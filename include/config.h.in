@@ -12,24 +12,9 @@
 ** ========================================================== */
 #ifndef _CONFIG_H
 #define _CONFIG_H
-/* Define if the C++ compiler supports BOOL */
-#undef HAVE_BOOL
-
-#undef VERSION
-
-#undef PACKAGE
-
-/* Define if you need the GNU extensions to compile */
-#undef _GNU_SOURCE
-
 /* Define if you want to use encryption */
 #ifndef HASCRYPT
 #undef HASCRYPT
-#endif
-
-/* Define if your system can handle exceptions */
-#ifndef MAGICK_HAS_EXCEPTIONS
-#undef MAGICK_HAS_EXCEPTIONS
 #endif
 
 /* Define if your system's locking works */
@@ -78,17 +63,20 @@
 #endif
 
 
+/* Define if the system has the type `bool'. */
+#undef HAVE_BOOL
+
 /* Define if you have the `dtoa' function. */
 #undef HAVE_DTOA
 
 /* Define if you have the <exception> header file. */
 #undef HAVE_EXCEPTION
 
-/* Define if you have the <exception.h> header file. */
-#undef HAVE_EXCEPTION_H
-
 /* Define if you have the `ftoa' function. */
 #undef HAVE_FTOA
+
+/* Define if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
 
 /* Define if you have the `itoa' function. */
 #undef HAVE_ITOA
@@ -101,6 +89,9 @@
 
 /* Define if you have the <map> header file. */
 #undef HAVE_MAP
+
+/* Define if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
 
 /* Define if you have the <mpatrol.h> header file. */
 #undef HAVE_MPATROL_H
@@ -117,8 +108,26 @@
 /* Define if you have the <stack> header file. */
 #undef HAVE_STACK
 
+/* Define if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
 /* Define if you have the <string> header file. */
 #undef HAVE_STRING
+
+/* Define if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
 
 /* Define if you have the <termio.h> header file. */
 #undef HAVE_TERMIO_H
@@ -128,6 +137,9 @@
 
 /* Define if you have the `ultoa' function. */
 #undef HAVE_ULTOA
+
+/* Define if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
 
 /* Define if you have the <utility> header file. */
 #undef HAVE_UTILITY

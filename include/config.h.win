@@ -28,11 +28,6 @@
 #define HASCRYPT 1
 #endif
 
-/* Define if your system can handle exceptions */
-#ifndef MAGICK_HAS_EXCEPTIONS
-#define MAGICK_HAS_EXCEPTIONS 1
-#endif
-
 /* Define if your system's locking works */
 #ifndef MAGICK_LOCKS_WORK
 #define MAGICK_LOCKS_WORK 1
@@ -78,6 +73,9 @@
 #define CRYPTO_KEY2 "| Magick II Key Stamp 2 .............................................................. |"
 #endif
 
+/* Define if the system has the type `bool'. */
+#define HAVE_BOOL 1
+
 /* Define if you have the dtoa function.  */
 /* #undef HAVE_DTOA */
 
@@ -110,9 +108,6 @@
 
 /* Define if you have the <exception> header file.  */
 #define HAVE_EXCEPTION 1
-
-/* Define if you have the <exception.h> header file.  */
-/* #undef HAVE_EXCEPTION_H */
 
 /* Define if you have the <list> header file.  */
 #define HAVE_LIST 1

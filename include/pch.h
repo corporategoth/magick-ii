@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/12/30 11:53:08  prez
+** Added thread safety for STL to pch.h, and started using ACE to do it.
+**
 ** Revision 1.45  2001/12/25 05:57:27  prez
 ** Updated SXP and EXPAT -- untested, but should work.
 **
@@ -168,6 +171,28 @@
 #  include "config.h"
 #endif
 
+/* Set us up, so that everything else knows about thread safety,
+ * extensions, etc.  Most of these options are the same as ACE.
+ */
+#define _REENTRANT
+#define _THREAD_SAFE
+#ifdef __cplusplus
+#include <ace/config.h>
+#include <ace/Version.h>
+#ifdef ACE_HAS_PTHREADS
+#  define __STL_PTHREADS
+#endif
+#ifdef ACE_HAS_STHREADS
+#  define __STL_UITHREADS
+#endif
+#ifdef ACE_HAS_IRIX62_THREADS
+#  define __STL_SGI_THREADS
+#endif
+#ifdef ACE_HAS_WTHREADS
+#  define __STL_WIN32THREADS
+#endif
+#endif /* __cplusplus */
+
 #ifdef STDC_HEADERS
 #  ifdef  __cplusplus
 #    include <cstdlib>
@@ -212,7 +237,11 @@
  * standard ones, only a .h
  */
 #ifdef __cplusplus
-#ifdef MAGICK_HAS_EXCEPTIONS
+#ifndef HAVE_BOOL
+enum bool { false, true };
+#endif
+#ifdef ACE_HAS_EXCEPTIONS
+#  define MAGICK_HAS_EXCEPTIONS
 #  ifdef HAVE_EXCEPTION
 #    include <exception>
 #  else
@@ -261,7 +290,6 @@
 #endif
 
 /* ACE Extensions */
-#include <ace/config.h>
 #include <ace/Version.h>
 #include <ace/Reactor.h>
 #include <ace/Connector.h>

@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2001/12/30 11:53:08  prez
+** Added thread safety for STL to pch.h, and started using ACE to do it.
+**
 ** Revision 1.30  2001/12/27 04:54:46  prez
 ** Converted SXP to not use STL strings, use mstring instead.
 **
@@ -418,9 +421,14 @@ namespace SXP {
 
 	void MOutStream::ExpandBuf()
 	{
-	    buffer = static_cast<char *>(realloc(buffer, sizeof(char) * (buf_sz + INIT_BUFSIZE)));
-	    memset(&buffer[buf_sz], 0, INIT_BUFSIZE);
+	    char *newbuf = new char[buf_sz + INIT_BUFSIZE];
+	    memcpy(newbuf, buffer, buf_sz);
+	    memset(&newbuf[buf_sz], 0, INIT_BUFSIZE);
 	    buf_sz += INIT_BUFSIZE;
+
+	    if (buffer != NULL)
+		delete [] buffer;
+	    buffer = newbuf;
 	}
 
 
@@ -444,79 +452,78 @@ namespace SXP {
 
 	void MOutStream::Indent()
 	{
-		while (buf_cnt+m_nIndent >= buf_sz)
-		    ExpandBuf();
-		for(int i=0; i<m_nIndent; i++)
-		    buffer[buf_cnt++] = '\t';
+	    while (buf_cnt+m_nIndent >= buf_sz)
+		ExpandBuf();
+	    for(int i=0; i<m_nIndent; i++)
+		buffer[buf_cnt++] = '\t';
 	}
 
 	MOutStream::MOutStream()
 		: m_nIndent(0), buf_sz(INIT_BUFSIZE), buf_cnt(0)
 	{
-		buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
-		memset(buffer, 0, sizeof(char) * buf_sz);
+	    buffer = new char[buf_sz];
+	    memset(buffer, 0, buf_sz);
 	}
 
 	MOutStream::~MOutStream()
 	{
-		if (buffer != NULL)
-		    free(buffer);
+	    if (buffer != NULL)
+		delete [] buffer;
 	}
 
 	void MOutStream::BeginXML(void)
 	{
-		// UTF-8 encoding is used because it allows relatively painless
-		// support for storing widechars as character data, via
-		// conversion functions in IElement::Retrieve() and 
-		// IOutStream::WriteElement
-		mstring tmp(XML_STRING);
-		if (buf_cnt + tmp.length() >= buf_sz)
-		    ExpandBuf();
-		ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-		buf_cnt+=tmp.length();
+	    // UTF-8 encoding is used because it allows relatively painless
+	    // support for storing widechars as character data, via
+	    // conversion functions in IElement::Retrieve() and 
+	    // IOutStream::WriteElement
+	    mstring tmp(XML_STRING);
+	    if (buf_cnt + tmp.length() >= buf_sz)
+		ExpandBuf();
+	    ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
+	    buf_cnt+=tmp.length();
 	}
 
 	void MOutStream::BeginObject(Tag& t, dict& attribs)
 	{
-		Indent(); m_nIndent++;
-		mstring tmp;
-		tmp.Format("<%s", t.ch);
-		if (buf_cnt + tmp.length() >= buf_sz)
-		    ExpandBuf();
-		ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-		buf_cnt+=tmp.length();
-		for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
-			tmp = "";
-			tmp.Format(" %s=\"%s\"",
-				(*i).first.c_str(),
+	    Indent(); m_nIndent++;
+	    mstring tmp;
+	    tmp.Format("<%s", t.ch);
+	    if (buf_cnt + tmp.length() >= buf_sz)
+		ExpandBuf();
+	    ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
+	    buf_cnt+=tmp.length();
+	    for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
+		tmp = "";
+		tmp.Format(" %s=\"%s\"", (*i).first.c_str(),
 				(*i).second.c_str() );
-			if (buf_cnt + tmp.length() >= buf_sz)
-			    ExpandBuf();
-			ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-			buf_cnt+=tmp.length();
-		}
-		tmp = ">\n";
 		if (buf_cnt + tmp.length() >= buf_sz)
 		    ExpandBuf();
 		ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
 		buf_cnt+=tmp.length();
+	    }
+	    tmp = ">\n";
+	    if (buf_cnt + tmp.length() >= buf_sz)
+		ExpandBuf();
+	    ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
+	    buf_cnt+=tmp.length();
 	}
 
 	void MOutStream::EndObject  (Tag& t)
 	{
-		m_nIndent--;
-		Indent();
-		mstring tmp;
-		tmp.Format("</%s>\n", t.ch);
-		if (buf_cnt + tmp.length() >= buf_sz)
-		    ExpandBuf();
-		ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-		buf_cnt+=tmp.length();
+	    m_nIndent--;
+	    Indent();
+	    mstring tmp;
+	    tmp.Format("</%s>\n", t.ch);
+	    if (buf_cnt + tmp.length() >= buf_sz)
+		ExpandBuf();
+	    ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
+	    buf_cnt+=tmp.length();
 	}
 
 	void MOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 	{
-		pObj->WriteElement(this, attribs);
+	    pObj->WriteElement(this, attribs);
 	}
 };
 

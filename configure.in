@@ -498,8 +498,7 @@ AC_CHECK_HEADERS(mpatrol.h)
 AC_CHECK_HEADERS(termio.h)
 
 dnl Find out which to use for C++ headers ...
-AC_CHECK_HEADERS(exception, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)],
-  [AC_CHECK_HEADERS(exception.h, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])])
+AC_CHECK_HEADERS(exception)
 AC_CHECK_HEADERS(list)
 AC_CHECK_HEADERS(map)
 AC_CHECK_HEADERS(queue)
@@ -520,6 +519,9 @@ AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(vsnprintf)
 AC_CHECK_FUNCS(_snprintf)
 AC_CHECK_FUNCS(_vsnprintf)
+
+dnl Find out which types we must provide ...
+AC_CHECK_TYPES(bool)
 
 dnl ====================================================
 
