@@ -162,10 +162,9 @@ void ThreadID::WriteOut(const mstring &message)
     }
     assert(out.LastError()==wxStream_NOERROR);
 */
-cout << "POST: " << message << endl;
     mstring finalout = "";
     for (int i=0; i<t_indent; i++)
-        finalout += "  ";
+        finalout += "   ";
     finalout += message;
 //    out << finalout << wxEndL;
     cout << finalout << endl;
@@ -184,7 +183,6 @@ T_Functions::T_Functions(const mstring &name)
     tid = mainthread;
     if (IsOn(tid)) {
 	mstring message = "\\\\ " + m_name + "()";
-cout << "PRE: " << message << endl;
 	tid->WriteOut(message);
     }
     tid->indentup();
@@ -199,15 +197,11 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
     if (IsOn(tid)) {
 	mstring message = "\\\\ " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
-cout << "DEBUG: " << message << endl;
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
-cout << "DEBUG: " << message << endl;
 	    if (i < args.count() - 1)
 		message += ", ";
 	}
-cout << "DEBUG: " << message << endl;
 	message += " )";
-cout << "PRE: " << message << endl;
 	tid->WriteOut(message);
     }
     tid->indentup();
@@ -221,9 +215,12 @@ T_Functions::~T_Functions()
 	tid = mainthread;
     tid->indentdown(); 
     if (IsOn(tid)) {
-	mstring message="// (" + return_value.type() + ") " + return_value.AsString();
+	mstring message;
+	if (strlen(return_value.type()))
+		message="// (" + return_value.type() + ") " + return_value.AsString();
+	else
+		message="//";
 	tid->WriteOut(message);
-
     }
 }
 
