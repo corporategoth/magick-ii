@@ -991,6 +991,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     case SIGSEGV:	// Segfault, validate all storage.
+	// on first read this code seems insensible. to keep in mind when reading
+	// unassigned mdatetime defaults to Jan 1 1970 therefor, first pass through
+	// will always be LastSEGV - Now() > 5
 	if((long) (LastSEGV - Now()) < 5)
 	{
 	    CP(("Got second sigsegv call, giving magick the boot"));
@@ -1010,8 +1013,8 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGHUP:	// Reload CFG/DB's
 	break;
 #endif
-    case SIGILL:	// Re-try last call.
-	Parent->shutdown(true);	// Temp, we just kill on CTRL-C
+    case SIGILL:	// illegal opcode, this suckers gone awry..
+	Parent->shutdown(true);	// We've gotta kill her captain, she's breaking up.
 	return -1;
 	break;
 #ifdef SIGTRAP
