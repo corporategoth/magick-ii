@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.149  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.148  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -297,7 +300,7 @@ public:
 		friend Magick;
 
 		// map<server name, pair<priority, triplet<port, password, numeric> > >
-		map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > > servers;
+		map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > > servers;
 		// map<server name, vector<allowed uplinks> >
 		map<mstring,vector<mstring> > allows;
 		mstring server_name;
@@ -311,7 +314,7 @@ public:
 		unsigned long lagtime;
 	public:
 		bool IsServer(mstring server)const;
-		pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > Server(mstring server)const;
+		pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Server(mstring server)const;
 		vector<mstring> PriorityList(unsigned int pri)const;
 		size_t Server_size()const { return servers.size(); }
 

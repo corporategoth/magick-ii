@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.61  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -306,7 +309,7 @@ bool mFile::Open(mstring name, mstring mode)
 {
     FT("mFile::Open", (name, mode));
 
-    i_name = "";
+    i_name.erase();
     if (fd != NULL)
     {
 	ACE_OS::fclose(fd);
@@ -331,7 +334,7 @@ void mFile::Close()
     {
 	ACE_OS::fflush(fd);
 	ACE_OS::fclose(fd);
-	i_name = "";
+	i_name.erase();
     }
     fd = NULL;
 }
@@ -453,7 +456,7 @@ void mFile::Attach(mstring name, FILE *in)
     FT("mFile::Attach", (name, "(FILE *) in"));
     MLOCK(("mFile", name));
     if (in == NULL)
-	i_name = "";
+	i_name.erase();
     else
 	i_name = name;
     fd = in;
@@ -996,7 +999,7 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     {
 	for(i2=i1->second.begin(); i2!=i1->second.end(); i2++)
 	{
-	    out = "";
+	    out.erase();
 	    out << (int) i1->first << "\n" << i2->first << "\n" <<
 		i2->second.first << "\n" << i2->second.second;
 	    pOut->WriteElement(tag_File, out);
@@ -1029,7 +1032,7 @@ void FileMap::PostLoad()
 		if (fm_array[i]->WordCount("\n") > 3)
 		    priv = fm_array[i]->ExtractWord(4, "\n");
 		else
-		    priv = "";
+		    priv.erase();
 		i_FileMap[type][number] = pair<mstring,mstring>(name,priv);
 	    }
 	    delete fm_array[i];
@@ -1259,10 +1262,9 @@ void DccXfer::operator=(const DccXfer &in)
     i_DccId=in.i_DccId;
     i_Socket = in.i_Socket;
 
-    DccXfer *tmp = (DccXfer *) &in;
-    if (tmp->i_File.IsOpened())
+    if (in.i_File.IsOpened())
     {
-	tmp->i_File.Close();
+	in.i_File.Close();
 	if (i_Type == Get)
 	{
 	    i_File.Open(i_Tempfile.c_str(), "a");

@@ -27,8 +27,8 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.64  2001/02/03 05:16:20  prez
-** Fixed up mdatetime
+** Revision 1.65  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
 **
 ** Revision 1.63  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up

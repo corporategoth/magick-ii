@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.88  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -254,7 +257,6 @@ Committee::Committee(mstring name, mstring head, mstring description)
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
     i_RegTime = mDateTime::CurrentDateTime();
     i_Head = head.LowerCase();
-    i_HeadCom = "";
     i_Description = description;
     i_OpenMemos = Parent->commserv.DEF_OpenMemos();
     l_OpenMemos = false;
@@ -272,7 +274,6 @@ Committee::Committee(mstring name, Committee *head, mstring description)
     i_Name = name.UpperCase();
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
     i_RegTime = mDateTime::CurrentDateTime();
-    i_Head = "";
     i_HeadCom = head->Name();
     i_Description = description;
     i_OpenMemos = Parent->commserv.DEF_OpenMemos();
@@ -291,8 +292,6 @@ Committee::Committee(mstring name, mstring description)
     i_Name = name.UpperCase();
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
     i_RegTime = mDateTime::CurrentDateTime();
-    i_Head = "";
-    i_HeadCom = "";
     i_Description = description;
     i_OpenMemos = Parent->commserv.DEF_OpenMemos();
     l_OpenMemos = false;
@@ -362,7 +361,7 @@ void Committee::Head(mstring newhead)
     if (!i_HeadCom.empty())
     {
 	CB(1, i_HeadCom);
-	i_HeadCom = "";
+	i_HeadCom.erase();
 	CE(1, i_HeadCom);
     }
 
@@ -1590,7 +1589,7 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 			comm->URL().c_str());
     }
 
-    output = "";
+    output.erase();
     if (comm->size())
     {
 	if (output.size())
@@ -1607,7 +1606,7 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/STATS"),
 			output.c_str());
 
-    output = "";
+    output.erase();
     if (comm->Secure())
     {
 	if (output.size())
@@ -1873,7 +1872,7 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
     }
     else if (!comm->Head().empty())
     {
-	output = "";
+	output.erase();
 	output << nextnum++ << ". " << IRC_Bold;
 	if (Parent->nickserv.IsStored(comm->Head()))
 	    output << Parent->getSname(comm->Head());
@@ -1889,7 +1888,7 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
     MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
-	output = "";
+	output.erase();
 	output << nextnum++ << ". " << (first ? Blank : IRC_Bold) <<
 		comm->member->Entry() << (first ? Blank : IRC_Off);
 	if (!Parent->nickserv.IsStored(comm->member->Entry()))
@@ -2074,7 +2073,7 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
     for (i=1, comm->message = comm->MSG_begin();
 	comm->message != comm->MSG_end(); comm->message++, i++)
     {
-	output = "";
+	output.erase();
 	output << i << ". " << comm->message->Entry();
 	::send(mynick, source, output);
 	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
@@ -2266,7 +2265,7 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
     }
 
     if (email.IsSameAs("none", true))
-	email = "";
+	email.erase();
     else if (!email.Contains("@"))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
@@ -2348,7 +2347,7 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
     }
 
     if (url.IsSameAs("none", true))
-	url = "";
+	url.erase();
 
     if (url.SubString(0, 6).IsSameAs("http://", true))
     {
@@ -3202,15 +3201,13 @@ void CommServ::PostLoad()
     c_array.clear();
 
     map<mstring,Committee>::iterator iter;
-    entlist_t *ptr;
     for (iter=list.begin(); iter!=list.end(); iter++)
     {
 	for (iter->second.member = iter->second.begin();
 		iter->second.member != iter->second.end();
 		iter->second.member++)
 	{
-	    ptr = (entlist_t *) &(*iter->second.member);
-	    ptr->PostLoad();
+	    iter->second.member->PostLoad();
 	}
 	for (iter->second.message = iter->second.MSG_begin();
 		iter->second.message != iter->second.MSG_end();

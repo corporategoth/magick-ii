@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.61  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -631,8 +634,7 @@ void mSocket::operator=(const mSocket &in)
     trace = in.trace;
 #endif
     sock = in.sock;
-    mSocket *tmp = (mSocket *) &in;
-    tmp->sock = NULL;
+    in.sock = NULL;
 
     MLOCK2(("SockMap"));
     SockMap[sockid] = this;

@@ -25,8 +25,8 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.50  2001/02/03 05:16:20  prez
-** Fixed up mdatetime
+** Revision 1.51  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
 **
 ** Revision 1.49  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...

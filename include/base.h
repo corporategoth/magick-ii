@@ -25,8 +25,8 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.80  2001/02/03 05:16:19  prez
-** Fixed up mdatetime
+** Revision 1.81  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
 **
 ** Revision 1.79  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
@@ -150,8 +150,8 @@ RCSID(base_h, "@(#) $Id$");
 class mUserDef
 {
 protected:
-    vector<mstring *> ud_array;
-    map<mstring,mstring> i_UserDef;
+    mutable vector<mstring *> ud_array;
+    mutable map<mstring,mstring> i_UserDef;
 public:
     virtual ~mUserDef() {}
     virtual mstring UserDef(mstring type) const;
@@ -276,7 +276,7 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-    virtual void PostLoad();
+    virtual void PostLoad() const;
 
     virtual size_t Usage() const;
     virtual void DumpB() const;

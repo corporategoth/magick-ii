@@ -25,8 +25,8 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.34  2001/02/03 05:16:20  prez
-** Fixed up mdatetime
+** Revision 1.35  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
 **
 ** Revision 1.33  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
@@ -267,7 +267,6 @@ public:
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);
-
 };
 
 extern mstring DisectTime(long intime, mstring source = "");

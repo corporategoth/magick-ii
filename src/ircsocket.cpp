@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.147  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.146  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -409,7 +412,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
     unsigned int i;
     mstring data2 = flack + data;
-    flack = "";
+    flack.erase();
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
@@ -699,7 +702,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	LOG((LM_EMERGENCY, Parent->getLogMessage("OTHER/NOVALIDSERVERS")));
     }
 
-    pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > details = Parent->startup.Server(server);
+    pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > details = Parent->startup.Server(server);
 
     ACE_INET_Addr addr(details.second.first, server);
 
@@ -1277,7 +1280,8 @@ int EventTask::svc(void)
 			    if (j>=Parent->server.proto.Modes())
 			    {
 				modelines.push_back(mode + " " + modeparam);
-				mode = modeparam = "";
+				mode.erase();
+				modeparam.erase();
 				j=0;
 			    }
 			    if (mode.empty())
@@ -1294,7 +1298,7 @@ int EventTask::svc(void)
 			}
 			{ WLOCK(("ChanServ", "live", cli->first, "p_modes_off"));
 			WLOCK2(("ChanServ", "live", cli->first, "p_modes_off_params"));
-			cli->second.p_modes_off = "";
+			cli->second.p_modes_off.erase();
 			cli->second.p_modes_off_params.clear();
 			}
 			if (mode.size() && cli->second.p_modes_on.size())
@@ -1304,7 +1308,8 @@ int EventTask::svc(void)
 			    if (j>=Parent->server.proto.Modes())
 			    {
 				modelines.push_back(mode + " " + modeparam);
-				mode = modeparam = "";
+				mode.erase();
+				modeparam.erase();
 				j=0;
 			    }
 			    if (mode.empty())
@@ -1320,7 +1325,7 @@ int EventTask::svc(void)
 			}
 			{ WLOCK(("ChanServ", "live", cli->first, "p_modes_on"));
 			WLOCK2(("ChanServ", "live", cli->first, "p_modes_on_params"));
-			cli->second.p_modes_on = "";
+			cli->second.p_modes_on.erase();
 			cli->second.p_modes_on_params.clear();
 			}
 			if (mode.size())

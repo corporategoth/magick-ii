@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.155  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.154  2001/02/03 02:21:35  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -424,36 +427,6 @@ void Protocol::SetTokens(unsigned int type)
 	tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG"; */
 	break;
 
-    case 0003:
-	SetTokens(0001);
-	tokens["e"] = "MODNICK";
-
-    case 0002: /* Relic >= 2.1 */
-	SetTokens(0001);
-	tokens.erase("1");
-	tokens.erase("3");
-	tokens.erase("=");
-	tokens["^"] = "WALLOPS";
-	tokens["LO"] = "LOCOPS";
-	tokens.erase("c");
-	tokens.erase("d");
-	tokens["QL"] = "SQLINE";
-	tokens["Uq"] = "UNSQLINE";
-	tokens["o"] = "OMODE";
-	tokens.erase("p");
-	tokens["s"] = "OPERMOTD";
-	tokens["v"] = "RPING";
-	tokens["w"] = "RPONG";
-	tokens["{"] = "MAP";
-	tokens["|"] = "SJOIN";
-	tokens["}"] = "SNICK";
-	tokens["~"] = "GLINE";
-	tokens["y"] = "SETTIME";
-	tokens["HM"] = "HTM";
-	tokens["z"] = "ADCHAT";
-	tokens["Rz"] = "RW";
-	break;
-
     case 0001: /* DAL >= 4.4.15 */
 	tokens["!"] = "PRIVMSG";
 	tokens["\\"] = "WHO";
@@ -534,6 +507,92 @@ void Protocol::SetTokens(unsigned int type)
 	tokens["q"] = "ZLINE";
 	tokens["r"] = "UNZLINE";
 	tokens["s"] = "PRIVMSG HelpServ";
+	break;
+
+    case 0002: /* Relic >= 2.1 */
+	SetTokens(0001);
+	tokens.erase("1");
+	tokens.erase("3");
+	tokens.erase("=");
+	tokens["^"] = "WALLOPS";
+	tokens["LO"] = "LOCOPS";
+	tokens.erase("c");
+	tokens.erase("d");
+	tokens["QL"] = "SQLINE";
+	tokens["Uq"] = "UNSQLINE";
+	tokens["o"] = "OMODE";
+	tokens.erase("p");
+	tokens["s"] = "OPERMOTD";
+	tokens["v"] = "RPING";
+	tokens["w"] = "RPONG";
+	tokens["{"] = "MAP";
+	tokens["|"] = "SJOIN";
+	tokens["}"] = "SNICK";
+	tokens["~"] = "GLINE";
+	tokens["y"] = "SETTIME";
+	tokens["HM"] = "HTM";
+	tokens["z"] = "ADCHAT";
+	tokens["Rz"] = "RW";
+	break;
+
+    case 0003:
+	SetTokens(0001);
+	tokens["e"] = "MODNICK";
+	break;
+
+    case 0004:
+	SetTokens(0001);
+	tokens["t"] = "RULES";
+	tokens["u"] = "MAP";
+	tokens["v"] = "SVS2MODE";
+	tokens["w"] = "DALINFO";
+	tokens["x"] = "ADCHAT";
+	tokens["y"] = "MKPASSWD";
+	tokens["z"] = "ADDLINE";
+	tokens["}"] = "GLINE";
+	tokens["~"] = "SJOIN";
+	tokens["AA"] = "SETHOST";
+	tokens["AB"] = "TECHAT";
+	tokens["AC"] = "NACHAT";
+	tokens["AD"] = "SETIDENT";
+	tokens["AE"] = "SETNAME";
+	tokens["AF"] = "LAG";
+	tokens["AG"] = "SDESC";
+	tokens["AH"] = "PRIVMSG StatServ";
+	tokens["AI"] = "KNOCK";
+	tokens["AJ"] = "CREDITS";
+	tokens["AK"] = "LICENSE";
+	tokens["AL"] = "CHGHOST";
+	tokens["AM"] = "RPING";
+	tokens["AN"] = "RPONG";
+	tokens["AO"] = "NETINFO";
+	tokens["AP"] = "SENDUMODE";
+	tokens["AQ"] = "ADDMOTD";
+	tokens["AR"] = "ADDOMOTD";
+	tokens["AS"] = "SVSMOTD";
+	tokens["AU"] = "SMO";
+	tokens["AV"] = "OPERMOTD";
+	tokens["AW"] = "TSCTL";
+	tokens["AX"] = "SVSJOIN";
+	tokens["AY"] = "SVSPART";
+	tokens["AZ"] = "CHGIDENT";
+	tokens["BA"] = "SWHOIS";
+	tokens["BB"] = "SVSO";
+	tokens["BC"] = "SVSFLINE";
+	tokens["BD"] = "TKL";
+	tokens["BE"] = "VHOST";
+	tokens["BF"] = "BOTMOTD";
+	tokens["BG"] = "REMGLINE";
+	tokens["BH"] = "HTM";
+	tokens["|"] = "UMODE2";
+	tokens["BI"] = "DCCDENY";
+	tokens["BJ"] = "UNDCCDENY";
+	tokens["BK"] = "CHGNAME";
+	tokens["BL"] = "SHUN";
+	tokens["BM"] = "CRYPTO";
+	tokens["BN"] = "POST";
+	tokens["BO"] = "PRIVMSG InfoServ";
+	break;
     }
 }
 
@@ -553,20 +612,7 @@ Protocol::Protocol()
     i_Modes = 3;
     i_ChanModeArg = "ovbkl";
     i_Server = "SERVER %s %d :%s";
-    i_Numeric = false;
-
-    /* Leave these commented, since they do nothing ...
-    i_Burst = "";
-    i_EndBurst = "";
-    i_Protoctl = "";
-    i_SVSNICK = "";
-    i_SVSMODE = "";
-    i_SVSKILL = "";
-    i_SVSNOOP = "";
-    i_SQLINE = "";
-    i_UNSQLINE = "";
-    i_SVSHOST = "";
-    */
+    i_Numeric = 0;
 
     DumpB();
 }
@@ -648,7 +694,7 @@ void Protocol::Set(unsigned int in)
 	i_Signon = 1000;
 	i_Akill = 2000;
 	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
-	i_Numeric = true;
+	i_Numeric = 7;
 	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
 	SetTokens(1000);
@@ -753,20 +799,23 @@ void Protocol::Set(unsigned int in)
 
     case 70: /* Unreal */
 	i_NickLen = 32;
-	i_Signon = 1001;
+	i_Signon = 2003;
 	i_Globops = true;
 	i_Helpops = true;
 	i_Akill = 1000;
-	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
-	i_Numeric = true;
-	i_ChanModeArg = "ovbehkl";
+	i_Modes = 6;
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 SJ3 NS VHP";
+	/* Check serveropts in s_debug.c for what the letters are */
+	i_Server = "SERVER %s %d :U2301-CFhiIpnXS-%d %s";
+	i_Numeric = 4;
+	i_ChanModeArg = "ovbehklLf";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
 	i_SVSNOOP = "SVSNOOP";
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0001);
+	SetTokens(0004);
 	break;
 
     case 80: /* UltimateIRCD */
@@ -837,27 +886,28 @@ void Protocol::DumpE() const
 	i_SQLINE, i_UNSQLINE, i_SVSHOST, tokens.size()));
 }
 
-Server::Server(mstring name, mstring description)
+Server::Server(mstring name, mstring description, unsigned long numeric)
 {
-    FT("Server::Server", (name, description));
+    FT("Server::Server", (name, description, numeric));
     MLOCK(("Server", "ServerList", name.LowerCase()));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
+    i_Numeric = numeric;
     i_Uplink = Parent->startup.Server_Name().LowerCase();
     i_Hops = 0;
     i_Description = description;
     i_Ping = i_Lag = 0;
     i_Jupe = true;
-    Parent->server.OurUplink(i_Name);
     DumpE();
 }
 
-Server::Server(mstring name, int hops, mstring description)
+Server::Server(mstring name, int hops, mstring description, unsigned long numeric)
 {
-    FT("Server::Server", (name, hops, description));
+    FT("Server::Server", (name, hops, description, numeric));
     MLOCK(("Server", "ServerList", name.LowerCase()));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
+    i_Numeric = numeric;
     i_Uplink = Parent->startup.Server_Name().LowerCase();
     i_Hops = hops;
     i_Description = description;
@@ -867,12 +917,13 @@ Server::Server(mstring name, int hops, mstring description)
     DumpE();
 }
 
-Server::Server(mstring name, mstring uplink, int hops, mstring description)
+Server::Server(mstring name, mstring uplink, int hops, mstring description, unsigned long numeric)
 {
-    FT("Server::Server", (name, uplink, hops, description));
+    FT("Server::Server", (name, uplink, hops, description, numeric));
     MLOCK(("Server", "ServerList", name.LowerCase()));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
+    i_Numeric = numeric;
     i_Uplink = uplink.LowerCase();
     i_Hops = hops;
     i_Description = description;
@@ -887,6 +938,7 @@ void Server::operator=(const Server &in)
     MLOCK(("Server", "ServerList", in.i_Name.LowerCase()));
     i_Name = in.i_Name;
     i_AltName = in.i_AltName;
+    i_Numeric = in.i_Numeric;
     i_Uplink = in.i_Uplink;
     i_Hops = in.i_Hops;
     i_Description = in.i_Description;
@@ -911,14 +963,14 @@ void Server::AltName(mstring in)
     MCE(i_AltName);
 }
 
-unsigned int Server::Numeric() const
+unsigned long Server::Numeric() const
 {
     NFT("Server::Numeric");
     RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Numeric"));
     RET(i_Numeric);
 }
 
-void Server::Numeric(unsigned int in)
+void Server::Numeric(unsigned long in)
 {
     FT("Server::Numeric", (in));
     WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Numeric"));
@@ -955,7 +1007,7 @@ void Server::Ping()
     WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Ping"));
     if (!i_Ping)
     {
-        Parent->server.sraw(((Parent->server.proto.Tokens() && !Parent->server.proto.GetNonToken("PING").empty()) ?
+	Parent->server.sraw(((Parent->server.proto.Tokens() && !Parent->server.proto.GetNonToken("PING").empty()) ?
 		Parent->server.proto.GetNonToken("PING") : mstring("PING")) +
 		" " + Parent->startup.Server_Name() + " :" + i_Name);
 	MCB(i_Ping);
@@ -1115,14 +1167,14 @@ size_t Server::Usage() const
 
 void Server::DumpB() const
 {
-    MB(0, (i_Name, i_AltName, i_Uplink, i_Hops, i_Description, i_Ping,
-	i_Lag, i_Jupe));
+    MB(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description,
+	i_Ping, i_Lag, i_Jupe));
 }
 
 void Server::DumpE() const
 {
-    ME(0, (i_Name, i_AltName, i_Uplink, i_Hops, i_Description, i_Ping,
-	i_Lag, i_Jupe));
+    ME(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description,
+	i_Ping, i_Lag, i_Jupe));
 }
 
 void NetworkServ::raw(mstring text) const
@@ -1134,12 +1186,12 @@ void NetworkServ::raw(mstring text) const
 void NetworkServ::sraw(mstring text) const
 {
     mstring out;
-    out << ":";
-    if (proto.Numeric())
-	out << Parent->startup.Server(Parent->Server()).second.third;
-    else
-	out << Parent->startup.Server_Name();
-    out << " " << text;
+/*    if (proto.Numeric())
+	out << "@" << base64_to_str(GetOurNumeric()) << " ";
+    else */
+    if (!proto.Numeric())
+	out << ":" << Parent->startup.Server_Name() << " ";
+    out << text;
     raw(out);
 }
 
@@ -1154,7 +1206,7 @@ void NetworkServ::SignOnAll()
     {
 	if (!Parent->nickserv.IsLive(Parent->operserv.GetNames().ExtractWord(i, " ")))
 	{
-	    doison += " " + Parent->operserv.GetNames().ExtractWord(i, " ");
+	    doison += Parent->operserv.GetNames().ExtractWord(i, " ") + " ";
 	    WaitIsOn.insert(Parent->operserv.GetNames().ExtractWord(i, " "));
 	}
     }
@@ -1162,7 +1214,7 @@ void NetworkServ::SignOnAll()
     {
 	if (!Parent->nickserv.IsLive(Parent->nickserv.GetNames().ExtractWord(i, " ")))
 	{
-	    doison += " " + Parent->nickserv.GetNames().ExtractWord(i, " ");
+	    doison += Parent->nickserv.GetNames().ExtractWord(i, " ") + " ";
 	    WaitIsOn.insert(Parent->nickserv.GetNames().ExtractWord(i, " "));
 	}
     }
@@ -1170,7 +1222,7 @@ void NetworkServ::SignOnAll()
     {
 	if (!Parent->nickserv.IsLive(Parent->chanserv.GetNames().ExtractWord(i, " ")))
 	{
-	    doison += " " + Parent->chanserv.GetNames().ExtractWord(i, " ");
+	    doison += Parent->chanserv.GetNames().ExtractWord(i, " ") + " ";
 	    WaitIsOn.insert(Parent->chanserv.GetNames().ExtractWord(i, " "));
 	}
     }
@@ -1178,7 +1230,7 @@ void NetworkServ::SignOnAll()
     {
 	if (!Parent->nickserv.IsLive(Parent->memoserv.GetNames().ExtractWord(i, " ")))
 	{
-	    doison += " " + Parent->memoserv.GetNames().ExtractWord(i, " ");
+	    doison += Parent->memoserv.GetNames().ExtractWord(i, " ") + " ";
 	    WaitIsOn.insert(Parent->memoserv.GetNames().ExtractWord(i, " "));
 	}
     }
@@ -1186,7 +1238,7 @@ void NetworkServ::SignOnAll()
     {
 	if (!Parent->nickserv.IsLive(Parent->commserv.GetNames().ExtractWord(i, " ")))
 	{
-	    doison += " " + Parent->commserv.GetNames().ExtractWord(i, " ");
+	    doison += Parent->commserv.GetNames().ExtractWord(i, " ") + " ";
 	    WaitIsOn.insert(Parent->commserv.GetNames().ExtractWord(i, " "));
 	}
     }
@@ -1194,14 +1246,14 @@ void NetworkServ::SignOnAll()
     {
 	if (!Parent->nickserv.IsLive(Parent->servmsg.GetNames().ExtractWord(i, " ")))
 	{
-	    doison += " " + Parent->servmsg.GetNames().ExtractWord(i, " ");
+	    doison += Parent->servmsg.GetNames().ExtractWord(i, " ") + " ";
 	    WaitIsOn.insert(Parent->servmsg.GetNames().ExtractWord(i, " "));
 	}
     }
 
     if (!doison.empty())
 	sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
-		proto.GetNonToken("ISON") : mstring("ISON")) +
+		proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
 		doison);
 }
 
@@ -1212,6 +1264,7 @@ NetworkServ::NetworkServ()
     messages=true;
     WLOCK(("Server", "i_UserMax"));
     i_UserMax = 0;
+    proc_SERVER = proc_NICK = proc_CHAN = 0;
     DumpE();
 }
 
@@ -1452,7 +1505,7 @@ bool NetworkServ::IsServer(mstring server) const
 }
 
 
-mstring NetworkServ::ServerNumeric(unsigned int num) const
+mstring NetworkServ::ServerNumeric(unsigned long num) const
 {
     FT("NetworkServ::ServerNumeric", (num));
     mstring retval;
@@ -1464,6 +1517,31 @@ mstring NetworkServ::ServerNumeric(unsigned int num) const
 	    retval = iter->second.Name();
 	    break;
 	}
+    RET(retval);
+}
+
+
+mstring NetworkServ::GetServer(mstring server) const
+{
+    FT("NetworkServ::GetServer", (server));
+    mstring retval;
+    RLOCK(("Server", "ServerList"));
+    if (proto.Numeric())
+    {
+	retval = ServerNumeric(str_to_base64(server));
+	if (retval.empty() && IsServer(server))
+	    retval = server;
+    }
+    else if (IsServer(server))
+	retval = server;
+    RET(retval);
+}
+
+
+unsigned long NetworkServ::GetOurNumeric() const
+{
+    NFT("NetworkServ::GetOurNumeric");
+    unsigned long retval = Parent->startup.Server(Parent->Server()).second.third;
     RET(retval);
 }
 
@@ -1486,13 +1564,7 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
     mstring tmp;
-    if (proto.Numeric())
-	tmp.Format(proto.Server().c_str(),
-	    server.LowerCase().c_str(), 2,
-	    Parent->startup.Server(Parent->Server()).second.third,
-	    ("JUPED (" + reason + ")").c_str());
-    else
-	tmp.Format(proto.Server().c_str(),
+    tmp.Format(proto.Server().c_str(),
 	    server.LowerCase().c_str(), 2,
 	    ("JUPED (" + reason + ")").c_str());
     raw(tmp);
@@ -2046,8 +2118,20 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << token;
 	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
-		" " << host << " " << host << " " << server << " 0 :" <<
+		" " << host << " " << host << " " << server << " 1 :" <<
 		realname;
+	    break;
+	case 2003:
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
+		send << proto.GetNonToken(token);
+	    else
+		send << token;
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		" +" << user << " " << host << " " << server << " 1 +" <<
+		Parent->startup.Setmode() << " " << host << " :" << realname;
 	    break;
 	}
 	// Sign ourselves in ...
@@ -2695,11 +2779,10 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
 void NetworkServ::KillUnknownUser(mstring user) const
 {
     FT("NetworkServ::KillUnknownUser", (user));
-    raw(":" + Parent->startup.Server_Name() + " " +
-	((proto.Tokens() && !proto.GetNonToken("KILL").empty()) ?
+    sraw(((proto.Tokens() && !proto.GetNonToken("KILL").empty()) ?
 		proto.GetNonToken("KILL") : mstring("KILL")) +
-    	" " + user + " :" + Parent->startup.Server_Name() +
-    	" (" + user + "(?) <- " + Parent->Server() + ")");
+		" " + user + " :" + Parent->startup.Server_Name() +
+		" (" + user + "(?) <- " + Parent->Server() + ")");
     LOG((LM_ERROR, Parent->getLogMessage("OTHER/KILL_UNKNOWN"),
 	user.c_str()));
 }
@@ -2734,28 +2817,39 @@ unsigned int NetworkServ::SeenMessage(mstring data)
 }
 
 
-void NetworkServ::execute(const mstring & data)
+void NetworkServ::execute(const mstring & message)
 {
     //okay this is the main networkserv command switcher
-    FT("NetworkServ::execute", (data));
+    FT("NetworkServ::execute", (message));
 
+    mstring data(message);
     mstring source, sourceL, msgtype;
-    if (data[0u]==':')
+
+    if (data[0u] == ':' || data[0u] == '@')
     {
-        source=data.ExtractWord(1,": ");
-	if (proto.Numeric() && source.IsNumber())
-	    source = ServerNumeric(atoi(source.c_str()));
-	sourceL=source.LowerCase();
-        msgtype=data.ExtractWord(2,": ").UpperCase();
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	    data.replace(0, ':');
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	sourceL = source.LowerCase();
+        msgtype = data.ExtractWord(2,": ").UpperCase();
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
-		PushUser(source, data);
-		return;
+	    PushUser(source, data);
+	    return;
 	}
     }
     else
     {
-        msgtype=data.ExtractWord(1,": ").UpperCase();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
     }
 
     // Message names direct from RFC1459, with DAL4.4.15+
@@ -3016,13 +3110,13 @@ void NetworkServ::execute(const mstring & data)
 	    // :soul.darker.net 303 heaven.darker.net :
 
 	    // repl: :our.server 303 source :local.nick
-	    mstring isonstr = "";
+	    mstring isonstr;
 	    for (unsigned int i=3; i<=data.WordCount(": "); i++)
 	    {
 		if (isonstr.length() > proto.MaxLine())
 		{
 		    sraw("303 " + source + " :" + isonstr);
-		    isonstr = "";
+		    isonstr.erase();
 		}
 		if (Parent->nickserv.IsLive(data.ExtractWord(i, ": ")))
 		    isonstr += data.ExtractWord(i, ": ") + " ";
@@ -3042,6 +3136,17 @@ void NetworkServ::execute(const mstring & data)
 	    if (source.Contains(".") || source.empty())
 		return;
 
+	    /* In burst mode, make sure NICK processing is done */
+	    { RLOCK(("IrcSvcHandler"));
+	      RLOCK2(("Server", "proc_NICK"));
+	    if (proc_NICK && Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->Burst())
+	    {
+		WLOCK(("WaitEndNickAdd"));
+	    }}
+	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN++; }
+	    RLOCK(("WaitEndChanAdd"));
+
 	    // :source JOIN :#channel
 	    for (unsigned int i=3; i<=data.WordCount(":, "); i++)
 	    {
@@ -3059,6 +3164,7 @@ void NetworkServ::execute(const mstring & data)
 		    Parent->nickserv.live[sourceL].Join(chan);
 		}
 	    }
+	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN--; }
 	}
 	else
 	{
@@ -3314,7 +3420,8 @@ void NetworkServ::execute(const mstring & data)
 	    if (source.Contains("."))
 		return;
 
-	    if (source.empty()) {
+	    if (source.empty())
+	    {
 		// NEW USER
 		sourceL = data.ExtractWord(2, ": ").LowerCase();
 
@@ -3351,6 +3458,17 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 
+		/* In burst mode, make sure SERVER processing is done */
+		{ RLOCK(("IrcSvcHandler"));
+		  RLOCK2(("Server", "proc_SERVER"));
+		if (proc_SERVER && Parent->ircsvchandler != NULL &&
+			Parent->ircsvchandler->Burst())
+		{
+		    WLOCK(("WaitEndServerAdd"));
+		}}
+		{ WLOCK(("Server", "proc_NICK")); proc_NICK++; }
+		RLOCK(("WaitEndNickAdd"));
+
 		{ WLOCK(("NickServ", "live"));
 		switch (proto.Signon())
 		{
@@ -3362,7 +3480,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(7, ": "),
+			    GetServer(data.ExtractWord(7, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(6, ": "),
 			    data.After(":")
@@ -3373,7 +3491,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(7, ": "),
+			    GetServer(data.ExtractWord(7, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(6, ": "),
 			    data.After(":")
@@ -3384,7 +3502,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(7, ": "),
+			    GetServer(data.ExtractWord(7, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(9, ": "),
 			    data.After(":")
@@ -3396,7 +3514,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(8, ": "),
+			    GetServer(data.ExtractWord(8, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(6, ": "),
 			    data.After(":")
@@ -3408,7 +3526,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(8, ": "),
+			    GetServer(data.ExtractWord(8, ": ")),
 			    data.ExtractWord(6, ": "),
 			    data.ExtractWord(7, ": "),
 			    data.After(":")
@@ -3420,7 +3538,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(8, ": "),
+			    GetServer(data.ExtractWord(8, ": ")),
 			    data.ExtractWord(6, ": "),
 			    data.ExtractWord(7, ": "),
 			    data.After(":")
@@ -3432,13 +3550,26 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(9, ": "),
+			    GetServer(data.ExtractWord(9, ": ")),
 			    data.ExtractWord(6, ": "),
 			    data.ExtractWord(7, ": "),
 			    data.After(":")
 			);
 		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
 		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(8, ": "));
+		    break;
+		case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    GetServer(data.ExtractWord(7, ": ")),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
+		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(10, ": "));
 		    break;
 		}}
 		if (Parent->nickserv.IsLive(sourceL))
@@ -3448,6 +3579,7 @@ void NetworkServ::execute(const mstring & data)
 			PopUser(sourceL);
 			KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
+			{ WLOCK(("Server", "proc_NICK")); proc_NICK--; }
 			return;
 		    }
 
@@ -3463,7 +3595,7 @@ void NetworkServ::execute(const mstring & data)
 		    // HAS to be AFTER the nickname is added to map.
 		    map<mstring, Committee>::iterator iter;
 		    mstring setmode;
-		    { RLOCK(("CommServ", "list"));
+		    { RLOCK2(("CommServ", "list"));
 		    for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
@@ -3523,6 +3655,7 @@ void NetworkServ::execute(const mstring & data)
 			}
 		    }
 		}
+		{ WLOCK(("Server", "proc_NICK")); proc_NICK--; }
 	    }
 	    else
 	    {
@@ -3618,11 +3751,6 @@ void NetworkServ::execute(const mstring & data)
 		sraw("464 " + Parent->Server() + " :" + "Password Incorrect");
 		Parent->Disconnect();
 	    }
-            else
-	    {
-		Parent->GotConnect(true);
-		SignOnAll();
-            }
 	}
 	else if (msgtype=="PING")
 	{
@@ -3786,22 +3914,54 @@ void NetworkServ::execute(const mstring & data)
 	    // SQUIT lifestone.darker.net :Ping timeout
 	    // :PreZ SQUIT server :reason
 
+	    /* Ensure only ONE server is added at a time ... */
+	    { RLOCK(("IrcSvcHandler"));
+	      RLOCK2(("Server", "proc_SERVER"));
+	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->Burst())
+	    {
+		WLOCK(("WaitEndServerAdd"));
+	    }}
+	    { MLOCK(("Server", "proc_SERVER")); proc_SERVER++; }
+	    RLOCK(("WaitEndServerAdd"));
+
+	    unsigned long numeric = 0;
 	    if (source.empty())
 	    {
 		if (Parent->startup.IsAllowed(data.ExtractWord(2, ": "),
 			Parent->startup.Server_Name()))
 		{
 		    WLOCK(("Server", "ServerList"));
-		    ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
-			data.ExtractWord(2, ": ").LowerCase(),
-			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
-			data.After(":"));
-		    if (proto.Numeric())
-			ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
-			    atoi(data.ExtractWord(7, ": ").c_str()));
+		    // unreal puts the numeric in the desctiption, ie.
+		    // SERVER downlink hops :Uversion-servopts-numeric description
+		    //        Only this way for direct links --^^^^^^^
+		    if (proto.Number() >= 70 && proto.Number() <= 79)
+		    {
+			numeric = atoi(data.After(":").ExtractWord(3, "-"));
+			ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
+				data.ExtractWord(2, ": ").LowerCase(),
+				atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
+				data.After(":").After(" "), numeric);
+		    }
+		    else
+		    {
+			ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
+				data.ExtractWord(2, ": ").LowerCase(),
+				atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
+				data.After(":"));
+			if (proto.Numeric())
+			{
+			    numeric = atoi(data.ExtractWord(proto.Numeric(), ": "));
+			    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
+				numeric);
+			}
+		    }
+
 		    LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(2, ": ").c_str(),
 			Parent->startup.Server_Name().c_str()));
+		    Parent->GotConnect(true);
+		    SignOnAll();
 		}
 		else
 		{
@@ -3830,8 +3990,11 @@ void NetworkServ::execute(const mstring & data)
 			    atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			    data.After(":", 2));
 			if (proto.Numeric())
-			    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
-				atoi(data.ExtractWord(8, ": ").c_str()));
+			{
+			    numeric = atoi(data.ExtractWord(proto.Numeric()+1, ": "));
+			    ServerList[data.ExtractWord(3, ": ").LowerCase()].Numeric(
+				numeric);
+			}
 			LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			    data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
 		    }
@@ -3857,6 +4020,7 @@ void NetworkServ::execute(const mstring & data)
 			Parent->getMessage("MISC/MAYNOTLINK"));
 		}
 	    }
+	    { MLOCK(("Server", "proc_SERVER")); proc_SERVER--; }
 	}
 	else if (msgtype=="SILENCE")
 	{
@@ -3869,33 +4033,83 @@ void NetworkServ::execute(const mstring & data)
 	    
 	    //:user SJOIN chan-stamp #channel #channel etc...
 
+	    /* In burst mode, make sure NICK processing is done */
+	    { RLOCK(("IrcSvcHandler"));
+	      RLOCK2(("Server", "proc_NICK"));
+	    if (proc_NICK && Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->Burst())
+	    {
+		WLOCK(("WaitEndNickAdd"));
+	    }}
+	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN++; }
+	    RLOCK(("WaitEndChanAdd"));
+
 	    if (source.Contains(".") || source.empty())
 	    {
 		unsigned int i;
+		bool nosource = source.empty();
+		mstring chan = data.ExtractWord((nosource ? 3 : 4), ": ");
 
 		vector<mstring> users;
-		mstring modes = data.ExtractWord(5, ": ");
-		mstring mode_params = "", nick;
-		bool oped, voiced;
-		if (modes.Contains("l") || modes.Contains("k"))
-		    mode_params = data.Before(":", 2).After(" ", 5);
-		for (i=0; i < data.After(":", 2).WordCount(" "); i++)
+		mstring modes;
+		if (data.Before(":", (nosource ? 1 : 2)).WordCount(": ") >= (nosource ? 4u : 5u))
+		    modes = data.Before(":", (nosource ? 1 : 2)).ExtractWord((nosource ? 4 : 5), ": ");
+		mstring mode_params, nick;
+		bool oped, halfoped, voiced, owner, prot, isban, isexcept;
+		if (modes.length())
 		{
-		    nick = data.After(":", 2).ExtractWord(i+1, " ");
+		    for (i=0; i < proto.ChanModeArg().length(); i++)
+			if (modes.Contains(proto.ChanModeArg()[i]))
+			{
+			    mode_params = data.Before(":", (nosource ? 1 : 2)).After(" ", 5);
+			    break;
+			}
+		}
+		for (i=0; i < data.After(":", (nosource ? 1 : 2)).WordCount(" "); i++)
+		{
+		    nick = data.After(":", (nosource ? 1 : 2)).ExtractWord(i+1, " ");
 		    if (!nick.empty())
 		    {
-			oped = voiced = false;
-			if (nick[0u] == '@')
+			char c = 0;
+			oped = halfoped = voiced = owner = prot = false;
+			isban = isexcept = false;
+			while (c != nick[0u])
 			{
-			    oped = true;
-			    nick.replace("@", "", false);
+			    c = nick[0u];
+			    switch(nick[0u])
+			    {
+			    case '@':
+				oped = true;
+				nick.erase(0, 0);
+			        break;
+			    case '%':
+				halfoped = true;
+				nick.erase(0, 0);
+			        break;
+			    case '+':
+				voiced = true;
+				nick.erase(0, 0);
+			        break;
+			    case '*':
+				owner = true;
+				nick.erase(0, 0);
+			        break;
+			    case '~':
+				prot = true;
+				nick.erase(0, 0);
+			        break;
+			    case '&':
+				isban = true;
+				nick.erase(0, 0);
+			        break;
+			    case '"':
+				isexcept = true;
+				nick.erase(0, 0);
+			        break;
+			    }
 			}
-			if (nick[0u] == '+')
-			{
-			    voiced = true;
-			    nick.replace("+", "", false);
-			}
-			if (Parent->nickserv.IsLive(nick))
+			if (!(isban || isexcept) &&
+			    Parent->nickserv.IsLive(nick))
 			{
 			    if (oped)
 			    {
@@ -3909,18 +4123,27 @@ void NetworkServ::execute(const mstring & data)
 			    }
 			    users.push_back(nick);
 			}
+			else if (isban)
+			{
+			    modes += "b";
+			    mode_params += " " + nick;
+			}
+			else if (isexcept)
+			{
+			    modes += "e";
+			    mode_params += " " + nick;
+			}
 			else
 			{
-			    PushUser(nick, ":" + nick + " JOIN " +
-				data.ExtractWord(4, ": "));
+			    PushUser(nick, ":" + nick + " JOIN " + chan);
 			    if (oped)
-				PushUser(nick, ":" + source + " MODE " +
-				    data.ExtractWord(4, ": ") + " +o :" +
-				    nick, data.ExtractWord(4, ": "));
+				PushUser(nick, ":" + (nosource ?
+				    OurUplink() : source) + " MODE " +
+				    chan + " +o :" + nick, chan);
 			    if (voiced)
-				PushUser(nick, ":" + source + " MODE " +
-				    data.ExtractWord(4, ": ") + " +v :" +
-				    nick, data.ExtractWord(4, ": "));
+				PushUser(nick, ":" + (nosource ?
+				    OurUplink() : source) + " MODE " +
+				    chan + " +v :" + nick, chan);
 			}
 		    }
 		}
@@ -3929,19 +4152,19 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    for (i=0; i<users.size(); i++)
 		    {
-			Parent->nickserv.live[users[i].LowerCase()].Join(data.ExtractWord(4, ": "));
+			Parent->nickserv.live[users[i].LowerCase()].Join(chan);
 		    }
-		    CP(("MODE TO %s: %s", data.ExtractWord(4, ": ").LowerCase().c_str(),
+		    CP(("MODE TO %s: %s", chan.LowerCase().c_str(),
 			(modes + " " + mode_params).c_str()));
-		    if (Parent->chanserv.IsLive(data.ExtractWord(4, ": ")))
-			Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(
+		    if (Parent->chanserv.IsLive(chan))
+			Parent->chanserv.live[chan.LowerCase()].Mode(
 				Parent->chanserv.FirstName(), modes + " " + mode_params);
 		}
 		else if (modes.length() > 1)
 		{
-		    PushUser(nick, ":" + source + " MODE " +
-			data.ExtractWord(4, ": ") + " " + modes +
-			" :" + mode_params, data.ExtractWord(4, ": "));
+		    PushUser(nick, ":" + (nosource ?
+			OurUplink() : source) + " MODE " + chan +
+			" " + modes + " :" + mode_params, chan);
 		}
 	    }
 	    else
@@ -3957,12 +4180,12 @@ void NetworkServ::execute(const mstring & data)
 		    if (chan[0u] == '@')
 		    {
 			oped = true;
-			chan.replace("@", "", false);
+			chan.erase(0, 0);
 		    }
 		    if (chan[0u] == '+')
 		    {
 			voiced = true;
-			chan.replace("+", "", false);
+			chan.erase(0, 0);
 		    }
 		    Parent->nickserv.live[sourceL].Join(chan);
 		    if (oped)
@@ -3973,6 +4196,7 @@ void NetworkServ::execute(const mstring & data)
 				Parent->chanserv.FirstName(), "+v " + source);
 		}
 	    }
+	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN--; }
 	}
 	else if (msgtype=="SMO")
 	{
@@ -4022,7 +4246,19 @@ void NetworkServ::execute(const mstring & data)
 	    // services = 1 for service, 0 for user
 	    // DAL4.4.15+ SNICK name hops time user host server services modes :real name
 
-	    {WLOCK(("NickServ", "live"));
+	    /* In burst mode, make sure SERVER processing is done */
+	    { RLOCK(("IrcSvcHandler"));
+	      RLOCK2(("Server", "proc_SERVER"));
+	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->Burst())
+	    {
+		WLOCK(("WaitEndServerAdd"));
+	    }}
+	    { WLOCK(("Server", "proc_NICK")); proc_NICK++; }
+	    RLOCK(("WaitEndNickAdd"));
+
+	    { WLOCK(("NickServ", "live"));
+	      RLOCK2(("AddingServer"));
 	    switch (proto.Signon())
 	    {
 	    case 0000:
@@ -4033,7 +4269,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(7, ": "),
+			    GetServer(data.ExtractWord(7, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(6, ": "),
 			    data.After(":")
@@ -4045,7 +4281,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(7, ": "),
+			    GetServer(data.ExtractWord(7, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(6, ": "),
 			    data.After(":")
@@ -4057,7 +4293,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(7, ": "),
+			    GetServer(data.ExtractWord(7, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(9, ": "),
 			    data.After(":")
@@ -4070,7 +4306,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(8, ": "),
+			    GetServer(data.ExtractWord(8, ": ")),
 			    data.ExtractWord(5, ": "),
 			    data.ExtractWord(6, ": "),
 			    data.After(":")
@@ -4083,7 +4319,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(8, ": "),
+			    GetServer(data.ExtractWord(8, ": ")),
 			    data.ExtractWord(6, ": "),
 			    data.ExtractWord(7, ": "),
 			    data.After(":")
@@ -4095,7 +4331,7 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(8, ": "),
+			    GetServer(data.ExtractWord(8, ": ")),
 			    data.ExtractWord(6, ": "),
 			    data.ExtractWord(7, ": "),
 			    data.After(":")
@@ -4107,13 +4343,26 @@ void NetworkServ::execute(const mstring & data)
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
 			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    data.ExtractWord(9, ": "),
+			    GetServer(data.ExtractWord(9, ": ")),
 			    data.ExtractWord(6, ": "),
 			    data.ExtractWord(7, ": "),
 			    data.After(":")
 			);
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(8, ": "));
+		break;
+	    case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    GetServer(data.ExtractWord(7, ": ")),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
+		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(10, ": "));
 		break;
 	    }}
 	    if (Parent->nickserv.IsLive(sourceL))
@@ -4123,6 +4372,8 @@ void NetworkServ::execute(const mstring & data)
 		    PopUser(sourceL);
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
+		    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+
 		    return;
 		}
 
@@ -4138,7 +4389,7 @@ void NetworkServ::execute(const mstring & data)
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
 		mstring setmode;
-		{ RLOCK(("CommServ", "list"));
+		{ RLOCK2(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
@@ -4197,6 +4448,7 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 	    }
+	    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
 	}
 	else if (msgtype=="SQLINE")
 	{
@@ -4449,7 +4701,7 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    if (iter->second.IsServices())
 		    {
-			out = "";
+			out.erase();
 			if (iter->second.HasMode("o"))
 			{
 			    out << "204 " << source << " Operator 10 ";
@@ -4468,23 +4720,23 @@ void NetworkServ::execute(const mstring & data)
 			
 		    }
 		}
-		out = "";
+		out.erase();
 		out << "209 " << source << " Class 50 :1";
 		sraw(out);
 		if (opers)
 		{
-		    out = "";
+		    out.erase();
 		    out << "209 " << source << " Class 10 :" << opers;
 		    sraw(out);
 		}
 		if (users)
 		{
-		    out = "";
+		    out.erase();
 		    out << "209 " << source << " Class 1 :" << users;
 		    sraw(out);
 		}
 	    }
-	    out = "";
+	    out.erase();
 	    out << "262 " << source << " " << Parent->startup.Server_Name() <<
 		" :End of TRACE";
 	    sraw(out);
@@ -4496,7 +4748,14 @@ void NetworkServ::execute(const mstring & data)
 	}
 	break;
     case 'U':
-	if (msgtype=="UNGLINE")
+	if (msgtype=="UMODE2")
+	{
+	    if (!source.Contains("."))
+	    {
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(3, ": "));
+	    }
+	}
+	else if (msgtype=="UNGLINE")
 	{
 	    // We will ignore GLINES because they're not relivant to us.
 	    // we will not be glining our own clients ;P
@@ -4506,7 +4765,7 @@ void NetworkServ::execute(const mstring & data)
 	    // We will ignore SQLINES because they're not relivant to us.
 	    // we will not be qlining our own clients ;P
 	}
-	if (msgtype=="UNZLINE")
+	else if (msgtype=="UNZLINE")
 	{
 	    // We will ignore ZLINES because they're not relivant to us.
 	    // we will not be zlining our own clients ;P
@@ -4552,7 +4811,19 @@ void NetworkServ::execute(const mstring & data)
 	        }
 	    }
 
+	    /* In burst mode, make sure SERVER processing is done */
+	    { RLOCK(("IrcSvcHandler"));
+	      RLOCK2(("Server", "proc_SERVER"));
+	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->Burst())
+	    {
+		WLOCK(("WaitEndServerAdd"));
+	    }}
+	    { WLOCK(("Server", "proc_NICK")); proc_NICK++; }
+	    RLOCK(("WaitEndNickAdd"));
+
 	    { WLOCK(("NickServ", "live"));
+	      RLOCK2(("AddingServer"));
 	    switch (proto.Signon())
 	    {
 	    case 0000: // USER nick user host server :realname
@@ -4560,7 +4831,7 @@ void NetworkServ::execute(const mstring & data)
 		    Nick_Live_t(
 			data.ExtractWord(2, ": "),
 			time(NULL),
-			data.ExtractWord(5, ": "),
+			GetServer(data.ExtractWord(5, ": ")),
 			data.ExtractWord(3, ": "),
 			data.ExtractWord(4, ": "),
 			data.After(":")
@@ -4571,7 +4842,7 @@ void NetworkServ::execute(const mstring & data)
 		    Nick_Live_t(
 			data.ExtractWord(2, ": "),
 			(time_t) atol(data.ExtractWord(3, ": ")),
-			data.ExtractWord(6, ": "),
+			GetServer(data.ExtractWord(6, ": ")),
 			data.ExtractWord(4, ": "),
 			data.ExtractWord(5, ": "),
 			data.After(":")
@@ -4584,6 +4855,7 @@ void NetworkServ::execute(const mstring & data)
 	    case 2000:
 	    case 2001:
 	    case 2002:
+	    case 2003:
 		break;
 	    }}
 
@@ -4594,6 +4866,7 @@ void NetworkServ::execute(const mstring & data)
 		    PopUser(sourceL);
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
+		    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
 		    return;
 		}
 
@@ -4609,7 +4882,7 @@ void NetworkServ::execute(const mstring & data)
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
 		mstring setmode;
-		{ RLOCK(("CommServ", "list"));
+		{ RLOCK2(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
@@ -4668,6 +4941,7 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 	    }
+	    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
 	}
 	else if (msgtype=="USERHOST")
 	{
@@ -4995,18 +5269,31 @@ void NetworkServ::execute(const mstring & data)
 
 }
 
-void NetworkServ::numeric_execute(const mstring & data)
+void NetworkServ::numeric_execute(const mstring & message)
 {
-    FT("NetworkServ::numeric_execute", (data));
+    FT("NetworkServ::numeric_execute", (message));
     unsigned int i;
 
+    mstring data(message);
     mstring source, sourceL;
     unsigned int msgtype;
-    if (data[0u]==':' || data.ExtractWord(1, ": ").Contains("."))
+    
+    if (data[0u] == ':' || data[0u] == '@')
     {
-        source=data.ExtractWord(1,": ");
-	sourceL=source.LowerCase();
-        msgtype=atoi(data.ExtractWord(2,": "));
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	    data.replace(0, ':');
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	sourceL = source.LowerCase();
+        msgtype = atoi(data.ExtractWord(2,": "));
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
 	    PushUser(source, data);
@@ -5014,7 +5301,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     }
     else
     {
-        msgtype=atoi(data.ExtractWord(1,": "));
+        msgtype = atoi(data.ExtractWord(1,": "));
     }
 
     // Numerics direct from RFC1459
@@ -5094,7 +5381,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 				if (joinline.length() > proto.MaxLine())
 				{
 				    JOIN(Parent->chanserv.FirstName(), joinline);
-				    joinline = "";
+				    joinline.erase();
 				}
 			    }
 			    if (clive != NULL)
@@ -5124,7 +5411,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 			if (joinline.length())
 			{
 			    JOIN(Parent->chanserv.FirstName(), joinline);
-			    joinline = "";
+			    joinline.erase();
 			}
 			map<mstring,mstring>::iterator i;
 			for (i=modes.begin(); i!=modes.end(); i++)

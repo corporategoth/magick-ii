@@ -27,6 +27,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.39  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -213,19 +216,19 @@ vector<mstring> DccEngine::ctcpExtract(mstring& in)
     int Start,End,occ=1;
     Start=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     if(Start<0)
-	return Result;
+	NRET(vector<mstring>, Result);
     End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     if (End<0)
-	return Result;
-    while(Start < (int) in.length() && End < (int) in.length())
+	NRET(vector<mstring>, Result);
+    while(Start >= 0 && Start < (int) in.length() &&
+	  End >= 0 && End < (int) in.length())
     {
 	// the +1,-1 removes the '\001' markers off front and back
 	Result.push_back(in.SubString(Start+1,End-1));
 	Start=End;
-	if(Start < (int) in.length())
-	    End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
+	End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     }
-    return Result;
+    NRET(vector<mstring>, Result);
 }
 
 void DccEngine::decodeReply(const mstring& mynick, const mstring& source,

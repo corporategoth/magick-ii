@@ -25,8 +25,8 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.60  2001/02/03 05:16:20  prez
-** Fixed up mdatetime
+** Revision 1.61  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
 **
 ** Revision 1.59  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
@@ -198,13 +198,14 @@ class Protocol
      * 2000 = NICK nick hops signon-time mode user host server :realname
      * 2001 = NICK nick hops signon-time mode user host server service :realname
      * 2002 = NICK nick hops signon-time mode user host althost server helper :realname
+     * 2003 = NICK nick hops signon-time user host server service mode althost :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */
     mstring i_ChanModeArg; /* Channel Modes that have arguments */
 
     mstring i_Server;	/* Should have %s %d %s in it (in order) */
-    bool i_Numeric;	/* Do we use numerics at all */
+    int i_Numeric;	/* # paramater that is numeric! */
     mstring i_Burst;	/* Simply do we need to announce a flood? */
     mstring i_EndBurst; /* and if we do, how do we tell em we're done */
 
@@ -256,7 +257,7 @@ public:
     unsigned int Modes() const    { return i_Modes; }
     mstring ChanModeArg() const   { return i_ChanModeArg; }
     mstring Server() const	  { return i_Server; }
-    bool Numeric() const	  { return i_Numeric; }
+    int Numeric() const		  { return i_Numeric; }
     mstring SVSNICK() const	  { return i_SVSNICK; }
     mstring SVSMODE() const	  { return i_SVSMODE; }
     mstring SVSKILL() const	  { return i_SVSKILL; }
@@ -276,7 +277,7 @@ class Server
 {
     mstring i_Name;
     mstring i_AltName;
-    unsigned int i_Numeric;
+    unsigned long i_Numeric;
     mstring i_Uplink;
     int i_Hops;
     mstring i_Description;
@@ -286,9 +287,12 @@ class Server
 public:
     Server() {}
     Server(const Server &in) { *this = in; }
-    Server(mstring name, mstring description);
-    Server(mstring name, int hops, mstring description);
-    Server(mstring name, mstring uplink, int hops, mstring description);
+    Server(mstring name, mstring description,
+    				unsigned long numeric = 0);
+    Server(mstring name, int hops, mstring description,
+				unsigned long numeric = 0);
+    Server(mstring name, mstring uplink, int hops, mstring description,
+				unsigned long numeric = 0);
     void operator=(const Server &in);
     bool operator==(const Server &in) const
 	{ return (i_Name == in.i_Name); }
@@ -300,8 +304,8 @@ public:
     mstring Name() const	{ return i_Name; }
     mstring AltName() const;
     void AltName(mstring in);
-    unsigned int Numeric() const;
-    void Numeric(unsigned int num);
+    unsigned long Numeric() const;
+    void Numeric(unsigned long num);
     mstring Uplink() const;
     int Hops() const;
     mstring Description() const;
@@ -341,6 +345,7 @@ class NetworkServ : public mBase
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;
+    unsigned int proc_SERVER, proc_NICK, proc_CHAN;
     
     enum send_type {
 	t_GLOBOPS, t_HELPOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
@@ -348,7 +353,6 @@ class NetworkServ : public mBase
 	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(mstring nick);
-
     map<mstring, list<triplet<mDateTime, mstring, mstring> > > ToBeDone;
 
     void OurUplink(mstring server);
@@ -363,7 +367,9 @@ public:
     map<mstring,Server> ServerList;
     mstring OurUplink() const;
     bool IsServer(mstring server) const;
-    mstring ServerNumeric(unsigned int num) const;
+    mstring ServerNumeric(unsigned long num) const;
+    mstring GetServer(mstring server) const;
+    unsigned long GetOurNumeric() const;
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.

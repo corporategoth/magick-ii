@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.65  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -619,6 +622,7 @@ public:
     int rfind(const char *str, int occurance = 1) const;
     void replace(const char *find, const char *replace, bool all = true);
     void replace(int begin, int end, char *replace, size_t length);
+    bool replace(size_t offs, char c);
 
     mstring substr(int nFirst, int nCount) const;
 

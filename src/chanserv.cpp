@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.226  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.225  2001/02/03 02:21:32  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -423,9 +426,9 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    CB(2, modes);
 	    CB(3, i_Limit);
 	    CB(4, i_Key);
-	    modes = "";
+	    modes.erase();
 	    i_Limit = 0;
-	    i_Key = "";
+	    i_Key.erase();
 	    CE(2, modes);
 	    CE(3, i_Limit);
 	    CE(4, i_Key);
@@ -478,7 +481,7 @@ void Chan_Live_t::UnSquit(mstring nick)
     if (!users.size())
     {
 	MCB(modes);
-	modes = "";
+	modes.erase();
 	MCE(modes);
     }
 
@@ -1556,7 +1559,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 				i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
 				i_Name.c_str(), source.c_str()));
 		    }
-		    i_Key = "";
+		    i_Key.erase();
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
 		}
@@ -2484,8 +2487,11 @@ void Chan_Stored_t::defaults()
     NFT("Chan_Stored_t::defaults");
 
     // Dont lock in here, we locked outside ...
-    i_Mlock_On = i_Mlock_Off = i_Mlock_Key = "";
-    l_Mlock_On = l_Mlock_Off = "";
+    i_Mlock_On.erase();
+    i_Mlock_Off.erase();
+    i_Mlock_Key.erase();
+    l_Mlock_On.erase();
+    l_Mlock_Off.erase();
     i_Mlock_Limit = 0;
     
     i_Bantime = Parent->chanserv.DEF_Bantime();
@@ -2860,7 +2866,7 @@ void Chan_Stored_t::Founder(mstring in)
     if (i_CoFounder.IsSameAs(in, true))
     {
 	CB(1, i_CoFounder);
-	i_CoFounder = "";
+	i_CoFounder.erase();
 	CE(1, i_CoFounder);
     }
 
@@ -3023,7 +3029,7 @@ void Chan_Stored_t::UnSuspend()
     NFT("Chan_Stored_t::UnSuspend");
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     MCB(i_Suspend_By);
-    i_Suspend_By = "";
+    i_Suspend_By.erase();
     MCE(i_Suspend_By);
 }
 
@@ -3074,7 +3080,9 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     CB(1, i_Mlock_Off);
     CB(2, i_Mlock_Key);
     CB(3, i_Mlock_Limit);
-    i_Mlock_On = i_Mlock_Off = i_Mlock_Key = "";
+    i_Mlock_On.erase();
+    i_Mlock_Off.erase();
+    i_Mlock_Key.erase();
     i_Mlock_Limit = 0;
     vector<mstring> retval;
     mstring output, change = mode.ExtractWord(1, ": ");
@@ -3087,7 +3095,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     if (change.WordCount("k") > 2)
     {
 	ignorek = true;
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "ERR_SYNTAX/MULTI_MODE").c_str(),
 		    'k');
 	retval.push_back(output);
@@ -3095,7 +3103,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     if (change.WordCount("l") > 2)
     {
 	ignorel = true;
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "ERR_SYNTAX/MULTI_MODE").c_str(),
 		    'l');
 	retval.push_back(output);
@@ -3120,7 +3128,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		{
 		    if (fwdargs > mode.WordCount(": "))
 		    {
-			output = "";
+			output.erase();
 			output.Format(Parent->getMessage(source, "ERR_SYNTAX/NOKEY").c_str());
 			retval.push_back(output);
 			fwdargs--;
@@ -3138,7 +3146,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		{
 		    if (fwdargs > mode.WordCount(": "))
 		    {
-			output = "";
+			output.erase();
 			output.Format(Parent->getMessage(source, "ERR_SYNTAX/NOLIMIT").c_str());
 			retval.push_back(output);
 			fwdargs--;
@@ -3146,13 +3154,13 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		    else if (!mode.ExtractWord(fwdargs, ": ").IsNumber() ||
 			mode.ExtractWord(fwdargs, ": ").Contains("."))
 		    {
-			output = "";
+			output.erase();
 			output.Format(Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER").c_str());
 			retval.push_back(output);
 		    }
 		    else if (atol(mode.ExtractWord(fwdargs, ": ")) < 1)
 		    {
-			output = "";
+			output.erase();
 			output.Format(Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER").c_str(),
 			    1, 32768);
 			retval.push_back(output);
@@ -3248,7 +3256,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	    else
 	    {
 		if (locked[i] == 'k')
-		    i_Mlock_Key = "";
+		    i_Mlock_Key.erase();
 		else if (locked[i] == 'l')
 		    i_Mlock_Limit = 0;
 
@@ -3270,12 +3278,12 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	}
     }
 
-    mstring output2 = "";
+    mstring output2;
     if (!override_on.empty() || !override_off.empty())
     {	
 	if (!output2.empty())
 	    output2 += "  ";
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_REVERSED").c_str(),
 	    ((!override_on.empty() ? ("+" + override_on ) : mstring("")) +
 	     (!override_off.empty() ? ("-" + override_off) : mstring(""))).c_str());
@@ -3285,7 +3293,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     {
 	if (!output2.empty())
 	    output2 += "  ";
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_FORCED").c_str(),
 	    ((!forced_on.empty() ? ("+" + forced_on ) : mstring("")) +
 	     (!forced_off.empty() ? ("-" + forced_off) : mstring(""))).c_str());
@@ -3314,7 +3322,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	if (i_Mlock_Limit)
 	    modes << " " << i_Mlock_Limit;
 
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_SET").c_str(),
 	    i_Name.c_str(), modes.c_str());
 	retval.push_back(output);
@@ -3360,7 +3368,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     }
     else
     {	
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNSET").c_str(),
 	    i_Name.c_str());
 	retval.push_back(output);
@@ -3440,7 +3448,8 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
     MCB(l_Mlock_Off);
     CB(1, l_Mlock_On);
-    l_Mlock_On = l_Mlock_Off = "";
+    l_Mlock_On.erase();
+    l_Mlock_Off.erase();
     vector<mstring> retval;
     mstring output, change = mode.ExtractWord(1, ": ");
     bool add = true;
@@ -3547,7 +3556,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	if (l_Mlock_Off[i] == 'k')
 	{
 	    WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-	    i_Mlock_Key = "";
+	    i_Mlock_Key.erase();
 	}
 	else if (l_Mlock_Off[i] == 'l')
 	{
@@ -3569,7 +3578,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 
     if (!override_on.empty() || !override_off.empty())
     {
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_REVERSED").c_str(),
 	    ((!override_on.empty() ? ("+" + override_on ) : mstring("")) +
 	     (!override_off.empty() ? ("-" + override_off) : mstring(""))).c_str());
@@ -3577,7 +3586,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     }
     if (!l_Mlock_On.empty() || !l_Mlock_Off.empty())
     {
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_LOCK").c_str(),
 	    i_Name.c_str(),
 	    ((!l_Mlock_On.empty() ? ("+" + l_Mlock_On )  : mstring("")) +
@@ -3595,7 +3604,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     }
     else
     {
-	output = "";
+	output.erase();
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNLOCK").c_str(),
 	    i_Name.c_str());
 	retval.push_back(output);
@@ -5217,27 +5226,22 @@ size_t Chan_Stored_t::Usage() const
     retval += sizeof(i_Suspend_Time.Internal());
 
     set<entlist_val_t<long> >::const_iterator j;
-    entlist_val_t<long> *jp;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
     for (j=i_Level.begin(); j!=i_Level.end(); j++)
     {
-	jp = (entlist_val_t<long> *) &(*j);
-	retval += jp->Usage();
+	j->Usage();
     }}
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     for (j=i_Access.begin(); j!=i_Access.end(); j++)
     {
-	jp = (entlist_val_t<long> *) &(*j);
-	retval += jp->Usage();
+	j->Usage();
     }}
 
     set<entlist_val_t<mstring> >::const_iterator k;
-    entlist_val_t<mstring> *kp;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     for (k=i_Akick.begin(); k!=i_Akick.end(); k++)
     {
-	kp = (entlist_val_t<mstring> *) &(*k);
-	retval += kp->Usage();
+	k->Usage();
     }}
 
     list<entlist_t>::const_iterator l;
@@ -6158,7 +6162,7 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_INFO/DESCRIPTION"),
 		chan->Description().c_str());
 
-    output = "";
+    output.erase();
     if (chan->NoExpire() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
 	output << " (" << Parent->getMessage(source, "CS_INFO/NOEXPIRE") << ")";
@@ -6170,7 +6174,7 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 	if (Parent->chanserv.IsLive(channel))
 	{
 	    Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
-	    output = "";
+	    output.erase();
 	    if (clive->Ops())
 	    {
 		output << clive->Ops() << " " << Parent->getMessage(source, "CS_INFO/OPS");
@@ -6244,7 +6248,7 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "CS_INFO/PARTTIME"),
 		ToHumanTime(chan->Parttime(), source).c_str());
 
-    output = "";
+    output.erase();
     if (chan->Keeptopic())
     {
 	if (!output.empty())
@@ -7073,7 +7077,7 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
 
     if (topic.IsSameAs("none", true))
     {
-	topic = "";
+	topic.erase();
     }
 
     Parent->chanserv.stats.i_Topic++;
@@ -8151,7 +8155,7 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel   = params.ExtractWord(2, " ");
-    mstring what = "";
+    mstring what;
     if (params.WordCount(" ") > 3)
 	what = params.ExtractWord(4, " ");
 
@@ -9633,7 +9637,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
     }
 
     if (option.IsSameAs("none", true))
-	option = "";
+	option.erase();
     else if (!option.Contains("@"))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
@@ -9706,7 +9710,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
     }
 
     if (option.IsSameAs("none", true))
-	option = "";
+	option.erase();
 
     if (option.SubString(0, 6).IsSameAs("http://", true))
     {
@@ -9765,7 +9769,7 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     channel = cstored->Name();
 
     if (option.IsSameAs("none", true))
-	option = "";
+	option.erase();
     cstored->Comment(option);
     Parent->chanserv.stats.i_Set++;
     if (option.empty())
@@ -12273,30 +12277,25 @@ void ChanServ::PostLoad()
     mstring locked = Parent->chanserv.LCK_MLock();
 
     map<mstring,Chan_Stored_t>::iterator iter;
-    entlist_val_t<long> *ptr1;
-    entlist_val_t<mstring> *ptr2;
     for (iter=stored.begin(); iter!=stored.end(); iter++)
     {
 	for (iter->second.Level = iter->second.Level_begin();
 		iter->second.Level != iter->second.Level_end();
 		iter->second.Level++)
 	{
-	    ptr1 = (entlist_val_t<long> *) &(*iter->second.Level);
-	    ptr1->PostLoad();
+	    iter->second.Level->PostLoad();
 	}
 	for (iter->second.Access = iter->second.Access_begin();
 		iter->second.Access != iter->second.Access_end();
 		iter->second.Access++)
 	{
-	    ptr1 = (entlist_val_t<long> *) &(*iter->second.Access);
-	    ptr1->PostLoad();
+	    iter->second.Access->PostLoad();
 	}
 	for (iter->second.Akick = iter->second.Akick_begin();
 		iter->second.Akick != iter->second.Akick_end();
 		iter->second.Akick++)
 	{
-	    ptr2 = (entlist_val_t<mstring> *) &(*iter->second.Akick);
-	    ptr2->PostLoad();
+	    iter->second.Akick->PostLoad();
 	}
 	for (iter->second.Greet = iter->second.Greet_begin();
 		iter->second.Greet != iter->second.Greet_end();
@@ -12334,7 +12333,7 @@ void ChanServ::PostLoad()
 		else
 		{
 		    if (locked[i] == 'k')
-			iter->second.i_Mlock_Key = "";
+			iter->second.i_Mlock_Key.erase();
 		    else if (locked[i] == 'l')
 			iter->second.i_Mlock_Limit = 0;
 

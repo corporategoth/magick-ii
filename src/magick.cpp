@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.288  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.287  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -2036,12 +2039,12 @@ bool Magick::get_config_values()
 	    tmp[4]=value_mstring.ExtractWord(5, ":");
 	    if (value_mstring.WordCount(":") == 5 && tmp[1].IsNumber() &&
 		tmp[3].IsNumber() && tmp[4].IsNumber() && atoi(tmp[1]) > 0 &&
-		atoi(tmp[3]) > 0 && atoi(tmp[4]) > 0)
+		atoi(tmp[3]) > 0 && atol(tmp[4]) > 0)
 	    {
 		// startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
 		startup.servers[tmp[0].LowerCase()] = pair<unsigned int,
-			triplet<unsigned int,mstring,unsigned int> >(atoi(tmp[3]),
-			triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[4])));
+			triplet<unsigned int,mstring,unsigned long> >(atol(tmp[3]),
+			triplet<unsigned int,mstring,unsigned long>(atoi(tmp[1]),tmp[2],atol(tmp[4])));
 		if (min_level < 1 || atoi(tmp[3]) < min_level)
 		    min_level = atoi(tmp[3]);
 	    }
@@ -2056,7 +2059,7 @@ bool Magick::get_config_values()
     if (min_level > 1)
     {
 	// We NEED the lowest priority to be 1
-	map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > >::iterator iter;
+	map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > >::iterator iter;
 	for (iter=startup.servers.begin(); iter!=startup.servers.end(); iter++)
 	{
 	    iter->second.first -= (min_level-1);
@@ -2162,8 +2165,8 @@ bool Magick::get_config_values()
 		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
-		    isonstr = "";
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(nickserv.names.ExtractWord(i+1, " "));
@@ -2204,8 +2207,8 @@ bool Magick::get_config_values()
 		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
-		    isonstr = "";
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(chanserv.names.ExtractWord(i+1, " "));
@@ -2244,8 +2247,8 @@ bool Magick::get_config_values()
 		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
-		    isonstr = "";
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(memoserv.names.ExtractWord(i+1, " "));
@@ -2284,8 +2287,8 @@ bool Magick::get_config_values()
 		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
-		    isonstr = "";
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(operserv.names.ExtractWord(i+1, " "));
@@ -2324,8 +2327,8 @@ bool Magick::get_config_values()
 		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
-		    isonstr = "";
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(commserv.names.ExtractWord(i+1, " "));
@@ -2364,8 +2367,8 @@ bool Magick::get_config_values()
 		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
-		    isonstr = "";
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(servmsg.names.ExtractWord(i+1, " "));
@@ -2378,7 +2381,7 @@ bool Magick::get_config_values()
 
     if (!isonstr.empty())
 	server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-		server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
+		server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 
     in.Read(ts_Files+"PIDFILE",files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",files.logfile,"magick.log");
@@ -3294,16 +3297,16 @@ bool Magick::startup_t::IsServer(mstring server)const
     RET(false);
 }
 
-pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > Magick::startup_t::Server(mstring server)const
+pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup_t::Server(mstring server)const
 {
     FT("Magick::startup_t::Server", (server));
-    pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > value(0, triplet<unsigned int,mstring,unsigned int>(0, "", 0));
+    pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > value(0, triplet<unsigned int,mstring,unsigned long>(0, "", 0));
 
     RLOCK(("Startup", "Servers"));
     if (IsServer(server)) {
 	value = servers.find(server.LowerCase())->second;
     }
-    NRET(pair<unsigned int. triplet<unsigned int. mstring. unsigned int> >, value);
+    NRET(pair<unsigned int. triplet<unsigned int. mstring. unsigned long> >, value);
 }
 
 vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
@@ -3311,7 +3314,7 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
     FT("Magick::startup_t::PriorityList", (pri));
     vector<mstring> list;
 
-    map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > >::const_iterator iter;
+    map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > >::const_iterator iter;
 
     RLOCK(("Startup", "Servers"));
     for (iter=servers.begin(); iter!=servers.end(); iter++) {
@@ -3395,7 +3398,7 @@ vector<mstring> Magick::startup_t::AllowList()const
 mstring Magick::GetKey()const
 {
     NFT("Magick::GetKey");
-    mstring retval = "";
+    mstring retval;
 #ifdef HASCRYPT
     if (!files.KeyFile().empty() &&
 	mFile::Exists(files.KeyFile()))

@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.88  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -757,7 +760,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			output << iter->Text().SubString(sentsize, iter->Text().size()-1);
 		    }
 		    ::send(mynick, source, "    " + output);
-		    output = "";
+		    output.erase();
 		}
 	    }
 	    if (i==1 && unread)
@@ -817,7 +820,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 				output << iter->Text().SubString(sentsize, iter->Text().size()-1);
 			    }
 			    ::send(mynick, source, "    " + output);
-			    output = "";
+			    output.erase();
 			}
 		    }
 		}
@@ -896,7 +899,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			output << iter->Text().SubString(sentsize, iter->Text().size()-1);
 		    }
 		    ::send(mynick, source, "    " + output);
-		    output = "";
+		    output.erase();
 		}
 	    }
 	}
@@ -964,7 +967,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 				output << iter->Text().SubString(sentsize, iter->Text().size()-1);
 			    }
 			    ::send(mynick, source, "    " + output);
-			    output = "";
+			    output.erase();
 			}
 		    }
 		}
@@ -1095,7 +1098,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_UNREAD"),
 					    output.c_str(), who.c_str());
-		output = "";
+		output.erase();
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
@@ -1176,7 +1179,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_UNREAD"),
 					output.c_str());
-		output = "";
+		output.erase();
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
@@ -1366,7 +1369,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
 	{
-	    output = "";
+	    output.erase();
 	    if (iter->Text().size() > 20)
 		output << iter->Text().SubString(0, 19) << "...";
 	    else
@@ -1401,7 +1404,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
 	{
-	    output = "";
+	    output.erase();
 	    if (iter->Text().size() > 20)
 		output << iter->Text().SubString(0, 19) << "...";
 	    else
@@ -1631,7 +1634,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	}
 
 	unsigned int i;
-	mstring output = "";
+	mstring output;
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
@@ -1686,7 +1689,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	}
 
 	unsigned int i;
-	mstring output = "";
+	mstring output;
 	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
 	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
@@ -1847,7 +1850,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	mstring output = "";
+	mstring output;
 	unsigned int i;
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
@@ -1909,7 +1912,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	}
 
 	unsigned int i;
-	mstring output = "";
+	mstring output;
 	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
 	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
@@ -2131,13 +2134,13 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_NOTDEL"),
 			    denied.c_str(), who.c_str());
-		denied = "";
+		denied.erase();
 	    }
 	    if (!output.empty())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL"),
 			    output.c_str(), who.c_str());
-		output = "";
+		output.erase();
 		LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL"),
 			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 			adjust, who.c_str()));
@@ -2240,7 +2243,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_DEL"),
 			    output.c_str());
-		output = "";
+		output.erase();
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));

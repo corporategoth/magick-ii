@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.114  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -2038,7 +2041,7 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOSERVICE"),
 		    service.c_str());
-		service = "";
+		service.erase();
 	    }
 	    if (!service.empty())
 	    {
@@ -2148,7 +2151,7 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOSERVICE"),
 		    service.c_str());
-		service = "";
+		service.erase();
 	    }
 	    if (!service.empty())
 	    {
@@ -2324,7 +2327,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PASS"),
 			Parent->nickserv.Passfail());
 
-    mstring output = "";
+    mstring output;
     if (Parent->nickserv.DEF_Protect())
     {
 	if (!output.empty())
@@ -2394,7 +2397,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_OPTIONS"),
 			output.c_str());
 
-    output = "";
+    output.erase();
     if (Parent->nickserv.LCK_Language())
 	output << IRC_Bold;
     output << Parent->nickserv.DEF_Language();
@@ -2435,7 +2438,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_KEEPTIME"),
 		    ToHumanTime(Parent->chanserv.ChanKeep(), source).c_str());
 
-    mstring output = "";
+    mstring output;
     if (Parent->chanserv.LCK_Bantime())
 	output << IRC_Bold;
     output << ToHumanTime(Parent->chanserv.DEF_Bantime(), source);
@@ -2443,7 +2446,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	output << IRC_Off;
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_BANTIME"),
 		    output.c_str());
-    output = "";
+    output.erase();
     if (Parent->chanserv.LCK_Parttime())
 	output << IRC_Bold;
     output << ToHumanTime(Parent->chanserv.DEF_Parttime(), source);
@@ -2456,7 +2459,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 		    Parent->chanserv.DEF_MLock().c_str(),
 		    Parent->chanserv.LCK_MLock().c_str());
 
-    output = "";
+    output.erase();
     if (Parent->chanserv.DEF_Keeptopic())
     {
 	if (!output.empty())
@@ -2570,7 +2573,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_OPTIONS"),
 		    output.c_str());
 
-    output = "";
+    output.erase();
     if (Parent->chanserv.LCK_Revenge())
 	output << IRC_Bold;
     output << Parent->chanserv.DEF_Revenge();
@@ -2630,7 +2633,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_IGNORE"),
 		    ToHumanTime(Parent->operserv.Ignore_Time(), source).c_str(),
 		    Parent->operserv.Ignore_Limit());
-    mstring output = "";
+    mstring output;
 
     if (Parent->commserv.DEF_OpenMemos())
     {
@@ -3916,33 +3919,21 @@ void OperServ::PostLoad()
     }
     i_array.clear();
 
-    // Kind of dodgy, yes, I know, however we NEED to do the
-    // post load on all the elements and its just too time
-    // and energy consuming to pop them all of and re-insert
-    entlist_val_t<pair<unsigned int, mstring> > *c_ptr;
-    entlist_val_t<pair<unsigned long, mstring> > *a_ptr;
-    entlist_val_t<mstring> *o_ptr;
-    entlist_val_t<bool> *i_ptr;
-
     for (Clone = Clone_begin(); Clone != Clone_end(); Clone++)
     {
-	c_ptr = (entlist_val_t<pair<unsigned int, mstring> > *) &(*Clone);
-	c_ptr->PostLoad();
+	Clone->PostLoad();
     }
     for (Akill = Akill_begin(); Akill != Akill_end(); Akill++)
     {
-	a_ptr = (entlist_val_t<pair<unsigned long, mstring> > *) &(*Akill);
-	a_ptr->PostLoad();
+	Akill->PostLoad();
     }
     for (OperDeny = OperDeny_begin(); OperDeny != OperDeny_end(); OperDeny++)
     {
-	o_ptr = (entlist_val_t<mstring> *) &(*OperDeny);
-	o_ptr->PostLoad();
+	OperDeny->PostLoad();
     }
     for (Ignore = Ignore_begin(); Ignore != Ignore_end(); Ignore++)
     {
-	i_ptr = (entlist_val_t<bool> *) &(*Ignore);
-	i_ptr->PostLoad();
+	Ignore->PostLoad();
     }
 }
 

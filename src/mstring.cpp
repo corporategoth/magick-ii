@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.93  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -1033,6 +1036,20 @@ void mstring::replace(int begin, int end, char *replace, size_t length)
 {
     erase(begin, end);
     insert(begin, replace, length);
+}
+
+bool mstring::replace(size_t offs, char c)
+{
+    bool retval = false;
+
+    lock_write();
+    if (i_str != NULL && offs < i_len)
+    {
+	i_str[offs] = c;
+	retval = true;
+    }
+    lock_rel();
+    return retval;
 }
 
 mstring mstring::substr(int nFirst, int nCount) const

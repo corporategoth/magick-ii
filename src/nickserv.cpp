@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.156  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.155  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -495,10 +498,10 @@ void Nick_Live_t::InFlight_t::init()
     timer = 0u;
     fileattach = false;
     fileinprog = false;
-    service = "";
-    sender = "";
-    recipiant = "";
-    text = "";
+    service.erase();
+    sender.erase();
+    recipiant.erase();
+    text.erase();
 }
 
 
@@ -1140,7 +1143,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 	// Do this cos it will be removed when we KILL,
 	// and we dont wanna get out of touch.
 	Parent->operserv.AddHost(i_host);
-	i_server = "";
+	i_server.erase();
 	i_realname = reason;
 	return;
     }}
@@ -1150,7 +1153,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     {
 	LOG((LM_INFO, Parent->getLogMessage("OTHER/KILL_CLONE"),
 		Mask(N_U_P_H).c_str()));
-	i_server = "";
+	i_server.erase();
 	i_realname = Parent->operserv.Def_Clone();
 	return;
     }
@@ -1921,13 +1924,13 @@ void Nick_Live_t::ClearSquit()
     MCB(i_squit);
 
     { WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_squit"));
-    i_squit = "";
+    i_squit.erase();
     }
 
     // These will all be set again
     { WLOCK2(("NickServ", "live", i_Name.LowerCase(), "modes"));
     CB(1, modes);
-    modes = "";
+    modes.erase();
     CE(1, modes);
     }
 
@@ -2852,7 +2855,7 @@ void Nick_Stored_t::UnSuspend()
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
 	MCB(i_Suspend_By);
-	i_Suspend_By = "";
+	i_Suspend_By.erase();
 	MCE(i_Suspend_By);
     }
     else
@@ -2873,7 +2876,7 @@ mstring Nick_Stored_t::Host()
 		i_Host.c_str(), i_Name.c_str()));
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
 	    MCB(i_Host);
-	    i_Host = "";
+	    i_Host.erase();
 	    MCE(i_Host);
 	}
 	else
@@ -2969,7 +2972,7 @@ unsigned int Nick_Stored_t::Siblings()
 mstring Nick_Stored_t::Sibling(unsigned int count)
 {
     FT("Nick_Stored_t::Siblings", (count));
-    mstring retval = "";
+    mstring retval;
     if (Host().empty())
     {
 	vector<mstring> chunked;
@@ -3278,7 +3281,7 @@ bool Nick_Stored_t::MakeHost()
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.clear();
 	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name.LowerCase();
 	mstring tmp = i_Host;
-	i_Host = "";
+	i_Host.erase();
 	DumpE();
 	ChangeOver(tmp);
 	RET(true);
@@ -3325,7 +3328,7 @@ bool Nick_Stored_t::Unlink()
 	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.erase(i_Name.LowerCase());
-	i_Host = "";
+	i_Host.erase();
 	DumpE();
 	RET(true);
     }
@@ -4706,7 +4709,7 @@ mstring NickServ::findnextnick(mstring in)
 	srand(time(NULL));
 	for (i=0; i<attempts; i++)
 	{
-	    retval = "";
+	    retval.erase();
 	    retval.Format("%s%05d",
 		    Parent->nickserv.Suffixes().c_str(),
 		    rand() % 99999);
@@ -5515,7 +5518,7 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 		output.length() > 510)
 	{
 	    ::send(mynick, source, output);
-	    output = "";
+	    output.erase();
 	    output << IRC_Bold << target << IRC_Off << " (" <<
 		Parent->nickserv.stored[target.LowerCase()].Siblings() << "):";
 	}
@@ -5614,7 +5617,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host()))
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HOST"),
 		Parent->nickserv.stored[nick->Host().LowerCase()].Name().c_str());
-    output = "";
+    output.erase();
     if (nick->NoExpire() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
 	output << " (" << Parent->getMessage(source, "NS_INFO/NOEXPIRE") << ")";
@@ -5623,7 +5626,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 
     if (!nick->IsOnline())
     {
-	output = "";
+	output.erase();
 	bool isonline = false;
 	if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host())
 	    && Parent->nickserv.stored[nick->Host().LowerCase()].IsOnline())
@@ -5637,7 +5640,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 		{
 		    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ONLINEAS"),
 						output.c_str());
-		    output = "";
+		    output.erase();
 		    isonline = true;
 		}
 		output += Parent->nickserv.live[nick->Sibling(i).LowerCase()].Name() + " ";
@@ -5698,7 +5701,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 					nick->Comment().c_str());
     }
 
-    output = "";
+    output.erase();
     map<mstring, Committee>::iterator iter;
     for (iter=Parent->commserv.list.begin();
 		iter!=Parent->commserv.list.end(); iter++)
@@ -5719,7 +5722,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
 						output.c_str());
-		output = "";
+		output.erase();
 	    }
 	    if (!output.empty())
 		output << ", ";
@@ -5734,7 +5737,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
 					output.c_str());
 
-    output = "";
+    output.erase();
     bool firstoption = true;
     if (nick->Protect())
     {
@@ -6592,7 +6595,7 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     mstring retval;
     for (i=0; i<Parent->nickserv.stored[target.LowerCase()].Access(); i++)
     {
-	retval = "";
+	retval.erase();
 	retval << i+1 << ". " << Parent->nickserv.stored[target.LowerCase()].Access(i);
 	::send(mynick, source, retval);
     }
@@ -6760,7 +6763,7 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     mstring retval;
     for (i=0; i<Parent->nickserv.stored[target.LowerCase()].Ignore(); i++)
     {
-	retval = "";
+	retval.erase();
 	retval << i+1 << ". " << Parent->nickserv.stored[target.LowerCase()].Ignore(i);
 	::send(mynick, source, retval);
     }
@@ -6819,7 +6822,7 @@ void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
     mstring newvalue = params.ExtractWord(3, " ");
 
     if (newvalue.IsSameAs("none", true))
-	newvalue = "";
+	newvalue.erase();
     else if (!newvalue.Contains("@"))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
@@ -6870,7 +6873,7 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
     mstring newvalue = params.ExtractWord(3, " ");
 
     if (newvalue.IsSameAs("none", true))
-	newvalue = "";
+	newvalue.erase();
 
     if (newvalue.SubString(0, 6).IsSameAs("http://", true))
     {
@@ -6915,7 +6918,7 @@ void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
     mstring newvalue = params.ExtractWord(3, " ");
 
     if (newvalue.IsSameAs("none", true))
-	newvalue = "";
+	newvalue.erase();
     else if (!newvalue.IsNumber() || newvalue.Contains("."))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
@@ -6966,7 +6969,7 @@ void NickServ::do_set_Description(mstring mynick, mstring source, mstring params
     mstring newvalue = params.After(" ", 2);
 
     if (newvalue.IsSameAs("none", true))
-	newvalue = "";
+	newvalue.erase();
 
     Parent->nickserv.stored[source.LowerCase()].Description(newvalue);
     Parent->nickserv.stats.i_Set++;
@@ -7021,7 +7024,7 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     }
 
     if (comment.IsSameAs("none", true))
-	comment = "";
+	comment.erase();
 
     Parent->nickserv.stored[target.LowerCase()].Comment(comment);
     Parent->nickserv.stats.i_Set++;
@@ -8250,7 +8253,7 @@ void NickServ::PostLoad()
 	    {
 		LOG((LM_WARNING, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
 		    iter->second.i_Host.c_str(), iter->first.c_str()));
-		iter->second.i_Host = "";
+		iter->second.i_Host.erase();
 	    }
 	}
     }

@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.79  2001/02/03 02:21:35  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -551,7 +554,7 @@ void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
 	    if (output.length() > Parent->server.proto.MaxLine())
 	    {
 		::send(mynick, source, "    " + output);
-		output = "";
+		output.erase();
 	    }
 	    val = *i;
 	    val.Truncate(val.Find(".", true));

@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.35  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -109,6 +112,8 @@ mstring ToHumanSpace(unsigned long in);
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc);
 void mHASH(unsigned char *in, size_t size, unsigned char *out);
+unsigned long str_to_base64(mstring in);
+mstring base64_to_str(unsigned long in);
 
 // extrapolated from the ms's pair<T1,T2> template code
 

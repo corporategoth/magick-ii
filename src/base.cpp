@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.149  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.148  2001/02/03 02:21:32  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -551,17 +554,18 @@ mstring mBaseTask::PreParse(const mstring& message) const
 
     if (Parent->server.proto.Tokens())
     {
-	if (message[0u] == ':' &&
+	if (((message[0u] == '@' && Parent->server.proto.Numeric()) ||
+	    message[0u] == ':') &&
 	   !Parent->server.proto.GetToken(message.ExtractWord(2, " ")).empty())
 	{
-	    data = "";
+	    data.erase();
 	    data << message.ExtractWord(1, " ") << " " <<
 		Parent->server.proto.GetToken(message.ExtractWord(2, " ")) <<
 		" " << message.After(" ", 2);
 	}
 	else if (!Parent->server.proto.GetToken(message.ExtractWord(1, " ")).empty())
 	{
-	    data = "";
+	    data.erase();
 	    data << Parent->server.proto.GetToken(message.ExtractWord(1, " ")) <<
 		" " << message.After(" ", 1);
 	}
@@ -1390,22 +1394,22 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->EndObject(tag_entlist_t);
 }
 
-void entlist_t::PostLoad()
+void entlist_t::PostLoad() const
 {
     NFT("entlist_t::PostLoad");
 
     unsigned int j;
-	    for (j=0; j<ud_array.size(); j++)
-	    {
-		if (ud_array[j] != NULL)
-		{
-		    if (ud_array[j]->Contains("\n"))
-			i_UserDef[ud_array[j]->Before("\n")] =
-				ud_array[j]->After("\n");
-		    delete ud_array[j];
-		}
-	    }
-	    ud_array.clear();
+    for (j=0; j<ud_array.size(); j++)
+    {
+	if (ud_array[j] != NULL)
+	{
+	    if (ud_array[j]->Contains("\n"))
+		i_UserDef[ud_array[j]->Before("\n")] =
+			ud_array[j]->After("\n");
+	    delete ud_array[j];
+	}
+    }
+    ud_array.clear();
 }
 
 SXP::Tag tag_entlist_t("entlist_t");

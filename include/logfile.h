@@ -22,16 +22,11 @@ RCSID(logfile_h, "@(#) $Id$");
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
+** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.17  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.14  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
+** Revision 1.18  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
 **
 **
 ** ========================================================== */
@@ -39,13 +34,14 @@ RCSID(logfile_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Mon Dec 18 20:23:25 EST 2000
+ * Created on Fri Feb  2 23:53:05 EST 2001
  */
 
-unsigned int def_logent =     323;
+unsigned int def_logent =     328;
 char *def_log[] = {
 "; Magick IRC Services",
-"; (c) 1996-1999 Preston A. Elder, W. King",
+"; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
+"; (c) 1998-2001 William King <ungod@magick.tm>",
 ";",
 "; English Log Output Language File",
 "; Translated By: Preston A. Elder <prez@magick.tm>",
@@ -132,6 +128,7 @@ char *def_log[] = {
 "UNLINK           =%s unlinked nickname %s from %s.",
 "HOST             =%s changed their host nickname from %s to %s.",
 "IDENTIFY         =%s identified for nickname %s.",
+"IDENTIFY_FAILED  =%s failed identification for nickname %s.",
 "GHOST            =%s killed nickname %s with the ghost command.",
 "RECOVER          =%s requested services to recover nickname %s.",
 "SUSPEND          =%s suspended nickname %s for %s.",
@@ -157,6 +154,7 @@ char *def_log[] = {
 "REGISTER         =%s registered channel %s.",
 "DROP             =%s droped channel %s (%s).",
 "IDENTIFY         =%s identified as founder for channel %s.",
+"IDENTIFY_FAILED  =%s failed identification for channel %s.",
 "SUSPEND          =%s suspended channel %s for %s.",
 "UNSUSPEND        =%s unsuspended channel %s.",
 "FORBID           =%s forbade channel %s from being registered.",
@@ -317,6 +315,7 @@ char *def_log[] = {
 "KILL_CLONE       =Clone protection triggered for %s, killing user.",
 "KILL_AKILL       =Killing user %s on auto kill list %s (%s).",
 "KILL_UNKNOWN     =Killed unknown user %s.",
+"NOVALIDSERVERS   =Magick aborting, no valid servers available to connect to!",
 "CONNECTING       =Connecting to server %s:%d ...",
 "CONNECTED        =Connection established and authenticated to server %s.",
 "WRONGPASS        =Password mismatch connecting to server %s, skipping.",
@@ -324,6 +323,7 @@ char *def_log[] = {
 "REFUSED          =Connection to server %s:%d refused.",
 "SERVER_MSG       =SERVER MESSAGE (%s): %s",
 "LINK             =Server %s has linked to the network via. %s.",
+"INVALIDLINK      =Server %s has been SQUIT from %s as it is not allowed!",
 "KILLED           =Service %s has been killed by %s, attempting to respawn.",
 "TEMP_IGNORE      =%s triggered services temporary ignore.",
 "PERM_IGNORE      =%s triggered services permanent ignore.",

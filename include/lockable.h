@@ -25,6 +25,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.53  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -278,7 +281,7 @@ public:
 class mSocket
 {
     unsigned long sockid;
-    ACE_SOCK_Stream *sock;
+    mutable ACE_SOCK_Stream *sock;
     ACE_INET_Addr local, remote;
     int last_error;
     bool DestroyMe;

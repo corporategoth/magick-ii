@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.57  2001/02/03 02:21:35  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -509,4 +512,72 @@ void mHASH(unsigned char *in, size_t size, unsigned char *out)
 	sprintf((char *) &out[i*2], "%02x", md[i]);
     }
     memset(md, 0, MD5_DIGEST_LENGTH);
+}
+
+/* Copied direct from Unreal code */
+static const char char_to_base64[] = {
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1,
+	-1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+	25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,
+	-1, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+	51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, -1, 63, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+
+static const char base64_to_char[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+	'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+	'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+	'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+	'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+	'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+	'u', 'v', 'w', 'x', 'y', 'z', '{', '}' };
+
+
+unsigned long str_to_base64(mstring in)
+{
+	if (!in.length())
+	    return 0;
+
+	unsigned long i = 0, v = char_to_base64[(unsigned char) in[i++]];
+
+	while (i < in.length())
+	{
+		v <<= 6;
+		v += char_to_base64[(unsigned char) in[i++]];
+	}
+
+	return v;
+}
+
+
+mstring base64_to_str(unsigned long in)
+{
+	/* 32/6 == max 6 bytes for representation, 
+	 * +1 for the null, +1 for byte boundaries 
+	 */
+	char base64buf[8];
+	unsigned long i = 7;
+
+	base64buf[i] = '\0';
+
+	do
+	{
+		base64buf[--i] = base64_to_char[in & 63];
+	}
+	while (in >>= 6);
+
+	return mstring(base64buf + i);
 }

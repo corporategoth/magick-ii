@@ -27,6 +27,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2001/02/11 07:41:28  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.104  2001/02/03 02:21:35  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -292,7 +295,7 @@ void ThreadID::assign(threadtype_enum Type)
 void ThreadID::WriteOut(const mstring &message)
 {
 #ifdef MAGICK_TRACE_WORKS
-    mstring finalout = "";
+    mstring finalout;
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;

@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2001/02/11 07:41:27  prez
+** Enhansed support for server numerics, specifically for Unreal.
+**
 ** Revision 1.35  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -238,7 +241,7 @@ private:
     // that we now have it.  This way we can just
     // concentrate on getting the job done.
     mSocket i_Socket;
-    mFile i_File;
+    mutable mFile i_File;
     mstring i_Source;
     mstring i_Mynick;
     mstring i_Tempfile;
