@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+
+<title>Magick Specification: Scripting Language</title>
+
+<meta name="keywords" content="magick,magick.tm,magick irc services,irc,irc services,services,internet relay chat,network,irc network services,network services,chat,irc operater,ircop,oper,operserv,nickserv,chanserv,memoserv,akill,ban,download,magick 2.0,magick 1.4,version 2,documentation,gpl,open source,c++">
+<meta name="description" content="Magick IRC Services">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="utils.js"></script>
+
+<link rel="stylesheet" type="text/css" href="magick.css">
+
+<link rel="shortcut icon" href="favicon.ico">
+
+</head>
+<body>
+
+<table class="center collapse" width="780" cellpadding="0" cellspacing="0" border="1">
+ <tr class="medium">
+  <td><div class="center"><img src="images/logo1.jpg" width="160" height="110" alt="Magick Logo"><img src="images/logo2.jpg" alt="Magick Logo" height="110" width="600"></div></td>
+ </tr>
+</table>
+
+<br />
+
+<table class="center collapse medium" width="780" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td>
+   <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+    <tr>
+     <td width="200" valign="top">
+      <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+       <tr>
+        <td>
+         <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="0">
+          <tr class="dark">
+           <td><b class="light-margin">Contents</b></td></tr>
+          <tr>
+           <td><br /></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Home'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#0'" class="hand"><p class="menu-side"><a href="#0">Home:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Summary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#1'" class="hand"><p class="menu-side"><a href="#1">Summary:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Justification'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#2'" class="hand"><p class="menu-side"><a href="#2">Justification:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Pre-Requisites'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#3'" class="hand"><p class="menu-side"><a href="#3">Pre-Requisites:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Implementation'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#4'" class="hand"><p class="menu-side"><a href="#4">Implementation:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Potential Problems'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#5'" class="hand"><p class="menu-side"><a href="#5">Potential Problems:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Test Plan'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#6'" class="hand"><p class="menu-side"><a href="#6">Test Plan:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Glossary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#7'" class="hand"><p class="menu-side"><a href="#7">Glossary:</a></p></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/spacer.gif" alt="" height="1500" width="1"></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/logo3.jpg" alt="Magick Logo" height="300" width="190"></td></tr>
+         </table>
+        </td>
+       </tr>
+      </table>
+     </td>
+     <td width="580" valign="top">&nbsp;
+      <table width="580" cellpadding="2" cellspacing="2" border="0">
+       <tr>
+        <td><div class="center">
+         <table width="490" cellpadding="2" cellspacing="2" border="0" class="center">
+          <tr>
+           <td><h1><a name="0">Scripting Language</a></h1></td></tr>
+          <tr>
+	   <td><table border="0" class="medium">
+            <tr><td><p>Project Number	</td><td><p>	3				</p></td></tr>
+            <tr><td><p>Slated Release	</td><td><p>	2.1				</p></td></tr>
+            <tr><td><p>Author		</td><td><p>	<a href="mailto:prez@magick.tm">Preston A. Elder</a>	</p></td></tr>
+            <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
+            <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
+			<br />$Log$
+			<br />Revision 1.1  2002/07/31 22:47:06  prez
+			<br />Added scripting language spec.
+			<br />
+            </code></p></td></tr>
+           </table></td></tr>
+          <tr>
+           <td><br />
+
+            <h2><a name="1">Summary</a></h2>
+            <p>
+			Magick will have the ability to script extra functionality (ie. write custom code without touching
+			the core Magick code).  Magick will then be able to, at various points in Magick's execution make
+			certain callbacks, which will execute the functions created by the user.  When those functions are
+			finished their processing, they will return control to Magick, and processing will continue.  The
+			scripting language itself will be interfaced with Mantra, and mantra will expose a callback API to
+			Magick, so that it can invoke the relevant execution.
+            </p><br />
+
+            <h2><a name="2">Justification</a></h2>
+            <p>
+			Many users request features that are either considered by the Development Team to be beyond the
+			scope of what Magick (the core product) should do (for example, sending emails), or that are
+			not in line with the direction the Development team wishes to head with Magick.  The solution to
+			this is to create an easy way for users to write the functionality themselves, and get Magick to
+			hand over to their own code, and take control again once its done.
+            </p><p>
+			Another issue we have noticed is sometimes users want things like the default committee which can
+			run a certain command changed, or the behavior of a certain command to be different, or require
+			more information, etc.  Once again, letting users re-bind commands, and write their own commands
+			helps with this process, giving Magick much more flexability and appeal to users.
+            </p><br />
+
+            <h2><a name="3">Pre-Requisites</a></h2>
+            <p>
+			Mantra must be created.
+            </p><br />
+
+            <h2><a name="4">Implementation</a></h2>
+            <p>
+			The scripting language we have decided to use is <a href="http://www.python.org">Python</a>.
+			Python was chosen because it is also natively object oriented, internally multi-threaded, and
+			fairly easy to embed into a C++ program.  It is also becoming more and more popular, meaning
+			that there is an existing body of people who understand how to use it, and it coming installed
+			on more and more systems.
+            </p><p>
+			The scripting language will first have to be implemented into Mantra first.  The interface to
+			the scripting language should only expose an API consisting of:
+			<ul>
+			<li>	Starting and stopping the interpereter.
+			</li>
+			<li>	Loading (or re-loading) a script file.
+			</li>
+			<li>	Unloading a file and its functions (if possible).
+			</li>
+			<li>	Exposing a function (including return codes and parameters), variables, and functions
+				from the API user to the scripting language for use in scripts.
+			</li>
+			<li>	Exposing an object (and functions, and data items) to the scripting language from the
+			<li>	Checking whether a subroutine exists in the script.
+			</li>
+			<li>	Running a specific subroutine from one of the files that has been loaded with optional
+				arguments.  This should return an integer return value from the subroutine.  An exception
+				should be raised if the function fails to execute for any reason.
+			</li>
+			</ul>
+            </p><p>
+			Once the scripting language is implemented into Mantra, it should be reasonably easy to implement
+			the necessary callbacks into Magick.  The parameters that should be passed to each callback will
+			be determined as the callback is implemented, and when this happens, a skeleton callback function
+			should be implemented in the scripting language.
+            </p><p>
+			The current design allows for us to change the scripting language at any time if either another
+			suitable candidate is found, or if someone wishes to implement the same scripting API for another
+			language.  Therefore, it is possible that Magick may support other scripting languages in the
+			future, however this is not planned.
+            </p><br />
+
+            <h2><a name="5">Potential Problems</a></h2>
+            <p>
+			If python is not installed on a system, the scripting language will have to be disabled, as we
+			do not want to distribute python with Magick, and while the user COULD compile python in their
+			own home directory, its impractical for them to do so.
+            </p><p>
+			Magick will be blindly handing off execution control to the python interpereter.  There is no
+			way to account for how long the python interpereter will keep control, or what the script the
+			user has written (or is using) will do.  This could be very dangerous, however the scripting
+			language will be a 'use at your own risk' deal.
+            </p><br />
+
+            <h2><a name="6">Test Plan</a></h2>
+            <p>
+			Several sample scripts for EVERY callback that is used by Magick will have to be created.
+			This includes scripts ranging from simple ones to change the bindings of a commands to be
+			accessable by a different committee, right up to creating an entirely new service complete
+			with its own functions and data storage.
+            </p><br />
+
+            <h2><a name="7">Glossary</a></h2>
+            <p>
+			<a href="http://www.python.org">Python</a>.
+            </p><br />
+
+           </td></tr>
+         </table></div>
+        </td>
+       </tr>
+       </div>
+      </table>  
+     </td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+<p class="center-sm">Copyright &copy;2001-2002 Magick.tm. All rights reserved.</p>
+&nbsp;
+</body>
+
+</html>
