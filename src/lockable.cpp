@@ -28,6 +28,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.80  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -246,7 +249,7 @@ RCSID(lockable_cpp, "@(#)$Id$");
 
 mLock_Mutex *mLOCK::maplock = NULL;
 mLock_Mutex *mThread::maplock = NULL;
-map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >mLOCK::LockMap;
+map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > > mLOCK::LockMap;
 
 ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex >
     mLOCK::
@@ -258,7 +261,7 @@ memory_area((sizeof(mLock_Read) >
 												       sizeof(mLock_Mutex))),
 	    LOCK_SEGMENT);
 
-map < unsigned long, mSocket * >mSocket::SockMap;
+map < unsigned long, mSocket * > mSocket::SockMap;
 
 bool mLOCK::AcquireMapLock()
 {
@@ -328,7 +331,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Read;
-		read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+		read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 	    }
 	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
 	    {
@@ -340,7 +343,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    read_lock = new mLock_Read(reinterpret_cast < const char *>(hash));
+	    read_lock = new mLock_Read(reinterpret_cast < const char * > (hash));
 
 	    if (read_lock == NULL)
 	    {
@@ -349,7 +352,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(read_lock, tmap);
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (read_lock, tmap);
 
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
 	}
@@ -367,7 +370,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 			if (read_lock != NULL)
 			    delete read_lock;
 
@@ -403,7 +406,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Read;
-		read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+		read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 	    }
 	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
 	    {
@@ -415,7 +418,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    read_lock = new mLock_Read(reinterpret_cast < const char *>(hash));
+	    read_lock = new mLock_Read(reinterpret_cast < const char * > (hash));
 
 	    if (read_lock == NULL)
 	    {
@@ -424,7 +427,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(read_lock, tmap);
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (read_lock, tmap);
 
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
 	}
@@ -442,7 +445,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 			if (read_lock != NULL)
 			    delete read_lock;
 
@@ -474,8 +477,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		{
 		case L_Read:
 		    lockiter->second.second[ACE_Thread::self()] = L_WriteUpgrade;
-		    read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
-		    write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
+		    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
+		    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
 		    break;
 		case L_Mutex:
 		    ReleaseMapLock();
@@ -488,13 +491,13 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    else
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Write;
-		write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
+		write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
 	    }
 	}
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    write_lock = new mLock_Write(reinterpret_cast < const char *>(hash));
+	    write_lock = new mLock_Write(reinterpret_cast < const char * > (hash));
 
 	    if (write_lock == NULL)
 	    {
@@ -503,7 +506,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(write_lock, tmap);
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (write_lock, tmap);
 
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Write;
 	}
@@ -529,7 +532,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
+			write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
 			if (write_lock != NULL)
 			    delete read_lock;
 
@@ -569,13 +572,13 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Mutex;
-		mutex_lock = reinterpret_cast < mLock_Mutex * >(lockiter->second.first);
+		mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
 	    }
 	}
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    mutex_lock = new mLock_Mutex(reinterpret_cast < const char *>(hash));
+	    mutex_lock = new mLock_Mutex(reinterpret_cast < const char * > (hash));
 
 	    if (mutex_lock == NULL)
 	    {
@@ -584,7 +587,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(mutex_lock, tmap);
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (mutex_lock, tmap);
 
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Mutex;
 	}
@@ -602,7 +605,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			mutex_lock = reinterpret_cast < mLock_Mutex * >(lockiter->second.first);
+			mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
 			if (mutex_lock != NULL)
 			    delete mutex_lock;
 
@@ -655,14 +658,14 @@ mLOCK::~mLOCK()
 		switch (iter->second)
 		{
 		case L_Read:
-		    read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+		    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 		    break;
 		case L_Write:
 		case L_WriteUpgrade:
-		    write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
+		    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
 		    break;
 		case L_Mutex:
-		    mutex_lock = reinterpret_cast < mLock_Mutex * >(lockiter->second.first);
+		    mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
 		    break;
 		default:
 		    break;
@@ -725,7 +728,7 @@ mLOCK::~mLOCK()
 		    // time to downgrade it ...
 		    if (iter->second == L_Read)
 		    {
-			read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 			ReleaseMapLock();
 			if (read_lock->acquire() < 0)
 			{
@@ -738,7 +741,7 @@ mLOCK::~mLOCK()
 				lockiter->second.second.erase(ACE_Thread::self());
 				if (!lockiter->second.second.size())
 				{
-				    read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+				    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 				    if (read_lock != NULL)
 					delete read_lock;
 
@@ -764,9 +767,9 @@ mLOCK::~mLOCK()
     }
 }
 
-list < pair < void *, locktype_enum > >mLOCK::GetLocks(ACE_thread_t thr)
+list < pair < void *, locktype_enum > > mLOCK::GetLocks(ACE_thread_t thr)
 {
-    list < pair < void *, locktype_enum > >retval;
+    list < pair < void *, locktype_enum > > retval;
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator i;
 
     map < ACE_thread_t, locktype_enum >::iterator j;
@@ -835,7 +838,7 @@ mSocket::~mSocket()
     SockMap.erase(sockid);
 }
 
-mSocket & mSocket::operator=(const mSocket & in)
+mSocket &mSocket::operator=(const mSocket & in)
 {
     FT("mSocket::operator=", ("(const mSocket &) in"));
 
@@ -975,7 +978,7 @@ bool mSocket::Bind(ACE_SOCK_Stream * in, const dir_enum direction, const bool al
 #ifdef MAGICK_TRACE_WORKS
     trace.Begin(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()), direction);
 #else
-    static_cast < void >(direction);
+    static_cast < void > (direction);
 #endif
 
     RET(true);
@@ -1058,13 +1061,13 @@ bool mSocket::IsConnected() const
 
 void mSocket::Resolve(const socktype_enum type, const mstring & info)
 {
-    FT("mSocket::Resolve", (static_cast < int >(type), info));
+    FT("mSocket::Resolve", (static_cast < int > (type), info));
 #ifdef MAGICK_TRACE_WORKS
     WLOCK(("mSocket", sockid));
     trace.Resolve(type, info);
 #else
-    static_cast < void >(type);
-    static_cast < void >(info);
+    static_cast < void > (type);
+    static_cast < void > (info);
 #endif
 }
 
@@ -1200,9 +1203,9 @@ ThreadID *mThread::find(const ACE_thread_t thread)
     return tid;
 }
 
-vector < ThreadID * >mThread::findall()
+vector < ThreadID * > mThread::findall()
 {
-    vector < ThreadID * >threadlist;
+    vector < ThreadID * > threadlist;
     selftothreadidmap_t::const_iterator iter;
 
     if (!AcquireMapLock())

@@ -108,7 +108,6 @@ extern "C"
     }
     BF_KEY;
 
-
     void BF_set_key(BF_KEY * key, int len, const unsigned char *data);
 
     void BF_encrypt(BF_LONG * data, const BF_KEY * key);

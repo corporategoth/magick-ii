@@ -27,6 +27,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.91  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -280,40 +283,39 @@ RCSID(mstring_h, "@(#) $Id$");
 
 /* --------------- End of hard-config section --------------- */
 
-
 #ifdef MAGICK_HAS_EXCEPTIONS
 
 /** Exception thrown when allocation of memory fails inside mstring */
-class mstring_noalloc:public exception
+class mstring_noalloc : public exception
 {
     char i_reason[1024];
-  public:
-      mstring_noalloc(const char *reason = "") throw()
+public:
+      mstring_noalloc(const char *reason = "") throw ()
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-     ~mstring_noalloc() throw()
+     ~mstring_noalloc() throw ()
     {
     }
-    const char *what() const throw()
+    const char *what() const throw ()
     {
 	return i_reason;
     }
 };
 
 /** Exception thrown when deallocation of memory fails inside mstring */
-class mstring_nodealloc:public exception
+class mstring_nodealloc : public exception
 {
     char i_reason[1024];
-  public:
-      mstring_nodealloc(const char *reason = "") throw()
+public:
+      mstring_nodealloc(const char *reason = "") throw ()
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-     ~mstring_nodealloc() throw()
+     ~mstring_nodealloc() throw ()
     {
     }
-    const char *what() const throw()
+    const char *what() const throw ()
     {
 	return i_reason;
     }
@@ -376,13 +378,13 @@ inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
 	return -1;
 
     int iLen = 0;
-    char *nbuf = new char[sz];
+    char *nbuf = new char [sz];
 
     if (nbuf != NULL)
     {
 	iLen = ACE_OS::vsprintf(nbuf, fmt, ap);
 	strncpy(buf, nbuf, sz);
-	delete[]nbuf;
+	delete [] nbuf;
     }
     else
     {
@@ -519,8 +521,8 @@ class mstring
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static inline char *alloc(const size_t sz) throw(mstring_noalloc);
-    static inline void dealloc(char *&in) throw(mstring_nodealloc);
+    static inline char *alloc(const size_t sz) throw (mstring_noalloc);
+    static inline void dealloc(char *&in) throw (mstring_nodealloc);
 #else
     static inline char *alloc(const size_t sz);
     static inline void dealloc(char *&in);
@@ -618,12 +620,12 @@ class mstring
 	init();
 	copy(in);
     }
-    mstring(const vector < mstring > &in)
+    mstring(const vector < mstring > & in)
     {
 	init();
 	Assemble(in);
     }
-    mstring(const list < mstring > &in)
+    mstring(const list < mstring > & in)
     {
 	init();
 	Assemble(in);
@@ -743,7 +745,7 @@ class mstring
     }
     void copy(const unsigned char in)
     {
-	copy(reinterpret_cast < const char *>(&in), 1);
+	copy(reinterpret_cast < const char * > (&in), 1);
     }
     void copy(const int in)
     {
@@ -822,7 +824,7 @@ class mstring
 		starting with 0.
      *  @see first();
      */
-    const char operator[] (const size_t off) const
+    const char operator [] (const size_t off) const
     {
 	return first(off + 1);
     }
@@ -832,7 +834,7 @@ class mstring
      *    char *s = mystring;
      *  @see c_str()
      */
-    operator  const char *() const
+    operator          const char *() const
     {
 	return c_str();
     }
@@ -843,7 +845,7 @@ class mstring
      *  @return An STL string representation of current contents.
 		This will be "" if there is none.
      */
-    operator  const string() const
+    operator          const string() const
     {
 	return string(c_str());
     }
@@ -853,7 +855,7 @@ class mstring
      *    mstring s = mystring;
      *  @see copy()
      */
-    mstring & operator=(const mstring & rhs)
+    mstring &operator=(const mstring & rhs)
     {
 	copy(rhs);
 	return *this;
@@ -864,7 +866,7 @@ class mstring
      *    mystring += "hello world";
      *  @see append()
      */
-    mstring & operator+=(const mstring & rhs)
+    mstring &operator+=(const mstring & rhs)
     {
 	append(rhs);
 	return *this;
@@ -875,7 +877,7 @@ class mstring
      *    mystring << "hello world";
      *  @see append()
      */
-    mstring & operator<<(const mstring & rhs)
+    mstring &operator<<(const mstring & rhs)
     {
 	append(rhs);
 	return *this;
@@ -1327,13 +1329,13 @@ class mstring
      *  @param text The vector you wish to replace the current contets with.
      *  @param deilm The delimiter to put in between each entry of the vector.
      */
-    void Assemble(const vector < mstring > &text, const mstring & delim = " ");
+    void Assemble(const vector < mstring > & text, const mstring & delim = " ");
 
     /** Replace current contents with the contents of a list
      *  @param text The list you wish to replace the current contets with.
      *  @param deilm The delimiter to put in between each entry of the list.
      */
-    void Assemble(const list < mstring > &text, const mstring & delim = " ");
+    void Assemble(const list < mstring > & text, const mstring & delim = " ");
 };
 
 /** @defgroup overloads Operator Overloads

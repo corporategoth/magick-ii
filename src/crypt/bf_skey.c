@@ -77,25 +77,25 @@ void BF_set_key(BF_KEY * key, int len, const unsigned char *data)
 	len = (BF_ROUNDS + 2) * 4;
 
     d = data;
-    end = &(data[len]);
+    end = & (data[len]);
     for (i = 0; i < (BF_ROUNDS + 2); i++)
     {
-	ri = *(d++);
+	ri = * (d++);
 	if (d >= end)
 	    d = data;
 
 	ri <<= 8;
-	ri |= *(d++);
+	ri |= * (d++);
 	if (d >= end)
 	    d = data;
 
 	ri <<= 8;
-	ri |= *(d++);
+	ri |= * (d++);
 	if (d >= end)
 	    d = data;
 
 	ri <<= 8;
-	ri |= *(d++);
+	ri |= * (d++);
 	if (d >= end)
 	    d = data;
 

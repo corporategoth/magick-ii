@@ -27,6 +27,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.130  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -136,7 +139,6 @@ RCSID(version_h, "@(#) $Id$");
 **
 **
 ** ========================================================== */
-
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)

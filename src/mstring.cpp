@@ -28,6 +28,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.125  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.124  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -313,12 +316,12 @@ const mstring DirSlash("\\");
 const mstring DirSlash("/");
 #endif
 const mstring Blank;
-const mstring IRC_CTCP(static_cast < char >(1));	// ^A
-const mstring IRC_Bold(static_cast < char >(2));	// ^B
-const mstring IRC_Underline(static_cast < char >(31));	// ^_
-const mstring IRC_Reverse(static_cast < char >(22));	// ^V
-const mstring IRC_Color(static_cast < char >(3));	// ^C
-const mstring IRC_Off(static_cast < char >(15));	// ^O
+const mstring IRC_CTCP(static_cast < char > (1));	// ^A
+const mstring IRC_Bold(static_cast < char > (2));	// ^B
+const mstring IRC_Underline(static_cast < char > (31));	// ^_
+const mstring IRC_Reverse(static_cast < char > (22));	// ^V
+const mstring IRC_Color(static_cast < char > (3));	// ^C
+const mstring IRC_Off(static_cast < char > (15));	// ^O
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 inline char *mstring::alloc(const size_t sz) throw(mstring_noalloc)
@@ -340,7 +343,7 @@ inline char *mstring::alloc(const size_t sz)
 	defined(ACE_NEW_THROWS_EXCEPTIONS)
     try
     {
-	out = new char[sz];
+	out = new char [sz];
     }
     catch(ACE_bad_alloc & e)
     {
@@ -348,7 +351,7 @@ inline char *mstring::alloc(const size_t sz)
 	errno = ENOMEM;
     }
 # else
-    out = new char[sz];
+    out = new char [sz];
 
     if (out == NULL)
     {
@@ -359,7 +362,7 @@ inline char *mstring::alloc(const size_t sz)
 #elif ALLOCTYPE == 2
 
     /* Standard C++ Allocation */
-    out = new char[sz];
+    out = new char [sz];
 
 #else
 
@@ -402,12 +405,12 @@ inline void mstring::dealloc(char *&in)
 #elif ALLOCTYPE == 3
 
     /* Duplicate ACE's new, but with no return's. */
-    delete[]in;
+    delete[] in;
 
 #elif ALLOCTYPE == 2
 
     /* Standard C++ Allocation */
-    delete[]in;
+    delete[] in;
 
 #else
 
@@ -562,8 +565,8 @@ void mstring::erase(int begin, int end)
 	return;
     }
 
-    if (end < 0 || end >= static_cast < int >(i_len))
-	if (begin >= static_cast < int >(i_len))
+    if (end < 0 || end >= static_cast < int > (i_len))
+	if (begin >= static_cast < int > (i_len))
 	{
 	    lock_rel();
 	    return;
@@ -580,7 +583,7 @@ void mstring::erase(int begin, int end)
     }
     end++;
 
-    if (begin > 0 || end < static_cast < int >(i_len))
+    if (begin > 0 || end < static_cast < int > (i_len))
     {
 	i = 0;
 	if (i_res == 0)
@@ -608,7 +611,7 @@ void mstring::erase(int begin, int end)
 	    tmp = i_str;
 	}
 
-	if (end < static_cast < int >(i_len))
+	if (end < static_cast < int > (i_len))
 	    memmove(&tmp[i], &i_str[end], i_len - end);
 	i_len -= end - begin;
 	memset(&tmp[i_len], 0, i_res - i_len);
@@ -741,20 +744,20 @@ const char *mstring::c_str() const
 	retval = i_str;
     lock_rel();
 
-    return static_cast < const char *>(retval);
+    return static_cast < const char * > (retval);
 }
 
 const unsigned char *mstring::uc_str() const
 {
-    unsigned char *retval = reinterpret_cast < unsigned char *>(const_cast < char *>(""));
+    unsigned char *retval = reinterpret_cast < unsigned char * > (const_cast < char * > (""));
 
     lock_read();
     if (i_str != NULL)
-	retval = reinterpret_cast < unsigned char *>(i_str);
+	retval = reinterpret_cast < unsigned char * > (i_str);
 
     lock_rel();
 
-    return static_cast < const unsigned char *>(retval);
+    return static_cast < const unsigned char * > (retval);
 }
 
 const char mstring::first(size_t off) const
@@ -766,7 +769,7 @@ const char mstring::first(size_t off) const
 	retval = i_str[off - 1];
     lock_rel();
 
-    return static_cast < const char >(retval);
+    return static_cast < const char > (retval);
 }
 
 const char mstring::last(size_t off) const
@@ -778,7 +781,7 @@ const char mstring::last(size_t off) const
 	retval = i_str[i_len - off];
     lock_rel();
 
-    return static_cast < const char >(retval);
+    return static_cast < const char > (retval);
 }
 
 size_t mstring::length() const
@@ -833,12 +836,12 @@ int mstring::find_first_of(const char *str, const size_t len) const
 
     for (i = 0; i < len; i++)
     {
-	char *ptr = static_cast < char *>(memchr(i_str, str[i], i_len));
+	char *ptr = static_cast < char * > (memchr(i_str, str[i], i_len));
 
 	if (ptr != NULL && ptr - i_str < retval)
 	    retval = ptr - i_str;
     }
-    if (retval > static_cast < int >(i_len))
+    if (retval > static_cast < int > (i_len))
 	retval = -1;
 
     lock_rel();
@@ -1168,7 +1171,7 @@ mstring mstring::substr(int nFirst, int nCount) const
 	    nFirst = 0;
 	if (nCount < 0)
 	    nCount = i_len - nFirst;
-	if ((nCount + nFirst) > static_cast < int >(i_len))
+	if ((nCount + nFirst) > static_cast < int > (i_len))
 	    nCount = i_len - nFirst;
 	lock_rel();
 	if (nCount > 0)
@@ -1547,7 +1550,7 @@ mstring mstring::SubString(int from, int to) const
     if (to < 0)
     {
 	lock_read();
-	if (from < static_cast < int >(i_len))
+	if (from < static_cast < int > (i_len))
 	    to = i_len - 1;
 	else
 	{
@@ -1594,7 +1597,7 @@ mstring mstring::ExtractWord(const unsigned int count, const mstring & delim, co
     {
 	i = begin;
 	lock_read();
-	while (i < static_cast < int >(i_len) && !delim.Contains(i_str[static_cast < unsigned int >(i)]))
+	while (i < static_cast < int > (i_len) && !delim.Contains(i_str[static_cast < unsigned int > (i)]))
 	    i++;
 
 	if (i != begin)
@@ -1675,7 +1678,7 @@ list < mstring > mstring::List(const mstring & delim, bool const assemble) const
     return Result;
 }
 
-void mstring::Assemble(const vector < mstring > &text, const mstring & delim)
+void mstring::Assemble(const vector < mstring > & text, const mstring & delim)
 {
     lock_write();
 
@@ -1726,7 +1729,7 @@ void mstring::Assemble(const vector < mstring > &text, const mstring & delim)
     lock_rel();
 }
 
-void mstring::Assemble(const list < mstring > &text, const mstring & delim)
+void mstring::Assemble(const list < mstring > & text, const mstring & delim)
 {
     lock_write();
 
@@ -1796,7 +1799,7 @@ bool match_wild(const char *pattern, const char *str, bool nocase)
 
     for (;;)
     {
-	switch (c = *pattern++)
+	switch (c = * pattern++)
 	{
 	case 0:
 	    if (!*str)
@@ -1813,7 +1816,7 @@ bool match_wild(const char *pattern, const char *str, bool nocase)
 	    s = str;
 	    while (*s)
 	    {
-		if ((nocase ? (tolower(*s) == tolower(*pattern)) : *s == *pattern) && match_wild(pattern, s, nocase))
+		if ((nocase ? (tolower(*s) == tolower(*pattern)) : *s == * pattern) && match_wild(pattern, s, nocase))
 		    return true;
 		++s;
 	    }

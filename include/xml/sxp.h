@@ -27,6 +27,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.28  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -193,7 +196,7 @@ namespace SXP
     interface IPersistObj;
     struct Tag;
 
-      template < class T > interface IFilePointer
+    template < class T > interface IFilePointer
     {
 	inline FILE *FP()
 	{
@@ -207,28 +210,28 @@ namespace SXP
 
     template < class T > class IFilePrint
     {
-      public:
+   public:
 	inline void Print(const char *format, ...)
 	{
 	    va_list argptr;
 
-	    va_start(argptr, format);
-	    static_cast < T * >(this)->PrintV(format, argptr);
-	    va_end(argptr);
+	      va_start(argptr, format);
+	      static_cast < T * > (this)->PrintV(format, argptr);
+	      va_end(argptr);
 	}
 	inline void PrintV(const char *format, va_list argptr)
 	{
-	    static_cast < T * >(this)->PrintV(format, argptr);
+	    static_cast < T * > (this)->PrintV(format, argptr);
 	}
 	inline void Indent()
 	{
-	    static_cast < T * >(this)->Indent();
+	    static_cast < T * > (this)->Indent();
 	}
     };
 
     interface IData
     {
-	virtual ~ IData();
+	virtual ~IData();
 	virtual const char *Data() const = 0;
     };
 
@@ -245,8 +248,7 @@ namespace SXP
     // abstraction for the output stream - something which knows
     // how to begin the XML document, how to write object begin/end tags
     // and simple data elements
-  template < class T > interface IOutStreamT:
-    public IDataOutput < T >
+    template < class T > interface IOutStreamT : public IDataOutput < T >
     {
 	inline void BeginXML(void)
 	{
@@ -277,9 +279,9 @@ namespace SXP
     // the methods to read from simple data elements (like <height>187.4</height>)
     // are stuffed here
 
-    interface IElement:public IDataInput
+    interface IElement : public IDataInput
     {
-	virtual ~ IElement()
+	virtual ~IElement()
 	{
 	}
 	virtual const char *Name();
@@ -325,12 +327,12 @@ namespace SXP
 
     class TagHashtable
     {
-      private:
+   private:
 	TagHashtable()
 	{
 	}
-      public:
-	  inline static TagHashtable & TagHT()
+   public:
+	inline static TagHashtable &TagHT()
 	{
 	    if (g_pHashTable)
 	    {
@@ -406,16 +408,16 @@ namespace SXP
     };
 
     // IOutStream to an stdio file.
-    class CFileOutStream:public IOutStreamT < CFileOutStream >
+    class CFileOutStream : public IOutStreamT < CFileOutStream >
     {
-      public:
+   public:
 	FILE * m_fp;
-      private:
+   private:
 	int m_nIndent;
 
 	// ugly...
-      public:
-	  inline FILE * FP()
+   public:
+	inline FILE *FP()
 	{
 	    return m_fp;
 	}
@@ -475,7 +477,7 @@ namespace SXP
 	void WriteSubElement(IPersistObj * pObj, dict & attribs = blank_dict);
     };
 
-    class MOutStream:public IOutStreamT < MOutStream >
+    class MOutStream : public IOutStreamT < MOutStream >
     {
 	int m_nIndent;
 	size_t buf_sz;
@@ -483,12 +485,12 @@ namespace SXP
 	char *buffer;
 
 	void ExpandBuf();
-      public:
-	  virtual void Print(const char *format, ...);
+   public:
+	virtual void Print(const char *format, ...);
 	virtual void PrintV(const char *format, va_list argptr);
 	virtual void Indent();
 	  MOutStream();
-	  virtual ~ MOutStream();
+	virtual ~MOutStream();
 	inline size_t BufSize()
 	{
 	    return buf_cnt;
@@ -507,14 +509,14 @@ namespace SXP
 
     // IElement implemented with STL strings
 
-    class CElement:public IElement
+    class CElement : public IElement
     {
 	mstring m_strName;
 	mstring m_strData;
 	dict m_Attribs;
 	unsigned long m_dwTagHash;
 
-      public:
+   public:
 	  CElement()
 	{
 	}
@@ -570,7 +572,7 @@ namespace SXP
 	}
 	inline int IsA(const char *pchName)
 	{
-	    return ( !m_strName.compare(pchName));
+	    return (!m_strName.compare(pchName));
 	}
     };
 
@@ -581,7 +583,7 @@ namespace SXP
 	// this should return the identifier used for the elements
 	// describing objects of the user class; this should be a
 	// function used also by the IPersistObj::WriteElement implementation
-	virtual Tag & GetClassTag() const = 0;
+	virtual Tag &GetClassTag() const = 0;
 
 	// the user class should write itself out, using the IOutStream
 	// members for its "simple" members and calling WriteElement
@@ -606,21 +608,21 @@ namespace SXP
     };
 
     // the mighty parser itself
-    class CParser:public IParser
+    class CParser : public IParser
     {
-	std::stack < IPersistObj * >m_EHStack;	// event handlers
-	std::stack < CElement * >m_EStack;	// elements
+	std::stack < IPersistObj * > m_EHStack;	// event handlers
+	std::stack < CElement * > m_EStack;	// elements
 	XML_Parser m_parser;
 
 	int m_bShuttingDown;
 	int m_nErrorLine, m_nErrorCol;	// position of error as reported by expat
 	mstring m_strError;
 
-      public:
+   public:
 	// The parser begins feeding element events into a "root" object -
 	// typically an object factory of sorts
 	  CParser(IPersistObj * pRoot);
-	  virtual ~ CParser()
+	virtual ~CParser()
 	{
 	    DoShutdown();
 	}

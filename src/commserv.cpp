@@ -28,6 +28,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.113  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -357,14 +360,14 @@ void Committee_t::defaults()
     lock.Secure = false;
 }
 
-Committee_t::Committee_t():i_RegTime(mDateTime::CurrentDateTime())
+Committee_t::Committee_t() : i_RegTime(mDateTime::CurrentDateTime())
 {
     NFT("Committee_t::Committee_t");
     defaults();
     DumpE();
 }
 
-Committee_t::Committee_t(const mstring & name, const mstring & head, const mstring & description):i_Name(name.UpperCase()),
+Committee_t::Committee_t(const mstring & name, const mstring & head, const mstring & description) : i_Name(name.UpperCase()),
 i_RegTime(mDateTime::CurrentDateTime()), i_Head(head.LowerCase()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, head, description));
@@ -372,15 +375,16 @@ i_RegTime(mDateTime::CurrentDateTime()), i_Head(head.LowerCase()), i_Description
     DumpE();
 }
 
-Committee_t::Committee_t(const mstring & name, const Committee_t & head, const mstring & description):i_Name(name.UpperCase()),
-i_RegTime(mDateTime::CurrentDateTime()), i_HeadCom(head.Name()), i_Description(description)
+Committee_t::Committee_t(const mstring & name, const Committee_t & head,
+			 const mstring & description) : i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
+i_HeadCom(head.Name()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, "(Committee_t *) head", description));
     defaults();
     DumpE();
 }
 
-Committee_t::Committee_t(const mstring & name, const mstring & description):i_Name(name.UpperCase()),
+Committee_t::Committee_t(const mstring & name, const mstring & description) : i_Name(name.UpperCase()),
 i_RegTime(mDateTime::CurrentDateTime()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, description));
@@ -388,7 +392,7 @@ i_RegTime(mDateTime::CurrentDateTime()), i_Description(description)
     DumpE();
 }
 
-Committee_t & Committee_t::operator=(const Committee_t & in)
+Committee_t &Committee_t::operator=(const Committee_t & in)
 {
     FT("Committee_t::operator=", ("(const Committee_t &) in"));
 
@@ -489,6 +493,7 @@ bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDat
     if (i_Members.empty() || iter == i_Members.end())
     {
 	pair < entlist_ui, bool > tmp;
+
 	MCB(i_Members.size());
 	tmp = i_Members.insert(entlist_t(entry, nick, modtime));
 	MCE(i_Members.size());
@@ -2496,12 +2501,12 @@ void CommServ::do_set_Secure(const mstring & mynick, const mstring & source, con
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee,
-	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
-	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
 }
 
@@ -2567,12 +2572,12 @@ void CommServ::do_set_Private(const mstring & mynick, const mstring & source, co
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee,
-	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
-	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
 }
 
@@ -2638,12 +2643,12 @@ void CommServ::do_set_OpenMemos(const mstring & mynick, const mstring & source, 
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
 }
 
@@ -2705,12 +2710,12 @@ void CommServ::do_lock_Secure(const mstring & mynick, const mstring & source, co
     Magick::instance().commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee,
-	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
-	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
 }
 
@@ -2772,12 +2777,12 @@ void CommServ::do_lock_Private(const mstring & mynick, const mstring & source, c
     Magick::instance().commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee,
-	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
-	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
 }
 
@@ -2839,12 +2844,12 @@ void CommServ::do_lock_OpenMemos(const mstring & mynick, const mstring & source,
     Magick::instance().commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
 }
 
@@ -3030,7 +3035,7 @@ void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("Committee_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -3097,7 +3102,7 @@ void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("Committee_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
@@ -3127,7 +3132,7 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (l = i_Members.begin(); l != i_Members.end(); l++)
 	{
 	    pOut->BeginObject(tag_Members);
-	    pOut->WriteSubElement(const_cast < entlist_t * >(&(*l)));
+	    pOut->WriteSubElement(const_cast < entlist_t * > (&(*l)));
 	    pOut->EndObject(tag_Members);
 	}
     }
@@ -3170,8 +3175,8 @@ void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
-    static_cast < void >(pElement);
+    static_cast < void > (pIn);
+    static_cast < void > (pElement);
 
     FT("CommServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
@@ -3179,7 +3184,7 @@ void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("CommServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this

@@ -27,6 +27,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.68  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -201,7 +204,7 @@ class mLOCK
     friend class mLock_Mutex;
 
     static mLock_Mutex *maplock;
-    static map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >LockMap;
+    static map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > > LockMap;
     static ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex > memory_area;
 
     bool islocked;
@@ -213,7 +216,7 @@ class mLOCK
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
 
-  public:
+public:
       mLOCK()
     {
     }
@@ -232,7 +235,7 @@ class mLOCK
     {
 	return LockMap.size();
     }
-    static list < pair < void *, locktype_enum > >mLOCK::GetLocks(ACE_thread_t thr = ACE_Thread::self());
+    static list < pair < void *, locktype_enum > > mLOCK::GetLocks(ACE_thread_t thr = ACE_Thread::self());
 };
 
 /* We need to ditch these for the below operator new */
@@ -243,11 +246,11 @@ class mLOCK
 #undef malloc
 #undef free
 
-class mLock_Read:public ACE_RW_Thread_Mutex
+class mLock_Read : public ACE_RW_Thread_Mutex
 {
     typedef ACE_RW_Thread_Mutex base;
-  public:
-      mLock_Read(const char *name = 0):base(name)
+public:
+      mLock_Read(const char *name = 0) : base(name)
     {
     }
 
@@ -260,23 +263,23 @@ class mLock_Read:public ACE_RW_Thread_Mutex
 	return tryacquire_read();
     }
 
-    void *operator  new(size_t size)
+    void *operator    new (size_t size)
     {
-	static_cast < void >(size);
+	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator  delete(void *ptr)
+    void operator    delete (void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
 };
 
-class mLock_Write:public ACE_RW_Thread_Mutex
+class mLock_Write : public ACE_RW_Thread_Mutex
 {
     typedef ACE_RW_Thread_Mutex base;
-  public:
-      mLock_Write(const char *name = 0):base(name)
+public:
+      mLock_Write(const char *name = 0) : base(name)
     {
     }
 
@@ -289,33 +292,33 @@ class mLock_Write:public ACE_RW_Thread_Mutex
 	return tryacquire_write();
     }
 
-    void *operator  new(size_t size)
+    void *operator    new (size_t size)
     {
-	static_cast < void >(size);
+	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator  delete(void *ptr)
+    void operator    delete (void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
 };
 
-class mLock_Mutex:public ACE_Recursive_Thread_Mutex
+class mLock_Mutex : public ACE_Recursive_Thread_Mutex
 {
     typedef ACE_Recursive_Thread_Mutex base;
-  public:
-      mLock_Mutex(const char *name = 0):base(name)
+public:
+      mLock_Mutex(const char *name = 0) : base(name)
     {
     }
 
-    void *operator  new(size_t size)
+    void *operator    new (size_t size)
     {
-	static_cast < void >(size);
+	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator  delete(void *ptr)
+    void operator    delete (void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -385,7 +388,6 @@ class mLock_Mutex:public ACE_Recursive_Thread_Mutex
 	{ MLOCK(x); __if_res = y; } \
 	if (__if_res)
 
-
 #else /* MAGICK_LOCKS_WORK */
 #define RLOCK(y)
 #define RLOCK2(y)
@@ -434,8 +436,8 @@ class mSocket
 #endif
 
     void init();
-  public:
-    static map < unsigned long, mSocket * >SockMap;
+public:
+    static map < unsigned long, mSocket * > SockMap;
     static unsigned short FindAvailPort();
 
       mSocket()
@@ -468,7 +470,7 @@ class mSocket
 	*this = in;
     }
     ~mSocket();
-    mSocket & operator=(const mSocket & in);
+    mSocket &operator=(const mSocket & in);
 
     bool Connect(const ACE_INET_Addr & addr, const unsigned long timeout = 0);
     bool Connect(const unsigned long host, const unsigned short port, const unsigned long timeout = 0);
@@ -496,7 +498,7 @@ class mSocket
 
 class mThread
 {
-  private:
+private:
 
 /** Custom thread class (inherited ACE_Thread) that is constructed as
 	new thread(function, veriable, ThreadID::type_enum);
@@ -509,16 +511,16 @@ class mThread
 	to know 1) if tracing is turned on for that type, and 2) do the write out.
 */
     // really should be using auto_ptr's here, *shrug* maybe later
-    typedef map < ACE_thread_t, ThreadID * >selftothreadidmap_t;
+    typedef map < ACE_thread_t, ThreadID * > selftothreadidmap_t;
     static selftothreadidmap_t selftothreadidmap;
     static mLock_Mutex *maplock;
 
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
 
-  public:
+public:
     static ThreadID *find(const ACE_thread_t thread = ACE_Thread::self());
-    static vector < ThreadID * >findall();
+    static vector < ThreadID * > findall();
     static size_t size()
     {
 	return selftothreadidmap.size();

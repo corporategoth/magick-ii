@@ -27,6 +27,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.78  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -326,7 +329,7 @@ class Protocol
       map < mstring, mstring > tokens;
     void SetTokens(unsigned int type);
 
-  public:
+public:
       Protocol();
      ~Protocol()
     {
@@ -460,7 +463,7 @@ class Protocol
     void DumpE() const;
 };
 
-class Server_t:public mUserDef, public ref_class
+class Server_t : public mUserDef, public ref_class
 {
     mstring i_Name;
     mstring i_AltName;
@@ -473,9 +476,9 @@ class Server_t:public mUserDef, public ref_class
     bool i_Jupe;
 
     void defaults();
-  public:
+public:
       Server_t();
-      Server_t(const Server_t & in):mUserDef(in), ref_class()
+      Server_t(const Server_t & in) : mUserDef(in), ref_class()
     {
 	*this = in;
     }
@@ -487,7 +490,7 @@ class Server_t:public mUserDef, public ref_class
     {
     }
 
-    Server_t & operator=(const Server_t & in);
+    Server_t &operator=(const Server_t & in);
     bool operator==(const Server_t & in) const
     {
 	return (i_Name == in.i_Name);
@@ -519,16 +522,15 @@ class Server_t:public mUserDef, public ref_class
     unsigned int Users() const;
     unsigned int Opers() const;
 
-    vector < mstring > Downlinks()const;
-    vector < mstring > AllDownlinks()const;
+    vector < mstring > Downlinks() const;
+    vector < mstring > AllDownlinks() const;
 
     size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
 };
 
-
-class Server:public mBase
+class Server : public mBase
 {
     friend class Magick;
     friend class Server_t;
@@ -542,8 +544,8 @@ class Server:public mBase
       set < mstring > WaitIsOn;
 
     size_t i_UserMax;
-      map < mstring, long >ServerSquit;
-      map < mstring, list < mstring > >ToBeSquit;
+      map < mstring, long > ServerSquit;
+      map < mstring, list < mstring > > ToBeSquit;
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;
@@ -554,18 +556,18 @@ class Server:public mBase
 	t_NOTICE, t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
 	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS
     };
-      map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > >ToBeSent;
+      map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > > ToBeSent;
     void FlushMsgs(const mstring & nick);
 
-  public:
-    typedef map < mstring, Server_t * >list_t;
+public:
+    typedef map < mstring, Server_t * > list_t;
 
-  private:
+private:
 
       list_t i_list;
 
     void OurUplink(const mstring & server);
-  public:
+public:
       Server();
      ~Server()
     {
@@ -576,24 +578,24 @@ class Server:public mBase
     size_t UserMax() const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddList(Server_t * in) throw(E_Server_List);
-    void AddList(const Server_t & in) throw(E_Server_List)
+    void AddList(Server_t * in) throw (E_Server_List);
+    void AddList(const Server_t & in) throw (E_Server_List)
     {
 	AddList(new Server_t(in));
     }
-    void AddList(const map_entry < Server_t > &in) throw(E_Server_List)
+    void AddList(const map_entry < Server_t > & in) throw (E_Server_List)
     {
 	AddList(in.entry());
     }
-    map_entry < Server_t > GetList(const mstring & in) const throw(E_Server_List);
-    void RemList(const mstring & in, bool downlinks = true) throw(E_Server_List);
+    map_entry < Server_t > GetList(const mstring & in) const throw (E_Server_List);
+    void RemList(const mstring & in, bool downlinks = true) throw (E_Server_List);
 #else
     void AddList(Server_t * in);
     void AddList(const Server_t & in)
     {
 	AddList(new Server_t(in));
     }
-    void AddList(const map_entry < Server_t > &in)
+    void AddList(const map_entry < Server_t > & in)
     {
 	AddList(in.entry());
     }
@@ -608,7 +610,7 @@ class Server:public mBase
     {
 	return i_list.end();
     }
-    list_t::const_iterator ListBegin()const
+    list_t::const_iterator ListBegin() const
     {
 	return i_list.begin();
     }

@@ -28,6 +28,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.116  2002/01/13 05:18:42  prez
 ** More formatting, changed style slightly
 **
@@ -462,11 +465,11 @@ unsigned short makehex(const mstring & SLevel)
 
 // ===================================================
 
-ThreadID::ThreadID():t_internaltype(tt_LOST), t_indent(0), t_intrace(false)
+ThreadID::ThreadID() : t_internaltype(tt_LOST), t_indent(0), t_intrace(false)
 {
 }
 
-ThreadID::ThreadID(const threadtype_enum Type):t_internaltype(Type), t_indent(0), t_intrace(false)
+ThreadID::ThreadID(const threadtype_enum Type) : t_internaltype(Type), t_indent(0), t_intrace(false)
 {
 }
 
@@ -484,7 +487,7 @@ void ThreadID::assign(const threadtype_enum Type)
 void ThreadID::WriteOut(const mstring & message)
 {
 #ifndef MAGICK_TRACE_WORKS
-    static_cast < void >(message);
+    static_cast < void > (message);
 #else
     mstring finalout;
 
@@ -520,7 +523,7 @@ void ThreadID::Flush()
     if (tid != NULL)
 	tid->t_intrace = true;
     list < pair < threadtype_enum, mstring > >::iterator iter;
-    list < pair < threadtype_enum, mstring > >ThreadMessageQueue2;
+    list < pair < threadtype_enum, mstring > > ThreadMessageQueue2;
     list < mstring > pre_messages;
     {
 	MLOCK(("ThreadMessageQueue"));
@@ -565,7 +568,7 @@ void ThreadID::Flush()
 unsigned short Trace::traces[tt_MAX] = { 0 };
 
 vector < Trace::levelname_struct > Trace::levelname;	// Initialised in main.cpp
-list < pair < threadtype_enum, mstring > >ThreadMessageQueue;
+list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 
 int levelname_count()
 {
@@ -575,7 +578,7 @@ int levelname_count()
 // ===================================================
 
 //      \  function()
-T_Functions::T_Functions(const mstring & name):m_name(name)
+T_Functions::T_Functions(const mstring & name) : m_name(name)
 {
     ThreadID *tid = mThread::find();
 
@@ -593,7 +596,7 @@ T_Functions::T_Functions(const mstring & name):m_name(name)
 }
 
 //      \  function( (char) T, (int) 5 )
-T_Functions::T_Functions(const mstring & name, const mVarArray & args):m_name(name)
+T_Functions::T_Functions(const mstring & name, const mVarArray & args) : m_name(name)
 {
     ThreadID *tid = mThread::find();
 
@@ -705,7 +708,7 @@ void T_Comments::common(const mstring & input)
 //      << DE1(PreZ)
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
-T_Modify::T_Modify(const mVarArray & args, unsigned int offset):i_args(args), i_offset(offset)
+T_Modify::T_Modify(const mVarArray & args, unsigned int offset) : i_args(args), i_offset(offset)
 {
 }
 
@@ -753,7 +756,7 @@ void T_Modify::End()
 //      << DE1(PreZ)
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
-T_Changing::T_Changing(const mstring & name, const mVariant & arg):i_name(name), i_arg(arg)
+T_Changing::T_Changing(const mstring & name, const mVariant & arg) : i_name(name), i_arg(arg)
 {
 }
 

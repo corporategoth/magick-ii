@@ -73,7 +73,6 @@ extern "C"
 	XML_Content *children;
     };
 
-
 /* This is called for an element declaration. See above for
    description of the model argument. It's the caller's responsibility
    to free model when finished with it.
@@ -98,7 +97,6 @@ extern "C"
 
       XMLPARSEAPI(void) XML_SetAttlistDeclHandler(XML_Parser parser, XML_AttlistDeclHandler attdecl);
 
-
     /* The XML declaration handler is called for *both* XML declarations and
      * text declarations. The way to distinguish is that the version parameter
      * will be null for text declarations. The encoding parameter may be null
@@ -110,7 +108,6 @@ extern "C"
     typedef void (*XML_XmlDeclHandler) (void *userData, const XML_Char * version, const XML_Char * encoding, int standalone);
 
       XMLPARSEAPI(void) XML_SetXmlDeclHandler(XML_Parser parser, XML_XmlDeclHandler xmldecl);
-
 
     typedef struct
     {
@@ -137,7 +134,6 @@ the name and prefix will be passed through without expansion. */
 
       XMLPARSEAPI(XML_Parser) XML_ParserCreateNS(const XML_Char * encoding, XML_Char namespaceSeparator);
 
-
 /* Constructs a new parser using the memory management suit referred to
    by memsuite. If memsuite is NULL, then use the standard library memory
    suite. If namespaceSeparator is non-NULL it creates a parser with
@@ -157,7 +153,6 @@ the name and prefix will be passed through without expansion. */
     typedef void (*XML_StartElementHandler) (void *userData, const XML_Char * name, const XML_Char ** atts);
 
     typedef void (*XML_EndElementHandler) (void *userData, const XML_Char * name);
-
 
 /* s is not 0 terminated. */
     typedef void (*XML_CharacterDataHandler) (void *userData, const XML_Char * s, int len);
@@ -214,7 +209,8 @@ closing > is encountered, but after processing any external subset. */
 
     typedef void (*XML_EntityDeclHandler) (void *userData, const XML_Char * entityName, int is_parameter_entity,
 					   const XML_Char * value, int value_length, const XML_Char * base,
-					   const XML_Char * systemId, const XML_Char * publicId, const XML_Char * notationName);
+					   const XML_Char * systemId, const XML_Char * publicId,
+					   const XML_Char * notationName);
 
       XMLPARSEAPI(void) XML_SetEntityDeclHandler(XML_Parser parser, XML_EntityDeclHandler handler);
 

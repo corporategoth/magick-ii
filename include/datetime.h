@@ -27,6 +27,9 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.41  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -114,7 +117,7 @@ extern mDateTime StringToDateTime(const mstring & in);
 class mDateTime
 {
     double Val;
-  public:
+public:
       mstring timetstring() const;
     enum mDateTimeFlag
     { Date, Time, DateTime };
@@ -179,65 +182,65 @@ class mDateTime
     {
     }
 
-    mDateTime & operator=(const mDateTime & in)
+    mDateTime &operator=(const mDateTime & in)
     {
 	Val = in.Val;
 	return *this;
     }
-    mDateTime & operator=(const double in)
+    mDateTime &operator=(const double in)
     {
 	Val = in;
 	return *this;
     }
-    mDateTime & operator=(const time_t in)
+    mDateTime &operator=(const time_t in)
     {
 	tm *tmst;
 
 	tmst = localtime(&in);
-	*this = *tmst;
+	*this = * tmst;
 	return *this;
     }
-    mDateTime & operator=(const struct tm in)
+    mDateTime &operator=(const struct tm in)
     {
 	*this = mDateTime(in.tm_year + 1900, in.tm_mon + 1, in.tm_mday) + mDateTime(in.tm_hour, in.tm_min, in.tm_sec, 0);
 	return *this;
     }
-    mDateTime & operator+=(const mDateTime & in)
+    mDateTime &operator+=(const mDateTime & in)
     {
 	Val += in.Val;
 	return *this;
     }
-    mDateTime & operator+=(const double in)
+    mDateTime &operator+=(const double in)
     {
 	Val += in;
 	return *this;
     }
-    mDateTime & operator+=(const time_t in)
+    mDateTime &operator+=(const time_t in)
     {
 	Val += mDateTime(in).Val;
 	return *this;
     }
-    mDateTime & operator+=(const struct tm in)
+    mDateTime &operator+=(const struct tm in)
     {
 	Val += mDateTime(in).Val;
 	return *this;
     }
-    mDateTime & operator-=(const mDateTime & in)
+    mDateTime &operator-=(const mDateTime & in)
     {
 	Val -= in.Val;
 	return *this;
     }
-    mDateTime & operator-=(const double in)
+    mDateTime &operator-=(const double in)
     {
 	Val -= in;
 	return *this;
     }
-    mDateTime & operator-=(const time_t in)
+    mDateTime &operator-=(const time_t in)
     {
 	Val -= mDateTime(in).Val;
 	return *this;
     }
-    mDateTime & operator-=(const struct tm in)
+    mDateTime &operator-=(const struct tm in)
     {
 	Val -= mDateTime(in).Val;
 	return *this;
@@ -315,12 +318,12 @@ class mDateTime
 	return (Val <= in.Val);
     }
 
-    operator  double () const
+    operator    double () const
     {
 	return Val;
     }
-    operator  time_t() const;
-    operator  mstring() const
+    operator    time_t() const;
+    operator    mstring() const
     {
 	return DateTimeString();
     }
@@ -475,7 +478,7 @@ class mDateTime
     }
     unsigned long YearsSince() const
     {
-	return static_cast < int >(static_cast < double >(DaysSince()) / 365.25);
+	return static_cast < int > (static_cast < double > (DaysSince()) / 365.25);
     }
     mstring Ago(const mstring & source = "") const
     {
@@ -485,6 +488,5 @@ class mDateTime
     friend bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime & Date);
     friend bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime & Time);
 };
-
 
 #endif

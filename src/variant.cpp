@@ -28,6 +28,9 @@ RCSID(variant_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.51  2002/01/13 05:18:42  prez
 ** More formatting, changed style slightly
 **
@@ -110,7 +113,7 @@ RCSID(variant_cpp, "@(#)$Id$");
 // gah microsoft sucks, the below is to make sure our header get's included, not ms's
 #include "../include/variant.h"
 
-mVariant & mVariant::operator=(const mVariant & in)
+mVariant &mVariant::operator=(const mVariant & in)
 {
     valuetype = in.valuetype;
     truevaluetype = in.truevaluetype;
@@ -213,7 +216,7 @@ bool mVariant::operator<(const mVariant & in) const
     switch (valuetype)
     {
     case BOOL:
-	return (static_cast < int >(BoolValue) < static_cast < int >(in.BoolValue));
+	return (static_cast < int > (BoolValue) < static_cast < int > (in.BoolValue));
     case CHAR:
 	return (CharValue < in.CharValue);
     case SHORT:

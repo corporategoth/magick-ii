@@ -27,6 +27,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.52  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -217,12 +220,12 @@ RCSID(filesys_h, "@(#) $Id$");
 
 class mFile
 {
-  private:
+private:
     mutable FILE * fd;
     mstring i_name;
     mstring i_mode;
 
-  public:
+public:
       mFile()
     {
 	fd = NULL;
@@ -238,7 +241,7 @@ class mFile
     {
 	Close();
     }
-    mFile & operator=(const mFile & in);
+    mFile &operator=(const mFile & in);
     mstring Name() const
     {
 	return i_name;
@@ -270,8 +273,9 @@ class mFile
     static long Length(const mstring & name);
     static mDateTime LastMod(const mstring & name);
     static long Copy(const mstring & sin, const mstring & sout, const bool append = false);
-    static long Dump(const vector < mstring > &sin, const mstring & sout, const bool append = false, const bool endline = true);
-    static long Dump(const list < mstring > &sin, const mstring & sout, const bool append = false, const bool endline = true);
+    static long Dump(const vector < mstring > & sin, const mstring & sout, const bool append = false, const bool endline =
+		     true);
+    static long Dump(const list < mstring > & sin, const mstring & sout, const bool append = false, const bool endline = true);
     static vector < mstring > UnDump(const mstring & sin);
     static size_t DirUsage(const mstring & directory);
     static set < mstring > DirList(const mstring & directory, const mstring & filemask);
@@ -283,18 +287,18 @@ class mFile
 
 unsigned short FindAvailPort();
 
-class FileMap:public SXP::IPersistObj
+class FileMap : public SXP::IPersistObj
 {
-  public:
+public:
     FileMap()
     {
     }
-    virtual ~ FileMap()
+    virtual ~FileMap()
     {
     }
     enum FileType
     { MemoAttach, Picture, Public, Unknown };
-    typedef map < FileType, map < unsigned long, pair < mstring, mstring > > >filemap_t;
+    typedef map < FileType, map < unsigned long, pair < mstring, mstring > > > filemap_t;
 
     unsigned long FindAvail(const FileType type);
     bool Exists(const FileType type, const unsigned long num);
@@ -306,11 +310,11 @@ class FileMap:public SXP::IPersistObj
     size_t GetSize(const FileType type, const unsigned long num);
     unsigned long NewFile(const FileType type, const mstring & filename, const mstring & priv = "");
     void EraseFile(const FileType type, const unsigned long num);
-    vector < unsigned long >GetList(const FileType type, const mstring & source);
+    vector < unsigned long > GetList(const FileType type, const mstring & source);
     unsigned long GetNum(const FileType type, const mstring & name);
     size_t FileSysSize(const FileType type) const;
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_FileMap;
     }
@@ -321,17 +325,17 @@ class FileMap:public SXP::IPersistObj
 
   private:
     filemap_t i_FileMap;
-    vector < mstring * >fm_array;
+    vector < mstring * > fm_array;
     static SXP::Tag tag_FileMap, tag_File;
 };
 
 class DccXfer
 {
-  public:
+public:
     enum XF_Type
     { Get, Send };
 
-  private:
+private:
 
     // We dont care HOW we got the socket, just
     // that we now have it.  This way we can just
@@ -352,7 +356,7 @@ class DccXfer
     mDateTime i_LastData;
     map < time_t, size_t > i_Traffic;
 
-  public:
+public:
     DccXfer()
     {
 	i_Transiant = NULL;
@@ -365,7 +369,7 @@ class DccXfer
     {
 	*this = in;
     }
-    DccXfer & operator=(const DccXfer & in);
+    DccXfer &operator=(const DccXfer & in);
 
     ~DccXfer();
 
@@ -395,12 +399,12 @@ class DccXfer
     void DumpE() const;
 };
 
-class DccMap:public ACE_Task < ACE_MT_SYNCH >
+class DccMap : public ACE_Task < ACE_MT_SYNCH >
 {
     typedef ACE_Task < ACE_MT_SYNCH > internal;
 
     // Damn solaris already HAS a 'queue'
-    static std::queue < unsigned long >active;
+    static std::queue < unsigned long > active;
 
     Magick *magick_instance;
     ACE_Thread_Manager tm;
@@ -425,14 +429,14 @@ class DccMap:public ACE_Task < ACE_MT_SYNCH >
     static void *Connect2(void *);
     static void *Accept2(void *);
 
-  public:
-    typedef map < unsigned long, DccXfer * >xfers_t;
+public:
+    typedef map < unsigned long, DccXfer * > xfers_t;
 
-  private:
+private:
     static xfers_t xfers;
 
-  public:
-    DccMap(ACE_Thread_Manager * tm = 0):internal(tm)
+public:
+    DccMap(ACE_Thread_Manager * tm = 0) : internal(tm)
     {
     }
 
@@ -445,17 +449,17 @@ class DccMap:public ACE_Task < ACE_MT_SYNCH >
     }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static void AddXfers(DccXfer * in) throw(E_DccMap_Xfers);
-    static DccXfer & GetXfers(const unsigned long in) throw(E_DccMap_Xfers);
-    static void RemXfers(const unsigned long in) throw(E_DccMap_Xfers);
-    static bool IsXfers(const unsigned long in) throw(E_DccMap_Xfers);
-    static vector < unsigned long >GetList(const mstring & in) throw(E_DccMap_Xfers);
+    static void AddXfers(DccXfer * in) throw (E_DccMap_Xfers);
+    static DccXfer &GetXfers(const unsigned long in) throw (E_DccMap_Xfers);
+    static void RemXfers(const unsigned long in) throw (E_DccMap_Xfers);
+    static bool IsXfers(const unsigned long in) throw (E_DccMap_Xfers);
+    static vector < unsigned long > GetList(const mstring & in) throw (E_DccMap_Xfers);
 #else
     static void AddXfers(DccXfer * in);
-    static DccXfer & GetXfers(const unsigned long in);
+    static DccXfer &GetXfers(const unsigned long in);
     static void RemXfers(const unsigned long in);
     static bool IsXfers(const unsigned long in);
-    static vector < unsigned long >GetList(const mstring & in);
+    static vector < unsigned long > GetList(const mstring & in);
 #endif
     static xfers_t::iterator XfersBegin()
     {

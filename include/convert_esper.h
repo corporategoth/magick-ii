@@ -27,6 +27,9 @@ RCSID(convert_esper_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.7  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -170,7 +173,6 @@ struct ESP_SuspendInfo
  * lists; the list is determined by the first character of the nick.  Nicks
  * are stored in alphabetical order within lists. */
 
-
 struct ESP_NickInfo
 {
     char nick[ESP_NICKMAX];
@@ -208,7 +210,6 @@ struct ESP_NickInfo
     time_t id_timestamp;	/* TS8 timestamp of user who last ID'd for nick */
 };
 
-
 /* Nickname status flags: */
 #define ESP_NS_ENCRYPTEDPW	0x0001	/* Nickname password is encrypted */
 #define ESP_NS_VERBOTEN		0x0002	/* Nick may not be registered or used */
@@ -222,7 +223,6 @@ struct ESP_NickInfo
 					 * yet changed. An enforcer will be
 					 * introduced when it does change. */
 #define ESP_NS_TEMPORARY	0xFF00	/* All temporary status flags */
-
 
 /* Nickname setting flags: */
 #define ESP_NI_KILLPROTECT	0x00000001	/* Kill others who take this nick */
@@ -398,7 +398,6 @@ struct ESP_ChannelInfo
 
 /* IRC_BAHAMUT servers only */
 #define ESP_CMODE_C 0x00000400	/* No mIRC/ANSI colours in channel */
-
 
 /*************************************************************************/
 

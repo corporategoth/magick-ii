@@ -27,6 +27,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.105  2002/01/12 14:42:07  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -242,11 +245,11 @@ RCSID(base_h, "@(#) $Id$");
 
 class mUserDef
 {
-  protected:
-    mutable vector < mstring * >ud_array;
+protected:
+    mutable vector < mstring * > ud_array;
     mutable map < mstring, mstring > i_UserDef;
-  public:
-      virtual ~ mUserDef()
+public:
+    virtual ~mUserDef()
     {
     }
     mstring UserDef(const mstring & type) const
@@ -273,7 +276,7 @@ class mUserDef
     }
 };
 
-class mMessage:public ACE_Method_Request
+class mMessage : public ACE_Method_Request
 {
     friend class EventTask;
     friend class IrcSvcHandler;
@@ -282,18 +285,18 @@ class mMessage:public ACE_Method_Request
     mstring source_, msgtype_, params_;
     mDateTime creation_;
 
-  public:
+public:
     enum type_t
     { ServerExists, ServerNoExists, NickExists, NickNoExists,
 	ChanExists, ChanNoExists, UserInChan, UserNoInChan
     };
 
-  private:
-    static map < type_t, map < mstring, set < unsigned long > > >AllDependancies;
-    static map < unsigned long, mMessage * >MsgIdMap;
+private:
+    static map < type_t, map < mstring, set < unsigned long > > > AllDependancies;
+    static map < unsigned long, mMessage * > MsgIdMap;
     static unsigned long LastMsgId;
 
-      list < triplet < type_t, mstring, bool > >dependancies;
+      list < triplet < type_t, mstring, bool > > dependancies;
     void AddDepend(const type_t type, const mstring & param)
     {
 	dependancies.push_back(triplet < type_t, mstring, bool > (type, param, false));
@@ -336,7 +339,7 @@ class mMessage:public ACE_Method_Request
 class mBase
 {
     friend class EventTask;
-  protected:
+protected:
       mstring names;		// Names of service (space delimited)
     mstring realname;		// 'Real Name' of service
 
@@ -355,7 +358,7 @@ class mBase
     mBase()
     {
     }
-    virtual ~ mBase()
+    virtual ~mBase()
     {
     }
 
@@ -401,7 +404,7 @@ class mBase
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator  mVariant() const
+    virtual operator    mVariant() const
     {
 	mVariant locvar(GetInternalName());
 	  locvar.truevaluetype = GetInternalName();
@@ -432,31 +435,31 @@ extern SXP::Tag tag_entlist_t;
 extern SXP::Tag tag_Entry, tag_Value, tag_Last_Modify_Time, tag_Last_Modifier, tag_UserDef, tag_Stupid;
 extern SXP::Tag tag_ValueFirst, tag_ValueSecond;
 
-class entlist_t:public mUserDef, public SXP::IPersistObj
+class entlist_t : public mUserDef, public SXP::IPersistObj
 {
-  protected:
+protected:
     mstring i_Entry;
     mDateTime i_Last_Modify_Time;
     mstring i_Last_Modifier;
 
-  public:
+public:
     entlist_t()
     {
     }
-    entlist_t(const entlist_t & in):mUserDef(in), SXP::IPersistObj(in)
+    entlist_t(const entlist_t & in) : mUserDef(in), SXP::IPersistObj(in)
     {
 	*this = in;
     }
     entlist_t(const mstring & entry, const mstring & nick, const mDateTime & modtime =
-	      mDateTime::CurrentDateTime()):i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
+	      mDateTime::CurrentDateTime()) : i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
     {
 	FT("entlist_t::entlist_t", (entry, nick, modtime));
     }
 
-    virtual ~ entlist_t()
+    virtual ~entlist_t()
     {
     }
-    entlist_t & operator=(const entlist_t & in);
+    entlist_t &operator=(const entlist_t & in);
     virtual bool operator==(const entlist_t & in) const
     {
 	return (i_Entry == in.i_Entry);
@@ -502,30 +505,30 @@ typedef list < entlist_t >::const_iterator entlist_ci;
 typedef set < entlist_t >::iterator entlist_ui;
 typedef set < entlist_t >::const_iterator entlist_cui;
 
-template < class T > class entlist_val_t:public entlist_t
+template < class T > class entlist_val_t : public entlist_t
 {
-  protected:
+protected:
     T i_Value;
     bool i_Stupid;		// if TRUE, Value() does nothing.
 
-  public:
+public:
     entlist_val_t()
     {
     }
-    entlist_val_t(const entlist_val_t < T > &in):entlist_t(in)
+    entlist_val_t(const entlist_val_t < T > & in) : entlist_t(in)
     {
 	*this = in;
     }
     entlist_val_t(const mstring & entry, const T & value, const mstring & nick, const mDateTime & modtime =
 		  mDateTime::CurrentDateTime(), const bool stupid =
-		  false):entlist_t(entry, nick, modtime), i_Value(value), i_Stupid(stupid)
+		  false) : entlist_t(entry, nick, modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick, modtime, stupid));
     }
-    virtual ~ entlist_val_t()
+    virtual ~entlist_val_t()
     {
     }
-    virtual entlist_val_t < T > &operator=(const entlist_val_t < T > &in)
+    virtual entlist_val_t < T > & operator=(const entlist_val_t < T > & in)
     {
 	FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
 	entlist_t::operator=(in);
@@ -615,30 +618,30 @@ template<class T>
 typedef set<entlist_val_t<T> >::const_iterator entlist_val_cui;
 */
 
-template < class X, class Y > class entlist_val_pair_t:public entlist_t
+template < class X, class Y > class entlist_val_pair_t : public entlist_t
 {
-  protected:
+protected:
     pair < X, Y > i_Value;
     bool i_Stupid;		// if TRUE, Value() does nothing.
 
-  public:
+public:
     entlist_val_pair_t()
     {
     }
-    entlist_val_pair_t(const entlist_val_pair_t < X, Y > &in):entlist_t(in)
+    entlist_val_pair_t(const entlist_val_pair_t < X, Y > & in) : entlist_t(in)
     {
 	*this = in;
     }
-    entlist_val_pair_t(const mstring & entry, const pair < X, Y > &value, const mstring & nick, const mDateTime & modtime =
+    entlist_val_pair_t(const mstring & entry, const pair < X, Y > & value, const mstring & nick, const mDateTime & modtime =
 		       mDateTime::CurrentDateTime(), const bool stupid =
-		       false):entlist_t(entry, nick, modtime), i_Value(value), i_Stupid(stupid)
+		       false) : entlist_t(entry, nick, modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_pair_t< pair<X, Y> >::entlist_val_pair_t", (entry, "( pair<X,Y> ) value", nick, modtime, stupid));
     }
-    virtual ~ entlist_val_pair_t()
+    virtual ~entlist_val_pair_t()
     {
     }
-    virtual entlist_val_pair_t < X, Y > &operator=(const entlist_val_pair_t < X, Y > &in)
+    virtual entlist_val_pair_t < X, Y > & operator=(const entlist_val_pair_t < X, Y > & in)
     {
 	FT("entlist_val_pair_t< pair<X, X> >::operator=", ("(const entlist_val_pair_t< pair<X,Y> > &) in"));
 	entlist_t::operator=(in);
@@ -647,7 +650,7 @@ template < class X, class Y > class entlist_val_pair_t:public entlist_t
 	NRET(entlist_val_pair_t < X_Y > &, *this);
     }
 
-    virtual bool Value(pair < X, Y > &value, const mstring & nick)
+    virtual bool Value(pair < X, Y > & value, const mstring & nick)
     {
 	FT("entlist_val_pair_t< pair<X,Y> >::Change", ("(pair<X,Y>) value", nick));
 	if (i_Stupid)
@@ -662,7 +665,7 @@ template < class X, class Y > class entlist_val_pair_t:public entlist_t
 	    RET(true);
 	}
     }
-    pair < X, Y > Value()const
+    pair < X, Y > Value() const
     {
 	return i_Value;
     }
@@ -726,12 +729,12 @@ class CommandMap
 {
     typedef void (*functor) (const mstring &, const mstring &, const mstring &);
     // map<service, map<command, pair<committees, functor> > >
-    typedef list < triplet < mstring, mstring, functor > >cmdtype;
+    typedef list < triplet < mstring, mstring, functor > > cmdtype;
     typedef map < mstring, cmdtype > cmdmap;
     cmdmap i_user;
     cmdmap i_system;
 
-  public:
+public:
     void AddSystemCommand(const mstring & service, const mstring & command, const mstring & committees, functor function);
     void RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees);
     void AddCommand(const mstring & service, const mstring & command, const mstring & committees, functor function);

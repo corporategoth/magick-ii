@@ -23,6 +23,9 @@
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2002/01/14 07:16:53  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.9  2002/01/12 14:42:07  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -55,7 +58,7 @@
  * only until it is intergrated into ACE propper
  */
 
-template < class T, class ACE_LOCK > class ACE_Expandable_Cached_Allocator:public ACE_New_Allocator
+template < class T, class ACE_LOCK > class ACE_Expandable_Cached_Allocator : public ACE_New_Allocator
 {
     // = TITLE
     //   Create a cached memory poll with <n_chunks> chunks each with
@@ -67,7 +70,7 @@ template < class T, class ACE_LOCK > class ACE_Expandable_Cached_Allocator:publi
     //   fixed-sized classes.
     //   Note, this class does NOT free up memory segments when
     //   they become unused (but it does when the class is destructed).
-  public:
+public:
     ACE_Expandable_Cached_Allocator(size_t n_chunks);
     // Create a cached memory poll with <n_chunks> chunks
     // each with sizeof (TYPE) size.
@@ -93,15 +96,15 @@ template < class T, class ACE_LOCK > class ACE_Expandable_Cached_Allocator:publi
 	return (pool_.size() * n_chunks_) - free_list_.size();
     }
 
-  private:
+private:
       size_t n_chunks_;
 
     // how many chunks per segment.
 
-    ACE_Locked_Free_List < ACE_Cached_Mem_Pool_Node < T >, ACE_LOCK > free_list_;
+      ACE_Locked_Free_List < ACE_Cached_Mem_Pool_Node < T >, ACE_LOCK > free_list_;
     // Maintain a cached memory free list.
 
-    ACE_Array_Base < char *>pool_;
+      ACE_Array_Base < char * > pool_;
 
     // remember how we allocate the memory in the first place so
     // we can clear things up later.
@@ -113,16 +116,16 @@ template < class T, class ACE_LOCK > ACE_INLINE void ACE_Expandable_Cached_Alloc
     this->free_list_.add(ptr);
 }
 
-template < class T, class ACE_LOCK > ACE_Expandable_Cached_Allocator < T, ACE_LOCK >::ACE_Expandable_Cached_Allocator(size_t n_chunks):n_chunks_(n_chunks), free_list_(ACE_PURE_FREE_LIST),
-pool_
-(1)
+template < class T, class ACE_LOCK > ACE_Expandable_Cached_Allocator < T,
+    ACE_LOCK >::ACE_Expandable_Cached_Allocator(size_t n_chunks) : n_chunks_(n_chunks), free_list_(ACE_PURE_FREE_LIST),
+pool_(1)
 {
     char *temp;
-    ACE_NEW(temp, char[n_chunks_ * sizeof(T)]);
+    ACE_NEW(temp, char [n_chunks_ * sizeof(T)]);
 
     if (pool_.set(temp, 0) < 0)
     {
-	delete[]temp;
+	delete [] temp;
 	return;
     }
 
@@ -140,7 +143,7 @@ pool_
 template < class T, class ACE_LOCK > ACE_Expandable_Cached_Allocator < T, ACE_LOCK >::~ACE_Expandable_Cached_Allocator(void)
 {
     for (size_t c = 0; c < pool_.size(); c++)
-	delete[]this->pool_[c];
+	delete [] this->pool_[c];
 }
 
 template < class T, class ACE_LOCK > void *ACE_Expandable_Cached_Allocator < T, ACE_LOCK >::malloc(size_t nbytes)
@@ -153,12 +156,12 @@ template < class T, class ACE_LOCK > void *ACE_Expandable_Cached_Allocator < T, 
     if (!this->free_list_.size())
     {
 	char *temp = NULL;
-	ACE_NEW_RETURN(temp, char[n_chunks_ * sizeof(T)], 0);
+	ACE_NEW_RETURN(temp, char [n_chunks_ * sizeof(T)], 0);
 
 	pool_.max_size(pool_.max_size() + 1);
 	if (pool_.set(temp, pool_.size() - 1) < 0)
 	{
-	    delete[]temp;
+	    delete [] temp;
 	    return NULL;
 	}
 	// We could not add to the map ...
@@ -179,8 +182,7 @@ template < class T, class ACE_LOCK > void *ACE_Expandable_Cached_Allocator < T, 
     return this->free_list_.remove()->addr();
 }
 
-
-template < class ACE_LOCK > class ACE_Cached_Fixed_Allocator:public ACE_New_Allocator
+template < class ACE_LOCK > class ACE_Cached_Fixed_Allocator : public ACE_New_Allocator
 {
     // = TITLE
     //   Create a cached memory poll with <n_chunks> chunks each with
@@ -189,7 +191,7 @@ template < class ACE_LOCK > class ACE_Cached_Fixed_Allocator:public ACE_New_Allo
     // = DESCRIPTION
     //   This class enables caching of dynamically allocated,
     //   fixed-sized classes.
-  public:
+public:
     ACE_Cached_Fixed_Allocator(size_t n_size, size_t n_chunks);
 
     ~ACE_Cached_Fixed_Allocator(void);
@@ -219,15 +221,15 @@ template < class ACE_LOCK > class ACE_Cached_Fixed_Allocator:public ACE_New_Allo
 
     // Amount of used chunks so far
 
-  private:
-    size_t n_size_;
+private:
+      size_t n_size_;
     // Size of each element
 
     size_t n_chunks_;
 
     // How many chunks per segment
 
-    ACE_Locked_Free_List < ACE_Cached_Mem_Pool_Node < void *>, ACE_LOCK > free_list_;
+      ACE_Locked_Free_List < ACE_Cached_Mem_Pool_Node < void * >, ACE_LOCK > free_list_;
 
     // Maintain a cached memory free list.
 
@@ -236,7 +238,6 @@ template < class ACE_LOCK > class ACE_Cached_Fixed_Allocator:public ACE_New_Allo
     // remember how we allocate the memory in the first place so
     // we can clear things up later.
 };
-
 
 template < class ACE_LOCK > ACE_INLINE void *ACE_Cached_Fixed_Allocator < ACE_LOCK >::malloc(size_t nbytes)
 {
@@ -275,12 +276,12 @@ template < class ACE_LOCK > ACE_INLINE size_t ACE_Cached_Fixed_Allocator < ACE_L
     return size() - free_list_.size();
 }
 
-
-template < class ACE_LOCK > ACE_Cached_Fixed_Allocator < ACE_LOCK >::ACE_Cached_Fixed_Allocator(size_t n_size, size_t n_chunks):n_size_(n_size), n_chunks_(n_chunks), free_list_(ACE_PURE_FREE_LIST),
-pool_
-(0)
+template < class ACE_LOCK > ACE_Cached_Fixed_Allocator < ACE_LOCK >::ACE_Cached_Fixed_Allocator(size_t n_size,
+												size_t
+												n_chunks):n_size_(n_size),
+n_chunks_(n_chunks), free_list_(ACE_PURE_FREE_LIST), pool_(0)
 {
-    ACE_NEW(pool_, char[n_chunks_ * n_size_]);
+    ACE_NEW(pool_, char [n_chunks_ * n_size_]);
 
     ACE_OS::memset(n_chunks_ * n_size_);
     for (size_t c = 0; c < n_chunks_; c++)
@@ -295,10 +296,10 @@ pool_
 
 template < class ACE_LOCK > ACE_Cached_Fixed_Allocator < ACE_LOCK >::~ACE_Cached_Fixed_Allocator(void)
 {
-    delete[]pool_;
+    delete [] pool_;
 }
 
-template < class ACE_LOCK > class ACE_Expandable_Cached_Fixed_Allocator:public ACE_New_Allocator
+template < class ACE_LOCK > class ACE_Expandable_Cached_Fixed_Allocator : public ACE_New_Allocator
 {
     // = TITLE
     //   Create a cached memory poll with <n_chunks> chunks each with
@@ -310,7 +311,7 @@ template < class ACE_LOCK > class ACE_Expandable_Cached_Fixed_Allocator:public A
     //   fixed-sized classes.
     //   Note, this class does NOT free up memory segments when
     //   they become unused (but it does when the class is destructed).
-  public:
+public:
     ACE_Expandable_Cached_Fixed_Allocator(size_t n_size, size_t n_chunks);
 
     ~ACE_Expandable_Cached_Fixed_Allocator(void);
@@ -341,29 +342,28 @@ template < class ACE_LOCK > class ACE_Expandable_Cached_Fixed_Allocator:public A
 
     // Amount of used chunks so far
 
-  private:
-    size_t n_size_;
+private:
+      size_t n_size_;
     // Size of each element
 
     size_t n_chunks_;
 
     // How many chunks per segment
 
-    ACE_Locked_Free_List < ACE_Cached_Mem_Pool_Node < void *>, ACE_LOCK > free_list_;
+      ACE_Locked_Free_List < ACE_Cached_Mem_Pool_Node < void * >, ACE_LOCK > free_list_;
 
     // Maintain a cached memory free list.
 
-    ACE_Array_Base < char *>pool_;
+      ACE_Array_Base < char * > pool_;
 
     // remember how we allocate the memory in the first place so
     // we can clear things up later.
 };
 
-
 template < class ACE_LOCK > ACE_INLINE void ACE_Expandable_Cached_Fixed_Allocator < ACE_LOCK >::free(void *ptr)
 {
     ACE_OS::memset(ptr, 0, n_size_);
-    this->free_list_.add(static_cast < ACE_Cached_Mem_Pool_Node < void *>*>(ptr));
+    this->free_list_.add(static_cast < ACE_Cached_Mem_Pool_Node < void * > * > (ptr));
 }
 
 template < class ACE_LOCK > ACE_INLINE size_t ACE_Expandable_Cached_Fixed_Allocator < ACE_LOCK >::size() const
@@ -386,17 +386,16 @@ template < class ACE_LOCK > ACE_INLINE size_t ACE_Expandable_Cached_Fixed_Alloca
     return size() - free_list_.size();
 }
 
-
-template < class ACE_LOCK > ACE_Expandable_Cached_Fixed_Allocator < ACE_LOCK >::ACE_Expandable_Cached_Fixed_Allocator(size_t n_size, size_t n_chunks):n_size_(n_size), n_chunks_(n_chunks), free_list_(ACE_PURE_FREE_LIST),
-pool_
-(1)
+template < class ACE_LOCK > ACE_Expandable_Cached_Fixed_Allocator <
+    ACE_LOCK >::ACE_Expandable_Cached_Fixed_Allocator(size_t n_size, size_t n_chunks) : n_size_(n_size), n_chunks_(n_chunks),
+free_list_(ACE_PURE_FREE_LIST), pool_(1)
 {
     char *temp;
-    ACE_NEW(temp, char[n_chunks_ * n_size_]);
+    ACE_NEW(temp, char [n_chunks_ * n_size_]);
 
     if (pool_.set(temp, 0) < 0)
     {
-	delete[]temp;
+	delete [] temp;
 	return;
     }
 
@@ -404,7 +403,7 @@ pool_
     for (size_t c = 0; c < n_chunks_; c++)
     {
 	void *placement = temp + c * n_size_;
-	this->free_list_.add(static_cast < ACE_Cached_Mem_Pool_Node < void *>*>(placement));
+	this->free_list_.add(static_cast < ACE_Cached_Mem_Pool_Node < void * > * > (placement));
     }
     // Put into free list using placement contructor, no real memory
     // allocation in the above <new>.
@@ -413,7 +412,7 @@ pool_
 template < class ACE_LOCK > ACE_Expandable_Cached_Fixed_Allocator < ACE_LOCK >::~ACE_Expandable_Cached_Fixed_Allocator(void)
 {
     for (size_t c = 0; c < pool_.size(); c++)
-	delete[]this->pool_[c];
+	delete [] this->pool_[c];
 }
 
 template < class ACE_LOCK > void *ACE_Expandable_Cached_Fixed_Allocator < ACE_LOCK >::malloc(size_t nbytes)
@@ -426,12 +425,12 @@ template < class ACE_LOCK > void *ACE_Expandable_Cached_Fixed_Allocator < ACE_LO
     if (!this->free_list_.size())
     {
 	char *temp = NULL;
-	ACE_NEW_RETURN(temp, char[n_chunks_ * n_size_], 0);
+	ACE_NEW_RETURN(temp, char [n_chunks_ * n_size_], 0);
 
 	pool_.max_size(pool_.max_size() + 1);
 	if (pool_.set(temp, pool_.size() - 1) < 0)
 	{
-	    delete[]temp;
+	    delete [] temp;
 	    return NULL;
 	}
 	// We could not add to the map ...
@@ -440,7 +439,7 @@ template < class ACE_LOCK > void *ACE_Expandable_Cached_Fixed_Allocator < ACE_LO
 	for (size_t c = 0; c < n_chunks_; c++)
 	{
 	    void *placement = temp + c * n_size_;
-	    this->free_list_.add(static_cast < ACE_Cached_Mem_Pool_Node < void *>*>(placement));
+	    this->free_list_.add(static_cast < ACE_Cached_Mem_Pool_Node < void * > * > (placement));
 	}
 	// Put into free list using placement contructor, no real memory
 	// allocation in the above <new>.

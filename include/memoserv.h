@@ -27,6 +27,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.57  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -170,7 +173,6 @@ RCSID(memoserv_h, "@(#) $Id$");
 **
 ** ========================================================== */
 
-
 #include "base.h"
 
 struct MemoList_CUR;
@@ -178,7 +180,7 @@ struct NewsList_CUR;
 struct ESP_MemoInfo;
 struct EPO_MemoInfo;
 
-class Memo_t:public mUserDef, public SXP::IPersistObj
+class Memo_t : public mUserDef, public SXP::IPersistObj
 {
     friend list < Memo_t > CreateMemoEntry(MemoList_CUR * ml);
     friend list < Memo_t > ESP_CreateMemoEntry(ESP_MemoInfo * ml, char *nick);
@@ -194,11 +196,11 @@ class Memo_t:public mUserDef, public SXP::IPersistObj
     unsigned long i_File;
 
     static SXP::Tag tag_Memo_t, tag_Nick, tag_Sender, tag_Time, tag_Text, tag_Read, tag_File, tag_UserDef;
-  public:
+public:
     Memo_t()
     {
     }
-    Memo_t(const Memo_t & in):mUserDef(in), SXP::IPersistObj(in)
+    Memo_t(const Memo_t & in) : mUserDef(in), SXP::IPersistObj(in)
     {
 	*this = in;
     }
@@ -207,7 +209,7 @@ class Memo_t:public mUserDef, public SXP::IPersistObj
     ~Memo_t()
     {
     }
-    Memo_t & operator=(const Memo_t & in);
+    Memo_t &operator=(const Memo_t & in);
     bool operator==(const Memo_t & in) const
     {
 	return (i_Sender == in.i_Sender && i_Time == in.i_Time);
@@ -235,7 +237,7 @@ class Memo_t:public mUserDef, public SXP::IPersistObj
     void Read();
     void Unread();
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_Memo_t;
     }
@@ -248,7 +250,7 @@ class Memo_t:public mUserDef, public SXP::IPersistObj
     void DumpE() const;
 };
 
-class News_t:public mUserDef, public SXP::IPersistObj
+class News_t : public mUserDef, public SXP::IPersistObj
 {
     friend list < News_t > CreateNewsEntry(NewsList_CUR * nl);
     friend list < News_t > ESP_CreateNewsEntry(ESP_MemoInfo * nl, char *chan);
@@ -264,11 +266,11 @@ class News_t:public mUserDef, public SXP::IPersistObj
     set < mstring > i_Read;
 
     static SXP::Tag tag_News_t, tag_Channel, tag_Sender, tag_Time, tag_Text, tag_set_NoExpire, tag_Read, tag_UserDef;
-  public:
+public:
     News_t()
     {
     }
-    News_t(const News_t & in):mUserDef(in), SXP::IPersistObj(in)
+    News_t(const News_t & in) : mUserDef(in), SXP::IPersistObj(in)
     {
 	*this = in;
     }
@@ -277,7 +279,7 @@ class News_t:public mUserDef, public SXP::IPersistObj
     ~News_t()
     {
     }
-    News_t & operator=(const News_t & in);
+    News_t &operator=(const News_t & in);
     bool operator==(const News_t & in) const
     {
 	return (i_Sender == in.i_Sender && i_Time == in.i_Time);
@@ -305,7 +307,7 @@ class News_t:public mUserDef, public SXP::IPersistObj
     void Read(const mstring & name);
     void Unread(const mstring & name);
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_News_t;
     }
@@ -318,11 +320,11 @@ class News_t:public mUserDef, public SXP::IPersistObj
     void DumpE() const;
 };
 
-class MemoServ:public mBase, public SXP::IPersistObj
+class MemoServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend class Nick_Stored_t;
-  private:
+private:
     unsigned long news_expire;
     unsigned long inflight;
     unsigned long delay;
@@ -330,23 +332,23 @@ class MemoServ:public mBase, public SXP::IPersistObj
     unsigned long filesize;
     static SXP::Tag tag_MemoServ;
 
-    vector < Memo_t * >m_array;
-    vector < News_t * >n_array;
+    vector < Memo_t * > m_array;
+    vector < News_t * > n_array;
 
-  public:
+public:
     typedef list < Memo_t > nick_memo_t;
     typedef map < mstring, nick_memo_t > nick_t;
     typedef list < News_t > channel_news_t;
     typedef map < mstring, channel_news_t > channel_t;
 
-  private:
+private:
     nick_t nick;
     channel_t channel;
 
     void NickMemoConvert(const mstring & source, const mstring & target);
     void AddCommands();
     void RemCommands();
-  public:
+public:
     MemoServ();
     ~MemoServ()
     {
@@ -368,7 +370,7 @@ class MemoServ:public mBase, public SXP::IPersistObj
 	unsigned long i_Continue;
 	unsigned long i_File;
 	unsigned long i_Get;
-      public:
+   public:
 	stats_t()
 	{
 	    clear();
@@ -435,17 +437,17 @@ class MemoServ:public mBase, public SXP::IPersistObj
     stats;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddNick(nick_memo_t in) throw(E_MemoServ_Nick);
-    void AddNickMemo(Memo_t * in) throw(E_MemoServ_Nick);
-    nick_memo_t & GetNick(const mstring & in) const throw(E_MemoServ_Nick);
-    Memo_t & GetNickMemo(const mstring & in, const size_t num) const throw(E_MemoServ_Nick);
-    void RemNick(const mstring & in) throw(E_MemoServ_Nick);
-    void RemNickMemo(const mstring & in, const size_t num) throw(E_MemoServ_Nick);
+    void AddNick(nick_memo_t in) throw (E_MemoServ_Nick);
+    void AddNickMemo(Memo_t * in) throw (E_MemoServ_Nick);
+    nick_memo_t &GetNick(const mstring & in) const throw (E_MemoServ_Nick);
+    Memo_t &GetNickMemo(const mstring & in, const size_t num) const throw (E_MemoServ_Nick);
+    void RemNick(const mstring & in) throw (E_MemoServ_Nick);
+    void RemNickMemo(const mstring & in, const size_t num) throw (E_MemoServ_Nick);
 #else
     void AddNick(nick_memo_t in);
     void AddNickMemo(Memo_t * in);
-    nick_memo_t & GetNick(const mstring & in) const;
-    Memo_t & GetNickMemo(const mstring & in, const size_t num) const;
+    nick_memo_t &GetNick(const mstring & in) const;
+    Memo_t &GetNickMemo(const mstring & in, const size_t num) const;
     void RemNick(const mstring & in);
     void RemNickMemo(const mstring & in, const size_t num);
 #endif
@@ -457,7 +459,7 @@ class MemoServ:public mBase, public SXP::IPersistObj
     {
 	return nick.end();
     }
-    nick_t::const_iterator NickBegin()const
+    nick_t::const_iterator NickBegin() const
     {
 	return nick.begin();
     }
@@ -494,17 +496,17 @@ class MemoServ:public mBase, public SXP::IPersistObj
     bool IsNickMemo(const mstring & in, const size_t num) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddChannel(channel_news_t in) throw(E_MemoServ_Channel);
-    void AddChannelNews(News_t * in) throw(E_MemoServ_Channel);
-    channel_news_t & GetChannel(const mstring & in) const throw(E_MemoServ_Channel);
-    News_t & GetChannelNews(const mstring & in, const size_t num) const throw(E_MemoServ_Channel);
-    void RemChannel(const mstring & in) throw(E_MemoServ_Channel);
-    void RemChannelNews(const mstring & in, const size_t num) throw(E_MemoServ_Channel);
+    void AddChannel(channel_news_t in) throw (E_MemoServ_Channel);
+    void AddChannelNews(News_t * in) throw (E_MemoServ_Channel);
+    channel_news_t &GetChannel(const mstring & in) const throw (E_MemoServ_Channel);
+    News_t &GetChannelNews(const mstring & in, const size_t num) const throw (E_MemoServ_Channel);
+    void RemChannel(const mstring & in) throw (E_MemoServ_Channel);
+    void RemChannelNews(const mstring & in, const size_t num) throw (E_MemoServ_Channel);
 #else
     void AddChannel(channel_news_t in);
     void AddChannelNews(News_t * in);
-    channel_news_t & GetChannel(const mstring & in) const;
-    News_t & GetChannelNews(const mstring & in, const size_t num) const;
+    channel_news_t &GetChannel(const mstring & in) const;
+    News_t &GetChannelNews(const mstring & in, const size_t num) const;
     void RemChannel(const mstring & in);
     void RemChannelNews(const mstring & in, const size_t num);
 #endif
@@ -516,7 +518,7 @@ class MemoServ:public mBase, public SXP::IPersistObj
     {
 	return channel.end();
     }
-    channel_t::const_iterator ChannelBegin()const
+    channel_t::const_iterator ChannelBegin() const
     {
 	return channel.begin();
     }
@@ -601,7 +603,7 @@ class MemoServ:public mBase, public SXP::IPersistObj
 
     static void do_set_NoExpire(const mstring & mynick, const mstring & source, const mstring & params);
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_MemoServ;
     }

@@ -28,6 +28,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.111  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -345,14 +348,14 @@ static MemoServ::channel_news_t GLOB_channel_news_t;
 static News_t GLOB_News_t;
 #endif
 
-Memo_t::Memo_t(const mstring & nick, const mstring & sender, const mstring & text, const unsigned long file):i_Nick(nick),
+Memo_t::Memo_t(const mstring & nick, const mstring & sender, const mstring & text, const unsigned long file) : i_Nick(nick),
 i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text), i_Read(false), i_File(file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
     DumpE();
 }
 
-Memo_t & Memo_t::operator=(const Memo_t & in)
+Memo_t &Memo_t::operator=(const Memo_t & in)
 {
     FT("Memo_t::operator=", ("(const Memo_t &) in"));
     i_Nick = in.i_Nick;
@@ -456,14 +459,15 @@ void Memo_t::DumpE() const
     ME(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File, i_UserDef.size()));
 }
 
-News_t::News_t(const mstring & channel, const mstring & sender, const mstring & text, const bool noexpire):i_Channel(channel),
-i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text), i_NoExpire(noexpire)
+News_t::News_t(const mstring & channel, const mstring & sender, const mstring & text,
+	       const bool noexpire) : i_Channel(channel), i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text),
+i_NoExpire(noexpire)
 {
     FT("News_t::News_t", (channel, sender, text));
     DumpE();
 }
 
-News_t & News_t::operator=(const News_t & in)
+News_t &News_t::operator=(const News_t & in)
 {
     FT("News_t::operator=", ("(const News_t &) in"));
     i_Channel = in.i_Channel;
@@ -838,13 +842,13 @@ MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const
 #endif
     }
 
-    NRET(MemoServ::nick_memo_t &, const_cast < MemoServ::nick_memo_t & >(iter->second));
+    NRET(MemoServ::nick_memo_t &, const_cast < MemoServ::nick_memo_t & > (iter->second));
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-Memo_t & MemoServ::GetNickMemo(const mstring & in, const size_t num) const throw(E_MemoServ_Nick)
+Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const throw(E_MemoServ_Nick)
 #else
-Memo_t & MemoServ::GetNickMemo(const mstring & in, const size_t num) const
+Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
 #endif
 {
     FT("MemoServ::GetNickMemo", (in, num));
@@ -887,7 +891,7 @@ Memo_t & MemoServ::GetNickMemo(const mstring & in, const size_t num) const
     }
 
     /* NRET(Memo_t &, const_cast<Memo_t &>(**iter)); */
-    NRET(Memo_t &, const_cast < Memo_t & >(*iter));
+    NRET(Memo_t &, const_cast < Memo_t & > (*iter));
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1118,13 +1122,13 @@ MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const
 #endif
     }
 
-    NRET(MemoServ::channel_news_t &, const_cast < MemoServ::channel_news_t & >(iter->second));
+    NRET(MemoServ::channel_news_t &, const_cast < MemoServ::channel_news_t & > (iter->second));
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-News_t & MemoServ::GetChannelNews(const mstring & in, const size_t num) const throw(E_MemoServ_Channel)
+News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const throw(E_MemoServ_Channel)
 #else
-News_t & MemoServ::GetChannelNews(const mstring & in, const size_t num) const
+News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
 #endif
 {
     FT("MemoServ::GetChannelNews", (in, num));
@@ -1167,7 +1171,7 @@ News_t & MemoServ::GetChannelNews(const mstring & in, const size_t num) const
     }
 
     /* NRET(News_t &, const_cast<News_t &>(**iter)); */
-    NRET(News_t &, const_cast < News_t & >(*iter));
+    NRET(News_t &, const_cast < News_t & > (*iter));
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1445,7 +1449,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	}
 	else
 	{
-	    vector < int >numbers = ParseNumbers(what);
+	    vector < int > numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j = 1;
 	    mstring output;
@@ -1460,7 +1464,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > static_cast < int >(newslist.size()))
+		else if (numbers[i] > static_cast < int > (newslist.size()))
 		    triedabove = true;
 		else
 		{
@@ -1575,7 +1579,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	}
 	else
 	{
-	    vector < int >numbers = ParseNumbers(what);
+	    vector < int > numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j = 1;
 	    bool triedabove = false, nonnumeric = false;
@@ -1591,7 +1595,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > static_cast < int >(memolist.size()))
+		else if (numbers[i] > static_cast < int > (memolist.size()))
 		    triedabove = true;
 		else
 		{
@@ -1722,7 +1726,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	}
 	else
 	{
-	    vector < int >numbers = ParseNumbers(what);
+	    vector < int > numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j = 1;
 	    bool triedabove = false, nonnumeric = false;
@@ -1738,7 +1742,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > static_cast < int >(newslist.size()))
+		else if (numbers[i] > static_cast < int > (newslist.size()))
 		    triedabove = true;
 		else
 		{
@@ -1802,7 +1806,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	}
 	else
 	{
-	    vector < int >numbers = ParseNumbers(what);
+	    vector < int > numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j = 1;
 	    bool triedabove = false, nonnumeric = false;
@@ -1818,7 +1822,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > static_cast < int >(memolist.size()))
+		else if (numbers[i] > static_cast < int > (memolist.size()))
 		    triedabove = true;
 		else
 		{
@@ -1887,7 +1891,7 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
 	return;
     }
 
-    vector < int >numbers = ParseNumbers(what);
+    vector < int > numbers = ParseNumbers(what);
     unsigned int i;
     int j = 1;
     bool triedabove = false, nonnumeric = false, nonfiles = false;
@@ -1904,7 +1908,7 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
     {
 	if (numbers[i] <= 0)
 	    nonnumeric = true;
-	else if (numbers[i] > static_cast < int >(memolist.size()))
+	else if (numbers[i] > static_cast < int > (memolist.size()))
 	    triedabove = true;
 	else
 	{
@@ -2064,14 +2068,14 @@ void MemoServ::do_List(const mstring & mynick, const mstring & source, const mst
 	    if (iter->File() && Magick::instance().filesys.Exists(FileMap::MemoAttach, iter->File()))
 	    {
 		SEND(mynick, source, "MS_COMMAND/MEMO_LIST_FILE",
-		     (iter->IsRead()? ' ' : '*', i++, iter->Sender(), iter->Time().Ago(), output,
+		     (iter->IsRead() ? ' ' : '*', i++, iter->Sender(), iter->Time().Ago(), output,
 		      Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
 		      ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 	    }
 	    else
 	    {
 		SEND(mynick, source, "MS_COMMAND/MEMO_LIST",
-		     (iter->IsRead()? ' ' : '*', i++, iter->Sender(), iter->Time().Ago(), output));
+		     (iter->IsRead() ? ' ' : '*', i++, iter->Sender(), iter->Time().Ago(), output));
 	    }
 	}
     }
@@ -2657,8 +2661,8 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	     * that 5 has become 3 and 7 has become 5.
 	     */
 	    int j = 1, adjust = 0;
-	    vector < int >numbers1 = ParseNumbers(what);
-	    set < int >numbers;
+	    vector < int > numbers1 = ParseNumbers(what);
+	    set < int > numbers;
 	    set < int >::iterator ni;
 
 	    for (i = 0; i < numbers1.size(); i++)
@@ -2677,7 +2681,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 		{
 		    if (*ni - adjust <= 0)
 			nonnumeric = true;
-		    else if (*ni - adjust > static_cast < int >(newslist.size()))
+		    else if (*ni - adjust > static_cast < int > (newslist.size()))
 			triedabove = true;
 		    else
 		    {
@@ -2692,15 +2696,15 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 			    {
 				if (!denied.empty())
 				    denied << ", ";
-				denied << *ni;
+				denied << * ni;
 			    }
 			    else
 			    {
 				if (!output.empty())
 				    output << ", ";
-				output << *ni;
+				output << * ni;
 				Magick::instance().memoserv.RemChannelNews(who, j - 1);
-				if (adjust + 2 == static_cast < int >(amt))
+				if (adjust + 2 == static_cast < int > (amt))
 				{
 				    if (numbers.size() > amt)
 					triedabove = true;
@@ -2775,8 +2779,8 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	     * that 5 has become 3 and 7 has become 5.
 	     */
 	    int j = 1, adjust = 0;
-	    vector < int >numbers1 = ParseNumbers(what);
-	    set < int >numbers;
+	    vector < int > numbers1 = ParseNumbers(what);
+	    set < int > numbers;
 	    set < int >::iterator ni;
 
 	    for (i = 0; i < numbers1.size(); i++)
@@ -2794,7 +2798,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 		{
 		    if (*ni - adjust <= 0)
 			nonnumeric = true;
-		    else if (*ni - adjust > static_cast < int >(memolist.size()))
+		    else if (*ni - adjust > static_cast < int > (memolist.size()))
 			triedabove = true;
 		    else
 		    {
@@ -2807,11 +2811,11 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 			{
 			    if (!output.empty())
 				output << ", ";
-			    output << *ni;
+			    output << * ni;
 			    if (iter->File())
 				Magick::instance().filesys.EraseFile(FileMap::MemoAttach, iter->File());
 			    Magick::instance().memoserv.RemNickMemo(who, j - 1);
-			    if (adjust + 2 == static_cast < int >(amt))
+			    if (adjust + 2 == static_cast < int > (amt))
 			    {
 				if (numbers.size() > amt)
 				    triedabove = true;
@@ -3097,19 +3101,19 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    }
 	    SEND(mynick, source, "MS_COMMAND/CS_SET_ALL",
 		 (Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), who,
-		  (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+		  (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
 
 	    LOG(LM_DEBUG, "MEMOSERV/SET_ALL",
 		(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		 Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), who,
-		 (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+		 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
 	}
 	else
 	{
 	    unsigned int i;
 	    int j = 1, count = 0;
-	    vector < int >numbers1 = ParseNumbers(what);
-	    set < int >numbers;
+	    vector < int > numbers1 = ParseNumbers(what);
+	    set < int > numbers;
 	    set < int >::iterator ni;
 
 	    for (i = 0; i < numbers1.size(); i++)
@@ -3128,7 +3132,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 		{
 		    if (*ni <= 0)
 			nonnumeric = true;
-		    else if (*ni > static_cast < int >(newslist.size()))
+		    else if (*ni > static_cast < int > (newslist.size()))
 			triedabove = true;
 		    else
 		    {
@@ -3152,13 +3156,14 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    {
 		SEND(mynick, source, "MS_COMMAND/CS_SET",
 		     (Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), output, who,
-		      (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().
+		      (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().
 		       getMessage("VALS/OFF"))));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/SET",
 		    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		     Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), count, who,
-		     (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+		     (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().
+		      getMessage("VALS/OFF"))));
 	    }
 	    if (nonnumeric)
 		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
@@ -3286,7 +3291,7 @@ SXP::Tag News_t::tag_UserDef("UserDef");
 
 void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("Memo_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -3301,7 +3306,7 @@ void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("Memo_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -3321,7 +3326,7 @@ void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("Memo_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
@@ -3345,7 +3350,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 
 void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("News_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -3360,7 +3365,7 @@ void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("News_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -3386,7 +3391,7 @@ void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("News_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
@@ -3445,8 +3450,8 @@ void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
-    static_cast < void >(pElement);
+    static_cast < void > (pIn);
+    static_cast < void > (pElement);
 
     FT("MemoServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
@@ -3454,7 +3459,7 @@ void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("MemoServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this

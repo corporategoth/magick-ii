@@ -27,6 +27,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.75  2002/01/12 14:42:07  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -205,22 +208,23 @@ RCSID(chanserv_h, "@(#) $Id$");
 **
 ** ========================================================== */
 
-
 #include "base.h"
 #include "ircsocket.h"
 
-class Chan_Live_t:public mUserDef, public ref_class
+class Chan_Live_t : public mUserDef, public ref_class
 {
     friend class Nick_Live_t;
+    friend class Part_Handler;
     friend void EventTask::do_check(mDateTime & synctime);
     friend void EventTask::do_modes(mDateTime & synctime);
-    friend class Part_Handler;
 
     mstring i_Name;
     mDateTime i_Creation_Time;
+
     // below: .first == op .second == halfop .third == voice
-      map < mstring, triplet < bool, bool, bool > >squit;
-      map < mstring, triplet < bool, bool, bool > >users;
+      map < mstring, triplet < bool, bool, bool > > squit;
+      map < mstring, triplet < bool, bool, bool > > users;
+
       map < mstring, mDateTime > bans;
       map < mstring, mDateTime > exempt;
     mstring i_Topic;
@@ -231,14 +235,16 @@ class Chan_Live_t:public mUserDef, public ref_class
     mstring i_Key;
     mstring p_modes_on;
     mstring p_modes_off;
+
       vector < mstring > p_modes_on_params;
       vector < mstring > p_modes_off_params;
     long ph_timer;
+
       map < mstring, mDateTime > recent_parts;
 
-    static bool ModeExists(const mstring & mode, const vector < mstring > &mode_params, const bool change, const char reqmode,
+    static bool ModeExists(const mstring & mode, const vector < mstring > & mode_params, const bool change, const char reqmode,
 			   const mstring & reqparam = "");
-    static void RemoveMode(mstring & mode, vector < mstring > &mode_params, const bool change, const char reqmode,
+    static void RemoveMode(mstring & mode, vector < mstring > & mode_params, const bool change, const char reqmode,
 			   const mstring & reqparam = "");
 
     bool Join(const mstring & nick);	// Called by Nick_Live_t
@@ -248,9 +254,9 @@ class Chan_Live_t:public mUserDef, public ref_class
     unsigned int Kick(const mstring & nick, const mstring & kicker);	// Called by Nick_Live_t
     void ChgNick(const mstring & nick, const mstring & newnick);	// Called by Nick_Live_t
 
-  public:
+public:
       Chan_Live_t();
-      Chan_Live_t(const Chan_Live_t & in):mUserDef(in), ref_class()
+      Chan_Live_t(const Chan_Live_t & in) : mUserDef(in), ref_class()
     {
 	*this = in;
     }
@@ -259,7 +265,7 @@ class Chan_Live_t:public mUserDef, public ref_class
     ~Chan_Live_t()
     {
     }
-    Chan_Live_t & operator=(const Chan_Live_t & in);
+    Chan_Live_t &operator=(const Chan_Live_t & in);
     bool operator==(const Chan_Live_t & in) const
     {
 	return (i_Name == in.i_Name);
@@ -331,7 +337,7 @@ struct ChanInfo_CUR;
 struct ESP_ChannelInfo;
 struct EPO_ChannelInfo;
 
-class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
+class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
     friend void Nick_Live_t::Join(const mstring & chan);
     friend set < mstring > Nick_Live_t::Name(const mstring & chan);
@@ -352,7 +358,7 @@ class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     mstring i_Email;
     mstring i_URL;
     mstring i_Comment;
-    map < mstring, unsigned int >failed_passwds;
+    map < mstring, unsigned int > failed_passwds;
 
     mstring i_Topic;
     mstring i_Topic_Setter;
@@ -410,17 +416,17 @@ class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     mstring i_Suspend_By;
     mDateTime i_Suspend_Time;
 
-    set < entlist_val_t < long > >i_Level;
-    set < entlist_val_t < long > >i_Access;
-    set < entlist_val_t < mstring > >i_Akick;
+    set < entlist_val_t < long > > i_Level;
+    set < entlist_val_t < long > > i_Access;
+    set < entlist_val_t < mstring > > i_Akick;
     list < entlist_t > i_Greet;
     list < entlist_t > i_Message;
 
-    vector < entlist_val_t < long >*>level_array;
-    vector < entlist_val_t < long >*>access_array;
-    vector < entlist_val_t < mstring > *>akick_array;
-    vector < entlist_t * >greet_array;
-    vector < entlist_t * >message_array;
+    vector < entlist_val_t < long > * > level_array;
+    vector < entlist_val_t < long > * > access_array;
+    vector < entlist_val_t < mstring > * > akick_array;
+    vector < entlist_t * > greet_array;
+    vector < entlist_t * > message_array;
 
     static SXP::Tag tag_Chan_Stored_t, tag_Name, tag_RegTime, tag_LastUsed, tag_Founder, tag_CoFounder, tag_Description,
 	tag_Password, tag_Email, tag_URL, tag_Comment, tag_Topic, tag_Topic_Setter, tag_Topic_Set_Time, tag_set_Mlock_On,
@@ -443,9 +449,9 @@ class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     void Mode(const mstring & setter, const mstring & mode);
     bool DoRevenge(const mstring & type, const mstring & target, const mstring & source);
     void defaults();
-  public:
+public:
     Chan_Stored_t();
-    Chan_Stored_t(const Chan_Stored_t & in):mUserDef(in), SXP::IPersistObj(in), ref_class()
+    Chan_Stored_t(const Chan_Stored_t & in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
     {
 	*this = in;
     }
@@ -455,7 +461,7 @@ class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     ~Chan_Stored_t()
     {
     }
-    Chan_Stored_t & operator=(const Chan_Stored_t & in);
+    Chan_Stored_t &operator=(const Chan_Stored_t & in);
     bool operator==(const Chan_Stored_t & in) const
     {
 	return (i_Name == in.i_Name);
@@ -686,7 +692,7 @@ class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     bool Message_find(const unsigned int num);
     entlist_i Message;
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_Chan_Stored_t;
     }
@@ -699,12 +705,12 @@ class Chan_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     void DumpE() const;
 };
 
-class ChanServ:public mBase, public SXP::IPersistObj
+class ChanServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend int EventTask::svc();
     friend int IrcSvcHandler::handle_close(ACE_HANDLE, ACE_Reactor_Mask);
-  private:
+private:
 
     set < mstring > Revenge_Levels;
 
@@ -719,7 +725,7 @@ class ChanServ:public mBase, public SXP::IPersistObj
     unsigned long chankeep;	// Time to keep channel after AKICK
     long level_min;		// Minimum access level
     long level_max;		// Maximum access level
-    map < mstring, long >lvl;
+    map < mstring, long > lvl;
 
     class def_t
     {
@@ -765,20 +771,20 @@ class ChanServ:public mBase, public SXP::IPersistObj
 
     static SXP::Tag tag_ChanServ;
 
-  public:
-    typedef map < mstring, Chan_Stored_t * >stored_t;
-    typedef map < mstring, Chan_Live_t * >live_t;
+public:
+    typedef map < mstring, Chan_Stored_t * > stored_t;
+    typedef map < mstring, Chan_Live_t * > live_t;
 
-  private:
+private:
 
-    vector < Chan_Stored_t * >cs_array;
+    vector < Chan_Stored_t * > cs_array;
     stored_t stored;
     live_t live;
 
     void AddCommands();
     void RemCommands();
 
-  public:
+public:
     ChanServ();
     ~ChanServ()
     {
@@ -818,7 +824,7 @@ class ChanServ:public mBase, public SXP::IPersistObj
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
 
-      public:
+   public:
 	stats_t()
 	{
 	    clear();
@@ -1111,29 +1117,29 @@ class ChanServ:public mBase, public SXP::IPersistObj
     }
     long LVL(const mstring & level) const;
     bool IsLVL(const mstring & level) const;
-    vector < mstring > LVL()const;
+    vector < mstring > LVL() const;
 
     Part_Handler ph;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddStored(Chan_Stored_t * in) throw(E_ChanServ_Stored);
-    void AddStored(const Chan_Stored_t & in) throw(E_ChanServ_Stored)
+    void AddStored(Chan_Stored_t * in) throw (E_ChanServ_Stored);
+    void AddStored(const Chan_Stored_t & in) throw (E_ChanServ_Stored)
     {
 	AddStored(new Chan_Stored_t(in));
     }
-    void AddStored(const map_entry < Chan_Stored_t > &in) throw(E_ChanServ_Stored)
+    void AddStored(const map_entry < Chan_Stored_t > & in) throw (E_ChanServ_Stored)
     {
 	AddStored(in.entry());
     }
-    map_entry < Chan_Stored_t > GetStored(const mstring & in) const throw(E_ChanServ_Stored);
-    void RemStored(const mstring & in) throw(E_ChanServ_Stored);
+    map_entry < Chan_Stored_t > GetStored(const mstring & in) const throw (E_ChanServ_Stored);
+    void RemStored(const mstring & in) throw (E_ChanServ_Stored);
 #else
     void AddStored(Chan_Stored_t * in);
     void AddStored(const Chan_Stored_t & in)
     {
 	AddStored(new Chan_Stored_t(in));
     }
-    void AddStored(const map_entry < Chan_Stored_t > &in)
+    void AddStored(const map_entry < Chan_Stored_t > & in)
     {
 	AddStored(in.entry());
     }
@@ -1148,7 +1154,7 @@ class ChanServ:public mBase, public SXP::IPersistObj
     {
 	return stored.end();
     }
-    stored_t::const_iterator StoredBegin()const
+    stored_t::const_iterator StoredBegin() const
     {
 	return stored.begin();
     }
@@ -1163,24 +1169,24 @@ class ChanServ:public mBase, public SXP::IPersistObj
     bool IsStored(const mstring & in) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddLive(Chan_Live_t * in) throw(E_ChanServ_Live);
-    void AddLive(const Chan_Live_t & in) throw(E_ChanServ_Live)
+    void AddLive(Chan_Live_t * in) throw (E_ChanServ_Live);
+    void AddLive(const Chan_Live_t & in) throw (E_ChanServ_Live)
     {
 	AddLive(new Chan_Live_t(in));
     }
-    void AddLive(const map_entry < Chan_Live_t > &in) throw(E_ChanServ_Live)
+    void AddLive(const map_entry < Chan_Live_t > & in) throw (E_ChanServ_Live)
     {
 	AddLive(in.entry());
     }
-    map_entry < Chan_Live_t > GetLive(const mstring & in) const throw(E_ChanServ_Live);
-    void RemLive(const mstring & in) throw(E_ChanServ_Live);
+    map_entry < Chan_Live_t > GetLive(const mstring & in) const throw (E_ChanServ_Live);
+    void RemLive(const mstring & in) throw (E_ChanServ_Live);
 #else
     void AddLive(Chan_Live_t * in);
     void AddLive(const Chan_Live_t & in)
     {
 	AddLive(new Chan_Live_t(in));
     }
-    void AddLive(const map_entry < Chan_Live_t > &in)
+    void AddLive(const map_entry < Chan_Live_t > & in)
     {
 	AddLive(in.entry());
     }
@@ -1195,7 +1201,7 @@ class ChanServ:public mBase, public SXP::IPersistObj
     {
 	return live.end();
     }
-    live_t::const_iterator LiveBegin()const
+    live_t::const_iterator LiveBegin() const
     {
 	return live.begin();
     }
@@ -1320,7 +1326,7 @@ class ChanServ:public mBase, public SXP::IPersistObj
     static void do_unlock_Join(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_Revenge(const mstring & mynick, const mstring & source, const mstring & params);
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_ChanServ;
     }

@@ -27,6 +27,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.79  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -229,8 +232,7 @@ RCSID(nickserv_h, "@(#) $Id$");
 #include "base.h"
 #include "ircsocket.h"
 
-
-class Nick_Live_t:public mUserDef, public ref_class
+class Nick_Live_t : public mUserDef, public ref_class
 {
     mstring i_Name;
     mDateTime i_Signon_Time;
@@ -255,8 +257,8 @@ class Nick_Live_t:public mUserDef, public ref_class
     bool services;
     mDateTime last_nick_reg, last_chan_reg, last_memo;
 
-  public:
-      class InFlight_t
+public:
+    class InFlight_t
     {
 	friend class Nick_Live_t;
 	friend class DccXfer;
@@ -272,7 +274,7 @@ class Nick_Live_t:public mUserDef, public ref_class
 	mstring recipiant;
 	mstring text;
 
-	  InFlight_t(const mstring & name):nick(name)
+	  InFlight_t(const mstring & name) : nick(name)
 	{
 	    init();
 	}
@@ -280,10 +282,10 @@ class Nick_Live_t:public mUserDef, public ref_class
 	{
 	    init();
 	}
-	~InFlight_t();
+	 ~InFlight_t();
 
 	void ChgNick(const mstring & newnick);
-	InFlight_t & operator=(const InFlight_t & in);
+	InFlight_t &operator=(const InFlight_t & in);
 	void init();
 
 	// Called upon completion
@@ -316,7 +318,7 @@ class Nick_Live_t:public mUserDef, public ref_class
     InFlight;
 
     Nick_Live_t();
-    Nick_Live_t(const Nick_Live_t & in):mUserDef(in), ref_class()
+    Nick_Live_t(const Nick_Live_t & in) : mUserDef(in), ref_class()
     {
 	*this = in;
     }
@@ -327,7 +329,7 @@ class Nick_Live_t:public mUserDef, public ref_class
     ~Nick_Live_t()
     {
     }
-    Nick_Live_t & operator=(const Nick_Live_t & in);
+    Nick_Live_t &operator=(const Nick_Live_t & in);
     bool operator==(const Nick_Live_t & in) const
     {
 	return (i_Name == in.i_Name);
@@ -347,7 +349,7 @@ class Nick_Live_t:public mUserDef, public ref_class
     void Kick(const mstring & kicker, const mstring & channel);
     void Quit(const mstring & reason);
     bool IsInChan(const mstring & channel);
-    set < mstring > Channels()const;
+    set < mstring > Channels() const;
 
     // true if user ignored
     bool FloodTrigger();
@@ -425,7 +427,7 @@ struct ESP_NickInfo;
 struct EPO_NickAlias;
 struct EPO_NickCore;
 
-class Nick_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
+class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
     friend class Nick_Live_t;
     friend class NickServ;
@@ -495,12 +497,12 @@ class Nick_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
 
     static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime, tag_Password, tag_Email, tag_URL, tag_ICQ, tag_AIM,
 	tag_Description, tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure, tag_set_NoExpire, tag_set_NoMemo,
-	tag_set_Private, tag_set_PRIVMSG, tag_set_Language, tag_Forbidden, tag_lock_Protect, tag_lock_Secure, tag_lock_NoExpire,
-	tag_lock_NoMemo, tag_lock_Private, tag_lock_PRIVMSG, tag_lock_Language, tag_Picture, tag_Suspend_By, tag_Suspend_Time,
-	tag_LastSeenTime, tag_LastRealName, tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
-  public:
+	tag_set_Private, tag_set_PRIVMSG, tag_set_Language, tag_Forbidden, tag_lock_Protect, tag_lock_Secure,
+	tag_lock_NoExpire, tag_lock_NoMemo, tag_lock_Private, tag_lock_PRIVMSG, tag_lock_Language, tag_Picture, tag_Suspend_By,
+	tag_Suspend_Time, tag_LastSeenTime, tag_LastRealName, tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
+public:
     Nick_Stored_t();
-    Nick_Stored_t(const Nick_Stored_t & in):mUserDef(in), SXP::IPersistObj(in), ref_class()
+    Nick_Stored_t(const Nick_Stored_t & in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
     {
 	*this = in;
     }
@@ -510,7 +512,7 @@ class Nick_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     ~Nick_Stored_t()
     {
     }
-    Nick_Stored_t & operator=(const Nick_Stored_t & in);
+    Nick_Stored_t &operator=(const Nick_Stored_t & in);
     bool operator==(const Nick_Stored_t & in) const
     {
 	return (i_Name == in.i_Name);
@@ -631,7 +633,7 @@ class Nick_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
 
     size_t MyChannels() const;
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_Nick_Stored_t;
     }
@@ -644,17 +646,16 @@ class Nick_Stored_t:public mUserDef, public SXP::IPersistObj, public ref_class
     void DumpE();
 };
 
-
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class NickServ:public mBase, public SXP::IPersistObj
+class NickServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend int EventTask::svc(void);
     friend int IrcSvcHandler::handle_close(ACE_HANDLE, ACE_Reactor_Mask);
 
-  private:
+private:
     // Config Entries ...
     mstring enforcer_name;	// Realname of enforcer
     bool append_rename;		// Type of renaming scheme to use.
@@ -697,13 +698,13 @@ class NickServ:public mBase, public SXP::IPersistObj
 
     static SXP::Tag tag_NickServ;
 
-    vector < Nick_Stored_t * >ns_array;
-  public:
-    typedef map < mstring, Nick_Stored_t * >stored_t;
-    typedef map < mstring, Nick_Live_t * >live_t;
+    vector < Nick_Stored_t * > ns_array;
+public:
+    typedef map < mstring, Nick_Stored_t * > stored_t;
+    typedef map < mstring, Nick_Live_t * > live_t;
     typedef map < mstring, mDateTime > recovered_t;
 
-  private:
+private:
 
     stored_t stored;
     live_t live;
@@ -711,7 +712,7 @@ class NickServ:public mBase, public SXP::IPersistObj
 
     void AddCommands();
     void RemCommands();
-  public:
+public:
     NickServ();
     ~NickServ()
     {
@@ -741,7 +742,7 @@ class NickServ:public mBase, public SXP::IPersistObj
 	unsigned long i_Unlock;
 	unsigned long i_SetPicture;
 	unsigned long i_Send;
-      public:
+   public:
 	stats_t()
 	{
 	    clear();
@@ -750,7 +751,8 @@ class NickServ:public mBase, public SXP::IPersistObj
 	{
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Link = i_Unlink = i_Host = i_Identify = i_Ghost = i_Recover = i_Suspend = i_Unsuspend =
-		i_Forbid = i_Getpass = i_Access = i_Ignore = i_Set = i_NoExpire = i_Lock = i_Unlock = i_SetPicture = i_Send = 0;
+		i_Forbid = i_Getpass = i_Access = i_Ignore = i_Set = i_NoExpire = i_Lock = i_Unlock = i_SetPicture = i_Send =
+		0;
 	}
 	mDateTime ClearTime() const
 	{
@@ -939,24 +941,24 @@ class NickServ:public mBase, public SXP::IPersistObj
     InFlight_Handler ifh;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddStored(Nick_Stored_t * in) throw(E_NickServ_Stored);
-    void AddStored(const Nick_Stored_t & in) throw(E_NickServ_Stored)
+    void AddStored(Nick_Stored_t * in) throw (E_NickServ_Stored);
+    void AddStored(const Nick_Stored_t & in) throw (E_NickServ_Stored)
     {
 	AddStored(new Nick_Stored_t(in));
     }
-    void AddStored(const map_entry < Nick_Stored_t > &in) throw(E_NickServ_Stored)
+    void AddStored(const map_entry < Nick_Stored_t > & in) throw (E_NickServ_Stored)
     {
 	AddStored(in.entry());
     }
-    map_entry < Nick_Stored_t > GetStored(const mstring & in) const throw(E_NickServ_Stored);
-    void RemStored(const mstring & in) throw(E_NickServ_Stored);
+    map_entry < Nick_Stored_t > GetStored(const mstring & in) const throw (E_NickServ_Stored);
+    void RemStored(const mstring & in) throw (E_NickServ_Stored);
 #else
     void AddStored(Nick_Stored_t * in);
     void AddStored(const Nick_Stored_t & in)
     {
 	AddStored(new Nick_Stored_t(in));
     }
-    void AddStored(const map_entry < Nick_Stored_t > &in)
+    void AddStored(const map_entry < Nick_Stored_t > & in)
     {
 	AddStored(in.entry());
     }
@@ -971,7 +973,7 @@ class NickServ:public mBase, public SXP::IPersistObj
     {
 	return stored.end();
     }
-    stored_t::const_iterator StoredBegin()const
+    stored_t::const_iterator StoredBegin() const
     {
 	return stored.begin();
     }
@@ -986,24 +988,24 @@ class NickServ:public mBase, public SXP::IPersistObj
     bool IsStored(const mstring & in) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddLive(Nick_Live_t * in) throw(E_NickServ_Live);
-    void AddLive(const Nick_Live_t & in) throw(E_NickServ_Live)
+    void AddLive(Nick_Live_t * in) throw (E_NickServ_Live);
+    void AddLive(const Nick_Live_t & in) throw (E_NickServ_Live)
     {
 	AddLive(new Nick_Live_t(in));
     }
-    void AddLive(const map_entry < Nick_Live_t > &in) throw(E_NickServ_Live)
+    void AddLive(const map_entry < Nick_Live_t > & in) throw (E_NickServ_Live)
     {
 	AddLive(in.entry());
     }
-    map_entry < Nick_Live_t > GetLive(const mstring & in) const throw(E_NickServ_Live);
-    void RemLive(const mstring & in) throw(E_NickServ_Live);
+    map_entry < Nick_Live_t > GetLive(const mstring & in) const throw (E_NickServ_Live);
+    void RemLive(const mstring & in) throw (E_NickServ_Live);
 #else
     void AddLive(Nick_Live_t * in);
     void AddLive(const Nick_Live_t & in)
     {
 	AddLive(new Nick_Live_t(in));
     }
-    void AddLive(const map_entry < Nick_Live_t > &in)
+    void AddLive(const map_entry < Nick_Live_t > & in)
     {
 	AddLive(in.entry());
     }
@@ -1018,7 +1020,7 @@ class NickServ:public mBase, public SXP::IPersistObj
     {
 	return live.end();
     }
-    live_t::const_iterator LiveBegin()const
+    live_t::const_iterator LiveBegin() const
     {
 	return live.begin();
     }
@@ -1034,12 +1036,12 @@ class NickServ:public mBase, public SXP::IPersistObj
     bool IsLiveAll(const mstring & in) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddRecovered(const mstring & name, const mDateTime & in) throw(E_NickServ_Recovered);
-    const mDateTime & GetRecovered(const mstring & in) const throw(E_NickServ_Recovered);
-    void RemRecovered(const mstring & in) throw(E_NickServ_Recovered);
+    void AddRecovered(const mstring & name, const mDateTime & in) throw (E_NickServ_Recovered);
+    const mDateTime &GetRecovered(const mstring & in) const throw (E_NickServ_Recovered);
+    void RemRecovered(const mstring & in) throw (E_NickServ_Recovered);
 #else
     void AddRecovered(const mstring & name, const mDateTime & in);
-    const mDateTime & GetRecovered(const mstring & in) const;
+    const mDateTime &GetRecovered(const mstring & in) const;
     void RemRecovered(const mstring & in);
 #endif
     recovered_t::iterator RecoveredBegin()
@@ -1050,7 +1052,7 @@ class NickServ:public mBase, public SXP::IPersistObj
     {
 	return recovered.end();
     }
-    recovered_t::const_iterator RecoveredBegin()const
+    recovered_t::const_iterator RecoveredBegin() const
     {
 	return recovered.begin();
     }
@@ -1136,7 +1138,7 @@ class NickServ:public mBase, public SXP::IPersistObj
     static void do_unlock_PRIVMSG(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_Language(const mstring & mynick, const mstring & source, const mstring & params);
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_NickServ;
     }
@@ -1145,6 +1147,5 @@ class NickServ:public mBase, public SXP::IPersistObj
     void WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs = SXP::blank_dict);
     void PostLoad();
 };
-
 
 #endif

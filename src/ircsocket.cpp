@@ -28,6 +28,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.201  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.200  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -507,13 +510,14 @@ void *IrcSvcHandler::worker(void *in)
 		RLOCK(("IrcSvcHandler"));
 		if (Magick::instance().ircsvchandler == NULL)
 		    break;
-		msg = dynamic_cast < mMessage * >(Magick::instance().ircsvchandler->message_queue.dequeue());
+		msg = dynamic_cast < mMessage * > (Magick::instance().ircsvchandler->message_queue.dequeue());
 	    }
 	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
 	    if (msg != NULL)
 	    {
 		int rv = msg->call();
+
 		delete msg;
 
 		if (rv < 0)
@@ -554,12 +558,12 @@ void *IrcSvcHandler::worker(void *in)
 
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
-    DTRET(static_cast < void *>(NULL));
+    DTRET(static_cast < void * > (NULL));
 }
 
 int IrcSvcHandler::open(void *in)
 {
-    static_cast < void >(in);
+    static_cast < void > (in);
 
     //mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::open", (in));
@@ -589,7 +593,7 @@ int IrcSvcHandler::open(void *in)
 
 int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 {
-    static_cast < void >(hin);
+    static_cast < void > (hin);
 
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
@@ -657,22 +661,22 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 		{
 		    if (!htm_level)
 			ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/HTM_ON",
-				 (fmstring("%.1f", static_cast < float >(total) / static_cast < float >(htm_gap) / 1024.0),
-				  fmstring("%.1f", static_cast < float >(htm_threshold) / 1024.0)));
+				 (fmstring("%.1f", static_cast < float > (total) / static_cast < float > (htm_gap) / 1024.0),
+				  fmstring("%.1f", static_cast < float > (htm_threshold) / 1024.0)));
 		    else if (htm_level < 3)
 			ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/HTM_STILL",
 				 (htm_level + 1, htm_gap,
-				  fmstring("%.1f", static_cast < float >(total) / static_cast < float >(htm_gap) / 1024.0)));
+				  fmstring("%.1f", static_cast < float > (total) / static_cast < float > (htm_gap) / 1024.0)));
 		    else
 			ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/HTM_TURBO",
 				 (htm_level + 1, htm_gap,
-				  fmstring("%.1f", static_cast < float >(total) / static_cast < float >(htm_gap) / 1024.0)));
+				  fmstring("%.1f", static_cast < float > (total) / static_cast < float > (htm_gap) / 1024.0)));
 		    htm_level++;
 		    htm_gap += 2;
 		    LOG(LM_NOTICE, "OPERSERV/HTM_ON",
 			(htm_level, htm_gap,
-			 fmstring("%.1f", static_cast < float >(total) / static_cast < float >(htm_gap) / 1024.0),
-			 fmstring("%.1f", static_cast < float >(htm_threshold) / 1024.0)));
+			 fmstring("%.1f", static_cast < float > (total) / static_cast < float > (htm_gap) / 1024.0),
+			 fmstring("%.1f", static_cast < float > (htm_threshold) / 1024.0)));
 		}
 	    }
 	    else if (htm_level)
@@ -729,8 +733,8 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
 int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 {
-    static_cast < void >(h);
-    static_cast < void >(mask);
+    static_cast < void > (h);
+    static_cast < void > (mask);
 
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
@@ -742,17 +746,17 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     // We DONT want any processing once we're gone ...
     // Dump the queue and kill all our threads nicely.
-    for (i = 0; i < static_cast < unsigned int >(tm.count_threads()); i++)
+    for (i = 0; i < static_cast < unsigned int > (tm.count_threads()); i++)
 	enqueue_sleep();
     mMessage *msg;
 
     while (!message_queue.is_empty())
     {
-	msg = dynamic_cast < mMessage * >(message_queue.dequeue());
+	msg = dynamic_cast < mMessage * > (message_queue.dequeue());
 	if (msg != NULL)
 	    delete msg;
     }
-    for (i = 0; i < static_cast < unsigned int >(tm.count_threads()); i++)
+    for (i = 0; i < static_cast < unsigned int > (tm.count_threads()); i++)
 	enqueue_shutdown();
 
     {
@@ -794,8 +798,8 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 		{
 		    mstring *arg = NULL;
 		    if (Magick::instance().reactor().
-			cancel_timer(Magick::instance().server.ServerSquit[si->first], reinterpret_cast < const void **>(arg))
-			&& arg != NULL)
+			cancel_timer(Magick::instance().server.ServerSquit[si->first],
+				     reinterpret_cast < const void ** > (arg)) && arg != NULL)
 			delete arg;
 		}
 		if (!Magick::instance().Shutdown())
@@ -887,7 +891,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
 int IrcSvcHandler::fini()
 {
-    return sock.IsConnected()? 0 : 1;
+    return sock.IsConnected() ? 0 : 1;
 }
 
 time_t IrcSvcHandler::HTM_Gap() const
@@ -1003,7 +1007,7 @@ int IrcSvcHandler::send(const mstring & data)
     tmp.replace("\n", "");
     tmp.replace("\r", "");
     out_traffic += tmp.length() + 2;
-    recvResult = sock.send(const_cast < char *>((tmp + "\n\r").c_str()), tmp.length() + 2);
+    recvResult = sock.send(const_cast < char * > ((tmp + "\n\r").c_str()), tmp.length() + 2);
 
     CH(D_To, tmp);
     RET(recvResult);
@@ -1024,7 +1028,7 @@ void IrcSvcHandler::enqueue(mMessage * mm)
     else
     {
 	// Make sure we have at LEAST our minimum ...
-	while (static_cast < unsigned int >(tm.count_threads()) < Magick::instance().config.Min_Threads())
+	while (static_cast < unsigned int > (tm.count_threads()) < Magick::instance().config.Min_Threads())
 	{
 	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) != -1)
 	    {
@@ -1035,11 +1039,11 @@ void IrcSvcHandler::enqueue(mMessage * mm)
 	}
 
 	// Only spawn if we are less than our maximum ... and need it :)
-	if (message_queue.method_count() > static_cast <
-	    int >(tm.count_threads() * Magick::instance().config.High_Water_Mark()))
+	if (message_queue.method_count() > static_cast < int >
+	    (tm.count_threads() * Magick::instance().config.High_Water_Mark()))
 	{
 	    CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	    if (static_cast < unsigned int >(tm.count_threads()) >= Magick::instance().config.Max_Threads())
+	    if (static_cast < unsigned int > (tm.count_threads()) >= Magick::instance().config.Max_Threads())
 	    {
 		NLOG(LM_WARNING, "EVENT/MAX_THREADS");
 	    }
@@ -1217,8 +1221,8 @@ void IrcSvcHandler::DumpE() const
 
 int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
-    static_cast < void >(tv);
-    static_cast < void >(arg);
+    static_cast < void > (tv);
+    static_cast < void > (arg);
 
     mThread::Attach(tt_MAIN);
     FT("Heartbeat_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
@@ -1265,9 +1269,9 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 			    ACE_Thread_Manager *thr_mgr = NULL;
 
 			    if (Magick::instance().ircsvchandler != NULL)
-				thr_mgr = &Magick::instance().ircsvchandler->tm;
+				thr_mgr = & Magick::instance().ircsvchandler->tm;
 			    else
-				thr_mgr = &Magick::instance().thr_mgr();
+				thr_mgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			    if (iter->second.third)
 			    {
@@ -1293,7 +1297,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 				ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 
 				if (thr_mgr == NULL)
-				    thr_mgr = &Magick::instance().thr_mgr();
+				    thr_mgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 				if (iter->second.third)
 				{
@@ -1317,7 +1321,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 				ACE_Thread_Manager *thr_mgr = Magick::instance().events->thr_mgr();
 
 				if (thr_mgr == NULL)
-				    thr_mgr = &Magick::instance().thr_mgr();
+				    thr_mgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 				if (iter->second.third)
 				{
@@ -1349,7 +1353,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 				ACE_Thread_Manager *thr_mgr = Magick::instance().dcc->thr_mgr();
 
 				if (thr_mgr == NULL)
-				    thr_mgr = &Magick::instance().thr_mgr();
+				    thr_mgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 				if (iter->second.third)
 				{
@@ -1419,7 +1423,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
 void Heartbeat_Handler::AddThread(heartbeat_enum type, ACE_thread_t id)
 {
-    FT("Heartbeat_Handler::AddThread", (static_cast < int >(type), id));
+    FT("Heartbeat_Handler::AddThread", (static_cast < int > (type), id));
     WLOCK(("Heartbeat_Handler", "threads"));
     threads[id] = triplet < heartbeat_enum, mDateTime, bool > (type, mDateTime::CurrentDateTime(), true);
 }
@@ -1471,7 +1475,7 @@ size_t Heartbeat_Handler::size()
 
 size_t Heartbeat_Handler::count(heartbeat_enum type)
 {
-    FT("Heartbeat_Handler::count", (static_cast < int >(type)));
+    FT("Heartbeat_Handler::count", (static_cast < int > (type)));
     size_t retval = 0;
 
     {
@@ -1529,8 +1533,8 @@ mstring Reconnect_Handler::FindNext(const mstring & i_server)
 
 int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
-    static_cast < void >(tv);
-    static_cast < void >(arg);
+    static_cast < void > (tv);
+    static_cast < void > (arg);
 
     mThread::Attach(tt_MAIN);
     FT("Disconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
@@ -1545,7 +1549,7 @@ int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *ar
 		ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 
 		if (thr_mgr == NULL)
-		    thr_mgr = &Magick::instance().thr_mgr();
+		    thr_mgr = & Magick::instance().thr_mgr();
 		ACE_thread_t id;
 
 		thr_mgr->thread_list(Magick::instance().ircsvchandler, &id, 1);
@@ -1566,8 +1570,8 @@ int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *ar
 
 int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
-    static_cast < void >(tv);
-    static_cast < void >(arg);
+    static_cast < void > (tv);
+    static_cast < void > (arg);
 
     mThread::Attach(tt_MAIN);
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
@@ -1581,7 +1585,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     {
 	if (Magick::instance().GotConnect())
 	{
-	    server = Magick::instance().startup.PriorityList(1)[0];
+	    server = Magick::instance().startup.PriorityList(1) [0];
 	    while (!server.empty() && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 	    {
 		server = FindNext(server);
@@ -1601,7 +1605,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	    }
 	    if (server.empty())
 	    {
-		server = Magick::instance().startup.PriorityList(1)[0];
+		server = Magick::instance().startup.PriorityList(1) [0];
 		while (!server.empty() &&
 		       !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 		{
@@ -1615,7 +1619,8 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	NLOG(LM_EMERGENCY, "OTHER/NOVALIDSERVERS");
     }
 
-    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >details = Magick::instance().startup.Server(server);
+    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > details =
+	Magick::instance().startup.Server(server);
 
     ACE_INET_Addr addr(details.second.first, server);
 
@@ -1710,8 +1715,8 @@ int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     // We ONLY get here if we didnt receive a SQUIT message in <10s
     // after any QUIT message with 2 valid servers in it
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    static_cast < void >(tv);
-    mstring *tmp = reinterpret_cast < mstring * >(const_cast < void *>(arg));
+    static_cast < void > (tv);
+    mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
     {
 	WLOCK(("Server", "ServerSquit"));
@@ -1803,8 +1808,8 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    static_cast < void >(tv);
-    mstring *tmp = reinterpret_cast < mstring * >(const_cast < void *>(arg));
+    static_cast < void > (tv);
+    mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
     {
 	WLOCK(("Server", "ServerSquit"));
@@ -1827,7 +1832,7 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	for (i = Magick::instance().nickserv.LiveBegin(); i != Magick::instance().nickserv.LiveEnd(); i++)
 	{
 	    map_entry < Nick_Live_t > nlive(i->second);
-	    if (nlive->Squit() == *tmp)
+	    if (nlive->Squit() == * tmp)
 		SquitMe.push_back(i->first);
 	}
     }
@@ -1886,8 +1891,8 @@ int InFlight_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     // Memo timed out, send it!
     // If its a file, and not inprogress, ignore.
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    static_cast < void >(tv);
-    mstring *tmp = reinterpret_cast < mstring * >(const_cast < void *>(arg));
+    static_cast < void > (tv);
+    mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
     if (Magick::instance().nickserv.IsLiveAll(*tmp))
     {
@@ -1917,8 +1922,8 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
     mThread::Attach(tt_MAIN);
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    static_cast < void >(tv);
-    mstring *tmp = reinterpret_cast < mstring * >(const_cast < void *>(arg));
+    static_cast < void > (tv);
+    mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
     // This is to part channels I'm not supposed to be
     // in (ie. dont have JOIN on, and I'm the only user
@@ -2029,7 +2034,7 @@ void *EventTask::save_databases(void *in)
     Magick::register_instance((Magick *) in);
     Magick::instance().save_databases();
     Magick::deregister_instance();
-    DTRET(static_cast < void *>(NULL));
+    DTRET(static_cast < void * > (NULL));
 }
 
 void EventTask::AddChannelModePending(const mstring & in)
@@ -2079,7 +2084,7 @@ int EventTask::open(void *in)
 
 int EventTask::close(u_long in)
 {
-    static_cast < void >(in);
+    static_cast < void > (in);
 
     FT("EventTask::close", (in));
     // dump all and close open file handles.
@@ -2133,7 +2138,7 @@ int EventTask::svc(void)
 	}
 
 	CP(("TIMERS:  Current time: %ld,  Earliest Timer: %ld", ACE_OS::gettimeofday().sec(),
-	    Magick::instance().reactor().timer_queue()->is_empty()? 0 : Magick::instance().reactor().timer_queue()->
+	    Magick::instance().reactor().timer_queue()->is_empty() ? 0 : Magick::instance().reactor().timer_queue()->
 	    earliest_time().sec()));
 
 	try
@@ -2162,7 +2167,7 @@ int EventTask::svc(void)
 		ACE_Thread_Manager *tm = thr_mgr();
 
 		if (tm == NULL)
-		    tm = &Magick::instance().thr_mgr();
+		    tm = & Magick::instance().thr_mgr();
 		if (tm->spawn(save_databases, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) < 0)
 		{
 		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
@@ -2412,7 +2417,7 @@ void EventTask::do_expire(mDateTime & synctime)
 {
     CP(("Starting EXPIRATION check ..."));
 
-    static_cast < void >(synctime);
+    static_cast < void > (synctime);
 
     NickServ::stored_t::iterator nsi;
     ChanServ::stored_t::iterator csi;
@@ -2465,7 +2470,7 @@ void EventTask::do_expire(mDateTime & synctime)
     // nicknames
     try
     {
-	vector < pair < mstring, mstring > >expired_nicks;
+	vector < pair < mstring, mstring > > expired_nicks;
 	{
 	    RLOCK2(("NickServ", "stored"));
 	    for (nsi = Magick::instance().nickserv.StoredBegin(); nsi != Magick::instance().nickserv.StoredEnd(); nsi++)
@@ -2526,7 +2531,7 @@ void EventTask::do_expire(mDateTime & synctime)
     // channels
     try
     {
-	vector < pair < mstring, mstring > >expired_chans;
+	vector < pair < mstring, mstring > > expired_chans;
 	{
 	    RLOCK2(("ChanServ", "stored"));
 	    for (csi = Magick::instance().chanserv.StoredBegin(); csi != Magick::instance().chanserv.StoredEnd(); csi++)
@@ -2574,7 +2579,7 @@ void EventTask::do_expire(mDateTime & synctime)
     // news articles
     try
     {
-	map < mstring, vector < size_t > >expired_news;
+	map < mstring, vector < size_t > > expired_news;
 	map < mstring, vector < size_t > >::iterator iter;
 	{
 	    RLOCK2(("MemoServ", "channel"));
@@ -2635,7 +2640,7 @@ void EventTask::do_check(mDateTime & synctime)
 
     if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
     {
-	RLOCK2(("ChanServ", "live"));
+	RLOCK(("ChanServ", "live"));
 	for (cli = Magick::instance().chanserv.LiveBegin(); cli != Magick::instance().chanserv.LiveEnd(); cli++)
 	{
 	    map_entry < Chan_Live_t > clive(cli->second);
@@ -2659,7 +2664,7 @@ void EventTask::do_check(mDateTime & synctime)
 		    vector < mstring > rem;
 		    vector < mstring >::iterator ri;
 		    {
-			RLOCK4(("ChanServ", "live", cli->first, "bans"));
+			RLOCK2(("ChanServ", "live", cli->first, "bans"));
 			for (di = clive->bans.begin(); di != clive->bans.end(); di++)
 			{
 			    if (di->second.SecondsSince() > bantime)
@@ -2747,7 +2752,7 @@ void EventTask::do_check(mDateTime & synctime)
 		    Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), chunked[i],
 						   Magick::instance().getMessage("NS_SET/PROTECT"));
 		Magick::instance().server.NICK(chunked[i],
-					       (Magick::instance().startup.Ownuser()? chunked[i].
+					       (Magick::instance().startup.Ownuser() ? chunked[i].
 						LowerCase() : Magick::instance().startup.Services_User()),
 					       Magick::instance().startup.Services_Host(),
 					       Magick::instance().startup.Server_Name(),
@@ -2784,7 +2789,7 @@ void EventTask::do_modes(mDateTime & synctime)
 {
     CP(("Starting PENDING MODES check ..."));
 
-    static_cast < void >(synctime);
+    static_cast < void > (synctime);
 
     set < mstring > cmp;
     set < mstring >::iterator iter;
@@ -2797,7 +2802,7 @@ void EventTask::do_modes(mDateTime & synctime)
 	cmodes_pending.clear();
 	MCE(cmodes_pending.size());
     }
-    map < mstring, vector < mstring > >modelines;
+    map < mstring, vector < mstring > > modelines;
     map < mstring, vector < mstring > >::iterator ml;
     for (iter = cmp.begin(); iter != cmp.end(); iter++)
     {
@@ -2892,9 +2897,9 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 {
     CP(("Starting EXPIRED MESSAGE check ..."));
 
-    static_cast < void >(synctime);
+    static_cast < void > (synctime);
 
-    vector < mMessage * >Msgs;
+    vector < mMessage * > Msgs;
     unsigned int i;
 
     vector < mstring > chunked;
@@ -2909,7 +2914,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 
 	    for (k = j->second.begin(); k != j->second.end(); k++)
 	    {
-		set < unsigned long >Ids;
+		set < unsigned long > Ids;
 		set < unsigned long >::iterator l;
 
 		for (l = k->second.begin(); l != k->second.end(); l++)
@@ -2965,7 +2970,7 @@ void EventTask::do_ping(mDateTime & synctime)
 {
     CP(("Starting SERVER PING ..."));
 
-    static_cast < void >(synctime);
+    static_cast < void > (synctime);
 
     Server::list_t::iterator si;
 
@@ -2989,16 +2994,15 @@ void EventTask::do_ping(mDateTime & synctime)
     else
 	avg = sum / count;
 
-    if (avg > static_cast <
-	double >(Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level() + 1)))
+    if (avg > static_cast < double >
+	(Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level() + 1)))
     {
 	Magick::instance().LevelUp();
 	LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
     }
     else if (Magick::instance().Level() > Magick::instance().startup.Level() &&
-	     avg <= static_cast <
-	     double >(Magick::instance().startup.Lagtime() *
-		      (Magick::instance().Level() - Magick::instance().startup.Level())))
+	     avg <= static_cast < double >
+	     (Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level())))
     {
 	Magick::instance().LevelDown();
 	LOG(LM_WARNING, "EVENT/LEVEL_DOWN", (fmstring("%.3f", avg)));

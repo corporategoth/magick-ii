@@ -18,7 +18,7 @@ const ENCODING *NS(XmlGetUtf16InternalEncoding) (void)
 #endif
 }
 
-static const ENCODING *NS(encodings)[] =
+static const ENCODING *NS(encodings) [] =
 {
     &ns(latin1_encoding).enc, &ns(ascii_encoding).enc, &ns(utf8_encoding).enc, &ns(big2_encoding).enc, &ns(big2_encoding).enc, &ns(little2_encoding).enc, &ns(utf8_encoding).enc	/* NO_ENC */
 };
@@ -44,7 +44,7 @@ int NS(XmlInitEncoding) (INIT_ENCODING * p, const ENCODING ** encPtr, const char
     p->initEnc.scanners[XML_CONTENT_STATE] = NS(initScanContent);
     p->initEnc.updatePosition = initUpdatePosition;
     p->encPtr = encPtr;
-    *encPtr = &(p->initEnc);
+    *encPtr = & (p->initEnc);
     return 1;
 }
 
@@ -64,7 +64,7 @@ static const ENCODING *NS(findEncoding) (const ENCODING * enc, const char *ptr, 
     i = getEncodingIndex(buf);
     if (i == UNKNOWN_ENC)
 	return 0;
-    return NS(encodings)[i];
+    return NS(encodings) [i];
 }
 
 int NS(XmlParseXmlDecl) (int isGeneralTextEntity, const ENCODING * enc, const char *ptr, const char *end, const char **badPtr,

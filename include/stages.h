@@ -27,6 +27,9 @@ RCSID(stages_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.7  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -81,12 +84,12 @@ enum stage_errors
 
 class Stage
 {
-  protected:
+protected:
     unsigned char tag;
     Stage *input;
 
-  public:
-      virtual ~ Stage()
+public:
+    virtual ~Stage()
     {
     }
 
@@ -99,16 +102,16 @@ class Stage
     virtual long Read(char *buf, size_t size) = 0;
 };
 
-class StringStage:public Stage
+class StringStage : public Stage
 {
     mstring i_str;
     size_t offset;
 
       StringStage();
-  public:
+public:
       StringStage(const mstring & in);
       StringStage(Stage & PrevStage);
-      virtual ~ StringStage();
+    virtual ~StringStage();
 
     virtual bool Validate();
     mstring Result();
@@ -116,22 +119,22 @@ class StringStage:public Stage
     virtual long Read(char *buf, size_t size);
 };
 
-class FileStage:public Stage
+class FileStage : public Stage
 {
     mFile file;
 
       FileStage();
-  public:
+public:
       FileStage(const mstring & name);
       FileStage(Stage & PrevStage, const mstring & name, const mstring & mode = "w");
-      virtual ~ FileStage();
+    virtual ~FileStage();
 
     virtual bool Validate();
     virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
 
-class CryptStage:public Stage
+class CryptStage : public Stage
 {
     char buffer[DEF_STAGE_BUFFER];
     unsigned char outbuf[8];
@@ -143,56 +146,56 @@ class CryptStage:public Stage
     bool encrypt, gotkeys;
 
       CryptStage();
-  public:
+public:
       CryptStage(Stage & PrevStage, const mstring & key1, const mstring & key2);
-      virtual ~ CryptStage();
+    virtual ~CryptStage();
 
     virtual bool Validate();
     virtual long Read(char *buf, size_t size);
 };
 
-class CompressStage:public Stage
+class CompressStage : public Stage
 {
     char buffer[DEF_STAGE_BUFFER];
     z_stream strm;
     bool compress;
 
       CompressStage();
-  public:
+public:
       CompressStage(Stage & PrevStage, int level = 0);
-      virtual ~ CompressStage();
+    virtual ~CompressStage();
 
     virtual bool Validate();
     virtual long Read(char *buf, size_t size);
 };
 
-class XMLStage:public Stage
+class XMLStage : public Stage
 {
     SXP::MOutStream * generator;
     SXP::CParser * parser;
     size_t curpos;
 
       XMLStage();
-  public:
+public:
       XMLStage(SXP::IPersistObj * pRoot, SXP::dict & attribs = SXP::blank_dict);
       XMLStage(Stage & PrevStage, SXP::IPersistObj * pRoot);
-      virtual ~ XMLStage();
+    virtual ~XMLStage();
 
     virtual bool Validate();
     virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
 
-class VerifyStage:public Stage
+class VerifyStage : public Stage
 {
     char *text;
     size_t offset, total, vsize, curpos;
     bool verified;
 
       VerifyStage();
-  public:
+public:
       VerifyStage(Stage & PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize);
-      virtual ~ VerifyStage();
+    virtual ~VerifyStage();
 
     virtual bool Validate();
     virtual long Read(char *buf, size_t size);

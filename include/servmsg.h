@@ -27,6 +27,9 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.34  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -125,15 +128,15 @@ RCSID(servmsg_h, "@(#) $Id$");
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class ServMsg:public mBase
+class ServMsg : public mBase
 {
     friend class Magick;
-  private:
-      bool showsync;
+private:
+    bool showsync;
 
     void AddCommands();
     void RemCommands();
-  public:
+public:
       ServMsg();
      ~ServMsg()
     {
@@ -153,7 +156,7 @@ class ServMsg:public mBase
 	unsigned long i_file_Priv;
 	unsigned long i_file_Rename;
 	unsigned long i_file_Cancel;
-      public:
+   public:
 	  stats_t()
 	{
 	    clear();
@@ -231,7 +234,7 @@ class ServMsg:public mBase
     static void do_Contrib(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_Languages(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_BreakDown(const mstring & mynick, const mstring & source, const mstring & params);
-    static void do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >ServCounts, const mstring & mynick,
+    static void do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > > ServCounts, const mstring & mynick,
 			      const mstring & source, const mstring & previndent, const mstring & server);
     static void do_Global(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_Ask(const mstring & mynick, const mstring & source, const mstring & params);

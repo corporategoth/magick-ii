@@ -28,6 +28,9 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.39  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -187,7 +190,7 @@ ceNode::~ceNode()
     i_keys.clear();
 }
 
-ceNode & ceNode::operator=(const ceNode & in)
+ceNode &ceNode::operator=(const ceNode & in)
 {
     FT("ceNode::operator=", ("(const ceNode &) in"));
     i_Name = in.i_Name;
@@ -205,7 +208,7 @@ ceNode & ceNode::operator=(const ceNode & in)
     {
 	i_children[j->first] = new ceNode;
 	// the below line *will* recursively copy it's children
-	*(i_children[j->first]) = *(j->second);
+	*(i_children[j->first]) = * (j->second);
     }
     return *this;
 }
@@ -223,7 +226,7 @@ bool ceNode::operator==(const ceNode & in) const
 	    if (i_children.find(i->first) == i_children.end())
 		RET(false);
 	    // the below line *will* recursively check it's children
-	    if (!(*(i_children.find(i->first)->second) == *(i->second)))
+	    if (!(*(i_children.find(i->first)->second) == * (i->second)))
 		RET(false);
 	}
 	Result = true;
@@ -897,19 +900,19 @@ bool mConfigEngine::LoadFromString(const mstring & configstring)
     RET(Result);
 }
 
-bool mConfigEngine::LoadFromArray(const vector < mstring > &configarray)
+bool mConfigEngine::LoadFromArray(const vector < mstring > & configarray)
 {
     FT("mConfigEngine::LoadFromArray", ("(vector<mstring>) configarray"));
     bool Result = false;
 
     vector < mstring > decommented;
     decommented = PreParse(configarray);
-    ceNode *currNode = &RootNode;
+    ceNode *currNode = & RootNode;
     mstring currline, currpath;
 
     for (vector < mstring >::const_iterator i = decommented.begin(); i != decommented.end(); i++)
     {
-	currline = *i;
+	currline = * i;
 	if (currline.first() == '[' && currline.last() == ']')
 	{
 	    // new section
@@ -949,7 +952,7 @@ bool mConfigEngine::NodeExists(const mstring & NodeName) const
     RET(Result);
 }
 
-vector < mstring > mConfigEngine::PreParse(const vector < mstring > &in)
+vector < mstring > mConfigEngine::PreParse(const vector < mstring > & in)
 {
     FT("mConfigEngine::PreParse", ("(const vector<mstrign>) in"));
     vector < mstring > Result;

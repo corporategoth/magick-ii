@@ -27,6 +27,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.178  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.177  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -326,18 +329,17 @@ inline bool IsChan(mstring input)
     return (ChanSpec.Contains(input[0U]));
 }
 
-class SignalHandler:public ACE_Event_Handler
+class SignalHandler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_signal(int signum, siginfo_t * siginfo, ucontext_t * ucontext);
 };
 
-
-class Logger:public ACE_Log_Msg_Callback
+class Logger : public ACE_Log_Msg_Callback
 {
     mFile fout;
 
-  public:
+public:
       Logger();
      ~Logger();
 
@@ -362,35 +364,34 @@ class Logger:public ACE_Log_Msg_Callback
 #define NSLOG(X, Y) \
 	{ LOG2((X, parseMessage(Y))); }
 
-
-class Magick:public SXP::IPersistObj
+class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
     friend class Disconnect_Handler;
-  private:
+private:
     enum
     { Unknown = 0, Constructed, Initialized, Started,
 	Running, RunCompleted, Stopped, Finished
     }
     CurrentState;
 
-    static map < ACE_thread_t, Magick * >InstanceMap;
+    static map < ACE_thread_t, Magick * > InstanceMap;
     ACE_Reactor i_reactor;
     ACE_Thread_Manager i_thr_mgr;
 
     vector < mstring > argv;
     // Language, token, string
-    map < mstring, map < mstring, mstring > >Messages;
+    map < mstring, map < mstring, mstring > > Messages;
     // Language, token, vector<yescom, nocom, string>
-    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >Help;
+    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > > Help;
     // Token, string
     map < mstring, mstring > LogMessages;
     int doparamparse();
     SignalHandler *signalhandler;
-    map < pair < mstring, mstring >, vector < mstring > >handlermap;
+    map < pair < mstring, mstring >, vector < mstring > > handlermap;
 
     Logger *logger;
-    set < ACE_Log_Msg * >LogInstances;
+    set < ACE_Log_Msg * > LogInstances;
     bool i_verbose;
 
     mstring i_services_dir;
@@ -412,7 +413,7 @@ class Magick:public SXP::IPersistObj
     bool i_saving;
 
     static SXP::Tag tag_Magick;
-  public:
+public:
     EventTask * events;
     DccMap *dcc;
     IrcSvcHandler *ircsvchandler;
@@ -433,22 +434,22 @@ class Magick:public SXP::IPersistObj
     Server server;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static void register_instance(Magick * ins, ACE_thread_t id = ACE_Thread::self()) throw(E_Magick);
+    static void register_instance(Magick * ins, ACE_thread_t id = ACE_Thread::self()) throw (E_Magick);
 #else
     static void register_instance(Magick * ins, ACE_thread_t id = ACE_Thread::self());
 #endif
     static void deregister_instance(ACE_thread_t id = ACE_Thread::self());
     static bool instance_exists(ACE_thread_t id = ACE_Thread::self());
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static Magick & instance(ACE_thread_t id = ACE_Thread::self()) throw(E_Magick);
+    static Magick &instance(ACE_thread_t id = ACE_Thread::self()) throw (E_Magick);
 #else
-    static Magick & instance(ACE_thread_t id = ACE_Thread::self());
+    static Magick &instance(ACE_thread_t id = ACE_Thread::self());
 #endif
-    ACE_Reactor & reactor()
+    ACE_Reactor &reactor()
     {
 	return i_reactor;
     }
-    ACE_Thread_Manager & thr_mgr()
+    ACE_Thread_Manager &thr_mgr()
     {
 	return i_thr_mgr;
     }
@@ -459,9 +460,9 @@ class Magick:public SXP::IPersistObj
 	friend class Magick;
 
 	// map<server name, pair<priority, triplet<port, password, numeric> > >
-	map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >servers;
+	map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > > servers;
 	// map<server name, vector<allowed uplinks> >
-	map < mstring, vector < mstring > >allows;
+	map < mstring, vector < mstring > > allows;
 	mstring server_name;
 	mstring server_desc;
 	mstring services_user;
@@ -472,9 +473,9 @@ class Magick:public SXP::IPersistObj
 	mstring bind;
 	unsigned int level;
 	unsigned long lagtime;
-      public:
+   public:
 	bool IsServer(const mstring & server) const;
-	pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >Server(const mstring & server) const;
+	pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Server(const mstring & server) const;
 	vector < mstring > PriorityList(const unsigned int pri) const;
 	size_t Server_size() const
 	{
@@ -559,7 +560,7 @@ class Magick:public SXP::IPersistObj
 	unsigned long min_speed;
 	unsigned long max_speed;
 	unsigned long sampletime;
-      public:
+   public:
 	mstring MakePath(const mstring & in) const
 	{
 #ifdef WIN32
@@ -690,7 +691,7 @@ class Magick:public SXP::IPersistObj
 	unsigned long heartbeat_time;
 	unsigned long msg_seen_time;
 	unsigned long msg_check_time;
-      public:
+   public:
 	unsigned long Server_Relink() const
 	{
 	    return server_relink;
@@ -786,7 +787,7 @@ class Magick:public SXP::IPersistObj
     // Current STATES, and switching between them.
     Magick(int inargc, char **inargv);
 
-    virtual ~ Magick();
+    virtual ~Magick();
 
     // Init and Finish are only EVER called once
     // Start should be called after Init or Stop
@@ -897,7 +898,7 @@ class Magick:public SXP::IPersistObj
     }
     void Disconnect(const bool reconnect = true);
     void send(const mstring & text) const;
-    pair < mstring, mstring > GetKeys()const;
+    pair < mstring, mstring > GetKeys() const;
     void save_databases();
     void load_databases();
 
@@ -906,7 +907,7 @@ class Magick:public SXP::IPersistObj
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator  mVariant() const
+    operator    mVariant() const
     {
 	mVariant locvar("Magick");
 	locvar.truevaluetype = "Magick";
@@ -985,7 +986,7 @@ class Magick:public SXP::IPersistObj
 	return "";
     }
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_Magick;
     }
@@ -993,15 +994,13 @@ class Magick:public SXP::IPersistObj
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs = SXP::blank_dict);
 
-    set < mstring > LNG_Loaded()const;
+    set < mstring > LNG_Loaded() const;
     size_t LNG_Usage(const mstring & lang) const;
-    set < mstring > HLP_Loaded()const;
+    set < mstring > HLP_Loaded() const;
     size_t HLP_Usage(const mstring & lang) const;
     size_t LFO_Usage() const;
     void DumpB() const;
     void DumpE() const;
 };
-
-
 
 #endif

@@ -28,6 +28,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.183  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.182  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -379,11 +382,11 @@ RCSID(base_cpp, "@(#)$Id$");
 #include "magick.h"
 
 bool mBase::TaskOpened;
-map < mMessage::type_t, map < mstring, set < unsigned long > > >mMessage::AllDependancies;
-map < unsigned long, mMessage * >mMessage::MsgIdMap;
+map < mMessage::type_t, map < mstring, set < unsigned long > > > mMessage::AllDependancies;
+map < unsigned long, mMessage * > mMessage::MsgIdMap;
 unsigned long mMessage::LastMsgId = 0;
 
-entlist_t & entlist_t::operator=(const entlist_t & in)
+entlist_t &entlist_t::operator=(const entlist_t & in)
 {
     FT("entlist_t::operator=", ("(const entlist_t &) in"));
     i_Entry = in.i_Entry;
@@ -409,7 +412,7 @@ SXP::Tag tag_Stupid("Stupid");
 
 void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -424,7 +427,7 @@ void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -438,7 +441,7 @@ void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
@@ -504,7 +507,7 @@ void entlist_t::DumpE() const
 // --------- end of entlist_t -----------------------------------
 
 mMessage::mMessage(const mstring & p_source, const mstring & p_msgtype, const mstring & p_params,
-		   const unsigned long p_priority):ACE_Method_Request(p_priority), msgid_(0), source_(p_source),
+		   const unsigned long p_priority) : ACE_Method_Request(p_priority), msgid_(0), source_(p_source),
 params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
     FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
@@ -700,6 +703,7 @@ void mMessage::AddDependancies()
     }
 
     list < triplet < type_t, mstring, bool > >::iterator iter;
+
     for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
     {
 	int oldadded = added;
@@ -716,7 +720,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -733,7 +737,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -750,7 +754,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -767,7 +771,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -784,7 +788,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -801,7 +805,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -820,7 +824,7 @@ void mMessage::AddDependancies()
 			MLOCK(("MsgIdMap"));
 			MsgIdMap[msgid_] = this;
 		    }
-		    AllDependancies[iter->first][iter->second].insert(msgid_);
+		    AllDependancies[iter->first] [iter->second].insert(msgid_);
 		}
 		else
 		{
@@ -836,7 +840,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    break;
 	case UserNoInChan:
@@ -850,7 +854,7 @@ void mMessage::AddDependancies()
 		    MLOCK(("MsgIdMap"));
 		    MsgIdMap[msgid_] = this;
 		}
-		AllDependancies[iter->first][iter->second].insert(msgid_);
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -860,7 +864,7 @@ void mMessage::AddDependancies()
 	}
 	if (oldadded != added)
 	{
-	    CP(("(%d) Added dependancy on %d %s.", msgid_, static_cast < int >(iter->first), iter->second.c_str()));
+	    CP(("(%d) Added dependancy on %d %s.", msgid_, static_cast < int > (iter->first), iter->second.c_str()));
 	}
     }
 }
@@ -1007,7 +1011,7 @@ bool mMessage::RecheckDependancies()
 	    }
 	    if (resolved)
 	    {
-		CP(("(%d) Resolved dependancy on %d %s.", msgid_, static_cast < int >(iter->first), iter->second.c_str()));
+		CP(("(%d) Resolved dependancy on %d %s.", msgid_, static_cast < int > (iter->first), iter->second.c_str()));
 	    }
 	}
     }
@@ -1035,6 +1039,7 @@ bool mMessage::OutstandingDependancies()
 
     RLOCK(("Dependancies", this));
     list < triplet < type_t, mstring, bool > >::iterator iter;
+
     for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
     {
 	if (!iter->third)
@@ -1048,7 +1053,7 @@ bool mMessage::OutstandingDependancies()
 
 void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, const mstring & param2)
 {
-    FT("mMessage::CheckDependancies", (static_cast < int >(type), param1, param2));
+    FT("mMessage::CheckDependancies", (static_cast < int > (type), param1, param2));
 
     if (param1.empty())
 	return;
@@ -1064,7 +1069,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 	target = param1.LowerCase() + ":" + param2.LowerCase();
     else
 	target = param1.LowerCase();
-    set < unsigned long >mydep;
+    set < unsigned long > mydep;
 
     {
 	MLOCK(("AllDependancies"));
@@ -1105,7 +1110,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 	if (msg != NULL)
 	{
 	    CP(("No more dependancies for %d.", msg->msgid()));
-	    msg->priority(static_cast < unsigned long >(P_DepFilled));
+	    msg->priority(static_cast < unsigned long > (P_DepFilled));
 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)
@@ -1116,15 +1121,16 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 
 void mMessage::DependancySatisfied(mMessage::type_t type, const mstring & param)
 {
-    FT("mMessage::DependancySatisfied", (static_cast < int >(type), param));
+    FT("mMessage::DependancySatisfied", (static_cast < int > (type), param));
 
     WLOCK(("Dependancies", this));
     list < triplet < type_t, mstring, bool > >::iterator iter;
+
     for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
     {
 	if (iter->first == type && iter->second == param)
 	{
-	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, static_cast < int >(iter->first), iter->second.c_str()));
+	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, static_cast < int > (iter->first), iter->second.c_str()));
 	    iter->third = true;
 	    break;
 	}
@@ -1412,7 +1418,7 @@ bool mBase::signon(const mstring & nickname) const
     else
     {
 	Magick::instance().server.NICK(nickname,
-				       (Magick::instance().startup.Ownuser()? nickname.LowerCase() : Magick::instance().
+				       (Magick::instance().startup.Ownuser() ? nickname.LowerCase() : Magick::instance().
 					startup.Services_User()), Magick::instance().startup.Services_Host(),
 				       Magick::instance().startup.Server_Name(), realname);
 	RET(true);
@@ -1743,7 +1749,7 @@ void CommandMap::AddSystemCommand(const mstring & service, const mstring & comma
     WLOCK(("CommandMap", "i_system"));
     i_system[service.LowerCase()].push_back(triplet < mstring, mstring,
 					    functor > (command.UpperCase(),
-						       ((!committees.empty())? committees.LowerCase() : mstring("all")),
+						       ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
 						       function));
 }
 
@@ -1776,7 +1782,7 @@ void CommandMap::AddCommand(const mstring & service, const mstring & command, co
     WLOCK(("CommandMap", "i_user"));
     i_user[service.LowerCase()].push_back(triplet < mstring, mstring,
 					  functor > (command.UpperCase(),
-						     ((!committees.empty())? committees.LowerCase() : mstring("all")),
+						     ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
 						     function));
 }
 
@@ -1809,6 +1815,7 @@ pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & se
     unsigned int i;
 
     pair < bool, functor > retval = pair < bool, functor > (false, NULL);
+
     cmdtype::const_iterator iter;
     mstring type, list;
 
@@ -1873,6 +1880,7 @@ pair < bool, CommandMap::functor > CommandMap::GetSystemCommand(const mstring & 
     unsigned int i;
 
     pair < bool, functor > retval = pair < bool, functor > (false, NULL);
+
     cmdtype::const_iterator iter;
     mstring type, list;
 
@@ -1937,6 +1945,7 @@ bool CommandMap::DoCommand(const mstring & mynick, const mstring & user, const m
     bool cmdfound = false;
 
     pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
+
     if (cmd.second != NULL)
     {
 	if (cmd.first)
@@ -1986,6 +1995,7 @@ bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, con
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
 
     pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
+
     if (cmd.second != NULL)
     {
 	if (cmd.first)
@@ -2016,6 +2026,7 @@ bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, c
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
 
     pair < bool, functor > cmd = GetSystemCommand(mynick, command, user);
+
     if (cmd.second != NULL)
     {
 	if (cmd.first)

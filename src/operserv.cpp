@@ -28,6 +28,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.143  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.142  2002/01/13 05:18:42  prez
 ** More formatting, changed style slightly
 **
@@ -431,8 +434,8 @@ bool OperServ::AddHost(const mstring & host)
 		    }
 
 		    float percent =
-			100.0 * static_cast < float >(killusers.size()) / static_cast <
-			float >(Magick::instance().nickserv.LiveSize());
+			100.0 * static_cast < float > (killusers.size()) / static_cast < float >
+			(Magick::instance().nickserv.LiveSize());
 
 		    Magick::instance().server.AKILL("*@" + host, Magick::instance().operserv.Clone_Akill(),
 						    Magick::instance().operserv.Clone_AkillTime(),
@@ -550,8 +553,8 @@ void OperServ::CloneList_check()
 		}
 
 		float percent =
-		    100.0 * static_cast < float >(killusers.size()) / static_cast <
-		    float >(Magick::instance().nickserv.LiveSize());
+		    100.0 * static_cast < float > (killusers.size()) / static_cast < float >
+		    (Magick::instance().nickserv.LiveSize());
 
 		Magick::instance().server.AKILL("*@" + iter->first, Magick::instance().operserv.Clone_Akill(),
 						Magick::instance().operserv.Clone_AkillTime(),
@@ -585,6 +588,7 @@ bool OperServ::Clone_insert(const mstring & entry, const unsigned int value, con
     if (!Clone_find(entry))
     {
 	pair < set < Clone_Type >::iterator, bool > tmp;
+
 	MCB(i_Clone.size());
 	tmp = i_Clone.insert(Clone_Type(entry, pair < unsigned int, mstring > (value, reason), nick, added));
 
@@ -689,6 +693,7 @@ bool OperServ::Akill_insert(const mstring & entry, const unsigned long value, co
     if (!Akill_find(entry))
     {
 	pair < set < Akill_Type >::iterator, bool > tmp;
+
 	MCB(i_Akill.size());
 	tmp = i_Akill.insert(Akill_Type(entry, pair < unsigned long, mstring > (value, reason), nick, added));
 
@@ -808,6 +813,7 @@ bool OperServ::OperDeny_insert(const mstring & i_entry, const mstring & value, c
     if (!OperDeny_find(entry))
     {
 	pair < set < OperDeny_Type >::iterator, bool > tmp;
+
 	MCB(i_OperDeny.size());
 	tmp = i_OperDeny.insert(OperDeny_Type(entry, value, nick));
 	MCE(i_OperDeny.size());
@@ -927,6 +933,7 @@ bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mst
     if (!Ignore_find(entry))
     {
 	pair < set < Ignore_Type >::iterator, bool > tmp;
+
 	MCB(i_Ignore.size());
 	tmp = i_Ignore.insert(Ignore_Type(entry, perm, nick));
 	MCE(i_Ignore.size());
@@ -1782,14 +1789,14 @@ void OperServ::do_NOOP(const mstring & mynick, const mstring & source, const mst
     Magick::instance().server.SVSNOOP(mynick, target, onoff.GetBool());
     Magick::instance().operserv.stats.i_Noop++;
     SEND(mynick, source, "OS_COMMAND/NOOP",
-	 ((onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	 ((onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	   getMessage(source, "VALS/OFF")), target));
     ANNOUNCE(mynick, "MISC/NOOP",
-	     (source, (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF")),
+	     (source, (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF")),
 	      target));
     LOG(LM_INFO, "OPERSERV/NOOP",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target,
-	 (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void OperServ::do_Kill(const mstring & mynick, const mstring & source, const mstring & params)
@@ -2261,9 +2268,9 @@ void OperServ::do_HTM(const mstring & mynick, const mstring & source, const mstr
 	SEND(mynick, source, "OS_STATUS/HTM",
 	     (ToHumanSpace(Magick::instance().ircsvchandler->HTM_Threshold()),
 	      fmstring("%.1f",
-		       static_cast <
-		       float >(Magick::instance().ircsvchandler->Average(Magick::instance().ircsvchandler->HTM_Gap())) /
-		       static_cast < float >(1024))));
+		       static_cast < float >
+		       (Magick::instance().ircsvchandler->Average(Magick::instance().ircsvchandler->HTM_Gap())) / static_cast <
+		       float > (1024))));
     }
     else
     {
@@ -3117,8 +3124,8 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
 	    }
 
 	    float percent =
-		100.0 * static_cast < float >(killusers.size()) / static_cast <
-		float >(Magick::instance().nickserv.LiveSize());
+		100.0 * static_cast < float > (killusers.size()) / static_cast < float >
+		(Magick::instance().nickserv.LiveSize());
 	    if (percent > Magick::instance().operserv.Akill_Reject() &&
 		!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
 		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source)))
@@ -3801,15 +3808,15 @@ void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
-    static_cast < void >(pElement);
+    static_cast < void > (pIn);
+    static_cast < void > (pElement);
 
     FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
 void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("OperServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     set < Clone_Type >::iterator i;
@@ -3825,7 +3832,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (i = i_Clone.begin(); i != i_Clone.end(); i++)
 	{
 	    pOut->BeginObject(tag_Clone);
-	    pOut->WriteSubElement(const_cast < Clone_Type * >(&(*i)));
+	    pOut->WriteSubElement(const_cast < Clone_Type * > (&(*i)));
 	    pOut->EndObject(tag_Clone);
 	}
     }
@@ -3835,7 +3842,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (j = i_Akill.begin(); j != i_Akill.end(); j++)
 	{
 	    pOut->BeginObject(tag_Akill);
-	    pOut->WriteSubElement(const_cast < Akill_Type * >(&(*j)));
+	    pOut->WriteSubElement(const_cast < Akill_Type * > (&(*j)));
 	    pOut->EndObject(tag_Akill);
 	}
     }
@@ -3845,7 +3852,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (k = i_OperDeny.begin(); k != i_OperDeny.end(); k++)
 	{
 	    pOut->BeginObject(tag_OperDeny);
-	    pOut->WriteSubElement(const_cast < OperDeny_Type * >(&(*k)));
+	    pOut->WriteSubElement(const_cast < OperDeny_Type * > (&(*k)));
 	    pOut->EndObject(tag_OperDeny);
 	}
     }
@@ -3858,7 +3865,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	    if (l->Value())
 	    {
 		pOut->BeginObject(tag_Ignore);
-		pOut->WriteSubElement(const_cast < Ignore_Type * >(&(*l)));
+		pOut->WriteSubElement(const_cast < Ignore_Type * > (&(*l)));
 		pOut->EndObject(tag_Ignore);
 	    }
 	}

@@ -28,6 +28,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.14  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -153,7 +156,7 @@ ESP_dbFILE *ESP_open_db_read(const char *service, const char *filename)
     ESP_dbFILE *f;
     FILE *fp;
 
-    static_cast < void >(service);
+    static_cast < void > (service);
 
     f = (ESP_dbFILE *) malloc(sizeof(*f));
     if (!f)
@@ -611,7 +614,7 @@ int ESP_delnick(ESP_NickInfo * ni)
     }							\
 } while (0)
 
-static int def_levels[][2] = {
+static int def_levels[] [2] = {
     {ESP_CA_AUTOOP, 5},
     {ESP_CA_AUTOVOICE, 3},
     {ESP_CA_AUTODEOP, -1},
@@ -635,8 +638,8 @@ void ESP_reset_levels(ESP_ChannelInfo * ci)
     if (ci->levels)
 	free(ci->levels);
     ci->levels = (int16 *) malloc(ESP_CA_SIZE * sizeof(int16 *));
-    for (i = 0; def_levels[i][0] >= 0; i++)
-	ci->levels[def_levels[i][0]] = def_levels[i][1];
+    for (i = 0; def_levels[i] [0] >= 0; i++)
+	ci->levels[def_levels[i] [0]] = def_levels[i] [1];
 }
 
 /* Load v1-v4 files. */
@@ -647,7 +650,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE * f, int ver)
     ESP_ChannelInfo *ci;
     int failed = 0;
 
-    static_cast < void >(ver);
+    static_cast < void > (ver);
 
     struct
     {

@@ -27,6 +27,9 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.82  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -150,7 +153,8 @@ RCSID(trace_h, "@(#) $Id$");
 
 enum threadtype_enum
 { tt_LOST =
-	0, tt_MAIN, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_MAX };
+	0, tt_MAIN, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_MAX
+};
 extern mstring threadname[tt_MAX];
 unsigned short makehex(const mstring & SLevel);
 enum locktype_enum
@@ -166,14 +170,14 @@ enum priority_enum
 
 class ThreadID
 {
-  private:
+private:
     threadtype_enum t_internaltype;
     short t_indent;
     bool t_intrace;
     mstring t_lastfunc;
       list < mstring > messages;
 
-  public:
+public:
       ThreadID();
       ThreadID(const threadtype_enum Type);
      ~ThreadID();
@@ -359,7 +363,7 @@ class ThreadID
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-extern list < pair < threadtype_enum, mstring > >ThreadMessageQueue;
+extern list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 
 // Trace Codes
 //   \   Down Function (T_Functions)
@@ -388,7 +392,7 @@ extern list < pair < threadtype_enum, mstring > >ThreadMessageQueue;
 
 class Trace
 {
-  public:
+public:
     // For expansion -- 0x4C08
     enum level_enum
     {
@@ -417,10 +421,10 @@ class Trace
 	Full = 0xffff
     };
 
-  private:
+private:
     static unsigned short traces[tt_MAX];
 
-  public:
+public:
     struct levelname_struct
     {
 	mstring name;
@@ -435,7 +439,7 @@ class Trace
 	    name = in;
 	    level = lin;
 	};
-	levelname_struct & operator=(const levelname_struct & in)
+	levelname_struct &operator=(const levelname_struct & in)
 	{
 	    name = in.name;
 	    level = in.level;
@@ -491,7 +495,7 @@ extern Trace *TraceObject;
 
 // ===================================================
 
-class T_Functions:public Trace
+class T_Functions : public Trace
 {
     mstring m_name;
     mstring i_prevfunc;
@@ -500,7 +504,7 @@ class T_Functions:public Trace
     {
     }
 
-  public:
+public:
       mVariant return_value;
     T_Functions(const mstring & name);
     T_Functions(const mstring & name, const mVarArray & args);
@@ -510,11 +514,11 @@ class T_Functions:public Trace
 
 // ===================================================
 
-class T_CheckPoint:public Trace
+class T_CheckPoint : public Trace
 {
     void common(const mstring & input);
 
-  public:
+public:
       T_CheckPoint();
       T_CheckPoint(const char *fmt, ...);
      ~T_CheckPoint()
@@ -524,12 +528,12 @@ class T_CheckPoint:public Trace
 
 // ===================================================
 
-class T_Comments:public Trace
+class T_Comments : public Trace
 {
     void common(const mstring & input);
       T_Comments();
 
-  public:
+public:
       T_Comments(const char *fmt, ...);
      ~T_Comments()
     {
@@ -538,14 +542,14 @@ class T_Comments:public Trace
 
 // ===================================================
 
-class T_Modify:public Trace
+class T_Modify : public Trace
 {
     mVarArray i_args;
     unsigned int i_offset;
       T_Modify()
     {
     }
-  public:
+public:
 
       T_Modify(const mVarArray & args, unsigned int offset = 0);
     void Begin();
@@ -558,7 +562,7 @@ class T_Modify:public Trace
 
 // ===================================================
 
-class T_Changing:public Trace
+class T_Changing : public Trace
 {
     mstring i_name;
     mVariant i_arg;
@@ -566,7 +570,7 @@ class T_Changing:public Trace
     {
     }
 
-  public:
+public:
       T_Changing(const mstring & name, const mVariant & arg);
     void End(const mVariant & arg);
 
@@ -577,13 +581,13 @@ class T_Changing:public Trace
 
 // ===================================================
 
-class T_Chatter:public Trace
+class T_Chatter : public Trace
 {
     T_Chatter()
     {
     }
 
-  public:
+public:
       T_Chatter(const dir_enum direction, const mstring & input);
 
     ~T_Chatter()
@@ -593,12 +597,12 @@ class T_Chatter:public Trace
 
 // ===================================================
 
-class T_Locking:public Trace
+class T_Locking : public Trace
 {
     locktype_enum locktype;
     mstring name;
 
-  public:
+public:
       T_Locking()
     {
     }
@@ -610,9 +614,9 @@ class T_Locking:public Trace
 
 // ===================================================
 
-class T_Source:public Trace
+class T_Source : public Trace
 {
-  public:
+public:
     T_Source(const mstring & text);
       T_Source(const mstring & section, const mstring & key, const mstring & value);
 };
@@ -623,11 +627,11 @@ class T_Source:public Trace
 
 // ===================================================
 
-class T_Sockets:public Trace
+class T_Sockets : public Trace
 {
     unsigned long s_id;
 
-  public:
+public:
     void Begin(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
 	       const dir_enum direction = D_Unknown);
     void Failed(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,

@@ -27,6 +27,9 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.63  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -180,7 +183,7 @@ RCSID(commserv_h, "@(#) $Id$");
 
 #include "base.h"
 
-class Committee_t:public mUserDef, public SXP::IPersistObj, public ref_class
+class Committee_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
     friend class CommServ;
 
@@ -205,16 +208,16 @@ class Committee_t:public mUserDef, public SXP::IPersistObj, public ref_class
 
     list < entlist_t > i_Messages;
 
-    vector < entlist_t * >members_array;
-    vector < entlist_t * >messages_array;
+    vector < entlist_t * > members_array;
+    vector < entlist_t * > messages_array;
 
     void defaults();
     static SXP::Tag tag_Committee_t, tag_Name, tag_HeadCom, tag_Head, tag_Description, tag_Email, tag_URL, tag_set_Private,
 	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private, tag_lock_OpenMemos, tag_lock_Secure, tag_Members, tag_Messages,
 	tag_UserDef, tag_RegTime;
-  public:
+public:
     Committee_t();
-    Committee_t(const Committee_t & in):mUserDef(in), SXP::IPersistObj(in), ref_class()
+    Committee_t(const Committee_t & in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
     {
 	*this = in;
     }
@@ -225,7 +228,7 @@ class Committee_t:public mUserDef, public SXP::IPersistObj, public ref_class
     ~Committee_t()
     {
     }
-    Committee_t & operator=(const Committee_t & in);
+    Committee_t &operator=(const Committee_t & in);
     bool operator==(const Committee_t & in) const
     {
 	return (i_Name == in.i_Name);
@@ -306,7 +309,7 @@ class Committee_t:public mUserDef, public SXP::IPersistObj, public ref_class
     bool MSG_find(const int num);
     entlist_i message;
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_Committee_t;
     }
@@ -319,11 +322,10 @@ class Committee_t:public mUserDef, public SXP::IPersistObj, public ref_class
     void DumpE() const;
 };
 
-
-class CommServ:public mBase, public SXP::IPersistObj
+class CommServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
-  private:
+private:
     unsigned int max_logon;
 
     class
@@ -360,18 +362,18 @@ class CommServ:public mBase, public SXP::IPersistObj
     mstring ovr_cs_clear;
     static SXP::Tag tag_CommServ;
 
-  public:
-    typedef map < mstring, Committee_t * >list_t;
+public:
+    typedef map < mstring, Committee_t * > list_t;
 
-  private:
+private:
 
-    vector < Committee_t * >c_array;
+    vector < Committee_t * > c_array;
     list_t i_list;
 
     void AddCommands();
     void RemCommands();
 
-  public:
+public:
     CommServ();
     ~CommServ()
     {
@@ -389,7 +391,7 @@ class CommServ:public mBase, public SXP::IPersistObj
 	unsigned long i_Set;
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
-      public:
+   public:
 	stats_t()
 	{
 	    clear();
@@ -616,24 +618,24 @@ class CommServ:public mBase, public SXP::IPersistObj
     }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddList(Committee_t * in) throw(E_CommServ_List);
-    void AddList(const Committee_t & in) throw(E_CommServ_List)
+    void AddList(Committee_t * in) throw (E_CommServ_List);
+    void AddList(const Committee_t & in) throw (E_CommServ_List)
     {
 	AddList(new Committee_t(in));
     }
-    void AddList(const map_entry < Committee_t > &in) throw(E_CommServ_List)
+    void AddList(const map_entry < Committee_t > & in) throw (E_CommServ_List)
     {
 	AddList(in.entry());
     }
-    map_entry < Committee_t > GetList(const mstring & in) const throw(E_CommServ_List);
-    void RemList(const mstring & in) throw(E_CommServ_List);
+    map_entry < Committee_t > GetList(const mstring & in) const throw (E_CommServ_List);
+    void RemList(const mstring & in) throw (E_CommServ_List);
 #else
     void AddList(Committee_t * in);
     void AddList(const Committee_t & in)
     {
 	AddList(new Committee_t(in));
     }
-    void AddList(const map_entry < Committee_t > &in)
+    void AddList(const map_entry < Committee_t > & in)
     {
 	AddList(in.entry());
     }
@@ -648,7 +650,7 @@ class CommServ:public mBase, public SXP::IPersistObj
     {
 	return i_list.end();
     }
-    list_t::const_iterator ListBegin()const
+    list_t::const_iterator ListBegin() const
     {
 	return i_list.begin();
     }
@@ -701,7 +703,7 @@ class CommServ:public mBase, public SXP::IPersistObj
     static void do_unlock_Private(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params);
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_CommServ;
     }

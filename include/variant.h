@@ -27,6 +27,9 @@ RCSID(variant_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.41  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -118,64 +121,64 @@ class mVariant
     mDateTime DateTimeValue;
 //    } value;
 
-  public:
-      mVariant():valuetype(EMPTY)
+public:
+      mVariant() : valuetype(EMPTY)
     {
     }
     mVariant(const mVariant & in)
     {
 	*this = in;
     }
-    mVariant(const bool in):truevaluetype("bool"), valuetype(BOOL), BoolValue(in)
+    mVariant(const bool in) : truevaluetype("bool"), valuetype(BOOL), BoolValue(in)
     {
     }
-    mVariant(const char in):truevaluetype("char"), valuetype(CHAR), CharValue(in)
+    mVariant(const char in) : truevaluetype("char"), valuetype(CHAR), CharValue(in)
     {
     }
-    mVariant(const short in):truevaluetype("short"), valuetype(SHORT), ShortValue(in)
+    mVariant(const short in) : truevaluetype("short"), valuetype(SHORT), ShortValue(in)
     {
     }
-    mVariant(const int in):truevaluetype("int"), valuetype(INT), IntValue(in)
+    mVariant(const int in) : truevaluetype("int"), valuetype(INT), IntValue(in)
     {
     }
-    mVariant(const long in):truevaluetype("long"), valuetype(LONG), LongValue(in)
+    mVariant(const long in) : truevaluetype("long"), valuetype(LONG), LongValue(in)
     {
     }
-    mVariant(const float in):truevaluetype("float"), valuetype(FLOAT), FloatValue(in)
+    mVariant(const float in) : truevaluetype("float"), valuetype(FLOAT), FloatValue(in)
     {
     }
-    mVariant(const double in):truevaluetype("double"), valuetype(DOUBLE), DoubleValue(in)
+    mVariant(const double in) : truevaluetype("double"), valuetype(DOUBLE), DoubleValue(in)
     {
     }
-    mVariant(const unsigned char in):truevaluetype("unsigned char"), valuetype(UCHAR), UCharValue(in)
+    mVariant(const unsigned char in) : truevaluetype("unsigned char"), valuetype(UCHAR), UCharValue(in)
     {
     }
-    mVariant(const unsigned short in):truevaluetype("unsigned short"), valuetype(USHORT), UShortValue(in)
+    mVariant(const unsigned short in) : truevaluetype("unsigned short"), valuetype(USHORT), UShortValue(in)
     {
     }
-    mVariant(const unsigned int in):truevaluetype("unsigned int"), valuetype(UINT), UIntValue(in)
+    mVariant(const unsigned int in) : truevaluetype("unsigned int"), valuetype(UINT), UIntValue(in)
     {
     }
-    mVariant(const unsigned long in):truevaluetype("unsigned long"), valuetype(ULONG), ULongValue(in)
+    mVariant(const unsigned long in) : truevaluetype("unsigned long"), valuetype(ULONG), ULongValue(in)
     {
     }
-    mVariant(void *in):truevaluetype("void *"), valuetype(PTR), PtrValue(in)
+    mVariant(void *in) : truevaluetype("void *"), valuetype(PTR), PtrValue(in)
     {
     }
 
     // Magick ONLY types ...
-    mVariant(const mstring & in):truevaluetype("mstring"), valuetype(MSTRING), StringValue(in)
+    mVariant(const mstring & in) : truevaluetype("mstring"), valuetype(MSTRING), StringValue(in)
     {
     }
-    mVariant(const mDateTime & in):truevaluetype("mDateTime"), valuetype(MDATETIME), DateTimeValue(in)
+    mVariant(const mDateTime & in) : truevaluetype("mDateTime"), valuetype(MDATETIME), DateTimeValue(in)
     {
     }
 
     // Aliases ...
-    mVariant(const char *in):truevaluetype("char *"), valuetype(MSTRING), StringValue(in)
+    mVariant(const char *in) : truevaluetype("char *"), valuetype(MSTRING), StringValue(in)
     {
     }
-    mVariant(const string & in):truevaluetype("string"), valuetype(MSTRING), StringValue(in)
+    mVariant(const string & in) : truevaluetype("string"), valuetype(MSTRING), StringValue(in)
     {
     }
 
@@ -183,7 +186,7 @@ class mVariant
     {
     }
 
-    mVariant & operator=(const mVariant & in);
+    mVariant &operator=(const mVariant & in);
     bool operator==(const mVariant & in) const;
     bool operator!=(const mVariant & in) const
     {
@@ -201,7 +204,7 @@ class mVariant
 class mVarArray
 {
     vector < mVariant > values;
-  public:
+public:
     mVarArray()
     {
     };
@@ -210,7 +213,8 @@ class mVarArray
     mVarArray(const mVariant & one, const mVariant & two);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four);
-    mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five);
+    mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four,
+	      const mVariant & five);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
 	      const mVariant & six);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
@@ -223,35 +227,36 @@ class mVarArray
 	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
 	      const mVariant & ten);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
-	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine, const mVariant & ten,
-	      const mVariant & eleven);
+	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
+	      const mVariant & ten, const mVariant & eleven);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
-	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine, const mVariant & ten,
-	      const mVariant & eleven, const mVariant & twelve);
+	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
+	      const mVariant & ten, const mVariant & eleven, const mVariant & twelve);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
-	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine, const mVariant & ten,
-	      const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen);
+	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
+	      const mVariant & ten, const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
-	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine, const mVariant & ten,
-	      const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen, const mVariant & fourteen);
+	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
+	      const mVariant & ten, const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen,
+	      const mVariant & fourteen);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
-	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine, const mVariant & ten,
-	      const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen, const mVariant & fourteen,
-	      const mVariant & fifteen);
+	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
+	      const mVariant & ten, const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen,
+	      const mVariant & fourteen, const mVariant & fifteen);
     mVarArray(const mVariant & one, const mVariant & two, const mVariant & three, const mVariant & four, const mVariant & five,
-	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine, const mVariant & ten,
-	      const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen, const mVariant & fourteen,
-	      const mVariant & fifteen, const mVariant & sixteen);
+	      const mVariant & six, const mVariant & seven, const mVariant & eight, const mVariant & nine,
+	      const mVariant & ten, const mVariant & eleven, const mVariant & twelve, const mVariant & thirteen,
+	      const mVariant & fourteen, const mVariant & fifteen, const mVariant & sixteen);
     // if we need any more, you get the drift
     int count() const
     {
 	return values.size();
     }
-    const mVariant & operator[] (int position) const
+    const mVariant &operator [] (int position) const
     {
 	return values[position];
     }
-    mVariant & operator[] (int position)
+    mVariant &operator [] (int position)
     {
 	return values[position];
     }

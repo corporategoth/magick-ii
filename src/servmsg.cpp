@@ -28,6 +28,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.98  2002/01/13 05:18:42  prez
 ** More formatting, changed style slightly
 **
@@ -598,7 +601,7 @@ void ServMsg::do_Languages(const mstring & mynick, const mstring & source, const
 		::send(mynick, source, "    " + output);
 		output.erase();
 	    }
-	    val = *i;
+	    val = * i;
 	    val.Truncate(val.Find(".", true));
 	    if (output.length())
 		output += ", ";
@@ -635,7 +638,7 @@ void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const
     NSEND(mynick, source, "MISC/BREAKDOWN_HEAD");
     mstring out;
 
-    map < mstring, pair < unsigned int, unsigned int > >ServCounts;
+    map < mstring, pair < unsigned int, unsigned int > > ServCounts;
 
     NickServ::live_t::iterator k;
     {
@@ -645,7 +648,7 @@ void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const
 	    map_entry < Nick_Live_t > nlive(k->second);
 	    if (ServCounts.find(nlive->Server().LowerCase()) == ServCounts.end())
 	    {
-		ServCounts[nlive->Server()] = pair < unsigned int, unsigned int >(0, 0);
+		ServCounts[nlive->Server()] = pair < unsigned int, unsigned int > (0, 0);
 	    }
 	    if (!nlive->Name().empty())
 	    {
@@ -657,12 +660,12 @@ void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const
     }
     ::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%", Magick::instance().startup.Server_Name().LowerCase().c_str(),
 	    0.0, ServCounts[""].first, ServCounts[""].second,
-	    100.0 * static_cast < float >(ServCounts[""].first) / static_cast <
-	    float >(Magick::instance().nickserv.LiveSize()));
+	    100.0 * static_cast < float > (ServCounts[""].first) / static_cast < float >
+	    (Magick::instance().nickserv.LiveSize()));
     do_BreakDown2(ServCounts, mynick, source, "", "");
 }
 
-void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >ServCounts, const mstring & mynick,
+void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > > ServCounts, const mstring & mynick,
 			    const mstring & source, const mstring & previndent, const mstring & server)
 {
     FT("ServMsg::do_BreakDown2", (mynick, source, previndent, server));
@@ -703,14 +706,16 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
 	    {
 		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%", (previndent + "|-" + servername).c_str(), lag,
 			users, opers,
-			100.0 * static_cast < float >(users) / static_cast < float >(Magick::instance().nickserv.LiveSize()));
+			100.0 * static_cast < float > (users) / static_cast < float >
+			(Magick::instance().nickserv.LiveSize()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
 	    {
 		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%", (previndent + "`-" + servername).c_str(), lag,
 			users, opers,
-			100.0 * static_cast < float >(users) / static_cast < float >(Magick::instance().nickserv.LiveSize()));
+			100.0 * static_cast < float > (users) / static_cast < float >
+			(Magick::instance().nickserv.LiveSize()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
@@ -1366,7 +1371,7 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
 	}
     }
 
-    vector < unsigned long >filelist = Magick::instance().filesys.GetList(FileMap::Public, source);
+    vector < unsigned long > filelist = Magick::instance().filesys.GetList(FileMap::Public, source);
 
     if (!filelist.size())
     {
@@ -1539,7 +1544,7 @@ void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const
 	  Magick::instance().getMessage(source, "LIST/ACCESS"), priv));
     LOG(LM_INFO, "SERVMSG/FILE_PRIV",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), file,
-	 ((priv.empty())? "ALL" : priv.c_str())));
+	 ((priv.empty()) ? "ALL" : priv.c_str())));
     Magick::instance().filesys.SetPriv(FileMap::Public, num, priv);
 }
 
@@ -1641,7 +1646,7 @@ void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const 
 	    if (iter->second == NULL)
 		continue;
 
-	    float speed = static_cast < float >(iter->second->Average());
+	    float speed = static_cast < float > (iter->second->Average());
 	    char scale = 'b';
 
 	    while (speed >= 1024.0)
@@ -1670,7 +1675,7 @@ void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const 
 	    // 0000ac36 R 000000000 100.0%         PreZ
 	    ::sendV(mynick, source, "%08x %c %9d %5.1f%% %6.1f%c %s (%s)", iter->first,
 		    ((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'), iter->second->Filesize(),
-		    100.0 * static_cast < float >(iter->second->Total()) / static_cast < float >(iter->second->Filesize()),
+		    100.0 * static_cast < float > (iter->second->Total()) / static_cast < float > (iter->second->Filesize()),
 		    speed, scale, iter->second->Source().c_str(), iter->second->Filename().c_str());
 	}
     }

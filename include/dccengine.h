@@ -27,6 +27,9 @@ RCSID(dccengine_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.19  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -71,7 +74,7 @@ const char CTCP_MQUOTE_CHAR = '\020';
 
 class DccEngine
 {
-  public:
+public:
     static void DoDccSend(const mstring & mynick, const mstring & source, const ACE_INET_Addr & addr, mstring & filename,
 			  const size_t size);
     static void DoDccChat(const mstring & mynick, const mstring & source, const ACE_INET_Addr & addr);

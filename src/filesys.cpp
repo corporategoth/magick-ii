@@ -28,6 +28,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.93  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -392,7 +395,7 @@ RCSID(filesys_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-std::queue < unsigned long >DccMap::active;
+std::queue < unsigned long > DccMap::active;
 
 DccMap::xfers_t DccMap::xfers;
 #ifndef MAGICK_HAS_EXCEPTIONS
@@ -427,7 +430,7 @@ mFile::mFile(const mstring & name, const mstring & mode)
     }
 }
 
-mFile & mFile::operator=(const mFile & in)
+mFile &mFile::operator=(const mFile & in)
 {
     FT("mFile::operator=", ("(const mFile &) in"));
     i_name = in.i_name;
@@ -640,7 +643,7 @@ long mFile::Length() const
     }
     else
     {
-	retval = static_cast < long >(st.st_size);
+	retval = static_cast < long > (st.st_size);
     }
     RET(retval);
 }
@@ -778,7 +781,7 @@ long mFile::Length(const mstring & name)
     }
     else
     {
-	retval = static_cast < long >(st.st_size);
+	retval = static_cast < long > (st.st_size);
     }
     RET(retval);
 }
@@ -835,7 +838,7 @@ long mFile::Copy(const mstring & infile, const mstring & outfile, const bool app
 }
 
 // CANNOT trace this, it is used by TRACE code ...
-long mFile::Dump(const vector < mstring > &invector, const mstring & outfile, const bool append, const bool endline)
+long mFile::Dump(const vector < mstring > & invector, const mstring & outfile, const bool append, const bool endline)
 {
     FT("mFile::Dump", ("(vector<mstring>) invector", outfile, append, endline));
     if (!invector.size() || outfile.empty())
@@ -864,7 +867,7 @@ long mFile::Dump(const vector < mstring > &invector, const mstring & outfile, co
 }
 
 // CANNOT trace this, it is used by TRACE code ...
-long mFile::Dump(const list < mstring > &inlist, const mstring & outfile, const bool append, const bool endline)
+long mFile::Dump(const list < mstring > & inlist, const mstring & outfile, const bool append, const bool endline)
 {
     FT("mFile::Dump", ("(list<mstring>) inlist", outfile, append, endline));
     if (!inlist.size() || outfile.empty())
@@ -1002,12 +1005,12 @@ set < mstring > mFile::DirList(const mstring & directory, const mstring & filema
 
 unsigned long FileMap::FindAvail(const FileMap::FileType type)
 {
-    FT("FileMap::FindAvail", (static_cast < int >(type)));
+    FT("FileMap::FindAvail", (static_cast < int > (type)));
 
     unsigned long filenum = 1;
 
     {
-	RLOCK(("FileMap", static_cast < int >(type)));
+	RLOCK(("FileMap", static_cast < int > (type)));
 	while (filenum > 0)	// Guarentee 8 digits
 	{
 	    if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
@@ -1018,13 +1021,13 @@ unsigned long FileMap::FindAvail(const FileMap::FileType type)
 	}
     }
 
-    LOG(LM_ERROR, "SYS_ERRORS/FILEMAPFULL", (static_cast < int >(type)));
+    LOG(LM_ERROR, "SYS_ERRORS/FILEMAPFULL", (static_cast < int > (type)));
     RET(0);
 }
 
 bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 {
-    FT("FileMap::Exists", (static_cast < int >(type), num));
+    FT("FileMap::Exists", (static_cast < int > (type), num));
 
     mstring filename;
 
@@ -1042,25 +1045,25 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 	filemap_t::const_iterator fmi = i_FileMap.find(type);
 	if (fmi != i_FileMap.end())
 	{
-	    RLOCK(("FileMap", static_cast < int >(type)));
+	    RLOCK(("FileMap", static_cast < int > (type)));
 	    if (fmi->second.find(num) != fmi->second.end())
 	    {
 		RET(true);
 	    }
 	}
 	mFile::Erase(filename);
-	LOG(LM_CRITICAL, "SYS_ERRORS/MISSING_FILE1", (static_cast < int >(type), fmstring("%08x", num)));
+	LOG(LM_CRITICAL, "SYS_ERRORS/MISSING_FILE1", (static_cast < int > (type), fmstring("%08x", num)));
     }
     else
     {
 	filemap_t::iterator fmi = i_FileMap.find(type);
 	if (fmi != i_FileMap.end())
 	{
-	    WLOCK(("FileMap", static_cast < int >(type)));
+	    WLOCK(("FileMap", static_cast < int > (type)));
 	    if (fmi->second.find(num) != fmi->second.end())
 	    {
 		fmi->second.erase(num);
-		LOG(LM_CRITICAL, "SYS_ERRORS/MISSING_FILE2", (static_cast < int >(type), fmstring("%08x", num)));
+		LOG(LM_CRITICAL, "SYS_ERRORS/MISSING_FILE2", (static_cast < int > (type), fmstring("%08x", num)));
 	    }
 	}
     }
@@ -1069,19 +1072,19 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 
 mstring FileMap::GetName(const FileMap::FileType type, const unsigned long num)
 {
-    FT("FileMap::GetName", (static_cast < int >(type), num));
+    FT("FileMap::GetName", (static_cast < int > (type), num));
 
     if (Exists(type, num))
     {
-	RLOCK(("FileMap", static_cast < int >(type), num));
-	RET(i_FileMap[type][num].first);
+	RLOCK(("FileMap", static_cast < int > (type), num));
+	RET(i_FileMap[type] [num].first);
     }
     RET("");
 }
 
 mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long num)
 {
-    FT("FileMap::GetRealName", (static_cast < int >(type), num));
+    FT("FileMap::GetRealName", (static_cast < int > (type), num));
 
     if (Exists(type, num))
     {
@@ -1102,24 +1105,24 @@ mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long n
 
 mstring FileMap::GetPriv(const FileMap::FileType type, const unsigned long num)
 {
-    FT("FileMap::GetPriv", (static_cast < int >(type), num));
+    FT("FileMap::GetPriv", (static_cast < int > (type), num));
 
     if (Exists(type, num))
     {
-	RLOCK(("FileMap", static_cast < int >(type), num));
-	RET(i_FileMap[type][num].second);
+	RLOCK(("FileMap", static_cast < int > (type), num));
+	RET(i_FileMap[type] [num].second);
     }
     RET("");
 }
 
 bool FileMap::SetPriv(const FileMap::FileType type, const unsigned long num, const mstring & priv)
 {
-    FT("FileMap::SetPriv", (static_cast < int >(type), num, priv));
+    FT("FileMap::SetPriv", (static_cast < int > (type), num, priv));
 
     if (Exists(type, num))
     {
-	WLOCK(("FileMap", static_cast < int >(type), num));
-	i_FileMap[type][num] = pair < mstring, mstring > (i_FileMap[type][num].first, priv);
+	WLOCK(("FileMap", static_cast < int > (type), num));
+	i_FileMap[type] [num] = pair < mstring, mstring > (i_FileMap[type] [num].first, priv);
 	RET(true);
     }
     RET(false);
@@ -1127,12 +1130,12 @@ bool FileMap::SetPriv(const FileMap::FileType type, const unsigned long num, con
 
 bool FileMap::Rename(const FileMap::FileType type, const unsigned long num, const mstring & newname)
 {
-    FT("FileMap::SetPriv", (static_cast < int >(type), num, newname));
+    FT("FileMap::SetPriv", (static_cast < int > (type), num, newname));
 
     if (type != Picture && Exists(type, num))
     {
-	WLOCK(("FileMap", static_cast < int >(type), num));
-	i_FileMap[type][num] = pair < mstring, mstring > (newname, i_FileMap[type][num].second);
+	WLOCK(("FileMap", static_cast < int > (type), num));
+	i_FileMap[type] [num] = pair < mstring, mstring > (newname, i_FileMap[type] [num].second);
 	RET(true);
     }
     RET(false);
@@ -1140,7 +1143,7 @@ bool FileMap::Rename(const FileMap::FileType type, const unsigned long num, cons
 
 size_t FileMap::GetSize(const FileMap::FileType type, const unsigned long num)
 {
-    FT("FileMap::GetSize", (static_cast < int >(type), num));
+    FT("FileMap::GetSize", (static_cast < int > (type), num));
     mstring filename = GetRealName(type, num);
 
     if (!filename.empty())
@@ -1157,7 +1160,7 @@ size_t FileMap::GetSize(const FileMap::FileType type, const unsigned long num)
 
 unsigned long FileMap::NewFile(const FileMap::FileType type, const mstring & filename, const mstring & priv)
 {
-    FT("FileMap::NewFile", (static_cast < int >(type), filename, priv));
+    FT("FileMap::NewFile", (static_cast < int > (type), filename, priv));
 
     unsigned long filenum = 0;
 
@@ -1166,8 +1169,8 @@ unsigned long FileMap::NewFile(const FileMap::FileType type, const mstring & fil
 	filenum = FindAvail(type);
 	if (filenum)
 	{
-	    WLOCK(("FileMap", static_cast < int >(type), filenum));
-	    i_FileMap[type][filenum] = pair < mstring, mstring > (filename, priv);
+	    WLOCK(("FileMap", static_cast < int > (type), filenum));
+	    i_FileMap[type] [filenum] = pair < mstring, mstring > (filename, priv);
 	}
     }
 
@@ -1183,21 +1186,21 @@ void FileMap::EraseFile(const FileType type, const unsigned long num)
     if (!filename.empty())
     {
 	mFile::Erase(filename);
-	WLOCK(("FileMap", static_cast < int >(type)));
+	WLOCK(("FileMap", static_cast < int > (type)));
 	i_FileMap[type].erase(num);
     }
 }
 
-vector < unsigned long >FileMap::GetList(const FileMap::FileType type, const mstring & source)
+vector < unsigned long > FileMap::GetList(const FileMap::FileType type, const mstring & source)
 {
-    FT("FileMap::GetList", (static_cast < int >(type), source));
-    vector < unsigned long >retval;
+    FT("FileMap::GetList", (static_cast < int > (type), source));
+    vector < unsigned long > retval;
     map < unsigned long, pair < mstring, mstring > >::iterator iter;
     unsigned int i;
 
     if (i_FileMap.find(type) != i_FileMap.end())
     {
-	RLOCK(("FileMap", static_cast < int >(type)));
+	RLOCK(("FileMap", static_cast < int > (type)));
 	for (iter = i_FileMap[type].begin(); iter != i_FileMap[type].end(); iter++)
 	{
 	    if (!Exists(type, iter->first))
@@ -1206,7 +1209,7 @@ vector < unsigned long >FileMap::GetList(const FileMap::FileType type, const mst
 	    }
 	    else
 	    {
-		RLOCK2(("FileMap", static_cast < int >(type), iter->first));
+		RLOCK2(("FileMap", static_cast < int > (type), iter->first));
 		if (iter->second.second.empty())
 		    retval.push_back(iter->first);
 		else
@@ -1228,16 +1231,16 @@ vector < unsigned long >FileMap::GetList(const FileMap::FileType type, const mst
 
 unsigned long FileMap::GetNum(const FileMap::FileType type, const mstring & name)
 {
-    FT("FileMap::GetNum", (static_cast < int >(type), name));
+    FT("FileMap::GetNum", (static_cast < int > (type), name));
     map < unsigned long, pair < mstring, mstring > >::iterator iter;
 
     filemap_t::iterator fmi = i_FileMap.find(type);
     if (fmi != i_FileMap.end())
     {
-	RLOCK(("FileMap", static_cast < int >(type)));
+	RLOCK(("FileMap", static_cast < int > (type)));
 	for (iter = fmi->second.begin(); iter != fmi->second.end(); iter++)
 	{
-	    RLOCK2(("FileMap", static_cast < int >(type), iter->first));
+	    RLOCK2(("FileMap", static_cast < int > (type), iter->first));
 	    if (iter->second.first == name)
 	    {
 		if (Exists(type, iter->first))
@@ -1252,7 +1255,7 @@ unsigned long FileMap::GetNum(const FileMap::FileType type, const mstring & name
 
 size_t FileMap::FileSysSize(const FileMap::FileType type) const
 {
-    FT("FileMap::FileSysSize", (static_cast < int >(type)));
+    FT("FileMap::FileSysSize", (static_cast < int > (type)));
     size_t retval = 0;
 
     if (type == MemoAttach)
@@ -1270,15 +1273,15 @@ SXP::Tag FileMap::tag_File("File");
 
 void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
-    static_cast < void >(pElement);
+    static_cast < void > (pIn);
+    static_cast < void > (pElement);
 
     FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
 void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("FileMap::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
@@ -1294,7 +1297,7 @@ void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("FileMap::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
@@ -1310,8 +1313,8 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++)
 	{
 	    out.erase();
-	    out << static_cast <
-		int >(i1->first) << "\n" << i2->first << "\n" << i2->second.first << "\n" << i2->second.second;
+	    out << static_cast < int >
+		(i1->first) << "\n" << i2->first << "\n" << i2->second.first << "\n" << i2->second.second;
 
 	    pOut->WriteElement(tag_File, out);
 	}
@@ -1344,7 +1347,7 @@ void FileMap::PostLoad()
 		    priv = fm_array[i]->ExtractWord(4, "\n");
 		else
 		    priv.erase();
-		i_FileMap[type][number] = pair < mstring, mstring > (name, priv);
+		i_FileMap[type] [number] = pair < mstring, mstring > (name, priv);
 	    }
 	    delete fm_array[i];
 	}
@@ -1353,11 +1356,11 @@ void FileMap::PostLoad()
 }
 
 DccXfer::DccXfer(const unsigned long dccid, const mSocket & sock, const mstring & mynick, const mstring & source,
-		 const FileMap::FileType filetype, const unsigned long filenum):i_Socket(sock), i_Source(source),
+		 const FileMap::FileType filetype, const unsigned long filenum) : i_Socket(sock), i_Source(source),
 i_Mynick(mynick), i_Filename(Magick::instance().filesys.GetName(filetype, filenum)),
 i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
 {
-    FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock", mynick, source, static_cast < int >(filetype), filenum));
+    FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock", mynick, source, static_cast < int > (filetype), filenum));
 
     // Setup Paramaters
     i_Transiant = NULL;
@@ -1396,7 +1399,7 @@ i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
     }
 
     // Initialize Transfer
-    i_Transiant = new unsigned char[i_Blocksize + 1];
+    i_Transiant = new unsigned char [i_Blocksize + 1];
 
     memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
@@ -1408,7 +1411,7 @@ i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
 }
 
 DccXfer::DccXfer(const unsigned long dccid, const mSocket & sock, const mstring & mynick, const mstring & source,
-		 const mstring & filename, const size_t filesize, const size_t blocksize):i_Socket(sock), i_Source(source),
+		 const mstring & filename, const size_t filesize, const size_t blocksize) : i_Socket(sock), i_Source(source),
 i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Get), i_DccId(dccid)
 {
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock", mynick, source, filename, filesize, blocksize));
@@ -1443,7 +1446,7 @@ i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blo
     i_Filesize = filesize;
 
     // Initialize Transfer
-    i_Transiant = new unsigned char[i_Blocksize + 1];
+    i_Transiant = new unsigned char [i_Blocksize + 1];
 
     memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
@@ -1459,7 +1462,7 @@ DccXfer::~DccXfer()
     NFT("DccXfer::~DccXfer");
 
     if (i_Transiant != NULL)
-	delete[]i_Transiant;
+	delete[] i_Transiant;
     i_Transiant = NULL;
 
     if (i_File.IsOpened())
@@ -1533,7 +1536,7 @@ DccXfer::~DccXfer()
 	mFile::Erase(i_Tempfile);
 }
 
-DccXfer & DccXfer::operator=(const DccXfer & in)
+DccXfer &DccXfer::operator=(const DccXfer & in)
 {
     FT("DccXfer::operator=", ("(const DccXfer &) in"));
 
@@ -1569,7 +1572,7 @@ DccXfer & DccXfer::operator=(const DccXfer & in)
     i_Transiant = NULL;
     if (in.i_Transiant != NULL && in.i_XferTotal)
     {
-	i_Transiant = new unsigned char[i_Blocksize + 1];
+	i_Transiant = new unsigned char [i_Blocksize + 1];
 
 	memset(i_Transiant, 0, i_Blocksize + 1);
 	memcpy(i_Transiant, in.i_Transiant, i_XferTotal);
@@ -1676,7 +1679,7 @@ void DccXfer::Action()
 	if (i_Traffic.size() &&
 	    (Magick::instance().files.Max_Speed() == 0 || Average() <= Magick::instance().files.Max_Speed()))
 	{
-	    XferAmt = i_Socket.recv(reinterpret_cast < void *>(&i_Transiant[i_XferTotal]), i_Blocksize - i_XferTotal, 1);
+	    XferAmt = i_Socket.recv(reinterpret_cast < void * > (&i_Transiant[i_XferTotal]), i_Blocksize - i_XferTotal, 1);
 
 	    COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 		 i_Socket.Last_Error_String().c_str()));
@@ -1711,7 +1714,7 @@ void DccXfer::Action()
 		    i_XferTotal = 0;
 		    memset(i_Transiant, 0, i_Blocksize);
 		    verify = htonl(i_Total);
-		    XferAmt = i_Socket.send(reinterpret_cast < void *>(&verify), 4, 1);
+		    XferAmt = i_Socket.send(reinterpret_cast < void * > (&verify), 4, 1);
 
 		    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 			 i_Socket.Last_Error_String().c_str()));
@@ -1755,7 +1758,7 @@ void DccXfer::Action()
 	{
 	    if (i_XferTotal == i_Blocksize)
 	    {
-		XferAmt = i_Socket.recv(reinterpret_cast < void *>(&verify), 4, 1);
+		XferAmt = i_Socket.recv(reinterpret_cast < void * > (&verify), 4, 1);
 
 		COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 		     i_Socket.Last_Error_String().c_str()));
@@ -1797,7 +1800,7 @@ void DccXfer::Action()
 		i_XferTotal = 0;
 	    }
 	    CP(("Going to send %d bytes ...", TranSz));
-	    XferAmt = i_Socket.send(reinterpret_cast < void *>(&i_Transiant[i_XferTotal]), TranSz - i_XferTotal, 1);
+	    XferAmt = i_Socket.send(reinterpret_cast < void * > (&i_Transiant[i_XferTotal]), TranSz - i_XferTotal, 1);
 	    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 		 i_Socket.Last_Error_String().c_str()));
 	}
@@ -1925,7 +1928,7 @@ int DccMap::open(void *in)
 
 int DccMap::close(const unsigned long in)
 {
-    static_cast < void >(in);
+    static_cast < void > (in);
 
     FT("DccMap::close", (in));
 
@@ -1998,7 +2001,8 @@ int DccMap::svc(void)
 	}
 #endif
 	RLOCK(("DccMap", "xfers", WorkId));
-	DccXfer & dcc = GetXfers(WorkId);
+	DccXfer &dcc = GetXfers(WorkId);
+
 	if (!dcc.Ready())
 	{
 	    RemXfers(WorkId);
@@ -2060,9 +2064,9 @@ void DccMap::AddXfers(DccXfer * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-DccXfer & DccMap::GetXfers(const unsigned long in) throw(E_DccMap_Xfers)
+DccXfer &DccMap::GetXfers(const unsigned long in) throw(E_DccMap_Xfers)
 #else
-DccXfer & DccMap::GetXfers(const unsigned long in)
+DccXfer &DccMap::GetXfers(const unsigned long in)
 #endif
 {
     FT("DccMap::GetXfers", (in));
@@ -2097,7 +2101,7 @@ DccXfer & DccMap::GetXfers(const unsigned long in)
 #endif
     }
 
-    NRET(DccXfer &, const_cast < DccXfer & >(*iter->second));
+    NRET(DccXfer &, const_cast < DccXfer & > (*iter->second));
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -2163,13 +2167,13 @@ bool DccMap::IsXfers(const unsigned long in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-vector < unsigned long >DccMap::GetList(const mstring & in) throw(E_DccMap_Xfers)
+vector < unsigned long > DccMap::GetList(const mstring & in) throw(E_DccMap_Xfers)
 #else
-vector < unsigned long >DccMap::GetList(const mstring & in)
+vector < unsigned long > DccMap::GetList(const mstring & in)
 #endif
 {
     FT("DccMap::GetList", (in));
-    vector < unsigned long >retval;
+    vector < unsigned long > retval;
 
     DccMap::xfers_t::const_iterator iter;
     RLOCK(("DccMap", "xfers"));
@@ -2205,7 +2209,7 @@ void *DccMap::Connect2(void *in)
     mThread::Attach(tt_MAIN);
     FT("DccMap::Connect2", ("(void *) in"));
 
-    NewSocket *val = reinterpret_cast < NewSocket * >(in);
+    NewSocket *val = reinterpret_cast < NewSocket * > (in);
 
     Magick::register_instance(val->magick_instance);
 
@@ -2252,7 +2256,7 @@ void *DccMap::Accept2(void *in)
     mThread::Attach(tt_MAIN);
     FT("DccMap::Accept2", ("(void *) in"));
 
-    NewSocket *val = reinterpret_cast < NewSocket * >(in);
+    NewSocket *val = reinterpret_cast < NewSocket * > (in);
 
     Magick::register_instance(val->magick_instance);
 
@@ -2300,7 +2304,7 @@ void DccMap::Connect(const ACE_INET_Addr & address, const mstring & mynick, cons
     FT("DccMap::Connect", ("(ACE_INET_Addr) address", mynick, source, filename, filesize, blocksize));
     NewSocket *tmp = new NewSocket;
 
-    tmp->magick_instance = &Magick::instance();
+    tmp->magick_instance = & Magick::instance();
     tmp->address = address;
     tmp->source = source;
     tmp->mynick = mynick;
@@ -2308,23 +2312,23 @@ void DccMap::Connect(const ACE_INET_Addr & address, const mstring & mynick, cons
     tmp->filesize = filesize;
     tmp->blocksize = blocksize;
 
-    tm.spawn(Connect2, reinterpret_cast < void *>(tmp), THR_NEW_LWP | THR_DETACHED);
+    tm.spawn(Connect2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
 }
 
 void DccMap::Accept(const unsigned short port, const mstring & mynick, const mstring & source,
 		    const FileMap::FileType filetype, const unsigned long filenum)
 {
-    FT("DccMap::Accept", (port, mynick, source, static_cast < int >(filetype), filenum));
+    FT("DccMap::Accept", (port, mynick, source, static_cast < int > (filetype), filenum));
     NewSocket *tmp = new NewSocket;
 
-    tmp->magick_instance = &Magick::instance();
+    tmp->magick_instance = & Magick::instance();
     tmp->port = port;
     tmp->source = source;
     tmp->mynick = mynick;
     tmp->filetype = filetype;
     tmp->filenum = filenum;
 
-    tm.spawn(Accept2, reinterpret_cast < void *>(tmp), THR_NEW_LWP | THR_DETACHED);
+    tm.spawn(Accept2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
 }
 
 void DccMap::Cancel(const unsigned long DccId, const bool silent)
@@ -2338,7 +2342,8 @@ void DccMap::Cancel(const unsigned long DccId, const bool silent)
 	if (IsXfers(DccId))
 	{
 	    RLOCK(("DccMap", "xfers", DccId));
-	    DccXfer & dcc = GetXfers(DccId);
+	    DccXfer &dcc = GetXfers(DccId);
+
 	    if (!silent)
 		SEND(dcc.Mynick(), dcc.Source(), "DCC/FAILED", ((dcc.Type() == DccXfer::Get) ? "GET" : "SEND"));
 	    dcc.Cancel();

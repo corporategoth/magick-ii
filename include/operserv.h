@@ -27,6 +27,9 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.63  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -164,11 +167,11 @@ RCSID(operserv_h, "@(#) $Id$");
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class OperServ:public mBase, public SXP::IPersistObj
+class OperServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend class Nick_Live_t;
-  private:
+private:
     mstring services_admin;
     bool secure;
     bool secureoper;
@@ -197,17 +200,17 @@ class OperServ:public mBase, public SXP::IPersistObj
     unsigned long max_htm_gap;
     unsigned long htm_on_gap;
 
-  public:
+public:
     typedef entlist_val_pair_t < unsigned int, mstring > Clone_Type;
     typedef entlist_val_pair_t < unsigned long, mstring > Akill_Type;
     typedef entlist_val_t < mstring > OperDeny_Type;
     typedef entlist_val_t < bool > Ignore_Type;
 
-  private:
+private:
 
     // Mask (H), Limit (int), Reason (mstring)
     set < Clone_Type > i_Clone;
-    map < mstring, pair < unsigned int, list < mDateTime > > >CloneList;
+    map < mstring, pair < unsigned int, list < mDateTime > > > CloneList;
 
     // Mask (U_H), Expire (long), Reason (mstring)
     set < Akill_Type > i_Akill;
@@ -218,10 +221,10 @@ class OperServ:public mBase, public SXP::IPersistObj
     // Mask (N_U_H), Permanent (bool)
     set < Ignore_Type > i_Ignore;
 
-    vector < Clone_Type * >c_array;
-    vector < Akill_Type * >a_array;
-    vector < OperDeny_Type * >o_array;
-    vector < Ignore_Type * >i_array;
+    vector < Clone_Type * > c_array;
+    vector < Akill_Type * > a_array;
+    vector < OperDeny_Type * > o_array;
+    vector < Ignore_Type * > i_array;
 
     void AddCommands();
     void RemCommands();
@@ -230,7 +233,7 @@ class OperServ:public mBase, public SXP::IPersistObj
     void RemHost(const mstring & host);
 
     static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny, tag_Ignore;
-  public:
+public:
     OperServ();
     ~OperServ()
     {
@@ -258,7 +261,7 @@ class OperServ:public mBase, public SXP::IPersistObj
 	unsigned long i_Akill;
 	unsigned long i_OperDeny;
 	unsigned long i_Ignore;
-      public:
+   public:
 	stats_t()
 	{
 	    clear();
@@ -548,7 +551,6 @@ class OperServ:public mBase, public SXP::IPersistObj
 
     set < Ignore_Type >::iterator Ignore;
 
-
     threadtype_enum Get_TType() const
     {
 	return tt_OperServ;
@@ -599,7 +601,7 @@ class OperServ:public mBase, public SXP::IPersistObj
     static void do_ignore_Del(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_ignore_List(const mstring & mynick, const mstring & source, const mstring & params);
 
-    SXP::Tag & GetClassTag()const
+    SXP::Tag & GetClassTag() const
     {
 	return tag_OperServ;
     }

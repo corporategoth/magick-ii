@@ -27,6 +27,9 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.24  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -114,11 +117,11 @@ RCSID(mconfig_h, "@(#) $Id$");
 class ceNode
 {
     friend class mConfigEngine;
-  private:
+private:
       mstring i_Name;
       map < mstring, mstring > i_keys;
-      map < mstring, ceNode * >i_children;
-  public:
+      map < mstring, ceNode * > i_children;
+public:
       ceNode()
     {
     }
@@ -127,7 +130,7 @@ class ceNode
 	*this = in;
     }
     ~ceNode();
-    ceNode & operator=(const ceNode & in);
+    ceNode &operator=(const ceNode & in);
     bool operator==(const ceNode & in) const;
     bool operator<(const ceNode & in) const
     {
@@ -146,16 +149,16 @@ class ceNode
     mstring GetKey(const mstring & KeyName, const mstring & DefValue) const;
     ceNode *GetNode(const mstring & NodeName);
     mstring Write(const mstring & KeyName, const mstring & Value);
-    map < mstring, mstring > GetMap()const;
+    map < mstring, mstring > GetMap() const;
 };
 
 class mConfigEngine
 {
-  private:
+private:
     ceNode RootNode;
     mstring i_FileName;
-      vector < mstring > PreParse(const vector < mstring > &in);
-  public:
+      vector < mstring > PreParse(const vector < mstring > & in);
+public:
       mConfigEngine()
     {
     }
@@ -171,17 +174,17 @@ class mConfigEngine
     }
     bool LoadFile();
     bool LoadFromString(const mstring & configstring);
-    bool LoadFromArray(const vector < mstring > &configarray);
+    bool LoadFromArray(const vector < mstring > & configarray);
     bool SaveFile();
     void Empty();
 
-    map < mstring, mstring > GetMap()const
+    map < mstring, mstring > GetMap() const
     {
 	return RootNode.GetMap();
     }
     mstring Read(const mstring & key, const mstring & Defailt = "") const;
     bool Read(const mstring & key, mstring & outvar, const mstring & Default = "") const;
-    bool Read(const mstring & key, bool & outvar, const bool Default = false) const;
+    bool Read(const mstring & key, bool &outvar, const bool Default = false) const;
     bool Read(const mstring & key, int &outvar, const int Default = 0) const;
     bool Read(const mstring & key, unsigned int &outvar, const unsigned int Default = 0) const;
     bool Read(const mstring & key, long &outvar, const long Default = 0) const;

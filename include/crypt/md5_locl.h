@@ -177,7 +177,6 @@
 #define ROTATE(a,n)     (((a)<<(n))|(((a)&0xffffffff)>>(32-(n))))
 #endif
 
-
 #define R0(a,b,c,d,k,s,t) { \
 	a+=((k)+(t)+F((b),(c),(d))); \
 	a=ROTATE(a,s); \

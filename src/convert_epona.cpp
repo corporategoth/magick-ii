@@ -28,6 +28,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.10  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -155,7 +158,7 @@ EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
     EPO_dbFILE *f;
     FILE *fp;
 
-    static_cast < void >(service);
+    static_cast < void > (service);
 
     f = (EPO_dbFILE *) malloc(sizeof(*f));
     if (!f)
@@ -191,7 +194,7 @@ EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
 
 EPO_dbFILE *EPO_open_db(const char *service, const char *filename, const char *mode, uint32 version)
 {
-    static_cast < void >(version);
+    static_cast < void > (version);
 
     if (*mode == 'r')
     {
@@ -550,7 +553,7 @@ void EPO_load_ns_dbase(void)
     /* First we load nick cores */
     for (i = 0; i < 1024 && !failed; i++)
     {
-	nclast = &nclists[i];
+	nclast = & nclists[i];
 	ncprev = NULL;
 
 	while ((c = EPO_getc_db(f)) == 1)
@@ -562,7 +565,7 @@ void EPO_load_ns_dbase(void)
 
 	    nc = (EPO_NickCore *) calloc(sizeof(EPO_NickCore), 1);
 	    *nclast = nc;
-	    nclast = &nc->next;
+	    nclast = & nc->next;
 	    nc->prev = ncprev;
 	    ncprev = nc;
 
@@ -774,7 +777,7 @@ int EPO_delcore(EPO_NickCore * nc)
     }							\
 } while (0)
 
-static int def_levels[][2] = {
+static int def_levels[] [2] = {
     {EPO_CA_AUTOOP, 5},
     {EPO_CA_AUTOVOICE, 3},
     {EPO_CA_AUTODEOP, -1},
@@ -821,8 +824,8 @@ void EPO_reset_levels(EPO_ChannelInfo * ci)
     if (ci->levels)
 	free(ci->levels);
     ci->levels = (int16 *) malloc(EPO_CA_SIZE * sizeof(int16 *));
-    for (i = 0; def_levels[i][0] >= 0; i++)
-	ci->levels[def_levels[i][0]] = def_levels[i][1];
+    for (i = 0; def_levels[i] [0] >= 0; i++)
+	ci->levels[def_levels[i] [0]] = def_levels[i] [1];
 }
 
 void EPO_load_cs_dbase(void)

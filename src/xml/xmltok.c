@@ -263,12 +263,12 @@ static void utf8_toUtf8(const ENCODING * enc, const char **fromP, const char *fr
     if (fromLim - *fromP > toLim - *toP)
     {
 	/* Avoid copying partial characters. */
-	for (fromLim = *fromP + (toLim - *toP); fromLim > *fromP; fromLim--)
+	for (fromLim = * fromP + (toLim - *toP); fromLim > * fromP; fromLim--)
 	    if (((unsigned char) fromLim[-1] & 0xc0) != 0x80)
 		break;
     }
-    for (to = *toP, from = *fromP; from != fromLim; from++, to++)
-	*to = *from;
+    for (to = * toP, from = * fromP; from != fromLim; from++, to++)
+	*to = * from;
     *fromP = from;
     *toP = to;
 }
@@ -276,8 +276,8 @@ static void utf8_toUtf8(const ENCODING * enc, const char **fromP, const char *fr
 static void utf8_toUtf16(const ENCODING * enc, const char **fromP, const char *fromLim, unsigned short **toP,
 			 const unsigned short *toLim)
 {
-    unsigned short *to = *toP;
-    const char *from = *fromP;
+    unsigned short *to = * toP;
+    const char *from = * fromP;
 
     while (from != fromLim && to != toLim)
     {
@@ -306,7 +306,7 @@ static void utf8_toUtf16(const ENCODING * enc, const char **fromP, const char *f
 	    }
 	    break;
 	default:
-	    *to++ = *from++;
+	    *to++ = * from++;
 	    break;
 	}
     }
@@ -381,7 +381,7 @@ static void latin1_toUtf8(const ENCODING * enc, const char **fromP, const char *
 	{
 	    if (*toP == toLim)
 		break;
-	    *(*toP)++ = *(*fromP)++;
+	    *(*toP)++ = * (*fromP)++;
 	}
     }
 }
@@ -420,7 +420,7 @@ static const struct normal_encoding latin1_encoding = {
 static void ascii_toUtf8(const ENCODING * enc, const char **fromP, const char *fromLim, char **toP, const char *toLim)
 {
     while (*fromP != fromLim && *toP != toLim)
-	*(*toP)++ = *(*fromP)++;
+	*(*toP)++ = * (*fromP)++;
 }
 
 #ifdef XML_NS
@@ -835,8 +835,8 @@ static int streqci(const char *s1, const char *s2)
 {
     for (;;)
     {
-	char c1 = *s1++;
-	char c2 = *s2++;
+	char c1 = * s1++;
+	char c2 = * s2++;
 
 	if (ASCII_a <= c1 && c1 <= ASCII_z)
 	    c1 += ASCII_A - ASCII_a;
@@ -937,7 +937,7 @@ static int parsePseudoAttribute(const ENCODING * enc, const char *ptr, const cha
 	}
 	ptr += enc->minBytesPerChar;
     }
-    if (ptr == *namePtr)
+    if (ptr == * namePtr)
     {
 	*nextTokPtr = ptr;
 	return 0;
@@ -1181,7 +1181,7 @@ struct unknown_encoding
     int (*convert) (void *userData, const char *p);
     void *userData;
     unsigned short utf16[256];
-    char utf8[256][4];
+    char utf8[256] [4];
 };
 
 int XmlSizeOfUnknownEncoding(void)
@@ -1226,7 +1226,7 @@ static void unknown_toUtf8(const ENCODING * enc, const char **fromP, const char 
 	if (*fromP == fromLim)
 	    break;
 	utf8 = ((const struct unknown_encoding *) enc)->utf8[(unsigned char) **fromP];
-	n = *utf8++;
+	n = * utf8++;
 	if (n == 0)
 	{
 	    int c =
@@ -1246,7 +1246,7 @@ static void unknown_toUtf8(const ENCODING * enc, const char **fromP, const char 
 	}
 	do
 	{
-	    *(*toP)++ = *utf8++;
+	    *(*toP)++ = * utf8++;
 	} while (--n != 0);
     }
 }
@@ -1275,7 +1275,7 @@ ENCODING *XmlInitUnknownEncoding(void *mem, int *table, int (*convert) (void *us
     int i;
     struct unknown_encoding *e = mem;
     for (i = 0; i < (int) sizeof(struct normal_encoding); i++)
-	((char *) mem)[i] = ((char *) &latin1_encoding)[i];
+	((char *) mem) [i] = ((char *) &latin1_encoding) [i];
     for (i = 0; i < 128; i++)
 	if (latin1_encoding.type[i] != BT_OTHER && latin1_encoding.type[i] != BT_NONXML && table[i] != i)
 	    return 0;
@@ -1288,15 +1288,15 @@ ENCODING *XmlInitUnknownEncoding(void *mem, int *table, int (*convert) (void *us
 	    e->normal.type[i] = BT_MALFORM;
 	    /* This shouldn't really get used. */
 	    e->utf16[i] = 0xFFFF;
-	    e->utf8[i][0] = 1;
-	    e->utf8[i][1] = 0;
+	    e->utf8[i] [0] = 1;
+	    e->utf8[i] [1] = 0;
 	}
 	else if (c < 0)
 	{
 	    if (c < -4)
 		return 0;
 	    e->normal.type[i] = BT_LEAD2 - (c + 2);
-	    e->utf8[i][0] = 0;
+	    e->utf8[i] [0] = 0;
 	    e->utf16[i] = 0;
 	}
 	else if (c < 0x80)
@@ -1304,8 +1304,8 @@ ENCODING *XmlInitUnknownEncoding(void *mem, int *table, int (*convert) (void *us
 	    if (latin1_encoding.type[c] != BT_OTHER && latin1_encoding.type[c] != BT_NONXML && c != i)
 		return 0;
 	    e->normal.type[i] = latin1_encoding.type[c];
-	    e->utf8[i][0] = 1;
-	    e->utf8[i][1] = (char) c;
+	    e->utf8[i] [0] = 1;
+	    e->utf8[i] [1] = (char) c;
 	    e->utf16[i] = c == 0 ? 0xFFFF : c;
 	}
 	else if (checkCharRefNumber(c) < 0)
@@ -1313,8 +1313,8 @@ ENCODING *XmlInitUnknownEncoding(void *mem, int *table, int (*convert) (void *us
 	    e->normal.type[i] = BT_NONXML;
 	    /* This shouldn't really get used. */
 	    e->utf16[i] = 0xFFFF;
-	    e->utf8[i][0] = 1;
-	    e->utf8[i][1] = 0;
+	    e->utf8[i] [0] = 1;
+	    e->utf8[i] [1] = 0;
 	}
 	else
 	{
@@ -1326,7 +1326,7 @@ ENCODING *XmlInitUnknownEncoding(void *mem, int *table, int (*convert) (void *us
 		e->normal.type[i] = BT_NAME;
 	    else
 		e->normal.type[i] = BT_OTHER;
-	    e->utf8[i][0] = (char) XmlUtf8Encode(c, e->utf8[i] + 1);
+	    e->utf8[i] [0] = (char) XmlUtf8Encode(c, e->utf8[i] + 1);
 	    e->utf16[i] = c;
 	}
     }

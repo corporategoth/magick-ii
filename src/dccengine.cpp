@@ -28,6 +28,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.51  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -267,7 +270,7 @@ vector < mstring > DccEngine::ctcpExtract(const mstring & in)
     End = in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     if (End < 0)
 	NRET(vector < mstring >, Result);
-    while (Start >= 0 && Start < static_cast < int >(in.length()) && End >= 0 && End < static_cast < int >(in.length()))
+    while (Start >= 0 && Start < static_cast < int > (in.length()) && End >= 0 && End < static_cast < int > (in.length()))
     {
 	// the +1,-1 removes the '\001' markers off front and back
 	Result.push_back(in.SubString(Start + 1, End - 1));
@@ -279,8 +282,8 @@ vector < mstring > DccEngine::ctcpExtract(const mstring & in)
 
 void DccEngine::decodeReply(const mstring & mynick, const mstring & source, const mstring & in)
 {
-    static_cast < void >(mynick);
-    static_cast < void >(source);
+    static_cast < void > (mynick);
+    static_cast < void > (source);
 
     FT("DccEngine::decodeReply", (in));
     vector < mstring > ResVector;
@@ -527,7 +530,7 @@ void DccEngine::GotDCC(const mstring & mynick, const mstring & source, const mst
 
     address = atoul(straddress.c_str());
     longport = atoul(strport.c_str());
-    port = static_cast < unsigned short >(longport);
+    port = static_cast < unsigned short > (longport);
 
     size = 0;
     if (!strsize.empty())
@@ -568,7 +571,7 @@ void DccEngine::DoDccChat(const mstring & mynick, const mstring & source, const 
 
     SEND(mynick, source, "DCC/NOACCESS", ("CHAT"));
 
-    static_cast < void >(addr);
+    static_cast < void > (addr);
 }
 
 // INBOUND DCC!!

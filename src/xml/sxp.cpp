@@ -28,6 +28,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2002/01/14 07:16:56  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.33  2002/01/13 05:18:42  prez
 ** More formatting, changed style slightly
 **
@@ -313,7 +316,7 @@ namespace SXP
 		if (*p < 32 || *p > 126)
 		{
 		    mstring tmp;
-		    tmp.Format("&asc%d;", static_cast < unsigned char >(*p));
+		    tmp.Format("&#%d;", static_cast < unsigned char > (*p));
 
 		    ret.append(tmp);
 		}
@@ -357,17 +360,16 @@ namespace SXP
 		    p += 5;
 		    ret.append('"');
 		}
-		else if (strncmp(p + 1, "asc", 3) == 0)
+		else if (strncmp(p + 1, "#", 1) == 0)
 		{
-		    p += 4;
-		    char tmp[5];
+		    p += 2;
+		    char tmp[4];
 
-		    memset(tmp, 0, 5);
-		    for (short i = 0; *p != ';' && i < 5; p++, i++)
-			tmp[i] = *p;
-		    p--;
+		    memset(tmp, 0, 4);
+		    for (short i = 0; *p != ';' && i < 4; p++, i++)
+			tmp[i] = * p;
 		    if (strlen(tmp))
-			ret.append(static_cast < char >(atoi(tmp)));
+			ret.append(static_cast < char > (atoi(tmp)));
 		}
 		else
 		{
@@ -466,7 +468,7 @@ namespace SXP
     {
 	CParser *pThis = (CParser *) puserData;
 
-	if ( !pThis->m_bShuttingDown)
+	if (!pThis->m_bShuttingDown)
 	{
 	    pThis->StartElement(name, atts);
 	}
@@ -475,7 +477,7 @@ namespace SXP
     {
 	CParser *pThis = (CParser *) puserData;
 
-	if ( !pThis->m_bShuttingDown)
+	if (!pThis->m_bShuttingDown)
 	{
 	    pThis->EndElement(name);
 	}
@@ -484,7 +486,7 @@ namespace SXP
     {
 	CParser *pThis = (CParser *) puserData;
 
-	if ( !pThis->m_bShuttingDown)
+	if (!pThis->m_bShuttingDown)
 	{
 	    pThis->CharData(data, len);
 	}
@@ -517,12 +519,12 @@ namespace SXP
     {
 	if (m_parser != 0)
 	    XML_ParserFree(m_parser);
-	while ( !m_EHStack.empty())
+	while (!m_EHStack.empty())
 	{
 	    //delete m_EHStack.top(); 
 	    m_EHStack.pop();
 	}
-	while ( !m_EStack.empty())
+	while (!m_EStack.empty())
 	{
 	    delete m_EStack.top();
 
@@ -533,14 +535,14 @@ namespace SXP
 
     void MOutStream::ExpandBuf()
     {
-	char *newbuf = new char[buf_sz + INIT_BUFSIZE];
+	char *newbuf = new char [buf_sz + INIT_BUFSIZE];
 
 	memcpy(newbuf, buffer, buf_sz);
 	memset(&newbuf[buf_sz], 0, INIT_BUFSIZE);
 	buf_sz += INIT_BUFSIZE;
 
 	if (buffer != NULL)
-	    delete[]buffer;
+	    delete[] buffer;
 	buffer = newbuf;
     }
 
@@ -572,9 +574,9 @@ namespace SXP
 	    buffer[buf_cnt++] = '\t';
     }
 
-  MOutStream::MOutStream():m_nIndent(0), buf_sz(INIT_BUFSIZE), buf_cnt(0)
+    MOutStream::MOutStream() : m_nIndent(0), buf_sz(INIT_BUFSIZE), buf_cnt(0)
     {
-	buffer = new char[buf_sz];
+	buffer = new char [buf_sz];
 
 	memset(buffer, 0, buf_sz);
     }
@@ -582,7 +584,7 @@ namespace SXP
     MOutStream::~MOutStream()
     {
 	if (buffer != NULL)
-	    delete[]buffer;
+	    delete[] buffer;
     }
 
     void MOutStream::BeginXML(void)

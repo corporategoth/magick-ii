@@ -28,6 +28,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.77  2002/01/13 05:18:42  prez
 ** More formatting, changed style slightly
 **
@@ -240,10 +243,10 @@ RCSID(utils_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-vector < int >ParseNumbers(const mstring & what)
+vector < int > ParseNumbers(const mstring & what)
 {
     FT("ParseNumbers", (what));
-    vector < int >numbers;
+    vector < int > numbers;
     unsigned int i;
     mstring tmp;
 
@@ -347,7 +350,7 @@ unsigned long FromHumanTime(const mstring & in)
 	case 'y':
 	    if (number != 0)
 	    {
-		total += number * static_cast < unsigned long >(60.0 * 60.0 * 24.0 * 365.25);
+		total += number * static_cast < unsigned long > (60.0 * 60.0 * 24.0 * 365.25);
 
 		number = 0;
 	    }
@@ -403,7 +406,7 @@ unsigned long FromHumanTime(const mstring & in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += static_cast < unsigned long >(in[i] - '0');
+	    number += static_cast < unsigned long > (in[i] - '0');
 
 	    break;
 	default:
@@ -428,7 +431,7 @@ mstring ToHumanTime(const unsigned long in, const mstring & source)
     }
     else
     {
-	retval = DisectTime(static_cast < long >(in), source);
+	retval = DisectTime(static_cast < long > (in), source);
     }
 
     RET(retval);
@@ -565,7 +568,7 @@ unsigned long FromHumanSpace(const mstring & in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += static_cast < unsigned long >(in[i] - '0');
+	    number += static_cast < unsigned long > (in[i] - '0');
 
 	    break;
 	default:
@@ -583,7 +586,7 @@ mstring parseMessage(const mstring & message, const mVarArray & va)
     FT("parseMessage", (message, "(const mVarArray&) va"));
 
     mstring data, tok;
-    int start, end, toknum, length = static_cast < int >(message.length());
+    int start, end, toknum, length = static_cast < int > (message.length());
 
     start = end = 0;
     while (end < length)
@@ -642,8 +645,8 @@ size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, co
     unsigned char ivec1[8], ivec2[8], ivec3[8], buf1[8], buf2[8];
     unsigned int i, j;
 
-    BF_set_key(&bfkey1, strlen(key1), reinterpret_cast < const unsigned char *>(key1));
-    BF_set_key(&bfkey2, strlen(key2), reinterpret_cast < const unsigned char *>(key2));
+    BF_set_key(&bfkey1, strlen(key1), reinterpret_cast < const unsigned char * > (key1));
+    BF_set_key(&bfkey2, strlen(key2), reinterpret_cast < const unsigned char * > (key2));
 
     memset(ivec1, 0, 8);
     memset(ivec2, 0, 8);
@@ -681,8 +684,8 @@ void mHASH16(const char *in, const size_t size, char *out)
 
     memset(out, 0, MD5_DIGEST_LENGTH);
     MD5_Init(&c);
-    MD5_Update(&c, const_cast < unsigned char *>(reinterpret_cast < const unsigned char *>(in)), size);
-    MD5_Final(const_cast < unsigned char *>(reinterpret_cast < const unsigned char *>(out)), &c);
+    MD5_Update(&c, const_cast < unsigned char * > (reinterpret_cast < const unsigned char * > (in)), size);
+    MD5_Final(const_cast < unsigned char * > (reinterpret_cast < const unsigned char * > (out)), &c);
 
     memset(&c, 0, sizeof(MD5_CTX));
 }
@@ -690,7 +693,7 @@ void mHASH16(const char *in, const size_t size, char *out)
 void mHASH(const char *in, const size_t size, char *out)
 {
     unsigned char md[MD5_DIGEST_LENGTH];
-    mHASH16(in, size, reinterpret_cast < char *>(md));
+    mHASH16(in, size, reinterpret_cast < char * > (md));
 
     memset(out, 0, (MD5_DIGEST_LENGTH * 2) + 1);
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++)
@@ -734,12 +737,12 @@ unsigned long str_to_base64(const mstring & in)
     if (!in.length())
 	return 0;
 
-    unsigned long i = 0, v = char_to_base64[static_cast < unsigned char >(in[static_cast < size_t > (i++)])];
+    unsigned long i = 0, v = char_to_base64[static_cast < unsigned char > (in[static_cast < size_t > (i++)])];
 
     while (i < in.length())
     {
 	v <<= 6;
-	v += char_to_base64[static_cast < unsigned char >(in[static_cast < size_t > (i++)])];
+	v += char_to_base64[static_cast < unsigned char > (in[static_cast < size_t > (i++)])];
     }
 
     return v;

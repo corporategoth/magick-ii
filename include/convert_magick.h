@@ -27,6 +27,9 @@ RCSID(convert_magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.5  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -476,7 +479,6 @@ void load_sop();
 void load_message();
 void load_akill();
 void load_clone();
-
 
 #endif /* CONVERT */
 #endif /* _CONVERT_MAGICK */

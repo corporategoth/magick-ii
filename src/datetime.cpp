@@ -28,6 +28,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.75  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -225,12 +228,12 @@ mDateTime::mDateTime(const mstring & src, const mDateTimeFlag flag)
     else if (flag = DateTime)
 	*this = StringToDateTime(src);
 #else
-    static_cast < void >(src);
-    static_cast < void >(flag);
+    static_cast < void > (src);
+    static_cast < void > (flag);
 #endif
 }
 
-static mDayTable & GetDayTable(int Year)
+static mDayTable &GetDayTable(int Year)
 {
     if ((Year % 4 == 0) && ((Year % 100 != 0) || (Year % 400 == 0)))
 	return DayTable2;
@@ -244,7 +247,8 @@ bool DoEncodeDate(const int iYear, const int iMonth, const int iDay, mDateTime &
     bool Result = false;
     int tmpDay = iDay - 1;
 
-    mDayTable & DayTable = GetDayTable(iYear);
+    mDayTable &DayTable = GetDayTable(iYear);
+
     if ((iYear >= 1) && (iYear <= 9999) && (iMonth >= 1) && (iMonth <= 12) && (iDay >= 1) && (iDay <= DayTable[iMonth - 1]))
     {
 	for (I = 1; I < iMonth; I++)
@@ -253,7 +257,7 @@ bool DoEncodeDate(const int iYear, const int iMonth, const int iDay, mDateTime &
 	}
 	I = iYear;
 	tmpDay += ((I * 365) + (I / 4) - (I / 100) + (I / 400));
-	Date.Val = static_cast < double >(tmpDay);
+	Date.Val = static_cast < double > (tmpDay);
 
 	Result = true;
     }
@@ -267,8 +271,8 @@ bool DoEncodeTime(const int iHour, const int iMin, const int iSec, const int iMS
     if ((iHour < 24) && (iMin < 60) && (iSec < 60) && (iMSec < 1000))
     {
 	Time.Val =
-	    (static_cast < double >(iHour) * 3600000.0 + static_cast < double >(iMin) * 60000.0 + static_cast <
-	     double >(iSec) * 1000.0 + static_cast < double >(iMSec)) /static_cast < double >(MSecsPerDay);
+	    (static_cast < double > (iHour) * 3600000.0 + static_cast < double > (iMin) * 60000.0 + static_cast < double >
+	     (iSec) * 1000.0 + static_cast < double > (iMSec)) /static_cast < double > (MSecsPerDay);
 	Result = true;
     }
     return Result;
@@ -530,7 +534,7 @@ mstring mDateTime::DateTimeString() const
     return Result;
 }
 
-mDateTime::operator       time_t() const
+mDateTime::operator          time_t() const
 {
     int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 
@@ -554,7 +558,7 @@ mDateTime::operator       time_t() const
 int mDateTime::DayOfWeek() const
 {
     mDateTime knownmonday(1970, 1, 5);
-    int Result = static_cast < int >(Val - knownmonday.Val) % 7;
+    int Result = static_cast < int > (Val - knownmonday.Val) % 7;
 
     return Result;
 }
@@ -565,7 +569,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day) const
     const int D4 = D1 * 4 + 1;
     const int D100 = D4 * 25 - 1;
     const int D400 = D100 * 4 + 1;
-    int NumDays = static_cast < int >(Val);
+    int NumDays = static_cast < int > (Val);
     int Y400, Y100, Y4, Y1, Y, M = 1;
     int LeftOver;
 
@@ -590,7 +594,8 @@ void mDateTime::DecodeDate(int &year, int &month, int &day) const
 
     int i = 0;
 
-    mDayTable & DayTable = GetDayTable(year);
+    mDayTable &DayTable = GetDayTable(year);
+
     while (DayTable[i] < NumDays)
     {
 	M++;
@@ -604,7 +609,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day) const
 void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec) const
 {
     //(iHour * 3600000 + iMin * 60000 + iSec * 1000 + iMSec) / MSecsPerDay;
-    int CurrentVal = static_cast < int >(fmod(Val, 1.0) * static_cast < double >(MSecsPerDay));
+    int CurrentVal = static_cast < int > (fmod(Val, 1.0) * static_cast < double > (MSecsPerDay));
     int LeftOver;
 
     LeftOver = CurrentVal % 3600000;
@@ -704,7 +709,7 @@ mstring mDateTime::timetstring() const
     localtm.tm_sec = iSec;
     localtm.tm_isdst = -1;
     Res2 = mktime(&localtm);
-    Result << static_cast < unsigned long >(Res2);
+    Result << static_cast < unsigned long > (Res2);
 
     return Result;
 }
@@ -768,7 +773,7 @@ int mDateTime::Year() const
 unsigned long mDateTime::MSecondsSince() const
 {
     mDateTime dummyvar = mDateTime::CurrentDateTime() - (*this);
-    unsigned long CurrentVal = static_cast < unsigned long >(dummyvar.Val * static_cast < double >(MSecsPerDay));
+    unsigned long CurrentVal = static_cast < unsigned long > (dummyvar.Val * static_cast < double > (MSecsPerDay));
 
     return CurrentVal;
 }
@@ -776,7 +781,7 @@ unsigned long mDateTime::MSecondsSince() const
 unsigned long mDateTime::SecondsSince() const
 {
     mDateTime dummyvar = mDateTime::CurrentDateTime() - (*this);
-    unsigned long CurrentVal = static_cast < unsigned long >(dummyvar.Val * static_cast < double >(SecsPerDay));
+    unsigned long CurrentVal = static_cast < unsigned long > (dummyvar.Val * static_cast < double > (SecsPerDay));
 
     return CurrentVal;
 }
@@ -796,7 +801,7 @@ mstring DisectTime(const long intime, const mstring & source)
 	Seconds = intime;
     }
 
-    negamt = static_cast < long >(60.0 * 60.0 * 24.0 * 365.25);
+    negamt = static_cast < long > (60.0 * 60.0 * 24.0 * 365.25);
 
     while (Seconds >= negamt)
     {
@@ -932,10 +937,10 @@ mDateTime GMT(const mDateTime & in, const bool to)
     long offset = ACE_OS::timezone() * (to ? 1 : -1);
     double val = in.Internal();
     int days = 0, secs = 0;
-    days = static_cast < int >(val);
+    days = static_cast < int > (val);
 
     val -= days;
-    secs = static_cast < int >(val * static_cast < double >(SecsPerDay));
+    secs = static_cast < int > (val * static_cast < double > (SecsPerDay));
 
     if (secs + offset > SecsPerDay)
     {
@@ -954,7 +959,7 @@ mDateTime GMT(const mDateTime & in, const bool to)
     {
 	secs += offset;
     }
-    val = static_cast < double >(days) + (static_cast < double >(secs) * (1.0 / static_cast < double >(SecsPerDay)));
+    val = static_cast < double > (days) + (static_cast < double > (secs) * (1.0 / static_cast < double > (SecsPerDay)));
 
     return mDateTime(val);
 }

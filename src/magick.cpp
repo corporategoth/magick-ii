@@ -30,6 +30,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.345  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.344  2002/01/13 05:18:41  prez
 ** More formatting, changed style slightly
 **
@@ -633,7 +636,7 @@ static bool nofork = false;
 
 mDateTime Magick::i_StartTime;
 
-map < ACE_thread_t, Magick * >Magick::InstanceMap;
+map < ACE_thread_t, Magick * > Magick::InstanceMap;
 #ifndef MAGICK_HAS_EXCEPTIONS
 static Magick GLOB_Magick;
 #endif
@@ -667,9 +670,9 @@ bool Magick::instance_exists(ACE_thread_t id)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-Magick & Magick::instance(ACE_thread_t id) throw(E_Magick)
+Magick &Magick::instance(ACE_thread_t id) throw(E_Magick)
 #else
-Magick & Magick::instance(ACE_thread_t id)
+Magick &Magick::instance(ACE_thread_t id)
 #endif
 {
     map < ACE_thread_t, Magick * >::iterator iter = InstanceMap.find(id);
@@ -684,8 +687,8 @@ Magick & Magick::instance(ACE_thread_t id)
 #endif
 }
 
-Magick::Magick(int inargc, char **inargv):i_verbose(false), i_level(0), i_pause(false), i_auto(false), i_shutdown(false), i_reconnect(true), i_localhost(0),
-i_gotconnect(false), i_connected(false), i_saving(false), dh_timer(0)
+Magick::Magick(int inargc, char **inargv) : i_verbose(false), i_level(0), i_pause(false), i_auto(false), i_shutdown(false),
+i_reconnect(true), i_localhost(0), i_gotconnect(false), i_connected(false), i_saving(false), dh_timer(0)
 {
     char buf[1024], *c;
 
@@ -756,13 +759,13 @@ int Magick::Init()
 
     for (i = 1; i < argc; i++)
     {
-	if (argv[i][0U] == '-')
+	if (argv[i] [0U] == '-')
 	{
 	    argv[i].MakeLower();
 	    if (argv[i] == "--dir")
 	    {
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--dir"));
 		    return MAGICK_RET_ERROR;
@@ -772,7 +775,7 @@ int Magick::Init()
 	    else if (argv[i] == "--config")
 	    {
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--config"));
 		    return MAGICK_RET_ERROR;
@@ -783,7 +786,7 @@ int Magick::Init()
 	    else if (argv[i] == "--trace")
 	    {
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--trace"));
 		    return MAGICK_RET_ERROR;
@@ -810,7 +813,7 @@ int Magick::Init()
 		}
 	    }
 #endif
-	    else if (argv[i] == "--help" || (argv[i][1U] != '-' && argv[i].Contains("?")))
+	    else if (argv[i] == "--help" || (argv[i] [1U] != '-' && argv[i].Contains("?")))
 	    {
 		dump_help();
 		return MAGICK_RET_NORMAL;
@@ -1260,7 +1263,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	if (!lang.empty() && Messages.find(lang.UpperCase()) != Messages.end() &&
 	    Messages[lang.UpperCase()].find(name.UpperCase()) != Messages[lang.UpperCase()].end())
 	{
-	    retval = Messages[lang.UpperCase()][name.UpperCase()];
+	    retval = Messages[lang.UpperCase()] [name.UpperCase()];
 	    RET(retval);
 	}
     }
@@ -1283,7 +1286,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	    Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
 	    Messages[nickserv.DEF_Language().UpperCase()].end())
 	{
-	    retval = Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()];
+	    retval = Messages[nickserv.DEF_Language().UpperCase()] [name.UpperCase()];
 	    RET(retval);
 	}
     }
@@ -1294,7 +1297,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	RLOCK(("Messages", "DEFAULT", name.UpperCase()));
 	if (Messages["DEFAULT"].find(name.UpperCase()) != Messages["DEFAULT"].end())
 	{
-	    retval = Messages["DEFAULT"][name.UpperCase()];
+	    retval = Messages["DEFAULT"] [name.UpperCase()];
 	    RET(retval);
 	}
     }
@@ -1362,7 +1365,7 @@ vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 	    if (entry.third.empty())
 		entry.third = " ";
 
-	    Help[language][section].push_back(entry);
+	    Help[language] [section].push_back(entry);
 	}
 	MCE(Help.size());
 	if (tmp.size())
@@ -1381,29 +1384,29 @@ vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 	{
 	    bool sendline;
 
-	    for (j = 0; j < Help[language][Uname].size(); j++)
+	    for (j = 0; j < Help[language] [Uname].size(); j++)
 	    {
 		sendline = false;
-		if (!Help[language][Uname][j].first.empty())
+		if (!Help[language] [Uname] [j].first.empty())
 		{
-		    for (i = 1; !sendline && i <= Help[language][Uname][j].first.WordCount(" "); i++)
+		    for (i = 1; !sendline && i <= Help[language] [Uname] [j].first.WordCount(" "); i++)
 		    {
-			if (commserv.IsList(Help[language][Uname][j].first.ExtractWord(i, " ")) &&
-			    commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " "))->IsOn(nick))
+			if (commserv.IsList(Help[language] [Uname] [j].first.ExtractWord(i, " ")) &&
+			    commserv.GetList(Help[language] [Uname] [j].first.ExtractWord(i, " "))->IsOn(nick))
 			    sendline = true;
 		    }
 		}
 		else
 		    sendline = true;
-		if (!Help[language][Uname][j].second.empty())
-		    for (i = 1; sendline && i <= Help[language][Uname][j].second.WordCount(" "); i++)
+		if (!Help[language] [Uname] [j].second.empty())
+		    for (i = 1; sendline && i <= Help[language] [Uname] [j].second.WordCount(" "); i++)
 		    {
-			if (commserv.IsList(Help[language][Uname][j].second.ExtractWord(i, " ")) &&
-			    commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " "))->IsOn(nick))
+			if (commserv.IsList(Help[language] [Uname] [j].second.ExtractWord(i, " ")) &&
+			    commserv.GetList(Help[language] [Uname] [j].second.ExtractWord(i, " "))->IsOn(nick))
 			    sendline = false;
 		    }
 		if (sendline)
-		    helptext.push_back(Help[language][Uname][j].third);
+		    helptext.push_back(Help[language] [Uname] [j].third);
 	    }
 	}
     }
@@ -1625,11 +1628,11 @@ int Magick::doparamparse()
 
     for (i = 1; i < argc; i++)
     {
-	if (argv[i][0U] == '-')
+	if (argv[i] [0U] == '-')
 	{
 	    bool ArgUsed = false;
 
-	    if (argv[i][1U] == '-')
+	    if (argv[i] [1U] == '-')
 		ArgUsed = paramlong(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
 	    else
 		ArgUsed = paramshort(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
@@ -1702,10 +1705,10 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	if (atoi(second.c_str()) != static_cast < int >(server.proto.Number()))
+	if (atoi(second.c_str()) != static_cast < int > (server.proto.Number()))
 	{
 	    server.proto.Set(atoi(second.c_str()));
-	    if (atoi(second.c_str()) != static_cast < int >(server.proto.Number()))
+	    if (atoi(second.c_str()) != static_cast < int > (server.proto.Number()))
 	    {
 		LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (second, server.proto.Number()));
 	    }
@@ -2512,12 +2515,13 @@ bool Magick::get_config_values()
 		{
 		    // startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
 		    startup.servers[tmp[0].LowerCase()] =
-			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >(atol(tmp[3]),
-												triplet < unsigned int,
-												mstring,
-												unsigned long >(atoi(tmp[1]),
-														tmp[2],
-														atol(tmp[4])));
+			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > (atol(tmp[3]),
+												 triplet < unsigned int,
+												 mstring,
+												 unsigned long > (atoi(tmp[1]),
+														  tmp[2],
+														  atol(tmp
+														       [4])));
 		    if (min_level < 1 || atoi(tmp[3]) < min_level)
 			min_level = atoi(tmp[3]);
 		}
@@ -2644,7 +2648,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2687,7 +2691,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2728,7 +2732,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2769,7 +2773,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2810,7 +2814,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2851,7 +2855,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2868,7 +2872,7 @@ bool Magick::get_config_values()
     if (!isonstr.empty())
 	server.
 	    sraw(((server.proto.Tokens() &&
-		   !server.proto.GetNonToken("ISON").empty())? server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
+		   !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
 		 isonstr);
 
     in.Read(ts_Files + "UMASK", value_mstring, "027");
@@ -3543,7 +3547,7 @@ bool Magick::get_config_values()
     {
 	server.
 	    raw(((server.proto.Tokens() &&
-		  !server.proto.GetNonToken("ERROR").empty())? server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
+		  !server.proto.GetNonToken("ERROR").empty()) ? server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
 		" :Closing Link: Configuration reload required restart!");
 	Disconnect();
     }
@@ -3555,8 +3559,8 @@ bool Magick::get_config_values()
 
 int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 {
-    static_cast < void >(si);
-    static_cast < void >(uctx);
+    static_cast < void > (si);
+    static_cast < void > (uctx);
 
     // No trace, screws with LastFunc...
     //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) si", "(ucontext_t *) uctx"));
@@ -3568,7 +3572,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 #if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
 	{
-	    vector < ThreadID * >ids = mThread::findall();
+	    vector < ThreadID * > ids = mThread::findall();
 	    for (unsigned int i = 0; i < ids.size(); i++)
 		if (ids[i] != NULL)
 		    ids[i]->Flush();
@@ -3592,9 +3596,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 		{
 		    RLOCK(("IrcSvcHandler"));
 		    if (Magick::instance().ircsvchandler != NULL)
-			thr_mgr = &Magick::instance().ircsvchandler->tm;
+			thr_mgr = & Magick::instance().ircsvchandler->tm;
 		    else
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 		}
 		break;
 	    case Heartbeat_Handler::H_IrcServer:
@@ -3604,7 +3608,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 			thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 		}
 		if (thr_mgr == NULL)
-		    thr_mgr = &Magick::instance().thr_mgr();
+		    thr_mgr = & Magick::instance().thr_mgr();
 		Magick::instance().Disconnect();
 		if (Magick::instance().dh_timer > 0)
 		    Magick::instance().reactor().cancel_timer(Magick::instance().dh_timer);
@@ -3624,7 +3628,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 			Magick::instance().events = NULL;
 		    }
 		    if (thr_mgr == NULL)
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 		    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
 		    Magick::instance().events->open((void *) &Magick::instance());
 		}
@@ -3643,14 +3647,14 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 			Magick::instance().dcc = NULL;
 		    }
 		    if (thr_mgr == NULL)
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 		    Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
 		    Magick::instance().dcc->open((void *) &Magick::instance());
 		}
 		break;
 	    case Heartbeat_Handler::H_Main:	// Its a REAL SIGABRT ...
 		{
-		    vector < ThreadID * >ids = mThread::findall();
+		    vector < ThreadID * > ids = mThread::findall();
 		    for (unsigned int i = 0; i < ids.size(); i++)
 			if (ids[i] != NULL)
 			    ids[i]->Flush();
@@ -3707,7 +3711,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 #endif
     case SIGSEGV:		// Segmentation Fault
 	{
-	    vector < ThreadID * >ids = mThread::findall();
+	    vector < ThreadID * > ids = mThread::findall();
 	    for (unsigned int i = 0; i < ids.size(); i++)
 		if (ids[i] != NULL)
 		    ids[i]->Flush();
@@ -4002,11 +4006,11 @@ bool Magick::startup_t::IsServer(const mstring & svr) const
     RET(false);
 }
 
-pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >Magick::startup_t::Server(const mstring & svr) const
+pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Magick::startup_t::Server(const mstring & svr) const
 {
     FT("Magick::startup_t::Server", (svr));
-    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >value(0, triplet < unsigned int, mstring,
-										 unsigned long >(0, "", 0));
+    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > value(0, triplet < unsigned int, mstring,
+										  unsigned long > (0, "", 0));
 
     RLOCK(("Startup", "Servers"));
     if (IsServer(svr))
@@ -4165,7 +4169,7 @@ void Magick::Disconnect(const bool reconnect)
 		    ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 
 		    if (thr_mgr == NULL)
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 		    thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 #endif
@@ -4230,7 +4234,7 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
@@ -4248,7 +4252,7 @@ void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
 

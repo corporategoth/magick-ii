@@ -27,6 +27,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.64  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -170,20 +173,20 @@ RCSID(ircsocket_h, "@(#) $Id$");
 
 #include "variant.h"
 
-class Heartbeat_Handler:public ACE_Event_Handler
+class Heartbeat_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     enum heartbeat_enum
     { H_Invalid = 0, H_Worker, H_Main,
 	H_IrcServer, H_Events, H_DCC, H_MAX
     };
     static const char *names[H_MAX];
 
-  private:
-    typedef map < ACE_thread_t, triplet < heartbeat_enum, mDateTime, bool > >threads_t;
+private:
+    typedef map < ACE_thread_t, triplet < heartbeat_enum, mDateTime, bool > > threads_t;
     threads_t threads;
 
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 
     void AddThread(heartbeat_enum type, ACE_thread_t id = ACE_Thread::self());
@@ -195,44 +198,44 @@ class Heartbeat_Handler:public ACE_Event_Handler
     size_t count(heartbeat_enum type);
 };
 
-class Reconnect_Handler:public ACE_Event_Handler
+class Reconnect_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
     mstring Reconnect_Handler::FindNext(const mstring & i_server);
 };
 
-class Disconnect_Handler:public ACE_Event_Handler
+class Disconnect_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class ToBeSquit_Handler:public ACE_Event_Handler
+class ToBeSquit_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class Squit_Handler:public ACE_Event_Handler
+class Squit_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class InFlight_Handler:public ACE_Event_Handler
+class InFlight_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class Part_Handler:public ACE_Event_Handler
+class Part_Handler : public ACE_Event_Handler
 {
-  public:
+public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class EventTask:public ACE_Task < ACE_MT_SYNCH >
+class EventTask : public ACE_Task < ACE_MT_SYNCH >
 {
     typedef ACE_Task < ACE_MT_SYNCH > internal;
 
@@ -250,8 +253,8 @@ class EventTask:public ACE_Task < ACE_MT_SYNCH >
     void do_msgcheck(mDateTime & synctime);
     void do_modes(mDateTime & synctime);
 
-  public:
-      EventTask(ACE_Thread_Manager * tm = 0):internal(tm)
+public:
+      EventTask(ACE_Thread_Manager * tm = 0) : internal(tm)
     {
     }
     void AddChannelModePending(const mstring & in);
@@ -271,7 +274,7 @@ class EventTask:public ACE_Task < ACE_MT_SYNCH >
 };
 
 class mMessage;
-class IrcSvcHandler:public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
+class IrcSvcHandler : public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
 {
     friend int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg);
     friend class SignalHandler;
@@ -296,7 +299,7 @@ class IrcSvcHandler:public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
     ACE_Activation_Queue message_queue;
 
     static void *worker(void *);
-  public:
+public:
     int send(const mstring & data);
     int open(void * = 0);
     int handle_input(ACE_HANDLE handle);

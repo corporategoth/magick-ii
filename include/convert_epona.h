@@ -27,6 +27,9 @@ RCSID(convert_epona_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.5  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -209,7 +212,6 @@ struct EPO_NickCore
     int16 channelmax;		/* Maximum number of channels allowed */
 };
 
-
 /* Nickname status flags: */
 #define EPO_NS_VERBOTEN		0x0002	/* Nick may not be registered or used */
 #define EPO_NS_NO_EXPIRE	0x0004	/* Nick never expires */
@@ -296,7 +298,6 @@ struct EPO_ChanAccess
 #define EPO_ACCESS_AOP		5
 #define EPO_ACCESS_SOP		10
 
-
 /* AutoKick data. */
 struct EPO_AutoKick
 {
@@ -327,9 +328,6 @@ struct EPO_BadWord
 #define EPO_BW_SINGLE	1
 #define EPO_BW_START 	2
 #define EPO_BW_END	3
-
-
-
 
 struct EPO_ChannelInfo
 {
@@ -570,7 +568,6 @@ struct EPO_NewsItem
     time_t time;
 };
 
-
 /*************************************************************************/
 
 /* Ignorance list data. */
@@ -605,7 +602,6 @@ struct EPO_SXLine
     time_t seton;
     time_t expires;
 };
-
 
 /*************************************************************************/
 
@@ -647,7 +643,6 @@ struct EPO_Exception
 };
 
 /*************************************************************************/
-
 
 void EPO_load_ns_dbase(void);
 EPO_NickCore *EPO_findcore(const char *nick, EPO_NickCore ** nclists);

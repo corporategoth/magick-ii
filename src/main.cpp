@@ -26,6 +26,9 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2002/01/14 07:16:55  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.55  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **

@@ -170,7 +170,6 @@ may be returned together.  Similarly for characters in the prolog outside
 literals, comments and processing instructions.
 */
 
-
 #define XmlTok(enc, state, ptr, end, nextTokPtr) \
   (((enc)->scanners[state])(enc, ptr, end, nextTokPtr))
 

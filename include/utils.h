@@ -27,6 +27,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2002/01/14 07:16:54  prez
+** More pretty printing with a newer indent with C++ fixes (not totally done)
+**
 ** Revision 1.48  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -150,7 +153,7 @@ RCSID(utils_h, "@(#) $Id$");
 #endif
 #include "crypt/md5_locl.h"
 
-vector < int >ParseNumbers(const mstring & what);
+vector < int > ParseNumbers(const mstring & what);
 bool MakeDirectory(const mstring & in);
 unsigned long FromHumanTime(const mstring & in);
 mstring ToHumanTime(const unsigned long in, const mstring & source = "");
@@ -175,14 +178,14 @@ class ref_class
     bool i_doDelete;
     mVarArray i_lockData;
 
-  public:
-      ref_class():i_references(0), i_doDelete(false)
+public:
+      ref_class() : i_references(0), i_doDelete(false)
     {
     }
-    ref_class(const mVarArray & l):i_references(0), i_doDelete(false), i_lockData(l)
+    ref_class(const mVarArray & l) : i_references(0), i_doDelete(false), i_lockData(l)
     {
     }
-    virtual ~ ref_class()
+    virtual ~ref_class()
     {
     }
 
@@ -211,7 +214,7 @@ class ref_class
     {
 	i_lockData = in;
     }
-    virtual const mVarArray & lockData() const
+    virtual const mVarArray &lockData() const
     {
 	return i_lockData;
     }
@@ -252,10 +255,10 @@ template < class T > class map_entry
     }
 
   public:
-  map_entry():entry_ptr(NULL), lock(NULL)
+    map_entry() : entry_ptr(NULL), lock(NULL)
     {
     }
-    map_entry(const map < mstring, T * >&map_ptr, const mstring & map_key):entry_ptr(NULL), lock(NULL)
+    map_entry(const map < mstring, T * > & map_ptr, const mstring & map_key) : entry_ptr(NULL), lock(NULL)
     {
 	if (map_key.empty())
 	    return;
@@ -271,7 +274,7 @@ template < class T > class map_entry
 	Start();
     }
 
-  map_entry(T * e):entry_ptr(NULL), lock(NULL)
+    map_entry(T * e) : entry_ptr(NULL), lock(NULL)
     {
 	if (e == NULL)
 	    return;
@@ -280,12 +283,12 @@ template < class T > class map_entry
 	Start();
     }
 
-  map_entry(const map_entry < T > &in):entry_ptr(NULL), lock(NULL)
+    map_entry(const map_entry < T > & in) : entry_ptr(NULL), lock(NULL)
     {
 	*this = in;
     }
 
-    map_entry < T > &operator=(const map_entry < T > &in)
+    map_entry < T > & operator=(const map_entry < T > & in)
     {
 	End();
 	entry_ptr = in.entry_ptr;
@@ -306,26 +309,25 @@ template < class T > class map_entry
     }
 };
 
-
 // extrapolated from the ms's pair<T1,T2> template code
 template < class T1, class T2, class T3 > class triplet
 {
-  public:
+public:
     typedef T1 first_type;
     typedef T2 second_type;
     typedef T3 third_type;
 
-  triplet():first(T1()), second(T2()), third(T3())
+      triplet() : first(T1()), second(T2()), third(T3())
     {
     }
-    triplet(const T1 & _V1, const T2 & _V2, const T3 & _V3):first(_V1), second(_V2), third(_V3)
+    triplet(const T1 & _V1, const T2 & _V2, const T3 & _V3) : first(_V1), second(_V2), third(_V3)
     {
     }
-    triplet(const triplet < T1, T2, T3 > &in)
+    triplet(const triplet < T1, T2, T3 > & in)
     {
 	*this = in;
     }
-    triplet < T1, T2, T3 > &operator=(const triplet < T1, T2, T3 > &in)
+    triplet < T1, T2, T3 > & operator=(const triplet < T1, T2, T3 > & in)
     {
 	first = in.first;
 	second = in.second;
@@ -337,39 +339,39 @@ template < class T1, class T2, class T3 > class triplet
     T3 third;
 };
 
-template < class T1, class T2, class T3 > inline bool operator==(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
-								 T3 > &Y)
+template < class T1, class T2, class T3 > inline bool operator==(const triplet < T1, T2, T3 > & X, const triplet < T1, T2,
+								 T3 > & Y)
 {
     return (X.first == Y.first && X.second == Y.second && X.third == Y.third);
 }
 
-template < class T1, class T2, class T3 > inline bool operator!=(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
-								 T3 > &Y)
+template < class T1, class T2, class T3 > inline bool operator!=(const triplet < T1, T2, T3 > & X, const triplet < T1, T2,
+								 T3 > & Y)
 {
     return (!(X == Y));
 }
 
-template < class T1, class T2, class T3 > inline bool operator<(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
-								T3 > &Y)
+template < class T1, class T2, class T3 > inline bool operator<(const triplet < T1, T2, T3 > & X, const triplet < T1, T2,
+								T3 > & Y)
 {
-    return (((X.first < Y.first)) || ((X.first == Y.first) && (X.second < Y.second))
-	    || ((X.first == Y.first) && (X.second == Y.second) && (X.third < Y.third)));
+    return (((X.first < Y.first)) || ((X.first == Y.first) && (X.second < Y.second)) ||
+	    ((X.first == Y.first) && (X.second == Y.second) && (X.third < Y.third)));
 }
 
-template < class T1, class T2, class T3 > inline bool operator<=(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
-								 T3 > &Y)
+template < class T1, class T2, class T3 > inline bool operator<=(const triplet < T1, T2, T3 > & X, const triplet < T1, T2,
+								 T3 > & Y)
 {
     return !(Y < X);
 }
 
-template < class T1, class T2, class T3 > inline bool operator>=(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
-								 T3 > &Y)
+template < class T1, class T2, class T3 > inline bool operator>=(const triplet < T1, T2, T3 > & X, const triplet < T1, T2,
+								 T3 > & Y)
 {
     return !(X < Y);
 }
 
-template < class T1, class T2, class T3 > inline bool operator>(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
-								T3 > &Y)
+template < class T1, class T2, class T3 > inline bool operator>(const triplet < T1, T2, T3 > & X, const triplet < T1, T2,
+								T3 > & Y)
 {
     return !(X <= Y);
 }

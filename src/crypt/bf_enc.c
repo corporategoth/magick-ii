@@ -77,7 +77,7 @@ void BF_encrypt(BF_LONG * data, const BF_KEY * key)
     register const BF_LONG *p, *s;
 
     p = key->P;
-    s = &(key->S[0]);
+    s = & (key->S[0]);
     l = data[0];
     r = data[1];
 
@@ -154,7 +154,7 @@ void BF_decrypt(BF_LONG * data, const BF_KEY * key)
     register const BF_LONG *p, *s;
 
     p = key->P;
-    s = &(key->S[0]);
+    s = & (key->S[0]);
     l = data[0];
     r = data[1];
 
