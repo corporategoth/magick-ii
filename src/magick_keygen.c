@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.11  2001/04/13 07:12:48  prez
 ** Changed genrankeys style random key generation to binary stamping
 ** (allowing people to stamp the binary AFTER it has been created, and
@@ -80,6 +83,7 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** ========================================================== */
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "config.h"
 #ifdef HASCRYPT
 #include "des/des_locl.h"
@@ -94,6 +98,8 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc);
+int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...);
+int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
 
 int main(int argc, char **argv)
 {
@@ -107,6 +113,7 @@ int main(int argc, char **argv)
 #else
     size_t i, key_size;
     unsigned char inkey[KEYLEN], outkey[KEYLEN], filename[512];
+    unsigned char instr[128], outstr[128];
     FILE *infile, *outfile, *tty;
     des_key_schedule key1, key2;
     des_cblock ckey1, ckey2;
@@ -160,7 +167,6 @@ int main(int argc, char **argv)
 	    return 2;
 	}
 	key_size = fread(inkey, sizeof(char), KEYLEN, infile);
-	inkey[KEYLEN-1]=0;
     }
     else
     {
@@ -200,7 +206,7 @@ int main(int argc, char **argv)
 	if (key_size != KEYLEN-1)
 	    outkey[--key_size]=0;
 	printf("\n");
-	if (strcmp(inkey, outkey)!=0)
+	if (memcmp(inkey, outkey, KEYLEN)!=0)
 	{
 	    fprintf(stderr, "Key mismatch, aborting key generation.\n");
 #ifdef HAVE_TERMIO_H
@@ -220,10 +226,18 @@ int main(int argc, char **argv)
     des_string_to_key(CRYPTO_KEY2,&ckey2);
     des_set_key(&ckey2,key2);
 
+    memset(instr, 0, 128);
+#if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
+    mstring_snprintf(instr, 128, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
+#else
+    mstring_snprintf(instr, 128, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
+#endif
+    mDES(instr, outstr, 128, key1, key2, 1);
+    fwrite(outstr, sizeof(unsigned char), 128, outfile);
+
     // normalize to a derivitive of sizeof(unsigned long) * 2
     key_size += (key_size % (sizeof(unsigned long) * 2));
     mDES(inkey, outkey, key_size, key1, key2, 1);
-
     fwrite(outkey, sizeof(unsigned char), key_size, outfile);
     fclose(outfile);
     printf("Created %d byte keyfile.\n", key_size);
@@ -269,3 +283,25 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 #endif
 }
 
+int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...)
+{
+    int iLen;
+    va_list argptr;
+    va_start(argptr, fmt);
+
+    iLen = mstring_vsnprintf(buf, size, fmt, argptr);
+
+    va_end(argptr);
+    return iLen;
+}
+
+int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap)
+{
+    int iLen;
+#ifndef HAVE_VSNPRINTF
+    iLen = vsprintf(buf, fmt, ap);
+#else
+    iLen = vsnprintf(buf, size, fmt, ap);
+#endif
+    return iLen;
+}

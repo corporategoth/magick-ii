@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.98  2001/05/08 15:51:41  prez
 ** Added some security stuff with committees, so certain things are guarenteed
 ** on database load (ie. the magick.ini assertions).
@@ -380,15 +383,15 @@ void Committee_t::Head(const mstring& newhead)
 {
     FT("Committee_t::Head", (newhead));
 
-    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     MCB(i_Head);
+    { WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     if (!i_HeadCom.empty())
     {
 	CB(1, i_HeadCom);
 	i_HeadCom.erase();
 	CE(1, i_HeadCom);
-    }
+    }}
 
     i_Head = newhead.LowerCase();
     MCE(i_Head);
@@ -508,11 +511,17 @@ bool Committee_t::IsIn(const mstring& nick) const
 	RET(true);
     }}
 
+    vector<mstring> members;
+    unsigned int i;
+    { MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     entlist_cui iter;
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
     {
-	if (target.IsSameAs(iter->Entry(), true))
+	members.push_back(iter->Entry().LowerCase());
+    }}
+    for (i=0; i<members.size(); i++)
+    {
+	if (target.IsSameAs(members[i], true))
 	{
 	    RET(true);
 	}
@@ -525,10 +534,9 @@ bool Committee_t::IsIn(const mstring& nick) const
 	unsigned int i;
 	for (i=0; i<Parent->nickserv.GetStored(target).Siblings(); i++)
 	{
-	    for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
+	    for (i=0; i<members.size(); i++)
 	    {
-		if (Parent->nickserv.GetStored(target).Sibling(i).LowerCase() ==
-						iter->Entry().LowerCase())
+		if (Parent->nickserv.GetStored(target).Sibling(i).IsSameAs(members[i], true))
 		{
 		    RET(true);
 		}
@@ -575,11 +583,13 @@ bool Committee_t::IsOn(const mstring& nick) const
     // taken into account).
     if (IsIn(nick) && Parent->nickserv.IsStored(nick) &&
 	Parent->nickserv.GetStored(nick).IsOnline())
-	if (!i_Secure ||
-	    Parent->nickserv.GetLive(nick).IsIdentified())
+    {
+	RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "i_Secure"),
+		!i_Secure || Parent->nickserv.GetLive(nick).IsIdentified())
 	{
 	    RET(true);
 	}
+    }
     RET(false);
 }
 
@@ -588,21 +598,26 @@ bool Committee_t::IsHead(const mstring& nick) const
 {
     FT("Committee_t::IsHead", (nick));
 
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
-    RLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
-    if (!i_Head.empty() && i_Head == nick.LowerCase())
+    RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "i_Head"),
+	!i_Head.empty() && i_Head.IsSameAs(nick, false))
     {
 	RET(true);
     }
-    else if (!i_HeadCom.empty() && Parent->commserv.IsList(i_HeadCom) &&
-	Parent->commserv.GetList(i_HeadCom.UpperCase()).IsIn(nick))
+    else
     {
-	RET(true);
-    }
-    else if (i_Head.empty() && i_HeadCom.empty())
-    {
-	bool retval = IsIn(nick);
-	RET(retval);
+	RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"),
+	    !i_HeadCom.empty() && Parent->commserv.IsList(i_HeadCom))
+	{
+	    if (Parent->commserv.GetList(i_HeadCom).IsIn(nick))
+	    {
+		RET(true);
+	    }
+	}
+	else if (i_Head.empty() && i_HeadCom.empty())
+	{
+	    bool retval = IsIn(nick);
+	    RET(retval);
+	}
     }
     RET(false);
 }
@@ -1459,7 +1474,7 @@ void CommServ::do_List(const mstring &mynick, const mstring &source, const mstri
 					mask));
     CommServ::list_t::iterator iter;
 
-    RLOCK(("CommServ", "list"));
+    { RLOCK(("CommServ", "list"));
     for (iter = Parent->commserv.ListBegin(), i=0, count = 0;
 			iter != Parent->commserv.ListEnd(); iter++)
     {
@@ -1476,7 +1491,7 @@ void CommServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	    }
 	    count++;
 	}
-    }
+    }}
     SEND(mynick, source, "LIST/DISPLAYED", (
 							i, count));
 }
@@ -1803,13 +1818,6 @@ void CommServ::do_member_Add(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
-    {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(member))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
@@ -1825,7 +1833,17 @@ void CommServ::do_member_Add(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (Parent->commserv.GetList(committee).IsIn(member))
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    if (comm.IsIn(member))
     {
 	SEND(mynick, source, "LIST/EXISTS2", (
 				member, committee,
@@ -1833,9 +1851,8 @@ void CommServ::do_member_Add(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    MLOCK(("CommServ", "list", committee.UpperCase(), "member"));
-    Committee_t &comm = Parent->commserv.GetList(committee);
     comm.insert(member, source);
+    }
     Parent->commserv.stats.i_Member++;
     SEND(mynick, source, "LIST/ADD2", (
 				member, committee,
@@ -1878,14 +1895,17 @@ void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
+    RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
     {
 	SEND(mynick, source, "COMMSERV/NOTHEAD", (
 					committee));
 	return;
     }
 
-    if (Parent->commserv.GetList(committee).IsHead(member))
+    if (comm.IsHead(member))
     {
 	SEND(mynick, source, "COMMSERV/OTH_HEAD", (
 				member, 
@@ -1894,7 +1914,6 @@ void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const
     }
 
     MLOCK(("CommServ", "list", committee.UpperCase(), "member"));
-    Committee_t &comm = Parent->commserv.GetList(committee);
     if (comm.find(member))
     {
 	Parent->commserv.stats.i_Member++;
@@ -2046,7 +2065,8 @@ void CommServ::do_logon_Add(const mstring &mynick, const mstring &source, const 
 				committee));
 	return;
     }
-    RLOCK(("CommServ", "list", committee.UpperCase()));
+
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
     Committee_t &comm = Parent->commserv.GetList(committee);
 
     if (!comm.IsHead(source))
@@ -2063,12 +2083,12 @@ void CommServ::do_logon_Add(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    MLOCK(("CommServ", "list", comm.Name().UpperCase(), "message"));
-    Parent->commserv.stats.i_Logon++;
     comm.MSG_insert(msgnum, source);
+    Parent->commserv.stats.i_Logon++;
     SEND(mynick, source, "LIST/ADD2_NUMBER", (
 		comm.MSG_size(), committee,
 		Parent->getMessage(source, "LIST/MESSAGES")));
+    }
     LOG(LM_INFO, "COMMSERV/LOGON_ADD", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	committee));
@@ -2098,13 +2118,6 @@ void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
-    {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    }
-
     if (!msgnum.IsNumber() || msgnum.Contains(".") || msgnum.Contains("-"))
     {
 	NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
@@ -2118,8 +2131,17 @@ void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const 
 			1, Parent->commserv.GetList(committee).MSG_size()));
     }
 
-    MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
+    RLOCK(("CommServ", "list", committee.UpperCase()));
     Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
     if (comm.MSG_find(num))
     {
 	Parent->commserv.stats.i_Logon++;
@@ -2172,7 +2194,10 @@ void CommServ::do_logon_List(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source) &&
+    RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source) &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
 	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source)))
     {
@@ -2181,7 +2206,7 @@ void CommServ::do_logon_List(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).MSG_size())
+    if (!comm.MSG_size())
     {
 	SEND(mynick, source, "LIST/EMPTY2", (
 		committee, Parent->getMessage(source, "LIST/MESSAGES")));
@@ -2190,10 +2215,9 @@ void CommServ::do_logon_List(const mstring &mynick, const mstring &source, const
 
     int i;
     mstring output;
-    MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
-    Committee_t &comm = Parent->commserv.GetList(committee);
     SEND(mynick, source, "LIST/DISPLAY2", (
 		committee, Parent->getMessage(source, "LIST/MESSAGES")));
+    MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
     for (i=1, comm.message = comm.MSG_begin();
 	comm.message != comm.MSG_end(); comm.message++, i++)
     {
@@ -2231,34 +2255,6 @@ void CommServ::do_set_Head(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    if (!(Parent->commserv.GetList(committee).IsHead(source) ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_Owner()).IsOn(source))))
-    {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    }
-
-    if (Parent->commserv.GetList(committee).Head().empty())
-    {
-	SEND(mynick, source, "COMMSERV/MULTI_HEAD", (
-				committee));
-	return;
-    }
-
-    if (committee == Parent->commserv.SADMIN_Name() ||
-	committee == Parent->commserv.SOP_Name() ||
-	committee == Parent->commserv.ADMIN_Name() ||
-	committee == Parent->commserv.OPER_Name() ||
-	committee == Parent->commserv.ALL_Name() ||
-	committee == Parent->commserv.REGD_Name())
-    {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(newhead))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
@@ -2274,14 +2270,46 @@ void CommServ::do_set_Head(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    if (newhead.IsSameAs(Parent->commserv.GetList(committee).Head(), true))
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
+				committee));
+	return;
+    }
+
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!(comm.IsHead(source) ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
+	 Parent->commserv.GetList(Parent->commserv.OVR_Owner()).IsOn(source))))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    if (comm.Head().empty())
+    {
+	SEND(mynick, source, "COMMSERV/MULTI_HEAD", (
+				committee));
+	return;
+    }
+
+    if (newhead.IsSameAs(comm.Head(), true))
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (
 				message));
 	return;
     }
 
-    Parent->commserv.GetList(committee).Head(newhead);
+    comm.Head(newhead);
+    }
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 	Parent->getMessage(source, "COMMSERV_INFO/SET_HEAD"),
@@ -2316,13 +2344,6 @@ void CommServ::do_set_Description(const mstring &mynick, const mstring &source, 
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
-    {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    }
-
     if (committee == Parent->commserv.SADMIN_Name() ||
 	committee == Parent->commserv.SOP_Name() ||
 	committee == Parent->commserv.ADMIN_Name() ||
@@ -2335,7 +2356,18 @@ void CommServ::do_set_Description(const mstring &mynick, const mstring &source, 
 	return;
     }
 
-    Parent->commserv.GetList(committee).Description(desc);
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    comm.Description(desc);
+    }
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 	Parent->getMessage(source, "COMMSERV_INFO/SET_DESCRIPTION"),
@@ -2370,25 +2402,6 @@ void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
-    {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    }
-
-    if (committee == Parent->commserv.SADMIN_Name() ||
-	committee == Parent->commserv.SOP_Name() ||
-	committee == Parent->commserv.ADMIN_Name() ||
-	committee == Parent->commserv.OPER_Name() ||
-	committee == Parent->commserv.ALL_Name() ||
-	committee == Parent->commserv.REGD_Name())
-    {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
-	return;
-    }
-
     if (email.IsSameAs("none", true))
 	email.erase();
     else if (!email.Contains("@"))
@@ -2404,7 +2417,30 @@ void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    Parent->commserv.GetList(committee).Email(email);
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
+				committee));
+	return;
+    }
+
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    comm.Email(email);
+    }
     Parent->commserv.stats.i_Set++;
     if (email.empty())
     {
@@ -2452,11 +2488,12 @@ void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
+    if (url.IsSameAs("none", true))
+	url.erase();
+
+    if (url.SubString(0, 6).IsSameAs("http://", true))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
+	url.erase(0, 6);
     }
 
     if (committee == Parent->commserv.SADMIN_Name() ||
@@ -2471,15 +2508,18 @@ void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    if (url.IsSameAs("none", true))
-	url.erase();
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
 
-    if (url.SubString(0, 6).IsSameAs("http://", true))
+    if (!comm.IsHead(source))
     {
-	url.erase(0, 6);
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
     }
 
-    Parent->commserv.GetList(committee).URL(url);
+    comm.URL(url);
+    }
     Parent->commserv.stats.i_Set++;
     if (url.empty())
     {
@@ -2527,10 +2567,17 @@ void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	if (Parent->commserv.DEF_Secure())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -2546,7 +2593,17 @@ void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (Parent->commserv.GetList(committee).L_Secure())
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    if (comm.L_Secure())
     {
 	SEND(mynick, source, "COMMSERV/ISLOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE"),
@@ -2554,21 +2611,8 @@ void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
-    {
-	if (Parent->commserv.DEF_Secure())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
+    comm.Secure(onoff.GetBool());
     }
-
-    if (!onoff.IsBool())
-    {
-	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
-	return;
-    }
-
-    Parent->commserv.GetList(committee).Secure(onoff.GetBool());
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE"),
@@ -2607,10 +2651,17 @@ void CommServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	if (Parent->commserv.DEF_Private())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -2626,7 +2677,17 @@ void CommServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (Parent->commserv.GetList(committee).L_Private())
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    if (comm.L_Private())
     {
 	SEND(mynick, source, "COMMSERV/ISLOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
@@ -2634,21 +2695,8 @@ void CommServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
-    {
-	if (Parent->commserv.DEF_Private())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
+    comm.Private(onoff.GetBool());
     }
-
-    if (!onoff.IsBool())
-    {
-	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
-	return;
-    }
-
-    Parent->commserv.GetList(committee).Private(onoff.GetBool());
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
@@ -2687,10 +2735,17 @@ void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, co
 	return;
     }
 
-    if (!Parent->commserv.GetList(committee).IsHead(source))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	if (Parent->commserv.DEF_OpenMemos())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -2706,7 +2761,17 @@ void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, co
 	return;
     }
 
-    if (Parent->commserv.GetList(committee).L_OpenMemos())
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
+
+    if (!comm.IsHead(source))
+    {
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (
+				committee));
+	return;
+    }
+
+    if (comm.L_OpenMemos())
     {
 	SEND(mynick, source, "COMMSERV/ISLOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
@@ -2714,21 +2779,8 @@ void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, co
 	return;
     }
 
-    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
-    {
-	if (Parent->commserv.DEF_OpenMemos())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
+    comm.OpenMemos(onoff.GetBool());
     }
-
-    if (!onoff.IsBool())
-    {
-	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
-	return;
-    }
-
-    Parent->commserv.GetList(committee).OpenMemos(onoff.GetBool());
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
@@ -2767,6 +2819,20 @@ void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
+    {
+	if (Parent->commserv.DEF_Secure())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
+	return;
+    }
+
     if (committee == Parent->commserv.SADMIN_Name() ||
 	committee == Parent->commserv.SOP_Name() ||
 	committee == Parent->commserv.ADMIN_Name() ||
@@ -2787,23 +2853,13 @@ void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
-    {
-	if (Parent->commserv.DEF_Secure())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
-    }
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
 
-    if (!onoff.IsBool())
-    {
-	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
-	return;
+    comm.L_Secure(false);
+    comm.Secure(onoff.GetBool());
+    comm.L_Secure(true);
     }
-
-    Parent->commserv.GetList(committee).L_Secure(false);
-    Parent->commserv.GetList(committee).Secure(onoff.GetBool());
-    Parent->commserv.GetList(committee).L_Secure(true);
     Parent->commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE"),
@@ -2842,6 +2898,20 @@ void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 	return;
     }
 
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
+    {
+	if (Parent->commserv.DEF_Private())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
+	return;
+    }
+
     if (committee == Parent->commserv.SADMIN_Name() ||
 	committee == Parent->commserv.SOP_Name() ||
 	committee == Parent->commserv.ADMIN_Name() ||
@@ -2862,23 +2932,13 @@ void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
-    {
-	if (Parent->commserv.DEF_Private())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
-    }
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
 
-    if (!onoff.IsBool())
-    {
-	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
-	return;
+    comm.L_Private(false);
+    comm.Private(onoff.GetBool());
+    comm.L_Private(true);
     }
-
-    Parent->commserv.GetList(committee).L_Private(false);
-    Parent->commserv.GetList(committee).Private(onoff.GetBool());
-    Parent->commserv.GetList(committee).L_Private(true);
     Parent->commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
@@ -2917,6 +2977,20 @@ void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, c
 	return;
     }
 
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
+    {
+	if (Parent->commserv.DEF_OpenMemos())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
+	return;
+    }
+
     if (committee == Parent->commserv.SADMIN_Name() ||
 	committee == Parent->commserv.SOP_Name() ||
 	committee == Parent->commserv.ADMIN_Name() ||
@@ -2937,23 +3011,13 @@ void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
-    {
-	if (Parent->commserv.DEF_OpenMemos())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
-    }
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
+    Committee_t &comm = Parent->commserv.GetList(committee);
 
-    if (!onoff.IsBool())
-    {
-	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
-	return;
+    comm.L_OpenMemos(false);
+    comm.OpenMemos(onoff.GetBool());
+    comm.L_OpenMemos(true);
     }
-
-    Parent->commserv.GetList(committee).L_OpenMemos(false);
-    Parent->commserv.GetList(committee).OpenMemos(onoff.GetBool());
-    Parent->commserv.GetList(committee).L_OpenMemos(true);
     Parent->commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
@@ -3277,7 +3341,7 @@ void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     pOut->BeginObject(tag_CommServ, attribs);
 
     CommServ::list_t::iterator iter;
-    { RLOCK(("CommServ", "stored"));
+    { RLOCK(("CommServ", "list"));
     for (iter = i_list.begin(); iter != i_list.end(); iter++)
 	pOut->WriteSubElement(&iter->second, attribs);
     }

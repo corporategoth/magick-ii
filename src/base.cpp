@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.163  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.162  2001/05/06 18:44:25  prez
 ** Fixed problem with kill/rejoin
 **
@@ -1294,7 +1297,6 @@ bool mBase::signon(const mstring &nickname) const
 {
     FT("mBase::signon", (nickname));
 
-    RLOCK(("NickServ", "live", nickname.LowerCase()));
     if (Parent->nickserv.IsLive(nickname))
     {
 	RET(false);
@@ -1312,7 +1314,6 @@ bool mBase::signoff(const mstring &nickname) const
 {
     FT("mBase::signoff", (nickname));
 
-    RLOCK(("NickServ", "live", nickname.LowerCase()));
     if (Parent->nickserv.IsLive(nickname))
     {
 	Parent->server.QUIT(nickname);
@@ -1354,9 +1355,7 @@ void mBase::privmsgV(const mstring &source, const mstring &dest, const char *psz
     mstring message;
     message.FormatV(pszFormat, argptr);
 
-    RLOCK(("NickServ", "live", dest.LowerCase()));
-    RLOCK2(("ChanServ", "live", dest.LowerCase()));
-    if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
+    if (IsName(source) && !Parent->getLname(dest).empty())
 	Parent->server.PRIVMSG(source, dest, message);
 }
 
@@ -1389,9 +1388,7 @@ void mBase::noticeV(const mstring &source, const mstring &dest, const char *pszF
 
     mstring message;
     message.FormatV(pszFormat, argptr);
-    RLOCK(("NickServ", "live", dest.LowerCase()));
-    RLOCK2(("ChanServ", "live", dest.LowerCase()));
-    if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
+    if (IsName(source) && !Parent->getLname(dest).empty())
 	Parent->server.NOTICE(source, dest, message);
 }
 
@@ -1420,7 +1417,6 @@ void mBase::sendV(const mstring &source, const mstring &dest, const char *pszFor
 {
     FT("mBase::sendV", (source, dest, pszFormat));
 
-    RLOCK(("NickServ", "live", dest.LowerCase()));
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
 	if (!Parent->nickserv.LCK_PRIVMSG() && Parent->nickserv.IsStored(dest) &&
@@ -1683,7 +1679,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
 	NRET(pair<bool_functor>,retval);
 
     RLOCK(("CommandMap", "i_user"));
-	cmdmap::const_iterator mi = i_user.find(type);
+    cmdmap::const_iterator mi = i_user.find(type);
     if (mi != i_user.end())
     {
 	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)

@@ -25,6 +25,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/05/13 00:55:17  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.61  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -285,6 +288,20 @@ public:
 #define MLOCK7(y)  mVarArray __lockM7_VarArray y; mLOCK __lockM7(L_Mutex, __lockM7_VarArray)
 #define MLOCK8(y)  mVarArray __lockM8_VarArray y; mLOCK __lockM8(L_Mutex, __lockM8_VarArray)
 
+#define RLOCK_IF(x, y) \
+	bool __if_res = false; \
+	{ RLOCK(x); __if_res = y; } \
+	if (__if_res)
+#define WLOCK_IF(x, y) \
+	bool __if_res = false; \
+	{ WLOCK(x); __if_res = y; } \
+	if (__if_res)
+#define MLOCK_IF(x, y) \
+	bool __if_res = false; \
+	{ MLOCK(x); __if_res = y; } \
+	if (__if_res)
+
+
 #else /* MAGICK_LOCKS_WORK */
 #define RLOCK(y)
 #define RLOCK2(y)
@@ -310,6 +327,10 @@ public:
 #define MLOCK6(y)
 #define MLOCK7(y)
 #define MLOCK8(y)
+
+#define RLOCK_IF(x, y) if (y)
+#define WLOCK_IF(x, y) if (y)
+#define MLOCK_IF(x, y) if (y)
 
 #endif /* MAGICK_LOCKS_WORK */
 

@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.307  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.306  2001/05/08 15:51:41  prez
 ** Added some security stuff with committees, so certain things are guarenteed
 ** on database load (ie. the magick.ini assertions).
@@ -3521,13 +3524,10 @@ mstring Magick::GetKey()const
     {
 	mFile keyfile(files.KeyFile());
 	unsigned char tmp[KEYLEN], key[KEYLEN];
+	unsigned char instr[64], outstr[64];
 	size_t key_size;
 	des_key_schedule key1, key2;
 	des_cblock ckey1, ckey2;
-
-	memset(tmp, 0, KEYLEN);
-	key_size = keyfile.Read(tmp, KEYLEN);
-	tmp[KEYLEN-1]=0;
 
 	/* Unscramble keyfile keys */
 	des_string_to_key(CRYPTO_KEY1,&ckey1);
@@ -3535,9 +3535,23 @@ mstring Magick::GetKey()const
 	des_string_to_key(CRYPTO_KEY2,&ckey2);
 	des_set_key(&ckey2,key2);
 
-	/* Use keyfile keys to get REAL key */
-	mDES(tmp, key, key_size, key1, key2, 0);
-	retval = reinterpret_cast<char *>(key);
+	// First verify syntax is correct!
+	keyfile.Read(instr, 128);
+	mDES(instr, outstr, 128, key1, key2, 0);
+#if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
+	mstring::snprintf(reinterpret_cast<char *>(instr), 128, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
+#else
+	mstring::snprintf(reinterpret_cast<char *>(instr), 128, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
+#endif
+	if (memcmp(instr, outstr, 128) == 0)
+	{
+	    /* Use keyfile keys to get REAL key */
+	    key_size = keyfile.Read(tmp, KEYLEN);
+	    mDES(tmp, key, key_size, key1, key2, 0);
+	    retval = reinterpret_cast<char *>(key);
+	}
+	else
+	    LOG(LM_CRITICAL, "ERROR/KEY_CORRUPT", (files.KeyFile()));
     }
 #endif
     NRET(mstring, retval);

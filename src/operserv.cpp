@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.123  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.122  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -1039,7 +1042,7 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "JUPE*", Parent->commserv.ADMIN_Name(), OperServ::do_Jupe);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.SADMIN_Name(), NickServ::do_Identify);
+	    "ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "ON", Parent->commserv.SADMIN_Name(), OperServ::do_On);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1194,7 +1197,7 @@ void OperServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "JUPE*", Parent->commserv.ADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.SADMIN_Name());
+	    "ID*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "ON", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),

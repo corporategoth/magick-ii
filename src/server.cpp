@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.174  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.173  2001/05/08 06:28:28  prez
 ** Added convert to version info
 **
@@ -4906,7 +4909,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		MCE(ToBeSquit.size());
 		}
 		NickServ::live_t::iterator iter;
-		vector<mstring> chunked;
+		vector<mstring> chunked, chunked2;
 		{ RLOCK(("NickServ", "live"));
 		for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
 		{
@@ -4921,7 +4924,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			    if (tlist[i] == iter->second.Server())
 			    {
 				iter->second.SetSquit();
-				mMessage::CheckDependancies(mMessage::NickNoExists, iter->first);
+				chunked2.push_back(iter->first);
 				break;
 			    }
 			}
@@ -4930,6 +4933,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	        // Sign off services if we have NO uplink
 		for (i=0; i<chunked.size(); i++)
 		    QUIT(chunked[i], "SQUIT - " + target);
+		for (i=0; i<chunked2.size(); i++)
+		    mMessage::CheckDependancies(mMessage::NickNoExists, chunked2[i]);
 		for (i=0; i<tlist.size(); i++)
 		    mMessage::CheckDependancies(mMessage::ServerNoExists, tlist[i]);
 	    }

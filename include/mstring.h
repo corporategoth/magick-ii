@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/05/13 00:55:17  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.74  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -275,10 +278,11 @@ class mstring
     void lock_rel() const;
     void init();
     int occurances(const char *str, const size_t length) const;
+
+public:
     static int snprintf(char *buf, const size_t size, const char *fmt, ...);
     static int vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
 
-public:
     mstring()
 	{ init(); }
     mstring(const mstring &in)

@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/05/13 00:55:17  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.67  2001/05/03 22:34:35  prez
 ** Fixed SQUIT protection ...
 **
@@ -513,7 +516,6 @@ public:
     mstring Suspend_By();
     mDateTime Suspend_Time();
     bool Forbidden() const;
-    void SendPic(const mstring& nick);
     unsigned long PicNum();
     void GotPic(const unsigned long picnum);
 

@@ -330,3 +330,4 @@ NOLANGTOKEN      =Invalid token ERR_SITUATION/BADTOKEN for language ENGLISH used
 BADSET           =Tried to set BAD data (PreZ) for FOUNDER on #magick.
 DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).
 DB_CORRUPT       =Database load failed due to data corruption.
+KEY_CORRUPT      =Keyfile magick.ini failed validation checks (requires regeneration) - NOT USED!

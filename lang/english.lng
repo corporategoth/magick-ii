@@ -131,6 +131,8 @@ FILEINPROG         =Cannot begin a new memo or file transfer while a file transf
 COFOUNDER          =Cannot set the Co-Founder the same as the Founder.
 NOACCESS           =Access denied.
 NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use.
+ISLOCKED_NICK      =$1 option is locked for ALL nicknames.
+ISLOCKED_CHAN      =$1 option is locked for ALL channels.
 
 ;
 ; This section deals with DCC actions.

@@ -58,13 +58,13 @@ for ($i=0, $j=0; $i <= $#sorted1 || $j <= $#sorted2; )
 	else
 	{
 		$amt1 = $amt2 = 0;
-		for ($amt1 = 0; $file1{$sorted1[$i]} =~ /%/; $amt1++)
+		for ($amt1 = 0; $file1{$sorted1[$i]} =~ /\$/; $amt1++)
 		{
-			$file1{$sorted1[$i]} =~ s/.*%//;
+			$file1{$sorted1[$i]} =~ s/.*\$//;
 		}
-		for ($amt2 = 0; $file2{$sorted2[$j]} =~ /%/; $amt2++)
+		for ($amt2 = 0; $file2{$sorted2[$j]} =~ /\$/; $amt2++)
 		{
-			$file2{$sorted2[$j]} =~ s/.*%//;
+			$file2{$sorted2[$j]} =~ s/.*\$//;
 		}
 		if ($amt1 != $amt2)
 		{
@@ -94,7 +94,7 @@ if (defined @missing2)
 
 if (defined @changed)
 {
-	print "Changed % tokens from SOURCE file ($ARGV[0]) to TARGET file ($ARGV[1]):\n";
+	print "Changed \$ tokens from SOURCE file ($ARGV[0]) to TARGET file ($ARGV[1]):\n";
 	for ($i=0; $i <= $#changed; $i++)
 	{
 		print "    $changed[$i]\n";

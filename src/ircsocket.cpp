@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.163  2001/05/13 00:55:18  prez
+** More patches to try and fix deadlocking ...
+**
 ** Revision 1.162  2001/05/08 03:22:27  prez
 ** Removed one possible deadlock cause, and stopped events engine from doing
 ** anything until synch is over.
@@ -912,7 +915,8 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
 
     // QUIT all user's who faked it ...
-    WLOCK2(("Server", "ToBeSquit"));
+    vector<mstring> chunked;
+    { WLOCK2(("Server", "ToBeSquit"));
     if (Parent->server.ToBeSquit.find(*tmp) != Parent->server.ToBeSquit.end())
     {
 	list<mstring>::iterator iter;
@@ -921,13 +925,19 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	{
 	    if (Parent->nickserv.IsLiveAll(*iter))
 	    {
-		Parent->nickserv.GetLive(*iter).Quit("FAKE SQUIT - " + *tmp);
-		Parent->nickserv.RemLive(*iter);
+		chunked.push_back(*iter);
 	    }
 	}
 	Parent->server.ToBeSquit.erase(*tmp);
 	CE(2, Parent->server.ToBeSquit.size());
-    }   
+    }}  
+    vector<mstring>::iterator k;
+    for (k=chunked.begin(); k!=chunked.end(); k++)
+    {
+	Parent->nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
+	Parent->nickserv.RemLive(*k);
+	mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+    }
     Parent->server.DumpE();
 
     delete tmp;
@@ -966,11 +976,9 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     vector<mstring>::iterator k;
     for (k=SquitMe.begin(); k != SquitMe.end(); k++)
     {
-	if (Parent->nickserv.IsLiveAll(*k))
-	{
-	    Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
-	    Parent->nickserv.RemLive(*k);
-	}
+	Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
+	Parent->nickserv.RemLive(*k);
+	mMessage::CheckDependancies(mMessage::NickNoExists, *k);
     }
 
     delete tmp;

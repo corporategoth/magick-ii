@@ -330,3 +330,4 @@ NOLANGTOKEN      =Invalid token $1 for language $2 used, error returned.
 BADSET           =Tried to set BAD data ($1) for $2 on $3.
 DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).
 DB_CORRUPT       =Database load failed due to data corruption.
+KEY_CORRUPT      =Keyfile $1 failed validation checks (requires regeneration) - NOT USED!
