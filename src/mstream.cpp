@@ -743,10 +743,12 @@ wxFilterOutputStream::~wxFilterOutputStream()
 wxOutputStream& wxEndL(wxOutputStream& stream)
 {
 #ifdef WIN32
-  return stream.Write("\r\n", 2);
+  wxOutputStream &Result=stream.Write("\r\n", 2);
 #else
-  return stream.Write("\n", 1);
+  wxOutputStream &Result=stream.Write("\n", 1);
 #endif
+  stream.Sync();
+  return Result;
 }
 
 // ---------------------------------------------------------------------------
