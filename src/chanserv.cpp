@@ -50,6 +50,7 @@ static Chan_Live_t GLOB_Chan_Live_t;
 
 bool Chan_Live_t::Join(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Live_t::Join", (nick));
 
     if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
@@ -72,10 +73,12 @@ bool Chan_Live_t::Join(const mstring & nick)
 	MCE(users.size());
 	RET(true);
     }
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Part(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Live_t::Part", (nick));
     if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
@@ -142,10 +145,12 @@ unsigned int Chan_Live_t::Part(const mstring & nick)
     unsigned int retval = users.size() + squit.size();
 
     RET(retval);
+    ETCB();
 }
 
 void Chan_Live_t::SquitUser(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Live_t::SquitUser", (nick));
     if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "squit"), users.find(nick.LowerCase()) != users.end())
     {
@@ -162,10 +167,12 @@ void Chan_Live_t::SquitUser(const mstring & nick)
 	CE(1, users.size());
 	MCE(squit.size());
     }
+    ETCB();
 }
 
 void Chan_Live_t::UnSquitUser(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Live_t::UnSquitUser", (nick));
 
     // We'll get ALL modes if all users are squit
@@ -185,10 +192,12 @@ void Chan_Live_t::UnSquitUser(const mstring & nick)
     }
     else
 	Part(nick);
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Kick(const mstring & nick, const mstring & kicker)
 {
+    BTCB();
     FT("Chan_Live_t::Kick", (nick, kicker));
     if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
@@ -223,10 +232,12 @@ unsigned int Chan_Live_t::Kick(const mstring & nick, const mstring & kicker)
     unsigned int retval = users.size() + squit.size();
 
     RET(retval);
+    ETCB();
 }
 
 void Chan_Live_t::ChgNick(const mstring & nick, const mstring & newnick)
 {
+    BTCB();
     FT("Chan_Live_t::ChgNick", (nick, newnick));
     if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
@@ -257,27 +268,33 @@ void Chan_Live_t::ChgNick(const mstring & nick, const mstring & newnick)
 	    LOG(LM_WARNING, "ERROR/REC_FORNOTINCHAN", ("NICK", nick, i_Name));
 	}
     }
+    ETCB();
 }
 
 Chan_Live_t::Chan_Live_t() : i_Numeric(0), i_Limit(0), ph_timer(0)
 {
+    BTCB();
     NFT("Chan_Live_t::Chan_Live_t");
     ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
     DumpB();
+    ETCB();
 }
 
 Chan_Live_t::Chan_Live_t(const mstring & name, const mstring & first_user, const mDateTime & creation) : i_Name(name),
 i_Numeric(0), i_Creation_Time(creation), i_Limit(0), ph_timer(0)
 {
+    BTCB();
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
     users[first_user.LowerCase()] = triplet < bool, bool, bool > (false, false, false);
 
     DumpB();
+    ETCB();
 }
 
 Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
 {
+    BTCB();
     NFT("Chan_Live_t::operator=");
 
     i_Name = in.i_Name;
@@ -319,24 +336,30 @@ Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
     for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
 	i_UserDef.insert(*j);
     NRET(Chan_Live_t &, *this);
+    ETCB();
 }
 
 mDateTime Chan_Live_t::Creation_Time() const
 {
+    BTCB();
     NFT("Chan_Live_t::Creation_Time");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
     RET(i_Creation_Time);
+    ETCB();
 }
 
 void Chan_Live_t::Creation_Time(const mDateTime & in)
 {
+    BTCB();
     FT("Chan_Live_t::Creation_Time", (in));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
     i_Creation_Time = in;
+    ETCB();
 }
 
 void Chan_Live_t::Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & settime)
 {
+    BTCB();
     FT("Chan_Live_t::Topic", (source, topic, setter, settime));
     {
 	WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
@@ -354,55 +377,69 @@ void Chan_Live_t::Topic(const mstring & source, const mstring & topic, const mst
     }
     if (Magick::instance().chanserv.IsStored(i_Name))
 	Magick::instance().chanserv.GetStored(i_Name)->Topic(source, topic, setter, settime);
+    ETCB();
 }
 
 mstring Chan_Live_t::Topic() const
 {
+    BTCB();
     NFT(("Chan_Live_t::Topic"));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
+    ETCB();
 }
 
 mstring Chan_Live_t::Topic_Setter() const
 {
+    BTCB();
     NFT(("Chan_Live_t::Topic_Setter"));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
+    ETCB();
 }
 
 mDateTime Chan_Live_t::Topic_Set_Time() const
 {
+    BTCB();
     NFT(("Chan_Live_t::Topic_Set_Time"));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Set_Time"));
     RET(i_Topic_Set_Time);
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Squit() const
 {
+    BTCB();
     NFT("Chan_Live_t::Squit");
     unsigned int retval = squit.size();
 
     RET(retval);
+    ETCB();
 }
 
 void Chan_Live_t::Numeric(const unsigned long in)
 {
+    BTCB();
     FT("Chan_Live_t::Numeric", (in));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Numeric"));
     MCB(i_Numeric);
     i_Numeric = in;
     MCE(i_Numeric);
+    ETCB();
 }
 
 unsigned long Chan_Live_t::Numeric() const
 {
+    BTCB();
     NFT("Chan_Live_t::Numeric");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Numeric"));
     RET(i_Numeric);
+    ETCB();
 }
 
 mstring Chan_Live_t::Squit(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::Squit", (num));
     unsigned int i;
 
@@ -416,18 +453,22 @@ mstring Chan_Live_t::Squit(const unsigned int num) const
 	}
 
     RET("");
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Users() const
 {
+    BTCB();
     NFT("Chan_Live_t::Users");
     unsigned int retval = users.size();
 
     RET(retval);
+    ETCB();
 }
 
 mstring Chan_Live_t::User(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::User", (num));
     unsigned int i;
 
@@ -441,10 +482,12 @@ mstring Chan_Live_t::User(const unsigned int num) const
 	}
 
     RET("");
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Ops() const
 {
+    BTCB();
     NFT("Chan_Live_t::Ops");
     unsigned int count = 0;
 
@@ -455,10 +498,12 @@ unsigned int Chan_Live_t::Ops() const
 	if (i->second.first)
 	    count++;
     RET(count);
+    ETCB();
 }
 
 mstring Chan_Live_t::Op(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::Op", (num));
     unsigned int i;
 
@@ -476,10 +521,12 @@ mstring Chan_Live_t::Op(const unsigned int num) const
 	}
 
     RET("");
+    ETCB();
 }
 
 unsigned int Chan_Live_t::HalfOps() const
 {
+    BTCB();
     NFT("Chan_Live_t::HalfOps");
     unsigned int count = 0;
 
@@ -490,10 +537,12 @@ unsigned int Chan_Live_t::HalfOps() const
 	if (i->second.second)
 	    count++;
     RET(count);
+    ETCB();
 }
 
 mstring Chan_Live_t::HalfOp(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::HalfOp", (num));
     unsigned int i;
 
@@ -511,10 +560,12 @@ mstring Chan_Live_t::HalfOp(const unsigned int num) const
 	}
 
     RET("");
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Voices() const
 {
+    BTCB();
     NFT("Chan_Live_t::Voices");
     unsigned int count = 0;
 
@@ -525,10 +576,12 @@ unsigned int Chan_Live_t::Voices() const
 	if (i->second.third)
 	    count++;
     RET(count);
+    ETCB();
 }
 
 mstring Chan_Live_t::Voice(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::Voice", (num));
     unsigned int i;
 
@@ -545,10 +598,12 @@ mstring Chan_Live_t::Voice(const unsigned int num) const
 	    i++;
 	}
     RET("");
+    ETCB();
 }
 
 triplet < bool, bool, bool > Chan_Live_t::User(const mstring & name) const
 {
+    BTCB();
     FT("Chan_Live_t::User", (name));
     if (IsIn(name))
     {
@@ -561,18 +616,22 @@ triplet < bool, bool, bool > Chan_Live_t::User(const mstring & name) const
 	triplet < bool, bool, bool > tmp(false, false, false);
 	NRET(triplet < bool.bool.bool >, tmp);
     }
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Bans() const
 {
+    BTCB();
     NFT("Chan_Live_t::Bans");
     unsigned int retval = bans.size();
 
     RET(retval);
+    ETCB();
 }
 
 mstring Chan_Live_t::Ban(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::Ban", (num));
     unsigned int i;
 
@@ -585,10 +644,12 @@ mstring Chan_Live_t::Ban(const unsigned int num) const
 	}
 
     RET("");
+    ETCB();
 }
 
 mDateTime Chan_Live_t::Ban(const mstring & mask) const
 {
+    BTCB();
     FT("Chan_Live_t::Ban", (mask));
     mDateTime retval(0.0);
 
@@ -599,18 +660,22 @@ mDateTime Chan_Live_t::Ban(const mstring & mask) const
 	retval = i->second;
     }
     RET(retval);
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Exempts() const
 {
+    BTCB();
     NFT("Chan_Live_t::Exempts");
     unsigned int retval = exempt.size();
 
     RET(retval);
+    ETCB();
 }
 
 mstring Chan_Live_t::Exempt(const unsigned int num) const
 {
+    BTCB();
     FT("Chan_Live_t::Exempt", (num));
     unsigned int i;
 
@@ -623,10 +688,12 @@ mstring Chan_Live_t::Exempt(const unsigned int num) const
 	}
 
     RET("");
+    ETCB();
 }
 
 mDateTime Chan_Live_t::Exempt(const mstring & mask) const
 {
+    BTCB();
     FT("Chan_Live_t::Exempt", (mask));
     mDateTime retval(0.0);
 
@@ -637,28 +704,34 @@ mDateTime Chan_Live_t::Exempt(const mstring & mask) const
 	retval = i->second;
     }
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Live_t::IsSquit(const mstring & nick) const
 {
+    BTCB();
     FT("Chan_Live_t::IsSquit", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     bool retval = (squit.find(nick.LowerCase()) != squit.end());
 
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Live_t::IsIn(const mstring & nick) const
 {
+    BTCB();
     FT("Chan_Live_t::IsIn", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
     bool retval = (users.find(nick.LowerCase()) != users.end());
 
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Live_t::IsOp(const mstring & nick) const
 {
+    BTCB();
     FT("Chan_Live_t::IsOp", (nick));
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -669,10 +742,12 @@ bool Chan_Live_t::IsOp(const mstring & nick) const
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 bool Chan_Live_t::IsHalfOp(const mstring & nick) const
 {
+    BTCB();
     FT("Chan_Live_t::IsHalfOp", (nick));
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -683,10 +758,12 @@ bool Chan_Live_t::IsHalfOp(const mstring & nick) const
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 bool Chan_Live_t::IsVoice(const mstring & nick) const
 {
+    BTCB();
     FT("Chan_Live_t::IsVoice", (nick));
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -697,19 +774,23 @@ bool Chan_Live_t::IsVoice(const mstring & nick) const
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 bool Chan_Live_t::IsBan(const mstring & mask) const
 {
+    BTCB();
     FT("Chan_Live_t::IsBan", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
     bool retval = (bans.find(mask.LowerCase()) != bans.end());
 
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Live_t::MatchBan(const mstring & mask) const
 {
+    BTCB();
     FT("Chan_Live_t::MatchBan", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
     map < mstring, mDateTime >::const_iterator i;
@@ -721,19 +802,23 @@ bool Chan_Live_t::MatchBan(const mstring & mask) const
 	}
     }
     RET(false);
+    ETCB();
 }
 
 bool Chan_Live_t::IsExempt(const mstring & mask) const
 {
+    BTCB();
     FT("Chan_Live_t::IsExempt", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
     bool retval = (exempt.find(mask.LowerCase()) != exempt.end());
 
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Live_t::MatchExempt(const mstring & mask) const
 {
+    BTCB();
     FT("Chan_Live_t::MatchExempt", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
     map < mstring, mDateTime >::const_iterator i;
@@ -745,10 +830,12 @@ bool Chan_Live_t::MatchExempt(const mstring & mask) const
 	}
     }
     RET(false);
+    ETCB();
 }
 
 void Chan_Live_t::LockDown()
 {
+    BTCB();
     NFT("Chan_Live_t::LockDown");
 
     Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
@@ -762,10 +849,12 @@ void Chan_Live_t::LockDown()
 	Magick::instance().reactor().schedule_timer(&(Magick::instance().chanserv.ph), new mstring(i_Name),
 						    ACE_Time_Value(Magick::instance().chanserv.ChanKeep()));
     MCE(ph_timer);
+    ETCB();
 }
 
 void Chan_Live_t::UnLock()
 {
+    BTCB();
     NFT("Chan_Live_t::UnLock");
 
     if (modes.Contains("s") && Magick::instance().chanserv.IsStored(i_Name) &&
@@ -783,11 +872,13 @@ void Chan_Live_t::UnLock()
     }
     ph_timer = 0;
     MCE(ph_timer);
+    ETCB();
 }
 
 bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > & mode_params, const bool change,
 			     const char reqmode, const mstring & reqparam)
 {
+    BTCB();
     FT("Chan_Live_t::ModeExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
 
@@ -821,11 +912,13 @@ bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > & mo
 	}
     }
     RET(false);
+    ETCB();
 }
 
 void Chan_Live_t::RemoveMode(mstring & mode, vector < mstring > & mode_params, const bool change, const char reqmode,
 			     const mstring & reqparam)
 {
+    BTCB();
     FT("Chan_Live_t::RemoveMode", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
     mstring new_mode;
@@ -866,10 +959,12 @@ void Chan_Live_t::RemoveMode(mstring & mode, vector < mstring > & mode_params, c
     }
     mode = new_mode;
     mode_params = new_params;
+    ETCB();
 }
 
 void Chan_Live_t::SendMode(const mstring & in)
 {
+    BTCB();
     FT("Chan_Live_t::SendMode", (in));
     unsigned int i, param = 2;
     mstring mode(in.Before(" "));
@@ -1210,10 +1305,12 @@ void Chan_Live_t::SendMode(const mstring & in)
     RLOCK2(("Events"));
     if (Magick::instance().events != NULL)
 	Magick::instance().events->AddChannelModePending(i_Name);
+    ETCB();
 }
 
 void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 {
+    BTCB();
     FT("Chan_Live_t::Mode", (source, in));
 
     mstring change(in.ExtractWord(1, ": "));
@@ -1551,38 +1648,48 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 
     if (Magick::instance().chanserv.IsStored(i_Name))
 	Magick::instance().chanserv.GetStored(i_Name)->Mode(source, newmode + newmode_param);
+    ETCB();
 }
 
 bool Chan_Live_t::HasMode(const mstring & in) const
 {
+    BTCB();
     FT("Chan_Live_t::HasMode", (in));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes.Contains(in));
+    ETCB();
 }
 
 mstring Chan_Live_t::Mode() const
 {
+    BTCB();
     NFT("Chan_Live_t::Mode");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes);
+    ETCB();
 }
 
 mstring Chan_Live_t::Key() const
 {
+    BTCB();
     NFT("Chan_Live_t::Key");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
     RET(i_Key);
+    ETCB();
 }
 
 unsigned int Chan_Live_t::Limit() const
 {
+    BTCB();
     NFT("Chan_Live_t::Limit");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
     RET(i_Limit);
+    ETCB();
 }
 
 mDateTime Chan_Live_t::PartTime(const mstring & nick) const
 {
+    BTCB();
     FT("Chan_Live_t::PartTime", (nick));
     mDateTime retval(0.0);
 
@@ -1593,10 +1700,12 @@ mDateTime Chan_Live_t::PartTime(const mstring & nick) const
 	retval = i->second;
     }
     RET(retval);
+    ETCB();
 }
 
 size_t Chan_Live_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
@@ -1653,28 +1762,34 @@ size_t Chan_Live_t::Usage() const
     }
 
     return retval;
+    ETCB();
 }
 
 void Chan_Live_t::DumpB() const
 {
+    BTCB();
     MB(0,
        (i_Name, i_Numeric, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
 	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size()));
     MB(16, (p_modes_off_params.size(), ph_timer, recent_parts.size()));
+    ETCB();
 }
 
 void Chan_Live_t::DumpE() const
 {
+    BTCB();
     ME(0,
        (i_Name, i_Numeric, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
 	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size()));
     ME(16, (p_modes_off_params.size(), ph_timer, recent_parts.size()));
+    ETCB();
 }
 
 // --------- end of Chan_Live_t -----------------------------------
 
 void Chan_Stored_t::ChgAttempt(const mstring & nick, const mstring & newnick)
 {
+    BTCB();
     FT("Chan_Stored_t::ChgAttempt", (nick, newnick));
 
     map < mstring, unsigned int >::iterator iter;
@@ -1690,10 +1805,12 @@ void Chan_Stored_t::ChgAttempt(const mstring & nick, const mstring & newnick)
 	}
     failed_passwds.erase(nick.LowerCase());
     MCE(failed_passwds.size());
+    ETCB();
 }
 
 bool Chan_Stored_t::Join(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Stored_t::Join", (nick));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1916,10 +2033,12 @@ bool Chan_Stored_t::Join(const mstring & nick)
 		 (i_Name, count, Magick::instance().memoserv.FirstName(), i_Name));
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Part(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Stored_t::Part", (nick));
 
     if (Magick::instance().nickserv.IsLive(nick) && Magick::instance().nickserv.GetLive(nick)->IsServices())
@@ -1958,10 +2077,12 @@ void Chan_Stored_t::Part(const mstring & nick)
 	    Magick::instance().chanserv.GetLive(i_Name)->SendMode(mode);
 	}
     }
+    ETCB();
 }
 
 void Chan_Stored_t::Kick(const mstring & nick, const mstring & kicker)
 {
+    BTCB();
     FT("Chan_Stored_t::Kick", (nick, kicker));
 
     // Users shouldnt kick us, but we just rejoin!
@@ -1974,10 +2095,12 @@ void Chan_Stored_t::Kick(const mstring & nick, const mstring & kicker)
 
     if (DoRevenge("KICK", kicker, nick))
 	Magick::instance().server.INVITE(Magick::instance().chanserv.FirstName(), nick, i_Name);
+    ETCB();
 }
 
 void Chan_Stored_t::ChgNick(const mstring & nick, const mstring & newnick)
 {
+    BTCB();
     FT("Chan_Stored_t::ChgNick", (nick, newnick));
 
     if (!Magick::instance().chanserv.IsLive(i_Name))
@@ -2035,19 +2158,23 @@ void Chan_Stored_t::ChgNick(const mstring & nick, const mstring & newnick)
 	    return;
 	}
     }
+    ETCB();
 }
 
 void Chan_Stored_t::Quit(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Stored_t::Quit", (nick));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
     MCB(failed_passwds.size());
     failed_passwds.erase(nick.LowerCase());
     MCE(failed_passwds.size());
+    ETCB();
 }
 
 void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & settime)
 {
+    BTCB();
     FT("Chan_Stored_t::Topic", (source, topic, setter, settime));
 
     bool burst = false;
@@ -2108,10 +2235,12 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 	CE(2, i_Topic_Set_Time);
 	MCE(i_Topic);
     }
+    ETCB();
 }
 
 void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, const mstring & topic)
 {
+    BTCB();
     FT("Chan_Stored_t::SetTopic", (source, setter, topic));
 
     // Its us re-setting it!
@@ -2145,10 +2274,12 @@ void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, con
     Magick::instance().server.TOPIC(source, setter, i_Name, topic,
 				    Magick::instance().chanserv.GetLive(i_Name)->Topic_Set_Time() -
 				    (1.0 / (60.0 * 60.0 * 24.0)));
+    ETCB();
 }
 
 void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 {
+    BTCB();
     FT("Chan_Stored_t::Mode", (setter, mode));
     // ENFORCE mlock
 
@@ -2408,10 +2539,12 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
     }
     if (out_mode.size() && Magick::instance().chanserv.IsLive(i_Name))
 	clive->SendMode(out_mode + out_param);
+    ETCB();
 }
 
 void Chan_Stored_t::defaults()
 {
+    BTCB();
     NFT("Chan_Stored_t::defaults");
 
     ref_class::lockData(mVarArray("ChanServ", "stored", i_Name));
@@ -2521,10 +2654,12 @@ void Chan_Stored_t::defaults()
 	    i_Level.insert(entlist_val_t < long >
 			   (levels[i], Magick::instance().chanserv.LVL(levels[i]), Magick::instance().chanserv.FirstName()));
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, const mstring & source)
 {
+    BTCB();
     FT("Chan_Stored_t::DoRevenge", (i_type, target, source));
 
     if (!
@@ -2640,40 +2775,48 @@ bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, co
     }
 
     RET(false);
+    ETCB();
 }
 
 Chan_Stored_t::Chan_Stored_t() : i_RegTime(mDateTime::CurrentDateTime()), i_LastUsed(mDateTime::CurrentDateTime())
 {
+    BTCB();
     NFT("Chan_Stored_t::Chan_Stored_t");
 
     defaults();
     DumpE();
+    ETCB();
 }
 
 Chan_Stored_t::Chan_Stored_t(const mstring & name, const mstring & founder, const mstring & password,
 			     const mstring & desc) : i_Name(name), i_RegTime(mDateTime::CurrentDateTime()),
 i_LastUsed(mDateTime::CurrentDateTime()), i_Founder(founder), i_Description(desc)
 {
+    BTCB();
     FT("Chan_Stored_t::Chan_Stored_t", (name, founder, password, desc));
 
     defaults();
     Password(password);
     DumpE();
+    ETCB();
 }
 
 Chan_Stored_t::Chan_Stored_t(const mstring & name) : i_Name(name), i_RegTime(mDateTime::CurrentDateTime()),
 i_LastUsed(mDateTime::CurrentDateTime())
 {
+    BTCB();
     FT("Chan_Stored_t::Chan_Stored_t", (name));
 
     defaults();
     setting.Mlock_On = "nits";
     setting.Forbidden = true;
     DumpE();
+    ETCB();
 }
 
 Chan_Stored_t &Chan_Stored_t::operator=(const Chan_Stored_t & in)
 {
+    BTCB();
     NFT("Chan_Stored_t::operator=");
     i_Name = in.i_Name;
     ref_class::lockData(mVarArray("ChanServ", "stored", i_Name.LowerCase()));
@@ -2757,10 +2900,12 @@ Chan_Stored_t &Chan_Stored_t::operator=(const Chan_Stored_t & in)
     for (i = in.i_UserDef.begin(); i != in.i_UserDef.end(); i++)
 	i_UserDef.insert(*i);
     NRET(Chan_Stored_t &, *this);
+    ETCB();
 }
 
 mDateTime Chan_Stored_t::LastUsed()
 {
+    BTCB();
     NFT("Chan_Stored_t::LastUsed");
 
     if (Magick::instance().chanserv.IsLive(i_Name))
@@ -2776,17 +2921,21 @@ mDateTime Chan_Stored_t::LastUsed()
     }
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
     RET(i_LastUsed);
+    ETCB();
 }
 
 mDateTime Chan_Stored_t::RegTime() const
 {
+    BTCB();
     NFT("Chan_Stored_t::RegTime");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_RegTime"));
     RET(i_RegTime);
+    ETCB();
 }
 
 void Chan_Stored_t::Founder(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::Founder", (in));
 
     if (!Magick::instance().nickserv.IsStored(in))
@@ -2809,17 +2958,21 @@ void Chan_Stored_t::Founder(const mstring & in)
 
     i_Founder = in;
     MCE(i_Founder);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Founder() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Founder");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
     RET(i_Founder);
+    ETCB();
 }
 
 void Chan_Stored_t::CoFounder(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::CoFounder", (in));
 
     if (in.length() && !Magick::instance().nickserv.IsStored(in))
@@ -2838,33 +2991,41 @@ void Chan_Stored_t::CoFounder(const mstring & in)
     MCB(i_CoFounder);
     i_CoFounder = in;
     MCE(i_CoFounder);
+    ETCB();
 }
 
 mstring Chan_Stored_t::CoFounder() const
 {
+    BTCB();
     NFT("Chan_Stored_t::CoFounder");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
     RET(i_CoFounder);
+    ETCB();
 }
 
 void Chan_Stored_t::Description(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::Description", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
     MCB(i_Description);
     i_Description = in;
     MCE(i_Description);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Description() const
 {
+    BTCB();
     NFT("Description(mstring in)	{ i_Description = in;");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
     RET(i_Description);
+    ETCB();
 }
 
 void Chan_Stored_t::Password(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::Password", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
     MCB(i_Password);
@@ -2877,65 +3038,81 @@ void Chan_Stored_t::Password(const mstring & in)
     i_Password = newpass;
 #endif
     MCE(i_Password);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Password() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Password");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
     RET(i_Password);
+    ETCB();
 }
 
 void Chan_Stored_t::Email(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::Email", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
     MCB(i_Email);
     i_Email = in;
     MCE(i_Email);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Email() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Email");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
     RET(i_Email);
+    ETCB();
 }
 
 void Chan_Stored_t::URL(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::URL", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
     MCB(i_URL);
     i_URL = in;
     MCE(i_URL);
+    ETCB();
 }
 
 mstring Chan_Stored_t::URL() const
 {
+    BTCB();
     NFT("Chan_Stored_t::URL");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
     RET(i_URL);
+    ETCB();
 }
 
 void Chan_Stored_t::Comment(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::Comment", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
     MCB(i_Comment);
     i_Comment = in;
     MCE(i_Comment);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Comment() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Comment");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
     RET(i_Comment);
+    ETCB();
 }
 
 unsigned int Chan_Stored_t::CheckPass(const mstring & nick, const mstring & password)
 {
+    BTCB();
     FT("Chan_Stored_t::CheckPass", (nick, password));
     unsigned int retval = 0;
 
@@ -2959,10 +3136,12 @@ unsigned int Chan_Stored_t::CheckPass(const mstring & nick, const mstring & pass
     }
     MCE(failed_passwds.size());
     RET(retval);
+    ETCB();
 }
 
 void Chan_Stored_t::Suspend(const mstring & name)
 {
+    BTCB();
     FT("Chan_Stored_t::Suspend", (name));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
@@ -2972,33 +3151,41 @@ void Chan_Stored_t::Suspend(const mstring & name)
     i_Suspend_Time = mDateTime::CurrentDateTime();
     CE(1, i_Suspend_Time);
     MCE(i_Suspend_By);
+    ETCB();
 }
 
 void Chan_Stored_t::UnSuspend()
 {
+    BTCB();
     NFT("Chan_Stored_t::UnSuspend");
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     MCB(i_Suspend_By);
     i_Suspend_By.erase();
     MCE(i_Suspend_By);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Mlock_Off() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Mlock_Off");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
     RET(setting.Mlock_Off);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Mlock_On() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Mlock_On");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
     RET(setting.Mlock_On);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Mlock() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Mlock");
     mstring Result;
 
@@ -3015,10 +3202,12 @@ mstring Chan_Stored_t::Mlock() const
     if (!setting.Mlock_Off.empty())
 	Result << "-" << setting.Mlock_Off;
     RET(Result);
+    ETCB();
 }
 
 vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & mode)
 {
+    BTCB();
     FT("Chan_Stored_t::Mlock", (source, mode));
 
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
@@ -3342,10 +3531,12 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
     CE(3, setting.Mlock_Limit);
     MCE(setting.Mlock_On);
     NRET(vector < mstring >, retval);
+    ETCB();
 }
 
 mstring Chan_Stored_t::L_Mlock() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Mlock");
     mstring Result;
 
@@ -3397,10 +3588,12 @@ mstring Chan_Stored_t::L_Mlock() const
     if (!mode_off.empty())
 	Result += "-" + mode_off;
     RET(Result);
+    ETCB();
 }
 
 vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring & mode)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Mlock", (source, mode));
 
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
@@ -3574,45 +3767,57 @@ vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring 
     CE(1, lock.Mlock_On);
     MCE(lock.Mlock_Off);
     NRET(vector < mstring >, retval);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Mlock_Key() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Mlock_Key");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
     RET(setting.Mlock_Key);
+    ETCB();
 }
 
 unsigned int Chan_Stored_t::Mlock_Limit() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Mlock_Limit");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
     RET(setting.Mlock_Limit);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Last_Topic() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Last_Topic");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Last_Topic_Setter() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Last_Topic_Setter");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
+    ETCB();
 }
 
 mDateTime Chan_Stored_t::Last_Topic_Set_Time() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Last_Topic_Set_Time");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
     RET(i_Topic_Set_Time);
+    ETCB();
 }
 
 void Chan_Stored_t::Bantime(const unsigned long in)
 {
+    BTCB();
     FT("Chan_Stored_t::Bantime", (in));
     if (!L_Bantime())
     {
@@ -3621,10 +3826,12 @@ void Chan_Stored_t::Bantime(const unsigned long in)
 	setting.Bantime = in;
 	MCE(setting.Bantime);
     }
+    ETCB();
 }
 
 unsigned long Chan_Stored_t::Bantime() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Bantime");
     if (!Magick::instance().chanserv.LCK_Bantime())
     {
@@ -3632,10 +3839,12 @@ unsigned long Chan_Stored_t::Bantime() const
 	RET(setting.Bantime);
     }
     RET(Magick::instance().chanserv.DEF_Bantime());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Bantime(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Bantime", (in));
     if (!Magick::instance().chanserv.LCK_Bantime())
     {
@@ -3644,10 +3853,12 @@ void Chan_Stored_t::L_Bantime(const bool in)
 	lock.Bantime = in;
 	MCE(lock.Bantime);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Bantime() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Bantime");
     if (!Magick::instance().chanserv.LCK_Bantime())
     {
@@ -3655,10 +3866,12 @@ bool Chan_Stored_t::L_Bantime() const
 	RET(lock.Bantime);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Parttime(const unsigned long in)
 {
+    BTCB();
     FT("Chan_Stored_t::Parttime", (in));
     if (!L_Parttime())
     {
@@ -3667,10 +3880,12 @@ void Chan_Stored_t::Parttime(const unsigned long in)
 	setting.Parttime = in;
 	MCE(setting.Parttime);
     }
+    ETCB();
 }
 
 unsigned long Chan_Stored_t::Parttime() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Parttime");
     if (!Magick::instance().chanserv.LCK_Parttime())
     {
@@ -3678,10 +3893,12 @@ unsigned long Chan_Stored_t::Parttime() const
 	RET(setting.Parttime);
     }
     RET(Magick::instance().chanserv.DEF_Parttime());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Parttime(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Parttime", (in));
     if (!Magick::instance().chanserv.LCK_Parttime())
     {
@@ -3690,10 +3907,12 @@ void Chan_Stored_t::L_Parttime(const bool in)
 	lock.Parttime = in;
 	MCE(lock.Parttime);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Parttime() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Parttime");
     if (!Magick::instance().chanserv.LCK_Parttime())
     {
@@ -3701,10 +3920,12 @@ bool Chan_Stored_t::L_Parttime() const
 	RET(lock.Parttime);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Keeptopic(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Keeptopic", (in));
     if (!L_Keeptopic())
     {
@@ -3713,10 +3934,12 @@ void Chan_Stored_t::Keeptopic(const bool in)
 	setting.Keeptopic = in;
 	MCE(setting.Keeptopic);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Keeptopic() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Keeptopic");
     if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
@@ -3724,10 +3947,12 @@ bool Chan_Stored_t::Keeptopic() const
 	RET(setting.Keeptopic);
     }
     RET(Magick::instance().chanserv.DEF_Keeptopic());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Keeptopic(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Keeptopic", (in));
     if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
@@ -3736,10 +3961,12 @@ void Chan_Stored_t::L_Keeptopic(const bool in)
 	lock.Keeptopic = in;
 	MCE(lock.Keeptopic);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Keeptopic() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Keeptopic");
     if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
@@ -3747,10 +3974,12 @@ bool Chan_Stored_t::L_Keeptopic() const
 	RET(lock.Keeptopic);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Topiclock(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Topiclock", (in));
     if (!L_Topiclock())
     {
@@ -3759,10 +3988,12 @@ void Chan_Stored_t::Topiclock(const bool in)
 	setting.Topiclock = in;
 	MCE(setting.Topiclock);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Topiclock() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Topiclock");
     if (!Magick::instance().chanserv.LCK_Topiclock())
     {
@@ -3770,10 +4001,12 @@ bool Chan_Stored_t::Topiclock() const
 	RET(setting.Topiclock);
     }
     RET(Magick::instance().chanserv.DEF_Topiclock());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Topiclock(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Topiclock", (in));
     if (!Magick::instance().chanserv.LCK_Topiclock())
     {
@@ -3782,10 +4015,12 @@ void Chan_Stored_t::L_Topiclock(const bool in)
 	lock.Topiclock = in;
 	MCE(lock.Topiclock);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Topiclock() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Topiclock");
     if (!Magick::instance().chanserv.LCK_Topiclock())
     {
@@ -3793,10 +4028,12 @@ bool Chan_Stored_t::L_Topiclock() const
 	RET(lock.Topiclock);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Private(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Private", (in));
     if (!L_Private())
     {
@@ -3805,10 +4042,12 @@ void Chan_Stored_t::Private(const bool in)
 	setting.Private = in;
 	MCE(setting.Private);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Private() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Private");
     if (!Magick::instance().chanserv.LCK_Private())
     {
@@ -3816,10 +4055,12 @@ bool Chan_Stored_t::Private() const
 	RET(setting.Private);
     }
     RET(Magick::instance().chanserv.DEF_Private());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Private(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Private", (in));
     if (!Magick::instance().chanserv.LCK_Private())
     {
@@ -3828,10 +4069,12 @@ void Chan_Stored_t::L_Private(const bool in)
 	lock.Private = in;
 	MCE(lock.Private);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Private() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Private");
     if (!Magick::instance().chanserv.LCK_Private())
     {
@@ -3839,10 +4082,12 @@ bool Chan_Stored_t::L_Private() const
 	RET(lock.Private);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Secureops(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Secureops", (in));
     if (!L_Secureops())
     {
@@ -3851,10 +4096,12 @@ void Chan_Stored_t::Secureops(const bool in)
 	setting.Secureops = in;
 	MCE(setting.Secureops);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Secureops() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Secureops");
     if (!Magick::instance().chanserv.LCK_Secureops())
     {
@@ -3862,10 +4109,12 @@ bool Chan_Stored_t::Secureops() const
 	RET(setting.Secureops);
     }
     RET(Magick::instance().chanserv.DEF_Secureops());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Secureops(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Secureops", (in));
     if (!Magick::instance().chanserv.LCK_Secureops())
     {
@@ -3874,10 +4123,12 @@ void Chan_Stored_t::L_Secureops(const bool in)
 	lock.Secureops = in;
 	MCE(lock.Secureops);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Secureops() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Secureops");
     if (!Magick::instance().chanserv.LCK_Secureops())
     {
@@ -3885,10 +4136,12 @@ bool Chan_Stored_t::L_Secureops() const
 	RET(lock.Secureops);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Secure(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Secure", (in));
     if (!L_Secure())
     {
@@ -3897,10 +4150,12 @@ void Chan_Stored_t::Secure(const bool in)
 	setting.Secure = in;
 	MCE(setting.Secure);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Secure() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Secure");
     if (!Magick::instance().chanserv.LCK_Secure())
     {
@@ -3908,10 +4163,12 @@ bool Chan_Stored_t::Secure() const
 	RET(setting.Secure);
     }
     RET(Magick::instance().chanserv.DEF_Secure());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Secure(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Secure", (in));
     if (!Magick::instance().chanserv.LCK_Secure())
     {
@@ -3920,10 +4177,12 @@ void Chan_Stored_t::L_Secure(const bool in)
 	lock.Secure = in;
 	MCE(lock.Secure);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Secure() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Secure");
     if (!Magick::instance().chanserv.LCK_Secure())
     {
@@ -3931,10 +4190,12 @@ bool Chan_Stored_t::L_Secure() const
 	RET(lock.Secure);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::NoExpire(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::NoExpire", (in));
     if (!Magick::instance().chanserv.LCK_NoExpire())
     {
@@ -3943,10 +4204,12 @@ void Chan_Stored_t::NoExpire(const bool in)
 	setting.NoExpire = in;
 	MCE(setting.NoExpire);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::NoExpire() const
 {
+    BTCB();
     NFT("Chan_Stored_t::NoExpire");
     if (!Magick::instance().chanserv.LCK_NoExpire())
     {
@@ -3954,10 +4217,12 @@ bool Chan_Stored_t::NoExpire() const
 	RET(setting.NoExpire);
     }
     RET(Magick::instance().chanserv.DEF_NoExpire());
+    ETCB();
 }
 
 void Chan_Stored_t::Anarchy(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Anarchy", (in));
     if (!L_Anarchy())
     {
@@ -3966,10 +4231,12 @@ void Chan_Stored_t::Anarchy(const bool in)
 	setting.Anarchy = in;
 	MCE(setting.Anarchy);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Anarchy() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Anarchy");
     if (!Magick::instance().chanserv.LCK_Anarchy())
     {
@@ -3977,10 +4244,12 @@ bool Chan_Stored_t::Anarchy() const
 	RET(setting.Anarchy);
     }
     RET(Magick::instance().chanserv.DEF_Anarchy());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Anarchy(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Anarchy", (in));
     if (!Magick::instance().chanserv.LCK_Anarchy())
     {
@@ -3989,10 +4258,12 @@ void Chan_Stored_t::L_Anarchy(const bool in)
 	lock.Anarchy = in;
 	MCE(lock.Anarchy);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Anarchy() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Anarchy");
     if (!Magick::instance().chanserv.LCK_Anarchy())
     {
@@ -4000,10 +4271,12 @@ bool Chan_Stored_t::L_Anarchy() const
 	RET(lock.Anarchy);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::KickOnBan(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::KickOnBan", (in));
     if (!L_KickOnBan())
     {
@@ -4012,10 +4285,12 @@ void Chan_Stored_t::KickOnBan(const bool in)
 	setting.KickOnBan = in;
 	MCE(setting.KickOnBan);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::KickOnBan() const
 {
+    BTCB();
     NFT("Chan_Stored_t::KickOnBan");
     if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
@@ -4023,10 +4298,12 @@ bool Chan_Stored_t::KickOnBan() const
 	RET(setting.KickOnBan);
     }
     RET(Magick::instance().chanserv.DEF_KickOnBan());
+    ETCB();
 }
 
 void Chan_Stored_t::L_KickOnBan(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_KickOnBan", (in));
     if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
@@ -4035,10 +4312,12 @@ void Chan_Stored_t::L_KickOnBan(const bool in)
 	lock.KickOnBan = in;
 	MCE(lock.KickOnBan);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_KickOnBan() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_KickOnBan");
     if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
@@ -4046,10 +4325,12 @@ bool Chan_Stored_t::L_KickOnBan() const
 	RET(lock.KickOnBan);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Restricted(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Restricted", (in));
     if (!L_Restricted())
     {
@@ -4058,10 +4339,12 @@ void Chan_Stored_t::Restricted(const bool in)
 	setting.Restricted = in;
 	MCE(setting.Restricted);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Restricted() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Restricted");
     if (!Magick::instance().chanserv.LCK_Restricted())
     {
@@ -4069,10 +4352,12 @@ bool Chan_Stored_t::Restricted() const
 	RET(setting.Restricted);
     }
     RET(Magick::instance().chanserv.DEF_Restricted());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Restricted(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Restricted", (in));
     if (!Magick::instance().chanserv.LCK_Restricted())
     {
@@ -4081,10 +4366,12 @@ void Chan_Stored_t::L_Restricted(const bool in)
 	lock.Restricted = in;
 	MCE(lock.Restricted);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Restricted() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Restricted");
     if (!Magick::instance().chanserv.LCK_Restricted())
     {
@@ -4092,10 +4379,12 @@ bool Chan_Stored_t::L_Restricted() const
 	RET(lock.Restricted);
     }
     RET(true);
+    ETCB();
 }
 
 void Chan_Stored_t::Join(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::Join", (in));
     if (!L_Join())
     {
@@ -4104,10 +4393,12 @@ void Chan_Stored_t::Join(const bool in)
 	setting.Join = in;
 	MCE(setting.Join);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Join() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Join");
     if (!Magick::instance().chanserv.LCK_Join())
     {
@@ -4115,10 +4406,12 @@ bool Chan_Stored_t::Join() const
 	RET(setting.Join);
     }
     RET(Magick::instance().chanserv.DEF_Join());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Join(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Join", (in));
     if (!Magick::instance().chanserv.LCK_Join())
     {
@@ -4127,10 +4420,12 @@ void Chan_Stored_t::L_Join(const bool in)
 	lock.Join = in;
 	MCE(lock.Join);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Join() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Join");
     if (!Magick::instance().chanserv.LCK_Join())
     {
@@ -4138,10 +4433,12 @@ bool Chan_Stored_t::L_Join() const
 	RET(lock.Join);
     }
     RET(true);
+    ETCB();
 }
 
 bool Chan_Stored_t::Revenge(const mstring & in)
 {
+    BTCB();
     FT("Chan_Stored_t::Revenge", (in));
     if (!L_Revenge())
     {
@@ -4152,10 +4449,12 @@ bool Chan_Stored_t::Revenge(const mstring & in)
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 mstring Chan_Stored_t::Revenge() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Revenge");
     if (!Magick::instance().chanserv.LCK_Revenge())
     {
@@ -4163,10 +4462,12 @@ mstring Chan_Stored_t::Revenge() const
 	RET(setting.Revenge);
     }
     RET(Magick::instance().chanserv.DEF_Revenge());
+    ETCB();
 }
 
 void Chan_Stored_t::L_Revenge(const bool in)
 {
+    BTCB();
     FT("Chan_Stored_t::L_Revenge", (in));
     if (!Magick::instance().chanserv.LCK_Revenge())
     {
@@ -4175,10 +4476,12 @@ void Chan_Stored_t::L_Revenge(const bool in)
 	lock.Revenge = in;
 	MCE(lock.Revenge);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::L_Revenge() const
 {
+    BTCB();
     NFT("Chan_Stored_t::L_Revenge");
     if (!Magick::instance().chanserv.LCK_Revenge())
     {
@@ -4186,38 +4489,48 @@ bool Chan_Stored_t::L_Revenge() const
 	RET(lock.Revenge);
     }
     RET(true);
+    ETCB();
 }
 
 bool Chan_Stored_t::Suspended() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Suspended");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     RET(!i_Suspend_By.empty());
+    ETCB();
 }
 
 mstring Chan_Stored_t::Suspend_By() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Suspend_By");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     RET(i_Suspend_By);
+    ETCB();
 }
 
 mDateTime Chan_Stored_t::Suspend_Time() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Suspend_Time");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
     RET(i_Suspend_Time);
+    ETCB();
 }
 
 bool Chan_Stored_t::Forbidden() const
 {
+    BTCB();
     NFT("Chan_Stored_t::Forbidden");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Forbidden"));
     RET(setting.Forbidden);
+    ETCB();
 }
 
 bool Chan_Stored_t::Level_change(const mstring & entry, const long value, const mstring & nick)
 {
+    BTCB();
     FT("Chan_Stored_t::Level_change", (entry, value, nick));
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
@@ -4232,10 +4545,12 @@ bool Chan_Stored_t::Level_change(const mstring & entry, const long value, const 
 	Level = i_Level.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Level_find(const mstring & entry)
 {
+    BTCB();
     FT("Chan_Stored_t::Level_find", (entry));
 
     //  entlist_val_ui<long> iter = i_Level.end();
@@ -4257,10 +4572,12 @@ bool Chan_Stored_t::Level_find(const mstring & entry)
 	Level = i_Level.end();
 	RET(false);
     }
+    ETCB();
 }
 
 long Chan_Stored_t::Level_value(const mstring & entry)
 {
+    BTCB();
     FT("Chan_Stored_t::Level_value", (entry));
 
     long retval = 0;
@@ -4273,10 +4590,12 @@ long Chan_Stored_t::Level_value(const mstring & entry)
 	retval = Level->Value();
     Level = iter;
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Stored_t::Access_insert(const mstring & i_entry, const long value, const mstring & nick, const mDateTime & modtime)
 {
+    BTCB();
     FT("Chan_Stored_t::Access_insert", (i_entry, value, nick, modtime));
 
     // Wildcards but no @
@@ -4338,10 +4657,12 @@ bool Chan_Stored_t::Access_insert(const mstring & i_entry, const long value, con
 	Access = i_Access.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Access_erase()
 {
+    BTCB();
     NFT("Chan_Stored_t::Access_erase");
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
@@ -4358,10 +4679,12 @@ bool Chan_Stored_t::Access_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
+    BTCB();
     FT("Chan_Stored_t::Access_find", (entry, livelook));
 
 //  entlist_val_ui<long> iter = i_Access.end();
@@ -4446,10 +4769,12 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
 	Access = i_Access.end();
 	RET(false);
     }
+    ETCB();
 }
 
 long Chan_Stored_t::Access_value(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
+    BTCB();
     FT("Chan_Stored_t::Access_value", (entry));
 
     long retval = 0;
@@ -4462,10 +4787,12 @@ long Chan_Stored_t::Access_value(const mstring & entry, const Chan_Stored_t::com
 	retval = Access->Value();
     Access = iter;
     RET(retval);
+    ETCB();
 }
 
 long Chan_Stored_t::GetAccess(const mstring & entry)
 {
+    BTCB();
     FT("Chan_Stored_t::GetAccess", (entry));
 
     long retval = 0;
@@ -4543,20 +4870,24 @@ long Chan_Stored_t::GetAccess(const mstring & entry)
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Stored_t::GetAccess(const mstring & entry, const mstring & type)
 {
+    BTCB();
     FT("Chan_Stored_t::GetAccess", (entry, type));
 
     bool retval = (GetAccess(entry) >= Level_value(type));
 
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Stored_t::Akick_insert(const mstring & i_entry, const mstring & value, const mstring & nick,
 				 const mDateTime & modtime)
 {
+    BTCB();
     FT("Chan_Stored_t::Akick_insert", (i_entry, value, nick, modtime));
 
     // Wildcards but no @
@@ -4617,20 +4948,24 @@ bool Chan_Stored_t::Akick_insert(const mstring & i_entry, const mstring & value,
 	Akick = i_Akick.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Akick_insert(const mstring & entry, const mstring & nick, const mDateTime & modtime)
 {
+    BTCB();
     FT("Chan_Stored_t::Akick_insert", (entry, nick, modtime));
     MCB(i_Akick.size());
     bool retval = Akick_insert(entry, Magick::instance().chanserv.DEF_Akick_Reason(), nick, modtime);
 
     MCE(i_Akick.size());
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Stored_t::Akick_erase()
 {
+    BTCB();
     NFT("Chan_Stored_t::Akick_erase");
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
@@ -4647,10 +4982,12 @@ bool Chan_Stored_t::Akick_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
+    BTCB();
     FT("Chan_Stored_t::Akick_find", (entry, livelook));
 
 //  entlist_val_ui<mstring> iter = i_Akick.end();
@@ -4724,10 +5061,12 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
 	Akick = i_Akick.end();
 	RET(false);
     }
+    ETCB();
 }
 
 mstring Chan_Stored_t::Akick_string(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
+    BTCB();
     FT("Chan_Stored_t::Akick_string", (entry));
 
     mstring retval;
@@ -4740,10 +5079,12 @@ mstring Chan_Stored_t::Akick_string(const mstring & entry, const Chan_Stored_t::
 	retval = Akick->Value();
     Akick = iter;
     RET(retval);
+    ETCB();
 }
 
 bool Chan_Stored_t::Greet_insert(const mstring & entry, const mstring & nick, const mDateTime & modtime)
 {
+    BTCB();
     FT("Chan_Stored_t::Greet_insert", (entry, nick, modtime));
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
@@ -4761,10 +5102,12 @@ bool Chan_Stored_t::Greet_insert(const mstring & entry, const mstring & nick, co
 	Greet = i_Greet.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Greet_erase()
 {
+    BTCB();
     NFT("Chan_Stored_t::Greet_erase");
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
@@ -4781,10 +5124,12 @@ bool Chan_Stored_t::Greet_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 bool Chan_Stored_t::Greet_find(const mstring & nick)
 {
+    BTCB();
     FT("Chan_Stored_t::Greet_find", (nick));
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
@@ -4805,10 +5150,12 @@ bool Chan_Stored_t::Greet_find(const mstring & nick)
 	Greet = i_Greet.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Chan_Stored_t::Message_insert(const mstring & entry, const mstring & nick)
 {
+    BTCB();
     FT("Chan_Stored_t::Message_insert", (entry, nick));
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
@@ -4818,10 +5165,12 @@ bool Chan_Stored_t::Message_insert(const mstring & entry, const mstring & nick)
     Message = i_Message.end();
     Message--;
     RET(true);
+    ETCB();
 }
 
 bool Chan_Stored_t::Message_erase()
 {
+    BTCB();
     NFT("Chan_Stored_t::Message_erase");
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
@@ -4838,10 +5187,12 @@ bool Chan_Stored_t::Message_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 bool Chan_Stored_t::Message_find(const unsigned int num)
 {
+    BTCB();
     FT("Chan_Stored_t::Message_find", (num));
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
@@ -4865,6 +5216,7 @@ bool Chan_Stored_t::Message_find(const unsigned int num)
 	Message = i_Message.end();
 	RET(false);
     }
+    ETCB();
 }
 
 SXP::Tag Chan_Stored_t::tag_Chan_Stored_t("Chan_Stored_t");
@@ -4925,6 +5277,7 @@ SXP::Tag Chan_Stored_t::tag_UserDef("UserDef");
 
 void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("Chan_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if (pElement->IsA(tag_Level))
     {
@@ -4972,10 +5325,12 @@ void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Chan_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -5213,10 +5568,12 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(i_Suspend_By);
     if (pElement->IsA(tag_Suspend_Time))
 	pElement->Retrieve(i_Suspend_Time);
+    ETCB();
 }
 
 void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     set < entlist_val_t < long > >::iterator j;
@@ -5343,10 +5700,12 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_Chan_Stored_t);
+    ETCB();
 }
 
 size_t Chan_Stored_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
@@ -5433,10 +5792,12 @@ size_t Chan_Stored_t::Usage() const
     }
 
     return retval;
+    ETCB();
 }
 
 void Chan_Stored_t::DumpB() const
 {
+    BTCB();
     MB(0,
        (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder, i_Description, i_Password, i_Email, i_URL, i_Comment,
 	failed_passwds.size(), setting.Mlock_On, lock.Mlock_On, setting.Mlock_Off, lock.Mlock_Off, setting.Mlock_Key));
@@ -5449,10 +5810,12 @@ void Chan_Stored_t::DumpB() const
 	setting.Restricted, lock.Restricted, setting.Join, lock.Join, setting.Forbidden, setting.Revenge, lock.Revenge,
 	i_Suspend_By, i_Suspend_Time));
     MB(48, (i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
+    ETCB();
 }
 
 void Chan_Stored_t::DumpE() const
 {
+    BTCB();
     ME(0,
        (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder, i_Description, i_Password, i_Email, i_URL, i_Comment,
 	failed_passwds.size(), setting.Mlock_On, lock.Mlock_On, setting.Mlock_Off, lock.Mlock_Off, setting.Mlock_Key));
@@ -5465,12 +5828,14 @@ void Chan_Stored_t::DumpE() const
 	setting.Restricted, lock.Restricted, setting.Join, lock.Join, setting.Forbidden, setting.Revenge, lock.Revenge,
 	i_Suspend_By, i_Suspend_Time));
     ME(48, (i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
+    ETCB();
 }
 
 // --------- end of Chan_Stored_t ---------------------------------
 
 ChanServ::ChanServ()
 {
+    BTCB();
     NFT("ChanServ::ChanServ");
     messages = true;
     Revenge_Levels.insert("NONE");
@@ -5482,10 +5847,12 @@ ChanServ::ChanServ()
     Revenge_Levels.insert("BAN3");
     Revenge_Levels.insert("BAN4");
     Revenge_Levels.insert("MIRROR");
+    ETCB();
 }
 
 void ChanServ::AddCommands()
 {
+    BTCB();
     NFT("ChanServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -5756,10 +6123,12 @@ void ChanServ::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.SOP_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.SOP_Name(),
 						 do_1_3param);
+    ETCB();
 }
 
 void ChanServ::RemCommands()
 {
+    BTCB();
     NFT("ChanServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -5905,6 +6274,7 @@ void ChanServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.SOP_Name());
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5913,6 +6283,7 @@ void ChanServ::AddStored(Chan_Stored_t * in) throw (E_ChanServ_Stored)
 void ChanServ::AddStored(Chan_Stored_t * in)
 #endif
 {
+    BTCB();
     FT("ChanServ::AddStored", ("(Chan_Stored_t *) in"));
 
     if (in == NULL)
@@ -5954,6 +6325,7 @@ void ChanServ::AddStored(Chan_Stored_t * in)
     }
     WLOCK(("ChanServ", "stored"));
     stored[in->Name().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5962,6 +6334,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const throw 
 map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("ChanServ::GetStored", (in));
 
     RLOCK(("ChanServ", "stored"));
@@ -5995,6 +6368,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
     }
 
     NRET(map_entry < Chan_Stored_t >, map_entry < Chan_Stored_t > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -6003,6 +6377,7 @@ void ChanServ::RemStored(const mstring & in) throw (E_ChanServ_Stored)
 void ChanServ::RemStored(const mstring & in)
 #endif
 {
+    BTCB();
     FT("ChanServ::RemStored", (in));
 
     RLOCK(("ChanServ", "stored"));
@@ -6024,15 +6399,18 @@ void ChanServ::RemStored(const mstring & in)
     }
     WLOCK(("ChanServ", "stored"));
     stored.erase(iter);
+    ETCB();
 }
 
 bool ChanServ::IsStored(const mstring & in) const
 {
+    BTCB();
     FT("ChanServ::IsStored", (in));
     RLOCK(("ChanServ", "stored"));
     bool retval = stored.find(in.LowerCase()) != stored.end();
 
     RET(retval);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -6041,6 +6419,7 @@ void ChanServ::AddLive(Chan_Live_t * in) throw (E_ChanServ_Live)
 void ChanServ::AddLive(Chan_Live_t * in)
 #endif
 {
+    BTCB();
     FT("ChanServ::AddLive", ("(Chan_Live_t *) in"));
 
     if (in == NULL)
@@ -6072,6 +6451,7 @@ void ChanServ::AddLive(Chan_Live_t * in)
     }
     WLOCK(("ChanServ", "live"));
     live[in->Name().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -6080,6 +6460,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const throw (E_C
 map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("ChanServ::GetLive", (in));
 
     RLOCK(("ChanServ", "live", in.LowerCase()));
@@ -6113,6 +6494,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
     }
 
     NRET(map_entry < Chan_Live_t >, map_entry < Chan_Live_t > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -6121,6 +6503,7 @@ void ChanServ::RemLive(const mstring & in) throw (E_ChanServ_Live)
 void ChanServ::RemLive(const mstring & in)
 #endif
 {
+    BTCB();
     FT("ChanServ::RemLive", (in));
 
     RLOCK(("ChanServ", "live"));
@@ -6142,19 +6525,23 @@ void ChanServ::RemLive(const mstring & in)
     }
     WLOCK(("ChanServ", "live"));
     live.erase(iter);
+    ETCB();
 }
 
 bool ChanServ::IsLive(const mstring & in) const
 {
+    BTCB();
     FT("ChanServ::IsLive", (in));
     RLOCK(("ChanServ", "live"));
     bool retval = live.find(in.LowerCase()) != live.end();
 
     RET(retval);
+    ETCB();
 }
 
 void ChanServ::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     mThread::ReAttach(tt_ChanServ);
     FT("ChanServ::execute", (source, msgtype, params));
     //okay this is the main chanserv command switcher
@@ -6177,10 +6564,12 @@ void ChanServ::execute(mstring & source, const mstring & msgtype, const mstring 
     }
 
     mThread::ReAttach(tt_mBase);
+    ETCB();
 }
 
 void ChanServ::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Help", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6205,10 +6594,12 @@ void ChanServ::do_Help(const mstring & mynick, const mstring & source, const mst
 
     for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
+    ETCB();
 }
 
 void ChanServ::do_Register(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Register", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6283,10 +6674,12 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
     Magick::instance().chanserv.stats.i_Register++;
     SEND(mynick, source, "CS_COMMAND/REGISTERED", (channel, founder));
     LOG(LM_INFO, "CHANSERV/REGISTER", (nlive->Mask(Nick_Live_t::N_U_P_H), channel));
+    ETCB();
 }
 
 void ChanServ::do_Drop(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Drop", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6329,10 +6722,12 @@ void ChanServ::do_Drop(const mstring & mynick, const mstring & source, const mst
     Magick::instance().chanserv.stats.i_Drop++;
     SEND(mynick, source, "CS_COMMAND/DROPPED", (channel));
     LOG(LM_INFO, "CHANSERV/DROP", (nlive->Mask(Nick_Live_t::N_U_P_H), channel, founder));
+    ETCB();
 }
 
 void ChanServ::do_Identify(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Identify", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6379,10 +6774,12 @@ void ChanServ::do_Identify(const mstring & mynick, const mstring & source, const
     }
     if (!output.empty())
 	::send(mynick, source, output);
+    ETCB();
 }
 
 void ChanServ::do_Info(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Info", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6600,10 +6997,12 @@ void ChanServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	    SEND(mynick, source, "MISC/SYNC", (Magick::instance().events->SyncTime(source)));
     }
+    ETCB();
 }
 
 void ChanServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_List", (mynick, source, params));
 
     unsigned int listsize, i;
@@ -6676,10 +7075,12 @@ void ChanServ::do_List(const mstring & mynick, const mstring & source, const mst
 	}
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
+    ETCB();
 }
 
 void ChanServ::do_Suspend(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Suspend", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6744,10 +7145,12 @@ void ChanServ::do_Suspend(const mstring & mynick, const mstring & source, const 
 	    }
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_UnSuspend(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_UnSuspend", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6783,10 +7186,12 @@ void ChanServ::do_UnSuspend(const mstring & mynick, const mstring & source, cons
     Magick::instance().chanserv.stats.i_Unsuspend++;
     SEND(mynick, source, "CS_COMMAND/UNSUSPENDED", (channel));
     LOG(LM_NOTICE, "CHANSERV/UNSUSPEND", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
+    ETCB();
 }
 
 void ChanServ::do_Forbid(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Forbid", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6829,11 +7234,13 @@ void ChanServ::do_Forbid(const mstring & mynick, const mstring & source, const m
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), kickees[i], channel, reason);
 	}
     }
+    ETCB();
 }
 
 #ifdef GETPASS
 void ChanServ::do_Getpass(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Getpass", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6875,12 +7282,14 @@ void ChanServ::do_Getpass(const mstring & mynick, const mstring & source, const 
     ANNOUNCE(mynick, "MISC/CHAN_GETPASS", (source, chan->Name(), founder));
     LOG(LM_NOTICE, "CHANSERV/GETPASS",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), chan.Name(), founder));
+    ETCB();
 }
 
 #endif /* GETPASS */
 
 void ChanServ::do_Setpass(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Setpass", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6931,10 +7340,12 @@ void ChanServ::do_Setpass(const mstring & mynick, const mstring & source, const 
     ANNOUNCE(mynick, "MISC/CHAN_SETPASS", (source, chan->Name(), founder));
     LOG(LM_NOTICE, "CHANSERV/SETPASS",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), chan->Name(), founder));
+    ETCB();
 }
 
 void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Mode", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7027,10 +7438,12 @@ void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mst
 	Magick::instance().chanserv.stats.i_Mode++;
 	::send(mynick, source, output);
     }
+    ETCB();
 }
 
 void ChanServ::do_Op(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Op", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7116,10 +7529,12 @@ void ChanServ::do_Op(const mstring & mynick, const mstring & source, const mstri
     Magick::instance().chanserv.stats.i_Op++;
     clive->SendMode("+o " + target);
     LOG(LM_DEBUG, "CHANSERV/OP", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_DeOp(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_DeOp", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7194,10 +7609,12 @@ void ChanServ::do_DeOp(const mstring & mynick, const mstring & source, const mst
     Magick::instance().chanserv.stats.i_Deop++;
     clive->SendMode("-o " + target);
     LOG(LM_DEBUG, "CHANSERV/DEOP", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_HalfOp(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_HalfOp", (mynick, source, params));
 
     if (!Magick::instance().server.proto.ChanModeArg().Contains('h'))
@@ -7291,10 +7708,12 @@ void ChanServ::do_HalfOp(const mstring & mynick, const mstring & source, const m
     clive->SendMode("+h " + target);
     LOG(LM_DEBUG, "CHANSERV/HALFOP",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_DeHalfOp(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_DeHalfOp", (mynick, source, params));
 
     if (!Magick::instance().server.proto.ChanModeArg().Contains('h'))
@@ -7378,10 +7797,12 @@ void ChanServ::do_DeHalfOp(const mstring & mynick, const mstring & source, const
     clive->SendMode("-h " + target);
     LOG(LM_DEBUG, "CHANSERV/DEHALFOP",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_Voice(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Voice", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7469,10 +7890,12 @@ void ChanServ::do_Voice(const mstring & mynick, const mstring & source, const ms
     clive->SendMode("+v " + target);
     LOG(LM_DEBUG, "CHANSERV/VOICE",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_DeVoice(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_DeVoice", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7549,10 +7972,12 @@ void ChanServ::do_DeVoice(const mstring & mynick, const mstring & source, const 
     clive->SendMode("-v " + target);
     LOG(LM_DEBUG, "CHANSERV/DEVOICE",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_Topic(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Topic", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7601,10 +8026,12 @@ void ChanServ::do_Topic(const mstring & mynick, const mstring & source, const ms
     Magick::instance().chanserv.stats.i_Topic++;
     chan->SetTopic(mynick, source, topic);
     LOG(LM_DEBUG, "CHANSERV/TOPIC", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
+    ETCB();
 }
 
 void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Kick", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7674,10 +8101,12 @@ void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mst
     Magick::instance().chanserv.stats.i_Kick++;
     Magick::instance().server.KICK(mynick, target, channel, output);
     LOG(LM_DEBUG, "CHANSERV/KICK", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_AnonKick(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_AnonKick", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7741,10 +8170,12 @@ void ChanServ::do_AnonKick(const mstring & mynick, const mstring & source, const
     Magick::instance().server.KICK(mynick, target, channel, reason);
     LOG(LM_DEBUG, "CHANSERV/ANONKICK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_Users(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Users", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7839,10 +8270,12 @@ void ChanServ::do_Users(const mstring & mynick, const mstring & source, const ms
     }
     if (output.length() > channel.length() + 10)
 	::send(mynick, source, output);
+    ETCB();
 }
 
 void ChanServ::do_Invite(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Invite", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -7914,10 +8347,12 @@ void ChanServ::do_Invite(const mstring & mynick, const mstring & source, const m
     Magick::instance().server.INVITE(mynick, target, channel);
     LOG(LM_DEBUG, "CHANSERV/INVITE",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_Unban(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Unban", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -8006,10 +8441,12 @@ void ChanServ::do_Unban(const mstring & mynick, const mstring & source, const ms
 	else
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTBANNED", (target, channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_Live(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Live", (mynick, source, params));
 
     unsigned int listsize, i, count;
@@ -8081,10 +8518,12 @@ void ChanServ::do_Live(const mstring & mynick, const mstring & source, const mst
 	}
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
+    ETCB();
 }
 
 void ChanServ::do_Detail(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_Detail", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -8160,10 +8599,12 @@ void ChanServ::do_Detail(const mstring & mynick, const mstring & source, const m
 	::send(mynick, source, nick + ": " + output);
     else if (!displayed)
 	SEND(mynick, source, "CS_STATUS/HASNOACCESS", (nick));
+    ETCB();
 }
 
 void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_Users", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8236,10 +8677,12 @@ void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, co
     Magick::instance().chanserv.stats.i_Clear++;
     LOG(LM_INFO, "CHANSERV/COMMAND",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
+    ETCB();
 }
 
 void ChanServ::do_clear_Ops(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_Ops", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8319,10 +8762,12 @@ void ChanServ::do_clear_Ops(const mstring & mynick, const mstring & source, cons
 	LOG(LM_INFO, "CHANSERV/COMMAND",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_clear_HalfOps(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_HalfOps", (mynick, source, params));
 
     if (!Magick::instance().server.proto.ChanModeArg().Contains('h'))
@@ -8414,10 +8859,12 @@ void ChanServ::do_clear_HalfOps(const mstring & mynick, const mstring & source, 
 	LOG(LM_INFO, "CHANSERV/COMMAND",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_clear_Voices(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_Voices", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8503,10 +8950,12 @@ void ChanServ::do_clear_Voices(const mstring & mynick, const mstring & source, c
 	LOG(LM_INFO, "CHANSERV/COMMAND",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_clear_Modes(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_Modes", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8602,10 +9051,12 @@ void ChanServ::do_clear_Modes(const mstring & mynick, const mstring & source, co
 	LOG(LM_INFO, "CHANSERV/COMMAND",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_clear_Bans(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_Bans", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8688,10 +9139,12 @@ void ChanServ::do_clear_Bans(const mstring & mynick, const mstring & source, con
 	LOG(LM_INFO, "CHANSERV/COMMAND",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_clear_All(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_clear_All", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8753,10 +9206,12 @@ void ChanServ::do_clear_All(const mstring & mynick, const mstring & source, cons
 	     parseMessage(Magick::instance().getMessage("CS_COMMAND/CLEAR"), mVarArray(message, source, channel)));
     LOG(LM_INFO, "CHANSERV/COMMAND",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), message, channel));
+    ETCB();
 }
 
 void ChanServ::do_level_Set(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_level_Set", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8836,10 +9291,12 @@ void ChanServ::do_level_Set(const mstring & mynick, const mstring & source, cons
     {
 	SEND(mynick, source, "LIST/NOTEXISTS2", (what, channel, Magick::instance().getMessage(source, "LIST/LEVEL")));
     }
+    ETCB();
 }
 
 void ChanServ::do_level_Reset(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_level_Reset", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8907,10 +9364,12 @@ void ChanServ::do_level_Reset(const mstring & mynick, const mstring & source, co
 	LOG(LM_DEBUG, "CHANSERV/LEVEL_ALL",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
     }
+    ETCB();
 }
 
 void ChanServ::do_level_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_level_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -8985,10 +9444,12 @@ void ChanServ::do_level_List(const mstring & mynick, const mstring & source, con
 		 (Magick::instance().getMessage(source, "CS_SET/LVL_" + cstored->Level->Entry()), channel));
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_access_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_access_Add", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9160,10 +9621,12 @@ void ChanServ::do_access_Add(const mstring & mynick, const mstring & source, con
 	LOG(LM_DEBUG, "CHANSERV/ACCESS_ADD",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), who, channel, num));
     }
+    ETCB();
 }
 
 void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_access_Del", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9292,10 +9755,12 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (who, channel, Magick::instance().getMessage(source, "LIST/ACCESS")));
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_access_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_access_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9366,10 +9831,12 @@ void ChanServ::do_access_List(const mstring & mynick, const mstring & source, co
 		parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
 			     mVarArray(cstored->Access->Last_Modify_Time().Ago(), cstored->Access->Last_Modifier())).c_str());
     }
+    ETCB();
 }
 
 void ChanServ::do_akick_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_akick_Add", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9581,10 +10048,12 @@ void ChanServ::do_akick_Add(const mstring & mynick, const mstring & source, cons
 					   ((!reason.empty()) ? reason : Magick::instance().chanserv.DEF_Akick_Reason()));
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_akick_Del", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9698,10 +10167,12 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (who, channel, Magick::instance().getMessage(source, "LIST/AKICK")));
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_akick_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_akick_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9773,10 +10244,12 @@ void ChanServ::do_akick_List(const mstring & mynick, const mstring & source, con
 			     mVarArray(cstored->Akick->Last_Modify_Time().Ago(), cstored->Akick->Last_Modifier())).c_str());
 	::send(mynick, source, "      " + cstored->Akick->Value());
     }
+    ETCB();
 }
 
 void ChanServ::do_greet_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_greet_Add", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9867,10 +10340,12 @@ void ChanServ::do_greet_Add(const mstring & mynick, const mstring & source, cons
     SEND(mynick, source, "LIST/ADD2", (target, channel, Magick::instance().getMessage(source, "LIST/GREET")));
     LOG(LM_DEBUG, "CHANSERV/GREET_ADD",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    ETCB();
 }
 
 void ChanServ::do_greet_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_greet_Del", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -9948,10 +10423,12 @@ void ChanServ::do_greet_Del(const mstring & mynick, const mstring & source, cons
 	    }
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_greet_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_greet_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10038,10 +10515,12 @@ void ChanServ::do_greet_List(const mstring & mynick, const mstring & source, con
 	else
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (target, channel, Magick::instance().getMessage(source, "LIST/GREET")));
     }
+    ETCB();
 }
 
 void ChanServ::do_message_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_message_Add", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10088,10 +10567,12 @@ void ChanServ::do_message_Add(const mstring & mynick, const mstring & source, co
     SEND(mynick, source, "LIST/ADD2_NUMBER",
 	 (cstored->Message_size(), channel, Magick::instance().getMessage(source, "LIST/JOINMSG")));
     LOG(LM_DEBUG, "CHANSERV/MESSAGE_ADD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
+    ETCB();
 }
 
 void ChanServ::do_message_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_message_Del", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10163,10 +10644,12 @@ void ChanServ::do_message_Del(const mstring & mynick, const mstring & source, co
 		 (num, channel, Magick::instance().getMessage(source, "LIST/JOINMSG")));
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_message_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_message_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10231,10 +10714,12 @@ void ChanServ::do_message_List(const mstring & mynick, const mstring & source, c
 	    ::sendV(mynick, source, "%d. %s", i, cstored->Message->Entry().c_str());
 	}
     }
+    ETCB();
 }
 
 void ChanServ::do_set_Founder(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Founder", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10302,10 +10787,12 @@ void ChanServ::do_set_Founder(const mstring & mynick, const mstring & source, co
     LOG(LM_INFO, "CHANSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/FOUNDER"), channel, founder));
+    ETCB();
 }
 
 void ChanServ::do_set_CoFounder(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_CoFounder", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10393,10 +10880,12 @@ void ChanServ::do_set_CoFounder(const mstring & mynick, const mstring & source, 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("CS_SET/COFOUNDER"), channel, founder));
     }
+    ETCB();
 }
 
 void ChanServ::do_set_Description(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Description", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10438,10 +10927,12 @@ void ChanServ::do_set_Description(const mstring & mynick, const mstring & source
     LOG(LM_DEBUG, "CHANSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/DESCRIPTION"), channel, option));
+    ETCB();
 }
 
 void ChanServ::do_set_Password(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Password", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10488,10 +10979,12 @@ void ChanServ::do_set_Password(const mstring & mynick, const mstring & source, c
     Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (Magick::instance().getMessage(source, "CS_SET/PASSWORD"), channel, password));
     LOG(LM_INFO, "CHANSERV/SET_PASSWORD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
+    ETCB();
 }
 
 void ChanServ::do_set_Email(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Email", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10550,10 +11043,12 @@ void ChanServ::do_set_Email(const mstring & mynick, const mstring & source, cons
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("CS_SET/EMAIL"), channel, option));
     }
+    ETCB();
 }
 
 void ChanServ::do_set_URL(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_URL", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10614,10 +11109,12 @@ void ChanServ::do_set_URL(const mstring & mynick, const mstring & source, const 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("CS_SET/URL"), channel, "http://" + option));
     }
+    ETCB();
 }
 
 void ChanServ::do_set_Comment(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Comment", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10665,10 +11162,12 @@ void ChanServ::do_set_Comment(const mstring & mynick, const mstring & source, co
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("CS_SET/COMMENT"), channel, option));
     }
+    ETCB();
 }
 
 void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Mlock", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10714,10 +11213,12 @@ void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, cons
     Magick::instance().chanserv.stats.i_Set++;
     for (unsigned int i = 0; i < retval.size(); i++)
 	::send(mynick, source, retval[i]);
+    ETCB();
 }
 
 void ChanServ::do_set_BanTime(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_BanTime", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10768,10 +11269,12 @@ void ChanServ::do_set_BanTime(const mstring & mynick, const mstring & source, co
     LOG(LM_DEBUG, "CHANSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/BANTIME"), channel, ToHumanTime(num, source)));
+    ETCB();
 }
 
 void ChanServ::do_set_PartTime(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_PartTime", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10822,10 +11325,12 @@ void ChanServ::do_set_PartTime(const mstring & mynick, const mstring & source, c
     LOG(LM_DEBUG, "CHANSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/PARTTIME"), channel, ToHumanTime(num, source)));
+    ETCB();
 }
 
 void ChanServ::do_set_KeepTopic(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_KeepTopic", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10892,10 +11397,12 @@ void ChanServ::do_set_KeepTopic(const mstring & mynick, const mstring & source, 
 	 Magick::instance().getMessage("CS_SET/KEEPTOPIC"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_TopicLock(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_TopicLock", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -10962,10 +11469,12 @@ void ChanServ::do_set_TopicLock(const mstring & mynick, const mstring & source, 
 	 Magick::instance().getMessage("CS_SET/KEEPTOPIC"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Private", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11032,10 +11541,12 @@ void ChanServ::do_set_Private(const mstring & mynick, const mstring & source, co
 	 Magick::instance().getMessage("CS_SET/PRIVATE"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_SecureOps(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_SecureOps", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11102,10 +11613,12 @@ void ChanServ::do_set_SecureOps(const mstring & mynick, const mstring & source, 
 	 Magick::instance().getMessage("CS_SET/SECUREOPS"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Secure", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11172,10 +11685,12 @@ void ChanServ::do_set_Secure(const mstring & mynick, const mstring & source, con
 	 Magick::instance().getMessage("CS_SET/SECURE"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_NoExpire(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_NoExpire", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11235,10 +11750,12 @@ void ChanServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	 Magick::instance().getMessage("CS_SET/NOEXPIRE"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_Anarchy(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Anarchy", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11305,10 +11822,12 @@ void ChanServ::do_set_Anarchy(const mstring & mynick, const mstring & source, co
 	 Magick::instance().getMessage("CS_SET/ANARCHY"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_KickOnBan(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_KickOnBan", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11375,10 +11894,12 @@ void ChanServ::do_set_KickOnBan(const mstring & mynick, const mstring & source, 
 	 Magick::instance().getMessage("CS_SET/KICKONBAN"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_Restricted(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Restricted", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11445,10 +11966,12 @@ void ChanServ::do_set_Restricted(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("CS_SET/RESTRICTED"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_set_Join(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Join", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11534,10 +12057,12 @@ void ChanServ::do_set_Join(const mstring & mynick, const mstring & source, const
     {
 	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
+    ETCB();
 }
 
 void ChanServ::do_set_Revenge(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_set_Revenge", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11598,10 +12123,12 @@ void ChanServ::do_set_Revenge(const mstring & mynick, const mstring & source, co
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/REVENGE"), channel,
 	 Magick::instance().getMessage("CS_SET/REV_" + option.UpperCase())));
+    ETCB();
 }
 
 void ChanServ::do_lock_Mlock(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Mlock", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11640,10 +12167,12 @@ void ChanServ::do_lock_Mlock(const mstring & mynick, const mstring & source, con
     Magick::instance().chanserv.stats.i_Lock++;
     for (unsigned int i = 0; i < retval.size(); i++)
 	::send(mynick, source, retval[i]);
+    ETCB();
 }
 
 void ChanServ::do_lock_BanTime(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_BanTime", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11689,10 +12218,12 @@ void ChanServ::do_lock_BanTime(const mstring & mynick, const mstring & source, c
     LOG(LM_DEBUG, "CHANSERV/LOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/BANTIME"), channel, ToHumanTime(num)));
+    ETCB();
 }
 
 void ChanServ::do_lock_PartTime(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_PartTime", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11738,10 +12269,12 @@ void ChanServ::do_lock_PartTime(const mstring & mynick, const mstring & source, 
     LOG(LM_DEBUG, "CHANSERV/LOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/PARTTIME"), channel, ToHumanTime(num, source)));
+    ETCB();
 }
 
 void ChanServ::do_lock_KeepTopic(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_KeepTopic", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11803,10 +12336,12 @@ void ChanServ::do_lock_KeepTopic(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("CS_SET/KEEPTOPIC"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_TopicLock(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_TopicLock", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11868,10 +12403,12 @@ void ChanServ::do_lock_TopicLock(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("CS_SET/TOPICLOCK"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Private", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11933,10 +12470,12 @@ void ChanServ::do_lock_Private(const mstring & mynick, const mstring & source, c
 	 Magick::instance().getMessage("CS_SET/PRIVATE"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_SecureOps(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_SecureOps", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -11998,10 +12537,12 @@ void ChanServ::do_lock_SecureOps(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("CS_SET/SECUREOPS"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Secure", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12063,10 +12604,12 @@ void ChanServ::do_lock_Secure(const mstring & mynick, const mstring & source, co
 	 Magick::instance().getMessage("CS_SET/SECURE"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_Anarchy(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Anarchy", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12128,10 +12671,12 @@ void ChanServ::do_lock_Anarchy(const mstring & mynick, const mstring & source, c
 	 Magick::instance().getMessage("CS_SET/ANARCHY"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_KickOnBan(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_KickOnBan", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12193,10 +12738,12 @@ void ChanServ::do_lock_KickOnBan(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("CS_SET/KICKONBAN"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_Restricted(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Restricted", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12258,10 +12805,12 @@ void ChanServ::do_lock_Restricted(const mstring & mynick, const mstring & source
 	 Magick::instance().getMessage("CS_SET/RESTRICTED"), channel,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void ChanServ::do_lock_Join(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Join", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12342,10 +12891,12 @@ void ChanServ::do_lock_Join(const mstring & mynick, const mstring & source, cons
     {
 	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
+    ETCB();
 }
 
 void ChanServ::do_lock_Revenge(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_lock_Revenge", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12401,10 +12952,12 @@ void ChanServ::do_lock_Revenge(const mstring & mynick, const mstring & source, c
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/REVENGE"), channel,
 	 Magick::instance().getMessage("CS_SET/REV_" + option.UpperCase())));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Mlock(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Mlock", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12437,10 +12990,12 @@ void ChanServ::do_unlock_Mlock(const mstring & mynick, const mstring & source, c
     Magick::instance().chanserv.stats.i_Unlock++;
     for (unsigned int i = 0; i < retval.size(); i++)
 	::send(mynick, source, retval[i]);
+    ETCB();
 }
 
 void ChanServ::do_unlock_BanTime(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_BanTime", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12479,10 +13034,12 @@ void ChanServ::do_unlock_BanTime(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/BANTIME"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_PartTime(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_PartTime", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12521,10 +13078,12 @@ void ChanServ::do_unlock_PartTime(const mstring & mynick, const mstring & source
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/PARTTIME"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_KeepTopic(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_KeepTopic", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12563,10 +13122,12 @@ void ChanServ::do_unlock_KeepTopic(const mstring & mynick, const mstring & sourc
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/KEEPTOPIC"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_TopicLock(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_TopicLock", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12606,10 +13167,12 @@ void ChanServ::do_unlock_TopicLock(const mstring & mynick, const mstring & sourc
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/TOPICLOCK"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Private", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12648,10 +13211,12 @@ void ChanServ::do_unlock_Private(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/PRIVATE"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_SecureOps(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_SecureOps", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12690,10 +13255,12 @@ void ChanServ::do_unlock_SecureOps(const mstring & mynick, const mstring & sourc
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/SECUREOPS"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Secure", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12732,10 +13299,12 @@ void ChanServ::do_unlock_Secure(const mstring & mynick, const mstring & source, 
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/SECURE"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Anarchy(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Anarchy", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12774,10 +13343,12 @@ void ChanServ::do_unlock_Anarchy(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/ANARCHY"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_KickOnBan(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_KickOnBan", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12816,10 +13387,12 @@ void ChanServ::do_unlock_KickOnBan(const mstring & mynick, const mstring & sourc
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/KICKONBAN"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Restricted(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Restricted", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12858,10 +13431,12 @@ void ChanServ::do_unlock_Restricted(const mstring & mynick, const mstring & sour
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/RESTRICTED"), channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Join(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Join", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12900,10 +13475,12 @@ void ChanServ::do_unlock_Join(const mstring & mynick, const mstring & source, co
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), Magick::instance().getMessage("CS_SET/JOIN"),
 	 channel));
+    ETCB();
 }
 
 void ChanServ::do_unlock_Revenge(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ChanServ::do_unlock_Revenge", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -12942,10 +13519,12 @@ void ChanServ::do_unlock_Revenge(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/REVENGE"), channel));
+    ETCB();
 }
 
 long ChanServ::LVL(const mstring & level) const
 {
+    BTCB();
     FT("ChanServ::LVL", (level));
     long retval = 0;
     map < mstring, long >::const_iterator i = lvl.find(level.UpperCase());
@@ -12959,10 +13538,12 @@ long ChanServ::LVL(const mstring & level) const
 	retval = i->second;
     }
     RET(retval);
+    ETCB();
 }
 
 vector < mstring > ChanServ::LVL() const
 {
+    BTCB();
     NFT("ChanServ::LVL");
 
     vector < mstring > retval;
@@ -12973,20 +13554,24 @@ vector < mstring > ChanServ::LVL() const
 	retval.push_back(iter->first.UpperCase());
     }
     NRET(vector < mstring >, retval);
+    ETCB();
 }
 
 bool ChanServ::IsLVL(const mstring & level) const
 {
+    BTCB();
     FT("ChanServ::IsLVL", (level));
     bool retval = lvl.find(level.UpperCase()) != lvl.end();
 
     RET(retval);
+    ETCB();
 }
 
 SXP::Tag ChanServ::tag_ChanServ("ChanServ");
 
 void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("ChanServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Chan_Stored_t *cs = new Chan_Stored_t;
 
@@ -12999,19 +13584,23 @@ void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	delete cs;
     }
+    ETCB();
 }
 
 void ChanServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
     static_cast < void > (pElement);
 
     FT("ChanServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+    ETCB();
 }
 
 void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("ChanServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -13029,10 +13618,12 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_ChanServ);
+    ETCB();
 }
 
 void ChanServ::PostLoad()
 {
+    BTCB();
     NFT("ChanServ::PostLoad");
     // Linkage, etc
     unsigned int i, j;
@@ -13190,4 +13781,5 @@ void ChanServ::PostLoad()
 	    }
 	}
     }
+    ETCB();
 }

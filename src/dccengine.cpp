@@ -39,6 +39,7 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 
 mstring DccEngine::lowQuote(const mstring & in)
 {
+    BTCB();
     FT("DccEngine::lowQuote", (in));
     mstring Result;
 
@@ -56,10 +57,12 @@ mstring DccEngine::lowQuote(const mstring & in)
 	    Result << in[i];
     }
     RET(Result);
+    ETCB();
 }
 
 mstring DccEngine::lowDequote(const mstring & in)
 {
+    BTCB();
     FT("DccEngine::lowDequote", (in));
     mstring Result;
 
@@ -83,10 +86,12 @@ mstring DccEngine::lowDequote(const mstring & in)
 	    Result << in[i];
     }
     RET(Result);
+    ETCB();
 }
 
 mstring DccEngine::ctcpQuote(const mstring & in)
 {
+    BTCB();
     FT("DccEngine::ctcpQuote", (in));
     mstring Result;
 
@@ -100,10 +105,12 @@ mstring DccEngine::ctcpQuote(const mstring & in)
 	    Result << in[i];
     }
     RET(Result);
+    ETCB();
 }
 
 mstring DccEngine::ctcpDequote(const mstring & in)
 {
+    BTCB();
     FT("DccEngine::ctcpDequote", (in));
     mstring Result;
 
@@ -123,10 +130,12 @@ mstring DccEngine::ctcpDequote(const mstring & in)
 	    Result << in[i];
     }
     RET(Result);
+    ETCB();
 }
 
 vector < mstring > DccEngine::ctcpExtract(const mstring & in)
 {
+    BTCB();
     FT("DccEngine::ctcpExtract", (in));
     // pull out /001...../001 pairs
     vector < mstring > Result;
@@ -146,10 +155,12 @@ vector < mstring > DccEngine::ctcpExtract(const mstring & in)
 	End = in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     }
     NRET(vector < mstring >, Result);
+    ETCB();
 }
 
 void DccEngine::decodeReply(const mstring & mynick, const mstring & source, const mstring & in)
 {
+    BTCB();
     static_cast < void > (mynick);
     static_cast < void > (source);
 
@@ -172,10 +183,12 @@ void DccEngine::decodeReply(const mstring & mynick, const mstring & source, cons
 
 	// todo if( ) { } else if( ) {} where first word is SED etc.
     }
+    ETCB();
 }
 
 void DccEngine::decodeRequest(const mstring & mynick, const mstring & source, const mstring & in)
 {
+    BTCB();
     FT("DccEngine::decodeRequest", ((in)));
     vector < mstring > ResVector;
     mstring ResMid = lowDequote(in);
@@ -343,10 +356,12 @@ void DccEngine::decodeRequest(const mstring & mynick, const mstring & source, co
 	}
     }
 
+    ETCB();
 }
 
 mstring DccEngine::encode(const mstring & type, const mstring & in)
 {
+    BTCB();
     FT("DccEngine::encode", ((in)));
     mstring Result;
 
@@ -358,10 +373,12 @@ mstring DccEngine::encode(const mstring & type, const mstring & in)
 //    Result=lowQuote(ResMid);
 //    RET(Result);
     RET(Result);
+    ETCB();
 }
 
 void DccEngine::GotDCC(const mstring & mynick, const mstring & source, const mstring & in)
 {
+    BTCB();
     FT("DccEngine::GotDCC", (mynick, source, in));
     mstring type, argument, straddress, strport, strsize;
     unsigned short port;
@@ -397,10 +414,12 @@ void DccEngine::GotDCC(const mstring & mynick, const mstring & source, const mst
 	CP(("Invalid Type in DCC Command of:" + type));
 	return;
     }
+    ETCB();
 }
 
 void DccEngine::DoDccChat(const mstring & mynick, const mstring & source, const ACE_INET_Addr & addr)
 {
+    BTCB();
     FT("DccEngine::DoDccChat", (mynick, source, "(ACE_INET_Addr) addr"));
     // todo: check if we should accept this dcc (ie is it an oper?)
 
@@ -418,12 +437,15 @@ void DccEngine::DoDccChat(const mstring & mynick, const mstring & source, const 
     SEND(mynick, source, "DCC/NOACCESS", ("CHAT"));
 
     static_cast < void > (addr);
+
+    ETCB();
 }
 
 // INBOUND DCC!!
 void DccEngine::DoDccSend(const mstring & mynick, const mstring & source, const ACE_INET_Addr & addr, mstring & filename,
 			  const size_t size)
 {
+    BTCB();
     FT("DccEngine::DoDccSend", (mynick, source, "(ACE_INET_Addr) addr", filename, size));
     // todo: check if we should accept this dcc (ie is it an oper?)
     // create a new threaded connection that is nothing more than a standard
@@ -489,4 +511,5 @@ void DccEngine::DoDccSend(const mstring & mynick, const mstring & source, const 
 	if (Magick::instance().dcc != NULL)
 	    Magick::instance().dcc->Connect(addr, mynick, source, filename, size);
     }
+    ETCB();
 }

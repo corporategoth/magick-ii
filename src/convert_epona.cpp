@@ -78,6 +78,7 @@ const int EPO_NSAllowKillImmed = 0;
 
 int EPO_get_file_version(EPO_dbFILE * f)
 {
+    BTCB();
     FILE *fp = f->fp;
     int version = fgetc(fp) << 24 | fgetc(fp) << 16 | fgetc(fp) << 8 | fgetc(fp);
 
@@ -94,12 +95,14 @@ int EPO_get_file_version(EPO_dbFILE * f)
 	return 0;
     }
     return version;
+    ETCB();
 }
 
 /*************************************************************************/
 
 EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
 {
+    BTCB();
     EPO_dbFILE *f;
     FILE *fp;
 
@@ -124,6 +127,7 @@ EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
     f->fp = fp;
     f->backupfp = NULL;
     return f;
+    ETCB();
 }
 
 /*************************************************************************/
@@ -139,6 +143,7 @@ EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
 
 EPO_dbFILE *EPO_open_db(const char *service, const char *filename, const char *mode, uint32 version)
 {
+    BTCB();
     static_cast < void > (version);
 
     if (*mode == 'r')
@@ -150,6 +155,7 @@ EPO_dbFILE *EPO_open_db(const char *service, const char *filename, const char *m
 	errno = EINVAL;
 	return NULL;
     }
+    ETCB();
 }
 
 /*************************************************************************/
@@ -160,8 +166,10 @@ EPO_dbFILE *EPO_open_db(const char *service, const char *filename, const char *m
 
 void EPO_close_db(EPO_dbFILE * f)
 {
+    BTCB();
     fclose(f->fp);
     free(f);
+    ETCB();
 }
 
 /*************************************************************************/
@@ -182,6 +190,7 @@ void EPO_close_db(EPO_dbFILE * f)
 
 int EPO_read_int16(int16 * ret, EPO_dbFILE * f)
 {
+    BTCB();
     int c1, c2;
 
     c1 = fgetc(f->fp);
@@ -190,10 +199,12 @@ int EPO_read_int16(int16 * ret, EPO_dbFILE * f)
 	return -1;
     *ret = c1 << 8 | c2;
     return 0;
+    ETCB();
 }
 
 int EPO_read_int32(int32 * ret, EPO_dbFILE * f)
 {
+    BTCB();
     int c1, c2, c3, c4;
 
     c1 = fgetc(f->fp);
@@ -204,10 +215,12 @@ int EPO_read_int32(int32 * ret, EPO_dbFILE * f)
 	return -1;
     *ret = c1 << 24 | c2 << 16 | c3 << 8 | c4;
     return 0;
+    ETCB();
 }
 
 int EPO_read_string(char **ret, EPO_dbFILE * f)
 {
+    BTCB();
     char *s;
     int16 len;
 
@@ -226,6 +239,7 @@ int EPO_read_string(char **ret, EPO_dbFILE * f)
     }
     *ret = s;
     return 0;
+    ETCB();
 }
 
 /*************************************************************************/
@@ -243,6 +257,7 @@ int EPO_read_string(char **ret, EPO_dbFILE * f)
 
 void EPO_load_old_ns_dbase(EPO_dbFILE * f, int ver)
 {
+    BTCB();
     Nick_Stored_t *nick;
 
     MemoServ::nick_memo_t memo;
@@ -466,10 +481,12 @@ void EPO_load_old_ns_dbase(EPO_dbFILE * f, int ver)
     }				/* for (i) */
 
     EPO_close_db(f);
+    ETCB();
 }
 
 void EPO_load_ns_dbase(void)
 {
+    BTCB();
     Nick_Stored_t *nick;
 
     MemoServ::nick_memo_t memo;
@@ -637,10 +654,12 @@ void EPO_load_ns_dbase(void)
 	    EPO_delcore(ncprev);
 	}
     }
+    ETCB();
 }
 
 EPO_NickCore *EPO_findcore(const char *nick, EPO_NickCore ** nclists)
 {
+    BTCB();
     EPO_NickCore *nc;
 
     for (nc = nclists[HASH(nick)]; nc; nc = nc->next)
@@ -650,10 +669,12 @@ EPO_NickCore *EPO_findcore(const char *nick, EPO_NickCore ** nclists)
     }
 
     return NULL;
+    ETCB();
 }
 
 int EPO_delnick(EPO_NickAlias * na)
 {
+    BTCB();
     free(na->nick);
     if (na->last_usermask)
 	free(na->last_usermask);
@@ -664,10 +685,12 @@ int EPO_delnick(EPO_NickAlias * na)
 
     free(na);
     return 1;
+    ETCB();
 }
 
 int EPO_delcore(EPO_NickCore * nc)
 {
+    BTCB();
     int i;
 
     /* Now we can safely free it. */
@@ -705,6 +728,7 @@ int EPO_delcore(EPO_NickCore * nc)
     free(nc);
 
     return 1;
+    ETCB();
 }
 
 #undef HASH
@@ -838,6 +862,7 @@ static int def_levels[] [2] =
 
 void EPO_reset_levels(EPO_ChannelInfo * ci)
 {
+    BTCB();
     int i;
 
     if (ci->levels)
@@ -845,10 +870,12 @@ void EPO_reset_levels(EPO_ChannelInfo * ci)
     ci->levels = (int16 *) malloc(EPO_CA_SIZE * sizeof(int16 *));
     for (i = 0; def_levels[i] [0] >= 0; i++)
 	ci->levels[def_levels[i] [0]] = def_levels[i] [1];
+    ETCB();
 }
 
 void EPO_load_cs_dbase(void)
 {
+    BTCB();
     Chan_Stored_t *chan;
 
     MemoServ::channel_news_t news;
@@ -1182,10 +1209,12 @@ void EPO_load_cs_dbase(void)
     }				/* for (i) */
 
     EPO_close_db(f);
+    ETCB();
 }
 
 int EPO_delchan(EPO_ChannelInfo * ci)
 {
+    BTCB();
     int i;
 
     if (ci->founder)
@@ -1241,6 +1270,7 @@ int EPO_delchan(EPO_ChannelInfo * ci)
 	free(ci->badwords);
     free(ci);
     return 1;
+    ETCB();
 }
 
 #undef SAFE
@@ -1257,6 +1287,7 @@ int EPO_delchan(EPO_ChannelInfo * ci)
 
 void EPO_load_news()
 {
+    BTCB();
     EPO_dbFILE *f;
     int i;
     int16 n;
@@ -1315,6 +1346,7 @@ void EPO_load_news()
     }				/* switch (ver) */
 
     EPO_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1332,6 +1364,7 @@ void EPO_load_news()
 
 static void EPO_load_old_akill(void)
 {
+    BTCB();
     EPO_dbFILE *f;
     int j;
     int32 tmp32;
@@ -1386,6 +1419,7 @@ static void EPO_load_old_akill(void)
     }
 
     EPO_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1400,6 +1434,7 @@ static void EPO_load_old_akill(void)
 
 void EPO_load_os_dbase(void)
 {
+    BTCB();
     EPO_dbFILE *f;
     int16 i, n, ver, c;
     EPO_HostCache *hc;
@@ -1596,6 +1631,7 @@ void EPO_load_os_dbase(void)
 	}			/* for (i) */
     }
     EPO_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1612,6 +1648,7 @@ void EPO_load_os_dbase(void)
 
 void EPO_load_exceptions()
 {
+    BTCB();
     EPO_dbFILE *f;
     int i;
     int16 n;
@@ -1669,6 +1706,7 @@ void EPO_load_exceptions()
     }				/* switch (ver) */
 
     EPO_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1677,6 +1715,7 @@ void EPO_load_exceptions()
 
 Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias * na, EPO_NickCore * nc)
 {
+    BTCB();
     if (na == NULL || na->nick == NULL || !strlen(na->nick))
 	return NULL;
 
@@ -1807,10 +1846,12 @@ Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias * na, EPO_NickCore * nc)
     {
 	return NULL;
     }
+    ETCB();
 }
 
 mstring EPO_getmodes(int16 modes)
 {
+    BTCB();
     mstring retval;
 
     if (modes & EPO_CMODE_i)
@@ -1889,10 +1930,12 @@ mstring EPO_getmodes(int16 modes)
 #endif
 
     return retval;
+    ETCB();
 }
 
 Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo * ci)
 {
+    BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))
 	return NULL;
 
@@ -2121,10 +2164,12 @@ Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo * ci)
 
 	return out;
     }
+    ETCB();
 }
 
 MemoServ::nick_memo_t EPO_CreateMemoEntry(EPO_MemoInfo * ml, char *nick)
 {
+    BTCB();
     int i;
 
     MemoServ::nick_memo_t out;
@@ -2145,10 +2190,12 @@ MemoServ::nick_memo_t EPO_CreateMemoEntry(EPO_MemoInfo * ml, char *nick)
 	delete tmp;
     }
     return out;
+    ETCB();
 }
 
 MemoServ::channel_news_t EPO_CreateNewsEntry(EPO_MemoInfo * nl, char *chan)
 {
+    BTCB();
     int i;
 
     MemoServ::channel_news_t out;
@@ -2167,6 +2214,7 @@ MemoServ::channel_news_t EPO_CreateNewsEntry(EPO_MemoInfo * nl, char *chan)
 	delete tmp;
     }
     return out;
+    ETCB();
 }
 
 #endif /* CONVERT */

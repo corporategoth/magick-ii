@@ -50,6 +50,7 @@ const char *clone_db = "clone.db";
 
 int get_file_version(FILE * f, const char *filename)
 {
+    BTCB();
     int version = fgetc(f) << 24 | fgetc(f) << 16 | fgetc(f) << 8 | fgetc(f);
 
     if (ferror(f) || feof(f))
@@ -61,10 +62,12 @@ int get_file_version(FILE * f, const char *filename)
 	SLOG(LM_EMERGENCY, "Invalid version number ($1) on $2", (version, filename));
     }
     return version;
+    ETCB();
 }
 
 char *read_string(FILE * f, const char *filename)
 {
+    BTCB();
     char *s;
     unsigned int len;
 
@@ -75,10 +78,12 @@ char *read_string(FILE * f, const char *filename)
 	SLOG(LM_EMERGENCY, "Read error on $1", (filename));
     }
     return s;
+    ETCB();
 }
 
 void load_ns_dbase(void)
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(nickserv_db, "r");
     int i, j;
     NickInfo *ni;
@@ -267,6 +272,7 @@ void load_ns_dbase(void)
 	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", (i, nickserv_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 /* Remove a nick from the NickServ database.  Return 1 on success, 0
@@ -274,6 +280,7 @@ void load_ns_dbase(void)
 
 void delnick(NickInfo * ni)
 {
+    BTCB();
     int i;
 
     if (ni->email)
@@ -298,10 +305,12 @@ void delnick(NickInfo * ni)
     }
     free(ni);
     ni = NULL;
+    ETCB();
 }
 
 Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni)
 {
+    BTCB();
     int i;
     char **string;
 
@@ -390,10 +399,12 @@ Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni)
 
 	return out;
     }
+    ETCB();
 }
 
 void load_cs_dbase(void)
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(chanserv_db, "r");
     int i, j;
     ChanInfo *ci;
@@ -882,10 +893,12 @@ void load_cs_dbase(void)
 	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", (i, chanserv_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 char *oldmodeconv(short inmode)
 {
+    BTCB();
     static char outmode[MODEMAX];
 
     ACE_OS::strcpy(outmode, "");
@@ -906,10 +919,12 @@ char *oldmodeconv(short inmode)
     if (inmode & 0x80)
 	ACE_OS::strcat(outmode, "l");
     return outmode;
+    ETCB();
 }
 
 void delchan(ChanInfo * ci)
 {
+    BTCB();
     int i;
 
     if (ci->desc)
@@ -936,10 +951,12 @@ void delchan(ChanInfo * ci)
 	free(ci->akick);
     free(ci);
     ci = NULL;
+    ETCB();
 }
 
 Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci)
 {
+    BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))
 	return NULL;
 
@@ -1139,10 +1156,12 @@ Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci)
 	}
 	return out;
     }
+    ETCB();
 }
 
 void load_ms_dbase(void)
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(memoserv_db, "r");
     int i, j;
     MemoList *ml;
@@ -1187,10 +1206,12 @@ void load_ms_dbase(void)
 	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", (i, memoserv_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 void load_news_dbase(void)
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(newsserv_db, "r");
     int i, j;
     NewsList *nl;
@@ -1237,6 +1258,7 @@ void load_news_dbase(void)
 	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", (i, newsserv_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 /* del_memolist:  Remove a nick's memo list from the database.  Assumes
@@ -1245,6 +1267,7 @@ void load_news_dbase(void)
 
 void del_memolist(MemoList * ml)
 {
+    BTCB();
     int i;
     Memo *memos;
 
@@ -1256,6 +1279,7 @@ void del_memolist(MemoList * ml)
     if (ml->memos)
 	free(ml->memos);
     free(ml);
+    ETCB();
 }
 
 /* del_newslist:  Remove a nick's news list from the database.  Assumes
@@ -1264,6 +1288,7 @@ void del_memolist(MemoList * ml)
 
 void del_newslist(NewsList * nl)
 {
+    BTCB();
     int i;
     Memo *newss;
 
@@ -1275,10 +1300,12 @@ void del_newslist(NewsList * nl)
     if (nl->newss)
 	free(nl->newss);
     free(nl);
+    ETCB();
 }
 
 MemoServ::nick_memo_t CreateMemoEntry(MemoList_CUR * ml)
 {
+    BTCB();
     int i;
 
     MemoServ::nick_memo_t out;
@@ -1297,10 +1324,12 @@ MemoServ::nick_memo_t CreateMemoEntry(MemoList_CUR * ml)
 	delete tmp;
     }
     return out;
+    ETCB();
 }
 
 MemoServ::channel_news_t CreateNewsEntry(NewsList_CUR * nl)
 {
+    BTCB();
     int i;
 
     MemoServ::channel_news_t out;
@@ -1318,10 +1347,12 @@ MemoServ::channel_news_t CreateNewsEntry(NewsList_CUR * nl)
 	delete tmp;
     }
     return out;
+    ETCB();
 }
 
 void load_sop()
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(sop_db, "r");
     int i, j, nsop = 0, sop_size = 0;
     Sop *sops = NULL;
@@ -1373,10 +1404,12 @@ void load_sop()
 	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", (i, sop_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 void load_message()
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(message_db, "r");
     int i, j, nmessage = 0, message_size = 0;
     Message *messages = NULL;
@@ -1438,10 +1471,12 @@ void load_message()
 	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", (i, message_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 void load_akill()
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(akill_db, "r");
     int i, j, nakill = 0, akill_size = 0;
     Akill *akills = NULL;
@@ -1566,10 +1601,12 @@ void load_akill()
 	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", (i, akill_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 void load_clone()
 {
+    BTCB();
     FILE *f = ACE_OS::fopen(clone_db, "r");
     int i, j, nclone = 0, clone_size = 0;
     Allow *clones = NULL;
@@ -1626,6 +1663,7 @@ void load_clone()
 	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", (i, clone_db));
     }				/* switch (version) */
     fclose(f);
+    ETCB();
 }
 
 #endif /* CONVERT */

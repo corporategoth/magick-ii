@@ -83,6 +83,7 @@ int32 ESP_nexceptions;
 
 int ESP_get_file_version(ESP_dbFILE * f)
 {
+    BTCB();
     FILE *fp = f->fp;
     int version = fgetc(fp) << 24 | fgetc(fp) << 16 | fgetc(fp) << 8 | fgetc(fp);
 
@@ -99,12 +100,14 @@ int ESP_get_file_version(ESP_dbFILE * f)
 	return 0;
     }
     return version;
+    ETCB();
 }
 
 /*************************************************************************/
 
 ESP_dbFILE *ESP_open_db_read(const char *service, const char *filename)
 {
+    BTCB();
     ESP_dbFILE *f;
     FILE *fp;
 
@@ -129,6 +132,7 @@ ESP_dbFILE *ESP_open_db_read(const char *service, const char *filename)
     f->fp = fp;
     f->backupfp = NULL;
     return f;
+    ETCB();
 }
 
 /*************************************************************************/
@@ -144,6 +148,7 @@ ESP_dbFILE *ESP_open_db_read(const char *service, const char *filename)
 
 ESP_dbFILE *ESP_open_db(const char *service, const char *filename, const char *mode)
 {
+    BTCB();
     if (*mode == 'r')
     {
 	return ESP_open_db_read(service, filename);
@@ -153,6 +158,7 @@ ESP_dbFILE *ESP_open_db(const char *service, const char *filename, const char *m
 	errno = EINVAL;
 	return NULL;
     }
+    ETCB();
 }
 
 /*************************************************************************/
@@ -163,8 +169,10 @@ ESP_dbFILE *ESP_open_db(const char *service, const char *filename, const char *m
 
 void ESP_close_db(ESP_dbFILE * f)
 {
+    BTCB();
     fclose(f->fp);
     free(f);
+    ETCB();
 }
 
 /*************************************************************************/
@@ -185,6 +193,7 @@ void ESP_close_db(ESP_dbFILE * f)
 
 int ESP_read_int16(int16 * ret, ESP_dbFILE * f)
 {
+    BTCB();
     int c1, c2;
 
     c1 = fgetc(f->fp);
@@ -193,10 +202,12 @@ int ESP_read_int16(int16 * ret, ESP_dbFILE * f)
 	return -1;
     *ret = c1 << 8 | c2;
     return 0;
+    ETCB();
 }
 
 int ESP_read_int32(int32 * ret, ESP_dbFILE * f)
 {
+    BTCB();
     int c1, c2, c3, c4;
 
     c1 = fgetc(f->fp);
@@ -207,10 +218,12 @@ int ESP_read_int32(int32 * ret, ESP_dbFILE * f)
 	return -1;
     *ret = c1 << 24 | c2 << 16 | c3 << 8 | c4;
     return 0;
+    ETCB();
 }
 
 int ESP_read_string(char **ret, ESP_dbFILE * f)
 {
+    BTCB();
     char *s;
     int16 len;
 
@@ -229,6 +242,7 @@ int ESP_read_string(char **ret, ESP_dbFILE * f)
     }
     *ret = s;
     return 0;
+    ETCB();
 }
 
 /*************************************************************************/
@@ -245,6 +259,7 @@ int ESP_read_string(char **ret, ESP_dbFILE * f)
 
 void ESP_load_old_ns_dbase(ESP_dbFILE * f, int ver)
 {
+    BTCB();
     Nick_Stored_t *nick;
     struct nickinfo_
     {
@@ -357,10 +372,12 @@ void ESP_load_old_ns_dbase(ESP_dbFILE * f, int ver)
     if (ESP_debug >= 2)
 	NSLOG(LM_DEBUG, "ESP_load_old_ns_dbase(): loading memos");
     ESP_load_old_ms_dbase();
+    ETCB();
 }
 
 void ESP_load_ns_dbase(void)
 {
+    BTCB();
     Nick_Stored_t *nick;
 
     MemoServ::nick_memo_t memo;
@@ -514,10 +531,12 @@ void ESP_load_ns_dbase(void)
     }				/* switch (version) */
 
     ESP_close_db(f);
+    ETCB();
 }
 
 int ESP_delnick(ESP_NickInfo * ni)
 {
+    BTCB();
     int i;
 
     /* cs_remove_nick(ni);
@@ -550,6 +569,7 @@ int ESP_delnick(ESP_NickInfo * ni)
     }
     free(ni);
     return 1;
+    ETCB();
 }
 
 #undef SAFE
@@ -613,6 +633,7 @@ static int def_levels[] [2] =
 
 void ESP_reset_levels(ESP_ChannelInfo * ci)
 {
+    BTCB();
     int i;
 
     if (ci->levels)
@@ -620,11 +641,13 @@ void ESP_reset_levels(ESP_ChannelInfo * ci)
     ci->levels = (int16 *) malloc(ESP_CA_SIZE * sizeof(int16 *));
     for (i = 0; def_levels[i] [0] >= 0; i++)
 	ci->levels[def_levels[i] [0]] = def_levels[i] [1];
+    ETCB();
 }
 
 /* Load v1-v4 files. */
 void ESP_load_old_cs_dbase(ESP_dbFILE * f, int ver)
 {
+    BTCB();
     Chan_Stored_t *chan;
     int i, j, c;
     ESP_ChannelInfo *ci;
@@ -854,10 +877,12 @@ void ESP_load_old_cs_dbase(ESP_dbFILE * f, int ver)
 	    ESP_delchan(ci);
 	}			/* while (ESP_getc_db(f) != 0) */
     }				/* for (i) */
+    ETCB();
 }
 
 void ESP_load_cs_dbase(void)
 {
+    BTCB();
     Chan_Stored_t *chan;
 
     MemoServ::channel_news_t news;
@@ -1062,10 +1087,12 @@ void ESP_load_cs_dbase(void)
      * }
      * }
      * } */
+    ETCB();
 }
 
 int ESP_delchan(ESP_ChannelInfo * ci)
 {
+    BTCB();
     int i;
 
     if (ci->founder)
@@ -1121,6 +1148,7 @@ int ESP_delchan(ESP_ChannelInfo * ci)
 	free(ci->entry_message);
     free(ci);
     return 1;
+    ETCB();
 }
 
 #undef SAFE
@@ -1139,6 +1167,7 @@ int ESP_delchan(ESP_ChannelInfo * ci)
 
 void ESP_load_old_ms_dbase(void)
 {
+    BTCB();
     MemoServ::nick_memo_t memo;
     ESP_dbFILE *f;
     int ver, i, j, c;
@@ -1218,6 +1247,7 @@ void ESP_load_old_ms_dbase(void)
 	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on memo.db", (ver));
     }				/* switch (version) */
     ESP_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1234,6 +1264,7 @@ void ESP_load_old_ms_dbase(void)
 
 void ESP_load_news()
 {
+    BTCB();
     ESP_dbFILE *f;
     int i;
     int16 n;
@@ -1307,6 +1338,7 @@ void ESP_load_news()
     }				/* switch (ver) */
 
     ESP_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1325,6 +1357,7 @@ void ESP_load_news()
 
 void ESP_load_os_dbase(void)
 {
+    BTCB();
     ESP_dbFILE *f;
     int16 i, n, ver;
     char *s;
@@ -1439,6 +1472,7 @@ void ESP_load_os_dbase(void)
 	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", (ver, ESP_OperDBName));
     }				/* switch (version) */
     ESP_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1455,6 +1489,7 @@ void ESP_load_os_dbase(void)
 
 void ESP_load_akill(void)
 {
+    BTCB();
     ESP_dbFILE *f;
     int i, ver;
     int16 tmp16;
@@ -1641,6 +1676,7 @@ void ESP_load_akill(void)
     }				/* switch (version) */
 
     ESP_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1657,6 +1693,7 @@ void ESP_load_akill(void)
 
 void ESP_load_exceptions()
 {
+    BTCB();
     ESP_dbFILE *f;
     int i;
     int16 n;
@@ -1714,6 +1751,7 @@ void ESP_load_exceptions()
     }				/* switch (ver) */
 
     ESP_close_db(f);
+    ETCB();
 }
 
 #undef SAFE
@@ -1722,6 +1760,7 @@ void ESP_load_exceptions()
 
 Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo * ni)
 {
+    BTCB();
     if (ni == NULL || ni->nick == NULL || !strlen(ni->nick))
 	return NULL;
 
@@ -1823,10 +1862,12 @@ Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo * ni)
 
 	return out;
     }
+    ETCB();
 }
 
 mstring ESP_getmodes(int16 modes)
 {
+    BTCB();
     mstring retval;
 
     if (modes & ESP_CMODE_I)
@@ -1853,10 +1894,12 @@ mstring ESP_getmodes(int16 modes)
 	retval += "c";
 
     return retval;
+    ETCB();
 }
 
 Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo * ci)
 {
+    BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))
 	return NULL;
 
@@ -2051,10 +2094,12 @@ Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo * ci)
 
 	return out;
     }
+    ETCB();
 }
 
 MemoServ::nick_memo_t ESP_CreateMemoEntry(ESP_MemoInfo * ml, char *nick)
 {
+    BTCB();
     int i;
 
     MemoServ::nick_memo_t out;
@@ -2075,10 +2120,12 @@ MemoServ::nick_memo_t ESP_CreateMemoEntry(ESP_MemoInfo * ml, char *nick)
 	delete tmp;
     }
     return out;
+    ETCB();
 }
 
 MemoServ::channel_news_t ESP_CreateNewsEntry(ESP_MemoInfo * nl, char *chan)
 {
+    BTCB();
     int i;
 
     MemoServ::channel_news_t out;
@@ -2097,6 +2144,7 @@ MemoServ::channel_news_t ESP_CreateNewsEntry(ESP_MemoInfo * nl, char *chan)
 	delete tmp;
     }
     return out;
+    ETCB();
 }
 
 #endif /* CONVERT */

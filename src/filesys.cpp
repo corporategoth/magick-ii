@@ -45,6 +45,7 @@ static DccXfer GLOB_DccXfer;
 
 mFile::mFile(const mstring & name, FILE * in, const mstring & mode)
 {
+    BTCB();
     FT("mFile::mFile", (name, "(FILE *) in"));
     MLOCK(("mFile", name));
     fd = in;
@@ -53,10 +54,12 @@ mFile::mFile(const mstring & name, FILE * in, const mstring & mode)
 	i_name = name;
 	i_mode = mode;
     }
+    ETCB();
 }
 
 mFile::mFile(const mstring & name, const mstring & mode)
 {
+    BTCB();
     FT("mFile::mFile", (name, mode));
 
     MLOCK(("mFile", name));
@@ -69,20 +72,24 @@ mFile::mFile(const mstring & name, const mstring & mode)
 	i_name = name;
 	i_mode = mode;
     }
+    ETCB();
 }
 
 mFile &mFile::operator=(const mFile & in)
 {
+    BTCB();
     FT("mFile::operator=", ("(const mFile &) in"));
     i_name = in.i_name;
     i_mode = in.i_mode;
     fd = in.fd;
     in.fd = NULL;
     NRET(mFile &, *this);
+    ETCB();
 }
 
 bool mFile::Open(const mstring & name, const mstring & mode)
 {
+    BTCB();
     FT("mFile::Open", (name, mode));
 
     int opres;
@@ -110,10 +117,12 @@ bool mFile::Open(const mstring & name, const mstring & mode)
 	i_mode = mode;
     }
     RET(fd != NULL);
+    ETCB();
 }
 
 void mFile::Close()
 {
+    BTCB();
     NFT("mFile::Close");
 
     int opres;
@@ -130,46 +139,56 @@ void mFile::Close()
 	i_mode.erase();
 	fd = NULL;
     }
+    ETCB();
 }
 
 bool mFile::IsOpened() const
 {
+    BTCB();
     NFT("mFile::IsOpened");
     MLOCK(("mFile", i_name));
     bool retval = (fd != NULL);
 
     RET(retval);
+    ETCB();
 }
 
 bool mFile::IsReadable() const
 {
+    BTCB();
     NFT("mFile::IsReadable");
     MLOCK(("mFile", i_name));
     bool retval = (i_mode.Contains("r") || i_mode.Contains("+"));
 
     RET(retval);
+    ETCB();
 }
 
 bool mFile::IsWritable() const
 {
+    BTCB();
     NFT("mFile::IsWritable");
     MLOCK(("mFile", i_name));
     bool retval = (i_mode.Contains("w") || i_mode.Contains("a") || i_mode.Contains("+"));
 
     RET(retval);
+    ETCB();
 }
 
 bool mFile::IsBoth() const
 {
+    BTCB();
     NFT("mFile::IsBoth");
     MLOCK(("mFile", i_name));
     bool retval = i_mode.Contains("+");
 
     RET(retval);
+    ETCB();
 }
 
 long mFile::Seek(const long offset, const int whence)
 {
+    BTCB();
     FT("mFile::Seek", (offset, whence));
     MLOCK(("mFile", i_name));
     if (!IsOpened())
@@ -181,10 +200,12 @@ long mFile::Seek(const long offset, const int whence)
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("fseek", i_name, errno, strerror(errno)));
     }
     RET(retpos);
+    ETCB();
 }
 
 size_t mFile::Write(const mstring & buf, const bool endline)
 {
+    BTCB();
     FT("mFile::Write", (buf, endline));
     mstring data(buf);
 
@@ -193,10 +214,12 @@ size_t mFile::Write(const mstring & buf, const bool endline)
     long written = Write(data.c_str(), data.length());
 
     RET(written);
+    ETCB();
 }
 
 size_t mFile::Write(const void *buf, const size_t size)
 {
+    BTCB();
     FT("mFile::Write", ("(const void *)", size));
     MLOCK(("mFile", i_name));
     if (!IsOpened())
@@ -208,10 +231,12 @@ size_t mFile::Write(const void *buf, const size_t size)
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("fwrite", i_name, errno, strerror(errno)));
     }
     RET(written);
+    ETCB();
 }
 
 size_t mFile::Read(void *buf, const size_t size)
 {
+    BTCB();
     FT("mFile::Read", ("(const void *)", size));
     MLOCK(("mFile", i_name));
     if (!IsOpened())
@@ -223,10 +248,12 @@ size_t mFile::Read(void *buf, const size_t size)
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("fread", i_name, errno, strerror(errno)));
     }
     RET(bytesread);
+    ETCB();
 }
 
 mstring mFile::ReadLine()
 {
+    BTCB();
     NFT("mFile::ReadLine");
     mstring Result;
 
@@ -263,10 +290,12 @@ mstring mFile::ReadLine()
 #endif
 
     RET(Result);
+    ETCB();
 }
 
 long mFile::Length() const
 {
+    BTCB();
     NFT("mFile::Length");
 
     int opres;
@@ -287,10 +316,12 @@ long mFile::Length() const
 	retval = static_cast < long > (st.st_size);
     }
     RET(retval);
+    ETCB();
 }
 
 mDateTime mFile::LastMod() const
 {
+    BTCB();
     NFT("mFile::LastMod");
 
     int opres;
@@ -311,10 +342,12 @@ mDateTime mFile::LastMod() const
 	retval = static_cast < time_t > (ACE_Time_Value(st.st_mtime).sec());
     }
     RET(retval);
+    ETCB();
 }
 
 bool mFile::Eof() const
 {
+    BTCB();
     NFT("mFile::Eof");
     MLOCK(("mFile", i_name));
     if (!IsOpened())
@@ -326,10 +359,12 @@ bool mFile::Eof() const
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("feof", i_name, errno, strerror(errno)));
     }
     RET(retval);
+    ETCB();
 }
 
 void mFile::Attach(const mstring & name, FILE * in, const mstring & mode)
 {
+    BTCB();
     FT("mFile::Attach", (name, "(FILE *) in"));
     MLOCK(("mFile", name));
     if (in == NULL)
@@ -343,10 +378,12 @@ void mFile::Attach(const mstring & name, FILE * in, const mstring & mode)
 	i_mode = mode;
     }
     fd = in;
+    ETCB();
 }
 
 FILE *mFile::Detach()
 {
+    BTCB();
     NFT("mFile::Detach");
     MLOCK(("mFile", i_name));
     FILE *rfd = fd;
@@ -355,10 +392,12 @@ FILE *mFile::Detach()
     i_name.erase();
     i_mode.erase();
     NRET(FILE *, rfd);
+    ETCB();
 }
 
 void mFile::Flush()
 {
+    BTCB();
     NFT("mFile::Flush");
 
     int opres;
@@ -372,10 +411,12 @@ void mFile::Flush()
 	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("fflush", i_name, errno, strerror(errno)));
 	}
     }
+    ETCB();
 }
 
 bool mFile::Exists(const mstring & name)
 {
+    BTCB();
     FT("mFile::Exists", (name));
     MLOCK(("mFile", name));
     FILE *file;
@@ -384,10 +425,12 @@ bool mFile::Exists(const mstring & name)
 	RET(false);
     ACE_OS::fclose(file);
     RET(true);
+    ETCB();
 }
 
 bool mFile::Erase(const mstring & name)
 {
+    BTCB();
     FT("mFile::Erase", (name));
 
     int opres;
@@ -401,10 +444,12 @@ bool mFile::Erase(const mstring & name)
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("remove", name, errno, strerror(errno)));
     }
     RET(true);
+    ETCB();
 }
 
 long mFile::Length(const mstring & name)
 {
+    BTCB();
     FT("mFile::Length", (name));
 
     int opres;
@@ -425,10 +470,12 @@ long mFile::Length(const mstring & name)
 	retval = static_cast < long > (st.st_size);
     }
     RET(retval);
+    ETCB();
 }
 
 mDateTime mFile::LastMod(const mstring & name)
 {
+    BTCB();
     FT("mFile::LastMod", (name));
 
     int opres;
@@ -449,10 +496,12 @@ mDateTime mFile::LastMod(const mstring & name)
 	retval = static_cast < time_t > (ACE_Time_Value(st.st_mtime).sec());
     }
     RET(retval);
+    ETCB();
 }
 
 long mFile::Copy(const mstring & infile, const mstring & outfile, const bool append)
 {
+    BTCB();
     FT("mFile::Copy", (infile, outfile, append));
 
     if (infile.empty() || !Exists(infile) || outfile.empty())
@@ -477,11 +526,13 @@ long mFile::Copy(const mstring & infile, const mstring & outfile, const bool app
     in.Close();
     out.Close();
     RET(total);
+    ETCB();
 }
 
 // CANNOT trace this, it is used by TRACE code ...
 long mFile::Dump(const vector < mstring > & invector, const mstring & outfile, const bool append, const bool endline)
 {
+    BTCB();
     FT("mFile::Dump", ("(vector<mstring>) invector", outfile, append, endline));
     if (!invector.size() || outfile.empty())
 	RET(0);
@@ -506,11 +557,13 @@ long mFile::Dump(const vector < mstring > & invector, const mstring & outfile, c
     }
     out.Close();
     RET(total);
+    ETCB();
 }
 
 // CANNOT trace this, it is used by TRACE code ...
 long mFile::Dump(const list < mstring > & inlist, const mstring & outfile, const bool append, const bool endline)
 {
+    BTCB();
     FT("mFile::Dump", ("(list<mstring>) inlist", outfile, append, endline));
     if (!inlist.size() || outfile.empty())
 	RET(0);
@@ -536,10 +589,12 @@ long mFile::Dump(const list < mstring > & inlist, const mstring & outfile, const
     }
     out.Close();
     RET(total);
+    ETCB();
 }
 
 vector < mstring > mFile::UnDump(const mstring & infile)
 {
+    BTCB();
     FT("mFile::UnDump", (infile));
     vector < mstring > Result;
 
@@ -561,10 +616,12 @@ vector < mstring > mFile::UnDump(const mstring & infile)
     }
 
     NRET(vector < mstring >, Result);
+    ETCB();
 }
 
 size_t mFile::DirUsage(const mstring & directory)
 {
+    BTCB();
     FT("mFile::DirUsage", (directory));
     int opres;
     size_t retval = 0;
@@ -608,10 +665,12 @@ size_t mFile::DirUsage(const mstring & directory)
     RET(retval);
 #endif
     RET(0);
+    ETCB();
 }
 
 set < mstring > mFile::DirList(const mstring & directory, const mstring & filemask)
 {
+    BTCB();
     FT("mFile::DirList", (directory, filemask));
     set < mstring > retval;
 
@@ -643,10 +702,12 @@ set < mstring > mFile::DirList(const mstring & directory, const mstring & filema
     }
 #endif
     NRET(set < mstring >, retval);
+    ETCB();
 }
 
 unsigned long FileMap::FindAvail(const FileMap::FileType type)
 {
+    BTCB();
     FT("FileMap::FindAvail", (static_cast < int > (type)));
 
     unsigned long filenum = 1;
@@ -665,10 +726,12 @@ unsigned long FileMap::FindAvail(const FileMap::FileType type)
 
     LOG(LM_ERROR, "SYS_ERRORS/FILEMAPFULL", (static_cast < int > (type)));
     RET(0);
+    ETCB();
 }
 
 bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 {
+    BTCB();
     FT("FileMap::Exists", (static_cast < int > (type), num));
 
     mstring filename;
@@ -710,10 +773,12 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 	}
     }
     RET(false);
+    ETCB();
 }
 
 mstring FileMap::GetName(const FileMap::FileType type, const unsigned long num)
 {
+    BTCB();
     FT("FileMap::GetName", (static_cast < int > (type), num));
 
     if (Exists(type, num))
@@ -722,10 +787,12 @@ mstring FileMap::GetName(const FileMap::FileType type, const unsigned long num)
 	RET(i_FileMap[type] [num].first);
     }
     RET("");
+    ETCB();
 }
 
 mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long num)
 {
+    BTCB();
     FT("FileMap::GetRealName", (static_cast < int > (type), num));
 
     if (Exists(type, num))
@@ -743,10 +810,12 @@ mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long n
 	RET(filename);
     }
     RET("");
+    ETCB();
 }
 
 mstring FileMap::GetPriv(const FileMap::FileType type, const unsigned long num)
 {
+    BTCB();
     FT("FileMap::GetPriv", (static_cast < int > (type), num));
 
     if (Exists(type, num))
@@ -755,10 +824,12 @@ mstring FileMap::GetPriv(const FileMap::FileType type, const unsigned long num)
 	RET(i_FileMap[type] [num].second);
     }
     RET("");
+    ETCB();
 }
 
 bool FileMap::SetPriv(const FileMap::FileType type, const unsigned long num, const mstring & priv)
 {
+    BTCB();
     FT("FileMap::SetPriv", (static_cast < int > (type), num, priv));
 
     if (Exists(type, num))
@@ -768,10 +839,12 @@ bool FileMap::SetPriv(const FileMap::FileType type, const unsigned long num, con
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 bool FileMap::Rename(const FileMap::FileType type, const unsigned long num, const mstring & newname)
 {
+    BTCB();
     FT("FileMap::SetPriv", (static_cast < int > (type), num, newname));
 
     if (type != Picture && Exists(type, num))
@@ -781,10 +854,12 @@ bool FileMap::Rename(const FileMap::FileType type, const unsigned long num, cons
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 size_t FileMap::GetSize(const FileMap::FileType type, const unsigned long num)
 {
+    BTCB();
     FT("FileMap::GetSize", (static_cast < int > (type), num));
     mstring filename = GetRealName(type, num);
 
@@ -798,10 +873,12 @@ size_t FileMap::GetSize(const FileMap::FileType type, const unsigned long num)
 	RET(retval);
     }
     RET(0);
+    ETCB();
 }
 
 unsigned long FileMap::NewFile(const FileMap::FileType type, const mstring & filename, const mstring & priv)
 {
+    BTCB();
     FT("FileMap::NewFile", (static_cast < int > (type), filename, priv));
 
     unsigned long filenum = 0;
@@ -817,10 +894,12 @@ unsigned long FileMap::NewFile(const FileMap::FileType type, const mstring & fil
     }
 
     RET(filenum);
+    ETCB();
 }
 
 void FileMap::EraseFile(const FileType type, const unsigned long num)
 {
+    BTCB();
     FT("FileMap::EraseFile", (type, num));
 
     mstring filename = GetRealName(type, num);
@@ -831,10 +910,12 @@ void FileMap::EraseFile(const FileType type, const unsigned long num)
 	WLOCK(("FileMap", static_cast < int > (type)));
 	i_FileMap[type].erase(num);
     }
+    ETCB();
 }
 
 vector < unsigned long > FileMap::GetList(const FileMap::FileType type, const mstring & source)
 {
+    BTCB();
     FT("FileMap::GetList", (static_cast < int > (type), source));
     vector < unsigned long > retval;
     map < unsigned long, pair < mstring, mstring > >::iterator iter;
@@ -869,10 +950,13 @@ vector < unsigned long > FileMap::GetList(const FileMap::FileType type, const ms
 	}
     }
     NRET(vector < unsigned long >, retval);
+
+    ETCB();
 }
 
 unsigned long FileMap::GetNum(const FileMap::FileType type, const mstring & name)
 {
+    BTCB();
     FT("FileMap::GetNum", (static_cast < int > (type), name));
     map < unsigned long, pair < mstring, mstring > >::iterator iter;
 
@@ -893,10 +977,12 @@ unsigned long FileMap::GetNum(const FileMap::FileType type, const mstring & name
 	}
     }
     RET(0);
+    ETCB();
 }
 
 size_t FileMap::FileSysSize(const FileMap::FileType type) const
 {
+    BTCB();
     FT("FileMap::FileSysSize", (static_cast < int > (type)));
     size_t retval = 0;
 
@@ -908,6 +994,7 @@ size_t FileMap::FileSysSize(const FileMap::FileType type) const
 	retval = mFile::DirUsage(Magick::instance().files.Public());
 
     RET(retval);
+    ETCB();
 }
 
 SXP::Tag FileMap::tag_FileMap("FileMap");
@@ -915,14 +1002,17 @@ SXP::Tag FileMap::tag_File("File");
 
 void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
     static_cast < void > (pElement);
 
     FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+    ETCB();
 }
 
 void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("FileMap::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -935,10 +1025,12 @@ void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	fm_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("FileMap::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -963,10 +1055,12 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_FileMap);
+    ETCB();
 }
 
 void FileMap::PostLoad()
 {
+    BTCB();
     NFT("FileMap::PostLoad");
     // Linkage, etc
 
@@ -995,6 +1089,7 @@ void FileMap::PostLoad()
 	}
     }
     fm_array.clear();
+    ETCB();
 }
 
 DccXfer::DccXfer(const unsigned long dccid, const mSocket & sock, const mstring & mynick, const mstring & source,
@@ -1002,6 +1097,7 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket & sock, const mstring 
 i_Mynick(mynick), i_Filename(Magick::instance().filesys.GetName(filetype, filenum)),
 i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
 {
+    BTCB();
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock", mynick, source, static_cast < int > (filetype), filenum));
 
     // Setup Paramaters
@@ -1050,12 +1146,14 @@ i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
     DumpE();
     LOG(LM_DEBUG, "OTHER/DCC_INIT", (fmstring("%08x", i_DccId), i_Source, "SEND"));
     CP(("DCC %d initialized", i_DccId));
+    ETCB();
 }
 
 DccXfer::DccXfer(const unsigned long dccid, const mSocket & sock, const mstring & mynick, const mstring & source,
 		 const mstring & filename, const size_t filesize, const size_t blocksize) : i_Socket(sock), i_Source(source),
 i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Get), i_DccId(dccid)
 {
+    BTCB();
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock", mynick, source, filename, filesize, blocksize));
 
     // Setup Paramaters
@@ -1097,10 +1195,12 @@ i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blo
     DumpE();
     LOG(LM_DEBUG, "OTHER/DCC_INIT", (fmstring("%08x", i_DccId), i_Source, "GET"));
     CP(("DCC %d initialized", i_DccId));
+    ETCB();
 }
 
 DccXfer::~DccXfer()
 {
+    BTCB();
     NFT("DccXfer::~DccXfer");
 
     if (i_Transiant != NULL)
@@ -1176,10 +1276,12 @@ DccXfer::~DccXfer()
 
     if (mFile::Exists(i_Tempfile))
 	mFile::Erase(i_Tempfile);
+    ETCB();
 }
 
 DccXfer &DccXfer::operator=(const DccXfer & in)
 {
+    BTCB();
     FT("DccXfer::operator=", ("(const DccXfer &) in"));
 
     // i_File=in.i_File;
@@ -1221,77 +1323,97 @@ DccXfer &DccXfer::operator=(const DccXfer & in)
     }
     i_LastData = in.i_LastData;
     NRET(DccXfer &, *this);
+    ETCB();
 }
 
 bool DccXfer::Ready() const
 {
+    BTCB();
     NFT("DccXfer::Ready");
     RLOCK(("DccMap", "xfers", i_DccId, "i_File"));
     bool retval = i_File.IsOpened();
 
     RET(retval);
+    ETCB();
 }
 
 DccXfer::XF_Type DccXfer::Type() const
 {
+    BTCB();
     NFT("DccXfer::Type");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Type"));
     RET(i_Type);
+    ETCB();
 }
 
 mstring DccXfer::Mynick() const
 {
+    BTCB();
     NFT("DccXfer::Mynick");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Mynick"));
     RET(i_Mynick);
+    ETCB();
 }
 
 mstring DccXfer::Source() const
 {
+    BTCB();
     NFT("DccXfer::Source");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
     RET(i_Source);
+    ETCB();
 }
 
 mstring DccXfer::Filename() const
 {
+    BTCB();
     NFT("DccXfer::Filename");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Filename"));
     RET(i_Filename);
+    ETCB();
 }
 
 size_t DccXfer::Filesize() const
 {
+    BTCB();
     NFT("DccXfer::Filesize");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Filesize"));
     RET(i_Filesize);
+    ETCB();
 }
 
 size_t DccXfer::Total() const
 {
+    BTCB();
     NFT("DccXfer::Total");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     RET(i_Total);
+    ETCB();
 }
 
 mDateTime DccXfer::LastData() const
 {
+    BTCB();
     NFT("DccXfer::LastData");
     RLOCK(("DccMap", "xfers", i_DccId, "i_LastData"));
     RET(i_LastData);
+    ETCB();
 }
 
 void DccXfer::ChgNick(const mstring & in)
 {
+    BTCB();
     FT("DccXfer::ChgNick", (in));
     WLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
     MCB(i_Source);
     i_Source = in;
     MCE(i_Source);
+    ETCB();
 }
 
 void DccXfer::Cancel()
 {
+    BTCB();
     NFT("DccXfer::Cancel");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
     WLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
@@ -1304,10 +1426,12 @@ void DccXfer::Cancel()
     i_File.Close();
     CE(1, i_File.Length());
     MCE(i_Total);
+    ETCB();
 }
 
 void DccXfer::Action()
 {
+    BTCB();
     NFT("DccXfer::Action");
     long XferAmt = 0, TranSz = 0;
     unsigned long verify;
@@ -1492,10 +1616,12 @@ void DccXfer::Action()
 	}
     }
     DumpE();
+    ETCB();
 }
 
 size_t DccXfer::Average(time_t secs) const
 {
+    BTCB();
     FT("DccXfer::Average", (secs));
     time_t now = time(NULL);
     size_t total = 0;
@@ -1515,10 +1641,12 @@ size_t DccXfer::Average(time_t secs) const
 	}
     }
     RET(total / (i ? i : 1));
+    ETCB();
 }
 
 size_t DccXfer::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK(("DccMap", "xfers", i_DccId));
@@ -1543,33 +1671,41 @@ size_t DccXfer::Usage() const
     }
 
     return retval;
+    ETCB();
 }
 
 void DccXfer::DumpB() const
 {
+    BTCB();
     MB(0,
        (i_Socket.Last_Error(), i_File.Length(), i_Source, i_Mynick, i_Tempfile, i_Filename, i_Blocksize, i_XferTotal, i_Total,
 	i_Filesize, i_Type, i_DccId, i_Transiant, i_LastData, i_Traffic.size()));
+    ETCB();
 }
 
 void DccXfer::DumpE() const
 {
+    BTCB();
     ME(0,
        (i_Socket.Last_Error(), i_File.Length(), i_Source, i_Mynick, i_Tempfile, i_Filename, i_Blocksize, i_XferTotal, i_Total,
 	i_Filesize, i_Type, i_DccId, i_Transiant, i_LastData, i_Traffic.size()));
+    ETCB();
 }
 
 int DccMap::open(void *in)
 {
+    BTCB();
     FT("DccMap::open", ("(void *) in"));
     magick_instance = reinterpret_cast < Magick * > (in);
     int retval = activate();
 
     RET(retval);
+    ETCB();
 }
 
 int DccMap::close(const unsigned long in)
 {
+    BTCB();
     static_cast < void > (in);
 
     FT("DccMap::close", (in));
@@ -1592,10 +1728,12 @@ int DccMap::close(const unsigned long in)
 	RemXfers(iter->first);
 
     RET(0);
+    ETCB();
 }
 
 int DccMap::svc(void)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     Magick::register_instance(magick_instance);
     NFT("DccMap::svc");
@@ -1672,6 +1810,7 @@ int DccMap::svc(void)
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
     DRET(0);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1680,6 +1819,7 @@ void DccMap::AddXfers(DccXfer * in) throw (E_DccMap_Xfers)
 void DccMap::AddXfers(DccXfer * in)
 #endif
 {
+    BTCB();
     FT("DccMap::AddXfers", ("(DccXfer *) in"));
 
     if (in == NULL)
@@ -1703,6 +1843,7 @@ void DccMap::AddXfers(DccXfer * in)
 
     WLOCK(("DccMap", "xfers"));
     xfers[in->DccId()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1711,6 +1852,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in) throw (E_DccMap_Xfers)
 DccXfer &DccMap::GetXfers(const unsigned long in)
 #endif
 {
+    BTCB();
     FT("DccMap::GetXfers", (in));
 
     RLOCK(("DccMap", "xfers", in));
@@ -1744,6 +1886,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
     }
 
     NRET(DccXfer &, const_cast < DccXfer & > (*iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1752,6 +1895,7 @@ void DccMap::RemXfers(const unsigned long in) throw (E_DccMap_Xfers)
 void DccMap::RemXfers(const unsigned long in)
 #endif
 {
+    BTCB();
     FT("DccMap::RemXfers", (in));
 
     WLOCK(("DccMap", "xfers"));
@@ -1771,6 +1915,7 @@ void DccMap::RemXfers(const unsigned long in)
 	delete iter->second;
     }
     xfers.erase(iter);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1779,6 +1924,7 @@ bool DccMap::IsXfers(const unsigned long in) throw (E_DccMap_Xfers)
 bool DccMap::IsXfers(const unsigned long in)
 #endif
 {
+    BTCB();
     FT("DccMap::IsXfers", (in));
 
     RLOCK(("DccMap", "xfers", in));
@@ -1806,6 +1952,7 @@ bool DccMap::IsXfers(const unsigned long in)
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1814,6 +1961,7 @@ vector < unsigned long > DccMap::GetList(const mstring & in) throw (E_DccMap_Xfe
 vector < unsigned long > DccMap::GetList(const mstring & in)
 #endif
 {
+    BTCB();
     FT("DccMap::GetList", (in));
     vector < unsigned long > retval;
 
@@ -1844,10 +1992,13 @@ vector < unsigned long > DccMap::GetList(const mstring & in)
 	    retval.push_back(iter->first);
     }
     NRET(vector < unsigned long >, retval);
+
+    ETCB();
 }
 
 void *DccMap::Connect2(void *in)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     FT("DccMap::Connect2", ("(void *) in"));
 
@@ -1891,10 +2042,12 @@ void *DccMap::Connect2(void *in)
 
     Magick::deregister_instance();
     DRET(0);
+    ETCB();
 }
 
 void *DccMap::Accept2(void *in)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     FT("DccMap::Accept2", ("(void *) in"));
 
@@ -1938,11 +2091,13 @@ void *DccMap::Accept2(void *in)
 
     Magick::deregister_instance();
     DRET(0);
+    ETCB();
 }
 
 void DccMap::Connect(const ACE_INET_Addr & address, const mstring & mynick, const mstring & source, const mstring & filename,
 		     const size_t filesize, const size_t blocksize)
 {
+    BTCB();
     FT("DccMap::Connect", ("(ACE_INET_Addr) address", mynick, source, filename, filesize, blocksize));
     NewSocket *tmp = new NewSocket;
 
@@ -1955,11 +2110,13 @@ void DccMap::Connect(const ACE_INET_Addr & address, const mstring & mynick, cons
     tmp->blocksize = blocksize;
 
     thr_mgr()->spawn(Connect2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
+    ETCB();
 }
 
 void DccMap::Accept(const unsigned short port, const mstring & mynick, const mstring & source,
 		    const FileMap::FileType filetype, const unsigned long filenum)
 {
+    BTCB();
     FT("DccMap::Accept", (port, mynick, source, static_cast < int > (filetype), filenum));
     NewSocket *tmp = new NewSocket;
 
@@ -1971,10 +2128,12 @@ void DccMap::Accept(const unsigned short port, const mstring & mynick, const mst
     tmp->filenum = filenum;
 
     thr_mgr()->spawn(Accept2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
+    ETCB();
 }
 
 void DccMap::Cancel(const unsigned long DccId, const bool silent)
 {
+    BTCB();
     FT("DccMap::Cancel", (DccId, silent));
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -2007,4 +2166,5 @@ void DccMap::Cancel(const unsigned long DccId, const bool silent)
     }
 #endif
     thr_mgr()->cancel_all();
+    ETCB();
 }

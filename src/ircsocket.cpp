@@ -46,6 +46,7 @@ static const char *immediate_process[] =
 
 void *IrcSvcHandler::worker(void *in)
 {
+    BTCB();
     mThread::Attach(tt_mBase);
     Magick::register_instance(reinterpret_cast < Magick * > (in));
     FT("IrcSvcHandler::worker", (in));
@@ -130,10 +131,13 @@ void *IrcSvcHandler::worker(void *in)
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
     DTRET(static_cast < void * > (NULL));
+
+    ETCB();
 }
 
 int IrcSvcHandler::open(void *in)
 {
+    BTCB();
     static_cast < void > (in);
 
     //mThread::Attach(tt_MAIN);
@@ -162,10 +166,12 @@ int IrcSvcHandler::open(void *in)
     DumpB();
     CP(("IrcSvcHandler activated"));
     RET(0);
+    ETCB();
 }
 
 int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 {
+    BTCB();
     static_cast < void > (hin);
 
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
@@ -182,10 +188,12 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
     recvResult = handle_input(data);
     RET(recvResult);
+    ETCB();
 }
 
 int IrcSvcHandler::handle_input(const char *data)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
 
@@ -310,10 +318,12 @@ int IrcSvcHandler::handle_input(const char *data)
 
     Magick::instance().hh.Heartbeat();
     DRET(0);
+    ETCB();
 }
 
 int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 {
+    BTCB();
     static_cast < void > (h);
     static_cast < void > (mask);
 
@@ -475,45 +485,57 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 #endif
 //  this->destroy();
     DRET(0);
+    ETCB();
 }
 
 int IrcSvcHandler::fini()
 {
+    BTCB();
     return sock.IsConnected() ? 0 : 1;
+    ETCB();
 }
 
 time_t IrcSvcHandler::HTM_Gap() const
 {
+    BTCB();
     NFT("IrcSvcHandler::HTM_Gap");
     RLOCK(("IrcSvcHandler", "htm_gap"));
     RET(htm_gap);
+    ETCB();
 }
 
 unsigned short IrcSvcHandler::HTM_Level() const
 {
+    BTCB();
     NFT("IrcSvcHandler::HTM_Level");
     RLOCK(("IrcSvcHandler", "htm_level"));
     RET(htm_level);
+    ETCB();
 }
 
 size_t IrcSvcHandler::HTM_Threshold() const
 {
+    BTCB();
     NFT("IrcSvcHandler::HTM_Threshold");
     RLOCK(("IrcSvcHandler", "htm_threshold"));
     RET(htm_threshold);
+    ETCB();
 }
 
 void IrcSvcHandler::HTM_Threshold(const size_t in)
 {
+    BTCB();
     FT("IrcSvcHandler::HTM_Threshold", (in));
     WLOCK(("IrcSvcHandler", "htm_threshold"));
     MCB(htm_threshold);
     htm_threshold = in;
     MCE(htm_threshold);
+    ETCB();
 }
 
 void IrcSvcHandler::HTM(const bool in)
 {
+    BTCB();
     FT("IrcSvcHandler::HTM", (in));
     WLOCK(("IrcSvcHandler", "last_htm_check"));
     WLOCK2(("IrcSvcHandler", "htm_level"));
@@ -535,10 +557,12 @@ void IrcSvcHandler::HTM(const bool in)
     CE(1, htm_level);
     CE(2, htm_gap);
     MCE(last_htm_check);
+    ETCB();
 }
 
 size_t IrcSvcHandler::Average(time_t secs) const
 {
+    BTCB();
     FT("IrcSvcHandler::Average", (secs));
     time_t now = time(NULL);
     size_t total = 0;
@@ -557,34 +581,42 @@ size_t IrcSvcHandler::Average(time_t secs) const
 	}
     }
     RET(total / (i ? i : 1));
+    ETCB();
 }
 
 bool IrcSvcHandler::Burst() const
 {
+    BTCB();
     NFT("IrcSvcHandler::Burst");
     RLOCK(("IrcSvcHandler", "i_burst"));
     RET(i_burst);
+    ETCB();
 }
 
 float IrcSvcHandler::BurstTime() const
 {
+    BTCB();
     NFT("IrcSvcHandler::BurstTime");
     RLOCK(("IrcSvcHandler", "connect_time"));
     RLOCK2(("IrcSvcHandler", "i_synctime"));
     float retval = static_cast < float > ((i_synctime - connect_time).asMSeconds() / 1000000.0);
 
     RET(retval);
+    ETCB();
 }
 
 mDateTime IrcSvcHandler::SyncTime() const
 {
+    BTCB();
     NFT("IrcSvcHandler::SyncTime");
     RLOCK(("IrcSvcHandler", "i_synctime"));
     RET(i_synctime);
+    ETCB();
 }
 
 void IrcSvcHandler::EndBurst()
 {
+    BTCB();
     NFT("IrcSvcHandler::EndBurst");
     WLOCK(("IrcSvcHandler", "i_burst"));
     WLOCK2(("IrcSvcHandler", "i_synctime"));
@@ -594,10 +626,12 @@ void IrcSvcHandler::EndBurst()
     i_synctime = mDateTime::CurrentDateTime();
     CE(1, i_synctime);
     MCE(i_burst);
+    ETCB();
 }
 
 int IrcSvcHandler::send(const mstring & data)
 {
+    BTCB();
     FT("IrcSvcHandler::send", (data));
     int recvResult = 0;
     mstring tmp(data);
@@ -614,10 +648,12 @@ int IrcSvcHandler::send(const mstring & data)
 
     CH(D_To, tmp);
     RET(recvResult);
+    ETCB();
 }
 
 void IrcSvcHandler::enqueue(mMessage * mm)
 {
+    BTCB();
     FT("IrcSvcHandler::enqueue", (mm));
 
     if (mm == NULL)
@@ -667,10 +703,12 @@ void IrcSvcHandler::enqueue(mMessage * mm)
 
 	message_queue.enqueue(mm);
     }
+    ETCB();
 }
 
 void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 {
+    BTCB();
     FT("IrcSvcHandler::enqueue", (message, pri));
     CH(D_From, message);
 
@@ -812,48 +850,60 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
     {
 	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
     }
+    ETCB();
 }
 
 void IrcSvcHandler::enqueue_shutdown()
 {
+    BTCB();
     NFT("IrcSvcHandler::enqueue_shutdown");
     mMessage *msg = new mMessage(" ", "SHUTDOWN", "", P_System);
 
     message_queue.enqueue(msg);
+    ETCB();
 }
 
 void IrcSvcHandler::enqueue_sleep(const mstring & in)
 {
+    BTCB();
     NFT("IrcSvcHandler::enqueue_sleep");
     mMessage *msg = new mMessage(" ", "SLEEP", in, P_System);
 
     message_queue.enqueue(msg);
+    ETCB();
 }
 
 void IrcSvcHandler::enqueue_test()
 {
+    BTCB();
     NFT("IrcSvcHandler::enqueue_test");
     mMessage *msg = new mMessage(" ", "TEST", "", P_System);
 
     message_queue.enqueue(msg);
+    ETCB();
 }
 
 void IrcSvcHandler::DumpB() const
 {
+    BTCB();
     MB(0,
        (traffic.size(), in_traffic, out_traffic, connect_time, last_htm_check, htm_level, htm_gap, htm_threshold, i_burst,
 	i_synctime));
+    ETCB();
 }
 
 void IrcSvcHandler::DumpE() const
 {
+    BTCB();
     ME(0,
        (traffic.size(), in_traffic, out_traffic, connect_time, last_htm_check, htm_level, htm_gap, htm_threshold, i_burst,
 	i_synctime));
+    ETCB();
 }
 
 int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
+    BTCB();
     static_cast < void > (tv);
     static_cast < void > (arg);
 
@@ -1052,35 +1102,44 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
     Magick::instance().reactor().schedule_timer(this, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
     DRET(0);
+    ETCB();
 }
 
 void Heartbeat_Handler::AddThread(heartbeat_enum type, ACE_thread_t id)
 {
+    BTCB();
     FT("Heartbeat_Handler::AddThread", (static_cast < int > (type), id));
     WLOCK(("Heartbeat_Handler", "threads"));
     threads[id] = triplet < heartbeat_enum, mDateTime, bool > (type, mDateTime::CurrentDateTime(), true);
+
+    ETCB();
 }
 
 void Heartbeat_Handler::RemoveThread(ACE_thread_t id)
 {
+    BTCB();
     FT("Heartbeat_Handler::RemoveThread", (id));
     WLOCK(("Heartbeat_Handler", "threads"));
     threads_t::iterator iter = threads.find(id);
     if (iter != threads.end())
 	threads.erase(iter);
+    ETCB();
 }
 
 void Heartbeat_Handler::Heartbeat(ACE_thread_t id)
 {
+    BTCB();
     FT("Heartbeat_Handler::Heartbeat", (id));
     WLOCK(("Heartbeat_Handler", "threads"));
     threads_t::iterator iter = threads.find(id);
     if (iter != threads.end())
 	iter->second.second = mDateTime::CurrentDateTime();
+    ETCB();
 }
 
 Heartbeat_Handler::heartbeat_enum Heartbeat_Handler::ThreadType(ACE_thread_t id)
 {
+    BTCB();
     FT("Heartbeat_Handler::Heartbeat", (id));
 
     heartbeat_enum retval = H_Invalid;
@@ -1092,10 +1151,12 @@ Heartbeat_Handler::heartbeat_enum Heartbeat_Handler::ThreadType(ACE_thread_t id)
 	    retval = iter->second.first;
     }
     RET(retval);
+    ETCB();
 }
 
 size_t Heartbeat_Handler::size()
 {
+    BTCB();
     NFT("Heartbeat_Handler::size");
     size_t retval = 0;
 
@@ -1104,10 +1165,12 @@ size_t Heartbeat_Handler::size()
 	retval = threads.size();
     }
     RET(retval);
+    ETCB();
 }
 
 size_t Heartbeat_Handler::count(heartbeat_enum type)
 {
+    BTCB();
     FT("Heartbeat_Handler::count", (static_cast < int > (type)));
     size_t retval = 0;
 
@@ -1120,10 +1183,12 @@ size_t Heartbeat_Handler::count(heartbeat_enum type)
     }
 
     RET(retval);
+    ETCB();
 }
 
 mstring Reconnect_Handler::FindNext(const mstring & i_server)
 {
+    BTCB();
     FT("Reconnect_Handler::FindNext", (i_server));
     mstring result, server(i_server.LowerCase());
 
@@ -1162,10 +1227,12 @@ mstring Reconnect_Handler::FindNext(const mstring & i_server)
 	}
     }
     RET("");
+    ETCB();
 }
 
 int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
+    BTCB();
     static_cast < void > (tv);
     static_cast < void > (arg);
 
@@ -1199,10 +1266,12 @@ int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *ar
     }
 
     DRET(0);
+    ETCB();
 }
 
 int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
+    BTCB();
     static_cast < void > (tv);
     static_cast < void > (arg);
 
@@ -1352,10 +1421,12 @@ CE(1, Magick::instance().i_currentserver);
 Magick::instance().DumpE();
 
 DRET(0);
+ETCB();
 }
 
      int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
      {
+	 BTCB();
 	 mThread::Attach(tt_MAIN);
 	 // We ONLY get here if we didnt receive a SQUIT message in <10s
 	 // after any QUIT message with 2 valid servers in it
@@ -1450,10 +1521,12 @@ DRET(0);
 	 delete tmp;
 
 	 DRET(0);
+	 ETCB();
      }
 
 int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
@@ -1537,10 +1610,12 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     delete tmp;
 
     DRET(0);
+    ETCB();
 }
 
 int InFlight_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     // Memo timed out, send it!
     // If its a file, and not inprogress, ignore.
@@ -1570,10 +1645,12 @@ int InFlight_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     delete tmp;
 
     DRET(0);
+    ETCB();
 }
 
 int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     static_cast < void > (tv);
@@ -1679,74 +1756,91 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     delete tmp;
 
     DRET(0);
+    ETCB();
 }
 
 void *EventTask::save_databases(void *in)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     FT("EventTask::save_databases", (in));
     Magick::register_instance(reinterpret_cast < Magick * > (in));
     Magick::instance().save_databases();
     Magick::deregister_instance();
     DTRET(static_cast < void * > (NULL));
+
+    ETCB();
 }
 
 void EventTask::AddChannelModePending(const mstring & in)
 {
+    BTCB();
     FT("EventTask::AddChannelModePending", (in));
     WLOCK(("Events", "cmodes_pending"));
     MCB(cmodes_pending.size());
     cmodes_pending.insert(in);
     MCE(cmodes_pending.size());
+    ETCB();
 }
 
 void EventTask::ForceSave()
 {
+    BTCB();
     NFT("EventTask::ForceSave");
     WLOCK(("Events", "last_save"));
     MCB(last_save);
     last_save = mDateTime(0.0);
     MCE(last_save);
+    ETCB();
 }
 
 void EventTask::ForcePing()
 {
+    BTCB();
     NFT("EventTask::ForcePing");
     WLOCK(("Events", "last_ping"));
     MCB(last_ping);
     last_ping = mDateTime(0.0);
     MCE(last_ping);
+    ETCB();
 }
 
 mstring EventTask::SyncTime(const mstring & source) const
 {
+    BTCB();
     FT("EventTask::SyncTime", (source));
     RLOCK(("Events", "last_save"));
     mstring retval = ToHumanTime(Magick::instance().config.Savetime() - last_save.SecondsSince(), source);
 
     RET(retval);
+    ETCB();
 }
 
 int EventTask::open(void *in)
 {
+    BTCB();
     FT("EventTask::open", ("(void *) in"));
     magick_instance = reinterpret_cast < Magick * > (in);
     int retval = activate();
 
     RET(retval);
+    ETCB();
 }
 
 int EventTask::close(u_long in)
 {
+    BTCB();
     static_cast < void > (in);
 
     FT("EventTask::close", (in));
     // dump all and close open file handles.
     RET(0);
+    ETCB();
 }
 
 int EventTask::svc(void)
 {
+    BTCB();
     mThread::Attach(tt_MAIN);
     Magick::register_instance(magick_instance);
     // The biggie, so big, it has its own zip code ... uhh .. thread.
@@ -2068,10 +2162,12 @@ int EventTask::svc(void)
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
     DRET(0);
+    ETCB();
 }
 
 void EventTask::do_expire(mDateTime & synctime)
 {
+    BTCB();
     CP(("Starting EXPIRATION check ..."));
 
     static_cast < void > (synctime);
@@ -2282,10 +2378,12 @@ void EventTask::do_expire(mDateTime & synctime)
     {
 	e.what();
     }
+    ETCB();
 }
 
 void EventTask::do_check(mDateTime & synctime)
 {
+    BTCB();
     CP(("Starting CHECK cycle ..."));
 
     NickServ::live_t::iterator nli;
@@ -2440,10 +2538,12 @@ void EventTask::do_check(mDateTime & synctime)
 	    Magick::instance().server.QUIT(chunked[i], "RECOVER period expired");
 	}
     }
+    ETCB();
 }
 
 void EventTask::do_modes(mDateTime & synctime)
 {
+    BTCB();
     CP(("Starting PENDING MODES check ..."));
 
     static_cast < void > (synctime);
@@ -2556,10 +2656,12 @@ void EventTask::do_modes(mDateTime & synctime)
 	for (i = 0; i < ml->second.size(); i++)
 	    Magick::instance().server.MODE(Magick::instance().chanserv.FirstName(), ml->first, ml->second[i]);
     }
+    ETCB();
 }
 
 void EventTask::do_msgcheck(mDateTime & synctime)
 {
+    BTCB();
     CP(("Starting EXPIRED MESSAGE check ..."));
 
     static_cast < void > (synctime);
@@ -2630,10 +2732,12 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 	    }
 	}
     }
+    ETCB();
 }
 
 void EventTask::do_ping(mDateTime & synctime)
 {
+    BTCB();
     CP(("Starting SERVER PING ..."));
 
     static_cast < void > (synctime);
@@ -2687,14 +2791,19 @@ void EventTask::do_ping(mDateTime & synctime)
 	    NLOG(LM_TRACE, "EVENT/PING");
 	}
     }
+    ETCB();
 }
 
 void EventTask::DumpB() const
 {
+    BTCB();
     MB(0, (last_expire, last_save, last_check, last_ping));
+    ETCB();
 }
 
 void EventTask::DumpE() const
 {
+    BTCB();
     ME(0, (last_expire, last_save, last_check, last_ping));
+    ETCB();
 }
