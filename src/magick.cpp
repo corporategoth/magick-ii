@@ -369,7 +369,7 @@ int Magick::Start()
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
 #ifndef WIN32
-    if (!i_fork && firstrun)
+    if (i_fork && firstrun)
     {
 	NLOG(LM_STARTUP, "COMMANDLINE/START_FORK");
 	errno = 0;
