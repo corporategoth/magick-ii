@@ -1,0 +1,372 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; English On-Line Language File
+; Translated By: Preston A. Elder <prez@magick.tm>
+;
+; --------------------------------------------------------------
+;
+; Throughout this file there are verious codes used for various
+; purposed, from making it look prettier on IRC, to replacing
+; the code with a value direct from Magick.  There are three
+; tables listed below which outline the codes and their meanings.
+;
+; The C replacement codes are used to insert a value from Magick
+; into the string.  These should NEVER be removed, they mey be
+; moved around, but NOT removed (if removed, results are very
+; unpredictable!).  These are also known as 'live' codes.
+;
+; The IRC beautifying codes are generally accepted codes that
+; have a certain function, on ALL IRC clients.  The codes listed
+; are all 'control' codes, meaning you hold control then push
+; the key listed to insert the code.
+;
+; The mIRC colour codes are here for convenience, but it is NOT
+; recommended you use them, as there are alot of IRC clients
+; (especially unix based) that will not be able to understand
+; them and make the output unreadable.  When using these codes,
+; to change just the foreground you use ^C# where # is the colour
+; code.  For foreground and background, you use ^C#,#.  To reset
+; the text back to 'no colour' you just use ^C.
+;
+; --------------------------------------------------------------
+;
+; C replacement codes:
+;   %s = String		%c = Single Character
+;   %d = Integer	%l = Numeric (with DP's)
+;   %o = Octal		%x = Hexidecimal
+;   %% = Literal %
+; The DP in %l can be moved by telling it how many numbers
+; are to appear before and after the DP.  eg. %3.2l for 3
+; numbers before, and 2 after the decimal point.
+;
+; IRC beautifying codes:
+;   ^B () = BOLD	- Make text between look brighter
+;   ^_ () = UNDERLINE	- Underline text between
+;   ^V () = REVERSE	- Switch foreground and background
+;   ^O () = CANCEL	- Back to non-bold/underline/reverse
+;   ^C () = COLOUR	- See below
+;
+; mIRC colour codes:
+;   0 = White		8  = Yellow
+;   1 = Black		9  = Bright Green
+;   2 = Blue		10 = Cyan
+;   3 = Green		11 = Bright Cyan
+;   4 = Red		12 = Bright Blue
+;   5 = Orange		13 = Bright Magenta
+;   6 = Magenta		14 = Grey
+;   7 = Bright Red	15 = Bright Grey
+; 
+
+; Command syntax errors.
+[ERR/SYNTAX]
+UNKNOWN_COMMAND    =Unrecognized command %s.  Type /msg %s HELP for help.
+UNKNOWN_OPTION     =Unrecognized option %s.  Type /msg %s HELP %s for help.
+MORE_INFO          =Type /msg %s HELP %s for more information.
+NOHELP             =No help available for command %s.
+STARTHRESH         =Entry must have at least %d non-*, ? or . characters.
+NEED_MLOCK_PARAM   =Paramater required for MLOCK +%c.
+MLOCK_POSITIVE     =Paramater for MLOCK +%c must be positive.
+MLOCK_UNKNOWN      =Unknown MLOCK character %c ignored.
+SECURE_NICKS       =SECURE access lists may only contain registered nicknames.
+FORMATTING         =You must specify %s only.
+MAY_NOT_HAVE       =You may not use a %c character.
+MUST_HAVE          =You must include a %c character.
+
+; Access denied, for some reason
+[ERR/DENIED]
+WRONG_PASSWORD     =Password incorrect.
+ACCESS_DENIED      =Access denied.
+SUSPENDED_NICK     =Access denied for SUSPENDED nicknames.
+SUSPENDED_CHAN     =Access denied for SUSPENDED channels.
+TEMP_DISABLED      =Sorry, %s is temporarily disabled.
+FAILED             =Sorry, %s failed.
+YOU_DONT_EXIST     =Sorry, could not obtain your user information.
+CHAN_NOTVALID      =%s is not a valid channel name.
+READ_ONLY          =WARNING: Services are in read-only mode, changes will not be saved.
+
+; Need more confirmation user is who they say they are.
+[ERR/VERIFY]
+NEED_PASSWORD      =Password identification required for %s.
+NEED_OPS           =You must be a channel operator for %s.
+IDENT_NICK_FIRST   =Please retry after typing /MSG %s IDENTIFY password.
+IDENT_CHAN_FIRST   =Please retry after typing /MSG %s IDENTIFY %s password.
+NICK_FORBIDDEN     =This nickname may not be used.  Please choose another.
+NICK_OWNED         =This nickname is owned by someone else.  Please choose another.
+NICK_SECURE        =This nickname is registered and protected.
+NICK_IDENTIFY      =If this is your nick, type /MSG %s IDENTIFY password
+WILL_KILL_YOU      =If you do not change within one minute, you will be disconnected.
+
+; They are (or the target is) the wrong kind of person.
+[ERR/PERSON]
+MUST_BE_HOST       =%s must be done as the HOST nickname.
+CANT_BE_HOST       =%s may not be done as the HOST nickname.
+MUST_BE_LINK       =%s must be done as a LINKED nickname.
+CANT_BE_LINK       =%s may not be done on a LINKED nickname.
+MUST_BETO_HOST     =%s must be performed on a HOST nickname.
+CANT_BETO_HOST     =%s may not be performed on a HOST nickname.
+MUST_BETO_LINK     =%s must be performed on a LINKED nickname.
+CANT_BETO_LINK     =%s may not be performed on a LINKED nickname.
+NOT_ON_YOURSELF    =%s may not be performed on yourself.
+NOT_ON_IRCOP       =%s may not be performed on an IRC Operator.
+ONLY_ON_IRCOP      =%s may only be performed on an IRC Operator.
+MUST_BE_IRCOP      =You must have the IRC Operator flag set to %s.
+
+; Displayed on SET's and LIST's
+[DISPLAY/INFO]
+SYNC_TIME          =Databases will sync in %s.
+LIST_MATCH         =List of entries matching %s:
+END_OF_LIST        =End of list - %d/%d matches shown.
+EMAIL              =E-Mail
+URL                =WWW Page (URL)
+FOUNDER            =Founder
+DESC               =Description
+MLOCK              =Mode Lock
+JOIN               =ChanServ Join
+
+; Generic list modification
+[DISPLAY/LISTS]
+THERE              =%s is already present (or inclusive) on %s %s list.
+NOT_THERE          =%s not found on %s %s list.
+NOT_FOUND          =No such entry #%d on %s %s list.
+ADDED              =%s has been added to %s %s list.
+ADDED_AT           =%s has been added to %s %s at %s.
+REMOVED            =%s has been removed from %s %s list.
+REMOVED_NUM        =Entry #%d has been removed from %s %s list.
+REMOVED_MASK       =%d entr%s matching %s removed from %s %s list.
+REMOVED_ALL        =All entries on %s %s list removed.
+UNCHANGED          =%s unchanged on %s %s list at %s.
+CHANGED            =%s changed on %s %s list to %s.
+LIMIT              =Sorry, you may only have %d entries on %s %s list.
+
+; Command displays that are relivant for more than one command
+[DISPLAY/COMMAND]
+GETPASS            =Password for %s (%s) is %s.
+GETPASS_WALLOP     =%s used GETPASS on %s (%s).
+FORBID             =%s has been FORBIDDEN.
+SUSPEND            =%s (%s) has been SUSPENDED.
+UNSUSPEND          =%s (%s) has been UNSUSPENDED.
+
+; Global messages (GLOBOPS or GLOBAL) for change in circumstances
+[DISPLAY/GLOBAL]
+FLOODING           =%s is FLOODING services (placed on %s ignore).
+TEMP_FLOOD         =Services FLOOD triggered (>%d messages in %d seconds).  You are being ignored for %d seconds.
+PERM_FLOOD         =Services FLOOD triggered >%d times in one connection.  You are now on perminant ignore.
+IS_IGNORED         =You have triggered PERM ignore on a previous connection.  You will not be answered by services.
+SERVICES_OFF_REASON=Services are currently OFF (%s).
+SERVICES_OFF       =Services are currently OFF.
+SERVICES_ON        =Services have now been switched back ON - Please use them at will.
+ONOFF_NOTIFY       =Services switched %s by request of %s.
+
+; NickServ INFO display
+[NS/INFO]
+INTRO              =%s is %s
+HOST               =        Host Nick: %s
+EMAIL              =   E-Mail Address: %s
+URL                =   WWW Page (URL): %s
+SUSPENDED          =    Suspended For: %s
+USERMASK           =Last Seen Address: %s
+REGISTERED         =       Registered: %s ago
+ONLINE_AS          =        Online As: %s
+AONLINE_AS         =   Also Online As: %s
+LAST_SEEN          =        Last Seen: %s ago
+LAST_ONLINE        =      Last Online: %s ago
+OPTIONS            =          Options: %s
+COUNT              =%d nicknames currently registered.
+ONLINE             =This user is currently online, type /whois %s for more information.
+
+; Flags a nick can have set
+[NS/FLAGS]
+SUSPENDED          =SUSPENDED USER
+KILLPROTECT        =Kill Protection
+SECURE             =Security
+PRIVATE            =Private
+IRCOP              =IRC Operator
+SOP                =Services Operator
+NONE               =None
+
+; Output from NickServ commands
+[NS/COMMAND]
+REGISTERED         =Your nickname is now registered under host %s.
+LINKED             =Your nickname has now been linked to %s.
+DROPPED            =Nickname %s%s%s%s has been dropped.
+CHANGE_PASSWORD    =Your password is now %s - Please remember this for later use.
+KILLED_IMPOSTER    =User claiming your nickname has been killed.
+RELEASE            =Type /MSG %s RELEASE %s password to use it before the one-minute timeout.
+FORCED_CHANGE      =Your nickname has been forcibly changed.
+FORCED_KILL        =Nickname protection enforced
+FAILMAX_KILL       =Repeated password failure
+GHOST_KILL         =Removing GHOST user
+IDENTIFIED         =Password accepted - you are now recognized.
+FORBID_WALLOP      =%s used FORBID on nickname %s (%d slave nicks dropped).
+
+; Ownership and staus issues.
+[NS/OWNER]
+NOT_YOURS          =Nickname %s does not belong to you.
+IN_USE             =Nickname %s is currently in use.
+NOT_IN_USE         =Nickname %s is not currently in use.
+YOU_NO_SLAVES      =You have no slave nicks.
+NO_SLAVES          =Nickname %s has no slave nicks.
+YOU_NOT_REGISTERED =Your nickname is not registered.
+NOT_REGISTERED     =Nickname %s is not registered.
+TAKEN              =Nickname %s is already registered.
+CANNOT_REGISTER    =Nickname %s may not be registered.
+CANNOT_LINK        =Nickname %s may not be linked.
+AM_IGNORED         =%s is ignoring your memos.
+IS_SUSPENDED_MEMO  =%s is SUSPENDED, therefore may not retrieve memos.
+IS_SUSPENDED       =Nickname %s is SUSPENDED.
+IS_NOT_SUSPENDED   =Nickname %s is not SUSPENDED.
+
+; ChanServ INFO display
+[CS/INFO]
+INTRO              =Information on channel %s
+FOUNDER            =       Founder: %s%s%s%s
+DESC               =   Description: %s
+URL                =WWW Page (URL): %s
+REG_TIME           =    Registered: %s ago
+LAST_USED          =     Last Used: %s ago
+SUSPENDED          = Suspended For: %s
+SUSPENDER          =  Suspended By: %s
+TOPIC              =    Last Topic: %s
+TOPIC_SET          =  Topic Set By: %s
+REVENGE            = Revenge Level: %s
+CHAN_STAT          = Channel Stats: %d user%s, %d voice%s, %d op%s.
+OPTIONS            =       Options: %s
+MLOCK              =     Mode Lock: %s
+COUNT              =%d channels currently registered.
+
+; Flags a channel can have set
+[CS/FLAGS]
+SUSPENDED          =SUSPENDED CHANNEL
+PRIVATE            =Private
+KEEPTOPIC          =Topic Retention
+TOPICLOCK          =Topic Lock
+SECUREOPS          =Secure Ops
+SECURE             =Secure
+RESTRICTED         =Restricted
+NONE               =None
+
+; ChanServ REVENGE and other bitchy functions
+[CS/BITCH]
+REV_LEVEL          =Revenge level for %s currently at %s (%s).
+REV_SET            =Revenge level for %s set to %s (%s).
+REV_DEOP           =REVENGE - Do not deop %s.
+REV_KICK           =REVENGE - Do not kick %s.
+REV_BAN            =REVENGE - Do not ban %s.
+SUSPENDED_TOPIC    =[SUSPENDED] %s [SUSPENDED]
+FORBID_WALLOP      =%s used FORBID on channel %s.
+
+; Access and Level function displays
+[CS/ACCESS]
+LEVEL_YOU          =You can %s.
+LEVEL_LIST         =Level required for commands on %s:
+LEVEL_LOW          =Cannot change levels below %d.
+LEVEL_HIGH         =Cannot change levels above %d.
+LEVEL_CHANGE       =Level for %s on %s changed to %d.
+LEVEL_NO_CHANGE    =Level for %s on %s unchanged at %d.
+LEVEL_RESET        =All levels for %s reset.
+LEVEL_NONE         =Unknown level type %s.
+ACCESS_ZERO        =Access levels must be non-zero.
+ACCESS_LOW         =Cannot add or change to access levels below %d.
+ACCESS_HIGH        =Cannot add or change to access levels above %d.
+ACCESS_HIGHER      =Sorry, %s is higher or equal on access list.
+ACCESS_HIGHER_MATCH=Sorry, %s matches %s (higher or equal on access list).
+
+; Output from ChanServ commands
+[CS/COMMAND]
+REGISTERED         =Channel %s has been registered under your nickname %s.
+DROPPED            =Channel %s has been dropped.
+CHANGE_PASSWORD    =Channel %s password is now %s - Please remember this for later use.
+IDENTIFIED         =Password accepted - you now have founder access to %s.
+YOU_UNBANNED       =You have been unbanned from %s.
+UNBANNED           =%s has been unbanned from %s.
+CLEARED            =%s have been cleared from channel %s.
+CLEAR_KICK         =CLEAR USERS command from %s
+
+; Ownership and status issues
+[CS/OWNER]
+SUSPENDED          =Channel %s is currently SUSPENDED, no ops/voices will be allowed.
+REGISTERED         =Channel %s is a registered channel, access privilages apply.
+IN_USE             =Channel %s is currently in use.
+NOT_IN_USE         =Channel %s is not currently in use.
+NOT_REGISTERED     =Channel %s is not registered.
+TAKEN              =Channel %s is already registered.
+CANNOT_REGISTER    =Channel %s may not be registered.
+FORBIDDEN          =Channel %s may not be used.
+GET_OUT            =You are not permitted in this channel
+IS_SUSPENDED       =Channel %s is SUSPENDED.
+IS_NOT_SUSPENDED   =Channel %s is not SUSPENDED.
+YOU_NOT_IN_CHAN    =You are not in channel %s.
+YOU_IN_CHAN        =You are already in channel %s.
+NOT_IN_CHAN        =%s is not in channel %s.
+IN_CHAN            =%s is already in channel %s.
+YOU_NOT_GOT        =You are not %s in channel %s.
+NOT_GOT            =%s is not %s in channel %s.
+YOU_ALREADY_GOT    =You are already %s in channel %s.
+ALREADY_GOT        =%s is already %s in channel %s.
+
+; ALL output to do with MEMO's (not NEWS)
+[MEMO]
+IS_BACKUP          =Sorry, backup services currently in use, MEMOS and NEWS are disabled.
+YOU_DONT_HAVE      =You have no memos.
+YOU_HAVE           =You have %d memo%s.
+DOESNT_EXIST       =Memo %d does not exist!
+LIST               =To read, type /msg %s READ num.
+NEW                =You have a new %smemo (#%d) from %s.
+READ_NEW           =Type /msg %s READ %d to read it.
+MEMO               =Memo %d from %s (sent %s ago).
+TODEL              =To delete, type /msg %s DEL %d.
+TODEL_ALL          =To delete, type /msg %s DEL ALL.
+SEND               =Memo sent to %s (%s).
+MASS_SEND          =Memo sent to all %s.
+DELETE             =Memo %d has been deleted.
+DELETE_ALL         =All of your memos have been deleted.
+
+; ALL output to do with NEWS (not MEMO's)
+[NEWS]
+YOU_DONT_HAVE      =There are no news articles for %s.
+YOU_HAVE           =There %s %d news article%s for %s.
+DOESNT_EXIST       =News article %d does not exist for %s!
+MAY_NOT            =You may not %s a news article.
+LIST               =To read, type /msg %s READ %s num.
+NEW                =There is a new news article (#%d) for %s from %s.
+READ_NEW           =Type /msg %s READ %s %d to read it.
+MEMO               =News article %d for %s from %s (sent %s ago)
+SEND               =News article posted for %s.
+DELETE             =News article %d for %s has been deleted.
+DELETE_ALL         =All news articles for %s have been deleted.
+
+; OperServ SETTINGS display
+[OS/SETTINGS]
+EXP                =Expiries (days):
+EXP_CHAN           =    Channels : %d
+EXP_NICK           =    Nicknames: %d
+EXP_NEWS           =    News     : %d
+EXP_AKILL          =    AutoKills: %d
+SOPS               =Maximum of %d Services Operators (%d currently).
+CLONES             =Each user may have %d connections.
+RELEASE            =Nicknames held for %d seconds.
+AKICKS             =Maximum of %d AKICK's per channel.
+FLOOD              =Flood triggered on %d messages in %d seconds.
+IGNORE             =Ignore lasts for %d seconds, %d ignores makes it perminant.
+RELINK             =Services relink in %d seconds upon SQUIT.
+OVERRIDE           =ChanServ Override is %s
+UPDATE             =Databases saved every %d seconds.
+ADMINS             =Services Admins: %s
+
+; Output from OperServ commands
+[OS/COMMAND]
+GLOBAL_WALLOP      =%s just sent a message to ALL users.
+QLINE              =%s activated QUARENTINE on nick %s.
+UNQLINE            =%s removed QUARENTINE on nick %s.
+SVSNOOP_ON         =%s activated OPER QUARENTINE on %s.
+SVSNOOP_OFF        =%s removed OPER QUARENTINE on %s.
+JUPE               =JUPING %s by request of %s.
+UPDATE             =Updating databases.
+NEW_MESSAGE        =%s created a new %s message.
+AKILL_ADDED        =%s has been added to services %sAKILL list (%d users killed).
+AKILL_NOT_THERE    =%s not found on services AKILL list or is PERMANENT.
+AKILL_EXPIRE       =Expring AKILL on %s (%s) by %s.
+AKILL_BANNED       =You are banned (%s)
+CLONE_HIGH         =CLONE AMOUNT must be less than %d.
+CLONE_LOW          =CLONE AMOUNT must be greater than %d.

@@ -1,0 +1,372 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; Elite On-Line Language File
+; Translated By: Striker Stormbringer <striker@darker.net>
+;
+; --------------------------------------------------------------
+;
+; Throughout this file there are verious codes used for various
+; purposed, from making it look prettier on IRC, to replacing
+; the code with a value direct from Magick.  There are three
+; tables listed below which outline the codes and their meanings.
+;
+; The C replacement codes are used to insert a value from Magick
+; into the string.  These should NEVER be removed, they mey be
+; moved around, but NOT removed (if removed, results are very
+; unpredictable!).  These are also known as 'live' codes.
+;
+; The IRC beautifying codes are generally accepted codes that
+; have a certain function, on ALL IRC clients.  The codes listed
+; are all 'control' codes, meaning you hold control then push
+; the key listed to insert the code.
+;
+; The mIRC colour codes are here for convenience, but it is NOT
+; recommended you use them, as there are alot of IRC clients
+; (especially unix based) that will not be able to understand
+; them and make the output unreadable.  When using these codes,
+; to change just the foreground you use ^C# where # is the colour
+; code.  For foreground and background, you use ^C#,#.  To reset
+; the text back to 'no colour' you just use ^C.
+;
+; --------------------------------------------------------------
+;
+; C replacement codes:
+;   %s = String		%c = Single Character
+;   %d = Integer	%l = Numeric (with DP's)
+;   %o = Octal		%x = Hexidecimal
+;   %% = Literal %
+; The DP in %l can be moved by telling it how many numbers
+; are to appear before and after the DP.  eg. %3.2l for 3
+; numbers before, and 2 after the decimal point.
+;
+; IRC beautifying codes:
+;   ^B () = BOLD	- Make text between look brighter
+;   ^_ () = UNDERLINE	- Underline text between
+;   ^V () = REVERSE	- Switch foreground and background
+;   ^O () = CANCEL	- Back to non-bold/underline/reverse
+;   ^C () = COLOUR	- See below
+;
+; mIRC colour codes:
+;   0 = White		8  = Yellow
+;   1 = Black		9  = Bright Green
+;   2 = Blue		10 = Cyan
+;   3 = Green		11 = Bright Cyan
+;   4 = Red		12 = Bright Blue
+;   5 = Orange		13 = Bright Magenta
+;   6 = Magenta		14 = Grey
+;   7 = Bright Red	15 = Bright Grey
+; 
+
+; Command syntax errors.
+[ERR/SYNTAX]
+UNKNOWN_COMMAND    =Unr3c0gniz3d c0mmand %s.  Typ3 /msg %s H3LP f0r h3lp.
+UNKNOWN_OPTION     =Unr3c0gniz3d 0pti0n %s.  Typ3 /msg %s H3LP %s f0r h3lp.
+MORE_INFO          =Typ3 /msg %s H3LP %s f0r m0r3 inf0rmati0n.
+NOHELP             =N0 h3lp availabl3 f0r c0mmand %s.
+STARTHRESH         =3ntry must hav3 at l3ast %d n0n-*, ? 0r . charact3rs.
+NEED_MLOCK_PARAM   =Paramat3r r3quir3d f0r ML0CK +%c.
+MLOCK_POSITIVE     =Paramat3r f0r ML0CK +%c must b3 p0sitiv3.
+MLOCK_UNKNOWN      =Unkn0wn ML0CK charact3r %c ign0r3d.
+SECURE_NICKS       =S3CUR3 acc3ss lists may 0nly c0ntain r3gist3r3d nicknam3s.
+FORMATTING         =Y0u must sp3cify %s 0nly.
+MAY_NOT_HAVE       =Y0u may n0t us3 a %c charact3r.
+MUST_HAVE          =Y0u must includ3 a %c charact3r.
+
+; Access denied, for some reason
+[ERR/DENIED]
+WRONG_PASSWORD     =Passw0rd inc0rr3ct.
+ACCESS_DENIED      =Acc3ss dEni3d.
+SUSPENDED_NICK     =Acc3ss dEni3d f0r SUSP3ND3D nicknam3s.
+SUSPENDED_CHAN     =Acc3ss dEni3d f0r SUSP3ND3D channEls.
+TEMP_DISABLED      =S0rry, %s is t3mp0rarily disabl3d.
+FAILED             =S0rry, %s fail3d.
+YOU_DONT_EXIST     =S0rry, c0uld n0t 0btain y0ur us3r inf0rmati0n.
+CHAN_NOTVALID      =%s is n0t a valid chann3l nam3.
+READ_ONLY          =WARNING: S3rvicEs ar3 in r3ad-0nly m0d3, chang3s will n0t b3 sav3d.
+
+; Need more confirmation user is who they say they are.
+[ERR/VERIFY]
+NEED_PASSWORD      =Passw0rd id3ntificati0n rEquir3d f0r %s.
+NEED_OPS           =Y0u must b3 a chann3l 0p3rat0r f0r %s.
+IDENT_NICK_FIRST   =Pl3asE r3try aft3r typing /MSG %s ID3NTIFY passw0rd.
+IDENT_CHAN_FIRST   =PlEas3 r3try aft3r typing /MSG %s ID3NTIFY %s passw0rd.
+NICK_FORBIDDEN     =This nicknam3 may n0t b3 us3d.  Pl3as3 ch0os3 an0th3r.
+NICK_OWNED         =This nicknam3 is 0wn3d by s0m30n# 3lsE.  PleasE ch0os3 an0th3r.
+NICK_SECURE        =This nicknam3 is registEr3d and pr0t3ctEd.
+NICK_IDENTIFY      =If this is y0ur nick, typ3 /MSG %s ID3NTIFY passw0rd
+WILL_KILL_YOU      =If y0u d0 n0t chang3 within 0n3 minut3, y0u will b3 disc0nn3ctEd.
+
+; They are (or the target is) the wrong kind of person.
+[ERR/PERSON]
+MUST_BE_HOST       =%s must b3 d0n3 as th3 H0ST nicknam3.
+CANT_BE_HOST       =%s may n0t b3 d0n3 as th3 H0ST nicknam3.
+MUST_BE_LINK       =%s must b3 d0n3 as a LINKED nicknam3.
+CANT_BE_LINK       =%s may n0t b3 d0n3 0n a LINKeD nicknam3.
+MUST_BETO_HOST     =%s must b3 p3rf0rmEd 0n a H0ST nicknam3.
+CANT_BETO_HOST     =%s may n0t b3 perf0rm3d 0n a H0ST nicknamE.
+MUST_BETO_LINK     =%s must b3 pErf0rm3d 0n a LINKeD nicknamE.
+CANT_BETO_LINK     =%s may n0t bE perf0rmEd 0n a LINKED nickname.
+NOT_ON_YOURSELF    =%s may n0t bE p3rf0rm3d 0n y0ursElf.
+NOT_ON_IRCOP       =%s may n0t b3 p3rf0rmed 0n an IRC Op3rat0r.
+ONLY_ON_IRCOP      =%s may 0nly b3 perf0rm3d 0n an IRC Op3rat0r.
+MUST_BE_IRCOP      =Y0u must hav3 th3 IRC Op3rat0r flag s3t t0 %s.
+
+; Displayed on SET's and LIST's
+[DISPLAY/INFO]
+SYNC_TIME          =Databas3s will sync in %s.
+LIST_MATCH         =List 0f 3ntri3s matching %s:
+END_OF_LIST        =3nd 0f list - %d/%d match3s sh0wn.
+EMAIL              =e-Mail
+URL                =WWW Pag3 (URL)
+FOUNDER            =F0undEr
+DESC               =D3scripti0n
+MLOCK              =M0d3 L0ck
+JOIN               =ChanSErv J0in
+
+; Generic list modification
+[DISPLAY/LISTS]
+THERE              =%s is alr3ady pr3sEnt (0r inclusiv3) 0n %s %s list.
+NOT_THERE          =%s n0t f0und 0n %s %s list.
+NOT_FOUND          =N0 such 3ntry #%d 0n %s %s list.
+ADDED              =%s has be3n addEd t0 %s %s list.
+ADDED_AT           =%s has bEen add3d t0 %s %s at %s.
+REMOVED            =%s has b33n r3m0vEd fr0m %s %s list.
+REMOVED_NUM        =Entry #%d has b3en rem0v3d fr0m %s %s list.
+REMOVED_MASK       =%d 3ntr%s matching %s r3m0ved fr0m %s %s list.
+REMOVED_ALL        =All entri3s 0n %s %s list rem0v3d.
+UNCHANGED          =%s unchang3d 0n %s %s list at %s.
+CHANGED            =%s chang3d 0n %s %s list t0 %s.
+LIMIT              =S0rry, y0u may 0nly hav3 %d 3ntriEs 0n %s %s list.
+
+; Command displays that are relivant for more than one command
+[DISPLAY/COMMAND]
+GETPASS            =Passw0rd f0r %s (%s) is %s.
+GETPASS_WALLOP     =%s us3d G3TPASS 0n %s (%s).
+FORBID             =%s has be3n F0RBIDD3N.
+SUSPEND            =%s (%s) has b3en SUSPEND3D.
+UNSUSPEND          =%s (%s) has be3n UNSUSP3NDED.
+
+; Global messages (GLOBOPS or GLOBAL) for change in circumstances
+[DISPLAY/GLOBAL]
+FLOODING           =%s is FL0ODING servic3s (plac3d 0n %s ign0r3).
+TEMP_FLOOD         =S3rvicEs FLO0D triggEred (>%d mEssages in %d s3c0nds).  Y0u ar3 b3ing ign0rEd f0r %d sEc0nds.
+PERM_FLOOD         =SErvices FL0OD trigger3d >%d tim3s in 0n3 c0nn3cti0n.  Y0u ar3 n0w 0n p3rminant ign0r3.
+IS_IGNORED         =Y0u hav3 trigg3red PERM ign0r3 0n a pr3vi0us c0nn3cti0n.  Y0u will n0t b3 answ3r3d by s3rvices.
+SERVICES_OFF_REASON=S3rvicEs arE curr3ntly 0FF (%s).
+SERVICES_OFF       =SErvic3s ar3 curr3ntly 0FF.
+SERVICES_ON        =SErvicEs havE n0w bE3n switch3d back 0N - PlEase us3 th3m at will.
+ONOFF_NOTIFY       =S3rvices switch3d %s by r3quEst 0f %s.
+
+; NickServ INFO display
+[NS/INFO]
+INTRO              =%s is %s
+HOST               =        H0st Nick: %s
+EMAIL              =   e-Mail Addr3ss: %s
+URL                =   WWW Pag3 (URL): %s
+SUSPENDED          =    SuspEnd3d F0r: %s
+USERMASK           =Last SeEn Addr3ss: %s
+REGISTERED         =       REgister3d: %s ag0
+ONLINE_AS          =        0nlin3 As: %s
+AONLINE_AS         =   Als0 0nlin3 As: %s
+LAST_SEEN          =        Last SEen: %s ag0
+LAST_ONLINE        =      Last 0nlin3: %s ag0
+OPTIONS            =          Opti0ns: %s
+COUNT              =%d nicknam3s curr3ntly rEgisterEd.
+ONLINE             =This us3r is curr3ntly 0nlin3, typ3 /wh0is %s f0r m0r3 inf0rmati0n.
+
+; Flags a nick can have set
+[NS/FLAGS]
+SUSPENDED          =SUSPeNDeD US3R
+KILLPROTECT        =Kill Pr0t3cti0n
+SECURE             =S3curity
+PRIVATE            =Privat3
+IRCOP              =IRC 0pErator
+SOP                =SErvicEs Op3rat0r
+NONE               =N0n3
+
+; Output from NickServ commands
+[NS/COMMAND]
+REGISTERED         =Y0ur nicknam3 is n0w registErEd und3r h0st %s.
+LINKED             =Y0ur nicknamE has n0w been linked t0 %s.
+DROPPED            =Nicknam3 %s%s%s%s has b3en dr0ppEd.
+CHANGE_PASSWORD    =Y0ur passw0rd is n0w %s - PlEEs3 r3membEr this f0r lat3r usE.
+KILLED_IMPOSTER    =UsEr claiming y0ur nicknamE has been kill3d.
+RELEASE            =Type /MSG %s REL3ASE %s passw0rd t0 usE it bef0r3 thE 0nE-minut3 timE0ut.
+FORCED_CHANGE      =Y0ur nicknamE has b3en f0rcibly changEd.
+FORCED_KILL        =NicknamE pr0t3cti0n Enf0rcEd
+FAILMAX_KILL       =R3pEatEd passw0rd failur3
+GHOST_KILL         =R3m0ving GH0ST usEr
+IDENTIFIED         =Passw0rd acceptEd - y0u arE n0w rec0gnizEd.
+FORBID_WALLOP      =%s usEd F0RBID 0n nicknamE %s (%d slav3 nicks dr0ppEd).
+
+; Ownership and staus issues.
+[NS/OWNER]
+NOT_YOURS          =NicknamE %s d0es n0t b3l0ng t0 y0u.
+IN_USE             =Nicknam3 %s is curr3ntly in use.
+NOT_IN_USE         =Nicknam3 %s is n0t curr3ntly in usE.
+YOU_NO_SLAVES      =Y0u havE n0 slavE nicks.
+NO_SLAVES          =Nicknam3 %s has n0 slavE nicks.
+YOU_NOT_REGISTERED =Y0ur nicknamE is n0t regist3rEd.
+NOT_REGISTERED     =Nickname %s is n0t r3gistEred.
+TAKEN              =NicknamE %s is alrEady r3gist3r3d.
+CANNOT_REGISTER    =Nicknam3 %s may n0t bE rEgist3r3d.
+CANNOT_LINK        =Nickname %s may n0t b3 link3d.
+AM_IGNORED         =%s is ign0ring y0ur m3m0s.
+IS_SUSPENDED_MEMO  =%s is SUSPeND3D, th3rf0re may n0t retriEve mem0s.
+IS_SUSPENDED       =Nicknam3 %s is SUSPeNDeD.
+IS_NOT_SUSPENDED   =NicknamE %s is n0t SUSPeNDeD.
+
+; ChanServ INFO display
+[CS/INFO]
+INTRO              =Inf0rmati0n 0n channEl %s
+FOUNDER            =       F0undEr: %s%s%s%s
+DESC               =   Descripti0n: %s
+URL                =WWW Page (URL): %s
+REG_TIME           =    Registered: %s ag0
+LAST_USED          =     Last Used: %s ag0
+SUSPENDED          = Suspended F0r: %s
+SUSPENDER          =  Suspended By: %s
+TOPIC              =    Last T0pic: %s
+TOPIC_SET          =  T0pic Set By: %s
+REVENGE            = Revenge Level: %s
+CHAN_STAT          = Channel Stats: %d user%s, %d v0ice%s, %d 0p%s.
+OPTIONS            =       0ptions: %s
+MLOCK              =     M0de L0ck: %s
+COUNT              =%d channels currently registered.
+
+; Flags a channel can have set
+[CS/FLAGS]
+SUSPENDED          =SUSPENDED CHANNEL
+PRIVATE            =Private
+KEEPTOPIC          =T0pic Retenti0n
+TOPICLOCK          =T0pic L0ck
+SECUREOPS          =Secure 0ps
+SECURE             =Secure
+RESTRICTED         =Restricted
+NONE               =N0ne
+
+; ChanServ REVENGE and other bitchy functions
+[CS/BITCH]
+REV_LEVEL          =Revenge level f0r %s currently at %s (%s).
+REV_SET            =Revenge level f0r %s set t0 %s (%s).
+REV_DEOP           =REVENGE - D0 n0t de0p %s.
+REV_KICK           =REVENGE - D0 n0t kick %s.
+REV_BAN            =REVENGE - D0 n0t ban %s.
+SUSPENDED_TOPIC    =[SUSPENDED] %s [SUSPENDED]
+FORBID_WALLOP      =%s used F0RBID 0n channel %s.
+
+; Access and Level function displays
+[CS/ACCESS]
+LEVEL_YOU          =Y0u can %s.
+LEVEL_LIST         =Level required f0r c0mmands 0n %s:
+LEVEL_LOW          =Cann0t change levels bel0w %d.
+LEVEL_HIGH         =Cann0t change levels ab0ve %d.
+LEVEL_CHANGE       =Level f0r %s 0n %s changed t0 %d.
+LEVEL_NO_CHANGE    =Level f0r %s 0n %s unchanged at %d.
+LEVEL_RESET        =All levels f0r %s reset.
+LEVEL_NONE         =Unkn0wn level type %s.
+ACCESS_ZERO        =Access levels must be n0n-zerO.
+ACCESS_LOW         =Cann0t add 0r change t0 access levels bel0w %d.
+ACCESS_HIGH        =Cann0t add 0r change t0 access levels ab0ve %d.
+ACCESS_HIGHER      =S0rry, %s is higher 0r equal 0n access list.
+ACCESS_HIGHER_MATCH=S0rry, %s matches %s (higher 0r equal 0n access list).
+
+; Output from ChanServ commands
+[CS/COMMAND]
+REGISTERED         =Channel %s has been registered under y0ur nickname %s.
+DROPPED            =Channel %s has been dr0pped.
+CHANGE_PASSWORD    =Channel %s passw0rd is n0w %s - Please remember this f0r later use.
+IDENTIFIED         =Passw0rd accepted - y0u n0w have f0under access t0 %s.
+YOU_UNBANNED       =Y0u have been unbanned fr0m %s.
+UNBANNED           =%s has been unbanned fr0m %s.
+CLEARED            =%s have been cleared fr0m channel %s.
+CLEAR_KICK         =CLEAR USERS c0mmand fr0m %s
+
+; Ownership and status issues
+[CS/OWNER]
+SUSPENDED          =Channel %s is currently SUSPENDED, n0 0ps/v0ices will be all0wed.
+REGISTERED         =Channel %s is a registered channel, access privilages apply.
+IN_USE             =Channel %s is currently in use.
+NOT_IN_USE         =Channel %s is n0t currently in use.
+NOT_REGISTERED     =Channel %s is n0t registered.
+TAKEN              =Channel %s is already registered.
+CANNOT_REGISTER    =Channel %s may n0t be registered.
+FORBIDDEN          =Channel %s may n0t be used.
+GET_OUT            =Y0u are n0t permitted in this channel
+IS_SUSPENDED       =Channel %s is SUSPENDED.
+IS_NOT_SUSPENDED   =Channel %s is n0t SUSPENDED.
+YOU_NOT_IN_CHAN    =Y0u are n0t in channel %s.
+YOU_IN_CHAN        =Y0u are already in channel %s.
+NOT_IN_CHAN        =%s is n0t in channel %s.
+IN_CHAN            =%s is already in channel %s.
+YOU_NOT_GOT        =Y0u are n0t %s in channel %s.
+NOT_GOT            =%s is n0t %s in channel %s.
+YOU_ALREADY_GOT    =Y0u are already %s in channel %s.
+ALREADY_GOT        =%s is already %s in channel %s.
+
+; ALL output to do with MEMO's (not NEWS)
+[MEMO]
+IS_BACKUP          =S0rry, backup services currently in use, MEM0S and NEWS are disabled.
+YOU_DONT_HAVE      =Y0u have n0 mem0s.
+YOU_HAVE           =Y0u have %d mem0%s.
+DOESNT_EXIST       =Mem0 %d d0es n0t exist!
+LIST               =T0 read, type /msg %s READ num.
+NEW                =Y0u have a new %smem0 (#%d) fr0m %s.
+READ_NEW           =Type /msg %s READ %d t0 read it.
+MEMO               =Mem0 %d fr0m %s (sent %s ag0).
+TODEL              =T0 delete, type /msg %s DEL %d.
+TODEL_ALL          =T0 delete, type /msg %s DEL ALL.
+SEND               =Mem0 sent t0 %s (%s).
+MASS_SEND          =Mem0 sent t0 all %s.
+DELETE             =Mem0 %d has been deleted.
+DELETE_ALL         =All 0f y0ur mem0s have been deleted.
+
+; ALL output to do with NEWS (not MEMO's)
+[NEWS]
+YOU_DONT_HAVE      =There are n0 news articles f0r %s.
+YOU_HAVE           =There %s %d news article%s f0r %s.
+DOESNT_EXIST       =News article %d d0es n0t exist f0r %s!
+MAY_NOT            =Y0u may n0t %s a news article.
+LIST               =T0 read, type /msg %s READ %s num.
+NEW                =There is a new news article (#%d) f0r %s fr0m %s.
+READ_NEW           =Type /msg %s READ %s %d t0 read it.
+MEMO               =News article %d f0r %s fr0m %s (sent %s ag0)
+SEND               =News article p0sted f0r %s.
+DELETE             =News article %d f0r %s has been deleted.
+DELETE_ALL         =All news articles f0r %s have been deleted.
+
+; OperServ SETTINGS display
+[OS/SETTINGS]
+EXP                =Expiries (days):
+EXP_CHAN           =    Channels : %d
+EXP_NICK           =    Nicknames: %d
+EXP_NEWS           =    News     : %d
+EXP_AKILL          =    Aut0Kills: %d
+SOPS               =Maximum 0f %d Services 0perat0rs (%d currently).
+CLONES             =Each user may have %d c0nnecti0ns.
+RELEASE            =Nicknames held f0r %d sec0nds.
+AKICKS             =Maximum 0f %d AKICK's per channel.
+FLOOD              =Flo0d triggered 0n %d messages in %d sec0nds.
+IGNORE             =Ign0re lasts f0r %d sec0nds, %d ign0res makes it perminant.
+RELINK             =Services relink in %d sec0nds up0n SQUIT.
+OVERRIDE           =ChanServ 0verride is %s
+UPDATE             =Databases saved every %d sec0nds.
+ADMINS             =Services Admins: %s
+
+; Output from OperServ commands
+[OS/COMMAND]
+GLOBAL_WALLOP      =%s just sent a message t0 ALL users.
+QLINE              =%s activated QUARENTINE 0n nick %s.
+UNQLINE            =%s rem0ved QUARENTINE 0n nick %s.
+SVSNOOP_ON         =%s activated 0PER QUARENTINE 0n %s.
+SVSNOOP_OFF        =%s rem0ved 0PER QUARENTINE 0n %s.
+JUPE               =JUPING %s by request 0f %s.
+UPDATE             =Updating databases.
+NEW_MESSAGE        =%s created a new %s message.
+AKILL_ADDED        =%s has been added t0 services %sAKILL list (%d users killed).
+AKILL_NOT_THERE    =%s n0t f0und 0n services AKILL list 0r is PERMANENT.
+AKILL_EXPIRE       =Expring AKILL 0n %s (%s) by %s.
+AKILL_BANNED       =Y0u are banned (%s)
+CLONE_HIGH         =CL0NE AM0UNT must be less than %d.
+CLONE_LOW          =CL0NE AM0UNT must be greater than %d.
