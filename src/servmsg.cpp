@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/05/19 10:48:15  prez
+** Finalized the DCC Sending (now uses the Action map properly)
+**
 ** Revision 1.48  2000/05/18 11:41:46  prez
 ** Fixed minor front-end issues with the filesystem...
 **
@@ -1004,12 +1007,29 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
     mstring filename = params.ExtractWord(3, " ");
     unsigned long filenum = Parent->filesys.GetNum(FileMap::Public, filename);
 
-    if (!filenum)
+    bool display = false;
+    mstring priv = Parent->filesys.GetPriv(FileMap::Public, filenum);
+    if (priv.IsEmpty())
+	display = true;
+    else
+    {
+	for (int k=1; k<=priv.WordCount(" "); k++)
+	    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
+		Parent->commserv.list[priv.ExtractWord(k, " ").UpperCase()].IsOn(source))
+	    {
+		display = true;
+		break;
+	    }
+    }
+
+    if (!(filenum && display))
     {
 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
 		filename.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
 	return;
     }
+
+
 
     filename = Parent->filesys.GetName(FileMap::Public, filenum);
     size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);

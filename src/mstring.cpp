@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/05/19 10:48:14  prez
+** Finalized the DCC Sending (now uses the Action map properly)
+**
 ** Revision 1.62  2000/05/17 14:08:12  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -599,7 +602,7 @@ mstring& mstring::operator <<(float f)
 mstring& mstring::operator <<(double d)
 {
 	mstring s;
-	s.Format("%14.8g",d);
+	s.Format("%11.5g",d);
 	return *this<<s;
 }
 

@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/05/19 10:48:14  prez
+** Finalized the DCC Sending (now uses the Action map properly)
+**
 ** Revision 1.13  2000/05/18 10:13:15  prez
 ** Finished off the mFile structure, and the DCC system, it all works.
 **
@@ -214,7 +217,7 @@ public:
     virtual int close(unsigned long in);
     virtual int svc(void);
 
-    static map<unsigned long, DccXfer> xfers;
+    static map<unsigned long, DccXfer *> xfers;
     vector<unsigned long> GetList(mstring in);
 
     // These start in their own threads.

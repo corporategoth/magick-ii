@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/05/19 10:48:14  prez
+** Finalized the DCC Sending (now uses the Action map properly)
+**
 ** Revision 1.24  2000/05/18 11:42:44  prez
 ** fixed the default assignment
 **
@@ -120,7 +123,7 @@ static const char *ident = "@(#)$Id$";
 #include "magick.h"
 
 queue<unsigned long> DccMap::active;
-map<unsigned long, DccXfer> DccMap::xfers;
+map<unsigned long, DccXfer *> DccMap::xfers;
 
 mFile::mFile(FILE *in)
 {
@@ -762,7 +765,8 @@ void DccXfer::operator=(const DccXfer &in)
     // into the DccXfer struct ready for an Action call,
     // the pointer has gone awry, which is why we get
     // ENOACCESS returns (ie. errno 14)
-    i_Socket=(auto_ptr<ACE_SOCK_Stream> &) in.i_Socket;
+    //i_Socket=(auto_ptr<ACE_SOCK_Stream> &) in.i_Socket;
+
     // i_File=in.i_File;
     i_Source=in.i_Source;
     i_Mynick=in.i_Mynick;
@@ -776,6 +780,7 @@ void DccXfer::operator=(const DccXfer &in)
     i_DccId=in.i_DccId;
 
     DccXfer *tmp = (DccXfer *) &in;
+    i_Socket = tmp->i_Socket;
     if (tmp->i_File.IsOpened())
     {
 	tmp->i_File.Close();
@@ -953,9 +958,9 @@ int DccMap::close(unsigned long in)
 {
     FT("DccMap::close", (in));
     // dump all and close open file handles.
-    map<unsigned long, DccXfer>::iterator iter;
+    map<unsigned long, DccXfer *>::iterator iter;
     for (iter=xfers.begin(); iter != xfers.end(); iter++)
-	iter->second.Cancel();
+	iter->second->Cancel();
     RET(0);
 }
 
@@ -979,18 +984,20 @@ int DccMap::svc(void)
 
 	if (xfers.find(WorkId) == xfers.end())
 	    continue;
-	if (!xfers[WorkId].Ready())
+	if (!(*xfers[WorkId]).Ready())
 	{
+	    delete xfers[WorkId];
 	    xfers.erase(WorkId);
 	    continue;
 	}
 
 	CP(("Executing ACTION for DCC #%d", WorkId));
-	xfers[WorkId].Action();
+	xfers[WorkId]->Action();
 	// No data in X seconds...
-	if (xfers[WorkId].LastData().SecondsSince() > Parent->files.Timeout())
+	if (xfers[WorkId]->LastData().SecondsSince() > Parent->files.Timeout())
 	{
-	    xfers[WorkId].Cancel();
+	    xfers[WorkId]->Cancel();
+	    delete xfers[WorkId];
 	    xfers.erase(WorkId);
 	    continue;
 	}
@@ -1004,10 +1011,10 @@ vector<unsigned long> DccMap::GetList(mstring in)
     FT("DccMap::GetList", (in));
     vector<unsigned long> retval;
 
-    map<unsigned long, DccXfer>::iterator iter;
+    map<unsigned long, DccXfer *>::iterator iter;
     for (iter=xfers.begin(); iter!=xfers.end(); iter++)
     {
-	if (iter->second.Source().CmpNoCase(in)==0)
+	if (iter->second->Source().CmpNoCase(in)==0)
 	    retval.push_back(iter->first);
     }
     NRET(vector<unsigned long>, retval);
@@ -1027,13 +1034,13 @@ void *DccMap::Connect2(void *in)
 
     if (errno != ETIME)
     {
-/*	unsigned long WorkId;
+	unsigned long WorkId;
 	bool found = false;
 	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, val->mynick,
+		xfers[WorkId] = new DccXfer(WorkId, DCC_SOCK, val->mynick,
 			val->source, val->filename, val->filesize, val->blocksize);
 		active.push(WorkId);
 		found = true;
@@ -1043,23 +1050,10 @@ void *DccMap::Connect2(void *in)
 	if (!found)
 	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"GET");
-*/    }
+    }
     else
 	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"GET");
-
-    DccXfer xfer(TxnIds::Create(), DCC_SOCK, val->mynick,
-	val->source, val->filename, val->filesize, val->blocksize);
-    while (xfer.Ready())
-    {
-	xfer.Action();
-	// No data in X seconds...
-	if (xfer.LastData().SecondsSince() > Parent->files.Timeout())
-	{
-	    xfer.Cancel();
-	    break;
-	}
-    }
 
     if (val != NULL)
 	delete val;
@@ -1083,13 +1077,13 @@ void *DccMap::Accept2(void *in)
     CP(("Accept responded with %d", errno));
     if (errno != ETIME)
     {
-/*	unsigned long WorkId;
+	unsigned long WorkId;
 	bool found = false;
 	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, val->mynick,
+		xfers[WorkId] = new DccXfer(WorkId, DCC_SOCK, val->mynick,
 			val->source, val->filetype, val->filenum);
 		active.push(WorkId);
 		found = true;
@@ -1099,23 +1093,10 @@ void *DccMap::Accept2(void *in)
 	if (!found)
 	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"SEND");
-*/    }
+    }
     else
 	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"SEND");
-
-    DccXfer xfer(TxnIds::Create(), DCC_SOCK, val->mynick,
-	val->source, val->filetype, val->filenum);
-    while (xfer.Ready())
-    {
-	xfer.Action();
-	// No data in X seconds...
-	if (xfer.LastData().SecondsSince() > Parent->files.Timeout())
-	{
-	    xfer.Cancel();
-	    break;
-	}
-    }
 
     if (val != NULL)
 	delete val;
@@ -1159,7 +1140,11 @@ void DccMap::Close(unsigned long DccId)
 {
     FT("DccMap::Close", (DccId));
     if (xfers.find(DccId) != xfers.end())
-	xfers[DccId].Cancel();
+    {
+	xfers[DccId]->Cancel();
+	delete xfers[DccId];
+	xfers.erase(DccId);
+    }
     tm.cancel_all();
 }
 

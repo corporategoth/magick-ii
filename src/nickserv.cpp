@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2000/05/19 10:48:14  prez
+** Finalized the DCC Sending (now uses the Action map properly)
+**
 ** Revision 1.93  2000/05/18 11:41:46  prez
 ** Fixed minor front-end issues with the filesystem...
 **
@@ -395,9 +398,9 @@ void Nick_Live_t::InFlight_t::Cancel()
 	}
     if (File())
 	if (InProg())
-	    send(service, nick, Parent->getMessage(nick, "DCC/TIMEOUT"), "SEND");
+	    send(service, nick, Parent->getMessage(nick, "DCC/TIMEOUT"), "GET");
 	else
-	    send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "SEND");
+	    send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "GET");
     else
 	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
     init();
@@ -970,7 +973,7 @@ void Nick_Live_t::Name(mstring in)
 
     vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
     for (i=0; i<dccs.size(); i++)
-	Parent->dcc->xfers[dccs[i]].ChgNick(in);
+	Parent->dcc->xfers[dccs[i]]->ChgNick(in);
 
     // Carry over failed attempts (so /nick doesnt cure all!)
     for (i=0; i<try_chan_ident.size(); i++)

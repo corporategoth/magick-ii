@@ -147,7 +147,7 @@ CORE
 	are not time-dependant, just message dependant (so you will
 	also need to factor average message processing time).
 
-+ Language files setup (with a default language set in the ini)
+x Language files setup (with a default language set in the ini)
 	(These files are a COMPLETE translation (except things like
 	names and hostmasks) of every scrap of text magick outputs.
 	We will write english ones, and send a call to others to
@@ -454,7 +454,7 @@ x global map <theadid,servername> - in the magick object see log.cpp/log.h for h
 GENERAL CODING CONSTRUCTS
 -------------------------
 
-+ change over the wxFile internals to use ACE_OS:: calls
+x change over the wxFile internals to use ACE_OS:: calls
 
 + everywhere we use message queue's we need to have a bool shutting_down,
     when closing down task object, set it true, and push messages. while

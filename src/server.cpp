@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2000/05/19 10:48:15  prez
+** Finalized the DCC Sending (now uses the Action map properly)
+**
 ** Revision 1.94  2000/05/18 10:13:15  prez
 ** Finished off the mFile structure, and the DCC system, it all works.
 **
@@ -1705,6 +1708,7 @@ void NetworkServ::execute(const mstring & data)
 		    wxLogWarning(Parent->getLogMessage("OTHER/KILLED"),
 			    data.ExtractWord(3, ": ").c_str(),
 			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str());
+		    WaitIsOn.insert(data.ExtractWord(3, ": "));
 		    sraw("ISON " + data.ExtractWord(3, ": "));
 		}
 		int wc = data.After(":", 2).WordCount("!");
