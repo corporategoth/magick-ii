@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.328  2001/11/18 01:54:04  prez
+** Fixed up trace levels (again)
+**
 ** Revision 1.327  2001/11/17 03:16:02  prez
 ** Extra logging, actually made DCC identify as a DCC thread, and fixed some
 ** mkdir failures ...
@@ -668,7 +671,7 @@ int Magick::Start(bool firstrun)
 		    mstring type=argv[i].Before(":").UpperCase();
 		    if (type=="MAIN" || type=="ALL")
 			Trace::TurnSet(tt_MAIN, level);
-		    for (j=tt_MAIN+1; j<tt_MAX; j++)
+		    for (j=0; j<tt_MAX; j++)
 			if (type==threadname[j] || type=="ALL")
 			    Trace::TurnSet(static_cast<threadtype_enum>(j), level);
 		}

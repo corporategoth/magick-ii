@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.136  2001/11/18 01:54:04  prez
+** Fixed up trace levels (again)
+**
 ** Revision 1.135  2001/11/18 01:44:56  prez
 ** Changed trace levels
 **
@@ -1445,7 +1448,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
     }
     else
     {
-        for (i=tt_MAIN+1; i<tt_MAX; i++)
+        for (i=0+1; i<tt_MAX; i++)
 	    if (ttype == threadname[i])
 		break;
 	if (i<tt_MAX)
@@ -1466,7 +1469,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 	{
 	    if (type == tt_MAX)
 	    {
-		for (i=tt_MAIN; i<tt_MAX; i++)
+		for (i=0; i<tt_MAX; i++)
 		{
 		    Trace::TurnSet(static_cast<threadtype_enum>(i),
 			makehex(levels[0U]));
@@ -1499,7 +1502,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		    {
 			if (type == tt_MAX)
 			{
-			    for (k=tt_MAIN; k<tt_MAX; k++)
+			    for (k=0; k<tt_MAX; k++)
 			    {
 				if (k==tt_MAIN)
 				{
@@ -1550,7 +1553,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		{
 		    if (type == tt_MAX)
 		    {
-			for (k=tt_MAIN; k<tt_MAX; k++)
+			for (k=0; k<tt_MAX; k++)
 			{
 			    Trace::TurnUp(static_cast<threadtype_enum>(k),
 				Trace::levelname[j].level);
@@ -1589,7 +1592,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		{
 		    if (type == tt_MAX)
 		    {
-			for (k=tt_MAIN; k<tt_MAX; k++)
+			for (k=0; k<tt_MAX; k++)
 			{
 			    Trace::TurnDown(static_cast<threadtype_enum>(k),
 				Trace::levelname[j].level);

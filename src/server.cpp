@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.195  2001/11/18 01:54:04  prez
+** Fixed up trace levels (again)
+**
 ** Revision 1.194  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -4441,8 +4444,7 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 
 	    /* TRACE ... (usually leave off) */
 	    /*
-	    Trace::TurnSet(tt_MAIN, 0xffff);
-	    for (int i=tt_MAIN+1; i<tt_MAX; i++)
+	    for (int i=0; i<tt_MAX; i++)
 		Trace::TurnSet(static_cast<threadtype_enum>(i), 0xffff);
 	    */
 
