@@ -130,9 +130,21 @@ NOATTACH           =Cannot send file attachments to channels.
 FILEINPROG         =Cannot begin a new memo or file transfer while a file transfer is in progress.
 COFOUNDER          =Cannot set the CoFounder the same as the Founder.
 NOACCESS           =Access denied.
-DCCSENDREFUSE      =DCC SEND refused, no file transfer request in effect.
-DCCCHATREFUSE      =DCC CHAT refused, you do not have access to this feature.
 NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use.
+
+;
+; This section deals with DCC actions.
+;
+[DCC]
+COMPLETED          =DCC %s completed (%d bytes transferred).
+NOACCESS           =DCC %s refused (access denied).
+NOREQUEST          =DCC %s refused (no request active).
+NOFILE             =DCC %s failed (missing file).
+NOCONNECT          =DCC %s failed (no connection established).
+FAILED             =DCC %s failed (internal server error).
+TIMEOUT            =DCC %s aborted (timeout).
+SOCKERR            =DCC %s aborted (socket error %d).
+ABORTED            =DCC %s aborted (internal server error).
 
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.
@@ -223,14 +235,14 @@ OTH_CMD1           =READ       %10d / UNREAD     %10d
 OTH_CMD2           =SEND       %10d / FLUSH      %10d
 OTH_CMD3           =REPLY      %10d / FORWARD    %10d
 OTH_CMD4           =CANCEL     %10d / DEL        %10d
-OTH_CMD5           =CONTINUE   %10d / FILE       %10d
+OTH_CMD5           =CONTINUE   %10d / FILE/GET   %10d
 
 OTH_CMD6           =NEW        %10d / KILL       %10d
 OTH_CMD7           =ADD/DEL    %10d / MEMO       %10d
 OTH_CMD8           =LOGON      %10d / SET        %10d
 OTH_CMD9           =LOCK       %10d / UNLOCK     %10d
 
-OTH_CMD10           =GLOBAL     %10d / CREDITS    %10d
+OTH_CMD10          =GLOBAL     %10d / CREDITS    %10d
 
 OTH_CMD11          =TRACE      %10d / MODE       %10d
 OTH_CMD12          =QLINE      %10d / UNQLINE    %10d
@@ -330,6 +342,7 @@ IDENTIFIED         =You are already identified for nickname %s.
 ISLOCKED           =%s option for nickname %s is locked.
 ISNOTLOCKED        =%s option for nickname %s is not locked.
 
+NOPIC              =Nickname %s does not have a picture set.
 ISNOTYOURS         =Nickname %s is not linked to you.
 ISINUSE            =Nickname %s is currently in use.
 ISNOTINUSE         =Nickname %s is not currently in use.
@@ -441,7 +454,6 @@ UNSET              =Your %s has been unset.
 OPT_SET_TO         =%s option has been set to %s.
 
 PENDING            =Please begin sending your picture now.
-CANCEL             =Pending file transfer cancelled.
 SAVED              =Your picture has been saved.
 REMOVED            =Your picture has been removed.
 

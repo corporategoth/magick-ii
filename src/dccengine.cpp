@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/03/24 12:53:04  prez
+** FileSystem Logging
+**
 ** Revision 1.23  2000/03/23 10:22:24  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -483,6 +486,9 @@ void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
     // .ns for nickserv, .cs for chanserv, .os for operserv.  It
     // should just pass the commands through the same engine as the
     // telnet commands.
+
+    send(mynick, source, Parent->getMessage(source, "DCC/NOACCESS"),
+						"CHAT");
 }
 
 // INBOUND DCC!!
@@ -510,9 +516,11 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     if (!(Parent->nickserv.live[source.LowerCase()].InFlight.File() &&
 	!Parent->nickserv.live[source.LowerCase()].InFlight.InProg()))
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/DCCSENDREFUSE"));
+	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
+						"GET");
 	return;
     }
 
+    // Spawn this in a new thread, and we're done, it takes over.
     Parent->dcc->Connect(addr, mynick, source, filename, size);
 }

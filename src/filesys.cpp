@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/03/24 12:53:04  prez
+** FileSystem Logging
+**
 ** Revision 1.7  2000/03/23 10:22:25  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -238,7 +241,11 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     if (!Parent->nickserv.IsLive(i_Source))
 	return;
     if (i_Filename == "")
+    {
+	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
+					"SEND");
 	return;
+    }
 
     // Set 'Ready to Transfer'
     mstring tmp;
@@ -249,7 +256,12 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 	tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
 			DirSlash.c_str(), filenum);
     if (!wxFile::Exists(tmp.c_str()))
+    {
+	Parent->filesys.EraseFile(filetype, filenum);
+	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
+					"SEND");
 	return;
+    }
     if (wxFile::Exists(i_Tempfile.c_str()))
 	remove(i_Tempfile.c_str());
     wxFileInputStream fin(tmp.c_str());
@@ -288,12 +300,17 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Filename = filename;
 
     // Verify Paramaters
-    if (Parent->nickserv.IsLive(i_Source) &&
-	Parent->nickserv.live[i_Source.LowerCase()].InFlight.File() &&
+    if (Parent->nickserv.IsLive(i_Source))
+	return;
+    if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.File() &&
 	!Parent->nickserv.live[i_Source.LowerCase()].InFlight.InProg())
 	Parent->nickserv.live[i_Source.LowerCase()].InFlight.SetInProg();
     else
+    {
+	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
+					"GET");
 	return;
+    }
 
     // Set 'Ready to Transfer'
     if (wxFile::Exists(i_Tempfile.c_str()))
@@ -336,14 +353,17 @@ DccXfer::~DccXfer()
 	    else if (filetype == FileMap::Picture)
 		tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
 			DirSlash.c_str(), filenum);
-	    if (!wxFile::Exists(i_Tempfile.c_str()))
-		return;
-	    if (wxFile::Exists(tmp.c_str()))
-		remove(tmp.c_str());
-	    wxFileInputStream fin(i_Tempfile.c_str());
-	    wxFileOutputStream fout(tmp.c_str());
-	    fout << fin;
-	    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
+	    if (wxFile::Exists(i_Tempfile.c_str()))
+	    {
+		if (wxFile::Exists(tmp.c_str()))
+		    remove(tmp.c_str());
+		wxFileInputStream fin(i_Tempfile.c_str());
+		wxFileOutputStream fout(tmp.c_str());
+		fout << fin;
+		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
+	    }
+	    else
+		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
 	}
 	else
 	    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
@@ -401,6 +421,12 @@ void DccXfer::Action()
 		memset(i_Transiant, 0, i_Blocksize);
 		i_Socket->send_n((void *) htonl(i_Total), 4);
 		merrno = errno;
+		if (i_Filesize == i_Total)
+		{
+		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
+					"GET", i_Total);
+		    i_File->Close();
+		}
 	    }
 	}
 	else if (XferAmt < 0)
@@ -414,6 +440,8 @@ void DccXfer::Action()
 	    case ETIME:		// Request Timed Out
 		break;
 	    default:
+		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
+						"GET");
 		i_File->Close();
 	    }
 	}
@@ -437,6 +465,8 @@ void DccXfer::Action()
 		case ETIME:		// Request Timed Out
 		    break;
 		default:
+		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
+						"SEND");
 		    i_File->Close();
 		}
 		return;
@@ -450,6 +480,8 @@ void DccXfer::Action()
 	    i_XferTotal = 0;
 	    if (i_Total == i_Filesize)
 	    {
+		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
+					"SEND", i_Total);
 		i_File->Close();
 		return;
 	    }
@@ -480,6 +512,8 @@ void DccXfer::Action()
 	    case ETIME:		// Request Timed Out
 		break;
 	    default:
+		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
+						"SEND");
 		i_File->Close();
 	    }
 	}
@@ -576,10 +610,12 @@ unsigned long DccMap::Connect(ACE_INET_Addr address,
 		RET(WorkId);
 	    }
 	}
-	send(mynick, source, "Unable to accept DCC");
+	send(mynick, source, Parent->getMessage("DCC/FAILED"),
+						"GET");
     }
     else
-	send(mynick, source, "DCC tiemd out");
+	send(mynick, source, Parent->getMessage("DCC/NOCONNECT"),
+						"GET");
     RET(0);
 }
 
@@ -605,10 +641,12 @@ unsigned long DccMap::Accept(unsigned short port, mstring mynick,
 		RET(WorkId);
 	    }
 	}
-	send(mynick, source, "Unable to initiate DCC");
+	send(mynick, source, Parent->getMessage("DCC/FAILED"),
+						"SEND");
     }
     else
-	send(mynick, source, "DCC tiemd out");
+	send(mynick, source, Parent->getMessage("DCC/NOCONNECT"),
+						"SEND");
     RET(0);
 }
 

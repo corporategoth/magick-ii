@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/03/24 12:53:05  prez
+** FileSystem Logging
+**
 ** Revision 1.67  2000/03/23 10:22:25  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -304,10 +307,10 @@ void Nick_Live_t::InFlight_t::Cancel()
 	    delete arg;
 	}
 */
-    if (memo)
-	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
+    if (fileattach)
+	send(service, nick, Parent->getMessage(nick, "DCC/NOCONNEC"));
     else
-	send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/CANCEL"));
+	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
     init();
 }
 
@@ -411,12 +414,12 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			}
 			else if (File())
 			{
-			    // Delete file from filesystem
+			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
 			}
 		    }
 		    else if (File())
 		    {
-			// Delete file from filesystem
+			Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
 		    }
 		}
 	    }
@@ -429,7 +432,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		}
 		else
 		{
-		    // Delete file from filesystem
+		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
 		}
 	    }
 	}
