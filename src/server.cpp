@@ -1873,7 +1873,10 @@ void NetworkServ::numeric_execute(const mstring & data)
 		else if (Parent->commserv.IsName(*k))
 		    Parent->commserv.signon(*k);
 		else if (Parent->servmsg.IsName(*k))
+		{
 		    Parent->servmsg.signon(*k);
+		    Parent->server.MODE(*k, "+o");
+		}
 	    }
 	}
 

@@ -1128,6 +1128,7 @@ void Magick::get_config_values()
 	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
 	    {
 		servmsg.signon(servmsg.names.ExtractWord(i+1, " "));
+		Parent->server.MODE(servmsg.names.ExtractWord(i+1, " "), "+o");
 	    }
 	}
     }

@@ -361,13 +361,13 @@ int EventTask::svc(void)
 		{
 		    if (nsi->second.Host() == "")
 		    {
-			if (nsi->second.LastAllSeenTime().DaysSince() >
+			if (nsi->second.LastAllSeenTime().SecondsSince() >
 			    Parent->nickserv.Expire())
 			    expired_nicks.push_back(nsi->first);
 		    }
 		    else
 		    {
-			if (nsi->second.LastSeenTime().DaysSince() >
+			if (nsi->second.LastSeenTime().SecondsSince() >
 			    Parent->nickserv.Expire())
 			    expired_nicks.push_back(nsi->first);
 		    }
@@ -386,7 +386,7 @@ int EventTask::svc(void)
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); nsi++)
 		{
-		    if (csi->second.LastUsed().DaysSince() >
+		    if (csi->second.LastUsed().SecondsSince() >
 			Parent->chanserv.Expire())
 			expired_chans.push_back(csi->first);
 		}
@@ -411,7 +411,7 @@ int EventTask::svc(void)
 			    lni = ni->second.begin();
 			    firstgone = false;
 			}
-			if (lni->Time().DaysSince() >
+			if (lni->Time().SecondsSince() >
 			    Parent->memoserv.News_Expire())
 			{
 			    if (lni == ni->second.begin())

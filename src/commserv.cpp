@@ -338,20 +338,6 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"INFO", Parent->commserv.ALL_Name(), CommServ::do_Info);
 
-    // These 'throw' the command back onto the map with
-    // more paramaters.  IF you want to put wildcards in
-    // it, you must add a terminator command (ie. "CMD* *"
-    // in the command map, and NULL as the function).
-    // This must be BEFORE the wildcarded map ("CMD*")
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOG* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOG*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET*", Parent->commserv.REGD_Name(), do_1_3param);
-
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* ADD", Parent->commserv.REGD_Name(), CommServ::do_logon_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -370,6 +356,21 @@ void CommServ::AddCommands()
 		"SET* PRIV*", Parent->commserv.REGD_Name(), CommServ::do_set_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* *MEMO*", Parent->commserv.REGD_Name(), CommServ::do_set_OpenMemos);
+
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOG* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOG*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET*", Parent->commserv.REGD_Name(), do_1_3param);
+
 }
 
 void CommServ::RemCommands()

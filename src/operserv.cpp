@@ -981,7 +981,7 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
 		Parent->operserv.Clone != Parent->operserv.Clone_end();
 		Parent->operserv.Clone++)
     {
-	if (host.Matches(Parent->operserv.Clone->Entry().LowerCase()))
+	if (Parent->operserv.Clone->Entry().LowerCase().Matches(host))
 	{
 	    output.Format("%3d. %s (modified %s ago by %s)", i,
 			    Parent->operserv.Clone->Entry().c_str(),
@@ -1158,7 +1158,7 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
 		Parent->operserv.Akill != Parent->operserv.Akill_end();
 		Parent->operserv.Akill++)
     {
-	if (host.Matches(Parent->operserv.Akill->Entry().LowerCase()))
+	if (Parent->operserv.Akill->Entry().LowerCase().Matches(host))
 	{
 	    output.Format("%3d. %s (modified %s ago by %s)", i,
 			    Parent->operserv.Akill->Entry().c_str(),
@@ -1311,7 +1311,7 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 		Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
 		Parent->operserv.OperDeny++)
     {
-	if (host.Matches(Parent->operserv.OperDeny->Entry().LowerCase()))
+	if (Parent->operserv.OperDeny->Entry().LowerCase().Matches(host))
 	{
 	    output.Format("%3d. %s (modified %s ago by %s)", i,
 			    Parent->operserv.OperDeny->Entry().c_str(),
@@ -1462,7 +1462,7 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 		Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
 		Parent->operserv.OperDeny++)
     {
-	if (host.Matches(Parent->operserv.OperDeny->Entry().LowerCase()) &&
+	if (Parent->operserv.OperDeny->Entry().LowerCase().Matches(host) &&
 	    Parent->operserv.OperDeny->Value())
 	{
 	    output.Format("%3d. %s (modified %s ago by %s)", i,
