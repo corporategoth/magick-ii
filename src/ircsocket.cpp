@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.171  2001/07/03 06:00:07  prez
+** More deadlock fixes ... also cleared up the Signal #6 problem.
+**
 ** Revision 1.170  2001/07/01 05:02:45  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -1134,10 +1137,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	CB(2, Parent->server.ToBeSquit.size());
 	for (iter=Parent->server.ToBeSquit[*tmp].begin(); iter!=Parent->server.ToBeSquit[*tmp].end(); iter++)
 	{
-	    if (Parent->nickserv.IsLiveAll(*iter))
-	    {
-		chunked.push_back(*iter);
-	    }
+	    chunked.push_back(*iter);
 	}
 	Parent->server.ToBeSquit.erase(*tmp);
 	CE(2, Parent->server.ToBeSquit.size());
@@ -1145,9 +1145,12 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     vector<mstring>::iterator k;
     for (k=chunked.begin(); k!=chunked.end(); k++)
     {
-	Parent->nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
-	Parent->nickserv.RemLive(*k);
-	mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	if (Parent->nickserv.IsLiveAll(*k))
+	{
+	    Parent->nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
+	    Parent->nickserv.RemLive(*k);
+	    mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	}
     }
     Parent->server.DumpE();
 
@@ -1188,9 +1191,12 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     vector<mstring>::iterator k;
     for (k=SquitMe.begin(); k != SquitMe.end(); k++)
     {
-	Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
-	Parent->nickserv.RemLive(*k);
-	mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	if (Parent->nickserv.IsLiveAll(*k))
+	{
+	    Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
+	    Parent->nickserv.RemLive(*k);
+	    mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	}
     }
 
     delete tmp;
@@ -1240,16 +1246,22 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // in (ie. dont have JOIN on, and I'm the only user
     // in them).  ie. after AKICK, etc.
     if (Parent->chanserv.IsLive(*tmp) &&
-	Parent->chanserv.GetLive(tmp->LowerCase()).IsIn(
+	Parent->chanserv.GetLive(*tmp).IsIn(
 			Parent->chanserv.FirstName()))
     {
 	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
-	MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
-	Parent->chanserv.GetLive(tmp->LowerCase()).DumpB();
-	CB(1, Parent->chanserv.GetLive(tmp->LowerCase()).ph_timer);
-	Parent->chanserv.GetLive(tmp->LowerCase()).ph_timer = 0;
-	CE(1, Parent->chanserv.GetLive(tmp->LowerCase()).ph_timer);
-	Parent->chanserv.GetLive(tmp->LowerCase()).DumpE();
+	if (Parent->chanserv.IsLive(*tmp))
+	{
+	    RLOCK(("ChanServ", "live", tmp->LowerCase()));
+	    Chan_Live_t &clive = Parent->chanserv.GetLive(tmp->LowerCase());
+	    clive.DumpB();
+	    { MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
+	    CB(1, clive.ph_timer);
+	    clive.ph_timer = 0;
+	    CE(1, clive.ph_timer);
+	    }
+	    clive.DumpE();
+	}
     }
     delete tmp;
     DRET(0);
@@ -1651,23 +1663,27 @@ int EventTask::svc(void)
 	    for (cli=Parent->chanserv.LiveBegin();
 		    cli!=Parent->chanserv.LiveEnd(); cli++)
 	    {
-		csi = Parent->chanserv.stored.find(cli->first);
-		// Removing bans ...
-		if (!Parent->chanserv.LCK_Bantime() ||
-		    Parent->chanserv.DEF_Bantime())
+		RLOCK3(("ChanServ", "live", cli->first));
+		bool found = false;
+		unsigned long bantime = 0, parttime = 0;
+
+		if (Parent->chanserv.IsStored(cli->first))
 		{
-		    unsigned long bantime = 0;
-		    { RLOCK3(("ChanServ", "stored", cli->first));
+		    bantime = Parent->chanserv.GetStored(cli->first).Bantime();
+		    parttime = Parent->chanserv.GetStored(cli->first).Parttime();
+		    found = true;
+		}
+		// Removing bans ...
+		if (found && (!Parent->chanserv.LCK_Bantime() ||
+		    Parent->chanserv.DEF_Bantime()))
+		{
 		    if (Parent->chanserv.LCK_Bantime())
 			bantime = Parent->chanserv.DEF_Bantime();
-		    else if (csi != Parent->chanserv.StoredEnd())
-			bantime = csi->second.Bantime();
-		    }
 		    if (bantime)
 		    {
 			vector<mstring> remove;
 			vector<mstring>::iterator ri;
-			RLOCK3(("ChanServ", "live", cli->first, "bans"));
+			{ RLOCK4(("ChanServ", "live", cli->first, "bans"));
 			for (di=cli->second.bans.begin();
 				di!=cli->second.bans.end(); di++)
 			{
@@ -1675,7 +1691,7 @@ int EventTask::svc(void)
 			    {
 				remove.push_back(di->first);
 			    }
-			}
+			}}
 			for (ri=remove.begin(); ri!=remove.end(); ri++)
 			{
 			    LOG(LM_DEBUG, "EVENT/UNBAN", (*ri,
@@ -1687,19 +1703,19 @@ int EventTask::svc(void)
 		}
 
 		chunked.clear();
-		if (csi != Parent->chanserv.StoredEnd())
+		if (found)
 		{
 		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		    for (di=cli->second.recent_parts.begin();
 				di!=cli->second.recent_parts.end(); di++)
 		    {
-			if (di->second.SecondsSince() > csi->second.Parttime())
+			if (di->second.SecondsSince() > parttime)
 			    chunked.push_back(di->first);
 		    }
 		    for (i=0; i<chunked.size(); i++)
 			cli->second.recent_parts.erase(chunked[i]);
 		}
-		else
+		else if (cli->second.recent_parts.size())
 		{
 		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		    cli->second.recent_parts.clear();
@@ -1718,50 +1734,52 @@ int EventTask::svc(void)
 		for (nli = Parent->nickserv.LiveBegin();
 			    nli != Parent->nickserv.LiveEnd(); nli++)
 		{
-		    nsi = Parent->nickserv.stored.find(nli->first);
 		    RLOCK2(("NickServ", "live", nli->first));
-		    RLOCK3(("NickServ", "stored", nli->first));
-		    if (nsi != Parent->nickserv.StoredEnd() &&
-			!nsi->second.IsOnline() && nsi->second.Protect() &&
-			!nli->second.IsServices() && nli->second.Squit().empty() &&
-			nli->second.MySignonTime().SecondsSince() >=
-					    Parent->nickserv.Ident())
+		    if (Parent->nickserv.IsStored(nli->first))
 		    {
-			chunked.push_back(nli->first);
+			if (!Parent->nickserv.GetStored(nli->first).IsOnline() &&
+				Parent->nickserv.GetStored(nli->first).Protect() &&
+				!nli->second.IsServices() && nli->second.Squit().empty() &&
+				nli->second.MySignonTime().SecondsSince() >=
+					    Parent->nickserv.Ident())
+			{
+			    chunked.push_back(nli->second.Name());
+			}
 		    }
 		}}
 		for (i=0; i<chunked.size(); i++)
 		{
-		    nli = Parent->nickserv.live.find(chunked[i]);
-		    nsi = Parent->nickserv.stored.find(chunked[i]);
-		    mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
-		    mstring oldnick = nli->second.Name();
-		    LOG(LM_INFO, "EVENT/KILLPROTECT", (nli->second.Mask(Nick_Live_t::N_U_P_H)));
+		    if (!Parent->nickserv.IsLive(chunked[i]) ||
+			!Parent->nickserv.IsStored(chunked[i]))
+			continue;
+
+		    mstring newnick = Parent->nickserv.findnextnick(chunked[i]);
+		    LOG(LM_INFO, "EVENT/KILLPROTECT", (Parent->nickserv.GetLive(chunked[i]).Mask(Nick_Live_t::N_U_P_H)));
 		    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
 		    {
-			if (nsi->second.Forbidden())
-			    NSEND(Parent->nickserv.FirstName(), oldnick, "MISC/RENAMED_FORBID");
+			if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
+			    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_FORBID");
 			else
-			    NSEND(Parent->nickserv.FirstName(), oldnick, "MISC/RENAMED_IDENT");
+			    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_IDENT");
 			Parent->server.SVSNICK(Parent->nickserv.FirstName(),
-				oldnick, newnick);
+				chunked[i], newnick);
 		    }
 		    else
 		    {
-			if (nsi->second.Forbidden())
+			if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
 			    Parent->server.KILL(Parent->nickserv.FirstName(),
-				oldnick, Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
+				chunked[i], Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
 			else
 			    Parent->server.KILL(Parent->nickserv.FirstName(),
-				oldnick, Parent->getMessage("NS_SET/PROTECT"));
-			Parent->server.NICK(oldnick, (Parent->startup.Ownuser() ?
-				    oldnick.LowerCase() :
+				chunked[i], Parent->getMessage("NS_SET/PROTECT"));
+			Parent->server.NICK(chunked[i], (Parent->startup.Ownuser() ?
+				    chunked[i].LowerCase() :
 				    Parent->startup.Services_User()),
 				    Parent->startup.Services_Host(),
 				    Parent->startup.Server_Name(),
 				    Parent->nickserv.Enforcer_Name());
 		    }
-		    Parent->nickserv.AddRecovered(oldnick, mDateTime::CurrentDateTime());
+		    Parent->nickserv.AddRecovered(chunked[i], mDateTime::CurrentDateTime());
 		}
 
 		// Sign off clients we've decided to take.
@@ -1791,37 +1809,41 @@ int EventTask::svc(void)
 	    MCE(last_check);
 	}
 
-	{ RLOCK(("Events", "cmodes_pending"));
-	set<mstring>::iterator iter;
-	CP(("Starting PENDING MODES check ..."));
-	for (iter=cmodes_pending.begin(); iter!=cmodes_pending.end(); iter++)
+	if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 	{
-	    if (Parent->chanserv.IsLive(*iter))
+	    CP(("Starting PENDING MODES check ..."));
+	    set<mstring> cmp;
+	    set<mstring>::iterator iter;
+	    { WLOCK(("Events", "cmodes_pending"));
+	    cmp = cmodes_pending;
+	    MCB(cmodes_pending.size());
+	    cmodes_pending.clear();
+	    MCE(cmodes_pending.size());
+	    }
+	    map<mstring,vector<mstring> > modelines;
+	    map<mstring,vector<mstring> >::iterator ml;
+	    for (iter=cmp.begin(); iter!=cmp.end(); iter++)
 	    {
-		COM(("Looking at channel %s", iter->c_str()));
-		RLOCK(("ChanServ", "live", *iter));
-		Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
-		// Send pending ChanServ modes ...
-		// Make sure we got someone to send them first.
+		if (Parent->chanserv.IsLive(*iter))
 		{
-		    RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
-		    RLOCK3(("ChanServ", "live", *iter, "p_modes_off"));
-		    RLOCK4(("ChanServ", "live", *iter, "p_modes_on_params"));
-		    RLOCK5(("ChanServ", "live", *iter, "p_modes_on_params"));
+		    COM(("Looking at channel %s", iter->c_str()));
+		    RLOCK(("ChanServ", "live", *iter));
+		    Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
 		    if (!chan.p_modes_on.empty() || !chan.p_modes_off.empty())
 		    {
 			unsigned int j, k;
-			vector<mstring> modelines;
 			mstring mode;
 			mstring modeparam;
 
+			{ RLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
+			RLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
 			CP(("p_modes_off_size %d (%s)", chan.p_modes_off.size(), chan.p_modes_off.c_str()));
 			for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
 			{
 			    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_off[i], j, k));
 			    if (j>=Parent->server.proto.Modes())
 			    {
-				modelines.push_back(mode + " " + modeparam);
+				modelines[*iter].push_back(mode + " " + modeparam);
 				mode.erase();
 				modeparam.erase();
 				j=0;
@@ -1838,11 +1860,13 @@ int EventTask::svc(void)
 				j++; k++;
 			    }
 			}
-			{ WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
+			WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
 			WLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
 			chan.p_modes_off.erase();
 			chan.p_modes_off_params.clear();
 			}
+			{ RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
+			RLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
 			if (mode.size() && chan.p_modes_on.size())
 			    mode += "+";
 			CP(("p_modes_on_size %d (%s)", chan.p_modes_on.size(), chan.p_modes_on.c_str()));
@@ -1851,7 +1875,7 @@ int EventTask::svc(void)
 			    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_on[i], j, k));
 			    if (j>=Parent->server.proto.Modes())
 			    {
-				modelines.push_back(mode + " " + modeparam);
+				modelines[*iter].push_back(mode + " " + modeparam);
 				mode.erase();
 				modeparam.erase();
 				j=0;
@@ -1867,26 +1891,22 @@ int EventTask::svc(void)
 				j++; k++;
 			    }
 			}
-			{ WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
+			WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
 			WLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
 			chan.p_modes_on.erase();
 			chan.p_modes_on_params.clear();
 			}
 			if (mode.size())
-			    modelines.push_back(mode + " " + modeparam);
-			for (i=0; i<modelines.size(); i++)
-			{
-			    Parent->server.MODE(Parent->chanserv.FirstName(),
-				*iter, modelines[i]);
-			}
+			    modelines[*iter].push_back(mode + " " + modeparam);
 		    }
 		}
 	    }
-	}}
-	{ WLOCK(("Events", "cmodes_pending"));
-	MCB(cmodes_pending.size());
-	cmodes_pending.clear();
-	MCE(cmodes_pending.size());
+	    for (ml=modelines.begin(); ml!=modelines.end(); ml++)
+	    {
+		for (i=0; i<ml->second.size(); i++)
+		    Parent->server.MODE(Parent->chanserv.FirstName(),
+			ml->first, ml->second[i]);
+	    }
 	}
 
 	chunked.clear();
@@ -2233,7 +2253,7 @@ int EventTask::svc(void)
     }
     catch (exception &e)
     {
-	LOG(LM_CRITICAL, "EXCEPTION/UNHANDLED", ( e.what()));
+	LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
     }
     catch (...)
     {

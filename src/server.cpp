@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.184  2001/07/03 06:00:08  prez
+** More deadlock fixes ... also cleared up the Signal #6 problem.
+**
 ** Revision 1.183  2001/07/02 03:39:29  prez
 ** Fixed bug with users sending printf strings (mainly in memos).
 **
@@ -2337,6 +2340,12 @@ void Server::NOTICE(const mstring& nick, const mstring& dest,
 		"NOTICE", nick, dest));
 	}
     }
+    else if (Parent->nickserv.IsLive(dest) &&
+	Parent->nickserv.GetLive(dest).IsServices())
+    {
+	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", (
+		"NOTICE", nick));
+    }
     else
     {
 	Parent->nickserv.GetLive(nick).Action();
@@ -2427,6 +2436,12 @@ void Server::PRIVMSG(const mstring& nick, const mstring& dest,
 	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
 		"PRIVMSG", nick, dest));
 	}
+    }
+    else if (Parent->nickserv.IsLive(dest) &&
+	Parent->nickserv.GetLive(dest).IsServices())
+    {
+	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", (
+		"PRIVMSG", nick));
     }
     else
     {
@@ -4145,9 +4160,9 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 
 	    /* TRACE ... (usually leave off) */
 	    /*
-	    Trace::TurnSet(tt_MAIN, 0x20c0);
+	    Trace::TurnSet(tt_MAIN, 0xffff);
 	    for (int i=tt_MAIN+1; i<tt_MAX; i++)
-		Trace::TurnSet(static_cast<threadtype_enum>(i), 0x20c0);
+		Trace::TurnSet(static_cast<threadtype_enum>(i), 0xffff);
 	    */
 
 	    // PASS :password
@@ -5935,14 +5950,15 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
     {
     case 303:     // RPL_ISON
 	{{ RLOCK(("IrcSvcHandler"));
-	if (Parent->ircsvchandler != NULL)
+	if (Parent->ircsvchandler != NULL &&
+	    Parent->ircsvchandler->Burst())
 	{
 	    Parent->ircsvchandler->EndBurst();
+	    if (!proto.Burst().empty())
+		Parent->server.sraw(((proto.Tokens() &&
+		    !proto.GetNonToken(proto.Burst()).empty()) ?
+		    proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
 	}}
-	if (!proto.Burst().empty())
-	    Parent->server.sraw(((proto.Tokens() &&
-		!proto.GetNonToken(proto.Burst()).empty()) ?
-		proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
 	for (unsigned int i=1; i<=params.WordCount(": "); i++)
 	{
 	    // Remove clients from 'signon list' who are

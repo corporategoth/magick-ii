@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.182  2001/07/03 06:00:07  prez
+** More deadlock fixes ... also cleared up the Signal #6 problem.
+**
 ** Revision 1.181  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -1379,8 +1382,6 @@ void Nick_Live_t::Part(const mstring& chan)
     MCB(joined_channels.size());
     joined_channels.erase(chan.LowerCase());
     MCE(joined_channels.size());
-    // Just incase we were cycling and need to JOIN
-    //Parent->server.FlushUser(i_Name, chan);
 }
 
 void Nick_Live_t::Kick(const mstring& kicker, const mstring& chan)
@@ -1426,10 +1427,14 @@ void Nick_Live_t::Quit(const mstring& reason)
 	}
     }}
 
-    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
-    while (joined_channels.size())
-	Part(*joined_channels.begin());
+    set<mstring> jc;
+    set<mstring>::iterator c;
+    { WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    jc = joined_channels;
+    joined_channels.clear();
     }
+    for (c=jc.begin(); c!=jc.end(); c++)
+	Part(*c);
 
     unsigned long i;
     { RLOCK(("DCC"));
@@ -1560,12 +1565,12 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     InFlight.ChgNick(in);
     set<mstring> wason;
 
-    RLOCK(("NickServ", "live", in.LowerCase()));
+    { RLOCK(("NickServ", "live", in.LowerCase()));
     if (i_Name.IsSameAs(in, true))
     {
 	i_Name = in;
 	NRET(set<mstring>, wason);
-    }
+    }}
 
     unsigned long i;
 
@@ -1632,11 +1637,14 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     CE(1, i_My_Signon_Time);
     }
 
+    set<mstring> jc;
     set<mstring>::iterator iter;
     vector<mstring> chunked;
     // Rename ourselves in all channels ...
     { RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
-    for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
+    jc = joined_channels;
+    }
+    for (iter=jc.begin(); iter!=jc.end(); iter++)
     {
 	if (Parent->chanserv.IsLive(*iter))
 	{
@@ -1648,7 +1656,7 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
 	    LOG(LM_ERROR, "ERROR/REC_FORNOTINCHAN", (
 		"NICK", oldnick, *iter));
 	}
-    }}
+    }
 
     // Clean up non-existant channels ...
     { WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
@@ -1979,16 +1987,29 @@ void Nick_Live_t::SetSquit()
 	Parent->operserv.RemHost(i_host);
     }
 
-    set<mstring>::iterator i;
-    RLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
-    for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
-	if (Parent->chanserv.IsLive(*i))
-	    Parent->chanserv.GetLive(*i).SquitUser(i_Name);
+    set<mstring> jc;
+    set<mstring>::iterator c;
+    vector<mstring> chunked;
+    { RLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    jc = joined_channels;
+    }
+    for (c=jc.begin(); c!=jc.end(); c++)
+	if (Parent->chanserv.IsLive(*c))
+	    Parent->chanserv.GetLive(*c).SquitUser(i_Name);
 	else
 	{
+	    chunked.push_back(*c);
 	    LOG(LM_ERROR, "ERROR/REC_FORNONCHAN", (
-		"SQUIT", i_Name, *i));
+		"SQUIT", i_Name, *c));
 	}
+
+    // Clean up non-existant channels ...
+    { WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    MCB(joined_channels.size());
+    for (unsigned int i=0; i<chunked.size(); i++)
+	joined_channels.erase(chunked[i]);
+    MCE(joined_channels.size());
+    }
 }
 
 
@@ -2009,10 +2030,15 @@ void Nick_Live_t::ClearSquit(const mstring& inmodes)
     CE(1, modes);
     }
 
+    set<mstring> jc;
+    set<mstring>::iterator i;
     { WLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
     CB(2, joined_channels.size());
-    set<mstring>::iterator i;
-    for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
+    jc = joined_channels;
+    joined_channels.clear();
+    CE(2, joined_channels.size());
+    }
+    for (i=jc.begin(); i!=jc.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
 	    Parent->chanserv.GetLive(*i).UnSquitUser(i_Name);
 	else
@@ -2020,11 +2046,6 @@ void Nick_Live_t::ClearSquit(const mstring& inmodes)
 	    LOG(LM_ERROR, "ERROR/REC_FORNONCHAN", (
 		"UNSQUIT", i_Name, *i));
 	}
-
-    joined_channels.clear();
-    CE(2, joined_channels.size());
-    }
-    MCE(i_squit);
 
     RLOCK_IF(("NickServ", "live", i_Name.LowerCase(), "i_host"),
 	!IsServices() && Parent->operserv.AddHost(i_host))

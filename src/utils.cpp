@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/07/03 06:00:08  prez
+** More deadlock fixes ... also cleared up the Signal #6 problem.
+**
 ** Revision 1.70  2001/07/01 05:02:46  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -544,8 +547,6 @@ mstring parseMessage(const mstring & message, const mVarArray& va)
 	}
 	start = end;
     }
-    // Needed to avoid formatting on our stuff ...
-    data.replace("%", "%%");
 
     RET(data);    
 }
