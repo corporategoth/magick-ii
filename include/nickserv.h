@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.63  2001/03/27 07:04:30  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -227,6 +230,7 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    NickServ();
     ~NickServ() {}
     class stats_t
     {
@@ -254,61 +258,61 @@ public:
 	unsigned long i_SetPicture;
 	unsigned long i_Send;
     public:
-	stats_t() { clear(); }
-	void clear() {
+	inline stats_t() { clear(); }
+	inline void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Link = i_Unlink = i_Host =
 		i_Identify = i_Ghost = i_Recover = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Access =
 		i_Ignore = i_Set = i_NoExpire = i_Lock =
 		i_Unlock = i_SetPicture = i_Send = 0; }
-	mDateTime ClearTime()const	{ return i_ClearTime; }
-	unsigned long Register()const	{ return i_Register; }
-	unsigned long Drop()const	{ return i_Drop; }
-	unsigned long Link()const	{ return i_Link; }
-	unsigned long Unlink()const	{ return i_Unlink; }
-	unsigned long Host()const	{ return i_Host; }
-	unsigned long Identify()const	{ return i_Identify; }
-	unsigned long Ghost()const	{ return i_Ghost; }
-	unsigned long Recover()const	{ return i_Recover; }
-	unsigned long Suspend()const	{ return i_Suspend; }
-	unsigned long Unsuspend()const	{ return i_Unsuspend; }
-	unsigned long Forbid()const	{ return i_Forbid; }
-	unsigned long Getpass()const	{ return i_Getpass; }
-	unsigned long Access()const	{ return i_Access; }
-	unsigned long Ignore()const	{ return i_Ignore; }
-	unsigned long Set()const	{ return i_Set; }
-	unsigned long NoExpire()const	{ return i_NoExpire; }
-	unsigned long Lock()const	{ return i_Lock; }
-	unsigned long Unlock()const	{ return i_Unlock; }
-	unsigned long SetPicture()const	{ return i_SetPicture; }
-	unsigned long Send()const	{ return i_Send; }
+	inline mDateTime ClearTime()const	{ return i_ClearTime; }
+	inline unsigned long Register()const	{ return i_Register; }
+	inline unsigned long Drop()const	{ return i_Drop; }
+	inline unsigned long Link()const	{ return i_Link; }
+	inline unsigned long Unlink()const	{ return i_Unlink; }
+	inline unsigned long Host()const	{ return i_Host; }
+	inline unsigned long Identify()const	{ return i_Identify; }
+	inline unsigned long Ghost()const	{ return i_Ghost; }
+	inline unsigned long Recover()const	{ return i_Recover; }
+	inline unsigned long Suspend()const	{ return i_Suspend; }
+	inline unsigned long Unsuspend()const	{ return i_Unsuspend; }
+	inline unsigned long Forbid()const	{ return i_Forbid; }
+	inline unsigned long Getpass()const	{ return i_Getpass; }
+	inline unsigned long Access()const	{ return i_Access; }
+	inline unsigned long Ignore()const	{ return i_Ignore; }
+	inline unsigned long Set()const	{ return i_Set; }
+	inline unsigned long NoExpire()const	{ return i_NoExpire; }
+	inline unsigned long Lock()const	{ return i_Lock; }
+	inline unsigned long Unlock()const	{ return i_Unlock; }
+	inline unsigned long SetPicture()const	{ return i_SetPicture; }
+	inline unsigned long Send()const	{ return i_Send; }
     } stats;
 
-    mstring Enforcer_Name()const	{ return enforcer_name; }
-    bool Append_Rename()const		{ return append_rename; }
-    mstring Suffixes()const		{ return suffixes; }
-    unsigned long Expire()const		{ return expire; }
-    unsigned long Delay()const		{ return delay; }
-    unsigned long Ident()const		{ return ident; }
-    unsigned long Release()const	{ return release; }
-    unsigned int Passfail()const	{ return passfail; }
-    bool DEF_Protect()const		{ return def_protect; }
-    bool LCK_Protect()const		{ return lck_protect; }
-    bool DEF_Secure()const		{ return def_secure; }
-    bool LCK_Secure()const		{ return lck_secure; }
-    bool DEF_NoExpire()const		{ return def_noexpire; }
-    bool LCK_NoExpire()const		{ return lck_noexpire; }
-    bool DEF_NoMemo()const		{ return def_nomemo; }
-    bool LCK_NoMemo()const		{ return lck_nomemo; }
-    bool DEF_Private()const		{ return def_private; }
-    bool LCK_Private()const		{ return lck_private; }
-    bool DEF_PRIVMSG()const		{ return def_privmsg; }
-    bool LCK_PRIVMSG()const		{ return lck_privmsg; }
-    mstring DEF_Language()const		{ return def_language; }
-    bool LCK_Language()const		{ return lck_language; }
-    unsigned long PicSize()const	{ return picsize; }
-    mstring PicExt()const		{ return picext; }
+    inline mstring Enforcer_Name()const	{ return enforcer_name; }
+    inline bool Append_Rename()const		{ return append_rename; }
+    inline mstring Suffixes()const		{ return suffixes; }
+    inline unsigned long Expire()const		{ return expire; }
+    inline unsigned long Delay()const		{ return delay; }
+    inline unsigned long Ident()const		{ return ident; }
+    inline unsigned long Release()const	{ return release; }
+    inline unsigned int Passfail()const	{ return passfail; }
+    inline bool DEF_Protect()const		{ return def_protect; }
+    inline bool LCK_Protect()const		{ return lck_protect; }
+    inline bool DEF_Secure()const		{ return def_secure; }
+    inline bool LCK_Secure()const		{ return lck_secure; }
+    inline bool DEF_NoExpire()const		{ return def_noexpire; }
+    inline bool LCK_NoExpire()const		{ return lck_noexpire; }
+    inline bool DEF_NoMemo()const		{ return def_nomemo; }
+    inline bool LCK_NoMemo()const		{ return lck_nomemo; }
+    inline bool DEF_Private()const		{ return def_private; }
+    inline bool LCK_Private()const		{ return lck_private; }
+    inline bool DEF_PRIVMSG()const		{ return def_privmsg; }
+    inline bool LCK_PRIVMSG()const		{ return lck_privmsg; }
+    inline mstring DEF_Language()const		{ return def_language; }
+    inline bool LCK_Language()const		{ return lck_language; }
+    inline unsigned long PicSize()const	{ return picsize; }
+    inline mstring PicExt()const		{ return picext; }
 
     InFlight_Handler ifh;
 
@@ -321,11 +325,11 @@ public:
     Nick_Stored_t &GetStored(const mstring &in);
     void RemStored(const mstring &in);
 #endif
-    stored_t::iterator StoredBegin() { return stored.begin(); }
-    stored_t::iterator StoredEnd() { return stored.end(); }
-    stored_t::const_iterator StoredBegin() const { return stored.begin(); }
-    stored_t::const_iterator StoredEnd() const { return stored.end(); }
-    size_t StoredSize() const { return stored.size(); }
+    inline stored_t::iterator StoredBegin() { return stored.begin(); }
+    inline stored_t::iterator StoredEnd() { return stored.end(); }
+    inline stored_t::const_iterator StoredBegin() const { return stored.begin(); }
+    inline stored_t::const_iterator StoredEnd() const { return stored.end(); }
+    inline size_t StoredSize() const { return stored.size(); }
     bool IsStored(const mstring& in)const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -337,11 +341,11 @@ public:
     Nick_Live_t &GetLive(const mstring &in) const;
     void RemLive(const mstring &in);
 #endif
-    live_t::iterator LiveBegin() { return live.begin(); }
-    live_t::iterator LiveEnd() { return live.end(); }
-    live_t::const_iterator LiveBegin() const { return live.begin(); }
-    live_t::const_iterator LiveEnd() const { return live.end(); }
-    size_t LiveSize() const { return live.size(); }
+    inline live_t::iterator LiveBegin() { return live.begin(); }
+    inline live_t::iterator LiveEnd() { return live.end(); }
+    inline live_t::const_iterator LiveBegin() const { return live.begin(); }
+    inline live_t::const_iterator LiveEnd() const { return live.end(); }
+    inline size_t LiveSize() const { return live.size(); }
     bool IsLive(const mstring& in)const;
     bool IsLiveAll(const mstring& in)const;
 
@@ -354,19 +358,18 @@ public:
     const mDateTime &GetRecovered(const mstring &in) const;
     void RemRecovered(const mstring &in);
 #endif
-    recovered_t::iterator RecoveredBegin() { return recovered.begin(); }
-    recovered_t::iterator RecoveredEnd() { return recovered.end(); }
-    recovered_t::const_iterator RecoveredBegin() const { return recovered.begin(); }
-    recovered_t::const_iterator RecoveredEnd() const { return recovered.end(); }
-    size_t RecoveredSize() const { return recovered.size(); }
+    inline recovered_t::iterator RecoveredBegin() { return recovered.begin(); }
+    inline recovered_t::iterator RecoveredEnd() { return recovered.end(); }
+    inline recovered_t::const_iterator RecoveredBegin() const { return recovered.begin(); }
+    inline recovered_t::const_iterator RecoveredEnd() const { return recovered.end(); }
+    inline size_t RecoveredSize() const { return recovered.size(); }
     bool IsRecovered(const mstring& in)const;
 
     static mstring findnextnick(const mstring& in);
 
-    NickServ();
-    virtual threadtype_enum Get_TType() const { return tt_NickServ; }
-    virtual mstring GetInternalName() const { return "NickServ"; }
-    virtual void execute(const mstring & message);
+    threadtype_enum Get_TType() const { return tt_NickServ; }
+    mstring GetInternalName() const { return "NickServ"; }
+    void execute(const mstring & message);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Register(const mstring &mynick, const mstring &source, const mstring &params);
@@ -423,10 +426,10 @@ public:
     static void do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_unlock_Language(const mstring &mynick, const mstring &source, const mstring &params);
 
-    virtual SXP::Tag& GetClassTag() const { return tag_NickServ; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    SXP::Tag& GetClassTag() const { return tag_NickServ; }
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
 };
 
@@ -472,9 +475,9 @@ public:
 	mstring recipiant;
 	mstring text;
 
-	InFlight_t(const mstring &name) : nick(name) { init(); }
-	InFlight_t() { init(); }
-	~InFlight_t();
+	inline InFlight_t(const mstring &name) : nick(name) { init(); }
+	inline InFlight_t() { init(); }
+	inline ~InFlight_t();
 
 	void ChgNick(const mstring& newnick);
 	void operator=(const InFlight_t &in);
@@ -507,7 +510,7 @@ public:
     } InFlight;
 
     Nick_Live_t();
-    Nick_Live_t(const Nick_Live_t &in)
+    inline Nick_Live_t(const Nick_Live_t &in)
 	{ *this = in; }
     Nick_Live_t(const mstring& name, const mDateTime& signon,
 	const mstring& server, const mstring& username,
@@ -516,11 +519,11 @@ public:
 	const mstring& hostname, const mstring& realname); // Services ONLY
     ~Nick_Live_t() {}
     void operator=(const Nick_Live_t &in);
-    bool operator==(const Nick_Live_t &in) const
+    inline bool operator==(const Nick_Live_t &in) const
     	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Nick_Live_t &in) const
+    inline bool operator!=(const Nick_Live_t &in) const
     	{ return (i_Name != in.i_Name); }
-    bool operator<(const Nick_Live_t &in) const
+    inline bool operator<(const Nick_Live_t &in) const
     	{ return (i_Name < in.i_Name); }
 
     // channel maintinance
@@ -536,7 +539,7 @@ public:
 
     // Data maintinance
     void Name(const mstring& in);
-    mstring Name() const	{ return i_Name; }
+    inline mstring Name() const	{ return i_Name; }
 
     void SendMode(const mstring& in);
     void Mode(const mstring& in);
@@ -664,19 +667,19 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 	tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
 public:
     Nick_Stored_t();
-    Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
+    inline Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
     Nick_Stored_t(const mstring& nick, const mstring& password);
     Nick_Stored_t(const mstring& nick); // Services Only (forbidden)
     ~Nick_Stored_t() {}
     void operator=(const Nick_Stored_t &in);
-    bool operator==(const Nick_Stored_t &in) const
+    inline bool operator==(const Nick_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Nick_Stored_t &in) const
+    inline bool operator!=(const Nick_Stored_t &in) const
 	{ return (i_Name != in.i_Name); }
-    bool operator<(const Nick_Stored_t &in) const
+    inline bool operator<(const Nick_Stored_t &in) const
 	{ return (i_Name < in.i_Name); }
 
-    mstring Name() const	{ return i_Name; }
+    inline mstring Name() const	{ return i_Name; }
     mDateTime RegTime() const;
 
     unsigned long Drop();
@@ -693,7 +696,7 @@ public:
     mstring Comment();
     void Comment(const mstring& in);
 
-    void Suspend(const mstring& name, const mstring& reason)
+    inline void Suspend(const mstring& name, const mstring& reason)
 	{ Comment(reason); Suspend(name); }
     void Suspend(const mstring& name);
     void UnSuspend();
@@ -710,7 +713,7 @@ public:
     mstring Access(const unsigned int count);
     bool AccessAdd(const mstring& in);
     unsigned int AccessDel(const mstring& in);
-    unsigned int AccessDel(const unsigned int in)
+    inline unsigned int AccessDel(const unsigned int in)
 	{ return AccessDel(Access(in)); }
     bool IsAccess(const mstring& in);
 
@@ -718,7 +721,7 @@ public:
     mstring Ignore(const unsigned int count);
     bool IgnoreAdd(const mstring& in);
     unsigned int IgnoreDel(const mstring& in);
-    unsigned int IgnoreDel(const unsigned int in)
+    inline unsigned int IgnoreDel(const unsigned int in)
 	{ return IgnoreDel(Ignore(in)); }
     bool IsIgnore(const mstring& in);
 
@@ -774,9 +777,9 @@ public:
     size_t MyChannels() const;
 
     SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage();
     void DumpB();

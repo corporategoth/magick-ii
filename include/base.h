@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.85  2001/03/27 07:04:30  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -168,8 +171,28 @@ protected:
     mutable map<mstring,mstring> i_UserDef;
 public:
     virtual ~mUserDef() {}
-    virtual mstring UserDef(const mstring &type) const;
-    virtual void UserDef(const mstring &type, const mstring &val);
+    inline mstring UserDef(const mstring &type) const
+    {
+	FT("mUserDef::UserDef", (type));
+	map<mstring,mstring>::const_iterator iter = i_UserDef.find(type.LowerCase());
+	if (iter != i_UserDef.end())
+	{
+	    RET(iter->second);
+	}
+	RET("");
+    }
+    inline void UserDef(const mstring &type, const mstring &val)
+    {
+	FT("mUserDef::UserDef", (type, val));
+	if (val.IsSameAs("NONE", true))
+	{
+	    i_UserDef.erase(type.LowerCase());
+	}
+	else
+	{
+	    i_UserDef[type.LowerCase()] = val;
+	}
+    }
 };
 
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
@@ -182,7 +205,7 @@ protected:
     size_t thread_count;
     int message_i(const mstring& message);
 public:
-    mBaseTask() {}
+    inline mBaseTask() {}
     virtual ~mBaseTask() {}
     virtual int open(void *in=0);
     virtual int close(unsigned long flags=0);
@@ -207,7 +230,7 @@ protected:
     virtual void RemCommands() {};
 
 public:
-    mBase() {}
+    inline mBase() {}
     virtual ~mBase() {}
     static void init();
     static void shutdown();
@@ -230,17 +253,17 @@ public:
     virtual bool MSG() const		{ return messages; }
     virtual void MSG(const bool on)	{ messages=on; } 
 
-    bool signon(const mstring& nickname) const;
-    bool signoff(const mstring& nickname) const;
-    void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
-    void privmsg(const mstring &dest, const char *pszFormat, ...) const;
-    void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
-    void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
-    void notice(const mstring &dest, const char *pszFormat, ...) const;
-    void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
-    void send(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
-    void send(const mstring &dest, const char *pszFormat, ...) const;
-    void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
+    virtual bool signon(const mstring& nickname) const;
+    virtual bool signoff(const mstring& nickname) const;
+    virtual void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    virtual void privmsg(const mstring &dest, const char *pszFormat, ...) const;
+    virtual void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
+    virtual void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    virtual void notice(const mstring &dest, const char *pszFormat, ...) const;
+    virtual void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
+    virtual void send(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    virtual void send(const mstring &dest, const char *pszFormat, ...) const;
+    virtual void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
 
     virtual operator mVariant() const
     {
@@ -269,16 +292,21 @@ protected:
     mstring i_Last_Modifier;
 
 public:
-    entlist_t () {}
-    entlist_t (const entlist_t& in) { *this = in; }
-    entlist_t (const mstring &entry, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime());
+    inline entlist_t () {}
+    inline entlist_t (const entlist_t& in) { *this = in; }
+    inline entlist_t(const mstring &entry, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime())
+	: i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
+    {
+	FT("entlist_t::entlist_t", (entry, nick, modtime));
+    }
+
     virtual ~entlist_t () {}
     void operator=(const entlist_t &in);
-    bool operator==(const entlist_t &in) const
+    inline bool operator==(const entlist_t &in) const
 	{ return (i_Entry == in.i_Entry); }
-    bool operator!=(const entlist_t &in) const
+    inline bool operator!=(const entlist_t &in) const
 	{ return (i_Entry != in.i_Entry); }
-    bool operator<(const entlist_t &in) const
+    inline bool operator<(const entlist_t &in) const
 	{ return (i_Entry < in.i_Entry); }
 
     virtual mstring Entry()const		{ return i_Entry; }
@@ -309,15 +337,15 @@ protected:
     bool i_Stupid;	// if TRUE, Value() does nothing.
 
 public:
-    entlist_val_t () {}
-    virtual ~entlist_val_t () {}
-    entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+    inline entlist_val_t () {}
+    inline entlist_val_t (const entlist_val_t& in) { *this = in; }
+    inline entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
 							modtime, stupid));
     }
+    virtual ~entlist_val_t () {}
     void operator=(const entlist_val_t &in)
     {
 	FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
@@ -413,16 +441,16 @@ protected:
     bool i_Stupid;	// if TRUE, Value() does nothing.
 
 public:
-    entlist_val_t () {}
-    virtual ~entlist_val_t () {}
-    entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (const mstring &entry, const pair<T1,T2> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+    inline entlist_val_t () {}
+    inline entlist_val_t (const entlist_val_t& in) { *this = in; }
+    inline entlist_val_t (const mstring &entry, const pair<T1,T2> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
 							modtime, stupid));
     }
-    void operator=(const entlist_val_t &in)
+    virtual ~entlist_val_t () {}
+    virtual void operator=(const entlist_val_t &in)
     {
 	FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t< pair<T1,T2> > &) in"));
 	i_Entry=in.i_Entry;

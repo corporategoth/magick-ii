@@ -31,6 +31,7 @@ your version of this file under either the MPL or the GPL.
 #ifndef XmlTok_INCLUDED
 #define XmlTok_INCLUDED 1
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +39,9 @@ extern "C" {
 #ifndef XMLTOKAPI
 #define XMLTOKAPI /* as nothing */
 #endif
+
+#include <stddef.h>
+#include <stdlib.h>
 
 /* The following token may be returned by XmlContentTok */
 #define XML_TOK_TRAILING_RSQB -5 /* ] or ]] at the end of the scan; might be start of

@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.58  2001/03/27 07:04:30  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -215,6 +218,7 @@ private:
     void RemCommands();
 
 public:
+    ChanServ();
     ~ChanServ() {}
     class stats_t
     {
@@ -250,8 +254,8 @@ public:
 	unsigned long i_Unlock;
 	    
     public:
-	stats_t() { clear(); }
-	void clear() {
+	inline stats_t() { clear(); }
+	inline void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Identify = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Mode =
@@ -260,77 +264,77 @@ public:
 		i_Clear = i_Akick = i_Level = i_Access =
 		i_Greet = i_Message = i_Set = i_NoExpire =
 		i_Lock = i_Unlock = 0; }
-	mDateTime ClearTime()const	    { return i_ClearTime; }
-	unsigned long Register()const    { return i_Register; }
-	unsigned long Drop()const	    { return i_Drop; }
-	unsigned long Identify()const    { return i_Identify; }
-	unsigned long Suspend()const	    { return i_Suspend; }
-	unsigned long Unsuspend()const   { return i_Unsuspend; }
-	unsigned long Forbid()const	    { return i_Forbid; }
-	unsigned long Getpass()const	    { return i_Getpass; }
-	unsigned long Mode()const	    { return i_Mode; }
-	unsigned long Topic()const	    { return i_Topic; }
-	unsigned long Op()const	    { return i_Op; }
-	unsigned long Deop()const	    { return i_Deop; }
-	unsigned long Voice()const	    { return i_Voice; }
-	unsigned long Devoice()const	    { return i_Devoice; }
-	unsigned long Kick()const	    { return i_Kick; }
-	unsigned long Anonkick()const    { return i_Anonkick; }
-	unsigned long Invite()const	    { return i_Invite; }
-	unsigned long Unban()const	    { return i_Unban; }
-	unsigned long Clear()const	    { return i_Clear; }
-	unsigned long Akick()const	    { return i_Akick; }
-	unsigned long Level()const	    { return i_Level; }
-	unsigned long Access()const	    { return i_Access; }
-	unsigned long Greet()const	    { return i_Greet; }
-	unsigned long Message()const	    { return i_Message; }
-	unsigned long Set()const	    { return i_Set; }
-	unsigned long NoExpire()const    { return i_NoExpire; }
-	unsigned long Lock()const	    { return i_Lock; }
-	unsigned long Unlock()const	    { return i_Unlock; }
+	inline mDateTime ClearTime()const	    { return i_ClearTime; }
+	inline unsigned long Register()const    { return i_Register; }
+	inline unsigned long Drop()const	    { return i_Drop; }
+	inline unsigned long Identify()const    { return i_Identify; }
+	inline unsigned long Suspend()const	    { return i_Suspend; }
+	inline unsigned long Unsuspend()const   { return i_Unsuspend; }
+	inline unsigned long Forbid()const	    { return i_Forbid; }
+	inline unsigned long Getpass()const	    { return i_Getpass; }
+	inline unsigned long Mode()const	    { return i_Mode; }
+	inline unsigned long Topic()const	    { return i_Topic; }
+	inline unsigned long Op()const	    { return i_Op; }
+	inline unsigned long Deop()const	    { return i_Deop; }
+	inline unsigned long Voice()const	    { return i_Voice; }
+	inline unsigned long Devoice()const	    { return i_Devoice; }
+	inline unsigned long Kick()const	    { return i_Kick; }
+	inline unsigned long Anonkick()const    { return i_Anonkick; }
+	inline unsigned long Invite()const	    { return i_Invite; }
+	inline unsigned long Unban()const	    { return i_Unban; }
+	inline unsigned long Clear()const	    { return i_Clear; }
+	inline unsigned long Akick()const	    { return i_Akick; }
+	inline unsigned long Level()const	    { return i_Level; }
+	inline unsigned long Access()const	    { return i_Access; }
+	inline unsigned long Greet()const	    { return i_Greet; }
+	inline unsigned long Message()const	    { return i_Message; }
+	inline unsigned long Set()const	    { return i_Set; }
+	inline unsigned long NoExpire()const    { return i_NoExpire; }
+	inline unsigned long Lock()const	    { return i_Lock; }
+	inline unsigned long Unlock()const	    { return i_Unlock; }
     } stats;
 
-    bool IsRevengeLevel(const mstring& level)
+    inline bool IsRevengeLevel(const mstring& level) const
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }
-    bool Hide()const			{ return hide; }
-    unsigned long Expire()const	{ return expire; }
-    unsigned long Delay()const	{ return delay; }
-    unsigned int Max_Per_Nick()const	{ return max_per_nick; }
-    unsigned int Max_Messages()const	{ return max_messages; }
-    mstring DEF_Akick_Reason()const	{ return def_akick_reason; }
-    unsigned int Passfail()const	{ return passfail; }
-    unsigned long ChanKeep()const	{ return chankeep; }
-    mstring DEF_MLock()const		{ return def_mlock; }
-    mstring LCK_MLock()const		{ return lck_mlock; }
-    unsigned long DEF_Bantime()const	{ return def_bantime; }
-    bool LCK_Bantime()const	        { return lck_bantime; }
-    unsigned long DEF_Parttime()const{ return def_bantime; }
-    bool LCK_Parttime()const	        { return lck_bantime; }
-    bool DEF_Keeptopic()const	{ return def_keeptopic; }
-    bool LCK_Keeptopic()const	{ return lck_keeptopic; }
-    bool DEF_Topiclock()const	{ return def_topiclock; }
-    bool LCK_Topiclock()const	{ return lck_topiclock; }
-    bool DEF_Private()const		{ return def_private; }
-    bool LCK_Private()const		{ return lck_private; }
-    bool DEF_Secureops()const	{ return def_secureops; }
-    bool LCK_Secureops()const	{ return lck_secureops; }
-    bool DEF_Secure()const		{ return def_secure; }
-    bool LCK_Secure()const		{ return lck_secure; }
-    bool DEF_NoExpire()const		{ return def_noexpire; }
-    bool LCK_NoExpire()const		{ return lck_noexpire; }
-    bool DEF_Anarchy()const		{ return def_anarchy; }
-    bool LCK_Anarchy()const		{ return lck_anarchy; }
-    bool DEF_KickOnBan()const	{ return def_kickonban; }
-    bool LCK_KickOnBan()const	{ return lck_kickonban; }
-    bool DEF_Restricted()const	{ return def_restricted; }
-    bool LCK_Restricted()const	{ return lck_restricted; }
-    bool DEF_Join()const		{ return def_join; }
-    bool LCK_Join()const		{ return lck_join; }
-    mstring DEF_Revenge()const	{ return def_revenge; }
-    bool LCK_Revenge()const		{ return lck_revenge; }
-    long Level_Min()const		{ return level_min; }
-    long Level_Max()const		{ return level_max; }
+    inline bool Hide()const			{ return hide; }
+    inline unsigned long Expire()const	{ return expire; }
+    inline unsigned long Delay()const	{ return delay; }
+    inline unsigned int Max_Per_Nick()const	{ return max_per_nick; }
+    inline unsigned int Max_Messages()const	{ return max_messages; }
+    inline mstring DEF_Akick_Reason()const	{ return def_akick_reason; }
+    inline unsigned int Passfail()const	{ return passfail; }
+    inline unsigned long ChanKeep()const	{ return chankeep; }
+    inline mstring DEF_MLock()const		{ return def_mlock; }
+    inline mstring LCK_MLock()const		{ return lck_mlock; }
+    inline unsigned long DEF_Bantime()const	{ return def_bantime; }
+    inline bool LCK_Bantime()const	        { return lck_bantime; }
+    inline unsigned long DEF_Parttime()const{ return def_bantime; }
+    inline bool LCK_Parttime()const	        { return lck_bantime; }
+    inline bool DEF_Keeptopic()const	{ return def_keeptopic; }
+    inline bool LCK_Keeptopic()const	{ return lck_keeptopic; }
+    inline bool DEF_Topiclock()const	{ return def_topiclock; }
+    inline bool LCK_Topiclock()const	{ return lck_topiclock; }
+    inline bool DEF_Private()const		{ return def_private; }
+    inline bool LCK_Private()const		{ return lck_private; }
+    inline bool DEF_Secureops()const	{ return def_secureops; }
+    inline bool LCK_Secureops()const	{ return lck_secureops; }
+    inline bool DEF_Secure()const		{ return def_secure; }
+    inline bool LCK_Secure()const		{ return lck_secure; }
+    inline bool DEF_NoExpire()const		{ return def_noexpire; }
+    inline bool LCK_NoExpire()const		{ return lck_noexpire; }
+    inline bool DEF_Anarchy()const		{ return def_anarchy; }
+    inline bool LCK_Anarchy()const		{ return lck_anarchy; }
+    inline bool DEF_KickOnBan()const	{ return def_kickonban; }
+    inline bool LCK_KickOnBan()const	{ return lck_kickonban; }
+    inline bool DEF_Restricted()const	{ return def_restricted; }
+    inline bool LCK_Restricted()const	{ return lck_restricted; }
+    inline bool DEF_Join()const		{ return def_join; }
+    inline bool LCK_Join()const		{ return lck_join; }
+    inline mstring DEF_Revenge()const	{ return def_revenge; }
+    inline bool LCK_Revenge()const		{ return lck_revenge; }
+    inline long Level_Min()const		{ return level_min; }
+    inline long Level_Max()const		{ return level_max; }
     long LVL(const mstring& level) const;
     bool IsLVL(const mstring& level)const;
     vector<mstring> LVL()const;
@@ -346,11 +350,11 @@ public:
     Chan_Stored_t &GetStored(const mstring &in);
     void RemStored(const mstring &in);
 #endif
-    stored_t::iterator StoredBegin() { return stored.begin(); }
-    stored_t::iterator StoredEnd() { return stored.end(); }
-    stored_t::const_iterator StoredBegin() const { return stored.begin(); }
-    stored_t::const_iterator StoredEnd() const { return stored.end(); }
-    size_t StoredSize() const { return stored.size(); }
+    inline stored_t::iterator StoredBegin() { return stored.begin(); }
+    inline stored_t::iterator StoredEnd() { return stored.end(); }
+    inline stored_t::const_iterator StoredBegin() const { return stored.begin(); }
+    inline stored_t::const_iterator StoredEnd() const { return stored.end(); }
+    inline size_t StoredSize() const { return stored.size(); }
     bool IsStored(const mstring& in)const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -362,17 +366,16 @@ public:
     Chan_Live_t &GetLive(const mstring &in) const;
     void RemLive(const mstring &in);
 #endif
-    live_t::iterator LiveBegin() { return live.begin(); }
-    live_t::iterator LiveEnd() { return live.end(); }
-    live_t::const_iterator LiveBegin() const { return live.begin(); }
-    live_t::const_iterator LiveEnd() const { return live.end(); }
-    size_t LiveSize() const { return live.size(); }
+    inline live_t::iterator LiveBegin() { return live.begin(); }
+    inline live_t::iterator LiveEnd() { return live.end(); }
+    inline live_t::const_iterator LiveBegin() const { return live.begin(); }
+    inline live_t::const_iterator LiveEnd() const { return live.end(); }
+    inline size_t LiveSize() const { return live.size(); }
     bool IsLive(const mstring& in)const;
 
-    ChanServ();
-    virtual threadtype_enum Get_TType() const { return tt_ChanServ; }
-    virtual mstring GetInternalName() const { return "ChanServ"; }
-    virtual void execute(const mstring & message);
+    threadtype_enum Get_TType() const { return tt_ChanServ; }
+    mstring GetInternalName() const { return "ChanServ"; }
+    void execute(const mstring & message);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Register(const mstring &mynick, const mstring &source, const mstring &params);
@@ -467,10 +470,10 @@ public:
     static void do_unlock_Join(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_unlock_Revenge(const mstring &mynick, const mstring &source, const mstring &params);
 
-    virtual SXP::Tag& GetClassTag() const { return tag_ChanServ; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    SXP::Tag& GetClassTag() const { return tag_ChanServ; }
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
 };
 
@@ -511,19 +514,19 @@ class Chan_Live_t : public mUserDef
     unsigned int Kick(const mstring& nick, const mstring& kicker); // Called by Nick_Live_t
     void ChgNick(const mstring& nick, const mstring& newnick); // Called by Nick_Live_t
 public:
-    Chan_Live_t() {}
-    Chan_Live_t(const Chan_Live_t& in) { *this = in; }
+    inline Chan_Live_t() {}
+    inline Chan_Live_t(const Chan_Live_t& in) { *this = in; }
     Chan_Live_t(const mstring& name, const mstring& first_user);
     ~Chan_Live_t() {}
     void operator=(const Chan_Live_t &in);
-    bool operator==(const Chan_Live_t &in) const
+    inline bool operator==(const Chan_Live_t &in) const
 	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Chan_Live_t &in) const
+    inline bool operator!=(const Chan_Live_t &in) const
 	{ return (i_Name != in.i_Name); }
-    bool operator<(const Chan_Live_t &in) const
+    inline bool operator<(const Chan_Live_t &in) const
 	{ return (i_Name < in.i_Name); }
 
-    mstring Name() const	{ return i_Name; }
+    inline mstring Name() const	{ return i_Name; }
     mDateTime Creation_Time() const;
 
     void Topic(const mstring& source, const mstring& topic, const mstring& setter, const mDateTime& time = mDateTime::CurrentDateTime());
@@ -673,21 +676,21 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     void defaults();
     bool DoRevenge(const mstring& type, const mstring& target, const mstring& source);
 public:
-    Chan_Stored_t() {}
-    Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
+    inline Chan_Stored_t() {}
+    inline Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
     Chan_Stored_t(const mstring& name, const mstring& founder,
 	const mstring& password, const mstring& desc);
     Chan_Stored_t(const mstring& name); // Forbidden
     ~Chan_Stored_t() {}
     void operator=(const Chan_Stored_t &in);
-    bool operator==(const Chan_Stored_t &in) const
+    inline bool operator==(const Chan_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Chan_Stored_t &in) const
+    inline bool operator!=(const Chan_Stored_t &in) const
 	{ return (i_Name != in.i_Name); }
-    bool operator<(const Chan_Stored_t &in) const
+    inline bool operator<(const Chan_Stored_t &in) const
 	{ return (i_Name < in.i_Name); }
 
-    mstring Name() const		{ return i_Name; }
+    inline mstring Name() const		{ return i_Name; }
     mDateTime RegTime() const;
     mDateTime LastUsed();
     void SetTopic(const mstring& mynick, const mstring& topic, const mstring& setter);
@@ -707,7 +710,7 @@ public:
     void Comment(const mstring& in);
     mstring Comment() const;
 
-    void Suspend(const mstring& name, const mstring& reason)
+    inline void Suspend(const mstring& name, const mstring& reason)
 	{ Comment(reason); Suspend(name); }
     void Suspend(const mstring& name);
     void UnSuspend();
@@ -786,11 +789,11 @@ public:
 //  bool Level_insert(const mstring& entry, const long value, const mstring& nick);
 //  bool Level_erase();
     bool Level_change(const mstring& entry, const long value, const mstring& nick);
-    set<entlist_val_t<long> >::iterator Level_begin()
+    inline set<entlist_val_t<long> >::iterator Level_begin()
 	{ return i_Level.begin(); }
-    set<entlist_val_t<long> >::iterator Level_end()
+    inline set<entlist_val_t<long> >::iterator Level_end()
 	{ return i_Level.end(); }
-    size_t Level_size() const		{ return i_Level.size(); }
+    inline size_t Level_size() const	{ return i_Level.size(); }
     bool Level_find(const mstring& entry);
     long Level_value(const mstring& entry);
     set<entlist_val_t<long> >::iterator Level;
@@ -805,11 +808,11 @@ public:
     bool Access_insert(const mstring& entry, const long value, const mstring& nick,
 	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool Access_erase();
-    set<entlist_val_t<long> >::iterator Access_begin()
+    inline set<entlist_val_t<long> >::iterator Access_begin()
 	{ return i_Access.begin(); }
-    set<entlist_val_t<long> >::iterator Access_end()
+    inline set<entlist_val_t<long> >::iterator Access_end()
 	{ return i_Access.end(); }
-    size_t Access_size() const			{ return i_Access.size(); }
+    inline size_t Access_size() const	{ return i_Access.size(); }
     bool Access_find(const mstring& entry, const bool looklive = true);
     long Access_value(const mstring& entry, const bool looklive = true);
     set<entlist_val_t<long> >::iterator Access;
@@ -828,11 +831,11 @@ public:
     bool Akick_insert(const mstring& entry, const mstring& nick,
 	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool Akick_erase();
-    set<entlist_val_t<mstring> >::iterator Akick_begin()
+    inline set<entlist_val_t<mstring> >::iterator Akick_begin()
 	{ return i_Akick.begin(); }
-    set<entlist_val_t<mstring> >::iterator Akick_end()
+    inline set<entlist_val_t<mstring> >::iterator Akick_end()
 	{ return i_Akick.end(); }
-    size_t Akick_size() const			{ return i_Akick.size(); }
+    inline size_t Akick_size() const	{ return i_Akick.size(); }
     bool Akick_find(const mstring& entry, const bool looklive = true);
     mstring Akick_string(const mstring& entry, const bool looklive = true);
     set<entlist_val_t<mstring> >::iterator Akick;
@@ -842,9 +845,9 @@ public:
     bool Greet_insert(const mstring& entry, const mstring& nick,
 	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool Greet_erase();
-    entlist_i Greet_begin()			{ return i_Greet.begin(); }
-    entlist_i Greet_end()			{ return i_Greet.end(); }
-    size_t Greet_size() const			{ return i_Greet.size(); }
+    inline entlist_i Greet_begin()	{ return i_Greet.begin(); }
+    inline entlist_i Greet_end()	{ return i_Greet.end(); }
+    inline size_t Greet_size() const	{ return i_Greet.size(); }
     bool Greet_find(const mstring& nick);
     entlist_i Greet;
 
@@ -852,16 +855,16 @@ public:
     // INSERT: Adds if not found.
     bool Message_insert(const mstring& entry, const mstring& nick);
     bool Message_erase();
-    entlist_i Message_begin()			{ return i_Message.begin(); }
-    entlist_i Message_end()			{ return i_Message.end(); }
-    size_t Message_size() const			{ return i_Message.size(); }
+    entlist_i Message_begin()		{ return i_Message.begin(); }
+    entlist_i Message_end()		{ return i_Message.end(); }
+    size_t Message_size() const		{ return i_Message.size(); }
     bool Message_find(const unsigned int num);
     entlist_i Message;
 
     SXP::Tag& GetClassTag() const { return tag_Chan_Stored_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage() const;
     void DumpB() const;

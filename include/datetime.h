@@ -25,6 +25,9 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.36  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -86,6 +89,13 @@ RCSID(datetime_h, "@(#) $Id$");
 
 #include "mstring.h"
 
+class mDateTime;
+extern mstring DisectTime(const long intime, const mstring &source = "");
+extern mDateTime GMT(const mDateTime &in, const bool to);
+extern mDateTime StringToDate(const mstring& in);
+extern mDateTime StringToTime(const mstring& in);
+extern mDateTime StringToDateTime(const mstring& in);
+
 class mDateTime
 {
     double Val;
@@ -95,7 +105,8 @@ public:
 
     static mDateTime CurrentDate();
     static mDateTime CurrentTime();
-    static mDateTime CurrentDateTime();
+    inline static mDateTime CurrentDateTime()
+	{ return mDateTime(time(NULL)); }
     static mstring DateSeparator;
     static mstring ShortDateFormat;
     static mstring LongDateFormat;
@@ -109,36 +120,128 @@ public:
     static mstring ShortDayNames[7];
     static mstring LongDayNames[7];
 
-    mDateTime() {Val=0.0;}
-    mDateTime(const mDateTime& src) {Val=src.Val;}
-    mDateTime(const double src) {Val=src;}
-    mDateTime(const time_t src);
+    inline mDateTime() {Val=0.0;}
+    inline mDateTime(const mDateTime& src) {Val=src.Val;}
+    inline mDateTime(const double src) {Val=src;}
+    inline mDateTime(const time_t src) { *this=src; }
     mDateTime(const mstring& src, const mDateTimeFlag flag=DateTime);
-    mDateTime(const unsigned int year, const unsigned int month, const unsigned int day);
-    mDateTime(const unsigned int hour, const unsigned int min, const unsigned int sec, const unsigned int msec);
+    inline mDateTime(const unsigned int year, const unsigned int month, const unsigned int day)
+	{
+	    mDateTime tmp;
+	    if(!DoEncodeDate(year,month,day,tmp))
+		tmp=0.0;
+	    *this=tmp;
+	}
+    inline mDateTime(const unsigned int hour, const unsigned int min, const unsigned int sec, const unsigned int msec)
+	{
+	    mDateTime tmp;
+	    if(!DoEncodeTime(hour,min,sec,msec,tmp))
+		tmp=0.0;
+	    *this=tmp;
+	}
+    inline ~mDateTime() {}
 
-    mDateTime& operator=(const mDateTime& in);
-    mDateTime& operator=(const double in);
-    mDateTime& operator=(const time_t in);
-    mDateTime& operator+=(const mDateTime& in);
-    mDateTime& operator+=(const double in);
-    mDateTime& operator+=(const time_t in);
-    mDateTime& operator-=(const mDateTime& in);
-    mDateTime& operator-=(const double in);
-    mDateTime& operator-=(const time_t in);
+    inline mDateTime& operator=(const mDateTime& in)
+	{
+	    Val=in.Val;
+	    return *this;
+	}
+    inline mDateTime& operator=(const double in)
+	{
+	    Val=in;
+	    return *this;
+	}
+    inline mDateTime& operator=(const time_t in)
+	{
+	    tm *tmst;
+	    tmst=localtime(&in);
+	    *this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
+	    return *this;
+	}
+    inline mDateTime& operator+=(const mDateTime& in)
+	{
+	    Val+=in.Val;
+	    return *this;
+	}
+    inline mDateTime& operator+=(const double in)
+	{
+	    Val+=in;
+	    return *this;
+	}
+    inline mDateTime& operator+=(const time_t in)
+	{
+	    Val+=mDateTime(in).Val;
+	    return *this;
+	}
+    inline mDateTime& operator-=(const mDateTime& in)
+	{
+	    Val-=in.Val;
+	    return *this;
+	}
+    inline mDateTime& operator-=(const double in)
+	{
+	    Val-=in;
+	    return *this;
+	}
+    inline mDateTime& operator-=(const time_t in)
+	{
+	    Val-=mDateTime(in).Val;
+	    return *this;
+	}
 
-    mDateTime operator+(const mDateTime& in) const;
-    mDateTime operator+(const double in) const;
-    mDateTime operator+(const time_t in) const;
-    mDateTime operator-(const mDateTime& in) const;
-    mDateTime operator-(const double in) const;
-    mDateTime operator-(const time_t in) const;
-    bool operator==(const mDateTime& in)const;
-    bool operator!=(const mDateTime& in)const;
-    bool operator>(const mDateTime& in)const;
-    bool operator<(const mDateTime& in)const;
-    bool operator>=(const mDateTime& in)const;
-    bool operator<=(const mDateTime& in)const;
+    inline mDateTime operator+(const mDateTime& in) const
+	{
+	    mDateTime retval(Val);
+	    retval += in;
+	    return retval;
+	}
+    inline mDateTime operator+(const double in) const
+	{
+	    mDateTime retval(Val);
+	    retval += in;
+	    return retval;
+	}
+    inline mDateTime operator+(const time_t in) const
+	{
+	    mDateTime retval(Val);
+	    retval += in;
+	    return retval;
+	}
+    inline mDateTime operator-(const mDateTime& in) const
+	{
+	    mDateTime retval(Val);
+	    retval -= in;
+	    return retval;
+	}
+    inline mDateTime operator-(const double in) const
+	{
+	    mDateTime retval(Val);
+	    retval -= in;
+	    return retval;
+	}
+    inline mDateTime operator-(const time_t in) const
+	{
+	    mDateTime retval(Val);
+	    retval -= in;
+	    return retval;
+	}
+    inline bool operator==(const mDateTime& in)const
+	{ return (Val == in.Val); }
+    inline bool operator!=(const mDateTime& in)const
+	{ return (Val != in.Val); }
+    inline bool operator>(const mDateTime& in)const
+	{ return (Val > in.Val); }
+    inline bool operator<(const mDateTime& in)const
+	{ return (Val < in.Val); }
+    inline bool operator>=(const mDateTime& in)const
+	{ return (Val >= in.Val); }
+    inline bool operator<=(const mDateTime& in)const
+	{ return (Val <= in.Val); }
+
+    inline operator double() const { return Val; }
+    operator time_t() const;
+    inline operator mstring() const { return DateTimeString(); }
+    inline double Internal() const { return Val; }
 
 /* FormatString formats the date-and-time using the format given by 
    format. The following format specifiers are supported:
@@ -240,14 +343,11 @@ public:
   the string variable S. */
     mstring FormatString(const mstring& format)const;
 
-    mstring DateString()const;
-    mstring TimeString()const;
+    inline mstring DateString()const
+	{ return FormatString(ShortDateFormat); }
+    inline mstring TimeString()const
+	{ return FormatString(LongTimeFormat); }
     mstring DateTimeString()const;
-
-    operator double() const {return Val;}
-    operator time_t() const;
-    operator mstring() const;
-    double Internal() const { return Val; }
 
     int DayOfWeek()const;
     void DecodeDate(int &year, int &month, int &day)const;
@@ -260,25 +360,27 @@ public:
     int Day() const;
     int Month() const;
     int Year() const;
-    int Year2() const;
-    int Century() const;
-    mstring Ago(const bool call = false, const mstring &source = "") const;
+    inline int Year2() const
+	{ return Year() % 100; }
+    inline int Century() const
+	{ return Year() - Year2(); }
+
     unsigned long MSecondsSince() const;
     unsigned long SecondsSince() const;
-    unsigned long MinutesSince() const;
-    unsigned long HoursSince() const;
-    unsigned long DaysSince() const;
-    unsigned long YearsSince() const;
+    inline unsigned long MinutesSince() const
+	{ return (SecondsSince() / 60); }
+    inline unsigned long HoursSince() const
+	{ return (MinutesSince() / 60); }
+    inline unsigned long DaysSince() const
+	{ return (HoursSince() / 24); }
+    inline unsigned long YearsSince() const
+	{ return static_cast<int>(static_cast<double>(DaysSince()) / 365.25); }
+    inline mstring Ago(const bool call = false, const mstring &source = "") const
+	{ return(DisectTime(SecondsSince(), source)); }
 
     friend bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Date);
     friend bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime& Time);
 };
-
-extern mstring DisectTime(const long intime, const mstring &source = "");
-extern mDateTime GMT(const mDateTime &in, const bool to);
-extern mDateTime StringToDate(const mstring& in);
-extern mDateTime StringToTime(const mstring& in);
-extern mDateTime StringToDateTime(const mstring& in);
 
 
 #endif

@@ -25,6 +25,9 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.29  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -113,6 +116,7 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    ServMsg();
     ~ServMsg() {}
     class stats_t
     {
@@ -130,31 +134,30 @@ public:
 	unsigned long i_file_Rename;
 	unsigned long i_file_Cancel;
     public:
-	stats_t() { clear(); }
-	void clear() {
+	inline stats_t() { clear(); }
+	inline void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Global = i_Ask = i_Stats = i_Credits = i_file_Add =
 	    i_file_Del = i_file_Send = i_file_Priv = i_file_Rename =
 	    i_file_Cancel = 0; }
-	mDateTime ClearTime()const		{ return i_ClearTime; }
-	unsigned long Global()const		{ return i_Global; }
-	unsigned long Ask()const		{ return i_Ask; }
-	unsigned long Stats()const		{ return i_Stats; }
-	unsigned long Credits()const		{ return i_Credits; }
-	unsigned long File_Add()const		{ return i_file_Add; }
-	unsigned long File_Del()const		{ return i_file_Del; }
-	unsigned long File_Send()const		{ return i_file_Send; }
-	unsigned long File_Priv()const		{ return i_file_Priv; }
-	unsigned long File_Rename()const	{ return i_file_Rename; }
-	unsigned long File_Cancel()const	{ return i_file_Cancel; }
+	inline mDateTime ClearTime()const		{ return i_ClearTime; }
+	inline unsigned long Global()const		{ return i_Global; }
+	inline unsigned long Ask()const		{ return i_Ask; }
+	inline unsigned long Stats()const		{ return i_Stats; }
+	inline unsigned long Credits()const		{ return i_Credits; }
+	inline unsigned long File_Add()const		{ return i_file_Add; }
+	inline unsigned long File_Del()const		{ return i_file_Del; }
+	inline unsigned long File_Send()const		{ return i_file_Send; }
+	inline unsigned long File_Priv()const		{ return i_file_Priv; }
+	inline unsigned long File_Rename()const	{ return i_file_Rename; }
+	inline unsigned long File_Cancel()const	{ return i_file_Cancel; }
     } stats;
 
-    bool ShowSync()const { return showsync; }
+    inline bool ShowSync()const { return showsync; }
 
-    ServMsg();
-    virtual threadtype_enum Get_TType() const { return tt_OtherServ; }
-    virtual mstring GetInternalName() const { return "ServMsg"; }
-    virtual void execute(const mstring & message);
+    threadtype_enum Get_TType() const { return tt_OtherServ; }
+    mstring GetInternalName() const { return "ServMsg"; }
+    void execute(const mstring & message);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Credits(const mstring &mynick, const mstring &source, const mstring &params);

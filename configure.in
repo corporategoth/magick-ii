@@ -12,7 +12,7 @@ dnl
 dnl Standard stuff
 dnl ==============
 
-AC_INIT(include/config.h)
+AC_INIT(acconfig.h)
 
 AM_INIT_AUTOMAKE(Magick,2.0)
 AM_CONFIG_HEADER(include/config.h)
@@ -51,7 +51,8 @@ WARNFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
 	-Wmissing-declarations -Wnested-externs -Woverloaded-virtual"
 
 dnl Add no-default-inline else gcc spinlocks (not-nice)
-CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS -fno-default-inline"
+CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS -fno-default-inline \
+	-fshort-enums -pipe"
 
 dnl Now we include SGI's STL -- if you have it
 dnl CXXFLAGS="$CXXFLAGS -ftemplate-depth-25 -I\$(top_srcdir)/include/stl"
@@ -67,6 +68,7 @@ AC_ARG_WITH(acelib, [  --with-acelib=file      Location of ACE library file],
 		libdir="`dirname ${withval}`"
 		libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
 		if test ! "x$libdir" = "x$libfile"; then
+			LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
 			LIBS="$LIBS -L${libdir}"
 		fi
 		if test ! "x$libfile" = "x"; then
@@ -106,6 +108,7 @@ AC_ARG_WITH(threadlib, [  --with-threadlib=file   Location of threads library fi
 		libdir="`dirname ${withval}`"
 		libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
 		if test ! "x$libdir" = "x$libfile"; then
+			LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
 			LIBS="$LIBS -L${libdir}"
 		fi
 		if test ! "x$libfile" = "x"; then
@@ -133,6 +136,7 @@ AC_ARG_WITH(zlib, [  --with-zlib=file        Location of compression library fil
 		libdir="`dirname ${withval}`"
 		libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
 		if test ! "x$libdir" = "x$libfile"; then
+			LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
 			LIBS="$LIBS -L${libdir}"
 		fi
 		if test ! "x$libfile" = "x"; then
@@ -164,7 +168,8 @@ AC_ARG_WITH(lockrel, [  --with-lockrel=rel      OS Release number to lock binary
  	[BUILD_REL=${withval}])
 
 AC_ARG_WITH(libdir, [  --with-libdir=dir       Add in search path for libraries],
-	[LIBS="$LIBS -L${withval}"])
+	[LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${withval}"
+	LIBS="$LIBS -L${withval}"])
 
 AC_ARG_WITH(lib, [  --with-lib=dir          Add in library],
 	[LIBS="$LIBS -l${withval}"])
@@ -341,16 +346,16 @@ if test "$hostlock" = "true"; then
     if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
 	if test -f ace_uname.cpp; then
 	    echo $ac_n "configuring system lock paramaters"" ... $ac_c"
-	    $CXX -o ace_uname ace_uname.cpp
+	    $CXX $LIBS $CPPFLAGS -o ace_uname ace_uname.cpp >/dev/null 2>&1
 	    if test -x ace_uname; then
 		if test -z "$BUILD_NODE"; then
-		    BUILD_NODE="`ace_uname nodename`"
+		    BUILD_NODE="`./ace_uname nodename`"
 		fi
 		if test -z "$BUILD_TYPE"; then
-		    BUILD_TYPE="`ace_uname sysname`/`ace_uname machine`"
+		    BUILD_TYPE="`./ace_uname sysname`/`./ace_uname machine`"
 		fi
 		if test -z "$BUILD_REL"; then
-		    BUILD_REL="`ace_uname release`"
+		    BUILD_REL="`./ace_uname release`"
 		fi
 		rm -f ace_uname
 		echo "$ac_t""done"

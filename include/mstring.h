@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.70  2001/03/27 07:04:30  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -201,10 +204,10 @@ class mstring_noalloc : public exception
 {
     char i_reason[1024];
 public:
-    mstring_noalloc(const char *reason)
+    inline mstring_noalloc(const char *reason = "")
 	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    mstring_noalloc() {}
-    const char *what() const
+    inline ~mstring_noalloc() {}
+    inline const char *what() const
 	{ return i_reason; };
 };
 
@@ -212,10 +215,10 @@ class mstring_nodealloc : public exception
 {
     char i_reason[1024];
 public:
-    mstring_nodealloc(const char *reason)
+    inline mstring_nodealloc(const char *reason = "")
 	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    mstring_nodealloc() {}
-    const char *what() const
+    inline ~mstring_nodealloc() {}
+    inline const char *what() const
 	{ return i_reason; };
 };
 #endif
@@ -224,25 +227,6 @@ public:
  * in the existance of C++ ;P */
 
 class mstring;
-
-#ifndef HAVE_ITOA
-const char *itoa(int i);
-#endif
-#ifndef HAVE_LTOA
-const char *ltoa(long l);
-#endif
-#ifndef HAVE_FTOA
-const char *ftoa(float f);
-#endif
-#ifndef HAVE_DTOA
-const char *dtoa(double d);
-#endif
-#ifndef HAVE_ULTOA
-const char *ultoa(unsigned long ul);
-#endif
-#ifndef HAVE_UITOA
-const char *uitoa(unsigned int ui);
-#endif
 
 extern const mstring DirSlash;
 extern const mstring Blank;
@@ -253,89 +237,6 @@ extern const mstring IRC_Colour;
 extern const mstring IRC_Off;
 
 bool match_wild (const char *pattern, const char *str, bool nocase);
-/*
-inline bool operator== (const mstring &lhs, const mstring &rhs);
-inline bool operator== (const mstring &lhs, const string &rhs);
-inline bool operator== (const mstring &lhs, const char *rhs);
-inline bool operator== (const mstring &lhs, const char rhs);
-inline bool operator== (const mstring &lhs, const unsigned char rhs);
-inline bool operator== (const string &lhs, const mstring &rhs);
-inline bool operator== (const char *lhs, const mstring &rhs);
-inline bool operator== (const char lhs, const mstring &rhs);
-inline bool operator== (const unsigned char lhs, const mstring &rhs);
-
-inline bool operator!= (const mstring &lhs, const mstring &rhs);
-inline bool operator!= (const mstring &lhs, const string &rhs);
-inline bool operator!= (const mstring &lhs, const char *rhs);
-inline bool operator!= (const mstring &lhs, const char rhs);
-inline bool operator!= (const mstring &lhs, const unsigned char rhs);
-inline bool operator!= (const string &lhs, const mstring &rhs);
-inline bool operator!= (const char *lhs, const mstring &rhs);
-inline bool operator!= (const char lhs, const mstring &rhs);
-inline bool operator!= (const unsigned char lhs, const mstring &rhs);
-
-inline bool operator< (const mstring &lhs, const mstring &rhs);
-inline bool operator< (const mstring &lhs, const string &rhs);
-inline bool operator< (const mstring &lhs, const char *rhs);
-inline bool operator< (const mstring &lhs, const char rhs);
-inline bool operator< (const mstring &lhs, const unsigned char rhs);
-inline bool operator< (const string &lhs, const mstring &rhs);
-inline bool operator< (const char *lhs, const mstring &rhs);
-inline bool operator< (const char lhs, const mstring &rhs);
-inline bool operator< (const unsigned char lhs, const mstring &rhs);
-
-inline bool operator> (const mstring &lhs, const mstring &rhs);
-inline bool operator> (const mstring &lhs, const string &rhs);
-inline bool operator> (const mstring &lhs, const char *rhs);
-inline bool operator> (const mstring &lhs, const char rhs);
-inline bool operator> (const mstring &lhs, const unsigned char rhs);
-inline bool operator> (const string &lhs, const mstring &rhs);
-inline bool operator> (const char *lhs, const mstring &rhs);
-inline bool operator> (const char lhs, const mstring &rhs);
-inline bool operator> (const unsigned char lhs, const mstring &rhs);
-
-inline bool operator<= (const mstring &lhs, const mstring &rhs);
-inline bool operator<= (const mstring &lhs, const string &rhs);
-inline bool operator<= (const mstring &lhs, const char *rhs);
-inline bool operator<= (const mstring &lhs, const char rhs);
-inline bool operator<= (const mstring &lhs, const unsigned char rhs);
-inline bool operator<= (const string &lhs, const mstring &rhs);
-inline bool operator<= (const char *lhs, const mstring &rhs);
-inline bool operator<= (const char lhs, const mstring &rhs);
-inline bool operator<= (const unsigned char lhs, const mstring &rhs);
-
-inline bool operator>= (const mstring &lhs, const mstring &rhs);
-inline bool operator>= (const mstring &lhs, const string &rhs);
-inline bool operator>= (const mstring &lhs, const char *rhs);
-inline bool operator>= (const mstring &lhs, const char rhs);
-inline bool operator>= (const mstring &lhs, const unsigned char rhs);
-inline bool operator>= (const string &lhs, const mstring &rhs);
-inline bool operator>= (const char *lhs, const mstring &rhs);
-inline bool operator>= (const char lhs, const mstring &rhs);
-inline bool operator>= (const unsigned char lhs, const mstring &rhs);
-
-inline mstring operator+ (const mstring &lhs, const mstring &rhs);
-inline mstring operator+ (const mstring &lhs, const string &rhs);
-inline mstring operator+ (const mstring &lhs, const char *rhs);
-inline mstring operator+ (const mstring &lhs, const char rhs);
-inline mstring operator+ (const mstring &lhs, const unsigned char rhs);
-inline mstring operator+ (const mstring &lhs, const int rhs);
-inline mstring operator+ (const mstring &lhs, const unsigned int rhs);
-inline mstring operator+ (const mstring &lhs, const long rhs);
-inline mstring operator+ (const mstring &lhs, const unsigned long rhs);
-inline mstring operator+ (const mstring &lhs, const float rhs);
-inline mstring operator+ (const mstring &lhs, const double rhs);
-inline mstring operator+ (const string &lhs, const mstring &rhs);
-inline mstring operator+ (const char *lhs, const mstring &rhs);
-inline mstring operator+ (const char lhs, const mstring &rhs);
-inline mstring operator+ (const unsigned char lhs, const mstring &rhs);
-inline mstring operator+ (const int lhs, const mstring &rhs);
-inline mstring operator+ (const unsigned int lhs, const mstring &rhs);
-inline mstring operator+ (const long lhs, const mstring &rhs);
-inline mstring operator+ (const unsigned long lhs, const mstring &rhs);
-inline mstring operator+ (const float lhs, const mstring &rhs);
-inline mstring operator+ (const double lhs, const mstring &rhs);
-*/
 
 class mstring
 {
@@ -356,9 +257,9 @@ class mstring
     static char *alloc(const size_t size);
     static void dealloc(char * & in);
 #endif
-    inline void lock_read() const;
-    inline void lock_write() const;
-    inline void lock_rel() const;
+    void lock_read() const;
+    void lock_write() const;
+    void lock_rel() const;
     void init();
     int occurances(const char *str, const size_t length) const;
     static int snprintf(char *buf, const size_t size, const char *fmt, ...);
@@ -403,14 +304,14 @@ public:
     void insert(const size_t pos, const char *in, const size_t length);
     int compare(const char *in, const size_t length) const;
     void swap(mstring &in);
-    inline const char *c_str() const;
-    inline const unsigned char *uc_str() const;
-    inline const char first() const;
-    inline const char last() const;
-    inline size_t length() const;
-    inline size_t size() const;
-    inline size_t capacity() const;
-    inline bool empty() const;
+    const char *c_str() const;
+    const unsigned char *uc_str() const;
+    const char first() const;
+    const char last() const;
+    size_t length() const;
+    size_t size() const;
+    size_t capacity() const;
+    bool empty() const;
 
     // Aliases for the above ...
     inline void copy(const mstring &in)
@@ -445,7 +346,7 @@ public:
     inline int compare(const mstring &in) const
 	{ return compare(in.i_str, in.i_len); }
 
-    inline const char operator[] (const size_t off) const;
+    const char operator[] (const size_t off) const;
     inline operator const char *() const
 	{ return c_str(); }
     inline operator const string () const
@@ -480,10 +381,14 @@ public:
     int find(const mstring &str, int occurance = 1) const;
     int rfind(const mstring &str, int occurance = 1) const;
     void replace(const mstring &i_find, const mstring &i_replace, const bool all = true);
-    inline void replace(const int begin, const int end, const char *i_replace, const size_t length);
+    inline void replace(const int begin, const int end, const char *i_replace, const size_t length)
+	{
+	    erase(begin, end);
+	    insert(begin, i_replace, length);
+	}
     inline void replace(const int begin, const int end, const mstring &i_replace)
 	{ replace(begin, end, i_replace.i_str, i_replace.i_len); }
-    inline bool replace(const size_t offs, const char c);
+    bool replace(const size_t offs, const char c);
 
     mstring substr(int nFirst, int nCount) const;
 
@@ -491,39 +396,46 @@ public:
     inline bool Contains(const mstring &in) const
 	{ return (find(in) >= 0); }
 
-    bool IsWord() const;
-    bool IsNumber() const;
-    bool IsAscii() const;
-    inline bool IsBool() const;
-    inline bool GetBool() const;
-
-    inline mstring UpperCase() const;
-    inline mstring LowerCase() const;
-    void MakeUpper();
-    void MakeLower();
-
-    inline int Occurances(const mstring &in, const bool NoCase = false) const;
-    inline int Find(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
-    inline int RevFind(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
-    inline int Cmp(const mstring &in, const bool NoCase = false) const;
-    inline bool IsSameAs(const mstring &in, const bool NoCase = false) const
-	{ return (Cmp(in, NoCase)==0); }
-    inline bool Matches(const mstring &in, const bool NoCase = false) const;
-
-    inline void Remove(const mstring &in, const bool All = true)
-	{ replace(in, "", All); }
-    inline void Truncate(const size_t pos, const bool right = true);
-    inline void Trim(const bool right=true, const mstring &delims = " \n\r\t");
-    inline mstring Strip(const bool right=true, const mstring &delims = " \n\r\t") const;
-
     int Format(const char *fmt, ...);
     int FormatV(const char *fmt, va_list argptr);
 
-    inline mstring Before(const mstring &in, const int occurance = 1) const;
-    inline mstring After(const mstring &in, const int occurance = 1) const;
-    inline mstring RevBefore(const mstring &in, const int occurance = 1) const;
-    inline mstring RevAfter(const mstring &in, const int occurance = 1) const;
-    inline mstring SubString(int from = 0, int to = -1) const;
+    bool IsWord() const;
+    bool IsNumber() const;
+    bool IsAscii() const;
+    bool IsBool() const;
+    bool GetBool() const;
+
+    mstring UpperCase() const;
+    mstring LowerCase() const;
+    void MakeUpper();
+    void MakeLower();
+
+    int Occurances(const mstring &in, const bool NoCase = false) const;
+    int Find(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
+    int RevFind(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
+    int Cmp(const mstring &in, const bool NoCase = false) const;
+    inline bool IsSameAs(const mstring &in, const bool NoCase = false) const
+	{ return (Cmp(in, NoCase)==0); }
+    inline bool Matches(const mstring &in, const bool NoCase = false) const
+	{ return match_wild(in.c_str(), c_str(), NoCase); }
+
+    inline void Remove(const mstring &in, const bool All = true)
+	{ replace(in, "", All); }
+    inline void Truncate(const size_t pos, const bool right = true)
+	{
+	    if (right)
+		erase(right);
+	    else
+		erase(0, pos);
+	}
+    void Trim(const bool right=true, const mstring &delims = " \n\r\t");
+    mstring Strip(const bool right=true, const mstring &delims = " \n\r\t") const;
+
+    mstring Before(const mstring &in, const int occurance = 1) const;
+    mstring After(const mstring &in, const int occurance = 1) const;
+    mstring RevBefore(const mstring &in, const int occurance = 1) const;
+    mstring RevAfter(const mstring &in, const int occurance = 1) const;
+    mstring SubString(int from = 0, int to = -1) const;
     inline mstring Left(const int pos) const
 	{ return SubString(0, pos-1); }
     inline mstring Right(const int pos) const
@@ -800,5 +712,36 @@ inline mstring operator+ (const double lhs, const mstring &rhs)
     str.append(rhs.c_str(), rhs.length());
     return str;
 }
+
+#ifndef HAVE_ITOA
+inline const char *itoa(int i)
+{ return mstring(i).c_str(); }
+#endif
+
+#ifndef HAVE_LTOA
+inline const char *ltoa(long l)
+{ return mstring(l).c_str(); }
+#endif
+
+#ifndef HAVE_FTOA
+inline const char *ftoa(float f)
+{ return mstring(f).c_str(); }
+#endif
+
+#ifndef HAVE_DTOA
+inline const char *dtoa(double d)
+{ return mstring(d).c_str(); }
+#endif
+
+#ifndef HAVE_ULTOA
+inline const char *ultoa(unsigned long ul)
+{ return mstring(ul).c_str(); }
+#endif
+
+#ifndef HAVE_UITOA
+inline const char *uitoa(unsigned int ui)
+{ return mstring(ui).c_str(); }
+#endif
+
 
 #endif

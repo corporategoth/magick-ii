@@ -266,6 +266,16 @@ LOCK_RELEASE     =Failed to release %s lock for %s.
 EXCEPTION        =Exception thrown on line %d, column %d of %s.
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 
+[EXCEPTIONS]
+GENERIC          =Exception - %s:%s:%s:%s - %s
+GENERIC2         =Exception - %s:%s:%s:%s - %s/%d
+UNHANDLED        =Unhandled Exception: %s.
+DCC_REMOVED      =Corrupt DCC #%d removed!
+NICK_S_REMOVED   =Corrupt stored nickname %s removed!
+NICK_L_REMOVED   =Corrupt live nickname %s removed!
+CHAN_S_REMOVED   =Corrupt stored channel %s removed!
+CHAN_L_REMOVED   =Corrupt live channel %s removed!
+
 ;
 ; This is a section for miscellaneous other occurrences.
 ;

@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.38  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -146,7 +149,7 @@ public:
 template<class T1, class T2, class T3> inline
 bool operator==(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 {
-    return (X.first==Y.first && X.second==Y.second && X.third == Y.third);
+    return (X.first==Y.first && X.second==Y.second && X.third==Y.third);
 }
     
 template<class T1, class T2, class T3> inline
@@ -158,21 +161,21 @@ bool operator!=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 template<class T1, class T2, class T3> inline
 bool operator<(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 {
-    return (X.first<Y.first
-	|| (!(X.first<Y.first) && (X.second<Y.second))
-	|| (!(X.first<Y.first) && (!(X.second<Y.second) && (X.third<Y.third))));
+    return (((X.first<Y.first)) || 
+	((X.first==Y.first) && (X.second<Y.second)) || 
+	((X.first==Y.first) && (X.second==Y.second) && (X.third<Y.third)));
 }
 
 template<class T1, class T2, class T3> inline
 bool operator>(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 {
-    return (Y < X);
+    return !((Y < X) || (Y == X));
 }
 
 template<class T1, class T2, class T3> inline
 bool operator<=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 {
-    return !(Y < X);
+    return !(Y > X);
 }
 
 template<class T1, class T2, class T3> inline

@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.48  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -112,32 +115,32 @@ RCSID(ircsocket_h, "@(#) $Id$");
 class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
     mstring Reconnect_Handler::FindNext(const mstring& i_server);
 };
 
 class ToBeSquit_Handler : public ACE_Event_Handler
 {
 public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class Squit_Handler : public ACE_Event_Handler
 {
 public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class InFlight_Handler : public ACE_Event_Handler
 {
 public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class Part_Handler : public ACE_Event_Handler
 {
 public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
@@ -159,15 +162,15 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     mDateTime i_synctime;
 public:
     int send(const mstring& data);
-    virtual int open(void *);
-    virtual int handle_input(ACE_HANDLE handle);
-    virtual int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
+    int open(void *);
+    int handle_input(ACE_HANDLE handle);
+    int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
 		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
 
-    unsigned long Local_IP() const { return sock.Local_IP(); }
-    size_t In_Traffic() const { return in_traffic; }
-    size_t Out_Traffic() const { return out_traffic; }
-    mDateTime Connect_Time() const { return connect_time; }
+    inline unsigned long Local_IP() const { return sock.Local_IP(); }
+    inline size_t In_Traffic() const { return in_traffic; }
+    inline size_t Out_Traffic() const { return out_traffic; }
+    inline mDateTime Connect_Time() const { return connect_time; }
     time_t HTM_Gap() const;
     unsigned short HTM_Level() const;
     size_t HTM_Threshold() const;
@@ -194,9 +197,9 @@ public:
     void ForceSave();
     void ForcePing();
     mstring SyncTime(const mstring& source = "") const;
-    virtual int open(void *in=0);
-    virtual int close(const unsigned long in);
-    virtual int svc(void);
+    int open(void *in=0);
+    int close(const unsigned long in);
+    int svc(void);
     void DumpB() const;
     void DumpE() const;
 };

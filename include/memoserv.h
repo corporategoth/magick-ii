@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.45  2001/03/27 07:04:30  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -159,6 +162,7 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    MemoServ();
     ~MemoServ() {}
     class stats_t
     {
@@ -178,24 +182,24 @@ public:
 	unsigned long i_File;
 	unsigned long i_Get;
     public:
-	stats_t() { clear(); }
-	void clear() {
+	inline stats_t() { clear(); }
+	inline void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Read = i_Unread = i_Send = i_Flush = i_Reply = i_Forward =
 	    	i_Cancel = i_Del = i_Set = i_Continue = i_File = i_Get = 0; }
-	mDateTime ClearTime()	    { return i_ClearTime; }
-	unsigned long Read()	    { return i_Read; }
-	unsigned long Unread()	    { return i_Unread; }
-	unsigned long Send()	    { return i_Send; }
-	unsigned long Flush()	    { return i_Flush; }
-	unsigned long Reply()	    { return i_Reply; }
-	unsigned long Forward()	    { return i_Forward; }
-	unsigned long Cancel()	    { return i_Cancel; }
-	unsigned long Del()	    { return i_Del; }
-	unsigned long Set()	    { return i_Set; }
-	unsigned long Continue()    { return i_Continue; }
-	unsigned long File()	    { return i_File; }
-	unsigned long Get()	    { return i_Get; }
+	inline mDateTime ClearTime()	    { return i_ClearTime; }
+	inline unsigned long Read()	    { return i_Read; }
+	inline unsigned long Unread()	    { return i_Unread; }
+	inline unsigned long Send()	    { return i_Send; }
+	inline unsigned long Flush()	    { return i_Flush; }
+	inline unsigned long Reply()	    { return i_Reply; }
+	inline unsigned long Forward()	    { return i_Forward; }
+	inline unsigned long Cancel()	    { return i_Cancel; }
+	inline unsigned long Del()	    { return i_Del; }
+	inline unsigned long Set()	    { return i_Set; }
+	inline unsigned long Continue()    { return i_Continue; }
+	inline unsigned long File()	    { return i_File; }
+	inline unsigned long Get()	    { return i_Get; }
     } stats;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -213,16 +217,16 @@ public:
     void RemNick(const mstring &in);
     void RemNickMemo(const mstring &in, const size_t num);
 #endif
-    nick_t::iterator NickBegin() { return nick.begin(); }
-    nick_t::iterator NickEnd() { return nick.end(); }
-    nick_t::const_iterator NickBegin() const { return nick.begin(); }
-    nick_t::const_iterator NickEnd()  const { return nick.end(); }
-    size_t NickSize() const { return nick.size(); }
-    nick_memo_t::iterator NickMemoBegin(const mstring &in) { return GetNick(in).begin(); }
-    nick_memo_t::iterator NickMemoEnd(const mstring &in) { return GetNick(in).end(); }
-    nick_memo_t::const_iterator NickMemoBegin(const mstring &in) const { return GetNick(in).begin(); }
-    nick_memo_t::const_iterator NickMemoEnd(const mstring &in)  const { return GetNick(in).end(); }
-    size_t NickMemoSize(const mstring &in) const { return GetNick(in).size(); }
+    inline nick_t::iterator NickBegin() { return nick.begin(); }
+    inline nick_t::iterator NickEnd() { return nick.end(); }
+    inline nick_t::const_iterator NickBegin() const { return nick.begin(); }
+    inline nick_t::const_iterator NickEnd()  const { return nick.end(); }
+    inline size_t NickSize() const { return nick.size(); }
+    inline nick_memo_t::iterator NickMemoBegin(const mstring &in) { return GetNick(in).begin(); }
+    inline nick_memo_t::iterator NickMemoEnd(const mstring &in) { return GetNick(in).end(); }
+    inline nick_memo_t::const_iterator NickMemoBegin(const mstring &in) const { return GetNick(in).begin(); }
+    inline nick_memo_t::const_iterator NickMemoEnd(const mstring &in)  const { return GetNick(in).end(); }
+    inline size_t NickMemoSize(const mstring &in) const { return GetNick(in).size(); }
     size_t NickMemoCount(const mstring &in, const bool read = false) const;
     bool IsNick(const mstring &in) const;
     bool IsNickMemo(const mstring &in, const size_t num) const;
@@ -242,30 +246,29 @@ public:
     void RemChannel(const mstring &in);
     void RemChannelNews(const mstring &in, const size_t num);
 #endif
-    channel_t::iterator ChannelBegin() { return channel.begin(); }
-    channel_t::iterator ChannelEnd() { return channel.end(); }
-    channel_t::const_iterator ChannelBegin() const { return channel.begin(); }
-    channel_t::const_iterator ChannelEnd()  const { return channel.end(); }
-    size_t ChannelSize() const { return channel.size(); }
-    channel_news_t::iterator ChannelNewsBegin(const mstring &in) { return GetChannel(in).begin(); }
-    channel_news_t::iterator ChannelNewsEnd(const mstring &in) { return GetChannel(in).end(); }
-    channel_news_t::const_iterator ChannelNewsBegin(const mstring &in) const { return GetChannel(in).begin(); }
-    channel_news_t::const_iterator ChannelNewsEnd(const mstring &in)  const { return GetChannel(in).end(); }
-    size_t ChannelNewsSize(const mstring &in) const { return GetChannel(in).size(); }
+    inline channel_t::iterator ChannelBegin() { return channel.begin(); }
+    inline channel_t::iterator ChannelEnd() { return channel.end(); }
+    inline channel_t::const_iterator ChannelBegin() const { return channel.begin(); }
+    inline channel_t::const_iterator ChannelEnd()  const { return channel.end(); }
+    inline size_t ChannelSize() const { return channel.size(); }
+    inline channel_news_t::iterator ChannelNewsBegin(const mstring &in) { return GetChannel(in).begin(); }
+    inline channel_news_t::iterator ChannelNewsEnd(const mstring &in) { return GetChannel(in).end(); }
+    inline channel_news_t::const_iterator ChannelNewsBegin(const mstring &in) const { return GetChannel(in).begin(); }
+    inline channel_news_t::const_iterator ChannelNewsEnd(const mstring &in)  const { return GetChannel(in).end(); }
+    inline size_t ChannelNewsSize(const mstring &in) const { return GetChannel(in).size(); }
     size_t ChannelNewsCount(const mstring &in, const mstring &user, const bool read = false) const;
     bool IsChannel(const mstring &in) const;
     bool IsChannelNews(const mstring &in, const size_t num) const;
 
-    unsigned long News_Expire()const	{ return news_expire; }
-    unsigned long InFlight()const	{ return inflight; }
-    unsigned long Delay()const		{ return delay; }
-    unsigned int Files()const		{ return files; }
-    unsigned long FileSize()const	{ return filesize; }
+    inline unsigned long News_Expire()const	{ return news_expire; }
+    inline unsigned long InFlight()const	{ return inflight; }
+    inline unsigned long Delay()const		{ return delay; }
+    inline unsigned int Files()const		{ return files; }
+    inline unsigned long FileSize()const	{ return filesize; }
 
-    MemoServ();
-    virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
-    virtual mstring GetInternalName() const { return "MemoServ"; }
-    virtual void execute(const mstring & message);
+    threadtype_enum Get_TType() const { return tt_MemoServ; }
+    mstring GetInternalName() const { return "MemoServ"; }
+    void execute(const mstring & message);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Read(const mstring &mynick, const mstring &source, const mstring &params);
@@ -285,10 +288,10 @@ public:
 
     static void do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params);
 
-    virtual SXP::Tag& GetClassTag() const { return tag_MemoServ; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    SXP::Tag& GetClassTag() const { return tag_MemoServ; }
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
 };
 
@@ -313,21 +316,21 @@ class Memo_t : public mUserDef, public SXP::IPersistObj
     static SXP::Tag tag_Memo_t, tag_Nick, tag_Sender, tag_Time,
 	tag_Text, tag_Read, tag_File, tag_UserDef;
 public:
-    Memo_t() {}
-    Memo_t(const Memo_t &in) { *this = in; }
+    inline Memo_t() {}
+    inline Memo_t(const Memo_t &in) { *this = in; }
     Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
 		const unsigned long file = 0);
     ~Memo_t() {}
     void operator=(const Memo_t &in);
-    bool operator==(const Memo_t &in) const
+    inline bool operator==(const Memo_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator!=(const Memo_t &in) const
+    inline bool operator!=(const Memo_t &in) const
     	{ return !(i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator<(const Memo_t &in) const
+    inline bool operator<(const Memo_t &in) const
     	{ return (i_Time < in.i_Time); }
 
     void ChgNick(const mstring& in);
-    mstring Nick()const	    { return i_Nick; }
+    inline mstring Nick()const	    { return i_Nick; }
     mstring Sender() const;
     mDateTime Time() const;
     mstring Text() const;
@@ -338,9 +341,9 @@ public:
     void Unread();
 
     SXP::Tag& GetClassTag() const { return tag_Memo_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage() const;
     void DumpB() const;
@@ -364,20 +367,20 @@ class News_t : public mUserDef, public SXP::IPersistObj
     static SXP::Tag tag_News_t, tag_Channel, tag_Sender, tag_Time,
 	tag_Text, tag_set_NoExpire, tag_Read, tag_UserDef;
 public:
-    News_t() {}
-    News_t(const News_t &in) { *this = in; }
+    inline News_t() {}
+    inline News_t(const News_t &in) { *this = in; }
     News_t(const mstring& channel, const mstring& sender, const mstring& text,
 	const bool noexpire = false);
     ~News_t() {}
     void operator=(const News_t &in);
-    bool operator==(const News_t &in) const
+    inline bool operator==(const News_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator!=(const News_t &in) const
+    inline bool operator!=(const News_t &in) const
     	{ return !(i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator<(const News_t &in) const
+    inline bool operator<(const News_t &in) const
     	{ return (i_Time < in.i_Time); }
 
-    mstring Channel()const	{ return i_Channel; }
+    inline mstring Channel()const	{ return i_Channel; }
     mstring Sender() const;
     mDateTime Time() const;
     mstring Text() const;
@@ -389,9 +392,9 @@ public:
     void Unread(const mstring& name);
 
     SXP::Tag& GetClassTag() const { return tag_News_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage() const;
     void DumpB() const;

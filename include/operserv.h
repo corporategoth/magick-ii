@@ -25,6 +25,9 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.53  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -194,6 +197,7 @@ private:
     static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny,
 	tag_Ignore;
 public:
+    OperServ();
     ~OperServ() {}
 
     class stats_t
@@ -219,74 +223,74 @@ public:
 	unsigned long i_OperDeny;
 	unsigned long i_Ignore;
     public:
-	stats_t() { clear(); }
-	void clear() {
+	inline stats_t() { clear(); }
+	inline void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop =
 		i_Kill = i_Hide = i_Ping = i_Update = i_Reload =
 		i_Unload = i_Jupe = i_OnOff = i_Clone =
 		i_Akill = i_OperDeny = i_Ignore = 0; }
-	mDateTime ClearTime()const	    { return i_ClearTime; }
-	unsigned long Trace()const	    { return i_Trace; }
-	unsigned long Mode()const	    { return i_Mode; }
-	unsigned long Qline()const	    { return i_Qline; }
-	unsigned long Unqline()const	    { return i_Unqline; }
-	unsigned long Noop()const	    { return i_Noop; }
-	unsigned long Kill()const	    { return i_Kill; }
-	unsigned long Hide()const	    { return i_Hide; }
-	unsigned long Ping()const	    { return i_Ping; }
-	unsigned long Update()const	    { return i_Update; }
-	unsigned long Reload()const	    { return i_Reload; }
-	unsigned long Unload()const	    { return i_Unload; }
-	unsigned long Jupe()const	    { return i_Jupe; }
-	unsigned long OnOff()const	    { return i_OnOff; }
-	unsigned long Clone()const	    { return i_Clone; }
-	unsigned long Akill()const	    { return i_Akill; }
-	unsigned long OperDeny()const	    { return i_OperDeny; }
-	unsigned long Ignore()const	    { return i_Ignore; }
+	inline mDateTime ClearTime()const	    { return i_ClearTime; }
+	inline unsigned long Trace()const	    { return i_Trace; }
+	inline unsigned long Mode()const	    { return i_Mode; }
+	inline unsigned long Qline()const	    { return i_Qline; }
+	inline unsigned long Unqline()const	    { return i_Unqline; }
+	inline unsigned long Noop()const	    { return i_Noop; }
+	inline unsigned long Kill()const	    { return i_Kill; }
+	inline unsigned long Hide()const	    { return i_Hide; }
+	inline unsigned long Ping()const	    { return i_Ping; }
+	inline unsigned long Update()const	    { return i_Update; }
+	inline unsigned long Reload()const	    { return i_Reload; }
+	inline unsigned long Unload()const	    { return i_Unload; }
+	inline unsigned long Jupe()const	    { return i_Jupe; }
+	inline unsigned long OnOff()const	    { return i_OnOff; }
+	inline unsigned long Clone()const	    { return i_Clone; }
+	inline unsigned long Akill()const	    { return i_Akill; }
+	inline unsigned long OperDeny()const	    { return i_OperDeny; }
+	inline unsigned long Ignore()const	    { return i_Ignore; }
     } stats;
 
-    mstring Services_Admin()const	    { return services_admin; }
-    bool Secure()const			    { return secure; }
-    bool SecureOper()const		    { return secureoper; }
-    unsigned long Def_Expire()const	    { return def_expire; }
-    unsigned long Expire_Oper()const	    { return expire_oper; }
-    unsigned long Expire_Admin()const	    { return expire_admin; }
-    unsigned long Expire_Sop()const	    { return expire_sop; }
-    unsigned long Expire_SAdmin()const	    { return expire_sadmin; }
-    float Akill_Reject()const		    { return akill_reject; }
-    unsigned int Max_Clone()const	    { return max_clone; }
-    unsigned int Clone_Limit()const	    { return clone_limit; }
-    mstring Def_Clone()const		    { return def_clone; }
-    unsigned int Clone_Trigger()const	    { return clone_trigger; }
-    unsigned long Clone_Time()const	    { return clone_time; }
-    mstring Clone_Akill()const		    { return clone_akill; }
-    unsigned long Clone_AkillTime()const    { return clone_akilltime; }
-    unsigned long Flood_Time()const	    { return flood_time; }
-    unsigned int Flood_Msgs()const	    { return flood_msgs; }
-    unsigned long Ignore_Time()const	    { return ignore_time; }
-    unsigned int Ignore_Limit()const	    { return ignore_limit; }
-    unsigned long Ignore_Remove()const	    { return ignore_remove; }
-    Nick_Live_t::styles Ignore_Method()const
+    inline mstring Services_Admin()const	    { return services_admin; }
+    inline bool Secure()const			    { return secure; }
+    inline bool SecureOper()const		    { return secureoper; }
+    inline unsigned long Def_Expire()const	    { return def_expire; }
+    inline unsigned long Expire_Oper()const	    { return expire_oper; }
+    inline unsigned long Expire_Admin()const	    { return expire_admin; }
+    inline unsigned long Expire_Sop()const	    { return expire_sop; }
+    inline unsigned long Expire_SAdmin()const	    { return expire_sadmin; }
+    inline float Akill_Reject()const		    { return akill_reject; }
+    inline unsigned int Max_Clone()const	    { return max_clone; }
+    inline unsigned int Clone_Limit()const	    { return clone_limit; }
+    inline mstring Def_Clone()const		    { return def_clone; }
+    inline unsigned int Clone_Trigger()const	    { return clone_trigger; }
+    inline unsigned long Clone_Time()const	    { return clone_time; }
+    inline mstring Clone_Akill()const		    { return clone_akill; }
+    inline unsigned long Clone_AkillTime()const    { return clone_akilltime; }
+    inline unsigned long Flood_Time()const	    { return flood_time; }
+    inline unsigned int Flood_Msgs()const	    { return flood_msgs; }
+    inline unsigned long Ignore_Time()const	    { return ignore_time; }
+    inline unsigned int Ignore_Limit()const	    { return ignore_limit; }
+    inline unsigned long Ignore_Remove()const	    { return ignore_remove; }
+    inline Nick_Live_t::styles Ignore_Method()const
 	{ return static_cast<Nick_Live_t::styles>(ignore_method); }
-    bool Log_Ignore()const		    { return log_ignore; }
-    unsigned long Init_HTM_Gap()const	    { return init_htm_gap; }
-    unsigned long Init_HTM_Thresh()const    { return init_htm_thresh; }
-    unsigned long Max_HTM_Gap()const	    { return max_htm_gap; }
-    unsigned long HTM_On_Gap()const	    { return htm_on_gap; }
+    inline bool Log_Ignore()const		    { return log_ignore; }
+    inline unsigned long Init_HTM_Gap()const	    { return init_htm_gap; }
+    inline unsigned long Init_HTM_Thresh()const    { return init_htm_thresh; }
+    inline unsigned long Max_HTM_Gap()const	    { return max_htm_gap; }
+    inline unsigned long HTM_On_Gap()const	    { return htm_on_gap; }
 
-    size_t CloneList_size()const { return CloneList.size(); }
+    inline size_t CloneList_size()const { return CloneList.size(); }
     size_t CloneList_sum()const;
     size_t CloneList_size(const unsigned int amt)const;
     size_t CloneList_Usage()const;
 
     bool Clone_insert(const mstring& entry, const unsigned int value, const mstring& reason, const mstring& nick, const mDateTime& added = mDateTime::CurrentDateTime());
     bool Clone_erase();
-    set<Clone_Type>::iterator Clone_begin()
+    inline set<Clone_Type>::iterator Clone_begin()
 	{ return i_Clone.begin(); }
-    set<Clone_Type>::iterator Clone_end()
+    inline set<Clone_Type>::iterator Clone_end()
 	{ return i_Clone.end(); }
-    size_t Clone_size() const			{ return i_Clone.size(); }
+    inline size_t Clone_size() const			{ return i_Clone.size(); }
     size_t Clone_Usage() const;
     bool Clone_find(const mstring& entry);
     pair<unsigned int, mstring> Clone_value(const mstring& entry);
@@ -294,11 +298,11 @@ public:
 
     bool Akill_insert(const mstring& entry, const unsigned long value, const mstring& reason, const mstring& nick, const mDateTime& added = mDateTime::CurrentDateTime());
     bool Akill_erase();
-    set<Akill_Type>::iterator Akill_begin()
+    inline set<Akill_Type>::iterator Akill_begin()
 	{ return i_Akill.begin(); }
-    set<Akill_Type>::iterator Akill_end()
+    inline set<Akill_Type>::iterator Akill_end()
 	{ return i_Akill.end(); }
-    size_t Akill_size()	const			{ return i_Akill.size(); }
+    inline size_t Akill_size()	const			{ return i_Akill.size(); }
     size_t Akill_Usage() const;
     bool Akill_find(const mstring& entry);
     pair<unsigned long, mstring> Akill_value(const mstring& entry);
@@ -306,11 +310,11 @@ public:
 
     bool OperDeny_insert(const mstring& entry, const mstring& value, const mstring& nick);
     bool OperDeny_erase();
-    set<OperDeny_Type>::iterator OperDeny_begin()
+    inline set<OperDeny_Type>::iterator OperDeny_begin()
 	{ return i_OperDeny.begin(); }
-    set<OperDeny_Type>::iterator OperDeny_end()
+    inline set<OperDeny_Type>::iterator OperDeny_end()
 	{ return i_OperDeny.end(); }
-    size_t OperDeny_size() const		{ return i_OperDeny.size(); }
+    inline size_t OperDeny_size() const		{ return i_OperDeny.size(); }
     size_t OperDeny_Usage() const;
     bool OperDeny_find(const mstring& entry);
     mstring OperDeny_value(const mstring& entry);
@@ -318,21 +322,20 @@ public:
 
     bool Ignore_insert(const mstring& entry, const bool perm, const mstring& nick);
     bool Ignore_erase();
-    set<Ignore_Type>::iterator Ignore_begin()
+    inline set<Ignore_Type>::iterator Ignore_begin()
 	{ return i_Ignore.begin(); }
-    set<Ignore_Type>::iterator Ignore_end()
+    inline set<Ignore_Type>::iterator Ignore_end()
 	{ return i_Ignore.end(); }
-    size_t Ignore_size() const				{ return i_Ignore.size(); }
+    inline size_t Ignore_size() const				{ return i_Ignore.size(); }
     size_t Ignore_Usage() const;
     bool Ignore_find(const mstring& entry);
     bool Ignore_value(const mstring& entry);
     set<Ignore_Type>::iterator Ignore;
 
 
-    OperServ();
-    virtual threadtype_enum Get_TType() const { return tt_OperServ; }
-    virtual mstring GetInternalName() const { return "OperServ"; }
-    virtual void execute(const mstring & message);
+    threadtype_enum Get_TType() const { return tt_OperServ; }
+    mstring GetInternalName() const { return "OperServ"; }
+    void execute(const mstring & message);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
 #ifdef MAGICK_TRACE_WORKS
@@ -373,9 +376,9 @@ public:
     static void do_ignore_List(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_OperServ; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
     void DumpB() const;
     void DumpE() const;

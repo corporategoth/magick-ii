@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.37  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -165,11 +168,12 @@ class mFile
     FILE *fd;
     mstring i_name;
 public:
-    mFile() { fd = NULL; }
+    inline mFile() { fd = NULL; }
+    inline mFile(const mFile &in) { *this = in; }
     mFile(const mstring& name, FILE *in);
     mFile(const mstring& name, const mstring& mode = "r");
-    ~mFile() { Close(); }
-    mstring Name() const	{ return i_name; }
+    inline ~mFile() { Close(); }
+    inline mstring Name() const	{ return i_name; }
     bool Open(const mstring& name, const mstring& mode = "r");
     void Close();
     bool IsOpened() const;
@@ -209,7 +213,8 @@ unsigned short FindAvailPort();
 class FileMap : public SXP::IPersistObj
 {
 public:
-    ~FileMap() {}
+    inline FileMap() {}
+    inline ~FileMap() {}
     enum FileType { MemoAttach, Picture, Public, Unknown };
     typedef map<FileType, map<unsigned long, pair<mstring, mstring> > > filemap_t;
 
@@ -228,10 +233,10 @@ public:
     unsigned long GetNum(const FileType type, const mstring& name);
     size_t FileSysSize(const FileType type) const;
 
-    virtual SXP::Tag& GetClassTag() const { return tag_FileMap; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    SXP::Tag& GetClassTag() const { return tag_FileMap; }
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
 private:
     filemap_t i_FileMap;
@@ -266,20 +271,20 @@ private:
     map<time_t, size_t> i_Traffic;
 
 public:
-    DccXfer() { i_Transiant = NULL; }
+    inline DccXfer() { i_Transiant = NULL; }
     DccXfer(const unsigned long dccid, const mSocket& socket,
 	const mstring& mynick, const mstring& source,
 	const FileMap::FileType filetype, const unsigned long filenum);
     DccXfer(const unsigned long dccid, const mSocket& socket,
 	const mstring& mynick, const mstring& source, const mstring& filename,
 	const size_t filesize, const size_t blocksize);
-    DccXfer(const DccXfer &in)
+    inline DccXfer(const DccXfer &in)
 	{ *this = in; }
     void operator=(const DccXfer &in);
 
     ~DccXfer();
 
-    unsigned long DccId() const	{ return i_DccId; }
+    inline unsigned long DccId() const	{ return i_DccId; }
     bool Ready() const;
     XF_Type Type() const;
     mstring Mynick() const;
@@ -293,7 +298,7 @@ public:
     void Cancel();
     void Action();	// Do what we want!
     size_t Average(time_t secs = 0) const;
-    size_t Traffic() const	{ return i_Traffic.size(); }
+    inline size_t Traffic() const	{ return i_Traffic.size(); }
     size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
@@ -325,12 +330,32 @@ class DccMap : public ACE_Task<ACE_MT_SYNCH>
     static void *Accept2(void *);
 
 public:
-    virtual int open(void *in=0);
-    virtual int close(const unsigned long in);
-    virtual int svc(void);
+    typedef map<unsigned long, DccXfer * > xfers_t;
 
-    static map<unsigned long, DccXfer *> xfers;
-    vector<unsigned long> GetList(const mstring& in) const;
+private:
+    static xfers_t xfers;
+
+public:
+    int open(void *in=0);
+    int close(const unsigned long in);
+    int svc(void);
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static void AddXfers(DccXfer *in) throw(E_DccMap_Xfers);
+    static DccXfer &GetXfers(const unsigned long in) throw(E_DccMap_Xfers);
+    static void RemXfers(const unsigned long in) throw(E_DccMap_Xfers);
+    static bool IsXfers(const unsigned long in) throw(E_DccMap_Xfers);
+    static vector<unsigned long> GetList(const mstring& in) throw(E_DccMap_Xfers);
+#else
+    static void AddXfers(DccXfer *in);
+    static DccXfer &GetXfers(const unsigned long in);
+    static void RemXfers(const unsigned long in);
+    static bool IsXfers(const unsigned long in);
+    static vector<unsigned long> GetList(const mstring& in);
+#endif
+    static inline xfers_t::iterator XfersBegin() { return xfers.begin(); }
+    static inline xfers_t::iterator XfersEnd() { return xfers.begin(); }
+    static inline size_t XfersSize() { return xfers.size(); }
 
     // These start in their own threads.
     void Connect(const ACE_INET_Addr& address, const mstring& mynick,

@@ -25,6 +25,9 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2001/04/02 02:13:27  prez
+** Added inlines, fixed more of the exception code.
+**
 ** Revision 1.18  2001/03/27 07:04:30  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -96,12 +99,13 @@ private:
     map<mstring,mstring> i_keys;
     map<mstring,ceNode * > i_children;
 public:
-    ceNode() {}
-    ceNode(ceNode &in) { *this=in; }
+    inline ceNode() {}
+    inline ceNode(ceNode &in) { *this=in; }
     ~ceNode();
     ceNode& operator=(const ceNode &in);
     bool operator==(const ceNode &in)const;
-    bool operator<(const ceNode &in)const;
+    inline bool operator<(const ceNode &in)const
+	{ return (i_Name < in.i_Name); }
     bool SetKey(const mstring &KeyName, const mstring &Value);
     bool DeleteKey(const mstring &KeyName);
     bool CreateNode(const mstring &NodeName);
@@ -121,15 +125,19 @@ private:
     mstring i_FileName;
     vector<mstring> DeComment(const vector<mstring>& in);
 public:
-    mConfigEngine();
-    mConfigEngine(const mstring& FileName);
+    inline mConfigEngine() {}
+    inline mConfigEngine(const mstring& FileName)
+	{
+	    i_FileName=FileName;
+	    LoadFile();
+	}
     bool LoadFile();
     bool LoadFromString(const mstring& configstring);
     bool LoadFromArray(const vector<mstring> &configarray);
     bool SaveFile();
     void Empty();
 
-    map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
+    inline map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
     mstring Read(const mstring &key, const mstring& Defailt="") const;
     bool Read(const mstring &key, mstring &outvar, const mstring& Default="") const;
     bool Read(const mstring &key, bool &outvar, const bool Default=false) const;
