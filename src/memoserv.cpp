@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.93  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -701,7 +704,27 @@ void MemoServ::AddNick(nick_memo_t in)
 {
     FT("MemoServ::AddNick", ("(nick_memo_t) in"));
 
-    if (!in.size() || in.begin()->Nick().empty())
+    if (!in.size())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Blank));
+#else
+	LOG((LM_CRITICAL, "Exception - Memo:Nick:Add:Blank"));
+	return;
+#endif
+    }
+
+    if (in.begin() == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Memo:Nick:Add:Invalid"));
+	return;
+#endif
+    }
+
+    if (in.begin()->Nick().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Blank));
@@ -722,6 +745,16 @@ void MemoServ::AddNickMemo(Memo_t *in)
 #endif
 {
     FT("MemoServ::AddNickMemo", ("(Memo_t *) in"));
+
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Memo:NickMemo:Add:Invalid"));
+	return;
+#endif
+    }
 
     if (in->Nick().empty())
     {
@@ -752,18 +785,18 @@ MemoServ::nick_memo_t &MemoServ::GetNick(const mstring &in) const
     if (iter == nick.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:Nick:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Memo:Nick:Get:NotFound - %s", in.c_str()));
 	NRET(MemoServ::nick_memo_t &, GLOB_nick_memo_t);
 #endif
     }
     if (!iter->second.size())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:Nick:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Memo:Nick:Get:Blank - %s", in.c_str()));
 	NRET(MemoServ::nick_memo_t &, GLOB_nick_memo_t);
 #endif
     }
@@ -789,18 +822,18 @@ Memo_t &MemoServ::GetNickMemo(const mstring &in, const size_t num) const
     if (i < num || iter==ent.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:NotFound - %s/%d", in.c_str(), num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
     /* if (*iter == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Invalid))
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Invalid, in.c_str(), num))
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:Invalid - %s/%d", in.c_str(), num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -808,9 +841,9 @@ Memo_t &MemoServ::GetNickMemo(const mstring &in, const size_t num) const
     if (iter->Nick().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:Blank - %s/%d", in.c_str(), num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -832,16 +865,17 @@ void MemoServ::RemNick(const mstring &in)
     if (iter == nick.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Memo:Nick:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("MemoServ", "nick", iter->first));
     /* nick_memo_t::iterator iter2;
     for (iter2=iter->second.begin(); iter2!=iter->second.end(); iter2++)
-	delete *iter2;
+	if (*iter2 != NULL)
+	    delete *iter2;
     */
     nick.erase(iter);
 }
@@ -859,9 +893,9 @@ void MemoServ::RemNickMemo(const mstring &in, const size_t num)
     if (iter == nick.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Memo:Nick:Rem:NotFound - %s/%d", in.c_str(), num));
 	return;
 #endif
     }
@@ -874,13 +908,14 @@ void MemoServ::RemNickMemo(const mstring &in, const size_t num)
     if (i < num || iter2==iter->second.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound));
+	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:NickMemo:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Memo:NickMemo:Rem:NotFound - %s/%d", in.c_str(), num));
 	return;
 #endif
     }
-    /* delete *iter2 */
+    /* if (*iter2 != NULL)
+	delete *iter2 */
     iter->second.erase(iter2);
 
     if (!iter->second.size())
@@ -944,7 +979,27 @@ void MemoServ::AddChannel(channel_news_t in)
 {
     FT("MemoServ::AddChannel", ("(channel_news_t) in"));
 
-    if (!in.size() || in.begin()->Channel().empty())
+    if (!in.size())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Blank));
+#else
+	LOG((LM_CRITICAL, "Exception - News:Channel:Add:Blank"));
+	return;
+#endif
+    }
+
+    if (in.begin() == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - News:Channel:Add:Invalid"));
+	return;
+#endif
+    }
+
+    if (in.begin()->Channel().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Blank));
@@ -965,6 +1020,16 @@ void MemoServ::AddChannelNews(News_t *in)
 #endif
 {
     FT("MemoServ::AddChannelNews", ("(News_t *) in"));
+
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - News:ChannelNews:Add:Invalid"));
+	return;
+#endif
+    }
 
     if (in->Channel().empty())
     {
@@ -995,18 +1060,18 @@ MemoServ::channel_news_t &MemoServ::GetChannel(const mstring &in) const
     if (iter == channel.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:Channel:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - News:Channel:Get:NotFound - %s", in.c_str()));
 	NRET(MemoServ::channel_news_t &, GLOB_channel_news_t);
 #endif
     }
     if (!iter->second.size())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:Channel:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - News:Channel:Get:Blank - %s", in.c_str()));
 	NRET(MemoServ::channel_news_t &, GLOB_channel_news_t);
 #endif
     }
@@ -1032,18 +1097,18 @@ News_t &MemoServ::GetChannelNews(const mstring &in, const size_t num) const
     if (i < num || iter==ent.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:NotFound - %s/%d", in.c_str(), num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
     /* if (*iter == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Invalid))
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Invalid, in.c_str(), num))
 #else
-	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:Invalid - %s/%d", in.c_str(), num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
@@ -1051,9 +1116,9 @@ News_t &MemoServ::GetChannelNews(const mstring &in, const size_t num) const
     if (iter->Channel().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:Blank - %s/%d", in.c_str(), num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
@@ -1075,16 +1140,17 @@ void MemoServ::RemChannel(const mstring &in)
     if (iter == channel.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - News:Channel:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("MemoServ", "channel", iter->first));
     /* channel_news_t::iterator iter2;
     for (iter2=iter->second.begin(); iter2!=iter->second.end(); iter2++)
-	delete *iter2;
+	if (*iter2 != NULL)
+	    delete *iter2;
     */
     channel.erase(iter);
 }
@@ -1102,9 +1168,9 @@ void MemoServ::RemChannelNews(const mstring &in, const size_t num)
     if (iter == channel.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - News:Channel:Rem:NotFound - %s/%d", in.c_str(), num));
 	return;
 #endif
     }
@@ -1117,13 +1183,14 @@ void MemoServ::RemChannelNews(const mstring &in, const size_t num)
     if (i < num || iter2==iter->second.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound));
+	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - News:ChannelNews:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - News:ChannelNews:Rem:NotFound - %s/%d", in.c_str(), num));
 	return;
 #endif
     }
-    /* delete *iter2 */
+    /* if (*iter2 != NULL)
+	delete *iter2 */
     iter->second.erase(iter2);
 
     if (!iter->second.size())

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.235  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.234  2001/03/27 19:16:03  prez
 ** Fixed Chan_Stored_t::ChgNick (had problems coz nick isnt fully changed yet)
 **
@@ -5892,6 +5895,16 @@ void ChanServ::AddStored(Chan_Stored_t *in)
 {
     FT("ChanServ::AddStored", ("(Chan_Stored_t *) in"));
 
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Chan:Stored:Add:Invalid"));
+	return;
+#endif
+    }
+
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5921,18 +5934,18 @@ Chan_Stored_t &ChanServ::GetStored(const mstring &in) const
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_NotFound));
+	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Chan:Stored:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Chan:Stored:Get:NotFound - %s", in.c_str()));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
 #endif
     }
-    /* if (*iter == NULL)
+    /* if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Invalid))
+	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Invalid, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Chan:Stored:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - Chan:Stored:Get:Invalid - %s", in.c_str()));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
 #endif
     }
@@ -5940,9 +5953,9 @@ Chan_Stored_t &ChanServ::GetStored(const mstring &in) const
     if (iter->second.Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Blank));
+	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Chan:Stored:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Chan:Stored:Get:Blank - %s", in.c_str()));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
 #endif
     }
@@ -5965,14 +5978,17 @@ void ChanServ::RemStored(const mstring &in)
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Rem, E_ChanServ_Stored::T_NotFound));
+	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Rem, E_ChanServ_Stored::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Chan:Stored:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Chan:Stored:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("ChanServ", "stored", iter->first));
-    /* delete iter->second; */
+    /* if (iter->second != NULL)
+    {
+	delete iter->second;
+    } */
     stored.erase(iter);
 }
 
@@ -5992,6 +6008,16 @@ void ChanServ::AddLive(Chan_Live_t *in)
 #endif
 {
     FT("ChanServ::AddLive", ("(Chan_Live_t *) in"));
+
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_ChanServ_Live(E_ChanServ_Live::W_Add, E_ChanServ_Live::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Chan:Live:Add:Invalid"));
+	return;
+#endif
+    }
 
     if (in->Name().empty())
     {
@@ -6022,18 +6048,18 @@ Chan_Live_t &ChanServ::GetLive(const mstring &in) const
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_NotFound));
+	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Chan:Live:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Chan:Live:Get:NotFound - %s", in.c_str()));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
 #endif
     }
-    /* if (*iter == NULL)
+    /* if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Invalid))
+	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Invalid, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Chan:Live:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - Chan:Live:Get:Invalid - %s", in.c_str()));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
 #endif
     }
@@ -6041,9 +6067,9 @@ Chan_Live_t &ChanServ::GetLive(const mstring &in) const
     if (iter->second.Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Blank));
+	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Chan:Live:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Chan:Live:Get:Blank - %s", in.c_str()));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
 #endif
     }
@@ -6066,14 +6092,17 @@ void ChanServ::RemLive(const mstring &in)
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Rem, E_ChanServ_Live::T_NotFound));
+	throw(E_ChanServ_Live(E_ChanServ_Live::W_Rem, E_ChanServ_Live::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Chan:Live:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Chan:Live:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("ChanServ", "live", iter->first));
-    /* delete iter->second; */
+    /* if (iter->second != NULL)
+    {
+	delete iter->second;
+    } */
     live.erase(iter);
 }
 

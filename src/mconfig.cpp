@@ -27,6 +27,9 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.30  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -138,6 +141,7 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** ========================================================== */
 
 #include "mconfig.h"
+#include "mexceptions.h"
 #include "filesys.h"
 
 ceNode::~ceNode()
@@ -194,12 +198,6 @@ bool ceNode::operator==(const ceNode &in)const
         Result=true;
     }
     RET(Result);
-}
-
-bool ceNode::operator<(const ceNode &in)const
-{
-    FT("ceNode::operator<", ("(const ceNode &) in"));
-    RET(i_Name<in.i_Name);
 }
 
 bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
@@ -548,17 +546,6 @@ map<mstring,mstring> ceNode::GetMap() const
     NRET(map<mstring_mstring>, Result);
 }
 
-mConfigEngine::mConfigEngine()
-{
-    NFT("mConfigEngine::mConfigEngine");
-}
-
-mConfigEngine::mConfigEngine(const mstring& FileName)
-{
-    FT("mConfigEngine::mConfigEngine", (FileName));
-    i_FileName=FileName;
-    LoadFile();
-}
 
 bool mConfigEngine::LoadFile()
 {

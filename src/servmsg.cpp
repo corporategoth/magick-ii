@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.83  2001/03/27 07:04:32  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -1117,7 +1120,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 			m1!=Parent->memoserv.NickEnd(); m1++)
     {
 	size += m1->first.capacity();
-	{ RLOCK(("MemoServ", "nick", m1->first));
+	{ RLOCK2(("MemoServ", "nick", m1->first));
 	count += m1->second.size();
 	for (m2 = m1->second.begin(); m2 != m1->second.end(); m2++)
 	{
@@ -1135,7 +1138,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 			n1!=Parent->memoserv.ChannelEnd(); n1++)
     {
 	size += n1->first.capacity();
-	{ RLOCK(("MemoServ", "channel", n1->first));
+	{ RLOCK2(("MemoServ", "channel", n1->first));
 	count += n1->second.size();
 	for (n2 = n1->second.begin(); n2 != n1->second.end(); n2++)
 	{
@@ -1588,14 +1591,18 @@ void ServMsg::do_file_Dcc(const mstring &mynick, const mstring &source, const ms
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    if (DccMap::xfers.size())
+    if (DccMap::XfersSize())
     {
 	::send(mynick, source, Parent->getMessage(source, "DCC/LIST_HEAD"));
-	map<unsigned long, DccXfer *>::iterator iter;
+	DccMap::xfers_t::iterator iter;
 	RLOCK(("DccMap", "xfers"));
-	for (iter = DccMap::xfers.begin(); iter != DccMap::xfers.end();
+	for (iter = DccMap::XfersBegin(); iter != DccMap::XfersEnd();
  						iter++)
  	{
+	    RLOCK2(("DccMap", "xfers", iter->first));
+	    if (iter->second == NULL)
+		continue;
+
 	    float speed = static_cast<float>(iter->second->Average());
 	    char scale = 'b';
 	    while (speed >= 1024.0)
@@ -1680,14 +1687,14 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
     }
 
     RLOCK(("DccMap", "xfers"));
-    if (DccMap::xfers.find(number) == DccMap::xfers.end())
+    if (!DccMap::IsXfers(number))
     {
 	::send(mynick, source, Parent->getMessage(source, "DCC/NODCCID"),
 		number);
     }
     else
     {
-	{ RLOCK(("DCC"));
+	{ RLOCK2(("DCC"));
 	if (Parent->dcc != NULL)
 	{
 	    Parent->dcc->Cancel(number);
@@ -1750,7 +1757,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    RLOCK(("MemoServ", "nick"));
 	    for (i=Parent->memoserv.NickBegin(); i!=Parent->memoserv.NickEnd(); i++)
 	    {
-		RLOCK(("MemoServ", "nick", i->first));
+		RLOCK2(("MemoServ", "nick", i->first));
 	    	for(k=1, j=i->second.begin(); j!=i->second.end(); j++, k++)
 	    	{
 	    	    if (j->File() == number)

@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.164  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.163  2001/03/27 19:16:03  prez
 ** Fixed Chan_Stored_t::ChgNick (had problems coz nick isnt fully changed yet)
 **
@@ -1522,7 +1525,7 @@ void Nick_Live_t::Name(const mstring& in)
     {
 	vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
 	for (i=0; i<dccs.size(); i++)
-	    Parent->dcc->xfers[dccs[i]]->ChgNick(in);
+	    Parent->dcc->GetXfers(dccs[i]).ChgNick(in);
     }}
 
     // Carry over failed attempts (so /nick doesnt cure all!)
@@ -5053,6 +5056,16 @@ void NickServ::AddStored(Nick_Stored_t *in)
 {
     FT("NickServ::AddStored", ("(Nick_Stored_t *) in"));
 
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Nick:Stored:Add:Invalid"));
+	return;
+#endif
+    }
+
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5082,18 +5095,18 @@ Nick_Stored_t &NickServ::GetStored(const mstring &in) const
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_NotFound));
+	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Stored:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Stored:Get:NotFound - %s", in.c_str()));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
 #endif
     }
-    /* if (*iter == NULL)
+    /* if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Invalid))
+	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Invalid, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Stored:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Stored:Get:Invalid - %s", in.c_str()));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
 #endif
     }
@@ -5101,9 +5114,9 @@ Nick_Stored_t &NickServ::GetStored(const mstring &in) const
     if (iter->second.Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Blank));
+	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Stored:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Stored:Get:Blank - %s", in.c_str()));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
 #endif
     }
@@ -5126,14 +5139,17 @@ void NickServ::RemStored(const mstring &in)
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Rem, E_NickServ_Stored::T_NotFound));
+	throw(E_NickServ_Stored(E_NickServ_Stored::W_Rem, E_NickServ_Stored::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Nick:Stored:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Nick:Stored:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("NickServ", "stored", iter->first));
-    /* delete iter->second; */
+    /* if (itr->second != NULL)
+    {
+	delete iter->second;
+    } */
     stored.erase(iter);
 }
 
@@ -5152,6 +5168,16 @@ void NickServ::AddLive(Nick_Live_t *in)
 #endif
 {
     FT("NickServ::AddLive", ("(Nick_Live_t *) in"));
+
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Nick:Live:Add:Invalid"));
+	return;
+#endif
+    }
 
     if (in->Name().empty())
     {
@@ -5182,18 +5208,18 @@ Nick_Live_t &NickServ::GetLive(const mstring &in) const
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_NotFound));
+	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Live:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Live:Get:NotFound - %s", in.c_str()));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
 #endif
     }
-    /* if (*iter == NULL)
+    /* if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Invalid));
+	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Invalid, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Live:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Live:Get:Invalid - %s", in.c_str()));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
 #endif
     }
@@ -5201,9 +5227,9 @@ Nick_Live_t &NickServ::GetLive(const mstring &in) const
     if (iter->second.Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Blank));
+	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Live:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Live:Get:Blank - %s", in.c_str()));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
 #endif
     }
@@ -5226,14 +5252,17 @@ void NickServ::RemLive(const mstring &in)
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Rem, E_NickServ_Live::T_NotFound));
+	throw(E_NickServ_Live(E_NickServ_Live::W_Rem, E_NickServ_Live::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Nick:Live:Rem:Invalid"));
+	LOG((LM_CRITICAL, "Exception - Nick:Live:Rem:Invalid - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("NickServ", "live", iter->first));
-    /* delete iter->second; */
+    /* if (iter->second != NULL)
+    {
+	delete iter->second;
+    } */
     live.erase(iter);
 }
 
@@ -5295,18 +5324,18 @@ const mDateTime &NickServ::GetRecovered(const mstring &in) const
     if (iter == recovered.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_NotFound));
+	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Recovered:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Recovered:Get:NotFound - %s", in.c_str()));
 	RET(mDateTime &, GLOB_mDateTime);
 #endif
     }
     if (iter->second == mDateTime(0.0))
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_Blank));
+	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Nick:Recovered:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Nick:Recovered:Get:Blank - %s", in.c_str()));
 	RET(mDateTime &, GLOB_mDateTime);
 #endif
     }
@@ -5328,9 +5357,9 @@ void NickServ::RemRecovered(const mstring &in)
     if (iter == recovered.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Rem, E_NickServ_Recovered::T_NotFound));
+	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Rem, E_NickServ_Recovered::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Nick:Recovered:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Nick:Recovered:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }

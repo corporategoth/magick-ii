@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.154  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.153  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -274,46 +277,6 @@ RCSID(base_cpp, "@(#)$Id$");
 bool mBase::TaskOpened;
 mBaseTask mBase::BaseTask;
 
-mstring mUserDef::UserDef(const mstring &type) const
-{
-    FT("mUserDef::UserDef", (type));
-    map<mstring,mstring>::const_iterator iter = i_UserDef.find(type.LowerCase());
-    if (iter == i_UserDef.end())
-    {
-	RET("");
-    }
-    else
-    {
-	
-	mstring retval(iter->second);
-	RET(retval);
-    }
-}
-
-
-void mUserDef::UserDef(const mstring &type, const mstring &val)
-{
-    FT("mUserDef::UserDef", (type, val));
-    if (val.IsSameAs("NONE", true))
-    {
-	i_UserDef.erase(type.LowerCase());
-    }
-    else
-    {
-	i_UserDef[type.LowerCase()] = val;
-    }
-}
-
-// --------- end of mUserDef -----------------------------------
-
-
-entlist_t::entlist_t(const mstring &entry, const mstring &nick, const mDateTime &modtime)
-    : i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
-{
-    FT("entlist_t::entlist_t", (entry, nick, modtime));
-}
-
-
 void entlist_t::operator=(const entlist_t &in)
 {
     FT("entlist_t::operator=", ("(const entlist_t &) in"));
@@ -540,6 +503,8 @@ int mBaseTask::message_i(const mstring& message)
 
     CH(D_From,data);	    
 
+    try {
+
     if ((type == "PRIVMSG" || type == "NOTICE") && !IsChan(target) &&
     	Parent->nickserv.IsLive(source))
     {
@@ -592,6 +557,190 @@ int mBaseTask::message_i(const mstring& message)
     }
     else
 	Parent->server.execute(data);
+
+    }
+    catch (E_NickServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Stored::T_Invalid:
+		case E_NickServ_Stored::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemStored(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_NickServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Live::T_Invalid:
+		case E_NickServ_Live::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_NickServ_Recovered &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Recovered::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Recovered::T_Invalid:
+		case E_NickServ_Recovered::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemRecovered(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Stored::T_Invalid:
+		case E_ChanServ_Stored::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->chanserv.RemStored(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Live::T_Invalid:
+		case E_ChanServ_Live::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->chanserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_CommServ_List &e)
+    {
+	switch(e.where())
+	{
+	    case E_CommServ_List::W_Get:
+		switch (e.type())
+		{
+		case E_CommServ_List::T_Invalid:
+		case E_CommServ_List::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->commserv.RemList(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_Server_List &e)
+    {
+	switch(e.where())
+	{
+	    case E_Server_List::W_Get:
+		switch (e.type())
+		{
+		case E_Server_List::T_Invalid:
+		case E_Server_List::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->server.RemList(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_MemoServ_Nick &e)
+    {
+    }
+    catch (E_MemoServ_Channel &e)
+    {
+    }
+    catch (E_DccMap_Xfers &e)
+    {
+	switch(e.where())
+	{
+	    case E_DccMap_Xfers::W_Get:
+		switch (e.type())
+		{
+		case E_DccMap_Xfers::T_Invalid:
+		case E_DccMap_Xfers::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			DccMap::RemXfers(atoi(e.what()));
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
 
     // Theoretically, under mutex lock, only ONE can access this
     // at once.  Under pressure tho, the thread system may need

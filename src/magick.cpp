@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.295  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.294  2001/03/27 16:09:42  prez
 ** Fixed chanserv internal maps problem (inserted with incorrect case)
 **
@@ -446,21 +449,6 @@ RCSID(magick_cpp, "@(#)$Id$");
 mDateTime StartTime;
 Magick *Parent;
 
-mstring Magick::files_t::MakePath(const mstring& in)const
-{
-#ifdef WIN32
-	if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
-	    return in;
-	else
-	    return Parent->Services_Dir() + DirSlash + in;
-#else
-	if (mstring(in[0u]) == DirSlash)
-	    return in;
-	else
-	    return Parent->Services_Dir() + DirSlash + in;
-#endif
-}
-
 Magick::Magick(int inargc, char **inargv)
     : i_verbose(false), i_level(0), i_auto(false), i_shutdown(false),
       i_reconnect(true), i_localhost(0), i_gotconnect(false),
@@ -487,10 +475,6 @@ Magick::Magick(int inargc, char **inargv)
     }
     else
 	i_services_dir=buf;
-}
-
-Magick::~Magick()
-{
 }
 
 int Magick::Start()
@@ -3306,7 +3290,8 @@ void Logger::open()
 bool Logger::opened() const
 {
     NFT("Logger::opened");
-    RET(fout.IsOpened());
+    bool retval = fout.IsOpened();
+    RET(retval);
 }
 
 

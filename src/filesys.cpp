@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.67  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -297,7 +300,8 @@ RCSID(filesys_cpp, "@(#)$Id$");
 #include "magick.h"
 
 queue<unsigned long> DccMap::active;
-map<unsigned long, DccXfer *> DccMap::xfers;
+DccMap::xfers_t DccMap::xfers;
+static DccXfer GLOB_DccXfer;
 
 mFile::mFile(const mstring& name, FILE *in)
 {
@@ -1031,7 +1035,6 @@ void FileMap::EraseFile(const FileType type, const unsigned long num)
     }
 }
 
-
 vector<unsigned long> FileMap::GetList(const FileMap::FileType type, const mstring& source)
 {
     FT("FileMap::GetList", (static_cast<int>(type), source));
@@ -1198,7 +1201,7 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
 			mynick, source, static_cast<int>(filetype), filenum));
 
-    WLOCK(("DccMap", "xfers", dccid));
+    WLOCK(("DccMap", "xfers", i_DccId));
     // Setup Paramaters
     i_Transiant = NULL;
 //    i_Blocksize = Parent->files.Blocksize();
@@ -1261,7 +1264,7 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
 		mynick, source, filename, filesize, blocksize));
 
-    WLOCK(("DccMap", "xfers", dccid));
+    WLOCK(("DccMap", "xfers", i_DccId));
     // Setup Paramaters
     i_Transiant = NULL;
 //    i_Blocksize = Parent->files.Blocksize();
@@ -1500,6 +1503,7 @@ void DccXfer::ChgNick(const mstring& in)
 void DccXfer::Cancel()
 {
     NFT("DccXfer::Cancel");
+    RLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
     WLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     WLOCK2(("DccMap", "xfers", i_DccId, "i_File"));
     if (Parent->nickserv.IsLiveAll(i_Source))
@@ -1788,15 +1792,23 @@ int DccMap::close(const unsigned long in)
 {
     FT("DccMap::close", (in));
     // dump all and close open file handles.
-    map<unsigned long, DccXfer *>::iterator iter;
+    DccMap::xfers_t::iterator iter;
     RLOCK(("DccMap", "xfers"));
-    for (iter=xfers.begin(); iter != xfers.end(); iter++)
+    for (iter=XfersBegin(); iter != XfersEnd(); iter++)
     {
-	send(iter->second->Mynick(), iter->second->Source(),
+	RLOCK2(("DccMap", "xfers", iter->first));
+	if (iter->second != NULL)
+	{
+	    send(iter->second->Mynick(), iter->second->Source(),
 		Parent->getMessage(iter->second->Source(), "DCC/FAILED"),
 		((iter->second->Type() == DccXfer::Get) ? "GET" : "SEND"));
-	iter->second->Cancel();
+	    iter->second->Cancel();
+	}
     }
+    WLOCK(("DccMap", "xfers"));
+    for (iter=XfersBegin(); XfersSize(); iter=XfersBegin())
+	RemXfers(iter->first);
+
     RET(0);
 }
 
@@ -1822,37 +1834,48 @@ int DccMap::svc(void)
 	active.pop();
 	}
 
-	RLOCK(("DccMap", "xfers"));
-	if (xfers.find(WorkId) == xfers.end())
-	    continue;
-	if (xfers[WorkId] == NULL)
+#ifdef MAGICK_HAS_EXCEPTIONS
+	try
 	{
-	    WLOCK(("DccMap", "xfers"));
-	    xfers.erase(WorkId);
+#endif
+	    if (!IsXfers(WorkId))
+		continue;
+#ifdef MAGICK_HAS_EXCEPTIONS
+	}
+	catch(E_DccMap_Xfers &e)
+	{
+	    switch (e.type())
+	    {
+	    case E_DccMap_Xfers::T_Blank:
+	    case E_DccMap_Xfers::T_Invalid:
+		RemXfers(WorkId);
+		break;
+	    default:
+		throw;
+	    }
 	    continue;
 	}
-	if (!(*xfers[WorkId]).Ready())
+#endif
+	RLOCK(("DccMap", "xfers", WorkId));
+	DccXfer &dcc = GetXfers(WorkId);
+	if (!dcc.Ready())
 	{
-	    WLOCK(("DccMap", "xfers"));
-	    delete xfers[WorkId];
-	    xfers.erase(WorkId);
+	    RemXfers(WorkId);
 	    continue;
 	}
 
 	CP(("Executing ACTION for DCC #%d", WorkId));
 	// Only do an action IF they have not exceeded the max speed
-	xfers[WorkId]->Action();
+	dcc.Action();
 	// Below LOW SPEED threshold OR
 	// No data in X seconds...
-	if (xfers[WorkId]->LastData().SecondsSince() > Parent->files.Timeout())
+	if (dcc.LastData().SecondsSince() > Parent->files.Timeout())
 	{
-	    send(xfers[WorkId]->Mynick(), xfers[WorkId]->Source(),
-		Parent->getMessage(xfers[WorkId]->Source(), "DCC/TIMEOUT"),
-		((xfers[WorkId]->Type() == DccXfer::Get) ? "GET" : "SEND"));
-	    WLOCK(("DccMap", "xfers"));
-	    xfers[WorkId]->Cancel();
-	    delete xfers[WorkId];
-	    xfers.erase(WorkId);
+	    send(dcc.Mynick(), dcc.Source(),
+		Parent->getMessage(dcc.Source(), "DCC/TIMEOUT"),
+		((dcc.Type() == DccXfer::Get) ? "GET" : "SEND"));
+	    dcc.Cancel();
+	    RemXfers(WorkId);
 	    continue;
 	}
 	{ WLOCK(("DccMap", "active"));
@@ -1863,15 +1886,173 @@ int DccMap::svc(void)
     DRET(0);
 }
 
-vector<unsigned long> DccMap::GetList(const mstring& in) const
+#ifdef MAGICK_HAS_EXCEPTIONS
+void DccMap::AddXfers(DccXfer *in) throw(E_DccMap_Xfers)
+#else
+void DccMap::AddXfers(DccXfer *in)
+#endif
+{
+    FT("DccMap::AddXfers", ("(DccXfer *) in"));
+
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Nick:Xfers:Add:Invalid"));
+	return;
+#endif
+    }
+    if (!in->DccId())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Blank));
+#else
+	LOG((LM_CRITICAL, "Exception - Nick:Xfers:Add:Blank"));
+	return;
+#endif
+    }
+
+    WLOCK(("DccMap", "xfers"));
+    xfers[in->DccId()] = in;
+}
+
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+DccXfer &DccMap::GetXfers(const unsigned long in) throw(E_DccMap_Xfers)
+#else
+DccXfer &DccMap::GetXfers(const unsigned long in)
+#endif
+{
+    FT("DccMap::GetXfers", (in));
+
+    RLOCK(("DccMap", "xfers", in));
+    DccMap::xfers_t::iterator iter = xfers.find(in);
+    if (iter == xfers.end())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_NotFound));
+#else
+	LOG((LM_EMERGENCY, "Exception - DccMap:Xfers:Get:NotFound"));
+	NRET(DccXfer &, GLOB_DccXfer);
+#endif
+    }
+    if (iter->second == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
+#else
+	LOG((LM_EMERGENCY, "Exception - DccMap:Xfers:Get:Invalid"));
+	NRET(DccXfer &, GLOB_DccXfer);
+#endif
+    }
+    if (!iter->second->DccId())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
+#else
+	LOG((LM_EMERGENCY, "Exception - DccMap:Xfers:Get:Blank"));
+	NRET(DccXfer &, GLOB_DccXfer);
+#endif
+    }
+
+    NRET(DccXfer &, const_cast<DccXfer &>(*iter->second));
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+void DccMap::RemXfers(const unsigned long in) throw(E_DccMap_Xfers)
+#else
+void DccMap::RemXfers(const unsigned long in)
+#endif
+{
+    FT("DccMap::RemXfers", (in));
+
+    WLOCK(("DccMap", "xfers"));
+    DccMap::xfers_t::iterator iter = xfers.find(in);
+    if (iter == xfers.end())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Rem, E_DccMap_Xfers::T_NotFound));
+#else
+	LOG((LM_CRITICAL, "Exception - Nick:Xfers:Rem:NotFound"));
+	return;
+#endif
+    }
+    WLOCK2(("DccMap", "xfers", iter->first));
+    if (iter->second != NULL)
+    {
+	delete iter->second;
+    }
+    xfers.erase(iter);
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+bool DccMap::IsXfers(const unsigned long in) throw(E_DccMap_Xfers)
+#else
+bool DccMap::IsXfers(const unsigned long in)
+#endif
+{
+    FT("DccMap::IsXfers", (in));
+
+    RLOCK(("DccMap", "xfers", in));
+    DccMap::xfers_t::const_iterator iter = xfers.find(in);
+    if (iter != xfers.end())
+    {
+	if (iter->second == NULL)
+	{
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
+#else
+	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Invalid"));
+	    RET(false);
+#endif
+	}
+	if (!iter->second->DccId())
+	{
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
+#else
+	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Blank"));
+	    RET(false);
+#endif
+	}
+	RET(true);
+    }
+    RET(false);
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+vector<unsigned long> DccMap::GetList(const mstring& in) throw(E_DccMap_Xfers)
+#else
+vector<unsigned long> DccMap::GetList(const mstring& in)
+#endif
 {
     FT("DccMap::GetList", (in));
     vector<unsigned long> retval;
 
-    map<unsigned long, DccXfer *>::const_iterator iter;
+    DccMap::xfers_t::const_iterator iter;
     RLOCK(("DccMap", "xfers"));
     for (iter=xfers.begin(); iter!=xfers.end(); iter++)
     {
+	RLOCK(("DccMap", "xfers", iter->first));
+	if (iter->second == NULL)
+	{
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
+#else
+	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Invalid"));
+	    continue;
+#endif
+	}
+	if (!iter->second->DccId())
+	{
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
+#else
+	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Blank"));
+	    continue;
+#endif
+	}
 	if (iter->second->Source().IsSameAs(in, true))
 	    retval.push_back(iter->first);
     }
@@ -1889,23 +2070,24 @@ void *DccMap::Connect2(void *in)
     if (DCC_SOCK.IsConnected())
     {
 	unsigned long WorkId;
-	bool found = false;
+	xfers_t::iterator iter;
 	DCC_SOCK.Resolve(S_DCCFile, val->source);
-	RLOCK(("DccMap", "xfers"));
-	for (WorkId = 1; !found && WorkId > 0; WorkId++)
+	{ RLOCK(("DccMap", "xfers"));
+	for (iter=XfersBegin(), WorkId=1; iter!=XfersEnd(); iter++, WorkId++)
 	{
-	    if (xfers.find(WorkId) == xfers.end())
-	    {
-		xfers[WorkId] = new DccXfer(WorkId, DCC_SOCK, val->mynick,
-			val->source, val->filename, val->filesize, val->blocksize);
-		{ WLOCK(("DccMap", "active"));
-		active.push(WorkId);
-		}
-		found = true;
-		CP(("Created DCC entry #%d", WorkId));
+	    if (WorkId < iter->first)
+		break;
+	}}
+	if (WorkId)
+	{
+	    AddXfers(new DccXfer(WorkId, DCC_SOCK, val->mynick, val->source,
+		val->filename, val->filesize, val->blocksize));
+	    { WLOCK(("DccMap", "active"));
+	      active.push(WorkId);
 	    }
+	    CP(("Created DCC entry #%d", WorkId));
 	}
-	if (!found)
+	else
 	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"GET");
     }
@@ -1930,23 +2112,24 @@ void *DccMap::Accept2(void *in)
     if (DCC_SOCK.IsConnected())
     {
 	unsigned long WorkId;
-	bool found = false;
+	xfers_t::iterator iter;
 	DCC_SOCK.Resolve(S_DCCFile, val->source);
-	RLOCK(("DccMap", "xfers"));
-	for (WorkId = 1; !found && WorkId > 0; WorkId++)
+	{ RLOCK(("DccMap", "xfers"));
+	for (iter=XfersBegin(), WorkId=1; iter!=XfersEnd(); iter++, WorkId++)
 	{
-	    if (xfers.find(WorkId) == xfers.end())
-	    {
-		xfers[WorkId] = new DccXfer(WorkId, DCC_SOCK, val->mynick,
-			val->source, val->filetype, val->filenum);
-		{ WLOCK(("DccMap", "active"));
-		active.push(WorkId);
-		}
-		found = true;
-		CP(("Created DCC entry #%d", WorkId));
+	    if (WorkId < iter->first)
+		break;
+	}}
+	if (WorkId)
+	{
+	    AddXfers(new DccXfer(WorkId, DCC_SOCK, val->mynick,
+		val->source, val->filetype, val->filenum));
+	    { WLOCK(("DccMap", "active"));
+	      active.push(WorkId);
 	    }
+	    CP(("Created DCC entry #%d", WorkId));
 	}
-	if (!found)
+	else
 	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"SEND");
     }
@@ -1995,13 +2178,36 @@ void DccMap::Accept(const unsigned short port, const mstring& mynick,
 void DccMap::Cancel(const unsigned long DccId, const bool silent)
 {
     FT("DccMap::Cancel", (DccId, silent));
-    if (xfers.find(DccId) != xfers.end())
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+    try
     {
-	if (!silent)
-	    send(xfers[DccId]->Mynick(), xfers[DccId]->Source(),
-		Parent->getMessage(xfers[DccId]->Source(), "DCC/FAILED"),
-		((xfers[DccId]->Type() == DccXfer::Get) ? "GET" : "SEND"));
-	xfers[DccId]->Cancel();
+#endif
+	if (IsXfers(DccId))
+	{
+	    RLOCK(("DccMap", "xfers", DccId));
+	    DccXfer &dcc = GetXfers(DccId);
+	    if (!silent)
+		send(dcc.Mynick(), dcc.Source(),
+		    Parent->getMessage(dcc.Source(), "DCC/FAILED"),
+		    ((dcc.Type() == DccXfer::Get) ? "GET" : "SEND"));
+	    dcc.Cancel();
+	    RemXfers(DccId);
+	}
+#ifdef MAGICK_HAS_EXCEPTIONS
     }
+    catch(E_DccMap_Xfers &e)
+    {
+	switch (e.type())
+	{
+	case E_DccMap_Xfers::T_Blank:
+	case E_DccMap_Xfers::T_Invalid:
+	    RemXfers(DccId);
+	    break;
+	default:
+	    throw;
+	}
+    }
+#endif
     tm.cancel_all();
 }

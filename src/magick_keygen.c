@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.9  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -166,6 +169,8 @@ int main(int argc, char **argv)
 	memcpy(&tty_new, &tty_orig, sizeof(tty_orig));
 	tty_new.c_lflag &= ~ECHO;
 	ioctl(fileno(tty), TCSETA, &tty_new);
+#else
+	tty = stdin;
 #endif
 
 	printf("Enter database key: ");

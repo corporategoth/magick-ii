@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.161  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.160  2001/03/27 16:09:43  prez
 ** Fixed chanserv internal maps problem (inserted with incorrect case)
 **
@@ -1504,6 +1507,16 @@ void Server::AddList(Server_t *in)
 {
     FT("Server::AddList", ("(Server_t *) in"));
 
+    if (in == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_Server_List(E_Server_List::W_Add, E_Server_List::T_Invalid));
+#else
+	LOG((LM_CRITICAL, "Exception - Server:List:Add:Invalid"));
+	return;
+#endif
+    }
+
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1533,18 +1546,18 @@ Server_t &Server::GetList(const mstring &in) const
     if (iter == i_list.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_NotFound));
+	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Server:List:Get:NotFound"));
+	LOG((LM_EMERGENCY, "Exception - Server:List:Get:NotFound - %s", in.c_str()));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
-    /* if (*iter == NULL)
+    /* if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid))
+	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Invalid"));
+	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Invalid - %s", in.c_str()));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
@@ -1552,9 +1565,9 @@ Server_t &Server::GetList(const mstring &in) const
     if (iter->second.Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Blank));
+	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Blank"));
+	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Blank - %s", in.c_str()));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
@@ -1577,14 +1590,17 @@ void Server::RemList(const mstring &in)
     if (iter == i_list.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Rem, E_Server_List::T_NotFound));
+	throw(E_Server_List(E_Server_List::W_Rem, E_Server_List::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Server:List:Rem:NotFound"));
+	LOG((LM_CRITICAL, "Exception - Server:List:Rem:NotFound - %s", in.c_str()));
 	return;
 #endif
     }
     WLOCK2(("Server", "list", iter->first));
-    /* delete iter->second; */
+    /* if (iter->second != NULL)
+    {
+	delete iter->second;
+    } */
     i_list.erase(iter);
 }
 

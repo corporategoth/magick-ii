@@ -27,6 +27,9 @@ RCSID(variant_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.47  2001/03/08 14:34:29  prez
 ** Fixed some OS incompatabilities
 **
@@ -97,397 +100,202 @@ RCSID(variant_cpp, "@(#)$Id$");
 // gah microsoft sucks, the below is to make sure our header get's included, not ms's
 #include "../include/variant.h"
 
-// tracing taken out of mVariant now that we know it works so that we don't get infinite recursion.
-mVariant::mVariant(const short in)
-	: truevaluetype("short"),
-	  valuetype("short"),
-	  ShortValue(in)
-{}
-
-mVariant::mVariant(const int in)
-	: truevaluetype("int"),
-	  valuetype("int"),
-	  IntValue(in)
-{}
-
-mVariant::mVariant(const long in)
-	: truevaluetype("long"),
-	  valuetype("long"),
-	  LongValue(in)
-{}
-
-mVariant::mVariant(const char in)
-	: truevaluetype("char"),
-	  valuetype("char"),
-	  CharValue(in)
-{}
-
-mVariant::mVariant(const float in)
-	: truevaluetype("float"),
-	  valuetype("float"),
-	  FloatValue(in)
-{}
-
-mVariant::mVariant(const double in)
-	: truevaluetype("double"),
-	  valuetype("double"),
-	  DoubleValue(in)
-{}
-
-mVariant::mVariant(const char * in)
-	: truevaluetype("char *"),
-	  valuetype("mstring"),
-	  StringValue(in)
-{}
-
-mVariant::mVariant(const string& in)
-	: truevaluetype("string"),
-	  valuetype("mstring"),
-	  StringValue(in)
-{}
-
-mVariant::mVariant(const mstring& in)
-	: truevaluetype("mstring"),
-	  valuetype("mstring"),
-	  StringValue(in)
-{}
-
-mVariant::mVariant(const mDateTime& in)
-	: truevaluetype("mDateTime"),
-	  valuetype("mstring"),
-	  StringValue(in.DateTimeString())
-{}
-
-mVariant::mVariant(const bool in)
-	: truevaluetype("bool"),
-	  valuetype("bool"),
-	  BoolValue(in)
-{}
-
-mVariant::mVariant(const unsigned char in)
-	: truevaluetype("unsigned char"),
-	  valuetype("unsigned char"),
-	  UCharValue(in)
-{}
-
-mVariant::mVariant(const unsigned short in)
-	: truevaluetype("unsigned short"),
-	  valuetype("unsigned short"),
-	  UShortValue(in)
-{}
-
-mVariant::mVariant(const unsigned int in)
-	: truevaluetype("unsigned int"),
-	  valuetype("unsigned int"),
-	  UIntValue(in)
-{}
-
-mVariant::mVariant(const unsigned long in)
-	: truevaluetype("unsigned long"),
-	  valuetype("unsigned long"),
-	  ULongValue(in)
-{}
-
-mVariant::mVariant(void * in)
-	: truevaluetype("void *")
-{
-	if(in!=NULL)
-	{
-		valuetype="void *";
-	}
-	else
-	{
-		truevaluetype="void *";
-		valuetype="NULL";
-	}
-	PtrValue=in;
-}
-
-mVariant::mVariant(const mVariant & in)
-{
-	*this=in;
-}
-
 mVariant& mVariant::operator=(const mVariant& in)
 {
     valuetype=in.valuetype;
     truevaluetype=in.truevaluetype;
-    if(valuetype=="bool")
+    switch (valuetype)
+    {
+    case BOOL:
         BoolValue=in.BoolValue;
-    else if(valuetype=="char")
+	break;
+    case CHAR:
 	CharValue=in.CharValue;
-    else if(valuetype=="double")
-        DoubleValue=in.DoubleValue;
-    else if(valuetype=="float")
-        FloatValue=in.FloatValue;
-    else if(valuetype=="int")
-        IntValue=in.IntValue;
-    else if(valuetype=="long")
-        LongValue=in.LongValue;
-    else if(valuetype=="void *")
-        PtrValue=in.PtrValue;
-    else if(valuetype=="short")
+	break;
+    case SHORT:
         ShortValue=in.ShortValue;
-    else if(valuetype=="mstring")
-        StringValue=in.StringValue;
-    else if(valuetype=="unsigned char")
+	break;
+    case INT:
+        IntValue=in.IntValue;
+	break;
+    case LONG:
+        LongValue=in.LongValue;
+	break;
+    case FLOAT:
+        FloatValue=in.FloatValue;
+	break;
+    case DOUBLE:
+        DoubleValue=in.DoubleValue;
+	break;
+    case UCHAR:
         UCharValue=in.UCharValue;
-    else if(valuetype=="unsigned int")
-        UIntValue=in.UIntValue;
-    else if(valuetype=="unsigned long")
-        ULongValue=in.ULongValue;
-    else if(valuetype=="unsigned short")
+	break;
+    case USHORT:
         UShortValue=in.UShortValue;
+	break;
+    case UINT:
+        UIntValue=in.UIntValue;
+	break;
+    case ULONG:
+        ULongValue=in.ULongValue;
+	break;
+    case PTR:
+        PtrValue=in.PtrValue;
+	break;
+    case MSTRING:
+        StringValue=in.StringValue;
+	break;
+    case MDATETIME:
+        DateTimeValue=in.DateTimeValue;
+	break;
+    case EMPTY:
+	break;
+    }
     return *this;
 }
 
 bool mVariant::operator==(const mVariant& in)const
 {
-	if(valuetype!=in.valuetype)
-		return false;
-	if(valuetype=="bool")
-	{
-	    if(BoolValue==in.BoolValue)
-		return true;
-	    else 
-	    	return false;
-	}
-	else if(valuetype=="char")
-	{
-	    if(CharValue==in.CharValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="double")
-	{
-	    if(DoubleValue==in.DoubleValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="float")
-	{
-	    if(FloatValue==in.FloatValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="int")
-	{
-	    if(IntValue==in.IntValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="long")
-	{
-	    if(LongValue==in.LongValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="void *")
-	{
-	    if(PtrValue==in.PtrValue)
-		return true;
-	    else 
-	    	return false;
-	}
-	else if(valuetype=="short")
-	{
-	    if(ShortValue==in.ShortValue)
-	    	return true;
-	    else 
-	    	return false;
-	}
-	else if(valuetype=="mstring")
-	{
-	    if(StringValue==in.StringValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned char")
-	{
-	    if(UCharValue==in.UCharValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned int")
-	{
-	    if(UIntValue==in.UIntValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned long")
-	{
-	    if(ULongValue==in.ULongValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned short")
-	{
-	    if(UShortValue==in.UShortValue)
-	    	return true;
-	    else 
-	    	return false;
-	}
-	else if(valuetype=="Empty"||valuetype=="NULL")
-		return true;
-	// fall through, if it get's here major fubar, so put in logging mechanism when it's done
-	else return false;
+    if(valuetype!=in.valuetype)
+	return false;
+
+    switch (valuetype)
+    {
+    case BOOL:
+	return (BoolValue==in.BoolValue);
+    case CHAR:
+	return (CharValue==in.CharValue);
+    case SHORT:
+	return (ShortValue==in.ShortValue);
+    case INT:
+	return (IntValue==in.IntValue);
+    case LONG:
+	return (LongValue==in.LongValue);
+    case FLOAT:
+	return (FloatValue==in.FloatValue);
+    case DOUBLE:
+	return (DoubleValue==in.DoubleValue);
+    case UCHAR:
+	return (UCharValue==in.UCharValue);
+    case USHORT:
+	return (UShortValue==in.UShortValue);
+    case UINT:
+	return (UIntValue==in.UIntValue);
+    case ULONG:
+	return (ULongValue==in.ULongValue);
+    case PTR:
+	return (PtrValue==in.PtrValue);
+    case MSTRING:
+	return (StringValue==in.StringValue);
+    case MDATETIME:
+	return (DateTimeValue==in.DateTimeValue);
+    case EMPTY:
+	return true;
+    default:
+	return false;
+    }
 }
 bool mVariant::operator<(const mVariant& in)const
 {
-	if(in.valuetype!=valuetype)
-	    return false;
-	if(valuetype=="bool")
-	{
-	    if(static_cast<int>(BoolValue) < static_cast<int>(in.BoolValue))
-	    	return true;
-	    else 
-	    	return false;
-	}
-	else if(valuetype=="char")
-	{
-	    if(CharValue<in.CharValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="double")
-	{
-	    if(DoubleValue<in.DoubleValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="float")
-	{
-	    if(FloatValue<in.FloatValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="int")
-	{
-	    if(IntValue<in.IntValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="long")
-	{
-	    if(LongValue<in.LongValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="void *")
-	{
-	    if(PtrValue<in.PtrValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="short")
-	{
-	    if(ShortValue<in.ShortValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="mstring")
-	{
-	    if(StringValue<in.StringValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned char")
-	{
-	    if(UCharValue<in.UCharValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned int")
-	{
-	    if(UIntValue<in.UIntValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned long")
-	{
-	    if(ULongValue<in.ULongValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="unsigned short")
-	{
-	    if(UShortValue<in.UShortValue)
-		return true;
-	    else 
-		return false;
-	}
-	else if(valuetype=="Empty"||valuetype=="NULL")
-	    return true;
-	// fall through, if it get's here major fubar, so put in logging mechanism when it's done
-	else 
-	    return false;
+    if(valuetype!=in.valuetype)
+	return false;
+
+
+    switch (valuetype)
+    {
+    case BOOL:
+	return (static_cast<int>(BoolValue)<static_cast<int>(in.BoolValue));
+    case CHAR:
+	return (CharValue<in.CharValue);
+    case SHORT:
+	return (ShortValue<in.ShortValue);
+    case INT:
+	return (IntValue<in.IntValue);
+    case LONG:
+	return (LongValue<in.LongValue);
+    case FLOAT:
+	return (FloatValue<in.FloatValue);
+    case DOUBLE:
+	return (DoubleValue<in.DoubleValue);
+    case UCHAR:
+	return (UCharValue<in.UCharValue);
+    case USHORT:
+	return (UShortValue<in.UShortValue);
+    case UINT:
+	return (UIntValue<in.UIntValue);
+    case ULONG:
+	return (ULongValue<in.ULongValue);
+    case PTR:
+	return (PtrValue<in.PtrValue);
+    case MSTRING:
+	return (StringValue<in.StringValue);
+    case MDATETIME:
+	return (DateTimeValue<in.DateTimeValue);
+    case EMPTY:
+	return true;
+    default:
+	return false;
+    }
 }
 
 mstring mVariant::AsString()const
 {
     mstring dummystring;
-    if(valuetype=="bool")
+
+    switch (valuetype)
     {
+    case BOOL:
 	if(BoolValue==true)
 	    dummystring="true";
 	else
 	    dummystring="false";
-    }
-    else if(valuetype=="char")
+	break;
+    case CHAR:
 	dummystring.Format("%c",CharValue);
-    else if(valuetype=="double")
-	dummystring.Format("%f",DoubleValue);
-    else if(valuetype=="float")
-	dummystring.Format("%f",FloatValue);
-    else if(valuetype=="int")
-	dummystring.Format("%d",IntValue);
-    else if(valuetype=="long")
-	dummystring.Format("%d",LongValue);
-    else if(valuetype=="void *")
-	dummystring.Format("%p",PtrValue);
-    else if(valuetype=="short")
+	break;
+    case SHORT:
 	dummystring.Format("%d",ShortValue);
-    else if(valuetype=="mstring")
-	dummystring=StringValue;
-    else if(valuetype=="unsigned char")
+	break;
+    case INT:
+	dummystring.Format("%d",IntValue);
+	break;
+    case LONG:
+	dummystring.Format("%d",LongValue);
+	break;
+    case FLOAT:
+	dummystring.Format("%f",FloatValue);
+	break;
+    case DOUBLE:
+	dummystring.Format("%f",DoubleValue);
+	break;
+    case UCHAR:
 	dummystring.Format("%u",UCharValue);
-    else if(valuetype=="unsigned int")
-	dummystring.Format("%u",UIntValue);
-    else if(valuetype=="unsigned long")
-	dummystring.Format("%u",ULongValue);
-    else if(valuetype=="unsigned short")
+	break;
+    case USHORT:
 	dummystring.Format("%u",UShortValue);
-    else if(valuetype=="NULL")
-	dummystring="NULL";
+	break;
+    case UINT:
+	dummystring.Format("%u",UIntValue);
+	break;
+    case ULONG:
+	dummystring.Format("%u",ULongValue);
+	break;
+    case PTR:
+	dummystring.Format("%p",PtrValue);
+	break;
+    case MSTRING:
+	dummystring=StringValue;
+	break;
+    case MDATETIME:
+	dummystring=DateTimeValue.DateTimeString();
+	break;
+    case EMPTY:
+	break;
+    }
 
     return dummystring;
 }
 	
-mstring mVariant::type()const
-{
-    return truevaluetype;
-}
-
 mVarArray::mVarArray(const mVariant& one)
 {
     values.push_back(one);
@@ -697,10 +505,4 @@ mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& t
     values.push_back(fourteen);
     values.push_back(fifteen);
     values.push_back(sixteen);
-}
-
-const mVarArray mVarArray::EmptyArray()
-{
-	const mVarArray Result;
-	return Result;
 }

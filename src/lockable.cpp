@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.64  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -594,41 +597,6 @@ void mSocket::init()
 	    break;
 	}
 }
-
-mSocket::mSocket()
-{
-    NFT("mSocket::mSocket");
-    init();
-}
-
-mSocket::mSocket(const ACE_INET_Addr &addr, const unsigned long timeout)
-{
-    FT("mSocket::mSocket", ("(ACE_INET_Addr) addr", timeout));
-    init();
-    Connect(addr, timeout);
-}
-
-mSocket::mSocket(const mstring& host, const unsigned short port, const unsigned long timeout)
-{
-    FT("mSocket::mSocket", (host, port, timeout));
-    init();
-    Connect(host, port, timeout);
-}
-
-mSocket::mSocket(const unsigned short port, const unsigned long timeout)
-{
-    FT("mSocket::mSocket", (port, timeout));
-    init();
-    Accept(port, timeout);
-}
-
-mSocket::mSocket(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
-{
-    FT("mSocket::mSocket", ("(ACE_SOCK_Stream *) in"));
-    init();
-    Bind(in, direction, alloc);
-}
-
 
 mSocket::~mSocket()
 {

@@ -27,6 +27,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/04/02 02:11:23  prez
+** Fixed up some inlining, and added better excption handling
+**
 ** Revision 1.67  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -179,16 +182,6 @@ mDateTime mDateTime::CurrentTime()
     return Result;
 }
 
-mDateTime mDateTime::CurrentDateTime()
-{
-	return mDateTime(time(NULL));
-}
-
-mDateTime::mDateTime(const time_t src)
-{
-	*this=src;
-}
-
 mDateTime::mDateTime(const mstring& src, const mDateTimeFlag flag)
 {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
@@ -230,14 +223,6 @@ bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Dat
   return Result;
 }
 
-mDateTime::mDateTime(const unsigned int year, const unsigned int month, const unsigned int day)
-{
-	mDateTime tmp;
-	if(!DoEncodeDate(year,month,day,tmp))
-		tmp=0.0;
-	*this=tmp;
-}
-
 bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime& Time)
 {
   bool Result = false;
@@ -250,127 +235,6 @@ bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, 
     Result = true;
   }
   return Result;
-}
-
-mDateTime::mDateTime(const unsigned int hour, const unsigned int min, const unsigned int sec, const unsigned int msec)
-{
-	mDateTime tmp;
-	if(!DoEncodeTime(hour,min,sec,msec,tmp))
-		tmp=0.0;
-	*this=tmp;
-}
-mDateTime& mDateTime::operator=(const mDateTime& in)
-{
-	Val=in.Val;
-	return *this;
-}
-mDateTime& mDateTime::operator=(const double in)
-{
-	Val=in;
-	return *this;
-}
-mDateTime& mDateTime::operator=(const time_t in)
-{
-	tm *tmst;
-	tmst=localtime(&in);
-	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
-	return *this;
-}
-mDateTime& mDateTime::operator+=(const mDateTime& in)
-{
-	Val+=in.Val;
-	return *this;
-}
-mDateTime& mDateTime::operator+=(const double in)
-{
-	Val+=in;
-	return *this;
-}
-mDateTime& mDateTime::operator+=(const time_t in)
-{
-	*this+=mDateTime(in);
-	return *this;
-}
-mDateTime& mDateTime::operator-=(const mDateTime& in)
-{
-	Val-=in.Val;
-	return *this;
-}
-mDateTime& mDateTime::operator-=(const double in)
-{
-	Val-=in;
-	return *this;
-}
-mDateTime& mDateTime::operator-=(const time_t in)
-{
-	*this-=mDateTime(in);
-	return *this;
-}
-mDateTime mDateTime::operator+(const mDateTime& in) const
-{
-	mDateTime retval(Val);
-	retval += in;
-	return retval;
-}
-mDateTime mDateTime::operator+(const double in) const
-{
-	mDateTime retval(Val);
-	retval += in;
-	return retval;
-}
-mDateTime mDateTime::operator+(const time_t in) const
-{
-	mDateTime retval(Val);
-	retval += in;
-	return retval;
-}
-mDateTime mDateTime::operator-(const mDateTime& in) const
-{
-	mDateTime retval(Val);
-	retval -= in;
-	return retval;
-}
-mDateTime mDateTime::operator-(const double in) const
-{
-	mDateTime retval(Val);
-	retval -= in;
-	return retval;
-}
-mDateTime mDateTime::operator-(const time_t in) const
-{
-	mDateTime retval(Val);
-	retval -= in;
-	return retval;
-}
-
-bool mDateTime::operator==(const mDateTime& in)const
-{
-	return Val==in.Val;
-}
-
-bool mDateTime::operator!=(const mDateTime& in)const
-{
-	return Val!=in.Val;
-}
-
-bool mDateTime::operator>(const mDateTime& in)const
-{
-	return Val>in.Val;
-}
-
-bool mDateTime::operator<(const mDateTime& in)const
-{
-	return Val<in.Val;
-}
-
-bool mDateTime::operator>=(const mDateTime& in)const
-{
-	return Val>=in.Val;
-}
-
-bool mDateTime::operator<=(const mDateTime& in)const
-{
-	return Val<=in.Val;
 }
 
 mstring mDateTime::FormatString(const mstring& format)const
@@ -622,14 +486,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 	}
 	return Result;
 }
-mstring mDateTime::DateString()const
-{
-	return FormatString(ShortDateFormat);
-}
-mstring mDateTime::TimeString()const
-{
-	return FormatString(LongTimeFormat);
-}
+
 mstring mDateTime::DateTimeString()const
 {
 	mstring Result;
@@ -662,10 +519,6 @@ mDateTime::operator time_t() const
 	localtm.tm_sec=Sec;
 	localtm.tm_isdst=-1;
 	return mktime(&localtm);
-}
-mDateTime::operator mstring() const
-{
-	return DateTimeString();
 }
 
 int mDateTime::DayOfWeek()const
@@ -858,15 +711,7 @@ int mDateTime::Year() const
     DecodeDate(Year,Month,Day);
     return Year;
 }
-int mDateTime::Year2() const
-{
-    int Year2=Year() % 100;
-    return Year2;
-}
-int mDateTime::Century() const
-{
-    return Year()-Year2();
-}
+
 unsigned long mDateTime::MSecondsSince() const
 {
     mDateTime dummyvar=mDateTime::CurrentDateTime()-(*this);
@@ -874,37 +719,11 @@ unsigned long mDateTime::MSecondsSince() const
     return CurrentVal;
 }
 
-mstring mDateTime::Ago(const bool gmt, const mstring &source) const
-{
-    // Later we find out if this is a GMT time.
-    return(DisectTime(SecondsSince(), source));
-}
-
 unsigned long mDateTime::SecondsSince() const
 {
     mDateTime dummyvar=mDateTime::CurrentDateTime()-(*this);
     unsigned long CurrentVal=static_cast<unsigned long>(dummyvar.Val*static_cast<double>(SecsPerDay));
     return CurrentVal;
-}
-
-unsigned long mDateTime::MinutesSince() const
-{
-    return (SecondsSince() / 60);
-}
-
-unsigned long mDateTime::HoursSince() const
-{
-    return (MinutesSince() / 60);
-}
-
-unsigned long mDateTime::DaysSince() const
-{
-    return (HoursSince() / 24);
-}
-
-unsigned long mDateTime::YearsSince() const
-{
-    return static_cast<int>(static_cast<double>(DaysSince()) / 365.25);
 }
 
 mstring DisectTime(const long intime, const mstring &source)
