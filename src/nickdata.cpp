@@ -4505,7 +4505,7 @@ bool Nick_Stored_t::IsOnline()
     {
 	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(i_Name);
 
-	if (nlive->IsService())
+	if (nlive->IsServices())
 	{
 	    RET(false);
 	}
