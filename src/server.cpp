@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.189  2001/07/29 03:12:23  prez
+** Fixed up stuff for the NEW rn4.0
+**
 ** Revision 1.188  2001/07/24 02:51:13  prez
 ** Added ability to do JOIN or SJOIN
 **
@@ -877,7 +880,7 @@ void Protocol::Set(const unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
-	i_Akill = 2003;
+	i_Akill = 2002;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
@@ -885,8 +888,8 @@ void Protocol::Set(const unsigned int in)
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
 	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
+	i_SQLINE = "RQLINE 0";
+	i_UNSQLINE = "UNRQLINE";
 	i_Burst = "BURST";
 	i_EndBurst = "EOB";
 	SetTokens(0003);
@@ -1728,13 +1731,6 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	else
 	    line << "GLINE";
 	line << " +" << host << " " << exptime << " :" << reason;
-	break;
-    case 2003:
-	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
-	    line << proto.GetNonToken("GLINE");
-	else
-	    line << "GLINE";
-	line << " " << exptime << " +" << host << " " << exptime << " :" << reason;
 	break;
     }
 
@@ -2602,7 +2598,6 @@ void Server::RAKILL(const mstring& host)
 	line << " * -" << host;
 	break;
     case 2002:
-    case 2003:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
 	    line << proto.GetNonToken("GLINE");
 	else
@@ -5181,9 +5176,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else if (msgtype=="SZLINE")
 	{
-	    // Auto remove ... on relic IRCD, ignor otherwise
-	    if (proto.Number() == 53)
-		sraw("UNSZLINE " + params.ExtractWord(1, ": "));
+	   // zzzzZzzzZzzZzZZzZzZZZZzzzZzzz....
 	}
 	else
 	{

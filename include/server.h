@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/07/29 03:12:23  prez
+** Fixed up stuff for the NEW rn4.0
+**
 ** Revision 1.70  2001/07/24 02:51:13  prez
 ** Added ability to do JOIN or SJOIN
 **
@@ -217,8 +220,6 @@ class Protocol
      * 2001 = GLINE * +user@host time :reason
      *        GLINE * -user@host
      * 2002 = GLINE +user@host time :reason
-     *        GLINE -user@host
-     * 2003 = GLINE time +user@host time :reason
      *        GLINE -user@host
      */
     unsigned int i_Akill;

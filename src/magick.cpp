@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.320  2001/07/29 03:12:23  prez
+** Fixed up stuff for the NEW rn4.0
+**
 ** Revision 1.319  2001/07/15 07:35:38  prez
 ** Fixed problem of it removing access list entries on slave nickname drop.
 ** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
@@ -747,14 +750,6 @@ int Magick::Start()
 	}
     }
 
-    // load the local messages database and internal "default messages"
-    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
-    NLOG(LM_STARTUP, "COMMANDLINE/START_LANG");
-    LoadInternalMessages();
-
-    load_databases();
-
-    FLUSH();
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
@@ -811,6 +806,15 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
 #endif
 #endif
+
+    // load the local messages database and internal "default messages"
+    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
+    NLOG(LM_STARTUP, "COMMANDLINE/START_LANG");
+    LoadInternalMessages();
+    FLUSH();
+
+    load_databases();
+    FLUSH();
 
     i_ResetTime=mDateTime::CurrentDateTime();
     // Can only open these after fork if we want then to live
