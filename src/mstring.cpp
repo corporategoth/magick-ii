@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2000/12/09 16:45:37  prez
+** Fixed rfind in mstring.
+**
 ** Revision 1.84  2000/12/09 15:40:13  prez
 ** Fixed some stuff with mstring (ie. Contains called find_first_of
 ** not find, and the makeupper/makelower calls had != NULL not == NULL).
@@ -533,11 +536,14 @@ int mstring::find(const char *str, int occurance) const
 	occurance = 1;
 
     ptr = strstr(i_str, str);
-    for (i=1; i < occurance; i++)
+    if (ptr != NULL)
     {
-	ptr = strstr(ptr+length, str);
-	if (ptr == NULL)
-	    break;
+	for (i=1; i < occurance; i++)
+	{
+	    ptr = strstr(ptr+length, str);
+	    if (ptr == NULL)
+		break;
+	}
     }
     if (ptr != NULL)
 	retval = ptr - i_str;
@@ -555,7 +561,7 @@ int mstring::rfind(const char *str, int occurance) const
 	occurance = 1;
 
     occ = occurances(str);
-    if (occurance < occ)
+    if (occurance <= occ)
 	retval = find(str, occ - occurance + 1);
 
     return retval;

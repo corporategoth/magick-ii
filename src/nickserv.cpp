@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.139  2000/12/09 16:45:37  prez
+** Fixed rfind in mstring.
+**
 ** Revision 1.138  2000/12/09 15:40:13  prez
 ** Fixed some stuff with mstring (ie. Contains called find_first_of
 ** not find, and the makeupper/makelower calls had != NULL not == NULL).
@@ -4954,8 +4957,6 @@ void NickServ::execute(const mstring & data)
     mThread::ReAttach(tt_NickServ);
     FT("NickServ::execute", (data));
     //okay this is the main nickserv command switcher
-
-printf("Got here: %s\n", data.c_str());
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
 
