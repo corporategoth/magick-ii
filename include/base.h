@@ -631,17 +631,31 @@ public:
 };
 
 // Re-throws for the command map.
+void do_Xparam(const mstring & mynick, const mstring & source, const mstring & params, unsigned int x);
+void do_X_Yparam(const mstring & mynick, const mstring & source, const mstring & params, unsigned int x, unsigned int y);
+
 // do_X_Yparam will go through the map again with parameters X and Y (and a space between).
+inline void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_X_Yparam(mynick, source, params, 1, 2); }
+inline void do_1_3param(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_X_Yparam(mynick, source, params, 1, 3); }
+inline void do_1_4param(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_X_Yparam(mynick, source, params, 1, 4); }
+
 // do_X_Yparamswap will go through the map again with parameters Y and X (and a space between).
+inline void do_1_2paramswap(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_X_Yparam(mynick, source, params, 2, 1); }
+inline void do_1_3paramswap(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_X_Yparam(mynick, source, params, 3, 1); }
+inline void do_1_4paramswap(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_X_Yparam(mynick, source, params, 4, 1); }
+
 // do_Xparam will go through the map again with only parameter X.
-void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params);
-void do_1_3param(const mstring & mynick, const mstring & source, const mstring & params);
-void do_1_4param(const mstring & mynick, const mstring & source, const mstring & params);
-void do_1_2paramswap(const mstring & mynick, const mstring & source, const mstring & params);
-void do_1_3paramswap(const mstring & mynick, const mstring & source, const mstring & params);
-void do_1_4paramswap(const mstring & mynick, const mstring & source, const mstring & params);
-void do_2param(const mstring & mynick, const mstring & source, const mstring & params);
-void do_3param(const mstring & mynick, const mstring & source, const mstring & params);
-void do_4param(const mstring & mynick, const mstring & source, const mstring & params);
+inline void do_2param(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_Xparam(mynick, source, params, 2); }
+inline void do_3param(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_Xparam(mynick, source, params, 3); }
+inline void do_4param(const mstring & mynick, const mstring & source, const mstring & params)
+{ do_Xparam(mynick, source, params, 4); }
 
 #endif

@@ -1965,13 +1965,11 @@ void Server::MODE(const mstring & nick, const mstring & channel, const mstring &
 	Magick::instance().chanserv.GetLive(channel)->Mode(nick, mode);
 	if (proto.ServerModes())
 	    sraw(((proto.Tokens() &&
-		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
-		 mode.Before(" ") + " " + mode.After(" "));
+		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " + mode);
 	else
 	    nraw(nick,
 		 ((proto.Tokens() &&
-		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
-		 mode.Before(" ") + " " + mode.After(" "));
+		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " + mode);
     }
     ETCB();
 }

@@ -1565,6 +1565,32 @@ mstring mstring::ExtractWord(const unsigned int count, const mstring & delim, co
     return "";
 }
 
+mstring mstring::ExtractTo(const unsigned int count, const mstring & delim, const bool assemble) const
+{
+    int end = WordPosition(count, delim + 1, assemble);
+    if (end != -1)
+    {
+	end -= 2;
+	if (assemble)
+	{
+	    lock_read();
+	    while (end >= 0 && delim.Contains(i_str[static_cast<unsigned int>(end)]))
+		end--;
+	    lock_rel();
+	}
+	return SubString(0, end);
+    }
+    return SubString();
+}
+
+mstring mstring::ExtractFrom(const unsigned int count, const mstring & delim, const bool assemble) const
+{
+    int begin = WordPosition(count, delim, assemble);
+    if (begin != -1)
+	return SubString(begin, -1);
+    return "";
+}
+
 int mstring::WordPosition(const unsigned int count, const mstring & delim, const bool assemble) const
 {
     unsigned int i = 0, cnt = 0;

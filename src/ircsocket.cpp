@@ -771,14 +771,14 @@ void IrcSvcHandler::enqueue(const mstring & message, unsigned long priority)
     {
 	msgtype = IrcParam(message, 2);
 	if (message.WordCount(" ") > 2)
-	    params = " " + message.After(" ", 2);
+	    params = " " + message.ExtractFrom(3, " ");
     }
     else
     {
 	source.erase();
 	msgtype = IrcParam(message, 1);
 	if (message.WordCount(" ") > 1)
-	    params = " " + message.After(" ");
+	    params = " " + message.ExtractFrom(2, " ");
     }
 
     // Exception case ...

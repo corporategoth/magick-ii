@@ -242,9 +242,8 @@ void ServMsg::do_Help(const mstring & mynick, const mstring & source, const mstr
     mstring HelpTopic = Magick::instance().servmsg.GetInternalName();
 
     if (params.WordCount(" ") > 1)
-	HelpTopic += " " + params.After(" ");
+	HelpTopic += " " + params.ExtractFrom(2, " ");
     HelpTopic.Trim();
-    HelpTopic.Trim(false);
     while (HelpTopic.find("  ") >= 0)
 	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
@@ -468,7 +467,7 @@ void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2);
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -555,7 +554,7 @@ void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2);
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -653,7 +652,7 @@ void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("ServMsg::do_stats_Other", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2);
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -743,7 +742,7 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("ServMsg::do_stats_Oper", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2);
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -811,7 +810,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     int count;
     size_t size;
 
-    mstring message = params.Before(" ", 2);
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -1001,7 +1000,7 @@ void ServMsg::do_stats_All(const mstring & mynick, const mstring & source, const
     BTCB();
     FT("ServMsg::do_stats_All", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2);
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -1083,7 +1082,7 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
     bool display;
     mstring mask, priv;
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -1177,7 +1176,7 @@ void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("ServMsg::do_file_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -1197,7 +1196,7 @@ void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const 
     mstring priv;
 
     if (params.WordCount(" ") > 2)
-	priv = params.After(" ", 2).UpperCase();
+	priv = params.ExtractFrom(3, " ").UpperCase();
 
     Magick::instance().servmsg.stats.i_file_Add++;
     Magick::instance().nickserv.GetLive(source)->InFlight.Public(mynick, priv);
@@ -1209,7 +1208,7 @@ void ServMsg::do_file_Del(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("ServMsg::do_file_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -1238,7 +1237,7 @@ void ServMsg::do_file_Rename(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("ServMsg::do_file_Rename", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -1271,7 +1270,7 @@ void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const
     BTCB();
     FT("ServMsg::do_file_Priv", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -1283,7 +1282,7 @@ void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const
     mstring priv;
 
     if (params.WordCount(" ") > 3)
-	priv = params.After(" ", 3).UpperCase();
+	priv = params.ExtractFrom(4, " ").UpperCase();
     unsigned long num = Magick::instance().filesys.GetNum(FileMap::Public, file);
 
     if (!num)
@@ -1308,7 +1307,7 @@ void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const
     BTCB();
     FT("ServMsg::do_file_Send", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -1396,7 +1395,7 @@ void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("ServMsg::do_file_Dcc", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (DccMap::XfersSize())
     {
@@ -1454,7 +1453,7 @@ void ServMsg::do_file_Cancel(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("ServMsg::do_file_Cancel", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -1517,7 +1516,7 @@ void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("ServMsg::do_file_Lookup", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -1639,7 +1638,7 @@ void ServMsg::do_Global(const mstring & mynick, const mstring & source, const ms
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
-    mstring text = params.After(" ");
+    mstring text = params.ExtractFrom(2, " ");
 
     Server::list_t::iterator iter;
     RLOCK((lck_Server, lck_list));
@@ -1666,7 +1665,7 @@ void ServMsg::do_Ask(const mstring & mynick, const mstring & source, const mstri
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
-    mstring text = params.After(" ");
+    mstring text = params.ExtractFrom(2, " ");
 
     Magick::instance().servmsg.stats.i_Ask++;
     Magick::instance().server.HELPOPS(mynick, source + " (ASK) - " + text);

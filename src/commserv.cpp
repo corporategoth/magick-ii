@@ -1174,9 +1174,8 @@ void CommServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring HelpTopic = Magick::instance().commserv.GetInternalName();
 
     if (params.WordCount(" ") > 1)
-	HelpTopic += " " + params.After(" ");
+	HelpTopic += " " + params.ExtractFrom(2, " ");
     HelpTopic.Trim();
-    HelpTopic.Trim(false);
     while (HelpTopic.find("  ") >= 0)
 	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
@@ -1204,7 +1203,7 @@ void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstr
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
     mstring head = params.ExtractWord(3, " ");
-    mstring desc = params.After(" ", 3);
+    mstring desc = params.ExtractFrom(4, " ");
 
     if (Magick::instance().commserv.IsList(committee))
     {
@@ -1390,7 +1389,7 @@ void CommServ::do_Memo(const mstring & mynick, const mstring & source, const mst
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring text = params.After(" ", 2);
+    mstring text = params.ExtractFrom(3, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
@@ -1898,7 +1897,7 @@ void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, cons
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring msgnum = params.After(" ", 3);
+    mstring logmsg = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
@@ -1920,7 +1919,7 @@ void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    comm->MSG_insert(msgnum, source);
+    comm->MSG_insert(logmsg, source);
     Magick::instance().commserv.stats.i_Logon++;
     SEND(mynick, source, "LIST/ADD2_NUMBER",
 	 (comm->MSG_size(), committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
@@ -2158,7 +2157,7 @@ void CommServ::do_set_Description(const mstring & mynick, const mstring & source
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring desc = params.After(" ", 3);
+    mstring desc = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {

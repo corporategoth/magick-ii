@@ -1103,9 +1103,8 @@ void OperServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring HelpTopic = Magick::instance().operserv.GetInternalName();
 
     if (params.WordCount(" ") > 1)
-	HelpTopic += " " + params.After(" ");
+	HelpTopic += " " + params.ExtractFrom(2, " ");
     HelpTopic.Trim();
-    HelpTopic.Trim(false);
     while (HelpTopic.find("  ") >= 0)
 	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
@@ -1360,7 +1359,7 @@ void OperServ::do_Mode(const mstring & mynick, const mstring & source, const mst
     }
 
     mstring target = params.ExtractWord(2, " ");
-    mstring mode = params.After(" ", 2);
+    mstring mode = params.ExtractFrom(3, " ");
 
     if (IsChan(target))
     {
@@ -1438,7 +1437,7 @@ void OperServ::do_Qline(const mstring & mynick, const mstring & source, const ms
     mstring reason;
 
     if (params.WordCount(" ") > 2)
-	reason = params.After(" ", 2);
+	reason = params.ExtractFrom(3, " ");
     Magick::instance().server.SQLINE(mynick, target, reason);
     Magick::instance().operserv.stats.i_Qline++;
     SEND(mynick, source, "OS_COMMAND/QLINE", (target, Magick::instance().getMessage(source, "VALS/ON")));
@@ -1543,7 +1542,7 @@ void OperServ::do_Kill(const mstring & mynick, const mstring & source, const mst
     }
 
     mstring target = params.ExtractWord(2, " ");
-    mstring reason = params.After(" ", 2);
+    mstring reason = params.ExtractFrom(3, " ");
 
     if (Magick::instance().nickserv.IsLive(target))
     {
@@ -1667,7 +1666,7 @@ void OperServ::do_Shutdown(const mstring & mynick, const mstring & source, const
 	return;
     }
 
-    mstring reason = params.After(" ");
+    mstring reason = params.ExtractFrom(2, " ");
 
     NSEND(mynick, source, "OS_COMMAND/SHUTDOWN");
     ANNOUNCE(mynick, "MISC/SHUTDOWN", (source, reason));
@@ -1689,7 +1688,7 @@ void OperServ::do_Restart(const mstring & mynick, const mstring & source, const 
 	return;
     }
 
-    mstring reason = params.After(" ");
+    mstring reason = params.ExtractFrom(2, " ");
 
     NSEND(mynick, source, "OS_COMMAND/RESTART");
     ANNOUNCE(mynick, "MISC/RESTART", (source, reason));
@@ -1803,7 +1802,7 @@ void OperServ::do_Jupe(const mstring & mynick, const mstring & source, const mst
     }
 
     mstring target = params.ExtractWord(2, " ");
-    mstring reason = params.After(" ", 2);
+    mstring reason = params.ExtractFrom(3, " ");
 
     if (!target.Contains("."))
     {
@@ -2060,7 +2059,7 @@ void OperServ::do_settings_Config(const mstring & mynick, const mstring & source
     BTCB();
     FT("OperServ::do_settings_Config", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -2105,7 +2104,7 @@ void OperServ::do_settings_Nick(const mstring & mynick, const mstring & source, 
     BTCB();
     FT("OperServ::do_settings_Nick", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -2212,7 +2211,7 @@ void OperServ::do_settings_Channel(const mstring & mynick, const mstring & sourc
     BTCB();
     FT("OperServ::do_settings_Channel", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -2378,7 +2377,7 @@ void OperServ::do_settings_Other(const mstring & mynick, const mstring & source,
     BTCB();
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -2452,7 +2451,7 @@ void OperServ::do_settings_All(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("OperServ::do_settings_All", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -2475,7 +2474,7 @@ void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("OperServ::do_clone_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 5)
     {
@@ -2485,7 +2484,7 @@ void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, cons
 
     mstring host = params.ExtractWord(3, " ").LowerCase();
     mstring amount = params.ExtractWord(4, " ");
-    mstring reason = params.After(" ", 4);
+    mstring reason = params.ExtractFrom(5, " ");
 
     if (host.Contains("!"))
     {
@@ -2573,7 +2572,7 @@ void OperServ::do_clone_Del(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("OperServ::do_clone_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2660,7 +2659,7 @@ void OperServ::do_clone_List(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("OperServ::do_clone_List", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -2729,7 +2728,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("OperServ::do_akill_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -2738,7 +2737,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
     }
 
     mstring host = params.ExtractWord(3, " ").LowerCase();
-    mstring reason = params.After(" ", 3);
+    mstring reason = params.ExtractFrom(4, " ");
     unsigned long expire = FromHumanTime(reason.Before(" "));
 
     if (expire)
@@ -2749,7 +2748,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
 	    return;
 	}
 
-	reason = reason.After(" ");
+	reason = reason.ExtractFrom(2, " ");
     }
     else
 	expire = Magick::instance().operserv.Def_Expire();
@@ -2903,7 +2902,7 @@ void OperServ::do_akill_Del(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("OperServ::do_akill_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2989,7 +2988,7 @@ void OperServ::do_akill_List(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("OperServ::do_akill_List", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -3054,7 +3053,7 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("OperServ::do_operdeny_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3063,7 +3062,7 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
     }
 
     mstring host = params.ExtractWord(3, " ").LowerCase();
-    mstring reason = params.After(" ", 3);
+    mstring reason = params.ExtractFrom(4, " ");
 
     if (!host.Contains("@"))
     {
@@ -3159,7 +3158,7 @@ void OperServ::do_operdeny_Del(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("OperServ::do_operdeny_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3251,7 +3250,7 @@ void OperServ::do_operdeny_List(const mstring & mynick, const mstring & source, 
     BTCB();
     FT("OperServ::do_operdeny_List", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -3323,7 +3322,7 @@ void OperServ::do_ignore_Add(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("OperServ::do_ignore_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3395,7 +3394,7 @@ void OperServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("OperServ::do_ignore_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3486,7 +3485,7 @@ void OperServ::do_ignore_List(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("OperServ::do_ignore_List", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));

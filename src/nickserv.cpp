@@ -785,9 +785,8 @@ void NickServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring HelpTopic = Magick::instance().nickserv.GetInternalName();
 
     if (params.WordCount(" ") > 1)
-	HelpTopic += " " + params.After(" ");
+	HelpTopic += " " + params.ExtractFrom(2, " ");
     HelpTopic.Trim();
-    HelpTopic.Trim(false);
     while (HelpTopic.find("  ") >= 0)
 	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
@@ -1818,7 +1817,7 @@ void NickServ::do_Suspend(const mstring & mynick, const mstring & source, const 
     }
 
     mstring target = params.ExtractWord(2, " ");
-    mstring reason = params.After(" ", 2);
+    mstring reason = params.ExtractFrom(3, " ");
 
     if (!Magick::instance().nickserv.IsStored(target))
     {
@@ -2145,7 +2144,7 @@ void NickServ::do_access_Current(const mstring & mynick, const mstring & source,
     BTCB();
     FT("NickServ::do_access_Current", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 2)
     {
@@ -2176,7 +2175,7 @@ void NickServ::do_access_Add(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("NickServ::do_access_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2223,7 +2222,7 @@ void NickServ::do_access_Del(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("NickServ::do_access_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2286,7 +2285,7 @@ void NickServ::do_access_List(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_access_List", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
     mstring target = Magick::instance().getSname(source);
 
     {
@@ -2353,7 +2352,7 @@ void NickServ::do_ignore_Add(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("NickServ::do_ignore_Add", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2396,7 +2395,7 @@ void NickServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("NickServ::do_ignore_Del", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2448,7 +2447,7 @@ void NickServ::do_ignore_List(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_ignore_List", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
     mstring target = Magick::instance().getSname(source);
 
     {
@@ -2515,7 +2514,7 @@ void NickServ::do_set_Password(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("NickServ::do_set_Password", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2557,7 +2556,7 @@ void NickServ::do_set_Email(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("NickServ::do_set_Email", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2604,7 +2603,7 @@ void NickServ::do_set_URL(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("NickServ::do_set_URL", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2647,7 +2646,7 @@ void NickServ::do_set_ICQ(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("NickServ::do_set_ICQ", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2694,7 +2693,7 @@ void NickServ::do_set_AIM(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("NickServ::do_set_AIM", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2731,7 +2730,7 @@ void NickServ::do_set_MSN(const mstring & mynick, const mstring & source, const 
     BTCB();
     FT("NickServ::do_set_MSN", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2768,7 +2767,7 @@ void NickServ::do_set_Yahoo(const mstring & mynick, const mstring & source, cons
     BTCB();
     FT("NickServ::do_set_Yahoo", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2805,7 +2804,7 @@ void NickServ::do_set_Description(const mstring & mynick, const mstring & source
     BTCB();
     FT("NickServ::do_set_Description", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2813,7 +2812,7 @@ void NickServ::do_set_Description(const mstring & mynick, const mstring & source
 	return;
     }
 
-    mstring newvalue = params.After(" ", 2);
+    mstring newvalue = params.ExtractFrom(3, " ");
 
     if (newvalue.IsSameAs("none", true))
 	newvalue.erase();
@@ -2842,7 +2841,7 @@ void NickServ::do_set_Comment(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_set_Comment", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2851,7 +2850,7 @@ void NickServ::do_set_Comment(const mstring & mynick, const mstring & source, co
     }
 
     mstring target = params.ExtractWord(3, " ");
-    mstring comment = params.After(" ", 3);
+    mstring comment = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().nickserv.IsStored(target))
     {
@@ -2895,7 +2894,7 @@ void NickServ::do_set_Picture(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_set_Picture", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 2)
     {
@@ -2935,7 +2934,7 @@ void NickServ::do_set_Protect(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_set_Protect", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -2985,7 +2984,7 @@ void NickServ::do_set_Secure(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("NickServ::do_set_Secure", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3035,7 +3034,7 @@ void NickServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("NickServ::do_set_NoExpire", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3100,7 +3099,7 @@ void NickServ::do_set_NoMemo(const mstring & mynick, const mstring & source, con
     BTCB();
     FT("NickServ::do_set_NoMemo", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3150,7 +3149,7 @@ void NickServ::do_set_Private(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_set_Private", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3200,7 +3199,7 @@ void NickServ::do_set_PRIVMSG(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_set_PRIVMSG", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3250,7 +3249,7 @@ void NickServ::do_set_Language(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("NickServ::do_set_Language", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -3306,7 +3305,7 @@ void NickServ::do_lock_Protect(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("NickServ::do_lock_Protect", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3373,7 +3372,7 @@ void NickServ::do_lock_Secure(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_lock_Secure", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3439,7 +3438,7 @@ void NickServ::do_lock_NoMemo(const mstring & mynick, const mstring & source, co
     BTCB();
     FT("NickServ::do_lock_NoMemo", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3505,7 +3504,7 @@ void NickServ::do_lock_Private(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("NickServ::do_lock_Private", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3571,7 +3570,7 @@ void NickServ::do_lock_PRIVMSG(const mstring & mynick, const mstring & source, c
     BTCB();
     FT("NickServ::do_lock_PRIVMSG", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 4)
     {
@@ -3637,7 +3636,7 @@ void NickServ::do_lock_Language(const mstring & mynick, const mstring & source, 
     BTCB();
     FT("NickServ::do_lock_Language", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     {
 	RLOCK((lck_IrcSvcHandler));
@@ -3705,7 +3704,7 @@ void NickServ::do_unlock_Protect(const mstring & mynick, const mstring & source,
     BTCB();
     FT("NickServ::do_unlock_Protect", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3749,7 +3748,7 @@ void NickServ::do_unlock_Secure(const mstring & mynick, const mstring & source, 
     BTCB();
     FT("NickServ::do_unlock_Secure", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3793,7 +3792,7 @@ void NickServ::do_unlock_NoMemo(const mstring & mynick, const mstring & source, 
     BTCB();
     FT("NickServ::do_unlock_NoMemo", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3837,7 +3836,7 @@ void NickServ::do_unlock_Private(const mstring & mynick, const mstring & source,
     BTCB();
     FT("NickServ::do_unlock_Private", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3881,7 +3880,7 @@ void NickServ::do_unlock_PRIVMSG(const mstring & mynick, const mstring & source,
     BTCB();
     FT("NickServ::do_unlock_PRIVMSG", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {
@@ -3925,7 +3924,7 @@ void NickServ::do_unlock_Language(const mstring & mynick, const mstring & source
     BTCB();
     FT("NickServ::do_unlock_Language", (mynick, source, params));
 
-    mstring message = params.Before(" ", 2).UpperCase();
+    mstring message = params.ExtractTo(2, " ").UpperCase();
 
     if (params.WordCount(" ") < 3)
     {

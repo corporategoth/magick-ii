@@ -1658,251 +1658,47 @@ bool CommandMap::DoAnyCommand(pair < bool, functor > & cmd, const mstring & myni
     ETCB();
 }
 
-void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params)
+void do_Xparam(const mstring & mynick, const mstring & source, const mstring & params, unsigned int x)
 {
     BTCB();
-    FT("do_1_2param", (mynick, source, params));
-    if (params.WordCount(" ") < 2)
+    FT("do_Xparam", (mynick, source, params, x));
+    if (params.WordCount(" ") < x)
     {
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
 	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
-    mstring command(params.Before(" ", 2));
 
+    mstring command(params.ExtractWord(x, " "));
+    mstring data(params);
+    int begin = data.WordPosition(x, " ");
+    int end = data.WordPosition(x + 1, " ");
+    if (end > 0)
+	end--;
+    data.erase(begin, end);
+    data.prepend(command);
     command.MakeUpper();
 
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-
+    Magick::instance().commands.DoCommand(mynick, source, command, data);
     ETCB();
 }
 
-void do_1_3param(const mstring & mynick, const mstring & source, const mstring & params)
+void do_X_Yparam(const mstring & mynick, const mstring & source, const mstring & params, unsigned int x, unsigned int y)
 {
     BTCB();
-    FT("do_1_3param", (mynick, source, params));
-    if (params.WordCount(" ") < 3)
+    FT("do_X_Yparam", (mynick, source, params, x, y));
+
+    int min = (x < y ? x : y);
+    if (params.WordCount(" ") < (x < y ? y : x))
     {
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
+	     (params.ExtractWord(min, " ").UpperCase(), mynick, params.ExtractWord(min, " ").UpperCase()));
 	return;
     }
-    mstring command(params.Before(" ") + " " + params.ExtractWord(3, " "));
 
+    mstring command(params.ExtractWord(x, " ") + " " + params.ExtractWord(y, " "));
     command.MakeUpper();
 
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-    ETCB();
-}
-
-void do_1_4param(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_1_4param", (mynick, source, params));
-    if (params.WordCount(" ") < 4)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.Before(" ") + " " + params.ExtractWord(4, " "));
-
-    command.MakeUpper();
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-    ETCB();
-}
-
-void do_1_2paramswap(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_1_2paramswap", (mynick, source, params));
-    if (params.WordCount(" ") < 2)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.ExtractWord(2, " ") + " " + params.Before(" "));
-
-    command.MakeUpper();
-
-    mstring data(command);
-
-    if (params.WordCount(" ") > 2)
-	data += " " + params.After(" ", 2);
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-
-    ETCB();
-}
-
-void do_1_3paramswap(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_1_3paramswap", (mynick, source, params));
-    if (params.WordCount(" ") < 3)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.ExtractWord(3, " ") + " " + params.Before(" "));
-
-    command.MakeUpper();
-
-    mstring data(params.ExtractWord(3, " ") + " " + params.ExtractWord(2, " ") + " " + params.Before(" "));
-
-    if (params.WordCount(" ") > 3)
-	data += " " + params.After(" ", 3);
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-    ETCB();
-}
-
-void do_1_4paramswap(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_1_3paramswap", (mynick, source, params));
-    if (params.WordCount(" ") < 4)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.ExtractWord(4, " ") + " " + params.Before(" "));
-
-    command.MakeUpper();
-
-    mstring data(params.ExtractWord(4, " ") + " " + params.ExtractWord(2, " ") + params.ExtractWord(3, " ") + " " +
-		 params.Before(" "));
-    if (params.WordCount(" ") > 4)
-	data += " " + params.After(" ", 4);
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-    ETCB();
-}
-
-void do_2param(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_2param", (mynick, source, params));
-    if (params.WordCount(" ") < 2)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.ExtractWord(2, " "));
-
-    command.MakeUpper();
-
-    mstring data(command + " " + params.Before(" "));
-
-    if (params.WordCount(" ") > 2)
-	data += " " + params.After(" ", 2);
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-
-    ETCB();
-}
-
-void do_3param(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_3param", (mynick, source, params));
-    if (params.WordCount(" ") < 3)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.ExtractWord(3, " "));
-
-    command.MakeUpper();
-
-    mstring data(params.ExtractWord(3, " ") + " " + params.ExtractWord(2, " ") + " " + params.Before(" "));
-
-    if (params.WordCount(" ") > 3)
-	data += " " + params.After(" ", 3);
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
-    ETCB();
-}
-
-void do_4param(const mstring & mynick, const mstring & source, const mstring & params)
-{
-    BTCB();
-    FT("do_3param", (mynick, source, params));
-    if (params.WordCount(" ") < 4)
-    {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
-	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
-	return;
-    }
-    mstring command(params.ExtractWord(4, " "));
-
-    command.MakeUpper();
-
-    mstring data(params.ExtractWord(4, " ") + " " + params.ExtractWord(2, " ") + " " + params.ExtractWord(3, " ") + " " +
-		 params.Before(" "));
-    if (params.WordCount(" ") > 4)
-	data += " " + params.After(" ", 4);
-
-    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
-    {
-	// we're not worthy...
-//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//                      command, mynick,
-//                      command.Before(" ")));
-    }
+    Magick::instance().commands.DoCommand(mynick, source, command, params);
     ETCB();
 }

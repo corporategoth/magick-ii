@@ -791,9 +791,8 @@ void ChanServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring HelpTopic = Magick::instance().chanserv.GetInternalName();
 
     if (params.WordCount(" ") > 1)
-	HelpTopic += " " + params.After(" ");
+	HelpTopic += " " + params.ExtractFrom(2, " ");
     HelpTopic.Trim();
-    HelpTopic.Trim(false);
     while (HelpTopic.find("  ") >= 0)
 	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
@@ -821,7 +820,7 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
 
     mstring channel = params.ExtractWord(2, " ");
     mstring password = params.ExtractWord(3, " ");
-    mstring desc = params.After(" ", 3);
+    mstring desc = params.ExtractFrom(4, " ");
 
     if (Magick::instance().chanserv.IsStored(channel))
     {
@@ -1307,7 +1306,7 @@ void ChanServ::do_Suspend(const mstring & mynick, const mstring & source, const 
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring reason = params.After(" ", 2);
+    mstring reason = params.ExtractFrom(3, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -1627,7 +1626,7 @@ void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mst
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (change)
     {
-	mstring modes = params.After(" ", 2);
+	mstring modes = params.ExtractFrom(3, " ");
 
 	Magick::instance().chanserv.GetLive(channel)->SendMode(modes);
 	Magick::instance().chanserv.stats.i_Mode++;
@@ -2203,7 +2202,7 @@ void ChanServ::do_Topic(const mstring & mynick, const mstring & source, const ms
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring topic = params.After(" ", 2);
+    mstring topic = params.ExtractFrom(3, " ");
 
     if (!Magick::instance().chanserv.IsLive(channel))
     {
@@ -2261,7 +2260,7 @@ void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mst
     mstring reason;
 
     if (params.WordCount(" ") >= 4)
-	reason = params.After(" ", 3);
+	reason = params.ExtractFrom(4, " ");
     else
 	reason = Magick::instance().chanserv.DEF_Akick_Reason();
 
@@ -2346,7 +2345,7 @@ void ChanServ::do_AnonKick(const mstring & mynick, const mstring & source, const
 
     mstring channel = params.ExtractWord(2, " ");
     mstring target = params.ExtractWord(3, " ");
-    mstring reason = params.After(" ", 3);
+    mstring reason = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsLive(channel))
     {
@@ -2984,7 +2983,7 @@ void ChanServ::do_clear_Ops(const mstring & mynick, const mstring & source, cons
 
     bool allmode = false;
 
-    if (message.After(" ").Matches("ALL", true))
+    if (message.ExtractWord(2, " ").Matches("ALL", true))
 	allmode = true;
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
@@ -3075,7 +3074,7 @@ void ChanServ::do_clear_HalfOps(const mstring & mynick, const mstring & source, 
 
     bool allmode = false;
 
-    if (message.After(" ").Matches("ALL", true))
+    if (message.ExtractWord(2, " ").Matches("ALL", true))
 	allmode = true;
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
@@ -3166,7 +3165,7 @@ void ChanServ::do_clear_Voices(const mstring & mynick, const mstring & source, c
 
     bool allmode = false;
 
-    if (message.After(" ").Matches("ALL", true))
+    if (message.ExtractWord(2, " ").Matches("ALL", true))
 	allmode = true;
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
@@ -3257,7 +3256,7 @@ void ChanServ::do_clear_Modes(const mstring & mynick, const mstring & source, co
 
     bool allmode = false;
 
-    if (message.After(" ").Matches("ALL", true))
+    if (message.ExtractWord(2, " ").Matches("ALL", true))
 	allmode = true;
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
@@ -3358,7 +3357,7 @@ void ChanServ::do_clear_Bans(const mstring & mynick, const mstring & source, con
 
     bool allmode = false;
 
-    if (message.After(" ").Matches("ALL", true))
+    if (message.ExtractWord(2, " ").Matches("ALL", true))
 	allmode = true;
 
     vector < mstring > bans;
@@ -4100,7 +4099,7 @@ void ChanServ::do_akick_Add(const mstring & mynick, const mstring & source, cons
     mstring reason = Magick::instance().chanserv.DEF_Akick_Reason();
 
     if (params.WordCount(" ") > 4)
-	reason = params.After(" ", 4);
+	reason = params.ExtractFrom(5, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -4509,7 +4508,7 @@ void ChanServ::do_greet_Add(const mstring & mynick, const mstring & source, cons
 
     mstring channel = params.ExtractWord(2, " ");
     mstring target = Magick::instance().getSname(source);
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -4533,7 +4532,7 @@ void ChanServ::do_greet_Add(const mstring & mynick, const mstring & source, cons
 	if (option[0U] == '@')
 	{
 	    target = params.ExtractWord(4, " ").After("@");
-	    option = params.After(" ", 4);
+	    option = params.ExtractFrom(5, " ");
 	    if (!Magick::instance().nickserv.IsStored(target))
 	    {
 		SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (target));
@@ -4788,7 +4787,7 @@ void ChanServ::do_message_Add(const mstring & mynick, const mstring & source, co
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring text = params.After(" ", 3);
+    mstring text = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -5153,7 +5152,7 @@ void ChanServ::do_set_Description(const mstring & mynick, const mstring & source
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -5252,7 +5251,7 @@ void ChanServ::do_set_Email(const mstring & mynick, const mstring & source, cons
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -5316,7 +5315,7 @@ void ChanServ::do_set_URL(const mstring & mynick, const mstring & source, const 
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -5382,7 +5381,7 @@ void ChanServ::do_set_Comment(const mstring & mynick, const mstring & source, co
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -5435,7 +5434,7 @@ void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, cons
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {
@@ -6407,7 +6406,7 @@ void ChanServ::do_lock_Mlock(const mstring & mynick, const mstring & source, con
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring option = params.After(" ", 3);
+    mstring option = params.ExtractFrom(4, " ");
 
     if (!Magick::instance().chanserv.IsStored(channel))
     {

@@ -1143,6 +1143,28 @@ public:
      */
     mstring ExtractWord(const unsigned int count, const mstring & delim, const bool assemble = true) const;
 
+    /** Get everything from the beginning to the end of a 'word' given a delimiter
+     *  @param count The word number you want to end at (starting at 1).
+     *  @param delim The delimiters to use (may have multipal delimiters)
+     *  @param assemble If true, delimiters next to each other will be
+		counted as one delimiter, otherwise each delimiter
+		counts.  Defaults to true.
+     *  @return A new mstring with the range specified, or the whole string
+		if the word number does not exist.
+     */
+    mstring ExtractTo(const unsigned int count, const mstring & delim, const bool assemble = true) const;
+
+    /** Get everything from a 'word' to the end given a delimiter
+     *  @param count The word number you want to start at (starting at 1).
+     *  @param delim The delimiters to use (may have multipal delimiters)
+     *  @param assemble If true, delimiters next to each other will be
+		counted as one delimiter, otherwise each delimiter
+		counts.  Defaults to true.
+     *  @return A new mstring with the range specified, or "" if the
+		word number does not exist.
+     */
+    mstring ExtractFrom(const unsigned int count, const mstring & delim, const bool assemble = true) const;
+
     /** Get the possition of a specific 'word' given a delimiter
      *  @param count The word number you want (starting at 1).
      *  @param delim The delimiters to use (may have multipal delimiters)

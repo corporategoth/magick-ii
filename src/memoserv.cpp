@@ -1121,9 +1121,8 @@ void MemoServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring HelpTopic = Magick::instance().memoserv.GetInternalName();
 
     if (params.WordCount(" ") > 1)
-	HelpTopic += " " + params.After(" ");
+	HelpTopic += " " + params.ExtractFrom(2, " ");
     HelpTopic.Trim();
-    HelpTopic.Trim(false);
     while (HelpTopic.find("  ") >= 0)
 	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
@@ -1166,7 +1165,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
-	mstring what = params.After(" ", 2);
+	mstring what = params.ExtractFrom(3, " ");
 	mstring whoami = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
 
 	if (whoami.empty())
@@ -1303,7 +1302,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
     else
     {
 	mstring who = Magick::instance().nickserv.GetStored(source)->Host();
-	mstring what = params.After(" ", 1);
+	mstring what = params.ExtractFrom(2, " ");
 
 	if (who.empty())
 	    who = source;
@@ -1474,7 +1473,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
-	mstring what = params.After(" ", 2);
+	mstring what = params.ExtractFrom(3, " ");
 	mstring whoami = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
 
 	if (whoami.empty())
@@ -1568,7 +1567,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
     else
     {
 	mstring who = Magick::instance().nickserv.GetStored(source)->Host();
-	mstring what = params.After(" ", 1);
+	mstring what = params.ExtractFrom(2, " ");
 
 	if (who.empty())
 	    who = source;
@@ -1671,7 +1670,7 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
     }
 
     mstring who = Magick::instance().nickserv.GetStored(source)->Host();
-    mstring what = params.After(" ", 1);
+    mstring what = params.ExtractFrom(2, " ");
 
     if (who.empty())
 	who = source;
@@ -1902,7 +1901,7 @@ void MemoServ::do_Send(const mstring & mynick, const mstring & source, const mst
     }
 
     mstring name = params.ExtractWord(2, " ");
-    mstring text = params.After(" ", 2);
+    mstring text = params.ExtractFrom(3, " ");
 
     if (IsChan(name))
     {
@@ -2225,7 +2224,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.ExtractWord(3, " ");
-	mstring text = params.After(" ", 3);
+	mstring text = params.ExtractFrom(4, " ");
 
 	mstring whoami = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
 
@@ -2291,7 +2290,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
     {
 	mstring who = Magick::instance().nickserv.GetStored(source)->Host();
 	mstring what = params.ExtractWord(2, " ");
-	mstring text = params.After(" ", 2);
+	mstring text = params.ExtractFrom(3, " ");
 
 	if (who.empty())
 	    who = source;
@@ -2422,7 +2421,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
-	mstring what = params.After(" ", 2);
+	mstring what = params.ExtractFrom(3, " ");
 	mstring whoami = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
 
 	if (whoami.empty())
@@ -2552,7 +2551,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
     else
     {
 	mstring who = Magick::instance().nickserv.GetStored(source)->Host();
-	mstring what = params.After(" ", 1);
+	mstring what = params.ExtractFrom(2, " ");
 
 	if (who.empty())
 	    who = source;
@@ -2668,7 +2667,7 @@ void MemoServ::do_Continue(const mstring & mynick, const mstring & source, const
 	return;
     }
 
-    mstring text = params.After(" ", 1);
+    mstring text = params.ExtractFrom(2, " ");
 
     if (text.size() > Magick::instance().server.proto.MaxLine())
     {
@@ -2754,7 +2753,7 @@ void MemoServ::do_File(const mstring & mynick, const mstring & source, const mst
     mstring text;
 
     if (params.WordCount(" ") > 2)
-	text = params.After(" ", 2);
+	text = params.ExtractFrom(3, " ");
 
     if (IsChan(name))
     {
@@ -2869,7 +2868,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring onoff = params.ExtractWord(4, " ");
-	mstring what = params.After(" ", 4);
+	mstring what = params.ExtractFrom(5, " ");
 	mstring whoami = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
 
 	if (whoami.empty())
@@ -3001,7 +3000,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 
 	mstring who = Magick::instance().nickserv.GetStored(name)->Host();
 	mstring onoff = params.ExtractWord(3, " ");
-	mstring what = params.After(" ", 3);
+	mstring what = params.ExtractFrom(4, " ");
 
 	if (who.empty())
 	    who = source;
