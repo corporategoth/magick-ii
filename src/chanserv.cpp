@@ -45,7 +45,7 @@ void ChanServ::execute(const mstring & data)
     mThread::Attach(Parent,tt_mBase);
 }
 
-Chan_Live_t::Chan_Live_t(Chan_Live_t& in)
+Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
 {
     *this=in;
 }
@@ -110,7 +110,7 @@ int Chan_Live_t::Voices()
     return count_if(users.begin(),users.end(),checkvoices);    
 }
 
-Chan_Stored_t::Chan_Stored_t(Chan_Stored_t& in)
+Chan_Stored_t::Chan_Stored_t(const Chan_Stored_t& in)
 {
     *this=in;
 }
@@ -128,10 +128,19 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
 
-    i_Access_Level.assign(in.i_Access_Level.begin(),in.i_Access_Level.end());
-    i_Access.assign(in.i_Access.begin(),in.i_Access.end());
-    i_Akick.assign(in.i_Akick.begin(),in.i_Akick.end());
-    i_Greet.assign(in.i_Greet.begin(),in.i_Greet.end());
+    list<userlist_t>::iterator j;
+    i_Access_Level.clear();
+    for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
+	i_Access_Level.push_back(*j);
+    i_Access.clear();
+    for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
+	i_Access.push_back(*j);
+    i_Akick.clear();
+    for(j=in.i_Akick.begin();j!=in.i_Akick.end();j++)
+	i_Akick.push_back(*j);
+    i_Greet.clear();
+    for(j=in.i_Greet.begin();j!=in.i_Greet.end();j++)
+	i_Greet.push_back(*j);
 
     i_UserDef.clear();
     map<mstring, mstring>::iterator i;
