@@ -57,18 +57,16 @@ private:
 int IrcSvcHandler::open(void *in)
 {
     FT("IrcSvcHandler::open", (in));
-    ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
+    ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK|ACE_Event_Handler::WRITE_MASK);
     // todo activate the task
     CP(("Socket opened"));
     activate(THR_NEW_LWP | THR_JOINABLE,1);
     CP(("SvcHandler activated"));
     // do we do the server command here?
     mstring passcmd="PASS "+Parent->Startup_PASSWORD;
-    peer().send(passcmd.c_str(),passcmd.Len());
-    CH(T_Chatter::To,passcmd);
+    send(passcmd.c_str());
     mstring servercmd="SERVER "+Parent->Startup_SERVER_NAME+" 1 :["+Parent->Startup_SERVER_DESC+"]";
-    peer().send(servercmd.c_str(),servercmd.Len());
-    CH(T_Chatter::To,servercmd);
+    send(servercmd.c_str());
     RET(0);
 }
 
@@ -134,6 +132,7 @@ int IrcSvcHandler::send_i(const mstring & data)
 {
     int recvResult;
     recvResult=peer().send(data.c_str(),data.Len());
+    CH(T_Chatter::To,data);
     return 0;
 }
 
