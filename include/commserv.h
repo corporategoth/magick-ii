@@ -103,8 +103,9 @@ public:
 	return i_Name;
     }
     mDateTime RegTime() const;
-    void Drop();
+    unsigned long Drop();
     mstring HeadCom() const;
+    void HeadCom(const mstring & newhead);
     mstring Head() const;
     void Head(const mstring & newhead);
 

@@ -156,7 +156,6 @@ Flow_Control::Flow_Control(Magick * i)
 
 Flow_Control::~Flow_Control()
 {
-    reactor(NULL);
     if (magick_instance != NULL)
     {
 	magick_instance->Finish();

@@ -121,8 +121,27 @@ mDateTime Committee_t::RegTime() const
     RET(i_RegTime);
 }
 
-void Committee_t::Drop()
+unsigned long Committee_t::Drop()
 {
+    unsigned long dropped = 1;
+
+    {
+	vector < mstring > chunked;
+	RLOCK(("CommServ", "list"));
+	CommServ::list_t::iterator citer;
+	for (citer = Magick::instance().commserv.ListBegin(); citer != Magick::instance().commserv.ListEnd(); citer++)
+	{
+	    map_entry < Committee_t > comm(citer->second);
+	    if (comm->HeadCom().IsSameAs(i_Name))
+		chunked.push_back(comm->Name());
+	}
+	for (unsigned int i = 0; i < chunked.size(); i++)
+	{
+	    dropped += Magick::instance().commserv.GetList(chunked[i])->Drop();
+	    Magick::instance().commserv.RemList(chunked[i]);
+	}
+    }
+
     // Now we go for our channels ...
     ChanServ::stored_t::iterator iter;
     mstring entry = "@" + i_Name;
@@ -137,6 +156,7 @@ void Committee_t::Drop()
 		cstored->Access_erase();
 	}
     }
+    return dropped;
 }
 
 mstring Committee_t::HeadCom() const
@@ -144,6 +164,25 @@ mstring Committee_t::HeadCom() const
     NFT("Committee_t::HeadCom");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     RET(i_HeadCom);
+}
+
+void Committee_t::HeadCom(const mstring & newhead)
+{
+    FT("Committee_t::HeadCom", (newhead));
+
+    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+    MCB(i_HeadCom);
+    {
+	WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+	if (!i_Head.empty())
+	{
+	    CB(1, i_Head);
+	    i_Head.erase();
+	    CE(1, i_Head);
+	}
+    }
+    i_HeadCom = newhead.LowerCase();
+    MCE(i_HeadCom);
 }
 
 mstring Committee_t::Head() const
@@ -157,10 +196,10 @@ void Committee_t::Head(const mstring & newhead)
 {
     FT("Committee_t::Head", (newhead));
 
-    WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     MCB(i_Head);
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+	WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
 	if (!i_HeadCom.empty())
 	{
 	    CB(1, i_HeadCom);
@@ -168,7 +207,6 @@ void Committee_t::Head(const mstring & newhead)
 	    CE(1, i_HeadCom);
 	}
     }
-
     i_Head = newhead.LowerCase();
     MCE(i_Head);
 }
@@ -1083,19 +1121,6 @@ void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstr
 	return;
     }
 
-    if (!Magick::instance().nickserv.IsStored(head))
-    {
-	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (head));
-	return;
-    }
-
-    head = Magick::instance().getSname(head);
-    if (Magick::instance().nickserv.GetStored(head)->Forbidden())
-    {
-	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (head));
-	return;
-    }
-
     if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name() ||
 	committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name() ||
 	committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
@@ -1104,7 +1129,38 @@ void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstr
 	return;
     }
 
-    map_entry < Committee_t > tmp(new Committee_t(committee, head, desc));
+    map_entry < Committee_t > tmp;
+    if (head[0u] == '@')
+    {
+	head = head.After('@').UpperCase();
+
+	if (!Magick::instance().commserv.IsList(head))
+	{
+	    SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
+	    return;
+	}
+
+	tmp = new Committee_t(committee, *(Magick::instance().commserv.GetList(head).entry()), desc);
+    }
+    else
+    {
+
+	if (!Magick::instance().nickserv.IsStored(head))
+	{
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (head));
+	    return;
+	}
+
+	head = Magick::instance().getSname(head);
+	if (Magick::instance().nickserv.GetStored(head)->Forbidden())
+	{
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (head));
+	    return;
+	}
+
+	tmp = new Committee_t(committee, head, desc);
+    }
+
     Magick::instance().commserv.AddList(tmp);
     Magick::instance().commserv.stats.i_Add++;
     SEND(mynick, source, "COMMSERV/ADD", (committee, head));
@@ -1139,11 +1195,13 @@ void CommServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	return;
     }
 
-    Magick::instance().commserv.GetList(committee)->Drop();
+    unsigned long dropped = Magick::instance().commserv.GetList(committee)->Drop();
+
     Magick::instance().commserv.RemList(committee);
     Magick::instance().commserv.stats.i_Del++;
     SEND(mynick, source, "COMMSERV/DEL", (committee));
-    LOG(LM_NOTICE, "COMMSERV/DEL", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
+    LOG(LM_NOTICE, "COMMSERV/DEL",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee, dropped - 1));
 }
 
 void CommServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
@@ -1899,19 +1957,6 @@ void CommServ::do_set_Head(const mstring & mynick, const mstring & source, const
 	return;
     }
 
-    if (!Magick::instance().nickserv.IsStored(newhead))
-    {
-	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (newhead));
-	return;
-    }
-
-    newhead = Magick::instance().getSname(newhead);
-    if (Magick::instance().nickserv.GetStored(newhead)->Forbidden())
-    {
-	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (newhead));
-	return;
-    }
-
     if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name() ||
 	committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name() ||
 	committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
@@ -1922,28 +1967,57 @@ void CommServ::do_set_Head(const mstring & mynick, const mstring & source, const
 
     map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
-    if (!
-	(comm->IsHead(source) ||
-	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
-	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
+    bool ovr = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source));
+
+    if (!(comm->IsHead(source) || ovr))
     {
 	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
-    if (comm->Head().empty())
+    if (newhead[0u] == '@' && ovr)
     {
-	SEND(mynick, source, "COMMSERV/MULTI_HEAD", (committee));
-	return;
+	newhead = newhead.After("@").UpperCase();
+
+	if (!Magick::instance().commserv.IsList(newhead))
+	{
+	    SEND(mynick, source, "COMMSERV/ISNOTSTORED", (newhead));
+	    return;
+	}
+
+	comm->HeadCom(newhead);
+    }
+    else
+    {
+	if (!Magick::instance().nickserv.IsStored(newhead))
+	{
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (newhead));
+	    return;
+	}
+
+	newhead = Magick::instance().getSname(newhead);
+	if (Magick::instance().nickserv.GetStored(newhead)->Forbidden())
+	{
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (newhead));
+	    return;
+	}
+
+	if (comm->Head().empty() && !ovr)
+	{
+	    SEND(mynick, source, "COMMSERV/MULTI_HEAD", (committee));
+	    return;
+	}
+
+	if (newhead.IsSameAs(comm->Head(), true))
+	{
+	    SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (message));
+	    return;
+	}
+
+	comm->Head(newhead);
     }
 
-    if (newhead.IsSameAs(comm->Head(), true))
-    {
-	SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (message));
-	return;
-    }
-
-    comm->Head(newhead);
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_HEAD"), committee, newhead));

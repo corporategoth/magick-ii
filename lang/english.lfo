@@ -176,7 +176,7 @@ GET              =$1 received a file attachment ($2 / $3 - $4) from $5.
 ;
 [COMMSERV]
 ADD              =$1 created a new committee called $2 with $3 as its head.
-DEL              =$1 deleted committee $2.
+DEL              =$1 deleted committee $2 ($3 subcomittees).
 MEMO             =$1 sent a memo to all members of committee $2.
 MEMBER_ADD       =$1 added nickname $2 to committee $3.
 MEMBER_DEL       =$1 removed nickname $2 from committee $3.

@@ -1385,11 +1385,13 @@ You must be on the OVR_VIEW committee to use this command syntax.
 <p>
 
 <verb>
-SYNTAX: SET <lt>committee<gt> HEAD <lt>nickname<gt>
+SYNTAX: SET <lt>committee<gt> HEAD <lt>nickname|@committee<gt>
 </verb>
-This will transfer ownership of a committee to another user.  No other
-changes are made except who services see as the head.  The nickname
-specified must be a registered nickname.
+This will transfer ownership of a committee to another user or committee. 
+No other changes are made except who services see as the head.  If a
+nickname is specified it must be registered.  If a committee is specified
+prefixed by an '@' symbol, it too must be registered, and all members of
+that committee will be considered heads of the one you are changing.
 
 You must be on the OVR_OWNER committee to use this command syntax.
 </sect2>
@@ -1406,10 +1408,12 @@ require special privileges.
 <p>
 
 <verb>
-SYNTAX: ADD <lt>committee<gt> <lt>nickname<gt> <description>
+SYNTAX: ADD <lt>committee<gt> <lt>nickname|@committee<gt> <description>
 </verb>
-This will register a committee in services.  The nickname you specify
-will become the head of the committee.
+This will register a committee in services.  If you specify a nickname
+they will become the head of the committee.  If you specify another
+committee prefixed by a '@' symbol, all members of that committee
+will become heads of the one you are modifying.
 
 The description specified is purely informational, and should be a brief
 message saying what the committee is all about.

@@ -2028,15 +2028,17 @@
 16 =::      may change what is displayed above.
 
 [COMMSERV/ADD]
-01 =SOP::ADD <committee> <head> <description>
+01 =SOP::ADD <committee> <head|@headcom> <description>
 02 =SOP::
 03 =SOP::This will create a new committee.  You must assign
 04 =SOP::a committee head and description for the committee on
 05 =SOP::creation.  Please be sure to choose each committee's
 06 =SOP::head carefully, as will be able to add and remove
 07 =SOP::people to that committee at will, or transfer it to
-08 =SOP::another head, etc. without any way to intervene except
-09 =SOP::to DEL the committee.
+08 =SOP::another head, etc.  If you prefix the head with an '@'
+09 =SOP::sombol, it is assumed another committee is going to
+10 =SOP::be the head of this one, and all members on that
+11 =SOP::committee have full head privileges.
 
 [COMMSERV/DEL]
 01 =SOP::DEL <committee>
@@ -2141,13 +2143,17 @@
 08 =REGD::    SECURE       PRIVATE      OPENMEMOS
 
 [COMMSERV/SET/HEAD]
-01 =REGD::SET <committee> HEAD <head>
+01A=REGD:SADMIN:SET <committee> HEAD <head>
+01B=SADMIN::SET <committee> HEAD <head|@headcom>
 02 =REGD::
 03 =REGD::This will change who the head of a committee is.  The
 04 =REGD::head of a committee has full power over all options,
 05 =REGD::members, memos and logon messages.  Please be sure
 06 =REGD::you wish to relinquish all power of the committee
-07 =REGD::before using this command.
+07A=REGD:SADMIN:before using this command.
+07B=SADMIN::before using this command.  If there is an '@' symbol
+08 =SADMIN::before the head, it is considered to be a committee,
+09 =SADMIN::and all members of that committee will be heads.
 
 [COMMSERV/SET/DESCRIPTION]
 01 =REGD::SET <committee> DESCRIPTION <description>
