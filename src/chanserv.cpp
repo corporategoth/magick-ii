@@ -58,6 +58,23 @@ int Chan_Live_t::Part(mstring nick)
     RET(users.size());
 }
 
+int Chan_Live_t::Kick(mstring nick, mstring kicker)
+{
+    FT("Chan_Live_t::Kick", (nick));
+    if (users.find(nick.LowerCase())==users.end())
+	wxLogWarning("KICK from %s received for %s who is not in %s.", kicker.c_str(), nick.c_str(), i_Name.c_str());
+    else
+	users.erase(nick.LowerCase());
+
+    RET(users.size());
+}
+
+bool Chan_Live_t::IsIn(mstring nick)
+{
+    FT("Chan_Live_t::IsIn", (nick));
+    if (users.empty()) RET(false);
+    RET((users.find(nick.LowerCase()) != users.end()));
+}
 
 void Chan_Live_t::operator=(const Chan_Live_t &in)
 {

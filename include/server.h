@@ -18,6 +18,37 @@
 #include "base.h"
 #include "mstream.h"
 
+class Server
+{
+    mstring i_Name;
+    mstring i_Uplink;
+    int i_Hops;
+    mstring i_Description;
+    float i_Ping;
+    float i_Lag;
+public:
+    Server();
+    Server(const Server &in);
+    Server(mstring name, int hops, mstring description);
+    Server(mstring name, mstring uplink, int hops, mstring description);
+    void operator=(const Server &in);
+    bool operator==(const Server &in) const;
+    bool operator<(const Server &in) const;
+
+    mstring Name();
+    mstring Uplink();
+    int Hops();
+    mstring Description();
+    void Ping();
+    void Pong();
+    float Lag();
+
+    vector<mstring> Downlinks();
+    vector<mstring> AllDownlinks();
+    
+    ~Server();
+};
+
 class NetworkServ : public mBase
 {
     friend class Magick;
@@ -31,24 +62,15 @@ private:
     bool messages;		// Wether to process /MSG, /NOTICE.
     bool automation;		// Wether to do automatic tasks.
 
-    //  down    up
-    map<mstring,mstring> ServerList;
-protected:
-
 public:
     mstring getnames() { return names; }
+    map<mstring,Server> ServerList;
+    bool IsServer(mstring server);
 
     bool MSG() { return messages; }
     void MSG(bool on) { messages = on; }
     bool AUTO() { return automation; }
     void AUTO(bool on) { automation = on; }
-
-    bool AddServer(mstring uplink, mstring downlink);
-    mstring Uplink(mstring server);
-    bool IsServer(mstring server);
-    vector<mstring> Downlinks(mstring server);
-    vector<mstring> AllDownlinks(mstring server);
-    bool Squit(mstring server);
 
     NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }

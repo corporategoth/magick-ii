@@ -18,64 +18,135 @@
 #include "lockable.h"
 #include "magick.h"
 
-NetworkServ::NetworkServ()
+Server::Server()
 {
-    NFT("NetworkServ::NetworkServ");
-    messages=true;
-    automation=true;
+    NFT("Server::Server");
 }
 
-bool NetworkServ::IsServer(mstring server)
+Server::Server(const Server &in)
 {
-    FT("NetworkServ::IsServer", (server));
-    if (ServerList.empty()) RET(false);
-    RET(ServerList.find(server.LowerCase()) != ServerList.end());
+    FT("Server::Server", ("(const Server &) in"));
+    *this = in;
 }
 
-bool NetworkServ::AddServer(mstring uplink, mstring downlink)
+Server::Server(mstring name, int hops, mstring description)
 {
-    FT("NetworkServ::AddServer", (uplink, downlink));
-    if (uplink.LowerCase() == Parent->Startup_SERVER_NAME.LowerCase() || IsServer(uplink))
+    FT("Server::Server", (name, hops, description));
+    i_Name = name.LowerCase();
+    i_Uplink = Parent->Startup_SERVER_NAME.LowerCase();
+    i_Hops = hops;
+    i_Description = description;
+}
+
+Server::Server(mstring name, mstring uplink, int hops, mstring description)
+{
+    FT("Server::Server", (name, uplink, hops, description));
+    i_Name = name.LowerCase();
+    i_Uplink = uplink.LowerCase();
+    i_Hops = hops;
+    i_Description = description;
+}
+
+void Server::operator=(const Server &in)
+{
+    FT("Server::operator=", ("(const Server &) in"));
+    i_Name = in.i_Name;
+    i_Uplink = in.i_Uplink;
+    i_Hops = in.i_Hops;
+    i_Description = in.i_Description;
+    i_Ping = in.i_Ping;
+    i_Lag = in.i_Lag;
+}
+
+bool Server::operator==(const Server &in) const
+{
+    FT("Server::operator==", ("(const Server &) in"));
+    RET(i_Name == in.i_Name);
+}
+
+bool Server::operator<(const Server &in) const
+{
+    FT("Server::operator<", ("(const Server &) in"));
+    RET(i_Name < in.i_Name);
+}
+
+mstring Server::Name()
+{
+    NFT("Server::Name");
+    RET(i_Name);
+}
+
+mstring Server::Uplink()
+{
+    NFT("Server::Uplink");
+    RET(i_Uplink);
+}
+
+int Server::Hops()
+{
+    NFT("Server::Hops");
+    RET(i_Hops);
+}
+
+mstring Server::Description()
+{
+    NFT("Server::Description");
+    RET(i_Description);
+}
+
+void Server::Ping()
+{
+    NFT("Server::Ping");
+
+    timeval *tmp;
+    SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
+    gettimeofday(tmp, NULL);
+    i_Ping = tmp->tv_sec + (tmp->tv_usec / 1000);
+}
+
+void Server::Pong()
+{
+    NFT("Server::Pong");
+    if (i_Ping)
     {
-	ServerList[downlink.LowerCase()] = uplink.LowerCase();
-	RET(true);
+	timeval *tmp;
+	gettimeofday(tmp, NULL);
+	i_Lag = (tmp->tv_sec + (tmp->tv_usec / 1000)) - i_Ping;
+	i_Ping = 0;
     }
-    else
-	RET(false);
 }
 
-mstring NetworkServ::Uplink(mstring server)
+float Server::Lag()
 {
-    FT("NetworkServ::Uplink", (server));
-    if (IsServer(server))
-	RET(ServerList[server.LowerCase()]);
-    RET("");
+    NFT("Server::Lag");
+    RET(i_Lag);
 }
 
-vector<mstring> NetworkServ::Downlinks(mstring server)
+vector<mstring> Server::Downlinks()
 {
-    FT("NetworkServ::Downlinks", (server));
+    NFT("Server::Downlinks");
     vector<mstring> downlinks;
-    map<mstring,mstring>::iterator serv;
+    map<mstring,Server>::iterator serv;
 
-    for(serv=ServerList.begin(); serv!=ServerList.end(); serv++)
+    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
     {
-	if (serv->second == server.LowerCase())
+	if (serv->second.Uplink() == i_Name)
 	    downlinks.push_back(serv->first);
     }
     NRET(vector<mstring>, downlinks);
+    
 }
 
-vector<mstring> NetworkServ::AllDownlinks(mstring server)
+vector<mstring> Server::AllDownlinks()
 {
-    FT("NetworkServ::AllDownlinks", (server));
+    NFT("Server::AllDownlinks");
     vector<mstring> downlinks, uplinks, uplinks2;
-    map<mstring,mstring>::iterator serv;
+    map<mstring,Server>::iterator serv;
     bool found = false;
 
-    for(serv=ServerList.begin(); serv!=ServerList.end(); serv++)
+    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
     {
-	if (serv->second == server.LowerCase())
+	if (serv->second.Uplink() == i_Name)
 	{
 	    downlinks.push_back(serv->first);
 	    uplinks.push_back(serv->first);
@@ -88,9 +159,9 @@ vector<mstring> NetworkServ::AllDownlinks(mstring server)
 	found = false;
 	for (int i=0; i<uplinks.size(); i++) 
 	{
-	    for(serv=ServerList.begin(); serv!=ServerList.end(); serv++)
+	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
 	    {
-		if (serv->second == uplinks[i])
+		if (serv->second.Uplink() == uplinks[i])
 		{
 		    downlinks.push_back(serv->first);
 		    uplinks2.push_back(serv->first);
@@ -106,21 +177,29 @@ vector<mstring> NetworkServ::AllDownlinks(mstring server)
     NRET(vector<mstring>, downlinks);
 }
 
-bool NetworkServ::Squit(mstring server)
+Server::~Server()
 {
-    FT("NetworkServ::Squit", (server));
-    if (IsServer(server))
-    {
-	vector<mstring> ToKill = AllDownlinks(server);
-	for (int i=0; i<ToKill.size(); i++)
-	    ServerList.erase(ToKill[i]);
-	ServerList.erase(server.LowerCase());
-	RET(true);
-    }
-    else
-	RET(false);
+    NFT("Server::~Server");
+
+    // Take my sublinks with me (who will take theirs ...)
+    vector<mstring> Kill = Downlinks();
+    for (int i=0; i<Kill.size(); i++)
+	Parent->server.ServerList.erase(Kill[i]);
 }
 
+NetworkServ::NetworkServ()
+{
+    NFT("NetworkServ::NetworkServ");
+    messages=true;
+    automation=true;
+}
+
+bool NetworkServ::IsServer(mstring server)
+{
+    FT("IsServer", (server));
+    if (ServerList.empty()) RET(false);
+    RET((ServerList.find(server.LowerCase()) != ServerList.end()));
+}
 
 void NetworkServ::execute(const mstring & data)
 {
@@ -202,6 +281,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="ERROR")
 	{
 	    // ERROR :This is my error
+	    wxLogWarning("SERVER reported ERROR: %s", data.After(":").c_str());
 	}
 	break;
     case 'F':
@@ -253,7 +333,18 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="KICK")
 	{
 	    // :source KICK #channel target :reason
-	    // FOLLOWED BY A PART!
+
+	    // KICK for UNKNOWN USER.
+	    if (!Parent->nickserv.IsLive(data.ExtractWord(4, ": ")))
+	    {
+		KillUnknownUser(data.ExtractWord(4, ": "));
+		return;
+	    }
+
+	    if (!(Parent->nickserv.live[sourceL].IsInChan(data.ExtractWord(3, ": ")) || source.Contains(".")))
+		SendSVR("KICK " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
+
+	    Parent->nickserv.live[data.ExtractWord(4, ": ").LowerCase()].Kick(source, data.ExtractWord(3, ": "));
 	}
 	else if (msgtype=="KILL")
 	{
@@ -285,7 +376,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="NAMES")
 	{
 	    // :source NAMES #channel our.server
-	    // repl: :temple.magick.tm 366 ChanServ #magick :End of /NAMES list.
+	    SendSVR("336 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
 	}
 	else if (msgtype=="NICK")
 	{
@@ -347,8 +438,7 @@ void NetworkServ::execute(const mstring & data)
 	    // PASS :password
 	    if (data.ExtractWord(2, ": ") != Parent->Startup_PASSWORD)
 	    {
-		CP(("Server password mismatch.  Closing socket (%s, %s).",
-			Parent->Startup_PASSWORD.c_str(),data.ExtractWord(2, ": ").c_str()));
+		CP(("Server password mismatch.  Closing socket."));
 		Send("ERROR :No Access (passwd mismatch) [" + Parent->Startup_REMOTE_SERVER + "]");
 		Send("ERROR :Closing Link: [" + Parent->Startup_REMOTE_SERVER + "] (Bad Password)");
 
@@ -359,12 +449,23 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PING")
 	{
 	    // PING :some.server
-	    SendSVR("PONG " + Parent->Startup_SERVER_NAME + " :" +
-		data.ExtractWord(2, ": "));
+	    // :some.server PING some.server :our.server
+	    if (source)
+		SendSVR("PONG " + Parent->Startup_SERVER_NAME + " :" + source);
+	    else
+		SendSVR("PONG " + Parent->Startup_SERVER_NAME + " :" +
+			data.ExtractWord(2, ": "));
 	}
 	else if (msgtype=="PONG")
 	{
+	    // Receive info back for LAG MONITOR.
+	    // we'll send out ':our.server PING our.server :remote.server'
+	    // for EACH server, at the same time execute Ping() on it.
+
 	    // :server PONG server :our.server
+	    if (IsServer(source))
+		ServerList[sourceL].Pong();
+
 	}
 	else if (msgtype=="PRIVMSG")
 	{
@@ -398,18 +499,26 @@ void NetworkServ::execute(const mstring & data)
     case 'S':
 	if (msgtype=="SERVER")
 	{
-	    // SERVER our.uplink hops :description
+	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
 	    if (source.IsEmpty())
 	    {
-		if (!AddServer(Parent->Startup_SERVER_NAME, data.ExtractWord(2, ": ")))
-		{
-		    wxLogFatal("Error in NetworkServ::AddServer() -- Did not allow ourselves as uplink");
-		}
+		ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
+			data.ExtractWord(2, ": ").LowerCase(),
+			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
+			data.After(":"));
 	    }
 	    else
 	    {
-		if (!AddServer(source, data.ExtractWord(3, ": ")))
+		if (IsServer(sourceL))
+		{
+		    ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
+			data.ExtractWord(3, ": ").LowerCase(),
+			sourceL,
+			atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
+			data.After(":", 2));
+		}
+		else
 		{
 		    // Uplink (source) does not exist, WTF?!?
 		}
@@ -422,7 +531,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
 	    // SQUIT lifestone.darker.net :Ping timeout
-	    Squit(data.ExtractWord(2, ": "));
+	    ServerList.erase(data.ExtractWord(2, ": ").LowerCase());
 	}
 	else if (msgtype=="STATS")
 	{

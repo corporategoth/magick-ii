@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>
