@@ -28,6 +28,11 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.178  2001/06/11 03:44:45  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
+**
 ** Revision 1.177  2001/06/03 05:04:53  prez
 ** small fixes in operdeny and akill adding
 **
@@ -5902,9 +5907,9 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 
 	if (WaitIsOn.size())
 	{
-	    set<mstring>::iterator k;
+	    set<mstring>::reverse_iterator k;
 	    RLOCK(("Server", "WaitIsOn"));
-	    for (k=WaitIsOn.begin(); k!=WaitIsOn.end(); k++)
+	    for (k=WaitIsOn.rbegin(); k!=WaitIsOn.rend(); k++)
 	    {
 		if (Parent->operserv.IsName(*k) &&
 			!Parent->nickserv.IsLive(*k))
@@ -5925,10 +5930,13 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 		    {
 			if (Parent->chanserv.Hide())
 			    MODE(*k, "+i");
-			mstring joinline;
+			vector<mstring> joins;
 			ChanServ::stored_t::iterator iter;
 			map<mstring,mstring> modes;
+			map<mstring,triplet<mstring,mstring,mDateTime> > topics;
 			Chan_Live_t *clive;
+
+			// Should be fact finding ONLY ...
 			{ RLOCK(("ChanServ", "stored"));
 			for (iter=Parent->chanserv.StoredBegin(); iter!=Parent->chanserv.StoredEnd(); iter++)
 			{
@@ -5942,9 +5950,7 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 				(!iter->second.Mlock_Key().empty() ||
 				iter->second.Mlock_On().Contains("i"))))
 			    {
-				if (joinline.length())
-				    joinline << ",";
-				joinline << iter->first;
+				joins.push_back(iter->first);
 				if(clive == NULL)
 				{
 				    modes[iter->first] = "+s";
@@ -5954,46 +5960,54 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 					modes[iter->first] += "k " +
 						iter->second.Mlock_Key();
 				}
-				if (joinline.length() > proto.MaxLine())
-				{
-				    JOIN(Parent->chanserv.FirstName(), joinline);
-				    joinline.erase();
-				}
 			    }
-			    if (clive != NULL)
+
+			    if (clive != NULL && !iter->second.Last_Topic().empty() &&
+								!iter->second.Suspended())
 			    {
-				if (!clive->Topic().empty())
+				if ((iter->second.Topiclock() &&
+					clive->Topic() != iter->second.Last_Topic()) ||
+					(iter->second.Keeptopic() &&
+					clive->Topic().empty()))
 				{
-				    // Defer all the topic resets till we're done
-				    clive->Topic(OurUplink(),
-					clive->Topic(), clive->Topic_Setter(),
-					clive->Topic_Set_Time());
-				}
-				else
-				{
-				    // Now lets carry over all topics at once.
-				    if (iter->second.Keeptopic() &&
-					!iter->second.Last_Topic().empty())
-				    {
-					Parent->server.TOPIC(*k,
-					    iter->second.Last_Topic_Setter(),
-					    iter->second.Name(),
-					    iter->second.Last_Topic(),
-					    iter->second.Last_Topic_Set_Time());
-				    }
+				    topics[iter->first] = triplet<mstring,mstring,mDateTime>(
+					iter->second.Last_Topic_Setter(),
+					iter->second.Last_Topic(),
+					iter->second.Last_Topic_Set_Time());
 				}
 			    }
 			}}
+
+			vector<mstring>::iterator j;
+			mstring joinline;
+			for (j=joins.begin(); j!=joins.end(); j++)
+			{
+			    if (joinline.length() + j->length() > proto.MaxLine())
+			    {
+				JOIN(Parent->chanserv.FirstName(), joinline);
+				joinline.erase();
+			    }
+			    if (joinline.length())
+				joinline << ",";
+			    joinline << *j;
+			}
 			if (joinline.length())
 			{
 			    JOIN(Parent->chanserv.FirstName(), joinline);
 			    joinline.erase();
 			}
-			map<mstring,mstring>::iterator i;
-			for (i=modes.begin(); i!=modes.end(); i++)
+
+			map<mstring,mstring>::iterator m;
+			for (m=modes.begin(); m!=modes.end(); m++)
 			{
-			    if (Parent->chanserv.IsLive(i->first))
-				Parent->chanserv.GetLive(i->first).SendMode(i->second);
+			    Parent->chanserv.GetLive(m->first).SendMode(m->second);
+			}
+
+			map<mstring,triplet<mstring,mstring,mDateTime> >::iterator t;;
+			for (t=topics.begin(); t!=topics.end(); t++)
+			{
+			    Parent->server.TOPIC(*k, t->second.first,
+				t->first, t->second.second, t->second.third);
 			}
 		    }
 		}

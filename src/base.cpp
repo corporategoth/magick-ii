@@ -27,6 +27,11 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.167  2001/06/11 03:44:45  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
+**
 ** Revision 1.166  2001/05/28 11:17:33  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -321,7 +326,10 @@ RCSID(base_cpp, "@(#)$Id$");
 #include "magick.h"
 
 bool mBase::TaskOpened;
-map<mMessage::type_t, map<mstring, set<mMessage *> > > mMessage::AllDependancies;
+map<mMessage::type_t, map<mstring, set<unsigned long> > > mMessage::AllDependancies;
+map<unsigned long, mMessage *> mMessage::MsgIdMap;
+unsigned long LastMsgId = 0;
+
 
 void entlist_t::operator=(const entlist_t &in)
 {
@@ -433,7 +441,7 @@ void entlist_t::DumpE() const
 
 // --------- end of entlist_t -----------------------------------
 
-mMessage::mMessage(const mstring& source, const mstring& msgtype, const mstring& params, const u_long priority = 0)
+mMessage::mMessage(const mstring& source, const mstring& msgtype, const mstring& params, const u_long priority)
 	: ACE_Method_Request(priority), source_(source), params_(params),
 	  creation_(mDateTime::CurrentDateTime())
 {
@@ -452,6 +460,7 @@ void mMessage::AddDependancies()
 {
     NFT("mMessage::AddDependancies");
     WLOCK(("Dependancies", this));
+    bool added = false;
 
     if (!source_.empty())
     {
@@ -615,6 +624,13 @@ void mMessage::AddDependancies()
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
     }
 
+    unsigned long msgid;
+    { MLOCK(("MsgIdMap"));
+    msgid = LastMsgId++;
+    while (MsgIdMap.find(msgid) != MsgIdMap.end())
+	msgid = LastMsgId++;
+    }
+
     list<triplet<type_t, mstring, bool> >::iterator iter;
     for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
     {
@@ -623,8 +639,9 @@ void mMessage::AddDependancies()
 	case ServerExists:
 	    if (Parent->server.GetServer(iter->second).empty())
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[ServerExists][iter->second].insert(this);
+		AllDependancies[ServerExists][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -634,8 +651,9 @@ void mMessage::AddDependancies()
 	case ServerNoExists:
 	    if (!Parent->server.GetServer(iter->second).empty())
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[ServerNoExists][iter->second].insert(this);
+		AllDependancies[ServerNoExists][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -645,8 +663,9 @@ void mMessage::AddDependancies()
 	case NickExists:
 	    if (!Parent->nickserv.IsLive(iter->second))
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[NickExists][iter->second].insert(this);
+		AllDependancies[NickExists][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -656,8 +675,9 @@ void mMessage::AddDependancies()
 	case NickNoExists:
 	    if (Parent->nickserv.IsLive(iter->second))
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[NickNoExists][iter->second].insert(this);
+		AllDependancies[NickNoExists][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -667,8 +687,9 @@ void mMessage::AddDependancies()
 	case ChanExists:
 	    if (!Parent->chanserv.IsLive(iter->second))
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[ChanExists][iter->second].insert(this);
+		AllDependancies[ChanExists][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -678,8 +699,9 @@ void mMessage::AddDependancies()
 	case ChanNoExists:
 	    if (Parent->chanserv.IsLive(iter->second))
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[ChanNoExists][iter->second].insert(this);
+		AllDependancies[ChanNoExists][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -691,8 +713,9 @@ void mMessage::AddDependancies()
 	    {
 		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 		{
+		    added = true;
 		    WLOCK2(("AllDependancies"));
-		    AllDependancies[UserInChan][iter->second].insert(this);
+		    AllDependancies[UserInChan][iter->second].insert(msgid);
 		}
 		else
 		{
@@ -702,15 +725,16 @@ void mMessage::AddDependancies()
 	    else
 	    {
 		WLOCK2(("AllDependancies"));
-		AllDependancies[UserInChan][iter->second].insert(this);
+		AllDependancies[UserInChan][iter->second].insert(msgid);
 	    }
 	    break;
 	case UserNoInChan:
 	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
 		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 	    {
+		added = true;
 		WLOCK2(("AllDependancies"));
-		AllDependancies[UserNoInChan][iter->second].insert(this);
+		AllDependancies[UserNoInChan][iter->second].insert(msgid);
 	    }
 	    else
 	    {
@@ -718,6 +742,11 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	}
+    }
+    if (added)
+    {
+	MLOCK(("MsgIdMap"));
+	MsgIdMap[msgid] = this;
     }
 }
 
@@ -758,13 +787,13 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 	target = param1.LowerCase() + ":" + param2.LowerCase();
     else
 	target = param1.LowerCase();
-    set<mMessage *> mydep;
+    set<unsigned long> mydep;
 
     { WLOCK(("AllDependancies"));
-    map<type_t, map<mstring, set<mMessage *> > >::iterator i = AllDependancies.find(type);
+    map<type_t, map<mstring, set<unsigned long> > >::iterator i = AllDependancies.find(type);
     if (i != AllDependancies.end())
     {
-	map<mstring, set<mMessage *> >::iterator j = i->second.find(target);
+	map<mstring, set<unsigned long> >::iterator j = i->second.find(target);
 	if (j != i->second.end())
 	{
 	    mydep = j->second;
@@ -772,18 +801,26 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 	}
     }}
 
-    set<mMessage *>::iterator k;
+    set<unsigned long>::iterator k;
     for (k=mydep.begin(); k!=mydep.end(); k++)
     {
-	if (*k != NULL)
+	mMessage *msg = NULL;
+	{ MLOCK(("MsgIdMap"));
+	map<unsigned long, mMessage *>::iterator iter = MsgIdMap.find(*k);
+	if (iter != MsgIdMap.end())
 	{
-	    (*k)->DependancySatisfied(type, target);
-	    if (!(*k)->OutstandingDependancies())
+	    msg = iter->second;
+	    MsgIdMap.erase(iter);
+	}}
+	if (msg != NULL)
+	{
+	    msg->DependancySatisfied(type, target);
+	    if (!msg->OutstandingDependancies())
 	    {
-		(*k)->priority(static_cast<u_long>(P_DepFilled));
+		msg->priority(static_cast<u_long>(P_DepFilled));
 		RLOCK(("IrcSvcHandler"));
 		if (Parent->ircsvchandler != NULL)
-		    Parent->ircsvchandler->enqueue(*k);
+		    Parent->ircsvchandler->enqueue(msg);
 	    }
 	}
     }
@@ -827,26 +864,6 @@ int mMessage::call()
     }
 
     CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
-
-    // Remove ourselves from other's oustanding dependancy lists
-    // Code removed as it should not be necessary (note: SHOULD ;P)
-    /* { WLOCK(("AllDependancies"));
-    map<type_t, map<mstring, set<mMessage *> > >::iterator i;
-    for (i=AllDependancies.begin(); i!=AllDependancies.end(); i++)
-    {
-	vector<mstring> chunked;
-	map<mstring, set<mMessage *> >::iterator j;
-	for (j=i->second.begin(); j!=i->second.end(); j++)
-	{
-	    set<mMessage *>::iterator k = j->second.find(this);
-	    if (k != j->second.end())
-		j->second.erase(k);
-	    if (!j->second.size())
-		chunked.push_back(j->first);
-	}
-	for (unsigned int k=0; k<chunked.size(); k++)
-	    i->second.erase(chunked[k]);
-    }} */
 
     try {
 

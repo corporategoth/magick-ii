@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copyright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,26 +25,24 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.120  2001/05/28 11:17:33  prez
-** Added some more anti-deadlock stuff, and fixed nick ident warnings
+** Revision 1.121  2001/06/11 03:44:45  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
 **
-** Revision 1.119  2001/05/08 03:22:27  prez
-** Removed one possible deadlock cause, and stopped events engine from doing
-** anything until synch is over.
+** Revision 1.31  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
 **
-** Revision 1.118  2001/05/06 03:03:07  prez
+** Revision 1.30  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
 ** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
 ** Also added example lng and lfo file, so you can see the context of each line.
 **
-** Revision 1.117  2001/04/22 21:45:20  prez
-** Fixed make / make install and RPM spec
-**
-** Revision 1.116  2001/03/02 05:24:41  prez
+** Revision 1.29  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
-** Revision 1.115  2001/02/03 03:20:33  prez
+** Revision 1.28  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
 ** Revision 1.24  2000/12/10 07:49:26  prez
@@ -125,7 +123,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 2;
+const int BUILD_NUMBER = 0;
 
 /* Versioning Information
  *
@@ -170,8 +168,8 @@ const mstring PATCH9			= "";
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
 FULLNAME+" - "+SLOGAN,
-"  (c) 1997-2001 Preston Elder <prez@magick.tm>",
-"  (c) 1998-2001 William King <ungod@magick.tm>",
+"  (c) 1997-2000 Preston Elder <prez@magick.tm>",
+"  (c) 1998-2000 William King <ungod@magick.tm>",
 "",
 mstring(PACKAGE)+" is dedicated to the memory of PreZ's beloved",
 "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",
@@ -214,10 +212,9 @@ FULLNAME+" - "+SLOGAN,
 "Library Credits: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 "    cint           http://root.cern.ch/root/Cint.html",
-"    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
+"    openssl        http://www.openssl.org (blowfish + md5)",
 "    expat          http://www.jclark.com/xml/expat.html",
 "    sxp            http://www.sourceforge.net/project/?group_id=2280",
-"    zlib           http://www.cdrom.com/pub/infozip/zlib",
 "---EOM---"
 };
 

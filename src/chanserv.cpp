@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.249  2001/06/11 03:44:45  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
+**
 ** Revision 1.248  2001/05/28 11:17:33  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -2305,10 +2310,11 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 {
     FT("Chan_Stored_t::Topic", (source, topic, setter, time));
 
+    bool burst = false;
     // Still in burst ...
     { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL && Parent->ircsvchandler->Burst())
-	return;
+	burst = true;
     }
 
     // Its us re-setting it!
@@ -2340,6 +2346,10 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
     RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
     if (Topiclock())
     {
+	// Lets handle this later ...
+	if (burst)
+	    return;
+
 	Parent->server.TOPIC(Parent->chanserv.FirstName(),
 			i_Topic_Setter, i_Name, i_Topic,
 			time - (1.0 / (60.0 * 60.0 * 24.0)));
@@ -2359,7 +2369,6 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 	CE(1, i_Topic_Setter);
 	CE(2, i_Topic_Set_Time);
 	MCE(i_Topic);
-	
     }
 }
 

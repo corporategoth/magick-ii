@@ -25,6 +25,11 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2001/06/11 03:44:45  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
+**
 ** Revision 1.75  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -127,8 +132,8 @@ unsigned short makehex(const mstring &SLevel);
 enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
 enum socktype_enum { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
 			S_Client, S_Services, S_Telnet };
-enum dir_enum { D_Unknown, D_From, D_To };
-enum priority_enum { P_Normal = 0, P_DepFilled, P_System, P_Highest };
+enum dir_enum { D_Unknown = 0, D_From, D_To };
+enum priority_enum { P_Lowest = 0, P_Delay, P_Normal, P_DepFilled, P_System, P_Highest };
 
 class ThreadID {
 private:

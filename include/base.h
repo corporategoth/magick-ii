@@ -25,6 +25,11 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2001/06/11 03:44:44  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
+**
 ** Revision 1.95  2001/05/28 11:17:33  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -244,9 +249,11 @@ public:
 	ChanExists, ChanNoExists, UserInChan, UserNoInChan };
 
 private:
+    static map<type_t, map<mstring, set<unsigned long> > > AllDependancies;
+    static map<unsigned long, mMessage *> MsgIdMap;
+    static unsigned long LastMsgId;
 
     list<triplet<type_t, mstring, bool> > dependancies;
-    static map<type_t, map<mstring, set<mMessage *> > > AllDependancies;
     void AddDepend(const type_t type, const mstring& param)
 	{ dependancies.push_back(triplet<type_t,mstring,bool>(type, param, false)); }
     void AddDependancies();

@@ -27,6 +27,11 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.166  2001/06/11 03:44:45  prez
+** Re-wrote how burst works, and made the burst message a lower priority
+** than normal.  Also removed the chance of a stray pointer being picked
+** up in the dependancy system.
+**
 ** Revision 1.165  2001/05/28 11:17:34  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -608,6 +613,12 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     { WLOCK(("AllDependancies"));
     mMessage::AllDependancies.clear();
     }
+    { WLOCK(("MsgIdMap"));
+    map<unsigned long, mMessage *>::iterator mi;
+    for (mi=mMessage::MsgIdMap.begin(); mi!=mMessage::MsgIdMap.end(); mi++)
+	delete mi->second;
+    mMessage::MsgIdMap.clear();
+    }
 
     // Should I do this with SQUIT protection ...?
     { WLOCK(("NickServ", "recovered"));
@@ -827,11 +838,12 @@ void IrcSvcHandler::enqueue(mMessage *mm)
     message_queue.enqueue(mm);
 }
 
-void IrcSvcHandler::enqueue(const mstring &message, const u_long priority)
+void IrcSvcHandler::enqueue(const mstring &message, const u_long inpriority)
 {
-    FT("IrcSvcHandler::enqueue",(message, priority));
+    FT("IrcSvcHandler::enqueue",(message, inpriority));
     CH(D_From,message);
 
+    u_long priority(inpriority);
     mstring source, msgtype, params;
     if (message[0u] == ':' || message[0u] == '@')
     {
@@ -846,6 +858,12 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long priority)
 	if (message.WordCount(" ") > 1)
 	    params = message.After(" ");
     }
+
+    // Exception case ...
+    // We dont want to end burst until everything else
+    // is done ... sometimes this happens prematurely.
+    if (msgtype == "303")
+	priority = P_Delay;
 
     mMessage *msg = new mMessage(source, msgtype, params, priority);
     if (!msg->OutstandingDependancies())
@@ -1814,27 +1832,33 @@ int EventTask::svc(void)
 	{ RLOCK(("Events", "last_msgcheck"));
 	if (last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
 	{
-	    set<mMessage *> Ids, AllIds;
-	    set<mMessage *>::iterator k;
+	    set<unsigned long> Ids;
+	    set<unsigned long>::iterator k;
 
 	    { WLOCK(("AllDependancies"));
-	    map<mMessage::type_t, map<mstring, set<mMessage *> > >::iterator i;
+	    map<mMessage::type_t, map<mstring, set<unsigned long> > >::iterator i;
 	    for (i=mMessage::AllDependancies.begin(); i!=mMessage::AllDependancies.end(); i++)
 	    {
-		map<mstring, set<mMessage *> >::iterator j;
+		map<mstring, set<unsigned long> >::iterator j;
 		for (j=i->second.begin(); j!=i->second.end(); j++)
 		{
 		    for (k=j->second.begin(); k!=j->second.end(); k++)
 		    {
-			if (*k == NULL || (*k)->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
-			    Ids.insert(*k);
+			{ WLOCK(("MsgIdMap"));
+			map<unsigned long, mMessage *>::iterator l = mMessage::MsgIdMap.find(*k);
+			if (l != mMessage::MsgIdMap.end())
+			{
+			    if (l->second == NULL ||
+				l->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
+			    {
+				delete l->second;
+				Ids.insert(l->first);
+				mMessage::MsgIdMap.erase(l);
+			    }
+			}}
 		    }
 		    for (k=Ids.begin(); k!=Ids.end(); k++)
-		    {
-			if (*k != NULL)
-			    AllIds.insert(*k);
 			j->second.erase(*k);
-		    }
 		    if (!j->second.size())
 			chunked.push_back(j->first);
 		}
@@ -1842,8 +1866,6 @@ int EventTask::svc(void)
 		    i->second.erase(chunked[k]);
 		chunked.clear();
 	    }}
-	    for (k=AllIds.begin(); k!=AllIds.end(); k++)
-		delete *k;
 	}}
 
 	{ RLOCK(("Events", "last_heartbeat"));

@@ -48,7 +48,7 @@ compression library, and a threads library such as pthreads.
 <LI>
 <A HREF="http://www.cs.wustl.edu/~schmidt/ACE.html">ACE</A></LI>
 <LI>
-<A HREF="http://www.cdrom.com/pub/infozip/zlib">ZLIB</A></LI>
+<A HREF="ftp://ftp.freesoftware.com/pub/infozip/zlib/index.html">ZLIB</A></LI>
 <LI>
 <A HREF="http://www.gnu.org/pth">PTH</A></LI>
 </UL>
@@ -414,6 +414,13 @@ the need or use of core file analysis.
 --disable-convert</B><DD><P>This enables or disables the --convert commandline paramater that
 can be used to convert older versions of Magick DB's or other services
 databases.  Not needed for normal running of magick.
+<P>
+<DT><B>--enable-getpass
+--disable-getpass</B><DD><P>This enables the ChanServ and NickServ GETPASS commands, as opposed
+to the default SETPASS commands.  By doing this, passwords will be stored
+as they are in the database.  This is disabled by default, which means
+only SETPASS is available, and passwords are stored in a one-way hash
+that makes it impossible to retrieve passwords.
 <P>
 <DT><B>--enable-locks
 --disable-locks</B><DD><P>This turns on or off thread locking.  Thread locking is essential
