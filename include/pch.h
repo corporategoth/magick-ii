@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2001/06/17 19:29:53  prez
+** Fixed pch again to support 5.1.0 aswell as 5.1.17 ACE
+**
 ** Revision 1.40  2001/06/17 05:22:12  prez
 ** Resolved compatability issues with ACE 5.1.17
 **
@@ -248,8 +251,8 @@
 #endif
 
 /* ACE Extensions */
+#include <ace/config.h>
 #include <ace/Version.h>
-#include <ace/OS.h>
 #include <ace/Reactor.h>
 #include <ace/Connector.h>
 #include <ace/SOCK_Acceptor.h>
@@ -266,7 +269,8 @@
 #if !(ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
 	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
 	ACE_BETA_VERSION >= 16))))
-typedef DIR ACE_DIR
+typedef DIR ACE_DIR;
+typedef struct utsname ACE_utsname;
 #endif
 
 /* Alter this when it is intergrated
