@@ -27,6 +27,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2001/12/10 09:43:17  prez
+** Updated to remove '-' in front of release name in version tags.
+**
 ** Revision 1.46  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -337,7 +340,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    mstring tmp;
 	    tmp << PACKAGE << ":" << VERSION;
 	    if(!RELEASE.empty())
-		tmp += "-" + RELEASE;
+		tmp += RELEASE;
 	    if(!PATCH1.empty())
 		tmp += "+" + PATCH1;
 	    if(!PATCH2.empty())

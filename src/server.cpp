@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.197  2001/12/10 09:43:17  prez
+** Updated to remove '-' in front of release name in version tags.
+**
 ** Revision 1.196  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -5937,7 +5940,7 @@ void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &par
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp(VERSION);
 	    if(!RELEASE.empty())
-		tmp+="-"+RELEASE;
+		tmp+=RELEASE;
 	    if(!PATCH1.empty())
 		tmp+="+"+PATCH1;
 	    if(!PATCH2.empty())
