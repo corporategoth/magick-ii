@@ -5835,7 +5835,7 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	output.erase();
 	bool isonline = false;
 
-	if (nick.entry() != NULL && host->IsOnline())
+	if (host.entry() != NULL && host->IsOnline())
 	    output = Magick::instance().nickserv.GetLive(nick->Host())->Name() + " ";
 	for (i = 0; i < nick->Siblings(); i++)
 	{
