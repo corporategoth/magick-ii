@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/04/30 05:19:39  ungod
+** ACE_OS::AC_OS:: hey prez? *smirk*
+**
 ** Revision 1.59  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -119,7 +122,7 @@ mstring::mstring()
 
 int mstring::Cmp(const mstring & in)
 {
-	return ACE_OS::ACE_OS::strcmp(c_str(),in.c_str());
+	return ACE_OS::strcmp(c_str(),in.c_str());
 }
 
 int mstring::CmpNoCase(const mstring & in)
