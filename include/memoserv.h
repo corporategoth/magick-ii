@@ -132,6 +132,7 @@ public:
     static void do_Send(mstring mynick, mstring source, mstring params);
     static void do_Reply(mstring mynick, mstring source, mstring params);
     static void do_Forward(mstring mynick, mstring source, mstring params);
+    static void do_Forward2(mstring mynick, mstring source, mstring dest, mstring text);
     static void do_Cancel(mstring mynick, mstring source, mstring params);
     static void do_Del(mstring mynick, mstring source, mstring params);
     static void do_Continue(mstring mynick, mstring source, mstring params);

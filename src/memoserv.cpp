@@ -799,6 +799,149 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_Forward", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	if (params.WordCount(" ") < 4)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring what = params.ExtractWord(3, " ");
+	mstring dest = params.ExtractWord(4, " ");
+	mstring whoami = source.LowerCase();
+
+	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
+	{
+	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
+	}
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, "No such channel " + who + ".");
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "READ"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, "Channel " + who + " has no memos.");
+	    return;
+	}
+
+	if (!what.IsNumber() || what.Contains(".") ||
+	    atoi(what.c_str()) <= 0)
+	{
+	    ::send(mynick, source, "You must specify a posetive whole number.");
+	    return;
+	}
+
+	if (atoi(what.c_str()) > Parent->memoserv.channel[who.LowerCase()].size())
+	{
+	    ::send(mynick, source, "News Article #" + what +
+				    " does not exist for channel " + who);
+	    return;
+	}
+
+	int i;
+	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	for (i=1; i < atoi(what.c_str()); iter++, i++) ;
+	mstring output = "";
+	output << "[" << IRC_Bold << "FORWARD" << IRC_Off << "(" <<
+		Parent->chanserv.stored[who.LowerCase()].Name() <<
+		"): " << iter->Sender() << "]" << iter->Text();
+
+	do_Forward2(mynick, source, dest, output);
+    }
+    else
+    {
+	mstring who = source;
+	mstring what = params.ExtractWord(2, " ");
+	mstring dest = params.ExtractWord(3, " ");
+
+	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+	{
+	    who = Parent->nickserv.stored[source.LowerCase()].Host();
+	}
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, "You have no memos.");
+	    return;
+	}
+
+	if (!what.IsNumber() || what.Contains(".") ||
+	    atoi(what.c_str()) <= 0)
+	{
+	    ::send(mynick, source, "You must specify a posetive whole number.");
+	    return;
+	}
+
+	if (atoi(what.c_str()) > Parent->memoserv.nick[who.LowerCase()].size())
+	{
+	    ::send(mynick, source, "Memo #" + what + " does not exist.");
+	    return;
+	}
+
+	int i;
+	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	for (i=1; i < atoi(what.c_str()); iter++, i++) ;
+
+	mstring output = "";
+	output << "[" << IRC_Bold << "FORWARD" << IRC_Off;
+	if (iter->File())
+	    output << "(" << "filename" << ")";
+	output << ": " << iter->Sender() << "] " << iter->Text();
+
+	do_Forward2(mynick, source, dest, output);
+    }
+}
+
+
+void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
+						mstring text)
+{
+    FT("MemoServ::do_Send", (mynick, source, dest, text));
+
+    if (IsChan(dest))
+    {
+	if (!Parent->chanserv.IsStored(dest))
+	{
+	    ::send(mynick, source, "Channel " + dest + " is not registered.");
+	    return;
+	}
+
+	Chan_Stored_t *chan = &Parent->chanserv.stored[dest.LowerCase()];
+	if (!chan->GetAccess(source, "WRITEMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+    }
+    else if (!Parent->nickserv.IsStored(dest))
+    {
+	::send(mynick, source, "Nickname " + dest + " is not registered.");
+	return;
+    }
+
+    Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
+					    false, mynick, dest, text);
+    Parent->nickserv.live[source.LowerCase()].InFlight.End(0);
 }
 
 
@@ -824,6 +967,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	mstring what = params.ExtractWord(3, " ");
 	mstring text = params.After(" ", 3);
 	mstring whoami = source.LowerCase();
+
 	if (Parent->nickserv.stored[whoami].Host() != "" &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
@@ -973,6 +1117,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
 	mstring whoami = source.LowerCase();
+
 	if (Parent->nickserv.stored[whoami].Host() != "" &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
