@@ -25,6 +25,11 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.39  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -167,6 +172,7 @@ public:
     unsigned int Limit()	{ return i_Limit; }
     mDateTime PartTime(mstring nick);
 
+    size_t Usage();
 };
 
 struct ChanInfo;
@@ -443,6 +449,8 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    size_t Usage();
 };
 
 class ChanServ : public mBase, public SXP::IPersistObj

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/06/12 06:07:50  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.64  2000/06/11 09:30:21  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -164,6 +169,25 @@ void Memo_t::operator=(const Memo_t &in)
 }
 
 
+size_t Memo_t::Usage()
+{
+    size_t retval = 0;
+    retval += i_Nick.capacity();
+    retval += i_Sender.capacity();
+    retval += i_Text.capacity();
+    retval += sizeof(i_Time.Internal());
+    retval += sizeof(i_Read);
+    retval += sizeof(i_File);
+    map<mstring,mstring>::iterator i;
+    for (i=i_UserDef.begin(); i!=i_UserDef.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += i->second.capacity();
+    }
+    return retval;
+}
+
+
 News_t::News_t(mstring channel, mstring sender, mstring text)
 {
     FT("News_t::News_t", (channel, sender, text));
@@ -220,6 +244,26 @@ void News_t::Unread(mstring name)
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
     i_Read.erase(target.LowerCase());
 }
+
+size_t News_t::Usage()
+{
+    size_t retval = 0;
+    retval += i_Channel.capacity();
+    retval += i_Sender.capacity();
+    retval += i_Text.capacity();
+    retval += sizeof(i_Time.Internal());
+    set<mstring>::iterator i;
+    for (i=i_Read.begin(); i!=i_Read.end(); i++)
+	retval += i->capacity();
+    map<mstring,mstring>::iterator j;
+    for (j=i_UserDef.begin(); j!=i_UserDef.end(); j++)
+    {
+	retval += j->first.capacity();
+	retval += j->second.capacity();
+    }
+    return retval;
+}
+
 
 MemoServ::MemoServ()
 {

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.177  2000/06/12 06:07:50  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.176  2000/06/11 09:30:20  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -1048,6 +1053,59 @@ mDateTime Chan_Live_t::PartTime(mstring nick)
 	retval = recent_parts[nick.LowerCase()];
     }
     RET(retval);
+}
+
+
+size_t Chan_Live_t::Usage()
+{
+    size_t retval = 0;
+
+    retval += i_Name.capacity();
+    retval += sizeof(i_Creation_Time.Internal());
+    map<mstring, pair<bool,bool> >::iterator i;
+    for (i=squit.begin(); i!=squit.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += sizeof(i->second.first);
+	retval += sizeof(i->second.second);
+    }
+    for (i=users.begin(); i!=users.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += sizeof(i->second.first);
+	retval += sizeof(i->second.second);
+    }
+    map<mstring, mDateTime>::iterator j;
+    for (j=bans.begin(); j!=bans.end(); j++)
+    {
+	retval += j->first.capacity();
+	retval += sizeof(j->second.Internal());
+    }
+    retval += i_Topic.capacity();
+    retval += i_Topic_Setter.capacity();
+    retval += sizeof(i_Topic_Set_Time.Internal());
+    retval += modes.capacity();
+    retval += sizeof(i_Limit);
+    retval += i_Key.capacity();
+    retval += p_modes_on.capacity();
+    retval += p_modes_off.capacity();
+    vector<mstring>::iterator k;
+    for (k=p_modes_on_params.begin(); k!=p_modes_on_params.end(); k++)
+    {
+	retval += k->capacity();
+    }
+    for (k=p_modes_off_params.begin(); k!=p_modes_off_params.end(); k++)
+    {
+	retval += k->capacity();
+    }
+    retval += sizeof(ph_timer);
+    for (j=recent_parts.begin(); j!=recent_parts.end(); j++)
+    {
+	retval += j->first.capacity();
+	retval += sizeof(j->second.Internal());
+    }
+
+    return retval;
 }
 
 
@@ -3792,6 +3850,107 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->EndObject(tag_Chan_Stored_t);
 }
 
+
+size_t Chan_Stored_t::Usage()
+{
+    size_t retval = 0;
+
+    retval += i_Name.capacity();
+    retval += sizeof(i_RegTime.Internal());
+    retval += sizeof(i_LastUsed.Internal());
+    retval += i_Founder.capacity();
+    retval += i_CoFounder.capacity();
+    retval += i_Description.capacity();
+    retval += i_Password.capacity();
+    retval += i_Email.capacity();
+    retval += i_URL.capacity();
+    retval += i_Comment.capacity();
+    map<mstring, unsigned int>::iterator i;
+    for (i=failed_passwds.begin(); i!=failed_passwds.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += sizeof(i->second);
+    }
+
+    retval += i_Mlock_On.capacity();
+    retval += l_Mlock_On.capacity();
+    retval += i_Mlock_Off.capacity();
+    retval += l_Mlock_Off.capacity();
+    retval += i_Mlock_Key.capacity();
+    retval += sizeof(i_Mlock_Limit);
+    retval += i_Topic.capacity();
+    retval += i_Topic_Setter.capacity();
+    retval += sizeof(i_Topic_Set_Time.Internal());
+    
+    retval += sizeof(i_Bantime);
+    retval += sizeof(l_Bantime);
+    retval += sizeof(i_Parttime);
+    retval += sizeof(l_Parttime);
+    retval += sizeof(i_Keeptopic);
+    retval += sizeof(l_Keeptopic);
+    retval += sizeof(i_Topiclock);
+    retval += sizeof(l_Topiclock);
+    retval += sizeof(i_Private);
+    retval += sizeof(l_Private);
+    retval += sizeof(i_Secureops);
+    retval += sizeof(l_Secureops);
+    retval += sizeof(i_Secure);
+    retval += sizeof(l_Secure);
+    retval += sizeof(i_NoExpire);
+    retval += sizeof(l_NoExpire);
+    retval += sizeof(i_Anarchy);
+    retval += sizeof(l_Anarchy);
+    retval += sizeof(i_KickOnBan);
+    retval += sizeof(l_KickOnBan);
+    retval += sizeof(i_Restricted);
+    retval += sizeof(l_Restricted);
+    retval += sizeof(i_Join);
+    retval += sizeof(l_Join);
+    retval += sizeof(i_Forbidden);
+    retval += i_Revenge.capacity();
+    retval += sizeof(l_Revenge);
+
+    retval += i_Suspend_By.capacity();
+    retval += sizeof(i_Suspend_Time.Internal());
+
+    set<entlist_val_t<long> >::iterator j;
+    for (j=i_Level.begin(); j!=i_Level.end(); j++)
+    {
+	entlist_val_t<long> tmp = *j;
+	retval += tmp.Usage();
+    }
+    for (j=i_Access.begin(); j!=i_Access.end(); j++)
+    {
+	entlist_val_t<long> tmp = *j;
+	retval += tmp.Usage();
+    }
+
+    set<entlist_val_t<mstring> >::iterator k;
+    for (k=i_Akick.begin(); k!=i_Akick.end(); k++)
+    {
+	entlist_val_t<mstring> tmp = *k;
+	retval += tmp.Usage();
+    }
+
+    list<entlist_t>::iterator l;
+    for (l = i_Greet.begin(); l != i_Greet.end(); l++)
+    {
+	retval += l->Usage();
+    }
+    for (l = i_Message.begin(); l != i_Message.end(); l++)
+    {
+	retval += l->Usage();
+    }
+
+    map<mstring,mstring>::iterator m;
+    for (m=i_UserDef.begin(); m!=i_UserDef.end(); m++)
+    {
+	retval += m->first.capacity();
+	retval += m->second.capacity();
+    }
+
+    return retval;
+}
 
 
 // --------- end of Chan_Stored_t ---------------------------------

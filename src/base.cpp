@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2000/06/12 06:07:50  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.121  2000/06/11 08:20:11  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -190,6 +195,22 @@ void entlist_t::operator=(const entlist_t &in)
     i_UserDef.clear();
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
 	i_UserDef[i->first]=i->second;
+}
+
+
+size_t entlist_t::Usage()
+{
+    size_t retval = 0;
+    retval += i_Entry.capacity();
+    retval += i_Last_Modifier.capacity();
+    retval += sizeof(i_Last_Modify_Time.Internal());
+    map<mstring,mstring>::iterator i;
+    for (i=i_UserDef.begin(); i!=i_UserDef.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += i->second.capacity();
+    }
+    return retval;
 }
 
 

@@ -25,6 +25,11 @@ static const char *ident_datetime_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.25  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -205,6 +210,7 @@ public:
     operator double(){return Val;}
     operator time_t();
     operator mstring();
+    double Internal() { return Val; }
 
     int DayOfWeek()const;
     void DecodeDate(int &year, int &month, int &day)const;

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/06/12 06:07:51  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.57  2000/06/11 08:20:12  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -745,6 +750,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Usage", (mynick, source, params));
     int count;
+    size_t size;
 
     mstring message = params.Before(" ", 2);
     if (Parent->ircsvchandler->HTM_Level() > 3)
@@ -754,99 +760,121 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    size = 0;
+    map<mstring, Nick_Live_t>::iterator i;
+    for (i=Parent->nickserv.live.begin(); i!=Parent->nickserv.live.end(); i++)
+    {
+	size += i->first.capacity();
+	size += i->second.Usage();
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
-		Parent->nickserv.live.size(),
-		ToHumanSpace(Parent->nickserv.live.size() * sizeof(mstring) +
-		Parent->nickserv.live.size() * sizeof(Nick_Live_t)).c_str());
+		Parent->nickserv.live.size(),ToHumanSpace(size).c_str());
+    size = 0;
+    map<mstring, Chan_Live_t>::iterator j;
+    for (j=Parent->chanserv.live.begin(); j!=Parent->chanserv.live.end(); j++)
+    {
+	size += j->first.capacity();
+	size += j->second.Usage();
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
-		Parent->chanserv.live.size(),
-		ToHumanSpace(Parent->chanserv.live.size() * sizeof(mstring) +
-		Parent->chanserv.live.size() * sizeof(Chan_Live_t)).c_str());
+		Parent->chanserv.live.size(), ToHumanSpace(size).c_str());
+    size = 0;
+    map<mstring, Nick_Stored_t>::iterator k;
+    for (k=Parent->nickserv.stored.begin(); k!=Parent->nickserv.stored.end(); k++)
+    {
+	size += k->first.capacity();
+	size += k->second.Usage();
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
-		Parent->nickserv.stored.size(),
-		ToHumanSpace(Parent->nickserv.stored.size() * sizeof(mstring) +
-		Parent->nickserv.stored.size() * sizeof(Nick_Stored_t)).c_str());
+		Parent->nickserv.stored.size(), ToHumanSpace(size).c_str());
+    size = 0;
+    map<mstring, Chan_Stored_t>::iterator l;
+    for (l=Parent->chanserv.stored.begin(); l!=Parent->chanserv.stored.end(); l++)
+    {
+	size += l->first.capacity();
+	size += l->second.Usage();
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
-		Parent->chanserv.stored.size(),
-		ToHumanSpace(Parent->chanserv.stored.size() * sizeof(mstring) +
-		Parent->chanserv.stored.size() * sizeof(Chan_Stored_t)).c_str());
-    map<mstring,list<Memo_t> >::iterator mi;
-    for (count = 0, mi=Parent->memoserv.nick.begin();
-			mi!=Parent->memoserv.nick.end(); mi++)
-	count += mi->second.size();
+		Parent->chanserv.stored.size(), ToHumanSpace(size).c_str());
+
+    size = 0;
+    map<mstring,list<Memo_t> >::iterator m1;
+    list<Memo_t>::iterator m2;
+    for (count = 0, m1=Parent->memoserv.nick.begin();
+			m1!=Parent->memoserv.nick.end(); m1++)
+    {
+	size += m1->first.capacity();
+	count += m1->second.size();
+	for (m2 = m1->second.begin(); m2 != m1->second.end(); m2++)
+	{
+	    size += m2->Usage();
+	}
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_MEMO"),
-		Parent->memoserv.nick.size(),
-		ToHumanSpace(Parent->memoserv.nick.size() * sizeof(mstring) +
-		count * sizeof(Memo_t)).c_str());
-    map<mstring,list<News_t> >::iterator ni;
-    for (count = 0, ni=Parent->memoserv.channel.begin();
-			ni!=Parent->memoserv.channel.end(); ni++)
-	count += ni->second.size();
+		count, ToHumanSpace(size).c_str());
+
+    size = 0;
+    map<mstring,list<News_t> >::iterator n1;
+    list<News_t>::iterator n2;
+    for (count = 0, n1=Parent->memoserv.channel.begin();
+			n1!=Parent->memoserv.channel.end(); n1++)
+    {
+	size += n1->first.capacity();
+	count += n1->second.size();
+	for (n2 = n1->second.begin(); n2 != n1->second.end(); n2++)
+	{
+	    size += n2->Usage();
+	}
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NEWS"),
-		Parent->memoserv.channel.size(),
-		ToHumanSpace(Parent->memoserv.channel.size() * sizeof(mstring) +
-		count * sizeof(News_t)).c_str());
+		count, ToHumanSpace(size).c_str());
+
+    size = 0;
+    map<mstring, Committee>::iterator o;
+    for (o=Parent->commserv.list.begin(); o!=Parent->commserv.list.end(); o++)
+    {
+	size += o->first.capacity();
+	size += o->second.Usage();
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
-		Parent->commserv.list.size(),
-		ToHumanSpace(Parent->commserv.list.size() * sizeof(mstring) +
-		Parent->commserv.list.size() * sizeof(Committee)).c_str());
+		Parent->commserv.list.size(), ToHumanSpace(size).c_str());
+
+
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OPERSERV"),
 		(Parent->operserv.Clone_size() +
 		Parent->operserv.Akill_size() +
 		Parent->operserv.OperDeny_size() +
 		Parent->operserv.Ignore_size()),
-		ToHumanSpace(Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) +
-		Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) +
-		Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) +
-		Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore)).c_str());
+		ToHumanSpace(Parent->operserv.Clone_Usage() +
+		Parent->operserv.Akill_Usage() +
+		Parent->operserv.OperDeny_Usage() +
+		Parent->operserv.Ignore_Usage()).c_str());
+
+    size = 0;
+    map<mstring, Server>::iterator p;
+    for (p=Parent->server.ServerList.begin(); p!=Parent->server.ServerList.end(); p++)
+    {
+	size += p->first.capacity();
+	size += p->second.Usage();
+    }
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
-		Parent->server.ServerList.size(),
-		ToHumanSpace(Parent->server.ServerList.size() * sizeof(mstring) +
-		Parent->server.ServerList.size() * sizeof(Server)).c_str());
+		Parent->server.ServerList.size(), ToHumanSpace(size).c_str());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANGHEAD"));
-    set<mstring> seen;
-    map<mstring, map<mstring, mstring> >::iterator i;
-    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::iterator k;
-    map<mstring, vector<triplet<mstring, mstring, mstring> > >::iterator j;
-    for (i=Parent->Messages.begin(); i!=Parent->Messages.end(); i++)
+
+    set<mstring> tmp, lang;
+    tmp.clear(); tmp = Parent->LNG_Loaded();
+    lang.insert(tmp.begin(), tmp.end());
+    tmp.clear(); tmp = Parent->HLP_Loaded();
+    lang.insert(tmp.begin(), tmp.end());
+
+    set<mstring>::iterator q;
+    for (q=lang.begin(); q!=lang.end(); q++)
     {
-	if (Parent->Help.find(i->first) != Parent->Help.end())
-	{
-	    size_t helpsz = 0;
-	    for (j=Parent->Help[i->first].begin(); j!=Parent->Help[i->first].end(); j++)
-	    {
-		helpsz += j->second.size() * sizeof(j->second);
-		helpsz += sizeof(j->first);
-	    }
-	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			i->first.c_str(),
-			ToHumanSpace(Parent->Messages[i->first].size() * sizeof(i->second)).c_str(),
-			ToHumanSpace(sizeof(i->first) + helpsz).c_str());
-	    seen.insert(i->first);
-	}
-	else
-	{
-	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			i->first.c_str(),
-			ToHumanSpace(Parent->Messages[i->first].size() * sizeof(i->second)).c_str(),
-			ToHumanSpace(0).c_str());
-	}
-     }
-     for (k=Parent->Help.begin(); k!=Parent->Help.end(); k++)
-     {
-	if (seen.find(k->first) == seen.end())
-	{
-	    size_t helpsz = 0;
-	    for (j=Parent->Help[k->first].begin(); j!=Parent->Help[k->first].end(); j++)
-	    {
-		helpsz += j->second.size() * sizeof(j->second);
-		helpsz += sizeof(j->first);
-	    }
-	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			k->first.c_str(), ToHumanSpace(0).c_str(),
-			ToHumanSpace(sizeof(k->first) + helpsz).c_str());
-	}
+	::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
+		q->c_str(), ToHumanSpace(Parent->LNG_Usage(*q)).c_str(),
+		ToHumanSpace(Parent->HLP_Usage(*q)).c_str());
+	
     }
 }
 

@@ -28,6 +28,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.245  2000/06/12 06:07:50  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.244  2000/06/11 09:30:20  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -3156,5 +3161,87 @@ void Magick::load_databases()
    	SXP::CParser p( this ); // let the parser know which is the object
 	p.FeedFile(	(char *)files.Database().c_str());
     }
+}
+
+
+set<mstring> Magick::LNG_Loaded()
+{
+    set<mstring> retval;
+    map<mstring, map<mstring, mstring> >::iterator i;
+    for (i=Messages.begin(); i!=Messages.end(); i++)
+    {
+	retval.insert(i->first);
+    }
+    return retval;
+}
+
+size_t Magick::LNG_Usage(mstring lang)
+{
+    size_t retval = 0;
+
+    map<mstring, mstring>::iterator i;
+    if (Messages.find(lang.UpperCase()) != Messages.end())
+    {
+	retval += Messages.find(lang.UpperCase())->first.capacity();
+	for (i = Messages[lang.UpperCase()].begin();
+				i != Messages[lang.UpperCase()].end(); i++)
+	{
+	    retval += i->first.capacity();
+	    retval += i->second.capacity();
+	}
+    }
+
+    return retval;
+}
+
+set<mstring> Magick::HLP_Loaded()
+{
+    set<mstring> retval;
+    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::iterator i;
+    for (i=Help.begin(); i!=Help.end(); i++)
+    {
+	retval.insert(i->first);
+    }
+    return retval;
+}
+
+size_t Magick::HLP_Usage(mstring lang)
+{
+    size_t retval = 0;
+
+    map<mstring, vector<triplet<mstring, mstring, mstring> > >::iterator i;
+    vector<triplet<mstring, mstring, mstring> >::iterator j;
+
+    if (Help.find(lang.UpperCase()) != Help.end())
+    {
+	retval += Help.find(lang.UpperCase())->first.capacity();
+	for (i=Help[lang.UpperCase()].begin();
+				i != Help[lang.UpperCase()].end(); i++)
+	{
+	    retval += i->first.capacity();
+	    for (j = i->second.begin(); j != i->second.end(); j++)
+	    {
+		retval += j->first.capacity();
+		retval += j->second.capacity();
+		retval += j->third.capacity();
+	    }
+	}
+    }
+
+    return retval;
+}
+
+size_t Magick::LFO_Usage()
+{
+    size_t retval = 0;
+
+    map<mstring,mstring>::iterator i;
+    for (i=LogMessages.begin(); i!=LogMessages.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += i->second.capacity();
+    }
+
+    return retval;
 }
 

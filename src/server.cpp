@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2000/06/12 06:07:51  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.103  2000/06/11 09:30:21  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -561,6 +566,22 @@ Server::~Server()
 	Parent->server.ServerList.erase(Kill[i]);
     if (Kill.size() && Parent->server.OurUplink() == i_Name)
 	Parent->server.OurUplink("");
+}
+
+size_t Server::Usage()
+{
+    size_t retval = 0;
+
+    retval += i_Name.capacity();
+    retval += i_AltName.capacity();
+    retval += i_Uplink.capacity();
+    retval += sizeof(i_Hops);
+    retval += i_Description.capacity();
+    retval += sizeof(i_Ping);
+    retval += sizeof(i_Lag);
+    retval += sizeof(i_Jupe);
+
+    return retval;
 }
 
 void NetworkServ::raw(mstring text)

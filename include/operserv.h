@@ -25,6 +25,11 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.37  2000/06/08 13:07:33  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -196,6 +201,7 @@ public:
     size_t CloneList_size() { return CloneList.size(); }
     size_t CloneList_sum();
     size_t CloneList_size(unsigned int amt);
+    size_t CloneList_Usage();
 
     bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
     bool Clone_erase();
@@ -204,6 +210,7 @@ public:
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone_end()
 	{ return i_Clone.end(); }
     size_t Clone_size()				{ return i_Clone.size(); }
+    size_t Clone_Usage();
     bool Clone_find(mstring entry);
     pair<unsigned int, mstring> Clone_value(mstring entry);
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone;
@@ -215,6 +222,7 @@ public:
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator Akill_end()
 	{ return i_Akill.end(); }
     size_t Akill_size()				{ return i_Akill.size(); }
+    size_t Akill_Usage();
     bool Akill_find(mstring entry);
     pair<unsigned long, mstring> Akill_value(mstring entry);
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator Akill;
@@ -225,7 +233,8 @@ public:
 	{ return i_OperDeny.begin(); }
     set<entlist_val_t<mstring> >::iterator OperDeny_end()
 	{ return i_OperDeny.end(); }
-    size_t OperDeny_size()				{ return i_OperDeny.size(); }
+    size_t OperDeny_size()			{ return i_OperDeny.size(); }
+    size_t OperDeny_Usage();
     bool OperDeny_find(mstring entry);
     mstring OperDeny_value(mstring entry);
     set<entlist_val_t<mstring > >::iterator OperDeny;
@@ -237,6 +246,7 @@ public:
     set<entlist_val_t<bool> >::iterator Ignore_end()
 	{ return i_Ignore.end(); }
     size_t Ignore_size()				{ return i_Ignore.size(); }
+    size_t Ignore_Usage();
     bool Ignore_find(mstring entry);
     bool Ignore_value(mstring entry);
     set<entlist_val_t<bool> >::iterator Ignore;

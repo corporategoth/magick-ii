@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/06/12 06:07:50  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.60  2000/06/11 08:20:12  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -544,6 +549,48 @@ bool Committee::MSG_find(int number)
 	message = i_Messages.end();
 	RET(false);
     }
+}
+
+size_t Committee::Usage()
+{
+    size_t retval = 0;
+
+    retval += i_Name.capacity();
+    retval += sizeof(i_RegTime.Internal());
+    retval += i_HeadCom.capacity();
+    retval += i_Head.capacity();
+    retval += i_Description.capacity();
+    retval += i_Email.capacity();
+    retval += i_URL.capacity();
+    
+    set<entlist_t>::iterator i;
+    for (i=i_Members.begin(); i!=i_Members.end(); i++)
+    {
+	entlist_t tmp = *i;
+	retval += tmp.Usage();
+    }
+
+    retval += sizeof(i_Private);
+    retval += sizeof(l_Private);
+    retval += sizeof(i_OpenMemos);
+    retval += sizeof(l_OpenMemos);
+    retval += sizeof(i_Secure);
+    retval += sizeof(l_Secure);
+
+    list<entlist_t>::iterator j;
+    for (j=i_Messages.begin(); j!=i_Messages.end(); j++)
+    {
+	retval += j->Usage();
+    }
+
+    map<mstring,mstring>::iterator l;
+    for (l=i_UserDef.begin(); l!=i_UserDef.end(); l++)
+    {
+	retval += l->first.capacity();
+	retval += l->second.capacity();
+    }
+
+    return retval;    
 }
 
 CommServ::CommServ()

@@ -2144,7 +2144,8 @@
 07 =::    LIST         SEND
 08 =SOP::As a Services Operator, you may maintain it with:
 09 =SOP::    ADD          DEL          RENAME       SECURE
-10 =SADMIN::    LOOKUP
+10A=SOP:SADMIN:    DCC          CANCEL
+10B=SADMIN::    DCC          CANCEL       LOOKUP
 
 [SERVMSG/FILE/LIST]
 01 =::FILE LIST [mask [max]]

@@ -25,6 +25,11 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.40  2000/06/11 09:30:20  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -206,6 +211,8 @@ public:
     vector<mstring> AllDownlinks();
     
     ~Server();
+
+    size_t Usage();
 };
 
 class NetworkServ : public mBase

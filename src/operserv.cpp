@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2000/06/12 06:07:51  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.84  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -216,6 +221,18 @@ size_t OperServ::CloneList_size(unsigned int amt)
     RET(value);
 }
 
+size_t OperServ::CloneList_Usage()
+{
+    size_t retval = 0;
+    map<mstring, unsigned int>::iterator i;
+    for (i=CloneList.begin(); i!=CloneList.end(); i++)
+    {
+	retval += i->first.capacity();
+	retval += sizeof(i->second);
+    }
+    return retval;
+}
+
 
 bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added)
 {
@@ -260,6 +277,18 @@ bool OperServ::Clone_erase()
     {
 	RET(false);
     }
+}
+
+size_t OperServ::Clone_Usage()
+{
+    size_t retval = 0;
+    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
+    for (i=i_Clone.begin(); i!=i_Clone.end(); i++)
+    {
+	entlist_val_t<pair<unsigned int, mstring> > tmp = *i;
+	retval += tmp.Usage();
+    }
+    return retval;
 }
 
 
@@ -349,6 +378,19 @@ bool OperServ::Akill_erase()
 	RET(false);
     }
 
+}
+
+
+size_t OperServ::Akill_Usage()
+{
+    size_t retval = 0;
+    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator i;
+    for (i=i_Akill.begin(); i!=i_Akill.end(); i++)
+    {
+	entlist_val_t<pair<unsigned long, mstring> > tmp = *i;
+	retval += tmp.Usage();
+    }
+    return retval;
 }
 
 
@@ -447,6 +489,19 @@ bool OperServ::OperDeny_erase()
 	RET(false);
     }
 
+}
+
+
+size_t OperServ::OperDeny_Usage()
+{
+    size_t retval = 0;
+    set<entlist_val_t<mstring> >::iterator i;
+    for (i=i_OperDeny.begin(); i!=i_OperDeny.end(); i++)
+    {
+	entlist_val_t<mstring> tmp = *i;
+	retval += tmp.Usage();
+    }
+    return retval;
 }
 
 
@@ -550,6 +605,19 @@ bool OperServ::Ignore_erase()
 	RET(false);
     }
 
+}
+
+
+size_t OperServ::Ignore_Usage()
+{
+    size_t retval = 0;
+    set<entlist_val_t<bool> >::iterator i;
+    for (i=i_Ignore.begin(); i!=i_Ignore.end(); i++)
+    {
+	entlist_val_t<bool> tmp = *i;
+	retval += tmp.Usage();
+    }
+    return retval;
 }
 
 

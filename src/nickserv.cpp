@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2000/06/12 06:07:50  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.104  2000/06/11 09:30:21  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -1586,6 +1591,49 @@ bool Nick_Live_t::IsRecognized()
     RET(retval);
 }
 
+size_t Nick_Live_t::Usage()
+{
+    size_t retval = 0;
+
+    retval += i_Name.capacity();
+    retval += sizeof(i_Signon_Time.Internal());
+    retval += sizeof(i_My_Signon_Time.Internal());
+    retval += sizeof(i_Last_Action.Internal());
+    retval += i_realname.capacity();
+    retval += i_user.capacity();
+    retval += i_host.capacity();
+    retval += i_alt_host.capacity();
+    retval += i_server.capacity();
+    retval += i_squit.capacity();
+    retval += i_away.capacity();
+    retval += modes.capacity();
+    set<mstring>::iterator i;
+    for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
+    {
+	retval += i->capacity();
+    }
+    vector<mDateTime>::iterator j;
+    for (j=last_msg_times.begin(); j!=last_msg_times.end(); j++)
+    {
+	retval += sizeof(j->Internal());
+    }
+    retval += sizeof(last_msg_entries);
+    retval += sizeof(flood_triggered_times);
+    retval += sizeof(failed_passwds);
+    for (i=chans_founder_identd.begin(); i!=chans_founder_identd.end(); i++)
+    {
+	retval += i->capacity();
+    }
+    vector<mstring>::iterator k;
+    for (k=try_chan_ident.begin(); k!=try_chan_ident.end(); k++)
+    {
+	retval += k->capacity();
+    }
+    retval += sizeof(identified);
+    retval += sizeof(services);
+
+    return retval;
+}
 
 // =======================================================================
 
@@ -3496,6 +3544,69 @@ void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
         }
 
 	pOut->EndObject(tag_Nick_Stored_t);
+}
+
+size_t Nick_Stored_t::Usage()
+{
+    size_t retval = 0;
+
+    retval += i_Name.capacity();
+    retval += sizeof(i_RegTime.Internal());
+    retval += i_Password.capacity();
+    retval += i_Email.capacity();
+    retval += i_URL.capacity();
+    retval += i_ICQ.capacity();
+    retval += i_Description.capacity();
+    retval += i_Comment.capacity();
+    retval += i_Host.capacity();
+    
+    set<mstring>::iterator i;
+    for (i=i_slaves.begin(); i!=i_slaves.end(); i++)
+    {
+	retval += i->capacity();
+    }
+    for (i=i_access.begin(); i!=i_access.end(); i++)
+    {
+	retval += i->capacity();
+    }
+    for (i=i_ignore.begin(); i!=i_ignore.end(); i++)
+    {
+	retval += i->capacity();
+    }
+
+    retval += sizeof(i_Protect);
+    retval += sizeof(l_Protect);
+    retval += sizeof(i_Secure);
+    retval += sizeof(l_Secure);
+    retval += sizeof(i_NoExpire);
+    retval += sizeof(l_NoExpire);
+    retval += sizeof(i_NoMemo);
+    retval += sizeof(l_NoMemo);
+    retval += sizeof(i_Private);
+    retval += sizeof(l_Private);
+    retval += sizeof(i_PRIVMSG);
+    retval += sizeof(l_PRIVMSG);
+    retval += i_Language.capacity();
+    retval += sizeof(l_Language);
+    retval += sizeof(i_Forbidden);
+    retval += sizeof(i_Picture);
+
+    retval += i_Suspend_By.capacity();
+    retval += sizeof(i_Suspend_Time.Internal());
+
+    retval += sizeof(i_LastSeenTime.Internal());
+    retval += i_LastRealName.capacity();
+    retval += i_LastMask.capacity();
+    retval += i_LastQuit.capacity();
+
+    map<mstring,mstring>::iterator j;
+    for (j=i_UserDef.begin(); j!=i_UserDef.end(); j++)
+    {
+	retval += j->first.capacity();
+	retval += j->second.capacity();
+    }
+
+    return retval;
 }
 
 // =======================================================================

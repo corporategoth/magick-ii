@@ -25,6 +25,11 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.132  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.131  2000/06/08 13:07:33  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -167,7 +172,6 @@ public:
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
-    friend class ServMsg;
 private:
 	vector<mstring> argv;
 	// Language, token, string
@@ -448,6 +452,12 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    set<mstring> LNG_Loaded();
+    size_t LNG_Usage(mstring lang);
+    set<mstring> HLP_Loaded();
+    size_t HLP_Usage(mstring lang);
+    size_t LFO_Usage();
 };
 
 extern Magick *Parent;

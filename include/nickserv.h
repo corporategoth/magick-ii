@@ -25,6 +25,11 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.41  2000/06/11 08:20:11  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -167,6 +172,7 @@ public:
 	bool File()	{ return fileattach; }
 	bool InProg()	{ return fileinprog; }
 
+	size_t Usage();
     } InFlight;
 
     Nick_Live_t();
@@ -246,6 +252,8 @@ public:
     bool IsIdentified()		{ return identified; }
     bool IsRecognized();
     bool IsServices()		{ return (i_server == ""); }
+
+    size_t Usage();
 };
 
 struct NickInfo;
@@ -421,6 +429,8 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    size_t Usage();
 };
 
 // todo: move this over to a ACE_TASK style architecture

@@ -25,6 +25,11 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/06/12 06:07:49  prez
+** Added Usage() functions to get ACCURATE usage stats from various
+** parts of services.  However bare in mind DONT use this too much
+** as it has to go through every data item to grab the usages.
+**
 ** Revision 1.68  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -164,6 +169,8 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    size_t Usage();
 };
 typedef list<entlist_t>::iterator entlist_i;
 typedef list<entlist_t>::const_iterator entlist_ci;
@@ -236,6 +243,14 @@ public:
     	pOut->WriteElement(tag_Stupid, i_Stupid);
 
 	    pOut->EndObject(tag_entlist_val_t);
+    }
+
+    size_t Usage()
+    {
+	size_t retval = entlist_t::Usage();
+	retval += sizeof(i_Value);
+	retval += sizeof(i_Stupid);
+	return retval;
     }
 };
 
