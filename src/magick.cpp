@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.310  2001/05/14 14:48:00  prez
+** Ugh, another error in encryption fixed ...
+**
 ** Revision 1.309  2001/05/14 04:46:32  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -729,9 +732,6 @@ int Magick::Start()
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
 #endif
-#if defined(SIGABRT) && (SIGABRT != 0)
-    ACE_Reactor::instance()->register_handler(SIGABRT,signalhandler);
-#endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
     ACE_Reactor::instance()->register_handler(SIGPIPE,signalhandler);
 #endif
@@ -844,9 +844,6 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGINT);
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->remove_handler(SIGTERM);
-#endif
-#if defined(SIGABRT) && (SIGABRT != 0)
-    ACE_Reactor::instance()->remove_handler(SIGABRT);
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
     ACE_Reactor::instance()->remove_handler(SIGPIPE);
@@ -3151,9 +3148,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 
 
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
-#if defined(SIGIOT) && (SIGIOT != 0)
-    case SIGIOT:	// abort(), exit immediately!
-#endif
+//#if defined(SIGIOT) && (SIGIOT != 0)
+//    case SIGIOT:	// abort(), exit immediately!
+//#endif
 #if defined(SIGBUS) && (SIGBUS != 0)
     case SIGBUS:	// BUS error (fatal)
 #endif
@@ -3553,10 +3550,10 @@ pair<mstring,mstring> Magick::GetKeys()const
 	    /* Use keyfile keys to get REAL key */
 	    memset(tmp, 0, MAX_KEYLEN);
 	    keyfile.Read(tmp, MAX_KEYLEN);
-	    mCRYPT(tmp, key1, MAX_KEYLEN, key1, key2, 0);
+	    mCRYPT(tmp, key1, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	    memset(tmp, 0, MAX_KEYLEN);
 	    keyfile.Read(tmp, MAX_KEYLEN);
-	    mCRYPT(tmp, key2, MAX_KEYLEN, key1, key2, 0);
+	    mCRYPT(tmp, key2, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	    retval = pair<mstring,mstring>(key1,key2);
 	}
 	else
