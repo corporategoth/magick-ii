@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.190  2001/12/30 21:27:29  prez
+** Some trace code beautification, and added ACE_Thread::exit() to worker
+** and save_databases threads ..
+**
 ** Revision 1.189  2001/12/26 23:30:35  prez
 ** More fixes to see if I can fix the memory leak ...
 **
@@ -515,7 +519,7 @@ void *IrcSvcHandler::worker(void *in)
 
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
-    DRET(static_cast<void *>(NULL));
+    DTRET(static_cast<void *>(NULL));
 }
 
 
@@ -1920,11 +1924,11 @@ void *EventTask::save_databases(void *in)
 {
     static_cast<void>(in);
     mThread::Attach(tt_MAIN);
+    FT("EventTask::save_databases", (in));
     Magick::register_instance((Magick *) in);
     Magick::instance().save_databases();
     Magick::deregister_instance();
-    mThread::Detach();
-    return NULL;
+    DTRET(static_cast<void *>(NULL));
 }
 
 void EventTask::AddChannelModePending(const mstring &in)

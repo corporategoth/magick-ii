@@ -25,6 +25,10 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2001/12/30 21:27:29  prez
+** Some trace code beautification, and added ACE_Thread::exit() to worker
+** and save_databases threads ..
+**
 ** Revision 1.79  2001/11/16 20:27:33  prez
 ** Added a MAX_THREADS option, and made the thread heartbeat a timer based
 ** operation, instead of part of the threads.
@@ -172,12 +176,22 @@ public:
 
 #ifndef MAGICK_TRACE_WORKS
 
-#define FT(x,y) { ThreadID *tid = mThread::find(); if (tid != NULL) tid->LastFunc(x); }
-#define NFT(x) { ThreadID *tid = mThread::find(); if (tid != NULL) tid->LastFunc(x); }
+#define FT(x,y) do { \
+	ThreadID *tid = mThread::find(); \
+	if (tid != NULL) tid->LastFunc(x); \
+	} while (0)
+#define NFT(x) do { \
+	ThreadID *tid = mThread::find(); \
+	if (tid != NULL) tid->LastFunc(x); \
+	} while (0)
 #define RET(x) return x
 #define NRET(x,y) return y
 #define DRET(x) return x
 #define NDRET(x,y) return y
+#define TRET(x) do { ACE_Thread::exit(x); return x; } while (0)
+#define NTRET(x,y) do { ACE_Thread::exit(y); return y; } while (0)
+#define DTRET(x) do { ACE_Thread::exit(x); return x; } while (0)
+#define NDTRET(x,y) do { ACE_Thread::exit(y); return y; } while (0)
 #define CP(x)
 #define COM(x)
 #define SRC(x)
@@ -203,25 +217,67 @@ public:
 #define NFT(x) T_Functions __ft(x)
 
 // Set return value -- RET()
-#define RET(x) {__ft.return_value=mVariant(x); return x;}
-#define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
-#define DRET(x) {__ft.return_value=mVariant(x); mThread::Detach(); return x;}
-#define NDRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); mThread::Detach(); return y;}
+#define RET(x) do { \
+	__ft.return_value=mVariant(x); \
+	return x; \
+	} while (0)
+#define NRET(x,y) do { \
+	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
+	return y; \
+	} wile (0)
+#define DRET(x) do { \
+	__ft.return_value=mVariant(x); \
+	mThread::Detach(); \
+	return x; \
+	} while (0)
+#define NDRET(x,y) do { \
+	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
+	mThread::Detach(); \
+	return y; \
+	} while (0)
+#define TRET(x) do { \
+	__ft.return_value=mVariant(x); \
+	ACE_Thread::exit(x); \
+	return x; \
+	} while (0)
+#define NTRET(x,y) do { \
+	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
+	ACE_Thread::exit(y); \
+	return y; \
+	} while (0)
+#define DTRET(x) do { \
+	__ft.return_value=mVariant(x); \
+	mThread::Detach(); \
+	ACE_Thread::exit(x); \
+	return x; \
+	} while (0)
+#define NTDRET(x,y) do { \
+	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
+	mThread::Detach(); \
+	ACE_Thread::exit(y); \
+	return y; \
+	} while (0)
 
 // CheckPoint definition -- CP(());
-#define CP(x) { T_CheckPoint __cp x; }
+#define CP(x) do { T_CheckPoint __cp x; } while (0)
 
 // Comments definition -- COM(());
-#define COM(x) { T_Comments __com x; }
+#define COM(x) do { T_Comments __com x; } while (0)
 
 // Config file load
-#define SRC(x) { T_Source(x); }
-#define CSRC(x,y,z) { T_Source(x, y, z); }
+#define SRC(x) do { T_Source(x); } while (0)
+#define CSRC(x,y,z) do { T_Source(x, y, z); } while (0)
 
 // Modify begin -- MB((), offs = 0);
 // Modify end -- ME(());
-#define MB(x,y) { T_Modify __mod(mVarArray y, x); __mod.Begin(); }
-#define ME(x,y) { T_Modify __mod(mVarArray y, x); __mod.End(); }
+#define MB(x,y) do { \
+	T_Modify __mod(mVarArray y, x); \
+	__mod.Begin(); \
+	} while (0)
+#define ME(x,y) do { \
+	T_Modify __mod(mVarArray y, x); \
+	__mod.End(); \
+	} while (0)
 
 // Changing begin -- CB(item, stuff);
 // Changing end -- CE(item, stuff);
@@ -233,9 +289,12 @@ public:
 #define MCE(x) CE(0, x); DumpE()
 
 // In or Out chatter -- CH(enum, "...");
-#define CH(x,y) { T_Chatter __ch(x,y); }
+#define CH(x,y) do { T_Chatter __ch(x,y); } while (0)
 
-#define FLUSH() { ThreadID *tid = mThread::find(); if (tid != NULL && !tid->InTrace()) tid->Flush(); }
+#define FLUSH() do { \
+	ThreadID *tid = mThread::find(); \
+	if (tid != NULL && !tid->InTrace()) tid->Flush(); \
+	} while (0)
 
 // OperServ TRACE Syntax:
 //
