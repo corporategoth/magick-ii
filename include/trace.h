@@ -24,11 +24,18 @@ using namespace std;
 #include "variant.h"
 
 
+// FunctionTrace -- FT("...", AOC(()));
 #define FT(x,y) T_Functions __ft(x,y);
-#define CP(x) { T_CheckPoint __cp(#x); }
-#define MB(x) T_Modify __mod(#x);
-#define ME(x) __mod.End(#x);
-#define CH(x) { T_Chatter __ch(#x); }
+// Set return value -- RET();
+#define RET(x) { __ft.return_value(x); return x; }
+// CheckPoint definition -- CP(());
+#define CP(x) { T_CheckPoint __cp x; }
+// Modify begin -- MB(AOC(()));
+#define MB(x) T_Modify __mod(x);
+// Modify end -- ME(AOC(()));
+#define ME(x) __mod.End(x);
+// In or Out chatter -- CH(enum, "...");
+#define CH(x) { T_Chatter __ch(x); }
 
 // forward declarations till we get them done
 class Thread;
@@ -85,9 +92,12 @@ extern mstring threadname[tt_MAX];
 //   --  Unknown Traffic (T_Chatter)
 //   <<  Before changes (T_Modify)
 //   >>  After Changes (T_Modify)
-//   ::  Read/Write Locking (T_Locking)
+//   :+  Read/Write Locking (T_Locking)
+//   :-  Read/Write UnLocking (T_Locking)
 //   %%  CPU/Memory Stats (T_Stats)
-//   ||  Sockets - DCC/Telnet/ServNet (T_Sockets)
+//   |+  Socket Establish (T_Sockets)
+//   ||  Socket Definition (T_Sockets)
+//   |-  Socket Dropout (T_Sockets)
 //   !!  BOB Binds, Registrations (T_Bind)
 //   ??  External commands (T_External)
 
@@ -231,6 +241,7 @@ public:
     threadtype_enum type() { return internaltype; }
     void indentup() { indent++; }
     void indentdown() { indent--; }
+
     void WriteOut (const mstring &message);
 };
 
@@ -254,6 +265,7 @@ class T_Functions : public Trace
     mstring m_name;
     T_Functions() {} 
 public:
+    mVariant return_value;
     T_Functions(const mstring &name, const mVarArray &args);
     ~T_Functions();
 };
@@ -289,7 +301,7 @@ class T_Chatter : public Trace
     ThreadID *tid;
     T_Chatter() {} 
 public:
-    enum dir_enum { From, To };
+    enum dir_enum { From, To, Unknown };
     T_Chatter(dir_enum direction, const mstring &input);
     ~T_Chatter() {}
 };
@@ -297,6 +309,7 @@ public:
 // ===================================================
 
 // class T_Stats : public Trace {};
+
 
 // ===================================================
 

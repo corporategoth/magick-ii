@@ -27,36 +27,36 @@ Trace::Trace()
 	tmap[levelpair(tt_MAIN,Off)]		= TT_Off;
 	tmap[levelpair(tt_MAIN,Stats)]		= G_Stats;
 	tmap[levelpair(tt_MAIN,Source)]		= G_SourceFiles;
-	tmap[levelpair(tt_MAIN,Functions)]		= G_Functions;
-	tmap[levelpair(tt_MAIN,Locking)]		= G_Locking;
+	tmap[levelpair(tt_MAIN,Functions)]	= G_Functions;
+	tmap[levelpair(tt_MAIN,Locking)]	= G_Locking;
 
-	tmap[levelpair(tt_NickServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_NickServ,Off)]	= TT_Off;
 	tmap[levelpair(tt_NickServ,Chatter)]	= NS_Chatter;
 	tmap[levelpair(tt_NickServ,CheckPoint)]	= NS_CheckPoint;
 	tmap[levelpair(tt_NickServ,Functions)]	= NS_Functions;
 	tmap[levelpair(tt_NickServ,Modify)]	= NS_Modify;
 
-	tmap[levelpair(tt_ChanServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_ChanServ,Off)]	= TT_Off;
 	tmap[levelpair(tt_ChanServ,Chatter)]	= CS_Chatter;
 	tmap[levelpair(tt_ChanServ,CheckPoint)]	= CS_CheckPoint;
 	tmap[levelpair(tt_ChanServ,Functions)]	= CS_Functions;
 	tmap[levelpair(tt_ChanServ,Modify)]	= CS_Modify;
 
-	tmap[levelpair(tt_MemoServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_MemoServ,Off)]	= TT_Off;
 	tmap[levelpair(tt_MemoServ,Chatter)]	= MS_Chatter;
 	tmap[levelpair(tt_MemoServ,CheckPoint)]	= MS_CheckPoint;
 	tmap[levelpair(tt_MemoServ,Functions)]	= MS_Functions;
 	tmap[levelpair(tt_MemoServ,Modify)]	= MS_Modify;
 
-	tmap[levelpair(tt_OperServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_OperServ,Off)]	= TT_Off;
 	tmap[levelpair(tt_OperServ,Chatter)]	= OS_Chatter;
 	tmap[levelpair(tt_OperServ,CheckPoint)]	= OS_CheckPoint;
 	tmap[levelpair(tt_OperServ,Functions)]	= OS_Functions;
 	tmap[levelpair(tt_OperServ,Modify)]	= OS_Modify;
 
-	tmap[levelpair(tt_OtherServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_OtherServ,Off)]	= TT_Off;
 	tmap[levelpair(tt_OtherServ,Chatter)]	= XS_Chatter;
-	tmap[levelpair(tt_OtherServ,CheckPoint)]	= XS_CheckPoint;
+	tmap[levelpair(tt_OtherServ,CheckPoint)]= XS_CheckPoint;
 	tmap[levelpair(tt_OtherServ,Functions)]	= XS_Functions;
 	tmap[levelpair(tt_OtherServ,Modify)]	= XS_Modify;
 
@@ -69,8 +69,8 @@ Trace::Trace()
 	tmap[levelpair(tt_BOB,Off)]		= TT_Off;
 	tmap[levelpair(tt_BOB,Chatter)]		= BOB_Chatter;
 	tmap[levelpair(tt_BOB,Bind)]		= BOB_Bind;
-	tmap[levelpair(tt_BOB,Functions)]		= BOB_Functions;
-	tmap[levelpair(tt_BOB,External)]		= BOB_External;
+	tmap[levelpair(tt_BOB,Functions)]	= BOB_Functions;
+	tmap[levelpair(tt_BOB,External)]	= BOB_External;
 
 }
 //todo change this to a vector< >
@@ -90,7 +90,6 @@ const struct Trace::levelname_struct Trace::levelname[] = {
 		levelname_struct( "C*P*", CheckPoint ),
 		levelname_struct( "F*NC*", Functions ),
 		levelname_struct( "MOD*", Modify ) };
-// prez: with this the NULL is unneeded, besides, you can't have a NULL static
 int levelname_count()
 {
     return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
@@ -165,6 +164,7 @@ void ThreadID::WriteOut(const mstring &message)
 
 // ===================================================
 
+//      \\ function( (char) T, (int) 5 )
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
@@ -182,15 +182,17 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
     tid->indentup();
 }
 
+//      // (char) Y
 T_Functions::~T_Functions()
 { 
-    mstring message="// "+m_name+"()";
-    tid->WriteOut(message);
     tid->indentdown(); 
+    mstring message="// (" + return_value.type() + ") " + return_value.AsString()";
+    tid->WriteOut(message);
 }
 
 // ===================================================
 
+//      ** This is an important part!
 T_CheckPoint::T_CheckPoint()
 {
     common("T_CheckPoint Reached");
@@ -218,6 +220,9 @@ void T_CheckPoint::common(const char *input)
 
 // ===================================================
 
+//      << DE1(PreZ)
+//      << DE2(prez)
+//      << DE3(srealm.net.au)
 T_Modify::T_Modify(const mVarArray &args)
 {
     ShortLevel(Trace::Modify);
@@ -230,6 +235,9 @@ T_Modify::T_Modify(const mVarArray &args)
     }
 }
 
+//      >> DE1(PreZ)
+//      >> DE2(prez)
+//      >> DE3(corewars.net)
 void T_Modify::End(const mVarArray &args)
 {
     ShortLevel(Trace::Modify);
@@ -244,6 +252,9 @@ void T_Modify::End(const mVarArray &args)
 
 // ===================================================
 
+//      <- PreZ :PRIVMSG ChanServ :help blah
+//      -> ChanServ :PRIVMSG PreZ :Unknown command 'blah'
+//      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
     ShortLevel(Trace::Chatter);
@@ -261,21 +272,52 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 
 // ===================================================
 
+// real, swap and usage/space are in kb (1024 byte blocks)
+
+//      %% Magick v2.0 -- Up 1 month, 6 days, 13:47:26 (13:26m CPU).
+//      %% CURRENT - CPU  2.6% . MEM     0.2% . REAL    2560 . SWAP       0 . USAGE       213
+//      %% MAX     - CPU  5.7% . MEM     1.1% . REAL    8725 . SWAP       0 . USAGE      1526
+//      %% SYSTEM  - CPU  0.32 . AVAILABLE:     REAL    2672 . SWAP  121512 . SPACE   1578294
+
 // T_Stats::T_Stats() {}
 
 // ===================================================
+
+//      :+ R (ChanInfo) #Magick
+//      :- R (ChanInfo) #Magick
+//      :+ W (NickInfo) PreZ
+//      :- W (NickInfo) PreZ
 
 // T_Locking::T_Locking() {}
 
 // ===================================================
 
+//      |+ 3: 2478 / 6667 (203.30.145.2)
+//      || 3: Server (styx.us.relic.net)
+//      || 3: Telnet (Ungod)
+//      || 3: DCC (PreZ)
+//      || 3: ServNet (2)
+//      |- 3 (Socket Timeout)
+
 // T_Sockets::T_Sockets() {}
 
 // ===================================================
 
+//      !! VAR+ added_userinfo
+//      !! VAR- added_userinfo
+//      !! FUNC+ user_process( (char *) source, (char *) message )
+//      !! FUNC- user_process( (char *) source, (char *) message )
+//      !! BIND+ MSG "SET USERINFO" user_process
+//      !! BIND- MSG "SET USERINFO" user_process
+
 // T_Bind::T_Bind() {}
 
 // ===================================================
+
+//      ?? EXEC    ls /etc >/tmp/etcls
+//      ?? OPEN(R) /tmp/etcls
+//      ?? OPEN(W) /tmp/output
+//      ?? CLOSE   /tmp/output
 
 // T_External::T_External() {}
 
