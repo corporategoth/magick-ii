@@ -3,7 +3,7 @@
 
 ChanServ::ChanServ()
 {
-    terminate_requested=false;
+    on=false;
 }
 // ***************************************
 // NOTE:this function has to be re-entrant
@@ -16,7 +16,7 @@ void *chanserv_thread_handler(void *level)
 
     highestlevel=ilevel;
     MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
-    while(MagickObject->chanserv.terminate_requested==false)
+    while(MagickObject->chanserv.on==true)
     {
 
 	// brackets are here so that the lock exists only as long as we need it.

@@ -98,7 +98,9 @@ int Magick::Start()
 	return MAGICK_RET_ERROR;
     }
     //okay, need a function here to load all the ini file defalts
-
+    get_config_values();
+    if(shutdown==true)
+	return MAGICK_RET_ERROR;
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called language.ini (both local and global can be done here too)
@@ -122,6 +124,47 @@ int Magick::Start()
 
     if(logfile!=NULL)
 	fclose(logfile);
+
+    if(outlet_on==true)
+	s_Outlet.Format("%s%d",services_prefix.c_str(),services_level);
+    //open_log();
+
+#ifndef WIN32
+    if(live==false)
+    {
+	if ((i = fork ()) < 0)
+	{
+	    //log_perror ("fork()");
+            return 1;
+        }
+        else if (i != 0)
+            return 0;
+        if (setpgid (0, 0) < 0)
+        {
+            //log_perror ("setpgid()");
+            return 1;
+        }
+    }
+#endif
+    wxFile pidfile;
+    pidfile.Create(pid_filename,true);
+    if(pidfile.IsOpened())
+    {
+	mstring dummystring;
+	dummystring<<getpid();
+	pidfile.Write(dummystring);
+	pidfile.Close();
+    }
+    /*else
+	log_perror ("Warning: cannot write to PID file %s", pid_filename);*/
+
+    //write_log ("All systems nominal");
+
+
+    
+    // temporary placeholder
+    while(shutdown!=true);
+
     return MAGICK_RET_TERMINATE;
 }
 
@@ -477,43 +520,6 @@ int Magick::doparamparse()
 	    return MAGICK_RET_ERROR;
 	}
     }
-    if(check_config()==false)
-	return MAGICK_RET_ERROR;
-    if(outlet_on==true)
-	s_Outlet.Format("%s%d",services_prefix.c_str(),services_level);
-    //open_log();
-
-#ifndef WIN32
-    if(live==false)
-    {
-	if ((i = fork ()) < 0)
-	{
-	    //log_perror ("fork()");
-            return 1;
-        }
-        else if (i != 0)
-            return 0;
-        if (setpgid (0, 0) < 0)
-        {
-            //log_perror ("setpgid()");
-            return 1;
-        }
-    }
-#endif
-    wxFile pidfile;
-    pidfile.Create(pid_filename,true);
-    if(pidfile.IsOpened())
-    {
-	mstring dummystring;
-	dummystring<<getpid();
-	pidfile.Write(dummystring);
-	pidfile.Close();
-    }
-    /*else
-	log_perror ("Warning: cannot write to PID file %s", pid_filename);*/
-
-    //write_log ("All systems nominal");
-
     return MAGICK_RET_NORMAL;
 }
 
@@ -568,5 +574,53 @@ bool Magick::check_config()
         return false;
     }
     return true;
+
+}
+
+void Magick::get_config_values()
+{
+    if(MagickIni==NULL)
+    {
+	shutdown==true;
+	return;
+    }
+    wxFileConfig& in=*MagickIni;
+    mstring Startup=mstring("Startup\\");
+    mstring Services=mstring("Services\\");
+
+    in.Read(Startup+"Remote_Server",&remote_server,"127.0.0.1");
+    in.Read(Startup+"Remote_Port",&remote_port,9666);
+    in.Read(Startup+"Password",&password,"");
+    in.Read(Startup+"Server_Name",&server_name,"hell.darker.net");
+    in.Read(Startup+"Server_Desc",&server_desc,"DarkerNet's IRC Services");
+    in.Read(Startup+"Services_User",&services_user,"reaper");
+    in.Read(Startup+"Services_Host",&services_host,"darker.net");
+    in.Read(Startup+"Services_Level",&services_level,1);
+    in.Read(Startup+"TZ_Offset",&tz_offset,0);
+    in.Read(Startup+"Stop",&shutdown);
+
+    //in.Read(Services+"Nickserv",&nickserv.on,true);
+    in.Read(Services+"Chanserv",&chanserv.on,true);
+    //in.Read(Services+"Helpserv",&helpserv.on,true);
+    //in.Read(Services+"IrcIIHelp",&helpserv.irciihelp_on,true);
+    //in.Read(Services+"Memoserv",&memoserv.on,true);
+    //in.Read(Services+"Memos",&memoserv.memos_on,true);
+    //in.Read(Services+"News",&newsserv.news_on,true);
+    //in.Read(Services+"DevNull",&devnull.on,true);
+    //in.Read(Services+"Operserv",&operserv.on,true);
+    //in.Read(Services+"Outlet",&devnull.outlet_on,true);
+    //in.Read(Services+"AKill",&nickserv.akill_on,true);
+    //in.Read(Services+"Clones",&nickserv.clones_on,true);
+    //in.Read(Services+"GlobalNoticer",&operserv.global_noticer_on,true);
+    in.Read(Services+"Show_Sync",&show_sync,false);
+    //in.Read(Services+"Nickserv_Name",&nickserv.name,"NickServ");
+    in.Read(Services+"Chanserv_Name",&chanserv.name,"ChanServ");
+    //in.Read(Services+"Operserv_Name",&operserv.name,"OperServ");
+    //in.Read(Services+"Memoserv_Name",&memoserv.name,"MemoServ");
+    //in.Read(Services+"Helpserv_Name",&helpserv.name,"HelpServ");
+    //in.Read(Services+"GlobalNoticer_Name",&operserv.global_noticer_name,"Death");
+    //in.Read(Services+"DevNull_Name",&devnull.name,"DevNull");
+    //in.Read(Services+"IrcIIHelp_Name",&helpserv.irciihelp_name,"IrcIIHelp");
+    in.Read(Services+"Services_Prefix",&services_prefix,"Magick-"); 
 
 }

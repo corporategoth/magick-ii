@@ -48,6 +48,10 @@ private:
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
 public:
+	bool show_sync;
+	bool shutdown;
+	mstring password;
+	void get_config_values();
 	mstring pid_filename;
 	mstring s_Outlet;
 	int lastmsgmax;
