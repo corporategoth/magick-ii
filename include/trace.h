@@ -74,7 +74,6 @@ class ThreadID;
 // then it gives a syntax error.
 
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_BOB, tt_MAX };
-// note to prez, don't initialize in a header it fucks the compiler up on multiple includes
 extern mstring threadname[tt_MAX];
 
 // Trace Codes
