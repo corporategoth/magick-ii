@@ -38,9 +38,6 @@ RCSID(version_h, "@(#) $Id$");
 
 #include "mstring.h"
 
-const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
-
 /* Versioning Information
  *
  * All of the below information should only EVER be
@@ -70,8 +67,8 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "general@magick.tm";
 const mstring LISTSUBSCRIBE             = "http://lists.sourceforge.net/lists/listinfo/magick-general";
 const mstring HOMEPAGE			= "http://www.magick.tm";
-const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/rc";
-const mstring RELEASE			= "rc3";
+const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II";
+const mstring RELEASE			= "";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
