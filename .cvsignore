@@ -26,3 +26,5 @@ err.out
 *.~cp
 *.~c
 *$$$
+errors.txt
+magickbcc.dsp
