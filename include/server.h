@@ -24,6 +24,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/03/14 13:37:35  prez
+** *** empty log message ***
+**
 ** Revision 1.29  2000/03/14 10:05:16  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -51,11 +54,13 @@ static const char *ident_server_h = "@(#) $Id$";
 class Protocol
 {
     unsigned int i_Number;
+    map<mstring,mstring> tokens;
+
     bool i_Globops;
     bool i_Tokens;
     bool i_SVS;
     bool i_SVSHOST;
-    bool i_D12;
+    bool i_P12;
 
     /* Signon Types
      * 
@@ -74,13 +79,14 @@ public:
     Protocol();
     ~Protocol() {}
     void Set(unsigned int in);
+    mstring GetToken(mstring in);
 
     unsigned int Number()   { return i_Number; }
     bool Globops()	    { return i_Globops; }
     bool Tokens()	    { return i_Tokens; }
     bool SVS()		    { return i_SVS; }
     bool SVSHOST()	    { return i_SVSHOST; }
-    bool D12()		    { return i_D12; }
+    bool P12()		    { return i_P12; }
     unsigned int Signon()   { return i_Signon; }
     mstring Server()	    { return i_Server; }
     mstring Protoctl()	    { return i_Protoctl; }
