@@ -282,8 +282,16 @@ int Magick::Start()
     // to the irc server and sets up the socket handler that receives
     // incoming data and pushes it out to the appropriate service.
 
-    ACE_INET_Addr addr(startup.Remote_Port(),startup.Remote_Server());
+    // Grabs the FIRST entry of PRIORITY 1.
+    mstring tmp = Parent->startup.PriorityList(1)[0];
+    if (tmp == "")
+	RET(MAGICK_RET_TERMINATE);
+    ACE_INET_Addr addr(Parent->startup.Server(tmp).first, tmp);
+
+//  ACE_INET_Addr addr(startup.Remote_Port(),startup.Remote_Server());
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
+    GotConnect = false;
+    Parent->Server = tmp;
     ircsvchandler=new IrcSvcHandler;
     if(ACO_server.connect(ircsvchandler,addr)==-1)
     {
@@ -297,7 +305,7 @@ int Magick::Start()
     ACE_INET_Addr localaddr;
     ircsvchandler->peer().get_local_addr(localaddr);
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-    server.raw("PASS " + startup.Password());
+    server.raw("PASS " + startup.Server(tmp).second);
     server.raw("SERVER " + startup.Server_Name() + " 1 :" + startup.Server_Desc());
 
     // next thing to be done here is set up the acceptor mechanism to listen
@@ -571,23 +579,6 @@ bool Magick::paramlong(mstring first, mstring second)
 	// already handled, but we needed to i++
 	RET(true);
     }
-    else if(first=="--connect" || first=="--remote")
-    {
-	if(second.IsEmpty() || second[0U]=='-')
-	{
-	    wxLogFatal("--connect requires a hostname[:port]");
-	}
-	if(second.After(':').IsNumber())
-	{
-	    if(atoi(second.After(':').c_str())<=0)
-		wxLogError("port must be a positive number (ignoring)");
-	    else
-		startup.remote_port=atoi(second.After(':').c_str());
-	} else
-	    wxLogError("port must be a number");
-	startup.remote_server=second.Before(':');
-	RET(true);
-    }
     else if(first=="--name")
     {
 	if(second.IsEmpty() || second[0U]=='-')
@@ -829,11 +820,6 @@ bool Magick::check_config()
 	// change this to the logging mechanism
 	wxLogFatal("CONFIG: Cannot set [Startup] LEVEL < 1");
     }
-    if (startup.GMT() >= 12 || startup.GMT() <= -12)
-    {
-	// change this to the logging mechanism
-        wxLogFatal("CONFIG: [Startup] GMT must fall between -12 and 12.");
-    }
     if (config.Cycletime() < 30)
     {
 	// change this to the logging mechanism
@@ -881,18 +867,33 @@ void Magick::get_config_values()
     mstring ts_CommServ=mstring("CommServ/");
     mstring ts_ServMsg=mstring("ServMsg/");
 
-    in.Read(ts_Startup+"REMOTE_SERVER",&startup.remote_server,"127.0.0.1");
-    in.Read(ts_Startup+"REMOTE_PORT",&startup.remote_port,9666);
-    in.Read(ts_Startup+"PASSWORD",&startup.password,"");
     in.Read(ts_Startup+"SERVER_NAME",&startup.server_name,"services.magick.tm");
     in.Read(ts_Startup+"SERVER_DESC",&startup.server_desc,FULL_NAME);
     in.Read(ts_Startup+"SERVICES_USER",&startup.services_user,"services");
     in.Read(ts_Startup+"SERVICES_HOST",&startup.services_host,"magick.tm");
     in.Read(ts_Startup+"OWNUSER",&startup.ownuser,false);
+
+    // REMOTE entries
+    mstring ent="";
+    int i=1;
+    do {
+	mstring rem = "REMOTE_";
+	rem << i;
+	in.Read(ts_Startup+rem,&ent,"");
+	if (ent!="") {
+		mstring tmp[4];
+		tmp[0]=ent.ExtractWord(1, ":");
+		tmp[1]=ent.ExtractWord(2, ":");
+		tmp[2]=ent.ExtractWord(3, ":");
+		tmp[3]=ent.ExtractWord(4, ":");
+		if (tmp[1].IsNumber() && tmp[3].IsNumber())
+		    startup.servers[tmp[0].LowerCase()] = triplet<int,mstring,int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
+	}
+	i++;
+    } while (ent!="");
+
     in.Read(ts_Startup+"LEVEL",&startup.level,1);
     in.Read(ts_Startup+"LAGTIME",&startup.lagtime,10);
-    in.Read(ts_Startup+"DEADTIME",&startup.deadtime,30);
-    in.Read(ts_Startup+"GMT",&startup.gmt,0.0);
     in.Read(ts_Startup+"STOP",&i_shutdown,true);
 
     in.Read(ts_Services+"NickServ",&nickserv.names,"NickServ");
@@ -918,26 +919,20 @@ void Magick::get_config_values()
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"LANGUAGE",&files.language,"english");
-    in.Read(ts_Files+"COMMANDS",&files.commands,"default");
-    in.Read(ts_Files+"MAIN_DB",&files.main_db,"magick.mnd");
-    in.Read(ts_Files+"LINK_DB",&files.link_db,"link.db");
-    in.Read(ts_Files+"NICK_DB",&files.nick_db,"nick.db");
-    in.Read(ts_Files+"CHAN_DB",&files.chan_db,"chan.db");
-    in.Read(ts_Files+"MEMO_DB",&files.memo_db,"memo.db");
-    in.Read(ts_Files+"NEWS_DB",&files.news_db,"news.db");
-    in.Read(ts_Files+"AKILL_DB",&files.akill_db,"akill.db");
-    in.Read(ts_Files+"IGNORE_DB",&files.ignore_db,"ignore.db");
-    in.Read(ts_Files+"CLONE_DB",&files.clone_db,"clone.db");
-    in.Read(ts_Files+"COMM_DB",&files.comm_db,"comm.db");
-    in.Read(ts_Files+"MSGS_DB",&files.msgs_db,"msgs.db");
-    in.Read(ts_Files+"COMPRESSION",&files.compression,true);
+    in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
+    in.Read(ts_Files+"COMPRESSION",&files.compression,6);
     in.Read(ts_Files+"KEYFILE",&files.keyfile,"");
+    in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
 
     in.Read(ts_Config+"SERVER_RELINK",&config.server_relink,5);
     in.Read(ts_Config+"SQUIT_PROTECT",&config.squit_protect,120);
+    in.Read(ts_Config+"SQUIT_CANCEL",&config.squit_cancel,10);
     in.Read(ts_Config+"CYCLETIME",&config.cycletime,300);
     in.Read(ts_Config+"PING_FREQUENCY",&config.ping_frequency,30);
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
+    in.Read(ts_Config+"STARTUP_THREADS",&config.startup_threads, 2);
+    in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);
+    in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 25);
 
     in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
     in.Read(ts_NickServ+"IDENT",&nickserv.ident,60);
@@ -1000,10 +995,13 @@ void Magick::get_config_values()
     in.Read(ts_MemoServ+"NEWS_EXPIRE",&memoserv.news_expire,21);
 
     in.Read(ts_OperServ+"SERVICES_ADMIN",&operserv.services_admin,"");
+    in.Read(ts_OperServ+"SECURE",&operserv.secure,false);
+    in.Read(ts_OperServ+"DEF_EXPIRE",&operserv.expire_oper,"3h");
     in.Read(ts_OperServ+"EXPIRE_OPER",&operserv.expire_oper,"1d");
     in.Read(ts_OperServ+"EXPIRE_ADMIN",&operserv.expire_admin,"7d");
     in.Read(ts_OperServ+"EXPIRE_SOP",&operserv.expire_sop,"1m");
     in.Read(ts_OperServ+"EXPIRE_SADMIN",&operserv.expire_sadmin,"1y");
+    in.Read(ts_OperServ+"CLONE_MAX",&operserv.clone_limit,50);
     in.Read(ts_OperServ+"CLONE_LIMIT",&operserv.clone_limit,2);
     in.Read(ts_OperServ+"DEF_CLONE",&operserv.def_clone,"Maximum connections from one host exceeded");
     in.Read(ts_OperServ+"FLOOD_TIME",&operserv.flood_time,10);
@@ -1170,6 +1168,42 @@ Magick::~Magick()
     loggertask.i_shutdown();
 }
 
+bool Magick::startup_t::IsServer(mstring server)
+{
+    FT("Magick::startup_t::IsServer", (server));
+
+    if (servers.find(server.LowerCase()) != servers.end()) {
+	RET(true);
+    }
+    RET(false);
+}
+
+triplet<int,mstring,int> Magick::startup_t::Server(mstring server)
+{
+    FT("Magick::startup_t::Server", (server));
+    triplet<int,mstring,int> value(0, "", 0);
+
+    if (IsServer(server)) {
+	value = servers.find(server.LowerCase())->second;
+    }
+    NRET(triplet<int.mstring.int>, value);
+}
+
+vector<mstring> Magick::startup_t::PriorityList(int pri)
+{
+    FT("Magick::startup_t::PriorityList", (pri));
+    vector<mstring> list;
+
+    map<mstring,triplet<int,mstring,int> >::iterator iter;
+
+    for (iter=servers.begin(); iter!=servers.end(); iter++) {
+	if (iter->second.third == pri)
+	    list.push_back(iter->first);
+    }
+    NRET(vector<mstring>, list);
+}
+
+
 void Magick::load_databases()
 {
     // to buggered to think about it tonight, maybe tommorow night.
@@ -1193,13 +1227,14 @@ void Magick::save_databases()
 wxInputStream *Magick::create_input_stream(wxMemoryStream &in)
 {
     wxInputStream *Result=&in;
-    if(files.Password()!="")
+/*    if(files.Password())
     {
 	cstrm=new mDecryptStream(*Result,files.Password());
 	Result=cstrm;
     }
     else
 	cstrm=NULL;
+*/
     if(files.Compression())
     {
 	zstrm=new wxZlibInputStream(*Result);

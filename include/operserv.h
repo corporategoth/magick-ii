@@ -26,6 +26,8 @@ class OperServ : public mBase
     friend class Nick_Live_t;
 private:
     mstring services_admin;
+    bool secure;
+    mstring def_expire;
     mstring expire_oper;
     mstring expire_admin;
     mstring expire_sop;
@@ -63,6 +65,8 @@ private:
     void DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server);
 public:
     mstring Services_Admin()	{ return services_admin; }
+    bool Secure()		{ return secure; }
+    mstring Def_Expire()	{ return def_expire; }
     mstring Expire_Oper()	{ return expire_oper; }
     mstring Expire_Admin()	{ return expire_admin; }
     mstring Expire_Sop()	{ return expire_sop; }

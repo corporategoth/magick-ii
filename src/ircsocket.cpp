@@ -26,8 +26,7 @@ int IrcSvcHandler::open(void *in)
     //activate();
     // todo activate the task
     ACE_Reactor::instance()->schedule_timer(&sph,0,ACE_Time_Value(Parent->config.Ping_Frequency()),ACE_Time_Value(Parent->config.Ping_Frequency()));
-
-    CP(("SvcHandler activated"));
+    CP(("IrcSvcHandler activated"));
     RET(0);
 }
 
@@ -93,13 +92,71 @@ int IrcSvcHandler::close(unsigned long in)
     RET(handle_close());
 }
 
+mstring Reconnect_Handler::FindNext(mstring server) {
+    FT("Reconnect_Handler::FindNext", (server));
+    server.MakeLower();
+    mstring result;
+
+    // IF current server is found
+    //     IF last server of this priority
+    //         IF size of serverlist of next priority > 0 size
+    //             return first element of serverlist of next priority
+    //         ELSE return NULL
+    //     ELSE return next server of this priority
+    // ELSE return NULL
+
+    if (Parent->startup.IsServer(server)) {
+	vector<mstring> serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).third);
+	vector<mstring>::iterator iter;
+	for (iter=serverlist.begin(); iter!=serverlist.end(); iter++)
+	    if (*iter == server) break;
+
+	if (iter != serverlist.end()) iter++;
+
+	if (iter == serverlist.end()) {
+	    serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).third+1);
+
+	    if (serverlist.size()) {
+		RET(*serverlist.begin());
+
+	    } else {
+		RET("");
+	    }
+
+	} else {
+	    RET(*iter);
+	}
+
+    } else {
+	RET("");
+    }
+}
+
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    ACE_INET_Addr addr(Parent->startup.Remote_Port(),Parent->startup.Remote_Server());
-    //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-    if(Parent->config.Server_Relink()==-1||Parent->reconnect!=true||Parent->shutdown()==true)
+
+    if(Parent->config.Server_Relink()<1||Parent->reconnect!=true||Parent->shutdown()==true)
 	return 0;
+
+    mstring server;
+    triplet<int,mstring,int> details;
+    if (Parent->GotConnect) {
+	server = Parent->startup.PriorityList(1)[0];
+    } else {
+	server = FindNext(Parent->Server);
+	if (server == "") {
+	    server = Parent->startup.PriorityList(1)[0];
+	}
+    }
+    if (server != "")
+	details = Parent->startup.Server(server);
+    ACE_INET_Addr addr(details.first, server);
+
+    //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
+
+    Parent->GotConnect = false;
+    Parent->Server = server;
     Parent->ircsvchandler=new IrcSvcHandler;
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
     {
@@ -111,7 +168,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
         ACE_INET_Addr localaddr;
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-	Parent->server.raw("PASS " + Parent->startup.Password());
+	Parent->server.raw("PASS " + details.second);
 	Parent->server.raw("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
     }
     RET(0);

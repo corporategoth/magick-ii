@@ -19,6 +19,7 @@
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
 #include "server.h"
+#include "utils.h"
 #include "operserv.h"
 #include "nickserv.h"
 #include "chanserv.h"
@@ -47,6 +48,7 @@ public:
 };
 
 typedef map<mstring,mstring> mapstringstring;
+
 class Magick
 {
 private:
@@ -69,17 +71,18 @@ private:
         wxZlibInputStream *zstrm;
 	mDecryptStream *cstrm;
 
+	// Running config
+	
 
 public:
 	void save_databases();
 	void load_databases();
+
 	// Config Values
-        class statup_t{
+	class startup_t {
 		friend Magick;
 
-		mstring remote_server;
-		int remote_port;
-		mstring password;
+		map<mstring,triplet<int,mstring,int> > servers;
 		mstring server_name;
 		mstring server_desc;
 		mstring services_user;
@@ -90,9 +93,10 @@ public:
 		int deadtime;
 		float gmt;
 	public:
-		mstring Remote_Server()const	{ return remote_server; }
-		int Remote_Port()const		{ return remote_port; }
-		mstring Password()const		{ return password; }
+		bool IsServer(mstring server);
+		triplet<int,mstring,int> Server(mstring server);
+		vector<mstring> PriorityList(int pri);
+
 		mstring Server_Name()const	{ return server_name; }
 		mstring Server_Desc()const	{ return server_desc; }
 		mstring Services_User()const	{ return services_user; }
@@ -100,69 +104,54 @@ public:
 		bool Ownuser()const		{ return ownuser; }
 		int Level()const		{ return level; }
 		int Lagtime()const		{ return lagtime; }
-		int Deadtime()const		{ return deadtime; }
-		float GMT()const		{ return gmt; }
 	} startup;
 
-	class files_t{
+	class files_t {
 		friend Magick;
 
 		mstring pidfile;
 		mstring logfile;
 		mstring motdfile;
 		mstring language;
-		mstring commands;
-		mstring main_db;
-		mstring link_db;
-		mstring nick_db;
-		mstring chan_db;
-		mstring memo_db;
-		mstring news_db;
-		mstring akill_db;
-		mstring ignore_db;
-		mstring clone_db;
-		mstring comm_db;
-		mstring msgs_db;
-		bool compression;
+		mstring database;
+		int compression;
 		mstring keyfile;
-		mstring password;
+		bool encryption;
 	public:
 		mstring Pidfile()const	{ return pidfile; }
 		mstring Logfile()const	{ return logfile; }
 		mstring Motdfile()const	{ return motdfile; }
 		mstring Language()const	{ return language; }
-		mstring Commands()const	{ return commands; }
-		mstring Link_DB()const	{ return link_db; }
-		mstring Nick_DB()const	{ return nick_db; }
-		mstring Chan_DB()const	{ return chan_db; }
-		mstring Memo_DB()const	{ return memo_db; }
-		mstring News_DB()const	{ return news_db; }
-		mstring AKill_DB()const	{ return akill_db; }
-		mstring Ignore_DB()const{ return ignore_db; }
-		mstring Clone_DB()const	{ return clone_db; }
-		mstring Comm_DB()const	{ return comm_db; }
-		mstring Msgs_DB()const	{ return msgs_db; }
-		mstring Main_DB()const	{ return main_db; }
-		bool Compression()const	{ return compression; }
+		mstring Database()const	{ return database; }
+		int Compression()const	{ return compression; }
 		mstring KeyFile()const	{ return keyfile; }
-		mstring Password()const { return password; }
+		bool Encryption()const	{ return encryption; }
 	} files;
 
-	class config_t{
+	class config_t {
 		friend Magick;
 
 		int server_relink;
 		int squit_protect;
+		int squit_cancel;
 		int cycletime;
 		int ping_frequency;
 		int starthresh;
+		int startup_threads;
+		int low_water_mark;
+		int high_water_mark;
 	public:
 		int Server_Relink()	{ return server_relink; }
 		int Squit_Protect()	{ return squit_protect; }
+		int Squit_Cancel()	{ return squit_cancel; }
 		int Cycletime()		{ return cycletime; }
 		int Ping_Frequency()	{ return ping_frequency; }
 		int Starthresh()	{ return starthresh; }
+		int Startup_Threads()	{ return startup_threads; }
+		int Low_Water_Mark()	{ return low_water_mark; }
+		int High_Water_Mark()	{ return high_water_mark; }
 	} config;
+
 
 	bool Files_COMPRESS_STREAMS;
 	mstring Password;
@@ -197,6 +186,9 @@ public:
 	bool reconnect;
         Reconnect_Handler rh;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
+
+	bool GotConnect;
+	mstring Server;
 
 	void get_config_values();
 	bool check_config();
@@ -235,7 +227,7 @@ extern mDateTime StartTime;
 inline void KillUnknownUser(mstring user)
 { Parent->ircsvchandler->send(":" + Parent->startup.Server_Name() + " KILL " +
     user + " :" + Parent->startup.Server_Name() + " (" + user + "(?) <- " +
-    Parent->startup.Remote_Server() + ")"); }
+    Parent->Server + ")"); }
 
 inline bool IsChan(mstring input)
 { return (ChanSpec.Contains(input[0U])); }

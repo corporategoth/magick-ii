@@ -7,6 +7,7 @@ class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
     virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    mstring Reconnect_Handler::FindNext(mstring server);
 };
 
 class ServerPing_Handler : public ACE_Event_Handler

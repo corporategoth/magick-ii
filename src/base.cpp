@@ -279,6 +279,9 @@ void mBaseTask::message_i(const mstring& message)
 		else if (Parent->memoserv.IsName(target))
 		    Parent->memoserv.execute(message);
 
+		else if (Parent->commserv.IsName(target))
+		    Parent->commserv.execute(message);
+
 		else if (Parent->servmsg.IsName(target))
 		    Parent->servmsg.execute(message);
 
