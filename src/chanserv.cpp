@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.158  2000/04/02 08:08:08  prez
+** Misc Changes
+**
 ** Revision 1.157  2000/03/29 09:41:17  prez
 ** Attempting to fix thread problem with mBase, and added notification
 ** of new memos on join of channel or signon to network.
@@ -1019,7 +1022,10 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
     // Create a new one if we find the entry
     for (iter=failed_passwds.begin(); iter!=failed_passwds.end(); iter++)
 	if (iter->first == nick.LowerCase())
+	{
 	    failed_passwds[newnick.LowerCase()] = iter->second;
+	    break;
+	}
     failed_passwds.erase(nick.LowerCase());
 }
 
@@ -1035,27 +1041,30 @@ void Chan_Stored_t::Join(mstring nick)
     if (Parent->chanserv.IsLive(i_Name))
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
     else
+    {
+	wxLogWarning("channel not exist");
 	return;
+    }
     unsigned int users = clive->Users();
 
     if (Parent->nickserv.IsLive(nick))
 	nlive = &Parent->nickserv.live[nick.LowerCase()];
     else
-	return;
-
-    if (Parent->nickserv.IsStored(nick))
-	nstored = &Parent->nickserv.stored[nick.LowerCase()];
-
-    if (nlive->IsServices())
     {
-	clive->SendMode("+o " + nick);
+	wxLogWarning("non-existant user ...");
 	return;
     }
 
-    if (Join() && users == 1)
+    if (Parent->nickserv.IsStored(nick))
+	nstored = &Parent->nickserv.stored[nick.LowerCase()];
+    else
+	nstored = NULL;
+
+    if (nlive->IsServices() &&
+	Parent->chanserv.FirstName().CmpNoCase(nick)==0)
     {
-	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
-	users++;
+	clive->SendMode("+o " + nick);
+	return;
     }
 
     { // NOONE else can move our iterator
@@ -1076,6 +1085,8 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
 
+	wxLogVerbose("KICKED user %s from channel %s for triggering AKICK",
+			nick.c_str(), i_Name.c_str());
 	return;
     }}
 
@@ -1095,6 +1106,8 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
 
+	wxLogVerbose("KICKED user %s from channel %s as it is restricted",
+			nick.c_str(), i_Name.c_str());
 	return;
     }
 
@@ -1106,7 +1119,7 @@ void Chan_Stored_t::Join(mstring nick)
 	users--;
     }
 
-    if (users == (Join() ? 2U : 1U))
+    if (users == 1)
     {
 	mstring modes = i_Mlock_On;
 	if (i_Mlock_Key)
@@ -1135,6 +1148,12 @@ void Chan_Stored_t::Join(mstring nick)
 	}
     }
 
+    if (Join() && users == 1)
+    {
+	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+	users++;
+    }
+
     if (GetAccess(nick)>0)
 	i_LastUsed = Now();
 
@@ -1144,13 +1163,15 @@ void Chan_Stored_t::Join(mstring nick)
 	clive->SendMode("+v " + nick);
 
     mstring target = nick;
-    if (nstored != NULL && nstored->Host() != "" &&
-	Parent->nickserv.IsStored(nstored->Host()))
+    if (nstored != NULL && nstored->Host() != "")
     {
 	target = nstored->Host();
     }
 
-    if (!Suspended()) {
+    if (Suspended())
+	return;
+
+    {
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
 	if (Greet_find(target) &&
 		clive->PartTime(target).SecondsSince() > Parttime())
@@ -1679,7 +1700,6 @@ Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, ms
     i_Founder = founder;
     i_Password = password;
     i_Description = desc;
-
 }
 
 
@@ -2269,6 +2289,30 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	}
     }
 
+    // Have to change the REAL mlock
+    for (i=0; i<l_Mlock_On.size(); i++)
+    {
+	if (!i_Mlock_On.Contains(l_Mlock_On[i]))
+	{
+	    i_Mlock_On += l_Mlock_On[i];
+	}
+	if (i_Mlock_Off.Contains(l_Mlock_On[i]))
+	{
+	    i_Mlock_Off.Remove(l_Mlock_On[i]);
+	}
+    }
+
+    for (i=0; i<l_Mlock_Off.size(); i++)
+    {
+	if (!i_Mlock_Off.Contains(l_Mlock_Off[i]))
+	{
+	    i_Mlock_Off += l_Mlock_Off[i];
+	}
+	if (i_Mlock_On.Contains(l_Mlock_Off[i]))
+	{
+	    i_Mlock_On.Remove(l_Mlock_Off[i]);
+	}
+    }
 
     if (override_on != "" || override_off != "")
     {
@@ -2820,7 +2864,6 @@ bool Chan_Stored_t::Level_change(mstring entry, long value, mstring nick)
 	RET(false);
     }
 }
-
 
 bool Chan_Stored_t::Level_find(mstring entry)
 {
