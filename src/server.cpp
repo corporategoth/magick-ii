@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2000/08/10 22:44:24  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.117  2000/08/06 21:56:14  prez
 ** Fixed some small problems in akill/clone protection
 **
@@ -995,7 +999,8 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	    line << "AKILL";
 	line << " " << host.After("@") << " " << host.Before("@") <<
 		" " << time << " " << ((killer != "") ? killer :
-		Parent->operserv.FirstName()) << " :" << reason;
+		Parent->operserv.FirstName()) << " " <<
+		(time_t) Now() << " :" << reason;
 	break;
     }
     if (line != "")

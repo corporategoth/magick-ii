@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.196  2000/08/10 22:44:22  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.195  2000/08/09 12:14:42  prez
 ** Ensured chanserv infinate loops wont occur, added 2 new cmdline
 ** paramaters, and added a manpage (you need to perl2pod it tho).
@@ -382,6 +386,8 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     {
 	users[newnick.LowerCase()] = users[nick.LowerCase()];
 	users.erase(nick.LowerCase());
+	if (Parent->chanserv.IsStored(i_Name))
+	    Parent->chanserv.stored[i_Name.LowerCase()].ChgNick(nick, newnick);
     }
     else if (squit.find(nick.LowerCase())!=squit.end())
     {
@@ -1516,7 +1522,7 @@ void Chan_Stored_t::Join(mstring nick)
 
 	if (Parent->nickserv.IsLive(Akick->Entry()))
 	    clive->SendMode("+b " +
-		nlive->AltMask(Nick_Live_t::P_H));
+		nlive->AltMask(Parent->operserv.Ignore_Method()));
 	else
 	    clive->SendMode("+b " + Akick->Entry());
 
@@ -1537,7 +1543,7 @@ void Chan_Stored_t::Join(mstring nick)
 
 	if (Parent->nickserv.IsLive(nick))
 	    clive->SendMode("+b " +
-		nlive->AltMask(Nick_Live_t::P_H));
+		nlive->AltMask(Parent->operserv.Ignore_Method()));
 	else
 	    clive->SendMode("+b " + nick + "!*@*");
 
@@ -1725,6 +1731,78 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
     if (DoRevenge("KICK", kicker, nick))
 	Parent->server.INVITE(Parent->chanserv.FirstName(),
 		nick, i_Name);
+}
+
+void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
+{
+    FT("Chan_Stored_t::ChgNick", (nick, newnick));
+
+    Chan_Live_t *clive = NULL;
+    Nick_Live_t *nlive = NULL;
+
+    if (Parent->chanserv.IsLive(i_Name))
+	clive = &Parent->chanserv.live[i_Name.LowerCase()];
+    else
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"NICK", nick.c_str(), i_Name.c_str());
+	return;
+    }
+    size_t users = clive->Users();
+
+    if (Parent->nickserv.IsLive(newnick))
+	nlive = &Parent->nickserv.live[newnick.LowerCase()];
+    else
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"NICK", i_Name.c_str(), newnick.c_str());
+	return;
+    }
+
+    // Check we dont now trigger AKICK
+    { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+    if (Akick_find(newnick))
+    {
+	// If this user is the only user in channel
+	if (users == 1)
+	    clive->LockDown();
+
+	if (Parent->nickserv.IsLive(Akick->Entry()))
+	    clive->SendMode("+b " +
+		nlive->AltMask(Parent->operserv.Ignore_Method()));
+	else
+	    clive->SendMode("+b " + Akick->Entry());
+
+	// Can only insert with reason or default, so its safe.
+	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
+		i_Name, Akick->Value());
+
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
+			newnick.c_str(), i_Name.c_str(), Akick->Value().c_str());
+	return;
+    }}
+
+    // Check we're still alowed in here!
+    if (Restricted() && !Suspended() && GetAccess(newnick) < (long) 1)
+    {
+	// If this user is the only user in channel
+	if (users == 1)
+	    clive->LockDown();
+
+	if (Parent->nickserv.IsLive(newnick))
+	    clive->SendMode("+b " +
+		nlive->AltMask(Parent->operserv.Ignore_Method()));
+	else
+	    clive->SendMode("+b " + newnick + "!*@*");
+
+	// Can only insert with reason or default, so its safe.
+	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
+		i_Name, Parent->getMessage(newnick, "MISC/KICK_RESTRICTED"));
+
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
+			newnick.c_str(), i_Name.c_str());
+	return;
+    }
 }
 
 

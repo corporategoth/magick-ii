@@ -25,6 +25,10 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/08/10 22:44:22  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.42  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -277,6 +281,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     void Join(mstring nick);
     void Part(mstring nick);
     void Kick(mstring nick, mstring kicker);
+    void ChgNick(mstring nick, mstring newnick);
     void Topic(mstring source, mstring topic, mstring setter, mDateTime time = Now());
     void Mode(mstring setter, mstring mode);
     void defaults();

@@ -18,4 +18,7 @@ Known problems that exist in magick that should be fixed.
   on OPER) it will not remove them from the subcommittee,
   and they will appear twice.
 
-- On FreeBSD, the sender does not show up in memo reads.
+- On FreeBSD, the log file isnt appended to properly, its
+  overwritten from the start or not written at all, which means
+  each sessions needs a new log file (yes, annoying).  Looking
+  into a different method other than re-directing stderr.

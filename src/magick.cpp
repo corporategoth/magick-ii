@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.262  2000/08/10 22:44:23  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.261  2000/08/09 12:14:43  prez
 ** Ensured chanserv infinate loops wont occur, added 2 new cmdline
 ** paramaters, and added a manpage (you need to perl2pod it tho).
@@ -1859,6 +1863,12 @@ bool Magick::get_config_values()
 	reconnect_clients = true;
     startup.services_user = value_mstring;
     startup.ownuser = value_bool;
+
+    in.Read(ts_Startup+"BIND", value_mstring, "*");
+    if (value_mstring != startup.bind)
+	reconnect = true;
+    startup.bind = value_mstring;
+
     in.Read(ts_Startup+"SETMODE",value_mstring, "");
     if (value_mstring != startup.setmode)
 	reconnect_clients = true;

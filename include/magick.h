@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.138  2000/08/10 22:44:22  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.137  2000/07/29 21:58:52  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -244,7 +248,6 @@ public:
 
 	// Other stuff ...
 	NetworkServ server;
-        IrcServer ACO_server;
 
 	// Config Values
 	class startup_t {
@@ -258,6 +261,7 @@ public:
 		mstring services_host;
 		bool ownuser;
 		mstring setmode;
+		mstring bind;
 		unsigned int level;
 		unsigned long lagtime;
 	public:
@@ -272,6 +276,7 @@ public:
 		mstring Services_Host()const	{ return services_host; }
 		bool Ownuser()const		{ return ownuser; }
 		mstring Setmode()const		{ return setmode; }
+		mstring Bind()const		{ return bind; }
 		unsigned int Level()const	{ return level; }
 		unsigned long Lagtime()const	{ return lagtime; }
 	} startup;

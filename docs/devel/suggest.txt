@@ -35,12 +35,10 @@ x Done
 
 * Restart command in OperServ.
 * Log and announce new max users (optional).
-* Support specific ip (ie. our ip) selection (if system has it).
 * Limit memos per user/channel (user definable with system max).
 * Limit registered channels per user.
 * Enforce time delay between allowing memo send.
 * Enforce time delay between allowing nick/channel registrations.
-* AKICK should be triggered if a user does /nick and suddenly matches.
 * Ability to 'rename' a channel (eg. #aic -> #lucida).
 * Have AKILL check online to ensure they are not akilling anyone on
   a committee higher than themselves.

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.123  2000/08/10 22:44:23  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.122  2000/08/07 22:38:50  prez
 ** Stopped the 'expiring nickname  ()' messages.
 **
@@ -490,8 +494,6 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     ACE_INET_Addr addr(details.first, server);
 
-    //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-
     Parent->GotConnect(false);
     Parent->i_server = server;
     Parent->server.proto.Tokens(false);
@@ -505,11 +507,30 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->ircsvchandler=new IrcSvcHandler;
     Log(LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
 		server.c_str(), details.first);
-    if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
+
+    IrcServer C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
+
+    unsigned int i;
+    for (i=1; i<5; i++)
+    {
+        mstring octet = Parent->startup.Bind().ExtractWord(i, ".", false);
+	if (!octet.IsNumber() || atoi(octet.c_str()) < 0 ||
+		atoi(octet.c_str()) > 255)
+	    break;
+    }
+
+    ACE_INET_Addr laddr;
+    unsigned short port = FindAvailPort();
+    if (i==5)
+	laddr.set(port, Parent->startup.Bind().c_str());
+    else
+	laddr.set(port);
+    if(C_server.connect(Parent->ircsvchandler,addr,
+    		ACE_Synch_Options::defaults, laddr)==-1)
     {
 	if (Parent->ircsvchandler != NULL)
 	{
-	    //Parent->ircsvchandler->shutdown();
+	    Parent->ircsvchandler->shutdown();
 	    delete Parent->ircsvchandler;
 	    Parent->ircsvchandler = NULL;
 	}

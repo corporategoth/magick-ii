@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2000/08/10 22:44:24  prez
+** Added 'binding to IP' options for shell servers, etc.  Also added akick
+** triggers for when a user changes their nick and suddenly matches akick.
+**
 ** Revision 1.123  2000/08/09 12:14:43  prez
 ** Ensured chanserv infinate loops wont occur, added 2 new cmdline
 ** paramaters, and added a manpage (you need to perl2pod it tho).
@@ -1252,6 +1256,7 @@ void Nick_Live_t::Name(mstring in)
 {
     FT("Nick_Live_t::Name", (in));
 
+    mstring oldnick = i_Name;
     InFlight.ChgNick(in);
 
     WLOCK(("NickServ", "live", i_Name.LowerCase()));
@@ -1277,25 +1282,6 @@ void Nick_Live_t::Name(mstring in)
 	if (iter2->second.IsOn(i_Name))
 	    wason.insert(iter2->first);
     }
-
-    // Rename ourselves in all channels ...
-    for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
-    {
-	if (Parent->chanserv.IsLive(*iter))
-	{
-	    Parent->chanserv.live[*iter].ChgNick(i_Name, in);
-	}
-	else
-	{
-	    chunked.push_back(*iter);
-	    Log(LM_ERROR, Parent->getLogMessage("REC_FORNOTINCHAN"),
-		"NICK", i_Name.c_str(), iter->c_str());
-	}
-    }
-
-    // Clean up non-existant channels ...
-    for (i=0; i<chunked.size(); i++)
-	joined_channels.erase(chunked[i]);
 
     vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
     for (i=0; i<dccs.size(); i++)
@@ -1326,6 +1312,25 @@ void Nick_Live_t::Name(mstring in)
     // WooHoo, we have a new nick!
     i_Name = in;
     i_My_Signon_Time = Now();
+
+    // Rename ourselves in all channels ...
+    for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
+    {
+	if (Parent->chanserv.IsLive(*iter))
+	{
+	    Parent->chanserv.live[*iter].ChgNick(oldnick, i_Name);
+	}
+	else
+	{
+	    chunked.push_back(*iter);
+	    Log(LM_ERROR, Parent->getLogMessage("REC_FORNOTINCHAN"),
+		"NICK", oldnick.c_str(), iter->c_str());
+	}
+    }
+
+    // Clean up non-existant channels ...
+    for (i=0; i<chunked.size(); i++)
+	joined_channels.erase(chunked[i]);
 
     if (Parent->nickserv.IsStored(i_Name))
     {
@@ -1402,14 +1407,16 @@ void Nick_Live_t::Mode(mstring in)
 		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
 		Parent->operserv.RemHost(i_host);
 		MLOCK(("OperServ", "OperDeny"));
-		// IF we are SecureOper and NOT on oper list
-		// OR user is on OperDeny and NOT on sadmin list && recognized
+		// IF we are SecureOper and NOT (on oper list && recoznized)
+		// OR user is on OperDeny and NOT (on sadmin list && recognized)
 		// Yeah, one UUUUUUGLY if.
-		if ((Parent->operserv.SecureOper() &&
-		    !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(i_Name))) ||
+		if (!IsServices() && (Parent->operserv.SecureOper() &&
+		    !(Parent->nickserv.IsStored(i_Name) &&
+		    Parent->nickserv.stored[i_Name.LowerCase()].IsOnline() &&
+		    Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		    Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(i_Name))) ||
 		    (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
-		    !IsServices() && !(Parent->nickserv.IsStored(i_Name) &&
+		    !(Parent->nickserv.IsStored(i_Name) &&
 		    Parent->nickserv.stored[i_Name.LowerCase()].IsOnline() &&
 		    Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(i_Name))))
