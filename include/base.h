@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/04/15 11:11:44  ungod
+** starting xmlage of magick
+**
 ** Revision 1.57  2000/04/02 07:25:05  prez
 ** Fixed low watermarks with threads, it all works now!
 **
@@ -62,6 +65,7 @@ static const char *ident_base_h = "@(#) $Id$";
 #include "trace.h"
 #include "dccengine.h"
 #include "utils.h"
+#include "xml/sxp.h"
 
 class mUserDef
 {
@@ -90,7 +94,7 @@ public:
     void i_shutdown();
 };
 
-class entlist_t : public mUserDef
+class entlist_t : public mUserDef, public SXP::IPersistObj
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, entlist_t& out);
@@ -112,6 +116,13 @@ public:
     mstring Entry()const		{ return i_Entry; }
     mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
     mstring Last_Modifier()const	{ return i_Last_Modifier; }
+    // XML handling section
+	static SXP::Tag tag_Entry, tag_Last_Modify_Time, tag_Last_Modifier;
+	static SXP::Tag tag_entlist_t;
+	SXP::Tag& GetClassTag() const { return tag_entlist_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in);
 wxInputStream &operator>>(wxInputStream& in, entlist_t& out);
@@ -350,3 +361,4 @@ void do_1_2param(mstring mynick, mstring source, mstring params);
 void do_1_3param(mstring mynick, mstring source, mstring params);
 
 #endif
+

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2000/04/15 11:11:44  ungod
+** starting xmlage of magick
+**
 ** Revision 1.111  2000/04/02 07:25:05  prez
 ** Fixed low watermarks with threads, it all works now!
 **
@@ -1039,5 +1042,30 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
 //			command.c_str(), mynick.c_str(),
 //			command.Before(" ").c_str());
     }
+}
+
+SXP::Tag entlist_t::tag_Entry("Entry");
+SXP::Tag entlist_t::tag_Last_Modify_Time("Last Modify Time");
+SXP::Tag entlist_t::tag_Last_Modifier("Last Modifier");
+SXP::Tag entlist_t::tag_entlist_t("entlist_t");
+
+void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
+	if( pElement->IsA(tag_Last_Modify_Time) )   pElement->Retrieve(i_Last_Modify_Time);
+	if( pElement->IsA(tag_Last_Modifier) )   pElement->Retrieve(i_Last_Modifier);
+}
+
+void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    //TODO: Add your source code here
+		pOut->BeginObject(tag_entlist_t, attribs);
+
+		pOut->WriteElement(tag_Entry, i_Entry);
+		pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
+		pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
+
+		pOut->EndObject(tag_entlist_t);
 }
 

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/04/15 11:11:45  ungod
+** starting xmlage of magick
+**
 ** Revision 1.15  2000/04/06 12:52:50  prez
 ** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
 **
@@ -61,10 +64,12 @@ static const char *ident = "@(#)$Id$";
 #include "cryptstream.h"
 #include "log.h"
 #include "trace.h"
+#ifdef HASCRYPT
 extern "C"
 {
 #include "des/spr.h"
 };
+#endif
 
 wxCryptOutputStream::wxCryptOutputStream(wxOutputStream& stream, const mstring& passphrase)
 : wxFilterOutputStream(stream)

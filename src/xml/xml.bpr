@@ -29,17 +29,24 @@ PATHCPP = .;
 PATHASM = .;
 PATHPAS = .;
 PATHRC = .;
-USERDEFINES =
+USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
 SYSDEFINES =NO_STRICT
 # ---------------------------------------------------------------------------
-CFLAG1 = -I$(BCB)\include;$(BCB)\include\vcl;..\..\include -Od -Hc \
-  -H=$(BCB)\lib\vcl40.csm -w -Ve -r- -a8 -k -y -v -vi- -c -b- -w-par -w-inl -Vx \
-  -tWM -D$(SYSDEFINES);$(USERDEFINES)
-IDLCFLAGS = -I$(BCB)\include -I$(BCB)\include\vcl -I..\..\include -src_suffixcpp
-PFLAGS = -U$(DEBUGLIBPATH) -I$(BCB)\include;$(BCB)\include\vcl;..\..\include -N2Debug \
-  -N0Debug -$YD -$W -$O- -v -JPHN -M
-AFLAGS = /i$(BCB)\include /i$(BCB)\include\vcl /i..\..\include /mx /w2 /zd
-RFLAGS = -i$(BCB)\include;$(BCB)\include\vcl;..\..\include
+CFLAG1 = -I..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib \
+  -Od -Hc -H=$(BCB)\lib\vcl40.csm -w-rvl -w-par -w-inl -Ve -r- -a8 -k -y -v -vi- \
+  -c -b- -Vx -tWM -D$(SYSDEFINES);$(USERDEFINES)
+IDLCFLAGS = -I..\..\include -I..\..\..\support\ace_wrappers -I$(BCB)\include \
+  -I$(BCB)\include\vcl -I..\..\..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
+  -DWIN32 -D_CONSOLE -D_MBCS -DACE_NTRACE=1 -DACE_USE_RCSID=0
+PFLAGS = -U$(DEBUGLIBPATH) \
+  -I..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib \
+  -N2Debug -N0Debug \
+  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0 -$YD -$W -$O- \
+  -v -JPHN -M
+AFLAGS = /i..\..\include /i..\..\..\support\ace_wrappers /i$(BCB)\include \
+  /i$(BCB)\include\vcl /i..\..\..\support\zlib /d_DEBUG /dDEBUG /dWIN32 \
+  /d_CONSOLE /d_MBCS /dACE_NTRACE=1 /dACE_USE_RCSID=0 /mx /w2 /zd
+RFLAGS = -i..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib
 LFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = $(OBJFILES)
@@ -74,13 +81,21 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=$(BCB)\include;$(BCB)\include\vcl;..\..\include
-Item1=$(BCB)\include;$(BCB)\include\vcl
+Count=6
+Item0=..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib
+Item1=..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\include;..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\include;..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl
+Item4=$(BCB)\include;$(BCB)\include\vcl;..\..\include
+Item5=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
 
 [HistoryLists\hlIntOutputDir]
 Count=1

@@ -45,25 +45,28 @@ PATHASM = .;
 DEBUGLIBPATH = $(BCB)\lib\debug
 RELEASELIBPATH = $(BCB)\lib\release
 SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
-USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
+USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
 # ---------------------------------------------------------------------------
-CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
-  -O2 -H=$(BCB)\lib\vcl40.csm -wuse -wstv -wstu -wpin -wnod -wnak -wdef -wamb \
-  -Vmp -Tkh30000 -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR \
-  -tWM -c
-IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude -I..\support\ace_wrappers \
-  -I..\support\zlib -I..\include\sxp -I..\include\expat -src_suffixcpp -D_DEBUG \
-  -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
+CFLAG1 = -Isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
+  -Od -H=$(BCB)\lib\vcl40.csm -wuse -wstv -wstu -w-rvl -wpin -wnod -wnak -wdef \
+  -wamb -Vmp -Tkh30000 -r- -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) \
+  -q -tWR -tWM -c
+IDLCFLAGS = -Isrc -Iinclude -I..\support\ace_wrappers -I..\support\zlib -I..\include\sxp \
+  -I..\include\expat -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp \
+  -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 \
+  -DACE_USE_RCSID=0
 PFLAGS = -Usrc;$(BCB)\lib;$(RELEASELIBPATH) \
-  -Isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
-  -N2Debug -N0Debug -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1 \
-  -$YD
-RFLAGS = -isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
-  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1 /l 0xc09 /d \
-  "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
-AFLAGS = /isrc /i$(BCB)\include /i$(BCB)\include\ATL /iinclude /i..\support\ace_wrappers \
-  /i..\support\zlib /i..\include\sxp /i..\include\expat /d_DEBUG /dDEBUG /dWIN32 \
-  /d_CONSOLE /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /mx /w2 /zd
+  -Isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
+  -N2Debug -N0Debug \
+  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 \
+  -$YD -$W -$O-
+RFLAGS = -isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
+  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 /l \
+  0xc09 /d "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
+AFLAGS = /isrc /iinclude /i..\support\ace_wrappers /i..\support\zlib /i..\include\sxp \
+  /i..\include\expat /i$(BCB)\include /i$(BCB)\include\ATL /d_DEBUG /dDEBUG \
+  /dWIN32 /d_CONSOLE /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /dACE_USE_RCSID=0 /mx \
+  /w2 /zi
 LFLAGS = -Lsrc;$(BCB)\lib;$(RELEASELIBPATH) -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
@@ -101,9 +104,11 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
-Item1=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
+Count=4
+Item0=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
+Item1=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL;
+Item2=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
+Item3=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
 
 [HistoryLists\hlLibraryPath]
 Count=3
@@ -116,8 +121,9 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
+Count=2
+Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
+Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 
 [HistoryLists\hlIntOutputDir]
 Count=1

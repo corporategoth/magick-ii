@@ -11,6 +11,8 @@
 // stdio.h file pointer returned by the FP() method, aided by an Indent()
 // method which knows how many tabs to print before your tag.
 
+#include "datetime.h"
+
 template<class T>
 interface IDataOutput :
 IFilePointer<T> {
@@ -43,7 +45,11 @@ IFilePointer<T> {
 			fprintf(FP(), "<%s/>\n", t.ch);
 	}
 #endif /* HAVE_WSTRING */
-	
+
+	inline void WriteElement(Tag& t, mDateTime val) {
+        WriteElement(t,(double)val);
+	}
+
 };
 
 // IDataInput: bundles together methods for converting from the char*
@@ -68,6 +74,11 @@ IData<T> {
 		val = XMLUnEscapeW(Data());
 	}
 #endif /* HAVE_WSTRING */
-	
+    inline void Retrieve(mDateTime& val) {
+        double temp;
+        Retrieve(temp);
+        val=temp;
+    }
+
 };
 
