@@ -14,41 +14,92 @@
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
-// Bit	Use
-// 1	
-// 2	
-// 3	
-// 4	
-// 5	
-// 6	
-// 7	
-// 8	
-
-class Trace
+Trace::Trace()
 {
-public:
-    enum {
-	FuncTrace = 0x00000001,	// Trace functions
-	DataMB    = 0x10000000,	// Data before modification
-	DataMA    = 0x20000000,	// Data AFTER modification
-    };
-    Trace()
-    {
+}
+
+Trace::~Trace()
+{
+}
+
+
+bool Trace::IsOn(long level)
+{
+    return (level & TraceLevel);
+}
+
+long Trace::Resolve(short level, int threadid, mstring &message)
+{
+    ThreadID *tid = ThreadMap.find(threadid);
+    TraceTypes types;
+
+    switch (tid.type) {
+	case NickServ:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return NS_Chatter;
+		CheckPoint:	return NS_CheckPoint;
+		Functions:	return NS_Functions;
+		Modify:		return NS_Locking;
+	    }
+	case ChanServ:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return CS_Chatter;
+		CheckPoint:	return CS_CheckPoint;
+		Functions:	return CS_Functions;
+		Modify:		return CS_Locking;
+	    }
+	case MemoServ:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return MS_Chatter;
+		CheckPoint:	return MS_CheckPoint;
+		Functions:	return MS_Functions;
+		Modify:		return MS_Locking;
+	    }
+	case OperServ:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return OS_Chatter;
+		CheckPoint:	return OS_CheckPoint;
+		Functions:	return OS_Functions;
+		Modify:		return OS_Locking;
+	    }
+	case OtherServ:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return XS_Chatter;
+		CheckPoint:	return XS_CheckPoint;
+		Functions:	return XS_Functions;
+		Modify:		return XS_Locking;
+	    }
+	case ServNet:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return NET_Chatter;
+		CheckPoint:	return NET_CheckPoint;
+		Functions:	return NET_Functions;
+		Sockets:	return NET_Sockets;
+	    }
+	case BOB:
+	    switch (level) {
+		Off:		return Off;
+		Chatter:	return BOB_Chatter;
+		Bind:		return BOB_Bind;
+		Functions:	return BOB_Functions;
+		External:	return BOB_External;
+	    }
+	default:
+	    switch (level) {
+		Off:		return Off;
+		Stats:		return G_Stats;
+		Source:		return G_Source;
+		Functions:	return G_Functions;
+		Locking:	return G_Locking;
+	    }
     }
-    ~Trace() {}
-    bool IsOn(int level);
-
-    WriteOut(int level, int tid, mstring &message);
 }
-
-class FuncTrace() : public Trace
-{
-public:
-    FuncTrace(const mstring name, mVarArray &args);
-    ~FuncTrace() { indent--; }
-
-}
-
 
 FuncTrace::FuncTrace(const mstring &name, mVarArray &args) {
     indent++;
