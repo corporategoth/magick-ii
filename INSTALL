@@ -113,7 +113,7 @@ you have aliased make, then try and build ACE again.
 After ACE has been made, you have two options:
 
 1) As root, you can copy *.so in the ace directory to /usr/local/lib
-   and then copy *.h, *.i and *.cpp in the ace directory to
+   and then copy *.h, *.i, *.inl and *.cpp in the ace directory to
    /usr/local/include/ace, which you will have to create.  On linux
    systems you will have to type 'ldconfig' after this.  Don't forget
    to make the libs chmod 755, and the includes chmod 644.
