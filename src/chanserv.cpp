@@ -5291,7 +5291,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
-		    who, channel.c_str(),
+		    who.c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	}
     }
@@ -5553,7 +5553,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
-		    who, channel.c_str(),
+		    who.c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/AKICK").c_str());
 	}
     }
@@ -7071,7 +7071,7 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
     cstored->Revenge(option.UpperCase());
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
-	    channel.c_str(), option.UpperCase());
+	    channel.c_str(), option.UpperCase().c_str());
 }
 
 void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
@@ -7676,7 +7676,7 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
     cstored->L_Revenge(true);
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
-	    channel.c_str(), option.UpperCase());
+	    channel.c_str(), option.UpperCase().c_str());
 }
 
 void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
