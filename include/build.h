@@ -19,7 +19,7 @@
 #ifndef _BUILD_H
 #define _BUILD_H
 #include "pch.h"
-RCSID(version_h, "@(#) $Id$");
+RCSID(build_h, "@(#) $Id$");
 
 /* ======================================================================= **
 **
