@@ -1,3 +1,8 @@
+* 2002-09-23 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.50):
+  
+  Created version 2.0s20020923
+
 * 2002-09-18 00:21  Preston A. Elder <prez@magick.tm>
   src/chanserv.cpp (1.307), src/commserv.cpp (1.130), src/memoserv.cpp
   (1.123), src/nickserv.cpp (1.221), src/operserv.cpp (1.163),
