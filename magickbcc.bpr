@@ -15,18 +15,17 @@ VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
 PROJECT = magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
-  Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
-  Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
-  Debug\lockable.obj Debug\magick.obj Debug\main.obj Debug\memoserv.obj \
-  Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj Debug\operserv.obj \
-  Debug\server.obj Debug\servmsg.obj Debug\textfile.obj Debug\trace.obj \
-  Debug\utils.obj Debug\variant.obj Debug\convert.obj Debug\filesys.obj \
-  Debug\mconfig.obj
+  Debug\confbase.obj Debug\datetime.obj Debug\dccengine.obj Debug\fileconf.obj \
+  Debug\ircsocket.obj Debug\lockable.obj Debug\magick.obj Debug\main.obj \
+  Debug\memoserv.obj Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj \
+  Debug\operserv.obj Debug\server.obj Debug\servmsg.obj Debug\textfile.obj \
+  Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj \
+  Debug\filesys.obj Debug\mconfig.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES = ..\support\zlib\zlib.LIB \
-  ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib \
-  src\antlr\antlr.lib src\des\crypto.lib src\xml\xml.lib
+  ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib src\des\crypto.lib \
+  src\xml\xml.lib
 IDLGENFILES =
 IDLFILES =
 LIBRARIES = VCL40.lib
@@ -48,7 +47,7 @@ SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H
 # ---------------------------------------------------------------------------
 CFLAG1 = -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
-  -Od -H=$(BCB)\lib\vcl40.csm -wuse -wstv -wstu -w-rvl -wpin -wnod -wnak -wdef \
+  -Od -H=$(BCB)\lib\vcl40.csm -wstv -wstu -w-rvl -wpin -w-par -wnod -wnak -wdef \
   -wamb -Vmp -Tkh30000 -r- -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) \
   -q -tWR -tWM -c
 IDLCFLAGS = -I"..\..\Program Files\Borland\CBuilder4\Projects" -Isrc -Iinclude \
