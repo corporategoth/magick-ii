@@ -80,7 +80,7 @@ bool Committee::insert(mstring entry, mstring nick)
 		break;
     if (i_Members.empty() || iter == i_Members.end())
     {
-	entlist_t tmp(entry, nick, true);
+	entlist_t tmp(entry, nick);
 	member = i_Members.insert(i_Members.end(), tmp);
 	RET(true);
     }
@@ -150,7 +150,7 @@ bool Committee::MSG_insert(mstring entry, mstring nick)
 
     if (IsHead(nick))
     {
-	entlist_t tmp(entry, nick, true);
+	entlist_t tmp(entry, nick);
 	message = i_Messages.insert(i_Messages.end(), tmp);
 	RET(true);
     }

@@ -496,7 +496,7 @@ void Chan_Stored_t::Join(mstring nick)
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
-		i_Name, Akick->String());
+		i_Name, Akick->Value());
 		
 	if (Parent->chanserv.IsLive(i_Name))
 	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
@@ -952,7 +952,8 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Suspend_Time=in.i_Suspend_Time;
     i_Forbidden=in.i_Forbidden;
 
-    entlist_val_cui<long> j;
+//  entlist_val_cui<long> j;
+    set<entlist_val_t<long> >::const_iterator j;
     i_Access_Level.clear();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	i_Access_Level.insert(*j);
@@ -961,7 +962,8 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	i_Access.insert(*j);
 
-    entlist_val_cui<mstring> k;
+//  entlist_val_cui<mstring> k;
+    set<entlist_val_t<mstring> >::const_iterator k;
     i_Akick.clear();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	i_Akick.insert(*k);
@@ -1423,7 +1425,8 @@ bool Chan_Stored_t::Access_Level_find(mstring entry)
 {
     FT("Chan_Stored_t::Access_Level_find", (entry));
 
-    entlist_val_ui<long> iter = i_Access_Level.end();
+//  entlist_val_ui<long> iter = i_Access_Level.end();
+    set<entlist_val_t<long> >::iterator iter = i_Access_Level.end();
     if (!i_Access_Level.empty())
 	for (iter=i_Access_Level.begin(); iter!=i_Access_Level.end(); iter++)
 	    if (iter->Entry().LowerCase() == entry.LowerCase())
@@ -1447,7 +1450,8 @@ long Chan_Stored_t::Access_Level_value(mstring entry)
     FT("Chan_Stored_t::Access_Level_value", (entry));
 
     long retval = 0;
-    entlist_val_ui<long> iter = Access_Level;
+//  entlist_val_ui<long> iter = Access_Level;
+    set<entlist_val_t<long> >::iterator iter = Access_Level;
 
     if (Access_Level_find(entry))
 	retval=Access_Level->Value();
@@ -1528,7 +1532,8 @@ bool Chan_Stored_t::Access_find(mstring entry)
     if (Parent->nickserv.IsLive(entry))
 	mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
 
-    entlist_val_ui<long> iter = i_Access.end();
+//  entlist_val_ui<long> iter = i_Access.end();
+    set<entlist_val_t<long> >::iterator iter = i_Access.end();
     if (!i_Access.empty())
     {
 	// FIND exact nickname
@@ -1578,7 +1583,8 @@ long Chan_Stored_t::Access_value(mstring entry)
     FT("Chan_Stored_t::Access_value", (entry));
 
     long retval = 0;
-    entlist_val_ui<long> iter = Access;
+//  entlist_val_ui<long> iter = Access;
+    set<entlist_val_t<long> >::iterator iter = Access;
 
     if (Access_find(entry))
 	retval=Access->Value();
@@ -1663,7 +1669,8 @@ bool Chan_Stored_t::Akick_find(mstring entry)
     if (Parent->nickserv.IsLive(entry))
 	mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
 
-    entlist_val_ui<mstring> iter = i_Akick.end();
+//  entlist_val_ui<mstring> iter = i_Akick.end();
+    set<entlist_val_t<mstring> >::iterator iter = i_Akick.end();
     if (!i_Akick.empty())
     {
 	// FIND exact nickname
@@ -1713,10 +1720,11 @@ mstring Chan_Stored_t::Akick_string(mstring entry)
     FT("Chan_Stored_t::Akick_string", (entry));
 
     mstring retval;
-    entlist_val_ui<mstring> iter = Akick;
+//  entlist_val_ui<mstring> iter = Akick;
+    set<entlist_val_t<mstring> >::iterator iter = Akick;
 
     if (Akick_find(entry))
-	retval=Akick->String();
+	retval=Akick->Value();
     Akick = iter;
     return retval;
 }
@@ -1728,7 +1736,7 @@ bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick)
 
     if (!Greet_find(entry))
     {
-	entlist_t tmp(entry, nick, true);
+	entlist_t tmp(entry, nick);
 	Greet = i_Greet.insert(i_Greet.end(), tmp);
 	RET(true);
     }
@@ -1789,7 +1797,8 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
-    entlist_val_cui<long> j;
+//  entlist_val_cui<long> j;
+    set<entlist_val_t<long> >::const_iterator j;
     out<<in.i_Access_Level.size();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	out<<*j;
@@ -1798,7 +1807,8 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	out<<*j;
 
-    entlist_val_cui<mstring> k;
+//  entlist_val_cui<mstring> k;
+    set<entlist_val_t<mstring> >::const_iterator k;
     out<<in.i_Akick.size();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	out<<*k;

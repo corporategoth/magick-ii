@@ -47,11 +47,10 @@ class entlist_t : public mUserDef
     mstring i_Entry;
     mDateTime i_Last_Modify_Time;
     mstring i_Last_Modifier;
-    bool i_Stupid;	// if TRUE, Change() does nothing.
 public:
     entlist_t () {}
     entlist_t (const entlist_t& in) { *this = in; }
-    entlist_t (mstring entry, mstring nick, bool stupid = false);
+    entlist_t (mstring entry, mstring nick);
     void operator=(const entlist_t &in);
     bool operator==(const entlist_t &in) const
 	{ return (i_Entry == in.i_Entry); }
@@ -82,7 +81,7 @@ class entlist_val_t : public mUserDef
     T i_Value;
     mDateTime i_Last_Modify_Time;
     mstring i_Last_Modifier;
-    bool i_Stupid;	// if TRUE, Change() does nothing.
+    bool i_Stupid;	// if TRUE, Value() does nothing.
 public:
     entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }

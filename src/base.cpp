@@ -53,13 +53,12 @@ mstring mUserDef::UserDef(mstring type, mstring val)
 // --------- end of mUserDef -----------------------------------
 
 
-entlist_t::entlist_t(mstring entry, mstring nick, bool stupid)
+entlist_t::entlist_t(mstring entry, mstring nick)
 {
-    FT("entlist_t::entlist_t", (entry, nick, stupid));
+    FT("entlist_t::entlist_t", (entry, nick));
     i_Entry = entry;
     i_Last_Modify_Time = Now();
     i_Last_Modifier = nick;
-    i_Stupid = stupid;
 }
 
 
@@ -69,7 +68,6 @@ void entlist_t::operator=(const entlist_t &in)
     i_Entry=in.i_Entry;
     i_Last_Modify_Time=in.i_Last_Modify_Time;
     i_Last_Modifier=in.i_Last_Modifier;
-    i_Stupid = in.i_Stupid;
     map<mstring,mstring>::const_iterator i;
     i_UserDef.clear();
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
@@ -77,26 +75,9 @@ void entlist_t::operator=(const entlist_t &in)
 }
 
 
-bool entlist_t::Change(mstring entry, mstring nick)
-{
-    FT("entlist_t::Change", (entry, nick));
-    if (i_Stupid)
-    {
-	RET(false);
-    }
-    else
-    {
-	i_Entry = entry;
-	i_Last_Modify_Time = Now();
-	i_Last_Modifier = nick;
-	RET(true);
-    }
-}
-
-
 wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in)
 {
-    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
+    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
 
     map<mstring,mstring>::const_iterator j;
     out<<in.i_UserDef.size();
@@ -111,7 +92,7 @@ wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
     unsigned int i,count;
     mstring dummy,dummy2;
 
-    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier>>out.i_Stupid;
+    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
 
     out.i_UserDef.clear();
     in>>count;
@@ -125,10 +106,10 @@ wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
 
 // --------- end of entlist_t -----------------------------------
 
-template class<T>
-entlist_val_t::entlist_val_t(mstring entry, T value, mstring nick, bool stupid)
+template<class T>
+entlist_val_t<T>::entlist_val_t(mstring entry, T value, mstring nick, bool stupid)
 {
-    FT("entlist_val_t::entlist_val_t", (entry, "(T) value", nick, stupid));
+    FT("entlist_val_t<T>::entlist_val_t<T>", (entry, "(T) value", nick, stupid));
     i_Entry = entry;
     i_Value = value;
     i_Last_Modify_Time = Now();
@@ -137,9 +118,9 @@ entlist_val_t::entlist_val_t(mstring entry, T value, mstring nick, bool stupid)
 }
 
 template<class T>
-void entlist_val_t::operator=(const entlist_val_t<T> &in)
+void entlist_val_t<T>::operator=(const entlist_val_t<T> &in)
 {
-    FT("entlist_val_t::operator=", ("(const entlist_val_t<T> &) in"));
+    FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
     i_Entry=in.i_Entry;
     i_Value=in.i_Value;
     i_Last_Modify_Time=in.i_Last_Modify_Time;
@@ -152,10 +133,10 @@ void entlist_val_t::operator=(const entlist_val_t<T> &in)
 }
 
 
-template class<T>
-bool entlist_val_t::Value(T value, mstring nick)
+template<class T>
+bool entlist_val_t<T>::Value(T value, mstring nick)
 {
-    FT("entlist_val_t::Change", ("(T) value", nick));
+    FT("entlist_val_t<T>::Change", ("(T) value", nick));
     if (i_Stupid)
     {
 	RET(false);
@@ -170,7 +151,8 @@ bool entlist_val_t::Value(T value, mstring nick)
 }
 
 
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t& in)
+template<class T>
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in)
 {
     out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 
@@ -182,7 +164,8 @@ wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t& in)
 }
 
 
-wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
+template<class T>
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out)
 {
     unsigned int i,count;
     mstring dummy,dummy2;
@@ -199,7 +182,7 @@ wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
     return in;
 }
 
-// --------- end of entlist_val_t -----------------------------------
+// --------- end of entlist_val_t<T> -----------------------------------
 
 mBase::mBase()
 {
