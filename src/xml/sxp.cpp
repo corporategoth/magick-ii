@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.22  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -168,21 +171,21 @@ Tag::Tag(const char *name)
 	TagHashtable::TagHT().Add(*this);
 }
 
-/*void CFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
+/* void CFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 {
 	pObj->WriteElement(this, attribs);
 } */
 
 
-void MFileOutStream::ExpandBuf()
+void MOutStream::ExpandBuf()
 {
-    buffer = static_cast<char *>(realloc(buffer, sizeof(char) * buf_sz * 2));
-    memset(&buffer[buf_sz], 0, buf_sz);
-    buf_sz *= 2;
+    buffer = static_cast<char *>(realloc(buffer, sizeof(char) * (buf_sz + INIT_BUFSIZE)));
+    memset(&buffer[buf_sz], 0, INIT_BUFSIZE);
+    buf_sz += INIT_BUFSIZE;
 }
 
 
-void MFileOutStream::Print(char *format, ...)
+void MOutStream::Print(char *format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -190,7 +193,7 @@ void MFileOutStream::Print(char *format, ...)
     va_end(argptr);
 }
 
-void MFileOutStream::PrintV(char *format, va_list argptr)
+void MOutStream::PrintV(char *format, va_list argptr)
 {
     mstring tmp;
     tmp.FormatV(format, argptr);
@@ -200,7 +203,7 @@ void MFileOutStream::PrintV(char *format, va_list argptr)
     buf_cnt+=tmp.length();
 }
 
-void MFileOutStream::Indent()
+void MOutStream::Indent()
 {
 	for(int i=0; i<m_nIndent; i++)
 	{
@@ -211,113 +214,20 @@ void MFileOutStream::Indent()
 	}
 }
 
-MFileOutStream::MFileOutStream(const mstring &chFilename, int comp, pair<mstring,mstring> &ikey)
-	: filename(chFilename), m_nIndent(0), compress(comp), buf_sz(INIT_BUFSIZE),
-	buf_cnt(0), key1(ikey.first), key2(ikey.second)
+MOutStream::MOutStream()
+	: m_nIndent(0), buf_sz(INIT_BUFSIZE), buf_cnt(0)
 {
-	out.Open(filename, "w");
 	buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
-MFileOutStream::MFileOutStream(const mstring &chFilename, FILE *fp, int comp, pair<mstring,mstring> &ikey)
-	: filename(chFilename), m_nIndent(0), compress(comp), buf_sz(INIT_BUFSIZE),
-	buf_cnt(0), key1(ikey.first), key2(ikey.second)
+MOutStream::~MOutStream()
 {
-	out.Attach(filename, fp);
-	buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
-	memset(buffer, 0, sizeof(char) * buf_sz);
-}
-
-MFileOutStream::~MFileOutStream()
-{
-	unsigned char tag = SXP_TAG;
-	char *outbuf = NULL;
-	size_t new_sz = 0, attempt, length=buf_cnt;
-	if (!out.IsOpened())
-	    return;
-	if (compress)
-	{
-	    z_streamp strm = new z_stream_s;
-	    memset(strm, 0, sizeof(z_stream_s));
-	    strm->zalloc = Z_NULL;
-	    strm->zfree  = Z_NULL;
-	    strm->opaque = Z_NULL;
-
-	    // From the zlib documentation:
-	    // avail_out must be at least 0.1% larger
-	    // than avail_in plus 12 bytes.
-	    new_sz = static_cast<size_t>(length * 1.001 + 12);
-	    deflateInit(strm, compress);
-	    outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
-	    memset(outbuf, 0, sizeof(char) * new_sz);
-
-	    strm->next_in   = reinterpret_cast<unsigned char *>(buffer);
-	    strm->avail_in  = length;
-	    strm->total_in  = 0;
-
-	    strm->next_out  = reinterpret_cast<unsigned char *>(outbuf);
-	    strm->avail_out = new_sz;
-	    strm->total_out = 0;
-
-	    for (attempt=0; attempt < 10 &&
-		deflate(strm, Z_FINISH) != Z_STREAM_END;
-		attempt++)
-	    {
-		new_sz += 12;
-		if (outbuf != NULL)
-		    free(outbuf);
-		outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
-		memset(outbuf, 0, sizeof(char) * new_sz);
-		strm->next_out = reinterpret_cast<unsigned char *>(outbuf);
-	    }
-	    deflateEnd(strm);
-	    if (strm != NULL)
-		delete strm;
-	    if (attempt < 10)
-	    {
-		length = strm->total_out;
-		buf_sz = length + 1;
-		if (buffer != NULL)
-		    free(buffer);
-		buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
-		memset(buffer, 0, sizeof(char) * buf_sz);
-		memcpy(buffer, outbuf, length);
-		tag |= SXP_COMPRESS;
-	    }
-	    if (outbuf != NULL)
-		free(outbuf);
-	    outbuf = NULL;
-	    
-	}
-	if (!key1.empty() && !key2.empty())
-	{
-	    new_sz = length + 8;
-	    outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
-	    memset(outbuf, 0, sizeof(char) * new_sz);
-
-	    length = mCRYPT(buffer, outbuf, length, key1.c_str(), key2.c_str(), true);
-
-	    if (outbuf != NULL)
-	    {
-		if (buffer != NULL)
-		    free(buffer);
-		buffer = outbuf;
-		outbuf = NULL;
-	    }
-	    tag |= SXP_ENCRYPT;
-	}
-	
 	if (buffer != NULL)
-	{
-	    out.Write(mstring(tag), false);
-	    out.Write(buffer, length * sizeof(char));
 	    free(buffer);
-	}
-	out.Close();
 }
 
-void MFileOutStream::BeginXML(void)
+void MOutStream::BeginXML(void)
 {
 	// UTF-8 encoding is used because it allows relatively painless
 	// support for storing widechars as character data, via
@@ -330,7 +240,7 @@ void MFileOutStream::BeginXML(void)
 	buf_cnt+=tmp.length();
 }
 
-void MFileOutStream::BeginObject(Tag& t, dict& attribs)
+void MOutStream::BeginObject(Tag& t, dict& attribs)
 {
 	Indent(); m_nIndent++;
 	mstring tmp;
@@ -356,7 +266,7 @@ void MFileOutStream::BeginObject(Tag& t, dict& attribs)
 	buf_cnt+=tmp.length();
 }
 
-void MFileOutStream::EndObject  (Tag& t)
+void MOutStream::EndObject  (Tag& t)
 {
 	m_nIndent--;
 	Indent();
@@ -368,135 +278,24 @@ void MFileOutStream::EndObject  (Tag& t)
 	buf_cnt+=tmp.length();
 }
 
-void MFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
+void MOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 {
 	pObj->WriteElement(this, attribs);
 }
 
 
-int CParser::FeedFile(const mstring &chFilename, pair<mstring,mstring> &ikey)
-{
-    int retval = 0;
-    mFile in(chFilename);
-    if (in.IsOpened())
+int CParser::Feed(const char *pData, int nLen, int bFinal = 1) {
+    if( m_parser )
     {
-	long filesize = in.Length(), new_sz;
-	unsigned char tag = 0;
-	char *tmpbuf, *buffer = static_cast<char *>(malloc(filesize * sizeof(char)));
-	memset(buffer, 0, filesize * sizeof(char));
-	new_sz = filesize-1;
-
-	in.Read(&tag, sizeof(unsigned char));
-	in.Read(buffer, (filesize-1) * sizeof(char));
-	in.Close();
-
-	if (tag & SXP_TAG)
-	{
-	    if (tag & SXP_ENCRYPT)
-	    {
-		if (ikey.first.empty() || ikey.second.empty())
-		    return -1;
-
-		new_sz += 8;
-		tmpbuf = static_cast<char *>(malloc(new_sz * sizeof(char)));
-		memset(tmpbuf, 0, new_sz * sizeof(char));
-
-		new_sz = mCRYPT(buffer, tmpbuf, filesize-1,
-			ikey.first.c_str(), ikey.second.c_str(), false);
-
-		if (tmpbuf != NULL && tmpbuf[filesize-1] == 0)
-		{
-		    if (buffer != NULL)
-			free(buffer);
-		    buffer = tmpbuf;
-		    tmpbuf = NULL;
-		}
-		else
-		    retval = -2;
-	    }
-	    if (retval >= 0 && tag & SXP_COMPRESS)
-	    {
-		int bufsize = 1024, index = 0;
-		z_streamp strm = new z_stream_s;
-		memset(strm, 0, sizeof(z_stream_s));
-
-		strm->zalloc = Z_NULL;
-		strm->zfree  = Z_NULL;
-		strm->opaque = Z_NULL;
-		inflateInit(strm);
-
-		tmpbuf = static_cast<char *>(malloc(bufsize * sizeof(char)));
-		memset(tmpbuf, 0, bufsize * sizeof(char));
-		strm->next_in   = reinterpret_cast<unsigned char *>(buffer);
-		strm->avail_in  = new_sz;
-		strm->total_in  = 0;
-
-		strm->next_out  = reinterpret_cast<unsigned char *>(&tmpbuf[index]);
-		strm->avail_out = bufsize;
-		strm->total_out = 0;
-
-		while ((retval = inflate(strm, Z_NO_FLUSH)) != Z_STREAM_END)
-		{
-		    if (retval == Z_OK && strm->avail_out == 0)
-		    {
-			index = bufsize;
-			bufsize *= 2;
-			tmpbuf = static_cast<char *>(realloc(tmpbuf, bufsize * sizeof(char)));
-			memset(&tmpbuf[index], 0, index);
-			strm->next_out  = reinterpret_cast<unsigned char *>(&tmpbuf[index]);
-			strm->avail_out = index;
-		    }
-		    else if (retval != Z_OK)
-			break;
-		}
-		if (retval == Z_STREAM_END || retval == Z_OK)
-		{
-		    if (buffer != NULL)
-			free(buffer);
-		    new_sz = strm->total_out;
-		    buffer = static_cast<char *>(malloc(sizeof(char) * new_sz+1));
-		    memset(buffer, 0, sizeof(char) * new_sz+1);
-		    memcpy(buffer, tmpbuf, new_sz);
-		    if (tmpbuf != NULL)
-			free(tmpbuf);
-		    tmpbuf = NULL;
-		    retval = 0;
-		}
-		else
-		{
-		    if (tmpbuf != NULL)
-			free(tmpbuf);
-		    tmpbuf = NULL;
-		    retval = -3;
-		}
-		inflateEnd(strm);
-		if (strm != NULL)
-		    delete strm;
-	    }
-	    if (retval >= 0)
-	    {
-		if (strncmp(buffer, XML_STRING, strlen(XML_STRING)) != 0)
-		{
-		    retval = -4;
-		}
-		else
-		{
-		    retval = Feed(buffer, new_sz);
-
-		    if (retval <= 0)
-		    {
-			Shutdown();
-			retval = -5;
-		    }
-		    if( m_bShuttingDown )
-			DoShutdown();
-		}
-	    }
-	}
-	if (buffer != NULL)
-	    free(buffer);
+	int retval = XML_Parse(m_parser, pData, nLen, bFinal);
+	if (retval <= 0)
+	    Shutdown();
+	if( m_bShuttingDown )
+	    DoShutdown();
+	return retval;
     }
-    return retval;
+    else
+	return 0;
 }
 
 SXP_NS_END

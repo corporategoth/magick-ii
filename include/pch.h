@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.38  2001/05/28 11:17:33  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -234,6 +237,11 @@
 #  include <vector>
 #else
 #  include <vector.h>
+#endif
+#ifdef HAVE_IOSTREAM
+#  include <iostream>
+#else
+#  include <iostream.h>
 #endif
 
 /* ACE Extensions */

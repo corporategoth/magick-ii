@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.314  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.313  2001/05/28 11:17:34  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -3684,13 +3687,45 @@ void Magick::save_databases()
     if (mFile::Exists(files.Database()))
 	mFile::Copy(files.Database(), files.Database()+".old");
     {
-	//SXP::CFileOutStream o(files.Database()+".new");
-	pair<mstring,mstring> keys;
+	Stage *ls = NULL;
+	XMLStage *xs = NULL;
+	CompressStage *zs = NULL;
+	CryptStage *cs = NULL;
+	FileStage *fs = NULL;
+
+	xs = new XMLStage(this);
+	if (xs != NULL)
+	    ls = xs;
+
+	if (files.Compression())
+	{
+	    zs = new CompressStage(*ls, files.Compression());
+	    ls = zs;
+	}
+
 	if (files.Encryption())
-	    keys = GetKeys();
-	SXP::MFileOutStream o(files.Database()+".new", files.Compression(), keys);
-	o.BeginXML();
-	WriteElement(&o);
+	{
+	    pair<mstring,mstring> keys = GetKeys();
+	    cs = new CryptStage(*ls, keys.first, keys.second);
+	    ls = cs;
+	}
+
+	fs = new FileStage(*ls, files.Database()+".new");
+	if (fs != NULL)
+	    ls = fs;
+
+	long retval = 0;
+	if (ls != NULL)
+	    retval = ls->Consume();
+
+	if (fs != NULL)
+	    delete fs;
+	if (cs != NULL)
+	    delete cs;
+	if (zs != NULL)
+	    delete zs;
+	if (xs != NULL)
+	    delete xs;
     }
     if (mFile::Exists(files.Database()+".new"))
     {
@@ -3708,30 +3743,79 @@ void Magick::load_databases()
     if (mFile::Exists(files.Database()))
     {
 	NLOG(LM_STARTUP, "EVENT/LOAD");
-   	SXP::CParser p( this ); // let the parser know which is the object
-	pair<mstring,mstring> keys = GetKeys();
-	int retval = p.FeedFile(files.Database(), keys);
-	switch (retval)
+
+	Stage *ls = NULL;
+	FileStage *fs = NULL;
+	CryptStage *cs = NULL;
+	CompressStage *zs = NULL;
+	VerifyStage *vs = NULL;
+	XMLStage *xs = NULL;
+
+	fs = new FileStage(files.Database());
+	if (fs != NULL)
+	    ls = fs;
+
+	if (ls->GetTag() & STAGE_TAG_CRYPT)
 	{
-	case  0: // Load did not run
-	    NLOG(LM_EMERGENCY, "ERROR/DB_NOPROCESS");
-	    break;
-	case -1: // Encrypted but no/invalid key specified
-	    NLOG(LM_EMERGENCY, "ERROR/DB_NOKEY");
-	    break;
-	case -2: // Decryption failed
-	    NLOG(LM_EMERGENCY, "ERROR/DB_NODECRYPT");
-	    break;
-	case -3: // Decompression failed
-	    NLOG(LM_EMERGENCY, "ERROR/DB_NODECOMPRESS");
-	    break;
-	case -4: // Sanity check failed
-	    NLOG(LM_EMERGENCY, "ERROR/DB_NOSANITY");
-	    break;
-	case -5: // XML parse failed
-	    NLOG(LM_EMERGENCY, "ERROR/DB_NOPARSE");
-	    break;
+	    pair<mstring,mstring> keys = GetKeys();
+	    cs = new CryptStage(*ls, keys.first, keys.second);
+	    if (cs != NULL)
+		ls = cs;
 	}
+
+	if (ls->GetTag() & STAGE_TAG_COMPRESS)
+	{
+	    zs = new CompressStage(*ls, 0);
+	    if (zs != NULL)
+		ls = zs;
+	}
+
+	vs = new VerifyStage(*ls, 0, XML_STRING, strlen(XML_STRING));
+	if (vs != NULL)
+	    ls = vs;
+
+	xs = new XMLStage(*ls, this);
+	if (xs != NULL)
+	    ls = xs;
+	
+	long retval = 0;
+	if (ls != NULL)
+	    retval = ls->Consume();
+	if (retval <= 0)
+	{
+	    switch (static_cast<stage_errors>(retval * -1))
+	    {
+	    case SE_CRY_NoKeys: // Encrypted but no/invalid key specified
+		NLOG(LM_EMERGENCY, "ERROR/DB_NOKEY");
+		break;
+	    case SE_CRY_CryptError: // Decryption failed
+		NLOG(LM_EMERGENCY, "ERROR/DB_NODECRYPT");
+		break;
+	    case SE_CPS_StreamError: // Decompression failed
+		NLOG(LM_EMERGENCY, "ERROR/DB_NODECOMPRESS");
+		break;
+	    case SE_VFY_Failed: // Sanity check failed
+		NLOG(LM_EMERGENCY, "ERROR/DB_NOSANITY");
+		break;
+	    case SE_XML_ParseError: // XML parse failed
+		NLOG(LM_EMERGENCY, "ERROR/DB_NOPARSE");
+		break;
+	    default:
+		NLOG(LM_EMERGENCY, "ERROR/DB_NOPROCESS");
+		break;
+	    }
+	}
+
+	if (xs != NULL)
+	    delete xs;
+	if (vs != NULL)
+	    delete vs;
+	if (zs != NULL)
+	    delete zs;
+	if (cs != NULL)
+	    delete cs;
+	if (fs != NULL)
+	    delete fs;
     }
 }
 

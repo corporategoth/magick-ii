@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.1  2001/06/02 11:04:20  prez
 ** Initial checkin of stages
 **
@@ -34,6 +37,23 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** ========================================================== */
 
 #include "magick.h"
+
+long Stage::Consume()
+{
+    if (input == NULL)
+	return -1 * (long) SE_ConsumeWithoutInput;
+
+    long res, total = 0;
+    char buffer[DEF_STAGE_BUFFER];
+    while ((res = input->Read(buffer, sizeof(buffer))) > 0)
+    {
+	total += res;
+    }
+    if (res < 0)
+	return res;
+    else
+	return total;
+}
 
 StringStage::StringStage(const mstring &in)
 {
@@ -56,7 +76,7 @@ StringStage::~StringStage()
 long StringStage::Consume()
 {
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithNullInput;
+	return -1 * (long) SE_ConsumeWithoutInput;
 
     long res, total = 0;
     char buffer[DEF_STAGE_BUFFER];
@@ -120,11 +140,11 @@ FileStage::~FileStage()
 long FileStage::Consume()
 {
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithNullInput;
+	return -1 * (long) SE_ConsumeWithoutInput;
     if (!file.IsOpened())
-	return -1 * (long) SE_FileNotOpened;
+	return -1 * (long) SE_FLE_NotOpened;
     if (!file.IsWritable())
-	return -1 * (long) SE_FileNotWritable;
+	return -1 * (long) SE_FLE_NotWritable;
 
     char buffer[DEF_STAGE_BUFFER];
     long ret = 0, total = 0;
@@ -148,7 +168,7 @@ long FileStage::Read(char *buf, size_t size)
     if (input != NULL)
 	return -1 * (long) SE_ReadWithInput;
     if (!file.IsOpened())
-	return -1 * (long) SE_FileNotOpened;
+	return -1 * (long) SE_FLE_NotOpened;
 
     return file.Read(buf, size);
 }
@@ -200,10 +220,10 @@ CryptStage::~CryptStage()
 long CryptStage::Read(char *buf, size_t size)
 {
     memset(buf, 0, size);
-    if (!gotkeys)
-	return -1 * (long) SE_NoKeys;
     if (input == NULL)
-	return -1 * (long) SE_ReadWithNullInput;
+	return -1 * (long) SE_ReadWithoutInput;
+    if (!gotkeys)
+	return -1 * (long) SE_CRY_NoKeys;
 
     unsigned int i=0;
     if (outbufsize)
@@ -322,7 +342,7 @@ long CompressStage::Read(char *buf, size_t size)
 {
     memset(buf, 0, size);
     if (input == NULL)
-	return -1 * (long) SE_ReadWithNullInput;
+	return -1 * (long) SE_ReadWithoutInput;
 
     strm.next_out = reinterpret_cast<Bytef *>(buf);
     strm.avail_out = size;
@@ -362,12 +382,23 @@ long CompressStage::Read(char *buf, size_t size)
     return size - strm.avail_out;
 }
 
-XMLStage::XMLStage()
+XMLStage::XMLStage(SXP::IPersistObj *pRoot, SXP::dict& attribs)
 {
     input = NULL;
     tag = STAGE_TAG_XML;
 
     parser = NULL;
+    generator = NULL;
+    curpos = 0;
+    if (pRoot != NULL)
+    {
+	generator = new SXP::MOutStream();
+	if (generator != NULL)
+	{
+	    generator->BeginXML();
+	    pRoot->WriteElement(generator, attribs);
+	}
+    }
 }
 
 XMLStage::XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot)
@@ -377,6 +408,8 @@ XMLStage::XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot)
     tag &= ~STAGE_TAG_XML;
 
     parser = NULL;
+    generator = NULL;
+    curpos = 0;
     if (pRoot != NULL)
 	parser = new SXP::CParser(pRoot);
 }
@@ -385,45 +418,59 @@ XMLStage::~XMLStage()
 {
     if (parser != NULL)
 	delete parser;
+    if (generator != NULL)
+	delete generator;
 }
 
 long XMLStage::Consume()
 {
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithNullInput;
+	return -1 * (long) SE_ConsumeWithoutInput;
     if (parser == NULL)
-	return -1 * (long) SE_NoXMLParser;
+	return -1 * (long) SE_XML_NoParser;
+    if (generator != NULL)
+	return -1 * (long) SE_XML_HaveGenerator;
 
     long res, xres = 1, total = 0;
     char buffer[DEF_STAGE_BUFFER];
     while ((res = input->Read(buffer, sizeof(buffer))) > 0)
     {
 	if (res < static_cast<long>(sizeof(buffer)))
-	    xres = parser->Feed(buffer, res, 0);
-	else
 	    xres = parser->Feed(buffer, res, 1);
+	else
+	    xres = parser->Feed(buffer, res, 0);
 	total += res;
     }
     if (res < 0)
 	return res;
     else if (!xres)
-	return -1 * (long) SE_XMLParseError;
+	return -1 * (long) SE_XML_ParseError;
     else
 	return total;
 }
 
 long XMLStage::Read(char *buf, size_t size)
 {
-    if (parser != NULL)
-	return -1 * (long) SE_ReadWithXMLParser;
-
     memset(buf, 0, size);
     if (input != NULL)
 	return -1 * (long) SE_ReadWithInput;
-    return 0;
+    if (parser != NULL)
+	return -1 * (long) SE_XML_HaveParser;
+    if (generator == NULL)
+	return -1 * (long) SE_XML_NoGenerator;
+
+    if (curpos >= generator->BufSize())
+	return 0;
+
+    if (size > generator->BufSize() - curpos)
+	size = generator->BufSize() - curpos;
+    memcpy(buf, &(generator->Buf())[curpos], size);
+    curpos += size;
+
+    return size;
 }
 
-VerifyStage::VerifyStage(Stage &PrevStage, size_t verifyoffset, char *verifytext, size_t verifysize)
+VerifyStage::VerifyStage(Stage &PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize)
 {
     input = &PrevStage;
     tag = input->GetTag();
@@ -450,7 +497,7 @@ long VerifyStage::Read(char *buf, size_t size)
 {
     memset(buf, 0, size);
     if (input == NULL)
-	return -1 * (long) SE_ReadWithNullInput;
+	return -1 * (long) SE_ReadWithoutInput;
 
     size_t end, begin = total;
     long cres, res = input->Read(buf, size);
@@ -461,7 +508,7 @@ long VerifyStage::Read(char *buf, size_t size)
 
     // Check condition where we missed the boat!
     if (!verified && begin > offset+vsize)
-	return -1 * (long) SE_NoSanity;
+	return -1 * (long) SE_VFY_Failed;
 
     // If the last byte ISNT below our first, and
     // the first byte ISNT above our last
@@ -477,7 +524,7 @@ long VerifyStage::Read(char *buf, size_t size)
 	cres = memcmp(&buf[begin], &text[curpos], end-begin);
 	curpos += end-begin;
 	if (cres != 0)
-	    return -1 * (long) SE_NoSanity;
+	    return -1 * (long) SE_VFY_Failed;
 	if (curpos >= vsize)
 	    verified = true;
     }

@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.19  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -109,7 +112,7 @@ RCSID(sxp_h, "@(#) $Id$");
 #undef JUST_MFILE
 
 const char XML_STRING[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-const int INIT_BUFSIZE = 32 * 1024;
+const int INIT_BUFSIZE = 65535;
 const unsigned int SXP_TAG = 0x01;	// Required to force write.
 const unsigned int SXP_COMPRESS	= 0x02;
 const unsigned int SXP_ENCRYPT = 0x04;
@@ -620,32 +623,29 @@ SXP_NS_BEGIN
 		void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
 	};
 
-	class MFileOutStream : public IOutStreamT<MFileOutStream>
+	class MOutStream : public IOutStreamT<MOutStream>
 	{
-		mstring filename;
-		mFile out;
-		int m_nIndent, compress;
+		int m_nIndent;
 		size_t buf_sz;
 		size_t buf_cnt;
 		char *buffer;
-		mstring key1;
-		mstring key2;
 
 		void ExpandBuf();
 	public:
 		void Print(char *format, ...);
 		void PrintV(char *format, va_list argptr);
 		void Indent();
-		MFileOutStream(const mstring &chFilename, int comp = 0, pair<mstring,mstring> &ikey = blank_mstring_pair);
-		MFileOutStream(const mstring &chFilename, FILE *fp, int comp = 0, pair<mstring,mstring> &ikey = blank_mstring_pair);
-		~MFileOutStream();
+		MOutStream();
+		~MOutStream();
+		inline size_t BufSize() { return buf_cnt; }
+		inline const char *Buf() { return buffer; }
 		void BeginXML(void);
 		void BeginObject(Tag& t, dict& attribs = blank_dict);
 		void EndObject  (Tag& t);
 		void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
 	};
 
-	typedef IOutStreamT<MFileOutStream> IOutStream;
+	typedef IOutStreamT<MOutStream> IOutStream;
 
 	// IElement implemented with STL strings
 
@@ -719,7 +719,7 @@ SXP_NS_BEGIN
 		// recursively for any contained objects
 		// some of its attributes might be supplied from its container
 		// (which is supposed to call WriteElement in the first place)
-		virtual void  WriteElement(IOutStream *pOut, dict& attribs) = 0;
+		virtual void  WriteElement(IOutStream *pOut, dict& attribs = blank_dict) = 0;
 
 		// this is called for each element within the "this" element,
 		// for which the "this" element is immediate parent
@@ -759,15 +759,7 @@ SXP_NS_BEGIN
 		virtual ~CParser() {}
 
 		// give the parser food for thought
-		inline int Feed(const char *pData, int nLen, int bFinal = 1) {
-			if( m_parser )
-				return XML_Parse(m_parser, pData, nLen, bFinal);
-			else
-				return 0;
-		}
-
-		// give the parser a food for thought the lazy way
-		int FeedFile(const mstring &chFilename, pair<mstring,mstring> &ikey = blank_mstring_pair);
+		int Feed(const char *pData, int nLen, int bFinal = 1);
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
 		inline void ReadTo( IPersistObj *pPI ) {

@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.73  2001/05/17 19:18:54  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -326,13 +329,16 @@ queue<unsigned long> DccMap::active;
 DccMap::xfers_t DccMap::xfers;
 static DccXfer GLOB_DccXfer;
 
-mFile::mFile(const mstring& name, FILE *in)
+mFile::mFile(const mstring& name, FILE *in, const mstring& mode)
 {
     FT("mFile::mFile", (name, "(FILE *) in"));
     MLOCK(("mFile", name));
     fd = in;
     if (fd != NULL)
+    {
 	i_name = name;
+	i_mode = mode;
+    }
 }
 
 mFile::mFile(const mstring& name, const mstring& mode)
@@ -346,7 +352,18 @@ mFile::mFile(const mstring& name, const mstring& mode)
 		name, mode, errno, strerror(errno)));
     }
     else
+    {
 	i_name = name;
+	i_mode = mode;
+    }
+}
+
+void mFile::operator=(const mFile &in)
+{
+    i_name = in.i_name;
+    i_mode = in.i_mode;
+    fd = in.fd;
+    in.fd = NULL;
 }
 
 bool mFile::Open(const mstring& name, const mstring& mode)
@@ -366,6 +383,7 @@ bool mFile::Open(const mstring& name, const mstring& mode)
 	fd = NULL;
     }
     i_name.erase();
+    i_mode.erase();
     MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
@@ -373,7 +391,10 @@ bool mFile::Open(const mstring& name, const mstring& mode)
 		name, mode, errno, strerror(errno)));
     }
     else
+    {
 	i_name = name;
+	i_mode = mode;
+    }
     RET(fd != NULL);
 }
 
@@ -392,8 +413,9 @@ void mFile::Close()
 			"fclose", i_name, errno, strerror(errno)));
 	}
 	i_name.erase();
+	i_mode.erase();
+	fd = NULL;
     }
-    fd = NULL;
 }
 
 bool mFile::IsOpened() const
@@ -401,6 +423,30 @@ bool mFile::IsOpened() const
     NFT("mFile::IsOpened");
     MLOCK(("mFile", i_name));
     bool retval = (fd != NULL);
+    RET(retval);
+}
+
+bool mFile::IsReadable() const
+{
+    NFT("mFile::IsReadable");
+    MLOCK(("mFile", i_name));
+    bool retval = (i_mode.Contains("r") || i_mode.Contains("+"));
+    RET(retval);
+}
+
+bool mFile::IsWritable() const
+{
+    NFT("mFile::IsWritable");
+    MLOCK(("mFile", i_name));
+    bool retval = (i_mode.Contains("w") || i_mode.Contains("a") || i_mode.Contains("+"));
+    RET(retval);
+}
+
+bool mFile::IsBoth() const
+{
+    NFT("mFile::IsBoth");
+    MLOCK(("mFile", i_name));
+    bool retval = i_mode.Contains("+");
     RET(retval);
 }
 
@@ -559,14 +605,20 @@ bool mFile::Eof() const
     RET(retval);
 }
 
-void mFile::Attach(const mstring& name, FILE *in)
+void mFile::Attach(const mstring& name, FILE *in, const mstring& mode)
 {
     FT("mFile::Attach", (name, "(FILE *) in"));
     MLOCK(("mFile", name));
     if (in == NULL)
+    {
 	i_name.erase();
+	i_mode.erase();
+    }
     else
+    {
 	i_name = name;
+	i_mode = mode;
+    }
     fd = in;
 }
 
@@ -576,6 +628,8 @@ FILE *mFile::Detach()
     MLOCK(("mFile", i_name));
     FILE *rfd = fd;
     fd = NULL;
+    i_name.erase();
+    i_mode.erase();
     NRET(FILE *, rfd);
 }
 

@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.40  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -172,18 +175,28 @@ RCSID(filesys_h, "@(#) $Id$");
 
 class mFile
 {
-    FILE *fd;
+private:
+    mutable FILE *fd;
     mstring i_name;
+    mstring i_mode;
+
 public:
     mFile() { fd = NULL; }
     mFile(const mFile &in) { *this = in; }
-    mFile(const mstring& name, FILE *in);
+    mFile(const mstring& name, FILE *in, const mstring& mode = "r");
     mFile(const mstring& name, const mstring& mode = "r");
     ~mFile() { Close(); }
+    void operator=(const mFile &in);
     mstring Name() const	{ return i_name; }
+    mstring Mode() const	{ return i_mode; }
     bool Open(const mstring& name, const mstring& mode = "r");
+    void Attach(const mstring& name, FILE *in, const mstring& mode = "r");
+    FILE *Detach();
     void Close();
     bool IsOpened() const;
+    bool IsReadable() const;
+    bool IsWritable() const;
+    bool IsBoth() const;
     long Seek(const long offset, const int whence = SEEK_SET);
     size_t Write(const mstring& buf, const bool endline = true);
     size_t Write(const void *buf, const size_t size);
@@ -192,8 +205,6 @@ public:
     long Length() const;
     mDateTime LastMod() const;
     bool Eof() const;
-    void Attach(const mstring& name, FILE *in);
-    FILE *Detach();
     void Flush();
     
     static bool Exists(const mstring& name);

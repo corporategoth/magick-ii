@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.163  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.162  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -244,6 +247,7 @@ RCSID(magick_h, "@(#) $Id$");
 #include "mexceptions.h"
 #include "filesys.h"
 #include "utils.h"
+#include "stages.h"
 #include "server.h"
 #include "nickserv.h"
 #include "chanserv.h"
@@ -278,7 +282,7 @@ public:
 
 
 #define LOG2(X)	\
-	if (Parent->ValidateLogger(ACE_LOG_MSG)) \
+	if (Parent != NULL && Parent->ValidateLogger(ACE_LOG_MSG)) \
 		ACE_DEBUG(X)
 #define LOG(X, Y, Z) \
 	{ LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z))); }

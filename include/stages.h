@@ -25,6 +25,9 @@ RCSID(stages_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.1  2001/06/02 11:04:20  prez
 ** Initial checkin of stages
 **
@@ -43,20 +46,32 @@ RCSID(stages_h, "@(#) $Id$");
 #define	STAGE_TAG_CRYPT		0x00000004
 
 enum stage_errors {
-	SE_NothingProcessed = 0, SE_ConsumeWithNullInput,
-	SE_ReadWithInput, SE_ReadWithNullInput, SE_FileNotOpened,
-	SE_FileNotWritable, SE_NoKeys, SE_CryptError,
-	SE_CompressError, SE_NoSanity, SE_NoXMLParser,
-	SE_ReadWithXMLParser, SE_XMLParseError };
+	SE_NothingProcessed = 0, SE_ReadWithInput,
+	SE_ReadWithoutInput, SE_ConsumeWithoutInput,
+	// String Stage ...
+	// File Stage ...
+	SE_FLE_NotOpened = 20, SE_FLE_NotWritable,
+	// Crypt Stage ...
+	SE_CRY_NoKeys = 30, SE_CRY_CryptError,
+	// Compress Stage ...
+	SE_CPS_StreamError = 40,
+	// Verify Stage ...
+	SE_VFY_Failed = 50,
+	// XML Stage ...
+	SE_XML_NoParser = 60, SE_XML_HaveParser,
+	SE_XML_NoGenerator, SE_XML_HaveGenerator,
+	SE_XML_ParseError };
 
 class Stage
 {
 protected:
     unsigned char tag;
+    Stage *input;
 
 public:
     virtual ~Stage() {}
     virtual unsigned char GetTag() { return tag; }
+    virtual long Consume();
     virtual long Read(char *buf, size_t size) = 0;
 };
 
@@ -64,22 +79,20 @@ class StringStage : public Stage
 {
     mstring i_str;
     size_t offset;
-    Stage *input;
 
 public:
     StringStage(const mstring &in);
     StringStage(Stage &PrevStage);
     virtual ~StringStage();
 
-    long Consume();
     mstring Result();
+    virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
 
 class FileStage : public Stage
 {
     mFile file;
-    Stage *input;
 
     FileStage();
 public:    
@@ -87,7 +100,7 @@ public:
     FileStage(Stage &PrevStage, const mstring &name, const mstring &mode = "w");
     virtual ~FileStage();
 
-    long Consume();
+    virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
 
@@ -101,7 +114,6 @@ class CryptStage : public Stage
     unsigned char ivec1[8], ivec2[8], ivec3[8];
 #endif
     bool encrypt, gotkeys;
-    Stage *input;
 
     CryptStage();
 public:
@@ -116,7 +128,6 @@ class CompressStage : public Stage
     char buffer[DEF_STAGE_BUFFER];
     z_stream strm;
     bool compress;
-    Stage *input;
 
     CompressStage();
 public:
@@ -128,15 +139,16 @@ public:
 
 class XMLStage : public Stage
 {
+    SXP::MOutStream *generator;
     SXP::CParser *parser;
-    Stage *input;
+    size_t curpos;
 
 public:
-    XMLStage();
+    XMLStage(SXP::IPersistObj *pRoot, SXP::dict &attribs = SXP::blank_dict);
     XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot);
     virtual ~XMLStage();
 
-    long Consume();
+    virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
 
@@ -145,11 +157,10 @@ class VerifyStage : public Stage
     char *text;
     size_t offset, total, vsize, curpos;
     bool verified;
-    Stage *input;
 
     VerifyStage();
 public:
-    VerifyStage(Stage &PrevStage, size_t verifyoffset, char *verifytext, size_t verifysize);
+    VerifyStage(Stage &PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize);
     virtual ~VerifyStage();
 
     virtual long Read(char *buf, size_t size);

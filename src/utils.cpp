@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2001/06/02 16:27:04  prez
+** Intergrated the staging system for dbase loading/saving.
+**
 ** Revision 1.65  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -577,6 +580,9 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
     }
     out[i]=0;
 
+    // Security ... dont leave keys around ...
+    memset(&bfkey1, 0, sizeof(BF_KEY));
+    memset(&bfkey2, 0, sizeof(BF_KEY));
     return i;
 #endif
 }
