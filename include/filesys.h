@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/05/20 01:17:43  ungod
+** added UnDump static function and ReadLine function
+**
 ** Revision 1.15  2000/05/20 00:08:01  ungod
 ** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
 **
@@ -101,6 +104,7 @@ public:
     size_t Write(mstring buf, bool endline = true);
     size_t Write(const void *buf, size_t size);
     size_t Read(void *buf, size_t size);
+    mstring ReadLine();
     long Length();
     bool Eof() { return feof(fd); }
     void Attach(FILE *in) { fd = in; }
@@ -110,6 +114,7 @@ public:
     static long Length(mstring name);
     static long Copy(mstring sin, mstring sout, bool append = false);
     static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
+    static vector<mstring> UnDump( const mstring &sin);
 };
 
 class FileMap : public SXP::IPersistObj

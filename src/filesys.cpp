@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/05/20 01:17:07  ungod
+** added UnDump static function and ReadLine function
+**
 ** Revision 1.25  2000/05/19 10:48:14  prez
 ** Finalized the DCC Sending (now uses the Action map properly)
 **
@@ -257,11 +260,11 @@ long mFile::Copy(mstring sin, mstring sout, bool append)
 long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 {
     FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
-    
+
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!(sin.size() && out.IsOpened()))
 	RET(0);
-	
+
     size_t i, total = 0;
     for (i=0; i<sin.size(); i++)
     {
@@ -273,6 +276,50 @@ long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
     RET(total);
 }
 
+vector<mstring> mFile::UnDump( const mstring &sin)
+{
+    FT("mFile::UnDump", (sin));
+    vector<mstring> Result;
+
+    if((sin=="")||(mFile::Exists(sin)==false))
+        NRET(vector<mstring>,Result);
+    mFile in(sin.c_str(), "r");
+    mstring Line;
+    Line=in.ReadLine();
+    while(!in.Eof())
+    {
+        Result.push_back(Line);
+        Line=in.ReadLine();
+    }
+
+    NRET(vector<mstring>,Result);
+}
+
+mstring mFile::ReadLine()
+{
+    NFT("mFile::ReadLine");
+    mstring Result;
+    if(IsOpened()==false)
+        RET(Result);
+    char *buffer=NULL;
+    try
+    {
+        buffer=new char[Length()+1];
+        fgets(buffer,Length()+1,fd);
+        Result=buffer;
+        if(Result[Result.Len()-1]=='\n')
+            Result=Result.Left(Result.Len()-1);
+    }
+    catch(...)
+    {
+        // this catches any exceptions so that we free up the buffer
+        Result="";
+    }
+    if(buffer!=NULL)
+        delete [] buffer;
+
+    RET(Result);
+}
 
 unsigned short FindAvailPort()
 {
