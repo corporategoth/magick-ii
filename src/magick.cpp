@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.273  2000/09/30 10:48:08  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.272  2000/09/22 12:26:11  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -1340,16 +1343,16 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<=0)
+	if(atoi(second.c_str())<=0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	if (ACE_OS::atoi(second.c_str()) != server.proto.Number())
+	if (atoi(second.c_str()) != (int) server.proto.Number())
 	{
-	    server.proto.Set(ACE_OS::atoi(second.c_str()));
-	    if (ACE_OS::atoi(second.c_str()) != server.proto.Number())
+	    server.proto.Set(atoi(second.c_str()));
+	    if (atoi(second.c_str()) != (int) server.proto.Number())
 		Log(LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
-			    ACE_OS::atoi(second.c_str()), server.proto.Number());
+			    atoi(second.c_str()), server.proto.Number());
 	}
 	RET(true);
     }
@@ -1359,11 +1362,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<=0)
+	if(atoi(second.c_str())<=0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	startup.level=ACE_OS::atoi(second.c_str());
+	startup.level=atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--lagtime")
@@ -1436,15 +1439,15 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<0)
+	if(atoi(second.c_str())<0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	if (ACE_OS::atoi(second.c_str())>9)
+	if (atoi(second.c_str())>9)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
 	}
-	files.compression=ACE_OS::atoi(second.c_str());
+	files.compression=atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--relink")
@@ -1453,7 +1456,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<0)
+	if(atoi(second.c_str())<0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
@@ -1522,11 +1525,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<0)
+	if(atoi(second.c_str())<0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	config.min_threads=ACE_OS::atoi(second.c_str());
+	config.min_threads=atoi(second.c_str());
 	if (config.min_threads < 1)
 	    config.min_threads = 1;
 	RET(true);
@@ -1537,11 +1540,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<0)
+	if(atoi(second.c_str())<0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	config.low_water_mark=ACE_OS::atoi(second.c_str());
+	config.low_water_mark=atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
 	RET(true);
@@ -1552,11 +1555,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<0)
+	if(atoi(second.c_str())<0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	config.high_water_mark=ACE_OS::atoi(second.c_str());
+	config.high_water_mark=atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
 	RET(true);
@@ -1619,15 +1622,15 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(ACE_OS::atoi(second.c_str())<0)
+	if(atoi(second.c_str())<0)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	if (ACE_OS::atoi(second.c_str())>9)
+	if (atoi(second.c_str())>9)
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
 	}
-	operserv.ignore_method=ACE_OS::atoi(second.c_str());
+	operserv.ignore_method=atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--convert")
@@ -1900,11 +1903,11 @@ bool Magick::get_config_values()
 
     mstring value_mstring;
     bool value_bool;
-    int value_int;
+//    int value_int;
     unsigned int value_uint;
-    long value_long;
-    unsigned long value_ulong;
-    short value_float;
+//    long value_long;
+//    unsigned long value_ulong;
+//    short value_float;
 
     // Groups ...
     mstring ts_Startup=mstring("Startup/");
@@ -1972,7 +1975,7 @@ bool Magick::get_config_values()
 		tmp[2]=ent.ExtractWord(3, ":");
 		tmp[3]=ent.ExtractWord(4, ":");
 		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
-		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(ACE_OS::atoi(tmp[1]),tmp[2],ACE_OS::atoi(tmp[3]));
+		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
 		else
 		    Log(LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str());
 		ent = "";

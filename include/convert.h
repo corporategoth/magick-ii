@@ -25,6 +25,9 @@ static const char *ident_convert_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/09/30 10:48:06  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.4  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -414,7 +417,7 @@ void load_ns_dbase (void);
 void delnick (NickInfo * ni);
 Nick_Stored_t CreateNickEntry(NickInfo *ni);
 void load_cs_dbase (void);
-static char *oldmodeconv (short inmode);
+char *oldmodeconv (short inmode);
 void delchan (ChanInfo *ci);
 Chan_Stored_t CreateChanEntry(ChanInfo *ci);
 void load_ms_dbase (void);

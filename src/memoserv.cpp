@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2000/09/30 10:48:08  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.77  2000/09/18 08:17:57  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -736,7 +739,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > Parent->memoserv.channel[who.LowerCase()].size())
+		else if (numbers[i] > (int) Parent->memoserv.channel[who.LowerCase()].size())
 		    triedabove = true;
 		else
 		{
@@ -871,7 +874,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > Parent->memoserv.nick[who.LowerCase()].size())
+		else if (numbers[i] > (int) Parent->memoserv.nick[who.LowerCase()].size())
 		    triedabove = true;
 		else
 		{
@@ -1024,7 +1027,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > Parent->memoserv.channel[who.LowerCase()].size())
+		else if (numbers[i] > (int) Parent->memoserv.channel[who.LowerCase()].size())
 		    triedabove = true;
 		else
 		{
@@ -1105,7 +1108,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > Parent->memoserv.nick[who.LowerCase()].size())
+		else if (numbers[i] > (int) Parent->memoserv.nick[who.LowerCase()].size())
 		    triedabove = true;
 		else
 		{
@@ -1194,7 +1197,7 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
     {
 	if (numbers[i] <= 0)
 	    nonnumeric = true;
-	else if (numbers[i] > Parent->memoserv.nick[who.LowerCase()].size())
+	else if (numbers[i] > (int) Parent->memoserv.nick[who.LowerCase()].size())
 	    triedabove = true;
 	else
 	{
@@ -1565,7 +1568,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = ACE_OS::atoi(what.c_str());
+	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.channel[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1620,7 +1623,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = ACE_OS::atoi(what.c_str());
+	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.nick[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1782,7 +1785,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = ACE_OS::atoi(what.c_str());
+	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.channel[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1843,7 +1846,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = ACE_OS::atoi(what.c_str());
+	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.nick[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -2046,7 +2049,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    {
 		if (*ni - adjust <= 0)
 		    nonnumeric = true;
-		else if (*ni - adjust > Parent->memoserv.channel[who.LowerCase()].size())
+		else if (*ni - adjust > (int) Parent->memoserv.channel[who.LowerCase()].size())
 		    triedabove = true;
 		else
 		{
@@ -2163,7 +2166,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    {
 		if (*ni - adjust <= 0)
 		    nonnumeric = true;
-		else if (*ni - adjust > Parent->memoserv.nick[who.LowerCase()].size())
+		else if (*ni - adjust > (int) Parent->memoserv.nick[who.LowerCase()].size())
 		    triedabove = true;
 		else
 		{

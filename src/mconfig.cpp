@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/09/30 10:48:08  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.17  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -116,7 +119,6 @@ ceNode::~ceNode()
 ceNode& ceNode::operator=(const ceNode &in)
 {
     FT("ceNode::operator=", ("(const ceNode &) in"));
-    map<mstring,ceNode * >::iterator i;
     i_Name=in.i_Name;
     i_keys.clear();
     i_keys=in.i_keys;
@@ -503,15 +505,14 @@ bool mConfigEngine::LoadFile()
 {
     NFT("mConfigEngine::LoadFile");
 
-    if(i_FileName=="")
-        RET(false);
-    if(mFile::Exists(i_FileName))
+    if(i_FileName != "" && mFile::Exists(i_FileName))
     {
         vector<mstring> initialload;
         initialload=mFile::UnDump(i_FileName);
         bool retval = LoadFromArray(initialload);
         RET(retval);
     }
+    RET(false);
 }
 
 bool mConfigEngine::SaveFile()
@@ -572,7 +573,7 @@ bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
     bool Result=true;
     tmpvar=RootNode.GetKey(key,itoa(Default));
     if(tmpvar.IsNumber())
-        outvar=ACE_OS::atoi(tmpvar.c_str());
+        outvar=atoi(tmpvar.c_str());
     else
     {
         outvar=Default;
@@ -588,7 +589,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int 
     bool Result=true;
     tmpvar=RootNode.GetKey(key,itoa(Default));
     if(tmpvar.IsNumber())
-        outvar=ACE_OS::atoi(tmpvar.c_str());
+        outvar=atoi(tmpvar.c_str());
     else
     {
         outvar=Default;

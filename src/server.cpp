@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.133  2000/09/30 10:48:09  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.132  2000/09/27 11:21:39  prez
 ** Added a BURST mode ...
 **
@@ -1194,7 +1197,7 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
 	}
 	if (LastProc.size())
 	{
-	    for (int i=0; i<LastProc.size(); i++)
+	    for (unsigned int i=0; i<LastProc.size(); i++)
 	    {
 		execute(LastProc[i]);
 	    }
@@ -2459,7 +2462,7 @@ void NetworkServ::execute(const mstring & data)
     {
         source=data.ExtractWord(1,": ");
 	if (proto.Numeric() && source.IsNumber())
-	    source = ServerNumeric(ACE_OS::atoi(source.c_str()));
+	    source = ServerNumeric(atoi(source.c_str()));
 	sourceL=source.LowerCase();
         msgtype=data.ExtractWord(2,": ").UpperCase();
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
@@ -2695,7 +2698,7 @@ void NetworkServ::execute(const mstring & data)
 		return;
 	    }
 	    else
-		for (int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
+		for (unsigned int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
 		    sraw("371 " + source + " :" + contrib[i]);
 	    }
 	    sraw("374 " + source + " :End of /INFO report");
@@ -2970,8 +2973,7 @@ void NetworkServ::execute(const mstring & data)
 		else
 		{
 		    vector<mstring> tmp = mFile::UnDump(Parent->files.Motdfile());
-		    int i;
-		    for (i=0; i<tmp.size(); i++)
+		    for (unsigned int i=0; i<tmp.size(); i++)
 			sraw("372 " + source + " :" + tmp[i].c_str());
 		}}
 		sraw("376 " + source + " :End of MOTD.");
@@ -3171,7 +3173,7 @@ void NetworkServ::execute(const mstring & data)
 		    if (setmode != "")
 		    {
 			mstring setmode2;
-			for (int j=0; j<setmode.size(); j++)
+			for (unsigned int j=0; j<setmode.size(); j++)
 			{
 			    if (setmode[j] != '+' && setmode[j] != '-' &&
 				setmode[j] != ' ' &&
@@ -3443,11 +3445,11 @@ void NetworkServ::execute(const mstring & data)
 		WLOCK(("Server", "ServerList"));
 		ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
 			data.ExtractWord(2, ": ").LowerCase(),
-			ACE_OS::atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
+			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
 		if (proto.Numeric())
 		    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
-			ACE_OS::atoi(data.ExtractWord(7, ": ").c_str()));
+			atoi(data.ExtractWord(7, ": ").c_str()));
 		Log(LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(2, ": ").c_str(),
 			Parent->startup.Server_Name().c_str());
@@ -3460,11 +3462,11 @@ void NetworkServ::execute(const mstring & data)
 		    ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
 			data.ExtractWord(3, ": ").LowerCase(),
 			sourceL,
-			ACE_OS::atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
+			atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			data.After(":", 2));
 		    if (proto.Numeric())
 			ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
-			   ACE_OS::atoi(data.ExtractWord(8, ": ").c_str()));
+			   atoi(data.ExtractWord(8, ": ").c_str()));
 		    Log(LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
 		}
@@ -3768,7 +3770,7 @@ void NetworkServ::execute(const mstring & data)
 		if (setmode != "")
 		{
 		    mstring setmode2;
-		    for (int j=0; j<setmode.size(); j++)
+		    for (unsigned int j=0; j<setmode.size(); j++)
 		    {
 			if (setmode[j] != '+' && setmode[j] != '-' &&
 			    setmode[j] != ' ' &&
@@ -4232,7 +4234,7 @@ void NetworkServ::execute(const mstring & data)
 		if (setmode != "")
 		{
 		    mstring setmode2;
-		    for (int j=0; j<setmode.size(); j++)
+		    for (unsigned int j=0; j<setmode.size(); j++)
 		    {
 			if (setmode[j] != '+' && setmode[j] != '-' &&
 			    setmode[j] != ' ' &&
@@ -4591,7 +4593,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     {
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
-        msgtype=ACE_OS::atoi(data.ExtractWord(2,": "));
+        msgtype=atoi(data.ExtractWord(2,": "));
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
 	    PushUser(source, data);
@@ -4599,7 +4601,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     }
     else
     {
-        msgtype=ACE_OS::atoi(data.ExtractWord(1,": "));
+        msgtype=atoi(data.ExtractWord(1,": "));
     }
 
     // Numerics direct from RFC1459

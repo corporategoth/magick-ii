@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.210  2000/09/30 10:48:06  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.209  2000/09/27 11:21:38  prez
 ** Added a BURST mode ...
 **
@@ -1515,7 +1518,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    }
 		    else
 		    {
-			i_Limit = ACE_OS::atoi(in.ExtractWord(fwdargs, ": ").c_str());
+			i_Limit = atoi(in.ExtractWord(fwdargs, ": ").c_str());
 			if (ModeExists(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(fwdargs, ": ")))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(fwdargs, ": "));
 			newmode += change[i];
@@ -1751,7 +1754,7 @@ bool Chan_Stored_t::Join(mstring nick)
     Chan_Live_t *clive = NULL;
     Nick_Live_t *nlive = NULL;
     Nick_Stored_t *nstored = NULL;
-    bool burst;
+    bool burst = false;
 
     if (Parent->chanserv.IsLive(i_Name))
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
@@ -2293,11 +2296,10 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		{
 		if (add && !setter.Contains("."))
 		{
-		    long SetAccess = GetAccess(setter);
 		    vector<mstring> tobekicked;
 		    bool DidRevenge = false;
 		    mstring bantype = "BAN1";
-		    int j;
+		    unsigned int j;
 
 		    mstring nick = mode.ExtractWord(fwdargs, ": ").Before("!");
 		    mstring user = mode.ExtractWord(fwdargs, ": ").After("!").Before("@");
@@ -4899,15 +4901,7 @@ void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Chan_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    set<entlist_t>::size_type ei,ecount;
-    set<entlist_val_t<long> >::size_type vli,vlcount;
-    set<entlist_val_t<mstring> >::size_type vsi,vscount;
-    mstring dummy,dummy2;
-    entlist_t edummy;
-    entlist_val_t<long> eldummy;
-    entlist_val_t<mstring> esdummy;
 
-    //TODO: Add your source code here
 	if( pElement->IsA(tag_Name) )			pElement->Retrieve(i_Name);
 	if( pElement->IsA(tag_RegTime) )		pElement->Retrieve(i_RegTime);
 	if( pElement->IsA(tag_LastUsed) )		pElement->Retrieve(i_LastUsed);
@@ -6233,7 +6227,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
@@ -7362,7 +7356,7 @@ void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -8203,7 +8197,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/WHOLENUMBER"));
 	    return;
 	}
-	unsigned int i, num = ACE_OS::atoi(who);
+	unsigned int i, num = atoi(who);
 	if (num < 1 || num > cstored->Access_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -8566,7 +8560,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/WHOLENUMBER"));
 	    return;
 	}
-	unsigned int i, num = ACE_OS::atoi(who);
+	unsigned int i, num = atoi(who);
 	if (num < 1 || num > cstored->Akick_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -9059,8 +9053,8 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "LIST/WHOLENUMBER"));
 	return;
     }
-    int num = ACE_OS::atoi(target);
-    if (num < 1 || num > cstored->Message_size())
+    int num = atoi(target);
+    if (num < 1 || num > (int) cstored->Message_size())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 		1, cstored->Message_size());

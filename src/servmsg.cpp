@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/09/30 10:48:09  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.68  2000/09/27 11:21:39  prez
 ** Added a BURST mode ...
 **
@@ -1119,7 +1122,7 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_file_List", (mynick, source, params));
 
-    unsigned int listsize, i, j, k, count;
+    unsigned int listsize, i, j, count;
     bool display;
     mstring mask, priv;
 
@@ -1147,7 +1150,7 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(3, " ").LowerCase();
-	listsize = ACE_OS::atoi(params.ExtractWord(4, " ").c_str());
+	listsize = atoi(params.ExtractWord(4, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -1191,7 +1194,7 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 			display = true;
 		    else
 		    {
-			for (int k=1; k<=priv.WordCount(" "); k++)
+			for (unsigned int k=1; k<=priv.WordCount(" "); k++)
 			    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
 				Parent->commserv.list[priv.ExtractWord(k, " ").UpperCase()].IsOn(source))
 			    {
@@ -1380,7 +1383,7 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 	display = true;
     else
     {
-	for (int k=1; k<=priv.WordCount(" "); k++)
+	for (unsigned int k=1; k<=priv.WordCount(" "); k++)
 	    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
 		Parent->commserv.list[priv.ExtractWord(k, " ").UpperCase()].IsOn(source))
 	    {
@@ -1508,7 +1511,7 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
     }
 
     unsigned long number;
-    unsigned short high, low, k;
+    unsigned short high, low;
     high = makehex("0x" + hexstr.SubString(0, 3));
     low = makehex("0x" + hexstr.SubString(4, 7));
     number = (high * 0x00010000) + low;

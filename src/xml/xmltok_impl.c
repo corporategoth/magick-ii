@@ -811,7 +811,6 @@ static
 int PREFIX(contentTok)(const ENCODING *enc, const char *ptr, const char *end,
 		       const char **nextTokPtr)
 {
-unsigned int i;
   if (ptr == end)
     return XML_TOK_NONE;
   if (MINBPC(enc) > 1) {
@@ -1399,7 +1398,7 @@ int PREFIX(getAtts)(const ENCODING *enc, const char *ptr,
 {
   enum { other, inName, inValue } state = inName;
   int nAtts = 0;
-  int open;
+  int open = 0;
 
   for (ptr += MINBPC(enc);; ptr += MINBPC(enc)) {
     switch (BYTE_TYPE(enc, ptr)) {

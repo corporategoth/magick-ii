@@ -378,10 +378,11 @@ dnl AC_CHECK_HEADERS(utility.h)
 dnl AC_CHECK_HEADERS(string.h)
 
 AC_CHECK_FUNCS(itoa)
-AC_CHECK_FUNCS(ftoa)
 AC_CHECK_FUNCS(ltoa)
+AC_CHECK_FUNCS(ftoa)
+AC_CHECK_FUNCS(dtoa)
 AC_CHECK_FUNCS(ultoa)
-AC_CHECK_FUNCS(atoul)
+AC_CHECK_FUNCS(uitoa)
 
 AC_ARG_WITH(keylen, [  --with-keylen=size      Maximum size of key (and keyfile)],
 	[AC_DEFINE_UNQUOTED(KEYLEN, $withval)],

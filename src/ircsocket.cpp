@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.135  2000/09/30 10:48:07  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.134  2000/09/27 11:21:39  prez
 ** Added a BURST mode ...
 **
@@ -290,7 +293,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     
     { WLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
-		iter->first < now - (Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
+		iter->first < now - (time_t) (Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
 	traffic.erase(iter->first);
     if (traffic.find(now) == traffic.end())
 	traffic[now] = 0;
@@ -302,7 +305,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     { WLOCK(("IrcSvcHandler", "htm_gap"));
     WLOCK2(("IrcSvcHandler", "htm_level"));
     WLOCK3(("IrcSvcHandler", "last_htm_check"));
-    if (last_htm_check.SecondsSince() > htm_gap)
+    if ((time_t) last_htm_check.SecondsSince() > htm_gap)
     {
 	last_htm_check = Now();
 	size_t total = 0;
@@ -315,7 +318,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	RLOCK(("IrcSvcHandler", "htm_threshold"));
 	if (total > (htm_gap * htm_threshold))
 	{
-	    if (htm_gap > Parent->operserv.Max_HTM_Gap())
+	    if (htm_gap > (time_t) Parent->operserv.Max_HTM_Gap())
 	    {
 		announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/HTM_DIE"));
@@ -495,7 +498,7 @@ size_t IrcSvcHandler::Average(time_t secs)
     size_t total = 0;
     int i = 0;
     map<time_t, size_t>::iterator iter;
-    if (secs > Parent->operserv.Max_HTM_Gap())
+    if (secs > (time_t) Parent->operserv.Max_HTM_Gap())
 	secs = 0;
     RLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
@@ -930,11 +933,11 @@ int EventTask::svc(void)
 	map<mstring, Nick_Stored_t>::iterator nsi;
 	map<mstring, Chan_Live_t>::iterator cli;
 	map<mstring, Chan_Stored_t>::iterator csi;
-	map<mstring, list<Memo_t> >::iterator mi;
-	list<Memo_t>::iterator lmi;
+//	map<mstring, list<Memo_t> >::iterator mi;
+//	list<Memo_t>::iterator lmi;
 	map<mstring, list<News_t> >::iterator ni;
 	list<News_t>::iterator lni;
-	map<mstring, Committee>::iterator ci;
+//	map<mstring, Committee>::iterator ci;
 	map<mstring, Server>::iterator si;
 	map<mstring, mDateTime>::iterator di;
 	unsigned int i;

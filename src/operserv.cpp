@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2000/09/30 10:48:08  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.101  2000/09/09 02:17:49  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -2503,7 +2506,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    num = ACE_OS::atoi(amount.c_str());
+    num = atoi(amount.c_str());
     if (num < 1 || num > Parent->operserv.Max_Clone())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -2570,7 +2573,7 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "Clone"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = ACE_OS::atoi(host.c_str());
+	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Clone_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -2780,7 +2783,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	host.Prepend("*@");
     }
 
-    int i, num;
+    unsigned int i, num;
     bool super = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source));
     for (i=host.size()-1, num=0; i>=0; i--)
@@ -2887,7 +2890,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "Akill"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = ACE_OS::atoi(host.c_str());
+	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Akill_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -3128,7 +3131,7 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "OperDeny"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = ACE_OS::atoi(host.c_str());
+	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.OperDeny_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -3365,7 +3368,7 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "Ignore"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = ACE_OS::atoi(host.c_str());
+	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Ignore_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -3517,15 +3520,6 @@ SXP::Tag OperServ::tag_Ignore("Ignore");
 void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("OperServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    set<entlist_t>::size_type ei,ecount;
-    set<entlist_val_t<long> >::size_type vli,vlcount;
-    set<entlist_val_t<mstring> >::size_type vsi,vscount;
-    mstring dummy,dummy2;
-    entlist_t edummy;
-    entlist_val_t<long> eldummy;
-    entlist_val_t<mstring> esdummy;
-
-    //TODO: Add your source code here
 
     if( pElement->IsA(tag_Clone) )
     {

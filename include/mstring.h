@@ -25,6 +25,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/09/30 10:48:06  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.47  2000/08/03 13:06:29  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -183,17 +186,20 @@ public:
 #ifndef HAVE_ITOA
 const char *itoa(int i);
 #endif
-#ifndef HAVE_FTOA
-const char *ftoa(float f);
-#endif
 #ifndef HAVE_LTOA
 const char *ltoa(long l);
 #endif
-#ifndef HAVE_ULTOA
-const char *ultoa(unsigned long l);
+#ifndef HAVE_FTOA
+const char *ftoa(float f);
 #endif
-#ifndef HAVE_ATOUL
-#define atoul(x) strtoul(x, NULL, 10)
+#ifndef HAVE_DTOA
+const char *dtoa(double d);
+#endif
+#ifndef HAVE_ULTOA
+const char *ultoa(unsigned long ul);
+#endif
+#ifndef HAVE_UITOA
+const char *uitoa(unsigned int ui);
 #endif
 
 extern const mstring DirSlash;

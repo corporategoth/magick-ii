@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/09/30 10:48:07  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.75  2000/09/22 12:26:11  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -1239,7 +1242,7 @@ void CommServ::do_List(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -1898,7 +1901,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
     
-    unsigned int num = ACE_OS::atoi(msgnum.c_str());
+    unsigned int num = atoi(msgnum.c_str());
     if (num <= 0 || num > Parent->commserv.list[committee].MSG_size())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -3071,7 +3074,7 @@ void CommServ::PostLoad()
     if (IsList(Parent->commserv.SADMIN_Name()))
     {
 	list[Parent->commserv.SADMIN_Name()].i_Members.clear();
-	for (int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
+	for (unsigned int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
 	    list[Parent->commserv.SADMIN_Name()].i_Members.insert(entlist_t(
 		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
 		Parent->operserv.FirstName()));

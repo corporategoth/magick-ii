@@ -25,6 +25,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/09/30 10:48:06  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.29  2000/09/22 12:26:10  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -187,7 +190,7 @@ unsigned short FindAvailPort();
 class FileMap : public SXP::IPersistObj
 {
 public:
-    enum FileType { MemoAttach, Picture, Public };
+    enum FileType { MemoAttach, Picture, Public, Unknown };
 
     unsigned long FindAvail(FileType type);
     bool Exists(FileType type, unsigned long num);

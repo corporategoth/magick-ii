@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/09/30 10:48:07  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.57  2000/09/11 10:58:19  prez
 ** Now saves in in GMT
 **
@@ -1004,10 +1007,10 @@ mDateTime GMT(mDateTime in, bool to)
     ACE_OS::tzset();
     long offset = ACE_OS::timezone() * (to ? 1 : -1);
     double val = in.Internal();
-    unsigned long days = 0, secs = 0;
-    days = (unsigned long) val;
+    int days = 0, secs = 0;
+    days = (int) val;
     val -= days;
-    secs = (unsigned long) (val * (double) SecsPerDay);
+    secs = (int) (val * (double) SecsPerDay);
 
     if (secs + offset > SecsPerDay)
     {

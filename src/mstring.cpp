@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/09/30 10:48:08  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.68  2000/09/05 10:53:07  prez
 ** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
 ** tracing -- also modified keygen to allow for cmdline generation (ie.
@@ -303,7 +306,7 @@ int mstring::FormatV(const char * pszFormat, va_list argptr)
 
 	int iLen=ACE_OS::vsprintf(s_szScratch, pszFormat, argptr);
 	char *buffer;
-	if(iLen<sizeof(s_szScratch)&&iLen!=-1)
+	if(iLen != -1 && iLen < (int) sizeof(s_szScratch))
 		buffer=s_szScratch;
 	else
 	{
@@ -312,7 +315,7 @@ int mstring::FormatV(const char * pszFormat, va_list argptr)
 		while(buffer!=NULL)
 		{
 			iLen=ACE_OS::vsprintf(buffer, pszFormat, argptr);
-			if(iLen<sizeof(s_szScratch)&&iLen!=-1)
+			if(iLen != 1 && iLen < (int) sizeof(s_szScratch))
 				break;
 			delete [] buffer;
 			size*=2;
@@ -412,9 +415,7 @@ int mstring::Index(char ch, int startpos) const
 
 int mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) const
 {
-	int i;
-	
-	unsigned int start,end;
+	unsigned int i,start,end;
 	if(fromEnd==true)
 	{
 		start=length()-in.length()-1;
@@ -426,7 +427,7 @@ int mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) const
 		end=length()-in.length()-1;
 	}
 	i=start;
-	while(i!=end)
+	while(i != end)
 	{
 		if(Mid(i,in.length()).IsSameAs(in,caseSensitive))
 			return i;
@@ -827,9 +828,9 @@ mstring mstring::ExtractWord(int count,const mstring& separators, bool assemble)
     i=WordPosition(count,separators, assemble);
     if(i!=-1)
     {
-	while(i<Len() && !separators.Contains(S[(unsigned int)i]))
+	while(i < (int) Len() && !separators.Contains(S[(unsigned int) i]))
 	{
-	    Result<<S[(unsigned int)i];
+	    Result<<S[(unsigned int) i];
 	    i++;
 	}
     }
@@ -874,6 +875,15 @@ const char *itoa(int i)
 }
 #endif
 
+#ifndef HAVE_LTOA
+const char *ltoa(long l)
+{
+    mstring str;
+    str << l;
+    return str.c_str();
+}
+#endif
+
 #ifndef HAVE_FTOA
 const char *ftoa(float f)
 {
@@ -883,11 +893,11 @@ const char *ftoa(float f)
 }
 #endif
 
-#ifndef HAVE_LTOA
-const char *ltoa(long l)
+#ifndef HAVE_DTOA
+const char *dtoa(double d)
 {
     mstring str;
-    str << l;
+    str << d;
     return str.c_str();
 }
 #endif
@@ -901,6 +911,14 @@ const char *ultoa(unsigned long ul)
 }
 #endif
 
+#ifndef HAVE_UITOA
+const char *uitoa(unsigned int ui)
+{
+    mstring str;
+    str << ui;
+    return str.c_str();
+}
+#endif
 
 
 /*  Direct from Magick I, credit to Andy Church for writing this.

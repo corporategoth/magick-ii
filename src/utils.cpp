@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/09/30 10:48:09  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.50  2000/09/13 12:45:34  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -237,8 +240,8 @@ vector<int> ParseNumbers(mstring what)
 	else if (tmp.Contains("-"))
 	{
 	    int j, limit;
-	    j = ACE_OS::atoi(tmp.Before("-").c_str());
-	    limit = ACE_OS::atoi(tmp.After("-").c_str());
+	    j = atoi(tmp.Before("-").c_str());
+	    limit = atoi(tmp.After("-").c_str());
 	    if (limit >= j)
 	    {
 		for (; j<=limit; j++)
@@ -252,7 +255,7 @@ vector<int> ParseNumbers(mstring what)
 	}
 	else
 	{
-	    numbers.push_back(ACE_OS::atoi(tmp.c_str()));
+	    numbers.push_back(atoi(tmp.c_str()));
 	}
     }
     NRET(vector<int>, numbers);
@@ -511,7 +514,7 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 #else
     DES_LONG tuple[2], t0, t1;
     unsigned char *iptr, *optr, tmp[8];
-    int i, j;
+    unsigned int i;
 
     memset(out, 0, size);
     for (iptr=in, optr=out, i=0; i+7<size; i+=8)

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/09/30 10:48:07  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.19  2000/09/13 12:45:33  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -423,7 +426,7 @@ CreateNickEntry(NickInfo *ni)
 	    out.i_NoExpire = true;
 	    // NOT a SADMIN, and OPER does exist.
 	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		  Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(out.i_Name)) &&
+		  Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(out.i_Name)) &&
 		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
 		Parent->commserv.list[Parent->commserv.OPER_Name()].insert(
 		    mstring(out.i_Name), Parent->commserv.FirstName());
@@ -470,7 +473,7 @@ load_cs_dbase (void)
 		    ChanAccess *access;
 		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
 		    ci->access = access;
-		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
+		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
@@ -509,7 +512,7 @@ load_cs_dbase (void)
 		    AutoKick *akick;
 		    akick = (AutoKick *) malloc (sizeof (AutoKick) * ci->akickcount);
 		    ci->akick = akick;
-		    if (ci->akickcount !=
+		    if (ci->akickcount != (long)
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
@@ -641,7 +644,7 @@ load_cs_dbase (void)
 		    ChanAccess *access;
 		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
 		    ci->access = access;
-		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
+		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
@@ -680,7 +683,7 @@ load_cs_dbase (void)
 		    AutoKick *akick;
 		    akick = (AutoKick *) malloc (sizeof (AutoKick) * ci->akickcount);
 		    ci->akick = akick;
-		    if (ci->akickcount !=
+		    if (ci->akickcount != (long)
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
@@ -800,7 +803,7 @@ load_cs_dbase (void)
 		    ChanAccess *access;
 		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
 		    ci->access = access;
-		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
+		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
@@ -839,7 +842,7 @@ load_cs_dbase (void)
 		    AutoKick *akick;
 		    akick = (AutoKick *) malloc (sizeof (AutoKick) * ci->akickcount);
 		    ci->akick = akick;
-		    if (ci->akickcount !=
+		    if (ci->akickcount != (long)
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
@@ -913,7 +916,7 @@ load_cs_dbase (void)
 }
 
 
-static char *
+char *
 oldmodeconv (short inmode)
 {
     static char outmode[MODEMAX];
@@ -1395,9 +1398,7 @@ void
 load_sop ()
 {
     FILE *f = ACE_OS::fopen (sop_db, "r");
-    int i, j;
-    unsigned int nsop = 0;
-    int sop_size = 0;
+    int i, j, nsop = 0, sop_size = 0;
     Sop *sops = NULL;
 
     if (!f)
@@ -1424,7 +1425,7 @@ load_sop ()
 	    fclose (f);
 	    return;
 	}
-	if (nsop != ACE_OS::fread (sops, sizeof (Sop), nsop, f))
+	if (nsop != (int) ACE_OS::fread (sops, sizeof (Sop), nsop, f))
 	    Log(LM_EMERGENCY, "Read error on %s", sop_db);
 
 	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
@@ -1432,7 +1433,7 @@ load_sop ()
 	    for (j=0; j<nsop; ++j)
 	    {
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(sops[j].nick)))
+		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(sops[j].nick)))
 		    Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
 		    mstring(sops[j].nick), Parent->commserv.FirstName());
 	    }
@@ -1449,9 +1450,7 @@ void
 load_message ()
 {
     FILE *f = ACE_OS::fopen (message_db, "r");
-    int i, j;
-    unsigned int nmessage = 0;
-    int message_size = 0;
+    int i, j, nmessage = 0, message_size = 0;
     Message *messages = NULL;
 
     if (!f)
@@ -1478,7 +1477,7 @@ load_message ()
 	    fclose (f);
 	    return;
 	}
-	if (nmessage != ACE_OS::fread (messages, sizeof (*messages), nmessage, f))
+	if (nmessage != (int) ACE_OS::fread (messages, sizeof (*messages), nmessage, f))
 	    Log(LM_EMERGENCY, "Read error on %s", message_db);
 	for (j = 0; j < nmessage; ++j)
 	    messages[j].text = read_string (f, message_db);
@@ -1514,9 +1513,7 @@ void
 load_akill ()
 {
     FILE *f = ACE_OS::fopen (akill_db, "r");
-    int i, j;
-    unsigned int nakill = 0;
-    int akill_size = 0;
+    int i, j, nakill = 0, akill_size = 0;
     Akill *akills = NULL;
 
     if (!f)
@@ -1542,7 +1539,7 @@ load_akill ()
 	    fclose (f);
 	    return;
 	}
-	if (nakill != ACE_OS::fread (akills, sizeof (*akills), nakill, f))
+	if (nakill != (int) ACE_OS::fread (akills, sizeof (*akills), nakill, f))
 	    Log(LM_EMERGENCY, "Read error on %s", akill_db);
 	for (j = 0; j < nakill; ++j)
 	{
@@ -1644,9 +1641,7 @@ void
 load_clone ()
 {
     FILE *f = ACE_OS::fopen (clone_db, "r");
-    int i, j;
-    unsigned int nclone = 0;
-    int clone_size = 0;
+    int i, j, nclone = 0, clone_size = 0;
     Allow *clones = NULL;
 
     if (!f)
@@ -1673,7 +1668,7 @@ load_clone ()
 	    fclose (f);
 	    return;
 	}
-	if (nclone != ACE_OS::fread (clones, sizeof (*clones), nclone, f))
+	if (nclone != (int) ACE_OS::fread (clones, sizeof (*clones), nclone, f))
 	    Log(LM_EMERGENCY, "Read error on %s", clone_db);
 	for (j = 0; j < nclone; ++j)
 	{

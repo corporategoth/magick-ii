@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/09/30 10:48:06  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.22  2000/09/18 08:17:57  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -221,6 +224,13 @@
 #include <ace/Task.h>
 #include <ace/Thread_Manager.h>
 #include <ace/Thread.h>
+
+#define atoi(x)		ACE_OS::strtol(x, NULL, 10)
+#define atol(x)		ACE_OS::strtol(x, NULL, 10)
+#define atoui(x)	ACE_OS::strtoul(x, NULL, 10)
+#define atoul(x)	ACE_OS::strtoul(x, NULL, 10)
+#define atof(x)		ACE_OS::strtod(x, NULL)
+#define atod(x)		ACE_OS::strtod(x, NULL)
 
 /* Debugging software -- if we dont use it, use ACE equivs */
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)

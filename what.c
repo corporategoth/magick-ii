@@ -19,6 +19,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/09/30 10:48:06  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.4  2000/04/06 15:09:11  prez
 ** More makefile changes...
 **
@@ -72,4 +75,5 @@ int main(int argc, char **argv)
 	    fclose(in);
 	}
     }
+    return 0;
 }

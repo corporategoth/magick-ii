@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/09/30 10:48:07  prez
+** Some general code cleanups ... got rid of warnings, etc.
+**
 ** Revision 1.52  2000/09/22 12:26:11  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -613,7 +616,6 @@ set<mstring> mFile::DirList(mstring directory, mstring filemask)
     set<mstring> retval;
     DIR *dir = NULL;
     struct dirent *entry = NULL;
-    struct stat st;
 
 #ifdef WIN32
     //todo: change over to findfirst/findnext (in io.h)
@@ -847,7 +849,7 @@ vector<unsigned long> FileMap::GetList(FileMap::FileType type, mstring source)
     FT("FileMap::GetList", ((int) type, source));
     vector<unsigned long> retval;
     map<unsigned long, pair<mstring, mstring> >::iterator iter;
-    int i;
+    unsigned int i;
 
     if (i_FileMap.find(type) != i_FileMap.end())
     {
@@ -884,7 +886,6 @@ unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
 {
     FT("FileMap::GetNum", ((int) type, name));
     map<unsigned long, pair<mstring, mstring> >::iterator iter;
-    int i;
 
     if (i_FileMap.find(type) != i_FileMap.end())
     {
@@ -1159,7 +1160,7 @@ DccXfer::~DccXfer()
 			  : i_Total > 0)
 	{
 	    mstring tmp;
-	    FileMap::FileType filetype;
+	    FileMap::FileType filetype = FileMap::Unknown;
 	    if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Memo())
 		filetype = FileMap::MemoAttach;
 	    else if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Picture())
@@ -1350,7 +1351,7 @@ void DccXfer::Action()
 	map<time_t, size_t>::iterator iter;
 	time_t now = time(NULL);
 	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
-		iter->first < now - (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
+		iter->first < now - (time_t) (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
 	    i_Traffic.erase(iter->first);
 	if (i_Traffic.find(now) == i_Traffic.end())
 	    i_Traffic[now] = 0;
@@ -1477,7 +1478,7 @@ void DccXfer::Action()
 	map<time_t, size_t>::iterator iter;
 	time_t now = time(NULL);
 	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
-		iter->first < now - (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
+		iter->first < now - (time_t) (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
 	    i_Traffic.erase(iter->first);
 	if (i_Traffic.find(now) == i_Traffic.end())
 	    i_Traffic[now] = 0;
@@ -1530,7 +1531,7 @@ size_t DccXfer::Average(time_t secs)
     size_t total = 0;
     int i = 0;
     map<time_t, size_t>::iterator iter;
-    if (secs > Parent->files.Sampletime())
+    if (secs > (time_t) Parent->files.Sampletime())
 	secs = 0;
 
     RLOCK(("DccMap", "xfers", i_DccId, "i_Traffic"));
@@ -1671,6 +1672,7 @@ int DccMap::svc(void)
 	FLUSH(); // Force TRACE output dump
     }
     mThread::Detach();
+    return 0;
 }
 
 vector<unsigned long> DccMap::GetList(mstring in)
