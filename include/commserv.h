@@ -13,10 +13,6 @@
 #ifndef _commserv_h
 #define _commserv_h
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 #include "variant.h"
 #include "base.h"

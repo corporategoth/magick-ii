@@ -13,10 +13,6 @@
 #ifndef _VARIANT_H
 #define _VARIANT_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 #include "datetime.h"
 #include "textfile.h"

@@ -14,10 +14,6 @@
 #ifndef _LOG_H
 #define _LOG_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 
 // ----------------------------------------------------------------------------

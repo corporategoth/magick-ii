@@ -18,10 +18,6 @@
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "trace.h"
 #include "lockable.h"
 #include "magick.h"

@@ -1329,44 +1329,6 @@ void ChanServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
-/* wrong answer, this was put in here so that you would fix it with the
- relevant gcc code that does exactly the same thing, try again */
-
-/* Direct from g++/stl_config.h :
-
-# ifdef __STL_USE_EXCEPTIONS
-#   define __STL_TRY try
-#   define __STL_CATCH_ALL catch(...)
-#   define __STL_RETHROW throw
-#   define __STL_NOTHROW throw()
-#   define __STL_UNWIND(action) catch(...) { action; throw; }
-# else
-#   define __STL_TRY
-#   define __STL_CATCH_ALL if (false)
-#   define __STL_RETHROW
-#   define __STL_NOTHROW
-#   define __STL_UNWIND(action)
-# endif
-
-gcc has no finally
-*/
-
-/*
-void cppexcepttest()
-{
-    //test of __try..__finally
-    // gcc might need just try..finally
-    try
-    {
-	throw "test";
-    }
-    finally
-    {
-	wxLogDebug("this worked too");
-    }
-}
-*/
-
 void ChanServ::save_database(wxOutputStream& out)
 {
 	map<mstring,Chan_Stored_t>::iterator i;

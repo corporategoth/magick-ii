@@ -14,10 +14,6 @@
 #ifndef _MAGICK_H
 #define _MAGICK_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView

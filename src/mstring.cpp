@@ -195,7 +195,7 @@ mstring& mstring::Truncate(size_t uiLine)
 	return *this;
 }
 
-bool mstring::Matches(const mstring & in)
+bool mstring::Matches(const mstring & in) const
 {
 
 // new code

@@ -27,10 +27,6 @@
 #ifndef _TEXTFILE_H
 #define _TEXTFILE_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 #include "mstream.h"
 //#include "log.h"

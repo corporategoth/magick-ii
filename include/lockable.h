@@ -14,10 +14,6 @@
 #ifndef _LOCKABLE_H
 #define _LOCKABLE_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 #include "trace.h"
 

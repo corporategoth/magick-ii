@@ -14,10 +14,6 @@
 #ifndef _DATETIME_H
 #define _DATETIME_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 #include "mstream.h"
 

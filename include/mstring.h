@@ -27,10 +27,6 @@
 #ifndef _MSTRING_H
 #define _MSTRING_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 class mstring:public string
 {
 	typedef string inherited;
@@ -79,7 +75,7 @@ public:
 	int FormatV(const char *pszFormat, va_list argptr);
 	int Format(const char *pszFormat, ...);
 	// Matches using '*' and '?' rules
-	bool Matches(const mstring& in);
+	bool Matches(const mstring& in)const;
 	mstring& Truncate(size_t uiLine);
 	mstring& Pad(size_t nCount, char chPad=' ', bool bFromRight=true);
 	mstring& Trim(bool bFromRight=true);

@@ -1,10 +1,6 @@
 #ifndef IRC_SOCKET_H
 #define IRC_SOCKET_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
 #include "mstring.h"
 
 class Reconnect_Handler : public ACE_Event_Handler

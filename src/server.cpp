@@ -149,17 +149,18 @@ void NetworkServ::SignOnAll()
 {
     NFT("NetworkServ::SignOnAll");
 
-    for (int i=0; i<Parent->operserv.GetNames().WordCount(" "); i++)
+    int i;
+    for (i=0; i<Parent->operserv.GetNames().WordCount(" "); i++)
 	Parent->operserv.signon(Parent->operserv.GetNames().ExtractWord(i, " "));
-    for (int i=0; i<Parent->nickserv.GetNames().WordCount(" "); i++)
+    for (i=0; i<Parent->nickserv.GetNames().WordCount(" "); i++)
 	Parent->nickserv.signon(Parent->nickserv.GetNames().ExtractWord(i, " "));
-    for (int i=0; i<Parent->chanserv.GetNames().WordCount(" "); i++)
+    for (i=0; i<Parent->chanserv.GetNames().WordCount(" "); i++)
 	Parent->chanserv.signon(Parent->chanserv.GetNames().ExtractWord(i, " "));
-    for (int i=0; i<Parent->memoserv.GetNames().WordCount(" "); i++)
+    for (i=0; i<Parent->memoserv.GetNames().WordCount(" "); i++)
 	Parent->memoserv.signon(Parent->memoserv.GetNames().ExtractWord(i, " "));
-    for (int i=0; i<Parent->commserv.GetNames().WordCount(" "); i++)
+    for (i=0; i<Parent->commserv.GetNames().WordCount(" "); i++)
 	Parent->commserv.signon(Parent->commserv.GetNames().ExtractWord(i, " "));
-    for (int i=0; i<Parent->servmsg.GetNames().WordCount(" "); i++)
+    for (i=0; i<Parent->servmsg.GetNames().WordCount(" "); i++)
 	Parent->servmsg.signon(Parent->servmsg.GetNames().ExtractWord(i, " "));
 
     map<mstring,Chan_Stored_t>::iterator iter;
