@@ -2081,8 +2081,8 @@
 03 =::
 04 =::This service allows you to use the following commands:
 05 =::    HELP         CREDITS      CONTRIB      BREAKDOWN
-06A=:REGD:    FILE
-06B=REGD::    STATS        FILE         LANGUAGES
+06A=:REGD:    FILE         ASK
+06B=REGD::    STATS        FILE         LANGUAGES    ASK
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
 09 =::You may also obtain help on the following:
@@ -2110,6 +2110,13 @@
 03 =ADMIN::This will send a message to all users on the network.
 04 =ADMIN::This should be used rarely, and for something that
 05 =ADMIN::the whole network needs to know.
+
+[SERVMSG/ASK]
+01 =::ASK <question>
+02 =::
+03 =::This will send a question to all IRC Operators that have
+04 =::+h (HelpOp) on.  They will see this and should respond
+05 =::to you directly with an answer to your question.
 
 [SERVMSG/LANGUAGES]
 01 =REGD::LANGUAGES

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.58  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -830,7 +834,7 @@ size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
 {
     FT("FileMap::GetSize", ((int) type, num));
     mstring filename = GetRealName(type, num);
-    if (filename != "")
+    if (!filename.empty())
     {
 	CP(("Checking file size of %s", filename.c_str()));
 	long retval = mFile::Length(filename);
@@ -865,7 +869,7 @@ void FileMap::EraseFile(FileType type, unsigned long num)
     FT("FileMap::EraseFile", (type, num));
 
     mstring filename = GetRealName(type, num);
-    if (filename != "")
+    if (!filename.empty())
     {
 	mFile::Erase(filename);
 	WLOCK(("FileMap", (int) type));

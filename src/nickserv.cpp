@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.153  2001/01/15 23:31:39  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.152  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -730,7 +734,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
 	if (Parent->nickserv.IsStored(sender))
 	{
-	    if (Parent->nickserv.stored[sender.LowerCase()].Host() != "" &&
+	    if (!Parent->nickserv.stored[sender.LowerCase()].Host().empty() &&
 		Parent->nickserv.IsStored(Parent->nickserv.stored[sender.LowerCase()].Host()))
 	    {
 		sender = Parent->getSname(Parent->nickserv.stored[sender.LowerCase()].Host());
@@ -1015,7 +1019,7 @@ bool Nick_Live_t::InFlight_t::Memo() const
 {
     NFT("Nick_Live_t::InFlight_t::Memo");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "recipiant"));
-    RET(recipiant != "");
+    RET(!recipiant.empty());
 }
 
 bool Nick_Live_t::InFlight_t::Picture() const
@@ -1037,7 +1041,7 @@ bool Nick_Live_t::InFlight_t::Exists() const
     NFT("Nick_Live_t::InFlight_t::Exists");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "recipiant"));
     RLOCK2(("NickServ", "live", nick.LowerCase(), "InFlight", "type"));
-    RET(recipiant != "" || type != FileMap::MemoAttach);
+    RET(!recipiant.empty() || type != FileMap::MemoAttach);
 }
 
 bool Nick_Live_t::InFlight_t::File() const
@@ -1580,7 +1584,7 @@ void Nick_Live_t::Name(mstring in)
 	    }
 	}
     }
-    if (setmode != "")
+    if (!setmode.empty())
     {
 	mstring setmode2;
 	for (i=0; i<setmode.size(); i++)
@@ -1706,7 +1710,7 @@ void Nick_Live_t::Mode(mstring in)
 			    }
 			}
 		    }
-		    if (setmode != "")
+		    if (!setmode.empty())
 		    {
 			mstring setmode2;
 			for (i=0; i<setmode.size(); i++)
@@ -2552,7 +2556,7 @@ unsigned long Nick_Stored_t::Drop()
 	while(Siblings())
 	{
 	    mstring nick = Sibling(0);
-	    if (nick != "")
+	    if (!nick.empty())
 	    {
 		
 		dropped += Parent->nickserv.stored[nick.LowerCase()].Drop();
@@ -2575,7 +2579,7 @@ unsigned long Nick_Stored_t::Drop()
     {
 	if (iter->second.Founder().IsSameAs(i_Name, true))
 	{
-	    if (iter->second.CoFounder() != "" &&
+	    if (!iter->second.CoFounder().empty() &&
 		Parent->nickserv.IsStored(iter->second.CoFounder()))
 	    {
 		iter->second.Founder(iter->second.CoFounder());
@@ -2856,7 +2860,7 @@ mstring Nick_Stored_t::Host()
     NFT("Nick_Stored_t::Host");
     mstring retval;
     RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
-    if (i_Host != "")
+    if (!i_Host.empty())
 	if (!Parent->nickserv.IsStored(i_Host))
 	{
 	    LOG((LM_ERROR, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
@@ -3064,7 +3068,7 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 		citer->second.erase();
 		found = true;
 	    }
-	    if (!(citer->second.HeadCom() != "") &&
+	    if ((citer->second.HeadCom().empty()) &&
 		(citer->second.IsHead(i_Name) || citer->second.IsHead(oldnick)))
 	    {
 		citer->second.Head(i_Name);
@@ -4142,7 +4146,7 @@ bool Nick_Stored_t::Suspended()
     if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
-	RET(Suspend_By() != "");
+	RET(!Suspend_By().empty());
     }
     else
     {
@@ -4204,7 +4208,7 @@ unsigned long Nick_Stored_t::PicNum()
     NFT("PicNum");
     if (Host().empty())
     {
-	if (Parent->nickserv.PicExt() != "")
+	if (!Parent->nickserv.PicExt().empty())
 	{
 	    RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Picture"));
 	    RET(i_Picture);
@@ -4224,7 +4228,7 @@ void Nick_Stored_t::GotPic(unsigned long picnum)
     FT("Nick_Stored_t::GotPic", (picnum));
     if (Host().empty())
     {
-	if (Parent->nickserv.PicExt() != "")
+	if (!Parent->nickserv.PicExt().empty())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Picture"));
 	    MCB(i_Picture);
@@ -5406,7 +5410,7 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (newhost != "")
+    if (!newhost.empty())
     {
 	if (!Parent->nickserv.IsStored(newhost))
 	{
@@ -5492,7 +5496,7 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 
 
     mstring output;
-    if (Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
+    if (!Parent->nickserv.stored[target.LowerCase()].Host().empty() &&
 	Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
 	target = Parent->getSname(Parent->nickserv.stored[target.LowerCase()].Host());
 
@@ -5551,7 +5555,7 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		source.c_str()));
     }
-    if (output != "")
+    if (!output.empty())
 	::send(mynick, source, output);
 }
 
@@ -5601,7 +5605,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/REALNAME"),
 			nick->Name().c_str(), nick->LastRealName().c_str());
-    if (nick->Host() != "" && Parent->nickserv.IsStored(nick->Host()))
+    if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host()))
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HOST"),
 		Parent->nickserv.stored[nick->Host().LowerCase()].Name().c_str());
     output = "";
@@ -5615,7 +5619,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     {
 	output = "";
 	bool isonline = false;
-	if (nick->Host() != "" && Parent->nickserv.IsStored(nick->Host())
+	if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host())
 	    && Parent->nickserv.stored[nick->Host().LowerCase()].IsOnline())
 	    output = Parent->nickserv.live[nick->Host().LowerCase()].Name() + " ";
 	for (i=0; i<nick->Siblings(); i++)
@@ -5633,7 +5637,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 		output += Parent->nickserv.live[nick->Sibling(i).LowerCase()].Name() + " ";
 	    }
 	}
-	if (output != "")
+	if (!output.empty())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ONLINEAS"),
 						output.c_str());
@@ -5670,19 +5674,19 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (nick->Email() != "")
+	if (!nick->Email().empty())
 	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/EMAIL"),
 					nick->Email().c_str());
-	if (nick->URL() != "")
+	if (!nick->URL().empty())
 	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/URL"),
 					nick->URL().c_str());
-	if (nick->ICQ() != "")
+	if (!nick->ICQ().empty())
 	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ICQ"),
 					nick->ICQ().c_str());
-	if (nick->Description() != "")
+	if (!nick->Description().empty())
 	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/DESCRIPTION"),
 					nick->Description().c_str());
-	if (nick->Comment() != "" && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	if (!nick->Comment().empty() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
 	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMENT"),
 					nick->Comment().c_str());
@@ -5711,16 +5715,16 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 						output.c_str());
 		output = "";
 	    }
-	    if (output != "")
+	    if (!output.empty())
 		output << ", ";
-	    if (iter->second.IsHead(target) && iter->second.Head() != "")
+	    if (iter->second.IsHead(target) && !iter->second.Head().empty())
 		output << IRC_Bold;
 	    output << iter->second.Name();
-	    if (iter->second.IsHead(target) && iter->second.Head() != "")
+	    if (iter->second.IsHead(target) && !iter->second.Head().empty())
 		output << IRC_Off;
 	}
     }
-    if (output != "")
+    if (!output.empty())
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
 					output.c_str());
 
@@ -5778,7 +5782,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    output << IRC_Off;
     }
 
-    if (output != "")
+    if (!output.empty())
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/OPTIONS"),
 						output.c_str());
     if (nick->PicNum() &&
@@ -5984,7 +5988,7 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     {
 	if (iter->second.Name().Matches(mask, true))
 	{
-	    if (iter->second.Host() != "")
+	    if (!iter->second.Host().empty())
 		continue;
 
 	    if (i < listsize && (!iter->second.Private() || isoper))
@@ -6278,7 +6282,7 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
 
     Nick_Stored_t *nick = &Parent->nickserv.stored[target.LowerCase()];
     mstring host = nick->Name();
-    if (nick->Host() != "" && Parent->nickserv.IsStored(nick->Host()))
+    if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host()))
 	host = Parent->getSname(nick->Host());
 
     Parent->nickserv.stats.i_Getpass++;
@@ -6360,10 +6364,10 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
 		    continue;
 
 		::send(mynick, source, iter->second.Mask(Nick_Live_t::N_U_P_H) + " (" +
-					((iter->second.Server() != "") ?
+					((!iter->second.Server().empty()) ?
 						iter->second.Server() :
 						Parent->startup.Server_Name()) +
-					((iter->second.Squit() != "") ? " (SQUIT)" : "") +
+					((!iter->second.Squit().empty()) ? " (SQUIT)" : "") +
 					"): +" + iter->second.Mode());
 		i++;
 	    }
@@ -6825,7 +6829,7 @@ void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     Parent->nickserv.stored[source.LowerCase()].Email(newvalue);
     Parent->nickserv.stats.i_Set++;
-    if (newvalue != "")
+    if (!newvalue.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
 		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), newvalue.c_str());
@@ -6869,7 +6873,7 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
 
     Parent->nickserv.stored[source.LowerCase()].URL(newvalue);
     Parent->nickserv.stats.i_Set++;
-    if (newvalue != "")
+    if (!newvalue.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
 		Parent->getMessage(source, "NS_SET/URL").c_str(),
@@ -6921,7 +6925,7 @@ void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
 
     Parent->nickserv.stored[source.LowerCase()].ICQ(newvalue);
     Parent->nickserv.stats.i_Set++;
-    if (newvalue != "")
+    if (!newvalue.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
 		Parent->getMessage(source, "NS_SET/ICQ").c_str(), newvalue.c_str());
@@ -6960,7 +6964,7 @@ void NickServ::do_set_Description(mstring mynick, mstring source, mstring params
 
     Parent->nickserv.stored[source.LowerCase()].Description(newvalue);
     Parent->nickserv.stats.i_Set++;
-    if (newvalue != "")
+    if (!newvalue.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
 		Parent->getMessage(source, "NS_SET/DESCRIPTION").c_str(), newvalue.c_str());
@@ -7015,7 +7019,7 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 
     Parent->nickserv.stored[target.LowerCase()].Comment(comment);
     Parent->nickserv.stats.i_Set++;
-    if (comment != "")
+    if (!comment.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/SET_TO"),
 		Parent->getMessage(source, "NS_SET/COMMENT").c_str(),
@@ -8216,7 +8220,7 @@ void NickServ::PostLoad()
 		}
 	    }
 	    ns_array[i]->ud_array.clear();
-	    if (ns_array[i]->Name() != "")
+	    if (!ns_array[i]->Name().empty())
 		stored[ns_array[i]->Name().LowerCase()] = *ns_array[i];
 	    delete ns_array[i];
 	}
@@ -8228,7 +8232,7 @@ void NickServ::PostLoad()
     WLOCK(("NickServ", "stored"));
     for (iter=stored.begin(); iter!=stored.end(); iter++)
     {
-	if (iter->second.i_Host != "")
+	if (!iter->second.i_Host.empty())
 	{
 	    if (IsStored(iter->second.i_Host))
 	    {

@@ -1,3 +1,4 @@
+RCS-ID:      $Id$
 
 Suggest Document.
 =================
@@ -18,6 +19,10 @@ x Done
   > Mebbe even be able to see graphical representations via. the web as
     a Magick plugin (now theres an idea, plugins for magick).  Might be
     better scripted tho.
+  > This would probably be part of a much more advanced stats system,
+    for this, we would need db storage, and per second stats that can
+    be gathered -- and of course, how long to keep them is a problem.
+
 = Work out some form of database redundancy (maybe backup copies) so
   that if we get a fucked up database, all aint lost. (credit skold).
   > I'd say this should be a shell script (Multipal versions of magick
@@ -27,25 +32,46 @@ x Done
     and THEN delete the old file, so essentially if an 'old' file exists
     and a new file exists, remove the new file and copy the old file as
     the databses.  If an old file exists and no new file does, remove it.
-= Ability to have logs go to a specified channel on the server
-  eg (#services) (credit skold).
-  > Scripted hook into 'LogOutput'?
+
 * If a misconfigured server fights with services (ie a missing uline) have
   services go into a sort of standby mode, requiring any ircop to re enable
   them once the server has been fixed or removed (and leave certain commands
   like jupe active if the servers admin isnt around)
   > Personally, I think this is a bad idea, squit the server.
-* Add a function to helpserv to forward messages to helpops
+
 * 'Insufficiant Paramaters' should also have syntax :)
-* Should have a way to akill if nickname matches mask, or realname
-  contains wildcarded text (akill would be added as default ignore mask)
+  > BIG problems with language compatability, etc.  BIG mess.
+
 * Should be able to akill on setting of topic containing wildcarded text.
-  > MAJOR potential for being abused!
+  > MAJOR potential for being abused!  eg. if you akill on '/server ' then
+    you will also akill anyone announcing their own server on the same net.
+    Better off with a 'topic forbid' changing topics forcibly.
+
 * Should be able to have permanent akills
-  > Dont like this personally coz I've seen it abused.
+  > Dont like this personally coz I've seen it abused (ie. not cleaned up).
+
 * Restart command in OperServ.
+  > Why? you can squit services, and reload config if necessary .. hrm.
+    Only thing it doesnt do is reload db's from file -- possible command?
+
 * Log and announce new max users (optional) -- possibly store values.
+  > As with previous point, should be part of a more advanced stats system.
+
 * Limit memos per user/channel (user definable with system max).
+
 * Ability to 'rename' a channel (eg. #aic -> #lucida).
+
 * Have AKILL check online to ensure they are not akilling anyone on
   a committee higher than themselves.
+
+* Ability to have CS on-join messages go to only people NOT on the access
+  list.
+  > This is what channel news is for.  Possibly expand news to allow
+    you to specify a level as to who can read the news.
+
+* Expand the clone system to allow user@host clone protection, whith
+  backup @host clone protection (say 2 per user@host, and 5 per @host).
+  With allowances to override either.
+  > Becomes difficult because a user@host clone override should not effect
+    an @host clone limit -- so 8 users from one user@host should not stop
+    another user from the same @host signing on.

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2001/01/15 23:31:39  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.86  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -412,7 +416,7 @@ bool News_t::IsRead(mstring name) const
     mstring target = name;
     if (!Parent->nickserv.IsStored(name))
 	RET(false);
-    if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+    if (!Parent->nickserv.stored[name.LowerCase()].Host().empty())
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
     RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     bool retval (i_Read.find(target.LowerCase())!=i_Read.end());
@@ -426,7 +430,7 @@ void News_t::Read(mstring name)
     mstring target = name;
     if (!Parent->nickserv.IsStored(name))
 	return;
-    if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+    if (!Parent->nickserv.stored[name.LowerCase()].Host().empty())
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     MCB(i_Read.size());
@@ -441,7 +445,7 @@ void News_t::Unread(mstring name)
     mstring target = name;
     if (!Parent->nickserv.IsStored(name))
 	return;
-    if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+    if (!Parent->nickserv.stored[name.LowerCase()].Host().empty())
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     MCB(i_Read.size());
@@ -684,7 +688,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
 	mstring whoami = source.LowerCase();
-	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	if (!Parent->nickserv.stored[whoami].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
 	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
@@ -827,7 +831,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	mstring who = source;
 	mstring what = params.After(" ", 1);
 
-	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
 	{
 	    who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -1005,7 +1009,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
 	mstring whoami = source.LowerCase();
-	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	if (!Parent->nickserv.stored[whoami].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
 	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
@@ -1078,13 +1082,13 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 		    if (iter != Parent->memoserv.channel[who.LowerCase()].end())
 		    {
 			iter->Unread(whoami);
-			if (output != "")
+			if (!output.empty())
 			    output << ", ";
 			output << j;
 		    }
 		}
 	    }
-	    if (output != "")
+	    if (!output.empty())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_UNREAD"),
 					    output.c_str(), who.c_str());
@@ -1102,7 +1106,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	mstring who = source;
 	mstring what = params.After(" ", 1);
 
-	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
 	{
 	    who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -1159,13 +1163,13 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
 		    {
 			iter->Unread();
-			if (output != "")
+			if (!output.empty())
 			    output << ", ";
 			output << j;
 		    }
 		}
 	    }
-	    if (output != "")
+	    if (!output.empty())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_UNREAD"),
 					output.c_str());
@@ -1206,7 +1210,7 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
     mstring who = source;
     mstring what = params.After(" ", 1);
 
-    if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+    if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
     {
 	who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -1325,7 +1329,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring whoami = source.LowerCase();
-	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	if (!Parent->nickserv.stored[whoami].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
 	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
@@ -1375,7 +1379,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
     {
 	mstring who = source;
 
-	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
 	{
 	    who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -1571,7 +1575,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	mstring dest = params.ExtractWord(4, " ");
 	mstring whoami = source.LowerCase();
 
-	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	if (!Parent->nickserv.stored[whoami].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
 	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
@@ -1641,7 +1645,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	mstring what = params.ExtractWord(2, " ");
 	mstring dest = params.ExtractWord(3, " ");
 
-	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
 	{
 	    who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -1788,7 +1792,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	mstring text = params.After(" ", 3);
 	mstring whoami = source.LowerCase();
 
-	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	if (!Parent->nickserv.stored[whoami].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
 	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
@@ -1863,7 +1867,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	mstring what = params.ExtractWord(2, " ");
 	mstring text = params.After(" ", 2);
 
-	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
 	{
 	    who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -2006,7 +2010,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	mstring what = params.After(" ", 2);
 	mstring whoami = source.LowerCase();
 
-	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	if (!Parent->nickserv.stored[whoami].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
 	{
 	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
@@ -2100,13 +2104,13 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 			if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO") &&
 			    iter->Sender().LowerCase() != who.LowerCase())
 			{
-			    if (denied != "")
+			    if (!denied.empty())
 				denied << ", ";
 			    denied << j;
 			}
 			else
 			{
-			    if (output != "")
+			    if (!output.empty())
 				output << ", ";
 			    output << j;
 			    Parent->memoserv.channel[who.LowerCase()].erase(iter);
@@ -2120,13 +2124,13 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    if (Parent->memoserv.channel[who.LowerCase()].size() == 0)
 		Parent->memoserv.channel.erase(who.LowerCase());
 	    }
-	    if (denied != "")
+	    if (!denied.empty())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_NOTDEL"),
 			    denied.c_str(), who.c_str());
 		denied = "";
 	    }
-	    if (output != "")
+	    if (!output.empty())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL"),
 			    output.c_str(), who.c_str());
@@ -2147,7 +2151,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	mstring who = source;
 	mstring what = params.After(" ", 1);
 
-	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
 	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
 	{
 	    who = Parent->nickserv.stored[source.LowerCase()].Host();
@@ -2214,7 +2218,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 		    }
 		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
 		    {
-			if (output != "")
+			if (!output.empty())
 			    output << ", ";
 			output << j;
 			if (iter->File())
@@ -2229,7 +2233,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    if (Parent->memoserv.nick[who.LowerCase()].size() == 0)
 		Parent->memoserv.nick.erase(who.LowerCase());
 	    }
-	    if (output != "")
+	    if (!output.empty())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_DEL"),
 			    output.c_str());
@@ -2325,7 +2329,7 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 	mstring target = name;
-	if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+	if (!Parent->nickserv.stored[name.LowerCase()].Host().empty())
 	    target = Parent->getSname(Parent->nickserv.stored[name.LowerCase()].Host());
 
 	if (Parent->memoserv.Files() > 0)
@@ -2594,7 +2598,7 @@ void MemoServ::PostLoad()
 		}
 	    }
 	    m_array[i]->ud_array.clear();
-	    if (m_array[i]->Nick() != "")
+	    if (!m_array[i]->Nick().empty())
 		nick[m_array[i]->Nick().LowerCase()].push_back(*m_array[i]);
 	    delete m_array[i];
 	}
@@ -2616,7 +2620,7 @@ void MemoServ::PostLoad()
 		}
 	    }
 	    n_array[i]->ud_array.clear();
-	    if (n_array[i]->Channel() != "")
+	    if (!n_array[i]->Channel().empty())
 		channel[n_array[i]->Channel().LowerCase()].push_back(*n_array[i]);
 	    delete n_array[i];
 	}

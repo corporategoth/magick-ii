@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2001/01/15 23:31:39  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.112  2001/01/01 05:32:45  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -1123,7 +1127,7 @@ void OperServ::RemCommands()
 	    Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name());
+	    "H*LP", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "TRACE", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -2037,7 +2041,7 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
 		    service.c_str());
 		service = "";
 	    }
-	    if (service != "")
+	    if (!service.empty())
 	    {
 		Parent->operserv.stats.i_OnOff++;
 		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF_ONE"),
@@ -2147,7 +2151,7 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 		    service.c_str());
 		service = "";
 	    }
-	    if (service != "")
+	    if (!service.empty())
 	    {
 		Parent->operserv.stats.i_OnOff++;
 		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF_ONE"),
@@ -2324,7 +2328,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
     mstring output = "";
     if (Parent->nickserv.DEF_Protect())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->nickserv.LCK_Protect())
 	    output << IRC_Bold;
@@ -2335,7 +2339,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.DEF_Secure())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->nickserv.LCK_Secure())
 	    output << IRC_Bold;
@@ -2346,7 +2350,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.DEF_NoExpire())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->nickserv.LCK_NoExpire())
 	    output << IRC_Bold;
@@ -2357,7 +2361,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.DEF_NoMemo())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->nickserv.LCK_NoMemo())
 	    output << IRC_Bold;
@@ -2368,7 +2372,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.DEF_Private())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->nickserv.LCK_Private())
 	    output << IRC_Bold;
@@ -2379,7 +2383,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.DEF_PRIVMSG())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->nickserv.LCK_PRIVMSG())
 	    output << IRC_Bold;
@@ -2456,7 +2460,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     output = "";
     if (Parent->chanserv.DEF_Keeptopic())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Keeptopic())
 	    output << IRC_Bold;
@@ -2467,7 +2471,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Topiclock())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Topiclock())
 	    output << IRC_Bold;
@@ -2478,7 +2482,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Private())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Private())
 	    output << IRC_Bold;
@@ -2489,7 +2493,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Secureops())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Secureops())
 	    output << IRC_Bold;
@@ -2500,7 +2504,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Secure())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Secure())
 	    output << IRC_Bold;
@@ -2511,7 +2515,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_NoExpire())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_NoExpire())
 	    output << IRC_Bold;
@@ -2522,7 +2526,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Anarchy())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Anarchy())
 	    output << IRC_Bold;
@@ -2533,7 +2537,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_KickOnBan())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_KickOnBan())
 	    output << IRC_Bold;
@@ -2544,7 +2548,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Restricted())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Restricted())
 	    output << IRC_Bold;
@@ -2555,7 +2559,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.DEF_Join())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->chanserv.LCK_Join())
 	    output << IRC_Bold;
@@ -2631,7 +2635,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 
     if (Parent->commserv.DEF_OpenMemos())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->commserv.LCK_OpenMemos())
 	    output << IRC_Bold;
@@ -2642,7 +2646,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 
     if (Parent->commserv.DEF_Private())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->commserv.LCK_Private())
 	    output << IRC_Bold;
@@ -2653,7 +2657,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 
     if (Parent->commserv.DEF_Secure())
     {
-	if (output != "")
+	if (!output.empty())
 	    output << ", ";
 	if (Parent->commserv.LCK_Secure())
 	    output << IRC_Bold;

@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.146  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.145  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -340,6 +344,7 @@ public:
 
 		mstring pidfile;
 		mstring logfile;
+		mstring logchan;
 		mstring motdfile;
 		mstring langdir;
 		mstring database;
@@ -363,6 +368,7 @@ public:
 		mstring MakePath(mstring in)const;
 		mstring Pidfile()const		    { return MakePath(pidfile); }
 		mstring Logfile()const		    { return MakePath(logfile); }
+		mstring Logchan()const		    { return logchan; }
 		mstring Motdfile()const		    { return MakePath(motdfile); }
 		mstring Langdir()const		    { return MakePath(langdir); }
 		mstring Database()const		    { return MakePath(database); }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/01/15 23:31:39  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.59  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -205,7 +209,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 
     for (i=0; i<args.count()-1; i++)
     {
-	if (lockname != "")
+	if (!lockname.empty())
 	    lockname += "::";
 	lockname += args[i].AsString();
 	rlock = NULL;
@@ -241,7 +245,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	}
     }
 
-    if (lockname != "")
+    if (!lockname.empty())
 	lockname += "::";
     lockname += args[i].AsString();
     rlock = NULL;

@@ -25,6 +25,10 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.22  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -112,6 +116,8 @@ public:
 	mDateTime i_ClearTime;
 	unsigned long i_Global;
 	unsigned long i_Credits;
+	unsigned long i_Ask;
+	unsigned long i_Stats;
 	unsigned long i_file_AddDel;
 	unsigned long i_file_Send;
 	unsigned long i_file_Change;
@@ -120,11 +126,13 @@ public:
 	stats_t() { clear(); }
 	void clear() {
 	    i_ClearTime = Now();
-	    i_Global = i_Credits = i_file_AddDel = i_file_Send =
-	    i_file_Change = i_file_Cancel = 0; }
+	    i_Global = i_Credits = i_Ask = i_Stats = i_file_AddDel =
+	    i_file_Send = i_file_Change = i_file_Cancel = 0; }
 	mDateTime ClearTime()const		{ return i_ClearTime; }
 	unsigned long Global()const		{ return i_Global; }
 	unsigned long Credits()const		{ return i_Credits; }
+	unsigned long Ask()const		{ return i_Ask; }
+	unsigned long Stats()const		{ return i_Stats; }
 	unsigned long File_AddDel()const	{ return i_file_AddDel; }
 	unsigned long File_Send()const		{ return i_file_Send; }
 	unsigned long File_Change()const	{ return i_file_Change; }
@@ -146,6 +154,7 @@ public:
     static void do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCounts,
 	mstring mynick, mstring source, mstring previndent, mstring server);
     static void do_Global(mstring mynick, mstring source, mstring params);
+    static void do_Ask(mstring mynick, mstring source, mstring params);
     static void do_stats_Nick(mstring mynick, mstring source, mstring params);
     static void do_stats_Channel(mstring mynick, mstring source, mstring params);
     static void do_stats_Oper(mstring mynick, mstring source, mstring params);

@@ -324,8 +324,9 @@ OTH_CMD8           =LOGON         %10d / SET           %10d
 OTH_CMD9           =LOCK          %10d / UNLOCK        %10d
 
 OTH_CMD10          =GLOBAL        %10d / CREDITS       %10d
-OTH_CMD11          =FILE ADD/DEL  %10d / FILE SEND     %10d
-OTH_CMD12          =FILE CHANGE   %10d / FILE CANCEL   %10d
+OTH_CMD11          =ASK           %10d / STATS         %10d
+OTH_CMD12          =FILE ADD/DEL  %10d / FILE SEND     %10d
+OTH_CMD13          =FILE CHANGE   %10d / FILE CANCEL   %10d
 
 USE_CPU            =CPU Usage %s system and %s user.
 USE_TRAFFIC        =Sent %s (%s/s) and Received %s (%s/s) in %s.

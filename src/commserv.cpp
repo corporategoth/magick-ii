@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.86  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -351,7 +355,7 @@ void Committee::Head(mstring newhead)
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     MCB(i_Head);
-    if (i_HeadCom != "")
+    if (!i_HeadCom.empty())
     {
 	CB(1, i_HeadCom);
 	i_HeadCom = "";
@@ -458,20 +462,20 @@ bool Committee::IsIn(mstring nick) const
     }
 
     mstring target = nick.LowerCase();
-    if (Parent->nickserv.stored[target].Host() != "" &&
+    if (!Parent->nickserv.stored[target].Host().empty() &&
 	Parent->nickserv.IsStored(Parent->nickserv.stored[target].Host()))
 	target = Parent->nickserv.stored[target].Host().LowerCase();
 
     // We're a HEAD, in by DEFAULT
     { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
-    if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom) &&
+    if (!i_HeadCom.empty() && Parent->commserv.IsList(i_HeadCom) &&
 	Parent->commserv.list[i_HeadCom].IsIn(target))
     {
 	RET(true);
     }}
 
     { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
-    if (i_Head != "" && target == i_Head)
+    if (!i_Head.empty() && target == i_Head)
     {
 	RET(true);
     }}
@@ -558,11 +562,11 @@ bool Committee::IsHead(mstring nick) const
 
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     RLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
-    if (i_Head != "" && i_Head == nick.LowerCase())
+    if (!i_Head.empty() && i_Head == nick.LowerCase())
     {
 	RET(true);
     }
-    else if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom) &&
+    else if (!i_HeadCom.empty() && Parent->commserv.IsList(i_HeadCom) &&
 	Parent->commserv.list[i_HeadCom.UpperCase()].IsIn(nick))
     {
 	RET(true);
@@ -1430,17 +1434,17 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	realme = source;
     else
 	return;
-    if (Parent->nickserv.stored[source.LowerCase()].Host() != "")
+    if (!Parent->nickserv.stored[source.LowerCase()].Host().empty())
 	realme = Parent->nickserv.stored[source.LowerCase()].Host();
 
-    if (comm->HeadCom() != "")
+    if (!comm->HeadCom().empty())
     {
 	if (Parent->commserv.IsList(comm->HeadCom()))
 	{
 	    CommServ::do_Memo2(source, comm->HeadCom(), text);
 	}
     }
-    else if (comm->Head() != "")
+    else if (!comm->Head().empty())
     {
 	if (Parent->nickserv.IsStored(comm->Head()))
 	{
@@ -1559,24 +1563,24 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 		committee.c_str(), comm->Description().c_str());
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/REGISTERED"),
     			comm->RegTime().Ago().c_str());
-    if (comm->HeadCom() != "")
+    if (!comm->HeadCom().empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/HEADCOM"),
 			comm->HeadCom().UpperCase().c_str());
     }
-    else if (comm->Head() != "")
+    else if (!comm->Head().empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/HEAD"),
 			Parent->getSname(comm->Head()).c_str());
     }
 
-    if (comm->Email() != "")
+    if (!comm->Email().empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/EMAIL"),
 			comm->Email().c_str());
     }
 
-    if (comm->URL() != "")
+    if (!comm->URL().empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/URL"),
 			comm->URL().c_str());
@@ -1856,14 +1860,14 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
 	RET(0);
     }
 
-    if (comm->HeadCom() != "")
+    if (!comm->HeadCom().empty())
     {
 	if (Parent->commserv.IsList(comm->HeadCom()))
 	{
 	    nextnum += CommServ::do_member_List2(mynick, source, comm->HeadCom(), false, nextnum);
 	}
     }
-    else if (comm->Head() != "")
+    else if (!comm->Head().empty())
     {
 	output = "";
 	output << nextnum++ << ". " << IRC_Bold;
@@ -3186,7 +3190,7 @@ void CommServ::PostLoad()
 		}
 	    }
 	    c_array[i]->ud_array.clear();
-	    if (c_array[i]->Name() != "")
+	    if (!c_array[i]->Name().empty())
 		list[c_array[i]->Name().UpperCase()] = *c_array[i];
 	    delete c_array[i];
 	}

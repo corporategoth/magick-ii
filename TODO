@@ -13,8 +13,19 @@ development team to be worked on, and are coming:
 
 - Per-channel clone override lists (kick if cloning)
 
-- Re-add the 'CS Override' level system (where you can
-  config what level you need for various overrides).
+- Add new AKILL funcitons for 3 new types:
+    * Nickname matchine mask
+    * Being in a channel matching mask
+    * Having a realname matching mask
+  Each case it should add the default ignore host to the
+  regular akill list -- however the default akill list
+  command should not show them unless 'all' is specified.
+  Alternately could maintain different lists for each.
+
+- Add functionality (while services are up only) to
+  'reserve' a nickname (ie. services keep it and dont
+  sign off of it, but its not going to reply to anything).
+  And of course, ability to un-reserve it (kill?)
 
 - Change .lfo and .lng files (in language directory) to
   accept something like $1, $2, etc and replace with the

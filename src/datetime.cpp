@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.61  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -614,7 +618,7 @@ mstring mDateTime::DateTimeString()const
 		Result=FormatString(LongDateFormat);
 	if(Hour!=0||Min!=0||Sec!=0||MSec!=0)
 	{
-	    if(Result!="")
+	    if(!Result.empty())
 			Result<<" ";
 	    Result<<FormatString(LongTimeFormat);
 	}

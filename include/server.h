@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.56  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -165,6 +169,7 @@ class Protocol
     unsigned int i_MaxLine;
 
     bool i_Globops;
+    bool i_Helpops;
     bool i_Tokens;
     bool i_P12;
     bool i_TSora;
@@ -246,6 +251,7 @@ public:
     unsigned int NickLen() const  { return i_NickLen; }
     unsigned int MaxLine() const  { return i_MaxLine; }
     bool Globops() const	  { return i_Globops; }
+    bool Helpops() const	  { return i_Helpops; }
     bool Tokens() const		  { return i_Tokens; }
     void Tokens(bool in)	  { i_Tokens = in; }
     bool P12() const		  { return i_P12; }
@@ -342,9 +348,9 @@ class NetworkServ : public mBase
     mstring i_OurUplink;
     
     enum send_type {
-	t_GLOBOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
-	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
-	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
+	t_GLOBOPS, t_HELPOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
+	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK, t_SVSKILL,
+	t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(mstring nick);
 
@@ -372,6 +378,7 @@ public:
     void ANONKILL(mstring nick, mstring dest, mstring reason);
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);
+    void HELPOPS(mstring nick, mstring message);
     void INVITE(mstring nick, mstring dest, mstring channel);
     void JOIN(mstring nick, mstring channel);
     void KICK(mstring nick, mstring dest, mstring channel, mstring reason = "");

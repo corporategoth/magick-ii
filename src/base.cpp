@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.147  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.146  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -545,14 +549,14 @@ mstring mBaseTask::PreParse(const mstring& message) const
     if (Parent->server.proto.Tokens())
     {
 	if (message[0u] == ':' &&
-	   Parent->server.proto.GetToken(message.ExtractWord(2, " ")) != "")
+	   !Parent->server.proto.GetToken(message.ExtractWord(2, " ")).empty())
 	{
 	    data = "";
 	    data << message.ExtractWord(1, " ") << " " <<
 		Parent->server.proto.GetToken(message.ExtractWord(2, " ")) <<
 		" " << message.After(" ", 2);
 	}
-	else if (Parent->server.proto.GetToken(message.ExtractWord(1, " ")) != "")
+	else if (!Parent->server.proto.GetToken(message.ExtractWord(1, " ")).empty())
 	{
 	    data = "";
 	    data << Parent->server.proto.GetToken(message.ExtractWord(1, " ")) <<
@@ -923,7 +927,7 @@ void CommandMap::AddSystemCommand(mstring service, mstring command,
     WLOCK(("CommandMap", "i_system"));
     i_system[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
-		    ((committees != "") ? committees.LowerCase() : mstring("all")),
+		    ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
 		    function));
 }
 
@@ -962,7 +966,7 @@ void CommandMap::AddCommand(mstring service, mstring command,
     WLOCK(("CommandMap", "i_user"));
     i_user[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
-		    ((committees != "") ? committees.LowerCase() : mstring("all")),
+		    ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
 		    function));
 }
 

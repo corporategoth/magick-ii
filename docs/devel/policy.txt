@@ -64,7 +64,7 @@
 * Magick II has trace code for a reason -- it should be 'live
   debugable' without a debugger, simply by following the output
   of trace code.  Magick trace mechanisms are also designed so
-  that you shouldnt need a full trace to see what the cod is
+  that you shouldnt need a full trace to see what the code is
   doing.  USE the trace code where appropriate, we do NOT want
   any trace 'blackholes' where we have to use printf's etc to
   find out whats going on.  See below for more on trace code.
@@ -82,6 +82,8 @@
   that have been introduced to the code base (exceeding memory
   bounds, failing to free memory, accessing unitialized memory).
   The INSTALL file tells how to enable this, and where to get it.
+  Alternately you can run magick with Electric Fence (easier to
+  install/use) -- however this is less thorough than mpatrol.
   
 
 RULE OF THUMB

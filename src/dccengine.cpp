@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.37  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -300,25 +304,25 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 
 	    mstring tmp;
 	    tmp << PACKAGE << ":" << VERSION;
-	    if(RELEASE!="")
+	    if(!RELEASE.empty())
 		tmp+="-" + RELEASE;
-	    if(PATCH1!="")
+	    if(!PATCH1.empty())
 		tmp+="+"+PATCH1;
-	    if(PATCH2!="")
+	    if(!PATCH2.empty())
 		tmp+="+"+PATCH2;
-	    if(PATCH3!="")
+	    if(!PATCH3.empty())
 		tmp+="+"+PATCH3;
-	    if(PATCH4!="")
+	    if(!PATCH4.empty())
 		tmp+="+"+PATCH4;
-	    if(PATCH5!="")
+	    if(!PATCH5.empty())
 		tmp+="+"+PATCH5;
-	    if(PATCH6!="")
+	    if(!PATCH6.empty())
 		tmp+="+"+PATCH6;
-	    if(PATCH7!="")
+	    if(!PATCH7.empty())
 		tmp+="+"+PATCH7;
-	    if(PATCH8!="")
+	    if(!PATCH8.empty())
 		tmp+="+"+PATCH8;
-	    if(PATCH9!="")
+	    if(!PATCH9.empty())
 		tmp+="+"+PATCH9;
 	    tmp<<":"<<BUILD_TYPE;
 
@@ -339,7 +343,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 		X-N-SPC	::= '\000' .. '\037' | '\041' .. '\377' 
 	    */
 	    mstring tmp(VERSION);
-	    if(RELEASE!="")
+	    if(!RELEASE.empty())
 		tmp+="-" + RELEASE;
 
 	    Parent->server.NOTICE(mynick, source, encode("SOURCE",

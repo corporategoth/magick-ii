@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2001/01/15 23:31:39  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.27  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -390,7 +394,7 @@ bool ceNode::KeyExists(const mstring &KeyName) const
     {
         // end of the line
 	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
-	if(iter != i_keys.end() && iter->second != "")
+	if(iter != i_keys.end() && !iter->second.empty())
             Result=true;
     }
     else
@@ -421,7 +425,7 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue) const
     {
         // end of the line
 	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
-	if(iter != i_keys.end() && iter->second != "")
+	if(iter != i_keys.end() && !iter->second.empty())
             Result=iter->second;
     }
     else
@@ -525,7 +529,7 @@ map<mstring,mstring> ceNode::GetMap() const
 	    submap = i->second->GetMap();
 	    for (j=submap.begin(); j!=submap.end(); j++)
 	    {
-		if (i_Name != "")
+		if (!i_Name.empty())
 		    Result[i_Name + "/" + j->first] = j->second;
 		else
 		    Result[j->first] = j->second;
@@ -537,7 +541,7 @@ map<mstring,mstring> ceNode::GetMap() const
 
     for (j=i_keys.begin(); j!=i_keys.end(); j++)
     {
-	if (i_Name != "")
+	if (!i_Name.empty())
 	    Result[i_Name + "/" + j->first] = j->second;
 	else
 	    Result[j->first] = j->second;
@@ -562,7 +566,7 @@ bool mConfigEngine::LoadFile()
     NFT("mConfigEngine::LoadFile");
 
     bool Result = false;
-    if(i_FileName != "" && mFile::Exists(i_FileName))
+    if(!i_FileName.empty() && mFile::Exists(i_FileName))
     {
         vector<mstring> initialload;
         initialload=mFile::UnDump(i_FileName);

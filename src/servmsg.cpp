@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2001/01/15 23:31:39  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.77  2001/01/01 05:32:45  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -301,6 +305,12 @@ void ServMsg::AddCommands()
 	    "FILE* H*LP", Parent->commserv.ALL_Name(), do_2param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ASK*", Parent->commserv.ALL_Name(), ServMsg::do_Ask);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "QUEST*", Parent->commserv.ALL_Name(), ServMsg::do_Ask);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "H*LP*OP*", Parent->commserv.ALL_Name(), ServMsg::do_Ask);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "H*LP", Parent->commserv.ALL_Name(), ServMsg::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CRED*", Parent->commserv.ALL_Name(), ServMsg::do_Credits);
@@ -377,7 +387,13 @@ void ServMsg::RemCommands()
 	    "FILE* H*LP", Parent->commserv.ALL_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name());
+	    "ASK*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "QUEST*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "H*LP*OP*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CRED*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -583,7 +599,7 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 	    ServCounts[k->second.Server().LowerCase()] =
 	    				pair<unsigned int,unsigned int>(0,0);
 	}
-	if (k->second.Name() != "")
+	if (!k->second.Name().empty())
 	{
 	    ServCounts[k->second.Server().LowerCase()].first++;
 	    if (k->second.HasMode("o"))
@@ -613,7 +629,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	for (iter = Parent->server.ServerList.begin();
 		iter != Parent->server.ServerList.end(); iter++)
 	{
-	    if (iter->second.Name() != "" &&
+	    if (!iter->second.Name().empty() &&
 		iter->second.Uplink() == Parent->startup.Server_Name().LowerCase())
 		downlinks.push_back(iter->first);
 	}
@@ -684,7 +700,7 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 	    forbidden++;
 	else
 	{
-	    if (i->second.Host() != "")
+	    if (!i->second.Host().empty())
 		linked++;
 	    if (i->second.Suspended())
 		suspended++;
@@ -724,6 +740,7 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD9"),
 		Parent->nickserv.stats.Lock(),
 		Parent->nickserv.stats.Unlock());
+    Parent->servmsg.stats.i_Stats++;
 }
 
 
@@ -812,6 +829,7 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD14"),
 		Parent->chanserv.stats.Lock(),
 		Parent->chanserv.stats.Unlock());
+    Parent->servmsg.stats.i_Stats++;
 }
 
 
@@ -891,11 +909,15 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 		Parent->servmsg.stats.Global(),
 		Parent->servmsg.stats.Credits());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+		Parent->servmsg.stats.Ask(),
+		Parent->servmsg.stats.Stats());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
 		Parent->servmsg.stats.File_AddDel(),
 		Parent->servmsg.stats.File_Send());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
 		Parent->servmsg.stats.File_Change(),
 		Parent->servmsg.stats.File_Cancel());
+    Parent->servmsg.stats.i_Stats++;
 }
 
 
@@ -969,6 +991,7 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
     if (!Parent->server.proto.SVSHOST().empty())
 	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD9"),
 		Parent->operserv.stats.Hide());
+    Parent->servmsg.stats.i_Stats++;
 }
 
 
@@ -1142,6 +1165,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		ToHumanSpace(Parent->HLP_Usage(*q)).c_str());
 	
     }
+    Parent->servmsg.stats.i_Stats++;
 }
 
 void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
@@ -1158,11 +1182,12 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
 	return;
     }}
 
-    do_Stats(mynick, source, params.ExtractWord(1, " "));
+    do_Stats(mynick, source, params.Before(" "));
     do_stats_Nick(mynick, source, params);
     do_stats_Channel(mynick, source, params);
     do_stats_Oper(mynick, source, params);
     do_stats_Other(mynick, source, params);
+    Parent->servmsg.stats.i_Stats -= 5;
     do_stats_Usage(mynick, source, params);
 }
 
@@ -1213,6 +1238,7 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
 		Parent->operserv.CloneList_sum() - Parent->operserv.CloneList_size(),
 		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1));
+    Parent->servmsg.stats.i_Stats++;
 }
 
 
@@ -1786,5 +1812,28 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
     LOG((LM_NOTICE, Parent->getLogMessage("SERVMSG/GLOBAL"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	text.c_str()));
+}
+
+void ServMsg::do_Ask(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_Ask", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (!Parent->server.proto.Helpops())
+    {
+	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	return;
+    }
+
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+    mstring text = params.After(" ");
+
+    Parent->servmsg.stats.i_Ask++;
+    Parent->server.HELPOPS(mynick, source + " (ASK) - " + text);
 }
 

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.145  2001/01/15 23:31:38  prez
+** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+** !string.empty() to save processing.
+**
 ** Revision 1.144  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -412,7 +416,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	for(i=1;i<data2.WordCount("\n\r");i++)
 	{
 	    mstring text = data2.ExtractWord(i,"\n\r");
-	    if(text!="")
+	    if(!text.empty())
 	    {
 		if (text.SubString(0, 4) == "PING ")
 		    mBase::push_message_immediately(text);
@@ -424,7 +428,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	if (data2.last() == '\n' || data2.last() == '\r')
 	{
 	    mstring text = data2.ExtractWord(i,"\n\r");
-	    if(text!="")
+	    if(!text.empty())
 	    {
 		if (text.SubString(0, 4) == "PING ")
 		    mBase::push_message_immediately(text);
@@ -663,13 +667,13 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Parent->GotConnect()) {
 	server = Parent->startup.PriorityList(1)[0];
     } else {
-	if (Parent->Server() != "")
+	if (!Parent->Server().empty())
 	    server = FindNext(Parent->Server());
 	if (server.empty()) {
 	    server = Parent->startup.PriorityList(1)[0];
 	}
     }
-    if (server != "")
+    if (!server.empty())
 	details = Parent->startup.Server(server);
 
     ACE_INET_Addr addr(details.first, server);
@@ -728,7 +732,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->server.raw("PASS " + details.second + " :TS");
 	else
 	    Parent->server.raw("PASS " + details.second);
-	if (Parent->server.proto.Protoctl() != "")
+	if (!Parent->server.proto.Protoctl().empty())
 	    Parent->server.raw(Parent->server.proto.Protoctl());
 	mstring tmp;
 	tmp.Format(Parent->server.proto.Server().c_str(),
@@ -1069,11 +1073,11 @@ int EventTask::svc(void)
 		WLOCK(("NickServ", "stored"));
 		for (i=0; i<expired_nicks.size(); i++)
 		{
-		    if (Parent->nickserv.stored[expired_nicks[i]].Name() != "")
+		    if (!Parent->nickserv.stored[expired_nicks[i]].Name().empty())
 		    {
 			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
 			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str(),
-			    ((Parent->nickserv.stored[expired_nicks[i]].Host() != "") ?
+			    ((!Parent->nickserv.stored[expired_nicks[i]].Host().empty()) ?
 				Parent->nickserv.stored[expired_nicks[i]].Host().c_str() :
 				Parent->nickserv.stored[expired_nicks[i]].Name().c_str())));
 		    }
@@ -1100,7 +1104,7 @@ int EventTask::svc(void)
 		WLOCK(("ChanServ", "stored"));
 		for (i=0; i<expired_chans.size(); i++)
 		{
-		    if (Parent->chanserv.stored[expired_chans[i]].Name() != "")
+		    if (!Parent->chanserv.stored[expired_chans[i]].Name().empty())
 		    {
 			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
 			    Parent->chanserv.stored[expired_chans[i]].Name().c_str(),
@@ -1234,7 +1238,7 @@ int EventTask::svc(void)
 		    RLOCK4(("ChanServ", "live", cli->first, "p_modes_off"));
 		    RLOCK5(("ChanServ", "live", cli->first, "p_modes_on_params"));
 		    RLOCK6(("ChanServ", "live", cli->first, "p_modes_on_params"));
-		    if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
+		    if (!cli->second.p_modes_on.empty() || !cli->second.p_modes_off.empty())
 		    {
 			unsigned int j, k;
 			vector<mstring> modelines;
@@ -1255,7 +1259,7 @@ int EventTask::svc(void)
 			    if (cli->second.p_modes_off[i] != 'l' &&
 				Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_off[i]))
 			    {
-				if (modeparam != "")
+				if (!modeparam.empty())
 				    modeparam += " ";
 				modeparam +=  cli->second.p_modes_off_params[k];
 				j++; k++;
@@ -1281,7 +1285,7 @@ int EventTask::svc(void)
 			    mode += cli->second.p_modes_on[i];
 			    if (Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_on[i]))
 			    {
-				if (modeparam != "")
+				if (!modeparam.empty())
 				    modeparam += " ";
 				modeparam += cli->second.p_modes_on_params[k];
 				j++; k++;
@@ -1331,7 +1335,7 @@ int EventTask::svc(void)
 		mstring oldnick = nli->second.Name();
 		LOG((LM_INFO, Parent->getLogMessage("EVENT/KILLPROTECT"),
 			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str()));
-		if (newnick != "" && !Parent->server.proto.SVSNICK().empty())
+		if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
 		{
 		    if (nsi->second.Forbidden())
 			send(Parent->nickserv.FirstName(), oldnick,
