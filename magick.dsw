@@ -41,11 +41,53 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name antlr
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sxplib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "sxplib"=".\SRC\sxp\sxplib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################
 
 Project: "what"=".\what.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name sxplib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "xmlparselib"=".\src\expat\xmlparse\xmlparselib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "xmltok"=".\src\expat\xmltok\xmltok.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
