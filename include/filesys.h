@@ -11,11 +11,11 @@
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ==========================================================
+** ========================================================== */
 #ifndef _FILESYS_H
 #define _FILESYS_H
 static const char *ident_filesys_h = "@(#) $Id$";
-** ==========================================================
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/02/23 21:01:25  prez
+** Fixing CVS tags again ...
+**
 ** Revision 1.2  2000/02/23 20:56:38  prez
 ** Fixed compilation of FileSystem (including ident tags)
 **

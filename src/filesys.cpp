@@ -17,7 +17,7 @@
 **
 ** ========================================================== */
 static const char *ident = "@(#) $Id$";
-/* ==========================================================
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -26,6 +26,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/02/23 21:01:25  prez
+** Fixing CVS tags again ...
+**
 ** Revision 1.2  2000/02/23 20:56:38  prez
 ** Fixed compilation of FileSystem (including ident tags)
 **
