@@ -434,7 +434,7 @@ bool mstring::IsNull() const
 bool mstring::IsNumber() const
 {
 	const char *s=c_str();
-	if(IsEmpty)
+	if(IsEmpty())
 	    return false;
 	while(*s)
 	{

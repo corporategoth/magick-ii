@@ -42,7 +42,6 @@ Magick::Magick(int inargc, char **inargv) : chanserv(this), nickserv(this), serv
 
 int Magick::Start()
 {
-    NFT("Magick::Start");
     int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
@@ -51,7 +50,6 @@ int Magick::Start()
     ACE_Log_Msg::enable_debug_messages();
 #endif
 
-    CP(("Magick II has been started ..."));
     // We log to STDERR until we find our logfile...
     logger=new wxLogStderr();
 
@@ -70,7 +68,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
+		    wxLogFatal("--dir requires a paramter.");
 		}
 		services_dir=argv[i];
 	    }
@@ -80,7 +78,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
+		    wxLogFatal("--config requires a paramter.");
 		}
 		config_file=argv[i];
 	    }
@@ -90,18 +88,38 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
+		    wxLogFatal("--trace requires a paramter.");
 		}
-		config_file=argv[i];
+		if(!argv[i].Contains(":"))
+		{
+		    // use static errors here because conf directory is not known yet
+		    wxLogFatal("trace level must be in format of TYPE:LEVEL.");
+		}
+		short level = makehex(argv[i].After(":"));
+		if (level==0)
+		{
+		    wxLogError("Zero or error parsing LEVEL, ignoring.");
+		}
+		else
+		{
+		    if (argv[i].Before(":").UpperCase()=="MAIN" ||
+			    argv[i].Before(":").UpperCase()=="ALL")
+			Trace::TurnSet(tt_MAIN, level);
+		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
+			if (argv[i].Before(":").UpperCase()==threadname[i] ||
+				argv[i].Before(":").UpperCase()=="ALL")
+			    Trace::TurnSet((threadtype_enum) i, level);
+		}
 	    }
 	    else if(argv[i]=="--help" ||
 		(argv[i][1U]!='-' && argv[i].Find("?")))
     	    {
 		dump_help(argv[0]);
-		RET(MAGICK_RET_NORMAL);
+		return MAGICK_RET_NORMAL;
 	    }
 	}
     }
+    NFT("Magick::Start");
     if (chdir (services_dir) < 0)
     {
         perror (services_dir);
@@ -121,14 +139,11 @@ int Magick::Start()
     if(MagickIni==NULL)
     {
 	wxLogFatal("Major fubar, couldn't allocate memory to read config file\nAborting");
-	RET(MAGICK_RET_ERROR);
     }
     //okay, need a function here to load all the ini file defalts
     get_config_values();
-    if(i_shutdown==true) {
+    if(i_shutdown==true)
 	wxLogFatal("CONFIG: [Startup] STOP code received.");
-	RET(MAGICK_RET_ERROR);
-    }
 
     Result=doparamparse();
     if(Result!=MAGICK_RET_NORMAL)
@@ -259,6 +274,8 @@ int Magick::Start()
     // 
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
+
+    CP(("Magick II has been started ..."));
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives
@@ -514,6 +531,7 @@ bool Magick::paramlong(mstring first, mstring second)
     if(first=="--dir" || first=="--config" || first=="--trace")
     {
 	// already handled, but we needed to i++
+	RET(true);
     }
     else if(first=="--connect" || first=="--remote")
     {

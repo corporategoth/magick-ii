@@ -82,6 +82,7 @@
 
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
+extern short makehex(mstring SLevel);
 
 // Trace Codes
 //   \   Down Function (T_Functions)

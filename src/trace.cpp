@@ -59,6 +59,134 @@ int levelname_count()
     return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
 }
 
+short makehex (mstring SLevel)
+{
+    if (SLevel[0u]!='0' || SLevel[1u]!='x' || SLevel.Len() != 6)
+	return 0;
+
+    short level;
+    for (unsigned int j=2; j<6; j++) {
+	switch(SLevel[j]) {
+	case 'F':
+	case 'f':
+	    switch(j) {
+	    case 5: level |= 0x000f; break;
+	    case 4: level |= 0x00f0; break;
+	    case 3: level |= 0x0f00; break;
+	    case 2: level |= 0xf000; break;
+	    } break;
+	case 'E':
+	case 'e':
+	    switch(j) {
+	    case 5: level |= 0x000e; break;
+	    case 4: level |= 0x00e0; break;
+	    case 3: level |= 0x0e00; break;
+	    case 2: level |= 0xe000; break;
+	    } break;
+	case 'D':
+	case 'd':
+	    switch(j) {
+	    case 5: level |= 0x000d; break;
+	    case 4: level |= 0x00d0; break;
+	    case 3: level |= 0x0d00; break;
+	    case 2: level |= 0xd000; break;
+	    } break;
+	case 'C':
+	case 'c':
+	    switch(j) {
+	    case 5: level |= 0x000c; break;
+	    case 4: level |= 0x00c0; break;
+	    case 3: level |= 0x0c00; break;
+	    case 2: level |= 0xc000; break;
+	    } break;
+	case 'B':
+	case 'b':
+	    switch(j) {
+	    case 5: level |= 0x000b; break;
+	    case 4: level |= 0x00b0; break;
+	    case 3: level |= 0x0b00; break;
+	    case 2: level |= 0xb000; break;
+	    } break;
+	case 'A':
+	case 'a':
+	    switch(j) {
+	    case 5: level |= 0x000a; break;
+	    case 4: level |= 0x00a0; break;
+	    case 3: level |= 0x0a00; break;
+	    case 2: level |= 0xa000; break;
+	    } break;
+	case '9':
+	    switch(j) {
+	    case 5: level |= 0x0009; break;
+	    case 4: level |= 0x0090; break;
+	    case 3: level |= 0x0900; break;
+	    case 2: level |= 0x9000; break;
+	    } break;
+	case '8':
+	    switch(j) {
+	    case 5: level |= 0x0008; break;
+	    case 4: level |= 0x0080; break;
+	    case 3: level |= 0x0800; break;
+	    case 2: level |= 0x8000; break;
+	    } break;
+	case '7':
+	    switch(j) {
+	    case 5: level |= 0x0007; break;
+	    case 4: level |= 0x0070; break;
+	    case 3: level |= 0x0700; break;
+	    case 2: level |= 0x7000; break;
+	    } break;
+	case '6':
+	    switch(j) {
+	    case 5: level |= 0x0006; break;
+	    case 4: level |= 0x0060; break;
+	    case 3: level |= 0x0600; break;
+	    case 2: level |= 0x6000; break;
+	    } break;
+	case '5':
+	    switch(j) {
+	    case 5: level |= 0x0005; break;
+	    case 4: level |= 0x0050; break;
+	    case 3: level |= 0x0500; break;
+	    case 2: level |= 0x5000; break;
+	    } break;
+	case '4':
+	    switch(j) {
+	    case 5: level |= 0x0004; break;
+	    case 4: level |= 0x0040; break;
+	    case 3: level |= 0x0400; break;
+	    case 2: level |= 0x4000; break;
+	    } break;
+	case '3':
+	    switch(j) {
+	    case 5: level |= 0x0003; break;
+	    case 4: level |= 0x0030; break;
+	    case 3: level |= 0x0300; break;
+	    case 2: level |= 0x3000; break;
+	    } break;
+	case '2':
+	    switch(j) {
+	    case 5: level |= 0x0002; break;
+	    case 4: level |= 0x0020; break;
+	    case 3: level |= 0x0200; break;
+	    case 2: level |= 0x2000; break;
+	    } break;
+	case '1':
+	    switch(j) {
+	    case 5: level |= 0x0001; break;
+	    case 4: level |= 0x0010; break;
+	    case 3: level |= 0x0100; break;
+	    case 2: level |= 0x1000; break;
+	    } break;
+	case '0':
+	    break;
+	default:
+	    return 0;
+	}
+    }
+    return level;
+}
+
 // ===================================================
 
 ThreadID::ThreadID(Magick *Parent)
