@@ -8,7 +8,7 @@ class DccEngine
 {
 public:
     bytevector lowQuote(bytevector& in);
-    bytevector ctcpDequote(bytevector& in);
+    bytevector lowDequote(bytevector& in);
     bytevector ctcpQuote(bytevector& in);
     bytevector ctcpDequote(bytevector& in);
     bytevector ctcpExtract(bytevector& in);
