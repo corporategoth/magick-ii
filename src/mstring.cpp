@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2000/12/10 02:30:05  prez
+** More misc fixes on mstring ... one of them fixing single char 0 strings.
+**
 ** Revision 1.86  2000/12/09 20:16:41  prez
 ** Fixed SubString and Left to have correct count/end possitions.  Also
 ** adjusted rest of source to follow suit.
@@ -343,11 +346,11 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     if (pos > 0)
     {
 	memcpy(tmp, i_str, pos);
-	i += pos;
+	i += pos+1;
     }
     memcpy(&tmp[i], in, length);
     i += length;
-    memcpy(&tmp[i], &i_str[i_len-pos], i_len-pos);
+    memcpy(&tmp[i], &i_str[pos], i_len-pos);
 
     if (i_str != NULL)
 	DEALLOC(i_str);
@@ -435,7 +438,7 @@ int mstring::find_first_of(const char *str, size_t length) const
     int i, retval = i_len + 1;
     char *ptr;
 
-    if (i_str == NULL)
+    if (i_str == NULL || str == NULL)
 	return -1;
 
     for (i=0; i<length; i++)
@@ -455,7 +458,7 @@ int mstring::find_last_of(const char *str, size_t length) const
     int i, retval = -1;
     char *ptr;
 
-    if (i_str == NULL)
+    if (i_str == NULL || str == NULL)
 	return -1;
 
     for (i=0; i<length; i++)
@@ -472,7 +475,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 {
     int i;
 
-    if (i_str == NULL)
+    if (i_str == NULL || str == NULL)
 	return -1;
 
     char *tmp;
@@ -496,7 +499,7 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 {
     int i;
 
-    if (i_str == NULL)
+    if (i_str == NULL || str == NULL)
 	return -1;
 
     char *tmp;
@@ -524,6 +527,8 @@ int mstring::occurances(const char *str) const
     if (i_str == NULL || str == NULL)
 	return 0;
     length = strlen(str);
+    if (length < 1)
+	return 0;
 
     ptr = strstr(i_str, str);
     while (ptr != NULL)
@@ -544,6 +549,9 @@ int mstring::find(const char *str, int occurance) const
 	return -1;
 
     length = strlen(str);
+    if (length < 1)
+	return -1;
+
     if (occurance < 1)
 	occurance = 1;
 
@@ -593,6 +601,9 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 
     old_len = i_len;
     find_len = strlen(i_find);
+    if (find_len < 1)
+	return;
+
     if (i_replace == NULL)
 	replace_len = 0;
     else
@@ -930,7 +941,12 @@ mstring mstring::RevAfter(const mstring &in, int occurance) const
 mstring mstring::SubString(int from, int to) const
 {
     if (to < 0)
-	to = i_len-1;
+    {
+	if (from < i_len)
+	    to = i_len-1;
+	else
+	    return "";
+    }
     if (to < from)
     {
 	int i = from;
@@ -960,7 +976,6 @@ unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
 mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
 						bool assemble) const
 {
-    mstring Result;
     int i, begin;
     begin=WordPosition(count, delim, assemble);
     if(begin!=-1)
@@ -971,7 +986,7 @@ mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
 	if (i!=begin)
 	    return SubString(begin, i-1);
     }
-    return Result;
+    return "";
 }
 
 int mstring::WordPosition(unsigned int count, const mstring &delim,
