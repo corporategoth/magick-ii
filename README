@@ -163,15 +163,20 @@ again at runtime, the settings in the config file will be used.
 --help (or -?)	Help output (summary of the below).
 --dir X		Set the initial services directory.
 --config X	Set the name (and/or path) of the config file.
---nofork	Do not become a daemon process (dont fork()).
-		This option is not valid on Windows installations.
+--nofork	Do not become a daemon/service process (dont fork()).
+--service X     Manipulate Magick's NT Service settings, where X is:
+                        insert (insert Magick into service db)
+                        start (start Magick, must be a service)
+                        stop (stop Magick, must be a service)
+                        remove (remove Magick from service db)
+		This option is not valid on non-Windows installations.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:
 			magick (1.4)   esper (4.4.8)
 			epona (1.4.7)  sirv (N/A)
 		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
---trace X:Y	Set the trace level on startup, equivalents of
+--trace X:Y	Set the trace level on startup, equivalent of
 		using the OperServ TRACE SET command while
 		running, where X is the trace type (or ALL), and
 		Y is the trace level in hex.
@@ -209,7 +214,8 @@ PARAMETER	SHORT	GROUP		OPTION
 --cycle X	-t	CONFIG		CYCLETIME
 --check X	-T 	CONFIG		CHECKTIME
 --ping X	-p	CONFIG		PING_FREQUENCY
---threads X	-X	CONFIG		MIN_THREADS
+--minthreads X	-q	CONFIG		MIN_THREADS
+--axthreads X	-Q	CONFIG		MAX_THREADS
 --lwm X		-m	CONFIG		LOW_WATER_MARK
 --hwm X		-M	CONFIG		HIGH_WATER_MARK
 --append	-a	NICKSERV	APPEND_RENAME=true

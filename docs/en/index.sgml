@@ -995,9 +995,14 @@ again at runtime, the settings in the config file will be used.
 <tscreen><verb>
 --help (or -?)	Help output (summary of the below).
 --dir X		Set the initial services directory.
---config X	Set the name of the config file.
---nofork	Do not become a daemon process (dont fork()).
-		This option is not valid on Windows installations.
+--config X	Set the name (and/or path) of the config file.
+--nofork	Do not become a daemon/service process (dont fork()).
+--service X     Manipulate Magick's NT Service settings, where X is:
+                        insert (insert Magick into service db)
+                        start (start Magick, must be a service)
+                        stop (stop Magick, must be a service)
+                        remove (remove Magick from service db)
+		This option is not valid on non-Windows installations.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:
@@ -1018,7 +1023,7 @@ the configuration file's comments for more information on each
 option, and what it does.
 
 <tscreen><verb>
-PARAMATER	SHORT	GROUP		OPTION
+PARAMETER	SHORT	GROUP		OPTION
 ---------	-----	-----		------
 --name X	-n	STARTUP		SERVER_NAME
 --desc X	-d	STARTUP		SERVER_DESC
@@ -1028,7 +1033,7 @@ PARAMATER	SHORT	GROUP		OPTION
 --protocol X	-P	STARTUP		PROTOCOL
 --level X	-l	STARTUP		LEVEL
 --lagtime X	-g	STARTUP		LAGTIME
---umask		-U	FILES		UMASK
+--umask X	-U	FILES		UMASK
 --verbose	-v	FILES		VERBOSE=true
 --log X		-L	FILES		LOGFILE
 --logchan X	-C	FILES		LOGCHAN
@@ -1040,11 +1045,12 @@ PARAMATER	SHORT	GROUP		OPTION
 --compress X	-c	FILES		COMPRESSION
 --relink X	-r	CONFIG		SERVER_RELINK
 --norelink		CONFIG		SERVER_RELINK=0
---cycle X	-t	CONFIG		CYCLETIME
 --save X	-w	CONFIG		SAVETIME
+--cycle X	-t	CONFIG		CYCLETIME
 --check X	-T 	CONFIG		CHECKTIME
 --ping X	-p	CONFIG		PING_FREQUENCY
---thread X	-X	CONFIG		MIN_THREADS
+--minthreads X	-q	CONFIG		MIN_THREADS
+--maxthreads X	-Q	CONFIG		MAX_THREADS
 --lwm X		-m	CONFIG		LOW_WATER_MARK
 --hwm X		-M	CONFIG		HIGH_WATER_MARK
 --append	-a	NICKSERV	APPEND_RENAME=true

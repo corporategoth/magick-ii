@@ -257,8 +257,13 @@ int Magick::Init()
 	    }
 #endif
 #ifdef WIN32
-	    else if (argv[i] == "--service" && isWinNT())
+	    else if (argv[i] == "--service")
 	    {
+		if (!isWinNT())
+		{
+		    LOG(LM_EMERGENCY, "COMMANDLINE/INCORRECT_OS", ("--service", "Windows NT"));
+		    return MAGICK_RET_ERROR;
+		}
 		i++;
 		if (i == argc || argv[i] [0U] == '-')
 		{

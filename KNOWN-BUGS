@@ -36,3 +36,10 @@ UNVERSAL
 SYSTEM SPECIFIC
 ---------------
 
+- FreeBSD: If the database save is done in a new thread (as it
+  is done on all other platforms), Magick starts using 100% cpu,
+  and never saves the database file.  To work around this, we
+  do NOT spawn a new thread on FreeBSD for database saves.  This
+  means however, that once databases start taking longer than 1
+  second to save, things such channel modes will be delayed while
+  the database save completes.

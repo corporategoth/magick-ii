@@ -1757,6 +1757,11 @@ int EventTask::svc(void)
 	    if_RLOCK2 (("Events", "last_save"), last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
+
+		// A hack, since freebsd goes apeshit if we spawn a thread to do this ...
+#ifdef __FreeBSD__
+		Magick::instance().save_databases();
+#else
 		ACE_Thread_Manager *tm = thr_mgr();
 
 		if (tm == NULL)
@@ -1766,6 +1771,7 @@ int EventTask::svc(void)
 		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
 		}
 		else
+#endif
 		{
 		    WLOCK(("Events", "last_save"));
 		    MCB(last_save);
