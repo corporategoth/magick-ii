@@ -21,7 +21,7 @@ OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.
   Debug\memoserv.obj Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj \
   Debug\operserv.obj Debug\server.obj Debug\servmsg.obj Debug\textfile.obj \
   Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj \
-  Debug\filesys.obj
+  Debug\filesys.obj Debug\mconfig.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES = ..\support\zlib\zlib.LIB \
@@ -47,27 +47,28 @@ RELEASELIBPATH = $(BCB)\lib\release
 SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
 # ---------------------------------------------------------------------------
-CFLAG1 = -Isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
+CFLAG1 = -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -Od -H=$(BCB)\lib\vcl40.csm -wuse -wstv -wstu -w-rvl -wpin -wnod -wnak -wdef \
   -wamb -Vmp -Tkh30000 -r- -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) \
   -q -tWR -tWM -c
-IDLCFLAGS = -Isrc -Iinclude -I..\support\ace_wrappers -I..\support\zlib -I..\include\sxp \
-  -I..\include\expat -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp \
-  -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 \
-  -DACE_USE_RCSID=0
-PFLAGS = -Usrc;$(BCB)\lib;$(DEBUGLIBPATH) \
-  -Isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
+IDLCFLAGS = -I"..\..\Program Files\Borland\CBuilder4\Projects" -Isrc -Iinclude \
+  -I..\support\ace_wrappers -I..\support\zlib -I..\include\sxp -I..\include\expat \
+  -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp -D_DEBUG -DDEBUG -DWIN32 \
+  -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 -DACE_USE_RCSID=0
+PFLAGS = -U"..\..\Program Files\Borland\CBuilder4\Projects";src;$(BCB)\lib;$(DEBUGLIBPATH) \
+  -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -N2Debug -N0Debug \
   -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 \
   -$YD -$W -$O-
-RFLAGS = -isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
+RFLAGS = -i"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 /l \
   0xc09 /d "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
 AFLAGS = /isrc /iinclude /i..\support\ace_wrappers /i..\support\zlib /i..\include\sxp \
   /i..\include\expat /i$(BCB)\include /i$(BCB)\include\ATL /d_DEBUG /dDEBUG \
   /dWIN32 /d_CONSOLE /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /dACE_USE_RCSID=0 /mx \
   /w2 /zi
-LFLAGS = -Lsrc;$(BCB)\lib;$(DEBUGLIBPATH) -ap -Tpe -s -v -q
+LFLAGS = -L"..\..\Program Files\Borland\CBuilder4\Projects";src;$(BCB)\lib;$(DEBUGLIBPATH) \
+  -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)

@@ -24,8 +24,8 @@ static const char *ident_config_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.1  2000/05/19 13:08:27  ungod
-** no message
+** Revision 1.1  2000/05/19 13:11:34  ungod
+** initial checkin of the new config engine, class structure is in, but no code in it.
 **
 ** Revision 1.3  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
