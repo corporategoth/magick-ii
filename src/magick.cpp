@@ -972,6 +972,7 @@ void Magick::get_config_values()
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
 {
     FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
+    static bool gotfirstsigsegv=false;
     // todo: fill this sucker in
     switch(signum)
     {
@@ -989,6 +990,16 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     case SIGSEGV:	// Segfault, validate all storage.
+	if(gotfirstsigsegv==false)
+	{
+	    gotfirstsigsegv==true;
+	    CP(("Got first sigsegv call, giving it another chance"));
+	}
+	else
+	{
+	    CP(("Got second sigsegv call, giving magick the boot"));
+	    RET(-1);
+	}
 	break;
 #ifdef SIGBUS
     case SIGBUS:	// Ignore
