@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/10/10 11:47:53  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.13  2000/09/13 12:45:34  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -159,10 +163,10 @@ void MFileOutStream::PrintV(char *format, va_list argptr)
 {
     mstring tmp;
     tmp.FormatV(format, argptr);
-    if (buf_cnt + tmp.Len() >= buf_sz)
+    if (buf_cnt + tmp.length() >= buf_sz)
 	ExpandBuf();
     ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-    buf_cnt+=tmp.Len();
+    buf_cnt+=tmp.length();
 }
 
 void MFileOutStream::Indent()
@@ -319,25 +323,25 @@ void MFileOutStream::BeginObject(Tag& t, dict& attribs)
 	Indent(); m_nIndent++;
 	mstring tmp;
 	tmp.Format("<%s", t.ch);
-	if (buf_cnt + tmp.Len() >= buf_sz)
+	if (buf_cnt + tmp.length() >= buf_sz)
 	    ExpandBuf();
 	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-	buf_cnt+=tmp.Len();
+	buf_cnt+=tmp.length();
 	for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
 		tmp = "";
 		tmp.Format(" %s=\"%s\"",
 			(*i).first.c_str(),
 			(*i).second.c_str() );
-		if (buf_cnt + tmp.Len() >= buf_sz)
+		if (buf_cnt + tmp.length() >= buf_sz)
 		    ExpandBuf();
 		ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-		buf_cnt+=tmp.Len();
+		buf_cnt+=tmp.length();
 	}
 	tmp = ">\n";
-	if (buf_cnt + tmp.Len() >= buf_sz)
+	if (buf_cnt + tmp.length() >= buf_sz)
 	    ExpandBuf();
 	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-	buf_cnt+=tmp.Len();
+	buf_cnt+=tmp.length();
 }
 
 void MFileOutStream::EndObject  (Tag& t)
@@ -346,10 +350,10 @@ void MFileOutStream::EndObject  (Tag& t)
 	Indent();
 	mstring tmp;
 	tmp.Format("</%s>\n", t.ch);
-	if (buf_cnt + tmp.Len() >= buf_sz)
+	if (buf_cnt + tmp.length() >= buf_sz)
 	    ExpandBuf();
 	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
-	buf_cnt+=tmp.Len();
+	buf_cnt+=tmp.length();
 }
 
 void MFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)

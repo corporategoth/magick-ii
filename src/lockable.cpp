@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.53  2000/10/07 11:01:13  prez
 ** Took out placement new's from lockable.cpp, now using derived classes.
 **
@@ -187,7 +191,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
 	    rlock = new mLock_Read((const char *) hash);
 	    if (rlock != NULL)
 	    {
@@ -225,7 +229,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
 	    rlock = new mLock_Read((const char *) hash);
 	    if (rlock != NULL)
 	    {
@@ -272,7 +276,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
 	    wlock = new mLock_Write((const char *) hash);
 	    if (wlock != NULL)
 	    {
@@ -320,7 +324,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
 	    mlock = new mLock_Mutex((const char *) hash);
 	    if (mlock != NULL)
 	    {

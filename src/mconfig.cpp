@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/10/10 11:47:52  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.18  2000/09/30 10:48:08  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -767,24 +771,23 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
     mstring currline, currpath;
     for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
     {
-        currline=*i;
-        currline.Trim(true).Trim(false);
-        if(currline[0]=='[' && currline.Last()==']')
+        currline=i->Strip(true).Strip(false);
+        if(currline[0]=='[' && currline.last()==']')
         {
             // new section
             Result=RootNode.CreateNode(currline.After("[").Before("]"));
             currNode=RootNode.GetNode(currline.After("[").Before("]"));
             currpath = currline.After("[").Before("]");
         }
-        else if(currline.First('=')>0)
+        else if(currline.find_first_of('=')>0)
         {
             // new value
             if(currNode!=NULL)
             {
-		mstring data = currline.After("=").Trim(false);
-		data.Replace("\\ ", " ", true);
-                Result=currNode->SetKey(currline.Before("=").Trim(true), data);
-                CSRC(currpath,currline.Before("=").Trim(true), data);
+		mstring data = currline.After("=").Strip(false);
+		data.replace("\\ ", " ");
+                Result=currNode->SetKey(currline.Before("=").Strip(true), data);
+                CSRC(currpath,currline.Before("=").Strip(true), data);
 	    }
         }
     }
@@ -804,12 +807,12 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
     for(vector<mstring>::const_iterator i=in.begin();i!=in.end();i++)
     {
 	mstring tmp = *i;
-        if(tmp.Len() && tmp[0] != '#' && tmp[0] != ';')
+        if(tmp.length() && tmp[0] != '#' && tmp[0] != ';')
         {
             // if we find ; then it's a comment to end of line, but /; is not a comment.
             bool founddelim=false;
             unsigned int j=1;
-            for (; founddelim == false && j < tmp.Len(); j++)
+            for (; founddelim == false && j < tmp.length(); j++)
             {
                 if(tmp[j] == ';' && tmp[j-1] != '\\')
                 {

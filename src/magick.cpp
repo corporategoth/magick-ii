@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.274  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.273  2000/09/30 10:48:08  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -1073,7 +1077,7 @@ StartGetLang:
 	}
 	mstring tmpstr, tmpstr2;
 	tmpstr2 = name;
-	tmpstr2.Replace(mstring("/"), mstring(" "));
+	tmpstr2.replace("/", " ");
 	tmpstr.Format(getMessage(nick, "ERR_SITUATION/NOHELP"),
 	    tmpstr2.After(" ").c_str());
 	helptext.push_back(tmpstr);
@@ -1300,7 +1304,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--name")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1309,7 +1313,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--desc")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1318,7 +1322,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--user")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1331,7 +1335,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--host")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1339,7 +1343,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--protocol")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1358,7 +1362,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--level")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1371,7 +1375,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--lagtime")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1387,7 +1391,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--log")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1396,7 +1400,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--dbase" || first=="--database")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1405,7 +1409,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--langdir")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1422,7 +1426,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--keyfile")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1435,7 +1439,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--compress" || first=="--compression")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1452,7 +1456,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--relink")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1469,7 +1473,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--cycle" || first=="--expire")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1482,7 +1486,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--save" || first=="--update")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1495,7 +1499,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--check" || first=="--hyperactive")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1508,7 +1512,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--ping")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1521,7 +1525,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--threads" || first=="--min_threads")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1536,7 +1540,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--lwm" || first=="--low_water_mark")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1551,7 +1555,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--hwm" || first=="--high_water_mark")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1574,7 +1578,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--ident")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1587,7 +1591,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--language")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1601,7 +1605,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--inflight")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1618,7 +1622,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--ignore")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
@@ -1635,11 +1639,11 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--convert")
     {
-	if(second.IsEmpty() || second[0U]=='-')
+	if(second.empty() || second[0U]=='-')
 	{
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if (second.CmpNoCase("magick")==0)
+	if (second.IsSameAs("magick", true))
 	{
 	    load_ns_dbase();
 	    load_cs_dbase();
@@ -1667,7 +1671,7 @@ bool Magick::paramshort(mstring first, mstring second)
 {
     FT("Magick::paramshort", (first, second));
     bool ArgUsed = false;
-    for (unsigned int i=1; i<first.Len(); i++) {
+    for (unsigned int i=1; i<first.length(); i++) {
 	if (first[i]=='?')
 	{
 	    // Already handled
@@ -1948,8 +1952,8 @@ bool Magick::get_config_values()
     startup.bind = value_mstring;
 
     in.Read(ts_Startup+"SETMODE",value_mstring, "");
-    value_mstring.Replace("+", "", true);
-    value_mstring.Replace(" ", "", true);
+    value_mstring.replace("+", "");
+    value_mstring.replace(" ", "");
     if (value_mstring != startup.setmode)
 	reconnect_clients = true;
     startup.setmode = value_mstring;
@@ -2038,7 +2042,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2080,7 +2084,7 @@ bool Magick::get_config_values()
 	{
 	    if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2120,7 +2124,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2160,7 +2164,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2200,7 +2204,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2240,7 +2244,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);

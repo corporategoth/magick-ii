@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.76  2000/09/30 10:48:07  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -1099,7 +1103,7 @@ void CommServ::do_Help(mstring mynick, mstring source, mstring params)
     mstring HelpTopic = Parent->commserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
-    HelpTopic.Replace(" ", "/");
+    HelpTopic.replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
@@ -2124,7 +2128,7 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (email.CmpNoCase("none") == 0)
+    if (email.IsSameAs("none", true))
 	email = "";
     else if (!email.Contains("@"))
     {
@@ -2206,7 +2210,7 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (url.CmpNoCase("none") == 0)
+    if (url.IsSameAs("none", true))
 	url = "";
     Parent->commserv.list[committee].URL(url);
     Parent->commserv.stats.i_Set++;
@@ -2283,7 +2287,7 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->commserv.DEF_Secure())
 	    onoff = "TRUE";
@@ -2363,7 +2367,7 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->commserv.DEF_Private())
 	    onoff = "TRUE";
@@ -2443,7 +2447,7 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->commserv.DEF_OpenMemos())
 	    onoff = "TRUE";
@@ -2516,7 +2520,7 @@ void CommServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->commserv.DEF_Secure())
 	    onoff = "TRUE";
@@ -2591,7 +2595,7 @@ void CommServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->commserv.DEF_Private())
 	    onoff = "TRUE";
@@ -2666,7 +2670,7 @@ void CommServ::do_lock_OpenMemos(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->commserv.DEF_OpenMemos())
 	    onoff = "TRUE";

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2000/10/10 11:47:52  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.103  2000/10/07 11:00:13  ungod
 ** no message
 **
@@ -716,7 +720,7 @@ mstring OperServ::OperDeny_value(mstring entry)
 {
     FT("OperServ::OperDeny_value", (entry));
 
-    mstring retval = mstring(0,"");
+    mstring retval;
     MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = OperDeny;
     set<entlist_val_t<mstring> >::iterator iter = OperDeny;
@@ -1209,7 +1213,7 @@ void OperServ::do_Help(mstring mynick, mstring source, mstring params)
     mstring HelpTopic = Parent->operserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
-    HelpTopic.Replace(" ", "/");
+    HelpTopic.replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;

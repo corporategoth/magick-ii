@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.137  2000/10/10 11:47:52  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.136  2000/09/30 10:48:08  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -1381,7 +1385,7 @@ void Nick_Live_t::Name(mstring in)
 
     WLOCK(("NickServ", "live", i_Name.LowerCase()));
     WLOCK2(("NickServ", "live", in.LowerCase()));
-    if (i_Name.CmpNoCase(in)==0)
+    if (i_Name.IsSameAs(in, true))
     {
 	i_Name = in;
 	return;
@@ -2490,7 +2494,7 @@ unsigned long Nick_Stored_t::Drop()
     for (iter = Parent->chanserv.stored.begin();
 	    iter != Parent->chanserv.stored.end(); iter++)
     {
-	if (iter->second.Founder().CmpNoCase(i_Name) == 0)
+	if (iter->second.Founder().IsSameAs(i_Name, true))
 	{
 	    if (iter->second.CoFounder() != "" &&
 		Parent->nickserv.IsStored(iter->second.CoFounder()))
@@ -4314,8 +4318,8 @@ size_t Nick_Stored_t::MyChannels()
     RLOCK(("ChanServ", "stored"));
     for (i=Parent->chanserv.stored.begin(); i!=Parent->chanserv.stored.end(); i++)
     {
-	if (i->second.Founder().CmpNoCase(i_Name)==0 ||
-	    i->second.CoFounder().CmpNoCase(i_Name)==0)
+	if (i->second.Founder().IsSameAs(i_Name, true) ||
+	    i->second.CoFounder().IsSameAs(i_Name, true))
 	    count++;
     }
     RET(count);
@@ -4582,9 +4586,9 @@ mstring NickServ::findnextnick(mstring in)
 
     if (Parent->nickserv.Append_Rename())
     {
-	for (i=0; i<Parent->nickserv.Suffixes().Len(); i++)
+	for (i=0; i<Parent->nickserv.Suffixes().length(); i++)
 	{
-	    while (retval.Len() < Parent->server.proto.NickLen())
+	    while (retval.length() < Parent->server.proto.NickLen())
 	    {
 		retval << Parent->nickserv.Suffixes()[i];
 		if (!Parent->nickserv.IsLiveAll(retval) &&
@@ -4990,7 +4994,7 @@ void NickServ::do_Help(mstring mynick, mstring source, mstring params)
     mstring HelpTopic = Parent->nickserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
-    HelpTopic.Replace(" ", "/");
+    HelpTopic.replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
@@ -5025,7 +5029,7 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
 		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince(),
 		source).c_str());
     }
-    else if (password.Len() < 5 || !password.CmpNoCase(source))
+    else if (password.length() < 5 || !password.IsSameAs(source, true))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
     }
@@ -5213,7 +5217,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
 	}
 
 	if (!(Parent->nickserv.stored[target.LowerCase()].IsSibling(source) ||
-		Parent->nickserv.stored[target.LowerCase()].Host().CmpNoCase(source)==0))
+		Parent->nickserv.stored[target.LowerCase()].Host().IsSameAs(source, true)))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTYOURS"),
 							target.c_str());
@@ -5290,7 +5294,7 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
 
 	if (!(source.LowerCase() == newhost.LowerCase() ||
 		Parent->nickserv.stored[newhost.LowerCase()].IsSibling(source) ||
-		Parent->nickserv.stored[newhost.LowerCase()].Host().CmpNoCase(source)==0))
+		Parent->nickserv.stored[newhost.LowerCase()].Host().IsSameAs(source, true)))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTLINKED"),
 						newhost.c_str());
@@ -5366,8 +5370,8 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 
     for (unsigned int i=0; i<Parent->nickserv.stored[target.LowerCase()].Siblings(); i++)
     {
-	if (Parent->nickserv.stored[target.LowerCase()].Sibling(i).Len() +
-		output.Len() > 510)
+	if (Parent->nickserv.stored[target.LowerCase()].Sibling(i).length() +
+		output.length() > 510)
 	{
 	    ::send(mynick, source, output);
 	    output = "";
@@ -5475,7 +5479,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    if (Parent->nickserv.IsStored(nick->Sibling(i)) &&
 		Parent->nickserv.stored[nick->Sibling(i).LowerCase()].IsOnline())
 	    {
-		if (output.Len() + nick->Sibling(i).Len() > Parent->server.proto.MaxLine())
+		if (output.length() + nick->Sibling(i).length() > Parent->server.proto.MaxLine())
 		{
 		    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ONLINEAS"),
 						output.c_str());
@@ -5557,7 +5561,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
 	{
-	    if (output.Len() + iter->second.Name().Len() > Parent->server.proto.MaxLine())
+	    if (output.length() + iter->second.Name().length() > Parent->server.proto.MaxLine())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
 						output.c_str());
@@ -5661,7 +5665,7 @@ void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
     mstring nick = params.ExtractWord(2, " ");
     mstring pass = params.ExtractWord(3, " ");
 
-    if (nick.CmpNoCase(source)==0)
+    if (nick.IsSameAs(source, true))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
 						message.c_str());
@@ -5727,7 +5731,7 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
     mstring nick = params.ExtractWord(2, " ");
     mstring pass = params.ExtractWord(3, " ");
 
-    if (nick.CmpNoCase(source)==0)
+    if (nick.IsSameAs(source, true))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
 						message.c_str());
@@ -6616,8 +6620,8 @@ void NickServ::do_set_Password(mstring mynick, mstring source, mstring params)
     }
 
     mstring oldpass = Parent->nickserv.stored[source.LowerCase()].Password();
-    if (newpass.CmpNoCase(oldpass) == 0 || newpass.CmpNoCase(source) == 0 ||
-	newpass.Len() < 5)
+    if (newpass.IsSameAs(oldpass, true) || newpass.IsSameAs(source, true) ||
+	newpass.length() < 5)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
 	return;
@@ -6646,7 +6650,7 @@ void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     mstring newvalue = params.ExtractWord(3, " ");
 
-    if (newvalue.CmpNoCase("none") == 0)
+    if (newvalue.IsSameAs("none", true))
 	newvalue = "";
     else if (!newvalue.Contains("@"))
     {
@@ -6697,7 +6701,7 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
 
     mstring newvalue = params.ExtractWord(3, " ");
 
-    if (newvalue.CmpNoCase("none") == 0)
+    if (newvalue.IsSameAs("none", true))
 	newvalue = "";
 
     Parent->nickserv.stored[source.LowerCase()].URL(newvalue);
@@ -6737,7 +6741,7 @@ void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
 
     mstring newvalue = params.ExtractWord(3, " ");
 
-    if (newvalue.CmpNoCase("none") == 0)
+    if (newvalue.IsSameAs("none", true))
 	newvalue = "";
 
     Parent->nickserv.stored[source.LowerCase()].ICQ(newvalue);
@@ -6776,7 +6780,7 @@ void NickServ::do_set_Description(mstring mynick, mstring source, mstring params
 
     mstring newvalue = params.After(" ", 2);
 
-    if (newvalue.CmpNoCase("none") == 0)
+    if (newvalue.IsSameAs("none", true))
 	newvalue = "";
 
     Parent->nickserv.stored[source.LowerCase()].Description(newvalue);
@@ -6831,7 +6835,7 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (comment.CmpNoCase("none") == 0)
+    if (comment.IsSameAs("none", true))
 	comment = "";
 
     Parent->nickserv.stored[target.LowerCase()].Comment(comment);
@@ -6877,7 +6881,7 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
     }
 
     if (params.WordCount(" ") > 2 &&
-	params.ExtractWord(3, " ").CmpNoCase("NONE")==0)
+	params.ExtractWord(3, " ").IsSameAs("none", true))
     {
 	if (Parent->nickserv.stored[source.LowerCase()].PicNum())
 	    Parent->filesys.EraseFile(FileMap::Picture,
@@ -6919,7 +6923,7 @@ void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_Protect())
 	    onoff = "TRUE";
@@ -6969,7 +6973,7 @@ void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_Secure())
 	    onoff = "TRUE";
@@ -7035,7 +7039,7 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_NoExpire())
 	    onoff = "TRUE";
@@ -7086,7 +7090,7 @@ void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_NoMemo())
 	    onoff = "TRUE";
@@ -7136,7 +7140,7 @@ void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_Private())
 	    onoff = "TRUE";
@@ -7186,7 +7190,7 @@ void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_PRIVMSG())
 	    onoff = "TRUE";
@@ -7246,7 +7250,7 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!lang.CmpNoCase("default") || !lang.CmpNoCase("reset"))
+    if (lang.IsSameAs("default", true) || lang.IsSameAs("reset", true))
     {
 	lang = Parent->nickserv.DEF_Language().UpperCase();
     }
@@ -7311,7 +7315,7 @@ void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_Protect())
 	    onoff = "TRUE";
@@ -7380,7 +7384,7 @@ void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_Secure())
 	    onoff = "TRUE";
@@ -7449,7 +7453,7 @@ void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_NoMemo())
 	    onoff = "TRUE";
@@ -7518,7 +7522,7 @@ void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_Private())
 	    onoff = "TRUE";
@@ -7587,7 +7591,7 @@ void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->nickserv.DEF_PRIVMSG())
 	    onoff = "TRUE";
@@ -7666,7 +7670,7 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!lang.CmpNoCase("default") || !lang.CmpNoCase("reset"))
+    if (lang.IsSameAs("default", true) || lang.IsSameAs("reset", true))
     {
 	lang = Parent->nickserv.DEF_Language().UpperCase();
     }

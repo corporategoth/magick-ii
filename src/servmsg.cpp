@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/10/10 11:47:53  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.69  2000/09/30 10:48:09  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -407,7 +411,7 @@ void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
     mstring HelpTopic = Parent->servmsg.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
-    HelpTopic.Replace(" ", "/");
+    HelpTopic.replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
@@ -432,7 +436,7 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
-	if (credits[i].Len())
+	if (credits[i].length())
 	    ::send(mynick, source, credits[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
@@ -455,7 +459,7 @@ void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
-	if (contrib[i].Len())
+	if (contrib[i].length())
 	    ::send(mynick, source, contrib[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
@@ -484,14 +488,14 @@ void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
 	set<mstring>::iterator i;
 	for (i=langs.begin(); i != langs.end(); i++)
 	{
-	    if (output.Len() > Parent->server.proto.MaxLine())
+	    if (output.length() > Parent->server.proto.MaxLine())
 	    {
 		::send(mynick, source, "    " + output);
 		output = "";
 	    }
 	    val = *i;
 	    val.Truncate(val.Find(".", true));
-	    if (output.Len())
+	    if (output.length())
 		output += ", ";
 	    if (val.UpperCase() == Parent->nickserv.DEF_Language())
 		output += IRC_Bold;
@@ -499,7 +503,7 @@ void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
 	    if (val.UpperCase() == Parent->nickserv.DEF_Language())
 		output += IRC_Off;
 	}
-	if (output.Len())
+	if (output.length())
 	    ::send(mynick, source, "    " + output);
     }
     else
@@ -1190,7 +1194,7 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 		{
 		    display = false;
 		    priv = Parent->filesys.GetPriv(FileMap::Public, filelist[j]);
-		    if (priv.IsEmpty())
+		    if (priv.empty())
 			display = true;
 		    else
 		    {
@@ -1379,7 +1383,7 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 
     bool display = false;
     mstring priv = Parent->filesys.GetPriv(FileMap::Public, filenum);
-    if (priv.IsEmpty())
+    if (priv.empty())
 	display = true;
     else
     {
@@ -1495,14 +1499,14 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
 
     mstring hexstr = params.ExtractWord(3, " ").LowerCase();
 
-    if (hexstr.Len() != 8)
+    if (hexstr.length() != 8)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
 	return;
     }
     else
     {
-	for (unsigned int i=0; i<hexstr.Len(); i++)
+	for (unsigned int i=0; i<hexstr.length(); i++)
 	    if (!mstring("0123456789abcdef").Contains(hexstr[i]))
 	    {
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
@@ -1553,14 +1557,14 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
     mstring type   = params.ExtractWord(3, " ").UpperCase();
     mstring hexstr = params.ExtractWord(4, " ").LowerCase();
 
-    if (hexstr.Len() != 8)
+    if (hexstr.length() != 8)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
 	return;
     }
     else
     {
-	for (unsigned int i=0; i<hexstr.Len(); i++)
+	for (unsigned int i=0; i<hexstr.length(); i++)
 	    if (!mstring("0123456789abcdef").Contains(hexstr[i]))
 	    {
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);

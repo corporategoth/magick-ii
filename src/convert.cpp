@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.20  2000/09/30 10:48:07  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -383,9 +387,9 @@ CreateNickEntry(NickInfo *ni)
 	if (ni->url != NULL)
 	    out.i_URL = mstring(ni->url);
 	if (out.i_URL.Contains("http://"))
-	    out.i_URL.Replace("http://", "");
+	    out.i_URL.replace("http://", "", false);
 	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.Replace("HTTP://", "");
+	    out.i_URL.replace("HTTP://", "", false);
 	if (ni->last_realname != NULL)
 	    out.i_LastRealName = mstring(ni->last_realname);
 	out.i_RegTime = mDateTime(ni->time_registered);
@@ -1006,9 +1010,9 @@ CreateChanEntry(ChanInfo *ci)
 	if (ci->url != NULL)
 	    out.i_URL = mstring(ci->url);
 	if (out.i_URL.Contains("http://"))
-	    out.i_URL.Replace("http://", "");
+	    out.i_URL.replace("http://", "", false);
 	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.Replace("HTTP://", "");
+	    out.i_URL.replace("HTTP://", "", false);
 	out.i_RegTime = mDateTime(ci->time_registered);
 	out.i_LastUsed = mDateTime(ci->last_used);
 	mstring modelock;
@@ -1030,7 +1034,7 @@ CreateChanEntry(ChanInfo *ci)
 	{
 	    modelock << " " << ci->mlock_limit;
 	}
-	if (modelock.Len())
+	if (modelock.length())
 	    out.Mlock(Parent->chanserv.FirstName(), modelock);
 	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
 	{

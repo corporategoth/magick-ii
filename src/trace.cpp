@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2000/10/10 11:47:53  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.100  2000/09/01 10:54:39  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -120,7 +124,7 @@ mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT"
 
 unsigned short makehex (mstring SLevel)
 {
-    if (SLevel.Len() != 6 || SLevel[0u]!='0' ||
+    if (SLevel.length() != 6 || SLevel[0u]!='0' ||
 		    (SLevel[1u]!='x' && SLevel[1u]!='X'))
 	return 0;
 
@@ -405,7 +409,7 @@ T_Functions::~T_Functions()
     ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message;
-	if (!return_value.type().IsEmpty())
+	if (!return_value.type().empty())
 		message="/  (" + return_value.type() + ") " + return_value.AsString();
 	else
 		message="/ ";
@@ -622,7 +626,7 @@ T_Locking::~T_Locking()
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) {
-	if (!name.IsEmpty())
+	if (!name.empty())
 	{
     	    mstring message;
 	    if(locktype == L_Read)

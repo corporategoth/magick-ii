@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.212  2000/10/10 11:47:50  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.211  2000/10/07 11:00:11  ungod
 ** no message
 **
@@ -1779,7 +1783,7 @@ bool Chan_Stored_t::Join(mstring nick)
     }
 
     if (nlive->IsServices() &&
-	Parent->chanserv.FirstName().CmpNoCase(nick)==0)
+	Parent->chanserv.FirstName().IsSameAs(nick, true))
     {
 	clive->SendMode("+o " + nick);
 	RET(true);
@@ -2801,7 +2805,7 @@ void Chan_Stored_t::Founder(mstring in)
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
     MCB(i_Founder);
-    if (i_CoFounder.CmpNoCase(in)==0)
+    if (i_CoFounder.IsSameAs(in, true))
     {
 	CB(1, i_CoFounder);
 	i_CoFounder = "";
@@ -2825,7 +2829,7 @@ void Chan_Stored_t::CoFounder(mstring in)
     }
 
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
-    if (i_Founder.CmpNoCase(in)==0)
+    if (i_Founder.IsSameAs(in, true))
 	return;
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
 
@@ -5799,7 +5803,7 @@ void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
     mstring HelpTopic = Parent->chanserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
-    HelpTopic.Replace(" ", "/");
+    HelpTopic.replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
@@ -5855,8 +5859,8 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (password.Len() < 5 || password.CmpNoCase(channel.After(channel[0u])) == 0 ||
-	password.CmpNoCase(channel) == 0 || password.CmpNoCase(source) == 0)
+    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) ||
+	password.IsSameAs(channel, true) || password.IsSameAs(source, true))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
 	return;
@@ -7125,7 +7129,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
     for (i=0; i<chan->Users(); i++)
     {
 	user = Parent->getLname(chan->User(i));
-	if (output.size() + user.Len() > Parent->server.proto.MaxLine())
+	if (output.size() + user.length() > Parent->server.proto.MaxLine())
 	{
 	    ::send(mynick, source, output);
 	    output = channel + ": ";
@@ -7140,21 +7144,21 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 	}
 	output << user << " ";
     }
-    if (output.Len() > channel.Len() + 2)
+    if (output.length() > channel.length() + 2)
 	::send(mynick, source, output);
 
     output = channel + " (SPLIT): ";
     for (i=0; i<chan->Squit(); i++)
     {
 	user = Parent->getLname(chan->Squit(i));
-	if (output.size() + user.Len() > Parent->server.proto.MaxLine())
+	if (output.size() + user.length() > Parent->server.proto.MaxLine())
 	{
 	    ::send(mynick, source, output);
 	    output = channel + " (SQUIT): ";
 	}
 	output << user << " ";
     }
-    if (output.Len() > channel.Len() + 10)
+    if (output.length() > channel.length() + 10)
 	::send(mynick, source, output);
 }
 
@@ -7458,7 +7462,7 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
     for (i=0; i<clive->Users(); i++)
     {
 	mstring user = clive->User(i);
-	if (user.CmpNoCase(source) != 0 && Parent->nickserv.IsLive(user) &&
+	if (!user.IsSameAs(source) && Parent->nickserv.IsLive(user) &&
 		!Parent->nickserv.live[user.LowerCase()].IsServices())
 	    kickees.push_back(clive->User(i));
     }
@@ -8937,7 +8941,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
 	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))))
     {
-	if (params.ExtractWord(3, " ").CmpNoCase("all") == 0)
+	if (params.ExtractWord(3, " ").IsSameAs("all", true))
 	    all = true;
     }
     else if (!cstored->GetAccess(source, "GREET"))
@@ -9402,8 +9406,8 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (password.Len() < 5 || password.CmpNoCase(channel.After(channel[0u])) == 0 ||
-	password.CmpNoCase(channel) == 0 || password.CmpNoCase(source) == 0)
+    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) ||
+	password.IsSameAs(channel, true) || password.IsSameAs(source, true))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
 	return;
@@ -9453,7 +9457,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (option.CmpNoCase("none") == 0)
+    if (option.IsSameAs("none", true))
 	option = "";
     else if (!option.Contains("@"))
     {
@@ -9526,7 +9530,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (option.CmpNoCase("none") == 0)
+    if (option.IsSameAs("none", true))
 	option = "";
     cstored->URL(option);
     Parent->chanserv.stats.i_Set++;
@@ -9579,7 +9583,7 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     channel = cstored->Name();
 
-    if (option.CmpNoCase("none") == 0)
+    if (option.IsSameAs("none", true))
 	option = "";
     cstored->Comment(option);
     Parent->chanserv.stats.i_Set++;
@@ -9639,7 +9643,7 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
 	option = Parent->chanserv.DEF_MLock();
     }
@@ -9800,7 +9804,7 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Keeptopic())
 	    onoff = "TRUE";
@@ -9871,7 +9875,7 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Topiclock())
 	    onoff = "TRUE";
@@ -9942,7 +9946,7 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Private())
 	    onoff = "TRUE";
@@ -10013,7 +10017,7 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Secureops())
 	    onoff = "TRUE";
@@ -10084,7 +10088,7 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Secure())
 	    onoff = "TRUE";
@@ -10148,7 +10152,7 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_NoExpire())
 	    onoff = "TRUE";
@@ -10219,7 +10223,7 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Anarchy())
 	    onoff = "TRUE";
@@ -10290,7 +10294,7 @@ void ChanServ::do_set_KickOnBan(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_KickOnBan())
 	    onoff = "TRUE";
@@ -10361,7 +10365,7 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Restricted())
 	    onoff = "TRUE";
@@ -10441,7 +10445,7 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Join())
 	    onoff = "TRUE";
@@ -10523,7 +10527,7 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
 	option = Parent->chanserv.DEF_Revenge();
     }
@@ -10574,7 +10578,7 @@ void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     channel = cstored->Name();
 
-    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
 	option = Parent->chanserv.DEF_MLock();
     }
@@ -10718,7 +10722,7 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Keeptopic())
 	    onoff = "TRUE";
@@ -10784,7 +10788,7 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Topiclock())
 	    onoff = "TRUE";
@@ -10850,7 +10854,7 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Private())
 	    onoff = "TRUE";
@@ -10916,7 +10920,7 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Secureops())
 	    onoff = "TRUE";
@@ -10982,7 +10986,7 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Secure())
 	    onoff = "TRUE";
@@ -11048,7 +11052,7 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Anarchy())
 	    onoff = "TRUE";
@@ -11114,7 +11118,7 @@ void ChanServ::do_lock_KickOnBan(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_KickOnBan())
 	    onoff = "TRUE";
@@ -11180,7 +11184,7 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Restricted())
 	    onoff = "TRUE";
@@ -11255,7 +11259,7 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
 	if (Parent->chanserv.DEF_Join())
 	    onoff = "TRUE";
@@ -11333,7 +11337,7 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
 	option = Parent->chanserv.DEF_Revenge();
     }

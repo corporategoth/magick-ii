@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.138  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.137  2000/10/04 10:52:08  prez
 ** Fixed the memory pool and removed printf's.
 **
@@ -388,7 +392,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    }
 	}
 
-	if (data2.Last() == '\n' || data2.Last() == '\r')
+	if (data2.last() == '\n' || data2.last() == '\r')
 	{
 	    mstring text = data2.ExtractWord(i,"\n\r");
 	    if(text!="")
@@ -548,8 +552,8 @@ int IrcSvcHandler::send(const mstring & data)
 {
     FT("IrcSvcHandler::send",(data));
     int recvResult;
-    out_traffic += data.Len();
-    recvResult=sock.send((void *) (data + "\r\n").c_str(),data.Len()+2);
+    out_traffic += data.length();
+    recvResult=sock.send((void *) (data + "\r\n").c_str(),data.length()+2);
     CH(D_To,data);
     RET(recvResult);
 }

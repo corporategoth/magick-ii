@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/10/10 11:47:50  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.49  2000/10/07 11:00:11  ungod
 ** no message
 **
@@ -74,117 +78,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** ========================================================== */
 
 
-class mstring:public string
-{
-	typedef string inherited;
-public:
-	mstring(const mstring& in);
-	mstring(const string& in);
-	mstring(const mstring& in, inherited::size_type pos, inherited::size_type n);
-	mstring(const char *in);
-	mstring(const char *in, inherited::size_type pos);
-	mstring(char c);
-/*	mstring(double d);
-	mstring(float f);
-	mstring(long l);
-	mstring(unsigned long l);
-	mstring(int i);
-	mstring(unsigned int i);
-*/
-	mstring(inherited::size_type n, char c);
-	mstring(inherited::const_iterator first, inherited::const_iterator last);
-	mstring();
+/* This would have to be the most interoperable class
+ * in the existance of C++ ;P */
 
-	// below are fast convert_to_string+append functions
-	mstring& operator <<(char ch);
-	mstring& operator <<(const char *psz);
-	mstring& operator <<(const mstring& s);
-	mstring& operator <<(double d);
-	mstring& operator <<(float f);
-	mstring& operator <<(long l);
-	mstring& operator <<(unsigned long l);
-	mstring& operator <<(int i);
-	mstring& operator <<(unsigned int i);
-	// non-destructive operators
-	friend mstring operator+(const mstring& inp_string, char ch);
-	friend mstring operator+(char ch, const mstring& inp_string);
-	friend mstring operator+(const mstring& inp_string, const char *psz);
-	friend mstring operator+(const char *psz, const mstring& inp_string);
-	/* friend mstring operator+(const mstring& inp_string, const mstring& s);
-	friend mstring operator+(const mstring& s, const mstring& inp_string); */
-	friend mstring operator+(const mstring& inp_string, double d);
-	friend mstring operator+(double d, const mstring& inp_string);
-	friend mstring operator+(const mstring& inp_string, float f);
-	friend mstring operator+(float f, const mstring& inp_string);
-	friend mstring operator+(const mstring& inp_string, long l);
-	friend mstring operator+(long l, const mstring& inp_string);
-	friend mstring operator+(const mstring& inp_string, unsigned long l);
-	friend mstring operator+(unsigned long l, const mstring& inp_string);
-	friend mstring operator+(const mstring& inp_string, int i);
-	friend mstring operator+(int i, const mstring& inp_string);
-	friend mstring operator+(const mstring& inp_string, unsigned int i);
-	friend mstring operator+(unsigned int i, const mstring& inp_string);
-	mstring operator()(size_t start,size_t len);
-	operator const char *() const { return c_str(); }
-
-	mstring UpperCase() const;
-    // values for first parameter of Strip function
-	enum stripType {stLeading, stTrailing , stBoth };
-	mstring Strip(stripType s=stTrailing);
-	size_t Replace(const mstring& szOld, const mstring& szNew, bool replaceAll=true);
-	mstring& RemoveLast();
-	mstring& Remove(int nStart, size_t nLen);
-	mstring& Remove(int pos);
-	mstring& Remove(mstring str);
-	mstring LowerCase() const;
-	bool IsWord() const;
-	bool IsNumber() const;
-	bool IsNull() const;
-	bool IsEmpty() const;
-	bool IsBool() const;
-	bool GetBool() const;
-	char Last() const;
-	size_t Len() const;
-	bool IsAscii() const;
-	int Index(const mstring& in, bool caseSensitive=true, bool fromEnd=false)const;
-	int Index(char ch, int startpos=0)const;
-	int First(const mstring& in)const;
-	int First(char c)const;
-	int Find(const mstring & in, int count=1)const;
-	int Find(char ch, bool bFromEnd=false)const;
-	void Empty();
-	bool Contains(const mstring& in)const;
-	mstring& Prepend(char ch, int count=1);
-	mstring& Prepend(const mstring& in);
-	mstring& Append(char ch, int count=1);
-	mstring& Append(const mstring& in);
-	// values for second parameter of CompareTo function
-	enum caseCompare {ccExact, ccIgnoreCase};
-
-	int CompareTo(const mstring& in, caseCompare cmp=ccExact);
-	int FormatV(const char *pszFormat, va_list argptr);
-	int Format(const char *pszFormat, ...);
-	bool Matches(const mstring& in, bool nocase = false)const;
-	mstring& Truncate(int uiLine);
-	mstring& Pad(size_t nCount, char chPad=' ', bool bFromRight=true);
-	mstring& Trim(bool bFromRight=true);
-	void MakeLower();
-	void MakeUpper();
-	mstring RevAfter(const mstring& in) const;
-	mstring RevBefore(const mstring& in) const;
-	mstring After(const mstring& in, int count=1) const;
-	mstring Before(const mstring& in,int count=1) const;
-	mstring Right(int nCount)const;
-	mstring Left(int nCount)const;
-	mstring SubString(int from, int to)const;
-	mstring Mid(int nFirst, int nCount=npos)const;
-	bool IsSameAs(const mstring& in, bool bCase=true);
-	int CmpNoCase(const mstring& in);
-	int Cmp(const mstring& in);
-	unsigned int WordCount(const mstring &separators, bool assemble = true)const;
-	mstring ExtractWord(int count,const mstring& separators, bool assemble = true)const;
-	unsigned int WordPosition(unsigned int count,const mstring& separators, bool assemble = true)const;
-};
+class mstring;
 
 #ifndef HAVE_ITOA
 const char *itoa(int i);
@@ -204,6 +101,12 @@ const char *ultoa(unsigned long ul);
 #ifndef HAVE_UITOA
 const char *uitoa(unsigned int ui);
 #endif
+#ifndef HAVE_SNPRINTF
+int snprintf(char *buf, size_t size, const char *fmt, ...);
+#endif
+#ifndef HAVE_VSNPRINTF
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap);
+#endif
 
 extern const mstring DirSlash;
 extern const mstring Blank;
@@ -213,6 +116,430 @@ extern const mstring IRC_Reverse;
 extern const mstring IRC_Colour;
 extern const mstring IRC_Off;
 
-extern bool match_wild (const char *pattern, const char *str, bool nocase = false);
+bool match_wild (const char *pattern, const char *str, bool docase);
+bool operator== (const mstring &lhs, const mstring &rhs);
+bool operator== (const mstring &lhs, const string &rhs);
+bool operator== (const mstring &lhs, const char *rhs);
+bool operator== (const mstring &lhs, const char rhs);
+bool operator== (const mstring &lhs, const unsigned char rhs);
+bool operator== (const string &lhs, const mstring &rhs);
+bool operator== (const char *lhs, const mstring &rhs);
+bool operator== (const char lhs, const mstring &rhs);
+bool operator== (const unsigned char lhs, const mstring &rhs);
+
+bool operator!= (const mstring &lhs, const mstring &rhs);
+bool operator!= (const mstring &lhs, const string &rhs);
+bool operator!= (const mstring &lhs, const char *rhs);
+bool operator!= (const mstring &lhs, const char rhs);
+bool operator!= (const mstring &lhs, const unsigned char rhs);
+bool operator!= (const string &lhs, const mstring &rhs);
+bool operator!= (const char *lhs, const mstring &rhs);
+bool operator!= (const char lhs, const mstring &rhs);
+bool operator!= (const unsigned char lhs, const mstring &rhs);
+
+bool operator< (const mstring &lhs, const mstring &rhs);
+bool operator< (const mstring &lhs, const string &rhs);
+bool operator< (const mstring &lhs, const char *rhs);
+bool operator< (const mstring &lhs, const char rhs);
+bool operator< (const mstring &lhs, const unsigned char rhs);
+bool operator< (const string &lhs, const mstring &rhs);
+bool operator< (const char *lhs, const mstring &rhs);
+bool operator< (const char lhs, const mstring &rhs);
+bool operator< (const unsigned char lhs, const mstring &rhs);
+
+bool operator> (const mstring &lhs, const mstring &rhs);
+bool operator> (const mstring &lhs, const string &rhs);
+bool operator> (const mstring &lhs, const char *rhs);
+bool operator> (const mstring &lhs, const char rhs);
+bool operator> (const mstring &lhs, const unsigned char rhs);
+bool operator> (const string &lhs, const mstring &rhs);
+bool operator> (const char *lhs, const mstring &rhs);
+bool operator> (const char lhs, const mstring &rhs);
+bool operator> (const unsigned char lhs, const mstring &rhs);
+
+bool operator<= (const mstring &lhs, const mstring &rhs);
+bool operator<= (const mstring &lhs, const string &rhs);
+bool operator<= (const mstring &lhs, const char *rhs);
+bool operator<= (const mstring &lhs, const char rhs);
+bool operator<= (const mstring &lhs, const unsigned char rhs);
+bool operator<= (const string &lhs, const mstring &rhs);
+bool operator<= (const char *lhs, const mstring &rhs);
+bool operator<= (const char lhs, const mstring &rhs);
+bool operator<= (const unsigned char lhs, const mstring &rhs);
+
+bool operator>= (const mstring &lhs, const mstring &rhs);
+bool operator>= (const mstring &lhs, const string &rhs);
+bool operator>= (const mstring &lhs, const char *rhs);
+bool operator>= (const mstring &lhs, const char rhs);
+bool operator>= (const mstring &lhs, const unsigned char rhs);
+bool operator>= (const string &lhs, const mstring &rhs);
+bool operator>= (const char *lhs, const mstring &rhs);
+bool operator>= (const char lhs, const mstring &rhs);
+bool operator>= (const unsigned char lhs, const mstring &rhs);
+
+mstring operator+ (const mstring &lhs, const mstring &rhs);
+mstring operator+ (const mstring &lhs, const string &rhs);
+mstring operator+ (const mstring &lhs, const char *rhs);
+mstring operator+ (const mstring &lhs, const char rhs);
+mstring operator+ (const mstring &lhs, const unsigned char rhs);
+mstring operator+ (const mstring &lhs, const int rhs);
+mstring operator+ (const mstring &lhs, const unsigned int rhs);
+mstring operator+ (const mstring &lhs, const long rhs);
+mstring operator+ (const mstring &lhs, const unsigned long rhs);
+mstring operator+ (const mstring &lhs, const float rhs);
+mstring operator+ (const mstring &lhs, const double rhs);
+mstring operator+ (const string &lhs, const mstring &rhs);
+mstring operator+ (const char *lhs, const mstring &rhs);
+mstring operator+ (const char lhs, const mstring &rhs);
+mstring operator+ (const unsigned char lhs, const mstring &rhs);
+mstring operator+ (const int lhs, const mstring &rhs);
+mstring operator+ (const unsigned int lhs, const mstring &rhs);
+mstring operator+ (const long lhs, const mstring &rhs);
+mstring operator+ (const unsigned long lhs, const mstring &rhs);
+mstring operator+ (const float lhs, const mstring &rhs);
+mstring operator+ (const double lhs, const mstring &rhs);
+
+class mstring
+{
+    char *i_str;
+    size_t i_len;
+
+public:
+    mstring()
+	{ i_len = 0; i_str = NULL; }
+    mstring(const mstring &in)
+	{ i_str = NULL; copy(in); }
+    mstring(const string &in)
+	{ i_str = NULL; copy(in); }
+    mstring(const char *in, size_t length)
+	{ i_str = NULL; copy(in, length); }
+    mstring(const char *in)
+	{ i_str = NULL; copy(in); }
+    mstring(const char in)
+	{ i_str = NULL; copy(in); }
+    mstring(const unsigned char in)
+	{ i_str = NULL; copy(in); }
+    mstring(const int in)
+	{ i_str = NULL; copy(in); }
+    mstring(const unsigned int in)
+	{ i_str = NULL; copy(in); }
+    mstring(const long in)
+	{ i_str = NULL; copy(in); }
+    mstring(const unsigned long in)
+	{ i_str = NULL; copy(in); }
+    mstring(const float in)
+	{ i_str = NULL; copy(in); }
+    mstring(const double in)
+	{ i_str = NULL; copy(in); }
+    ~mstring()
+	{ if (i_str != NULL) delete [] i_str; }
+
+    void copy(const char *in, size_t length);
+    void append(const char *in, size_t length);
+    void erase(int begin = 0, int end = -1);
+    void insert(size_t pos, const char *in, size_t length);
+    int compare(const char *in, size_t length) const;
+    void swap(mstring &in);
+    const char *c_str() const;
+    char first() const;
+    char last() const;
+
+    size_t length() const
+	{ return i_len; }
+    size_t size() const
+	{ return i_len; }
+    size_t capacity() const
+	{ return i_len+1; }
+    bool empty() const
+	{ return (i_str == NULL); }
+
+    // Aliases for the above ...
+    void copy(const mstring &in)
+	{ copy(in.i_str, in.i_len); }
+    void copy(const string &in)
+	{ copy(in.c_str(), in.length()); }
+    void copy(const char *in)
+	{ copy(in, strlen(in)); }
+    void copy(const char in)
+	{ copy(&in, 1); }
+    void copy(const unsigned char in)
+	{ copy((const char *) &in, 1); }
+    void copy(const int in)
+	{ mstring out; out.Format("%d", in); copy(out); }
+    void copy(const unsigned int in)
+	{ mstring out; out.Format("%u", in); copy(out); }
+    void copy(const long in)
+	{ mstring out; out.Format("%d", in); copy(out); }
+    void copy(const unsigned long in)
+	{ mstring out; out.Format("%u", in); copy(out); }
+    void copy(const float in)
+	{ mstring out; out.Format("%f", in); copy(out); }
+    void copy(const double in)
+	{ mstring out; out.Format("%f", in); copy(out); }
+
+    void append(const mstring &in)
+	{ append(in.i_str, in.i_len); }
+    void append(const string &in)
+	{ append(in.c_str(), in.length()); }
+    void append(const char *in)
+	{ append(in, strlen(in)); }
+    void append(const char in)
+	{ append(&in, 1); }
+    void append(const unsigned char in)
+	{ append((const char *) &in, 1); }
+    void append(const int in)
+	{ mstring out(in); append(out); }
+    void append(const unsigned int in)
+	{ mstring out(in); append(out); }
+    void append(const long in)
+	{ mstring out(in); append(out); }
+    void append(const unsigned long in)
+	{ mstring out(in); append(out); }
+    void append(const float in)
+	{ mstring out(in); append(out); }
+    void append(const double in)
+	{ mstring out(in); append(out); }
+
+    void insert(size_t pos, const mstring &in)
+	{ insert(pos, in.i_str, in.i_len); }
+    void insert(size_t pos, const string &in)
+	{ insert(pos, in.c_str(), in.length()); }
+    void insert(size_t pos, const char *in)
+	{ insert(pos, in, strlen(in)); }
+    void insert(size_t pos, const char in)
+	{ insert(pos, &in, 1); }
+    void insert(size_t pos, const unsigned char in)
+	{ insert(pos, (const char *) &in, 1); }
+    void insert(size_t pos, const int in)
+	{ mstring out(in); insert(pos, out); }
+    void insert(size_t pos, const unsigned int in)
+	{ mstring out(in); insert(pos, out); }
+    void insert(size_t pos, const long in)
+	{ mstring out(in); insert(pos, out); }
+    void insert(size_t pos, const unsigned long in)
+	{ mstring out(in); insert(pos, out); }
+    void insert(size_t pos, const float in)
+	{ mstring out(in); insert(pos, out); }
+    void insert(size_t pos, const double in)
+	{ mstring out(in); insert(pos, out); }
+
+    int compare(const mstring &in) const
+	{ return compare(in.i_str, in.i_len); }
+    int compare(const string &in) const
+	{ return compare(in.c_str(), in.length()); }
+    int compare(const char *in) const
+	{ return compare(in, strlen(in)); }
+    int compare(const char in) const
+	{ return compare(&in, 1); }
+    int compare(const unsigned char in) const
+	{ return compare((const char *) &in, 1); }
+    int compare(const int in) const
+	{ mstring out(in); return compare(in); }
+    int compare(const unsigned int in) const
+	{ mstring out(in); return compare(in); }
+    int compare(const long in) const
+	{ mstring out(in); return compare(in); }
+    int compare(const unsigned long in) const
+	{ mstring out(in); return compare(in); }
+    int compare(const float in) const
+	{ mstring out(in); return compare(in); }
+    int compare(const double in) const
+	{ mstring out(in); return compare(in); }
+
+    char operator[] (size_t off) const;
+    operator const char *() const
+	{ return c_str(); }
+    operator const string () const
+	{ return string(c_str()); }
+
+    mstring &operator= (const mstring &rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const string &rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const char *rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const char rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const unsigned char rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const int rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const unsigned int rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const long rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const unsigned long rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const float rhs)
+	{ copy(rhs); return *this; }
+    mstring &operator= (const double rhs)
+	{ copy(rhs); return *this; }
+
+    mstring &operator+= (const mstring &rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const string &rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const char *rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const char rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const unsigned char rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const int rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const unsigned int rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const long rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const unsigned long rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const float rhs)
+	{ append(rhs); return *this; }
+    mstring &operator+= (const double rhs)
+	{ append(rhs); return *this; }
+
+    mstring &operator<< (const mstring &rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const string &rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const char *rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const char rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const unsigned char rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const int rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const unsigned int rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const long rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const unsigned long rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const float rhs)
+	{ append(rhs); return *this; }
+    mstring &operator<< (const double rhs)
+	{ append(rhs); return *this; }
+
+    // ALL return -1 if not found, or the offset
+    // of the requested char/string.
+
+    // str here is a list of delimiters
+    int find_first_of(const char *str, size_t length) const;
+    int find_last_of(const char *str, size_t length) const;
+    int find_first_not_of(const char *str, size_t length) const;
+    int find_last_not_of(const char *str, size_t length) const;
+
+    int find_first_of(const mstring &in) const
+	{ find_first_of(in.i_str, in.i_len); }
+    int find_first_of(const string &in) const
+	{ find_first_of(in.c_str(), in.length()); }
+    int find_first_of(const char *in) const
+	{ find_first_of(in, strlen(in)); }
+    int find_first_of(const char in) const
+	{ find_first_of(&in, 1); }
+    int find_first_of(const unsigned char in) const
+	{ find_first_of((const char *) &in, 1); }
+
+    int find_last_of(const mstring &in) const
+	{ find_last_of(in.i_str, in.i_len); }
+    int find_last_of(const string &in) const
+	{ find_last_of(in.c_str(), in.length()); }
+    int find_last_of(const char *in) const
+	{ find_last_of(in, strlen(in)); }
+    int find_last_of(const char in) const
+	{ find_last_of(&in, 1); }
+    int find_last_of(const unsigned char in) const
+	{ find_last_of((const char *) &in, 1); }
+
+    int find_first_not_of(const mstring &in) const
+	{ find_first_not_of(in.i_str, in.i_len); }
+    int find_first_not_of(const string &in) const
+	{ find_first_not_of(in.c_str(), in.length()); }
+    int find_first_not_of(const char *in) const
+	{ find_first_not_of(in, strlen(in)); }
+    int find_first_not_of(const char in) const
+	{ find_first_not_of(&in, 1); }
+    int find_first_not_of(const unsigned char in) const
+	{ find_first_not_of((const char *) &in, 1); }
+
+    int find_last_not_of(const mstring &in) const
+	{ find_last_not_of(in.i_str, in.i_len); }
+    int find_last_not_of(const string &in) const
+	{ find_last_not_of(in.c_str(), in.length()); }
+    int find_last_not_of(const char *in) const
+	{ find_last_not_of(in, strlen(in)); }
+    int find_last_not_of(const char in) const
+	{ find_last_not_of(&in, 1); }
+    int find_last_not_of(const unsigned char in) const
+	{ find_last_not_of((const char *) &in, 1); }
+
+
+    // str here is used completely
+    int occurances(const char *str) const;
+    int find(const char *str, int occurance = 1) const;
+    int rfind(const char *str, int occurance = 1) const;
+    void replace(const char *find, const char *replace, bool all = true);
+    void replace(int begin, int end, char *replace, size_t length);
+
+    mstring substr(int nFirst, int nCount) const;
+
+    /* From here is our own additions ... */
+    bool Contains(const char *in) const
+	{ return (find_first_of(in) < i_len); }
+    bool Contains(const char in) const
+	{ return (find_first_of(in) < i_len); }
+    bool Contains(const unsigned char in) const
+	{ return (find_first_of(in) < i_len); }
+    bool IsWord() const;
+    bool IsNumber() const;
+    bool IsAscii() const;
+    bool IsBool() const;
+    bool GetBool() const;
+
+    mstring UpperCase() const;
+    mstring LowerCase() const;
+    void MakeUpper();
+    void MakeLower();
+
+    int Occurances(const mstring &in, bool NoCase = false) const;
+    int Find(const mstring &in, bool NoCase = false, int occurance = 1) const;
+    int RevFind(const mstring &in, bool NoCase = false, int occurance = 1) const;
+    int Cmp(const mstring &in, bool NoCase = false) const;
+    bool IsSameAs(const mstring &in, bool NoCase = false) const
+	{ return (Cmp(in, NoCase)==0); }
+    bool Matches(const mstring &in, bool NoCase = false) const;
+
+    void Prepend(const mstring &in)
+	{ insert(0, in); }
+    void Append(const mstring &in)
+	{ append(in); }
+    void Replace(const mstring &f, const mstring &r, bool All = true)
+	{ replace(f.i_str, r.i_str, All); }
+    void Remove(const mstring &in, bool All = true)
+	{ replace(in.i_str, "", All); }
+    void Truncate(size_t pos)
+	{ erase(pos); }
+    void Trim(bool right=true, const mstring &delims = " \n\r\t");
+    mstring Strip(bool right=true, const mstring &delims = " \n\r\t") const;
+
+    int Format(const char *fmt, ...);
+    int FormatV(const char *fmt, va_list argptr);
+
+    mstring Before(const mstring &in, int occurance = 1) const;
+    mstring After(const mstring &in, int occurance = 1) const;
+    mstring RevBefore(const mstring &in, int occurance = 1) const;
+    mstring RevAfter(const mstring &in, int occurance = 1) const;
+    mstring SubString(int from = 0, int to = -1) const;
+    mstring Left(int pos) const
+	{ return SubString(0, pos); }
+    mstring Right(int pos) const
+	{ return SubString(pos, i_len); }
+    unsigned int WordCount(const mstring &delim, bool assemble = true) const;
+    mstring ExtractWord(unsigned int count, const mstring &delim,
+						bool assemble = true) const;
+    int WordPosition(unsigned int count, const mstring &delim,
+						bool assemble = true) const;
+};
 
 #endif

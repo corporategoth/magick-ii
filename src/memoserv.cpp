@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2000/10/10 11:47:52  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.78  2000/09/30 10:48:08  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -613,7 +617,7 @@ void MemoServ::do_Help(mstring mynick, mstring source, mstring params)
     mstring HelpTopic = Parent->memoserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
-    HelpTopic.Replace(" ", "/");
+    HelpTopic.replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
@@ -682,10 +686,11 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	}
 
 	Parent->memoserv.stats.i_Read++;
-	if (what.CmpNoCase("all")==0 ||
-	    what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0)
+	if (what.IsSameAs("all", true) ||
+	    what.IsSameAs("new", true) || what.IsSameAs("unread", true))
 	{
-	    bool unread = (what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0);
+	    bool unread = (what.IsSameAs("new", true) ||
+				what.IsSameAs("unread", true));
 	    list<News_t>::iterator iter;
 	    int i = 0;
 	    RLOCK(("MemoServ", "channel", who.LowerCase()));
@@ -809,11 +814,12 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	}
 
 	Parent->memoserv.stats.i_Read++;
-	if (what.CmpNoCase("all")==0 ||
-	    what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0)
+	if (what.IsSameAs("all", true) ||
+	    what.IsSameAs("new", true) || what.IsSameAs("unread", true))
 	{
 	    list<Memo_t>::iterator iter;
-	    bool unread = (what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0);
+	    bool unread = (what.IsSameAs("new", true) ||
+				what.IsSameAs("unread", true));
 	    int i = 0;
 	    RLOCK(("MemoServ", "nick", who.LowerCase()));
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
@@ -1001,7 +1007,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	}
 
 	Parent->memoserv.stats.i_Unread++;
-	if (what.CmpNoCase("all")==0)
+	if (what.IsSameAs("all", true))
 	{
 	    list<News_t>::iterator iter;
 	    mstring output;
@@ -1083,7 +1089,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	}
 
 	Parent->memoserv.stats.i_Unread++;
-	if (what.CmpNoCase("all")==0)
+	if (what.IsSameAs("all", true))
 	{
 	    list<Memo_t>::iterator iter;
 	    mstring output;
@@ -1998,7 +2004,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	}
 
 	Parent->memoserv.stats.i_Del++;
-	if (what.CmpNoCase("all")==0)
+	if (what.IsSameAs("all", true))
 	{
 	    if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO"))
 	    {
@@ -2124,7 +2130,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	}
 
 	Parent->memoserv.stats.i_Del++;
-	if (what.CmpNoCase("all")==0)
+	if (what.IsSameAs("all", true))
 	{
 	    list<Memo_t>::iterator iter;
 	    mstring output;

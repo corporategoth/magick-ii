@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/10/10 11:47:53  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.52  2000/10/04 07:39:46  prez
 ** Added MemCluster to speed up lockable, but it cores when we start
 ** getting real messages -- seemingly in an alloc in the events.
@@ -235,7 +239,7 @@ vector<int> ParseNumbers(mstring what)
     unsigned int i;
     mstring tmp;
 
-    what.Replace(",", " ");
+    what.replace(",", " ");
     for (i=1; i<=what.WordCount(" "); i++)
     {
 	tmp = what.ExtractWord(i, " ");
@@ -381,7 +385,7 @@ mstring ToHumanNumber(unsigned long in)
 	RET(retval);
     }
 
-    switch (retval[retval.Len()-1])
+    switch (retval[retval.length()-1])
     {
     case '3':
 	retval += "rd";

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.53  2000/09/30 10:48:07  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -325,7 +329,7 @@ size_t mFile::Write(mstring buf, bool endline)
 	RET(0);
     if (endline)
 	buf << "\n";
-    long written = Write(buf.c_str(), buf.Len());
+    long written = Write(buf.c_str(), buf.length());
     RET(written);
 }
 
@@ -365,8 +369,8 @@ mstring mFile::ReadLine()
 #endif
         ACE_OS::fgets(buffer,1024,fd);
         Result=buffer;
-        Result.Replace("\n", "");
-        Result.Replace("\r", "");
+        Result.replace("\n", "");
+        Result.replace("\r", "");
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
     catch(...)
@@ -524,7 +528,7 @@ long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
     {
 	if (endline)
 	    sin[i] << "\n";
-	total += out.Write(sin[i].c_str(), sin[i].Len());
+	total += out.Write(sin[i].c_str(), sin[i].length());
     }
     out.Close();
     RET(total);
@@ -548,7 +552,7 @@ long mFile::Dump(list<mstring> sin, mstring sout, bool append, bool endline)
     {
 	if (endline)
 	    *iter << "\n";
-	total += out.Write(iter->c_str(), iter->Len());
+	total += out.Write(iter->c_str(), iter->length());
     }
     out.Close();
     RET(total);
@@ -590,7 +594,7 @@ size_t mFile::DirUsage(mstring directory)
     //todo: change over to findfirst/findnext (in io.h)
 #else
 
-    if (!directory.Len())
+    if (!directory.length())
 	RET(0);
 
     if ((dir = ACE_OS::opendir(directory.c_str())) != NULL)
@@ -621,7 +625,7 @@ set<mstring> mFile::DirList(mstring directory, mstring filemask)
     //todo: change over to findfirst/findnext (in io.h)
 #else
 
-    if (!directory.Len())
+    if (!directory.length())
 	NRET(set<mstring>, retval);
 
     if ((dir = ACE_OS::opendir(directory.c_str())) != NULL)
@@ -1684,7 +1688,7 @@ vector<unsigned long> DccMap::GetList(mstring in)
     RLOCK(("DccMap", "xfers"));
     for (iter=xfers.begin(); iter!=xfers.end(); iter++)
     {
-	if (iter->second->Source().CmpNoCase(in)==0)
+	if (iter->second->Source().IsSameAs(in, true))
 	    retval.push_back(iter->first);
     }
     NRET(vector<unsigned long>, retval);

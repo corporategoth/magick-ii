@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.139  2000/10/10 11:47:50  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.138  2000/10/04 10:52:08  prez
 ** Fixed the memory pool and removed printf's.
 **
@@ -350,7 +354,7 @@ int mBaseTask::svc(void)
 void mBaseTask::message(const mstring& message)
 {
     FT("mBaseTask::message",(message));
-    size_t length=message.Len();
+    size_t length=message.length();
     MLOCK(("MessageQueue"));
     // Most likely the third condition will match most, as on a
     // large network, average message size is about 100 bytes, a

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/10/10 11:47:51  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.32  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -99,19 +103,18 @@ mstring DccEngine::lowQuote(mstring& in)
 {
     FT("DccEngine::lowQuote",((in)));
     mstring Result;
-    mstring::iterator pos;
-    for(pos=in.begin();pos!=in.end();pos++)
+    for(unsigned int i=0;i<in.length();i++)
     {
-	if(*pos=='\0')
+	if(in[i]=='\0')
 	    Result<<CTCP_MQUOTE_CHAR<<'0';
-	else if(*pos=='\n')
+	else if(in[i]=='\n')
 	    Result<<CTCP_MQUOTE_CHAR<<'n';
-	else if(*pos=='\r')
+	else if(in[i]=='\r')
 	    Result<<CTCP_MQUOTE_CHAR<<'r';
-	else if(*pos==CTCP_MQUOTE_CHAR)
+	else if(in[i]==CTCP_MQUOTE_CHAR)
 	    Result<<CTCP_MQUOTE_CHAR<<CTCP_MQUOTE_CHAR;
 	else
-	    Result<<*pos;
+	    Result<<in[i];
     }
     RET(Result);
 }
@@ -120,39 +123,24 @@ mstring DccEngine::lowDequote(mstring& in)
 {
     FT("DccEngine::lowDequote",((in)));
     mstring Result;
-    mstring::iterator pos;
-    for(pos=in.begin();pos!=in.end();pos++)
+    for(unsigned int i=0;i<in.length();i++)
     {
-	if(*pos==CTCP_MQUOTE_CHAR)
+	if(in[i]==CTCP_MQUOTE_CHAR && i+1<in.length())
 	{
-	    if(*(pos+1)=='0')
-	    {
+	    i++;
+	    if(in[i]=='0')
 		Result<<'\0';
-		pos++;
-	    }
-	    else if(*(pos+1)=='n')
-    	    {
+	    else if(in[i]=='n')
 		Result<<'\n';
-		pos++;
-	    }
-	    else if(*(pos+1)=='r')
-	    {
+	    else if(in[i]=='r')
 		Result<<'\r';
-		pos++;
-	    }
-	    else if(*(pos+1)==CTCP_MQUOTE_CHAR)
-	    {
+	    else if(in[i]==CTCP_MQUOTE_CHAR)
 		Result<<CTCP_MQUOTE_CHAR;
-		pos++;
-	    }
 	    else
-	    {
-		Result<<*(pos+1);
-		pos++;
-	    }
+		Result<<in[i];
 	}
 	else
-	    Result<<*pos;
+	    Result<<in[i];
     }
     RET(Result);
 }
@@ -161,15 +149,14 @@ mstring DccEngine::ctcpQuote(mstring& in)
 {
     FT("DccEngine::ctcpQuote",((in)));
     mstring Result;
-    mstring::iterator pos;
-    for(pos=in.begin();pos!=in.end();pos++)
+    for(unsigned int i=0; i<in.length(); i++)
     {
-	if(*pos==CTCP_DELIM_CHAR)
+	if(in[i]==CTCP_DELIM_CHAR)
 	    Result<<CTCP_QUOTE_CHAR<<'a';
-	else if(*pos==CTCP_QUOTE_CHAR)
+	else if(in[i]==CTCP_QUOTE_CHAR)
 	    Result<<CTCP_QUOTE_CHAR<<CTCP_QUOTE_CHAR;
 	else
-	    Result<<*pos;
+	    Result<<in[i];
     }
     RET(Result);
 }
@@ -178,29 +165,20 @@ mstring DccEngine::ctcpDequote(mstring& in)
 {
     FT("DccEngine::ctcpDequote",((in)));
     mstring Result;
-    mstring::iterator pos;
-    for(pos=in.begin();pos!=in.end();pos++)
+    for(unsigned int i=0; i<in.length(); i++)
     {
-	if(*pos==CTCP_DELIM_CHAR)
+	if(in[i]==CTCP_DELIM_CHAR && i+1<in.length())
 	{
-	    if(*(pos+1)=='a')
-	    {
+	    i++;
+	    if(in[i]=='a')
 		Result<<CTCP_DELIM_CHAR;
-		pos++;
-	    }
-	    else if(*(pos+1)==CTCP_QUOTE_CHAR)
-	    {
+	    else if(in[i]==CTCP_QUOTE_CHAR)
 		Result<<CTCP_QUOTE_CHAR;
-		pos++;
-	    }
 	    else
-	    {
-		Result<<*(pos+1);
-		pos++;
-	    }
+		Result<<in[i];
 	}
 	else
-	    Result<<*pos;
+	    Result<<in[i];
     }
     RET(Result);
 }
@@ -210,20 +188,20 @@ vector<mstring> DccEngine::ctcpExtract(mstring& in)
     FT("DccEngine::ctcpExtract",((in)));
     // pull out /001...../001 pairs
     vector<mstring> Result;
-    mstring tmpstring;
-    mstring::iterator Start,End;
-    Start=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
-    if(Start==in.end())
+    int Start,End,occ=1;
+    Start=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
+    if(Start<0)
 	return Result;
-    End=find(Start+1,in.end(),CTCP_DELIM_CHAR);
-    while(Start != in.end() && End != in.end())
+    End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
+    if (End<0)
+	return Result;
+    while(Start<in.length() && End<in.length())
     {
 	// the +1,-1 removes the '\001' markers off front and back
-	tmpstring.assign(Start+1,End);
-	Result.push_back(tmpstring);
+	Result.push_back(in.SubString(Start+1,End-1));
 	Start=End;
-	if(Start!=in.end())
-	    End=find(Start+1,in.end(),CTCP_DELIM_CHAR);
+	if(Start<in.length())
+	    End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     }
     return Result;
 }
@@ -234,9 +212,9 @@ void DccEngine::decodeReply(const mstring& mynick, const mstring& source,
     FT("DccEngine::decodeReply",((in)));
     vector<mstring> ResVector;
     mstring ResMid=lowDequote(in);
-    if(count(in.begin(),in.end(),CTCP_DELIM_CHAR)<2)
+    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
 	return;
-    if(count(in.begin(),in.end(),CTCP_DELIM_CHAR)>8)
+    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())>8)
     {
 	CP(("Hmm way too many ctcp's in a single line, flood? ignoring..."));
 	return;
@@ -256,9 +234,9 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
     FT("DccEngine::decodeRequest",((in)));
     vector<mstring> ResVector;
     mstring ResMid=lowDequote(in);
-    if(count(in.begin(),in.end(),CTCP_DELIM_CHAR)<2)
+    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
 	return;
-    if(count(in.begin(),in.end(),CTCP_DELIM_CHAR)>8)
+    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())>8)
     {
 	CP(("Hmm way too many ctcp's in a single line, flood? ignoring..."));
 	return;
@@ -449,7 +427,7 @@ mstring DccEngine::encode(const mstring type, const mstring & in)
     FT("DccEngine::encode",((in)));
     mstring Result;
     Result << CTCP_DELIM_CHAR << type;
-    if (!in.IsEmpty())
+    if (!in.empty())
 	Result << " " << in;
     Result << CTCP_DELIM_CHAR;
 //    mstring ResMid=ctcpQuote(in);
@@ -476,7 +454,7 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
     longport = atoul(strport.c_str());
     port = (unsigned short) longport;
     size = 0;
-    if (!strsize.IsEmpty())
+    if (!strsize.empty())
 	size = atoul(strsize.c_str());
 
     ACE_INET_Addr Server(port,address);

@@ -25,6 +25,10 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/10/10 11:47:50  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.11  2000/08/19 15:17:39  ungod
 ** no message
 **
@@ -396,7 +400,7 @@ SXP_NS_BEGIN
 			    {
 				mstring tmp;
 				tmp.Format("&asc%d;", (unsigned char) *p);
-				ret.append(tmp.c_str(), tmp.Len());
+				ret.append(tmp.c_str(), tmp.length());
 			    }
 			    else
 				ret.append(1, *p);

@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.135  2000/10/10 11:47:52  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.134  2000/10/03 05:36:27  prez
 ** Updated some makefiles, helper stuff, and headers -- nothing
 ** too earth shattering.
@@ -661,7 +665,7 @@ mstring Protocol::GetNonToken(mstring in)
     map<mstring,mstring>::iterator iter;
     for (iter = tokens.begin(); iter != tokens.end(); iter++)
     {
-	if (iter->second.CmpNoCase(in)==0)
+	if (iter->second.IsSameAs(in))
 	{
 	    retval = iter->first;
 	    break;
@@ -2737,7 +2741,7 @@ void NetworkServ::execute(const mstring & data)
 	    mstring isonstr = "";
 	    for (unsigned int i=3; i<=data.WordCount(": "); i++)
 	    {
-		if (isonstr.Len() > proto.MaxLine())
+		if (isonstr.length() > proto.MaxLine())
 		{
 		    sraw("303 " + source + " :" + isonstr);
 		    isonstr = "";
@@ -3018,7 +3022,7 @@ void NetworkServ::execute(const mstring & data)
 	    if (source.Contains("."))
 		return;
 
-	    if (source.IsEmpty()) {
+	    if (source.empty()) {
 		// NEW USER
 		sourceL = data.ExtractWord(2, ": ").LowerCase();
 
@@ -3455,7 +3459,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
-	    if (source.IsEmpty())
+	    if (source.empty())
 	    {
 		WLOCK(("Server", "ServerList"));
 		ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
@@ -3519,12 +3523,12 @@ void NetworkServ::execute(const mstring & data)
 			if (nick[0u] == '@')
 			{
 			    oped = true;
-			    nick.Replace("@", "");
+			    nick.replace("@", "", false);
 			}
 			if (nick[0u] == '+')
 			{
 			    voiced = true;
-			    nick.Replace("+", "");
+			    nick.replace("+", "", false);
 			}
 			if (Parent->nickserv.IsLive(nick))
 			{
@@ -3568,7 +3572,7 @@ void NetworkServ::execute(const mstring & data)
 			Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(
 				Parent->chanserv.FirstName(), modes + " " + mode_params);
 		}
-		else if (modes.Len() > 1)
+		else if (modes.length() > 1)
 		{
 		    PushUser(nick, ":" + source + " MODE " +
 			data.ExtractWord(4, ": ") + " " + modes +
@@ -3588,12 +3592,12 @@ void NetworkServ::execute(const mstring & data)
 		    if (chan[0u] == '@')
 		    {
 			oped = true;
-			chan.Replace("@", "");
+			chan.replace("@", "", false);
 		    }
 		    if (chan[0u] == '+')
 		    {
 			voiced = true;
-			chan.Replace("+", "");
+			chan.replace("+", "", false);
 		    }
 		    Parent->nickserv.live[sourceL].Join(chan);
 		    if (oped)
@@ -4521,7 +4525,7 @@ void NetworkServ::execute(const mstring & data)
 		    else
 			outline += *iter + " ";
 		}
-		if (outline.After(":").Len() > 0)
+		if (outline.After(":").length() > 0)
 		    sraw(outline);
 
 		if (Parent->nickserv.live[targetL].IsServices())
@@ -4680,7 +4684,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 				(clive == NULL && (iter->second.Mlock_Key() != "" ||
 				iter->second.Mlock_On().Contains("i"))))
 			    {
-				if (joinline.Len())
+				if (joinline.length())
 				    joinline << ",";
 				joinline << iter->first;
 				if(clive == NULL)
@@ -4692,7 +4696,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 					modes[iter->first] += "k " +
 						iter->second.Mlock_Key();
 				}
-				if (joinline.Len() > proto.MaxLine())
+				if (joinline.length() > proto.MaxLine())
 				{
 				    JOIN(Parent->chanserv.FirstName(), joinline);
 				    joinline = "";
@@ -4722,7 +4726,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 				}
 			    }
 			}}
-			if (joinline.Len())
+			if (joinline.length())
 			{
 			    JOIN(Parent->chanserv.FirstName(), joinline);
 			    joinline = "";

@@ -48,7 +48,7 @@ public:
 		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, string val) {
+	inline void WriteElement(Tag& t, mstring val) {
 		Indent();
 		if( !val.empty() )
 			Print("<%s>%s</%s>\n", t.ch, XMLEscape(val.c_str()).c_str(), t.ch);
@@ -102,7 +102,7 @@ public:
 		val = atol(Data()) - (unsigned long) 0;
 	}
 
-	inline void Retrieve(string& val) {
+	inline void Retrieve(mstring& val) {
 		val = XMLUnEscape(Data());
 	}
 #if HAVE_WSTRING

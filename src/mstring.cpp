@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2000/10/10 11:47:52  prez
+** mstring is re-written totally ... find or occurances
+** or something has a problem, but we can debug that :)
+**
 ** Revision 1.70  2000/10/07 11:00:12  ungod
 ** no message
 **
@@ -96,21 +100,6 @@ static const char *ident = "@(#)$Id$";
 **
 **
 ** ========================================================== */
-
-
-// based upon
-
-/////////////////////////////////////////////////////////////////////////////
-// Name:        string.cpp
-// Purpose:     wxString class
-// Author:      Vadim Zeitlin
-// Modified by:
-// Created:     29/01/98
-// RCS-ID:      $Id$
-// Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
-// Licence:     wxWindows license
-/////////////////////////////////////////////////////////////////////////////
-
 #include "mstring.h"
 
 #ifdef WIN32
@@ -125,735 +114,696 @@ mstring const IRC_Reverse((char) 21);	// ^V
 mstring const IRC_Color((char) 3);	// ^C
 mstring const IRC_Off((char) 15);	// ^O
 
-mstring::mstring(const mstring& in)
-:inherited((inherited) in)
+
+void mstring::copy(const char *in, size_t length)
 {
-}
-mstring::mstring(const mstring& in, inherited::size_type pos, inherited::size_type n)
-:inherited((inherited) in,pos,n)
-{
-}
-mstring::mstring(const char *in)
-:inherited(in)
-{
-}
-mstring::mstring(const char *in, inherited::size_type pos)
-:inherited(in,pos)
-{
-}
-mstring::mstring(inherited::size_type n, char c)
-:inherited(n,c)
-{
-}
-mstring::mstring(char c)
-:inherited(1,c)
-{
-}
-mstring::mstring(inherited::const_iterator first, inherited::const_iterator last)
-:inherited(first,last)
-{
-}
-mstring::mstring()
-{
+    if (i_str != NULL)
+	delete [] i_str;
+    i_len = length;
+    i_str = new char[i_len+1];
+    memset(i_str, 0, i_len+1);
+    memcpy(i_str, in, i_len);
 }
 
-int mstring::Cmp(const mstring & in)
+void mstring::append(const char *in, size_t length)
 {
-	return ACE_OS::strcmp(c_str(),in.c_str());
+    if (length == 0)
+	return;
+
+    char *tmp = new char[i_len + length + 1];
+    memset(tmp, 0, i_len + length + 1);
+    if (i_str != NULL)
+	memcpy(tmp, i_str, i_len);
+    memcpy(&tmp[i_len], in, length);
+
+    if (i_str != NULL)
+	delete [] i_str;
+
+    i_len += length;
+    i_str = tmp;
 }
 
-int mstring::CmpNoCase(const mstring & in)
+void mstring::erase(int begin, int end)
 {
-	return ACE_OS::strcasecmp(c_str(),in.c_str());
-}
+    int i;
+    char *tmp = NULL;
+    if (i_str == NULL)
+	return;
 
-bool mstring::IsSameAs(const mstring & in, bool bCaseSensitive)
-{
-	if(bCaseSensitive==true)
-		return Cmp(in)==0;
-	else
-		return CmpNoCase(in)==0;
-}
-
-mstring mstring::Mid(int nFirst, int nCount) const
-{
-	if (nCount<0) nCount=npos;
-	if (nFirst<0) nFirst=0;
-	return substr(nFirst, nCount);
-}
-
-mstring mstring::SubString(int from, int to) const
-{
-	return Mid(from, (to - from + 1));
-}
-
-mstring::mstring(const inherited & in)
-{
-	*this=in.c_str();
-}
-
-mstring mstring::Left(int nCount)const
-{
-	return Mid(0, nCount);
-}
-
-mstring mstring::Right(int nCount)const
-{
-	return Mid(this->size()-nCount-1);
-}
-
-mstring mstring::Before(const mstring & in, int count) const
-{
-	int m_pos = Find(in,count);
-	if (m_pos >= 0)
-		return Mid(0,m_pos);
-	else
-		return *this;
-}
-
-mstring mstring::After(const mstring & in,int count) const
-{
-	int m_pos = Find(in,count);
-	if (m_pos >= 0)
-		return Mid(m_pos+in.Len());
-	else
-		return *this;
-}
-
-mstring mstring::RevBefore(const mstring & in) const
-{
-	// change find_last_of to Last(in)
-	int m_pos = Index(in,true,true);
-	if (m_pos >= 0)
-		return Mid(0,m_pos);
-	else
-		return *this;
-}
-
-mstring mstring::RevAfter(const mstring & in) const
-{
-	// change find_last_of to Last(in)
-	int m_pos = Index(in,true,true);
-	if (m_pos >= 0)
-		return Mid(m_pos+in.size());
-	else
-		return *this;
-}
-
-void mstring::MakeUpper()
-{
-	unsigned int i;
-	for(i=0;i<this->size();i++)
-		if(islower((*this)[i]))
-			at(i)=(char)toupper((*this)[i]);
-}
-
-void mstring::MakeLower()
-{
-	unsigned int i;
-	for(i=0;i<this->size();i++)
-		if(isupper((*this)[i]))
-			at(i)=(char)tolower((*this)[i]);
-}
-
-mstring& mstring::Trim(bool bFromRight)
-{
-	if (!this->size())
-		return *this;
-	// change find_last_of to Last(in)
-	if(bFromRight==true)
-	{
-		int m_pos = find_last_not_of(" \t\n");
-		if (m_pos >= 0)
-			*this=Mid(0,m_pos+1);
-	}
-	else
-	{
-		int m_pos = find_first_not_of(" \t\n");
-		if (m_pos >= 0)
-			*this=Mid(m_pos);
-	}
-	return *this;
-}
-
-mstring& mstring::Pad(size_t nCount, char chPad, bool bFromRight)
-{
-	if(bFromRight==true)
-		*this=*this+mstring(nCount,chPad);
-	else
-		*this=mstring(nCount,chPad)+*this;
-	return *this;
-}
-
-mstring& mstring::Truncate(int uiLine)
-{
-	*this=Left(uiLine);
-	return *this;
-}
-
-int mstring::Format(const char * pszFormat, ...)
-{
-  va_list argptr;
-  va_start(argptr, pszFormat);
-
-  int iLen = FormatV(pszFormat, argptr);
-
-  va_end(argptr);
-
-  return iLen;
-}
-
-int mstring::FormatV(const char * pszFormat, va_list argptr)
-{
-	static char s_szScratch[1024];
-
-	int iLen=ACE_OS::vsprintf(s_szScratch, pszFormat, argptr);
-	char *buffer;
-	if(iLen != -1 && iLen < (int) sizeof(s_szScratch))
-		buffer=s_szScratch;
-	else
-	{
-		int size=sizeof(s_szScratch)*2;
-		buffer=new char[size];
-		while(buffer!=NULL)
-		{
-			iLen=ACE_OS::vsprintf(buffer, pszFormat, argptr);
-			if(iLen != 1 && iLen < (int) sizeof(s_szScratch))
-				break;
-			delete [] buffer;
-			size*=2;
-			buffer=new char[size];
-		}
-		if(!buffer)
-			return -1;
-	}
-	*this=buffer;
-	if(buffer!=s_szScratch)
-		delete [] buffer;
-	return iLen;
-}
-
-int mstring::CompareTo(const mstring & in, caseCompare cmp)
-{
-	if(cmp==ccExact)
-		return Cmp(in);
-	else
-		return CmpNoCase(in);
-}
-
-mstring& mstring::Append(const mstring & in)
-{
-	*this=*this+in;
-	return *this;
-}
-
-mstring& mstring::Append(char ch, int count)
-{
-	*this=*this+mstring(count,ch);
-	return *this;
-}
-
-mstring& mstring::Prepend(const mstring & in)
-{
-	*this=in+*this;
-	return *this;
-}
-
-mstring& mstring::Prepend(char ch, int count)
-{
-	*this=mstring(count,ch)+*this;
-	return *this;
-}
-
-bool mstring::Contains(const mstring & in)const
-{
-	return Find(in)!=-1;
-}
-
-void mstring::Empty()
-{
-	*this="";
-}
-
-int mstring::Find(char ch, bool bFromEnd) const
-{
-	int i;
-	if(bFromEnd==true)
-		i=rfind(ch);
-	else
-		i=find(ch);
-
-	return i;
-}
-
-int mstring::Find(const mstring & in, int count) const
-{
-	//const char *psz=ACE_OS::strstr(c_str(),in);
-    mstring::const_iterator i=search(begin(),end(),in.begin(),in.end());
-    if(count>1)
+    if (begin < 0)
+	begin = 0;
+    if (end < 0 || end > i_len)
+	end = i_len;
+    if (begin > end)
     {
-	for(int j=1;j<count&&i!=end();j++)
-	    i=search(i+1,end(),in.begin(),in.end());
+	i = begin;
+	begin = end;
+	end = i;
     }
-    if(i==end())
-	return npos;
-    else
-	return distance(begin(),i);
-}
+    if (begin > i_len)
+	return;
 
-int mstring::First(char c) const
-{
-	return Find(c);
-}
-
-int mstring::First(const mstring & in) const
-{
-	return Find(in);
-}
-
-int mstring::Index(char ch, int startpos) const
-{
-	return find(ch,startpos);
-}
-
-int mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) const
-{
-	unsigned int i,start,end;
-	if(fromEnd==true)
+    if (begin > 0 || end+1 < i_len)
+    {
+	i=0;
+	tmp = new char[i_len - (end-begin) + 1];
+	memset(tmp, 0, i_len - (end-begin) + 1);
+	if (begin > 0)
 	{
-		start=length()-in.length()-1;
-		end=0;
+	    memcpy(tmp, i_str, begin);
+	    i += begin;
+	}
+	if (end+1 < i_len)
+	{
+	    memcpy(&tmp[i], &i_str[end+1], i_len-end+1);
+	}
+    }
+    delete [] i_str;
+    if (tmp == NULL)
+    {
+	i_str = NULL;
+	i_len = 0;
+    }
+    else
+    {
+	i_str = tmp;
+	i_len -= (end-begin);
+    }
+}
+
+void mstring::insert(size_t pos, const char *in, size_t length)
+{
+    int i;
+    char *tmp = NULL;
+
+    if (pos >= i_len)
+    {
+	append(in, length);
+	return;
+    }
+
+    tmp = new char[i_len + length + 1];
+    memset(tmp, 0, i_len + length + 1);
+
+    i=0;
+    if (pos > 0)
+    {
+	memcpy(tmp, i_str, pos);
+	i += pos;
+    }
+    memcpy(&tmp[i], in, length);
+    i += length;
+    memcpy(&tmp[i], &i_str[pos], i_len-pos);
+
+    if (i_str != NULL)
+	delete [] i_str;
+    i_str = tmp;
+    i_len += length;
+}
+
+// We compare up to a length they both have.  If its
+// the same, then return (-1 * i_len) if i_str is bigger,
+// or length if in is bigger.  0 means strings are the
+// same length and have the same text.
+int mstring::compare (const char *in, size_t length) const
+{
+    int retval = 0;
+    if (length && i_len)
+    {
+	retval = memcmp(i_str, in, ((length < i_len) ? length : i_len));
+	if (retval == 0)
+	{
+	    if (length < i_len)
+		retval = i_len * -1;
+	    else if (i_len < length)
+		retval = length;
+	}
+    }
+    else if (i_len)
+	retval = i_len * -1;
+    else if (length)
+	retval = length;
+
+    return retval;
+}
+
+void mstring::swap(mstring &in)
+{
+    char *str = i_str;
+    size_t len = i_len;
+
+    i_str = in.i_str;
+    i_len = in.i_len;
+
+    in.i_str = str;
+    in.i_len = len;
+}
+
+const char *mstring::c_str() const
+{
+    if (i_str == NULL)
+	return "";
+    else
+	return (const char *) i_str;
+}
+
+char mstring::operator[] (size_t offs) const
+{
+    if (i_str == NULL || offs > i_len)
+	return 0;
+    else
+	return i_str[offs];
+}
+
+char mstring::first() const
+{
+    if (i_str == NULL)
+	return 0;
+    else
+	return i_str[0];
+}
+
+char mstring::last() const
+{
+    if (i_str == NULL)
+	return 0;
+    else
+	return i_str[i_len-1];
+}
+
+
+// Index value of any of these chars
+int mstring::find_first_of(const char *str, size_t length) const
+{
+    int i, retval = i_len + 1;
+    char *ptr;
+
+    if (i_str == NULL)
+	return -1;
+
+    for (i=0; i<length; i++)
+    {
+	char *ptr = index(i_str, str[i]);
+	if (ptr != NULL && ptr - i_str < retval)
+	    retval = ptr - i_str;
+    }
+    if (retval > i_len)
+	retval = -1;
+    return retval;
+}
+
+// Reverse Index value of any of these chars
+int mstring::find_last_of(const char *str, size_t length) const
+{
+    int i, retval = -1;
+    char *ptr;
+
+    if (i_str == NULL)
+	return -1;
+
+    for (i=0; i<length; i++)
+    {
+	char *ptr = rindex(i_str, str[i]);
+	if (ptr != NULL && ptr - i_str > retval)
+	    retval = ptr - i_str;
+    }
+    return retval;
+}
+
+// Opposite to index for any of these chars
+int mstring::find_first_not_of(const char *str, size_t length) const
+{
+    int i;
+
+    if (i_str == NULL)
+	return -1;
+
+    char *tmp = new char[length+1];
+    memset(tmp, 0, length+1);
+    memcpy(tmp, str, length);
+
+    for (i=0; i<i_len; i++)
+    {
+	if (index(tmp, i_str[i])==NULL)
+	    return i;
+    }
+    delete [] tmp;
+    return -1;
+}
+
+// Opposite to rindex for any of these chars
+int mstring::find_last_not_of(const char *str, size_t length) const
+{
+    int i;
+
+    if (i_str == NULL)
+	return -1;
+
+    char *tmp = new char[length+1];
+    memset(tmp, 0, length+1);
+    memcpy(tmp, str, length);
+
+    for (i=i_len; i>0; i--)
+    {
+	if (index(tmp, i_str[i-1])==NULL)
+	    return i-1;
+    }
+    delete [] tmp;
+    return -1;
+}
+
+
+int mstring::occurances(const char *str) const
+{
+    int count = 0;
+    char *ptr, *ptr2;
+
+    if (i_str == NULL)
+	return 0;
+
+    ptr = strstr(i_str, str);
+    while (ptr != NULL)
+    {
+	count++;
+	ptr2 = ptr;
+	ptr = strstr(ptr2, str);
+    }
+    return count;
+}
+
+// Find occurance of full string
+int mstring::find(const char *str, int occurance) const
+{
+    int i, retval = -1;
+    char *ptr, *ptr2;
+
+    if (i_str == NULL)
+	return -1;
+
+    ptr = i_str;
+    for (i=0; i < occurance; i++)
+    {
+	ptr2 = ptr;
+	ptr = strstr(ptr2, str);
+	if (ptr == NULL)
+	    break;
+    }
+    if (ptr != NULL)
+	retval = ptr - i_str;
+	
+    return retval;
+}
+
+
+// Reverse Find occurance of full string
+int mstring::rfind(const char *str, int occurance) const
+{
+    int occ, retval = -1;
+
+    if (occurance < 1)
+	occurance = 1;
+
+    occ = occurances(str);
+    if (occurance < occ)
+	retval = find(str, occ - occurance);
+
+    return retval;
+}
+
+
+// Replace find string with replace string (optionally for all)
+void mstring::replace(const char *find, const char *replace, bool all)
+{
+    int i, j, old_len, find_len, amt_replace = 0, replace_len = 0;
+    char *tmp, *start, *end;
+    vector<pair<char *, int> > ptrs;
+    vector<pair<char *, int> >::iterator iter;
+
+    if (i_str == NULL)
+	return;
+
+    old_len = i_len;
+    find_len = strlen(find);
+    replace_len = strlen(replace);
+
+    start=i_str;
+    end=strstr(i_str, find);
+    while (end != NULL)
+    {
+	ptrs.push_back(pair<char *, int>(start, end-start));
+	end += find_len;
+	start = end;
+	amt_replace++;
+	if (!all)
+	    break;
+	end = strstr(start, find);
+    }
+    ptrs.push_back(pair<char *, int>(start,-1));
+
+    i_len += (amt_replace * (replace_len - find_len));
+    tmp = new char[i_len];
+    memset(tmp, 0, i_len);
+
+    i = j = 0;
+    for (iter=ptrs.begin(); iter!=ptrs.end(); iter++)
+    {
+	if (iter->second >= 0)
+	{
+	    memcpy(&tmp[j], iter->first, iter->second);
+	    j += iter->second;
+	    memcpy(&tmp[j], replace, replace_len);
+	    j += replace_len;
+	    i += iter->second + find_len;
 	}
 	else
 	{
-		start=0;
-		end=length()-in.length()-1;
+	    memcpy(&tmp[j], iter->first, old_len - i);
 	}
-	i=start;
-	while(i != end)
-	{
-		if(Mid(i,in.length()).IsSameAs(in,caseSensitive))
-			return i;
-		if(fromEnd==false)
-			i++;
-		else
-			i--;
-	}
-	return npos;
+    }
+    delete [] i_str;
+    i_str = tmp;
 }
 
-bool mstring::IsAscii() const
+void mstring::replace(int begin, int end, char *replace, size_t length)
 {
-	const char *s=c_str();
-	while(*s)
-	{
-		if(!isascii(*s))
-			return false;
-		s++;
-	}
-	return true;
+    erase(begin, end);
+    insert(begin, replace, length);
 }
 
-bool mstring::IsEmpty() const
+mstring mstring::substr(int nFirst, int nCount) const
 {
-	return *this=="";
+    mstring retval;
+    if (i_str != NULL)
+    {
+	if (nFirst < 0)
+	    nFirst = 0;
+	if (nCount < 0)
+	    nCount = i_len - nFirst;
+	if ((nCount + nFirst) > i_len)
+	    nCount = i_len - nFirst;
+
+	retval.copy(&i_str[nFirst], nCount);
+    }
+    return retval;
 }
 
-bool mstring::IsNull() const
+
+/********************************************************/
+
+
+bool mstring::IsWord() const
 {
-	return IsEmpty();
+    if (i_str == NULL)
+	return false;
+
+    for (size_t i=0; i<i_len; i++)
+	if (!isalpha(i_str[i]))
+	    return false;
+    return true;
 }
 
 bool mstring::IsNumber() const
 {
-	const char *s=c_str();
-	if(IsEmpty())
+    if (i_str == NULL)
+	return false;
+
+    for (size_t i=0; i<i_len; i++)
+	if (!isdigit(i_str[i]))
 	    return false;
-	if (*s == '-')
-	   s++;
-	while(*s)
-	{
-		if(!(isdigit(*s) || *s == '.'))
-			return false;
-		s++;
-	}
-	return true;
-}
-
-bool mstring::IsWord() const
-{
-	const char *s=c_str();
-	while(*s)
-	{
-		if(!isalpha(*s))
-			return false;
-		s++;
-	}
-	return true;
-}
-
-bool mstring::GetBool() const
-{
-  mstring tmp = *this;
-  if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
-      tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || atoi(tmp.c_str()) == 1)
     return true;
-  else
-    return false;
+}
+
+bool mstring::IsAscii() const
+{
+    if (i_str == NULL)
+	return false;
+
+    for (size_t i=0; i<i_len; i++)
+	if (!isascii(i_str[i]))
+	    return false;
+    return true;
 }
 
 bool mstring::IsBool() const
 {
-  mstring tmp = *this;
-  if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
-      tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || tmp == "1" ||
-      tmp.CmpNoCase("false")==0 || tmp.CmpNoCase("off")==0 || tmp.CmpNoCase("no")==0 ||
-      tmp.CmpNoCase("n")==0 || tmp.CmpNoCase("f")==0 || tmp == "0")
+  if (IsSameAs("true", true) || IsSameAs("on", true) ||
+      IsSameAs("yes", true) || IsSameAs("y", true) ||
+      IsSameAs("t", true) || compare("1") ||
+      IsSameAs("false", true) || IsSameAs("off", true) ||
+      IsSameAs("no", true) || IsSameAs("n", true) ||
+      IsSameAs("f", true) || compare("0"))
     return true;
   else
     return false;
 }
 
-mstring mstring::LowerCase() const
+bool mstring::GetBool() const
 {
-    mstring Result=*this;
-    Result.MakeLower();
-    return Result;
+  mstring tmp(*this);
+  if (IsSameAs("true", true) || IsSameAs("on", true) ||
+      IsSameAs("yes", true) || IsSameAs("y", true) ||
+      IsSameAs("t", true) || compare("1"))
+    return true;
+  else
+    return false;
 }
 
-mstring& mstring::Remove(int pos)
-{
-	return Truncate(pos);
-}
-
-mstring& mstring::Remove(int nStart, size_t nLen)
-{
-	erase(nStart,nLen);
-	return *this;
-}
-
-mstring& mstring::Remove(mstring str)
-{
-	int m_pos = Find(str);
-	if (m_pos >= 0)
-		Remove(m_pos, str.Len());
-	return *this;
-}
-
-mstring& mstring::RemoveLast()
-{
-	Truncate(length()-1);
-	return *this;
-}
-
-size_t mstring::Replace(const mstring & szOld, const mstring & szNew, bool replaceAll)
-{
-	size_t uiCount=0;
-	size_t uiOldLen=szOld.length();
-
-	mstring strTemp;
-	const char *pCurrent=c_str();
-	const char *pSubstr;
-
-	while(*pCurrent!='\0')
-	{
-		pSubstr=ACE_OS::strstr(pCurrent,szOld.c_str());
-		if(pSubstr==NULL)
-		{
-			if(uiCount==0)
-				return 0;
-			strTemp<<pCurrent;
-			break;
-		}
-		else
-		{
-			strTemp<<mstring(pCurrent).Left(pSubstr-pCurrent);
-			strTemp<<szNew;
-			pCurrent=pSubstr+uiOldLen;
-			uiCount++;
-			if(!replaceAll)
-			{
-				strTemp<<pCurrent;
-				break;
-			}
-		}
-	}
-	*this=strTemp;
-
-	return uiCount;
-}
-
-mstring mstring::Strip(stripType s)
-{
-	mstring str=*this;
-	if(s&stLeading) str.Trim(false);
-	if(s&stTrailing) str.Trim(true);
-	return str;
-}
 
 mstring mstring::UpperCase() const
 {
-    mstring Result=*this;
-    Result.MakeUpper();
-    return Result;
+    mstring tmp(*this);
+    tmp.MakeUpper();
+    return tmp;
 }
 
-mstring mstring::operator ( )(size_t start, size_t len)
+mstring mstring::LowerCase() const
 {
-	return Mid(start,len);
+    mstring tmp(*this);
+    tmp.MakeLower();
+    return tmp;
 }
 
-mstring& mstring::operator <<(const mstring & s)
+void mstring::MakeUpper()
 {
-	*this=*this+s;
-	return *this;
+    if (i_str != NULL)
+	return;
+
+    for (size_t i=0; i<i_len; i++)
+	i_str[i] = toupper(i_str[i]);
 }
 
-mstring& mstring::operator <<(const char * psz)
+void mstring::MakeLower()
 {
-	*this=*this+psz;
-	return *this;
+    if (i_str != NULL)
+	return;
+
+    for (size_t i=0; i<i_len; i++)
+	i_str[i] = tolower(i_str[i]);
 }
 
-mstring& mstring::operator <<(char ch)
+
+int mstring::Occurances(const mstring &in, bool NoCase) const
 {
-	*this=*this+mstring(ch);
-	return *this;
+    if (NoCase)
+    {
+	mstring tmp(in);
+	return UpperCase().occurances(tmp.UpperCase().i_str);
+    }
+    else
+	return occurances(in.i_str);
 }
 
-mstring& mstring::operator <<(int i)
+int mstring::Find(const mstring &in, bool NoCase, int occurance) const
 {
-	mstring s;
-	s.Format("%d",i);
-	return *this<<s;
+    if (NoCase)
+    {
+	mstring tmp(in);
+	return UpperCase().find(tmp.UpperCase().i_str, occurance);
+    }
+    else
+	return find(in.i_str, occurance);
 }
 
-mstring& mstring::operator <<(unsigned int i)
+int mstring::RevFind(const mstring &in, bool NoCase, int occurance) const
 {
-	mstring s;
-	s.Format("%u",i);
-	return *this<<s;
+    if (NoCase)
+    {
+	mstring tmp(in);
+	return UpperCase().rfind(tmp.UpperCase().i_str, occurance);
+    }
+    else
+	return rfind(in.i_str, occurance);
 }
 
-mstring& mstring::operator <<(long l)
+int mstring::Cmp(const mstring &in, bool NoCase) const
 {
-	mstring s;
-	s.Format("%d",l);
-	return *this<<s;
+    if (NoCase)
+    {
+	mstring tmp(in);
+	return UpperCase().compare(tmp.UpperCase());
+    }
+    else
+	return compare(in);
 }
 
-mstring& mstring::operator <<(unsigned long l)
+bool mstring::Matches(const mstring &in, bool NoCase) const
 {
-	mstring s;
-	s.Format("%u",l);
-	return *this<<s;
+    return match_wild(in.i_str, i_str, NoCase);
 }
 
-mstring& mstring::operator <<(float f)
+void mstring::Trim(bool right, const mstring &delims)
 {
-	mstring s;
-	s.Format("%f",f);
-	return *this<<s;
+    if (right)
+	erase(find_last_not_of(delims.i_str)+1);
+    else
+	erase(0, find_first_not_of(delims.i_str)-1);
 }
 
-mstring& mstring::operator <<(double d)
+mstring mstring::Strip(bool right, const mstring &deilms) const
 {
-	mstring s;
-	s.Format("%11.5g",d);
-	return *this<<s;
+    mstring tmp(*this);
+    tmp.Trim(right, deilms);
+    return tmp;
+}
+    
+int mstring::Format(const char *fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+
+    int iLen = FormatV(fmt, argptr);
+
+    va_end(argptr);
+    return iLen;
 }
 
-size_t mstring::Len() const
+int mstring::FormatV(const char *fmt, va_list argptr)
 {
-	return length();
+    int length, size = 1024;
+    char *buffer = new char[size];
+    memset(buffer, 0, size);
+    while (buffer != NULL)
+    {
+	length = vsnprintf(buffer, size-1, fmt, argptr);
+	if (length < size)
+	    break;
+	delete [] buffer;
+	size *= 2;
+	buffer = new char[size];
+	memset(buffer, 0, size);
+    }
+    if (buffer && length < 1)
+	delete [] buffer;
+    if (i_str != NULL)
+    {
+	i_str = NULL;
+	i_len = 0;
+    }
+    if (buffer)
+    {
+	i_str = buffer;
+	i_len = length;
+    }
+    return length;
 }
 
-char mstring::Last()const
+
+mstring mstring::Before(const mstring &in, int occurance) const
 {
-	mstring Result=*this;
-	return Result[Result.Len()-1];
+	int m_pos = Find(in,false,occurance);
+	if (m_pos >= 0)
+		return Left(m_pos);
+	else
+		return *this;
 }
 
-mstring operator+(const mstring& inp_string, char ch)
+mstring mstring::After(const mstring &in, int occurance) const
 {
-	mstring Result=inp_string+mstring(ch);
-	return Result;
+	int m_pos = Find(in,false,occurance);
+	if (m_pos >= 0)
+		return Right(m_pos+in.i_len);
+	else
+		return *this;
 }
 
-mstring operator+(char ch, const mstring& inp_string)
+mstring mstring::RevBefore(const mstring &in, int occurance) const
 {
-	mstring Result=mstring(ch)+inp_string;
-	return Result;
+	int m_pos = RevFind(in,false,occurance);
+	if (m_pos >= 0)
+		return Left(m_pos);
+	else
+		return *this;
 }
 
-mstring operator+(const mstring& inp_string, const char *psz)
+mstring mstring::RevAfter(const mstring &in, int occurance) const
 {
-	mstring Result=std::string(inp_string)+std::string(psz);
-	return Result;
+	int m_pos = RevFind(in,false,occurance);
+	if (m_pos >= 0)
+		return Right(m_pos+in.i_len);
+	else
+		return *this;
 }
 
-mstring operator+(const char *psz, const mstring& inp_string)
+mstring mstring::SubString(int from, int to) const
 {
-	mstring Result=mstring(psz)+inp_string;
-	return Result;
+    if (to < from)
+    {
+	int i = from;
+	from = to;
+	to = i;
+    }
+    return substr(from, to-from);
 }
 
-/* mstring operator+(const mstring& inp_string, const mstring& s)
-{
-	mstring Result=inp_string+s;
-	return Result;
-}
 
-mstring operator+(const mstring& s, const mstring& inp_string)
+unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
 {
-	mstring Result=s+inp_string;
-	return Result;
-}*/
-
-mstring operator+(const mstring& inp_string, double d)
-{
-	mstring s;
-	s << d;
-	mstring Result=inp_string+s;
-	return Result;
-}
-
-mstring operator+(double d, const mstring& inp_string)
-{
-	mstring s;
-	s << d;
-	mstring Result=s+inp_string;
-	return Result;
-}
-
-mstring operator+(const mstring& inp_string, float f)
-{
-	mstring s;
-	s << f;
-	mstring Result=inp_string+s;
-	return Result;
-}
-
-mstring operator+(float f, const mstring& inp_string)
-{
-	mstring s;
-	s << f;
-	mstring Result=s+inp_string;
-	return Result;
-}
-
-mstring operator+(const mstring& inp_string, long l)
-{
-	mstring s;
-	s << l;
-	mstring Result=inp_string+s;
-	return Result;
-}
-
-mstring operator+(long l, const mstring& inp_string)
-{
-	mstring s;
-	s << l;
-	mstring Result=s+inp_string;
-	return Result;
-}
-
-mstring operator+(const mstring& inp_string, unsigned long l)
-{
-	mstring s;
-	s << l;
-	mstring Result=inp_string+s;
-	return Result;
-}
-
-mstring operator+(unsigned long l, const mstring& inp_string)
-{
-	mstring s;
-	s << l;
-	mstring Result=s+inp_string;
-	return Result;
-}
-
-mstring operator+(const mstring& inp_string, int i)
-{
-	mstring s;
-	s << i;
-	mstring Result=inp_string+s;
-	return Result;
-}
-
-mstring operator+(int i, const mstring& inp_string)
-{
-	mstring s;
-	s << i;
-	mstring Result=s+inp_string;
-	return Result;
-}
-
-mstring operator+(const mstring& inp_string, unsigned int i)
-{
-	mstring s;
-	s << i;
-	mstring Result=inp_string+s;
-	return Result;
-}
-
-mstring operator+(unsigned int i, const mstring& inp_string)
-{
-	mstring s;
-	s << i;
-	mstring Result=s+inp_string;
-	return Result;
-}
-
-unsigned int mstring::WordCount(const mstring &separators, bool assemble)const
-{
-    //
     int Result=0;
     size_t i=0;
-    mstring S=*this;
-    while(i<Len())
+    while(i<i_len)
     {
-	while(i<Len()&& assemble && separators.Contains(S[i]))
+	while(i<i_len && assemble && delim.Contains(i_str[i]))
 	    i++;
-	if(i<Len())
+	if(i<i_len)
 	    Result++;
-	while(i<Len() && !separators.Contains(S[i]))
+	while(i<i_len && !delim.Contains(i_str[i]))
 	    i++;
     }
     return Result;
 }
-mstring mstring::ExtractWord(int count,const mstring& separators, bool assemble)const
+
+mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
+						bool assemble) const
 {
     mstring Result;
-    mstring S=*this;
-    int i;
-    i=WordPosition(count,separators, assemble);
-    if(i!=-1)
+    int i, begin;
+    begin=WordPosition(count, delim, assemble);
+    if(begin!=-1)
     {
-	while(i < (int) Len() && !separators.Contains(S[(unsigned int) i]))
-	{
-	    Result<<S[(unsigned int) i];
+	i=begin;
+	while(i < (int) i_len && !delim.Contains(i_str[(unsigned int) i]))
 	    i++;
-	}
+	if (i!=begin)
+	    return SubString(begin, i);
     }
     return Result;
 }
-unsigned int mstring::WordPosition(unsigned int N,const mstring& separators, bool assemble)const
+
+int mstring::WordPosition(unsigned int count, const mstring &delim,
+						bool assemble) const
 {
-    unsigned int i=0,count=0;
-    mstring S=*this;
-    int Result=0;
-    while(i<Len() && count!=N)
+    unsigned int i=0,cnt=0;
+    int Result=-1;
+    while(i<i_len && cnt!=count)
     {
 	// Skip past multi-seperators IF we assemble them.
-	while (i<Len() && assemble && separators.Contains(S[i]))
+	while (i<i_len && assemble && delim.Contains(i_str[i]))
 	    i++;
-	if(i<Len())
-	    count++;
-	if(count!=N)
+	if(i<i_len)
+	    cnt++;
+	if(cnt!=count)
 	{
-	    while(i<Len() && !separators.Contains(S[i]))
+	    while(i<i_len && !delim.Contains(i_str[i]))
 		i++;
 	    i++;
 	}
@@ -863,17 +813,14 @@ unsigned int mstring::WordPosition(unsigned int N,const mstring& separators, boo
     return Result;
 }
 
-bool mstring::Matches(const mstring& in, bool nocase)const
-{
-    // nocase == non-case-sensative
-    return match_wild(in.c_str(), c_str(), nocase);
-}
+
+
+/********************************************************/
 
 #ifndef HAVE_ITOA
 const char *itoa(int i)
 {
-    mstring str;
-    str << i;
+    mstring str(i);
     return str.c_str();
 }
 #endif
@@ -881,8 +828,7 @@ const char *itoa(int i)
 #ifndef HAVE_LTOA
 const char *ltoa(long l)
 {
-    mstring str;
-    str << l;
+    mstring str(l);
     return str.c_str();
 }
 #endif
@@ -890,8 +836,7 @@ const char *ltoa(long l)
 #ifndef HAVE_FTOA
 const char *ftoa(float f)
 {
-    mstring str;
-    str << f;
+    mstring str(f);
     return str.c_str();
 }
 #endif
@@ -899,8 +844,7 @@ const char *ftoa(float f)
 #ifndef HAVE_DTOA
 const char *dtoa(double d)
 {
-    mstring str;
-    str << d;
+    mstring str(d);
     return str.c_str();
 }
 #endif
@@ -908,8 +852,7 @@ const char *dtoa(double d)
 #ifndef HAVE_ULTOA
 const char *ultoa(unsigned long ul)
 {
-    mstring str;
-    str << ul;
+    mstring str(ul);
     return str.c_str();
 }
 #endif
@@ -917,12 +860,31 @@ const char *ultoa(unsigned long ul)
 #ifndef HAVE_UITOA
 const char *uitoa(unsigned int ui)
 {
-    mstring str;
-    str << ui;
+    mstring str(ui);
     return str.c_str();
 }
 #endif
 
+#ifndef HAVE_SNPRINTF
+int snprintf(char *buf, size_t size, const char *fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+
+    int iLen = ACE_OS::sprintf(buf, fmt, argptr);
+
+    va_end(argptr);
+    return iLen;
+}
+#endif
+
+#ifndef HAVE_VSNPRINTF
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
+{
+    int iLen = ACE_OS::vsprintf(buf, fmt, ap);
+    return iLen;
+}
+#endif
 
 /*  Direct from Magick I, credit to Andy Church for writing this.
  *
@@ -971,3 +933,268 @@ bool match_wild (const char *pattern, const char *str, bool docase)
 	}			/* switch */
     }
 }
+
+bool operator== (const mstring &lhs, const mstring &rhs)
+	{ return (lhs.compare(rhs) == 0); }
+bool operator== (const mstring &lhs, const string &rhs)
+	{ return (lhs.compare(rhs) == 0); }
+bool operator== (const mstring &lhs, const char *rhs)
+	{ return (lhs.compare(rhs) == 0); }
+bool operator== (const mstring &lhs, const char rhs)
+	{ return (lhs.compare(rhs) == 0); }
+bool operator== (const mstring &lhs, const unsigned char rhs)
+	{ return (lhs.compare(rhs) == 0); }
+bool operator== (const string &lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) == 0); }
+bool operator== (const char *lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) == 0); }
+bool operator== (const char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) == 0); }
+bool operator== (const unsigned char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) == 0); }
+
+bool operator!= (const mstring &lhs, const mstring &rhs)
+	{ return (lhs.compare(rhs) != 0); }
+bool operator!= (const mstring &lhs, const string &rhs)
+	{ return (lhs.compare(rhs) != 0); }
+bool operator!= (const mstring &lhs, const char *rhs)
+	{ return (lhs.compare(rhs) != 0); }
+bool operator!= (const mstring &lhs, const char rhs)
+	{ return (lhs.compare(rhs) != 0); }
+bool operator!= (const mstring &lhs, const unsigned char rhs)
+	{ return (lhs.compare(rhs) != 0); }
+bool operator!= (const string &lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) != 0); }
+bool operator!= (const char *lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) != 0); }
+bool operator!= (const char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) != 0); }
+bool operator!= (const unsigned char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) != 0); }
+
+bool operator< (const mstring &lhs, const mstring &rhs)
+	{ return (lhs.compare(rhs) < 0); }
+bool operator< (const mstring &lhs, const string &rhs)
+	{ return (lhs.compare(rhs) < 0); }
+bool operator< (const mstring &lhs, const char *rhs)
+	{ return (lhs.compare(rhs) < 0); }
+bool operator< (const mstring &lhs, const char rhs)
+	{ return (lhs.compare(rhs) < 0); }
+bool operator< (const mstring &lhs, const unsigned char rhs)
+	{ return (lhs.compare(rhs) < 0); }
+bool operator< (const string &lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) > 0); }
+bool operator< (const char *lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) > 0); }
+bool operator< (const char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) > 0); }
+bool operator< (const unsigned char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) > 0); }
+
+bool operator> (const mstring &lhs, const mstring &rhs)
+	{ return (lhs.compare(rhs) > 0); }
+bool operator> (const mstring &lhs, const string &rhs)
+	{ return (lhs.compare(rhs) > 0); }
+bool operator> (const mstring &lhs, const char *rhs)
+	{ return (lhs.compare(rhs) > 0); }
+bool operator> (const mstring &lhs, const char rhs)
+	{ return (lhs.compare(rhs) > 0); }
+bool operator> (const mstring &lhs, const unsigned char rhs)
+	{ return (lhs.compare(rhs) > 0); }
+bool operator> (const string &lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) < 0); }
+bool operator> (const char *lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) < 0); }
+bool operator> (const char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) < 0); }
+bool operator> (const unsigned char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) < 0); }
+
+bool operator<= (const mstring &lhs, const mstring &rhs)
+	{ return (lhs.compare(rhs) <= 0); }
+bool operator<= (const mstring &lhs, const string &rhs)
+	{ return (lhs.compare(rhs) <= 0); }
+bool operator<= (const mstring &lhs, const char *rhs)
+	{ return (lhs.compare(rhs) <= 0); }
+bool operator<= (const mstring &lhs, const char rhs)
+	{ return (lhs.compare(rhs) <= 0); }
+bool operator<= (const mstring &lhs, const unsigned char rhs)
+	{ return (lhs.compare(rhs) <= 0); }
+bool operator<= (const string &lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) >= 0); }
+bool operator<= (const char *lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) >= 0); }
+bool operator<= (const char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) >= 0); }
+bool operator<= (const unsigned char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) >= 0); }
+
+bool operator>= (const mstring &lhs, const mstring &rhs)
+	{ return (lhs.compare(rhs) >= 0); }
+bool operator>= (const mstring &lhs, const string &rhs)
+	{ return (lhs.compare(rhs) >= 0); }
+bool operator>= (const mstring &lhs, const char *rhs)
+	{ return (lhs.compare(rhs) >= 0); }
+bool operator>= (const mstring &lhs, const char rhs)
+	{ return (lhs.compare(rhs) >= 0); }
+bool operator>= (const mstring &lhs, const unsigned char rhs)
+	{ return (lhs.compare(rhs) >= 0); }
+bool operator>= (const string &lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) <= 0); }
+bool operator>= (const char *lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) <= 0); }
+bool operator>= (const char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) <= 0); }
+bool operator>= (const unsigned char lhs, const mstring &rhs)
+	{ return (rhs.compare(lhs) <= 0); }
+
+mstring operator+ (const mstring &lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const string &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const char *rhs)
+{
+    mstring str(lhs);
+    str.append(rhs, strlen(rhs));
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const char rhs)
+{
+    mstring str(lhs);
+    str.append(&rhs, 1);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const unsigned char rhs)
+{
+    mstring str(lhs);
+    str.append((const char *) &rhs, 1);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const int rhs)
+{
+    mstring str(lhs);
+    str.append(rhs);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const unsigned int rhs)
+{
+    mstring str(lhs);
+    str.append(rhs);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const long rhs)
+{
+    mstring str(lhs);
+    str.append(rhs);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const unsigned long rhs)
+{
+    mstring str(lhs);
+    str.append(rhs);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const float rhs)
+{
+    mstring str(lhs);
+    str.append(rhs);
+    return str;
+}
+
+mstring operator+ (const mstring &lhs, const double rhs)
+{
+    mstring str(lhs);
+    str.append(rhs);
+    return str;
+}
+
+mstring operator+ (const string &lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const char *lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const char lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const unsigned char lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const int lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const unsigned int lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const long lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const unsigned long lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const float lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+mstring operator+ (const double lhs, const mstring &rhs)
+{
+    mstring str(lhs);
+    str.append(rhs.c_str(), rhs.length());
+    return str;
+}
+
+
+/********************************************************/
+
