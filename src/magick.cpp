@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.249  2000/06/26 11:23:17  prez
+** Added auto-akill on clone triggers
+**
 ** Revision 1.248  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -2557,6 +2560,14 @@ bool Magick::get_config_values()
     in.Read(ts_OperServ+"MAX_CLONE",&operserv.max_clone,50);
     in.Read(ts_OperServ+"CLONE_LIMIT",&operserv.clone_limit,2);
     in.Read(ts_OperServ+"DEF_CLONE",&operserv.def_clone,"Maximum connections from one host exceeded");
+    in.Read(ts_OperServ+"CLONE_TRIGGER",&operserv.clone_trigger,10);
+    in.Read(ts_OperServ+"CLONE_TIME",&value_mstring,"3h");
+    if (FromHumanTime(value_mstring))
+	operserv.clone_time = FromHumanTime(value_mstring);
+    else
+	operserv.clone_time = FromHumanTime("3h");
+    in.Read(ts_OperServ+"CLONE_AKILL",&operserv.clone_akill,"Clone trigger exceeded, Automatic AKILL");
+
     in.Read(ts_OperServ+"FLOOD_TIME",&value_mstring,"10s");
     if (FromHumanTime(value_mstring))
 	operserv.flood_time = FromHumanTime(value_mstring);

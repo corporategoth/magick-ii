@@ -25,6 +25,9 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/06/26 11:23:17  prez
+** Added auto-akill on clone triggers
+**
 ** Revision 1.38  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -94,6 +97,9 @@ private:
     unsigned int max_clone;
     unsigned int clone_limit;
     mstring def_clone;
+    unsigned int clone_trigger;
+    unsigned long clone_time;
+    mstring clone_akill;
     unsigned long flood_time;
     unsigned int flood_msgs;
     unsigned long ignore_time;
@@ -108,7 +114,7 @@ private:
 
     // Mask (H), Limit (int), Reason (mstring)
     set<entlist_val_t<pair<unsigned int, mstring> > > i_Clone;
-    map<mstring, unsigned int> CloneList;
+    map<mstring, pair<unsigned int, list<mDateTime> > > CloneList;
 
     // Mask (U_H), Expire (long), Reason (mstring)
     set<entlist_val_t<pair<unsigned long, mstring> > > i_Akill;
@@ -185,6 +191,9 @@ public:
     unsigned int Max_Clone()	    { return max_clone; }
     unsigned int Clone_Limit()	    { return clone_limit; }
     mstring Def_Clone()		    { return def_clone; }
+    unsigned int Clone_Trigger()    { return clone_trigger; }
+    unsigned long Clone_Time()	    { return clone_time; }
+    mstring Clone_Akill()	    { return clone_akill; }
     unsigned long Flood_Time()	    { return flood_time; }
     unsigned int Flood_Msgs()	    { return flood_msgs; }
     unsigned long Ignore_Time()	    { return ignore_time; }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/06/26 11:23:17  prez
+** Added auto-akill on clone triggers
+**
 ** Revision 1.87  2000/06/21 09:00:06  prez
 ** Fixed bug in mFile
 **
@@ -165,22 +168,78 @@ bool OperServ::AddHost(mstring host)
 
     WLOCK(("OperServ", "CloneList"));
     if (CloneList.find(host.LowerCase()) == CloneList.end() ||
-	CloneList[host.LowerCase()] < 1)
-	CloneList[host.LowerCase()] = 0;
-    CloneList[host.LowerCase()]++;
+	CloneList[host.LowerCase()].first < 1)
+	CloneList[host.LowerCase()].first = 0;
+    CloneList[host.LowerCase()].first++;
 
+    CP(("Finding clone list, %s = %d", host.c_str(),
+		CloneList[host.LowerCase()].first));
     { MLOCK2(("OperServ","Clone"));
     if (Clone_find(host))
     {
-	if (CloneList[host.LowerCase()] > Clone->Value().first)
+	if (CloneList[host.LowerCase()].first > Clone->Value().first)
 	{
+	    // Get rid of entries from the beginning...
+	    while (CloneList[host.LowerCase()].second.size() &&
+	    		CloneList[host.LowerCase()].second.begin()->SecondsSince() >
+			Parent->operserv.Clone_Time())
+		CloneList[host.LowerCase()].second.erase(CloneList[host.LowerCase()].second.begin());
+	    CP(("Event Size after purge is %d",
+				CloneList[host.LowerCase()].second.size()));
+
+	    CloneList[host.LowerCase()].second.push_back(Now());
+	    if (CloneList[host.LowerCase()].second.size() >
+			Parent->operserv.Clone_Trigger())
+	    {
+		CP(("Reached MAX clone kills, adding AKILL ..."));
+		MLOCK(("OperServ", "Akill"));
+		if (Akill_find("*@" + host))
+		    Akill_erase();
+		Akill_insert("*@" + host, Parent->operserv.Def_Expire(),
+			Parent->operserv.Clone_Akill(), FirstName());
+		announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
+			FirstName().c_str(), host.c_str(),
+			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			Parent->operserv.Clone_Akill().c_str());
+		Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
+			FirstName().c_str(), host.c_str(),
+			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			Parent->operserv.Clone_Akill().c_str());
+	    }
 	    RET(true);
 	}
     }
     else
     {
-	if (CloneList[host.LowerCase()] > Clone_Limit())
+	if (CloneList[host.LowerCase()].first > Clone_Limit())
 	{
+	    // Get rid of entries from the beginning...
+	    while (CloneList[host.LowerCase()].second.size() &&
+	    		CloneList[host.LowerCase()].second.begin()->SecondsSince() >
+			Parent->operserv.Clone_Time())
+		CloneList[host.LowerCase()].second.erase(CloneList[host.LowerCase()].second.begin());
+	    CP(("Event Size after purge is %d",
+				CloneList[host.LowerCase()].second.size()));
+
+	    CloneList[host.LowerCase()].second.push_back(Now());
+	    if (CloneList[host.LowerCase()].second.size() >
+			Parent->operserv.Clone_Trigger())
+	    {
+		CP(("Reached MAX clone kills, adding AKILL ..."));
+		MLOCK(("OperServ", "Akill"));
+		if (Akill_find("*@" + host))
+		    Akill_erase();
+		Akill_insert("*@" + host, Parent->operserv.Def_Expire(),
+			Parent->operserv.Clone_Akill(), FirstName());
+		announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
+			FirstName().c_str(), host.c_str(),
+			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			Parent->operserv.Clone_Akill().c_str());
+		Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
+			FirstName().c_str(), host.c_str(),
+			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			Parent->operserv.Clone_Akill().c_str());
+	    }
 	    RET(true);
 	}
     }}
@@ -194,8 +253,8 @@ void OperServ::RemHost(mstring host)
     WLOCK(("OperServ", "CloneList"));
     if (CloneList.find(host.LowerCase()) != CloneList.end())
     {
-	if (CloneList[host.LowerCase()] > 1)
-	    CloneList[host.LowerCase()]--;
+	if (CloneList[host.LowerCase()].first > 1)
+	    CloneList[host.LowerCase()].first--;
 	else
 	    CloneList.erase(host.LowerCase());
     }
@@ -205,28 +264,28 @@ size_t OperServ::CloneList_sum()
 {
     NFT("OperServ::ClonesList_sum");
 
-    map<mstring, unsigned int>::iterator i;
+    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator i;
     size_t value = 0;
 
     RLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
-	value += i->second;
+	value += i->second.first;
     }
     RET(value);
 }
 
 size_t OperServ::CloneList_size(unsigned int amt)
 {
-    FT("OperServ::CloneL:ist_size", (amt));
+    FT("OperServ::CloneList_size", (amt));
 
-    map<mstring, unsigned int>::iterator i;
+    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator i;
     size_t value = 0;
 
     RLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
-	if (i->second == amt)
+	if (i->second.first >= amt)
 	    value++;
     }
     RET(value);
@@ -235,12 +294,15 @@ size_t OperServ::CloneList_size(unsigned int amt)
 size_t OperServ::CloneList_Usage()
 {
     size_t retval = 0;
-    map<mstring, unsigned int>::iterator i;
+    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator i;
     WLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	retval += i->first.capacity();
-	retval += sizeof(i->second);
+	retval += sizeof(i->second.first);
+	list<mDateTime>::iterator j;
+	for (j=i->second.second.begin(); j!=i->second.second.end(); j++)
+	    retval += sizeof(j->Internal());
     }
     return retval;
 }
