@@ -955,11 +955,14 @@ void Magick::get_config_values()
 	}
     }
 
-    for (i=0; i<nickserv.names.WordCount(" "); i++)
+    if (GotConnect)
     {
-	if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
+	for (i=0; i<nickserv.names.WordCount(" "); i++)
 	{
-	    nickserv.signon(nickserv.names.ExtractWord(i+1, " "));
+	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
+	    {
+		nickserv.signon(nickserv.names.ExtractWord(i+1, " "));
+	    }
 	}
     }
 
@@ -984,11 +987,14 @@ void Magick::get_config_values()
 	}
     }
 
-    for (i=0; i<chanserv.names.WordCount(" "); i++)
+    if (GotConnect)
     {
-	if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
+	for (i=0; i<chanserv.names.WordCount(" "); i++)
 	{
-	    chanserv.signon(chanserv.names.ExtractWord(i+1, " "));
+	    if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
+	    {
+		chanserv.signon(chanserv.names.ExtractWord(i+1, " "));
+	    }
 	}
     }
 
@@ -1015,7 +1021,7 @@ void Magick::get_config_values()
 
     in.Read(ts_Services+"MEMO",&memoserv.memo,true);
     in.Read(ts_Services+"NEWS",&memoserv.news,true);
-    if (memoserv.memo || memoserv.news)
+    if (GotConnect && (memoserv.memo || memoserv.news))
     {
 	for (i=0; i<memoserv.names.WordCount(" "); i++)
 	{
@@ -1047,11 +1053,14 @@ void Magick::get_config_values()
 	}
     }
 
-    for (i=0; i<operserv.names.WordCount(" "); i++)
+    if (GotConnect)
     {
-	if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
+	for (i=0; i<operserv.names.WordCount(" "); i++)
 	{
-	    operserv.signon(operserv.names.ExtractWord(i+1, " "));
+	    if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
+	    {
+		operserv.signon(operserv.names.ExtractWord(i+1, " "));
+	    }
 	}
     }
 
@@ -1080,11 +1089,14 @@ void Magick::get_config_values()
 	}
     }
 
-    for (i=0; i<commserv.names.WordCount(" "); i++)
+    if (GotConnect)
     {
-	if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
+	for (i=0; i<commserv.names.WordCount(" "); i++)
 	{
-	    commserv.signon(commserv.names.ExtractWord(i+1, " "));
+	    if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
+	    {
+		commserv.signon(commserv.names.ExtractWord(i+1, " "));
+	    }
 	}
     }
 
@@ -1109,11 +1121,14 @@ void Magick::get_config_values()
 	}
     }
 
-    for (i=0; i<servmsg.names.WordCount(" "); i++)
+    if (GotConnect)
     {
-	if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
+	for (i=0; i<servmsg.names.WordCount(" "); i++)
 	{
-	    servmsg.signon(servmsg.names.ExtractWord(i+1, " "));
+	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
+	    {
+		servmsg.signon(servmsg.names.ExtractWord(i+1, " "));
+	    }
 	}
     }
 

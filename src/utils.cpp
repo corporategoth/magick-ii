@@ -234,37 +234,42 @@ unsigned long FromHumanTime(mstring in)
 	case 'y':
 	    if (number != 0)
 	    {
-		total += (long) (number * 60 * 60 * 24 * 365.25);
+		total += (unsigned long) (number * 60 * 60 * 24 * 365.25);
 		number = 0;
 	    }
+	    break;
 	case 'W':
 	case 'w':
 	    if (number != 0)
 	    {
-		total += (long) (number * 60 * 60 * 24 * 7);
+		total += (number * 60 * 60 * 24 * 7);
 		number = 0;
 	    }
+	    break;
 	case 'D':
 	case 'd':
 	    if (number != 0)
 	    {
-		total += (long) (number * 60 * 60 * 24);
+		total += (number * 60 * 60 * 24);
 		number = 0;
 	    }
+	    break;
 	case 'H':
 	case 'h':
 	    if (number != 0)
 	    {
-		total += (long) (number * 60 * 60);
+		total += (number * 60 * 60);
 		number = 0;
 	    }
+	    break;
 	case 'M':
 	case 'm':
 	    if (number != 0)
 	    {
-		total += (long) (number * 60);
+		total += (number * 60);
 		number = 0;
 	    }
+	    break;
 	case 'S':
 	case 's':
 	    if (number != 0)
@@ -272,6 +277,7 @@ unsigned long FromHumanTime(mstring in)
 		total += number;
 		number = 0;
 	    }
+	    break;
 	case '0':
 	case '1':
 	case '2':
@@ -283,9 +289,11 @@ unsigned long FromHumanTime(mstring in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += (long) (in[i] - '0');
+	    number += (unsigned long) (in[i] - '0');
+	    break;
 	default:
 	    RET(0);
+	    break;
 	}
     }
     if (number != 0)

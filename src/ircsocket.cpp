@@ -343,7 +343,7 @@ int EventTask::svc(void)
 			}
 			else
 			{
-			    set<entlist_val_t<pair<long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
+			    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
 			    LastEnt--;
 			    Parent->operserv.Akill_erase();
 			    Parent->operserv.Akill = LastEnt;
