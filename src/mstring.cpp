@@ -366,7 +366,7 @@ int mstring::Find(const mstring & in, int count) const
 	    i=search(i+1,end(),in.begin(),in.end());
     }
     if(i==end())
-	return -1;
+	return npos;
     else
 	return distance(begin(),i);
 }

@@ -50,7 +50,7 @@ int Magick::Start()
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 #ifdef ACE_DEBUGGING
-    ACE_Log_Msg::instance()->open("Magick");
+    ACE_Log_Msg::instance()->open(PRODUCT);
     ACE_Log_Msg::enable_debug_messages();
 #endif
 
@@ -281,7 +281,7 @@ int Magick::Start()
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
-    CP(("Magick II has been started ..."));
+    CP((PRODUCT + " II has been started ..."));
     ResetTime=Now();
 
     //this little piece of code creates the actual connection from magick
@@ -377,7 +377,7 @@ void Magick::dump_help(mstring & progname)
 {
     // This needs to be re-written.
     cout << "\n"
-         << "Magick IRC Services\n"
+         << FULL_NAME + " - " + FULL_URL + "\n"
          << "    (c) 1996-2000 Preston A. Elder <prez@magick.tm>\n"
          << "    (c) 1999-2000 William King <ungod@magick.tm>\n"
          << "\n"
@@ -402,7 +402,7 @@ void Magick::dump_help(mstring & progname)
          << "	--log logfile              Output logs to different file.\n"
          << "	--trace type:level         Turn on tracing from the onset.\n"
          << "\n"
-         << "For more help on the usage of Magick, please browse the docs directory.\n"
+         << "For more help on the usage of " + PRODUCT + ", please browse the docs directory.\n"
          << "This software is free to the public, no registration or licensing fee\n"
          << "may be charged under any circumstances.  Media charges may be imposed.\n"
 	 << "\n";
@@ -844,7 +844,7 @@ void Magick::get_config_values()
     in.Read(ts_Startup+"REMOTE_PORT",&Startup_REMOTE_PORT,9666);
     in.Read(ts_Startup+"PASSWORD",&Startup_PASSWORD,"");
     in.Read(ts_Startup+"SERVER_NAME",&Startup_SERVER_NAME,"services.magick.tm");
-    in.Read(ts_Startup+"SERVER_DESC",&Startup_SERVER_DESC,"Magick IRC Services");
+    in.Read(ts_Startup+"SERVER_DESC",&Startup_SERVER_DESC,FULL_NAME);
     in.Read(ts_Startup+"SERVICES_USER",&Startup_SERVICES_USER,"services");
     in.Read(ts_Startup+"SERVICES_HOST",&Startup_SERVICES_HOST,"magick.tm");
     in.Read(ts_Startup+"OWNUSER",&Startup_OWNUSER,false);
@@ -872,7 +872,7 @@ void Magick::get_config_values()
     in.Read(ts_Services+"CommServ",&Services_CommServ,"CommServ");
     in.Read(ts_Services+"CommServ_Name",&Services_CommServ_Name,"Committee Service");
     in.Read(ts_Services+"ServMsg",&Services_ServMsg,"GlobalMsg DevNull");
-    in.Read(ts_Services+"ServMsg_Name",&Services_ServMsg_Name,"Magick <--> User");
+    in.Read(ts_Services+"ServMsg_Name",&Services_ServMsg_Name,PRODUCT + " <--> User");
     in.Read(ts_Services+"SHOWSYNC",&Services_SHOWSYNC,true);
 
     in.Read(ts_Files+"PIDFILE",&Files_PIDFILE,"magick.pid");

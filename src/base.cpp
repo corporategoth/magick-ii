@@ -218,7 +218,7 @@ NetworkServ::NetworkServ()
 void NetworkServ::execute(const mstring & data)
 {
     //okay this is the main networkserv command switcher
-    mThread::ReAttach(tt_ServNet);
+//    mThread::ReAttach(tt_ServNet);
     FT("NetworkServ::execute", (data));
 
     mstring source, sourceL, msgtype;
@@ -229,14 +229,15 @@ void NetworkServ::execute(const mstring & data)
         msgtype=data.ExtractWord(2,": ").UpperCase();
 	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
 	{
-	    KillUnknownUser(source);
-	    return;
+		KillUnknownUser(source);
+		return;
 	}
     }
     else
     {
         msgtype=data.ExtractWord(1,": ").UpperCase();
     }
+
 
     // Message names direct from RFC1459, with DAL4.4.15+
     // extensions.  Will add to for other ircd's.
@@ -263,7 +264,7 @@ void NetworkServ::execute(const mstring & data)
 		Parent->Startup_SERVER_NAME);
 	    SendSVR("257 " + source + " :" + Parent->Startup_SERVER_DESC);
 	    SendSVR("258 " + source + " :Admins - " + Parent->operserv.Services_Admin());
-	    SendSVR("259 " + source + " :Magick IRC Services - magick@magick.tm");
+	    SendSVR("259 " + source + " :" + FULL_NAME + " - " + FULL_EMAIL);
 	}
 	else if (msgtype=="AKILL")
 	{
@@ -320,10 +321,9 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="INFO")
 	{
 	    // :source INFO :server/nick
-
-	    // Basically, dump credits.
-	    // 371 ....
-	    // 374   (END)
+	    for (int i=0; i<sizeof(credits)/sizeof(mstring); i++)
+		SendSVR("371 " + source + " :" + credits[i]);
+	    SendSVR("374 " + source + " :End of /INFO report");
 	}
 	else if (msgtype=="INVITE")
 	{
@@ -338,8 +338,8 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="JOIN")
 	{
 	    // :source JOIN :#channel
-	    for (int i=1; i<=data.After(":", 2).WordCount(","); i++)
-		Parent->nickserv.live[sourceL].Join(data.After(":", 2).ExtractWord(i, ","));
+	    for (int i=3; i<=data.WordCount(":, "); i++)
+		Parent->nickserv.live[sourceL].Join(data.ExtractWord(i, ":, "));
 	}
 	break;
     case 'K':
@@ -396,13 +396,16 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(6, ": "),
 			data.After(":")
 		    );
+
 	    }
 	    else
 	    {
 		// CHANGE NICK
-		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ").LowerCase())) {
+		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ").LowerCase()))
+		{
 		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()] =
 			Parent->nickserv.live[sourceL];
+
 		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].
 			Name(data.ExtractWord(3, ": "));
 		}
@@ -410,6 +413,7 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    KillUnknownUser(data.ExtractWord(3, ": "));
 		}
+
 		Parent->nickserv.live.erase(sourceL);
 	    }
 	}
@@ -575,26 +579,33 @@ void NetworkServ::execute(const mstring & data)
 	    // :source VERSION :our.server
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp;
-	    SendSVR("351 " + source + " Magick " + Parent->Startup_SERVER_NAME +
-		" :pre-2.0-a1 (" +
-		(Parent->operserv.getnames() != "") ? "O" : "o" +
-		(Parent->operserv.getnames() != "" &&
-		     Parent->operserv.Akill())      ? "A" : "a" +
-		(Parent->operserv.getnames() != "" &&
-		    Parent->operserv.Flood())       ? "F" : "f" +
-		(Parent->operserv.getnames() != "" &&
-		    Parent->operserv.OperDeny())    ? "D" : "d" +
-		(Parent->nickserv.getnames() != "") ? "N" : "n" +
-		(Parent->chanserv.getnames() != "") ? "C" : "c" +
-		(Parent->memoserv.getnames() != "" &&
-		    Parent->memoserv.Memo())        ? "M" : "m" +
-		(Parent->memoserv.getnames() != "" &&
-		    Parent->memoserv.News())        ? "W" : "w" +
-		(Parent->helpserv.getnames() != "") ? "H" : "h" +
-		Parent->Services_SHOWSYNC           ? "Y" : "y" +
-		(tmp << Parent->Startup_LEVEL) +
-		")");
-
+	    SendSVR("351 " + source + " " + PRODUCT + " " + Parent->Startup_SERVER_NAME +
+			" :" + VERSION + ((RELEASE != "") ? "-" + RELEASE : "") +
+			((PATCH1 != "") ? "+" + PATCH1 : "") +
+			((PATCH2 != "") ? "+" + PATCH2 : "") +
+			((PATCH3 != "") ? "+" + PATCH3 : "") +
+			((PATCH4 != "") ? "+" + PATCH4 : "") +
+			((PATCH5 != "") ? "+" + PATCH5 : "") +
+			((PATCH6 != "") ? "+" + PATCH6 : "") +
+			((PATCH7 != "") ? "+" + PATCH7 : "") +
+			((PATCH8 != "") ? "+" + PATCH8 : "") +
+			((PATCH9 != "") ? "+" + PATCH9 : "") + " (" +
+			((Parent->operserv.getnames() != "")	? "O" : "o") +
+			((Parent->operserv.getnames() != "" &&
+				Parent->operserv.Akill())	? "A" : "a") +
+			((Parent->operserv.getnames() != "" &&
+				Parent->operserv.Flood())	? "F" : "f") +
+			((Parent->operserv.getnames() != "" &&
+				Parent->operserv.OperDeny())	? "D" : "d") +
+			((Parent->nickserv.getnames() != "")	? "N" : "n") +
+			((Parent->chanserv.getnames() != "")	? "C" : "c") +
+			((Parent->memoserv.getnames() != "" &&
+				Parent->memoserv.Memo())	? "M" : "m") +
+			((Parent->memoserv.getnames() != "" &&
+				Parent->memoserv.News())	? "W" : "w") +
+			((Parent->helpserv.getnames() != "")	? "H" : "h") +
+			(Parent->Services_SHOWSYNC		? "Y" : "y") +
+			(tmp << Parent->Startup_LEVEL) + ")");
 	}
 	break;
     case 'W':
@@ -623,8 +634,7 @@ void NetworkServ::execute(const mstring & data)
 	break;
     }
 
-    mThread::ReAttach(tt_mBase);
-   
+//    mThread::ReAttach(tt_mBase);   
 }
 
 void NetworkServ::numeric_execute(const mstring & data)

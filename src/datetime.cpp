@@ -458,7 +458,10 @@ mstring mDateTime::FormatString(const mstring& format)const
 		case '\'':
 			i++;
 			while(i<format.size()&&format[i]!='\'')
+			{
 				Result<<mstring(format[i]);
+				i++;
+			}
 			break;
 		case '"':
 			i++;
@@ -497,10 +500,11 @@ mstring mDateTime::DateTimeString()const
 		Result=FormatString(LongDateFormat);
 	if(Hour!=0||Min!=0||Sec!=0||MSec!=0)
 	{
-		if(Result!="")
+	    if(Result!="")
 			Result<<" ";
-		Result<<FormatString(LongTimeFormat);
+	    Result<<FormatString(LongTimeFormat);
 	}
+
 	return Result;
 }
 
