@@ -153,7 +153,7 @@ SOURCE=.\src\EscLexer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\EscLexer.hpp
+SOURCE=.\include\EscLexer.hpp
 # End Source File
 # Begin Source File
 
@@ -165,7 +165,7 @@ SOURCE=.\src\EscParser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\EscParser.hpp
+SOURCE=.\include\EscParser.hpp
 # End Source File
 # Begin Source File
 

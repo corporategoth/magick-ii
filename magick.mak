@@ -1242,8 +1242,8 @@ DEP_CPP_ESCLE=\
 	".\include\antlr\token.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\mstring.h"\
-	".\src\EscLexer.hpp"\
-	".\src\esclexertokentypes.hpp"\
+	".\include\EscLexer.hpp"\
+	".\include\esclexertokentypes.hpp"\
 	
 
 "$(INTDIR)\EscLexer.obj" : $(SOURCE) $(DEP_CPP_ESCLE) "$(INTDIR)"
@@ -1265,8 +1265,8 @@ DEP_CPP_ESCLE=\
 	".\include\antlr\token.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\mstring.h"\
-	".\src\EscLexer.hpp"\
-	".\src\esclexertokentypes.hpp"\
+	".\include\EscLexer.hpp"\
+	".\include\esclexertokentypes.hpp"\
 	
 
 "$(INTDIR)\EscLexer.obj" : $(SOURCE) $(DEP_CPP_ESCLE) "$(INTDIR)"
@@ -1299,8 +1299,8 @@ DEP_CPP_ESCPA=\
 	".\include\antlr\tokenbuffer.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\mstring.h"\
-	".\src\esclexertokentypes.hpp"\
-	".\src\EscParser.hpp"\
+	".\include\esclexertokentypes.hpp"\
+	".\include\EscParser.hpp"\
 	
 
 "$(INTDIR)\EscParser.obj" : $(SOURCE) $(DEP_CPP_ESCPA) "$(INTDIR)"
@@ -1329,8 +1329,8 @@ DEP_CPP_ESCPA=\
 	".\include\antlr\tokenbuffer.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\mstring.h"\
-	".\src\esclexertokentypes.hpp"\
-	".\src\EscParser.hpp"\
+	".\include\esclexertokentypes.hpp"\
+	".\include\EscParser.hpp"\
 	
 
 "$(INTDIR)\EscParser.obj" : $(SOURCE) $(DEP_CPP_ESCPA) "$(INTDIR)"
@@ -1726,8 +1726,8 @@ DEP_CPP_MAGIC=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	".\src\EscLexer.hpp"\
-	".\src\EscParser.hpp"\
+	".\include\EscLexer.hpp"\
+	".\include\EscParser.hpp"\
 	{$(INCLUDE)}"ace\ace.h"\
 	{$(INCLUDE)}"ace\ace.i"\
 	{$(INCLUDE)}"ace\atomic_op.i"\
@@ -1887,16 +1887,16 @@ DEP_CPP_MAGIC=\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
 	".\include\trace.h"\
-	".\src\bob\bob.h"\
-	".\src\bob\bobexp.h"\
-	".\src\bob\compiler.h"\
-	".\src\bob\eval.h"\
-	".\src\bob\execute.h"\
-	".\src\bob\function.h"\
-	".\src\bob\objects.h"\
-	".\src\bob\streams.h"\
-	".\src\EscLexer.hpp"\
-	".\src\EscParser.hpp"\
+	".\include\bob\bob.h"\
+	".\include\bob\bobexp.h"\
+	".\include\bob\compiler.h"\
+	".\include\bob\eval.h"\
+	".\include\bob\execute.h"\
+	".\include\bob\function.h"\
+	".\include\bob\objects.h"\
+	".\include\bob\streams.h"\
+	".\include\EscLexer.hpp"\
+	".\include\EscParser.hpp"\
 	{$(INCLUDE)}"ace\ace.h"\
 	{$(INCLUDE)}"ace\ace.i"\
 	{$(INCLUDE)}"ace\atomic_op.i"\
@@ -2142,14 +2142,14 @@ DEP_CPP_MAIN_=\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
 	".\include\trace.h"\
-	".\src\bob\bob.h"\
-	".\src\bob\bobexp.h"\
-	".\src\bob\compiler.h"\
-	".\src\bob\eval.h"\
-	".\src\bob\execute.h"\
-	".\src\bob\function.h"\
-	".\src\bob\objects.h"\
-	".\src\bob\streams.h"\
+	".\include\bob\bob.h"\
+	".\include\bob\bobexp.h"\
+	".\include\bob\compiler.h"\
+	".\include\bob\eval.h"\
+	".\include\bob\execute.h"\
+	".\include\bob\function.h"\
+	".\include\bob\objects.h"\
+	".\include\bob\streams.h"\
 	{$(INCLUDE)}"ace\ace.h"\
 	{$(INCLUDE)}"ace\ace.i"\
 	{$(INCLUDE)}"ace\atomic_op.i"\
