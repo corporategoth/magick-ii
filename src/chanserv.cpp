@@ -7891,6 +7891,8 @@ void ChanServ::PostLoad()
 	    {
 		if (cs_array[i]->level_array[j] != NULL)
 		{
+		    // MUST delete it, coz it might already exist from defaults.
+		    cs_array[i]->i_Level.erase(*cs_array[i]->level_array[j]);
 		    cs_array[i]->i_Level.insert(*cs_array[i]->level_array[j]);
 		    delete cs_array[i]->level_array[j];
 		}
