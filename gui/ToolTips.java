@@ -48,7 +48,8 @@ public class ToolTips
 					"attempt to connect to.  Magick will go through each entry in\n" +
 					"first priority order, then in a numerically sorted order.  You\n" +
 					"may not have two or more entries in this list with the same\n" +
-					"IP address.  Clearing the IP address field will remove an entry." },
+					"IP address and port combination.  Clearing the IP address field\n" +
+					"will remove an entry." },
 	{ "Startup/ALLOWS",		"If any entries are listed in this table, ONLY servers listed\n" +
 					"in this table will be able to connect to the IRC network.  If\n" +
 					"a server connects with a name not in this table, Magick will\n" +
