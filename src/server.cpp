@@ -3417,10 +3417,8 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	    break;
 	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
 	    {
-		map_entry < Nick_Live_t >
-		    tmp(new
-			Nick_Live_t(IrcParam(params, 1),
-				    static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 				    IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 		tmp->Mode(modes);
 		tmp->Numeric(proto.Numeric.UserNumeric(IrcParam(params, 8)));
@@ -4154,30 +4152,24 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 1000:		// NICK nick hops time user host server :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    Magick::instance().nickserv.AddLive(tmp);
 		}
 		break;
 	    case 1001:		// NICK nick hops time user host server 1 :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    Magick::instance().nickserv.AddLive(tmp);
 		}
 		break;
 	    case 1002:		// NICK nick hops time user host server 0 real-host :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 8), params.After(" :")));
 		    tmp->AltHost(IrcParam(params, 5));
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4185,10 +4177,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 4))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    tmp->AltHost(IrcParam(params, 6));
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4196,10 +4186,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 4))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    tmp->AltHost(IrcParam(params, 6));
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4207,10 +4195,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 2000:		// NICK nick hops time mode user host server :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 		    tmp->Mode(modes);
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4218,10 +4204,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 2001:		// NICK nick hops time mode user host server 0 :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 		    tmp->Mode(modes);
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4229,10 +4213,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 		    tmp->Mode(modes);
 		    tmp->AltHost(IrcParam(params, 7));
@@ -4241,10 +4223,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    tmp->Mode(modes);
 		    tmp->AltHost(IrcParam(params, 9));
@@ -4253,10 +4233,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 2004:		// NICK nick hops time mode user host server 0 ipaddress :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 		    tmp->Mode(modes);
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4264,10 +4242,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 		    tmp->Mode(modes);
 		    tmp->AltHost(IrcParam(params, 7));
@@ -4276,10 +4252,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		break;
 	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
 		{
-		    map_entry < Nick_Live_t >
-			tmp(new
-			    Nick_Live_t(IrcParam(params, 1),
-					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+		    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 3))));
+		    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    if (modes.length())
 		    {
@@ -4857,10 +4831,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    }
 	}
 	{
-	    map_entry < Nick_Live_t >
-		tmp(new
-		    Nick_Live_t(IrcParam(params, 1),
-				static_cast < time_t > (atoul(IrcParam(params, 2))), server,
+	    mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 2))));
+	    map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 				IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
 	    Magick::instance().nickserv.AddLive(tmp);
 	}
@@ -5746,19 +5718,17 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	{
 	case 0000:		// USER nick user host server :realname
 	    {
-		map_entry < Nick_Live_t >
-		    tmp(new
-			Nick_Live_t(IrcParam(params, 1), mDateTime::CurrentDateTime(), server,
+		mDateTime signon(mDateTime::CurrentDateTime());
+		map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
 				    IrcParam(params, 2), IrcParam(params, 3), params.After(" :")));
 		Magick::instance().nickserv.AddLive(tmp);
 	    }
 	    break;
 	case 0001:		// USER nick time user host server :realname
 	    {
-		map_entry < Nick_Live_t >
-		    tmp(new
-			Nick_Live_t(IrcParam(params, 1), static_cast < time_t > (atoul(IrcParam(params, 2))),
-				    server, IrcParam(params, 3), IrcParam(params, 4), params.After(" :")));
+		mDateTime signon(static_cast < time_t > (atoul(IrcParam(params, 2))));
+		map_entry < Nick_Live_t > tmp(new Nick_Live_t(IrcParam(params, 1), signon, server,
+				    IrcParam(params, 3), IrcParam(params, 4), params.After(" :")));
 		Magick::instance().nickserv.AddLive(tmp);
 	    }
 	    break;
