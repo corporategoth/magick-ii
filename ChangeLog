@@ -1,3 +1,95 @@
+* 2001-12-24 02:06  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.272):
+  
+  Made hostmasking more intelligent (ie. a narrower mask will take priority
+  over a broader one on the access/akick list), and if a user is on more
+  than one committee, the one with the highest level attached will be
+  returned.
+
+* 2001-12-23 15:46  Preston A. Elder <prez@magick.tm>
+  TODO (1.18), include/chanserv.h (1.71), include/commserv.h (1.60),
+  src/chanserv.cpp (1.271), src/commserv.cpp (1.109), src/nickserv.cpp
+  (1.195):
+  
+  Added cleanup code for committee entries in channel access list.
+
+* 2001-12-23 14:16  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.270):
+  
+  Fixed typos in chanserv.cpp
+
+* 2001-12-23 03:17  Preston A. Elder <prez@magick.tm>
+  docs/user.txt (1.3), include/chanserv.h (1.70), lang/english.hlp (1.44),
+  src/chanserv.cpp (1.269), src/nickserv.cpp (1.194):
+  
+  Added ability to add both hostmasks and committees to channel access
+  lists.  Priority of access search is nickname, committee, then mask.
+
+* 2001-12-21 00:03  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.8):
+  
+  Added Nathan West
+
+* 2001-12-21 00:02  Preston A. Elder <prez@magick.tm>
+  include/magick.h (1.172), src/chanserv.cpp (1.268), src/ircsocket.cpp
+  (1.188), src/magick.cpp (1.336), src/main.cpp (1.54), src/nickserv.cpp
+  (1.193), src/server.cpp (1.201):
+  
+  Changed over from using a global ACE_Reactor to using an instance inside
+  of the Magick instance.
+
+* 2001-12-20 03:02  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.102), include/filesys.h (1.47), include/ircsocket.h
+  (1.61), include/magick.h (1.171), include/mexceptions.h (1.7),
+  lang/english.lfo (1.45), src/base.cpp (1.177), src/chanserv.cpp (1.267),
+  src/commserv.cpp (1.108), src/convert_epona.cpp (1.7),
+  src/convert_esper.cpp (1.11), src/convert_magick.cpp (1.8),
+  src/datetime.cpp (1.73), src/dccengine.cpp (1.48), src/filesys.cpp
+  (1.86), src/ircsocket.cpp (1.187), src/lockable.cpp (1.77),
+  src/magick.cpp (1.335), src/main.cpp (1.53), src/memoserv.cpp (1.107),
+  src/nickserv.cpp (1.192), src/operserv.cpp (1.138), src/server.cpp
+  (1.200), src/servmsg.cpp (1.95), src/trace.cpp (1.114), src/utils.cpp
+  (1.75):
+  
+  Massive change -- 'Parent' has been changed to Magick::instance(), will
+  soon also move the ACE_Reactor over, and will be able to have multipal
+  instances of Magick in the same process if necessary.
+
+* 2001-12-19 10:53  Preston A. Elder <prez@magick.tm>
+  Magick.spec (1.9):
+  
+  More spec changes
+
+* 2001-12-19 10:52  Preston A. Elder <prez@magick.tm>
+  Magick.spec (1.8):
+  
+  Some changes to the SPEC file
+
+* 2001-12-18 23:50  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.24), docs/en/index.sgml (1.32):
+  
+  Changed installation docs to include ACE *.inl
+
+* 2001-12-18 23:49  Preston A. Elder <prez@magick.tm>
+  configure.in (1.48):
+  
+  Removed 2 more warnings, else gcc 2.95.x complains
+
+* 2001-12-18 17:46  Preston A. Elder <prez@magick.tm>
+  docs/en/Makefile.am (1.8):
+  
+  Streamlined makefile a little, added some new formats ...
+
+* 2001-12-18 10:54  Preston A. Elder <prez@magick.tm>
+  docs/oper.txt (1.2), docs/user.txt (1.2):
+  
+  Fixed some documentation indexing problems, thanks to Stibnite
+
+* 2001-12-17 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.12):
+  
+  Created version 2.0s20011217
+
 * 2001-12-15 21:21  Preston A. Elder <prez@magick.tm>
   src/server.cpp (1.199):
   
