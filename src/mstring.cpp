@@ -125,14 +125,14 @@ mstring mstring::Right(size_t nCount)const
     return Mid(this->size()-nCount-1);
 }
 
-mstring mstring::Before(const mstring & in) const
+mstring mstring::Before(const mstring & in, int count) const
 {
-	return Mid(0,First(in));
+    return Mid(0,Find(in,count));
 }
 
-mstring mstring::After(const mstring & in) const
+mstring mstring::After(const mstring & in,int count) const
 {
-	return Mid(First(in)+1);
+    return Mid(Find(in,count)+in.Len());
 }
 
 mstring mstring::RevBefore(const mstring & in) const
@@ -325,7 +325,7 @@ int mstring::Find(char ch, bool bFromEnd) const
 	return i;
 }
 
-int mstring::Find(const mstring & in) const
+int mstring::Find(const mstring & in, int count) const
 {
 	//const char *psz=ACE_OS::strstr(c_str(),in);
 	const_iterator i;
@@ -591,4 +591,15 @@ mstring operator+(const char *psz, const mstring& string)
 {
 	mstring Result=mstring(psz)+string;
 	return Result;
+}
+int mstring::WordCount(mstring &separators)
+{
+    //
+    int Result=0;
+
+    return Result;
+}
+mstring mstring::Word(int count,mstring& separators)
+{
+    return "todo";
 }

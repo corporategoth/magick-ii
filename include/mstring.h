@@ -69,7 +69,7 @@ public:
 	size_t Index(char ch, int startpos=0)const;
 	size_t First(const mstring& in)const;
 	size_t First(char c)const;
-	int Find(const mstring & in)const;
+	int Find(const mstring & in, int count=1)const;
 	int Find(char ch, bool bFromEnd=false)const;
 	void Empty();
 	bool Contains(const mstring& in);
@@ -92,8 +92,8 @@ public:
 	void MakeUpper();
 	mstring RevAfter(const mstring& in) const;
 	mstring RevBefore(const mstring& in) const;
-	mstring After(const mstring& in) const;
-	mstring Before(const mstring& in) const;
+	mstring After(const mstring& in, int count=1) const;
+	mstring Before(const mstring& in,int count=1) const;
 	mstring Right(size_t nCount)const;
 	mstring Left(size_t nCount)const;
 	 mstring(const string& in);
@@ -113,6 +113,8 @@ public:
 	mstring(inherited::size_type n, char c);
 	mstring(inherited::const_iterator first, inherited::const_iterator last);
 	mstring();
+	int WordCount(mstring &separators);
+	mstring Word(int count,mstring& separators);
 
 	operator const char *() const { return c_str(); }
 
