@@ -1,0 +1,73 @@
+"#!/bin/sh
+#
+# Re-create logfile.h
+#
+
+if [ -z "$1" ]; then
+	echo "You must specify a language file to convert."
+	echo "Syntax: $0 langfile"
+	exit 1
+elif [ ! -f lang/$1 -a ! -f lang/$1.lfo ]; then
+	echo "Language file $1 does not exist."
+	exit 1
+fi
+
+
+if [ -f include/logfile.h ]; then
+	if [ -f lang/$1 ]; then
+		LANG=lang/$1
+	else
+		LANG=lang/$1.lfo
+	fi
+	DATE=`date`
+
+	cat >include/logfile.h <<EOF
+#ifndef WIN32
+#pragma interface
+#endif
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ========================================================== **
+#ifndef _LOGFILE_H
+#define _LOGFILE_H
+static const char *ident = "@(#) \$Id\$";
+** ========================================================== **
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <magick-devel@magick.tm>:
+**
+** \$Log\$
+**
+** ========================================================== */
+
+
+/* Automatically generated hard-coded log output file.
+ * Based upon $LANG.
+ * Created on $DATE
+ */
+
+EOF
+	echo "int def_logent = `cat $LANG | wc -l`;" >>include/logfile.h
+	echo "char *def_log[] = {" >>include/logfile.h
+	sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" \
+		-e "s/$/\",/g" $LANG >>include/logfile.h
+	echo "\"\" };" >>include/logfile.h
+	echo "#endif" >>include/logfile.h
+	
+	echo "include/logfile.h created successfully."
+else
+	echo "Existing logfile.h file missing."
+	echo "To create one, type: > include/logfile.h"
+	echo "Then re-run this script."
+fi
