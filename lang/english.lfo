@@ -200,8 +200,8 @@ SAVE             =Database saved.
 UNBAN            =Removed ban %s from channel %s due to timeout (%s).
 KILLPROTECT      =Killed/renamed nickname %s for failure to identify.
 PING             =Pinged all servers.
-LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE.
-LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE.
+LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE (%f average lag).
+LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE (%f average lag).
 
 ;
 ; These are errors that come from wx routines.

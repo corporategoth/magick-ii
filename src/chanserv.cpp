@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.145  2000/03/02 07:25:10  prez
+** Added stuff to do the chanserv greet timings (ie. only greet if a user has
+** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
+**
 ** Revision 1.144  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -86,6 +90,12 @@ unsigned int Chan_Live_t::Part(mstring nick)
     FT("Chan_Live_t::Part", (nick));
     if (users.find(nick.LowerCase())!=users.end())
     {
+	mstring target = nick.LowerCase();
+	if (Parent->nickserv.IsStored(nick) &&
+	    Parent->nickserv.stored[nick.LowerCase()].IsOnline() &&
+	    Parent->nickserv.stored[nick.LowerCase()].Host() != "")
+	    target = Parent->nickserv.stored[nick.LowerCase()].Host().LowerCase();
+	recent_parts[target] = Now();
 	users.erase(nick.LowerCase());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
@@ -897,6 +907,17 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 }
 
 
+mDateTime Chan_Live_t::PartTime(mstring nick)
+{
+    FT("Chan_Live_t::PartTime", (nick));
+    if (recent_parts.find(nick.LowerCase()) != recent_parts.end())
+    {
+	RET(recent_parts[nick.LowerCase()]);
+    }
+    RET(mDateTime(0.0));
+}
+
+
 bool checkops(pair<const mstring, pair<bool,bool> > &in)
 {
     FT("checkops",(in.first,in.second.first,in.second.second));
@@ -1073,7 +1094,8 @@ void Chan_Stored_t::Join(mstring nick)
 
     {
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
-	if (Greet_find(target))
+	if (Greet_find(target) &&
+		clive->PartTime(target).SecondsSince() > Parttime())
 	{
 	    if (Greet->Entry()[0U] == '!')
 	    {
@@ -1332,6 +1354,8 @@ void Chan_Stored_t::defaults()
     l_Mlock_On = l_Mlock_Off = "";
     i_Bantime = Parent->chanserv.DEF_Bantime();
     l_Bantime = false;
+    i_Parttime = Parent->chanserv.DEF_Parttime();
+    l_Parttime = false;
     i_Keeptopic = Parent->chanserv.DEF_Keeptopic();
     l_Keeptopic = false;
     i_Topiclock = Parent->chanserv.DEF_Topiclock();
@@ -1486,6 +1510,8 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 
     i_Bantime=in.i_Bantime;
     l_Bantime=in.l_Bantime;
+    i_Parttime=in.i_Parttime;
+    l_Parttime=in.l_Parttime;
     i_Keeptopic=in.i_Keeptopic;
     l_Keeptopic=in.l_Keeptopic;
     i_Topiclock=in.i_Topiclock;
@@ -2082,6 +2108,44 @@ bool Chan_Stored_t::L_Bantime()
     if (!Parent->chanserv.LCK_Bantime())
     {
 	RET(l_Bantime);
+    }
+    RET(true);
+}
+
+
+void Chan_Stored_t::Parttime(unsigned long in)
+{
+    FT("Chan_Stored_t::Parttime", (in));
+    if (!(Parent->chanserv.LCK_Parttime() || l_Parttime))
+	i_Parttime = in;
+}
+
+
+unsigned long Chan_Stored_t::Parttime()
+{
+    NFT("Chan_Stored_t::Parttime");
+    if (!Parent->chanserv.LCK_Parttime())
+    {
+	RET(i_Parttime);
+    }
+    RET(Parent->chanserv.DEF_Parttime());
+}
+
+
+void Chan_Stored_t::L_Parttime(bool in)
+{
+    FT("Chan_Stored_t::L_Parttime", (in));
+    if (!Parent->chanserv.LCK_Parttime())
+	l_Parttime = in;
+}
+
+
+bool Chan_Stored_t::L_Parttime()
+{
+    NFT("Chan_Stored_t::L_Parttime");
+    if (!Parent->chanserv.LCK_Parttime())
+    {
+	RET(l_Parttime);
     }
     RET(true);
 }
@@ -2998,10 +3062,10 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
     out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_CoFounder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
-    out<<in.i_Bantime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<in.i_Secure
-	<<in.i_NoExpire<<in.i_Anarchy<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
-    out<<in.l_Bantime<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops<<in.l_Secure
-	<<in.l_NoExpire<<in.l_Anarchy<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
+    out<<in.i_Bantime<<in.i_Parttime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops
+	<<in.i_Secure<<in.i_NoExpire<<in.i_Anarchy<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
+    out<<in.l_Bantime<<in.l_Parttime<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops
+	<<in.l_Secure<<in.l_NoExpire<<in.l_Anarchy<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
 //  entlist_val_cui<long> j;
@@ -3049,10 +3113,10 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     entlist_val_t<mstring> esdummy;
     in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_CoFounder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
-    in>>out.i_Bantime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>out.i_Secure
-	>>out.i_NoExpire>>out.i_Anarchy>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
-    in>>out.l_Bantime>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops>>out.l_Secure
-	>>out.l_NoExpire>>out.l_Anarchy>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
+    in>>out.i_Bantime>>out.i_Parttime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops
+	>>out.i_Secure>>out.i_NoExpire>>out.i_Anarchy>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
+    in>>out.l_Bantime>>out.l_Parttime>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops
+	>>out.l_Secure>>out.l_NoExpire>>out.l_Anarchy>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
     out.i_Level.clear();
@@ -3255,6 +3319,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* BAN*TIME", Parent->commserv.REGD_Name(), ChanServ::do_set_BanTime);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* PART*TIME", Parent->commserv.REGD_Name(), ChanServ::do_set_PartTime);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* KEEP*", Parent->commserv.REGD_Name(), ChanServ::do_set_KeepTopic);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_set_TopicLock);
@@ -3279,6 +3345,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_lock_BanTime);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK PART*TIME", Parent->commserv.SOP_Name(), ChanServ::do_lock_PartTime);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK KEEP*", Parent->commserv.SOP_Name(), ChanServ::do_lock_KeepTopic);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK TOPIC*", Parent->commserv.SOP_Name(), ChanServ::do_lock_TopicLock);
@@ -3300,6 +3368,8 @@ void ChanServ::AddCommands()
 	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Mlock);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_unlock_BanTime);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK PART*TIME", Parent->commserv.SOP_Name(), ChanServ::do_unlock_PartTime);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOCK KEEP*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_KeepTopic);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3672,6 +3742,9 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     if (chan->Bantime())
 	::send(mynick, source, Parent->getMessage(source, "CS_INFO/BANTIME"),
 		ToHumanTime(chan->Bantime()).c_str());
+    if (chan->Parttime())
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/PARTTIME"),
+		ToHumanTime(chan->Parttime()).c_str());
 
     output = "";
     if (chan->Keeptopic())
@@ -6613,6 +6686,56 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), ToHumanTime(num).c_str());
 }
 
+void ChanServ::do_set_PartTime(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_PartTime", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring value     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
+	return;
+    }
+
+    if (cstored->L_Parttime())
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
+		channel.c_str());
+	return;
+    }
+
+    unsigned long num = FromHumanTime(value);
+    cstored->Parttime(num);
+    Parent->chanserv.stats.i_Set++;
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
+	    channel.c_str(), ToHumanTime(num).c_str());
+}
+
 void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_KeepTopic", (mynick, source, params));
@@ -7347,6 +7470,51 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), ToHumanTime(num).c_str());
 }
 
+void ChanServ::do_lock_PartTime(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_PartTime", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring value     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
+
+    if (Parent->chanserv.LCK_Parttime())
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
+		channel.c_str());
+	return;
+    }
+
+    unsigned long num = FromHumanTime(value);
+    cstored->L_Parttime(false);
+    cstored->Parttime(num);
+    cstored->L_Parttime(true);
+    Parent->chanserv.stats.i_Lock++;
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
+	    channel.c_str(), ToHumanTime(num).c_str());
+}
+
 void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_KeepTopic", (mynick, source, params));
@@ -7953,6 +8121,47 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+	    channel.c_str());
+}
+
+void ChanServ::do_unlock_PartTime(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_PartTime", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
+
+    if (Parent->chanserv.LCK_Parttime())
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
+		channel.c_str());
+	return;
+    }
+
+    cstored->L_Parttime(false);
+    Parent->chanserv.stats.i_Unlock++;
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
 	    channel.c_str());
 }
 

@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.200  2000/03/02 07:25:11  prez
+** Added stuff to do the chanserv greet timings (ie. only greet if a user has
+** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
+**
 ** Revision 1.199  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -1694,6 +1698,13 @@ bool Magick::get_config_values()
 	chanserv.def_bantime = FromHumanTime("0");
 
     in.Read(ts_ChanServ+"LCK_BANTIME",&chanserv.lck_bantime,false);
+    in.Read(ts_ChanServ+"DEF_PARTTIME",&value_mstring, "0");
+    if (FromHumanTime(value_mstring))
+	chanserv.def_parttime = FromHumanTime(value_mstring);
+    else
+	chanserv.def_parttime = FromHumanTime("0");
+
+    in.Read(ts_ChanServ+"LCK_PARTTIME",&chanserv.lck_parttime,false);
     in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&chanserv.def_keeptopic,true);
     in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&chanserv.lck_keeptopic,false);
     in.Read(ts_ChanServ+"DEF_TOPICLOCK",&chanserv.def_topiclock,false);
@@ -2134,6 +2145,7 @@ void Magick::load_databases()
 
     mstring tag;
     unsigned long ver;
+    short ver_major, ver_minor;
     bool compressed;
     bool encrypted;
     wxFileInputStream finput(databasefile);
@@ -2149,10 +2161,14 @@ void Magick::load_databases()
 	dinput = new wxDataInputStream(*input);
 	input = dinput;
 	*input >> tag >> ver >> compressed >> encrypted;
+
+	ver_minor = FileVersionNumber % 0x10000;
+	ver_major = FileVersionNumber / 0x10000;
+
 	//input->Sync();
 	input = &finput;
 	delete dinput;
-	CP(("Data TAG: %s | %d | %d | %d", tag.c_str(), ver, compressed, encrypted));
+	CP(("Data TAG: %s | %d.%d | %d | %d", tag.c_str(), ver_major, ver_minor, compressed, encrypted));
 
 	if (tag != FileIdentificationTag)
 	    wxLogFatal(getLogMessage("COMMANDLINE/DBASE_ID"));

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/03/02 07:25:11  prez
+** Added stuff to do the chanserv greet timings (ie. only greet if a user has
+** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
+**
 ** Revision 1.58  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -1360,8 +1364,16 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	output << IRC_Bold;
     output << ToHumanTime(Parent->chanserv.DEF_Bantime());
     if (Parent->chanserv.LCK_Bantime())
-	output << IRC_Off;    
+	output << IRC_Off;
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_BANTIME"),
+		    output.c_str());
+    output = "";
+    if (Parent->chanserv.LCK_Parttime())
+	output << IRC_Bold;
+    output << ToHumanTime(Parent->chanserv.DEF_Parttime());
+    if (Parent->chanserv.LCK_Parttime())
+	output << IRC_Off;
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_PARTTIME"),
 		    output.c_str());
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_MLOCK"),

@@ -24,6 +24,10 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/03/02 07:25:10  prez
+** Added stuff to do the chanserv greet timings (ie. only greet if a user has
+** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
+**
 ** Revision 1.30  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -70,6 +74,7 @@ class Chan_Live_t : public mUserDef
     vector<mstring> p_modes_on_params;
     vector<mstring> p_modes_off_params;
     long ph_timer;
+    map<mstring, mDateTime> recent_parts;
 
     bool ModeExists(mstring mode, vector<mstring> mode_params,
 			bool change, char reqmode, mstring reqparam = "");
@@ -128,6 +133,7 @@ public:
     mstring Mode()		{ return modes; }
     mstring Key()		{ return i_Key; }
     unsigned int Limit()	{ return i_Limit; }
+    mDateTime PartTime(mstring nick);
 
 };
 
@@ -166,6 +172,8 @@ class Chan_Stored_t : public mUserDef
     
     unsigned long i_Bantime;
     bool l_Bantime;
+    unsigned long i_Parttime;
+    bool l_Parttime;
     bool i_Keeptopic;
     bool l_Keeptopic;
     bool i_Topiclock;
@@ -257,6 +265,10 @@ public:
     void Bantime(unsigned long in);
     bool L_Bantime();
     void L_Bantime(bool in);
+    unsigned long Parttime();
+    void Parttime(unsigned long in);
+    bool L_Parttime();
+    void L_Parttime(bool in);
     bool Keeptopic();
     void Keeptopic(bool in);
     bool L_Keeptopic();
@@ -396,6 +408,8 @@ private:
     mstring lck_mlock;		// Locked MLOCK modes
     unsigned long def_bantime;	// Default time to keep bans (minutes)
     bool lck_bantime;		// BANTIME is locked?
+    unsigned long def_parttime;	// Default time to not greet
+    bool lck_parttime;		// PARTTIME is locked?
     bool def_keeptopic;		// Default val of KEEPTOPIC
     bool lck_keeptopic;		// KEEPTOPIC is locked?
     bool def_topiclock;		// Default val of TOPICLOCK
@@ -507,6 +521,8 @@ public:
     mstring LCK_MLock()		{ return lck_mlock; }
     unsigned long DEF_Bantime()	{ return def_bantime; }
     bool LCK_Bantime()	        { return lck_bantime; }
+    unsigned long DEF_Parttime(){ return def_bantime; }
+    bool LCK_Parttime()	        { return lck_bantime; }
     bool DEF_Keeptopic()	{ return def_keeptopic; }
     bool LCK_Keeptopic()	{ return lck_keeptopic; }
     bool DEF_Topiclock()	{ return def_topiclock; }
@@ -599,6 +615,7 @@ public:
     static void do_set_Comment(mstring mynick, mstring source, mstring params);
     static void do_set_Mlock(mstring mynick, mstring source, mstring params);
     static void do_set_BanTime(mstring mynick, mstring source, mstring params);
+    static void do_set_PartTime(mstring mynick, mstring source, mstring params);
     static void do_set_KeepTopic(mstring mynick, mstring source, mstring params);
     static void do_set_TopicLock(mstring mynick, mstring source, mstring params);
     static void do_set_Private(mstring mynick, mstring source, mstring params);
@@ -611,6 +628,7 @@ public:
     static void do_set_Revenge(mstring mynick, mstring source, mstring params);
     static void do_lock_Mlock(mstring mynick, mstring source, mstring params);
     static void do_lock_BanTime(mstring mynick, mstring source, mstring params);
+    static void do_lock_PartTime(mstring mynick, mstring source, mstring params);
     static void do_lock_KeepTopic(mstring mynick, mstring source, mstring params);
     static void do_lock_TopicLock(mstring mynick, mstring source, mstring params);
     static void do_lock_Private(mstring mynick, mstring source, mstring params);
@@ -622,6 +640,7 @@ public:
     static void do_lock_Revenge(mstring mynick, mstring source, mstring params);
     static void do_unlock_Mlock(mstring mynick, mstring source, mstring params);
     static void do_unlock_BanTime(mstring mynick, mstring source, mstring params);
+    static void do_unlock_PartTime(mstring mynick, mstring source, mstring params);
     static void do_unlock_KeepTopic(mstring mynick, mstring source, mstring params);
     static void do_unlock_TopicLock(mstring mynick, mstring source, mstring params);
     static void do_unlock_Private(mstring mynick, mstring source, mstring params);

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2000/03/02 07:25:11  prez
+** Added stuff to do the chanserv greet timings (ie. only greet if a user has
+** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
+**
 ** Revision 1.86  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -391,6 +395,7 @@ int EventTask::svc(void)
 	map<mstring, Server>::iterator si;
 	map<mstring, mDateTime>::iterator di;
 	unsigned int i;
+	vector<mstring> chunked;
 
 	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
 	{
@@ -586,6 +591,23 @@ int EventTask::svc(void)
 		    }
 		}
 
+		chunked.clear();
+		if (csi != Parent->chanserv.stored.end())
+		{
+		    for (di=cli->second.recent_parts.begin();
+				di!=cli->second.recent_parts.end(); di++)
+		    {
+			if (di->second.SecondsSince() > csi->second.Parttime())
+			    chunked.push_back(di->first);
+		    }
+		}
+		else
+		{
+		    cli->second.recent_parts.clear();
+		}
+		for (i=0; i<chunked.size(); i++)
+		    cli->second.recent_parts.erase(chunked[i]);
+
 		// Send pending ChanServ modes ...
 		// Make sure we got someone to send them first.
 		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
@@ -664,7 +686,7 @@ int EventTask::svc(void)
 	    // Check if we should rename people who are past their
 	    // grace time on ident (if KillProtect is on, and they
 	    // are not on access list or secure is on).
-	    vector<mstring> chunked;
+	    chunked.clear();
 	    for (nli = Parent->nickserv.live.begin();
 			    nli != Parent->nickserv.live.end(); nli++)
 	    {
@@ -703,8 +725,8 @@ int EventTask::svc(void)
 		Parent->nickserv.recovered[oldnick.LowerCase()] = Now();
 	    }
 
-	    chunked.clear();
 	    // Sign off clients we've decided to take.
+	    chunked.clear();
 	    for (di = Parent->nickserv.recovered.begin();
 			di != Parent->nickserv.recovered.end(); di++)
 	    {
@@ -728,7 +750,7 @@ int EventTask::svc(void)
 	    CP(("Starting SERVER PING ..."));
 
 	    vector<double> pingtimes;
-	    double min = -1, max = 0, sum, avg;
+	    double min = -1, max = 0, sum = 0, avg = 0;
 	    for (si=Parent->server.ServerList.begin();
 		    si!=Parent->server.ServerList.end(); si++)
 	    {
@@ -747,13 +769,13 @@ int EventTask::svc(void)
 	    if (avg > (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
 	    {
 		Parent->LevelUp();
-		wxLogWarning(Parent->getLogMessage("EVENT/LEVELUP"));
+		wxLogWarning(Parent->getLogMessage("EVENT/LEVEL_UP"), avg);
 	    }
 	    else if (Parent->Level() > Parent->startup.Level() &&
 		avg <= (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
 	    {
 		Parent->LevelDown();
-		wxLogWarning(Parent->getLogMessage("EVENT/LEVELDOWN"));
+		wxLogWarning(Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg);
 	    }
 
 	    for (si=Parent->server.ServerList.begin();

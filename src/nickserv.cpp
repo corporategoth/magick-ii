@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/03/02 07:25:11  prez
+** Added stuff to do the chanserv greet timings (ie. only greet if a user has
+** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
+**
 ** Revision 1.61  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -5467,7 +5471,7 @@ void NickServ::load_database(wxInputStream& in)
 		iter->first.c_str(), iter->second.i_Host.c_str()));
 	    stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->first);
 	}
-	else
+	else if (iter->second.i_Host != "")
 	{
 	    wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
 		iter->second.i_Host.c_str(), iter->first.c_str());
