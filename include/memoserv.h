@@ -13,7 +13,7 @@
 #ifndef _memoserv_h
 #define _memoserv_h
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 

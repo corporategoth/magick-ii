@@ -14,7 +14,7 @@
 #ifndef _MAGICK_H
 #define _MAGICK_H
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 

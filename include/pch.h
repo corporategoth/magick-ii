@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
-#ifndef _MSC_VER
+#ifndef WIN32
 #include <sys/time.h>
 #endif
 

@@ -24,7 +24,7 @@
 //                       Ballueder@usa.net     <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 #include "confbase.h"

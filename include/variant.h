@@ -13,7 +13,7 @@
 #ifndef _VARIANT_H
 #define _VARIANT_H
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 

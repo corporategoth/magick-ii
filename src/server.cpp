@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 // $Id$
@@ -100,7 +100,7 @@ void Server::Ping()
     if (!i_Ping)
     {
         SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
-#ifndef _MSC_VER
+#ifndef WIN32
 	timeval *tmp;
 	gettimeofday(tmp, NULL);
 	i_Ping = (double)tmp->tv_sec + ((double)tmp->tv_usec / 1000.0);
@@ -117,7 +117,7 @@ void Server::Pong()
     NFT("Server::Pong");
     if (i_Ping)
     {
-#ifndef _MSC_VER
+#ifndef WIN32
 	timeval *tmp;
 	gettimeofday(tmp, NULL);
 	i_Lag = ((double) tmp->tv_sec + ((double) tmp->tv_usec / 1000.0)) - i_Ping;

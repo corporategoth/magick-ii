@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 // $Id$
@@ -15,7 +15,7 @@
 //
 // ===================================================
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 #include "dccengine.h"

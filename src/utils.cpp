@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 // $Id$
@@ -14,7 +14,7 @@
 // code must be clearly documented and labelled.
 //
 // ===================================================
-#ifdef _MSC_VER
+#ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif

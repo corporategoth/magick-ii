@@ -1,7 +1,7 @@
 #ifndef IRC_SOCKET_H
 #define IRC_SOCKET_H
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 

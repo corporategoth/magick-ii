@@ -27,7 +27,7 @@
 #ifndef _MSTRING_H
 #define _MSTRING_H
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 

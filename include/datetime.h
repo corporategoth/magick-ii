@@ -14,7 +14,7 @@
 #ifndef _DATETIME_H
 #define _DATETIME_H
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 

@@ -14,7 +14,7 @@
 #ifndef _LOCKABLE_H
 #define _LOCKABLE_H
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma warning(disable:4786)
 #endif
 
