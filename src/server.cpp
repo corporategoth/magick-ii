@@ -295,7 +295,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="ERROR")
 	{
 	    // ERROR :This is my error
-	    wxLogWarning("SERVER reported ERROR: %s", data.After(":").c_str());
+	    wxLogNotice("SERVER reported ERROR: %s", data.After(":").c_str());
 	}
 	break;
     case 'F':
@@ -336,6 +336,8 @@ void NetworkServ::execute(const mstring & data)
 	    // :source INVITE target :channel
 	    //:PreZ INVITE ChanServ :#chatzone
 
+	    // We can ignore this, as our clients will not 'join on invite'
+
 	}
 	else if (msgtype=="ISON")
 	{
@@ -367,14 +369,27 @@ void NetworkServ::execute(const mstring & data)
 	    if (!(Parent->nickserv.live[sourceL].IsInChan(data.ExtractWord(3, ": ")) || source.Contains(".")))
 		SendSVR("KICK " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
 
+	    // NOTE: as the message has already been broadcasted,
+	    // we still need to acomodate for it.
 	    Parent->nickserv.live[data.ExtractWord(4, ": ").LowerCase()].Kick(source, data.ExtractWord(3, ": "));
 	}
 	else if (msgtype=="KILL")
 	{
 	    // :source/server KILL target :reason
 	    // LOCAL clients ONLY (remotes are a QUIT).
-	//:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
-	    Parent->nickserv.live.erase(data.ExtractWord(3, ": ").LowerCase());
+	    //:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
+	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    {
+		int wc = data.After(":", 2).WordCount("!");
+		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
+			"Killed (" + data.After(":", 2).After("!", wc) + ")");
+		Parent->nickserv.live.erase(data.ExtractWord(3, ": ").LowerCase());
+	    }
+	    else
+	    {
+		wxLogWarning("Received KILL message for user %s who does not exist, from %s",
+			data.ExtractWord(3, ": ").c_str(), source.c_str());
+	    }
 
 	}
 	break;
@@ -417,6 +432,30 @@ void NetworkServ::execute(const mstring & data)
 	    // :source MODE source :mode
 	    // :source MODE #channel mode params...
 	    // :server MODE #channel mode params... creationtime
+	    if (IsChan(data.ExtractWord(3, ": ")))
+	    {
+		if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
+		{
+		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(source, data.After(" ", 3));
+		}
+		else
+		{
+		    wxLogWarning("MODE from %s received for non-existant channel %s", source.c_str(),
+			data.ExtractWord(3, ": ").c_str());
+		}
+	    }
+	    else
+	    {
+		if (source!=data.ExtractWord(3, ": "))
+		{
+		    wxLogWarning("MODE for another nick received from %s for %s",
+			source.c_str(), data.ExtractWord(3, ": ").c_str());
+		}
+		else
+		{
+		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(4, ": "));
+		}
+	    }
 	}
 	break;
     case 'N':
@@ -531,7 +570,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source QUIT :reason
 
-	    // TODO: Call stored.Quit(reason) for live.IsRecognized().
+	    Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
 	    Parent->nickserv.live.erase(sourceL);
 	}
 	break;
@@ -581,7 +620,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="SQLINE")
 	{
 	    // We will ignore SQLINES because they're not relivant to us.
-	    // we will not be glining our own clients ;P
+	    // we will not be qlining our own clients ;P
 	}
 	else if (msgtype=="SQUIT")
 	{
@@ -690,7 +729,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="UNSQLINE")
 	{
 	    // We will ignore SQLINES because they're not relivant to us.
-	    // we will not be glining our own clients ;P
+	    // we will not be qlining our own clients ;P
 	}
 	else if (msgtype=="USER")
 	{

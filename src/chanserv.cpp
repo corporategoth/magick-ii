@@ -60,7 +60,7 @@ int Chan_Live_t::Part(mstring nick)
 
 int Chan_Live_t::Kick(mstring nick, mstring kicker)
 {
-    FT("Chan_Live_t::Kick", (nick));
+    FT("Chan_Live_t::Kick", (nick, kicker));
     if (users.find(nick.LowerCase())==users.end())
 	wxLogWarning("KICK from %s received for %s who is not in %s.", kicker.c_str(), nick.c_str(), i_Name.c_str());
     else
@@ -69,11 +69,147 @@ int Chan_Live_t::Kick(mstring nick, mstring kicker)
     RET(users.size());
 }
 
+void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
+{
+    FT("Chan_Live_t::ChgNick", (nick, newnick));
+    if (users.find(nick.LowerCase())==users.end())
+    {
+	wxLogWarning("NICK CHANGE for %s received, and is not in channel.", nick.c_str());
+    }
+    else
+    {
+	users[newnick.LowerCase()] = users[nick.LowerCase()];
+	users.erase(nick.LowerCase());
+    }
+}
+
 bool Chan_Live_t::IsIn(mstring nick)
 {
     FT("Chan_Live_t::IsIn", (nick));
     if (users.empty()) RET(false);
     RET((users.find(nick.LowerCase()) != users.end()));
+}
+
+void Chan_Live_t::Mode(mstring source, mstring in)
+{
+    FT("Chan_Live_t::Mode", (source, in));
+
+    mstring change = in.ExtractWord(1, ": ");
+    int fwdargs = 2;
+    bool add = true;
+    for (unsigned int i=0; i<change.size(); i++)
+    {
+	switch(change[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+
+	case '-':
+	    add = false;
+	    break;
+
+	case 'o':
+	    if (IsIn(in.ExtractWord(fwdargs, ": ")))
+	    {
+		if (add)
+		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
+		else
+		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = false;
+	    }
+	    else
+	    {
+		wxLogWarning("Received MODE +o in %s for %s (who is not in channel) by %s",
+			i_Name.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), source.c_str());
+	    } 
+	    fwdargs++;
+	    break;
+
+	case 'v':
+	    if (IsIn(in.ExtractWord(fwdargs, ": ")))
+	    {
+		if (add)
+		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
+		else
+		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = false;
+	    }
+	    else
+	    {
+		wxLogWarning("Received MODE +v in %s for %s (who is not in channel) by %s",
+			i_Name.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), source.c_str());
+	    } 
+	    fwdargs++;
+	    break;
+
+	case 'b':
+	    if (add)
+	    {
+		bans.insert(in.ExtractWord(fwdargs, ": ").LowerCase());
+	    }
+	    else
+	    {
+		bans.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
+	    }
+	    fwdargs++;
+	    break;
+
+	case 'k':
+	    if (in.ExtractWord(fwdargs, ": ") == i_Key)
+	    {
+		if (add)
+		    i_Key = "";
+		else
+		    i_Key = in.ExtractWord(fwdargs, ": ");
+	    }
+	    else
+	    {
+		wxLogWarning("Incorrect KEY on key-change from %s for %s", source.c_str(), i_Name.c_str());
+	    }
+	    fwdargs++;
+	    break;
+
+	case 'l':
+	    if (add)
+	    {
+		if (fwdargs > in.WordCount(": "))
+		{
+		    wxLogWarning("No number specified for new LIMIT for %s, set by %s", i_Name.c_str(), source.c_str());
+		    i_Limit = 0;
+		}
+		else if (!in.ExtractWord(fwdargs, ": ").IsNumber())
+		{
+		    wxLogWarning("New LIMIT for %s is not a number, set by %s", i_Name.c_str(), source.c_str());
+		    i_Limit = 0;
+		}
+		else
+		{
+		    i_Limit = atoi(in.ExtractWord(fwdargs, ": ").c_str());
+		}
+	    }
+	    else
+	    {
+		i_Limit = 0;
+	    } 
+	    fwdargs++;
+	    break;
+
+	default:
+	    if (add && !modes.Contains(change[i]))
+	    {
+		modes += change[i];
+	    }
+	    else if (!add && modes.Contains(change[i]))
+	    {
+		modes.Remove((mstring) change[i]);
+	    }
+	    else
+	    {
+		wxLogNotice("MODE change %c%c received from %s for %s that is currently in effect",
+			add ? '+' : '-', change[i], source.c_str(), i_Name.c_str());
+	    }
+	    break;
+	}
+    }
 }
 
 void Chan_Live_t::operator=(const Chan_Live_t &in)

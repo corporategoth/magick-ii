@@ -40,6 +40,7 @@ const int MAGICK_RET_ERROR		    = -1;
 const int MAGICK_RET_INVALID_SERVICES_DIR   = -20;
 
 class Magick; // fwd reference, leave it here
+const mstring ChanSpec = "#&+";
 
 class SignalHandler : public ACE_Event_Handler
 {
@@ -184,5 +185,7 @@ inline void KillUnknownUser(mstring user)
     user + " :" + Parent->Startup_SERVER_NAME + " (" + user + "(?) <- " +
     Parent->Startup_REMOTE_SERVER + ")"); }
 
+inline bool IsChan(mstring input)
+{ return (ChanSpec.Contains(input[0U])); }
 
 #endif

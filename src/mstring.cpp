@@ -480,6 +480,12 @@ mstring& mstring::Remove(size_t nStart, size_t nLen)
 	return *this;
 }
 
+mstring& mstring::Remove(mstring str)
+{
+	Remove(Find(str), str.Len());
+	return *this;
+}
+
 mstring& mstring::RemoveLast()
 {
 	Truncate(length()-1);

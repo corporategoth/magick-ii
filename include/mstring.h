@@ -51,6 +51,7 @@ public:
 	mstring& RemoveLast();
 	mstring& Remove(size_t nStart, size_t nLen);
 	mstring& Remove(size_t pos);
+	mstring& Remove(mstring str);
 	mstring LowerCase() const;
 	bool IsWord() const;
 	bool IsNumber() const;

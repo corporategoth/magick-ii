@@ -186,21 +186,13 @@ void mBaseTask::message_i(const mstring& message)
     else    // This handles all non-msgs/notices.
 	Parent->server.execute (message);
 
-    /* Locking here because we dont want two threads
-     * dieing because they both counted at the same
-     * time and before the other had died.  Unlikely,
-     * but it CAN happen.
-     */
-    {
-	MLOCK("thread_handler", "LWM");
-	if(thr_count()>1&&message_queue_.message_count()<
+    if(thr_count()>1&&message_queue_.message_count()<
 	    Parent->high_water_mark*(thr_count()-2)+Parent->low_water_mark)
-	{
-	    message_queue_.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
-	    message_queue_.low_water_mark(message_queue_.high_water_mark());
-	    COM(("Low water mark reached, killing thread."));
-	    i_shutdown();
-	}
+    {
+	message_queue_.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
+	message_queue_.low_water_mark(message_queue_.high_water_mark());
+	COM(("Low water mark reached, killing thread."));
+	i_shutdown();
     }
 }
 
