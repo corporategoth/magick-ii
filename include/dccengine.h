@@ -11,7 +11,7 @@ public:
     bytevector lowDequote(bytevector& in);
     bytevector ctcpQuote(bytevector& in);
     bytevector ctcpDequote(bytevector& in);
-    bytevector ctcpExtract(bytevector& in);
+    vector<bytevector> ctcpExtract(bytevector& in);
 };
 
 #endif

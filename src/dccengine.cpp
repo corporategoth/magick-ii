@@ -1,6 +1,9 @@
 #include "dccengine.h"
 #include <algorithm>
 using namespace std;
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 const unsigned char CTCP_DELIM_CHAR='\001';
 const unsigned char CTCP_QUOTE_CHAR='\\';
@@ -128,17 +131,23 @@ bytevector DccEngine::ctcpDequote(bytevector& in)
     return Result;
 }
 
-bytevector DccEngine::ctcpExtract(bytevector& in)
+vector<bytevector> DccEngine::ctcpExtract(bytevector& in)
 {
     // pull out /001...../001 pairs
-    bytevector Result;
+    vector<bytevector> Result;
+    bytevector tmpstring;
     bytevector::iterator start,end;
     start=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
     if(start==in.end())
 	return Result;
     end=find(start+1,in.end(),CTCP_DELIM_CHAR);
-    if(end==in.end())
-	return Result;
-    Result.assign(start,end);
+    while(start!=in.end()&&end!=in.end())
+    {
+	tmpstring.assign(start,end);
+	Result.push_back(tmpstring);
+	start=end;
+	if(start!=in.end())
+	    end=find(start+1,in.end(),CTCP_DELIM_CHAR);
+    }
     return Result;
 }
