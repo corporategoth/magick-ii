@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2001/12/25 06:26:57  prez
+** More new SXP fixes ...
+**
 ** Revision 1.47  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -255,7 +258,7 @@ class FileMap : public SXP::IPersistObj
 {
 public:
     FileMap() {}
-    ~FileMap() {}
+    virtual ~FileMap() {}
     enum FileType { MemoAttach, Picture, Public, Unknown };
     typedef map<FileType, map<unsigned long, pair<mstring, mstring> > > filemap_t;
 

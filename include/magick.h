@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.173  2001/12/25 06:26:57  prez
+** More new SXP fixes ...
+**
 ** Revision 1.172  2001/12/21 05:02:28  prez
 ** Changed over from using a global ACE_Reactor to using an instance inside
 ** of the Magick instance.
@@ -579,7 +582,7 @@ public:
 
     // Current STATES, and switching between them.
     Magick(int inargc, char **inargv);
-    ~Magick();
+    virtual ~Magick();
 
     // Init and Finish are only EVER called once
     // Start should be called after Init or Stop

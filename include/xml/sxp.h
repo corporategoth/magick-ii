@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2001/12/25 06:26:57  prez
+** More new SXP fixes ...
+**
 ** Revision 1.23  2001/12/25 05:57:28  prez
 ** Updated SXP and EXPAT -- untested, but should work.
 **
@@ -504,7 +507,7 @@ namespace SXP {
 		// for which the "this" element is immediate parent
 		// it is called when the open element tag is encountered,
 		// and only the Name() and Attrib() of pElement values are valid
-		virtual void BeginElement(IParser *pIn, IElement *pElement) = 0;
+		virtual void BeginElement(const IParser *pIn, const IElement *pElement) = 0;
 
 		// this is called when the corresponding close element
 		// tag is encountered, and the Data() member of pElement is
@@ -512,7 +515,7 @@ namespace SXP {
 		// NOTE: each object receives both its own BeginElement so it can
 		// process its own element tag attributes, and its own EndElement
 		// so it can process its own character data
-		virtual void EndElement(IParser *pIn, IElement *pElement) = 0;
+		virtual void EndElement(const IParser *pIn, const IElement *pElement) = 0;
 	};
 
 	// the mighty parser itself
