@@ -113,7 +113,8 @@ public:
     mVariant &operator[](int position){return values[position];};
 };
 
+extern const mVarArray EmptyArray;
 // todo
-#define AOC(x)
+#define AOC(x) mVarArray x
 
 #endif

@@ -11,40 +11,45 @@
 //
 // ===================================================
 #include "variant.h"
+#include "trace.h"
+
+const mVarArray EmptyArray;
 
 mVariant::mVariant()
 {
-	valuetype=VarEmpty;
+    FuncTrace("mVariant::mVariant()",EmptyArray);
+    valuetype=VarEmpty;
 }
 
 mVariant::mVariant(short in)
 {
-	valuetype=VarShort;
-	value.ShortValue=in;
+    FuncTrace("mVariant::mVariant(short in)",AOC((in)));
+    valuetype=VarShort;
+    value.ShortValue=in;
 }
 
 mVariant::mVariant(int in)
 {
-	valuetype=VarInt;
-	value.IntValue=in;
+    valuetype=VarInt;
+    value.IntValue=in;
 }
 
 mVariant::mVariant(char in)
 {
-	valuetype=VarChar;
-	value.CharValue=in;
+    valuetype=VarChar;
+    value.CharValue=in;
 }
 
 mVariant::mVariant(float in)
 {
-	valuetype=VarFloat;
-	value.FloatValue=in;
+    valuetype=VarFloat;
+    value.FloatValue=in;
 }
 
 mVariant::mVariant(double in)
 {
-	valuetype=VarDouble;
-	value.DoubleValue=in;
+    valuetype=VarDouble;
+    value.DoubleValue=in;
 }
 
 mVariant::mVariant(const char * in)
