@@ -113,10 +113,10 @@ private:
     // todo later buffer these up until a dump is done.
     void logmessage_i(wxOutputStream *out,const mstring& data);
 public:
-    int open(void *in);
-    int close(unsigned long in);
-    int svc(void);
-    void shutdown();
+    virtual int open(void *in=0);
+    virtual int close(unsigned long in);
+    virtual int svc(void);
+    void i_shutdown();
     void logmessage(wxOutputStream *out,const mstring& data);
 };
 

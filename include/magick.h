@@ -71,6 +71,7 @@ private:
 	bool messages;		// Wether to process /MSG, /NOTICE.
 	bool automation;		// Wether to do automatic tasks.
 public:
+	 ~Magick();
 	IrcSvcHandler *ircsvchandler;
 	void shutdown(bool in);
 	bool shutdown();

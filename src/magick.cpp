@@ -41,6 +41,7 @@ Magick::Magick(int inargc, char **inargv)
     low_water_mark=100;   // To be deciphered at runtime later
     high_water_mark=200;
     reconnect=true;
+    loggertask.open();
 }
 
 int Magick::Start()
@@ -1059,4 +1060,9 @@ void Magick::shutdown(bool in)
     {
 	ACE_Reactor::instance()->end_event_loop();
     }
+}
+
+Magick::~Magick()
+{
+    loggertask.i_shutdown();
 }

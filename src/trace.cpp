@@ -503,13 +503,13 @@ T_Locking::~T_Locking() {
 int LoggerTask::open(void *in)
 {
     return activate();
-    return 0;
 }
 int LoggerTask::close(unsigned long in)
 {
     // dump all and close open file handles.
     return 0;
 }
+
 int LoggerTask::svc(void)
 {
     // main service routine
@@ -525,7 +525,7 @@ int LoggerTask::svc(void)
     return 0;
 }
 
-void LoggerTask::shutdown()
+void LoggerTask::i_shutdown()
 {
     activation_queue_.enqueue(new shutdown_MO);
 }
