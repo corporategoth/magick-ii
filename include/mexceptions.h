@@ -50,7 +50,7 @@ private:
 
 public:
     E_NickServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		      "") throw() : i_where(p_where), i_type(p_type)
+		      "NickServ Stored") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -87,7 +87,7 @@ private:
 
 public:
     E_NickServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		    "") throw() : i_where(p_where), i_type(p_type)
+		    "NickServ Live") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -124,7 +124,7 @@ private:
 
 public:
     E_NickServ_Recovered(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-			 "") throw() : i_where(p_where), i_type(p_type)
+			 "NickServ Recovered") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -161,7 +161,7 @@ private:
 
 public:
     E_ChanServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		      "") throw() : i_where(p_where), i_type(p_type)
+		      "ChanServ Stored") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -198,7 +198,7 @@ private:
 
 public:
     E_ChanServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		    "") throw() : i_where(p_where), i_type(p_type)
+		    "ChanServ Live") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -235,7 +235,7 @@ private:
 
 public:
     E_CommServ_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		    "") throw() : i_where(p_where), i_type(p_type)
+		    "CommServ Live") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -272,7 +272,7 @@ private:
 
 public:
     E_Server_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		  "") throw() : i_where(p_where), i_type(p_type)
+		  "Server List") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -309,8 +309,8 @@ private:
     size_t i_memo;
 
 public:
-    E_MemoServ_Nick(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "", size_t p_memo =
-		    0) throw() : i_where(p_where), i_type(p_type), i_memo(p_memo)
+    E_MemoServ_Nick(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		    "MemoServ Nick", size_t p_memo = 0) throw() : i_where(p_where), i_type(p_type), i_memo(p_memo)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -352,7 +352,7 @@ private:
 
 public:
     E_MemoServ_Channel(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		       "", size_t p_news = 0) throw() : i_where(p_where), i_type(p_type), i_news(p_news)
+		       "MemoServ Channel", size_t p_news = 0) throw() : i_where(p_where), i_type(p_type), i_news(p_news)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -393,7 +393,7 @@ private:
 
 public:
     E_DccMap_Xfers(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		   "") throw() : i_where(p_where), i_type(p_type)
+		   "DccMap Xfers") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -426,7 +426,7 @@ private:
     char i_reason[1024];
 
 public:
-    E_Thread(const E_type p_type = T_Other, const char *p_reason = "") throw() : i_type(p_type)
+    E_Thread(const E_type p_type = T_Other, const char *p_reason = "Thread") throw() : i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -456,7 +456,7 @@ private:
     char i_reason[1024];
 
 public:
-    E_Magick(const E_type p_type = T_Other, const char *p_reason = "") throw() : i_type(p_type)
+    E_Magick(const E_type p_type = T_Other, const char *p_reason = "Magick") throw() : i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
@@ -488,7 +488,7 @@ private:
 
 public:
     E_Lock(const locktype_enum p_locktype = L_Invalid, const E_type p_type = T_Other, const char *p_reason =
-	   "") throw() : i_locktype(p_locktype), i_type(p_type)
+	   "Lock") throw() : i_locktype(p_locktype), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
