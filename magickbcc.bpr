@@ -15,10 +15,9 @@ VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
 PROJECT = magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
-  Debug\confbase.obj Debug\datetime.obj Debug\dccengine.obj Debug\fileconf.obj \
-  Debug\ircsocket.obj Debug\lockable.obj Debug\magick.obj Debug\main.obj \
-  Debug\memoserv.obj Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj \
-  Debug\operserv.obj Debug\server.obj Debug\servmsg.obj Debug\textfile.obj \
+  Debug\datetime.obj Debug\dccengine.obj Debug\ircsocket.obj Debug\lockable.obj \
+  Debug\magick.obj Debug\main.obj Debug\memoserv.obj Debug\mstring.obj \
+  Debug\nickserv.obj Debug\operserv.obj Debug\server.obj Debug\servmsg.obj \
   Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj \
   Debug\filesys.obj Debug\mconfig.obj
 RESFILES =

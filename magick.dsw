@@ -3,18 +3,6 @@ Microsoft Developer Studio Workspace File, Format Version 5.00
 
 ###############################################################################
 
-Project: "antlr"=".\SRC\antlr\antlr.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "crypto"=".\SRC\DES\crypto.dsp" - Package Owner=<4>
 
 Package=<5>
@@ -39,29 +27,8 @@ Package=<4>
     Project_Dep_Name crypto
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name antlr
+    Project_Dep_Name xml
     End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name sxplib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name xmlparselib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name xmltok
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "sxplib"=".\SRC\sxp\sxplib.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
 }}}
 
 ###############################################################################
@@ -81,19 +48,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "xmlparselib"=".\src\expat\xmlparse\xmlparselib.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "xmltok"=".\src\expat\xmltok\xmltok.dsp" - Package Owner=<4>
+Project: "xml"=".\src\xml\xml.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

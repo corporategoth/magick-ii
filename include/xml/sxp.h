@@ -25,6 +25,9 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2000/07/30 12:40:52  prez
+** Updated windows project files.
+**
 ** Revision 1.8  2000/07/29 21:58:52  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -487,12 +490,12 @@ SXP_NS_BEGIN
 				} else if( strncmp(pstr+pos+1, "quot;", 5) == 0 ) {
 					ret.append(1, L'"');
 				} else if (strncmp(pstr+pos+1, "asc", 3)==0) {
-					char tmp[5];
+					/*char tmp[5];
 					memset(tmp, 0, 5);
 					for (short i=0; pstr+pos+2+i != ';' && i<5; i++)
 					    tmp[i] = pstr+pos+2+i;
 					if (strlen(tmp))
-					    ret.append(1, L((char) atoi(tmp)));
+					    ret.append(1, L((char) atoi(tmp)));*/
 				} else {
 					ret.append(1, L'&');
 				}

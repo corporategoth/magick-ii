@@ -65,8 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib" /I "..\inlude\sxp" /I "..\include\expat" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /D ACE_NTRACE=1 /Fr /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "HAVE_CONFIG_H" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /D ACE_NTRACE=1 /Fr /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -253,14 +252,6 @@ SOURCE=.\include\commserv.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\confbase.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\confbase.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\cryptstream.cpp
 # End Source File
 # Begin Source File
@@ -282,28 +273,6 @@ SOURCE=.\src\dccengine.cpp
 # Begin Source File
 
 SOURCE=.\include\dccengine.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\EscLexer.cpp
-# SUBTRACT CPP /YX
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\escparse.g
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\EscParser.cpp
-# SUBTRACT CPP /YX
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\fileconf.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\fileconf.h
 # End Source File
 # Begin Source File
 
@@ -355,19 +324,19 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\mconfig.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\mconfig.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\memoserv.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\memoserv.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\mstream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\mstream.h
 # End Source File
 # Begin Source File
 
@@ -412,14 +381,6 @@ SOURCE=.\src\servmsg.cpp
 # Begin Source File
 
 SOURCE=.\include\servmsg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\textfile.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\textfile.h
 # End Source File
 # Begin Source File
 

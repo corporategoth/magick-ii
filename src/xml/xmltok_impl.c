@@ -1529,7 +1529,7 @@ static
 int PREFIX(predefinedEntityName)(const ENCODING *enc, const char *ptr, const char *end)
 {
   char str[16], asc[4];
-  int i, len=(end-ptr)/MINBPC(enc);
+  unsigned int i, len=(end-ptr)/MINBPC(enc);
   memset(str, 0, 16);
   memset(asc, 0, 4);
 
