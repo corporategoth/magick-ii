@@ -43,6 +43,7 @@ Magick::Magick(int inargc, char **inargv)
     i_reconnect = true;
     i_gotconnect = false;
     i_connected = false;
+    i_auto = false;
     loggertask.open();
     events.open();
 }
@@ -254,8 +255,9 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     CP((PRODUCT + " II has been started ..."));
-    i_ResetTime=Now();
     load_databases();
+    i_ResetTime=Now();
+    AUTO(true);
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives

@@ -328,6 +328,9 @@ int EventTask::svc(void)
     last_expire = last_save = last_check = last_ping = Now();
     while(!Parent->Shutdown())
     {
+	if (!Parent->AUTO())
+	    continue;
+
 	// Main routine -- when we end this, we're done!!
 	map<mstring, Nick_Live_t>::iterator nli;
 	map<mstring, Nick_Stored_t>::iterator nsi;

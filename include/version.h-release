@@ -27,6 +27,7 @@ const mstring BUILD_SYS = "localhost";
 const unsigned short Magick_Major_Ver=2;
 const unsigned short Magick_Minor_Ver=0;
 const unsigned long FileVersionNumber=(Magick_Major_Ver*0x10000)+Magick_Minor_Ver;
+const mstring FileIdentificationTag = "DFLY";
 
 /* Versioning Information
  *

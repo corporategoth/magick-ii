@@ -60,9 +60,6 @@ private:
 	SignalHandler *signalhandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 
-	bool messages;		// Wether to process /MSG, /NOTICE.
-	bool automation;	// Wether to do automatic tasks.
-
 	mstring i_services_dir;
 	mstring i_config_file;
 	mstring i_programname;
