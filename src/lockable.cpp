@@ -15,72 +15,185 @@
 
 RLOCK::RLOCK(mstring x1)
 {
-    lock1.open(x1.c_str());
-    lock1.acquire();
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
     count=1;
 }
 
 RLOCK::RLOCK(mstring x1, mstring x2)
 {
-    lock1.open(x1.c_str());
-    lock1.acquire();
-    lock2.open((x1+"::"+x2).c_str());
-    lock2.acquire();
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
     count=2;
 }
 
 RLOCK::RLOCK(mstring x1, mstring x2, mstring x3)
 {
-    lock1.open(x1.c_str());
-    lock1.acquire();
-    lock2.open((x1+"::"+x2).c_str());
-    lock2.acquire();
-    lock3.open((x1+"::"+x2+"::"+x3).c_str());
-    lock3.acquire();
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
     count=3;
 }
 
 RLOCK::RLOCK(mstring x1, mstring x2, mstring x3, mstring x4)
 {
-    lock1.open(x1.c_str());
-    lock1.acquire();
-    lock2.open((x1+"::"+x2).c_str());
-    lock2.acquire();
-    lock3.open((x1+"::"+x2+"::"+x3).c_str());
-    lock3.acquire();
-    lock4.open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    lock4.acquire();
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
+    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
+    lock[3].acquire();
     count=4;
 }
 
 RLOCK::RLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5)
 {
-    lock1.open(x1.c_str());
-    lock1.acquire();
-    lock2.open((x1+"::"+x2).c_str());
-    lock2.acquire();
-    lock3.open((x1+"::"+x2+"::"+x3).c_str());
-    lock3.acquire();
-    lock4.open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    lock4.acquire();
-    lock5.open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
-    lock5.acquire();
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
+    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
+    lock[3].acquire();
+    lock[4].open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
+    lock[4].acquire();
     count=5;
 }
 
 RLOCK::~RLOCK()
 {
-    switch(count)
-    {
-    case 5:
-	lock5.release();
-    case 4:
-	lock4.release();
-    case 3:
-	lock3.release();
-    case 2:
-	lock2.release();
-    case 1:
-	lock1.release();
-    }
+    for(;count;count--)
+	lock[count-1].release();
+}
+
+WLOCK::WLOCK(mstring x1)
+{
+    wlock.open(x1.c_str());
+    wlock.acquire();
+    count=0;
+}
+
+WLOCK::WLOCK(mstring x1, mstring x2)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    wlock.open((x1+"::"+x2).c_str());
+    wlock.acquire();
+    count=1;
+}
+
+WLOCK::WLOCK(mstring x1, mstring x2, mstring x3)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    wlock.open((x1+"::"+x2+"::"+x3).c_str());
+    wlock.acquire();
+    count=2;
+}
+
+WLOCK::WLOCK(mstring x1, mstring x2, mstring x3, mstring x4)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
+    wlock.open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
+    wlock.acquire();
+    count=3;
+}
+
+WLOCK::WLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
+    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
+    lock[3].acquire();
+    wlock.open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
+    wlock.acquire();
+    count=4;
+}
+
+WLOCK::~WLOCK()
+{
+    wlock.release();
+    for(;count;count--)
+	lock[count-1].release();
+}
+
+MLOCK::MLOCK(mstring x1)
+{
+    mlock.open(x1.c_str());
+    mlock.acquire();
+    count=0;
+}
+
+MLOCK::MLOCK(mstring x1, mstring x2)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    mlock.open((x1+"::"+x2).c_str());
+    mlock.acquire();
+    count=1;
+}
+
+MLOCK::MLOCK(mstring x1, mstring x2, mstring x3)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    mlock.open((x1+"::"+x2+"::"+x3).c_str());
+    mlock.acquire();
+    count=2;
+}
+
+MLOCK::MLOCK(mstring x1, mstring x2, mstring x3, mstring x4)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
+    mlock.open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
+    mlock.acquire();
+    count=3;
+}
+
+MLOCK::MLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5)
+{
+    lock[0].open(x1.c_str());
+    lock[0].acquire();
+    lock[1].open((x1+"::"+x2).c_str());
+    lock[1].acquire();
+    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
+    lock[2].acquire();
+    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
+    lock[3].acquire();
+    mlock.open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
+    mlock.acquire();
+    count=4;
+}
+
+MLOCK::~MLOCK()
+{
+    mlock.release();
+    for(;count;count--)
+	lock[count-1].release();
 }

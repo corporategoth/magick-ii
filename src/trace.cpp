@@ -186,7 +186,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     tid->indentdown(); 
-    mstring message="// (" + return_value.type() + ") " + return_value.AsString()";
+    mstring message="// (" + return_value.type() + ") " + return_value.AsString();
     tid->WriteOut(message);
 }
 
