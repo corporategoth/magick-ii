@@ -20,7 +20,6 @@
 #include "magick.h"
 #include "cryptstream.h"
 
-
 // Private functions
 
 void Chan_Live_t::Join(mstring nick)
@@ -3023,6 +3022,14 @@ ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
     messages=true;
+    Revenge_Levels.insert("NONE");
+    Revenge_Levels.insert("MIRROR");
+    Revenge_Levels.insert("DEOP");
+    Revenge_Levels.insert("KICK");
+    Revenge_Levels.insert("BAN1");
+    Revenge_Levels.insert("BAN2");
+    Revenge_Levels.insert("BAN3");
+    Revenge_Levels.insert("BAN4");
 }
 
 void ChanServ::AddCommands()
@@ -7065,8 +7072,12 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
     {
 	option = Parent->chanserv.DEF_Revenge();
     }
-
-    // checking to see if its valid.
+    else if (!Parent->chanserv.IsRevengeLevel(option))
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOREVENGE"),
+		option.UpperCase().c_str());
+	return;
+    }
 
     cstored->Revenge(option.UpperCase());
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
@@ -7666,9 +7677,11 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
     {
 	option = Parent->chanserv.DEF_Revenge();
     }
-    else
+    else if (!Parent->chanserv.IsRevengeLevel(option))
     {
-	// checking to see if its valid.
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOREVENGE"),
+		option.UpperCase().c_str());
+	return;
     }
 
     cstored->L_Revenge(false);

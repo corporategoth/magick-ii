@@ -469,7 +469,6 @@ T_Sockets::End(mstring reason)
 	tid->WriteOut(message);
     }
 }
-
 */
 
 // ===================================================

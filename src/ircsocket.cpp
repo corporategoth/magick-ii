@@ -475,14 +475,7 @@ int EventTask::svc(void)
 	if (last_save.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
-
-	    //Parent->operserv.save_database();
-	    //Parent->nickserv.save_database();
-	    //Parent->chanserv.save_database();
-	    //Parent->memoserv.save_database();
-	    //Parent->commserv.save_database();
-	    //Parent->servmsg.save_database();
-	    // Scripted services?
+	    Parent->save_databases();
 
 	    last_save = Now();
 	}

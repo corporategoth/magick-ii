@@ -354,6 +354,8 @@ class ChanServ : public mBase
     friend class Magick;
 private:
 
+    set<mstring> Revenge_Levels;
+
     // Config Entries ...
     unsigned long expire;			// How long to keep channels
     mstring def_akick_reason;	// Default AKICK reason
@@ -387,12 +389,14 @@ private:
     long level_max;		// Maximum access level
     map<mstring, long> lvl;
 
-
     void AddCommands();
     void RemCommands();
 protected:
 
 public:
+    bool IsRevengeLevel(mstring level)
+	{ return (Revenge_Levels.find(level.UpperCase()) !=
+				    Revenge_Levels.end()); }
     unsigned long Expire()	{ return expire; }
     mstring DEF_Akick_Reason()	{ return def_akick_reason; }
     unsigned int Passfail()	{ return passfail; }

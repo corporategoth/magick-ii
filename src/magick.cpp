@@ -252,6 +252,7 @@ int Magick::Start()
 
     CP((PRODUCT + " II has been started ..."));
     ResetTime=Now();
+    load_databases();
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives
@@ -1311,7 +1312,12 @@ bool Magick::get_config_values()
     in.Read(ts_ChanServ+"LCK_RESTRICTED",&chanserv.lck_restricted,false);
     in.Read(ts_ChanServ+"DEF_JOIN",&chanserv.def_join,false);
     in.Read(ts_ChanServ+"LCK_JOIN",&chanserv.lck_join,false);
-    in.Read(ts_ChanServ+"DEF_REVENGE",&chanserv.def_revenge,"NONE");
+    in.Read(ts_ChanServ+"DEF_REVENGE",&value_mstring,"NONE");
+    if (chanserv.IsRevengeLevel(value_mstring))
+	chanserv.def_revenge = value_mstring.UpperCase();
+    else
+	chanserv.def_revenge = "NONE";
+
     in.Read(ts_ChanServ+"LCK_REVENGE",&chanserv.lck_revenge,false);
     in.Read(ts_ChanServ+"LEVEL_MIN",&chanserv.level_min,-1);
     in.Read(ts_ChanServ+"LEVEL_MAX",&chanserv.level_max,30);
@@ -1723,6 +1729,23 @@ void Magick::load_databases()
     wxInputStream *strm=create_input_stream(chanservstrm);
     chanserv.load_database(*strm);
     destroy_input_stream();*/
+
+    mstring databasefile;
+    if (mstring(Parent->files.Database()[0u]) == DirSlash ||
+	Parent->files.Database()[1u] == ':')
+	databasefile = Parent->files.Database();
+    else
+	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
+
+    wxFileInputStream finput(databasefile);
+    Parent->operserv.load_database(finput);
+    Parent->nickserv.load_database(finput);
+    Parent->chanserv.load_database(finput);
+    Parent->memoserv.load_database(finput);
+    Parent->commserv.load_database(finput);
+    Parent->servmsg.load_database(finput);
+    // Scripted services?
+
 }
 
 void Magick::save_databases()
@@ -1742,6 +1765,21 @@ void Magick::save_databases()
 
     wxFileOutputStream */
 
+    mstring databasefile;
+    if (mstring(Parent->files.Database()[0u]) == DirSlash ||
+	Parent->files.Database()[1u] == ':')
+	databasefile = Parent->files.Database();
+    else
+	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
+
+    wxFileOutputStream foutput(databasefile);
+    Parent->operserv.save_database(foutput);
+    Parent->nickserv.save_database(foutput);
+    Parent->chanserv.save_database(foutput);
+    Parent->memoserv.save_database(foutput);
+    Parent->commserv.save_database(foutput);
+    Parent->servmsg.save_database(foutput);
+    // Scripted services?
 }
 
 wxInputStream *Magick::create_input_stream(wxMemoryStream &in)

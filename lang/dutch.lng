@@ -486,6 +486,7 @@ LOCKGREET          =Your greeting for channel %s is locked.
 NOTLOCKGREET       =Your greeting for channel %s is not locked.
 ISLOCKED           =%s for channel %s is locked.
 ISNOTLOCKED        =%s for channel %s is not locked.
+NOREVENGE          =Revenge level %s is not valid.
 
 ;
 ; This section contains the output used at the end of SUCCESSFULL
