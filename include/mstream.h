@@ -95,6 +95,7 @@ class wxStreamBuffer
   size_t GetLastAccess() const { return m_buffer_end-m_buffer_start; }
 
   void Fixed(bool fixed) { m_fixed = fixed; }
+  bool Fixed()const	 { return m_fixed; }
   void Flushable(bool f) { m_flushable = f; }
 
   bool FlushBuffer();
@@ -296,6 +297,7 @@ class wxMemoryOutputStream:  public wxOutputStream {
   wxMemoryOutputStream(char *data = NULL, size_t length = 0);
   virtual ~wxMemoryOutputStream();
 };
+
 
 class wxMemoryStream: public wxMemoryInputStream, public wxMemoryOutputStream {
  public:

@@ -1125,9 +1125,11 @@ char wxMemoryInputStream::Peek()
 wxMemoryOutputStream::wxMemoryOutputStream(char *data, size_t len)
   : wxOutputStream()
 {
-  if (data)
-    m_o_streambuf->SetBufferIO(data, data+len);
-  m_o_streambuf->Fixed(true);
+    if (data)
+    {
+	m_o_streambuf->SetBufferIO(data, data+len);
+    }
+    m_o_streambuf->Fixed(true);
 }
 
 wxMemoryOutputStream::~wxMemoryOutputStream()
@@ -1743,3 +1745,11 @@ wxFileStream::wxFileStream(const mstring& fileName)
 {
 }
 
+wxMemoryStream::wxMemoryStream(char *data, size_t length)
+:wxMemoryInputStream(data,length),wxMemoryOutputStream(data,length)
+{
+}
+
+wxMemoryStream::~wxMemoryStream()
+{
+}

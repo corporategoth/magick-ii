@@ -1483,6 +1483,7 @@ void NetworkServ::execute(const mstring & data)
 void NetworkServ::numeric_execute(const mstring & data)
 {
     FT("NetworkServ::numeric_execute", (data));
+    int i;
 
     mstring source, sourceL;
     unsigned int msgtype;
@@ -1576,7 +1577,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 302:     // RPL_USERHOST
 	break;
     case 303:     // RPL_ISON
-	for (int i=4; i<=data.WordCount(": "); i++)
+	for (i=4; i<=data.WordCount(": "); i++)
 	{
 	    if (WaitIsOn.find(data.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
 		WaitIsOn.erase(data.ExtractWord(i, ": "));
