@@ -925,6 +925,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	}
 	if (dead.size() > (threads.size() / 2))
 	{
+	    FLUSH();
 	    NANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
 	    NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
 	}
