@@ -51,6 +51,10 @@ void ServMsg::AddCommands()
 	    "STAT* ALL*", Parent->commserv.OPER_Name(), ServMsg::do_stats_All);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "STAT* *", Parent->commserv.OPER_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "STAT*", Parent->commserv.OPER_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT*", Parent->commserv.REGD_Name(), do_Stats);
 }
 
@@ -247,14 +251,14 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_Stats", (mynick, source, params));
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_UPTIME"),
-		StartTime.Ago());
+		StartTime.Ago().c_str());
     if (StartTime != Parent->ResetTime())
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_RESET"),
-		Parent->ResetTime().Ago());
+		Parent->ResetTime().Ago().c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_MAXUSERS"),
 		Parent->server.UserMax());
 
-    int opers;
+    size_t opers = 0;
     map<mstring,Nick_Live_t>::iterator k;
     for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
     {
@@ -266,8 +270,8 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 
     if (Parent->operserv.CloneList_size())
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
-		Parent->operserv.CloneList_size(),
-		Parent->operserv.CloneList_sum());
+		Parent->operserv.CloneList_sum(),
+		Parent->operserv.CloneList_size());
 }
 
 

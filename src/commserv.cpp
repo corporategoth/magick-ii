@@ -1500,11 +1500,12 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 void CommServ::load_database(wxInputStream& in)
 {
     FT("CommServ::load_database", ("(wxInputStream &) in"));
-    int i;
+    size_t i, j;
     in>>i;
     Committee tmpcommitee;
-    for(int j=0;j<i;j++)
+    for(j=0;j<i;j++)
     {
+	COM(("I am loading committee %d of %d", j, i));
 	in>>tmpcommitee;
 	list[tmpcommitee.Name().UpperCase()]=tmpcommitee;
     }
@@ -1513,9 +1514,20 @@ void CommServ::load_database(wxInputStream& in)
 void CommServ::save_database(wxOutputStream& out)
 {
     FT("CommServ::save_database", ("(wxOutputStream &) out"));
-    out<<list.size();
+    size_t sz = list.size();
+    if (IsList(ALL_Name())) sz--;
+    if (IsList(REGD_Name())) sz--;
+    if (IsList(SADMIN_Name())) sz--;
+
+    out<<sz;
     for(map<mstring,Committee>::iterator i=list.begin();i!=list.end();i++)
-	out<<i->second;
+    {
+	COM(("I'm on committee %s", i->first.c_str()));
+	if (!(i->first == ALL_Name() || i->first == REGD_Name() || i->first == SADMIN_Name()))
+	{
+	    out<<i->second;
+	}
+    }
 }
 
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
@@ -1533,6 +1545,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
     for(in.message=in.i_Messages.begin();in.message!=in.i_Messages.end();in.message++)
 	out<<(*in.message);
 
+    COM(("Entry %s has been saved.", in.i_Name.c_str()));
     return out;
 }
 wxInputStream &operator>>(wxInputStream& in, Committee& out)
@@ -1562,5 +1575,6 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
 	out.i_Messages.push_back(locent);
     }
 
+    COM(("Entry %s has been loaded.", out.i_Name.c_str()));
     return in;
 }

@@ -237,6 +237,7 @@ NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
     messages=true;
+    i_UserMax = 0;
 }
 
 
