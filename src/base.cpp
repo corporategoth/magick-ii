@@ -89,7 +89,7 @@ void mBase::shutdown()
 int mBaseTask::open(void *in)
 {
     NFT("mBaseTask::open");
-    RET(activate(1));
+    RET(activate());
 }
 
 int mBaseTask::svc(void)
