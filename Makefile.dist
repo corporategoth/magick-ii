@@ -47,6 +47,6 @@ all:
 	@if test -f Makefile ;\
 	then	echo "make" ;\
 		make ;\
-	else	ehco "Configure failed, please check why and re-run ./configure before running make again" ;\
+	else	echo "Configure failed, please check why and re-run ./configure before running make again" ;\
 	fi
 		
