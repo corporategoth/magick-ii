@@ -916,7 +916,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 						mstring text)
 {
-    FT("MemoServ::do_Send", (mynick, source, dest, text));
+    FT("MemoServ::do_Forward2", (mynick, source, dest, text));
 
     if (IsChan(dest))
     {

@@ -3153,6 +3153,10 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stored[channel.LowerCase()] =
 		Chan_Stored_t(channel, source, password, desc);
+    Parent->chanserv.stored[i_Name.LowerCase()].Topic(
+		Parent->chanserv.live[channel.LowerCase()].Topic(),
+		Parent->chanserv.live[channel.LowerCase()].Topic_Setter(),
+		Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time());
     Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, password);
     ::send(mynick, source, "Channel " + channel + " has been registered.");
 }
@@ -3251,19 +3255,27 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 	    Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
 	    mstring output = "";
 	    if (clive->Ops())
+	    {
 		output << clive->Ops() << " Ops";
-	    if (output != "")
-		output << ", ";
+	    }
 	    if (clive->Voices())
+	    {
+		if (output != "")
+		    output << ", ";
 		output << clive->Voices() << " Voices";
-	    if (output != "")
-		output << ", ";
+	    }
 	    if (clive->Users())
+	    {
+		if (output != "")
+		    output << ", ";
 		output << clive->Users() << " Users";
-	    if (output != "")
-		output << ", ";
+	    }
 	    if (clive->Squit())
+	    {
+		if (output != "")
+		    output << ", ";
 		output << clive->Squit() << " SPLIT Users";
+	    }
 	    ::send(mynick, source, "  In Use By: " + output);
 	}
 	else
@@ -3271,24 +3283,30 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, "  Last Used: " + chan->LastUsed().Ago());
 	}
     }
-    ::send(mynick, source, "     E-Mail: " + chan->Email());
-    ::send(mynick, source, "        URL: " + chan->URL());
+    if (chan->Email() != "")
+	::send(mynick, source, "     E-Mail: " + chan->Email());
+    if (chan->URL() != "")
+	::send(mynick, source, "        URL: " + chan->URL());
     if (chan->Suspended())
     {
 	::send(mynick, source, "  Suspended: " + chan->Suspend_Time().Ago());
 	::send(mynick, source, "         By: " + chan->Suspend_By());
-	::send(mynick, source, "        For: " + chan->Comment());
+	if (chan->Comment() != "")
+	    ::send(mynick, source, "        For: " + chan->Comment());
     }
     else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
     {
-	::send(mynick, source, "    Comment: " + chan->Comment());
+	if (chan->Comment() != "")
+	    ::send(mynick, source, "    Comment: " + chan->Comment());
     }
     ::send(mynick, source, " Last Topic: " + chan->Last_Topic());
     ::send(mynick, source, "     Set By: " + chan->Last_Topic_Setter() + " " +
 				    chan->Last_Topic_Set_Time().Ago() + " Ago");
-    ::send(mynick, source, "  Mode Lock: " + chan->Mlock());
-    ::send(mynick, source, "    Revenge: " + chan->Revenge());
+    if (chan->Mlock() != "")
+	::send(mynick, source, "  Mode Lock: " + chan->Mlock());
+    if (chan->Revenge() != "")
+	::send(mynick, source, "    Revenge: " + chan->Revenge());
     mstring output = "";
     if (chan->Bantime())
     {
@@ -3297,40 +3315,54 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 	output = "";
     }
 
-    if (output != "")
-	output << ", ";
     if (chan->Keeptopic())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "Keep Topic";
+    }
 
-    if (output != "")
-	output << ", ";
     if (chan->Topiclock())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "Topic Lock";
+    }
 
-    if (output != "")
-	output << ", ";
     if (chan->Private())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "Private";
+    }
 
-    if (output != "")
-	output << ", ";
     if (chan->Secureops())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "Secure Ops";
+    }
 
-    if (output != "")
-	output << ", ";
     if (chan->NoExpire())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "NoExpire";
+    }
 
-    if (output != "")
-	output << ", ";
     if (chan->Restricted())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "Restricted";
+    }
 
-    if (output != "")
-	output << ", ";
     if (chan->Anarchy())
+    {
+	if (output != "")
+	    output << ", ";
 	output << "Anarchy";
+    }
 
     if (output != "")
 	::send(mynick, source, "    Options: " + output);

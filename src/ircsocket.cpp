@@ -506,7 +506,9 @@ int EventTask::svc(void)
 			case 'v':
 			case 'b':
 			case 'k':
-			    modeparam += " " + cli->second.p_modes_off_params[k];
+			    if (modeparam != "")
+				modeparam += " ";
+			    modeparam +=  cli->second.p_modes_off_params[k];
 			    k++;
 			}
 		    }
@@ -530,7 +532,9 @@ int EventTask::svc(void)
 			case 'b':
 			case 'k':
 			case 'l':
-			    modeparam += " " + cli->second.p_modes_on_params[k];
+			    if (modeparam != "")
+				modeparam += " ";
+			    modeparam += cli->second.p_modes_on_params[k];
 			    k++;
 			}
 		    }
