@@ -20,7 +20,7 @@ and many other things.
 %setup
 
 %build
-configure --prefix=/usr --sysconfdir=/etc --disable-hostlock
+./configure --prefix=/usr --sysconfdir=/etc --enable-quick --disable-hostlock
 helper/build-ver .
 make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
 
