@@ -1,3 +1,13 @@
+* 2002-08-23 17:17  Preston A. Elder <prez@magick.tm>
+  ircd/Makefile.am (1.2):
+  
+  Added 'clean' target to stop it complaining.
+
+* 2002-08-19 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.45):
+  
+  Created version 2.0s20020819
+
 * 2002-08-15 14:34  Preston A. Elder <prez@magick.tm>
   ircd/ircd.aurora.ini (1.5), ircd/ircd.dal4.4.15.ini (1.5),
   ircd/ircd.unreal.ini (1.7), src/server.cpp (1.240), src/servmsg.cpp
