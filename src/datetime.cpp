@@ -745,6 +745,10 @@ mstring mDateTime::Disect(bool call)
 {
     mstring Result="";
     int Years,Months,Days,Hours,Minutes,Seconds,MSecs;
+    // what the fuck does !! do exactly? not not???
+    // how to get GMT hmm.
+    //if(call)
+	//add GMT offset
     DecodeDate(Years,Months,Days);
     DecodeTime(Hours,Minutes,Seconds,MSecs);
     if(Years>0)
