@@ -614,6 +614,13 @@ wxInputStream& wxInputStream::operator>>(double& f)
 	return *this;
 }
 
+wxInputStream& wxInputStream::operator>>(bool& b)
+{
+    Read(&b,sizeof(bool));
+    return *this;
+}
+
+
 // ----------------------------------------------------------------------------
 // wxOutputStream
 // ----------------------------------------------------------------------------
@@ -698,6 +705,12 @@ wxOutputStream& wxOutputStream::operator<<(double f)
 {
   return Write(&f, sizeof(double));
 }
+
+wxOutputStream& wxOutputStream::operator<<(bool b)
+{
+    return Write(&b, sizeof(bool));
+}
+
 
 // ----------------------------------------------------------------------------
 // wxFilterInputStream

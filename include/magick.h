@@ -60,6 +60,8 @@ private:
 	bool messages;		// Wether to process /MSG, /NOTICE.
 	bool automation;		// Wether to do automatic tasks.
 public:
+	bool Files_COMPRESS_STREAMS;
+	mstring Password;
 	 ~Magick();
 	IrcSvcHandler *ircsvchandler;
 	void shutdown(bool in);

@@ -35,6 +35,7 @@ private:
 
 class mEncryptStream : public wxFilterOutputStream
 {
+public:
     mEncryptStream(wxOutputStream& stream, const mstring& passphrase);
     //virtual ~mEncryptStream();
 protected:

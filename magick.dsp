@@ -353,5 +353,9 @@ SOURCE=.\src\variant.cpp
 
 SOURCE=.\include\variant.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\include\version.h
+# End Source File
 # End Target
 # End Project

@@ -179,6 +179,7 @@ class wxInputStream: public wxStreamBase {
   wxInputStream& operator>>(int& i);
   wxInputStream& operator>>(long& i);
   wxInputStream& operator>>(double& i);
+  wxInputStream& operator>>(bool& b);
 
   wxInputStream& operator>>(float& f) { double d; operator>>((double&)d); f = (float)d; return *this; }
   wxInputStream& operator>>(unsigned char& c) { return operator>>((char&)c);}
@@ -217,6 +218,7 @@ class wxOutputStream: public wxStreamBase {
   wxOutputStream& operator<<(int i);
   wxOutputStream& operator<<(long i);
   wxOutputStream& operator<<(double f);
+  wxOutputStream& operator<<(bool b);
 
   wxOutputStream& operator<<(float f) { return operator<<((double)f); }
   wxOutputStream& operator<<(unsigned char c) { return operator<<((char)c); }
