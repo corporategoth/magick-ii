@@ -387,7 +387,7 @@ int EventTask::svc(void)
 		for (nsi = Parent->nickserv.stored.begin();
 			nsi != Parent->nickserv.stored.end(); nsi++)
 		{
-		    if (!nsi->NoExpire())
+		    if (!nsi->second.NoExpire())
 		    {
 			if (nsi->second.Host() == "")
 			{
@@ -417,7 +417,7 @@ int EventTask::svc(void)
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); csi++)
 		{
-		    if (!csi->NoExpire())
+		    if (!csi->second.NoExpire())
 		    {
 			if (csi->second.LastUsed().SecondsSince() >
 			    Parent->chanserv.Expire())
