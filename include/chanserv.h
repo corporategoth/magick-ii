@@ -25,6 +25,11 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.41  2000/06/15 13:41:10  prez
 ** Added my tasks to develop *grin*
 ** Also did all the chanserv live locking (stored to be done).
@@ -248,6 +253,12 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     list<entlist_t> i_Greet;
     list<entlist_t> i_Message;
 
+    vector<entlist_val_t<long> *> level_array;
+    vector<entlist_val_t<long> *> access_array;
+    vector<entlist_val_t<mstring> *> akick_array;
+    vector<entlist_t *> greet_array;
+    vector<entlist_t *> message_array;
+
     static SXP::Tag tag_Chan_Stored_t, tag_Name, tag_RegTime, tag_LastUsed,
 	tag_Founder, tag_CoFounder, tag_Description, tag_Password, tag_Email,
 	tag_URL, tag_Comment, tag_Topic, tag_Topic_Setter, tag_Topic_Set_Time,
@@ -451,7 +462,7 @@ public:
     entlist_i Message;
 
     SXP::Tag& GetClassTag() const { return tag_Chan_Stored_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
@@ -503,6 +514,8 @@ private:
     long level_max;		// Maximum access level
     map<mstring, long> lvl;
     static SXP::Tag tag_ChanServ;
+
+    vector<Chan_Stored_t *> cs_array;
 
     void AddCommands();
     void RemCommands();

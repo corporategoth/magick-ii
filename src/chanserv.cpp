@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.186  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.185  2000/06/28 12:20:47  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -736,7 +741,7 @@ bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
 void Chan_Live_t::RemoveMode(mstring mode, vector<mstring> mode_params,
 			bool change, char reqmode, mstring reqparam)
 {
-    FT("Chan_Live_t::RemoveExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
+    FT("Chan_Live_t::RemoveMode", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
     mstring new_mode;
     vector<mstring> new_params;
@@ -1008,11 +1013,42 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 {
     FT("Chan_Live_t::Mode", (source, in));
 
-    mstring change = in.ExtractWord(1, ": "), newmode, newmode_param;
+    mstring change = in.ExtractWord(1, ": ");
+    mstring newmode, newmode_param, requeue, requeue_param;
     unsigned int fwdargs = 2, i;
     bool add = true;
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
+
+    requeue << ":" << source << " MODE " << i_Name << " ";
+    if (Parent->server.SeenMessage(requeue+in) >= Parent->config.MSG_Seen_Act())
+    {
+	for (i=0; i<change.size(); i++)
+	{
+	    switch(change[i])
+	    {
+	    case '+':
+		add = true;
+		break;
+	    case '-':
+		add = false;
+		break;
+	    case 'o':
+	    case 'v':
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+			add ? '+' : '-', change[i], source.c_str(),
+			in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+		fwdargs++;
+		break;
+	    }
+	}
+	return;
+    }
+
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on"));
+    WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
+    WLOCK4(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
+    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off_params"));
     for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
@@ -1020,11 +1056,13 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case '+':
 	    add = true;
 	    newmode += change[i];
+	    requeue += change[i];
 	    break;
 
 	case '-':
 	    add = false;
 	    newmode += change[i];
+	    requeue += change[i];
 	    break;
 
 	case 'o':
@@ -1032,16 +1070,24 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "users"));
 		if (add)
+		{
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(fwdargs, ": ")))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(fwdargs, ": "));
+		}
 		else
+		{
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = false;
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(fwdargs, ": ")))
+			RemoveMode(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(fwdargs, ": "));
+		}
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    else
 	    {
-		Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-			'+', 'o', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+		requeue += change[i];
+		requeue_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    fwdargs++;
 	    break;
@@ -1051,16 +1097,24 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "users"));
 		if (add)
+		{
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(fwdargs, ": ")))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(fwdargs, ": "));
+		}
 		else
+		{
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = false;
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(fwdargs, ": ")))
+			RemoveMode(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(fwdargs, ": "));
+		}
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    else
 	    {
-		Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-			'+', 'v', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+		requeue += change[i];
+		requeue_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    fwdargs++;
 	    break;
@@ -1070,11 +1124,15 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
+		if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": ")))
+		    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": "));
 	    }
 	    else
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		bans.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
+		if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": ")))
+		    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": "));
 	    }
 	    newmode += change[i];
 	    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
@@ -1086,6 +1144,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
 		i_Key = in.ExtractWord(fwdargs, ": ");
+		if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": ")))
+		    RemoveMode(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": "));
 	    }
 	    else
 	    {
@@ -1095,6 +1155,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 			i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
 			i_Name.c_str(), source.c_str());
 		i_Key = "";
+		if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
+		    RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
 	    }
 	    newmode += change[i];
 	    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
@@ -1120,6 +1182,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		else
 		{
 		    i_Limit = ACE_OS::atoi(in.ExtractWord(fwdargs, ": ").c_str());
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(fwdargs, ": ")))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(fwdargs, ": "));
 		    newmode += change[i];
 		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		}
@@ -1129,6 +1193,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 		i_Limit = 0;
+		if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
+		    RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
@@ -1164,10 +1230,14 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    if (add && !modes.Contains(change[i]))
 	    {
 		modes += change[i];
+		if (ModeExists(p_modes_on, p_modes_on_params, true, change[i]));
+		    RemoveMode(p_modes_on, p_modes_on_params, true, change[i]);
 	    }
 	    else if (!add && modes.Contains(change[i]))
 	    {
 		modes.Remove((mstring) change[i]);
+		if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]));
+		    RemoveMode(p_modes_off, p_modes_off_params, false, change[i]);
 	    }
 	    else
 	    {
@@ -1180,6 +1250,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source,
 						newmode + newmode_param);
+    if (requeue_param != "")
+	mBase::push_message(requeue + requeue_param);
 }
 
 bool Chan_Live_t::HasMode(mstring in)
@@ -2067,7 +2139,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, ms
     i_Name = name;
     WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
     defaults();
-    i_RegTime = Now();
+    i_RegTime = i_LastUsed = Now();
     i_Founder = founder;
     i_Password = password;
     i_Description = desc;
@@ -2082,7 +2154,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name)
     WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
     defaults();
     i_Mlock_On = "nits";
-    i_RegTime = Now();
+    i_RegTime = i_LastUsed = Now();
     i_Forbidden = true;
 }
 
@@ -2093,6 +2165,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     WLOCK(("ChanServ", "stored", in.i_Name.LowerCase()));
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
+    i_LastUsed=in.i_LastUsed;
     i_Founder=in.i_Founder;
     i_CoFounder=in.i_CoFounder;
     i_Description=in.i_Description;
@@ -4163,6 +4236,52 @@ SXP::Tag Chan_Stored_t::tag_Greet("Greet");
 SXP::Tag Chan_Stored_t::tag_Message("Message");
 SXP::Tag Chan_Stored_t::tag_UserDef("UserDef");
 
+void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("Chan_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+    if( pElement->IsA(tag_Level) )
+    {
+	entlist_val_t<long> *tmp = new entlist_val_t<long>;
+	level_array.push_back(tmp);
+	pIn->ReadTo(tmp);
+    }
+
+    if( pElement->IsA(tag_Access) )
+    {
+	entlist_val_t<long> *tmp = new entlist_val_t<long>;
+	access_array.push_back(tmp);
+	pIn->ReadTo(tmp);
+    }
+
+    if( pElement->IsA(tag_Akick) )
+    {
+	entlist_val_t<mstring> *tmp = new entlist_val_t<mstring>;
+	akick_array.push_back(tmp);
+	pIn->ReadTo(tmp);
+    }
+
+    if( pElement->IsA(tag_Greet) )
+    {
+	entlist_t *tmp = new entlist_t;
+	greet_array.push_back(tmp);
+	pIn->ReadTo(tmp);
+    }
+
+    if( pElement->IsA(tag_Message) )
+    {
+	entlist_t *tmp = new entlist_t;
+	message_array.push_back(tmp);
+	pIn->ReadTo(tmp);
+    }
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
 void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Chan_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -4223,48 +4342,6 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_lock_Revenge) )		pElement->Retrieve(l_Revenge);
 	if( pElement->IsA(tag_Suspend_By) )		pElement->Retrieve(i_Suspend_By);
 	if( pElement->IsA(tag_Suspend_Time) )		pElement->Retrieve(i_Suspend_Time);
-
-    if( pElement->IsA(tag_Level) )
-    {
-	entlist_val_t<long> tmp;
-	pIn->ReadTo(&tmp);
-	i_Level.insert(tmp);
-    }
-
-    if( pElement->IsA(tag_Access) )
-    {
-	entlist_val_t<long> tmp;
-	pIn->ReadTo(&tmp);
-	i_Access.insert(tmp);
-    }
-
-    if( pElement->IsA(tag_Akick) )
-    {
-	entlist_val_t<mstring> tmp;
-	pIn->ReadTo(&tmp);
-	i_Akick.insert(tmp);
-    }
-
-    if( pElement->IsA(tag_Greet) )
-    {
-	entlist_t tmp;
-	pIn->ReadTo(&tmp);
-	i_Greet.push_back(tmp);
-    }
-
-    if( pElement->IsA(tag_Message) )
-    {
-	entlist_t tmp;
-	pIn->ReadTo(&tmp);
-	i_Message.push_back(tmp);
-    }
-
-    if( pElement->IsA(tag_UserDef) )
-    {
-        mstring tmp;
-        pElement->Retrieve(tmp);
-        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
-    }
 }
 
 void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -4440,25 +4517,27 @@ size_t Chan_Stored_t::Usage()
     retval += sizeof(i_Suspend_Time.Internal());
 
     set<entlist_val_t<long> >::iterator j;
+    entlist_val_t<long> *jp;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
     for (j=i_Level.begin(); j!=i_Level.end(); j++)
     {
-	entlist_val_t<long> tmp = *j;
-	retval += tmp.Usage();
+	jp = (entlist_val_t<long> *) &(*j);
+	retval += jp->Usage();
     }}
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     for (j=i_Access.begin(); j!=i_Access.end(); j++)
     {
-	entlist_val_t<long> tmp = *j;
-	retval += tmp.Usage();
+	jp = (entlist_val_t<long> *) &(*j);
+	retval += jp->Usage();
     }}
 
     set<entlist_val_t<mstring> >::iterator k;
+    entlist_val_t<mstring> *kp;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     for (k=i_Akick.begin(); k!=i_Akick.end(); k++)
     {
-	entlist_val_t<mstring> tmp = *k;
-	retval += tmp.Usage();
+	kp = (entlist_val_t<mstring> *) &(*k);
+	retval += kp->Usage();
     }}
 
     list<entlist_t>::iterator l;
@@ -4528,7 +4607,7 @@ void ChanServ::AddCommands()
 	    "GET*PASS*", Parent->commserv.SOP_Name(), ChanServ::do_Getpass);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "MODE", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
+	    "MODE*", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "OP*", Parent->commserv.REGD_Name(), ChanServ::do_Op);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -11081,12 +11160,16 @@ SXP::Tag ChanServ::tag_ChanServ("ChanServ");
 void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("ChanServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    Chan_Stored_t d1;
-    if( pElement->IsA( d1.GetClassTag() ) )
+    Chan_Stored_t *cs = new Chan_Stored_t;
+
+    if( pElement->IsA( cs->GetClassTag() ) )
     {
-	pIn->ReadTo(&d1);
-	if (d1.Name() != "")
-	    stored[d1.Name().LowerCase()] = d1;
+	cs_array.push_back(cs);
+	pIn->ReadTo(cs);
+    }
+    else
+    {
+	delete cs;
     }
 }
 
@@ -11115,4 +11198,107 @@ void ChanServ::PostLoad()
 {
     NFT("ChanServ::PostLoad");
     // Linkage, etc
+    unsigned int i, j;
+    for (i=0; i<cs_array.size(); i++)
+    {
+	if (cs_array[i] != NULL)
+	{
+	    for (j=0; j<cs_array[i]->level_array.size(); j++)
+	    {
+		if (cs_array[i]->level_array[j] != NULL)
+		{
+		    cs_array[i]->i_Level.insert(*cs_array[i]->level_array[j]);
+		    delete cs_array[i]->level_array[j];
+		}
+	    }
+	    cs_array[i]->level_array.clear();
+	    for (j=0; j<cs_array[i]->access_array.size(); j++)
+	    {
+		if (cs_array[i]->access_array[j] != NULL)
+		{
+		    cs_array[i]->i_Access.insert(*cs_array[i]->access_array[j]);
+		    delete cs_array[i]->access_array[j];
+		}
+	    }
+	    cs_array[i]->access_array.clear();
+	    for (j=0; j<cs_array[i]->akick_array.size(); j++)
+	    {
+		if (cs_array[i]->akick_array[j] != NULL)
+		{
+		    cs_array[i]->i_Akick.insert(*cs_array[i]->akick_array[j]);
+		    delete cs_array[i]->akick_array[j];
+		}
+	    }
+	    cs_array[i]->akick_array.clear();
+	    for (j=0; j<cs_array[i]->greet_array.size(); j++)
+	    {
+		if (cs_array[i]->greet_array[j] != NULL)
+		{
+		    cs_array[i]->i_Greet.push_back(*cs_array[i]->greet_array[j]);
+		    delete cs_array[i]->greet_array[j];
+		}
+	    }
+	    cs_array[i]->greet_array.clear();
+	    for (j=0; j<cs_array[i]->message_array.size(); j++)
+	    {
+		if (cs_array[i]->message_array[j] != NULL)
+		{
+		    cs_array[i]->i_Message.push_back(*cs_array[i]->message_array[j]);
+		    delete cs_array[i]->message_array[j];
+		}
+	    }
+	    cs_array[i]->message_array.clear();
+	    for (j=0; j<cs_array[i]->ud_array.size(); j++)
+	    {
+		if (cs_array[i]->ud_array[j] != NULL)
+		{
+		    if (cs_array[i]->ud_array[j]->Contains("\n"))
+			cs_array[i]->i_UserDef[cs_array[i]->ud_array[j]->Before("\n")] =
+				cs_array[i]->ud_array[j]->After("\n");
+		    delete cs_array[i]->ud_array[j];
+		}
+	    }
+	    cs_array[i]->ud_array.clear();
+	    if (cs_array[i]->Name() != "")
+		stored[cs_array[i]->Name().LowerCase()] = *cs_array[i];
+	    delete cs_array[i];
+	}
+    }
+    cs_array.clear();
+
+    map<mstring,Chan_Stored_t>::iterator iter;
+    entlist_val_t<long> *ptr1;
+    entlist_val_t<mstring> *ptr2;
+    for (iter=stored.begin(); iter!=stored.end(); iter++)
+    {
+	for (iter->second.Level = iter->second.Level_begin();
+		iter->second.Level != iter->second.Level_end();
+		iter->second.Level++)
+	{
+	    ptr1 = (entlist_val_t<long> *) &(*iter->second.Level);
+	    ptr1->PostLoad();
+	}
+	for (iter->second.Access = iter->second.Access_begin();
+		iter->second.Access != iter->second.Access_end();
+		iter->second.Access++)
+	{
+	    ptr1 = (entlist_val_t<long> *) &(*iter->second.Access);
+	    ptr1->PostLoad();
+	}
+	for (iter->second.Akick = iter->second.Akick_begin();
+		iter->second.Akick != iter->second.Akick_end();
+		iter->second.Akick++)
+	{
+	    ptr2 = (entlist_val_t<mstring> *) &(*iter->second.Akick);
+	    ptr2->PostLoad();
+	}
+	for (iter->second.Greet = iter->second.Greet_begin();
+		iter->second.Greet != iter->second.Greet_end();
+		iter->second.Greet++)
+	    iter->second.Greet->PostLoad();
+	for (iter->second.Message = iter->second.Message_begin();
+		iter->second.Message != iter->second.Message_end();
+		iter->second.Message++)
+	    iter->second.Message->PostLoad();
+    }
 }

@@ -25,6 +25,11 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.6  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -61,6 +66,7 @@ static const char *ident_sxp_h = "@(#) $Id$";
 #include "utils.h"
 #undef JUST_MFILE
 
+#define XML_STRING	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 #define SXP_TAG		0x01	// Required to force write.
 #define SXP_COMPRESS	0x02
 #define SXP_ENCRYPT	0x04
@@ -513,7 +519,7 @@ SXP_NS_BEGIN
 			// support for storing widechars as character data, via
 			// conversion functions in IElement::Retrieve() and 
 			// IOutStream::WriteElement
-			fprintf(m_fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			fprintf(m_fp, XML_STRING);
 		}
 
 		inline void BeginObject(Tag& t, dict& attribs) {
@@ -577,8 +583,7 @@ SXP_NS_BEGIN
 			m_dwTagHash = ~0;
 			m_strName = pchName;
 			m_strData.erase();
-			m_Attribs.
-			clear();
+			m_Attribs.clear();
 
 			for(const char **pp = ppchAttrib; *pp != 0; pp += 2) {
 				m_Attribs[ string(pp[0]) ] =
@@ -680,7 +685,7 @@ SXP_NS_BEGIN
 		}
 
 		// give the parser a food for thought the lazy way
-		void FeedFile(mstring chFilename, mstring ikey = "");
+		int FeedFile(mstring chFilename, mstring ikey = "");
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
 		inline void ReadTo( IPersistObj *pPI ) {

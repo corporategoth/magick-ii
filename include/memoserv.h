@@ -25,6 +25,11 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.30  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -83,6 +88,7 @@ struct NewsList;
 class Memo_t : public mUserDef, public SXP::IPersistObj
 {
     friend list<Memo_t> CreateMemoEntry(MemoList *ml);
+    friend class MemoServ;
 
     mstring i_Nick;
     mstring i_Sender;
@@ -117,7 +123,7 @@ public:
     void Unread();
 
     SXP::Tag& GetClassTag() const { return tag_Memo_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
@@ -127,6 +133,7 @@ public:
 class News_t : public mUserDef, public SXP::IPersistObj
 {
     friend list<News_t> CreateNewsEntry(NewsList *nl);
+    friend class MemoServ;
 
     mstring i_Channel;
     mstring i_Sender;
@@ -159,7 +166,7 @@ public:
     void Unread(mstring name);
 
     SXP::Tag& GetClassTag() const { return tag_News_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
@@ -178,6 +185,9 @@ private:
     unsigned int files;
     unsigned long filesize;
     static SXP::Tag tag_MemoServ;
+
+    vector<Memo_t *> m_array;
+    vector<News_t *> n_array;
 
     void AddCommands();
     void RemCommands();

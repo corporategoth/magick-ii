@@ -5,6 +5,7 @@
 #pragma implementation
 #pragma implementation "language.h"
 #pragma implementation "logfile.h"
+#pragma implementation "crypt.h"
 #endif
 
 /*  Magick IRC Services
@@ -28,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.253  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.252  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -539,13 +545,15 @@ int Magick::Start()
     LoadInternalMessages();
 
     FLUSH();
+    load_databases();
+
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK"));
     Result = ACE::fork(i_programname);
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("ERROR/FAILED_FORK"), Result);
+	Log(LM_EMERGENCY, getLogMessage("SYS_ERROR/FAILED_FORK"), Result);
 	RET(1);
     }
     else if (Result != 0)
@@ -555,7 +563,7 @@ int Magick::Start()
     Result = ACE_OS::setpgid (0, 0);
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("ERROR/FAILED_SETPGID"), Result);
+	Log(LM_EMERGENCY, getLogMessage("SYS_ERROR/FAILED_SETPGID"), Result);
 	RET(1);
     }
     // Can only open these after fork if we want then to live
@@ -656,7 +664,6 @@ int Magick::Start()
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
-    load_databases();
     { WLOCK(("i_ResetTime"));
     i_ResetTime=Now();
     }
@@ -690,7 +697,8 @@ int Magick::Start()
 	ircsvchandler = NULL;
     }}
     mBase::shutdown();
-    while (mThread::size() > 2)
+    // Main Thread, DCC and Events engine
+    while (mThread::size() > 3)
     {
 	ACE_OS::sleep(1);
     }
@@ -1141,7 +1149,7 @@ mstring Magick::parseEscapes(const mstring & in)
     catch(ParserException &E)
     {
 	//todo
-	Log(LM_WARNING, getLogMessage("ERROR/EXCEPTION"),E.line,E.column,E.getMessage().c_str());
+	Log(LM_WARNING, getLogMessage("SYS_ERROR/EXCEPTION"),E.line,E.column,E.getMessage().c_str());
     }
     RET(lexer.retstring);
 }
@@ -2431,9 +2439,9 @@ bool Magick::get_config_values()
 	if (nickserv.IsLive(chanserv.FirstName()))
 	{
 	    if (chanserv.hide)
-		server.MODE(chanserv.FirstName(), "+s");
+		server.MODE(chanserv.FirstName(), "+i");
 	    else
-		server.MODE(chanserv.FirstName(), "-s");
+		server.MODE(chanserv.FirstName(), "-i");
 	}
     }
 
@@ -2997,218 +3005,33 @@ mstring Magick::GetKey()
     NFT("Magick::GetKey");
     mstring retval = "";
 #ifdef HASCRYPT
-    if (files.Encryption())
+    if (files.KeyFile() != "" &&
+	mFile::Exists(files.KeyFile()))
     {
-	if (mFile::Exists(files.KeyFile()))
-	{
-	    mFile keyfile(files.KeyFile());
-	    unsigned char tmp[KEYLEN], key[KEYLEN];
-	    des_key_schedule key1, key2;
-	    des_cblock ckey1, ckey2;
+	mFile keyfile(files.KeyFile());
+	unsigned char tmp[KEYLEN], key[KEYLEN];
+	des_key_schedule key1, key2;
+	des_cblock ckey1, ckey2;
 
 #include "crypt.h"
-	    ACE_OS::memset(tmp, 0, KEYLEN);
-	    keyfile.Read(tmp, KEYLEN);
-	    tmp[KEYLEN-1]=0;
+	ACE_OS::memset(tmp, 0, KEYLEN);
+	keyfile.Read(tmp, KEYLEN);
+	tmp[KEYLEN-1]=0;
 
-	    /* Unscramble keyfile keys */
-	    des_string_to_key(crypto_key1,&ckey1);
-	    des_set_key(&ckey1,key1);
-	    des_string_to_key(crypto_key2,&ckey2);
-	    des_set_key(&ckey2,key2);
+	/* Unscramble keyfile keys */
+	des_string_to_key(crypto_key1,&ckey1);
+	des_set_key(&ckey1,key1);
+	des_string_to_key(crypto_key2,&ckey2);
+	des_set_key(&ckey2,key2);
 
-	    /* Use keyfile keys to get REAL key */
-	    mDES(tmp, key, KEYLEN, key1, key2, 0);
-	    retval = (char *) key;
-	}
+	/* Use keyfile keys to get REAL key */
+	mDES(tmp, key, KEYLEN, key1, key2, 0);
+	retval = (char *) key;
     }
 #endif
     NRET(mstring, retval);
 }
 
-/*
-void Magick::load_databases()
-{
-    NFT("Magick::load_databases");
-
-    mstring databasefile;
-    databasefile = files.Database();
-
-    mstring tag;
-    unsigned long ver;
-    unsigned short ver_major, ver_minor;
-    bool compressed;
-    bool encrypted;
-    wxFileInputStream finput(databasefile);
-
-    if (finput.Ok())
-    {
-	wxCryptInputStream *cinput;
-	wxZlibInputStream *zinput;
-	wxDataInputStream *dinput;
-	wxInputStream *input = &finput;
-
-	// We need this to make sure its not endian.
-	dinput = new wxDataInputStream(*input);
-	input = dinput;
-	*input >> tag >> ver >> compressed >> encrypted;
-
-	ver_minor = ver % 0x10000;
-	ver_major = ver / 0x10000;
-
-	//input->Sync();
-	input = &finput;
-	delete dinput;
-	CP(("Data TAG: %s | %u.%u | %d | %d", tag.c_str(), ver_major, ver_minor, compressed, encrypted));
-
-	if (tag != FileIdentificationTag)
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/DBASE_ID"));
-
-	// Thread pipes ... create them.
-	if (encrypted)
-	{
-	    if (GetKey() == "")
-	    {
-		Log(LM_ERROR, "Database is encrypted but no keyfile found, load aborted.");
-		return;
-	    }
-	    cinput = new wxCryptInputStream(*input, GetKey());
-	    input = cinput;
-	}
-	if (compressed)
-	{
-	    zinput = new wxZlibInputStream(*input);
-	    input = zinput;
-	}
-	dinput = new wxDataInputStream(*input);
-	input = dinput;
-
-	operserv.load_database(*input);
-	nickserv.load_database(*input);
-	chanserv.load_database(*input);
-	memoserv.load_database(*input);
-	commserv.load_database(*input);
-	servmsg.load_database(*input);
-	filesys.load_database(*input);
-	// Scripted services?
-
-	// Clean up ..
-	delete dinput;
-	if (encrypted)
-	{
-	    delete cinput;
-	}
-	if (compressed)
-	{
-	    delete zinput;
-	}
-	input = &finput;
-	Log(LM_INFO, getLogMessage("EVENT/LOAD"), ver_major, ver_minor);
-    }
-}
-
-void Magick::save_databases()
-{
-    // to buggered to think about it tonight, maybe tommorow night.
-    NFT("Magick::save_databases");
-
-    mstring databasefile;
-    databasefile = files.Database();
-
-    CP(("Database Filename being used: %s", databasefile.c_str()));
-    wxFile dbase((files.Database() + ".new").c_str(), wxFile::write);
-
-    if (dbase.IsOpened())
-    {
-	wxFileOutputStream *foutput;
-	wxCryptOutputStream *coutput;
-	wxZlibOutputStream *zoutput;
-	wxDataOutputStream *doutput;
-	wxOutputStream *output;
-
-	foutput = new wxFileOutputStream(dbase);
-	output = foutput;
-
-	CP(("Data TAG: %s | %u.%u | %d | %d", FileIdentificationTag.c_str(),
-		FileVersionNumber / 0x10000, FileVersionNumber % 0x10000,
-		(files.Compression() != 0), files.Encryption()));
-	doutput = new wxDataOutputStream(*output);
-	output = doutput;
-	*output << FileIdentificationTag << FileVersionNumber <<
-		(files.Compression() != 0) << files.Encryption();
-	output->Sync();
-	output = foutput;
-	delete doutput;
-
-	if (GetKey() != "")
-	{
-	    coutput = new wxCryptOutputStream(*output, GetKey());
-	    output = coutput;
-	}
-	if (files.Compression())
-	{
-	    zoutput = new wxZlibOutputStream(*output, files.Compression());
-	    output = zoutput;
-	}
-	doutput = new wxDataOutputStream(*output);
-	output = doutput;
-
-	operserv.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-
-	nickserv.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-
-	chanserv.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-
-	memoserv.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-
-	commserv.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-
-	servmsg.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-
-	filesys.save_database(*output);
-	if (dbase.Error()) goto cleanup;
-	// Scripted services?
-
-	// clean up ...
-	output->Sync();
-cleanup:
-	delete doutput;
-	if (files.Encryption())
-	{
-	    delete coutput;
-	}
-	if (files.Compression())
-	{
-	    delete zoutput;
-	}
-	delete foutput;
-	output = NULL;
-
-	if (!dbase.Error())
-	{
-	    dbase.Close();
-	    wxFileInputStream in((files.Database() + ".new").c_str());
-	    wxFileOutputStream out(files.Database().c_str());
-	    if (in.Ok() && out.Ok())
-	    {
-		out << in;
-		mFile::Erase(files.Database() + ".new");
-		Log(LM_DEBUG, getLogMessage("EVENT/SAVE"));
-		return;
-	    }
-	}
-    }
-    mFile::Erase(files.Database() + ".new");
-    Log(LM_ERROR, "Error saving databases, aborted ...");
-    announce(operserv.FirstName(), "Warning, dbases not saved ..");
-}
-*/
 
 void Magick::Disconnect()
 {
@@ -3239,32 +3062,26 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     if( pElement->IsA( operserv.GetClassTag() ) )
     {
         pIn->ReadTo(&operserv);
-        operserv.PostLoad();
     }
     else if( pElement->IsA( nickserv.GetClassTag() ) )
     {
         pIn->ReadTo(&nickserv);
-        nickserv.PostLoad();
     }
     else if( pElement->IsA( chanserv.GetClassTag() ) )
     {
         pIn->ReadTo(&chanserv);
-        chanserv.PostLoad();
     }
     else if( pElement->IsA( memoserv.GetClassTag() ) )
     {
         pIn->ReadTo(&memoserv);
-        memoserv.PostLoad();
     }
     else if( pElement->IsA( commserv.GetClassTag() ) )
     {
         pIn->ReadTo(&commserv);
-        commserv.PostLoad();
     }
     else if( pElement->IsA( filesys.GetClassTag() ) )
     {
         pIn->ReadTo(&filesys);
-        filesys.PostLoad();
     }
     else
     {
@@ -3276,6 +3093,16 @@ void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+    if( pElement->IsA( tag_Magick ) )
+    {
+        operserv.PostLoad();
+        nickserv.PostLoad();
+        chanserv.PostLoad();
+        memoserv.PostLoad();
+        commserv.PostLoad();
+        filesys.PostLoad();
+	// Scripted ...
+    }
 }
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -3304,7 +3131,7 @@ void Magick::save_databases()
     {
 	//SXP::CFileOutStream o(files.Database()+".new");
 	SXP::MFileOutStream o(files.Database()+".new", files.Compression(),
-							GetKey());
+				(files.Encryption() ? GetKey() : mstring("")));
 	o.BeginXML();
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
@@ -3321,8 +3148,12 @@ void Magick::load_databases()
     NFT("Magick::load_databases");
     if (mFile::Exists(files.Database()))
     {
+	Log(LM_STARTUP, getLogMessage("EVENT/LOAD"));
    	SXP::CParser p( this ); // let the parser know which is the object
-	p.FeedFile(files.Database(), GetKey());
+	if (p.FeedFile(files.Database(), GetKey()) < 1)
+	{
+	    Log(LM_EMERGENCY, getLogMessage("ERROR/CORRUPT_DB"));
+	}
     }
 }
 

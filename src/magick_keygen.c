@@ -19,6 +19,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.3  2000/06/29 06:30:57  prez
 ** Added the support for the 'extra' chars (ie. at the end of a string)
 ** so we support odd-length strings.  Also updated documentation.
@@ -51,6 +56,9 @@ static const char *ident = "@(#)$Id$";
 #include "des/spr.h"
 #endif
 
+#define MIN_KEYLEN	16
+#define DEF_KEYNAME	"magick.key"
+
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc);
 
@@ -81,18 +89,26 @@ int main(int argc, char **argv)
     memset(inkey, 0, KEYLEN);
     memset(outkey, 0, KEYLEN);
 
-    printf("Enter filename to output to: ");
+    printf("Enter filename to output to [%s]: ", DEF_KEYNAME);
     fgets(filename, 512, stdin);
-    filename[511]=0;
-    for (i=0; i<strlen(filename); i++)
-	if (filename[i]<32)
-	    filename[i]=0;
+    if (strlen(filename) < 2)
+    {
+	strcpy(filename, DEF_KEYNAME);
+    }
+    else
+    {
+	filename[511]=0;
+	for (i=0; i<strlen(filename); i++)
+	    if (filename[i]<32)
+		filename[i]=0;
+    }
     if ((outfile = fopen(filename, "w")) == NULL)
     {
 	fprintf(stderr, "Could not open output file.\n");
 	return 1;
     }
 
+    /* This crap is needed to turn of echoing password */
 #ifndef WIN32
     if ((tty = fopen("/dev/tty", "r")) == NULL)
 	tty = stdin;
@@ -108,9 +124,9 @@ int main(int argc, char **argv)
     if (strlen(inkey) != KEYLEN-1)
 	inkey[strlen(inkey)-1]=0;
     printf("\n");
-    if (strlen(inkey) < 16)
+    if (strlen(inkey) < MIN_KEYLEN)
     {
-	fprintf(stderr, "Key must be at least 16 characters.\n");
+	fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
 #ifndef WIN32
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.112  2000/06/28 12:20:48  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -2110,7 +2115,7 @@ void Nick_Stored_t::operator=(const Nick_Stored_t &in)
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
     i_Password=in.i_Password;
-    i_Email=i_Email;
+    i_Email=in.i_Email;
     i_URL=in.i_URL;
     i_ICQ=in.i_ICQ;
     i_Description=in.i_Description;
@@ -3831,6 +3836,18 @@ SXP::Tag Nick_Stored_t::tag_Access("Access");
 SXP::Tag Nick_Stored_t::tag_Ignore("Ignore");
 SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
 
+void Nick_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("Nick_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
 void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Nick_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -3878,12 +3895,6 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
         mstring tmp;
         pElement->Retrieve(tmp);
         i_ignore.insert(tmp);
-    }
-    if( pElement->IsA(tag_UserDef) )
-    {
-        mstring tmp;
-        pElement->Retrieve(tmp);
-        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
     }
 }
 
@@ -5032,7 +5043,8 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     if (output != "")
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/OPTIONS"),
 						output.c_str());
-    if (nick->PicNum())
+    if (nick->PicNum() &&
+	Parent->filesys.Exists(FileMap::Picture, nick->PicNum()))
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HASPIC"),
 				ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, nick->PicNum())).c_str(),
 				mynick.c_str(), nick->Name().c_str());
@@ -7167,12 +7179,16 @@ SXP::Tag NickServ::tag_NickServ("NickServ");
 void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("NickServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    Nick_Stored_t d1;
-    if( pElement->IsA( d1.GetClassTag() ) )
+    Nick_Stored_t *ns = new Nick_Stored_t;
+
+    if( pElement->IsA( ns->GetClassTag() ) )
     {
-	pIn->ReadTo(&d1);
-	if (d1.Name() != "")
-	    stored[d1.Name().LowerCase()] = d1;
+	ns_array.push_back(ns);
+	pIn->ReadTo(ns);
+    }
+    else
+    {
+	delete ns;
     }
 }
 
@@ -7200,22 +7216,48 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 void NickServ::PostLoad()
 {
     NFT("NickServ::PostLoad");
+    unsigned int i, j;
+    for (i=0; i<ns_array.size(); i++)
+    {
+	if (ns_array[i] != NULL)
+	{
+	    for (j=0; j<ns_array[i]->ud_array.size(); j++)
+	    {
+		if (ns_array[i]->ud_array[j] != NULL)
+		{
+		    if (ns_array[i]->ud_array[j]->Contains("\n"))
+			ns_array[i]->i_UserDef[ns_array[i]->ud_array[j]->Before("\n")] =
+				ns_array[i]->ud_array[j]->After("\n");
+		    delete ns_array[i]->ud_array[j];
+		}
+	    }
+	    ns_array[i]->ud_array.clear();
+	    if (ns_array[i]->Name() != "")
+		stored[ns_array[i]->Name().LowerCase()] = *ns_array[i];
+	    delete ns_array[i];
+	}
+    }
+    ns_array.clear();
+
     map<mstring,Nick_Stored_t>::iterator iter;
     CP(("Linking nickname entries ..."));
     WLOCK(("NickServ", "stored"));
     for (iter=stored.begin(); iter!=stored.end(); iter++)
     {
-	if (IsStored(iter->second.i_Host))
+	if (iter->second.i_Host != "")
 	{
-	    COM(("Nickname %s has been linked to %s ...",
-		iter->first.c_str(), iter->second.i_Host.c_str()));
-	    stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->first);
-	}
-	else if (iter->second.i_Host != "")
-	{
-	    Log(LM_WARNING, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
-		iter->second.i_Host.c_str(), iter->first.c_str());
-	    iter->second.i_Host = "";
+	    if (IsStored(iter->second.i_Host))
+	    {
+		COM(("Nickname %s has been linked to %s ...",
+		    iter->first.c_str(), iter->second.i_Host.c_str()));
+		stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->first);
+	    }
+	    else
+	    {
+		Log(LM_WARNING, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
+		    iter->second.i_Host.c_str(), iter->first.c_str());
+		iter->second.i_Host = "";
+	    }
 	}
     }
 }

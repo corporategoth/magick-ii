@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.64  2000/06/19 13:15:34  prez
 ** Documentation, what a novel concept.
 **
@@ -1518,14 +1523,6 @@ void CommServ::do_member_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!Parent->commserv.list[committee].IsIn(member))
-    {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
-				member.c_str(), committee.c_str(),
-				Parent->getMessage(source, "LIST/MEMBER").c_str());
-	return;
-    }
-
     if (Parent->commserv.list[committee].IsHead(member))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/OTH_HEAD"),
@@ -1559,7 +1556,8 @@ void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_member_List", (mynick, source, params));
 
-    mstring message = params.Before(" ").UpperCase();
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
 
     if (Parent->ircsvchandler->HTM_Level() > 3)
     {
@@ -2689,6 +2687,36 @@ SXP::Tag Committee::tag_Members("Members");
 SXP::Tag Committee::tag_Messages("Messages");
 SXP::Tag Committee::tag_UserDef("UserDef");
 
+void Committee::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("Committee::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+    if (!(i_Name == Parent->commserv.SADMIN_Name() ||
+		i_Name == Parent->commserv.ALL_Name() ||
+		i_Name == Parent->commserv.REGD_Name()))
+    {
+	if( pElement->IsA(tag_Members) )
+	{
+	    entlist_t *tmp = new entlist_t;
+	    members_array.push_back(tmp);
+	    pIn->ReadTo(tmp);
+	}
+    }
+
+    if( pElement->IsA(tag_Messages) )
+    {
+	entlist_t tmp;
+	pIn->ReadTo(&tmp);
+	i_Messages.push_back(tmp);
+    }
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
 void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Committee::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -2706,39 +2734,6 @@ void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_lock_OpenMemos) )	pElement->Retrieve(l_OpenMemos);
 	if( pElement->IsA(tag_lock_Private) )	pElement->Retrieve(l_Private);
 	if( pElement->IsA(tag_lock_Secure) )	pElement->Retrieve(l_Secure);
-
-    if (i_Name == Parent->commserv.SADMIN_Name())
-    {
-	for (int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
-	    i_Members.insert(entlist_t(
-		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
-		Parent->operserv.FirstName()));
-    }
-    else if (!(i_Name == Parent->commserv.ALL_Name() ||
-		i_Name == Parent->commserv.REGD_Name()))
-    {
-	if( pElement->IsA(tag_Members) )
-	{
-	    entlist_t tmp;
-	    pIn->ReadTo(&tmp);
-	    i_Members.insert(tmp);
-	}
-    }
-
-    if( pElement->IsA(tag_Messages) )
-    {
-	entlist_t tmp;
-	pIn->ReadTo(&tmp);
-	i_Messages.push_back(tmp);
-    }
-
-
-    if( pElement->IsA(tag_UserDef) )
-    {
-        mstring tmp;
-        pElement->Retrieve(tmp);
-        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
-    }
 }
 
 void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -2797,12 +2792,16 @@ SXP::Tag CommServ::tag_CommServ("CommServ");
 void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("CommServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    Committee d1;
-    if( pElement->IsA( d1.GetClassTag() ) )
+    Committee *c = new Committee;
+
+    if( pElement->IsA( c->GetClassTag() ) )
     {
-	pIn->ReadTo(&d1);
-	if (d1.Name() != "")
-	    list[d1.Name().UpperCase()] = d1;
+	c_array.push_back(c);
+	pIn->ReadTo(c);
+    }
+    else
+    {
+	delete c;
     }
 }
 
@@ -2832,4 +2831,58 @@ void CommServ::PostLoad()
 {
     NFT("CommServ::PostLoad");
     // Linkage, etc
+    unsigned int i, j;
+    for (i=0; i<c_array.size(); i++)
+    {
+	if (c_array[i] != NULL)
+	{
+	    for (j=0; j<c_array[i]->members_array.size(); j++)
+	    {
+		c_array[i]->i_Members.insert(*c_array[i]->members_array[j]);
+		delete c_array[i]->members_array[j];
+	    }
+	    c_array[i]->members_array.clear();
+	    for (j=0; j<c_array[i]->ud_array.size(); j++)
+	    {
+		if (c_array[i]->ud_array[j] != NULL)
+		{
+		    if (c_array[i]->ud_array[j]->Contains("\n"))
+			c_array[i]->i_UserDef[c_array[i]->ud_array[j]->Before("\n")] =
+				c_array[i]->ud_array[j]->After("\n");
+		    delete c_array[i]->ud_array[j];
+		}
+	    }
+	    c_array[i]->ud_array.clear();
+	    if (c_array[i]->Name() != "")
+		list[c_array[i]->Name().UpperCase()] = *c_array[i];
+	    delete c_array[i];
+	}
+    }
+    c_array.clear();
+
+    map<mstring,Committee>::iterator iter;
+    entlist_t *ptr;
+    for (iter=list.begin(); iter!=list.end(); iter++)
+    {
+	for (iter->second.member = iter->second.begin();
+		iter->second.member != iter->second.end();
+		iter->second.member++)
+	{
+	    ptr = (entlist_t *) &(*iter->second.member);
+	    ptr->PostLoad();
+	}
+	for (iter->second.message = iter->second.MSG_begin();
+		iter->second.message != iter->second.MSG_end();
+		iter->second.message++)
+	    iter->second.message->PostLoad();
+    }
+
+    if (IsList(Parent->commserv.SADMIN_Name()))
+    {
+	list[Parent->commserv.SADMIN_Name()].i_Members.clear();
+	for (int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
+	    list[Parent->commserv.SADMIN_Name()].i_Members.insert(entlist_t(
+		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
+		Parent->operserv.FirstName()));
+    }
 }

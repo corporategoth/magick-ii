@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.128  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.127  2000/06/25 07:58:48  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -1137,22 +1142,30 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
     }
 }
 
+void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
 void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
 	if( pElement->IsA(tag_Last_Modify_Time) )   pElement->Retrieve(i_Last_Modify_Time);
 	if( pElement->IsA(tag_Last_Modifier) )   pElement->Retrieve(i_Last_Modifier);
-    if( pElement->IsA(tag_UserDef) )
-    {
-        mstring tmpUserDef;
-        pElement->Retrieve(tmpUserDef);
-        i_UserDef[tmpUserDef.Before("\n")]=tmpUserDef.After("\n");
-    }
 }
 
 void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_entlist_t, attribs);
 
@@ -1167,6 +1180,24 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     }
 
 	pOut->EndObject(tag_entlist_t);
+}
+
+void entlist_t::PostLoad()
+{
+    NFT("entlist_t::PostLoad");
+
+    unsigned int j;
+	    for (j=0; j<ud_array.size(); j++)
+	    {
+		if (ud_array[j] != NULL)
+		{
+		    if (ud_array[j]->Contains("\n"))
+			i_UserDef[ud_array[j]->Before("\n")] =
+				ud_array[j]->After("\n");
+		    delete ud_array[j];
+		}
+	    }
+	    ud_array.clear();
 }
 
 SXP::Tag tag_entlist_t("entlist_t");

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.12  2000/06/23 14:21:18  ungod
 ** more completion of the ceNode class and more work done on mConfigEngine
 **
@@ -558,7 +563,8 @@ ceNode *mConfigEngine::GetNode(const mstring& NodeName)
     //  could be freed at any time, trust it only as long as you have to
     // but at the moment, i'm just too damn brainfried to redesign this
     FT("mConfigEngine::GetNode", (NodeName));
-    NRET(ceNode *, RootNode.GetNode(NodeName));
+    ceNode *retval = RootNode.GetNode(NodeName);
+    NRET(ceNode *, retval);
 }
 
 bool mConfigEngine::DeleteNode(const mstring& NodeName)

@@ -7,6 +7,10 @@ $Id$
 Feature requests that have been 'approved' by the
 development team to be worked on, and are coming:
 
+- Make magick abort if magick data file presant, but
+  data in it is corrupted (not just start with blank
+  dbases).  This will be an indicator of a bad key.
+
 - Expanded flood protection (eg. nick flood = kill, etc)
 
 - Optional secure server list (auto squit if not listed)
@@ -18,6 +22,14 @@ development team to be worked on, and are coming:
   string equivilant of arg1, arg2, etc.  This way we can
   move around arguments for languages that have different
   sentance structures.
+
+- Add the rest of the trace code, and implement the other
+  trace types (and use them).
+
+- Add comments to code base, such standards as what the
+  function does, peculiarities about it, and other
+  commenting that tell you how the program works or the
+  bit of code in question fits into the grand scheme.
 
 This is by no means an extensive list, there are alot more
 suggestions being tracked in the docs/develop directory.

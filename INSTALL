@@ -279,4 +279,5 @@ your key, and do not know the password to generate a new one, you
 may as well remove the file and start again.
 
 Pre-compiled binaries will not be able to change the keyfile keys.
-This could be considered an advantage of compiling yourself.
+This could be considered an advantage of compiling yourself.  You
+will however need to re-generate your keyfile each new binary release.

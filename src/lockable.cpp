@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.38  2000/06/13 14:11:54  prez
 ** Locking system has been re-written, it doent core anymore.
 ** So I have set 'MAGICK_LOCKS_WORK' define active :)
@@ -80,10 +85,10 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 	lock[i] = NULL;
 	lock[i] = new ACE_RW_Thread_Mutex(lockname.c_str());
 	if (lock[i] == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_OPEN"),
 		"READ", lockname.c_str());
 	else if (lock[i]->acquire_read() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_ACQUIRE"),
 		"READ", lockname.c_str());
 	else count++;
 	tlock[i].open(T_Locking::Read, lockname);
@@ -98,10 +103,10 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 	rwlock = NULL;
 	rwlock = new ACE_RW_Thread_Mutex(lockname.c_str());
 	if (rwlock == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_OPEN"),
 		"READ", lockname.c_str());
 	else if (rwlock->acquire_read() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_ACQUIRE"),
 		"READ", lockname.c_str());
 	else count++;
     }
@@ -110,10 +115,10 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 	rwlock = NULL;
 	rwlock = new ACE_RW_Thread_Mutex(lockname.c_str());
 	if (rwlock == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_OPEN"),
 		"WRITE", lockname.c_str());
 	else if (rwlock->acquire_write() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_ACQUIRE"),
 		"WRITE", lockname.c_str());
 	else count++;
     }
@@ -122,10 +127,10 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 	mlock = NULL;
 	mlock = new ACE_Recursive_Thread_Mutex(lockname.c_str());
 	if (mlock == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_OPEN"),
 		"MUTEX", lockname.c_str());
 	else if (mlock->acquire() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_ACQUIRE"),
 		"MUTEX", lockname.c_str());
 	else count++;
     }
@@ -142,7 +147,7 @@ mLOCK::~mLOCK()
     if (last_type == T_Locking::Read && rwlock != NULL)
     {
 	if (rwlock->release() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_RELEASE"),
 		"READ", lockname.c_str());
 	else
 	{
@@ -153,7 +158,7 @@ mLOCK::~mLOCK()
     else if (last_type == T_Locking::Write && rwlock != NULL)
     {
 	if (rwlock->release() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_RELEASE"),
 		"WRITE", lockname.c_str());
 	else
 	{
@@ -164,7 +169,7 @@ mLOCK::~mLOCK()
     else if (last_type == T_Locking::Mutex && mlock != NULL)
     {
 	if (mlock->release() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_RELEASE"),
 		"MUTEX", lockname.c_str());
 	else
 	{
@@ -183,7 +188,7 @@ mLOCK::~mLOCK()
 	if (lock[count-1] != NULL)
 	{
 	    if (lock[count-1]->release() < 0)
-		Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/LOCK_RELEASE"),
 			"READ", lockname.c_str());
 	    else
 		delete lock[count-1];

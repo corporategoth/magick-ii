@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/07/21 00:18:50  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.7  2000/07/11 13:22:19  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -282,10 +287,10 @@ void MFileOutStream::BeginXML(void)
 	// support for storing widechars as character data, via
 	// conversion functions in IElement::Retrieve() and 
 	// IOutStream::WriteElement
-	mstring tmp = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	if (strlen(buffer) + tmp.Len() >= buf_sz)
+	mstring tmp = XML_STRING;
+	if (strlen(buffer) + strlen(XML_STRING) >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[strlen(buffer)], tmp.c_str());
+	strcpy(&buffer[strlen(buffer)], XML_STRING);
 }
 
 void MFileOutStream::BeginObject(Tag& t, dict& attribs)
@@ -328,23 +333,25 @@ void MFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 }
 
 
-void CParser::FeedFile(mstring chFilename, mstring ikey)
+int CParser::FeedFile(mstring chFilename, mstring ikey)
 {
-	mFile in(chFilename);
-	if (in.IsOpened())
+    int retval = 0;
+    mFile in(chFilename);
+    if (in.IsOpened())
+    {
+	long filesize = in.Length(), new_sz;
+	unsigned char tag = 0;
+	char *tmpbuf, *buffer = (char *) malloc(filesize * sizeof(char));
+	memset(buffer, 0, filesize * sizeof(char));
+	new_sz = filesize + 8;
+
+	in.Read(&tag, sizeof(unsigned char));
+	memset(buffer, 0, filesize);
+	in.Read(buffer, (filesize-1) * sizeof(char));
+	in.Close();
+
+	if (tag & SXP_TAG)
 	{
-	    long filesize = in.Length(), new_sz;
-	    int retval = 0;
-	    unsigned char tag = 0;
-	    char *tmpbuf, *buffer = (char *) malloc(filesize * sizeof(char));
-	    memset(buffer, 0, filesize * sizeof(char));
-	    new_sz = filesize + 8;
-
-	    in.Read(&tag, sizeof(unsigned char));
-	    memset(buffer, 0, filesize);
-	    in.Read(buffer, (filesize-1) * sizeof(char));
-	    in.Close();
-
 	    if ((tag & SXP_ENCRYPT) && ikey != "")
 	    {
 		des_key_schedule key1, key2;
@@ -416,15 +423,19 @@ void CParser::FeedFile(mstring chFilename, mstring ikey)
 		if (strm)
 		    delete strm;
 	    }
-	    retval = Feed(buffer, new_sz);
-	    if (buffer)
-		free(buffer);
-	    if (retval == 0)
-		Shutdown();
-	    if( m_bShuttingDown )
-		DoShutdown();
-	    
+	    if (strncmp(buffer, XML_STRING, strlen(XML_STRING))==0)
+	    {
+		retval = Feed(buffer, new_sz);
+		if (buffer)
+		    free(buffer);
+		if (retval == 0)
+		   Shutdown();
+		if( m_bShuttingDown )
+		    DoShutdown();
+	    }
 	}
+    }
+    return retval;
 }
 
 SXP_NS_END

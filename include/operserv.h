@@ -25,6 +25,11 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.39  2000/06/26 11:23:17  prez
 ** Added auto-akill on clone triggers
 **
@@ -124,6 +129,11 @@ private:
 
     // Mask (N_U_H), Permanent (bool)
     set<entlist_val_t<bool> > i_Ignore;
+
+    vector<entlist_val_t<pair<unsigned int, mstring> > *> c_array;
+    vector<entlist_val_t<pair<unsigned long, mstring> > *> a_array;
+    vector<entlist_val_t<mstring> *> o_array;
+    vector<entlist_val_t<bool> *> i_array;
 
     void AddCommands();
     void RemCommands();
@@ -302,7 +312,7 @@ public:
     static void do_ignore_List(mstring mynick, mstring source, mstring params);
 
     SXP::Tag& GetClassTag() const { return tag_OperServ; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();

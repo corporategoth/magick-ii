@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/07/21 00:18:50  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.43  2000/07/11 13:22:19  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -581,6 +586,8 @@ unsigned long FromHumanSpace(mstring in)
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc)
 {
+    FT("mDES", ("(unsigned char *) in", "(unsigned char *) out", size,
+	"(des_key_schedule) key1", "(des_key_schedule) key2", enc));
 #ifndef HASCRYPT
     ACE_OS::memset(out, 0, size);
     ACE_OS::memcpy(out, in, size);

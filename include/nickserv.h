@@ -25,6 +25,11 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.43  2000/06/15 13:41:10  prez
 ** Added my tasks to develop *grin*
 ** Also did all the chanserv live locking (stored to be done).
@@ -431,7 +436,7 @@ public:
     void Quit(mstring message);
 
     SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
@@ -470,6 +475,8 @@ private:
     unsigned long picsize;	// MAX size of a personal pic
     mstring picext;		// Valid PIC extensions
     static SXP::Tag tag_NickServ;
+
+    vector<Nick_Stored_t *> ns_array;
 
     void AddCommands();
     void RemCommands();

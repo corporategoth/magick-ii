@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2000/07/21 00:18:50  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.89  2000/06/27 18:56:59  prez
 ** Added choosing of keys to configure, also created the keygen,
 ** and scrambler (so keys are not stored in clear text, even in
@@ -364,10 +369,11 @@ size_t OperServ::Clone_Usage()
     size_t retval = 0;
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
     MLOCK(("OperServ", "Clone"));
+    entlist_val_t<pair<unsigned int, mstring> > *tmp;
     for (i=i_Clone.begin(); i!=i_Clone.end(); i++)
     {
-	entlist_val_t<pair<unsigned int, mstring> > tmp = *i;
-	retval += tmp.Usage();
+	tmp = (entlist_val_t<pair<unsigned int, mstring> > *) &(*i);
+	retval += tmp->Usage();
     }
     return retval;
 }
@@ -468,10 +474,11 @@ size_t OperServ::Akill_Usage()
     size_t retval = 0;
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator i;
     MLOCK(("OperServ", "Akill"));
+    entlist_val_t<pair<unsigned long, mstring> > *tmp;
     for (i=i_Akill.begin(); i!=i_Akill.end(); i++)
     {
-	entlist_val_t<pair<unsigned long, mstring> > tmp = *i;
-	retval += tmp.Usage();
+	tmp = (entlist_val_t<pair<unsigned long, mstring> > *) &(*i);
+	retval += tmp->Usage();
     }
     return retval;
 }
@@ -581,10 +588,11 @@ size_t OperServ::OperDeny_Usage()
     size_t retval = 0;
     set<entlist_val_t<mstring> >::iterator i;
     MLOCK(("OperServ", "OperDeny"));
+    entlist_val_t<mstring> *tmp;
     for (i=i_OperDeny.begin(); i!=i_OperDeny.end(); i++)
     {
-	entlist_val_t<mstring> tmp = *i;
-	retval += tmp.Usage();
+	tmp = (entlist_val_t<mstring> *) &(*i);
+	retval += tmp->Usage();
     }
     return retval;
 }
@@ -699,10 +707,11 @@ size_t OperServ::Ignore_Usage()
     size_t retval = 0;
     set<entlist_val_t<bool> >::iterator i;
     MLOCK(("OperServ", "Ignore"));
+    entlist_val_t<bool> *tmp;
     for (i=i_Ignore.begin(); i!=i_Ignore.end(); i++)
     {
-	entlist_val_t<bool> tmp = *i;
-	retval += tmp.Usage();
+	tmp = (entlist_val_t<bool> *) &(*i);
+	retval += tmp->Usage();
     }
     return retval;
 }
@@ -3362,9 +3371,9 @@ SXP::Tag OperServ::tag_Akill("Akill");
 SXP::Tag OperServ::tag_OperDeny("OperDeny");
 SXP::Tag OperServ::tag_Ignore("Ignore");
 
-void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+    FT("OperServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     set<entlist_t>::size_type ei,ecount;
     set<entlist_val_t<long> >::size_type vli,vlcount;
     set<entlist_val_t<mstring> >::size_type vsi,vscount;
@@ -3377,31 +3386,36 @@ void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
     if( pElement->IsA(tag_Clone) )
     {
-	entlist_val_t<pair<unsigned int, mstring> > tmp;
-	pIn->ReadTo(&tmp);
-	i_Clone.insert(tmp);
+	entlist_val_t<pair<unsigned int, mstring> > *tmp = new entlist_val_t<pair<unsigned int, mstring> >;
+	c_array.push_back(tmp);
+	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_Akill) )
     {
-	entlist_val_t<pair<unsigned long, mstring> > tmp;
-	pIn->ReadTo(&tmp);
-	i_Akill.insert(tmp);
+	entlist_val_t<pair<unsigned long, mstring> > *tmp = new entlist_val_t<pair<unsigned long, mstring> >;
+	a_array.push_back(tmp);
+	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_OperDeny) )
     {
-	entlist_val_t<mstring> tmp;
-	pIn->ReadTo(&tmp);
-	i_OperDeny.insert(tmp);
+	entlist_val_t<mstring> *tmp = new entlist_val_t<mstring>;
+	o_array.push_back(tmp);
+	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_Ignore) )
     {
-	entlist_val_t<bool> tmp;
-	pIn->ReadTo(&tmp);
-	i_Ignore.insert(tmp);
+	entlist_val_t<bool> *tmp = new entlist_val_t<bool>;
+	i_array.push_back(tmp);
+	pIn->ReadTo(tmp);
     }
+}
+
+void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
 void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -3458,4 +3472,74 @@ void OperServ::PostLoad()
 {
     NFT("OperServ::PostLoad");
     // Linkage, etc
+
+    unsigned int i;
+    for (i=0; i<c_array.size(); i++)
+    {
+	if (c_array[i] != NULL)
+	{
+	    i_Clone.insert(*c_array[i]);
+	    delete c_array[i];
+	}
+    }
+    c_array.clear();
+
+    for (i=0; i<a_array.size(); i++)
+    {
+	if (a_array[i] != NULL)
+	{
+	    i_Akill.insert(*a_array[i]);
+	    delete a_array[i];
+	}
+    }
+    a_array.clear();
+
+    for (i=0; i<o_array.size(); i++)
+    {
+	if (o_array[i] != NULL)
+	{
+	    i_OperDeny.insert(*o_array[i]);
+	    delete o_array[i];
+	}
+    }
+    o_array.clear();
+
+    for (i=0; i<i_array.size(); i++)
+    {
+	if (i_array[i] != NULL)
+	{
+	    i_Ignore.insert(*i_array[i]);
+	    delete i_array[i];
+	}
+    }
+    i_array.clear();
+
+    // Kind of dodgy, yes, I know, however we NEED to do the
+    // post load on all the elements and its just too time
+    // and energy consuming to pop them all of and re-insert
+    entlist_val_t<pair<unsigned int, mstring> > *c_ptr;
+    entlist_val_t<pair<unsigned long, mstring> > *a_ptr;
+    entlist_val_t<mstring> *o_ptr;
+    entlist_val_t<bool> *i_ptr;
+
+    for (Clone = Clone_begin(); Clone != Clone_end(); Clone++)
+    {
+	c_ptr = (entlist_val_t<pair<unsigned int, mstring> > *) &(*Clone);
+	c_ptr->PostLoad();
+    }
+    for (Akill = Akill_begin(); Akill != Akill_end(); Akill++)
+    {
+	a_ptr = (entlist_val_t<pair<unsigned long, mstring> > *) &(*Akill);
+	a_ptr->PostLoad();
+    }
+    for (OperDeny = OperDeny_begin(); OperDeny != OperDeny_end(); OperDeny++)
+    {
+	o_ptr = (entlist_val_t<mstring> *) &(*OperDeny);
+	o_ptr->PostLoad();
+    }
+    for (Ignore = Ignore_begin(); Ignore != Ignore_end(); Ignore++)
+    {
+	i_ptr = (entlist_val_t<bool> *) &(*Ignore);
+	i_ptr->PostLoad();
+    }
 }

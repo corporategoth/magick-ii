@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.67  2000/06/18 13:31:48  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -2155,6 +2160,18 @@ SXP::Tag News_t::tag_Text("Text");
 SXP::Tag News_t::tag_Read("Read");
 SXP::Tag News_t::tag_UserDef("UserDef");
 
+void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("Memo_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
 void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Memo_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -2165,17 +2182,11 @@ void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_Text) )		pElement->Retrieve(i_Text);
 	if( pElement->IsA(tag_Read) )		pElement->Retrieve(i_Read);
 	if( pElement->IsA(tag_File) )		pElement->Retrieve(i_File);
-
-    if( pElement->IsA(tag_UserDef) )
-    {
-        mstring tmp;
-        pElement->Retrieve(tmp);
-        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
-    }
 }
 
 void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("Memo_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Memo_t, attribs);
 
@@ -2195,6 +2206,18 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->EndObject(tag_Memo_t);
 }
 
+void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("News_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
 void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("News_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -2210,17 +2233,11 @@ void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(tmp);
 	i_Read.insert(tmp);
     }
-
-    if( pElement->IsA(tag_UserDef) )
-    {
-        mstring tmp;
-        pElement->Retrieve(tmp);
-        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
-    }
 }
 
 void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("News_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_News_t, attribs);
 
@@ -2249,20 +2266,26 @@ SXP::Tag MemoServ::tag_MemoServ("MemoServ");
 void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("MemoServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    Memo_t d1;
-    if( pElement->IsA( d1.GetClassTag() ) )
+    Memo_t *m = new Memo_t;
+    if( pElement->IsA( m->GetClassTag() ) )
     {
-	pIn->ReadTo(&d1);
-	if (d1.Nick() != "")
-	    nick[d1.Nick().LowerCase()].push_back(d1);
+	m_array.push_back(m);
+	pIn->ReadTo(m);
+    }
+    else
+    {
+	delete m;
     }
 
-    News_t d2;
-    if( pElement->IsA( d2.GetClassTag() ) )
+    News_t *n = new News_t;
+    if( pElement->IsA( n->GetClassTag() ) )
     {
-	pIn->ReadTo(&d2);
-	if (d2.Channel() != "")
-	    channel[d2.Channel().LowerCase()].push_back(d2);
+	n_array.push_back(n);
+	pIn->ReadTo(n);
+    }
+    else
+    {
+	delete n;
     }
 }
 
@@ -2307,4 +2330,50 @@ void MemoServ::PostLoad()
 {
     NFT("MemoServ::PostLoad");
     // Linkage, etc
+
+    unsigned int i, j;
+    for (i=0; m_array.size(); i++)
+    {
+	if (m_array[i] != NULL)
+	{
+	    for (j=0; j<m_array[i]->ud_array.size(); j++)
+	    {
+		if (m_array[i]->ud_array[j] != NULL)
+		{
+		    if (m_array[i]->ud_array[j]->Contains("\n"))
+			m_array[i]->i_UserDef[m_array[i]->ud_array[j]->Before("\n")] =
+				m_array[i]->ud_array[j]->After("\n");
+		    delete m_array[i]->ud_array[j];
+		}
+	    }
+	    m_array[i]->ud_array.clear();
+	    if (m_array[i]->Nick() != "")
+		nick[m_array[i]->Nick().LowerCase()].push_back(*m_array[i]);
+	    delete m_array[i];
+	}
+    }
+    m_array.clear();
+
+    for (i=0; n_array.size(); i++)
+    {
+	if (n_array[i] != NULL)
+	{
+	    for (j=0; j<n_array[i]->ud_array.size(); j++)
+	    {
+		if (n_array[i]->ud_array[j] != NULL)
+		{
+		    if (n_array[i]->ud_array[j]->Contains("\n"))
+			n_array[i]->i_UserDef[n_array[i]->ud_array[j]->Before("\n")] =
+				n_array[i]->ud_array[j]->After("\n");
+		    delete n_array[i]->ud_array[j];
+		}
+	    }
+	    n_array[i]->ud_array.clear();
+	    if (n_array[i]->Channel() != "")
+		channel[n_array[i]->Channel().LowerCase()].push_back(*n_array[i]);
+	    delete n_array[i];
+	}
+    }
+    n_array.clear();
+
 }

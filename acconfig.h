@@ -28,21 +28,6 @@
 #undef WIN32
 #endif
 
-/* Amount of chars to rotate crypto keys by */
-#ifndef CRYPTO_SCRAMBLE
-#define CRYPTO_SCRAMBLE 0
-#endif
-
-/* Keyfile key 1 (rotated) */
-#ifndef CRYPTO_KEY1
-#define CRYPTO_KEY1 "localhost"
-#endif
-
-/* Keyfile key 2 (rotated) */
-#ifndef CRYPTO_KEY2
-#define CRYPTO_KEY2 "Windows"
-#endif
-
 /* Length of database key */
 #ifndef KEYLEN
 #define KEYLEN 1024

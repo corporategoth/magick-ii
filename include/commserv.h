@@ -25,6 +25,11 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.32  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -74,6 +79,8 @@ static const char *ident_commserv_h = "@(#) $Id$";
 
 class Committee : public mUserDef, public SXP::IPersistObj
 {
+    friend class CommServ;
+
     mstring i_Name;
     mDateTime i_RegTime;
     mstring i_HeadCom;
@@ -90,6 +97,8 @@ class Committee : public mUserDef, public SXP::IPersistObj
     bool i_Secure;
     bool l_Secure;
     list<entlist_t> i_Messages;
+
+    vector<entlist_t *> members_array;
 
     static SXP::Tag tag_Committee, tag_Name, tag_HeadCom, tag_Head,
 	tag_Description, tag_Email, tag_URL, tag_set_Private,
@@ -155,7 +164,7 @@ public:
     entlist_i message;
 
     SXP::Tag& GetClassTag() const { return tag_Committee; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
@@ -193,6 +202,8 @@ private:
     bool    oper_private;
     bool    oper_openmemos;
     static SXP::Tag tag_CommServ;
+
+    vector<Committee *> c_array;
 
     void AddCommands();
     void RemCommands();

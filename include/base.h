@@ -25,6 +25,11 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.69  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -111,6 +116,7 @@ static const char *ident_base_h = "@(#) $Id$";
 class mUserDef
 {
 protected:
+    vector<mstring *> ud_array;
     map<mstring,mstring> i_UserDef;
 public:
     mstring UserDef(mstring type);
@@ -166,9 +172,10 @@ public:
 
     // XML handling section
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 
     size_t Usage();
 };
@@ -227,12 +234,15 @@ public:
     T Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; };
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+    {
+	entlist_t::BeginElement(pIn, pElement);
+    }
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
         entlist_t::EndElement(pIn,pElement);
-    	if( pElement->IsA(tag_Value) )   pElement->Retrieve(i_Value);
-	    if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
+    	if( pElement->IsA(tag_Value) )    pElement->Retrieve(i_Value);
+	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     {

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/07/21 00:18:49  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.38  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -580,7 +585,7 @@ unsigned long FileMap::FindAvail(FileMap::FileType type)
 	filenum++;
     }
 
-    Log(LM_ERROR, Parent->getLogMessage("SYS_ERROR/FILEMAPFULL"),
+    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
 		(int) type);
     RET(0);
 }
@@ -611,7 +616,7 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	    }
 	}
 	mFile::Erase(filename);
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/MISSING_FILE1"),
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE1"),
 		(int) type, num);
     }
     else
@@ -622,7 +627,7 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	    if (i_FileMap[type].find(num) != i_FileMap[type].end())
 	    {
 	    	i_FileMap[type].erase(num);
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/MISSING_FILE2"),
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE2"),
 			(int) type, num);
 	    }
 	}
@@ -840,29 +845,19 @@ SXP::Tag FileMap::tag_File("File");
 void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    mstring in;
-    FileMap::FileType type;
-    unsigned long number;
-    mstring name;
-    mstring priv;
-    if(pElement->IsA(tag_File))
-    {
-	pElement->Retrieve(in);
-	if (in.WordCount("\n") == 4)
-	{
-	    type = (FileMap::FileType) atoi(in.ExtractWord(1, "\n").c_str());
-	    number = atoul(in.ExtractWord(2, "\n").c_str());
-	    name = in.ExtractWord(3, "\n");
-	    priv = in.ExtractWord(4, "\n");
-	    i_FileMap[type][number] = pair<mstring,mstring>(name,priv);
-	}
-    }
 }
 
 void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("FileMap::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+
+    if(pElement->IsA(tag_File))
+    {
+	mstring *tmp = new mstring;
+	fm_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
 }
 
 void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -895,6 +890,31 @@ void FileMap::PostLoad()
 {
     NFT("FileMap::PostLoad");
     // Linkage, etc
+
+    FileMap::FileType type;
+    unsigned long number;
+    mstring name;
+    mstring priv;
+    unsigned int i;
+    for (i=0; i<fm_array.size(); i++)
+    {
+	if (fm_array[i] != NULL)
+	{
+	    if (fm_array[i]->WordCount("\n") >= 3)
+	    {
+		type = (FileMap::FileType) atoi(fm_array[i]->ExtractWord(1, "\n").c_str());
+		number = atoul(fm_array[i]->ExtractWord(2, "\n").c_str());
+		name = fm_array[i]->ExtractWord(3, "\n");
+		if (fm_array[i]->WordCount("\n") > 3)
+		    priv = fm_array[i]->ExtractWord(4, "\n");
+		else
+		    priv = "";
+		i_FileMap[type][number] = pair<mstring,mstring>(name,priv);
+	    }
+	    delete fm_array[i];
+	}
+    }
+    fm_array.clear();
 }
 
 DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,

@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2000/07/21 00:18:50  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.108  2000/06/25 11:58:03  prez
 ** Fixed problem where messages from nickserv about killing user would not
 ** be sent out (people would not know a nick was forbidden).
@@ -3829,7 +3834,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 		    if (Parent->chanserv.FirstName() == *k)
 		    {
 			if (Parent->chanserv.Hide())
-			    MODE(*k, "+s");
+			    MODE(*k, "+i");
 			mstring joinline;
 			map<mstring,Chan_Stored_t>::iterator iter;
 			{ RLOCK(("ChanServ", "stored"));

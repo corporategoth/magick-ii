@@ -25,6 +25,11 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/07/21 00:18:46  prez
+** Fixed database loading, we can now load AND save databases...
+**
+** Almost ready to release now :)
+**
 ** Revision 1.25  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -192,6 +197,7 @@ public:
     void PostLoad();
 private:
     map<FileType, map<unsigned long, pair<mstring, mstring> > > i_FileMap;
+    vector<mstring *> fm_array;
     static SXP::Tag tag_FileMap, tag_File;
 };
 

@@ -217,13 +217,12 @@ HTM_IGNORE       =Ignored message from %s (HTM mode): %s
 ; These are used when an automated event kicks off.
 ;
 [EVENT]
-STARTUP          =MAGICK II HAS STARTED UP SUCCESSFULLY.
 EXPIRE_AKILL     =Expiring akill for %s (%s) set by %s for %s.
 EXPIRE_NICK      =Expiring nickname %s (%s).
 EXPIRE_CHAN      =Expiring channel %s (%s).
 EXPIRE_NEWS      =Expiring news article for channel %s.
-LOAD             =Database version %u.%u has been loaded.
-SAVE             =Database saved.
+LOAD             =Loading databases ...
+SAVE             =Databases saved.
 UNBAN            =Removed ban %s from channel %s due to timeout (%s).
 KILLPROTECT      =Killed/renamed nickname %s for failure to identify.
 PING             =Pinged all servers.
@@ -252,6 +251,12 @@ NOT_IMPLEMENTED  =Entered %s, which is not implemented.
 INVALID_FORMAT   =Invalid date format char %d%c in %s.
 NOT_LITERAL      =Chatacter %c should be in quotes, taken as literal in %s.
 OUTOFTXNIDS      =Cannot create any more Transaction ID's
+FAILED_FORK      =Failed to fork new process with %d, terminating.
+FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.
+LOCK_OPEN        =Fialed to open %s lock for %s.
+LOCK_ACQUIRE     =Failed to acquire %s lock for %s.
+LOCK_RELEASE     =Failed to release %s lock for %s.
+EXCEPTION        =Exception thrown on line %d, column %d of %s.
 
 ;
 ; This is a section for miscellaneous other occurances.
@@ -310,10 +315,5 @@ SLAVE_NOTREGD    =Nickname %s was listed as a slave of %s, but does not exist (r
 KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.
 NOLIMIT          =No limit specified when required for channel %s from %s.
 NOLANGTOKEN      =Invalid token %s for language %s used, error returned.
-FAILED_FORK      =Failed to fork new process with %d, terminating.
-FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.
-LOCK_OPEN        =Fialed to open %s lock for %s.
-LOCK_ACQUIRE     =Failed to acquire %s lock for %s.
-LOCK_RELEASE     =Failed to release %s lock for %s.
-EXCEPTION        =Exception thrown on line %d, column %d of %s.
 BADSET           =Tried to set BAD data (%s) for %s on %s.
+CORRUPT_DB       =Database file corrupted or invalid key in keyfile.

@@ -21,7 +21,7 @@ Guidelines
 ==========
 
 Before checking ANY code into CVS, it MUST compile on both
-Windows (current standard being MS Visual C++ 5.0) and UNIX
+Windows (current standard being Borland C++ 4.0) and UNIX
 (current standard being gcc 2.95.2).  AND Magick as a whole
 should still be runable (and not segfault if your code is
 accessed) when run.  This is because at ANY time, an alpha
@@ -98,7 +98,9 @@ Changing	0x0100
     <TBA>
 Modify		0x0200
     MB((args)) should be used at the BEGINNING of any data
-	modification (formatting is automatic).
+	modification (formatting is automatic).  Usually the
+	arguments are identifying markers (eg. nickname) and
+	the veriables being changed.
     ME((args)) should be called with the same args as MB, and
 	used at the END of any data modification.
 
@@ -113,7 +115,7 @@ External	0x8000
     <TBA> should be used with the external CALL being made
     <TBA> should be used to capture the data RETURNED externally.
 
-NOTE: Tracing may be activated at run-time with:
+NOTE: Tracing may be activated at commandline with:
     magick --trace ALL:0xffff
 or at run-time with
     /MSG OperServ TRACE SET ALL 0xffff
@@ -286,13 +288,13 @@ Scripting
 
 Databases
 ---------
-+ bytesex independant data storage (research on xml based storage in progress)
+x bytesex independant data storage (research on xml based storage in progress)
 
-* compressed iostream filters
+x compressed iostream filters
 
-* encrypted iostream filters
+x encrypted iostream filters
 
-+ storage mechanism that stores data in the format (type, name, value)
+x storage mechanism that stores data in the format (type, name, value)
 	strings are stored with 4 byte long value of length prefix
 	also begin block and end block types (asc of '{'/'}' maybe?) so
 	that we can have nested objects. ala chanserv is the main object
@@ -300,7 +302,7 @@ Databases
 	nested bans etc.
   + Note: see above about xml.
 
-* Method to determine (wether encrypted, compressed, or plain) what
+x Method to determine (wether encrypted, compressed, or plain) what
 	flags are set on the datafile (including compression level,
 	possibly encryption type, magick internal version). (flags?!!!)
 
