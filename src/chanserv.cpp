@@ -1032,12 +1032,14 @@ void Chan_Stored_t::Join(mstring nick)
 	{
 	    if (Greet->Entry()[0U] == '!')
 	    {
-		Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
+		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
+		    Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
 					Greet->Entry().After("!"));
 	    }
 	    else
 	    {
-		Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
+		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
+		    Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
 						Greet->Entry());
 	    }
 	}
@@ -1047,7 +1049,8 @@ void Chan_Stored_t::Join(mstring nick)
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
 	for(Message = Message_begin(); Message != Message_end(); Message++)
 	{
-	    Parent->chanserv.notice(nick, "[" + i_Name + "] " + Message->Entry());
+	    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
+		Parent->chanserv.notice(nick, "[" + i_Name + "] " + Message->Entry());
 	}
     }
 }
