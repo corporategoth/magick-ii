@@ -1,6 +1,6 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
-SUBDIRS = en man devel 
+SUBDIRS = en man
 
 magick_CONF = magick.ini
 EXTRA_DIST = magick.ini
@@ -20,3 +20,6 @@ uninstall-data-am:
 	@list=$(magick_CONF); for p in $$list; do \
 	  rm -f $(DESTDIR)$(sysconfdir)/$$p ;\
 	done
+
+distclean:  distclean-recursive
+	rm -rf devel
