@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2000/08/06 08:06:41  prez
+** Fixed loading of logon messages in committee ..
+**
 ** Revision 1.119  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -1104,14 +1107,14 @@ int EventTask::svc(void)
 			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str());
 		if (newnick != "" && Parent->server.proto.SVS())
 		{
+		    if (nsi->second.Forbidden())
+			send(Parent->nickserv.FirstName(), oldnick,
+				Parent->getMessage("MISC/RENAMED_FORBID"));
+		    else
+			send(Parent->nickserv.FirstName(), oldnick,
+				Parent->getMessage("MISC/RENAMED_IDENT"));
 		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
 			oldnick, newnick);
-		    if (nsi->second.Forbidden())
-			send(Parent->nickserv.FirstName(), newnick,
-				Parent->getMessage(newnick, "MISC/RENAMED_FORBID"));
-		    else
-			send(Parent->nickserv.FirstName(), newnick,
-				Parent->getMessage(newnick, "MISC/RENAMED_IDENT"));
 		}
 		else
 		{

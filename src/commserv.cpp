@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/08/06 08:06:41  prez
+** Fixed loading of logon messages in committee ..
+**
 ** Revision 1.66  2000/08/02 20:08:57  prez
 ** Minor code cleanups, added ACE installation instructions, updated the
 ** suggestions file and stopped people doing a whole bunch of stuff to
@@ -2730,9 +2733,9 @@ void Committee::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
     if( pElement->IsA(tag_Messages) )
     {
-	entlist_t tmp;
-	pIn->ReadTo(&tmp);
-	i_Messages.push_back(tmp);
+	entlist_t *tmp = new entlist_t;
+	messages_array.push_back(tmp);
+	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_UserDef) )
@@ -2868,6 +2871,12 @@ void CommServ::PostLoad()
 		delete c_array[i]->members_array[j];
 	    }
 	    c_array[i]->members_array.clear();
+	    for (j=0; j<c_array[i]->messages_array.size(); j++)
+	    {
+		c_array[i]->i_Messages.push_back(*c_array[i]->messages_array[j]);
+		delete c_array[i]->messages_array[j];
+	    }
+	    c_array[i]->messages_array.clear();
 	    for (j=0; j<c_array[i]->ud_array.size(); j++)
 	    {
 		if (c_array[i]->ud_array[j] != NULL)

@@ -17,3 +17,7 @@ Known problems that exist in magick that should be fixed.
   are already on (eg. adding to ADMIN when they're already
   on OPER) it will not remove them from the subcommittee,
   and they will appear twice.
+
+- HOST does not report the transfer of hosts
+- email and url settings dont do sanity checks
+- sometimes host checking misfires (check Add/DelHost)

@@ -25,6 +25,9 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/08/06 08:06:41  prez
+** Fixed loading of logon messages in committee ..
+**
 ** Revision 1.34  2000/07/28 14:49:34  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -103,6 +106,7 @@ class Committee : public mUserDef, public SXP::IPersistObj
     list<entlist_t> i_Messages;
 
     vector<entlist_t *> members_array;
+    vector<entlist_t *> messages_array;
 
     static SXP::Tag tag_Committee, tag_Name, tag_HeadCom, tag_Head,
 	tag_Description, tag_Email, tag_URL, tag_set_Private,

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2000/08/06 08:06:41  prez
+** Fixed loading of logon messages in committee ..
+**
 ** Revision 1.115  2000/08/06 05:55:55  prez
 ** Added rudimentary UnderNet 2.8.10 support.
 **
@@ -362,7 +365,7 @@ void Protocol::Set(unsigned int in)
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
 	break;
-    case 20: /* UnderNet < 2.8.10  */
+    case 20: /* UnderNet < 2.10.x  */
 	i_Signon = 1000;
 	i_Akill = 2;
 	break;

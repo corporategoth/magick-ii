@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2000/08/06 08:06:41  prez
+** Fixed loading of logon messages in committee ..
+**
 ** Revision 1.118  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -4624,7 +4627,7 @@ void NickServ::do_Link(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUAION/NICK_WRONG_PASS"));
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NICK_WRONG_PASS"));
     }
 }
 
