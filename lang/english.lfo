@@ -235,30 +235,8 @@ NEW_THREAD       =Starting new thread to handle excess load.
 KILL_THREAD      =Killing thread, not enough work to warent it.
 
 ;
-; These are errors that come from wx routines.
+; These are errors that come from system based
 ;
-[WX_ERRORS]
-ENVIRONMENT      =Environment variables expansion failed - missing '%c' at position %d in '%s'.
-EXTRA            ='%s' has extra '..', ignored.
-GLOBAL_CFG       =Can't open global configuration file '%s'.
-USER_CFG         =Can't open user configuration file '%s'.
-USER_CFG_WRITE   =Can't write to user configuration file '%s'.
-USER_CFG_DEL     =Can't delete user configuration file '%s'.
-UNEXPECTED_CHAR  =File '%s': unexpected character %c at line %d.
-UNEXPECTED_CHAR2 =Unexpected '%c' at position %d in '%s'.
-LINE_IGNORED     =File '%s', line %d: '%s' ignored after group header.
-EQUALS_EXPECTED  =File '%s', line %d: '=' expected but not received, ignored.
-IMMUT_IGNORE     =File '%s', line %d: value for immutable key '%s' ignored.
-IMMUT_IGNORE2    =Attempt to change immutable key '%s' ignored.
-DUPLICATE_KEY    =File '%s', line %d: key '%s' was first found at line %d.
-DUPLICATE_KEY2   =Entry '%s' appears more than once in group '%s'
-MAYNOTSTART      =Entry name can't start with '%c'.
-MAYNOTCONTAIN    =Character '%c' is invalid in a config entry name.
-NOHOMEDIR        =Can't find user's HOME, using current directory.
-BINFILE          ='%s' is probably a binary file.
-CANTWRITE        =Can't write file '%s' to disk.
-OUTOFTXNIDS      =Cannot create any more Transaction ID's
-
 [SYS_ERRORS]
 COULDNOTOPEN     =Could not open file %s (%s).
 FILEMAPFULL      =Could not find an available file number for type %d!
@@ -273,6 +251,7 @@ SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.
 NOT_IMPLEMENTED  =Entered %s, which is not implemented.
 INVALID_FORMAT   =Invalid date format char %d%c in %s.
 NOT_LITERAL      =Chatacter %c should be in quotes, taken as literal in %s.
+OUTOFTXNIDS      =Cannot create any more Transaction ID's
 
 ;
 ; This is a section for miscellaneous other occurances.

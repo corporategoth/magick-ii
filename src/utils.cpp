@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/07/11 13:22:19  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.42  2000/06/29 06:30:57  prez
 ** Added the support for the 'extra' chars (ie. at the end of a string)
 ** so we support odd-length strings.  Also updated documentation.
@@ -257,7 +262,7 @@ unsigned long TxnIds::Create()
     }
     else
     {
-	Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/OUTOFTXNIDS"));
+	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/OUTOFTXNIDS"));
 	RET(0);
     }
 }
@@ -576,7 +581,10 @@ unsigned long FromHumanSpace(mstring in)
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc)
 {
-#ifdef HASCRYPT
+#ifndef HASCRYPT
+    ACE_OS::memset(out, 0, size);
+    ACE_OS::memcpy(out, in, size);
+#else
     DES_LONG tuple[2], t0, t1;
     unsigned char *iptr, *optr, tmp[8];
     int i, j;
@@ -609,4 +617,3 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
     }
 #endif
 }
-

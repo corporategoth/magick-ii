@@ -25,6 +25,11 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/07/11 13:22:18  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.26  2000/06/28 12:20:47  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -69,6 +74,8 @@ static const char *ident_utils_h = "@(#) $Id$";
 #include "mstring.h"
 #include "datetime.h"
 #include "lockable.h"
+#include "filesys.h"
+#include "xml/sxp.h"
 #ifdef HASCRYPT
 #include "des/des_locl.h"
 #endif

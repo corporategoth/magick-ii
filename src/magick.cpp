@@ -28,6 +28,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.252  2000/07/11 13:22:18  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.251  2000/06/29 06:30:57  prez
 ** Added the support for the 'extra' chars (ie. at the end of a string)
 ** so we support odd-length strings.  Also updated documentation.
@@ -508,7 +513,7 @@ int Magick::Start()
 	RET(Result);
 
     mFile pidfile;
-    if (mFile::Exists(files.Pidfile().Strip(mstring::stBoth)))
+    if (mFile::Exists(files.Pidfile()))
     {
 	pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"r");
 	if (pidfile.IsOpened())
@@ -521,7 +526,7 @@ int Magick::Start()
 			i_programname.c_str());
 	    }
 	    pidfile.Close();
-	    remove(files.Pidfile().Strip(mstring::stBoth).c_str());
+	    mFile::Erase(files.Pidfile());
 	}
     }
 
@@ -651,7 +656,7 @@ int Magick::Start()
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
-    //load_databases();
+    load_databases();
     { WLOCK(("i_ResetTime"));
     i_ResetTime=Now();
     }
@@ -761,7 +766,7 @@ int Magick::Start()
 
     delete signalhandler;
 
-    remove(files.Pidfile().Strip(mstring::stBoth));
+    mFile::Erase(files.Pidfile());
 
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_COMPLETE"),
 		PACKAGE, VERSION);
@@ -1088,7 +1093,7 @@ void Magick::LoadInternalMessages()
     unsigned int i;
     {
 #include "language.h"
-    	remove((files.TempDir()+DirSlash+"default.lng").c_str());
+    	mFile::Erase(files.TempDir()+DirSlash+"default.lng");
         ofstream out((files.TempDir()+DirSlash+"default.lng").c_str());
         for(i=0;i<def_langent;i++)
             out<<def_lang[i]<<endl;
@@ -1096,7 +1101,7 @@ void Magick::LoadInternalMessages()
 
     WLOCK(("Messages", "DEFAULT"));
     wxFileConfig fconf("magick","",files.TempDir()+DirSlash+"default.lng");
-    remove((files.TempDir()+DirSlash+"default.lng").c_str());
+    mFile::Erase(files.TempDir()+DirSlash+"default.lng");
     bool bContGroup, bContEntries;
     long dummy1=0,dummy2=0;
     mstring groupname,entryname,combined;
@@ -1198,7 +1203,7 @@ bool Magick::LoadLogMessages(mstring language)
     unsigned int i;
     {
 #include "logfile.h"
-    	remove((files.TempDir()+DirSlash+"default.lfo").c_str());
+    	mFile::Erase(files.TempDir()+DirSlash+"default.lfo");
 
         ofstream out((files.TempDir()+DirSlash+"default.lfo").c_str());
     	for(i=0;i<def_logent;i++)
@@ -1213,7 +1218,7 @@ bool Magick::LoadLogMessages(mstring language)
 
     WLOCK(("LogMessages"));
     fconf = new wxFileConfig("magick","",files.TempDir()+DirSlash+"default.lfo");
-    remove((files.TempDir()+DirSlash+"default.lfo").c_str());
+    mFile::Erase(files.TempDir()+DirSlash+"default.lfo");
     bContGroup=fconf->GetFirstGroup(groupname,dummy1);
     // this code is fucked up and won't work. debug to find why it's not
     // finding the entries when it is actually loading them.
@@ -3193,13 +3198,13 @@ cleanup:
 	    if (in.Ok() && out.Ok())
 	    {
 		out << in;
-		remove((files.Database() + ".new").c_str());
+		mFile::Erase(files.Database() + ".new");
 		Log(LM_DEBUG, getLogMessage("EVENT/SAVE"));
 		return;
 	    }
 	}
     }
-    remove((files.Database() + ".new").c_str());
+    mFile::Erase(files.Database() + ".new");
     Log(LM_ERROR, "Error saving databases, aborted ...");
     announce(operserv.FirstName(), "Warning, dbases not saved ..");
 }
@@ -3293,11 +3298,22 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void Magick::save_databases()
 {
-	NFT("Magick::save_databases");
-	SXP::CFileOutStream o(files.Database());
+    NFT("Magick::save_databases");
+    if (mFile::Exists(files.Database()+".new"))
+	mFile::Erase(files.Database()+".new");
+    {
+	//SXP::CFileOutStream o(files.Database()+".new");
+	SXP::MFileOutStream o(files.Database()+".new", files.Compression(),
+							GetKey());
 	o.BeginXML();
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
+    }
+    if (mFile::Exists(files.Database()+".new"))
+    {
+	mFile::Copy(files.Database()+".new", files.Database());
+	mFile::Erase(files.Database()+".new");
+    }
 }
 
 void Magick::load_databases()
@@ -3306,7 +3322,7 @@ void Magick::load_databases()
     if (mFile::Exists(files.Database()))
     {
    	SXP::CParser p( this ); // let the parser know which is the object
-	p.FeedFile(	(char *)files.Database().c_str());
+	p.FeedFile(files.Database(), GetKey());
     }
 }
 

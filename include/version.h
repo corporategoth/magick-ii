@@ -24,6 +24,11 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2000/07/11 13:22:18  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.99  2000/06/15 11:29:54  ungod
 ** rollback of last checkin. prez added a new define but forgot to tell me/add it to the bcb project
 **
@@ -161,10 +166,12 @@ FULLNAME+" - "+SLOGAN,
 "",
 "Library Creditations: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
+"    cint           http://root.cern.ch/root/Cint.html",
 "    antlr          http://www.antlr.org",
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
+"    expat          http://www.jclark.com/xml/expat.html",
+"    sxp            http://www.sourceforge.net/project/?group_id=2280",
 "    zlib           http://www.cdrom.com/pub/infozip/zlib",
-"    cint           http://root.cern.ch/root/Cint.html",
 "---EOM---"
 };
 

@@ -3,7 +3,7 @@ noinst_PROGRAMS = genrankeys
 bin_PROGRAMS = magick magick_keygen
 genrankeys_SOURCES = genrankeys.c
 magick_SOURCES = mconfig.cpp variant.cpp utils.cpp trace.cpp textfile.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp mstream.cpp memoserv.cpp main.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp fileconf.cpp dccengine.cpp datetime.cpp convert.cpp confbase.cpp commserv.cpp chanserv.cpp base.cpp EscParser.cpp EscLexer.cpp 
-magick_LDADD   = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a 
+magick_LDADD   = ./antlr/libantlr.a ./xml/libxml.a ./des/libdes.a
 magick_keygen_SOURCES = magick_keygen.c
 magick_keygen_LDADD   = ./des/libdes.a
 

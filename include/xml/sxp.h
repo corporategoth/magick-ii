@@ -25,6 +25,11 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/07/11 13:22:18  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.5  2000/05/28 05:20:46  prez
 ** More stuff ..
 **
@@ -51,6 +56,14 @@ static const char *ident_sxp_h = "@(#) $Id$";
 **
 **
 ** ========================================================== */
+
+#define JUST_MFILE 1
+#include "utils.h"
+#undef JUST_MFILE
+
+#define SXP_TAG		0x01	// Required to force write.
+#define SXP_COMPRESS	0x02
+#define SXP_ENCRYPT	0x04
 
 // configuration -- assume dos/win32 don't have GNU autoconf.
 // Don't touch any of this unless you know what you're doing.
@@ -96,7 +109,6 @@ static const char *ident_sxp_h = "@(#) $Id$";
 // expat
 #include "xmlparse.h"
 
-
 // Be friendly to those without namespaces
 #ifdef HAVE_NAMESPACES
 #	define	SXP_NS_BEGIN	namespace SXP {
@@ -131,6 +143,23 @@ SXP_NS_BEGIN
 	class IFilePointer {
     public:
 		inline FILE *FP() { return ((T *)this)->FP(); }
+		inline void Indent()   { ((T *)this)->Indent(); }
+	};
+
+	template<class T>
+	class IFilePrint {
+    public:
+		inline void Print(char *format, ...)
+		{
+		    va_list argptr;
+		    va_start(argptr, format);
+		    ((T *)this)->PrintV(format, argptr);
+		    va_end(argptr);
+		}
+		inline void PrintV(char *format, va_list argptr)
+		{
+		    ((T *)this)->PrintV(format, argptr);
+		}
 		inline void Indent()   { ((T *)this)->Indent(); }
 	};
 
@@ -507,7 +536,30 @@ SXP_NS_BEGIN
 		void WriteSubElement(IPersistObj *pObj, dict& attribs); 
 	};
 
-	typedef IOutStreamT<CFileOutStream> IOutStream;
+	class MFileOutStream : public IOutStreamT<MFileOutStream>
+	{
+		mstring filename;
+		mFile out;
+		int m_nIndent, compress;
+		size_t buf_sz;
+		char *buffer;
+		mstring key;
+
+		void ExpandBuf();
+	public:
+		void Print(char *format, ...);
+		void PrintV(char *format, va_list argptr);
+		void Indent();
+		MFileOutStream(mstring chFilename, int comp = 0, mstring ikey = "");
+		MFileOutStream(mstring chFilename, FILE *fp, int comp = 0, mstring ikey = "");
+		~MFileOutStream();
+		void BeginXML(void);
+		void BeginObject(Tag& t, dict& attribs);
+		void EndObject  (Tag& t);
+		void WriteSubElement(IPersistObj *pObj, dict& attribs); 
+	};
+
+	typedef IOutStreamT<MFileOutStream> IOutStream;
 
 	// IElement implemented with STL strings
 
@@ -525,7 +577,8 @@ SXP_NS_BEGIN
 			m_dwTagHash = ~0;
 			m_strName = pchName;
 			m_strData.erase();
-			m_Attribs.clear();
+			m_Attribs.
+			clear();
 
 			for(const char **pp = ppchAttrib; *pp != 0; pp += 2) {
 				m_Attribs[ string(pp[0]) ] =
@@ -627,47 +680,7 @@ SXP_NS_BEGIN
 		}
 
 		// give the parser a food for thought the lazy way
-		void FeedFile(char *chFilename) {
-			int nread, bufsize;
-			nread = 0;
-			bufsize = 8192;
-			char *pbuf = (char *)malloc(bufsize);
-			FILE *fp;
-			int done;
-			fp = fopen(chFilename, "rt");
-			do {
-				// grow buffer if file turns out to be large
-				if( nread == 2 ) {
-					if( bufsize < 1048576 ) { // but not too much
-						bufsize *= 2;
-						char *pnewbuf = (char *)realloc(pbuf, bufsize*2);
-						if( pnewbuf ) {
-							bufsize *= 2;
-							nread = 0;
-							pbuf = pnewbuf;
-						} else { 
-							// realloc failed, stop growing
-							nread = -1;
-						}
-					} else {
-						nread = -1; // buffer is 1 MB already, stop growing
-					}
-				}
-				size_t len = fread(pbuf, 1, bufsize, fp);
-				if( nread >= 0 ) nread ++;
-				done = static_cast<int>(len) < bufsize;
-				if( Feed(pbuf, len, done) == 0 ) {
-					// expat returned 0, panic
-					Shutdown();
-				}
-				if( m_bShuttingDown ) {
-					DoShutdown();
-					done = 1;
-				}
-			} while (!done);
-			free(pbuf);
-			fclose(fp);
-		}
+		void FeedFile(mstring chFilename, mstring ikey = "");
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
 		inline void ReadTo( IPersistObj *pPI ) {
@@ -755,5 +768,6 @@ SXP_NS_BEGIN
 		}
 	};
 SXP_NS_END
+using namespace std;
 
 #endif // __SXP__H

@@ -11,57 +11,58 @@
 // stdio.h file pointer returned by the FP() method, aided by an Indent()
 // method which knows how many tabs to print before your tag.
 
+#include "datetime.h"
 template<class T>
 class IDataOutput :
-public IFilePointer<T> {
+public IFilePrint<T> {
 public:
 	// add more simple type writers here
 
 	inline void WriteElement(Tag& t, bool val) {
 		Indent();
-		fprintf(FP(), "<%s>%d</%s>\n", t.ch, val, t.ch);
+		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, int val) {
 		Indent();
-		fprintf(FP(), "<%s>%d</%s>\n", t.ch, val, t.ch);
+		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, long val) {
 		Indent();
-		fprintf(FP(), "<%s>%d</%s>\n", t.ch, val, t.ch);
+		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, double val) {
 		Indent();
-		fprintf(FP(), "<%s>%5.5f</%s>\n", t.ch, val, t.ch);
+		Print("<%s>%5.5f</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, unsigned int val) {
 		Indent();
-		fprintf(FP(), "<%s>%u</%s>\n", t.ch, val, t.ch);
+		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, unsigned long val) {
 		Indent();
-		fprintf(FP(), "<%s>%u</%s>\n", t.ch, val, t.ch);
+		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, string val) {
 		Indent();
 		if( !val.empty() )
-			fprintf(FP(), "<%s>%s</%s>\n", t.ch, XMLEscape(val.c_str()).c_str(), t.ch);
+			Print("<%s>%s</%s>\n", t.ch, XMLEscape(val.c_str()).c_str(), t.ch);
 		else
-			fprintf(FP(), "<%s/>\n", t.ch);
+			Print("<%s/>\n", t.ch);
 	}
 
 #if HAVE_WSTRING
 	inline void WriteElement(Tag& t, wstring val) {
 		Indent();
 		if( !val.empty() )
-			fprintf(FP(), "<%s>%s</%s>\n", t.ch, XMLEscapeW(val.c_str()).c_str(), t.ch);
+			Print("<%s>%s</%s>\n", t.ch, XMLEscapeW(val.c_str()).c_str(), t.ch);
 		else
-			fprintf(FP(), "<%s/>\n", t.ch);
+			Print("<%s/>\n", t.ch);
 	}
 #endif /* HAVE_WSTRING */
 

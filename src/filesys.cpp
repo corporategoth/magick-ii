@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/07/11 13:22:18  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.37  2000/06/25 07:58:49  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -595,7 +600,7 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
     else if (type == Public)
     	filename.Prepend(Parent->files.Public() + DirSlash);
 
-    if (mFile::Exists(filename.c_str()))
+    if (mFile::Exists(filename))
     {
 	if (i_FileMap.find(type) != i_FileMap.end())
 	{
@@ -605,7 +610,7 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 		RET(true);
 	    }
 	}
-	remove(filename.c_str());
+	mFile::Erase(filename);
 	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERROR/MISSING_FILE1"),
 		(int) type, num);
     }
@@ -742,7 +747,7 @@ void FileMap::EraseFile(FileType type, unsigned long num)
     mstring filename = GetRealName(type, num);
     if (filename != "")
     {
-	remove(filename.c_str());
+	mFile::Erase(filename);
 	WLOCK(("FileMap", (int) type));
 	i_FileMap[type].erase(num);
     }
@@ -988,8 +993,8 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
     }
 
     // Set 'Ready to Transfer'
-    if (mFile::Exists(i_Tempfile.c_str()))
-	remove(i_Tempfile.c_str());
+    if (mFile::Exists(i_Tempfile))
+	mFile::Erase(i_Tempfile);
     i_File.Open(i_Tempfile.c_str(), "w");
     i_Filesize = filesize;
 
@@ -1061,7 +1066,7 @@ DccXfer::~DccXfer()
 		    tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
 			DirSlash.c_str(), filenum);
 
-		if (mFile::Exists(i_Tempfile.c_str()))
+		if (mFile::Exists(i_Tempfile))
 		{
 		    mFile::Copy(i_Tempfile, tmp);
 		    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
@@ -1077,8 +1082,8 @@ DccXfer::~DccXfer()
 	    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
     }
 
-    if (mFile::Exists(i_Tempfile.c_str()))
-	remove(i_Tempfile.c_str());
+    if (mFile::Exists(i_Tempfile))
+	mFile::Erase(i_Tempfile);
 }
 
 void DccXfer::operator=(const DccXfer &in)

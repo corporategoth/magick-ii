@@ -25,6 +25,11 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/07/11 13:22:18  prez
+** Fixed loading/saving -- they now work with encryption and compression.
+** Tested, it works too!  Now all we need to do is fix the loading, and
+** we're set ... :))
+**
 ** Revision 1.24  2000/06/25 07:58:48  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -119,11 +124,6 @@ static const char *ident_filesys_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-#include "datetime.h"
-#include "xml/sxp.h"
-
-unsigned short FindAvailPort();
-
 class mFile
 {
     FILE *fd;
@@ -158,6 +158,12 @@ public:
     static size_t DirUsage(mstring directory);
     static set<mstring> DirList(mstring directory, mstring filemask);
 };
+
+#ifndef JUST_MFILE
+#include "datetime.h"
+#include "xml/sxp.h"
+
+unsigned short FindAvailPort();
 
 class FileMap : public SXP::IPersistObj
 {
@@ -290,4 +296,5 @@ public:
     void Cancel(unsigned long DccId, bool silent = false);
 };
 
+#endif
 #endif
