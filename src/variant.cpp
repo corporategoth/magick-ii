@@ -62,6 +62,13 @@ mVariant::mVariant(double in)
     DoubleValue=in;
 }
 
+mVariant::mVariant(const char * in)
+{
+	truevaluetype="mstring";
+	valuetype="string";
+	StringValue=mstring(in);
+}
+
 mVariant::mVariant(const mstring& in)
 {
 	truevaluetype="mstring";
@@ -625,4 +632,3 @@ mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& t
     values.push_back(fourteen);
     values.push_back(fifteen);
 }
-

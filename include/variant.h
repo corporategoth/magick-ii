@@ -46,6 +46,7 @@ private:
 	//} value;
 	
 public:
+	 mVariant(const char *in);
 	mstring valuetype;
 	mstring truevaluetype;
 	// gonna change this to a mstring so we can use custom defined types
