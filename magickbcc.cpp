@@ -27,7 +27,6 @@ USEUNIT("src\trace.cpp");
 USEUNIT("src\utils.cpp");
 USEUNIT("src\variant.cpp");
 USELIB("src\des\Debug\crypto.lib");
-USELIB("src\rx-1.5\rx\rx\Debug\rxbcc.lib");
 USELIB("src\antlr\Debug\antlr.lib");
 USELIB("..\support\zlib\zlib.LIB");
 USELIB("..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib");

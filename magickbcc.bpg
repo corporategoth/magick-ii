@@ -9,7 +9,7 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = magickbcc.exe antlr.lib crypto.lib rxbcc.lib
+PROJECTS = antlr.lib crypto.lib magickbcc.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -21,9 +21,6 @@ antlr.lib: src\antlr\antlr.bpr
   $(MAKE)
 
 crypto.lib: src\des\crypto.bpr
-  $(MAKE)
-
-rxbcc.lib: src\rx-1.5\rx\rx\rxbcc.bpr
   $(MAKE)
 
 

@@ -24,8 +24,7 @@ OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.
   Debug\filesys.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
-LIBFILES = src\des\Debug\crypto.lib src\rx-1.5\rx\rx\Debug\rxbcc.lib \
-  src\antlr\Debug\antlr.lib ..\support\zlib\zlib.LIB \
+LIBFILES = src\des\Debug\crypto.lib src\antlr\Debug\antlr.lib ..\support\zlib\zlib.LIB \
   ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib
 IDLGENFILES =
 IDLFILES =
@@ -48,8 +47,8 @@ SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
 CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
-  -Od -Vmp -Tkh30000 -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q \
-  -tWR -tWM -c
+  -Od -wuse -wstv -wstu -wpin -wnod -wnak -wdef -wamb -Vmp -Tkh30000 -a8 -6 -d -k \
+  -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR -tWM -c
 IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude\bob -Iinclude \
   -I..\support\ace_wrappers -I..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
   -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
@@ -122,13 +121,14 @@ Count=1
 Item0=Debug
 
 [HistoryLists\hlFinalOutputDir]
-Count=6
-Item0=Debug
-Item1=DebugItem1=Debug
-Item2=
-Item3=DebugItem1=DebugItem1=Debug
-Item4=
+Count=7
+Item0=Debug\
+Item1=Debug
+Item2=DebugItem1=Debug
+Item3=
+Item4=DebugItem1=DebugItem1=Debug
 Item5=
+Item6=
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
