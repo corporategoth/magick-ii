@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2000/06/13 14:11:54  prez
+** Locking system has been re-written, it doent core anymore.
+** So I have set 'MAGICK_LOCKS_WORK' define active :)
+**
 ** Revision 1.105  2000/06/12 06:07:50  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -220,7 +224,10 @@ static const char *ident = "@(#)$Id$";
 void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
 {
     FT("Nick_Live_t::InFlight_t::ChgNick", (newnick));
+    WLOCK(("NickServ", "live", nick, "InFlight", "nick"));
+    WLOCK2(("NickServ", "live", newnick, "InFlight", "nick"));
     nick = newnick;
+    MLOCK(("NickServ", "live", nick, "InFlight", "timer"));
     if (timer)
     {
 	mstring *arg = NULL;
@@ -239,6 +246,7 @@ void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
 void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
 {
     NFT("Nick_Live_t::InFlight_t::operator=");
+    MLOCK(("NickServ", "live", in.nick, "InFlight"));
     nick        = in.nick;
     type	= in.type;
     fileattach	= in.fileattach;
@@ -257,6 +265,7 @@ void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
 Nick_Live_t::InFlight_t::~InFlight_t()
 {
     NFT("Nick_Live_t::InFlight_t::~InFlight_t");
+    MLOCK(("NickServ", "live", nick, "InFlight"));
     if (Exists())
 	End(0u);
     mstring *arg = NULL;
@@ -274,6 +283,7 @@ Nick_Live_t::InFlight_t::~InFlight_t()
 void Nick_Live_t::InFlight_t::init()
 {
     NFT("Nick_Live_t::InFlight_t::init");
+    MLOCK(("NickServ", "live", nick, "InFlight"));
     type = FileMap::MemoAttach;
     timer = 0u;
     fileattach = false;
@@ -290,6 +300,8 @@ void Nick_Live_t::InFlight_t::init()
 void Nick_Live_t::InFlight_t::File(unsigned long filenum)
 {
     FT("Nick_Live_t::InFlight_t::File", (filenum));
+    WLOCK(("NickServ", "live", nick, "InFlight", "fileinprog"));
+    RLOCK(("NickServ", "live", nick, "InFlight", "filenum"));
     fileinprog = false;
     if (filenum)
 	End(filenum);
@@ -303,8 +315,10 @@ void Nick_Live_t::InFlight_t::File(unsigned long filenum)
 void Nick_Live_t::InFlight_t::SetInProg()
 {
     NFT("Nick_Live_t::InFlight_t::SetInProg");
+    WLOCK(("NickServ", "live", nick, "InFlight", "fileinprog"));
     fileinprog = true;
     mstring *arg = NULL;
+    MLOCK(("NickServ", "live", nick, "InFlight", "timer"));
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
@@ -321,6 +335,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 			mstring who, mstring message, bool silent)
 {
     FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message, silent));
+    RLOCK(("NickServ", "live", nick, "InFlight", "nick"));
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -383,6 +398,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 	End(0u);
     }
 
+    MLOCK(("NickServ", "live", nick, "InFlight"));
     type = FileMap::MemoAttach;
     fileattach = file;
     service = mynick;
@@ -409,13 +425,16 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 void Nick_Live_t::InFlight_t::Continue(mstring message)
 {
     FT("Nick_Live_t::InFlight_t::Continue", (message));
+    RLOCK(("NickServ", "live", nick, "InFlight", "nick"));
     if (!Memo())
     {
 	send(service, nick, Parent->getMessage(nick, "MS_STATUS/NOPENDING"));
 	return;
     }
+    WLOCK(("NickServ", "live", nick, "InFlight", "text"));
     text += message;
     mstring *arg = NULL;
+    MLOCK(("NickServ", "live", nick, "InFlight", "timer"));
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
@@ -437,6 +456,7 @@ void Nick_Live_t::InFlight_t::Cancel()
     NFT("Nick_Live_t::InFlight_t::Cancel");
 
     mstring *arg = NULL;
+    MLOCK(("NickServ", "live", nick, "InFlight", "timer"));
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
@@ -445,7 +465,10 @@ void Nick_Live_t::InFlight_t::Cancel()
 	    delete arg;
 	}
     if (Memo() && !File())
+    {
+	RLOCK(("NickServ", "live", nick, "InFlight", "nick"));
 	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
+    }
     init();
 }
 
@@ -469,6 +492,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
     else
     {
 	mstring *arg = NULL;
+	MLOCK(("NickServ", "live", nick, "InFlight", "timer"));
 	if (timer)
 	    if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
@@ -476,6 +500,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    {
 		delete arg;
 	    }
+	RLOCK(("NickServ", "live", nick, "InFlight"));
 	if (Parent->nickserv.IsStored(sender))
 	{
 	    if (Parent->nickserv.stored[sender.LowerCase()].Host() != "" &&
@@ -552,19 +577,19 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/SENT"),
 				recipiant.c_str(), realrecipiant.c_str());
 
-			    Nick_Stored_t *nick = &Parent->nickserv.stored[realrecipiant.LowerCase()];
-			    if (nick->IsOnline())
+			    Nick_Stored_t *nstored = &Parent->nickserv.stored[realrecipiant.LowerCase()];
+			    if (nstored->IsOnline())
 				send(service, realrecipiant, Parent->getMessage(realrecipiant, "MS_COMMAND/NS_NEW"),
 				    Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
 				    service.c_str(),
 				    Parent->memoserv.nick[realrecipiant.LowerCase()].size());
 			    unsigned int i;
-			    for (i=0; i < nick->Siblings(); i++)
+			    for (i=0; i < nstored->Siblings(); i++)
 			    {
-				if (Parent->nickserv.IsStored(nick->Sibling(i)) &&
-				    Parent->nickserv.stored[nick->Sibling(i).LowerCase()].IsOnline())
+				if (Parent->nickserv.IsStored(nstored->Sibling(i)) &&
+				    Parent->nickserv.stored[nstored->Sibling(i).LowerCase()].IsOnline())
 				{
-				    send(service, nick->Sibling(i), Parent->getMessage(nick->Sibling(i), "MS_COMMAND/NS_NEW"),
+				    send(service, nstored->Sibling(i), Parent->getMessage(nstored->Sibling(i), "MS_COMMAND/NS_NEW"),
 					Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
 					service.c_str(),
 					Parent->memoserv.nick[realrecipiant.LowerCase()].size());
@@ -650,6 +675,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 {
     FT("Nick_Live_t::InFlight_t::Picture", (mynick));
+    RLOCK(("NickServ", "live", nick, "InFlight", "nick"));
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -686,6 +712,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 	End(0u);
     }
 
+    MLOCK(("NickServ", "live", nick, "InFlight"));
     type = FileMap::Picture;
     fileattach = true;
     sender = nick;
@@ -700,6 +727,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
 {
     FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
+    RLOCK(("NickServ", "live", nick, "InFlight", "nick"));
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -731,6 +759,7 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
 	End(0u);
     }
 
+    MLOCK(("NickServ", "live", nick, "InFlight"));
     type = FileMap::Public;
     fileattach = true;
     sender = nick;
@@ -757,6 +786,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 {
     FT("Nick_Live_t::Nick_Live_t",(name, signon, server, username, hostname, realname));
 
+    MLOCK(("NickServ", "live", name));
     i_Name = name;
     i_Signon_Time = signon;
     i_My_Signon_Time = i_Last_Action = Now();
@@ -810,6 +840,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
 	    mstring realname)
 {
     FT("Nick_Live_t::Nick_Live_t",(name, username, hostname, realname));
+    MLOCK(("NickServ", "live", name));
     i_Name = name;
     i_Signon_Time = i_My_Signon_Time = Now();
     i_Last_Action = time(NULL);
@@ -827,6 +858,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
 void Nick_Live_t::operator=(const Nick_Live_t &in)
 {
     NFT("Nick_Live_t::operator=");
+    MLOCK(("NickServ", "live", in.i_Name));
     i_Name=in.i_Name;
     i_Signon_Time=in.i_Signon_Time;
     i_My_Signon_Time=in.i_My_Signon_Time;
@@ -869,6 +901,7 @@ void Nick_Live_t::Join(mstring chan)
     bool joined = true;
     if (Parent->chanserv.IsLive(chan))
     {
+	WLOCK(("ChanServ", "live"));
 	joined = Parent->chanserv.live[chan.LowerCase()].Join(i_Name);
     }
     else
@@ -880,6 +913,7 @@ void Nick_Live_t::Join(mstring chan)
     if (joined && Parent->chanserv.IsStored(chan))
 	Parent->chanserv.stored[chan.LowerCase()].Join(i_Name);
 
+    WLOCK(("NickServ", "live", i_Name, "joined_channels"));
     joined_channels.insert(chan.LowerCase());
 }
 
@@ -891,14 +925,19 @@ void Nick_Live_t::Part(mstring chan)
     {
 	// If this returns 0, then the channel is empty.
 	if (Parent->chanserv.live[chan.LowerCase()].Part(i_Name) == 0)
+	{
+	    WLOCK(("ChanServ", "live"));
 	    Parent->chanserv.live.erase(chan.LowerCase());
+	}
     }
     else
     {
+	RLOCK(("NickServ", "live", i_Name, "i_Name"));
 	Log(LM_TRACE, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
 		"PART", i_Name.c_str(), chan.c_str());
     }
 
+    WLOCK(("NickServ", "live", i_Name, "joined_channels"));
     joined_channels.erase(chan.LowerCase());
 }
 
@@ -909,12 +948,19 @@ void Nick_Live_t::Kick(mstring kicker, mstring chan)
     {
 	// If this returns 0, then the channel is empty.
 	if (Parent->chanserv.live[chan.LowerCase()].Kick(i_Name, kicker) == 0)
+	{
+	    WLOCK(("ChanServ", "live"));
 	    Parent->chanserv.live.erase(chan.LowerCase());
+	}
     }
     else
+    {
+	RLOCK(("NickServ", "live", i_Name, "i_Name"));
 	Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
 		"KICK", kicker.c_str(), chan.c_str());
+    }
 
+    WLOCK(("NickServ", "live", i_Name, "joined_channels"));
     joined_channels.erase(chan.LowerCase());
 }
 
@@ -923,6 +969,7 @@ void Nick_Live_t::Quit(mstring reason)
 {
     FT("Nick_Live_t::Quit", (reason));
 
+    RLOCK(("NickServ", "live", i_Name, "i_host"));
     if (!(IsServices() || HasMode("o")))
 	Parent->operserv.RemHost(i_host);
 
@@ -936,8 +983,10 @@ void Nick_Live_t::Quit(mstring reason)
 	}
     }}
 
+    { RLOCK2(("NickServ", "live", i_Name, "joined_channels"));
     while (joined_channels.size())
 	Part(*joined_channels.begin());
+    }
 
     unsigned long i;
     vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
@@ -949,10 +998,12 @@ void Nick_Live_t::Quit(mstring reason)
     // We successfully ident to all channels we tried to
     // ident for before, so that they 0 our count -- we dont
     // want it carrying over to next time we log on.
+    { RLOCK3(("NickServ", "live", i_Name, "try_chan_ident"));
     for (i=0; i<try_chan_ident.size(); i++)
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
 	    Parent->chanserv.stored[try_chan_ident[i]].CheckPass(i_Name,
 		Parent->chanserv.stored[try_chan_ident[i]].Password());
+    }
 
     if (Parent->nickserv.IsStored(i_Name) &&
 	Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
@@ -963,6 +1014,7 @@ void Nick_Live_t::Quit(mstring reason)
 bool Nick_Live_t::IsInChan(mstring chan)
 {
     FT("Nick_Live_t::IsInChan", (chan));
+    RLOCK(("NickServ", "live", i_Name, "joined_channels"));
     bool retval = (joined_channels.find(chan.LowerCase()) != joined_channels.end());
     RET(retval);
 }
@@ -979,6 +1031,7 @@ bool Nick_Live_t::FloodTrigger()
     }
 
     // Check if we're currently being ignored ...
+    { MLOCK(("OperServ", "Ignore"));
     if (Parent->operserv.Ignore_size())
     {
 	RLOCK(("OperServ","Ignore"));
@@ -996,9 +1049,10 @@ bool Nick_Live_t::FloodTrigger()
 		Parent->operserv.Ignore_erase();
 	    }
 	}
-    }
+    }}
 
     // Clean up previous entries and push current entry
+    WLOCK(("NickServ", "live", i_Name, "last_msg_times"));
     while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Parent->operserv.Flood_Time())
 	last_msg_times.erase(last_msg_times.begin());
     last_msg_times.push_back(Now());
@@ -1006,12 +1060,12 @@ bool Nick_Live_t::FloodTrigger()
     // Check if we just triggered ignore.
     if (last_msg_times.size() > Parent->operserv.Flood_Msgs())
     {
+	WLOCK(("NickServ", "live", i_Name, "flood_triggered_times"));
 	flood_triggered_times++;
 	// Add To ignore, they're naughty.
-	{
-	WLOCK(("OperServ","Ignore"));
 	if (flood_triggered_times >= Parent->operserv.Ignore_Limit())
 	{
+	    RLOCK(("NickServ", "live", i_Name, "i_Name"));
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), true, i_Name);
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/IGNORE_TRIGGER"),
 			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time()).c_str());
@@ -1024,6 +1078,7 @@ bool Nick_Live_t::FloodTrigger()
 	}
 	else
 	{
+	    RLOCK(("NickServ", "live", i_Name, "i_Name"));
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), false, i_Name);
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/IGNORE_TRIGGER"),
 			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time()).c_str());
@@ -1034,7 +1089,7 @@ bool Nick_Live_t::FloodTrigger()
 			Mask(N_U_P_H).c_str());
 	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_TEMP"),
 			i_Name.c_str());
-	}}
+	}
  
 	RET(true);
     }
@@ -1050,8 +1105,13 @@ void Nick_Live_t::Name(mstring in)
 
     InFlight.ChgNick(in);
 
+    MLOCK(("NickServ", "live", i_Name));
+    MLOCK2(("NickServ", "live", in));
     if (i_Name.CmpNoCase(in)==0)
+    {
+	i_Name = in;
 	return;
+    }
 
     set<mstring>::iterator iter;
     vector<mstring> chunked;
@@ -1170,6 +1230,8 @@ void Nick_Live_t::Mode(mstring in)
     FT("Nick_Live_t::Mode", (in));
 
     bool add = true;
+    WLOCK(("NickServ", "live", i_Name, "modes"));
+    RLOCK(("NickServ", "live", i_Name, "i_Name"));
     for (unsigned int i=0; i<in.size(); i++)
     {
 	switch(in[i])
@@ -1187,6 +1249,7 @@ void Nick_Live_t::Mode(mstring in)
 	    // duplicate +o/-o (dont want to overhost it!)
 	    if (add && !modes.Contains(in[i]) && !IsServices())
 	    {
+		RLOCK2(("NickServ", "live", i_Name, "i_host"));
 		Parent->operserv.RemHost(i_host);
 		MLOCK(("OperServ", "OperDeny"));
 		// IF we are SecureOper and NOT on oper list
@@ -1241,7 +1304,10 @@ mDateTime Nick_Live_t::IdleTime()
     NFT("Nick_Live_t::IdleTime");
     mDateTime tmp;
     if (IsServices())
+    {
+	RLOCK(("NickServ", "live", i_Name, "i_Last_Action"));
 	tmp = time(NULL) - (time_t) i_Last_Action;
+    }
     RET(tmp);
 }
 
@@ -1250,19 +1316,25 @@ void Nick_Live_t::Action()
 {
     NFT("Nick_Live_t::Action");
     if (IsServices())
+    {
+	WLOCK(("NickServ", "live", i_Name, "i_Last_Action"));
 	i_Last_Action = Now();
+    }
 }
 
 
 void Nick_Live_t::SetSquit()
 {
     NFT("Nick_Live_t::SetSquit");
+    WLOCK(("NickServ", "live", i_Name, "i_squit"));
     i_squit = i_server;
 
+    RLOCK(("NickServ", "live", i_Name, "i_host"));
     if (!IsServices())
 	Parent->operserv.RemHost(i_host);
 
     set<mstring>::iterator i;
+    RLOCK2(("NickServ", "live", i_Name, "joined_channels"));
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
 	    Parent->chanserv.live[i->LowerCase()].Squit(i_Name);
@@ -1275,14 +1347,18 @@ void Nick_Live_t::SetSquit()
 void Nick_Live_t::ClearSquit()
 {
     NFT("Nick_Live_t::ClearSquit");
+    WLOCK(("NickServ", "live", i_Name, "i_squit"));
     i_squit = "";
 
+    RLOCK(("NickServ", "live", i_Name, "i_host"));
     if (!IsServices())
 	Parent->operserv.AddHost(i_host);
 
     // These will all be set again
+    WLOCK2(("NickServ", "live", i_Name, "modes"));
     modes = "";
 
+    WLOCK3(("NickServ", "live", i_Name, "joined_channels"));
     set<mstring>::iterator i;
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
@@ -1299,6 +1375,9 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 {
     FT("Nick_Live_t::Mask", ((int) type));
 
+    RLOCK(("NickServ", "live", i_Name, "i_Name"));
+    RLOCK2(("NickServ", "live", i_Name, "i_user"));
+    RLOCK3(("NickServ", "live", i_Name, "i_host"));
     mstring retval;
     mstring user = i_user;
     switch (type)
@@ -1376,6 +1455,9 @@ mstring Nick_Live_t::AltMask(Nick_Live_t::styles type)
 {
     FT("Nick_Live_t::AltMask", ((int) type));
 
+    RLOCK(("NickServ", "live", i_Name, "i_Name"));
+    RLOCK2(("NickServ", "live", i_Name, "i_user"));
+    RLOCK3(("NickServ", "live", i_Name, "i_alt_host"));
     mstring retval;
     mstring user = i_user;
     switch (type)
@@ -1453,16 +1535,19 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 {
     FT("Nick_Live_t::ChanIdentify", (channel, password));
     mstring retval;
+    RLOCK(("NickServ", "live", i_Name, "i_Name"));
     if (Parent->chanserv.IsStored(channel))
     {
 	unsigned int failtimes = Parent->chanserv.stored[channel.LowerCase()].CheckPass(i_Name, password);
 	if (!failtimes)
 	{
+	    WLOCK(("NickServ", "live", i_Name, "chans_founder_identd"));
 	    chans_founder_identd.insert(channel.LowerCase());
 	    retval = Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED");
 	}
 	else
 	{
+	    WLOCK(("NickServ", "live", i_Name, "try_chan_ident"));
 	    // Keep record of all channel attempts, so that when
 	    // we change nick or quit, we can let chanserv know.
 	    vector<mstring>::iterator iter;
@@ -1498,6 +1583,7 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
 
     if (IsChanIdentified(channel))
     {
+	WLOCK(("NickServ", "live", i_Name, "chans_founder_identd"));
 	chans_founder_identd.erase(channel.LowerCase());
     }
 }
@@ -1505,6 +1591,7 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
 bool Nick_Live_t::IsChanIdentified(mstring channel)
 {
     FT("Nick_Live_t::IsChanIdentified", (channel));
+    RLOCK(("NickServ", "live", i_Name, "chans_founder_identd"));
     bool retval = (chans_founder_identd.find(channel.LowerCase())!=chans_founder_identd.end());
     RET(retval);
 }
@@ -1514,12 +1601,15 @@ mstring Nick_Live_t::Identify(mstring password)
 {
     FT("Nick_Live_t::Identify", (password));
     mstring retval;
+    RLOCK(("NickServ", "live", i_Name, "i_Name"));
+    WLOCK(("NickServ", "live", i_Name, "identified"));
     if (identified == true)
     {
 	retval = Parent->getMessage(i_Name, "NS_YOU_STATUS/IDENTIFIED");
     }
     else if (Parent->nickserv.IsStored(i_Name))
     {
+	WLOCK2(("NickServ", "live", i_Name, "failed_passwds"));
 	if (Parent->nickserv.stored[i_Name.LowerCase()].Password() == password)
 	{
 	    set<mstring> wason;
@@ -1577,6 +1667,7 @@ mstring Nick_Live_t::Identify(mstring password)
 void Nick_Live_t::UnIdentify()
 {
     NFT("Nick_Live_t::UnIdentify");
+    WLOCK(("NickServ", "live", i_Name, "identified"));
     identified = false;
 }
 
@@ -1595,6 +1686,7 @@ size_t Nick_Live_t::Usage()
 {
     size_t retval = 0;
 
+    RLOCK(("NickServ", "live", i_Name));
     retval += i_Name.capacity();
     retval += sizeof(i_Signon_Time.Internal());
     retval += sizeof(i_My_Signon_Time.Internal());

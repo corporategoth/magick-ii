@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/06/13 14:11:53  prez
+** Locking system has been re-written, it doent core anymore.
+** So I have set 'MAGICK_LOCKS_WORK' define active :)
+**
 ** Revision 1.33  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -59,16 +63,13 @@ static const char *ident_lockable_h = "@(#) $Id$";
 #include "trace.h"
 
 #ifdef MAGICK_LOCKS_WORK
-#define MAX_LOCKS 5
+#define MAX_LOCKS 15 /* Max variants */
 class mLOCK
 {
     mstring lockname;
-    // union {
-    	ACE_Local_Mutex mlock;
-    	ACE_Local_WLock wlock;
-    	ACE_Local_RLock rlock;
-    // } llock;
-    ACE_Local_RLock lock[MAX_LOCKS-1];
+    ACE_Recursive_Thread_Mutex *mlock;
+    ACE_RW_Thread_Mutex *rwlock;
+    ACE_RW_Thread_Mutex *lock[MAX_LOCKS-1];
     T_Locking tlock[MAX_LOCKS];
     T_Locking::type_enum last_type;
 

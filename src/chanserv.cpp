@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.178  2000/06/13 14:11:53  prez
+** Locking system has been re-written, it doent core anymore.
+** So I have set 'MAGICK_LOCKS_WORK' define active :)
+**
 ** Revision 1.177  2000/06/12 06:07:50  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -6707,18 +6711,18 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
     }
     long num = atol(level.c_str());
 
+    if (num == 0)
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTZERO"));
+	return;
+    }
+
     if (num < Parent->chanserv.Level_Min() ||
 	num > Parent->chanserv.Level_Max())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 		Parent->chanserv.Level_Min(),
 		Parent->chanserv.Level_Max());
-	return;
-    }
-
-    if (num == 0)
-    {
-	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTZERO"));
 	return;
     }
 
@@ -6732,6 +6736,13 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
     if (cstored->Access_find(who))
     {
 	mstring entry = cstored->Access->Entry();
+	if (cstored->Access->Value() >= cstored->GetAccess(source))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/HIGHERACCESS"),
+			entry.c_str(), channel.c_str());
+	    return;
+	}
+
 	cstored->Access_erase();
 	cstored->Access_insert(entry, num, source);
 	Parent->chanserv.stats.i_Access++;
@@ -6812,6 +6823,13 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 				i++, cstored->Access++) ;
 	if (cstored->Access != cstored->Access_end())
 	{
+	    if (cstored->Access->Value() >= cstored->GetAccess(source))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "CS_STATUS/HIGHERACCESS"),
+			cstored->Access->Entry().c_str(), channel.c_str());
+		return;
+	    }
+
 	    Parent->chanserv.stats.i_Access++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
@@ -6833,6 +6851,13 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
 	if (cstored->Access_find(who))
 	{
+	    if (cstored->Access->Value() >= cstored->GetAccess(source))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "CS_STATUS/HIGHERACCESS"),
+			cstored->Access->Entry().c_str(), channel.c_str());
+		return;
+	    }
+
 	    Parent->chanserv.stats.i_Access++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
@@ -7014,7 +7039,25 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
     else
+    {
 	who = Parent->getSname(who);
+	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+	if (cstored->Access_find(who))
+	{
+	    // Reject if they're higher on access list, else erase them
+	    // from the access list, AKICK doesnt play nice with ACCESS.
+	    if (cstored->Access->Value() >= cstored->GetAccess(source))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "CS_STATUS/HIGHERACCESS"),
+			who.c_str(), channel.c_str());
+		return;
+	    }
+	    else
+	    {
+		cstored->Access_erase();
+	    }
+	}
+    }
 
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
     if (cstored->Akick_find(who))

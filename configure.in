@@ -212,9 +212,14 @@ dnl ====================================================
 
 dnl Static definition for now, will check for it later.
 
-AC_DEFINE(MAGICK_HAS_EXCEPTIONS)
 AC_CHECK_HEADER(never_find, [AC_DEFINE(WIN32)])
-AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_LOCKS_WORK)])
+dnl AC_DEFINE(WIN32)
+
+dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])
+AC_DEFINE(MAGICK_HAS_EXCEPTIONS)
+
+dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_LOCKS_WORK)])
+AC_DEFINE(MAGICK_LOCKS_WORK)
 
 dnl ====================================================
 
