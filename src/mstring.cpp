@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2000/11/09 11:03:06  prez
+** OOps, forgot some printf's :)
+**
 ** Revision 1.77  2000/11/09 10:58:19  prez
 ** THINK I have it working again ... with the free list.
 ** Will check, still thinking of sorting free list by size.
@@ -161,12 +164,10 @@ void mstring::copy(const char *in, size_t length)
 	while (i_res <= i_len)
 	    i_res *= 2;
 	i_str = (char *) memory_area.alloc(i_res);
-printf("i_str = %p\n", i_str); fflush(stdout);
 	if (i_str == NULL)
 	    NOMEM;
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
-printf("STRING = %s\n", i_str); fflush(stdout);
     }
     else
     {
