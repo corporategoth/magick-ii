@@ -3536,7 +3536,7 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
 	Parent->nickserv.live[source.LowerCase()].Identify(password);
 	Parent->nickserv.stats.i_Register++;
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/REGISTERED"),
-		mstring("*" + Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!")).c_str());
+		mstring(Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!")).c_str());
     }
 }
 
@@ -4398,7 +4398,7 @@ void NickServ::do_access_Current(mstring mynick, mstring source, mstring params)
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS"),
-		mstring("*" + Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!")).c_str(),
+		mstring(Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!")).c_str(),
 		Parent->getMessage(source, "LIST/ACCESS").c_str());
     }
 }

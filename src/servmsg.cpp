@@ -50,12 +50,12 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* OTH*", Parent->commserv.OPER_Name(), ServMsg::do_stats_Other);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* USE*", Parent->commserv.OPER_Name(), ServMsg::do_stats_Usage);
+	    "STAT* USAGE", Parent->commserv.OPER_Name(), ServMsg::do_stats_Usage);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* ALL*", Parent->commserv.OPER_Name(), ServMsg::do_stats_All);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* *", Parent->commserv.OPER_Name(), do_1_2param);
+	    "STAT* *", Parent->commserv.OPER_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT*", Parent->commserv.OPER_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -411,40 +411,57 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Usage", (mynick, source, params));
+    int count;
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
 		Parent->nickserv.live.size(),
-		Parent->nickserv.live.size() * sizeof(Nick_Live_t) / 1024);
+		(Parent->nickserv.live.size() * sizeof(mstring) +
+		Parent->nickserv.live.size() * sizeof(Nick_Live_t)) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
 		Parent->chanserv.live.size(),
-		Parent->chanserv.live.size() * sizeof(Chan_Live_t) / 1024);
+		(Parent->chanserv.live.size() * sizeof(mstring) +
+		Parent->chanserv.live.size() * sizeof(Chan_Live_t)) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
 		Parent->nickserv.stored.size(),
-		Parent->nickserv.stored.size() * sizeof(Nick_Stored_t) / 1024);
+		(Parent->nickserv.stored.size() * sizeof(mstring) +
+		Parent->nickserv.stored.size() * sizeof(Nick_Stored_t)) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
 		Parent->chanserv.stored.size(),
-		Parent->chanserv.stored.size() * sizeof(Chan_Stored_t) / 1024);
+		(Parent->chanserv.stored.size() * sizeof(mstring) +
+		Parent->chanserv.stored.size() * sizeof(Chan_Stored_t)) / 1024);
+    map<mstring,list<Memo_t> >::iterator mi;
+    for (count = 0, mi=Parent->memoserv.nick.begin();
+			mi!=Parent->memoserv.nick.end(); mi++)
+	count += mi->second.size();
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_MEMO"),
 		Parent->memoserv.nick.size(),
-		Parent->memoserv.nick.size() * sizeof(Memo_t) / 1024);
+		(Parent->memoserv.nick.size() * sizeof(mstring) +
+		count * sizeof(Memo_t)) / 1024);
+    map<mstring,list<News_t> >::iterator ni;
+    for (count = 0, ni=Parent->memoserv.channel.begin();
+			ni!=Parent->memoserv.channel.end(); ni++)
+	count += ni->second.size();
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NEWS"),
 		Parent->memoserv.channel.size(),
-		Parent->memoserv.channel.size() * sizeof(News_t) / 1024);
+		(Parent->memoserv.channel.size() * sizeof(mstring) +
+		count * sizeof(News_t)) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
 		Parent->commserv.list.size(),
-		Parent->commserv.list.size() * sizeof(Committee) / 1024);
+		(Parent->commserv.list.size() * sizeof(mstring) +
+		Parent->commserv.list.size() * sizeof(Committee)) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OPERSERV"),
-		Parent->operserv.Clone_size() +
+		(Parent->operserv.Clone_size() +
 		Parent->operserv.Akill_size() +
 		Parent->operserv.OperDeny_size() +
-		Parent->operserv.Ignore_size(),
-		Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) / 1024 +
-		Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) / 1024 +
-		Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) / 1024 +
-		Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore) / 1024);
+		Parent->operserv.Ignore_size()),
+		(Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) +
+		Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) +
+		Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) +
+		Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore)) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
 		Parent->server.ServerList.size(),
-		Parent->server.ServerList.size() * sizeof(Server) / 1024);
+		(Parent->server.ServerList.size() * sizeof(mstring) +
+		Parent->server.ServerList.size() * sizeof(Server)) / 1024);
 }
 
 void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
