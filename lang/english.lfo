@@ -251,6 +251,7 @@ RESTRICTED       =Kicked user $1 from restricted channel $2.
 NEW_THREAD       =Starting new thread to handle excess load.
 KILL_THREAD      =Killing thread, not enough work to warrant it.
 NEW_THREAD_FAIL  =Failed to create new thread.
+JOIN_THREAD_FAIL =Failed to join thread to current thread pool, thread-specific storage will be leaked!
 MAX_THREADS      =Maximum number of threads reached, cannot start a new one.
 
 ;

@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2002/01/01 22:16:55  prez
+** Fixed memory leak properly in db saving ...
+**
 ** Revision 1.88  2001/12/27 00:40:44  prez
 ** Some efficiancy changes to mstring
 **
@@ -2306,7 +2309,8 @@ void DccMap::Connect(const ACE_INET_Addr& address,
     tmp->filesize = filesize;
     tmp->blocksize = blocksize;
 
-    tm.spawn(Connect2, reinterpret_cast<void *>(tmp));
+    tm.spawn(Connect2, reinterpret_cast<void *>(tmp),
+		THR_NEW_LWP | THR_DETACHED);
 }
 
 void DccMap::Accept(const unsigned short port, const mstring& mynick,
@@ -2322,7 +2326,8 @@ void DccMap::Accept(const unsigned short port, const mstring& mynick,
     tmp->filetype = filetype;
     tmp->filenum = filenum;
 
-    tm.spawn(Accept2, reinterpret_cast<void *>(tmp));
+    tm.spawn(Accept2, reinterpret_cast<void *>(tmp),
+		THR_NEW_LWP | THR_DETACHED);
 }
 
 void DccMap::Cancel(const unsigned long DccId, const bool silent)

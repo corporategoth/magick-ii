@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.192  2002/01/01 22:16:56  prez
+** Fixed memory leak properly in db saving ...
+**
 ** Revision 1.191  2001/12/31 07:49:46  prez
 ** Found out stl_config.h didnt get included by default .. fixed that.
 **
@@ -465,6 +468,15 @@ void *IrcSvcHandler::worker(void *in)
     mThread::Attach(tt_mBase);
     Magick::register_instance((Magick *)in);
     FT("IrcSvcHandler::worker", (in));
+
+    { RLOCK(("IrcSvcHandler"));
+    if (Magick::instance().ircsvchandler != NULL)
+        if (Magick::instance().ircsvchandler->tm.join(ACE_Thread::self()) < 0)
+        {
+            NLOG(LM_ALERT, "EVENT/JOIN_THREAD_FAIL");
+        }
+    }
+
     mMessage *msg = NULL;
     bool active = true;
 
@@ -2061,7 +2073,8 @@ int EventTask::svc(void)
 		last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
-		thrmgr.spawn(save_databases, (void *) &Magick::instance());
+		thrmgr.spawn(save_databases, (void *) &Magick::instance(),
+			THR_NEW_LWP | THR_DETACHED);
 
 		WLOCK(("Events", "last_save"));
 		MCB(last_save);

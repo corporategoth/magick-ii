@@ -25,6 +25,9 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2002/01/01 22:16:55  prez
+** Fixed memory leak properly in db saving ...
+**
 ** Revision 1.80  2001/12/30 21:27:29  prez
 ** Some trace code beautification, and added ACE_Thread::exit() to worker
 ** and save_databases threads ..
@@ -224,7 +227,7 @@ public:
 #define NRET(x,y) do { \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	return y; \
-	} wile (0)
+	} while (0)
 #define DRET(x) do { \
 	__ft.return_value=mVariant(x); \
 	mThread::Detach(); \
