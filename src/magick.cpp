@@ -205,13 +205,15 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
 #endif
+#if defined(SIGUSR1) && (SIGUSR1 != 0)
+    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
+#endif
+#if defined(SIGUSR2) && (SIGUSR2 != 0)
+    ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
+#endif
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Sig_Action sigalrm (ACE_SignalHandler (SIG_IGN), SIGALRM);
     ACE_UNUSED_ARG (sigalrm);
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Sig_Action sigusr2 (ACE_SignalHandler (SIG_IGN), SIGUSR2);
-    ACE_UNUSED_ARG (sigusr2);
 #endif
 #ifdef SIGCHLD
     ACE_Sig_Action sigchld (ACE_SignalHandler (SIG_IGN), SIGCHLD);
@@ -232,9 +234,6 @@ int Magick::Start()
 #ifdef SIGTSTP
     ACE_Sig_Action sigttsp (ACE_SignalHandler (SIG_IGN), SIGTSTP);
     ACE_UNUSED_ARG (sigttsp);
-#endif
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
 #endif
 
     if(strlen(Services_NickServ))
@@ -303,6 +302,9 @@ int Magick::Start()
 #endif
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR1);
+#endif
+#if defined(SIGUSR2) && (SIGUSR2 != 0)
+    ACE_Reactor::instance()->remove_handler(SIGUSR2);
 #endif
     delete signalhandler;
     if(logger!=NULL)
@@ -837,45 +839,49 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     // todo: fill this sucker in
     switch(signum)
     {
-    case 0:
-	break;  // this is here to show up clashes for badly defined signal constants
-    case SIGINT:
+    case 0:		// this is here to show up clashes for badly defined signal constants
+	break;
+    case SIGINT:	// CTRL-C, Background.
 	break;
 #if defined(SIGTERM) && (SIGTERM != 0)
-    case SIGTERM:
+    case SIGTERM:	// Save DB's (often prequil to -KILL!)
 	break;
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
-    case SIGQUIT:
+    case SIGQUIT:	// Terminal dead, Background.
 	break;
 #endif
-    case SIGSEGV:
+    case SIGSEGV:	// Segfault, validate all storage.
 	break;
 #ifdef SIGBUS
-    case SIGBUS:
+    case SIGBUS:	// Ignore
 	break;
 #endif
 #if defined(SIGHUP) && (SIGHUP != 0)
-    case SIGHUP:
+    case SIGHUP:	// Reload CFG/DB's
 	break;
 #endif
-    case SIGILL:
+    case SIGILL:	// Re-try last call.
 	break;
 #ifdef SIGTRAP
-    case SIGTRAP:
+    case SIGTRAP:	// Throw exception
 	break;
 #endif
 #ifdef SIGIOT
-    case SIGIOT:
+    case SIGIOT:	// abort(), exit immediately!
 	break;
 #endif
-    case SIGFPE:
+    case SIGFPE:	// Retry last call
 	break;
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
-    case SIGUSR1:
+    case SIGUSR1:	// ??
 	break;
 #endif
-    default:
+#if defined(SIGUSR2) && (SIGUSR2 != 0)
+    case SIGUSR2:	// ??
+	break;
+#endif
+    default:		// Everything else.
 	;//ignore (todo log that we got it and we're ignoring it)
     }
     RET(0);
