@@ -290,6 +290,7 @@ public:
 class Nick_Stored_t : public mUserDef
 {
     friend class Nick_Live_t;
+    friend class NickServ;
     friend wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);
 
