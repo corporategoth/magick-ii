@@ -100,6 +100,10 @@ SOURCE=.\docs\develop
 # End Source File
 # Begin Source File
 
+SOURCE=.\docs\magick.ini
+# End Source File
+# Begin Source File
+
 SOURCE=.\docs\requirements
 # End Source File
 # End Group
