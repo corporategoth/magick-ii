@@ -12,7 +12,7 @@
 # should be installed and available as -lace.
 
 # Z (compression) Library
-#ZDIR=../support/zlib-1.1.3
+#ZDIR=../zlib-1.1.3
 #LIBZ=$(ZDIR)/libz.a
 
 ##########################################################################

@@ -941,7 +941,7 @@ double wxDataInputStream::ReadDouble()
   unsigned char buf[10];
 
   Read(&buf, 10);
-  return ConvertFromIeeeExtended((unsigned char *)buf);
+  return ConvertFromIeeeExtended(buf);
 #endif
 }
 
@@ -1027,11 +1027,12 @@ wxOutputStream&  wxDataOutputStream::WriteDouble(double d)
 	mstring tmp;
 	tmp<<d;
 	return WriteString(tmp);
+
 #if 0
   // this code dun seem to be working, so the above is a temporary workaround.
   unsigned char buf[10];
 
-  ConvertToIeeeExtended(d, (unsigned char *)buf);
+  ConvertToIeeeExtended(d, buf);
   return Write(buf, 10);
 #endif
 }

@@ -36,7 +36,7 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CRED*", Parent->commserv.ADMIN_Name(), ServMsg::do_Credits);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CONRIB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Contrib);
+	    "CONTRIB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Contrib);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
     Parent->commands.AddSystemCommand(GetInternalName(),
