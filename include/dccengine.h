@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,9 +25,8 @@ RCSID(dccengine_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.15  2001/02/03 02:21:31  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
+** Revision 1.16  2001/02/03 03:20:33  prez
+** Fixed up some differences in previous committed versions ...
 **
 ** Revision 1.13  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.

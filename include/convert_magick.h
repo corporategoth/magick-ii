@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,8 +25,8 @@ RCSID(convert_magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.1  2001/02/03 02:22:34  prez
-** added conversion for ESPERNET
+** Revision 1.2  2001/02/03 03:20:33  prez
+** Fixed up some differences in previous committed versions ...
 **
 ** Revision 1.5  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.

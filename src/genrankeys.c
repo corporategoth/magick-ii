@@ -8,16 +8,7 @@
 #include <time.h>
 #include "config.h"
 
-int mrandom(int upper)
-{
-#ifdef __BORLANDC__
-	return random(upper);
-#elseif _MSC_VER
-	return rand() % upper;
-#else
-	return random() % upper;
-#endif
-};
+int mrandom(int upper);
 
 int main(int argc, char **argv)
 {
@@ -102,3 +93,14 @@ char crypto_key1[%d] = {", __DATE__, __TIME__, KEYLEN);
     fprintf(fout, "0 };\n\n#endif\n");
     return 0;
 }
+
+int mrandom(int upper)
+{
+#ifdef __BORLANDC__
+	return random(upper);
+#elseif _MSC_VER
+	return rand() % upper;
+#else
+	return random() % upper;
+#endif
+};

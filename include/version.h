@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copyright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,9 +25,8 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.114  2001/02/03 02:21:31  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
+** Revision 1.115  2001/02/03 03:20:33  prez
+** Fixed up some differences in previous committed versions ...
 **
 ** Revision 1.24  2000/12/10 07:49:26  prez
 ** *** empty log message ***
@@ -140,7 +139,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b6";
+const mstring RELEASE			= "b8";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
@@ -154,8 +153,8 @@ const mstring PATCH9			= "";
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
 FULLNAME+" - "+SLOGAN,
-"  (c) 1997-2000 Preston Elder <prez@magick.tm>",
-"  (c) 1998-2000 William King <ungod@magick.tm>",
+"  (c) 1997-2001 Preston Elder <prez@magick.tm>",
+"  (c) 1998-2001 William King <ungod@magick.tm>",
 "",
 mstring(PACKAGE)+" is dedicated to the memory of PreZ's beloved",
 "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",

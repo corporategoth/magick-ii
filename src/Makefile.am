@@ -21,7 +21,7 @@ helper: genrankeys
 	@echo ""
 	@echo "======================================================="
 	@echo "This will probably take a while ..."
-	@echo "May as well go grab your favourite caffiene supplement."
+	@echo "May as well go grab your favourite caffeine supplement."
 	@echo "======================================================="
 	@$(srcdir)/genrankeys $(top_srcdir)/include/crypt.h
 	#$(top_srcdir)/helper/build-ver $(top_srcdir)
