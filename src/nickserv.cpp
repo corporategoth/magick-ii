@@ -5147,7 +5147,7 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
     {
 	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+lang.LowerCase()+".lng");
 	// check for valid language ...
-	if (fconf.IsEmpty())
+	if (!fconf.GetNumberOfGroups())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/NOLANG"),
 			lang.c_str());
@@ -5159,7 +5159,7 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
 			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
 			mstring(lang + " (" +
-			Parent->getMEssage(source, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
+			Parent->getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
 }
 
 void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
@@ -5476,7 +5476,7 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     {
 	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+lang.LowerCase()+".lng");
 	// check for valid language ...
-	if (fconf.IsEmpty())
+	if (!fconf.GetNumberOfGroups())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/NOLANG"),
 			lang.c_str());
@@ -5490,7 +5490,7 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/LOCKED"),
 			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
 			nickname.c_str(), mstring(lang + " (" +
-			Parent->getMEssage(source, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
+			Parent->getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
 }
 
 void NickServ::do_unlock_Protect(mstring mynick, mstring source, mstring params)
