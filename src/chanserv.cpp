@@ -3444,6 +3444,7 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     FT("ChanServ::do_Info", (mynick, source, params));
 
     mstring message = params.Before(" ");
+    mstring output;
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -3455,143 +3456,194 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     if (Parent->chanserv.stored[channel.LowerCase()].Forbidden())
     {
-	::send(mynick, source, "Channel " + channel + " is forbidden.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISFORBIDDEN"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
 
-    ::send(mynick, source, "Information about " + chan->Name());
-    ::send(mynick, source, "    Founder: " + chan->Founder());
+    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/IS"),
+		chan->Name().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/FOUNDER"),
+		chan->Founder().c_str());
     if (chan->CoFounder() != "")
-	::send(mynick, source, " Co-Founder: " + chan->CoFounder());
-    ::send(mynick, source, "Description: " + chan->Description());
-    ::send(mynick, source, " Registered: " + chan->RegTime().Ago());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/COFOUNDER"),
+		chan->CoFounder().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/DESCRIPTION"),
+		chan->Description().c_str());
+
+    output = "";
+    if (chan->NoExpire() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
+	output << " (" << Parent->getMessage(source, "CS_INFO/NOEXPIRE") << ")";
+    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/REGISTERED"),
+		chan->RegTime().Ago().c_str(), output.c_str());
     if (!chan->Private())
     {
 	if (Parent->chanserv.IsLive(channel))
 	{
 	    Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
-	    mstring output = "";
+	    output = "";
 	    if (clive->Ops())
 	    {
-		output << clive->Ops() << " Ops";
+		output << clive->Ops() << " " << Parent->getMessage(source, "CS_INFO/OPS");
 	    }
 	    if (clive->Voices())
 	    {
 		if (output != "")
 		    output << ", ";
-		output << clive->Voices() << " Voices";
+		output << clive->Voices() << " " << Parent->getMessage(source, "CS_INFO/VOICES");
 	    }
 	    if (clive->Users())
 	    {
 		if (output != "")
 		    output << ", ";
-		output << clive->Users() << " Users";
+		output << clive->Users() << " " << Parent->getMessage(source, "CS_INFO/USERS");
 	    }
 	    if (clive->Squit())
 	    {
 		if (output != "")
 		    output << ", ";
-		output << clive->Squit() << " SPLIT Users";
+		output << clive->Squit() << " " << Parent->getMessage(source, "CS_INFO/SPLIT_USERS");
 	    }
-	    ::send(mynick, source, "  In Use By: " + output);
+	    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/INUSEBY"),
+		output.c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "  Last Used: " + chan->LastUsed().Ago());
+	    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/LASTUSED"),
+		chan->LastUsed().Ago().c_str());
 	}
     }
     if (chan->Email() != "")
-	::send(mynick, source, "     E-Mail: " + chan->Email());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/EMAIL"),
+		chan->Email().c_str());
     if (chan->URL() != "")
-	::send(mynick, source, "        URL: " + chan->URL());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/URL"),
+		chan->URL().c_str());
     if (chan->Suspended())
     {
-	::send(mynick, source, "  Suspended: " + chan->Suspend_Time().Ago());
-	::send(mynick, source, "         By: " + chan->Suspend_By());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/SUSPEND"),
+		chan->Suspend_Time().Ago().c_str(),
+		chan->Suspend_By().c_str());
 	if (chan->Comment() != "")
-	    ::send(mynick, source, "        For: " + chan->Comment());
+	    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/SUSPENDFOR"),
+		chan->Comment().c_str());
     }
     else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
     {
 	if (chan->Comment() != "")
-	    ::send(mynick, source, "    Comment: " + chan->Comment());
+	    ::send(mynick, source, Parent->getMessage(source, "CS_INFO/COMMENT"),
+		chan->Comment().c_str());
     }
     if (chan->Last_Topic() != "")
     {
-	::send(mynick, source, " Last Topic: " + chan->Last_Topic());
-	::send(mynick, source, "     Set By: " + chan->Last_Topic_Setter() + " " +
-				    chan->Last_Topic_Set_Time().Ago() + " Ago");
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/TOPIC"),
+		chan->Last_Topic().c_str());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/TOPICBY"),
+		chan->Last_Topic_Set_Time().Ago().c_str(),
+		chan->Last_Topic_Setter().c_str());
     }
     if (chan->Mlock() != "")
-	::send(mynick, source, "  Mode Lock: " + chan->Mlock());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/MLOCK"),
+		chan->Mlock().c_str());
     if (chan->Revenge() != "")
-	::send(mynick, source, "    Revenge: " + chan->Revenge());
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/REVENGE"),
+		chan->Revenge().c_str());
     if (chan->Bantime())
-    {
-	::send(mynick, source, "Ban Removal: " + ToHumanTime(chan->Bantime()));
-    }
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/BANTIME"),
+		ToHumanTime(chan->Bantime()).c_str());
 
-    mstring output = "";
+    output = "";
     if (chan->Keeptopic())
     {
 	if (output != "")
 	    output << ", ";
-	output << "Keep Topic";
+	if (chan->L_Keeptopic())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/KEEPTOPIC");
+	if (chan->L_Keeptopic())
+	    output << IRC_Off;
     }
 
     if (chan->Topiclock())
     {
 	if (output != "")
 	    output << ", ";
-	output << "Topic Lock";
+	if (chan->L_Topiclock())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/TOPICLOCK");
+	if (chan->L_Topiclock())
+	    output << IRC_Off;
     }
 
     if (chan->Private())
     {
 	if (output != "")
 	    output << ", ";
-	output << "Private";
+	if (chan->L_Private())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/PRIVATE");
+	if (chan->L_Private())
+	    output << IRC_Off;
     }
 
     if (chan->Secureops())
     {
 	if (output != "")
 	    output << ", ";
-	output << "Secure Ops";
+	if (chan->L_Secureops())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/SECUREOPS");
+	if (chan->L_Secureops())
+	    output << IRC_Off;
     }
 
-    if (chan->NoExpire())
+    if (chan->Secure())
     {
 	if (output != "")
 	    output << ", ";
-	output << "NoExpire";
+	if (chan->L_Secure())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/SECURE");
+	if (chan->L_Secure())
+	    output << IRC_Off;
     }
 
     if (chan->Restricted())
     {
 	if (output != "")
 	    output << ", ";
-	output << "Restricted";
+	if (chan->L_Restricted())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/RESTRICTED");
+	if (chan->L_Restricted())
+	    output << IRC_Off;
     }
 
     if (chan->Anarchy())
     {
 	if (output != "")
 	    output << ", ";
-	output << "Anarchy";
+	if (chan->L_Anarchy())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/ANARCHY");
+	if (chan->L_Anarchy())
+	    output << IRC_Off;
     }
 
     if (output != "")
-	::send(mynick, source, "    Options: " + output);
+	::send(mynick, source, Parent->getMessage(source, "CS_INFO/OPTIONS"),
+	    output.c_str());
 }
 
 void ChanServ::do_List(mstring mynick, mstring source, mstring params)
@@ -3618,15 +3670,14 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
-	    mstring output;
-	    output << "You may only list up to " << Parent->config.Maxlist()
-		    << " entries per line.";
-	    ::send(mynick, source, output);
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
+		    Parent->config.Maxlist());
 	    return;
 	}
     }
 
-    ::send(mynick, source, "Channels matching " + mask + ":");
+    ::send(mynick, source, Parent->getMessage(source, "LIST/NICK_LIST"),
+					mask.c_str());
     map<mstring, Chan_Stored_t>::iterator iter;
 
     for (iter = Parent->chanserv.stored.begin(), i=0, count = 0;
@@ -3645,9 +3696,8 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 	    count++;
 	}
     }
-    mstring output;
-    output << IRC_Bold << i << IRC_Off << " of " << count << " entries shown.";
-    ::send(mynick, source, output);
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
+							i, count);
 }
 
 void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
@@ -3667,12 +3717,15 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
+    channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].Suspend(source, reason);
-    ::send(mynick, source, "Channel " + channel + " has been suspended.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SUSPENDED"),
+	    channel.c_str());
 }
 
 void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
@@ -3691,12 +3744,15 @@ void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
+    channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].UnSuspend();
-    ::send(mynick, source, "Channel " + channel + " has been unsuspended.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSUSPENDED"),
+	    channel.c_str());
 }
 
 void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
@@ -3715,12 +3771,15 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISSTORED"),
+		channel.c_str());
 	return;
     }
+    channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()] = Chan_Stored_t(channel);
-    ::send(mynick, source, "Channel " + channel + " has been forbidden.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/FORBIDDEN"),
+	    channel.c_str());
 }
 
 
@@ -3740,26 +3799,26 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
-    Nick_Stored_t *nick;
-    if (Parent->nickserv.IsStored(chan->Founder()))
-	nick = &Parent->nickserv.stored[chan->Founder().LowerCase()];
-    else
+    if (!Parent->nickserv.IsStored(chan->Founder()))
     {
 	wxLogWarning("Channel %s had a founder of %s who was not registered (channel dropped)",
 			chan->Name().c_str(), chan->Founder().c_str());
 	Parent->chanserv.stored.erase(channel.LowerCase());
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		chan->Name().c_str());
 	return;
     }
 
-    ::send(mynick, source, "Password for channel " + chan->Name() + " (" +
-				    nick->Name() + ") is " + IRC_Bold +
-				    chan->Password() + IRC_Off + ".");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/GETPASS"),
+			chan->Name().c_str(),
+			Parent->getSname(chan->Founder()).c_str(),
+			chan->Password().c_str());
 }
 
 void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
@@ -3778,13 +3837,15 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
@@ -3829,7 +3890,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    ::send(mynick, source, "Access Denied.");
+    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 }
 
 void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
@@ -3849,17 +3910,20 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -3870,26 +3934,28 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (Parent->chanserv.live[channel.LowerCase()].IsOp(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-						" is already opped.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_OPPED"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (chan->Secureops() &&
 		!(chan->GetAccess(target, "CMDOP") ||
 		chan->GetAccess(target, "AUTOOP")))
 	{
-	    ::send(mynick, source, "Channel " + channel + " is Secure Ops.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/RESTRICT"),
+		    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str());
 	    return;
 	}
     }
@@ -3897,17 +3963,19 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
     {
 	if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "You are not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (Parent->chanserv.live[channel.LowerCase()].IsOp(target))
 	{
-	    ::send(mynick, source, "You are already opped.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OPPED"),
+		    channel.c_str());
 	    return;
 	}
 	else if (!chan->GetAccess(target, "CMDOP"))
 	{
-	    ::send(mynick, source, "Access Denied.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	    return;
 	}
     }
@@ -3932,17 +4000,20 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -3953,19 +4024,20 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsOp(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-						" is not opped.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTOPPED"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
     }
@@ -3973,12 +4045,14 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
     {
 	if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "You are not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsOp(target))
 	{
-	    ::send(mynick, source, "You are not opped.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTOPPED"),
+		    channel.c_str());
 	    return;
 	}
     }
@@ -4003,17 +4077,20 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -4024,26 +4101,28 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (Parent->chanserv.live[channel.LowerCase()].IsVoice(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-						" is already voiced.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_VOICED"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (chan->Secureops() &&
 		!(chan->GetAccess(target, "CMDVOICE") ||
 		chan->GetAccess(target, "AUTOVOICE")))
 	{
-	    ::send(mynick, source, "Channel " + channel + " is Secure Ops.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/RESTRICT"),
+		    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str());
 	    return;
 	}
     }
@@ -4051,17 +4130,19 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
     {
 	if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "You are not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (Parent->chanserv.live[channel.LowerCase()].IsVoice(target))
 	{
-	    ::send(mynick, source, "You are already voiced.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/VOICED"),
+		    channel.c_str());
 	    return;
 	}
 	else if (!chan->GetAccess(target, "CMDVOICE"))
 	{
-	    ::send(mynick, source, "Access Denied.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	    return;
 	}
     }
@@ -4086,17 +4167,20 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -4107,19 +4191,20 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsVoice(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-						" is not voiced.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTVOICED"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
     }
@@ -4127,12 +4212,14 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
     {
 	if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "You are not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
 	else if (!Parent->chanserv.live[channel.LowerCase()].IsVoice(target))
 	{
-	    ::send(mynick, source, "You are not voiced.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTVOICED"),
+		    channel.c_str());
 	    return;
 	}
     }
@@ -4157,21 +4244,24 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     if (!chan->GetAccess(source, "CMDMODE"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4196,46 +4286,52 @@ void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     if (!chan->GetAccess(source, "CMDKICK"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
     if (!Parent->nickserv.IsLive(target))
     {
-	::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	return;
     }
 
     if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
     {
-	::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	return;
     }
 
     if (chan->GetAccess(target) > chan->GetAccess(source))
     {
-	::send(mynick, source, "Nickname " + target +
-				" is higer than you on the access list.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/HIGHERACCESS"),
+		    target.c_str(), channel.c_str());
 	return;
     }
 
-    Parent->server.KICK(mynick, target, channel, "Request by " + source +
-						    " (" + reason + ")");
+    mstring output;
+    output.Format(Parent->getMessage(target, "CS_COMMAND/KICK").c_str(),
+	    source.c_str(), reason.c_str());
+    Parent->server.KICK(mynick, target, channel, output);
 }
 
 void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
@@ -4256,41 +4352,45 @@ void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     if (!chan->GetAccess(source, "SUPER"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
     if (!Parent->nickserv.IsLive(target))
     {
-	::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	return;
     }
 
     if (!Parent->chanserv.live[channel.LowerCase()].IsIn(target))
     {
-	::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTIN"),
+		    target.c_str(), channel.c_str());
 	return;
     }
 
     if (chan->GetAccess(target) > chan->GetAccess(source))
     {
-	::send(mynick, source, "Nickname " + target +
-				" is higer than you on the access list.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/HIGHERACCESS"),
+		    target.c_str(), channel.c_str());
 	return;
     }
 
@@ -4313,24 +4413,27 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.stored[channel.LowerCase()].GetAccess(source,
 								"VIEW"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
     Chan_Live_t *chan = &Parent->chanserv.live[channel.LowerCase()];
+    channel = chan->Name();
     int i;
     mstring user, output = channel + ": ";
 
@@ -4387,17 +4490,20 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = chan->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -4408,31 +4514,34 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	    return;
 	}
 	else if (Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "Nickname " + target +
-				" is in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_IN"),
+		    target.c_str(), channel.c_str());
 	    return;
 	}
-	::send(mynick, target, "You have been invited to " + channel +
-						" by " + source + ".");
+	::send(mynick, target, Parent->getMessage(source, "CS_COMMAND/OTH_INVITE"),
+		    channel.c_str(), source.c_str());
     }
     else
     {
 	if (Parent->chanserv.live[channel.LowerCase()].IsIn(target))
 	{
-	    ::send(mynick, source, "You are in channel " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/IN"),
+		    channel.c_str());
 	    return;
 	}
 	else if (!chan->GetAccess(target, "CMDINVITE"))
 	{
-	    ::send(mynick, source, "Access Denied.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	    return;
 	}
-	::send(mynick, target, "You have been invited to " + channel + ".");
+	::send(mynick, target, Parent->getMessage(source, "CS_COMMAND/INVITE"),
+		channel.c_str());
     }
 
     Parent->server.INVITE(mynick, target, channel);
@@ -4455,17 +4564,20 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -4476,7 +4588,8 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
 	    return;
 	}
     }
@@ -4484,7 +4597,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     {
 	if (!cstored->GetAccess(target, "CMDUNBAN"))
 	{
-	    ::send(mynick, source, "Access Denied.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	    return;
 	}
     }
@@ -4505,19 +4618,20 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     if (found)
     {
 	if (target == source)
-	    ::send(mynick, target, "You have been unbanned from " +
-							    channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNBANNED"),
+		    channel.c_str());
 	else
-	    ::send(mynick, target, "You have been unbanned from " +
-					channel + " by " + source +".");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/OTH_UNBANNED"),
+		    target.c_str(), channel.c_str());
     }
     else
     {
 	if (target == source)
-	    ::send(mynick, source, "You are not banned from " + channel);
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTBANNED"),
+		    channel.c_str());
 	else
-	    ::send(mynick, source, "Nickname " + target +
-					" is not banned from " + channel);
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/OTH_NOTBANNED"),
+		    target.c_str(), channel.c_str());
     }
 }
 
@@ -4538,24 +4652,27 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4563,8 +4680,10 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
     int i;
     for (i=0; i<clive->Users(); i++)
     {
-	Parent->server.KICK(mynick, clive->User(i), channel,
-			    "CLEAR command executed by " + source + ".");
+	mstring output;
+	output.Format(Parent->getMessage(clive->User(i), "CS_COMMAND/CLEAR").c_str(),
+		message.c_str(), source.c_str(), channel.c_str());
+	Parent->server.KICK(mynick, clive->User(i), channel, output);
     }
 }
 
@@ -4585,24 +4704,27 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4610,8 +4732,9 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
     int i;
     for (i=0; i<clive->Ops(); i++)
     {
-	::send(mynick, clive->Op(i), "CLEAR OPS command used by " +
-							    source + ".");
+	if (!message.After(" ").Matches("*ALL*"))
+	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
+		    message.c_str(), source.c_str(), channel.c_str());
 	clive->SendMode("-o " + clive->Op(i));
     }
 }
@@ -4633,24 +4756,27 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4659,9 +4785,16 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 
     for (i=0; i<clive->Voices(); i++)
     {
-	::send(mynick, clive->Voice(i), "CLEAR VOICES command used by " +
-							    source + ".");
+	if (!message.After(" ").Matches("*ALL*"))
+	    ::send(mynick, clive->Voice(i), Parent->getMessage(clive->Voice(i), "CS_COMMAND/CLEAR"),
+		    message.c_str(), source.c_str(), channel.c_str());
 	clive->SendMode("-v " + clive->Voice(i));
+    }
+    for (i=0; i<clive->Ops(); i++)
+    {
+	if (!message.After(" ").Matches("*ALL*"))
+	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
+		    message.c_str(), source.c_str(), channel.c_str());
     }
 }
 
@@ -4682,24 +4815,27 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4709,8 +4845,9 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
     clive->SendMode("-" + clive->Mode() + " " + clive->Key());
     for (i=0; i<clive->Ops(); i++)
     {
-	::send(mynick, clive->Op(i), "CLEAR MODES command used by " +
-							    source + ".");
+	if (!message.After(" ").Matches("*ALL*"))
+	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
+		    message.c_str(), source.c_str(), channel.c_str());
     }
 }
 
@@ -4731,24 +4868,27 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4757,14 +4897,13 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 
     for (i=0; i<clive->Bans(); i++)
     {
-	::send(mynick, clive->Ban(i), "CLEAR BANS command used by " +
-							    source + ".");
 	clive->SendMode("-b " + clive->Ban(i));
     }
     for (i=0; i<clive->Ops(); i++)
     {
-	::send(mynick, clive->Op(i), "CLEAR BANS command used by " +
-							    source + ".");
+	if (!message.After(" ").Matches("*ALL*"))
+	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
+		    message.c_str(), source.c_str(), channel.c_str());
     }
 }
 
@@ -4785,24 +4924,27 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4810,6 +4952,9 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
     ChanServ::do_clear_Ops(mynick, source, params);
     ChanServ::do_clear_Voices(mynick, source, params);
     ChanServ::do_clear_Bans(mynick, source, params);
+
+    ::notice(mynick, channel, Parent->getMessage("CS_COMMAND/CLEAR"),
+		message.c_str(), source.c_str(), channel.c_str());
 }
 
 void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
@@ -4832,16 +4977,18 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4890,16 +5037,18 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -4941,11 +5090,13 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     mstring output = "";
     if (cstored->GetAccess(source, "SET"))
@@ -4996,22 +5147,25 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "ACCESS"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
     if (!Parent->nickserv.IsStored(who))
     {
-	::send(mynick, source, "Nickname " + who + "is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		who.c_str());
 	return;
     }
 
@@ -5063,16 +5217,18 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "ACCESS"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5139,18 +5295,20 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "ACCESS") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5196,16 +5354,18 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "AKICK"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5257,7 +5417,8 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
     }
     else if (!Parent->nickserv.IsStored(who))
     {
-	::send(mynick, source, "Nickname " + who + "is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
@@ -5294,16 +5455,18 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "AKICK"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5380,18 +5543,20 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "AKICK") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5435,11 +5600,13 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (option[0U] == '!' && params.WordCount(" ") > 4 &&
@@ -5449,13 +5616,14 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	option = params.After(" ", 4);
 	if (!Parent->nickserv.IsStored(target))
 	{
-	    ::send(mynick, source, "Nickname " + target + " is not registered.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		target.c_str());
 	    return;
 	}
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
     else
@@ -5523,11 +5691,13 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 3 &&
@@ -5553,7 +5723,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5612,7 +5782,8 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
@@ -5627,7 +5798,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5668,16 +5839,18 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "MESSAGE"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5705,16 +5878,18 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "MESSAGE"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5759,16 +5934,18 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "MESSAGE"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5800,22 +5977,25 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
     if (!Parent->nickserv.IsStored(founder))
     {
-	::send(mynick, source, "Nickname " + founder + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		founder.c_str());
 	return;
     }
     else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
@@ -5848,22 +6028,25 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
     if (!Parent->nickserv.IsStored(founder))
     {
-	::send(mynick, source, "Nickname " + founder + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		founder.c_str());
 	return;
     }
     else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
@@ -5902,16 +6085,18 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5939,16 +6124,18 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -5983,16 +6170,18 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6026,16 +6215,18 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6069,11 +6260,13 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (option.CmpNoCase("none") == 0)
 	option = "";
@@ -6105,16 +6298,18 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6147,16 +6342,18 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6196,16 +6393,18 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6253,16 +6452,18 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6310,16 +6511,18 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6367,16 +6570,18 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6424,16 +6629,18 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6481,11 +6688,13 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (cstored->L_NoExpire())
     {
@@ -6531,16 +6740,18 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6588,16 +6799,18 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6645,16 +6858,18 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6715,16 +6930,18 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
-	::send(mynick, source, "Access denied.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
 
@@ -6765,11 +6982,13 @@ void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
     {
@@ -6800,11 +7019,13 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Bantime())
     {
@@ -6844,11 +7065,13 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Keeptopic())
     {
@@ -6896,11 +7119,13 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Topiclock())
     {
@@ -6948,11 +7173,13 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Private())
     {
@@ -7000,11 +7227,13 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Secureops())
     {
@@ -7052,11 +7281,13 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Secure())
     {
@@ -7104,11 +7335,13 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Anarchy())
     {
@@ -7156,11 +7389,13 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Restricted())
     {
@@ -7208,11 +7443,13 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Join())
     {
@@ -7260,11 +7497,13 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Revenge())
     {
@@ -7306,11 +7545,13 @@ void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     vector<mstring> retval = cstored->L_Mlock(source, "");
     for (unsigned int i=0; i<retval.size(); i++)
@@ -7335,11 +7576,13 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Bantime())
     {
@@ -7370,11 +7613,13 @@ void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring param
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Keeptopic())
     {
@@ -7406,11 +7651,13 @@ void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring param
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Topiclock())
     {
@@ -7441,11 +7688,13 @@ void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
  
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Private())
     {
@@ -7476,11 +7725,13 @@ void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring param
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Secureops())
     {
@@ -7511,11 +7762,13 @@ void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Secure())
     {
@@ -7546,11 +7799,13 @@ void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Anarchy())
     {
@@ -7581,11 +7836,13 @@ void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring para
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Restricted())
     {
@@ -7616,11 +7873,13 @@ void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Join())
     {
@@ -7651,11 +7910,13 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     if (Parent->chanserv.LCK_Revenge())
     {

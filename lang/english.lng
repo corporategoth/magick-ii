@@ -128,7 +128,6 @@ KILL_PASS_FAIL     =Too many password failures
 KILL_GHOST         =GHOST command used
 KILL_RECOVER       =RECOVER command used
 KILL_OPERDENY      =Tried to /OPER when DENIED
-
 KICK_RESTRICTED    =This channel is restricted.
 
 NICK_GETPASS       =%s just performed a GETPASS on nickname %s (%s).
@@ -272,8 +271,7 @@ LASTALLSEEN        =\   Last Online: %s
 LASTMASK           =\  Last Seen As: %s
 LASTSEEN           =\     Last Seen: %s
 QUITMSG            =\      Quit MSG: %s
-SUSPEND            =\     Suspended: %s
-SUSPENDBY          =\            By: %s
+SUSPEND            =\     Suspended: %s ago by %s
 SUSPENDFOR         =\           For: %s
 EMAIL              =\        E-Mail: %s
 URL                =\      WWW Page: %s
@@ -352,8 +350,30 @@ REMOVED            =Your picture has been removed.
 
 
 [CS_INFO]
+IS                 =Information about %s:
+FOUNDER            =\    Founder: %s
+COFOUNDER          =\  CoFounder: %s
+DESCRIPTION        =Description: %s
+REGISTERED         =\ Registered: %s%s
+INUSEBY            =\  In Use By: %s
+LASTUSED           =\  Last Used: %s
+EMAIL              =\     E-Mail: %s
+URL                =\   WWW Page: %s
+SUSPEND            =\  Suspended: %s ago by %s
+SUSPENDFOR         =\        For: %s
+COMMENT            =\    Comment: %s
+TOPIC              =\ Last Topic: %s
+TOPICBY            =\        Set: %s ago by %s
+MLOCK              =\  Mode Lock: %s
+REVENGE            =\    Revenge: %s
+BANTIME            =Ban Removal: %s
+OPTIONS            =\    Options: %s
 
-
+NOEXPIRE           =non-expiring
+OPS                =ops
+VOICES             =voices
+USERS              =users
+SPLIT_USERS        =split users
 
 [CS_SET]
 FOUNDER            =Founder
@@ -381,14 +401,29 @@ REVENGE            =Revenge level
 [CS_STATUS]
 ISSTORED           =Channel %s is already registered.
 ISNOTSTORED        =Channel %s is not registered.
+IN                 =You are already in channel %s.
+NOTIN              =You are not in channel %s.
+OTH_IN             =Nickname %s is already in channel %s.
+OTH_NOTIN          =Nickname %s is not in channel %s.
 OPPED              =You are already opped in channel %s.
 NOTOPPED           =You are not opped in channel %s.
+OTH_OPPED          =Nickname %s is already opped in channel %s.
+OTH_NOTOPPED       =Nickname %s is not opped in channel %s.
 VOICED             =You are already voiced in channel %s.
 NOTVOICED          =You are not voiced in channel %s.
+OTH_VOICED         =Nickname %s is already voiced in channel %s.
+OTH_NOTVOICED      =Nickname %s is not voiced in channel %s.
+BANNED             =You are already banned from channel %s.
+NOTBANNED          =You are not banned from channel %s.
+OTH_BANNED         =Nickname %s is already banned from channel %s.
+OTH_NOTBANNED      =Nickname %s is not banned from channel %s.
 IDENTIFIED         =You are already identified for channel %s.
+ISFORBIDDEN        =Channel %s is forbidden.
+ISNOTFORBIDDEN     =Channel %s is not forbidden.
 ISINUSE            =Channel %s is currently in use.
 ISNOTINUSE         =Channel %s is not currently in use.
-
+RESTRICT           =Channel %s is registered and has %s set.  Access restrictions apply.
+HIGHERACCESS       =Nickname %s is higher than you are on the %s access list.
 
 [CS_COMMAND]
 REGISTERED         =Channel %s has been registered with founder %s.
@@ -400,7 +435,16 @@ MLOCK_SET          =Mode lock for channel %s has been set to %s.
 MLOCK_UNSET        =Mode lock for channel %s has been removed.
 MLOCK_LOCK         =Mode lock for channel %s has been locked to %s.
 MLOCK_UNLOCK       =Mode lock for channel %s has been unlocked.
-
+SUSPENDED          =Channel %s has been suspended.
+UNSUSPENDED        =Channel %s has been unsuspended.
+FORBIDDEN          =Channel %s has been forbidden.
+GETPASS            =Password for channel %s (%s) is %s.
+KICK               =Requested by %s (%s)
+INVITE             =You have been invited to channel %s.
+OTH_INVITE         =You have been invited to channel %s by %s.
+UNBANNED           =You have been unbanned from channel %s.
+OTH_UNBANNED       =Nickname %s has been unbanned from channel %s.
+CLEAR              =%s command has been used by %s for channel %s.
 
 [COMMSERV]
 ISSTORED           =Committee %s already exists.

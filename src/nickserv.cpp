@@ -3928,8 +3928,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     if (nick->Suspended())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/SUSPEND"),
-					nick->Suspend_Time().Ago().c_str());
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/SUSPENDBY"),
+					nick->Suspend_Time().Ago().c_str(),
 					nick->Suspend_By().c_str());
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/SUSPENDFOR"),
 					nick->Comment().c_str());
