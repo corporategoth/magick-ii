@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/05/15 08:43:28  ungod
+** fix for recursion issue upon adding of two mstrings on certain platforms.
+**
 ** Revision 1.60  2000/04/30 05:19:39  ungod
 ** ACE_OS::AC_OS:: hey prez? *smirk*
 **
@@ -622,7 +625,7 @@ mstring operator+(char ch, const mstring& string)
 
 mstring operator+(const mstring& string, const char *psz)
 {
-	mstring Result=string+mstring(psz);
+	mstring Result=std::string(string)+std::string(psz);
 	return Result;
 }
 
