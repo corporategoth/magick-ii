@@ -1184,7 +1184,9 @@ public:
 };
 
 #ifndef NO_HASH_MAP
+#ifdef STL_EXT_NAMESPACE
 namespace STL_EXT_NAMESPACE { 
+#endif
   template<> struct hash<mstring>
   {
     size_t operator()(const mstring &__s) const {
@@ -1192,8 +1194,10 @@ namespace STL_EXT_NAMESPACE {
 	return strhash(__s.c_str());
     }
   };
+#ifdef STL_EXT_NAMESPACE
 };
 #endif
+#endif // !NO_HASH_MAP
 
 /** @defgroup overloads Operator Overloads
  * @{
