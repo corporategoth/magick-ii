@@ -489,12 +489,12 @@ void Magick::LoadInternalMessages()
 #include "language.h"
     int i;
     remove("tmplang.lng");
+    FILE *fh;
+    fh = fopen(mstring(wxGetCwd()+DirSlash+"tmplang.lng").c_str(), "w");
 
-    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+DirSlash+"tmplang.lng");
     for(i=0;i<def_langent;i++)
-	*fostream<<def_lang[i]<<"\n";
-    fostream->Sync();
-    delete fostream;
+	fprintf(fh, "%s\n", def_lang[i]);
+    fclose(fh);
 
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
     wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"tmplang.lng");

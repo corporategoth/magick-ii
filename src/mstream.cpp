@@ -699,7 +699,7 @@ wxOutputStream& wxOutputStream::operator<<(const char *string)
 {
   wxDataOutputStream s(*this);
   
-  s.WriteString(mstring(line));
+  s.WriteString(mstring(string));
   return *this;
 }
 
@@ -707,7 +707,7 @@ wxOutputStream& wxOutputStream::operator<<(const mstring& string)
 {
   wxDataOutputStream s(*this);
   
-  s.WriteString(line);
+  s.WriteString(string);
   return *this;
 }
 
