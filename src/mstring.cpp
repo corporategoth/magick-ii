@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2000/12/05 07:56:16  prez
+** OOps ... forgot to #if / #endif something ...
+**
+** Revision 1.80  2000/12/05 07:49:13  prez
+** Added the ability (in the .h file) to chose what memory scheme to use.
+** This is necessary for testing to try and get mstring working!
+**
 ** Revision 1.79  2000/11/28 10:15:05  prez
 ** Trying to figure out why the free list doesnt work in mmemory.
 ** ALOT OF PRINTF'S - YOU'VE BEEN WARNED, OUTPUT STDOUT TO A FILE!
@@ -132,10 +139,12 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 #include "mstring.h"
 
+#if ALLOCTYPE == 3
 // This defaults to 8192 chunks.  Use init(size) before
 // any use of it, or pass size as a 2nd param to the first
 // use of it, or use blocksize(size) at any time to change.
 MemoryManager<ACE_Thread_Mutex> mstring::memory_area;
+#endif
 
 #ifdef WIN32
 mstring const DirSlash="\\";
@@ -160,14 +169,14 @@ mstring const IRC_Off((char) 15);	// ^O
 void mstring::copy(const char *in, size_t length)
 {
     if (i_str != NULL)
-	memory_area.dealloc(i_str);
+	DEALLOC(i_str);
     if (length && in)
     {
 	i_len = length;
 	i_res = 2;
 	while (i_res <= i_len)
 	    i_res *= 2;
-	i_str = (char *) memory_area.alloc(i_res);
+	i_str = ALLOC(i_res);
 	if (i_str == NULL)
 	    NOMEM;
 	memset(i_str, 0, i_res);
@@ -195,7 +204,7 @@ void mstring::append(const char *in, size_t length)
 	i_res *= 2;
     if (oldres != i_res)
     {
-	tmp = (char *) memory_area.alloc(i_res);
+	tmp = ALLOC(i_res);
 	if (tmp == NULL)
 	    NOMEM;
 	memset(tmp, 0, i_res);
@@ -209,7 +218,7 @@ void mstring::append(const char *in, size_t length)
     if (tmp != i_str)
     {
 	if (i_str != NULL)
-	    memory_area.dealloc(i_str);
+	    DEALLOC(i_str);
 	i_str = tmp;
     }
 
@@ -245,7 +254,7 @@ void mstring::erase(int begin, int end)
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
-	    tmp = (char *) memory_area.alloc(i_res);
+	    tmp = ALLOC(i_res);
 	    if (tmp == NULL)
 		NOMEM;
 	    memset(tmp, 0, i_res);
@@ -271,7 +280,7 @@ void mstring::erase(int begin, int end)
     if (tmp != i_str)
     {
 	if (i_str != NULL)
-	    memory_area.dealloc(i_str);
+	    DEALLOC(i_str);
 	i_str = tmp;
     }
     else if (tmp == NULL)
@@ -300,7 +309,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	i_res = 2;
     while (i_res <= i_len + length)
 	i_res *= 2;
-    tmp = (char *) memory_area.alloc(i_res);
+    tmp = ALLOC(i_res);
     if(tmp == NULL)
 	NOMEM;
     memset(tmp, 0, i_res);
@@ -316,7 +325,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     memcpy(&tmp[i], &i_str[i_len-pos], i_len-pos);
 
     if (i_str != NULL)
-	memory_area.dealloc(i_str);
+	DEALLOC(i_str);
     i_str = tmp;
     i_len += length;
 }
@@ -441,7 +450,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
     if (i_str == NULL)
 	return -1;
 
-    char *tmp = (char *) memory_area.alloc(length+1);
+    char *tmp = ALLOC(length+1);
     if (tmp == NULL)
 	NOMEMR(-1);
     memcpy(tmp, str, length);
@@ -452,7 +461,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 	if (index(tmp, i_str[i])==NULL)
 	    return i;
     }
-    memory_area.dealloc(tmp);
+    DEALLOC(tmp);
     return -1;
 }
 
@@ -464,7 +473,7 @@ int mstring::find_last_not_of(const char *str, size_t length) const
     if (i_str == NULL)
 	return -1;
 
-    char *tmp = (char *) memory_area.alloc(length+1);
+    char *tmp = ALLOC(length+1);
     if (tmp == NULL)
 	NOMEMR(-1);
     memcpy(tmp, str, length);
@@ -475,7 +484,7 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 	if (index(tmp, i_str[i-1])==NULL)
 	    return i-1;
     }
-    memory_area.dealloc(tmp);
+    DEALLOC(tmp);
     return -1;
 }
 
@@ -577,7 +586,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     i_len += (amt_replace * (replace_len - find_len));
     if (i_len == 0)
     {
-	memory_area.dealloc(i_str);
+	DEALLOC(i_str);
 	return;
     }
 
@@ -587,7 +596,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	i_res *= 2;
     while (i_res / 2 > i_len)
 	i_res /= 2;
-    tmp = (char *) memory_area.alloc(i_res);
+    tmp = ALLOC(i_res);
     if (tmp == NULL)
 	NOMEM;
     memset(tmp, 0, i_res);
@@ -611,7 +620,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	    memcpy(&tmp[j], iter->first, old_len - i);
 	}
     }
-    memory_area.dealloc(i_str);
+    DEALLOC(i_str);
     i_str = tmp;
 }
 
@@ -822,7 +831,7 @@ int mstring::Format(const char *fmt, ...)
 int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int length, size = 1024;
-    char *buffer = (char *) memory_area.alloc(size);
+    char *buffer = ALLOC(size);
     if (buffer == NULL)
 	NOMEMR(-1);
     while (buffer != NULL)
@@ -830,21 +839,21 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	length = vsnprintf(buffer, size-1, fmt, argptr);
 	if (length < size)
 	    break;
-	memory_area.dealloc(buffer);
+	DEALLOC(buffer);
 	size *= 2;
-	buffer = (char *) memory_area.alloc(size);
+	buffer = ALLOC(size);
 	if (buffer == NULL)
 	    NOMEMR(-1);
     }
     if (buffer && length < 1)
     {
-	memory_area.dealloc(buffer);
+	DEALLOC(buffer);
 	buffer = NULL;
     }
     if (buffer)
     {
 	copy(buffer, length);
-	memory_area.dealloc(buffer);
+	DEALLOC(buffer);
     }
     else
 	copy(NULL, 0);
