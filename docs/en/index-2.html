@@ -62,18 +62,20 @@ This utility is still in its infancy for ACE, and tends not to work.
 <P>Instead, you should follow the instructions that are outlined in the
 ACE-INSTALL file, which is simply (from the ACE_wrappers directory):
 <P>
-<UL>
-<LI>export ACE_ROOT=$PWD</LI>
-<LI>cd ace</LI>
-<LI>ls config*     (find the one for your system)</LI>
-<LI>ln -s config-your-system.h config.h</LI>
-<LI>cd ..</LI>
-<LI>cd include/makeinclude</LI>
-<LI>ls platform*     (find the one for your system)</LI>
-<LI>ln -s platform_your_system.GNU platform_macros.GNU</LI>
-<LI>cd ../..</LI>
-<LI>make</LI>
-</UL>
+<BLOCKQUOTE><CODE>
+<PRE>
+export ACE_ROOT=$PWD
+cd ace
+ls config*    (find the one for your system)
+ln -s config-your-system.h config.h
+cd ..
+cd include/makeinclude
+ls platform*    (find the one for your system)
+ln -s platform_your_system.GNU platform_macros.GNU
+cd ../..
+make
+</PRE>
+</CODE></BLOCKQUOTE>
 <P>Note on the above.  The 'export ACE_ROOT=' command may not work on
 your shell.  csh and tcsh users will have to se 'set ACE_ROOT=',
 and on some other weird shells, just 'ACE_ROOT='.  Try them until

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2000/09/06 11:27:33  prez
+** Finished the T_Modify / T_Changing traces, fixed a bug in clone
+** adding (was adding clone liimt as the mask length), updated docos
+** a little more, and added a response to SIGINT to signon clients.
+**
 ** Revision 1.97  2000/09/02 07:20:46  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -209,8 +214,10 @@ static const char *ident = "@(#)$Id$";
 bool OperServ::AddHost(mstring host)
 {
     FT("OperServ::AddHost", (host));
+    bool retval = false;
 
     WLOCK(("OperServ", "CloneList"));
+    MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) == CloneList.end())
 	CloneList[host.LowerCase()].first = 0;
     CloneList[host.LowerCase()].first++;
@@ -249,7 +256,7 @@ bool OperServ::AddHost(mstring host)
 			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
 			Parent->operserv.Clone_Akill().c_str());
 	    }
-	    RET(true);
+	    retval = true;
 	}
     }
     else
@@ -283,10 +290,12 @@ bool OperServ::AddHost(mstring host)
 			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
 			Parent->operserv.Clone_Akill().c_str());
 	    }
-	    RET(true);
+	    retval = true;
 	}
     }}
-    RET(false);
+
+    MCE(CloneList.size());
+    RET(retval);
 }
 
 void OperServ::RemHost(mstring host)
@@ -294,6 +303,7 @@ void OperServ::RemHost(mstring host)
     FT("OperServ::RemHost", (host));
 
     WLOCK(("OperServ", "CloneList"));
+    MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) != CloneList.end())
     {
 	if (CloneList[host.LowerCase()].first > 1)
@@ -301,6 +311,7 @@ void OperServ::RemHost(mstring host)
 	else
 	    CloneList.erase(host.LowerCase());
     }
+    MCE(CloneList.size());
 }
 
 size_t OperServ::CloneList_sum()
@@ -365,8 +376,10 @@ bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, m
     if (!Clone_find(entry))
     {
 	pair<set<entlist_val_t<pair<unsigned int, mstring> > >::iterator,bool> tmp;
+	MCB(i_Clone.size());
 	tmp = i_Clone.insert(entlist_val_t<pair<unsigned int, mstring> >(
 			entry, pair<unsigned int, mstring>(value, reason), nick, added));
+	MCE(i_Clone.size());
 	if (tmp.second)
 	    Clone = tmp.first;
 	else
@@ -388,7 +401,9 @@ bool OperServ::Clone_erase()
     MLOCK(("OperServ", "Clone"));
     if (Clone != i_Clone.end())
     {
+	MCB(i_Clone.size());
 	i_Clone.erase(Clone);
+	MCE(i_Clone.size());
 	Clone = i_Clone.end();
 	RET(true);
     }
@@ -468,8 +483,10 @@ bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, 
     if (!Akill_find(entry))
     {
 	pair<set<entlist_val_t<pair<unsigned long, mstring> > >::iterator, bool> tmp;
+	MCB(i_Akill.size());
 	tmp = i_Akill.insert(entlist_val_t<pair<unsigned long, mstring> >(
 			entry, pair<unsigned long, mstring>(value, reason), nick, added));
+	MCE(i_Akill.size());
 	if (tmp.second)
 	    Akill = tmp.first;
 	else
@@ -491,7 +508,9 @@ bool OperServ::Akill_erase()
     MLOCK(("OperServ", "Akill"));
     if (Akill != i_Akill.end())
     {
+	MCB(i_Akill.size());
 	i_Akill.erase(Akill);
+	MCE(i_Akill.size());
 	Akill = i_Akill.end();
 	RET(true);
     }
@@ -587,7 +606,9 @@ bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
     if (!OperDeny_find(entry))
     {
 	pair<set<entlist_val_t<mstring > >::iterator, bool> tmp;
+	MCB(i_OperDeny.size());
 	tmp = i_OperDeny.insert(entlist_val_t<mstring>(entry, value, nick));
+	MCE(i_OperDeny.size());
 	if (tmp.second)
 	    OperDeny = tmp.first;
 	else
@@ -609,7 +630,9 @@ bool OperServ::OperDeny_erase()
     MLOCK(("OperServ", "OperDeny"));
     if (OperDeny != i_OperDeny.end())
     {
+	MCB(i_OperDeny.size());
 	i_OperDeny.erase(OperDeny);
+	MCE(i_OperDeny.size());
 	OperDeny = i_OperDeny.end();
 	RET(true);
     }
@@ -706,7 +729,9 @@ bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
     if (!Ignore_find(entry))
     {
 	pair<set<entlist_val_t<bool> >::iterator, bool> tmp;
+	MCB(i_Ignore.size());
 	tmp = i_Ignore.insert(entlist_val_t<bool>(entry, perm, nick));
+	MCE(i_Ignore.size());
 	if (tmp.second)
 	    Ignore = tmp.first;
 	else
@@ -728,7 +753,9 @@ bool OperServ::Ignore_erase()
     MLOCK(("OperServ", "Ignore"));
     if (Ignore != i_Ignore.end())
     {
+	MCB(i_Ignore.size());
 	i_Ignore.erase(Ignore);
+	MCE(i_Ignore.size());
 	Ignore = i_Ignore.end();
 	RET(true);
     }
@@ -2425,15 +2452,6 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	return;
     }
-
-    unsigned int num = ACE_OS::atoi(amount.c_str());
-    if (num < 1 || num > Parent->operserv.Max_Clone())
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				1, Parent->operserv.Max_Clone());
-	return;
-    }
-
     unsigned int i;
     bool super = (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source));
@@ -2467,6 +2485,14 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
 			Parent->getMessage(source, "LIST/CLONE").c_str(), 1);
+	return;
+    }
+
+    unsigned int num = ACE_OS::atoi(amount.c_str());
+    if (num < 1 || num > Parent->operserv.Max_Clone())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				1, Parent->operserv.Max_Clone());
 	return;
     }
 

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.128  2000/09/06 11:27:33  prez
+** Finished the T_Modify / T_Changing traces, fixed a bug in clone
+** adding (was adding clone liimt as the mask length), updated docos
+** a little more, and added a response to SIGINT to signon clients.
+**
 ** Revision 1.127  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -233,6 +238,7 @@ int IrcSvcHandler::open(void *in)
 
     // Only activate the threads when we're ready.
     mBase::init();
+    DumpB();
     CP(("IrcSvcHandler activated"));
     RET(0);
 }
@@ -256,6 +262,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // Traffic Accounting ...
     map<time_t, size_t>::iterator iter;
     time_t now = time(NULL);
+    DumpB();
     
     { WLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
@@ -366,6 +373,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     }
     else
         flack = data2;
+    DumpE();
 
     DRET(0);
 }
@@ -421,7 +429,9 @@ void IrcSvcHandler::HTM_Threshold(size_t in)
 {
     FT("IrcSvcHandler::HTM_Threshold", (in));
     WLOCK(("IrcSvcHandler", "htm_threshold"));
+    MCB(htm_threshold);
     htm_threshold = in;
+    MCE(htm_threshold);
 }
 
 
@@ -431,6 +441,9 @@ void IrcSvcHandler::HTM(bool in)
     WLOCK(("IrcSvcHandler", "last_htm_check"));
     WLOCK2(("IrcSvcHandler", "htm_level"));
     WLOCK3(("IrcSvcHandler", "htm_gap"));
+    MCB(last_htm_check);
+    CB(1, htm_level);
+    CB(2, htm_gap);
     last_htm_check = Now();
     if (in)
     {
@@ -442,6 +455,9 @@ void IrcSvcHandler::HTM(bool in)
 	htm_level = 0;
 	htm_gap = Parent->operserv.Init_HTM_Gap();
     }
+    CE(1, htm_level);
+    CE(2, htm_gap);
+    MCE(last_htm_check);
 }
 
 size_t IrcSvcHandler::Average(time_t secs)
@@ -474,6 +490,18 @@ int IrcSvcHandler::send(const mstring & data)
     recvResult=sock.send((void *) (data + "\r\n").c_str(),data.Len()+2);
     CH(D_To,data);
     RET(recvResult);
+}
+
+void IrcSvcHandler::DumpB()
+{
+    MB(0, (traffic.size(), in_traffic, out_traffic, connect_time,
+	last_htm_check, htm_level, htm_gap, htm_threshold));
+}
+
+void IrcSvcHandler::DumpE()
+{
+    ME(0, (traffic.size(), in_traffic, out_traffic, connect_time,
+	last_htm_check, htm_level, htm_gap, htm_threshold));
 }
 
 mstring Reconnect_Handler::FindNext(mstring server) {
@@ -542,6 +570,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     ACE_INET_Addr addr(details.first, server);
 
+    Parent->DumpB();
+    CB(1, Parent->i_server);
     Parent->GotConnect(false);
     Parent->i_server = server;
     Parent->server.proto.Tokens(false);
@@ -592,7 +622,11 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     else
     {
 	if (Parent->ircsvchandler != NULL)
+	{
+	    CB(2, Parent->i_localhost);
 	    Parent->i_localhost = Parent->ircsvchandler->Local_IP();
+	    CE(2, Parent->i_localhost);
+	}
 	if (Parent->server.proto.TSora())
 	    Parent->server.raw("PASS " + details.second + " :TS");
 	else
@@ -609,6 +643,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(itoa(time(NULL))));
 	Parent->Connected(true);
     }
+    CE(1, Parent->i_server);
+    Parent->DumpE();
     DRET(0);
 }
 
@@ -621,7 +657,10 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     mstring *tmp = (mstring *) arg;
 
     { WLOCK(("Server", "ServerSquit"));
+    Parent->server.DumpB();
+    CB(1, Parent->server.ServerSquit.size());
     Parent->server.ServerSquit.erase(*tmp);
+    CE(1, Parent->server.ServerSquit.size());
     }
 
     if (Parent->server.IsServer(*tmp))
@@ -637,6 +676,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Parent->server.ToBeSquit.find(*tmp) != Parent->server.ToBeSquit.end())
     {
 	list<mstring>::iterator iter;
+	CB(2, Parent->server.ToBeSquit.size());
 	for (iter=Parent->server.ToBeSquit[*tmp].begin(); iter!=Parent->server.ToBeSquit[*tmp].end(); iter++)
 	{
 	    if (Parent->nickserv.IsLive(*iter))
@@ -647,7 +687,9 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    }
 	}
 	Parent->server.ToBeSquit.erase(*tmp);
+	CE(2, Parent->server.ToBeSquit.size());
     }   
+    Parent->server.DumpE();
 
     delete tmp;
     DRET(0);
@@ -663,8 +705,14 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
     { WLOCK(("Server", "ServerSquit"));
     WLOCK2(("Server", "ToBeSquit"));
+    Parent->server.DumpB();
+    CB(1, Parent->server.ServerSquit.size());
+    CB(2, Parent->server.ToBeSquit.size());
     Parent->server.ServerSquit.erase(*tmp);
     Parent->server.ToBeSquit.erase(*tmp);
+    CE(1, Parent->server.ServerSquit.size());
+    CE(2, Parent->server.ToBeSquit.size());
+    Parent->server.DumpE();
     }
 
     // QUIT all user's who did not come back from SQUIT
@@ -740,7 +788,11 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     {
 	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
 	MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
+	Parent->chanserv.live[tmp->LowerCase()].DumpB();
+	CB(1, Parent->chanserv.live[tmp->LowerCase()].ph_timer);
 	Parent->chanserv.live[tmp->LowerCase()].ph_timer = 0;
+	CE(1, Parent->chanserv.live[tmp->LowerCase()].ph_timer);
+	Parent->chanserv.live[tmp->LowerCase()].DumpE();
     }
     delete tmp;
     DRET(0);
@@ -758,14 +810,18 @@ void EventTask::ForceSave()
 {
     NFT("EventTask::ForceSave");
     WLOCK(("Events", "last_save"));
+    MCB(last_save);
     last_save = mDateTime(0.0);
+    MCE(last_save);
 }
 
 void EventTask::ForcePing()
 {
     NFT("EventTask::ForcePing");
     WLOCK(("Events", "last_ping"));
+    MCB(last_ping);
     last_ping = mDateTime(0.0);
+    MCE(last_ping);
 }
 
 mstring EventTask::SyncTime()
@@ -802,6 +858,7 @@ int EventTask::svc(void)
     WLOCK4(("Events", "last_ping"));
     last_expire = last_save = last_check = last_ping = Now();
     }
+    DumpB();
 
     ACE_Thread_Manager tm;
     while(!Parent->Shutdown())
@@ -1012,7 +1069,9 @@ int EventTask::svc(void)
 	    TxnIds::Expire();
 
 	    WLOCK(("Events", "last_expire"));
+	    MCB(last_expire);
 	    last_expire = Now();
+	    MCE(last_expire);
 	}}
 
 	{ RLOCK(("Events", "last_save"));
@@ -1024,7 +1083,9 @@ int EventTask::svc(void)
 	    tm.spawn(save_databases, NULL);
 
 	    WLOCK(("Events", "last_save"));
+	    MCB(last_save);
 	    last_save = Now();
+	    MCE(last_save);
 	}}
 
 	{ RLOCK(("Events", "last_check"));
@@ -1240,7 +1301,9 @@ int EventTask::svc(void)
 		Parent->nickserv.recovered.erase(chunked[i]);
 	    }
 	    WLOCK(("Events", "last_check"));
+	    MCB(last_check);
 	    last_check = Now();
+	    MCE(last_check);
 	}}
 
 	{ RLOCK(("Events", "last_ping"));
@@ -1290,12 +1353,24 @@ int EventTask::svc(void)
 		}
 	    }
 	    WLOCK(("Events", "last_ping"));
+	    MCB(last_ping);
 	    last_ping = Now();
+	    MCE(last_ping);
 	}}
 	
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }
     DRET(0);
+}
+
+void EventTask::DumpB()
+{
+    MB(0, (last_expire, last_save, last_check, last_ping));
+}
+
+void EventTask::DumpE()
+{
+    ME(0, (last_expire, last_save, last_check, last_ping));
 }
 

@@ -179,6 +179,28 @@ PARAMATER       SHORT   GROUP           OPTION
 ./magick --config /etc/magick.ini
 </PRE>
 </CODE></BLOCKQUOTE>
+<P>After Magick is running, it should be totally driven through the
+on-line cilents (NickServ, ChanServ, OperServ, etc).  However,
+in certain cases, events happen and these interfaces are either
+not available, not responding, too slow, or dont recognize you.
+For this eventuality, all UNIX SIGNALS have been trapped, and
+some perform extra functions that 'originally' intended.
+<P>
+<BLOCKQUOTE><CODE>
+<PRE>
+SIGNAL  NUMBER  EQUIVILANT      DESCRIPTION
+------  ------  ----------      -----------
+SIGHUP  1       OS RELOAD       Re-loads the config file.
+SIGINT  2       OS SIGNON       Attempts to sign on all cilents.
+SIGTERM 15      OS UPDATE       Saves the databases.
+</PRE>
+</CODE></BLOCKQUOTE>
+<P>Some have queried me on why SIGTERM saves the databases.  During
+shutdown of many systems, the shutdown scripts will send a SIGTERM
+to all running processes, wait a while, then send a SIGKILL (9).
+This gives us a chance to save our databases before we're killed.
+This also means that you must use kill -KILL (kill -9) to kill
+Magick once it has been started.
 <P>To use encryption, you must generate a key file with the program
 magick_keygen.  This program accepts a maximum of two arguments,
 being the output key filename, and an input file with the plain

@@ -29,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.269  2000/09/06 11:27:33  prez
+** Finished the T_Modify / T_Changing traces, fixed a bug in clone
+** adding (was adding clone liimt as the mask length), updated docos
+** a little more, and added a response to SIGINT to signon clients.
+**
 ** Revision 1.268  2000/09/02 07:20:45  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -481,6 +486,7 @@ Magick::Magick(int inargc, char **inargv)
     i_auto = false;
     i_verbose = false;
 
+    DumpB();
     ACE_LOG_MSG->open(i_programname.c_str());
 }
 
@@ -752,7 +758,9 @@ int Magick::Start()
 		PACKAGE, VERSION);
     while(!Shutdown())
     {
+	DumpB();
 	ACE_Reactor::instance()->run_event_loop();
+	DumpE();
 	FLUSH();
     }
 
@@ -972,6 +980,7 @@ StartGetLang:
 	map<mstring,mstring> tmp = fconf.GetMap();
 	map<mstring,mstring>::iterator i;
 
+	MCB(Help.size());
 	mstring section;
 	triplet<mstring,mstring,mstring> entry;
 	for (i=tmp.begin(); i!=tmp.end(); i++)
@@ -987,6 +996,7 @@ StartGetLang:
 
 	    Help[language][section].push_back(entry);
 	}
+	MCE(Help.size());
 	if (tmp.size())
 	{
 	    Log(LM_INFO, getLogMessage("OTHER/LOAD_HELP"),
@@ -1123,8 +1133,10 @@ void Magick::LoadInternalMessages()
     map<mstring,mstring> tmp = fconf.GetMap(); 
     if (tmp.size())
     {
+	MCB(Messages.size());
 	Messages.erase("DEFAULT");
 	Messages["DEFAULT"] = tmp;
+	MCE(Messages.size());
     }
 }
 
@@ -1146,8 +1158,10 @@ bool Magick::LoadExternalMessages(mstring language)
 	map<mstring,mstring> tmp = fconf.GetMap();
 	if (tmp.size())
 	{
+	    MCB(Messages.size());
 	    Messages.erase(language.UpperCase());
 	    Messages[language.UpperCase()] = tmp;
+	    MCE(Messages.size());
 	    RET(true);
 	}
     }
@@ -1161,6 +1175,7 @@ bool Magick::LoadLogMessages(mstring language)
 
     WLOCK(("LogMessages"));
     LogMessages.clear();
+    MCB(LogMessages.size());
     {
 #include "logfile.h"
 	vector<mstring> log;
@@ -1181,6 +1196,7 @@ bool Magick::LoadLogMessages(mstring language)
 	map<mstring,mstring> tmp = fconf.GetMap();
 	LogMessages.insert(tmp.begin(), tmp.end());
     }
+    MCE(LogMessages.size());
 
     if (LogMessages.size())
     {
@@ -1197,7 +1213,9 @@ bool Magick::UnloadExternalMessages(mstring language)
 	Messages.find(language.UpperCase()) != Messages.end())
     {
 	WLOCK(("Messages"));
+	MCB(Messages.size());
 	Messages.erase(language.UpperCase());
+	MCE(Messages.size());
 	RET(true);
     }
     RET(false);
@@ -1211,7 +1229,9 @@ bool Magick::UnloadHelp(mstring language)
 	Help.find(language.UpperCase()) != Help.end())
     {
 	WLOCK(("Help"));
+	MCB(Help.size());
 	Help.erase(language.UpperCase());
+	MCE(Help.size());
 	RET(true);
     }
     RET(false);
@@ -1874,6 +1894,7 @@ bool Magick::get_config_values()
     mstring ts_OperServ=mstring("OperServ/");
     mstring ts_CommServ=mstring("CommServ/");
     mstring ts_ServMsg=mstring("ServMsg/");
+    DumpB();
 
     in.Read(ts_Startup+"SERVER_NAME",value_mstring,"services.magick.tm");
     if (value_mstring != startup.server_name)
@@ -2771,6 +2792,7 @@ bool Magick::get_config_values()
 	}}
     }
 
+    DumpE();
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
     RET(true);
 }
@@ -2786,14 +2808,10 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     // todo: fill this sucker in
     switch(signum)
     {
-    case SIGINT:	// CTRL-C, Background.
-#if defined(SIGQUIT) && (SIGQUIT != 0)
-    case SIGQUIT:	// Terminal dead, Background.
-#endif
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	//fork();
+    case SIGINT:	// Re-signon all clients
+	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SIGNON"), signum);
+	Parent->server.SignOnAll();
 	break;
-
 
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
@@ -2983,8 +3001,12 @@ mstring Magick::GetKey()
 void Magick::Disconnect()
 {
     NFT("Magick::Disconnect");
+    MCB(i_connected);
+    CB(1, i_reconnect);
     i_reconnect = false;
     i_connected = false;
+    CE(1, i_reconnect);
+    MCE(i_connected);
     { WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
@@ -3073,6 +3095,8 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 void Magick::save_databases()
 {
     NFT("Magick::save_databases");
+    if (i_saving)
+	return;
     i_saving = true;
     if (mFile::Exists(files.Database()+".new"))
 	mFile::Erase(files.Database()+".new");

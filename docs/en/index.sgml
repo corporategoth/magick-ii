@@ -356,18 +356,18 @@ This utility is still in its infancy for ACE, and tends not to work.
 Instead, you should follow the instructions that are outlined in the
 ACE-INSTALL file, which is simply (from the ACE_wrappers directory):
 
-<itemize>
-<item>export ACE_ROOT=$PWD
-<item>cd ace
-<item>ls config*     (find the one for your system)
-<item>ln -s config-your-system.h config.h
-<item>cd ..
-<item>cd include/makeinclude
-<item>ls platform*     (find the one for your system)
-<item>ln -s platform_your_system.GNU platform_macros.GNU
-<item>cd ../..
-<item>make
-</itemize>
+<tscreen><verb>
+export ACE_ROOT=$PWD
+cd ace
+ls config*    (find the one for your system)
+ln -s config-your-system.h config.h
+cd ..
+cd include/makeinclude
+ls platform*    (find the one for your system)
+ln -s platform_your_system.GNU platform_macros.GNU
+cd ../..
+make
+</verb></tscreen>
 
 Note on the above.  The 'export ACE_ROOT=' command may not work on
 your shell.  csh and tcsh users will have to se 'set ACE_ROOT=',
@@ -842,6 +842,28 @@ Example:
 <tscreen><verb>
 ./magick --config /etc/magick.ini
 </verb></tscreen>
+
+After Magick is running, it should be totally driven through the
+on-line cilents (NickServ, ChanServ, OperServ, etc).  However,
+in certain cases, events happen and these interfaces are either
+not available, not responding, too slow, or dont recognize you.
+For this eventuality, all UNIX SIGNALS have been trapped, and
+some perform extra functions that 'originally' intended.
+
+<tscreen><verb>
+SIGNAL	NUMBER	EQUIVILANT	DESCRIPTION
+------	------	----------	-----------
+SIGHUP	1	OS RELOAD	Re-loads the config file.
+SIGINT	2	OS SIGNON	Attempts to sign on all cilents.
+SIGTERM	15	OS UPDATE	Saves the databases.
+</verb></tscreen>
+
+Some have queried me on why SIGTERM saves the databases.  During
+shutdown of many systems, the shutdown scripts will send a SIGTERM
+to all running processes, wait a while, then send a SIGKILL (9).
+This gives us a chance to save our databases before we're killed.
+This also means that you must use kill -KILL (kill -9) to kill
+Magick once it has been started.
 
 To use encryption, you must generate a key file with the program
 magick_keygen.  This program accepts a maximum of two arguments,

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/09/06 11:27:33  prez
+** Finished the T_Modify / T_Changing traces, fixed a bug in clone
+** adding (was adding clone liimt as the mask length), updated docos
+** a little more, and added a response to SIGINT to signon clients.
+**
 ** Revision 1.17  2000/08/07 12:20:27  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -140,6 +145,7 @@ load_ns_dbase (void)
 	while (fgetc (f) == 1)
 	{
 	    ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
+	    ACE_OS::memset(ni, 0, sizeof(NickInfo));
 	    if (1 != ACE_OS::fread (ni, sizeof (NickInfo), 1, f))
 		Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 	    ni->flags &= ~(NI_IDENTIFIED | NI_RECOGNIZED);
@@ -191,6 +197,8 @@ load_ns_dbase (void)
 	    {
 		ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
 		old_ni = (NickInfo_V3 *) ACE_OS::malloc (sizeof (NickInfo_V3));
+		ACE_OS::memset(ni, 0, sizeof(NickInfo));
+		ACE_OS::memset(old_ni, 0, sizeof(NickInfo_V3));
 		if (1 != ACE_OS::fread (old_ni, sizeof (NickInfo_V3), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
@@ -253,6 +261,8 @@ load_ns_dbase (void)
 	    {
 		ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
 		old_ni = (NickInfo_V1 *) ACE_OS::malloc (sizeof (NickInfo_V1));
+		ACE_OS::memset(ni, 0, sizeof(NickInfo));
+		ACE_OS::memset(old_ni, 0, sizeof(NickInfo_V1));
 		if (1 != ACE_OS::fread (ni, sizeof (NickInfo_V1), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
@@ -440,6 +450,7 @@ load_cs_dbase (void)
 	    while (fgetc (f) == 1)
 	    {
 		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
+		ACE_OS::memset(ci, 0, sizeof(ChanInfo));
 		if (1 != ACE_OS::fread (ci, sizeof (ChanInfo), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		ci->desc = read_string (f, chanserv_db);
@@ -569,6 +580,8 @@ load_cs_dbase (void)
 	    {
 		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
 		old_ci = (ChanInfo_V3 *) ACE_OS::malloc (sizeof (ChanInfo_V3));
+		ACE_OS::memset(ci, 0, sizeof(ChanInfo));
+		ACE_OS::memset(old_ci, 0, sizeof(ChanInfo_V3));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V3), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		/* Convert old dbase! */
@@ -739,6 +752,8 @@ load_cs_dbase (void)
 	    {
 		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
 		old_ci = (ChanInfo_V1 *) ACE_OS::malloc (sizeof (ChanInfo_V1));
+		ACE_OS::memset(ci, 0, sizeof(ChanInfo));
+		ACE_OS::memset(old_ci, 0, sizeof(ChanInfo_V1));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V1), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		/* Convert old dbase! */
@@ -1199,9 +1214,11 @@ load_ms_dbase (void)
 	    while (fgetc (f) == 1)
 	    {
 		ml = (MemoList *) ACE_OS::malloc (sizeof (MemoList));
+		ACE_OS::memset(ml, 0, sizeof(MemoList));
 		if (1 != ACE_OS::fread (ml, sizeof (MemoList), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", memoserv_db);
 		ml->memos = memos = (Memo *) ACE_OS::malloc (sizeof (Memo) * ml->n_memos);
+		ACE_OS::memset(ml->memos, 0, sizeof(Memo) * ml->n_memos);
 		ACE_OS::fread (memos, sizeof (Memo), ml->n_memos, f);
 		for (j = 0; j < ml->n_memos; ++j, ++memos)
 		    memos->text = read_string (f, memoserv_db);
@@ -1246,9 +1263,11 @@ load_news_dbase (void)
 	    while (fgetc (f) == 1)
 	    {
 		nl = (NewsList *) ACE_OS::malloc (sizeof (NewsList));
+		ACE_OS::memset(nl, 0, sizeof(NewsList));
 		if (1 != ACE_OS::fread (nl, sizeof (NewsList), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", newsserv_db);
 		nl->newss = newss = (Memo *) ACE_OS::malloc (sizeof (Memo) * nl->n_newss);
+		ACE_OS::memset(nl->newss, 0, sizeof(Memo) * nl->n_newss);
 		ACE_OS::fread (newss, sizeof (Memo), nl->n_newss, f);
 		for (j = 0; j < nl->n_newss; ++j, ++newss)
 		    newss->text = read_string (f, newsserv_db);
@@ -1395,6 +1414,7 @@ load_sop ()
 	else
 	    sop_size = 2 * nsop;
 	sops = (Sop *) ACE_OS::malloc (sizeof (Sop) * sop_size);
+	ACE_OS::memset(sops, 0, sizeof(Sop) * sop_size);
 	if (!nsop)
 	{
 	    fclose (f);
@@ -1447,7 +1467,8 @@ load_message ()
 	    message_size = 16;
 	else
 	    message_size = 2 * nmessage;
-	messages = (Message *) ACE_OS::malloc (sizeof (*messages) * message_size);
+	messages = (Message *) ACE_OS::malloc (sizeof (Message) * message_size);
+	ACE_OS::memset(messages, 0, sizeof(Message) * message_size);
 	if (!nmessage)
 	{
 	    fclose (f);
@@ -1510,7 +1531,8 @@ load_akill ()
 	    akill_size = 16;
 	else
 	    akill_size = 2 * nakill;
-	akills = (Akill *) ACE_OS::malloc (sizeof (*akills) * akill_size);
+	akills = (Akill *) ACE_OS::malloc (sizeof (Akill) * akill_size);
+	ACE_OS::memset(akills, 0, sizeof(Akill) * akill_size);
 	if (!nakill)
 	{
 	    fclose (f);
@@ -1559,7 +1581,8 @@ load_akill ()
 		akill_size = 16;
 	    else
 		akill_size = 2 * nakill;
-	    akills = (Akill *) ACE_OS::malloc (sizeof (*akills) * akill_size);
+	    akills = (Akill *) ACE_OS::malloc (sizeof (Akill) * akill_size);
+	    ACE_OS::memset(akills, 0, sizeof(Akill) * akill_size);
 	    if (!nakill)
 	    {
 		fclose (f);
@@ -1639,7 +1662,8 @@ load_clone ()
 	    clone_size = 16;
 	else
 	    clone_size = 2 * nclone;
-	clones = (Allow *) ACE_OS::malloc (sizeof (*clones) * clone_size);
+	clones = (Allow *) ACE_OS::malloc (sizeof (Allow) * clone_size);
+	ACE_OS::memset(clones, 0, sizeof(Allow) * clone_size);
 	if (!nclone)
 	{
 	    fclose (f);

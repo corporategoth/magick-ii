@@ -246,6 +246,7 @@ SIGNAL_SAVE      =Caught signal #%d, saving databases.
 SIGNAL_LOAD      =Caught signal #%d, loading configuration file.
 SIGNAL_RETRY     =Caught signal #%d, attempting to retry.
 SIGNAL_KILL      =Caught signal #%d - last function was %s, attempting to shutdown.
+SIGNAL_SIGNON    =Caught signal #%d, re-signing on all clients.
 SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.
 NOT_IMPLEMENTED  =Entered %s, which is not implemented.
 INVALID_FORMAT   =Invalid date format char %d%c in %s.

@@ -25,6 +25,11 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/09/06 11:27:33  prez
+** Finished the T_Modify / T_Changing traces, fixed a bug in clone
+** adding (was adding clone liimt as the mask length), updated docos
+** a little more, and added a response to SIGINT to signon clients.
+**
 ** Revision 1.40  2000/08/31 06:25:08  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -150,6 +155,8 @@ public:
     void HTM_Threshold(size_t in);
     void HTM(bool in);
     size_t Average(time_t secs = 0);
+    void DumpB();
+    void DumpE();
 };
 
 typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
@@ -168,6 +175,8 @@ public:
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);
+    void DumpB();
+    void DumpE();
 };
 
 #endif
