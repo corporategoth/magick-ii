@@ -89,27 +89,16 @@ UNKNOWN_OPTION     =Optie %s niet herkend, Tiep /msg %s HELP %s voor help.
 NEED_PARAMS        =Onvoldoende parameters gespecificeerd voor %s. Tiep /msg %s HELP %s voor help.
 MUSTCONTAIN        =Gespecificeerde %s invoer moet een %s karakter bevatten.
 MAYNOTCONTAIN      =Gespecificeerde %s invoer mag niet een '%c' karakter bevatten.
-
-
-; Problem: "wildcard"
-STARTHRESH         =Gespecificeerde %s invoer moet meer dan %d non-wildcard karakters bevatten.
-
-
+STARTHRESH         =Gespecificeerde %s invoer moet meer dan %d joker-tekens karakters bevatten.
 MUSTBENUMBER       =Je moet een nummer tussen %d en %d specificeren.
-
-
-POSWHOLENUMBER     =You may only specify a posetive whole number.
-
-
-MUSTBEONOFF        =Je mag alleen "AAN" of "AF" specificeren.
-
-
-NONNUMERIC         =Non-numeric arguments specified (ignored).
-ABOVELIMIT         =All entries above %d have been ignored.
-CHANFILEATTACH     =File attachments are not allowed to channels.
-MULTI_MODE         =Multiple +/-%c modes specified (ignored).
-NOKEY              =No key specified, but required (ignored).
-NOLIMIT            =No limit specified, but required (ignored).
+POSWHOLENUMBER     =Je mag alleen een positief geheel getal specificeren.
+MUSTBEONOFF        =Je mag alleen "AAN" of "UIT" specificeren.
+NONNUMERIC         =Niet-numerieke argumented gespecificeerd (genegeerd).
+ABOVELIMIT         =Alle invoer over %d was genegeerd.
+CHANFILEATTACH     =Gegevens bijlage zijn niet toegestaan in kanalen.
+MULTI_MODE         =Meerdere +/-%c modes gespecificeerd (genegeerd).
+NOKEY              =Geen sleutel Gespecificeerd, maar vereist (genegeerd).
+NOLIMIT            =Geen limiet gespecificeerd, maar vereist (genegeerd).
 
 ;
 ; This section describes SITUATION errors, ie. errors where you have
