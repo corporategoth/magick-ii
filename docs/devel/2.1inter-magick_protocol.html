@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+
+<title>Magick Specification: Inter-Magick Protocol</title>
+
+<meta name="keywords" content="magick,magick.tm,magick irc services,irc,irc services,services,internet relay chat,network,irc network services,network services,chat,irc operater,ircop,oper,operserv,nickserv,chanserv,memoserv,akill,ban,download,magick 2.0,magick 1.4,version 2,documentation,gpl,open source,c++">
+<meta name="description" content="Magick IRC Services">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="utils.js"></script>
+
+<link rel="stylesheet" type="text/css" href="magick.css">
+
+<link rel="shortcut icon" href="favicon.ico">
+
+</head>
+<body>
+
+<table class="center collapse" width="780" cellpadding="0" cellspacing="0" border="1">
+ <tr class="medium">
+  <td><div class="center"><img src="images/logo1.jpg" width="160" height="110" alt="Magick Logo"><img src="images/logo2.jpg" alt="Magick Logo" height="110" width="600"></div></td>
+ </tr>
+</table>
+
+<br />
+
+<table class="center collapse medium" width="780" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td>
+   <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+    <tr>
+     <td width="200" valign="top">
+      <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+       <tr>
+        <td>
+         <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="0">
+          <tr class="dark">
+           <td><b class="light-margin">Contents</b></td></tr>
+          <tr>
+           <td><br /></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Home'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#0'" class="hand"><p class="menu-side"><a href="#0">Home:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Summary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#1'" class="hand"><p class="menu-side"><a href="#1">Summary:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Justification'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#2'" class="hand"><p class="menu-side"><a href="#2">Justification:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Pre-Requisites'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#3'" class="hand"><p class="menu-side"><a href="#3">Pre-Requisites:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Implementation'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#4'" class="hand"><p class="menu-side"><a href="#4">Implementation:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Potential Problems'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#5'" class="hand"><p class="menu-side"><a href="#5">Potential Problems:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Test Plan'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#6'" class="hand"><p class="menu-side"><a href="#6">Test Plan:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Glossary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#7'" class="hand"><p class="menu-side"><a href="#7">Glossary:</a></p></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/spacer.gif" alt="" height="750" width="1"></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/logo3.jpg" alt="Magick Logo" height="300" width="190"></td></tr>
+         </table>
+        </td>
+       </tr>
+      </table>
+     </td>
+     <td width="580" valign="top">&nbsp;
+      <table width="580" cellpadding="2" cellspacing="2" border="0">
+       <tr>
+        <td><div class="center">
+         <table width="490" cellpadding="2" cellspacing="2" border="0" class="center">
+          <tr>
+           <td><h1><a name="0">Inter-Magick Protocol</a></h1></td></tr>
+          <tr>
+	   <td><table border="0" class="medium">
+            <tr><td><p>Project Number	</td><td><p>	4				</p></td></tr>
+            <tr><td><p>Slated Release	</td><td><p>	2.1				</p></td></tr>
+            <tr><td><p>Author		</td><td><p>	<a href="mailto:prez@magick.tm">Preston A. Elder</a>	</p></td></tr>
+            <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
+            <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
+			<br />$Log$
+			<br />Revision 1.1  2002/07/31 23:54:12  prez
+			<br />Added the inter-magick protocol spec.
+			<br />
+            </code></p></td></tr>
+           </table></td></tr>
+          <tr>
+           <td><br />
+
+            <h2><a name="1">Summary</a></h2>
+            <p>
+			Different sets of Magck IRC Services will be able to communicate with eachother, for things such as
+			database updates and letting eachother know how lagged they are so that another set of services can
+			take over as the primary set of services.  This protocol will also be used to communicate with the
+			Magick client.
+            </p><br />
+
+            <h2><a name="2">Justification</a></h2>
+            <p>
+			Magick IRC services can go offline or become lagged to the point they may as well be for a variety
+			of reasons (from network outages, DoS attacks, system maintanence, or just poor routing).  Magick
+			1.4 had the ability to run in 'backup' mode, where ther databases were read only, but at least they
+			were still there.  The updating of these databases was still the responsibility of the services
+			administrators, but for backup services, they worked.  Magick II has no such feature, as this method
+			of operation is inferior to the way it should work.  Magick has modelled its inter-magick protocol
+			on the eggdrop philosophy, or having multiple bots (or servers in this case) with up-to-date
+			databases so that if one goes down or is too slow, another can be used.
+            </p><br />
+
+            <h2><a name="3">Pre-Requisites</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+            <h2><a name="4">Implementation</a></h2>
+            <p>
+			The Inter-Magick protocol should be an easily extensible but efficient protocol.  It should be able
+			to be compressed and encrypted at the protocol user's request, and it should be versioned, so that
+			it is easy to recognize which revision of the protocol is being used.
+            </p><p>
+			Each protocol session should start with some kind of HELLO message, which will contain information
+			about what kind of process is talking (eg. Magick server, Magick client, etc), the protocol version
+			spoken by the protocol user, what extensions are supported (for example compression, encryption, etc),
+			and textual identifiers of both the protocol user's name (services name, etc) and a version string
+			(thats purely informational, and should include the name of the software using the protocol).
+            </p><p>
+			The protocol version should be evaluated to ensure that both ends can speak the same language (and
+			if not, an error message should be transmitted by the protocol with the higher version stating that
+			the older protocol version is not supported, otherwise the lesser protocol version should be spoken
+			for the session).  Once the session is established (and pleasantries exchanged), the extensions
+			should be evaluated.  For example, if encryption is to be used, some form of key exchange should
+			occur to create an encrypted session.  Once all excensions have been applied to the session, finally
+			authentication should be performed, to ensure the other end is who they say they are, and that they
+			are of the correct type, and are allowed to talk to us.  This is done after extensions are applied
+			so that no authentication data, etc. is transmitted over an unsecure connection.
+            </p><p>
+			Even when a session is established, certain types of servers will only be able to send certain
+			commands, and if the other end is of a type where a command is not valid, then an error should
+			be sent if they attempt to perform that commane (eg. a Magick server should probably not be able
+			to retrieve a log file from another server, and should get an error if it tries).  The actual
+			protocol should contain:
+			<ul>
+			<li>	A form of keepalive message (PING/PONG) that will be used during periods of little activity
+				to ensure that the connection is still alive.
+			</li>
+			<li>	A method to send type-specific messages, that will be interpereted by the other end to
+				perform a specific task.  For example a "RELOAD" message might be sent to a Magick server to
+				tell it to reload its configuration file.  A status message should be returned in response
+				to this, with either the result of the operation, or an error that the operation is invalid.
+			</li>
+			<li>	A method to send and recieve complete files, including information of how big the file in
+				transit is, the file name, and what kind of file it is.  File transfers should occur on a
+				different port to the main 'command' port.
+			</li>
+			<li>	A method to send a continually updating file.  The request should include the maximum number
+				of lines from the end of the file to send (or 0 for the whole file), what file type and name.
+				The file transfer should occur on a different port than the main 'command' port, however
+				this session should not close until a message is sent ording the tail to stop, or the main
+				'command' port is closed.
+			</li>
+			<li>	A method to indicate an update in data of some kind.  This message should include the record
+				type being updated, the key of the record being updated, the data type being updated, and
+				the data item itself.
+			</li>
+			<li>	A method to retrieve data of some kind.  Like updating, this should include the record type,
+				key of the record, and the data type being retrieved.
+			</li>
+			<li>	A method update or retrieve an entire record, using a series of key/value pairs.
+			</li>
+			<li>	A method to be able to report how much average lag and the current services level a magick
+				server has (this is only valid for Magick servers).
+			</li>
+			</ul>
+            </p><p>
+			Eventually, Magick will also be moving to being able to run in two modes, 'backup' and 'distributed'.
+			In backup mode, simple data updates will occur, and if lag becomes too great, and we're the best
+			candidate to take over, we do so.  In distributed mode, however, different services could be located
+			on different versions of Magick, meaning OperServ could be on one, and ChanServ on another, and
+			NickServ on yet another.  The protocol must be developed in a way that it is easily extensable enough
+			to support this.
+            </p><p>
+			<b>This spec should be updated with more speicific information as deeper analysis is done.</b>
+            </p><br />
+
+            <h2><a name="5">Potential Problems</a></h2>
+            <p>
+			Someone could implement the protocol above for malicious purposes, and because there is so much
+			power inherant in this protocol, could do significant damage.  As such, the authorization stage
+			and limiting of what can and cannot be used should be very strong.
+            </p><br />
+
+            <h2><a name="6">Test Plan</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+            <h2><a name="7">Glossary</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+           </td></tr>
+         </table></div>
+        </td>
+       </tr>
+       </div>
+      </table>  
+     </td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+<p class="center-sm">Copyright &copy;2001-2002 Magick.tm. All rights reserved.</p>
+&nbsp;
+</body>
+
+</html>

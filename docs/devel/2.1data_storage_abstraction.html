@@ -81,6 +81,9 @@
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.3  2002/07/31 23:54:12  prez
+			<br />Added the inter-magick protocol spec.
+			<br />
 			<br />Revision 1.2  2002/07/31 21:59:31  prez
 			<br />Extended the left-hand table size :)
 			<br />
@@ -154,6 +157,9 @@
 			</li>
 			<li>	A method for accepting ALL data/type pairs (at once) from the properties system, and
 				storing a complete record into the storage mechanism.
+			</li>
+			<li>	A method for retrieving a list of all record keys currently in the storage mechanism
+				for a particular record type.
 			</li>
 			<li>	A method for triggering a save of data.  For a 'live' storage mechanism, this does not
 				need to be implemented, as the default action is a no-op.  This will be called when the
