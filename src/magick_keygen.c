@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2001/05/13 18:59:17  prez
+** Fixed adding of 8 extra bytes when we align to 8 byte boundaries
+**
 ** Revision 1.13  2001/05/13 18:45:15  prez
 ** Fixed up the keyfile validation bug, and added more error reporting to
 ** the db load (also made sure it did not hang on certain circumstances).
@@ -243,7 +246,8 @@ int main(int argc, char **argv)
     fwrite(outstr, sizeof(unsigned char), 128, outfile);
 
     // normalize to a derivitive of sizeof(unsigned long) * 2
-    key_size += (TUPLE_SIZE - (key_size % TUPLE_SIZE));
+    if (key_size % TUPLE_SIZE)
+	key_size += (TUPLE_SIZE - (key_size % TUPLE_SIZE));
     mDES(inkey, outkey, key_size, key1, key2, 1);
     fwrite(outkey, sizeof(unsigned char), key_size, outfile);
     fclose(outfile);
