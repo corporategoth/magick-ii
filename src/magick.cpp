@@ -91,6 +91,8 @@ int Magick::Start()
 	LoadInternalMessages();
 	LoadExternalMessages();
 
+	StartTime=Now();
+
 	if(logfile!=NULL)
 		fclose(logfile);
 	return MAGICK_RET_TERMINATE;
@@ -210,6 +212,9 @@ mstring Magick::parseEscapes(const mstring & in)
 	catch(ParserException &E)
 	{
 		//todo
+		mstring blah;
+		blah.Format("Escape parser threw and exception at line: %d, column:%d of %s",E.line,E.column,E.getMessage().c_str());
+		wxLogWarning(blah);
 	}
 	return lexer.retstring;
 }

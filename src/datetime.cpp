@@ -40,12 +40,15 @@ mDateTime::mDateTime(time_t src)
 }
 mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
 {
+	wxLogError("Not Implemented");
+#if 0
 	if(flag==Date)
 		*this=StringToDate(src);
 	else if(flag=Time)
 		*this=StringToTime(src);
 	else if(flag=DateTime)
 		*this=StringToDateTime(src);
+#endif
 }
 
 const int SecsPerDay = 24 * 60 * 60;

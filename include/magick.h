@@ -14,6 +14,7 @@ using namespace std;
 #include "bob.hpp"
 #include "mstring.h"
 #include "fileconf.h"
+#include "datetime.h"	// Added by ClassView
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
@@ -31,6 +32,7 @@ class Magick
 	vector<mstring> MessageNamesShort;
 	ACE_Thread_Mutex mutex;
 public:
+	mDateTime StartTime;
 	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);
 	void LoadInternalMessages();
