@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.101  2001/05/22 22:57:10  prez
 ** Fixed nick linking/idetify, and recognition of committee heads.
 **
@@ -3216,7 +3219,7 @@ SXP::Tag Committee_t::tag_Members("Members");
 SXP::Tag Committee_t::tag_Messages("Messages");
 SXP::Tag Committee_t::tag_UserDef("UserDef");
 
-void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Committee_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Committee_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if (!(i_Name == Parent->commserv.SADMIN_Name() ||
@@ -3246,7 +3249,7 @@ void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Committee_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Committee_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -3318,7 +3321,7 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 SXP::Tag CommServ::tag_CommServ("CommServ");
 
-void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void CommServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("CommServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Committee_t *c = new Committee_t;
@@ -3334,7 +3337,7 @@ void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void CommServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("CommServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)

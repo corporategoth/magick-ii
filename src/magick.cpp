@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.316  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.315  2001/06/03 02:12:44  prez
 ** Fixed problem with compress stage not recognizing its end ...
 **
@@ -708,8 +711,13 @@ int Magick::Start()
 	Result = ACE::daemonize(Services_Dir(), 0, i_programname);
 	if (Result < 0 && errno)
 	{
+#ifdef WIN32
+	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR",
+		("fork", errno, strerror(errno)));
+#else
 	    LOG(LM_EMERGENCY, "SYS_ERRORS/OPERROR",
 		("fork", errno, strerror(errno)));
+#endif
 	}
 	else if (Result != 0)
 	{
@@ -843,17 +851,6 @@ int Magick::Start()
     }
 
     NLOG(LM_STARTUP, "COMMANDLINE/STOP_EVENTS");
-    // We're going down .. execute relivant shutdowns.
-    { WLOCK(("IrcSvcHandler"));
-    if (ircsvchandler != NULL)
-    {
-  	ircsvchandler->close();
-	ircsvchandler = NULL;
-    }}
-    while (mThread::size() > 4)
-    {
-	ACE_OS::sleep(1);
-    }
 
     //todo work out some way to "ignore" signals
     ACE_Reactor::instance()->remove_handler(SIGINT);
@@ -911,6 +908,12 @@ int Magick::Start()
 #endif
 #endif
 
+    if (signalhandler != NULL)
+    {
+	delete signalhandler;
+	signalhandler = NULL;
+    }
+
     { WLOCK(("Events"));
     if (events != NULL)
     {
@@ -919,7 +922,7 @@ int Magick::Start()
 	events = NULL;
     }}
 
-    { WLOCK(("DDCC"));
+    { WLOCK(("DCC"));
     if (dcc != NULL)
     {
 	dcc->close(0);
@@ -927,11 +930,12 @@ int Magick::Start()
 	dcc = NULL;
     }}
 
-    if (signalhandler != NULL)
+    { RLOCK(("IrcSvcHandler"));
+    if (ircsvchandler != NULL)
     {
-	delete signalhandler;
-	signalhandler = NULL;
-    }
+  	ircsvchandler->close();
+	ircsvchandler = NULL;
+    }}
 
     mFile::Erase(files.Pidfile());
 
@@ -3607,7 +3611,7 @@ void Magick::send(const mstring& in) const
 
 SXP::Tag Magick::tag_Magick("Magick");
 
-void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Magick::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Magick::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if( pElement->IsA( operserv.GetClassTag() ) )
@@ -3640,7 +3644,7 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Magick::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)

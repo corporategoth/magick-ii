@@ -1,9 +1,9 @@
-Microsoft Developer Studio Workspace File, Format Version 5.00
+Microsoft Developer Studio Workspace File, Format Version 6.00
 # WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
 
 ###############################################################################
 
-Project: "crypto"=".\SRC\DES\crypto.dsp" - Package Owner=<4>
+Project: "crypt"=".\crypt.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -24,11 +24,35 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name crypto
+    Project_Dep_Name crypt
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name xml
     End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "magick_keygen"=".\magick_keygen.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "magick_stampkeys"=".\magick_stampkeys.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################
@@ -41,14 +65,11 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name sxplib
-    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "xml"=".\src\xml\xml.dsp" - Package Owner=<4>
+Project: "xml"=".\xml.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

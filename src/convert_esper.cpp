@@ -27,6 +27,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.5  2001/05/28 11:17:34  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -239,7 +242,7 @@ int ESP_read_string(char **ret, ESP_dbFILE *f)
 
 
 #define SAFE(x) do {					\
-    if ((x) < 0) {					\
+    if (!(x)) {					\
 	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_NickDBName));	\
 	failed = 1;					\
 	break;						\
@@ -536,7 +539,7 @@ int ESP_delnick(ESP_NickInfo *ni)
 
 
 #define SAFE(x) do {					\
-    if ((x) < 0) {					\
+    if (!(x)) {					\
 	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_ChanDBName));	\
 	failed = 1;					\
 	break;						\
@@ -1016,7 +1019,7 @@ int ESP_delchan(ESP_ChannelInfo *ci)
 /* Compatibility memo load routine. */
 
 #define SAFE(x) do {					\
-    if ((x) < 0) {					\
+    if (!(x)) {					\
 	NSLOG(LM_EMERGENCY, "Read error on memo.db");		\
 	failed = 1;					\
 	break;						\
@@ -1103,7 +1106,7 @@ void ESP_load_old_ms_dbase(void)
 /*************************************************************************/
 
 #define SAFE(x) do {					\
-    if ((x) < 0) {					\
+    if (!(x)) {					\
 	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_NewsDBName));	\
 	ESP_nnews = i;					\
 	break;						\
@@ -1188,7 +1191,7 @@ void ESP_load_news()
 /* Load OperServ data. */
 
 #define SAFE(x) do {					\
-    if ((x) < 0) {					\
+    if (!(x)) {					\
 	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_OperDBName));	\
 	failed = 1;					\
 	break;						\
@@ -1302,7 +1305,7 @@ void ESP_load_os_dbase(void)
 /*************************************************************************/
 
 #define SAFE(x) do {					\
-    if ((x) < 0) {					\
+    if (!(x)) {					\
 	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_AutokillDBName));	\
 	ESP_nakill = i;					\
 	break;						\
@@ -1491,7 +1494,7 @@ void ESP_load_akill(void)
 /*************************************************************************/
 
 #define SAFE(x) do {                                    \
-    if ((x) < 0) {                                      \
+    if (!(x)) {                                      \
         SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_ExceptionDBName)); \
         ESP_nexceptions = i;                                \
         break;                                          \

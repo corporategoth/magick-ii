@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.127  2001/06/15 07:20:41  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.126  2001/06/07 06:21:06  prez
 ** Think I fixed staging encryption layer ... ugh.
 **
@@ -3107,7 +3110,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
     for (i=host.size()-1, num=0; i>=0; i--)
     {
-	switch (host[i])
+	switch (host[static_cast<size_t>(i)])
 	{
 	case '@':
 	    if (!super)
@@ -3849,40 +3852,40 @@ SXP::Tag OperServ::tag_Akill("Akill");
 SXP::Tag OperServ::tag_OperDeny("OperDeny");
 SXP::Tag OperServ::tag_Ignore("Ignore");
 
-void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void OperServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("OperServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
     if( pElement->IsA(tag_Clone) )
     {
-	entlist_val_t<pair<unsigned int, mstring> > *tmp = new entlist_val_t<pair<unsigned int, mstring> >;
+	Clone_Type *tmp = new Clone_Type;
 	c_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_Akill) )
     {
-	entlist_val_t<pair<unsigned long, mstring> > *tmp = new entlist_val_t<pair<unsigned long, mstring> >;
+	Akill_Type *tmp = new Akill_Type;
 	a_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_OperDeny) )
     {
-	entlist_val_t<mstring> *tmp = new entlist_val_t<mstring>;
+	OperDeny_Type *tmp = new OperDeny_Type;
 	o_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
 
     if( pElement->IsA(tag_Ignore) )
     {
-	entlist_val_t<bool> *tmp = new entlist_val_t<bool>;
+	Ignore_Type *tmp = new Ignore_Type;
 	i_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
 }
 
-void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void OperServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
@@ -3890,10 +3893,10 @@ void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("OperServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator j;
-    set<entlist_val_t<mstring> >::iterator k;
-    set<entlist_val_t<bool> >::iterator l;
+    set<Clone_Type >::iterator i;
+    set<Akill_Type >::iterator j;
+    set<OperDeny_Type >::iterator k;
+    set<Ignore_Type >::iterator l;
 
     //TODO: Add your source code here
 	pOut->BeginObject(tag_OperServ);
@@ -3902,7 +3905,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(i=i_Clone.begin(); i!=i_Clone.end(); i++)
 	{
 	    pOut->BeginObject(tag_Clone);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned int, mstring> > *>(&(*i)));
+	    pOut->WriteSubElement(const_cast<Clone_Type *>(&(*i)));
 	    pOut->EndObject(tag_Clone);
 	}}
 
@@ -3910,7 +3913,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(j=i_Akill.begin(); j!=i_Akill.end(); j++)
 	{
 	    pOut->BeginObject(tag_Akill);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned long, mstring> > *>(&(*j)));
+	    pOut->WriteSubElement(const_cast<Akill_Type *>(&(*j)));
 	    pOut->EndObject(tag_Akill);
 	}}
 
@@ -3918,7 +3921,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(k=i_OperDeny.begin(); k!=i_OperDeny.end(); k++)
 	{
 	    pOut->BeginObject(tag_OperDeny);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)));
+	    pOut->WriteSubElement(const_cast<OperDeny_Type *>(&(*k)));
 	    pOut->EndObject(tag_OperDeny);
 	}}
 
@@ -3929,7 +3932,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	    if (l->Value())
 	    {
 		pOut->BeginObject(tag_Ignore);
-		pOut->WriteSubElement(const_cast<entlist_val_t<bool> *>(&(*l)));
+		pOut->WriteSubElement(const_cast<Ignore_Type *>(&(*l)));
 		pOut->EndObject(tag_Ignore);
 	    }
 	}}

@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.20  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -221,7 +224,7 @@ SXP_NS_BEGIN
 	template<class T>
 	class IData {
     public:
-		inline const char *Data() { return static_cast<T *>(this)->Data(); }
+		inline const char *Data() const { return static_cast<const T *>(this)->Data(); }
 	};
 
 #include "sxp_data.h"
@@ -256,15 +259,15 @@ SXP_NS_BEGIN
 	public IDataInput<T>{
     public:
 		inline const char *Name() { return static_cast<T *>(this)->Name(); }
-		inline const char *Attrib(const char *attrName)
-			{ return static_cast<T *>(this)->Attrib(attrName); }
+		inline const char *Attrib(const char *attrName) const
+			{ return static_cast<const T *>(this)->Attrib(attrName); }
 
-		inline int IsA(const char *name)
-			{ return static_cast<T *>(this)->IsA(name); }
-		inline int IsA(Tag& t)
-			{ return static_cast<T *>(this)->IsA(t); }
-		inline int AttribIs(const char *attrName, const char *val)
-			{ return static_cast<T *>(this)->AttribIs(attrName, val); }
+		inline int IsA(const char *name) const
+			{ return static_cast<const T *>(this)->IsA(name); }
+		inline int IsA(Tag& t) const
+			{ return static_cast<const T *>(this)->IsA(t); }
+		inline int AttribIs(const char *attrName, const char *val) const
+			{ return static_cast<const T *>(this)->AttribIs(attrName, val); }
 	};
 
 	// The user classes need only this much access to the parser:
@@ -272,7 +275,7 @@ SXP_NS_BEGIN
 	// and a way to stop it on error or when it doesn't need more data
 	class IParser {
     public:
-		virtual void ReadTo( IPersistObj *pTarget ) = 0;
+		virtual void ReadTo( IPersistObj *pTarget ) const = 0;
 		virtual void Shutdown( void ) = 0;
 	};
 
@@ -653,7 +656,7 @@ SXP_NS_BEGIN
 		string m_strName;
 		string m_strData;
 		dict m_Attribs;
-		unsigned long m_dwTagHash;
+		mutable unsigned long m_dwTagHash;
 
 	public:
 		CElement() {}
@@ -676,27 +679,33 @@ SXP_NS_BEGIN
 		}
 
 		// IData
-		inline const char *Data() {
+		inline const char *Data() const {
 			return m_strData.c_str();
 		}
 
 		// IElementT
-		inline const char *Name() {
+		inline const char *Name() const {
 			return m_strName.c_str();
 		}
-		inline const char *Attrib(const char *attrName) {
-			return (m_Attribs[ string(attrName) ]).c_str();
+		inline const char *Attrib(const char *attrName) const {
+		    dict::const_iterator iter = m_Attribs.find(attrName);
+		    if (iter != m_Attribs.end())
+			return iter->second.c_str();
+		    return "";
 		}
-		inline int AttribIs(const char *attrName, const char *val) {
-			return ((m_Attribs[ string(attrName) ]).compare(val) == 0);
+		inline int AttribIs(const char *attrName, const char *val) const {
+		    dict::const_iterator iter = m_Attribs.find(attrName);
+		    if (iter != m_Attribs.end())
+			return iter->second.compare(val);
+		    return string("").compare(val);
 		}
-		inline int IsA(Tag& t) {
+		inline int IsA(Tag& t) const {
 			if( static_cast<int>(m_dwTagHash) == ~0 ) {
 				m_dwTagHash = TagHashtable::TagHT().Lookup(m_strName.c_str());
 			}
 			return( t.dw == m_dwTagHash );
 		}
-		inline int IsA(const char *pchName) {
+		inline int IsA(const char *pchName) const {
 			return( !m_strName.compare(pchName) );
 		}
 	};
@@ -725,7 +734,7 @@ SXP_NS_BEGIN
 		// for which the "this" element is immediate parent
 		// it is called when the open element tag is encountered,
 		// and only the Name() and Attrib() of pElement values are valid
-		virtual void BeginElement(IParser *pIn, IElement *pElement) = 0;
+		virtual void BeginElement(const IParser *pIn, const IElement *pElement) = 0;
 
 		// this is called when the corresponding close element
 		// tag is encountered, and the Data() member of pElement is
@@ -733,12 +742,12 @@ SXP_NS_BEGIN
 		// NOTE: each object receives both its own BeginElement so it can
 		// process its own element tag attributes, and its own EndElement
 		// so it can process its own character data
-		virtual void EndElement(IParser *pIn, IElement *pElement) = 0;
+		virtual void EndElement(const IParser *pIn, const IElement *pElement) = 0;
 	};
 
 	// the mighty parser itself
 	class CParser : public IParser {
-		std::stack<IPersistObj *> m_EHStack; // event handlers
+		mutable std::stack<IPersistObj *> m_EHStack; // event handlers
 		std::stack<CElement *> m_EStack; // elements
 		XML_Parser m_parser;
 
@@ -762,7 +771,7 @@ SXP_NS_BEGIN
 		int Feed(const char *pData, int nLen, int bFinal = 1);
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
-		inline void ReadTo( IPersistObj *pPI ) {
+		inline void ReadTo( IPersistObj *pPI ) const {
 			m_EHStack.push(pPI);
 		}
 

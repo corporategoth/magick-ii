@@ -25,6 +25,9 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.57  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -176,8 +179,8 @@ private:
     unsigned long htm_on_gap;
 
 public:
-    typedef entlist_val_t<pair<unsigned int, mstring> > Clone_Type;
-    typedef entlist_val_t<pair<unsigned long, mstring> > Akill_Type;
+    typedef entlist_val_pair_t<unsigned int, mstring> Clone_Type;
+    typedef entlist_val_pair_t<unsigned long, mstring> Akill_Type;
     typedef entlist_val_t<mstring> OperDeny_Type;
     typedef entlist_val_t<bool> Ignore_Type;
 
@@ -196,10 +199,10 @@ private:
     // Mask (N_U_H), Permanent (bool)
     set<Ignore_Type> i_Ignore;
 
-    vector<entlist_val_t<pair<unsigned int, mstring> > *> c_array;
-    vector<entlist_val_t<pair<unsigned long, mstring> > *> a_array;
-    vector<entlist_val_t<mstring> *> o_array;
-    vector<entlist_val_t<bool> *> i_array;
+    vector<Clone_Type *> c_array;
+    vector<Akill_Type *> a_array;
+    vector<OperDeny_Type *> o_array;
+    vector<Ignore_Type *> i_array;
 
     void AddCommands();
     void RemCommands();
@@ -389,8 +392,8 @@ public:
     static void do_ignore_List(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_OperServ; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
     void DumpB() const;

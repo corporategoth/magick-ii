@@ -111,40 +111,40 @@ template<class T>
 class IDataInput:
 public IData<T> {
 public:
-	inline void Retrieve(bool& val) {
+	inline void Retrieve(bool& val) const {
+		val = (atoi(Data()) != 0);
+	}
+
+	inline void Retrieve(int& val) const {
 		val = atoi(Data());
 	}
 
-	inline void Retrieve(int& val) {
-		val = atoi(Data());
-	}
-
-	inline void Retrieve(long& val) {
+	inline void Retrieve(long& val) const {
 		val = atol(Data());
 	}
 
-	inline void Retrieve(double& val) {
+	inline void Retrieve(double& val) const {
 		val = atof(Data());
 	}
 
-	inline void Retrieve(unsigned int& val) {
+	inline void Retrieve(unsigned int& val) const {
 		val = atoi(Data()) - static_cast<unsigned int>(0);
 	}
 
-	inline void Retrieve(unsigned long& val) {
+	inline void Retrieve(unsigned long& val) const {
 		val = atol(Data()) - static_cast<unsigned long>(0);
 	}
 
-	inline void Retrieve(mstring& val) {
+	inline void Retrieve(mstring& val) const {
 		val = XMLUnEscape(Data());
 	}
 #if HAVE_WSTRING
-	inline void Retrieve(wstring& val) {
+	inline void Retrieve(wstring& val) const {
 		val = XMLUnEscapeW(Data());
 	}
 #endif /* HAVE_WSTRING */
 
-    void Retrieve(mDateTime& val)
+    void Retrieve(mDateTime& val) const
     {
         double temp;
         Retrieve(temp);

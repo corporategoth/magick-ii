@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.64  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -273,7 +276,7 @@ struct ESP_ChannelInfo;
 class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend void Nick_Live_t::Join(const mstring& chan);
-    friend void Nick_Live_t::Name(const mstring& chan);
+    friend set<mstring> Nick_Live_t::Name(const mstring& chan);
     friend void Nick_Live_t::Quit(const mstring& reason);
     friend class Chan_Live_t;
     friend class ChanServ;
@@ -557,8 +560,8 @@ public:
     entlist_i Message;
 
     SXP::Tag& GetClassTag() const { return tag_Chan_Stored_t; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
@@ -888,8 +891,8 @@ public:
     static void do_unlock_Revenge(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_ChanServ; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };

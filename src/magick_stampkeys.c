@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.2  2001/05/14 04:46:32  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -155,7 +158,7 @@ int mrandom(int upper)
 {
 #ifdef __BORLANDC__
 	return random(upper);
-#elseif _MSC_VER
+#elif _MSC_VER
 	return rand() % upper;
 #else
 	return random() % upper;

@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2001/06/15 07:20:41  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.88  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -1209,10 +1212,13 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     NSEND(mynick, source, "STATS/USE_LANGHEAD");
 
     set<mstring> tmp, lang;
+    set<mstring>::iterator iter;
     tmp.clear(); tmp = Parent->LNG_Loaded();
-    lang.insert(tmp.begin(), tmp.end());
+    for (iter=tmp.begin(); iter!=tmp.end(); iter++)
+	lang.insert(*iter);
     tmp.clear(); tmp = Parent->HLP_Loaded();
-    lang.insert(tmp.begin(), tmp.end());
+    for (iter=tmp.begin(); iter!=tmp.end(); iter++)
+	lang.insert(*iter);
 
     set<mstring>::iterator q;
     for (q=lang.begin(); q!=lang.end(); q++)

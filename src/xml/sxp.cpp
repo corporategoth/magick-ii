@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2001/06/15 07:20:41  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.23  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -284,7 +287,7 @@ void MOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 }
 
 
-int CParser::Feed(const char *pData, int nLen, int bFinal = 1) {
+int CParser::Feed(const char *pData, int nLen, int bFinal) {
     if( m_parser )
     {
 	int retval = XML_Parse(m_parser, pData, nLen, bFinal);

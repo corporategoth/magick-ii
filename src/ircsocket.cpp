@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.167  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.166  2001/06/11 03:44:45  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -420,6 +423,7 @@ void *IrcSvcHandler::worker(void *in)
     }
     catch (E_Thread &e)
     {
+	e.what();
     }
 
     { RLOCK(("Events"));
@@ -595,9 +599,10 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 
     LOG(LM_ERROR, "OTHER/CLOSED", (Parent->CurrentServer()));
 
+    unsigned int i;
     // We DONT want any processing once we're gone ...
     // Dump the queue and kill all our threads nicely.
-    for (int i=0; i<tm.count_threads(); i++)
+    for (i=0; i<tm.count_threads(); i++)
 	enqueue_sleep();
     { MLOCK(("MessageQueue"));
     mMessage *msg;
@@ -607,7 +612,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 	if (msg != NULL)
 	    delete msg;
     }}
-    for (int i=0; i<tm.count_threads(); i++)
+    for (i=0; i<tm.count_threads(); i++)
 	enqueue_shutdown();
 
     { WLOCK(("AllDependancies"));
@@ -670,17 +675,26 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 	}
     }}
     // Sign off services if we have NO uplink
-    unsigned int i;
     for (i=0; i<chunked.size(); i++)
 	Parent->server.QUIT(chunked[i], "SQUIT - " + Parent->startup.Server_Name());
     Parent->server.i_list.clear();
     }
     Parent->server.OurUplink("");
 
-    { WLOCK(("IrcSvcHandler"));
-    Parent->ircsvchandler = NULL;
-    }
+    // Let other threads process shutdown instruction
+    // Otherwise cancel them.
 
+    ACE_Time_Value tv(time(NULL)+10);
+    tm.wait(&tv);
+    if (tm.count_threads())
+    {
+	tm.cancel_all();
+	tv.set(time(NULL)+10);
+	tm.wait(&tv);
+    }
+    /* ACE_Thread::yield();
+    if (tm.count_threads())
+	tm.cancel_all(); */
     if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown()) && Parent->Connected())
     {
@@ -1567,6 +1581,7 @@ int EventTask::svc(void)
 	    }
 	    catch (E_MemoServ_Channel &e)
 	    {
+		e.what();
 	    }
 
 	    WLOCK(("Events", "last_expire"));
@@ -2116,9 +2131,11 @@ int EventTask::svc(void)
     }
     catch (E_MemoServ_Nick &e)
     {
+	e.what();
     }
     catch (E_MemoServ_Channel &e)
     {
+	e.what();
     }
     catch (E_DccMap_Xfers &e)
     {

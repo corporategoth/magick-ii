@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.75  2001/06/03 02:12:44  prez
 ** Fixed problem with compress stage not recognizing its end ...
 **
@@ -1190,12 +1193,12 @@ size_t FileMap::FileSysSize(const FileMap::FileType type) const
 SXP::Tag FileMap::tag_FileMap("FileMap");
 SXP::Tag FileMap::tag_File("File");
 
-void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void FileMap::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
-void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void FileMap::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("FileMap::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)

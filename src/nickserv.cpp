@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.180  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.179  2001/05/28 11:17:34  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -4567,7 +4570,7 @@ SXP::Tag Nick_Stored_t::tag_Access("Access");
 SXP::Tag Nick_Stored_t::tag_Ignore("Ignore");
 SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
 
-void Nick_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Nick_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Nick_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -4579,7 +4582,7 @@ void Nick_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Nick_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Nick_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -8691,7 +8694,7 @@ void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, 
 
 SXP::Tag NickServ::tag_NickServ("NickServ");
 
-void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void NickServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("NickServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Nick_Stored_t *ns = new Nick_Stored_t;
@@ -8707,7 +8710,7 @@ void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void NickServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void NickServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("NickServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)

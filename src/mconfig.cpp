@@ -27,6 +27,9 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.31  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -206,7 +209,7 @@ bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
 
     mstring temppath;
     bool Result=false;
-    if(KeyName[0]=='/')
+    if(KeyName.first()=='/')
         temppath=KeyName.After("/");
     else
 	temppath=KeyName;
@@ -238,7 +241,7 @@ bool ceNode::DeleteKey(const mstring &KeyName)
     FT("ceNode::DeleteKey", (KeyName));
     mstring temppath;
     bool Result=false;
-    if(KeyName[0]=='/')
+    if(KeyName.first()=='/')
         temppath=KeyName.After("/");
     else
 	temppath=KeyName;
@@ -275,7 +278,7 @@ bool ceNode::CreateNode(const mstring &NodeName)
     FT("ceNode::CreateNode",(NodeName));
     mstring temppath;
     bool Result=false;
-    if(NodeName[0]=='/')
+    if(NodeName.first()=='/')
         temppath=NodeName.After("/");
     else
 	temppath=NodeName;
@@ -312,7 +315,7 @@ bool ceNode::DeleteNode(const mstring &NodeName)
     FT("ceNode::DeleteNode",(NodeName));
     mstring temppath;
     bool Result=false;
-    if(NodeName[0]=='/')
+    if(NodeName.first()=='/')
         temppath=NodeName.After("/");
     else
 	temppath=NodeName;
@@ -351,7 +354,7 @@ bool ceNode::NodeExists(const mstring &NodeName) const
     FT("ceNode::NodeExists", (NodeName));
     mstring temppath;
     bool Result=false;
-    if(NodeName[0]=='/')
+    if(NodeName.first()=='/')
         temppath=NodeName.After("/");
     else
 	temppath=NodeName;
@@ -382,7 +385,7 @@ bool ceNode::KeyExists(const mstring &KeyName) const
     FT("ceNode::KeyExists", (KeyName));
     mstring temppath;
     bool Result=false;
-    if(KeyName[0]=='/')
+    if(KeyName.first()=='/')
         temppath=KeyName.After("/");
     else
 	temppath=KeyName;
@@ -413,7 +416,7 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue) const
     FT("ceNode::GetKey", (KeyName,DefValue));
     mstring temppath;
     mstring Result=DefValue;
-    if(KeyName[0]=='/')
+    if(KeyName.first()=='/')
         temppath=KeyName.After("/");
     else
 	temppath=KeyName;
@@ -444,7 +447,7 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
     FT("ceNode::GetNode", (NodeName));
     mstring temppath;
     ceNode *Result=NULL;
-    if(NodeName[0]=='/')
+    if(NodeName.first()=='/')
         temppath=NodeName.After("/");
     else
 	temppath=NodeName;
@@ -483,7 +486,7 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
     FT("ceNode::Write", (KeyName,Value));
     mstring temppath;
     mstring Result="";
-    if(KeyName[0]=='/')
+    if(KeyName.first()=='/')
         temppath=KeyName.After("/");
     else
 	temppath=KeyName;
@@ -726,9 +729,9 @@ bool mConfigEngine::Write(const mstring &key,const bool value)
     bool Result;
     Read(key,Result,false);
     if(value==true)
-        Write(key,"True");
+        Write(key,mstring("TRUE"));
     else
-        Write(key,"False");
+        Write(key,mstring("FALSE"));
     RET(Result);
 }
 
@@ -833,7 +836,7 @@ bool mConfigEngine::LoadFromArray(const vector<mstring> &configarray)
     for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
     {
         currline=i->Strip(true).Strip(false);
-        if(currline[0]=='[' && currline.last()==']')
+        if(currline.first()=='[' && currline.last()==']')
         {
             // new section
             Result=RootNode.CreateNode(currline.After("[").Before("]"));
@@ -869,7 +872,7 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> &in)
     for(vector<mstring>::const_iterator i=in.begin();i!=in.end();i++)
     {
 	mstring tmp = *i;
-        if(tmp.length() && tmp[0] != '#' && tmp[0] != ';')
+        if(tmp.length() && tmp.first() != '#' && tmp.first() != ';')
         {
             // if we find ; then it's a comment to end of line, but /; is not a comment.
             bool founddelim=false;

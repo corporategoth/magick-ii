@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.71  2001/05/28 11:17:33  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -544,8 +547,8 @@ public:
     size_t MyChannels() const;
 
     SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage();
@@ -807,8 +810,8 @@ public:
     static void do_unlock_Language(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_NickServ; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };

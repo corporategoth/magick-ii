@@ -92,7 +92,7 @@
 /* #undef HAVE_ULTOA */
 
 /* Define if you have the vsnprintf function.  */
-#define HAVE_VSNPRINTF 1
+/* #undef HAVE_VSNPRINTF */
 
 /* Define if you have the <exception> header file.  */
 #define HAVE_EXCEPTION 1

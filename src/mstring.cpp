@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.105  2001/05/14 04:46:32  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -277,6 +280,7 @@ char *mstring::alloc(const size_t size)
     }
     catch (ACE_bad_alloc &e)
     {
+	e.what();
 	errno = ENOMEM;
     }
 # else

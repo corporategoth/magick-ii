@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.75  2001/05/13 00:55:17  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -309,9 +312,9 @@ public:
 	{ init(); copy(in); }
     mstring(const double in)
 	{ init(); copy(in); }
-    mstring(const vector<mstring> in)
+    mstring(const vector<mstring> &in)
 	{ init(); Assemble(in); }
-    mstring(const list<mstring> in)
+    mstring(const list<mstring> &in)
 	{ init(); Assemble(in); }
     ~mstring();
 
@@ -340,7 +343,7 @@ public:
     void copy(const char in)
 	{ copy(&in, 1); }
     void copy(const unsigned char in)
-	{ copy(&static_cast<const char>(in), 1); }
+	{ copy(reinterpret_cast<const char *>(&in), 1); }
     void copy(const int in)
 	{ mstring out; out.Format("%d", in); copy(out); }
     void copy(const unsigned int in)

@@ -25,6 +25,9 @@ RCSID(convert_esper_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.1  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -65,6 +68,10 @@ typedef unsigned int uint32;
 
 /* Maximum length of a password */
 #define ESP_PASSMAX		32
+
+#ifndef PATH_MAX
+#define PATH_MAX 512
+#endif
 
 /*************************************************************************/
 

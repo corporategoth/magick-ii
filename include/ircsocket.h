@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.54  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -233,6 +236,7 @@ public:
     bool Burst() const;
     mDateTime SyncTime() const;
     void EndBurst();
+    int Threads() { return tm.count_threads(); }
 
     void enqueue(mMessage *mm);
     void enqueue(const mstring &message, const u_long priority = static_cast<u_long>(P_Normal));

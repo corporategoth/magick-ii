@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.169  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.168  2001/06/11 06:47:49  prez
 ** Fixed an undefined symbol
 **
@@ -358,7 +361,7 @@ SXP::Tag tag_Last_Modifier("Last_Modifier");
 SXP::Tag tag_UserDef("UserDef");
 SXP::Tag tag_Stupid("Stupid");
 
-void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void entlist_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -370,7 +373,7 @@ void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void entlist_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -856,7 +859,7 @@ int mMessage::call()
 	}
 	else if (msgtype_.IsSameAs("SLEEP", false))
 	{
-	    sleep(FromHumanTime(params_) ? FromHumanTime(params_) : 1);
+	    ACE_OS::sleep(FromHumanTime(params_) ? FromHumanTime(params_) : 1);
 	}
 	else if (msgtype_.IsSameAs("TEST", false))
 	{
@@ -1081,9 +1084,11 @@ int mMessage::call()
     }
     catch (E_MemoServ_Nick &e)
     {
+        e.what();
     }
     catch (E_MemoServ_Channel &e)
     {
+        e.what();
     }
     catch (E_DccMap_Xfers &e)
     {

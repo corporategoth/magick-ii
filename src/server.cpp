@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.179  2001/06/15 07:20:41  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.178  2001/06/11 03:44:45  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -5887,7 +5890,7 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
     switch (numeric)
     {
     case 303:     // RPL_ISON
-	{ RLOCK(("IrcSvcHandler"));
+	{{ RLOCK(("IrcSvcHandler"));
 	if (Parent->ircsvchandler != NULL)
 	{
 	    Parent->ircsvchandler->EndBurst();
@@ -6042,6 +6045,7 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 	    Parent->server.sraw(((proto.Tokens() &&
 		!proto.GetNonToken(proto.EndBurst()).empty()) ?
 		proto.GetNonToken(proto.EndBurst()) : mstring(proto.EndBurst())));
+	}
 	break;
     case 436:     // ERR_NICKCOLLISION
 	// MUST handle.

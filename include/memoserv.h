@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.51  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -196,8 +199,8 @@ public:
     void Unread();
 
     SXP::Tag& GetClassTag() const { return tag_Memo_t; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
@@ -247,8 +250,8 @@ public:
     void Unread(const mstring& name);
 
     SXP::Tag& GetClassTag() const { return tag_News_t; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
@@ -412,8 +415,8 @@ public:
     static void do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_MemoServ; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };

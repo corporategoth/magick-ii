@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="magick" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
@@ -22,6 +22,7 @@ CFG=magick - Win32 Debug
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
@@ -38,18 +39,17 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
-# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Gi /GX /O2 /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib" /I "..\inlude\sxp" /I "..\include\expat" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /FR /YX"pch.h" /FD /c
-# ADD BASE RSC /l 0xc09 /d "NDEBUG"
-# ADD RSC /l 0xc09 /d "NDEBUG"
+# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ace.lib zlib.lib /nologo /subsystem:console /machine:I386 /libpath:"..\support\ace_wrappers\ace" /libpath:"..\support\zlib-1.1.3"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
@@ -64,17 +64,16 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "HAVE_CONFIG_H" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /D ACE_NTRACE=1 /Fr /FD /c
-# ADD BASE RSC /l 0xc09 /d "_DEBUG"
-# ADD RSC /l 0xc09 /d "_DEBUG"
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I ".\include" /I "..\support\zlib-1.1.3" /I "..\support\ace-5.1" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "HAVE_CONFIG_H" /FR /YX"pch.h" /FD /Zm200 /GZ /c
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib aced.lib zlib.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\support\ace_wrappers\ace" /libpath:"..\support\zlib-1.1.3"
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlib.lib aced.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"Debug" /libpath:"..\support\zlib-1.1.3/Debug" /libpath:"..\support\ace-5.1\ace"
 
 !ENDIF 
 
@@ -82,157 +81,12 @@ LINK32=link.exe
 
 # Name "magick - Win32 Release"
 # Name "magick - Win32 Debug"
-# Begin Group "docs"
+# Begin Group "Source Files"
 
-# PROP Default_Filter ""
-# Begin Group "rfcs"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc1459.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc854.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc855.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc856.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc857.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc858.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc859.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc860.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc861.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\rfcs\rfc959.txt
-# End Source File
-# Begin Source File
-
-SOURCE=".\docs\rfcs\The Client-To-Client Protocol (CTCP).txt"
-# End Source File
-# End Group
-# Begin Group "html"
-
-# PROP Default_Filter "*.htm; *.html"
-# Begin Source File
-
-SOURCE=.\docs\html\License.html
-# End Source File
-# End Group
-# Begin Group "text"
-
-# PROP Default_Filter "*.txt"
-# Begin Source File
-
-SOURCE=.\docs\text\commands.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\text\formats.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\text\install.txt
-# End Source File
-# End Group
-# Begin Group "devel"
-
-# PROP Default_Filter "*.*"
-# Begin Source File
-
-SOURCE=.\docs\devel\communication.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\config.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\dbase.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\develop.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\policy.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\requirements.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\suggest.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\devel\versionstamps.txt
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=.\docs\magick.ini
-# End Source File
-# End Group
-# Begin Group "lang files"
-
-# PROP Default_Filter ".lng"
-# Begin Source File
-
-SOURCE=.\lang\dark.lng
-# End Source File
-# Begin Source File
-
-SOURCE=.\lang\dutch.lng
-# End Source File
-# Begin Source File
-
-SOURCE=.\lang\english.hlp
-# End Source File
-# Begin Source File
-
-SOURCE=.\lang\english.lfo
-# End Source File
-# Begin Source File
-
-SOURCE=.\lang\english.lng
-# End Source File
-# Begin Source File
-
-SOURCE=.\lang\leet.lng
-# End Source File
-# End Group
+# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
 SOURCE=.\src\base.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\base.h
 # End Source File
 # Begin Source File
 
@@ -240,23 +94,15 @@ SOURCE=.\src\chanserv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\chanserv.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\commserv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\commserv.h
+SOURCE=.\src\convert_esper.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cryptstream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\cryptstream.h
+SOURCE=.\src\convert_magick.cpp
 # End Source File
 # Begin Source File
 
@@ -264,15 +110,7 @@ SOURCE=.\src\datetime.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\datetime.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\dccengine.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\dccengine.h
 # End Source File
 # Begin Source File
 
@@ -280,15 +118,7 @@ SOURCE=.\src\filesys.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\filesys.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\ircsocket.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\ircsocket.h
 # End Source File
 # Begin Source File
 
@@ -296,27 +126,7 @@ SOURCE=.\src\lockable.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\lockable.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\log.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\log.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\logfile.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\magick.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\magick.h
 # End Source File
 # Begin Source File
 
@@ -328,15 +138,7 @@ SOURCE=.\src\mconfig.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\mconfig.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\memoserv.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\memoserv.h
 # End Source File
 # Begin Source File
 
@@ -344,19 +146,119 @@ SOURCE=.\src\mstring.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\mstring.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\nickserv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\nickserv.h
+SOURCE=.\src\operserv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\operserv.cpp
+SOURCE=.\src\server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\servmsg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\stages.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\trace.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\utils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\variant.cpp
+# End Source File
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\include\ace_memory.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\base.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\chanserv.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\commserv.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\config.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\convert_esper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\convert_magick.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\datetime.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\dccengine.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\filesys.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ircsocket.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\language.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\lockable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\logfile.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\magick.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\mconfig.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\memoserv.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\mexceptions.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\mstring.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\nickserv.h
 # End Source File
 # Begin Source File
 
@@ -368,15 +270,7 @@ SOURCE=.\include\pch.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\server.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\include\server.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\servmsg.cpp
 # End Source File
 # Begin Source File
 
@@ -384,7 +278,7 @@ SOURCE=.\include\servmsg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\trace.cpp
+SOURCE=.\include\stages.h
 # End Source File
 # Begin Source File
 
@@ -392,15 +286,7 @@ SOURCE=.\include\trace.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\utils.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\include\utils.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\variant.cpp
 # End Source File
 # Begin Source File
 
@@ -410,9 +296,14 @@ SOURCE=.\include\variant.h
 
 SOURCE=.\include\version.h
 # End Source File
+# End Group
+# Begin Group "Resource Files"
+
+# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
 SOURCE=".\include\version.h-release"
 # End Source File
+# End Group
 # End Target
 # End Project

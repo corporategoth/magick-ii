@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.101  2001/05/23 02:43:48  prez
 ** Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv failed
 ** passwords kill bug.
@@ -3338,7 +3341,7 @@ SXP::Tag News_t::tag_set_NoExpire("SET_NoExpire");
 SXP::Tag News_t::tag_Read("Read");
 SXP::Tag News_t::tag_UserDef("UserDef");
 
-void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Memo_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Memo_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -3350,7 +3353,7 @@ void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Memo_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Memo_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -3384,7 +3387,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->EndObject(tag_Memo_t);
 }
 
-void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void News_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("News_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -3396,7 +3399,7 @@ void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void News_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("News_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
@@ -3443,7 +3446,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 SXP::Tag MemoServ::tag_MemoServ("MemoServ");
 
-void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void MemoServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("MemoServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Memo_t *m = new Memo_t;
@@ -3469,7 +3472,7 @@ void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void MemoServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("MemoServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)

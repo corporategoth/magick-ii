@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.41  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -252,8 +255,8 @@ public:
     size_t FileSysSize(const FileType type) const;
 
     SXP::Tag& GetClassTag() const { return tag_FileMap; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 private:

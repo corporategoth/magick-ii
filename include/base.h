@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2001/06/15 07:20:39  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.96  2001/06/11 03:44:44  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -378,8 +381,8 @@ public:
 
     // XML handling section
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    virtual void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     virtual void PostLoad() const;
 
@@ -441,12 +444,12 @@ public:
     virtual T Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; };
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+    virtual void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
     {
 	FT("entlist_val_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
     }
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+    virtual void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
     {
 	FT("entlist_val_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn,pElement);
@@ -496,26 +499,26 @@ template<class T>
 typedef set<entlist_val_t<T> >::const_iterator entlist_val_cui;
 */
 
-template<class T1, class T2>
-class entlist_val_t< pair<T1,T2> > : public entlist_t
+template<class X, class Y>
+class entlist_val_pair_t : public entlist_t
 {
 protected:
-    pair<T1,T2> i_Value;
+    pair<X,Y> i_Value;
     bool i_Stupid;	// if TRUE, Value() does nothing.
 
 public:
-    entlist_val_t () {}
-    entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (const mstring &entry, const pair<T1,T2> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+    entlist_val_pair_t () {}
+    entlist_val_pair_t (const entlist_val_pair_t& in) { *this = in; }
+    entlist_val_pair_t (const mstring &entry, const pair<X,Y> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
-	FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
+	FT("entlist_val_pair_t< pair<X, Y> >::entlist_val_pair_t", (entry, "( pair<X,Y> ) value", nick,
 							modtime, stupid));
     }
-    virtual ~entlist_val_t () {}
-    virtual void operator=(const entlist_val_t &in)
+    virtual ~entlist_val_pair_t () {}
+    virtual void operator=(const entlist_val_pair_t &in)
     {
-	FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t< pair<T1,T2> > &) in"));
+	FT("entlist_val_pair_t< pair<X, X> >::operator=", ("(const entlist_val_pair_t< pair<X,Y> > &) in"));
 	i_Entry=in.i_Entry;
 	i_Value=in.i_Value;
 	i_Last_Modify_Time=in.i_Last_Modify_Time;
@@ -527,9 +530,9 @@ public:
 	    i_UserDef[i->first]=i->second;
     }
 
-    virtual bool Value(pair<T1,T2> &value, const mstring &nick)
+    virtual bool Value(pair<X,Y> &value, const mstring &nick)
     {
-	FT("entlist_val_t< pair<T1,T2> >::Change", ("(pair<T1,T2>) value", nick));
+	FT("entlist_val_pair_t< pair<X,Y> >::Change", ("(pair<X,Y>) value", nick));
 	if (i_Stupid)
 	{
 	    RET(false);
@@ -542,25 +545,25 @@ public:
 	    RET(true);
 	}
     }
-    pair<T1,T2> Value()const			{ return i_Value; }
+    pair<X,Y> Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+    virtual void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
     {
-	FT("entlist_val_t< pair<T1,T2> >::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+	FT("entlist_val_pair_t< pair<X,Y> >::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
     }
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+    virtual void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
     {
-	FT("entlist_val_t< pair<T1,T2> >::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+	FT("entlist_val_pair_t< pair<X,Y> >::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn,pElement);
 	if( pElement->IsA(tag_ValueFirst) )   pElement->Retrieve(i_Value.first);
-	    if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
+	if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
 	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict)
     {
-	FT("entlist_val_t< pair<T1,T2> >::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
+	FT("entlist_val_pairt< pair<X,Y> >::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t);
 	entlist_t::WriteElement(pOut);
 

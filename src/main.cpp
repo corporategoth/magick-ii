@@ -25,6 +25,9 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.47  2001/04/08 18:53:09  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -118,19 +121,20 @@ int main(int argc, char **argv)
 	StartTime = mDateTime::CurrentDateTime();
 
 	int Result = MAGICK_RET_RESTART;
-        mThread::Attach(tt_MAIN);
+	mThread::Attach(tt_MAIN);
 	while (Result == MAGICK_RET_RESTART)
 	{
+	    Parent = NULL;
 	    Magick internalobject(argc, argv);
 	    Parent = &internalobject;
 	    Result = internalobject.Start();
-	    Parent = NULL;
 	}
+	Parent = NULL;
+	mThread::Detach();
 	if (Result != MAGICK_RET_NORMAL)
 	{
 	    ACE_OS::fprintf(stderr, "\n");
 	}
-	mThread::Detach();
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.250  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.249  2001/06/11 03:44:45  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -939,7 +942,7 @@ mDateTime Chan_Live_t::Ban(const mstring& mask) const
     mDateTime retval(0.0);
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
     map<mstring,mDateTime>::const_iterator i = bans.find(mask.LowerCase());
-    if (i != bans.end());
+    if (i != bans.end())
     {
 	retval = i->second;
     }
@@ -1756,7 +1759,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "modes"));
 		modes += change[i];
 		}
-		if (ModeExists(p_modes_on, p_modes_on_params, true, change[i]));
+		if (ModeExists(p_modes_on, p_modes_on_params, true, change[i]))
 		    RemoveMode(p_modes_on, p_modes_on_params, true, change[i]);
 	    }
 	    else
@@ -1767,7 +1770,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "modes"));
 		    modes.Remove(change[i]);
 		    }
-		    if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]));
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]))
 			RemoveMode(p_modes_off, p_modes_off_params, false, change[i]);
 		}
 		else
@@ -5138,7 +5141,7 @@ SXP::Tag Chan_Stored_t::tag_Greet("Greet");
 SXP::Tag Chan_Stored_t::tag_Message("Message");
 SXP::Tag Chan_Stored_t::tag_UserDef("UserDef");
 
-void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Chan_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Chan_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if( pElement->IsA(tag_Level) )
@@ -5184,7 +5187,7 @@ void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void Chan_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("Chan_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -13257,7 +13260,7 @@ bool ChanServ::IsLVL(const mstring& level)const
 
 SXP::Tag ChanServ::tag_ChanServ("ChanServ");
 
-void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void ChanServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("ChanServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Chan_Stored_t *cs = new Chan_Stored_t;
@@ -13273,7 +13276,7 @@ void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
 }
 
-void ChanServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+void ChanServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
     FT("ChanServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)

@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2001/06/15 07:20:40  prez
+** Fixed windows compiling -- now works with MS Visual Studio 6.0
+**
 ** Revision 1.16  2001/05/14 07:17:28  prez
 ** Fixed encryption :)
 **
@@ -96,6 +99,7 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** ========================================================== */
 
 #include <stdio.h>
+#include <string.h>
 #include "config.h"
 #ifdef HASCRYPT
 #include <stdarg.h>
