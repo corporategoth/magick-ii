@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/06/06 08:57:56  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.51  2000/05/21 04:49:40  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -62,6 +66,7 @@ static const char *ident = "@(#)$Id$";
 
 
 #include "datetime.h"
+#include "magick.h"
 
 mstring DateSeparator="/";
 mstring ShortDateFormat="d/m/yyyy";
@@ -111,7 +116,8 @@ mDateTime::mDateTime(time_t src)
 }
 mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
 {
-	Log(LM_ERROR, "Not Implemented");
+	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
+		"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)");
 #if 0
 	if(flag==Date)
 		*this=StringToDate(src);
@@ -352,7 +358,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<FormatString(LongDateFormat);
 				break;
 			default:
-				Log(LM_ERROR, "mDateTime::FormatString Invalid date format string");
+				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str());
 			};
 			break;
 		case 'm':
@@ -379,7 +386,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<LongMonthNames[Month-1];
 				break;
 			default:
-				Log(LM_ERROR, "mDateTime::FormatString Invalid month format string");
+				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str());
 			}
 			break;
 		case 'y':
@@ -398,7 +406,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<Year;
 				break;
 			default:
-				Log(LM_ERROR, "mDateTime::FormatString Invalid year format string");
+				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str());
 			}
 			break;
 		case 'h':
@@ -458,7 +467,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 					Result=Result+"0";
 				break;
 			default:
-				Log(LM_ERROR, "mDateTime::FormatString Invalid year format string");
+				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str());
 			}
 			Result<<MSec;
 			break;
@@ -501,7 +511,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			}
 			else
 			{
-				Log(LM_WARNING, "mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
+				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					1, format[i], format.c_str());
 				Result=Result+"a";
 			}
 			break;
@@ -534,8 +545,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			Result=Result+mstring(format[i]);
 			break;
 		default:
-			Log(LM_WARNING, "mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal",format[i]);
-			Log(LM_WARNING, "FormatString==%s",format.c_str());
+			Log(LM_TRACE, Parent->getLogMessage("SYS_ERRORS/NOT_LITERAL"),
+				format[i], format.c_str());
 			Result=Result+mstring(format[i]);
 		};
 		i++;
@@ -697,10 +708,10 @@ mDateTime StringToDate(const mstring& in)
 	else if(shortdateformat.Before(DateSeparator)=="yyyy")
 		year=first;
 	else if(shortdateformat.Before(DateSeparator)=="yy")
-		if(year<70)
-			year=first+2000;
+		if(first+100 <= Now().Year2() + 150)
+			year=first+Now().Century();
 		else
-			year=first+1900;
+			year=first+Now().Century()-100;
 	if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="m")
 		month=second;
 	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="d")
@@ -708,10 +719,10 @@ mDateTime StringToDate(const mstring& in)
 	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yyyy")
 		year=second;
 	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yy")
-		if(year<70)
-			year=second+2000;
+		if(second+100 <= Now().Year2() + 150)
+			year=second+Now().Century();
 		else
-			year=second+1900;
+			year=second+Now().Century()-100;
 	if(shortdateformat.After(DateSeparator).After(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).After(DateSeparator)=="m")
 		month=third;
 	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).After(DateSeparator)=="d")
@@ -719,10 +730,10 @@ mDateTime StringToDate(const mstring& in)
 	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yyyy")
 		year=third;
 	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yy")
-		if(year<70)
-			year=third+2000;
+		if(third+100 <= Now().Year2() + 150)
+			year=third+Now().Century();
 		else
-			year=third+1900;
+			year=third+Now().Century()-100;
 	return mDateTime(year,month,day);
 }
 
@@ -798,7 +809,17 @@ int mDateTime::Year()
     DecodeDate(Year,Month,Day);
     return Year;
 }
-
+int mDateTime::Year2()
+{
+    int Year2=Year();
+    while (Year2>100)
+	Year2-=100;
+    return Year2;
+}
+int mDateTime::Century()
+{
+    return Year()-Year2();
+}
 unsigned long mDateTime::MSecondsSince()
 {
     mDateTime dummyvar=Now()-(*this);

@@ -67,8 +67,13 @@ TRACE_SYNTAX     =Paramater for --trace must be in the format of TYPE:LEVEL
 ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.
 CFG_SYNTAX       =Configuration token "%s" contains a syntax error or invalid data.
 UNKNOWN_PROTO    =Unknown protocol identifier %d, default (%d) used.
-DBASE_ID         =Identification tag for database not valid.
-DBASE_VER        =Version of database is not recognized.
+START_LANG       =Loading default language file ...
+START_FORK       =Spawning into background ...
+START_EVENTS     =Starting events engine ...
+START_CALIBRATE  =Calibrating thread thresholds ...
+START_COMPLETE   =%s %d.%d startup procedure complete.
+STOP_EVENTS      =Stopping events engine ...
+STOP_COMPLETE    =%s %d.%d shutdown procedure complete.
 
 ;
 ; These are used when a command is executed from NickServ.
@@ -205,6 +210,7 @@ HTM_FORCE        =%s has forced HTM mode %s.
 HTM_ON           =HTM mode %d (%d delay) activated (%.1fKb/s > %.1fKb/s).
 HTM_OFF          =HTM mode deactivated.
 HTM_SET          =%s has set the HTM threshold to %s/s.
+HTM_IGNORE       =Ignored message from %s (HTM mode): %s
 
 ;
 ; These are used when an automated event kicks off.
@@ -222,6 +228,10 @@ KILLPROTECT      =Killed/renamed nickname %s for failure to identify.
 PING             =Pinged all servers.
 LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE (%.3f average lag).
 LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE (%.3f average lag).
+AKICK            =Kicked user %s from channel %s for triggering AKICK (%s).
+RESTRICTED       =Kicked user %s from restricted channel %s.
+NEW_THREAD       =Starting new thread to handle excess load.
+KILL_THREAD      =Killing thread, not enough work to warent it.
 
 ;
 ; These are errors that come from wx routines.
@@ -248,6 +258,21 @@ BINFILE          ='%s' is probably a binary file.
 CANTWRITE        =Can't write file '%s' to disk.
 OUTOFTXNIDS      =Cannot create any more Transaction ID's
 
+[SYS_ERRORS]
+COULDNOTOPEN     =Could not open file %s (%s).
+FILEMAPFULL      =Could not find an available file number for type %d!
+MISSING_FILE1    =Removed physical file type %d, #%08x that did not have a file map entry.
+MISSING_FILE2    =Removed file map entry type %d, #%08x that did not have a physical file.
+SIGNAL_IGNORE    =Caught signal #%d, ignoring.
+SIGNAL_SAVE      =Caught signal #%d, saving databases.
+SIGNAL_LOAD      =Caught signal #%d, loading configuration file.
+SIGNAL_RETRY     =Caught signal #%d, attempting to retry.
+SIGNAL_KILL      =Caught signal #%d, attempting to shutdown.
+SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.
+NOT_IMPLEMENTED  =Entered %s, which is not implemented.
+INVALID_FORMAT   =Invalid date format char %d%c in %s.
+NOT_LITERAL      =Chatacter %c should be in quotes, taken as literal in %s.
+
 ;
 ; This is a section for miscellaneous other occurances.
 ;
@@ -256,7 +281,8 @@ SQUIT_FIRST      =Suspected SQUIT detected, servers %s and %s, waiting ...
 SQUIT_CANCEL     =Suspected SQUIT of servers %s and %s was fake.
 SQUIT_SECOND     =SQUIT of servers %s and %s confirmed, taking appropriate action.
 KILL_CLONE       =Clone protection triggered for %s, killing user.
-KILL_AKILL       =Killing user %s on autokill list (%s).
+KILL_AKILL       =Killing user %s on autokill list %s (%s).
+KILL_UNKNOWN     =Killed unknown user %s.
 CONNECTING       =Connecting to server %s:%d ...
 CONNECTED        =Connection established and authenticated to server %s.
 WRONGPASS        =Password mismatch connecting to server %s, skipping.
@@ -270,6 +296,11 @@ PERM_IGNORE      =%s triggered services permanent ignore.
 KILL_NICK_PASS   =Killing user %s for password failures on nickname %s.
 KILL_CHAN_PASS   =Killing user %s for password failures on channel %s.
 LOAD_LANGUAGE    =Loaded %s language file.
+LOAD_HELP        =Loaded %s help file.
+REVENGE          =Taking revenge on user %s in channel %s for %s on %s.
+DCC_INIT         =DCC ID %u initialized with %s (%s).
+DCC_CLOSE        =DCC ID %u completed successfully.
+DCC_CANCEL       =DCC ID %u failed to complete successfully.
 
 ;
 ; These are errors (of varying severity) that we may encounter.
@@ -279,10 +310,11 @@ SIGNAL           =RECEIVED SIGNAL %d, EXITING.
 REQ_BYNONUSER    =%s command requested by non-existant user %s.
 REQ_BYNONSERVICE =%s command requested by non-service %s.
 REQ_FORNONUSER   =%s command requested by %s for non-existant user %s.
-REQ_TONONUSER    =%s command requested by %s to non-existant user %s.
+REQ_TOUSER       =%s command requested by %s to existing user %s.
 REQ_FORNONCHAN   =%s command requested by %s for non-existant channel %s.
 REQ_FORNONSERVER =%s command requested by %s for non-existant server %s.
 REQ_NOTINCHAN    =%s command requested by %s for %s who is not in channel %s.
+REQ_UNKNOWN      =Command type %d for %s (%s/%s/%s) queued %s ago, but unhandled (unknown type).
 UNKNOWN_MSG      =Unknown message from server: %s
 REC_FORNONUSER   =Received %s from %s for non-existant user %s.
 REC_FORNONCHAN   =Received %s from %s for non-existant channel %s.
@@ -291,6 +323,7 @@ REC_FORNOTINCHAN =Received %s for %s who is not in channel %s.
 DUP_CHAN         =Duplicate %s received from %s for channel %s.
 MODE_INEFFECT    =MODE change %c%c received from %s for %s that is already in effect.
 MODE_NOTINCHAN   =MODE change %c%c received from %s for %s who is not in channel %s.
+FOUNDER_NOTREGD  =Channel %s has a founder of %s who is not registered (channel dropped).
 HOST_NOTREGD     =Nickname %s was listed as the host of %s, but does not exist (rectified)!
 SLAVE_NOTREGD    =Nickname %s was listed as a slave of %s, but does not exist (rectified)!
 KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.
@@ -298,5 +331,8 @@ NOLIMIT          =No limit specified when required for channel %s from %s.
 NOLANGTOKEN      =Invalid token %s for language %s used, error returned.
 FAILED_FORK      =Failed to fork new process with %d, terminating.
 FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.
+LOCK_OPEN        =Fialed to open %s lock for %s.
+LOCK_ACQUIRE     =Failed to acquire %s lock for %s.
+LOCK_RELEASE     =Failed to release %s lock for %s.
 EXCEPTION        =Exception thrown on line %d, column %d of %s.
-
+BADSET           =Tried to set BAD data (%s) for %s on %s.

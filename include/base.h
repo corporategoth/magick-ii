@@ -25,6 +25,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/06/06 08:57:54  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.67  2000/05/28 05:05:12  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -105,7 +109,7 @@ protected:
     map<mstring,mstring> i_UserDef;
 public:
     mstring UserDef(mstring type);
-    mstring UserDef(mstring source, mstring type, mstring val);
+    void UserDef(mstring type, mstring val);
 };
 
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>

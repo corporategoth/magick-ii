@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2000/06/06 08:57:57  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.99  2000/05/28 02:37:16  prez
 ** Minor bug fixes (help system and changing nicks)
 **
@@ -353,6 +357,13 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 	}
     }
 
+    if (file && !(Parent->files.TempDirSize() == 0 ||
+	mFile::DirUsage(Parent->files.TempDir()) <=
+		Parent->files.TempDirSize()))
+    {
+	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
+	return;
+    }
 
     type = FileMap::MemoAttach;
     fileattach = file;
@@ -496,7 +507,22 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			mstring realrecipiant = Parent->nickserv.stored[recipiant.LowerCase()].Host();
 			if (realrecipiant == "")
 			    realrecipiant = recipiant;
-			if (recipiant == realrecipiant ||
+
+			if (!(!filenum || Parent->memoserv.FileSize() == 0 ||
+			    Parent->filesys.GetSize(FileMap::MemoAttach, filenum) <=
+			    Parent->memoserv.FileSize()))
+			{
+			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/TOOBIG"));
+			}
+			else if (!(!filenum || Parent->files.MemoAttachSize() == 0 ||
+			    Parent->filesys.FileSysSize(FileMap::MemoAttach) <=
+			    Parent->files.MemoAttachSize()))
+			{
+			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/NOSPACE"));
+			}
+			else if (recipiant == realrecipiant ||
 			    Parent->nickserv.IsStored(realrecipiant))
 			{
 			    Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
@@ -532,19 +558,33 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			else if (File())
 			{
 			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
 			}
 		    }
 		    else if (File())
 		    {
 			Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
 		    }
 		}
 	    }
 	    else if (Picture())
 	    {
-		if (Parent->nickserv.PicSize() == 0 ||
-			Parent->filesys.GetSize(FileMap::Picture, filenum) <=
-			Parent->nickserv.PicSize())
+		if (filenum && !(Parent->memoserv.FileSize() == 0 ||
+		    Parent->filesys.GetSize(FileMap::Picture, filenum) <=
+		    Parent->nickserv.PicSize()))
+		{
+		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
+		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/TOOBIG"));
+		}
+		else if (filenum && !(Parent->files.PictureSize() == 0 ||
+		    Parent->filesys.FileSysSize(FileMap::Picture) <=
+		    Parent->files.PictureSize()))
+		{
+		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
+		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/NOSPACE"));
+		}
+		else if (filenum)
 		{
 		    Parent->nickserv.stored[sender.LowerCase()].GotPic(filenum);
 		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/SAVED"));
@@ -555,14 +595,20 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		}
 		else
 		{
-		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
-		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/TOOBIG"));
+		    send(service, nick, Parent->getMessage(nick, "DCC/ABORTED"), "GET");
 		}
 	    }
 	    else if (Public())
 	    {
-/*		if (Parent->nickserv.FileSys())
-		{ */
+		if (filenum && !(Parent->files.PublicSize() == 0 ||
+		    Parent->filesys.FileSysSize(FileMap::Public) <=
+		    Parent->files.PublicSize()))
+		{
+		    Parent->filesys.EraseFile(FileMap::Public, filenum);
+		    send(service, nick, Parent->getMessage(nick, "DCC/NOSPACE"));
+		}
+		else if (filenum)
+		{
 		    send(service, nick, Parent->getMessage(nick, "LIST/ADD"),
     			Parent->filesys.GetName(FileMap::Public, filenum).c_str(),
     			Parent->getMessage(nick,"LIST/FILES").c_str());
@@ -572,11 +618,11 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			Parent->filesys.GetName(FileMap::Public, filenum).c_str(),
 			filenum, ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filenum)).c_str(),
 			Parent->filesys.GetPriv(FileMap::Public, filenum).c_str());
-/*		}
+		}
 		else
 		{
-		    Parent->filesys.EraseFile(FileMap::Public, filenum);
-		} */
+		    send(service, nick, Parent->getMessage(nick, "DCC/ABORTED"), "GET");
+		}
 	    }
 	}
 	init();
@@ -612,6 +658,14 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     else if (Parent->nickserv.PicExt() == "")
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
+	return;
+    }
+
+    if (!(Parent->files.TempDirSize() == 0 ||
+	mFile::DirUsage(Parent->files.TempDir()) <=
+		Parent->files.TempDirSize()))
+    {
+	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
 	return;
     }
 
@@ -651,10 +705,14 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
 	return;
     }
-/*    else if (!Parent->nickserv.)
+
+    if (!(Parent->files.TempDirSize() == 0 ||
+	mFile::DirUsage(Parent->files.TempDir()) <=
+		Parent->files.TempDirSize()))
     {
-	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PUBDISABLED"));
-    } */
+	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
+	return;
+    }
 
     type = FileMap::Public;
     fileattach = true;
@@ -695,9 +753,13 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     InFlight.init();
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
 
+    // User is on AKILL, add the mask, and KOSH the kill.
     { MLOCK(("OperServ", "Akill"));
     if (Parent->operserv.Akill_find(i_user + "@" + i_host))
     {
+	Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_AKILL"),
+		Mask(N_U_P_H).c_str(), Parent->operserv.Akill->Entry().c_str(),
+		Parent->operserv.Akill->Value().second.c_str());
 	Parent->server.AKILL(Parent->operserv.Akill->Entry(),
 			Parent->operserv.Akill->Value().second,
 			Parent->operserv.Akill->Value().first -
@@ -708,15 +770,14 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 	return;
     }}
 
+    // User triggered CLONE protection, KOSH the kill.
     if (Parent->operserv.AddHost(i_host))
     {
-	// Set off timer in 1s to do this:
-	// Parent->server.KILL(Parent->nickserv.FirstName(), i_Name, "Too many connections from one host");
-
+	Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_CLONE"),
+		Mask(N_U_P_H).c_str());
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
 	    new mstring(i_Name + ":" + Parent->operserv.Def_Clone()),
 	    ACE_Time_Value::zero);
-
 	return;
     }
 
@@ -817,7 +878,8 @@ void Nick_Live_t::Part(mstring chan)
     }
     else
     {
-	Log(LM_TRACE, "User %s PART from non-existant channel %s", i_Name.c_str(), chan.c_str());
+	Log(LM_TRACE, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+		"PART", i_Name.c_str(), chan.c_str());
     }
 
     joined_channels.erase(chan.LowerCase());
@@ -833,7 +895,8 @@ void Nick_Live_t::Kick(mstring kicker, mstring chan)
 	    Parent->chanserv.live.erase(chan.LowerCase());
     }
     else
-	Log(LM_WARNING, "User %s KICKED from non-existant channel %s by %s", i_Name.c_str(), chan.c_str(), kicker.c_str());
+	Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+		"KICK", kicker.c_str(), chan.c_str());
 
     joined_channels.erase(chan.LowerCase());
 }
@@ -843,12 +906,11 @@ void Nick_Live_t::Quit(mstring reason)
 {
     FT("Nick_Live_t::Quit", (reason));
 
-    if (!IsServices())
+    if (!(IsServices() || HasMode("o")))
 	Parent->operserv.RemHost(i_host);
 
     // Check if we're currently being TEMP ignored ...
-    {
-    MLOCK(("OperServ","Ignore"));
+    { MLOCK(("OperServ","Ignore"));
     if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
     {
 	if (Parent->operserv.Ignore->Value() != true)
@@ -906,7 +968,7 @@ bool Nick_Live_t::FloodTrigger()
 	if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
 	{
 	    // IF we havnt ignored for long enough yet, or its perminant ...
-	    if (mDateTime(0,0,Parent->operserv.Ignore_Time(),0) > Now() - Parent->operserv.Ignore->Last_Modify_Time()
+	    if (Parent->operserv.Ignore->Last_Modify_Time().SecondsSince() <= Parent->operserv.Ignore_Time()
 		|| Parent->operserv.Ignore->Value() == true)
 	    {
 		RET(true);
@@ -985,8 +1047,10 @@ void Nick_Live_t::Name(mstring in)
     map<mstring, Committee>::iterator iter2;
     for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
 								iter2++)
+    {
 	if (iter2->second.IsOn(i_Name))
 	    wason.insert(iter2->first);
+    }
 
     // Rename ourselves in all channels ...
     for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
@@ -998,7 +1062,8 @@ void Nick_Live_t::Name(mstring in)
 	else
 	{
 	    chunked.push_back(*iter);
-	    Log(LM_WARNING, "USER %s changed nick, tried to rename in non-existant channel %s", i_Name.c_str(), iter->c_str());
+	    Log(LM_ERROR, Parent->getLogMessage("REC_FORNOTINCHAN"),
+		"NICK", i_Name.c_str(), iter->c_str());
 	}
     }
 
@@ -1011,13 +1076,18 @@ void Nick_Live_t::Name(mstring in)
 	Parent->dcc->xfers[dccs[i]]->ChgNick(in);
 
     // Carry over failed attempts (so /nick doesnt cure all!)
+    // We dont care if it doesnt exist, they can drop channels *shrug*
     for (i=0; i<try_chan_ident.size(); i++)
+    {
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
 	    Parent->chanserv.stored[try_chan_ident[i]].ChgAttempt(i_Name, in);
+    }
 
     if (Parent->nickserv.IsStored(i_Name))
     {
-	if (!Parent->nickserv.stored[i_Name.LowerCase()].IsSibling(in))
+	// We are not related (by brotherhood, or parentage)
+	if (!(Parent->nickserv.stored[i_Name.LowerCase()].IsSibling(in) ||
+	    Parent->nickserv.stored[i_Name.LowerCase()].Host().LowerCase() == i_Name.LowerCase()))
 	{
 	    identified = false;
 	    chans_founder_identd.clear();
@@ -1135,8 +1205,8 @@ void Nick_Live_t::Mode(mstring in)
 	    }
 	    else
 	    {
-		Log(LM_TRACE, "MODE change %c%c received for %s that is currently in effect",
-			add ? '+' : '-', in[i], i_Name.c_str());
+		Log(LM_TRACE, Parent->getLogMessage("ERROR/MODE_INEFFECT"),
+			add ? '+' : '-', in[i], i_Name.c_str(), i_Name.c_str());
 	    }
 	    break;
 	}
@@ -1174,7 +1244,9 @@ void Nick_Live_t::SetSquit()
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
 	    Parent->chanserv.live[i->LowerCase()].Squit(i_Name);
-
+	else
+	    Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+		"SQUIT", i_Name.c_str(), i->c_str());
 }
 
 
@@ -1193,6 +1265,9 @@ void Nick_Live_t::ClearSquit()
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
 	    Parent->chanserv.live[i->LowerCase()].UnSquit(i_Name);
+	else
+	    Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+		"UNSQUIT", i_Name.c_str(), i->c_str());
 
     joined_channels.clear();
 }
@@ -1363,6 +1438,8 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	{
 	    chans_founder_identd.insert(channel.LowerCase());
 	    retval = Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED");
+	    Log(LM_INFO, Parent->getLogMessage("CHANSERV/IDENTIFY"),
+		Mask(N_U_P_H).c_str(), channel.c_str());
 	}
 	else
 	{
@@ -1451,6 +1528,8 @@ mstring Nick_Live_t::Identify(mstring password)
 		    }
 		}
 	    }
+	    Log(LM_INFO, Parent->getLogMessage("NICKSERV/IDENTIFY"),
+		Mask(N_U_P_H).c_str(), i_Name.c_str());
 	    retval = Parent->getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
 	else
@@ -1574,6 +1653,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick)
     FT("Nick_Stored_t::Nick_Stored_t", (nick));
     i_Name = nick;
     i_Forbidden = true;
+    i_Picture = 0;
     i_RegTime = Now();
 } 
 
@@ -1584,6 +1664,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_
     i_Name = nick;
     i_RegTime = regtime;
     i_Forbidden = false;
+    i_Picture = 0;
     i_Host = in.i_Name.LowerCase();
 
     if (Parent->nickserv.IsLive(i_Name))
@@ -1625,7 +1706,7 @@ unsigned long Nick_Stored_t::Drop()
     for (iter = Parent->chanserv.stored.begin();
 	    iter != Parent->chanserv.stored.end(); iter++)
     {
-	if (iter->second.Founder() == i_Name)
+	if (iter->second.Founder().CmpNoCase(i_Name) == 0)
 	{
 	    if (iter->second.CoFounder() != "" &&
 		Parent->nickserv.IsStored(iter->second.CoFounder()))
@@ -1635,8 +1716,6 @@ unsigned long Nick_Stored_t::Drop()
 	    else
 		killchans.push_back(iter->first);
 	}
-	else
-	    killchans.push_back(iter->first);
     }
 
     for (i=0; i<killchans.size(); i++)
@@ -1879,7 +1958,7 @@ mstring Nick_Stored_t::Host()
     NFT("Nick_Stored_t::Host");
     if (i_Host != "" && !Parent->nickserv.IsStored(i_Host))
     {
-	Log(LM_WARNING, "Nick %s was listed as host of %s, but did not exist!!",
+	Log(LM_ERROR, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
     }
@@ -1981,7 +2060,11 @@ mstring Nick_Stored_t::Sibling(unsigned int count)
 		}
 	    }
 	    else
+	    {
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/SLAVE_NOTREGD"),
+			iter->c_str(), i_Name.c_str());
 		i--;
+	    }
 	}
     }
     else
@@ -2063,13 +2146,13 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
     for (csiter = Parent->chanserv.stored.begin();
 			csiter != Parent->chanserv.stored.end(); csiter++)
     {
-	if (csiter->second.Founder().LowerCase() == oldnick.LowerCase())
-	{
-	    csiter->second.Founder(i_Name);
-	}
 	if (csiter->second.CoFounder().LowerCase() == oldnick.LowerCase())
 	{
 	    csiter->second.CoFounder(i_Name);
+	}
+	if (csiter->second.Founder().LowerCase() == oldnick.LowerCase())
+	{
+	    csiter->second.Founder(i_Name);
 	}
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Access"));
 	found = false;
@@ -2194,7 +2277,7 @@ bool Nick_Stored_t::MakeHost()
 		}
 		else
 		{
-		    Log(LM_WARNING, "Nick %s was listed as slave of %s, but does not exist!!",
+		    Log(LM_ERROR, Parent->getLogMessage("ERROR/SLAVE_NOTREGD"),
 			Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).c_str(), i_Name.c_str());
 		}
 	}
@@ -3047,7 +3130,7 @@ unsigned long Nick_Stored_t::PicNum()
     NFT("PicNum");
     if (Host() == "")
     {
-	if (!Parent->nickserv.PicSize())
+	if (Parent->nickserv.PicExt() != "")
 	{
 	    RET(i_Picture);
 	}
@@ -3101,16 +3184,28 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     }
     else if (Host() == "")
     {
+	vector<mstring> chunked;
 	mDateTime lastseen = i_LastSeenTime;
-	for (unsigned int i=0; i<Siblings(); i++)
+	unsigned int i;
+	for (i=0; i<Siblings(); i++)
 	{
 	    if (Parent->nickserv.IsStored(Sibling(i)))
 	    {
-		if (Parent->nickserv.stored[Sibling(i)].LastSeenTime() > lastseen)
+		if (Parent->nickserv.stored[Sibling(i).LowerCase()].LastSeenTime() > lastseen)
 		{
-		    lastseen = Parent->nickserv.stored[Sibling(i)].LastSeenTime();
+		    lastseen = Parent->nickserv.stored[Sibling(i).LowerCase()].LastSeenTime();
 		}
 	    }
+	    else
+	    {
+		chunked.push_back(Sibling(i));
+	    }
+	}
+	for (i=0; i<chunked.size(); i++)
+	{
+	    Log(LM_ERROR, Parent->getLogMessage("ERROR/SLAVE_NOTREGD"),
+		chunked[i].c_str(), i_Name.c_str());
+	    i_slaves.erase(chunked[i]);
 	}
 	RET(lastseen);
     }
@@ -3156,19 +3251,21 @@ mstring Nick_Stored_t::LastAllMask()
     NFT("Nick_Stored_t::LastAllMask");
     if (IsOnline())
     {
-	RET("ONLINE");
+	RET(Parent->getMessage("MISC/ONLINE"));
     }
     else if (Host() == "")
     {
+	vector<mstring> chunked;
 	mDateTime lastseen = i_LastSeenTime;
 	mstring lastmask = Name() + "!" + LastMask();
-	for (unsigned int i=0; i<Siblings(); i++)
+	unsigned int i;
+	for (i=0; i<Siblings(); i++)
 	{
 	    if (Parent->nickserv.IsStored(Sibling(i)))
 	    {
 		if (Parent->nickserv.stored[Sibling(i)].IsOnline())
 		{
-		    RET("ONLINE");
+		    RET(Parent->getMessage("MISC/ONLINE"));
 		}
 		if (Parent->nickserv.stored[Sibling(i)].LastSeenTime() > lastseen)
 		{
@@ -3177,6 +3274,16 @@ mstring Nick_Stored_t::LastAllMask()
 				Parent->nickserv.stored[Sibling(i)].LastMask();
 		}
 	    }
+	    else
+	    {
+		chunked.push_back(Sibling(i));
+	    }
+	}
+	for (i=0; i<chunked.size(); i++)
+	{
+	    Log(LM_ERROR, Parent->getLogMessage("ERROR/SLAVE_NOTREGD"),
+		chunked[i].c_str(), i_Name.c_str());
+	    i_slaves.erase(chunked[i]);
 	}
 	RET(lastmask);
     }
@@ -3193,7 +3300,7 @@ mstring Nick_Stored_t::LastMask()
     NFT("Nick_Stored_t::LastMask");
     if (IsOnline())
     {
-	RET("ONLINE");
+	RET(Parent->getMessage("MISC/ONLINE"));
     }
     else
     {
@@ -3220,14 +3327,12 @@ void Nick_Stored_t::Quit(mstring message)
 {
     FT("Nick_Stored_t::Quit", (message));
     
+    // Dont whinge here, because they may not be
+    // ident'd, in which case IsOnline() == false.
     if (IsOnline())
     {
 	i_LastSeenTime = Now();
 	i_LastQuit = message;
-    }
-    else
-    {
-	Log(LM_WARNING, "STORED QUIT received for user %s who is NOT ONLINE", i_Name.c_str());
     }
 }
 
@@ -3420,8 +3525,9 @@ mstring NickServ::findnextnick(mstring in)
 	    retval = "";
 	    retval.Format("%s%05d",
 		    Parent->nickserv.Suffixes().c_str(),
-		    rand() % 65535);
-	    if (!Parent->nickserv.IsLive(retval))
+		    rand() % 99999);
+	    if (!Parent->nickserv.IsLive(retval) &&
+		!Parent->nickserv.IsStored(retval))
 	    {
 		RET(retval);
 	    }
@@ -3760,7 +3866,8 @@ void NickServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" &&
+	!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -4626,6 +4733,14 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 	Parent->nickserv.stored[target.LowerCase()].GotPic(0);
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
 							target.c_str());
+	return;
+    }
+
+    if (!(Parent->files.TempDirSize() == 0 ||
+	mFile::DirUsage(Parent->files.TempDir()) <=
+		Parent->files.TempDirSize()))
+    {
+	::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
 	return;
     }
 
@@ -6556,7 +6671,7 @@ void NickServ::PostLoad()
 	}
 	else if (iter->second.i_Host != "")
 	{
-	    Log(LM_WARNING, "Nick %s was listed as host of %s, but did not exist!!",
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
 		iter->second.i_Host.c_str(), iter->first.c_str());
 	    iter->second.i_Host = "";
 	}

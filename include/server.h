@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/06/06 08:57:54  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.37  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -132,11 +136,13 @@ public:
     ~Protocol() {}
     void Set(unsigned int in);
     mstring GetToken(mstring in);
+    mstring GetNonToken(mstring in);
 
     unsigned int Number()   { return i_Number; }
     unsigned int NickLen()  { return i_NickLen; }
     bool Globops()	    { return i_Globops; }
     bool Tokens()	    { return i_Tokens; }
+    void Tokens(bool in)    { i_Tokens = in; }
     bool SVS()		    { return i_SVS; }
     bool SVSHOST()	    { return i_SVSHOST; }
     bool P12()		    { return i_P12; }

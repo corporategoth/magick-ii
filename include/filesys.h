@@ -25,6 +25,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/06/06 08:57:54  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.18  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -129,6 +133,7 @@ public:
     static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
     static long Dump(list<mstring> sin, mstring sout, bool append = false, bool endline = true);
     static vector<mstring> UnDump( const mstring &sin);
+    static size_t DirUsage(mstring directory);
 };
 
 class FileMap : public SXP::IPersistObj
@@ -139,6 +144,7 @@ public:
     unsigned long FindAvail(FileType type);
     bool Exists(FileType type, unsigned long num);
     mstring GetName(FileType type, unsigned long num);
+    mstring GetRealName(FileType type, unsigned long num);
     mstring GetPriv(FileType type, unsigned long num);
     bool SetPriv(FileType type, unsigned long num, mstring priv);
     bool Rename(FileType type, unsigned long num, mstring newname);
@@ -148,6 +154,7 @@ public:
     void EraseFile(FileType type, unsigned long num);
     vector<unsigned long> GetList(FileType type, mstring source);
     unsigned long GetNum(FileType type, mstring name);
+    size_t FileSysSize(FileType type);
 
     virtual SXP::Tag& GetClassTag() const { return tag_FileMap; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

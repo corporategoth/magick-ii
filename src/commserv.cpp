@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/06/06 08:57:56  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.57  2000/05/27 07:06:01  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -332,8 +336,8 @@ bool Committee::IsOn(mstring nick)
     // taken into account).
     if (IsIn(nick) && Parent->nickserv.IsStored(nick) &&
 	Parent->nickserv.stored[nick.LowerCase()].IsOnline())
-	if (!i_Secure || (i_Secure &&
-	    Parent->nickserv.live[nick.LowerCase()].IsIdentified()))
+	if (!i_Secure ||
+	    Parent->nickserv.live[nick.LowerCase()].IsIdentified())
 	{
 	    RET(true);
 	}
@@ -349,12 +353,10 @@ bool Committee::IsHead(mstring nick)
     {
 	RET(true);
     }
-    else if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom))
+    else if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom) &&
+	Parent->commserv.list[i_HeadCom.UpperCase()].IsIn(nick))
     {
-	if (Parent->commserv.list[i_HeadCom].IsIn(nick))
-	{
-	    RET(true);
-	}
+	RET(true);
     }
     else if (i_Head == "" && i_HeadCom == "")
     {
@@ -761,7 +763,8 @@ void CommServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" &&
+	!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }

@@ -56,7 +56,7 @@ x Ability to have *long* memos, some way of getting round ircd's line length
   eg (#services) (credit skold).
   > Scripted hook into 'LogOutput'?
 * More flood protection (eg. nickname flood, X nicks in X seconds = kill?)
-* Memo recall, ie, being able to delete unread memos you've sent to people.
+- Memo recall, ie, being able to delete unread memos you've sent to people.
 x Nomemo nick option, and a nomemo exempt list (similar to ignore, but
   backwards, ignoring everyone and letting certain people thru)
 * If a misconfigured server fights with services (ie a missing uline) have

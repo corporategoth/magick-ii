@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2000/06/06 08:57:54  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.119  2000/05/25 08:16:38  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -148,23 +152,16 @@ mstring mUserDef::UserDef(mstring type)
 }
 
 
-mstring mUserDef::UserDef(mstring source, mstring type, mstring val)
+void mUserDef::UserDef(mstring type, mstring val)
 {
-    FT("mUserDef::UserDef", (source, type, val));
-    mstring retval;
+    FT("mUserDef::UserDef", (type, val));
     if (val.UpperCase() == "NONE")
     {
 	i_UserDef.erase(type.LowerCase());
-	retval.Format(Parent->getMessage(source, "MISC/ENTLIST_CLEAR"),
-			type.UpperCase().c_str());
-	RET(retval);
     }
     else
     {
 	i_UserDef[type.LowerCase()] = val;
-	retval.Format(Parent->getMessage(source, "MISC/ENTLIST_SET"),
-			type.UpperCase().c_str(), val.c_str());
-	RET(retval);
     }
 }
 
@@ -407,8 +404,10 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
     va_start(argptr, str);
 
     RLOCK(("NickServ", "live", source));
-    if (Parent->nickserv.IsLive(source) &&
-	Parent->nickserv.live[source.LowerCase()].IsServices())
+    if (!Parent->nickserv.IsLive(source))
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"PRIVMSG", source.c_str());
+    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
     {
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.privmsgV(source, dest, pszFormat, argptr);
@@ -429,8 +428,13 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
 	    Parent->servmsg.privmsgV(source, dest, pszFormat, argptr);
 
 	// scripted hosts ...
-	// else
+	else
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"PRIVMSG", source.c_str());
     }
+    else
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"PRIVMSG", source.c_str());
     va_end(argptr);
 }
 
@@ -443,8 +447,10 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
     RLOCK(("NickServ", "live", source));
-    if (Parent->nickserv.IsLive(source) &&
-	Parent->nickserv.live[source.LowerCase()].IsServices())
+    if (!Parent->nickserv.IsLive(source))
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"NOTICE", source.c_str());
+    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
     {
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.noticeV(source, dest, pszFormat, argptr);
@@ -465,8 +471,13 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
 	    Parent->servmsg.noticeV(source, dest, pszFormat, argptr);
 
 	// scripted hosts ...
-	// else
+	else
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"NOTICE", source.c_str());
     }
+    else
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"NOTICE", source.c_str());
     va_end(argptr);
 }
 
@@ -479,8 +490,10 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
     RLOCK(("NickServ", "live", source));
-    if (Parent->nickserv.IsLive(source) &&
-	Parent->nickserv.live[source.LowerCase()].IsServices())
+    if (!Parent->nickserv.IsLive(source))
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"SEND", source.c_str());
+    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
     {
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.sendV(source, dest, pszFormat, argptr);
@@ -501,8 +514,13 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
 	    Parent->servmsg.sendV(source, dest, pszFormat, argptr);
 
 	// scripted hosts ...
-	// else
+	else
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SEND", source.c_str());
     }
+    else
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SEND", source.c_str());
 
     va_end(argptr);
 }
@@ -516,14 +534,21 @@ void announce(const mstring& source, const mstring &pszFormat, ...)
     va_start(argptr, str);
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
-
-    // Put logic in here to choose GLOBOP or WALLOP
-    if (Parent->server.proto.Globops())
-	Parent->server.GLOBOPS(source, message);
-    else
-	Parent->server.WALLOPS(source, message);
-
     va_end(argptr);
+
+    if (!Parent->nickserv.IsLive(source))
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"ANNOUNCE", source.c_str());
+    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
+    {
+	if (Parent->server.proto.Globops())
+	    Parent->server.GLOBOPS(source, message);
+	else
+	    Parent->server.WALLOPS(source, message);
+    }
+    else
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"ANNOUNCE", source.c_str());
 }
 
 void mBase::shutdown()
@@ -595,6 +620,7 @@ void mBaseTask::message(const mstring& message)
 	{
 	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()) * (sizeof(ACE_Method_Object *) * 2));
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
+	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
 	}
     }
     MLOCK2(("ActivationQueue"));
@@ -683,6 +709,7 @@ int mBaseTask::message_i(const mstring& message)
 	COM(("Low water mark reached, killing thread."));
 	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()-1) * (sizeof(ACE_Method_Object *) * 2));
 	message_queue_.low_water_mark(message_queue_.high_water_mark());
+	Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
 	RET(-1);
     }
     RET(0);
@@ -933,11 +960,8 @@ bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
 {
     FT("CommandMap::DoCommand", (mynick, user, command, params));
 
-    if (DoUserCommand(mynick, user, command, params))
-    {
-	RET(true);
-    }
-    else if (DoSystemCommand(mynick, user, command, params))
+    if (DoUserCommand(mynick, user, command, params) ||
+	DoSystemCommand(mynick, user, command, params))
     {
 	RET(true);
     }

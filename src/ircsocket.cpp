@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2000/06/06 08:57:56  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.106  2000/05/27 15:10:12  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -374,6 +378,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     Parent->GotConnect(false);
     Parent->i_server = server;
+    Parent->server.proto.Tokens(false);
     if (Parent->ircsvchandler != NULL)
 	delete Parent->ircsvchandler;
     Parent->ircsvchandler=new IrcSvcHandler;
@@ -408,16 +413,20 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 int KillOnSignon_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
     // If nickserv isnt online yet, wait 1s
+    mstring *tmp = (mstring *) arg;
+    FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", *tmp));
+
     if (!Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
     {
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),arg,ACE_Time_Value(1));
-	return 0;
+	CP(("Re-Queing KOSH timer (NickServ is not online)"));
+	RET(0);
     }
-    FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    // Nick and Reason
-    mstring *tmp = (mstring *) arg;
 
-    Parent->server.KILL(Parent->nickserv.FirstName(), tmp->Before(":"), tmp->After(":"));
+    if (tmp->Contains(":") && tmp->After(":").Len() &&
+				Parent->nickserv.IsLive(tmp->Before(":")))
+	Parent->server.KILL(Parent->nickserv.FirstName(),
+					tmp->Before(":"), tmp->After(":"));
     delete tmp;
     RET(0);
 }
@@ -427,7 +436,6 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     // We ONLY get here if we didnt receive a SQUIT message in <10s
     // after any QUIT message with 2 valid servers in it
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    // Nick and Reason
     mstring *tmp = (mstring *) arg;
 
     Parent->server.ServerSquit.erase(*tmp);
@@ -464,7 +472,6 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    // Nick and Reason
     mstring *tmp = (mstring *) arg;
 
     Parent->server.ServerSquit.erase(*tmp);
@@ -497,6 +504,8 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
 int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    // Memo timed out, send it!
+    // If its a file, and not inprogress, ignore.
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
     Nick_Live_t *entry;
@@ -524,6 +533,9 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
+    // This is to part channels I'm not supposed to be
+    // in (ie. dont have JOIN on, and I'm the only user
+    // in them).  ie. after AKICK, etc.
     if (Parent->chanserv.IsLive(*tmp) &&
 	Parent->chanserv.live[tmp->LowerCase()].IsIn(
 			Parent->chanserv.FirstName()))
@@ -559,14 +571,19 @@ int EventTask::close(unsigned long in)
 
 int EventTask::svc(void)
 {
+    // The biggie, so big, it has its own zip code ... uhh .. thread.
     mThread::Attach(tt_MAIN);
     NFT("EventTask::svc");
 
     last_expire = last_save = last_check = last_ping = Now();
     while(!Parent->Shutdown())
     {
+	// Make sure we're turned on ...
 	if (!Parent->AUTO())
+	{
+	    ACE_OS::sleep(1);
 	    continue;
+	}
 
  	// Main routine -- when we end this, we're done!!
 	map<mstring, Nick_Live_t>::iterator nli;
@@ -743,7 +760,7 @@ int EventTask::svc(void)
 		}
 	    }
 
-	    // transaction ID's
+	    // transaction ID's (for inter-magick)
 	    TxnIds::Expire();
 
 	    last_expire = Now();

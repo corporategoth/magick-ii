@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/06/06 08:57:57  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.60  2000/05/27 07:06:02  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -337,7 +341,8 @@ void MemoServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" &&
+	!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -955,6 +960,14 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		{
 		    nonfiles = true;
 		    continue;
+		}
+
+		if (!(Parent->files.TempDirSize() == 0 ||
+		    mFile::DirUsage(Parent->files.TempDir()) <=
+		    Parent->files.TempDirSize()))
+		{
+		    ::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
+		    return;
 		}
 
 		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);

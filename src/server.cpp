@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2000/06/06 08:57:58  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.99  2000/05/27 07:06:03  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -255,6 +259,9 @@ Protocol::Protocol()
 void Protocol::Set(unsigned int in)
 {
     FT("Protocol::Set", (in));
+
+    // WE NEVER set 'i_Tokens', thats set with the PROTCTL line.
+
     switch (in)
     {
     case 0: /* RFC */
@@ -276,7 +283,6 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_Tokens = true;
 	i_SVS = true;
 	i_Akill = 1;
 	i_Modes = 6;
@@ -292,7 +298,6 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_SVS = true;
 	i_SVSHOST = true;
-	i_Tokens = true;
 	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
@@ -306,7 +311,6 @@ void Protocol::Set(unsigned int in)
 	break;
     case 50: /* Relic 2.0 */
 	i_NickLen = 32;
-	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
 	i_Signon = 1001;
@@ -317,7 +321,6 @@ void Protocol::Set(unsigned int in)
 	break;
     case 51: /* Relic */
 	i_NickLen = 32;
-	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
 	i_P12 = true;
@@ -361,8 +364,24 @@ mstring Protocol::GetToken(mstring in)
 {
     FT("Protocol::GetToken", (in));
     if (tokens.find(in) == tokens.end())
-	return "";
+	RET("");
     RET(tokens[in]);
+}
+
+mstring Protocol::GetNonToken(mstring in)
+{
+    FT("Protocol::GetNonToken", (in));
+    mstring retval;
+    map<mstring,mstring>::iterator iter;
+    for (iter = tokens.begin(); iter != tokens.end(); iter++)
+    {
+	if (iter->second.CmpNoCase(in)==0)
+	{
+	    retval = iter->first;
+	    break;
+	}
+    }
+    RET(retval);
 }
 
 Server::Server(mstring name, mstring description)
@@ -422,7 +441,9 @@ void Server::Ping()
 
     if (!i_Ping)
     {
-        Parent->server.sraw("PING " + Parent->startup.Server_Name() + " :" + i_Name);
+        Parent->server.sraw(((Parent->server.proto.Tokens() && Parent->server.proto.GetNonToken("PING") != "") ?
+		Parent->server.proto.GetNonToken("PING") : mstring("PING")) +
+		" " + Parent->startup.Server_Name() + " :" + i_Name);
 	i_Ping = ACE_OS::gettimeofday().msec();
    }
 }
@@ -492,7 +513,7 @@ vector<mstring> Server::AllDownlinks()
 	}
     }
 
-    while (found == true)
+    while (found)
     {
 	found = false;
 	for (unsigned int i=0; i<uplinks.size(); i++) 
@@ -580,7 +601,9 @@ void NetworkServ::SignOnAll()
     }
 
     if (doison != "")
-	sraw("ISON" + doison);
+	sraw(((proto.Tokens() && proto.GetNonToken("ISON") != "") ?
+		proto.GetNonToken("ISON") : mstring("ISON")) +
+		doison);
 }
 
 
@@ -598,6 +621,7 @@ void NetworkServ::FlushMsgs(mstring nick)
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > >::iterator i;
     list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > >::iterator j;
 
+    // Dont report this, thats the point of the queue...
     if (!Parent->nickserv.IsLive(nick))
 	return;
 
@@ -667,6 +691,10 @@ void NetworkServ::FlushMsgs(mstring nick)
 		    WALLOPS(nick, j->third.first);
 		    break;
 		default:
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_UNKNOWN"),
+			(int) j->first, i->first.c_str(), j->third.first.c_str(),
+			j->third.second.c_str(), j->third.third.c_str(),
+			ToHumanTime(j->second.SecondsSince()).c_str());
 		    break;
 		}
 	    }
@@ -695,7 +723,9 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 {
     FT("NetworkServ::Jupe", (server, reason));
     if (IsServer(server))
-	raw("SQUIT " + server.LowerCase() + " :JUPE command used.");
+	raw(((proto.Tokens() && proto.GetNonToken("SQUIT") != "") ?
+		proto.GetNonToken("SQUIT") : mstring("SQUIT")) +
+		" " + server.LowerCase() + " :JUPE command used.");
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
     mstring tmp;
@@ -720,45 +750,32 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time)
     case 0:
 	break;
     case 1:
-	line << "AKILL " << host.After("@") << " " << host.Before("@") << " :" << reason;
+	if (proto.Tokens() && proto.GetNonToken("AKILL") != "")
+	    line << proto.GetNonToken("AKILL");
+	else
+	    line << "AKILL";
+	line << " " << host.After("@") << " " << host.Before("@") << " :" << reason;
 	break;
     case 2:
-	line << "GLINE * +" << time << " " << host << " :" << reason;
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " * +" << time << " " << host << " :" << reason;
 	break;
     case 3:
-	line << "GLINE * +" << host << " " << time << " :" << reason;
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " * +" << host << " " << time << " :" << reason;
 	break;
     case 4:
-	line << "GLINE +" << host << " " << time << " :" << reason;
-	break;
-    }
-    if (line != "")
-	sraw(line);
-}
-
-void NetworkServ::RAKILL(mstring host)
-{
-    FT("NetworkServ::RAKILL", (host));
-
-    if (!host.Contains("@"))
-	return;
-
-    mstring line;
-    switch (proto.Akill())
-    {
-    case 0:
-	break;
-    case 1:
-	line << "RAKILL " << host.After("@") << " " << host.Before("@");
-	break;
-    case 2:
-	line << "UNGLINE * " << host;
-	break;
-    case 3:
-	line << "GLINE * -" << host;
-	break;
-    case 4:
-	line << "GLINE -" << host;
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " +" << host << " " << time << " :" << reason;
 	break;
     }
     if (line != "")
@@ -771,19 +788,25 @@ void NetworkServ::AWAY(mstring nick, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "AWAY command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"AWAY", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "AWAY command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"AWAY", nick.c_str());
     }
     else
     {
-	mstring tmpResult;
+	mstring line;
 	Parent->nickserv.live[nick.LowerCase()].Away(reason);
+	if (proto.Tokens() && proto.GetNonToken("AWAY") != "")
+	    line << proto.GetNonToken("AWAY");
+	else
+	    line << "AWAY";
 	if(reason != "")
-	    tmpResult=" : " + reason;
-	raw(":" + nick + " AWAY" +  tmpResult);
+	    line=" : " + reason;
+	raw(":" + nick + " " +  line);
     }
 }
 
@@ -802,15 +825,22 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "GLOBOPS command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"GLOBOPS", nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Action();
 	if (proto.Globops())
-	    raw(":" + nick + " GLOBOPS :" + message);
+	    raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("GLOBOPS") != "") ?
+			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) +
+		" :" + message);
 	else
-	    raw(":" + nick + " WALLOPS :" + message);
+	    raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("WALLOPS") != "") ?
+			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) +
+		" :" + message);
     }
 }
 
@@ -829,20 +859,25 @@ void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "INVITE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"INVITE", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	Log(LM_WARNING, "INVITE command requested for non-existant user %s", dest.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"INVITE", nick.c_str(), dest.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	Log(LM_WARNING, "INVITE command requested by %s for %s in non-existant channel %s",
-		nick.c_str(), dest.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"INVITE", nick.c_str(), channel.c_str());
     }
     else
     {
-	raw(":" + nick + " INVITE " + dest + " :" + channel);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("INVITE") != "") ?
+			proto.GetNonToken("INVITE") : mstring("INVITE")) +
+		" " + dest + " :" + channel);
     }
 }
 
@@ -853,17 +888,22 @@ void NetworkServ::JOIN(mstring nick, mstring channel)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "JOIN command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"JOIN", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "JOIN command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"JOIN", nick.c_str());
     }
     else
     {
 	for (unsigned int i=0; i<channel.WordCount(", "); i++)
 	    Parent->nickserv.live[nick.LowerCase()].Join(channel.ExtractWord(i+1, ", "));
-	raw(":" + nick + " JOIN :" + channel);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("JOIN") != "") ?
+			proto.GetNonToken("JOIN") : mstring("JOIN")) +
+		" :" + channel);
     }
 }
 
@@ -882,26 +922,31 @@ void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reas
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "KICK command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"KICK", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	Log(LM_WARNING, "KICK command requested by %s for non-existant %s", dest.c_str(), nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"KICK", nick.c_str(), dest.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	Log(LM_WARNING, "KICK command requested by %s for %s in non-existant channel %s",
-		nick.c_str(), dest.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"KICK", nick.c_str(), channel.c_str());
     }
     else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(dest))
     {
-	Log(LM_WARNING, "KICK command requested by %s for %s who is not in channel %s",
-		nick.c_str(), dest.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_NOTINCHAN"),
+		"KICK", nick.c_str(), dest.c_str(), channel.c_str());
     }
     else
     {
 	Parent->nickserv.live[dest.LowerCase()].Kick(nick, channel);
-	raw(":" + nick + " KICK " + channel + " " + dest + " :" + reason);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("KICK") != "") ?
+			proto.GetNonToken("KICK") : mstring("KICK")) +
+		" " + channel + " " + dest + " :" + reason);
     }
 }
 
@@ -920,18 +965,23 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "KILL command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"KILL", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	Log(LM_WARNING, "KILL command requested for non-existant user %s", dest.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"KILL", nick.c_str(), dest.c_str());
     }
     else
     {
 	Parent->nickserv.live[dest.LowerCase()].Quit(
 		"Killed (" + nick + " (" + reason + "))");
 	Parent->nickserv.live.erase(dest.LowerCase());
-	raw(":" + nick + " KILL " + dest + " :" + Parent->nickserv.live[nick.LowerCase()].Host() +
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("KILL") != "") ?
+			proto.GetNonToken("KILL") : mstring("KILL")) +
+		" " + dest + " :" + Parent->nickserv.live[nick.LowerCase()].Host() +
 		"!" + nick + " (" + reason + ")");
     }
 }
@@ -943,16 +993,21 @@ void NetworkServ::MODE(mstring nick, mstring mode)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "MODE command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"MODE", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "MODE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"MODE", nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
-	raw(":" + nick + " MODE " + nick + " :" + mode);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("MODE") != "") ?
+			proto.GetNonToken("MODE") : mstring("MODE")) +
+		" " + nick + " :" + mode);
     }
 }
 
@@ -963,21 +1018,27 @@ void NetworkServ::MODE(mstring nick, mstring channel, mstring mode)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "MODE command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"MODE", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "MODE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"MODE", nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	Log(LM_WARNING, "MODE command requested by %s for non-existant channel %s", nick.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"MODE", nick.c_str(), channel.c_str());
     }
     else
     {
 	Parent->chanserv.live[channel.LowerCase()].Mode(nick, mode);
-	raw(":" + nick + " MODE " + channel + " " + mode.Before(" ") +
-					" " + mode.After(" "));
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("MODE") != "") ?
+			proto.GetNonToken("MODE") : mstring("MODE")) +
+		" " + channel + " " + mode.Before(" ") + " " +
+		mode.After(" "));
     }
 }
 
@@ -989,7 +1050,8 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 
     if (Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "NICK command requested for already-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_TOUSER"),
+		"NICK", server.c_str(), nick.c_str());
     }
     else
     {
@@ -997,31 +1059,55 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	switch (proto.Signon())
 	{
 	case 0000:
-	    send << "USER " << nick  << " " << user << " " << host <<
+	    if (proto.Tokens() && proto.GetNonToken("USER") != "")
+		send << proto.GetNonToken("USER");
+	    else
+		send << "USER";
+	    send << " " << nick  << " " << user << " " << host <<
 		" " << server << " :" << realname;
 	    break;
 	case 0001:
-	    send << "USER " << nick  << Now().timetstring() <<
+	    if (proto.Tokens() && proto.GetNonToken("USER") != "")
+		send << proto.GetNonToken("USER");
+	    else
+		send << "USER";
+	    send << " " << nick  << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" :" << realname;
 	    break;
 	case 1000:
-	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
+		send << proto.GetNonToken("NICK");
+	    else
+		send << "NICK";
+	    send << " " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" :" << realname;
 	    break;
 	case 1001:
-	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
+		send << proto.GetNonToken("NICK");
+	    else
+		send << "NICK";
+	    send << " " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" 1 :" << realname;
 	    break;
 	case 1002:
-	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
+		send << proto.GetNonToken("NICK");
+	    else
+		send << "NICK";
+	    send << " " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" 1 " << host << ":" << realname;
 	    break;
 	case 1003:
-	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
+		send << proto.GetNonToken("NICK");
+	    else
+		send << "NICK";
+	    send << " " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << host << " " <<
 		server << " 1 " << ":" << realname;
 	    break;
@@ -1042,11 +1128,13 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 
     if (!Parent->nickserv.IsLive(oldnick))
     {
-	Log(LM_WARNING, "NICK command requested by non-existant user %s", oldnick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"NICK", oldnick.c_str());
     }
     else if (!Parent->nickserv.live[oldnick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "NICK command requested by non-service %s", oldnick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"NICK", oldnick.c_str());
     }
     else
     {
@@ -1056,7 +1144,10 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 		Parent->nickserv.live[oldnick.LowerCase()];
 	Parent->nickserv.live.erase(oldnick.LowerCase());
 	Parent->nickserv.live[newnick.LowerCase()].Name(newnick);
-	raw(":" + oldnick + " NICK " + newnick);
+	raw(":" + oldnick + " " +
+		((proto.Tokens() && proto.GetNonToken("NICK") != "") ?
+			proto.GetNonToken("NICK") : mstring("NICK")) +
+		" " + newnick);
     }
 }
 
@@ -1070,19 +1161,25 @@ void NetworkServ::NOOP(mstring nick, mstring server, bool onoff)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "NOOP command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"NOOP", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "NOOP command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"NOOP", nick.c_str());
     }
     else if (!IsServer(server))
     {
-	Log(LM_WARNING, "NOOP command requested for non-existant server %s", server.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONSERVER"),
+		"NOOP", nick.c_str(), server.c_str());
     }
     else
     {
-	raw(":" + nick + " NOOP " + server + " " + mstring(onoff ? "+" : "-"));
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("NOOP") != "") ?
+			proto.GetNonToken("NOOP") : mstring("NOOP")) +
+		" " + server + " " + mstring(onoff ? "+" : "-"));
     }
 }
 
@@ -1101,18 +1198,27 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "NOTICE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"NOTICE", nick.c_str());
     }
     else if (!(dest[0u] == '$' || dest[0u] == '#' ||
 		Parent->nickserv.IsLive(dest) ||
 		Parent->chanserv.IsLive(dest)))
     {
-	Log(LM_WARNING, "NOTICE command requested for non-existant user/channel %s", dest.c_str());
+	if (IsChan(dest))
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"NOTICE", nick.c_str(), dest.c_str());
+	else
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"NOTICE", nick.c_str(), dest.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Action();
-	raw(":" + nick + " NOTICE " + dest + " :" + text);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+		" " + dest + " :" + text);
     }
 }
 
@@ -1123,21 +1229,23 @@ void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "PART command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"PART", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "PART command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"PART", nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	Log(LM_WARNING, "PART command requested by %s for non-existant channel %s",
-		nick.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"PART", nick.c_str(), channel.c_str());
     }
     else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(nick))
     {
-	Log(LM_WARNING, "PART command requested by %s who is not in channel %s",
-		nick.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_NOTINCHAN"),
+		"KICK", nick.c_str(), nick.c_str(), channel.c_str());
     }
     else
     {
@@ -1147,7 +1255,10 @@ void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
 	    tmpResult=" :"+reason;
 	else
 	    tmpResult="";
-	raw(":" + nick + " PART " + channel + tmpResult);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("PART") != "") ?
+			proto.GetNonToken("PART") : mstring("PART")) +
+		" " + channel + tmpResult);
     }
 }
 
@@ -1166,19 +1277,27 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "PRIVMSG command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"PRIVMSG", nick.c_str());
     }
     else if (!(dest[0u] == '$' || dest[0u] == '#' ||
 		Parent->nickserv.IsLive(dest) ||
 		Parent->chanserv.IsLive(dest)))
     {
-	Log(LM_WARNING, "PRIVMSG command requested by %s for non-existant user/channel %s",
-		nick.c_str(), dest.c_str());
+	if (IsChan(dest))
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"PRIVMSG", nick.c_str(), dest.c_str());
+	else
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"PRIVMSG", nick.c_str(), dest.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Action();
-	raw(":" + nick + " PRIVMSG " + dest + " :" + text);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("PRIVMSG") != "") ?
+			proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) +
+		" " + dest + " :" + text);
     }
 }
 
@@ -1200,11 +1319,15 @@ void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "QLINE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"QLINE", nick.c_str());
     }
     else
     {
-	raw(":" + nick + " QLINE " + target + " :" + reason);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("QLINE") != "") ?
+			proto.GetNonToken("QLINE") : mstring("QLINE")) +
+		" " + target + " :" + reason);
     }
 }
 
@@ -1215,20 +1338,70 @@ void NetworkServ::QUIT(mstring nick, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "QUIT command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		"QUIT", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "QUIT command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"QUIT", nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
 	Parent->nickserv.live.erase(nick.LowerCase());
-	raw(":" + nick + " QUIT :" + reason);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("QUIT") != "") ?
+			proto.GetNonToken("QUIT") : mstring("QUIT")) +
+		" :" + reason);
     }
 }
 
+
+void NetworkServ::RAKILL(mstring host)
+{
+    FT("NetworkServ::RAKILL", (host));
+
+    if (!host.Contains("@"))
+	return;
+
+    mstring line;
+    switch (proto.Akill())
+    {
+    case 0:
+	break;
+    case 1:
+	if (proto.Tokens() && proto.GetNonToken("RAKILL") != "")
+	    line << proto.GetNonToken("RAKILL");
+	else
+	    line << "RAKILL";
+	line << " " << host.After("@") << " " << host.Before("@");
+	break;
+    case 2:
+	if (proto.Tokens() && proto.GetNonToken("UNGLINE") != "")
+	    line << proto.GetNonToken("UNGLINE");
+	else
+	    line << "UNGLINE";
+	line << " * " << host;
+	break;
+    case 3:
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " * -" << host;
+	break;
+    case 4:
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " -" << host;
+	break;
+    }
+    if (line != "")
+	sraw(line);
+}
 
 void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
 {
@@ -1247,16 +1420,21 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "SVSMODE command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SVSMODE", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "SVSMODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"SVSMODE", mynick.c_str(), nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
-	raw(":" + mynick + " SVSMODE " + nick + " " + mode);
+	raw(":" + mynick + " " +
+		((proto.Tokens() && proto.GetNonToken("SVSMODE") != "") ?
+			proto.GetNonToken("SVSMODE") : mstring("SVSMODE")) +
+		" " + nick + " " + mode);
     }
 }
 
@@ -1278,16 +1456,21 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "SVSKILL command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SVSKILL", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "SVSKILL command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"SVSKILL", mynick.c_str(), nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
-	raw(":" + mynick + " SVSKILL " + nick + " :" + reason);
+	raw(":" + mynick + " " +
+		((proto.Tokens() && proto.GetNonToken("SVSKILL") != "") ?
+			proto.GetNonToken("SVSKILL") : mstring("SVSKILL")) +
+		" " + nick + " :" + reason);
     }
 }
 
@@ -1309,16 +1492,21 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "SVSHOST command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SVSHOST", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "SVSHOST command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"SVSHOST", mynick.c_str(), nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].AltHost(newhost);
-	raw(":" + mynick + " SVSHOST " + nick + " " + newhost);
+	raw(":" + mynick + " " +
+		((proto.Tokens() && proto.GetNonToken("SVSHOST") != "") ?
+			proto.GetNonToken("SVSHOST") : mstring("SVSHOST")) +
+		" " + nick + " " + newhost);
     }
 }
 
@@ -1340,20 +1528,28 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "SVSNICK command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SVSNICK", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	Log(LM_WARNING, "SVSNICK command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"SVSNICK", mynick.c_str(), nick.c_str());
     }
     else if (Parent->nickserv.IsLive(newnick))
     {
-	Log(LM_WARNING, "SVSNICK command requested by %s to existing user %s", mynick.c_str(), newnick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_TOUSER"),
+		"SVSNICK", mynick.c_str(), newnick.c_str());
     }
     else
     {
 	mstring output;
-	output << ":" << mynick << " SVSNICK " << nick << " " <<
+	output << ":" << mynick << " ";
+	if (proto.Tokens() && proto.GetNonToken("SVSNICK") != "")
+	    output << proto.GetNonToken("SVSNICK");
+	else
+	    output << "SVSNICK";
+	output << " " << nick << " " <<
 		    newnick << " :" << time_t(NULL);
 	raw(output);
     }
@@ -1374,20 +1570,26 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "TOPIC command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"TOPIC", nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	Log(LM_WARNING, "TOPIC command requested by %s for non-existant channel %s",
-		nick.c_str(), channel.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
+		"TOPIC", nick.c_str(), channel.c_str());
     }
     else
     {
 	mstring send;
-	if (topic == "")
-	    send << ":" << nick << " TOPIC " << channel << " " << setter;
+	send << ":" << nick << " ";
+	if (proto.Tokens() && proto.GetNonToken("TOPIC") != "")
+	    send << proto.GetNonToken("TOPIC");
 	else
-	    send << ":" << nick << " TOPIC " << channel << " " <<
+	    send << "TOPIC";
+	if (topic == "")
+	    send << " " << channel << " " << setter;
+	else
+	    send << " " << channel << " " <<
 		setter << " " << time.timetstring() << " :" << topic;
 
 	Parent->chanserv.live[channel.LowerCase()].Topic(nick, topic, setter, time);
@@ -1413,11 +1615,15 @@ void NetworkServ::UNQLINE(mstring nick, mstring target)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "UNQLINE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"UNQLINE", nick.c_str());
     }
     else
     {
-	raw(":" + nick + " UNQLINE " + target);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("UNQLINE") != "") ?
+			proto.GetNonToken("UNQLINE") : mstring("UNQLINE")) +
+		" " + target);
     }
 }
 
@@ -1436,12 +1642,16 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Log(LM_WARNING, "WALLOPS command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"WALLOPS", nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Action();
-	raw(":" + nick + " WALLOPS :" + message);
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("WALLOPS") != "") ?
+			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) +
+		" :" + message);
     }
 }
 
@@ -1449,9 +1659,13 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
 void NetworkServ::KillUnknownUser(mstring user)
 {
     FT("NetworkServ::KillUnknownUser", (user));
-    raw(":" + Parent->startup.Server_Name() + " KILL " + user +
-	    " :" + Parent->startup.Server_Name() + " (" + user +
-	    "(?) <- " + Parent->Server() + ")");
+    raw(":" + Parent->startup.Server_Name() + " " +
+	((proto.Tokens() && proto.GetNonToken("KILL") != "") ?
+		proto.GetNonToken("KILL") : mstring("KILL")) +
+    	" " + user + " :" + Parent->startup.Server_Name() +
+    	" (" + user + "(?) <- " + Parent->Server() + ")");
+    Log(LM_ERROR, Parent->getLogMessage("OTHER/KILL_UNKNOWN"),
+	user.c_str());
 }
 
 
@@ -1502,7 +1716,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		return;
 	    }
 	    // :source ADMIN
@@ -1570,12 +1786,16 @@ void NetworkServ::execute(const mstring & data)
 	    if (IsServer(data.ExtractWord(3, ": ")) ||
 	    	data.ExtractWord(3, ": ").LowerCase() == Parent->startup.Server_Name().LowerCase())
 	    {
-		raw("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
 			" already exists from " + Parent->startup.Server_Name());
 	    }
 	    else
 	    {
-		raw("NOTICE " + source + " :Connect: Host " +
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :Connect: Host " +
 			data.ExtractWord(3, ": ") + " not listed in irc.conf");
 	    }
 	}
@@ -1646,7 +1866,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		return;
 	    }
 	    else
@@ -1660,7 +1882,7 @@ void NetworkServ::execute(const mstring & data)
 	    //:PreZ INVITE ChanServ :#chatzone
 
 	    // We can ignore this, as our clients will not 'join on invite'
-
+	    // and we dont really need an invitation to join ...
 	}
 	else if (msgtype=="ISON")
 	{
@@ -1720,7 +1942,9 @@ void NetworkServ::execute(const mstring & data)
 
 	    if (!(source.Contains(".") || source == "") &&
 		!Parent->nickserv.live[sourceL].IsInChan(data.ExtractWord(3, ": ")))
-		sraw("KICK " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
+		sraw(((proto.Tokens() && proto.GetNonToken("KICK") != "") ?
+			proto.GetNonToken("KICK") : mstring("KICK")) +
+			" " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
 
 	    // NOTE: as the message has already been broadcasted,
 	    // we still need to acomodate for it.
@@ -1740,7 +1964,9 @@ void NetworkServ::execute(const mstring & data)
 			    data.ExtractWord(3, ": ").c_str(),
 			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str());
 		    WaitIsOn.insert(data.ExtractWord(3, ": "));
-		    sraw("ISON " + data.ExtractWord(3, ": "));
+		    sraw(((proto.Tokens() && proto.GetNonToken("ISON") != "") ?
+			proto.GetNonToken("ISON") : mstring("ISON")) +
+			" " + data.ExtractWord(3, ": "));
 		}
 		int wc = data.After(":", 2).WordCount("!");
 		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
@@ -1749,8 +1975,8 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    else
 	    {
-		Log(LM_WARNING, "Received KILL message for user %s who does not exist, from %s",
-			data.ExtractWord(3, ": ").c_str(), source.c_str());
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"KILL", source.c_str(), data.ExtractWord(3, ": ").c_str());
 	    }
 
 	}
@@ -1772,7 +1998,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		return;
 	    }
 	    else
@@ -1800,7 +2028,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		return;
 	    }
 	    else
@@ -1835,8 +2065,8 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_WARNING, "MODE from %s received for non-existant channel %s", source.c_str(),
-			data.ExtractWord(3, ": ").c_str());
+		    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
 		}
 	    }
 	    else
@@ -1847,8 +2077,8 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_WARNING, "MODE received for non-existant nickname %s",
-			data.ExtractWord(3, ": ").c_str());
+		    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
 		}
 	    }
 	}
@@ -1862,7 +2092,9 @@ void NetworkServ::execute(const mstring & data)
 		    mstring tmp;
 		    tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		    raw("NOTICE " + source + " :" + tmp.c_str());
+		    raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		    return;
 		}
 		else
@@ -2062,10 +2294,16 @@ void NetworkServ::execute(const mstring & data)
 	    if (!Parent->GotConnect())
 		return;
 
-	    if (!source && !IsChan(data.ExtractWord(2, ": ")))
-		Log(LM_NOTICE, "Received NOTICE for unknown user " + data.ExtractWord(2, ": "));
-	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
-		Log(LM_NOTICE, "Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
+	
+	
+	    if (source == "")
+		if (!IsChan(data.ExtractWord(2, ": ")))
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"NOTICE", Parent->startup.Server_Name().c_str(), data.ExtractWord(2, ": ").c_str());
+	    else
+		if (!IsChan(data.ExtractWord(3, ": ")))
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"NOTICE", source.c_str(), data.ExtractWord(3, ": ").c_str());
 	}
 	else
 	{
@@ -2100,8 +2338,12 @@ void NetworkServ::execute(const mstring & data)
 		Log(LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
 			Parent->Server().c_str());
 		CP(("Server password mismatch.  Closing socket."));
-		raw("ERROR :No Access (passwd mismatch) [" + Parent->Server() + "]");
-		raw("ERROR :Closing Link: [" + Parent->Server() + "] (Bad Password)");
+		raw(((proto.Tokens() && proto.GetNonToken("ERROR") != "") ?
+			proto.GetNonToken("ERROR") : mstring("ERROR")) +
+			" :No Access (passwd mismatch) [" + Parent->Server() + "]");
+		raw(((proto.Tokens() && proto.GetNonToken("ERROR") != "") ?
+			proto.GetNonToken("ERROR") : mstring("ERROR")) +
+			" :Closing Link: [" + Parent->Server() + "] (Bad Password)");
 
 		Parent->Disconnect();
 	    }
@@ -2116,9 +2358,13 @@ void NetworkServ::execute(const mstring & data)
 	    // PING :some.server
 	    // :some.server PING some.server :our.server
 	    if (source != "")
-		sraw("PONG " + Parent->startup.Server_Name() + " :" + source);
+		sraw(((proto.Tokens() && proto.GetNonToken("PONG") != "") ?
+			proto.GetNonToken("PONG") : mstring("PONG")) +
+			" " + Parent->startup.Server_Name() + " :" + source);
 	    else
-		sraw("PONG " + Parent->startup.Server_Name() + " :" +
+		sraw(((proto.Tokens() && proto.GetNonToken("PONG") != "") ?
+			proto.GetNonToken("PONG") : mstring("PONG")) +
+			" " + Parent->startup.Server_Name() + " :" +
 			data.ExtractWord(2, ": "));
 	}
 	else if (msgtype=="PONG")
@@ -2138,14 +2384,20 @@ void NetworkServ::execute(const mstring & data)
 	    if (!Parent->GotConnect())
 		return;
 
-	    if (source && !IsChan(data.ExtractWord(2, ": ")))
-		Log(LM_NOTICE, "Received PRIVMSG for unknown user " + data.ExtractWord(2, ": "));
-	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
-		Log(LM_NOTICE, "Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
+	    if (source == "")
+		if (!IsChan(data.ExtractWord(2, ": ")))
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"PRIVMSG", Parent->startup.Server_Name().c_str(), data.ExtractWord(2, ": ").c_str());
+	    else
+		if (!IsChan(data.ExtractWord(3, ": ")))
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"PRIVMSG", source.c_str(), data.ExtractWord(3, ": ").c_str());
 	}
 	else if (msgtype=="PROTOCTL")
 	{
-	    // This is valid from DAL4.4.15+
+	    // Turn on tokens dynamically ...
+	    if ((data + " ").Contains(" TOKEN "))
+		proto.Tokens(true);
 	}
 	else
 	{
@@ -2196,7 +2448,9 @@ void NetworkServ::execute(const mstring & data)
 		// Kind of illegal to do, but accomodate anyway, re-signon
 		// services if someone quits them (how?!?)
 		if (Parent->nickserv.live[sourceL].IsServices())
-		    sraw("ISON " + sourceL);
+		    sraw(((proto.Tokens() && proto.GetNonToken("ISON") != "") ?
+			proto.GetNonToken("ISON") : mstring("ISON")) +
+			" " + sourceL);
 		Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
 		Parent->nickserv.live.erase(sourceL);
 	    }
@@ -2531,8 +2785,8 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_WARNING, "MODE from %s received for non-existant channel %s", source.c_str(),
-			data.ExtractWord(3, ": ").c_str());
+		    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"SVSMODE", source.c_str(),  data.ExtractWord(3, ": ").c_str());
 		}
 	    }
 	    else
@@ -2543,8 +2797,8 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_WARNING, "MODE from %s received for non-existant user %s", source.c_str(),
-			data.ExtractWord(3, ": ").c_str());
+		    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"SVSMODE", source.c_str(),  data.ExtractWord(3, ": ").c_str());
 		}
 	    }
 	}
@@ -2624,7 +2878,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		return;
 	    }
 
@@ -2755,31 +3011,37 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="USERHOST")
 	{
-	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    if (data.WordCount(": ") > 2)
 	    {
-		if (!Parent->nickserv.IsStored(data.ExtractWord(3, ": ")) ? 1 :
-			!Parent->nickserv.stored[data.ExtractWord(3, ": ").LowerCase()].Private())
+		sraw("461 " + source + " USERHOST :Not enough paramaters");
+	    }
+	    else if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    {
+		mstring target = Parent->getLname(data.ExtractWord(3, ": "));
+		if (!Parent->nickserv.IsStored(target) ? 1 :
+			!Parent->nickserv.stored[target.LowerCase()].Private())
 		{
 		    sraw("302 " + source + " :" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
+			Parent->nickserv.live[target.LowerCase()].Name() +
 			"*=-" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
+			Parent->nickserv.live[target.LowerCase()].User() +
 			"@" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].AltHost());
+			Parent->nickserv.live[target.LowerCase()].AltHost());
 		}
 		else
 		{
 		    sraw("302 " + source + " :" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
+			Parent->nickserv.live[target.LowerCase()].Name() +
 			"*=-" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
-			"@ONLINE");
+			Parent->nickserv.live[target.LowerCase()].User() +
+			"@" + Parent->getMessage("MISC/ONLINE"));
 		}
 
 	    }
 	    else
 	    {
-		sraw("461 " + source + " USERHOST :Not enough paramaters");
+		sraw("401 " + source + " " + data.ExtractWord(3, ": ") +
+			" :No such nickname/channel.");
 	    }
 
 	}
@@ -2924,7 +3186,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		return;
 	    }
 
@@ -2950,7 +3214,9 @@ void NetworkServ::execute(const mstring & data)
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
 								msgtype.c_str());
-		raw("NOTICE " + source + " :" + tmp.c_str());
+		raw(((proto.Tokens() && proto.GetNonToken("NOTICE") != "") ?
+			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
+			" " + source + " :" + tmp.c_str());
 		sraw("318 " + source + " " + target + " :End of /WHOIS list.");
 		return;
 	    }

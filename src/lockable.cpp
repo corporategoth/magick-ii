@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/06/06 08:57:56  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.36  2000/05/20 03:28:11  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -63,13 +67,16 @@ static const char *ident = "@(#)$Id$";
 mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 {
     int i;
-    mstring lockname;
     for (i=0; i<args.count()-1; i++) {
 	if (lockname != "")
 	    lockname += "::";
 	lockname += args[i].AsString();
-	lock[i].open(lockname.c_str());
-	lock[i].acquire();
+	if (lock[i].open(lockname.c_str()) < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+		"READ", lockname.c_str());
+	else if (lock[i].acquire() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+		"READ", lockname.c_str());
 	tlock[i].open(T_Locking::Read, lockname);
     }
 
@@ -79,18 +86,30 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 
     if (type == T_Locking::Write)
     {
-	wlock.open(lockname.c_str());
-	wlock.acquire();
+	if (wlock.open(lockname.c_str()) < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+		"WRITE", lockname.c_str());
+	else if (wlock.acquire() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+		"WRITE", lockname.c_str());
     }
     else if (type == T_Locking::Mutex)
     {
-	mlock.open(lockname.c_str());
-	mlock.acquire();
+	if (mlock.open(lockname.c_str()) < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+		"MUTEX", lockname.c_str());
+	else if (mlock.acquire() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+		"MUTEX", lockname.c_str());
     }
     else
     {
-	rlock.open(lockname.c_str());
-	rlock.acquire();
+	if (rlock.open(lockname.c_str()) < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_OPEN"),
+		"READ", lockname.c_str());
+	else if (rlock.acquire() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_ACQUIRE"),
+		"READ", lockname.c_str());
     }
     tlock[i].open(type, lockname);
     last_type = type;
@@ -101,13 +120,31 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 mLOCK::~mLOCK()
 {
     if (last_type == T_Locking::Write)
-	wlock.release();
+    {
+	if (wlock.release() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+		"WRITE", lockname.c_str());
+    }
     else if (last_type == T_Locking::Mutex)
-	mlock.release();
+    {
+	if (mlock.release() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+		"MUTEX", lockname.c_str());
+    }
     else
-	rlock.release();
+    {
+	if (rlock.release() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+		"READ", lockname.c_str());
+    }
     for(;count;count--)
-	lock[count-1].release();
+    {
+	if (lockname.Contains("::"))
+	    lockname.Truncate(lockname.Find(':', true)-1);
+	if (lock[count-1].release() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/LOCK_RELEASE"),
+		"READ", lockname.c_str());
+    }
 }
 
 #endif /* MAGICK_LOCKS_WORK */

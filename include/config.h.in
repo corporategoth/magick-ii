@@ -96,9 +96,6 @@
 /* Define if you have the <strstream.h> header file.  */
 #undef HAVE_STRSTREAM_H
 
-/* Define if you have the <utility.h> header file.  */
-#undef HAVE_UTILITY_H
-
 /* Define if you have the <vector.h> header file.  */
 #undef HAVE_VECTOR_H
 

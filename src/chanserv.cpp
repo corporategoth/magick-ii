@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.173  2000/06/06 08:57:55  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.172  2000/05/27 15:10:11  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -204,7 +208,7 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
     else
-	Log(LM_TRACE, Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+	Log(LM_TRACE, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
 	    "PART", nick.c_str(), i_Name.c_str());
 
     unsigned int retval = users.size() + squit.size();
@@ -231,7 +235,7 @@ void Chan_Live_t::UnSquit(mstring nick)
 
     if (squit.find(nick.LowerCase())==squit.end())
     {
-	Log(LM_WARNING, Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
 		"UNSQUIT", nick.c_str(), i_Name.c_str());
     }
     else
@@ -242,7 +246,7 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Live_t::Kick", (nick, kicker));
     if (users.find(nick.LowerCase())==users.end())
-	Log(LM_WARNING, Parent->getMessage("ERROR/REC_NOTINCHAN"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_NOTINCHAN"),
 		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str());
     else
     {
@@ -260,7 +264,7 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     FT("Chan_Live_t::ChgNick", (nick, newnick));
     if (users.find(nick.LowerCase())==users.end())
     {
-	Log(LM_WARNING, Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
 		"NICK", nick.c_str(), i_Name.c_str());
     }
     else
@@ -900,7 +904,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		Log(LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
 			'+', 'o', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
 	    }
 	    fwdargs++;
@@ -916,7 +920,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		Log(LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
 			'+', 'v', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
 	    }
 	    fwdargs++;
@@ -945,7 +949,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		Log(LM_WARNING, Parent->getLogMessage("ERROR/KEYMISMATCH"),
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 			i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
 			i_Name.c_str(), source.c_str());
 	    }
@@ -957,13 +961,13 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		if (fwdargs > in.WordCount(": "))
 		{
-		    Log(LM_WARNING, Parent->getLogMessage("ERROR/NOLIMIT"),
+		    Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
 				i_Name.c_str(), source.c_str());
 		    i_Limit = 0;
 		}
 		else if (!in.ExtractWord(fwdargs, ": ").IsNumber())
 		{
-		    Log(LM_WARNING, Parent->getLogMessage("ERROR/NOLIMIT"),
+		    Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
 				i_Name.c_str(), source.c_str());
 		    i_Limit = 0;
 		}
@@ -1140,8 +1144,8 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
 
-	Log(LM_DEBUG, "KICKED user %s from channel %s for triggering AKICK",
-			nick.c_str(), i_Name.c_str());
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
+			nick.c_str(), i_Name.c_str(), Akick->Value().c_str());
 	return;
     }}
 
@@ -1161,7 +1165,7 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
 
-	Log(LM_DEBUG, "KICKED user %s from channel %s as it is restricted",
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
 			nick.c_str(), i_Name.c_str());
 	return;
     }
@@ -1210,14 +1214,14 @@ void Chan_Stored_t::Join(mstring nick)
     else if (GetAccess(nick, "AUTOVOICE"))
 	clive->SendMode("+v " + nick);
 
+    if (Suspended())
+	return;
+
     mstring target = nick;
     if (nstored != NULL && nstored->Host() != "")
     {
 	target = nstored->Host();
     }
-
-    if (Suspended())
-	return;
 
     {
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
@@ -1311,7 +1315,11 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 	return;
 
     if (!Parent->chanserv.IsLive(i_Name))
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"TOPIC", source.c_str(), i_Name.c_str());
 	return;
+    }
 
     if (Suspended())
     {
@@ -1349,7 +1357,11 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
 	return;
 
     if (!Parent->chanserv.IsLive(i_Name))
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"TOPIC", source.c_str(), i_Name.c_str());
 	return;
+    }
 
     if (Suspended())
 	return;
@@ -1369,7 +1381,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
     // ENFORCE mlock
 
     if (!Parent->chanserv.IsLive(i_Name))
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"MODE", setter.c_str(), i_Name.c_str());
 	return;
+    }
+
     Chan_Live_t *clive = &Parent->chanserv.live[i_Name.LowerCase()];
     if (Parent->nickserv.IsLive(setter) &&
 	Parent->nickserv.live[setter.LowerCase()].IsServices())
@@ -1673,6 +1690,7 @@ bool Chan_Stored_t::DoRevenge(mstring type, mstring target, mstring source)
 	}
 	else if (i_Revenge == "REVERSE")
 	{
+	    // All we need to do now is return 'screw em' (true)
 	}
 	else if (i_Revenge == "DEOP")
 	{
@@ -1762,7 +1780,7 @@ DoRevenge_Ban4:
 	    else if (type == "BAN4")
 		goto DoRevenge_Ban4;
 	}
-	Log(LM_INFO, "Taking revenge on user %s in channel %s for %s on %s.",
+	Log(LM_INFO, Parent->getLogMessage("OTHER/REVENGE"),
 			target.c_str(), i_Name.c_str(), type.c_str(), source.c_str());
 	RET(true);
     }
@@ -1895,7 +1913,11 @@ void Chan_Stored_t::Founder(mstring in)
     FT("Chan_Stored_t::Founder", (in));
 
     if (!Parent->nickserv.IsStored(in))
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/BADSET"),
+		in.c_str(), "FOUNDER", i_Name.c_str());
 	return;
+    }
 
     if (i_CoFounder == in)
 	i_CoFounder = "";
@@ -1909,7 +1931,11 @@ void Chan_Stored_t::CoFounder(mstring in)
     FT("Chan_Stored_t::CoFounder", (in));
 
     if (!Parent->nickserv.IsStored(in))
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/BADSET"),
+		in.c_str(), "COFOUNDER", i_Name.c_str());
 	return;
+    }
 
     if (i_Founder == in)
 	return;
@@ -3358,7 +3384,8 @@ bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick, mDateTime modtime)
     if (!Greet_find(entry))
     {
 	i_Greet.push_back(entlist_t(entry, nick, modtime));
-	Greet = i_Greet.end(); Greet--;
+	Greet = i_Greet.end();
+	Greet--;
 	RET(true);
     }
     else
@@ -4293,7 +4320,8 @@ void ChanServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" &&
+	!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -4882,7 +4910,7 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
     if (!Parent->nickserv.IsStored(chan->Founder()))
     {
-	Log(LM_WARNING, "Channel %s had a founder of %s who was not registered (channel dropped)",
+	Log(LM_CRITICAL, Parent->getLogMessage("ERROR/FOUNDER_NOTREGD"),
 			chan->Name().c_str(), chan->Founder().c_str());
 	Parent->chanserv.stored.erase(channel.LowerCase());
 	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),

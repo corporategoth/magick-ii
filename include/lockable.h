@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/06/06 08:57:54  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.32  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -55,15 +59,17 @@ static const char *ident_lockable_h = "@(#) $Id$";
 #include "trace.h"
 
 #ifdef MAGICK_LOCKS_WORK
+#define MAX_LOCKS 5
 class mLOCK
 {
+    mstring lockname;
     // union {
     	ACE_Local_Mutex mlock;
     	ACE_Local_WLock wlock;
     	ACE_Local_RLock rlock;
     // } llock;
-    ACE_Local_RLock lock[14];
-    T_Locking tlock[15];
+    ACE_Local_RLock lock[MAX_LOCKS-1];
+    T_Locking tlock[MAX_LOCKS];
     T_Locking::type_enum last_type;
 
     int count;

@@ -13,7 +13,7 @@ mostlyclean-compile:
 	-rm -f *.o core *.core *.debug
 
 helper:
-	../helper/build-ver $(top_srcdir)
+	#$(top_srcdir)/helper/build-ver $(top_srcdir)
 
 magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
 	@rm -f magick

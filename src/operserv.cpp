@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/06/06 08:57:57  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.82  2000/05/27 15:10:12  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -142,7 +146,8 @@ bool OperServ::AddHost(mstring host)
 {
     FT("OperServ::AddHost", (host));
 
-    if (CloneList[host.LowerCase()] < 1)
+    if (CloneList.find(host.LowerCase()) == CloneList.end() ||
+	CloneList[host.LowerCase()] < 1)
 	CloneList[host.LowerCase()] = 0;
     CloneList[host.LowerCase()]++;
 
@@ -924,7 +929,8 @@ void OperServ::execute(const mstring & data)
     {
 	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" &&
+	!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -1511,7 +1517,8 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	Log(LM_ERROR, "Could not read magick config file %s.", Parent->Config_File().c_str());
+	Log(LM_ERROR, Parent->getLogMessage("COMMANDLINE/NO_CFG_FILE"),
+		Parent->Config_File().c_str());
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD_FAIL"));
     }
 }

@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2000/06/06 08:57:54  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.129  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -253,10 +257,13 @@ public:
 		mstring keyfile;
 		bool encryption;
 		mstring memoattach;
+		unsigned long memoattachsize;
 		mstring picture;
+		unsigned long picturesize;
 		mstring i_public;
+		unsigned long publicsize;
 		mstring tempdir;
-		unsigned long filesyssize;
+		unsigned long tempdirsize;
 		unsigned long blocksize;
 		unsigned long timeout;
 		unsigned long min_speed;
@@ -272,10 +279,13 @@ public:
 		mstring KeyFile()		    { return MakePath(keyfile); }
 		bool Encryption()const		    { return encryption; }
 		mstring MemoAttach()		    { return MakePath(memoattach); }
+		unsigned long MemoAttachSize()const { return memoattachsize; }
 		mstring Picture()		    { return MakePath(picture); }
+		unsigned long PictureSize()const    { return picturesize; }
 		mstring Public()		    { return MakePath(i_public); }
+		unsigned long PublicSize()const	    { return publicsize; }
 		mstring TempDir()		    { return MakePath(tempdir); }
-		unsigned long Filesyssize()const    { return filesyssize; }
+		unsigned long TempDirSize()const    { return tempdirsize; }
 		unsigned long Blocksize()const	    { return blocksize; }
 		unsigned long Timeout()const	    { return timeout; }
 		unsigned long Min_Speed()const	    { return min_speed; }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/06/06 08:57:58  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.52  2000/05/27 15:10:12  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -297,7 +301,8 @@ void ServMsg::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" &&
+	!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -1157,6 +1162,14 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+
+    if (!(Parent->files.TempDirSize() == 0 ||
+	mFile::DirUsage(Parent->files.TempDir()) <=
+	Parent->files.TempDirSize()))
+    {
+	::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
+	return;
+    }
 
 
     filename = Parent->filesys.GetName(FileMap::Public, filenum);

@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.241  2000/06/06 08:57:56  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.240  2000/05/28 02:37:16  prez
 ** Minor bug fixes (help system and changing nicks)
 **
@@ -258,46 +262,71 @@ size_t LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
 
     switch (priority)
     {
+
+    // Stuff normal users dont wanna see
     case LM_TRACE:
 	text_priority = "TRACE   ";
 #ifndef DEBUG
 	RET(0);
 #endif
 	break;
+
+    // Stuff you have to turn VERBOSE on to see
     case LM_DEBUG:
 	text_priority = "DEBUG   ";
 	if (!Parent->verbose())
 	    RET(0);
 	break;
+
+    // Normal information that most users want
     case LM_INFO:
 	text_priority = "INFO    ";
 	break;
+
+    // Still normal, but notable (eg. SOP commands)
     case LM_NOTICE:
 	text_priority = "NOTICE  ";
 	break;
+
+    // An attempt at data corruption (denied) or recoverable error
     case LM_WARNING:
 	text_priority = "WARNING ";
 	break;
+
+    // Startup messages only (ie. boot)
     case LM_STARTUP:
 	text_priority = "STARTUP ";
 	break;
+
+    // A data corruption that we repaird
     case LM_ERROR:
 	text_priority = "ERROR   ";
 	break;
+
+    // A data corruption we could not repair (left in system or
+    // more drastic action taken, eg. the record being removed)
     case LM_CRITICAL:
 	text_priority = "CRITICAL";
 	break;
+
+    // A situation that caused us to hard abort, but did not kill
+    // us but may have caused a thread to die, etc.
     case LM_ALERT:
 	text_priority = "ALERT   ";
 	break;
+
+    // A situation we could not reover from, we're outtahere.
     case LM_EMERGENCY:
 	text_priority = "FATAL   ";
 	break;
+
+    // Should NEVER get this, but its there for completeness.
     default:
 	text_priority = "UNKNOWN ";
 	break;
     }
 
+    // Blatently copied from ACE_DEBUG code...
     int __ace_error = ACE_OS::last_error ();
     ACE_Log_Msg *ace___ = ACE_Log_Msg::instance ();
     ace___->set (ASYS_TEXT (__FILE__), __LINE__, 0, __ace_error,
@@ -309,7 +338,7 @@ size_t LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
 	text_priority.c_str(), text.c_str());
 
     if (priority == LM_EMERGENCY)
-	exit(1);
+	exit(-1);
     RET(retval);
 }
 
@@ -441,17 +470,17 @@ int Magick::Start()
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
-    Log(LM_STARTUP, "Loading default language file ...");
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_LANG"));
     LoadInternalMessages();
 
     FLUSH();
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
-    Log(LM_STARTUP, "Spawning to background ...");
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK"));
     Result = ACE_OS::fork();
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getMessage("ERROR/FAILED_FORK"), Result);
+	Log(LM_EMERGENCY, getLogMessage("ERROR/FAILED_FORK"), Result);
 	RET(1);
     }
     else if (Result != 0)
@@ -461,7 +490,7 @@ int Magick::Start()
     Result = ACE_OS::setpgid (0, 0);
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getMessage("ERROR/FAILED_SETPGID"), Result);
+	Log(LM_EMERGENCY, getLogMessage("ERROR/FAILED_SETPGID"), Result);
 	RET(1);
     }
     // Can only open these after fork if we want then to live
@@ -470,7 +499,7 @@ int Magick::Start()
 		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
 			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
 
-    Log(LM_STARTUP, "Starting events engine ...");
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS"));
     events = new EventTask;
     events->open();
     dcc = new DccMap;
@@ -548,7 +577,7 @@ int Magick::Start()
 
     // etc.
 
-    //Log(LM_STARTUP, "Running thread threshold loop ...");
+    //Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_CALIBRATE"));
     // calibrate the threshholds.
     //
     // register 250 nicks and 1000 channels (to random nicknames in the nick pool).
@@ -573,14 +602,15 @@ int Magick::Start()
     // This is the main loop.  When we get a Shutdown(),
     // we wait for everything to shutdown cleanly.
     // All that will be left is US and the LOGGER.
-    Log(LM_STARTUP, "%s %d.%d Startup Complete.", PRODUCT.c_str(),
-				Magick_Major_Ver, Magick_Minor_Ver);
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_COMPLETE"),
+		PRODUCT.c_str(), Magick_Major_Ver, Magick_Minor_Ver);
     while(!Shutdown())
     {
 	ACE_Reactor::instance()->run_event_loop();
 	FLUSH();
     }
 
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_EVENTS"));
     // We're going down .. execute relivant shutdowns.
     if (ircsvchandler != NULL)
     {
@@ -665,6 +695,8 @@ int Magick::Start()
 
     remove(files.Pidfile().Strip(mstring::stBoth));
 
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_COMPLETE"),
+		PRODUCT.c_str(), Magick_Major_Ver, Magick_Minor_Ver);
     RET(MAGICK_RET_TERMINATE);
 }
 
@@ -699,9 +731,6 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.find(lang.UpperCase()) == Messages.end())
     {
 	LoadExternalMessages(lang);
-	Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
-		lang.UpperCase().c_str());
-	CP(("Language %s was loaded into memory.", lang.c_str()));
     }
     if (lang != "" &&
 	Messages.find(lang.UpperCase()) != Messages.end() &&
@@ -721,9 +750,6 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.end())
     {
 	LoadExternalMessages(nickserv.DEF_Language());
-	Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
-		lang.UpperCase().c_str());
-	CP(("Language %s was loaded into memory.", nickserv.DEF_Language().c_str()));
     }
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
 	nickserv.DEF_Language() != "" &&
@@ -753,6 +779,7 @@ mstring Magick::getLogMessage(const mstring & name)
     // Load nickserv default language if its NOT loaded.
     // and then look for the message of THAT type.
     // Otherwise just try and find it in the DEFAULTs.
+    // NEVER implement locking here, we log the locks.
 
     mstring retval = "Could not find log message token \"" + name.UpperCase() +
 			    "\", please check your language file.";
@@ -821,6 +848,12 @@ StartGetLang:
 			entries[i].c_str(), tempstr.c_str()));
 	    entries[i].Truncate(entries[i].Find('/', true));
 	    Help[language][entries[i]].push_back(entry);
+	}
+	if (entries.size())
+	{
+	    Log(LM_INFO, getLogMessage("OTHER/LOAD_HELP"),
+		language.UpperCase().c_str());
+	    CP(("Help %s was loaded into memory.", language.c_str()));
 	}
     }
 
@@ -1075,6 +1108,9 @@ bool Magick::LoadExternalMessages(mstring language)
 	if (Messages.find(language.UpperCase()) != Messages.end())
 	{
 	    RET(true);
+	    Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
+		language.UpperCase().c_str());
+	    CP(("Language %s was loaded into memory.", language.c_str()));
 	}
     }
     RET(false);
@@ -1781,14 +1817,9 @@ bool Magick::get_config_values()
     // Check for \ or / or ?: in first chars.
     errstring=Config_File();
 
+    if (!mFile::Exists(errstring))
     {
-	FILE *TmpHand;
-	if ((TmpHand = ACE_OS::fopen(errstring, "r")) == NULL)
-	{
-	    RET(false);
-	}
-	else
-	    fclose(TmpHand);
+	RET(false);
     }
     wxFileConfig in("magick","",errstring);
     errstring = "";
@@ -1920,9 +1951,11 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.Len() > 450)
 		{
-		    server.sraw("ISON " + isonstr);
+		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		server.WaitIsOn.insert(nickserv.names.ExtractWord(i+1, " "));
 		isonstr += nickserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
@@ -1959,9 +1992,11 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.Len() > 450)
 		{
-		    server.sraw("ISON " + isonstr);
+		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		server.WaitIsOn.insert(chanserv.names.ExtractWord(i+1, " "));
 		isonstr += chanserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
@@ -1996,9 +2031,11 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.Len() > 450)
 		{
-		    server.sraw("ISON " + isonstr);
+		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		server.WaitIsOn.insert(memoserv.names.ExtractWord(i+1, " "));
 		isonstr += memoserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
@@ -2033,9 +2070,11 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.Len() > 450)
 		{
-		    server.sraw("ISON " + isonstr);
+		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		server.WaitIsOn.insert(operserv.names.ExtractWord(i+1, " "));
 		isonstr += operserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
@@ -2070,9 +2109,11 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.Len() > 450)
 		{
-		    server.sraw("ISON " + isonstr);
+		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		server.WaitIsOn.insert(commserv.names.ExtractWord(i+1, " "));
 		isonstr += commserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
@@ -2107,9 +2148,11 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.Len() > 450)
 		{
-		    server.sraw("ISON " + isonstr);
+		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		server.WaitIsOn.insert(servmsg.names.ExtractWord(i+1, " "));
 		isonstr += servmsg.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
@@ -2118,7 +2161,8 @@ bool Magick::get_config_values()
     in.Read(ts_Services+"SHOWSYNC",&servmsg.showsync,true);
 
     if (isonstr != "")
-	server.sraw("ISON " + isonstr);
+	server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
+		server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 
     in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
@@ -2133,14 +2177,37 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",&files.memoattach,"files/memo");
     ACE_OS::mkdir(files.memoattach.c_str());
+    in.Read(ts_Files+"MEMOATTACHSIZE",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	files.memoattachsize = FromHumanSpace(value_mstring);
+    else
+	files.memoattachsize = FromHumanSpace("0");
     in.Read(ts_Files+"PICTURE",&files.picture,"files/pic");
     ACE_OS::mkdir(files.picture.c_str());
+    in.Read(ts_Files+"PICTURESIZE",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	files.picturesize = FromHumanSpace(value_mstring);
+    else
+	files.picturesize = FromHumanSpace("0");
     in.Read(ts_Files+"PUBLIC",&files.i_public,"files/public");
     ACE_OS::mkdir(files.i_public.c_str());
+    in.Read(ts_Files+"PUBLICSIZE",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	files.publicsize = FromHumanSpace(value_mstring);
+    else
+	files.publicsize = FromHumanSpace("0");
     in.Read(ts_Files+"TEMPDIR",&files.tempdir,"files/temp");
     ACE_OS::mkdir(files.tempdir.c_str());
-    in.Read(ts_Files+"FILESYSSIZE",&files.filesyssize,0);
-    in.Read(ts_Files+"BLOCKSIZE",&files.blocksize,1024);
+    in.Read(ts_Files+"TEMPDIRSIZE",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	files.tempdirsize = FromHumanSpace(value_mstring);
+    else
+	files.tempdirsize = FromHumanSpace("0");
+    in.Read(ts_Files+"BLOCKSIZE",&value_mstring,"1k");
+    if (FromHumanSpace(value_mstring))
+	files.blocksize = FromHumanSpace(value_mstring);
+    else
+	files.blocksize = FromHumanSpace("1k");
     in.Read(ts_Files+"TIMEOUT",&value_mstring,"2m");
     if (FromHumanTime(value_mstring))
 	files.timeout = FromHumanTime(value_mstring);
@@ -2536,7 +2603,9 @@ bool Magick::get_config_values()
 
     if (reconnect && Connected())
     {
-	server.raw("ERROR :Closing Link: Configuration reload required restart!");
+	server.raw(((server.proto.Tokens() && server.proto.GetNonToken("ERROR") != "") ?
+		server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
+		" :Closing Link: Configuration reload required restart!");
 	ircsvchandler->shutdown();
 	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value(1));
     }
@@ -2554,21 +2623,26 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     switch(signum)
     {
     case 0:		// this is here to show up clashes for badly defined signal constants
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
     case SIGINT:	// CTRL-C, Background.
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	//fork();
 	break;
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
+	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SAVE"), signum);
 	Parent->save_databases();
 	break;
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
     case SIGPIPE:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
     case SIGQUIT:	// Terminal dead, Background.
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	//fork();
 	break;
 #endif
@@ -2577,6 +2651,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	// LastSEGV is < 5 seconds ...
 	if(((time_t) LastSEGV != 0) && ((time_t) (Now() - LastSEGV) < 5))
 	{
+	    Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	    CP(("Got second sigsegv call, giving magick the boot"));
 	    Parent->Shutdown(true);
 	    Parent->Die();
@@ -2584,12 +2659,14 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	}
 	else
 	{
+	    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/SIGNAL_RETRY"), signum);
 	    LastSEGV = Now();
 	    CP(("Got first sigsegv call, giving it another chance"));
 	}
 	break;
 #ifdef SIGBUS
     case SIGBUS:	// BUS error (fatal)
+	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	Parent->Shutdown(true);
 	Parent->Die();
 	RET(-1);
@@ -2597,59 +2674,78 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
 #if defined(SIGHUP) && (SIGHUP != 0)
     case SIGHUP:	// Reload CFG/DB's
+	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_LOAD"), signum);
+	if (!Parent->get_config_values())
+	{
+	    Log(LM_EMERGENCY, Parent->getLogMessage("COMMANDLINE/NO_CFG_FILE"),
+	    					Parent->Config_File().c_str());
+	}
 	break;
 #endif
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
+	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	Parent->Shutdown(true);
 	Parent->Die();
 	RET(-1);
 	break;
 #ifdef SIGTRAP
     case SIGTRAP:	// Throw exception
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #ifdef SIGIOT
     case SIGIOT:	// abort(), exit immediately!
+	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	Parent->Shutdown(true);
 	Parent->Die();
 	RET(-1);
 	break;
 #endif
     case SIGFPE:	// Retry last call
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     case SIGUSR1:	// ??
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     case SIGUSR2:	// ??
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #if defined(SIGALRM) && (SIGALRM != 0)
     case SIGALRM:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #if defined(SIGCHLD) && (SIGCHLD != 0)
     case SIGCHLD:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #ifdef SIGWINCH
     case SIGWINCH:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #ifdef SIGTTIN
     case SIGTTIN:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #ifdef SIGTTOU
     case SIGTTOU:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
 #ifdef SIGTSTP
     case SIGTSTP:	// Ignore
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;
 #endif
     default:		// Everything else.
+	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;//ignore (todo log that we got it and we're ignoring it)
     }
     RET(0);
@@ -2951,30 +3047,34 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
         pIn->ReadTo(&operserv);
         operserv.PostLoad();
     }
-    if( pElement->IsA( nickserv.GetClassTag() ) )
+    else if( pElement->IsA( nickserv.GetClassTag() ) )
     {
         pIn->ReadTo(&nickserv);
         nickserv.PostLoad();
     }
-    if( pElement->IsA( chanserv.GetClassTag() ) )
+    else if( pElement->IsA( chanserv.GetClassTag() ) )
     {
         pIn->ReadTo(&chanserv);
         chanserv.PostLoad();
     }
-    if( pElement->IsA( memoserv.GetClassTag() ) )
+    else if( pElement->IsA( memoserv.GetClassTag() ) )
     {
         pIn->ReadTo(&memoserv);
         memoserv.PostLoad();
     }
-    if( pElement->IsA( commserv.GetClassTag() ) )
+    else if( pElement->IsA( commserv.GetClassTag() ) )
     {
         pIn->ReadTo(&commserv);
         commserv.PostLoad();
     }
-    if( pElement->IsA( filesys.GetClassTag() ) )
+    else if( pElement->IsA( filesys.GetClassTag() ) )
     {
         pIn->ReadTo(&filesys);
         filesys.PostLoad();
+    }
+    else
+    {
+	// Scripted ...
     }
 }
 

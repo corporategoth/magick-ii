@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/06/06 08:57:56  prez
+** Finished off logging in backend processes except conver (which I will
+** leave for now).  Also fixed some minor bugs along the way.
+**
 ** Revision 1.43  2000/05/28 05:05:14  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -899,7 +903,7 @@ bool wxFileConfig::DeleteAll()
   const char *szFile = m_strLocalFile;
 
   if ( remove(szFile) == -1 )
-    Log(LM_ALERT, Parent->getMessage("WX_ERRORS/USER_CFG_DEL"), szFile);
+    Log(LM_ALERT, Parent->getLogMessage("WX_ERRORS/USER_CFG_DEL"), szFile);
 
   m_strLocalFile = m_strGlobalFile = "";
   Init();
