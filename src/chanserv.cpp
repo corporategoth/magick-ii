@@ -3913,6 +3913,12 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	return;
     }
 
+    if (!cstored->Access_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY2", (channel, Magick::instance().getMessage(source, "LIST/ACCESS")));
+	return;
+    }
+
     if (who.IsNumber())
     {
 	if (who.Contains("."))
@@ -3920,8 +3926,8 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	    NSEND(mynick, source, "ERR_STYNTAX/WHOLENUMBER");
 	    return;
 	}
-	unsigned int num = atoi(who);
 
+	unsigned int num = atoi(who);
 	if (num < 1 || num > cstored->Access_size())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, cstored->Access_size()));
@@ -4339,6 +4345,12 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
+    if (!cstored->Akick_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY2", (channel, Magick::instance().getMessage(source, "LIST/AKICK")));
+	return;
+    }
+
     if (who.IsNumber())
     {
 	if (who.Contains("."))
@@ -4346,8 +4358,8 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	    NSEND(mynick, source, "ERR_STYNTAX/WHOLENUMBER");
 	    return;
 	}
-	unsigned int num = atoi(who);
 
+	unsigned int num = atoi(who);
 	if (num < 1 || num > cstored->Akick_size())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, cstored->Akick_size()));
@@ -4872,17 +4884,16 @@ void ChanServ::do_message_Del(const mstring & mynick, const mstring & source, co
 	return;
     }
 
-    int num = atoi(target);
-
-    if (num < 1 || num > static_cast < int > (cstored->Message_size()))
-    {
-	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, cstored->Message_size()));
-	return;
-    }
-
     if (!cstored->Message_size())
     {
 	SEND(mynick, source, "LIST/EMPTY2", (channel, Magick::instance().getMessage(source, "LIST/JOINMSG")));
+	return;
+    }
+
+    int num = atoi(target);
+    if (num < 1 || num > static_cast < int > (cstored->Message_size()))
+    {
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, cstored->Message_size()));
 	return;
     }
 

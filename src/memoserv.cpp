@@ -2030,7 +2030,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 	    return;
 	}
 
-	if (!Magick::instance().memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who) || !Magick::instance().memoserv.ChannelNewsSize(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (who.LowerCase()));
 	    return;
@@ -2078,7 +2078,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 	if (who.empty())
 	    who = source;
 
-	if (!Magick::instance().memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who) || !Magick::instance().memoserv.NickMemoSize(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
@@ -2228,7 +2228,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	    return;
 	}
 
-	if (!Magick::instance().memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who) || !Magick::instance().memoserv.ChannelNewsSize(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (who.LowerCase()));
 	    return;
@@ -2273,7 +2273,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	if (who.empty())
 	    who = source;
 
-	if (!Magick::instance().memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who) || !Magick::instance().memoserv.NickMemoSize(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;

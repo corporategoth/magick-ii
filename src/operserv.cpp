@@ -2537,6 +2537,12 @@ void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
+    if (!Magick::instance().operserv.Max_Clone())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/CLONE")));
+	return;
+    }
+
     num = atoi(amount.c_str());
     if (num < 1 || num > Magick::instance().operserv.Max_Clone())
     {
@@ -2590,6 +2596,12 @@ void OperServ::do_clone_Del(const mstring & mynick, const mstring & source, cons
     else if (host.Contains("@"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (Magick::instance().getMessage(source, "LIST/CLONE"), '@'));
+	return;
+    }
+
+    if (!Magick::instance().operserv.Clone_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/CLONE")));
 	return;
     }
 
@@ -2918,6 +2930,12 @@ void OperServ::do_akill_Del(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
+    if (!Magick::instance().operserv.Akill_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/AKILL")));
+	return;
+    }
+
     MLOCK((lck_OperServ, "Akill"));
     if (host.IsNumber() && !host.Contains("."))
     {
@@ -3166,6 +3184,12 @@ void OperServ::do_operdeny_Del(const mstring & mynick, const mstring & source, c
 	return;
     }
 
+    if (!Magick::instance().operserv.OperDeny_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/OPERDENY")));
+	return;
+    }
+
     mstring host = params.ExtractWord(3, " ").LowerCase();
 
     MLOCK((lck_OperServ, "OperDeny"));
@@ -3399,6 +3423,12 @@ void OperServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
     if (params.WordCount(" ") < 3)
     {
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    if (!Magick::instance().operserv.Ignore_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/IGNORE")));
 	return;
     }
 

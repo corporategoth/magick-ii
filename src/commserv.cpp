@@ -1959,6 +1959,12 @@ void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, cons
 
     unsigned int num = atoi(msgnum.c_str());
 
+    if (!comm->MSG_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY2", (committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
+	return;
+    }
+
     if (num < 1 || num > comm->MSG_size())
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, comm->MSG_size()));
