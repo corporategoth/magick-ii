@@ -45,6 +45,7 @@ static mDateTime GLOB_mDateTime;
 
 void Nick_Live_t::InFlight_t::ChgNick(const mstring & newnick)
 {
+    BTCB();
     FT("Nick_Live_t::InFlight_t::ChgNick", (newnick));
     WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight"));
     WLOCK2((lck_NickServ, lck_live, newnick.LowerCase(), "InFlight"));
@@ -67,10 +68,12 @@ void Nick_Live_t::InFlight_t::ChgNick(const mstring & newnick)
 	CE(1, timer);
     }
     MCE(nick);
+    ETCB();
 }
 
 Nick_Live_t::InFlight_t & Nick_Live_t::InFlight_t::operator=(const InFlight_t & in)
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::operator=");
     nick = in.nick;
     type = in.type;
@@ -81,6 +84,7 @@ Nick_Live_t::InFlight_t & Nick_Live_t::InFlight_t::operator=(const InFlight_t & 
     recipiant = in.recipiant;
     text = in.text;
     NRET(Nick_Live_t::InFlight_t &, *this);
+    ETCB();
 }
 
 // NICK has been destructed, or is going to be.
@@ -89,6 +93,7 @@ Nick_Live_t::InFlight_t & Nick_Live_t::InFlight_t::operator=(const InFlight_t & 
 // destruction, we make sure the timer is cancelled.
 Nick_Live_t::InFlight_t::~InFlight_t()
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::~InFlight_t");
     if (Exists())
 	End(0u);
@@ -102,11 +107,13 @@ Nick_Live_t::InFlight_t::~InFlight_t()
 	}
 	timer = 0;
     }
+    ETCB();
 }
 
 // Initialise all veriables (done in Cancel() or End())
 void Nick_Live_t::InFlight_t::init()
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::init");
     WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight"));
     type = FileMap::MemoAttach;
@@ -117,12 +124,14 @@ void Nick_Live_t::InFlight_t::init()
     sender.erase();
     recipiant.erase();
     text.erase();
+    ETCB();
 }
 
 // We have completed a file transfer, or errored out.
 // 0 if we errored, else its a file number.
 void Nick_Live_t::InFlight_t::File(const unsigned long filenum)
 {
+    BTCB();
     FT("Nick_Live_t::InFlight_t::File", (filenum));
     WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "fileinprog"));
     MCB(fileinprog);
@@ -132,12 +141,14 @@ void Nick_Live_t::InFlight_t::File(const unsigned long filenum)
 	End(filenum);
     else
 	Cancel();
+    ETCB();
 }
 
 // Ok, we've started a file transfer, cancel timer,
 // now we wait for the File() command.
 void Nick_Live_t::InFlight_t::SetInProg()
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::SetInProg");
     WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "fileinprog"));
     MCB(fileinprog);
@@ -156,6 +167,7 @@ void Nick_Live_t::InFlight_t::SetInProg()
 	CE(1, timer);
     }
     MCE(fileinprog);
+    ETCB();
 }
 
 // New memo, send an old one if it isnt in-progress, and
@@ -163,6 +175,7 @@ void Nick_Live_t::InFlight_t::SetInProg()
 void Nick_Live_t::InFlight_t::Memo(const bool file, const mstring & mynick, const mstring & who, const mstring & message,
 				   const bool silent)
 {
+    BTCB();
     FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message, silent));
     if (!Magick::instance().nickserv.IsStored(nick))
     {
@@ -257,11 +270,13 @@ void Nick_Live_t::InFlight_t::Memo(const bool file, const mstring & mynick, cons
 	else
 	    SEND(mynick, nick, "MS_COMMAND/PENDING", (ToHumanTime(Magick::instance().memoserv.InFlight(), nick)));
     }
+    ETCB();
 }
 
 // Add text to a memo, and re-start the timer.
 void Nick_Live_t::InFlight_t::Continue(const mstring & message)
 {
+    BTCB();
     FT("Nick_Live_t::InFlight_t::Continue", (message));
     if (!Memo())
     {
@@ -294,11 +309,13 @@ void Nick_Live_t::InFlight_t::Continue(const mstring & message)
     }
     MCE(text);
     SEND(service, nick, "MS_COMMAND/CONTINUE", (ToHumanTime(Magick::instance().memoserv.InFlight(), nick)));
+    ETCB();
 }
 
 // Cancel a memo or picture send.
 void Nick_Live_t::InFlight_t::Cancel()
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Cancel");
 
     mstring *arg = NULL;
@@ -321,6 +338,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 	NSEND(service, nick, "MS_COMMAND/CANCEL");
     }
     init();
+    ETCB();
 }
 
 // This is the final destination of all memos.
@@ -330,6 +348,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 // no file attachment was requested, but set if 
 void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::End");
     if (File() && InProg())
     {
@@ -531,10 +550,12 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	}
 	init();
     }
+    ETCB();
 }
 
 void Nick_Live_t::InFlight_t::Picture(const mstring & mynick)
 {
+    BTCB();
     FT("Nick_Live_t::InFlight_t::Picture", (mynick));
     if (!Magick::instance().nickserv.IsStored(nick))
     {
@@ -592,10 +613,12 @@ void Nick_Live_t::InFlight_t::Picture(const mstring & mynick)
     DumpE();
 
     NSEND(mynick, nick, "NS_YOU_COMMAND/PENDING");
+    ETCB();
 }
 
 void Nick_Live_t::InFlight_t::Public(const mstring & mynick, const mstring & committees)
 {
+    BTCB();
     FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
     if (!Magick::instance().nickserv.IsStored(nick))
     {
@@ -649,67 +672,85 @@ void Nick_Live_t::InFlight_t::Public(const mstring & mynick, const mstring & com
     DumpE();
 
     NSEND(mynick, nick, "NS_YOU_COMMAND/PUB_PENDING");
+    ETCB();
 }
 
 mstring Nick_Live_t::InFlight_t::Text()
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Memo");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "text"));
     RET(text);
+    ETCB();
 }
 
 mstring Nick_Live_t::InFlight_t::Recipiant()
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Memo");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "recipiant"));
     RET(recipiant);
+    ETCB();
 }
 
 bool Nick_Live_t::InFlight_t::Memo() const
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Memo");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "recipiant"));
     RET(!recipiant.empty());
+    ETCB();
 }
 
 bool Nick_Live_t::InFlight_t::Picture() const
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Picture");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "type"));
     RET(type == FileMap::Picture);
+    ETCB();
 }
 
 bool Nick_Live_t::InFlight_t::Public() const
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Public");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "type"));
     RET(type == FileMap::Public);
+    ETCB();
 }
 
 bool Nick_Live_t::InFlight_t::Exists() const
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::Exists");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "recipiant"));
     RLOCK2((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "type"));
     RET(!recipiant.empty() || type != FileMap::MemoAttach);
+    ETCB();
 }
 
 bool Nick_Live_t::InFlight_t::File() const
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::File");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "fileattach"));
     RET(fileattach);
+    ETCB();
 }
 
 bool Nick_Live_t::InFlight_t::InProg() const
 {
+    BTCB();
     NFT("Nick_Live_t::InFlight_t::InProg");
     RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight", "fileinprog"));
     RET(fileinprog);
+    ETCB();
 }
 
 size_t Nick_Live_t::InFlight_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight"));
@@ -723,26 +764,33 @@ size_t Nick_Live_t::InFlight_t::Usage() const
     retval += text.capacity();
 
     return retval;
+    ETCB();
 }
 
 void Nick_Live_t::InFlight_t::DumpB() const
 {
+    BTCB();
     // 8 Elements
     MB(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
+    ETCB();
 }
 
 void Nick_Live_t::InFlight_t::DumpE() const
 {
+    BTCB();
     // 8 Elements
     ME(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
+    ETCB();
 }
 
 Nick_Live_t::Nick_Live_t() : i_Numeric(0), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false),
 services(true)
 {
+    BTCB();
     NFT("Nick_Live_t::Nick_Live_t");
     // Dont call anything that locks, no names!
     ref_class::lockData(mVarArray(lck_NickServ, lck_live, i_Name.LowerCase()));
+    ETCB();
 }
 
 Nick_Live_t::Nick_Live_t(const mstring & name, const mDateTime & signon, const mstring & server, const mstring & username,
@@ -751,6 +799,7 @@ i_Signon_Time(signon), i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Ac
 i_realname(realname), i_user(username), i_host(hostname), i_alt_host(hostname), i_server(server.LowerCase()),
 last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false), services(false), InFlight(name)
 {
+    BTCB();
     FT("Nick_Live_t::Nick_Live_t", (name, signon, server, username, hostname, realname));
 
     ref_class::lockData(mVarArray(lck_NickServ, lck_live, i_Name.LowerCase()));
@@ -793,6 +842,7 @@ last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(fal
 	    nstored->Signon(i_realname, Mask(U_P_H).After("!"));
     }
     DumpE();
+    ETCB();
 }
 
 Nick_Live_t::Nick_Live_t(const mstring & name, const mstring & username, const mstring & hostname,
@@ -801,14 +851,17 @@ i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::Current
 i_user(username), i_host(hostname), i_alt_host(hostname), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0),
 identified(true), services(true), InFlight(name)
 {
+    BTCB();
     FT("Nick_Live_t::Nick_Live_t", (name, username, hostname, realname));
     ref_class::lockData(mVarArray(lck_NickServ, lck_live, i_Name.LowerCase()));
     InFlight.init();
     DumpE();
+    ETCB();
 }
 
 Nick_Live_t &Nick_Live_t::operator=(const Nick_Live_t & in)
 {
+    BTCB();
     NFT("Nick_Live_t::operator=");
     i_Name = in.i_Name;
     ref_class::lockData(mVarArray(lck_NickServ, lck_live, i_Name.LowerCase()));
@@ -853,10 +906,12 @@ Nick_Live_t &Nick_Live_t::operator=(const Nick_Live_t & in)
     if (!InFlight.nick.IsSameAs(i_Name))
 	InFlight.nick = i_Name;
     NRET(Nick_Live_t &, *this);
+    ETCB();
 }
 
 void Nick_Live_t::Join(const mstring & chan)
 {
+    BTCB();
     FT("Nick_Live_t::Join", (chan));
     bool joined = true;
 
@@ -901,10 +956,12 @@ void Nick_Live_t::Join(const mstring & chan)
 					Magick::instance().server.proto.Numeric.ChannelNumeric(clive->Numeric()),
 					"!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
     }
+    ETCB();
 }
 
 void Nick_Live_t::Part(const mstring & chan)
 {
+    BTCB();
     FT("Nick_Live_t::Part", (chan));
 
     {
@@ -951,10 +1008,12 @@ void Nick_Live_t::Part(const mstring & chan)
 	    mMessage::CheckDependancies(mMessage::ChanNoExists,
 					Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric));
     }
+    ETCB();
 }
 
 void Nick_Live_t::Kick(const mstring & kicker, const mstring & chan)
 {
+    BTCB();
     FT("Nick_Live_t::Kick", (kicker, chan));
 
     {
@@ -1002,10 +1061,12 @@ void Nick_Live_t::Kick(const mstring & kicker, const mstring & chan)
 	    mMessage::CheckDependancies(mMessage::ChanNoExists,
 					Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric));
     }
+    ETCB();
 }
 
 void Nick_Live_t::Quit(const mstring & reason)
 {
+    BTCB();
     FT("Nick_Live_t::Quit", (reason));
 
     {
@@ -1065,26 +1126,32 @@ void Nick_Live_t::Quit(const mstring & reason)
 	if (nstored->IsOnline())
 	    nstored->Quit(reason);
     }
+    ETCB();
 }
 
 bool Nick_Live_t::IsInChan(const mstring & chan)
 {
+    BTCB();
     FT("Nick_Live_t::IsInChan", (chan));
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "joined_channels"));
     bool retval = (joined_channels.find(chan.LowerCase()) != joined_channels.end());
 
     RET(retval);
+    ETCB();
 }
 
 set < mstring > Nick_Live_t::Channels() const
 {
+    BTCB();
     NFT("Nick_Live_t::Channels");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "joined_channels"));
     NRET(set < mstring >, joined_channels);
+    ETCB();
 }
 
 bool Nick_Live_t::FloodTrigger()
 {
+    BTCB();
     NFT("Nick_Live_t::FloodTrigger");
     bool retval = false;
 
@@ -1163,10 +1230,12 @@ bool Nick_Live_t::FloodTrigger()
     }
 
     RET(retval);
+    ETCB();
 }
 
 set < mstring > Nick_Live_t::Name(const mstring & in)
 {
+    BTCB();
     FT("Nick_Live_t::Name", (in));
 
     InFlight.ChgNick(in);
@@ -1298,10 +1367,12 @@ set < mstring > Nick_Live_t::Name(const mstring & in)
     }
 
     NRET(set < mstring >, wason);
+    ETCB();
 }
 
 void Nick_Live_t::SendMode(const mstring & in)
 {
+    BTCB();
     FT("Nick_Live_t::SendMode", (in));
 
     if (IsServices())
@@ -1312,10 +1383,12 @@ void Nick_Live_t::SendMode(const mstring & in)
     {
 	Magick::instance().server.SVSMODE(Magick::instance().nickserv.FirstName(), i_Name, in);
     }
+    ETCB();
 }
 
 void Nick_Live_t::Mode(const mstring & in)
 {
+    BTCB();
     FT("Nick_Live_t::Mode", (in));
 
     bool add = true;
@@ -1479,56 +1552,70 @@ void Nick_Live_t::Mode(const mstring & in)
 	}
     }
     MCE(modes);
+    ETCB();
 }
 
 mstring Nick_Live_t::Mode() const
 {
+    BTCB();
     NFT("Nick_Live_t::Mode");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "modes"));
     RET(modes);
+    ETCB();
 }
 
 bool Nick_Live_t::HasMode(const mstring & in) const
 {
+    BTCB();
     FT("Nick_Live_t::HasMode", (in));
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "modes"));
     RET(modes.Contains(in));
+    ETCB();
 }
 
 void Nick_Live_t::Numeric(const unsigned long in)
 {
+    BTCB();
     FT("Nick_Live_t::Numeric", (in));
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_Numeric"));
     MCB(i_Numeric);
     i_Numeric = in;
     MCE(i_Numeric);
+    ETCB();
 }
 
 unsigned long Nick_Live_t::Numeric() const
 {
+    BTCB();
     NFT("Nick_Live_t::Numeric");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_Numeric"));
     RET(i_Numeric);
+    ETCB();
 }
 
 void Nick_Live_t::Away(const mstring & in)
 {
+    BTCB();
     FT("Nick_Live_t::Away", (in));
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_away"));
     MCB(i_away);
     i_away = in;
     MCE(i_away);
+    ETCB();
 }
 
 mstring Nick_Live_t::Away() const
 {
+    BTCB();
     NFT("Nick_Live_t::Away");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_away"));
     RET(i_away);
+    ETCB();
 }
 
 mDateTime Nick_Live_t::LastAction() const
 {
+    BTCB();
     NFT("Nick_Live_t::LastAction");
     if (IsServices())
     {
@@ -1536,10 +1623,12 @@ mDateTime Nick_Live_t::LastAction() const
 	RET(i_Last_Action);
     }
     RET(mDateTime::CurrentDateTime());
+    ETCB();
 }
 
 void Nick_Live_t::Action()
 {
+    BTCB();
     NFT("Nick_Live_t::Action");
     if (IsServices())
     {
@@ -1548,75 +1637,95 @@ void Nick_Live_t::Action()
 	i_Last_Action = mDateTime::CurrentDateTime();
 	MCE(i_Last_Action);
     }
+    ETCB();
 }
 
 mDateTime Nick_Live_t::SignonTime() const
 {
+    BTCB();
     NFT("Nick_Live_t::SignonTime");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_Signon_Time"));
     RET(i_Signon_Time);
+    ETCB();
 }
 
 mDateTime Nick_Live_t::MySignonTime() const
 {
+    BTCB();
     NFT("Nick_Live_t::MySignonTime");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_My_Signon_Time"));
     RET(i_My_Signon_Time);
+    ETCB();
 }
 
 mstring Nick_Live_t::RealName() const
 {
+    BTCB();
     NFT("Nick_Live_t::RealName");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_realname"));
     RET(i_realname);
+    ETCB();
 }
 
 mstring Nick_Live_t::User() const
 {
+    BTCB();
     NFT("Nick_Live_t::User");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_user"));
     RET(i_user);
+    ETCB();
 }
 
 mstring Nick_Live_t::Host() const
 {
+    BTCB();
     NFT("Nick_Live_t::Host");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_host"));
     RET(i_host);
+    ETCB();
 }
 
 mstring Nick_Live_t::AltHost() const
 {
+    BTCB();
     NFT("Nick_Live_t::AltHost");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_alt_host"));
     RET(i_alt_host);
+    ETCB();
 }
 
 void Nick_Live_t::AltHost(const mstring & in)
 {
+    BTCB();
     FT("Nick_Live_t::AltHost", (in));
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_alt_host"));
     MCB(i_alt_host);
     i_alt_host = in;
     MCE(i_alt_host);
+    ETCB();
 }
 
 mstring Nick_Live_t::Server() const
 {
+    BTCB();
     NFT("Nick_Live_t::Server");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_server"));
     RET(i_server);
+    ETCB();
 }
 
 mstring Nick_Live_t::Squit() const
 {
+    BTCB();
     NFT("Nick_Live_t::Squit");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_squit"));
     RET(i_squit);
+    ETCB();
 }
 
 void Nick_Live_t::SetSquit()
 {
+    BTCB();
     NFT("Nick_Live_t::SetSquit");
     {
 	WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_squit"));
@@ -1656,10 +1765,12 @@ void Nick_Live_t::SetSquit()
 	    joined_channels.erase(chunked[i]);
 	MCE(joined_channels.size());
     }
+    ETCB();
 }
 
 void Nick_Live_t::ClearSquit(const mstring & inmodes)
 {
+    BTCB();
     NFT("Nick_Live_t::ClearSquit");
 
     MCB(i_squit);
@@ -1702,10 +1813,12 @@ void Nick_Live_t::ClearSquit(const mstring & inmodes)
 				       Magick::instance().operserv.Def_Clone());
 	return;
     }
+    ETCB();
 }
 
 mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
 {
+    BTCB();
     FT("Nick_Live_t::Mask", (static_cast < int > (type)));
 
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_user"));
@@ -1781,10 +1894,12 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
     }
 
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
 {
+    BTCB();
     FT("Nick_Live_t::AltMask", (static_cast < int > (type)));
 
     RLOCK2((lck_NickServ, lck_live, i_Name.LowerCase(), "i_user"));
@@ -1860,10 +1975,12 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
     }
 
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Live_t::ChanIdentify(const mstring & channel, const mstring & password)
 {
+    BTCB();
     FT("Nick_Live_t::ChanIdentify", (channel, password));
     mstring retval;
 
@@ -1917,10 +2034,12 @@ mstring Nick_Live_t::ChanIdentify(const mstring & channel, const mstring & passw
 	retval = parseMessage(Magick::instance().getMessage(i_Name, "CS_STATUS/ISNOTSTORED"), mVarArray(channel));
     }
     RET(retval);
+    ETCB();
 }
 
 void Nick_Live_t::UnChanIdentify(const mstring & channel)
 {
+    BTCB();
     FT("Nick_Live_t::UnChanIdentify", (channel));
 
     if (IsChanIdentified(channel))
@@ -1930,19 +2049,23 @@ void Nick_Live_t::UnChanIdentify(const mstring & channel)
 	chans_founder_identd.erase(channel.LowerCase());
 	MCE(chans_founder_identd.size());
     }
+    ETCB();
 }
 
 bool Nick_Live_t::IsChanIdentified(const mstring & channel)
 {
+    BTCB();
     FT("Nick_Live_t::IsChanIdentified", (channel));
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "chans_founder_identd"));
     bool retval = (chans_founder_identd.find(channel.LowerCase()) != chans_founder_identd.end());
 
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Live_t::Identify(const mstring & password)
 {
+    BTCB();
     FT("Nick_Live_t::Identify", (password));
     mstring retval;
 
@@ -2057,26 +2180,32 @@ mstring Nick_Live_t::Identify(const mstring & password)
 	retval = Magick::instance().getMessage(i_Name, "NS_YOU_STATUS/ISNOTSTORED");
     }
     RET(retval);
+    ETCB();
 }
 
 void Nick_Live_t::UnIdentify()
 {
+    BTCB();
     NFT("Nick_Live_t::UnIdentify");
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "identified"));
     MCB(identified);
     identified = false;
     MCE(identified);
+    ETCB();
 }
 
 bool Nick_Live_t::IsIdentified() const
 {
+    BTCB();
     NFT("Nick_Live_t::IsIdentified");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "identified"));
     RET(identified);
+    ETCB();
 }
 
 bool Nick_Live_t::IsRecognized() const
 {
+    BTCB();
     NFT("Nick_Live_t::IsRecognised");
     bool retval = false;
 
@@ -2085,65 +2214,81 @@ bool Nick_Live_t::IsRecognized() const
 	retval = Magick::instance().nickserv.GetStored(i_Name)->IsAccess(Mask(U_P_H).After("!"));
     }
     RET(retval);
+    ETCB();
 }
 
 bool Nick_Live_t::IsServices() const
 {
+    BTCB();
     NFT("Nick_Live_t::IsServices");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "services"));
     RET(services);
+    ETCB();
 }
 
 void Nick_Live_t::SetLastNickReg()
 {
+    BTCB();
     NFT("Nick_Live_t::SetLastNickReg");
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_nick_reg"));
     MCB(last_nick_reg);
     last_nick_reg = mDateTime::CurrentDateTime();
     MCE(last_nick_reg);
+    ETCB();
 }
 
 mDateTime Nick_Live_t::LastNickReg() const
 {
+    BTCB();
     NFT("Nick_Live_t::LastNickReg");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_nick_reg"));
     RET(last_nick_reg);
+    ETCB();
 }
 
 void Nick_Live_t::SetLastChanReg()
 {
+    BTCB();
     NFT("Nick_Live_t::SetLastChanReg");
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_chan_reg"));
     MCB(last_chan_reg);
     last_chan_reg = mDateTime::CurrentDateTime();
     MCE(last_chan_reg);
+    ETCB();
 }
 
 mDateTime Nick_Live_t::LastChanReg() const
 {
+    BTCB();
     NFT("Nick_Live_t::LastChanReg");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_chan_reg"));
     RET(last_chan_reg);
+    ETCB();
 }
 
 void Nick_Live_t::SetLastMemo()
 {
+    BTCB();
     NFT("Nick_Live_t::SetLastMemo");
     WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_memo"));
     MCB(last_memo);
     last_memo = mDateTime::CurrentDateTime();
     MCE(last_memo);
+    ETCB();
 }
 
 mDateTime Nick_Live_t::LastMemo() const
 {
+    BTCB();
     NFT("Nick_Live_t::LastMemo");
     RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_memo"));
     RET(last_memo);
+    ETCB();
 }
 
 size_t Nick_Live_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     // We write lock here coz its the only way to
@@ -2192,10 +2337,12 @@ size_t Nick_Live_t::Usage() const
     retval += sizeof(last_memo.Internal());
 
     return retval;
+    ETCB();
 }
 
 void Nick_Live_t::DumpB() const
 {
+    BTCB();
     // 16 Elements
     MB(0,
        (i_Name, i_Numeric, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname, i_user, i_host, i_alt_host, i_server,
@@ -2204,10 +2351,12 @@ void Nick_Live_t::DumpB() const
     MB(16,
        (flood_triggered_times, failed_passwds, chans_founder_identd.size(), try_chan_ident.size(), identified, services,
 	last_nick_reg, last_chan_reg, last_memo));
+    ETCB();
 }
 
 void Nick_Live_t::DumpE() const
 {
+    BTCB();
     // 16 Elements
     ME(0,
        (i_Name, i_Numeric, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname, i_user, i_host, i_alt_host, i_server,
@@ -2216,12 +2365,14 @@ void Nick_Live_t::DumpE() const
     ME(16,
        (flood_triggered_times, failed_passwds, chans_founder_identd.size(), try_chan_ident.size(), identified, services,
 	last_nick_reg, last_chan_reg, last_memo));
+    ETCB();
 }
 
 // =======================================================================
 
 void Nick_Stored_t::Signon(const mstring & realname, const mstring & mask)
 {
+    BTCB();
     FT("Nick_Stored_t::Signon", (realname, mask));
     {
 	WLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastRealName"));
@@ -2250,10 +2401,12 @@ void Nick_Stored_t::Signon(const mstring & realname, const mstring & mask)
 	    SEND(Magick::instance().memoserv.FirstName(), i_Name, "MS_STATUS/NS_UNREAD",
 		 (count, Magick::instance().memoserv.FirstName()));
     }
+    ETCB();
 }
 
 void Nick_Stored_t::ChgNick(const mstring & nick)
 {
+    BTCB();
     FT("Nick_Stored_t::ChgNick", (nick));
     WLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastQuit"));
     WLOCK2((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastSeenTime"));
@@ -2263,10 +2416,12 @@ void Nick_Stored_t::ChgNick(const mstring & nick)
     i_LastSeenTime = mDateTime::CurrentDateTime();
     CE(1, i_LastSeenTime);
     MCE(i_LastQuit);
+    ETCB();
 }
 
 void Nick_Stored_t::defaults()
 {
+    BTCB();
     NFT("Nick_Stored_t::defaults");
 
     ref_class::lockData(mVarArray(lck_NickServ, lck_stored, i_Name));
@@ -2287,17 +2442,21 @@ void Nick_Stored_t::defaults()
     lock.PRIVMSG = false;
     lock.Language = false;
 
+    ETCB();
 }
 
 Nick_Stored_t::Nick_Stored_t()
 {
+    BTCB();
     NFT("Nick_Stored_t::Nick_Stored_t");
     defaults();
+    ETCB();
 }
 
 Nick_Stored_t::Nick_Stored_t(const mstring & nick, const mstring & password) : i_Name(nick),
 i_RegTime(mDateTime::CurrentDateTime())
 {
+    BTCB();
     FT("Nick_Stored_t::Nick_Stored_t", (nick, password));
 
     defaults();
@@ -2310,19 +2469,23 @@ i_RegTime(mDateTime::CurrentDateTime())
 	i_LastSeenTime = mDateTime::CurrentDateTime();
     }
     DumpE();
+    ETCB();
 }
 
 Nick_Stored_t::Nick_Stored_t(const mstring & nick) : i_Name(nick), i_RegTime(mDateTime::CurrentDateTime())
 {
+    BTCB();
     FT("Nick_Stored_t::Nick_Stored_t", (nick.LowerCase()));
     defaults();
     setting.Forbidden = true;
     DumpE();
+    ETCB();
 }
 
 Nick_Stored_t::Nick_Stored_t(const mstring & nick, const mDateTime & regtime, const Nick_Stored_t & in) : i_Name(nick),
 i_RegTime(regtime), i_Host(in.i_Name.LowerCase())
 {
+    BTCB();
     FT("Nick_Stored_t::Nick_Stored_t", (nick, "(const Nick_Stored_t &) in"));
 
     defaults();
@@ -2334,17 +2497,21 @@ i_RegTime(regtime), i_Host(in.i_Name.LowerCase())
 	i_LastSeenTime = mDateTime::CurrentDateTime();
     }
     DumpE();
+    ETCB();
 }
 
 mDateTime Nick_Stored_t::RegTime() const
 {
+    BTCB();
     NFT("Nick_Stored_t::RegTime");
     RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_RegTime"));
     RET(i_RegTime);
+    ETCB();
 }
 
 unsigned long Nick_Stored_t::Drop()
 {
+    BTCB();
     NFT("Nick_Stored_t::Drop");
 
     bool host = Host().empty();
@@ -2434,10 +2601,12 @@ unsigned long Nick_Stored_t::Drop()
     }
 
     RET(dropped);
+    ETCB();
 }
 
 Nick_Stored_t &Nick_Stored_t::operator=(const Nick_Stored_t & in)
 {
+    BTCB();
     NFT("Nick_Stored_t::operator=");
     i_Name = in.i_Name;
     ref_class::lockData(mVarArray(lck_NickServ, lck_stored, i_Name.LowerCase()));
@@ -2490,10 +2659,12 @@ Nick_Stored_t &Nick_Stored_t::operator=(const Nick_Stored_t & in)
     for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
 	i_UserDef.insert(*j);
     NRET(Nick_Stored_t &, *this);
+    ETCB();
 }
 
 mstring Nick_Stored_t::Email()
 {
+    BTCB();
     NFT("Nick_Stored_t::Email");
     if (Host().empty())
     {
@@ -2506,10 +2677,12 @@ mstring Nick_Stored_t::Email()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Email(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::Email", (in));
     if (Host().empty())
     {
@@ -2522,10 +2695,12 @@ void Nick_Stored_t::Email(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Email(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::URL()
 {
+    BTCB();
     NFT("Nick_Stored_t::URL");
     if (Host().empty())
     {
@@ -2538,10 +2713,12 @@ mstring Nick_Stored_t::URL()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::URL(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::URL", (in));
     if (Host().empty())
     {
@@ -2554,10 +2731,12 @@ void Nick_Stored_t::URL(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->URL(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::ICQ()
 {
+    BTCB();
     NFT("Nick_Stored_t::ICQ");
     if (Host().empty())
     {
@@ -2570,10 +2749,12 @@ mstring Nick_Stored_t::ICQ()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::ICQ(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::ICQ", (in));
     if (Host().empty())
     {
@@ -2586,10 +2767,12 @@ void Nick_Stored_t::ICQ(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->ICQ(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::AIM()
 {
+    BTCB();
     NFT("Nick_Stored_t::AIM");
     if (Host().empty())
     {
@@ -2602,10 +2785,12 @@ mstring Nick_Stored_t::AIM()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::AIM(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::AIM", (in));
     if (Host().empty())
     {
@@ -2618,10 +2803,12 @@ void Nick_Stored_t::AIM(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->AIM(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::MSN()
 {
+    BTCB();
     NFT("Nick_Stored_t::MSN");
     if (Host().empty())
     {
@@ -2634,10 +2821,12 @@ mstring Nick_Stored_t::MSN()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::MSN(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::MSN", (in));
     if (Host().empty())
     {
@@ -2650,10 +2839,12 @@ void Nick_Stored_t::MSN(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->MSN(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::Yahoo()
 {
+    BTCB();
     NFT("Nick_Stored_t::Yahoo");
     if (Host().empty())
     {
@@ -2666,10 +2857,12 @@ mstring Nick_Stored_t::Yahoo()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Yahoo(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::Yahoo", (in));
     if (Host().empty())
     {
@@ -2682,10 +2875,12 @@ void Nick_Stored_t::Yahoo(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Yahoo(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::Description()
 {
+    BTCB();
     NFT("Nick_Stored_t::Description");
     if (Host().empty())
     {
@@ -2698,10 +2893,12 @@ mstring Nick_Stored_t::Description()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Description(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::Description", (in));
     if (Host().empty())
     {
@@ -2714,10 +2911,12 @@ void Nick_Stored_t::Description(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Description();
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::Comment()
 {
+    BTCB();
     NFT("Nick_Stored_t::Comment");
     if (Host().empty())
     {
@@ -2730,10 +2929,12 @@ mstring Nick_Stored_t::Comment()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Comment(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::Comment", (in));
     if (Host().empty())
     {
@@ -2746,10 +2947,12 @@ void Nick_Stored_t::Comment(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Comment(in);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Suspend(const mstring & name)
 {
+    BTCB();
     FT("Nick_Stored_t::Suspend", (name));
     if (Host().empty())
     {
@@ -2766,10 +2969,12 @@ void Nick_Stored_t::Suspend(const mstring & name)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Suspend(name);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::UnSuspend()
 {
+    BTCB();
     NFT("Nick_Stored_t::UnSuspend");
     if (Host().empty())
     {
@@ -2782,10 +2987,12 @@ void Nick_Stored_t::UnSuspend()
     {
 	Magick::instance().nickserv.GetStored(i_Host)->UnSuspend();
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::Host()
 {
+    BTCB();
     NFT("Nick_Stored_t::Host");
     mstring retval;
 
@@ -2802,10 +3009,12 @@ mstring Nick_Stored_t::Host()
 	else
 	    retval = Magick::instance().nickserv.GetStored(i_Host)->Name();
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Stored_t::Password()
 {
+    BTCB();
     NFT("Nick_Stored_t::Password");
     if (Host().empty())
     {
@@ -2818,10 +3027,12 @@ mstring Nick_Stored_t::Password()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Password(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::Password", (in));
     if (Host().empty())
     {
@@ -2841,10 +3052,12 @@ void Nick_Stored_t::Password(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Password(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::CheckPass(const mstring & password)
 {
+    BTCB();
     FT("Nick_Stored_t::CheckPass", (password));
     if (Host().empty())
     {
@@ -2868,10 +3081,12 @@ bool Nick_Stored_t::CheckPass(const mstring & password)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Slave(const mstring & nick, const mstring & password, const mDateTime & regtime)
 {
+    BTCB();
     FT("Nick_Stored_t::Slave", (nick, password, regtime));
 
     if (Host().empty())
@@ -2904,10 +3119,12 @@ bool Nick_Stored_t::Slave(const mstring & nick, const mstring & password, const 
 
 	RET(retval);
     }
+    ETCB();
 }
 
 unsigned int Nick_Stored_t::Siblings()
 {
+    BTCB();
     NFT("Nick_Stored_t::Siblings");
     unsigned int retval = 0;
 
@@ -2920,10 +3137,12 @@ unsigned int Nick_Stored_t::Siblings()
 	retval = Magick::instance().nickserv.GetStored(i_Host)->Siblings();
     }
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Stored_t::Sibling(const unsigned int count)
 {
+    BTCB();
     FT("Nick_Stored_t::Siblings", (count));
     mstring retval;
 
@@ -2967,10 +3186,12 @@ mstring Nick_Stored_t::Sibling(const unsigned int count)
 	retval = Magick::instance().nickserv.GetStored(i_Host)->Sibling(count);
     }
     RET(retval);
+    ETCB();
 }
 
 bool Nick_Stored_t::IsSibling(const mstring & nick)
 {
+    BTCB();
     FT("Nick_Stored_t::IsSibling", (nick));
     if (i_Name.IsSameAs(nick, true))
     {
@@ -3001,10 +3222,12 @@ bool Nick_Stored_t::IsSibling(const mstring & nick)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::ChangeOver(const mstring & oldnick)
 {
+    BTCB();
     FT("Nick_Stored_t::ChangeOver", (oldnick));
 
     bool found;
@@ -3183,10 +3406,12 @@ void Nick_Stored_t::ChangeOver(const mstring & oldnick)
 	    }
 	}
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::MakeHost()
 {
+    BTCB();
     NFT("Nick_Stored_t::MakeHost");
     if (Host().empty())
     {
@@ -3250,10 +3475,12 @@ bool Nick_Stored_t::MakeHost()
 	ChangeOver(tmp);
 	RET(true);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Unlink()
 {
+    BTCB();
     NFT("Nick_Stored_t::Unlink");
     if (Host().empty())
     {
@@ -3301,10 +3528,12 @@ bool Nick_Stored_t::Unlink()
 	DumpE();
 	RET(true);
     }
+    ETCB();
 }
 
 unsigned int Nick_Stored_t::Access()
 {
+    BTCB();
     NFT("Nick_Stored_t::Access");
     unsigned int retval = 0;
 
@@ -3317,10 +3546,12 @@ unsigned int Nick_Stored_t::Access()
 	retval = Magick::instance().nickserv.GetStored(i_Host)->Access();
     }
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Stored_t::Access(const unsigned int count)
 {
+    BTCB();
     FT("Nick_Stored_t::Access", (count));
     if (Host().empty())
     {
@@ -3341,10 +3572,12 @@ mstring Nick_Stored_t::Access(const unsigned int count)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::AccessAdd(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::AccessAdd", (in));
     if (Host().empty())
     {
@@ -3385,10 +3618,12 @@ bool Nick_Stored_t::AccessAdd(const mstring & in)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 unsigned int Nick_Stored_t::AccessDel(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::AccessDel", (in));
     unsigned int retval = 0;
 
@@ -3414,10 +3649,12 @@ unsigned int Nick_Stored_t::AccessDel(const mstring & in)
 	retval = Magick::instance().nickserv.GetStored(i_Host)->AccessDel(in);
     }
     RET(retval);
+    ETCB();
 }
 
 bool Nick_Stored_t::IsAccess(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::IsAccess", (in));
     if (Host().empty())
     {
@@ -3436,10 +3673,12 @@ bool Nick_Stored_t::IsAccess(const mstring & in)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 unsigned int Nick_Stored_t::Ignore()
 {
+    BTCB();
     NFT("Nick_Stored_t::Ignore");
     unsigned int retval = 0;
 
@@ -3452,10 +3691,12 @@ unsigned int Nick_Stored_t::Ignore()
 	retval = Magick::instance().nickserv.GetStored(i_Host)->Ignore();
     }
     RET(retval);
+    ETCB();
 }
 
 mstring Nick_Stored_t::Ignore(const unsigned int count)
 {
+    BTCB();
     FT("Nick_Stored_t::Ignore", (count));
     if (Host().empty())
     {
@@ -3476,10 +3717,12 @@ mstring Nick_Stored_t::Ignore(const unsigned int count)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::IgnoreAdd(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::IgnoreAdd", (in));
     if (Host().empty())
     {
@@ -3510,10 +3753,12 @@ bool Nick_Stored_t::IgnoreAdd(const mstring & in)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 unsigned int Nick_Stored_t::IgnoreDel(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::IgnoreDel", (in));
     unsigned int retval = 0;
 
@@ -3553,10 +3798,12 @@ unsigned int Nick_Stored_t::IgnoreDel(const mstring & in)
 	retval = Magick::instance().nickserv.GetStored(i_Host)->IgnoreDel(in);
     }
     RET(retval);
+    ETCB();
 }
 
 bool Nick_Stored_t::IsIgnore(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::IsIgnore", (in));
     if (Host().empty())
     {
@@ -3589,10 +3836,12 @@ bool Nick_Stored_t::IsIgnore(const mstring & in)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Protect()
 {
+    BTCB();
     NFT("Nick_Stored_t::Protect");
     if (Magick::instance().nickserv.LCK_Protect())
     {
@@ -3609,10 +3858,12 @@ bool Nick_Stored_t::Protect()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Protect(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::Protect", (in));
     if (Host().empty())
     {
@@ -3628,10 +3879,12 @@ void Nick_Stored_t::Protect(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Protect(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::L_Protect()
 {
+    BTCB();
     NFT("Nick_Stored_t::L_Protect");
     if (Magick::instance().nickserv.LCK_Protect())
     {
@@ -3648,10 +3901,12 @@ bool Nick_Stored_t::L_Protect()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::L_Protect(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::L_Protect", (in));
     if (Host().empty())
     {
@@ -3667,10 +3922,12 @@ void Nick_Stored_t::L_Protect(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->L_Protect(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Secure()
 {
+    BTCB();
     NFT("Nick_Stored_t::Secure");
     if (Magick::instance().nickserv.LCK_Secure())
     {
@@ -3687,10 +3944,12 @@ bool Nick_Stored_t::Secure()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Secure(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::Secure", (in));
     if (Host().empty())
     {
@@ -3706,10 +3965,12 @@ void Nick_Stored_t::Secure(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Secure(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::L_Secure()
 {
+    BTCB();
     NFT("Nick_Stored_t::L_Secure");
     if (Magick::instance().nickserv.LCK_Secure())
     {
@@ -3726,10 +3987,12 @@ bool Nick_Stored_t::L_Secure()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::L_Secure(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::L_Secure", (in));
     if (Host().empty())
     {
@@ -3745,10 +4008,12 @@ void Nick_Stored_t::L_Secure(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->L_Secure(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::NoExpire()
 {
+    BTCB();
     NFT("Nick_Stored_t::NoExpire");
     if (Magick::instance().nickserv.LCK_NoExpire())
     {
@@ -3765,10 +4030,12 @@ bool Nick_Stored_t::NoExpire()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::NoExpire(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::NoExpire", (in));
     if (Host().empty())
     {
@@ -3784,10 +4051,12 @@ void Nick_Stored_t::NoExpire(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->NoExpire(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::NoMemo()
 {
+    BTCB();
     NFT("Nick_Stored_t::NoMemo");
     if (Magick::instance().nickserv.LCK_NoMemo())
     {
@@ -3804,10 +4073,12 @@ bool Nick_Stored_t::NoMemo()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::NoMemo(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::NoMemo", (in));
     if (Host().empty())
     {
@@ -3823,10 +4094,12 @@ void Nick_Stored_t::NoMemo(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->NoMemo(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::L_NoMemo()
 {
+    BTCB();
     NFT("Nick_Stored_t::L_NoMemo");
     if (Magick::instance().nickserv.LCK_NoMemo())
     {
@@ -3843,10 +4116,12 @@ bool Nick_Stored_t::L_NoMemo()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::L_NoMemo(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::L_NoMemo", (in));
     if (Host().empty())
     {
@@ -3862,10 +4137,12 @@ void Nick_Stored_t::L_NoMemo(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->L_NoMemo(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Private()
 {
+    BTCB();
     NFT("Nick_Stored_t::Private");
     if (Magick::instance().nickserv.LCK_Private())
     {
@@ -3882,10 +4159,12 @@ bool Nick_Stored_t::Private()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Private(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::Private", (in));
     if (Host().empty())
     {
@@ -3901,10 +4180,12 @@ void Nick_Stored_t::Private(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Private(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::L_Private()
 {
+    BTCB();
     NFT("Nick_Stored_t::L_Private");
     if (Magick::instance().nickserv.LCK_Private())
     {
@@ -3921,10 +4202,12 @@ bool Nick_Stored_t::L_Private()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::L_Private(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::L_Private", (in));
     if (Host().empty())
     {
@@ -3940,10 +4223,12 @@ void Nick_Stored_t::L_Private(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->L_Private(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::PRIVMSG()
 {
+    BTCB();
     NFT("Nick_Stored_t::PRIVMSG");
     if (Magick::instance().nickserv.LCK_PRIVMSG())
     {
@@ -3960,10 +4245,12 @@ bool Nick_Stored_t::PRIVMSG()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::PRIVMSG(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::PRIVMSG", (in));
     if (Host().empty())
     {
@@ -3979,10 +4266,12 @@ void Nick_Stored_t::PRIVMSG(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->PRIVMSG(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::L_PRIVMSG()
 {
+    BTCB();
     NFT("Nick_Stored_t::L_PRIVMSG");
     if (Magick::instance().nickserv.LCK_PRIVMSG())
     {
@@ -3999,10 +4288,12 @@ bool Nick_Stored_t::L_PRIVMSG()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::L_PRIVMSG(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::L_PRIVMSG", (in));
     if (Host().empty())
     {
@@ -4018,10 +4309,12 @@ void Nick_Stored_t::L_PRIVMSG(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->L_PRIVMSG(in);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::Language()
 {
+    BTCB();
     NFT("Nick_Stored_t::Language");
     if (Magick::instance().nickserv.LCK_Language())
     {
@@ -4038,10 +4331,12 @@ mstring Nick_Stored_t::Language()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Language(const mstring & in)
 {
+    BTCB();
     FT("Nick_Stored_t::Language", (in));
     if (Host().empty())
     {
@@ -4057,10 +4352,12 @@ void Nick_Stored_t::Language(const mstring & in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->Language(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::L_Language()
 {
+    BTCB();
     NFT("Nick_Stored_t::L_Language");
     if (Magick::instance().nickserv.LCK_Language())
     {
@@ -4077,10 +4374,12 @@ bool Nick_Stored_t::L_Language()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::L_Language(const bool in)
 {
+    BTCB();
     FT("Nick_Stored_t::L_Language", (in));
     if (Host().empty())
     {
@@ -4096,10 +4395,12 @@ void Nick_Stored_t::L_Language(const bool in)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->L_Language(in);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Suspended()
 {
+    BTCB();
     NFT("Nick_Stored_t::Suspended");
     if (Host().empty())
     {
@@ -4112,10 +4413,12 @@ bool Nick_Stored_t::Suspended()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::Suspend_By()
 {
+    BTCB();
     NFT("Nick_Stored_t::Suspend_By");
     if (Host().empty())
     {
@@ -4128,10 +4431,12 @@ mstring Nick_Stored_t::Suspend_By()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 mDateTime Nick_Stored_t::Suspend_Time()
 {
+    BTCB();
     NFT("Nick_Stored_t::Suspend_Time");
     if (Host().empty())
     {
@@ -4144,17 +4449,21 @@ mDateTime Nick_Stored_t::Suspend_Time()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::Forbidden() const
 {
+    BTCB();
     NFT("Nick_Stored_t::Forbidden");
     RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "setting.Forbidden"));
     RET(setting.Forbidden);
+    ETCB();
 }
 
 unsigned long Nick_Stored_t::PicNum()
 {
+    BTCB();
     NFT("PicNum");
     if (Host().empty())
     {
@@ -4171,10 +4480,12 @@ unsigned long Nick_Stored_t::PicNum()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::GotPic(const unsigned long picnum)
 {
+    BTCB();
     FT("Nick_Stored_t::GotPic", (picnum));
     if (Host().empty())
     {
@@ -4190,10 +4501,12 @@ void Nick_Stored_t::GotPic(const unsigned long picnum)
     {
 	Magick::instance().nickserv.GetStored(i_Host)->GotPic(picnum);
     }
+    ETCB();
 }
 
 bool Nick_Stored_t::IsOnline()
 {
+    BTCB();
     NFT("Nick_Stored_t::IsOnline");
 
     if (Magick::instance().nickserv.IsLive(i_Name))
@@ -4207,10 +4520,12 @@ bool Nick_Stored_t::IsOnline()
 	}
     }
     RET(false);
+    ETCB();
 }
 
 mDateTime Nick_Stored_t::LastAllSeenTime()
 {
+    BTCB();
     NFT("Nick_Stored_t::LastAllSeenTime");
     if (IsOnline())
     {
@@ -4243,10 +4558,12 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 mDateTime Nick_Stored_t::LastSeenTime()
 {
+    BTCB();
     NFT("Nick_Stored_t::LastSeenTime");
     if (IsOnline())
     {
@@ -4257,10 +4574,12 @@ mDateTime Nick_Stored_t::LastSeenTime()
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastSeenTime"));
 	RET(i_LastSeenTime);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::LastRealName()
 {
+    BTCB();
     NFT("Nick_Stored_t::LastRealName");
     if (IsOnline())
     {
@@ -4273,10 +4592,12 @@ mstring Nick_Stored_t::LastRealName()
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastRealName"));
 	RET(i_LastRealName);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::LastAllMask()
 {
+    BTCB();
     NFT("Nick_Stored_t::LastAllMask");
     if (IsOnline())
     {
@@ -4317,10 +4638,12 @@ mstring Nick_Stored_t::LastAllMask()
 
 	RET(retval);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::LastMask()
 {
+    BTCB();
     NFT("Nick_Stored_t::LastMask");
     if (IsOnline())
     {
@@ -4331,10 +4654,12 @@ mstring Nick_Stored_t::LastMask()
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastMask"));
 	RET(i_LastMask);
     }
+    ETCB();
 }
 
 mstring Nick_Stored_t::LastQuit()
 {
+    BTCB();
     NFT("Nick_Stored_t::LastQuit");
     if (IsOnline())
     {
@@ -4345,10 +4670,12 @@ mstring Nick_Stored_t::LastQuit()
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_LastQuit"));
 	RET(i_LastQuit);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::Quit(const mstring & message)
 {
+    BTCB();
     FT("Nick_Stored_t::Quit", (message));
 
     // Dont whinge here, because they may not be
@@ -4364,10 +4691,12 @@ void Nick_Stored_t::Quit(const mstring & message)
 	CE(1, i_LastQuit);
 	MCE(i_LastSeenTime);
     }
+    ETCB();
 }
 
 size_t Nick_Stored_t::MyChannels() const
 {
+    BTCB();
     NFT("Nick_Stored_t::MyChannels");
 
     size_t count = 0;
@@ -4381,6 +4710,7 @@ size_t Nick_Stored_t::MyChannels() const
 	    count++;
     }
     RET(count);
+    ETCB();
 }
 
 SXP::Tag Nick_Stored_t::tag_Nick_Stored_t("Nick_Stored_t");
@@ -4424,6 +4754,7 @@ SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
 
 void Nick_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Nick_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -4435,10 +4766,12 @@ void Nick_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Nick_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -4613,10 +4946,12 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(tmp);
 	i_ignore.insert(tmp);
     }
+    ETCB();
 }
 
 void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     //TODO: Add your source code here
@@ -4683,10 +5018,12 @@ void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_Nick_Stored_t);
+    ETCB();
 }
 
 size_t Nick_Stored_t::Usage()
 {
+    BTCB();
     size_t retval = 0;
 
     // Only way to ENSURE the data wont change.
@@ -4738,10 +5075,12 @@ size_t Nick_Stored_t::Usage()
     }
 
     return retval;
+    ETCB();
 }
 
 void Nick_Stored_t::DumpB()
 {
+    BTCB();
     MB(0,
        (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ, i_AIM, i_MSN, i_Yahoo, i_Description, i_Comment, i_Host,
 	i_slaves.size(), i_access.size(), i_ignore.size(), setting.Protect));
@@ -4750,10 +5089,12 @@ void Nick_Stored_t::DumpB()
 	lock.Private, setting.PRIVMSG, lock.PRIVMSG, setting.Language, lock.Language, setting.Forbidden, setting.Picture,
 	i_Suspend_By, i_Suspend_Time));
     MB(32, (i_LastSeenTime, i_LastRealName, i_LastMask, i_LastQuit, i_UserDef.size()));
+    ETCB();
 }
 
 void Nick_Stored_t::DumpE()
 {
+    BTCB();
     ME(0,
        (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ, i_AIM, i_MSN, i_Yahoo, i_Description, i_Comment, i_Host,
 	i_slaves.size(), i_access.size(), i_ignore.size(), setting.Protect));
@@ -4762,18 +5103,22 @@ void Nick_Stored_t::DumpE()
 	lock.Private, setting.PRIVMSG, lock.PRIVMSG, setting.Language, lock.Language, setting.Forbidden, setting.Picture,
 	i_Suspend_By, i_Suspend_Time));
     ME(32, (i_LastSeenTime, i_LastRealName, i_LastMask, i_LastQuit, i_UserDef.size()));
+    ETCB();
 }
 
 // =======================================================================
 
 NickServ::NickServ()
 {
+    BTCB();
     NFT("NickServ::NickServ");
     messages = true;
+    ETCB();
 }
 
 mstring NickServ::findnextnick(const mstring & in)
 {
+    BTCB();
     FT("NickServ::findnextnick", (in));
 
     // Amount of nicknames it will try, only
@@ -4814,10 +5159,12 @@ mstring NickServ::findnextnick(const mstring & in)
 	}
     }
     RET("");
+    ETCB();
 }
 
 void NickServ::AddCommands()
 {
+    BTCB();
     NFT("NickServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -4989,10 +5336,12 @@ void NickServ::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "IGN* *", Magick::instance().commserv.REGD_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "IGN*", Magick::instance().commserv.REGD_Name(),
 						 do_1_2param);
+    ETCB();
 }
 
 void NickServ::RemCommands()
 {
+    BTCB();
     NFT("NickServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -5083,6 +5432,7 @@ void NickServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "ACC*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "IGN* *", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "IGN*", Magick::instance().commserv.REGD_Name());
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5091,6 +5441,7 @@ void NickServ::AddStored(Nick_Stored_t * in) throw (E_NickServ_Stored)
 void NickServ::AddStored(Nick_Stored_t * in)
 #endif
 {
+    BTCB();
     FT("NickServ::AddStored", ("(Nick_Stored_t *) in"));
 
     if (in == NULL)
@@ -5132,6 +5483,7 @@ void NickServ::AddStored(Nick_Stored_t * in)
     }
     WLOCK((lck_NickServ, lck_stored));
     stored[in->Name().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5140,6 +5492,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const throw 
 map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("NickServ::GetStored", (in));
 
     RLOCK((lck_NickServ, lck_stored));
@@ -5173,6 +5526,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
     }
 
     NRET(map_entry < Nick_Stored_t >, map_entry < Nick_Stored_t > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5181,6 +5535,7 @@ void NickServ::RemStored(const mstring & in) throw (E_NickServ_Stored)
 void NickServ::RemStored(const mstring & in)
 #endif
 {
+    BTCB();
     FT("NickServ::RemStored", (in));
 
     RLOCK((lck_NickServ, lck_stored));
@@ -5202,15 +5557,18 @@ void NickServ::RemStored(const mstring & in)
     }
     WLOCK((lck_NickServ, lck_stored));
     stored.erase(iter);
+    ETCB();
 }
 
 bool NickServ::IsStored(const mstring & in) const
 {
+    BTCB();
     FT("NickServ::IsStored", (in));
     RLOCK((lck_NickServ, lck_stored));
     bool retval = (stored.find(in.LowerCase()) != stored.end());
 
     RET(retval);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5219,6 +5577,7 @@ void NickServ::AddLive(Nick_Live_t * in) throw (E_NickServ_Live)
 void NickServ::AddLive(Nick_Live_t * in)
 #endif
 {
+    BTCB();
     FT("NickServ::AddLive", ("(Nick_Live_t *) in"));
 
     if (in == NULL)
@@ -5260,6 +5619,7 @@ void NickServ::AddLive(Nick_Live_t * in)
     }
     WLOCK((lck_NickServ, lck_live));
     live[in->Name().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5268,6 +5628,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const throw (E_N
 map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("NickServ::GetLive", (in));
 
     RLOCK((lck_NickServ, lck_live));
@@ -5301,6 +5662,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
     }
 
     NRET(map_entry < Nick_Live_t >, map_entry < Nick_Live_t > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5309,6 +5671,7 @@ void NickServ::RemLive(const mstring & in) throw (E_NickServ_Live)
 void NickServ::RemLive(const mstring & in)
 #endif
 {
+    BTCB();
     FT("NickServ::RemLive", (in));
 
     RLOCK((lck_NickServ, lck_live));
@@ -5330,25 +5693,30 @@ void NickServ::RemLive(const mstring & in)
     }
     WLOCK((lck_NickServ, lck_live));
     live.erase(iter);
+    ETCB();
 }
 
 bool NickServ::IsLive(const mstring & in) const
 {
+    BTCB();
     FT("NickServ::IsLive", (in));
     RLOCK((lck_NickServ, lck_live));
     map_entry < Nick_Live_t > ent(live, in.LowerCase());
     if (ent.entry() != NULL && ent->Squit().empty())
 	RET(true);
     RET(false);
+    ETCB();
 }
 
 bool NickServ::IsLiveAll(const mstring & in) const
 {
+    BTCB();
     FT("NickServ::IsLiveAll", (in));
     RLOCK((lck_NickServ, lck_live));
     bool retval = (live.find(in.LowerCase()) != live.end());
 
     RET(retval);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5357,6 +5725,7 @@ void NickServ::AddRecovered(const mstring & name, const mDateTime & in) throw (E
 void NickServ::AddRecovered(const mstring & name, const mDateTime & in)
 #endif
 {
+    BTCB();
     FT("NickServ::AddRecovered", (name, in));
 
     if (name.empty() || in == mDateTime(0.0))
@@ -5371,6 +5740,7 @@ void NickServ::AddRecovered(const mstring & name, const mDateTime & in)
 
     WLOCK((lck_NickServ, "recovered"));
     recovered[name.LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5379,6 +5749,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const throw (E_NickS
 const mDateTime &NickServ::GetRecovered(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("NickServ::GetRecovered", (in));
 
     RLOCK((lck_NickServ, "recovered"));
@@ -5403,6 +5774,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const
     }
 
     NRET(mDateTime &, iter->second);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5411,6 +5783,7 @@ void NickServ::RemRecovered(const mstring & in) throw (E_NickServ_Recovered)
 void NickServ::RemRecovered(const mstring & in)
 #endif
 {
+    BTCB();
     FT("NickServ::RemRecovered", (in));
 
     WLOCK((lck_NickServ, "recovered"));
@@ -5425,19 +5798,23 @@ void NickServ::RemRecovered(const mstring & in)
 #endif
     }
     recovered.erase(iter);
+    ETCB();
 }
 
 bool NickServ::IsRecovered(const mstring & in) const
 {
+    BTCB();
     FT("NickServ::IsRecovered", (in));
     RLOCK((lck_NickServ, "recovered"));
     bool retval = (recovered.find(in.LowerCase()) != recovered.end());
 
     RET(retval);
+    ETCB();
 }
 
 void NickServ::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     mThread::ReAttach(tt_NickServ);
     FT("NickServ::execute", (source, msgtype, params));
     //okay this is the main nickserv command switcher
@@ -5460,10 +5837,12 @@ void NickServ::execute(mstring & source, const mstring & msgtype, const mstring 
     }
 
     mThread::ReAttach(tt_mBase);
+    ETCB();
 }
 
 void NickServ::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Help", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5488,10 +5867,12 @@ void NickServ::do_Help(const mstring & mynick, const mstring & source, const mst
 
     for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
+    ETCB();
 }
 
 void NickServ::do_Register(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Register", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5550,10 +5931,12 @@ void NickServ::do_Register(const mstring & mynick, const mstring & source, const
 	SEND(mynick, source, "NS_YOU_COMMAND/REGISTERED", (nlive->Mask(Nick_Live_t::U_H).After("!")));
 	LOG(LM_INFO, "NICKSERV/REGISTER", (nlive->Mask(Nick_Live_t::N_U_P_H), source));
     }
+    ETCB();
 }
 
 void NickServ::do_Drop(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Drop", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5618,10 +6001,12 @@ void NickServ::do_Drop(const mstring & mynick, const mstring & source, const mst
 
     LOG(LM_INFO, "NICKSERV/DROP", (nlive->Mask(Nick_Live_t::N_U_P_H), target, dropped - 1));
 
+    ETCB();
 }
 
 void NickServ::do_Link(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Link", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5705,10 +6090,12 @@ void NickServ::do_Link(const mstring & mynick, const mstring & source, const mst
     {
 	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
     }
+    ETCB();
 }
 
 void NickServ::do_UnLink(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_UnLink", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5779,10 +6166,12 @@ void NickServ::do_UnLink(const mstring & mynick, const mstring & source, const m
 	else
 	    NSEND(mynick, source, "NS_YOU_STATUS/ISNOTLINKED");
     }
+    ETCB();
 }
 
 void NickServ::do_Host(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Host", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5843,10 +6232,12 @@ void NickServ::do_Host(const mstring & mynick, const mstring & source, const mst
 	NSEND(mynick, source, "NS_YOU_COMMAND/NEWHOST");
 	LOG(LM_INFO, "NICKSERV/HOST", (nlive->Mask(Nick_Live_t::N_U_P_H), oldhost, source));
     }
+    ETCB();
 }
 
 void NickServ::do_Slaves(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Slaves", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5903,10 +6294,12 @@ void NickServ::do_Slaves(const mstring & mynick, const mstring & source, const m
 	output << " " << nick->Sibling(i);
     }
     ::send(mynick, source, output);
+    ETCB();
 }
 
 void NickServ::do_Identify(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Identify", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -5942,10 +6335,12 @@ void NickServ::do_Identify(const mstring & mynick, const mstring & source, const
     }
     if (!output.empty())
 	::send(mynick, source, output);
+    ETCB();
 }
 
 void NickServ::do_Info(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Info", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6173,10 +6568,12 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	    SEND(mynick, source, "MISC/SYNC", (Magick::instance().events->SyncTime(source)));
     }
+    ETCB();
 }
 
 void NickServ::do_Ghost(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Ghost", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6230,10 +6627,12 @@ void NickServ::do_Ghost(const mstring & mynick, const mstring & source, const ms
     Magick::instance().nickserv.stats.i_Ghost++;
     SEND(mynick, source, "NS_OTH_COMMAND/RELEASED", (nick));
     LOG(LM_DEBUG, "NICKSERV/GHOST", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), nick));
+    ETCB();
 }
 
 void NickServ::do_Recover(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Recover", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6288,10 +6687,12 @@ void NickServ::do_Recover(const mstring & mynick, const mstring & source, const 
     Magick::instance().nickserv.stats.i_Recover++;
     SEND(mynick, source, "NS_OTH_COMMAND/HELD", (nick));
     LOG(LM_DEBUG, "NICKSERV/RECOVER", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), nick));
+    ETCB();
 }
 
 void NickServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_List", (mynick, source, params));
 
     unsigned int listsize, i, count;
@@ -6378,10 +6779,12 @@ void NickServ::do_List(const mstring & mynick, const mstring & source, const mst
 	}
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
+    ETCB();
 }
 
 void NickServ::do_Send(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Send", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6464,10 +6867,12 @@ void NickServ::do_Send(const mstring & mynick, const mstring & source, const mst
 	    Magick::instance().dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
 	}
     }
+    ETCB();
 }
 
 void NickServ::do_Suspend(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Suspend", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6513,10 +6918,12 @@ void NickServ::do_Suspend(const mstring & mynick, const mstring & source, const 
     SEND(mynick, source, "NS_OTH_COMMAND/SUSPENDED", (target));
     LOG(LM_NOTICE, "NICKSERV/SUSPEND",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, reason));
+    ETCB();
 }
 
 void NickServ::do_UnSuspend(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_UnSuspend", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6553,10 +6960,12 @@ void NickServ::do_UnSuspend(const mstring & mynick, const mstring & source, cons
     Magick::instance().nickserv.stats.i_Unsuspend++;
     SEND(mynick, source, "NS_OTH_COMMAND/UNSUSPENDED", (target));
     LOG(LM_NOTICE, "NICKSERV/UNSUSPEND", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target));
+    ETCB();
 }
 
 void NickServ::do_Forbid(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Forbid", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6589,12 +6998,14 @@ void NickServ::do_Forbid(const mstring & mynick, const mstring & source, const m
     Magick::instance().nickserv.stats.i_Forbid++;
     SEND(mynick, source, "NS_OTH_COMMAND/FORBIDDEN", (target));
     LOG(LM_NOTICE, "NICKSERV/FORBID", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target));
+    ETCB();
 }
 
 #ifdef GETPASS
 
 void NickServ::do_Getpass(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Getpass", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6648,12 +7059,14 @@ void NickServ::do_Getpass(const mstring & mynick, const mstring & source, const 
     ANNOUNCE(mynick, "MISC/NICK_GETPASS", (source, target, host));
     LOG(LM_NOTICE, "NICKSERV/GETPASS",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, host));
+    ETCB();
 }
 
 #endif /* GETPASS */
 
 void NickServ::do_Setpass(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Setpass", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -6708,10 +7121,12 @@ void NickServ::do_Setpass(const mstring & mynick, const mstring & source, const 
     ANNOUNCE(mynick, "MISC/NICK_SETPASS", (source, target, host));
     LOG(LM_NOTICE, "NICKSERV/SETPASS",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, host));
+    ETCB();
 }
 
 void NickServ::do_Live(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_Live", (mynick, source, params));
 
     unsigned int listsize, i, count;
@@ -6788,10 +7203,12 @@ void NickServ::do_Live(const mstring & mynick, const mstring & source, const mst
 	}
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
+    ETCB();
 }
 
 void NickServ::do_access_Current(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_access_Current", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -6817,10 +7234,12 @@ void NickServ::do_access_Current(const mstring & mynick, const mstring & source,
 	SEND(mynick, source, "LIST/EXISTS",
 	     (nlive->Mask(Nick_Live_t::U_H).After("!"), Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
+    ETCB();
 }
 
 void NickServ::do_access_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_access_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -6856,10 +7275,12 @@ void NickServ::do_access_Add(const mstring & mynick, const mstring & source, con
     {
 	SEND(mynick, source, "LIST/EXISTS", (hostmask, Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
+    ETCB();
 }
 
 void NickServ::do_access_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_access_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -6917,10 +7338,12 @@ void NickServ::do_access_Del(const mstring & mynick, const mstring & source, con
     {
 	SEND(mynick, source, "LIST/NOTEXISTS", (hostmask, Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
+    ETCB();
 }
 
 void NickServ::do_access_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_access_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -6982,10 +7405,12 @@ void NickServ::do_access_List(const mstring & mynick, const mstring & source, co
 	retval << i + 1 << ". " << nstored->Access(i);
 	::send(mynick, source, retval);
     }
+    ETCB();
 }
 
 void NickServ::do_ignore_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_ignore_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7023,10 +7448,12 @@ void NickServ::do_ignore_Add(const mstring & mynick, const mstring & source, con
     {
 	SEND(mynick, source, "LIST/EXISTS", (target, Magick::instance().getMessage(source, "LIST/IGNORE")));
     }
+    ETCB();
 }
 
 void NickServ::do_ignore_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_ignore_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7073,10 +7500,12 @@ void NickServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
 	SEND(mynick, source, "LIST/NOTEXISTS", (target, Magick::instance().getMessage(source, "LIST/IGNORE")));
     }
 
+    ETCB();
 }
 
 void NickServ::do_ignore_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_ignore_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7138,10 +7567,12 @@ void NickServ::do_ignore_List(const mstring & mynick, const mstring & source, co
 	retval << i + 1 << ". " << nstored->Ignore(i);
 	::send(mynick, source, retval);
     }
+    ETCB();
 }
 
 void NickServ::do_set_Password(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Password", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7178,10 +7609,12 @@ void NickServ::do_set_Password(const mstring & mynick, const mstring & source, c
     Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (Magick::instance().getMessage(source, "NS_SET/PASSWORD"), newpass));
     LOG(LM_INFO, "NICKSERV/SET_PASSWORD", (nlive->Mask(Nick_Live_t::N_U_P_H), source));
+    ETCB();
 }
 
 void NickServ::do_set_Email(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Email", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7223,10 +7656,12 @@ void NickServ::do_set_Email(const mstring & mynick, const mstring & source, cons
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/EMAIL"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_URL(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_URL", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7264,10 +7699,12 @@ void NickServ::do_set_URL(const mstring & mynick, const mstring & source, const 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/URL"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_ICQ(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_ICQ", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7309,10 +7746,12 @@ void NickServ::do_set_ICQ(const mstring & mynick, const mstring & source, const 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/ICQ"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_AIM(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_AIM", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7344,10 +7783,12 @@ void NickServ::do_set_AIM(const mstring & mynick, const mstring & source, const 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/AIM"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_MSN(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_MSN", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7379,10 +7820,12 @@ void NickServ::do_set_MSN(const mstring & mynick, const mstring & source, const 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/MSN"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_Yahoo(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Yahoo", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7414,10 +7857,12 @@ void NickServ::do_set_Yahoo(const mstring & mynick, const mstring & source, cons
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/YAHOO"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_Description(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Description", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7449,10 +7894,12 @@ void NickServ::do_set_Description(const mstring & mynick, const mstring & source
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/DESCRIPTION"), source));
     }
+    ETCB();
 }
 
 void NickServ::do_set_Comment(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Comment", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7500,10 +7947,12 @@ void NickServ::do_set_Comment(const mstring & mynick, const mstring & source, co
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/COMMENT"), target));
     }
+    ETCB();
 }
 
 void NickServ::do_set_Picture(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Picture", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7538,10 +7987,12 @@ void NickServ::do_set_Picture(const mstring & mynick, const mstring & source, co
 	nstored->GotPic(0u);
 	Magick::instance().nickserv.GetLive(source)->InFlight.Picture(mynick);
     }
+    ETCB();
 }
 
 void NickServ::do_set_Protect(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Protect", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7585,10 +8036,12 @@ void NickServ::do_set_Protect(const mstring & mynick, const mstring & source, co
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PROTECT"), source,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_set_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Secure", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7632,10 +8085,12 @@ void NickServ::do_set_Secure(const mstring & mynick, const mstring & source, con
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/SECURE"), source,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_set_NoExpire(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_NoExpire", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7694,10 +8149,12 @@ void NickServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/NOEXPIRE"), nickname,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_set_NoMemo(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_NoMemo", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7741,10 +8198,12 @@ void NickServ::do_set_NoMemo(const mstring & mynick, const mstring & source, con
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/NOMEMO"), source,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_set_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Private", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7788,10 +8247,12 @@ void NickServ::do_set_Private(const mstring & mynick, const mstring & source, co
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PRIVATE"), source,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_set_PRIVMSG(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_PRIVMSG", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7835,10 +8296,12 @@ void NickServ::do_set_PRIVMSG(const mstring & mynick, const mstring & source, co
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PRIVMSG"), source,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_set_Language(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_set_Language", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7889,10 +8352,12 @@ void NickServ::do_set_Language(const mstring & mynick, const mstring & source, c
     LOG(LM_DEBUG, "NICKSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/LANGUAGE"), source, lang));
+    ETCB();
 }
 
 void NickServ::do_lock_Protect(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_lock_Protect", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -7953,10 +8418,12 @@ void NickServ::do_lock_Protect(const mstring & mynick, const mstring & source, c
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PROTECT"), nickname,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_lock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_lock_Secure", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8016,10 +8483,12 @@ void NickServ::do_lock_Secure(const mstring & mynick, const mstring & source, co
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/SECURE"), nickname,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_lock_NoMemo(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_lock_NoMemo", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8079,10 +8548,12 @@ void NickServ::do_lock_NoMemo(const mstring & mynick, const mstring & source, co
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/NOMEMO"), nickname,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_lock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_lock_Private", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8142,10 +8613,12 @@ void NickServ::do_lock_Private(const mstring & mynick, const mstring & source, c
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PRIVATE"), nickname,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_lock_PRIVMSG(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_lock_PRIVMSG", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8205,10 +8678,12 @@ void NickServ::do_lock_PRIVMSG(const mstring & mynick, const mstring & source, c
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PRIVMSG"), nickname,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void NickServ::do_lock_Language(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_lock_Language", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8271,10 +8746,12 @@ void NickServ::do_lock_Language(const mstring & mynick, const mstring & source, 
     LOG(LM_DEBUG, "NICKSERV/LOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/LANGUAGE"), nickname, lang));
+    ETCB();
 }
 
 void NickServ::do_unlock_Protect(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_unlock_Protect", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8313,10 +8790,12 @@ void NickServ::do_unlock_Protect(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "NICKSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PROTECT"), nickname));
+    ETCB();
 }
 
 void NickServ::do_unlock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_unlock_Secure", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8355,10 +8834,12 @@ void NickServ::do_unlock_Secure(const mstring & mynick, const mstring & source, 
     LOG(LM_DEBUG, "NICKSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/SECURE"), nickname));
+    ETCB();
 }
 
 void NickServ::do_unlock_NoMemo(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_unlock_NoMemo", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8397,10 +8878,12 @@ void NickServ::do_unlock_NoMemo(const mstring & mynick, const mstring & source, 
     LOG(LM_DEBUG, "NICKSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/NOMEMO"), nickname));
+    ETCB();
 }
 
 void NickServ::do_unlock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_unlock_Private", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8439,10 +8922,12 @@ void NickServ::do_unlock_Private(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "NICKSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PRIVATE"), nickname));
+    ETCB();
 }
 
 void NickServ::do_unlock_PRIVMSG(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_unlock_PRIVMSG", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8481,10 +8966,12 @@ void NickServ::do_unlock_PRIVMSG(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "NICKSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/PRIVMSG"), nickname));
+    ETCB();
 }
 
 void NickServ::do_unlock_Language(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("NickServ::do_unlock_Language", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -8523,12 +9010,14 @@ void NickServ::do_unlock_Language(const mstring & mynick, const mstring & source
     LOG(LM_DEBUG, "NICKSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("NS_SET/LANGUAGE"), nickname));
+    ETCB();
 }
 
 SXP::Tag NickServ::tag_NickServ("NickServ");
 
 void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("NickServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Nick_Stored_t *ns = new Nick_Stored_t;
 
@@ -8541,19 +9030,23 @@ void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	delete ns;
     }
+    ETCB();
 }
 
 void NickServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
     static_cast < void > (pElement);
 
     FT("NickServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+    ETCB();
 }
 
 void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("NickServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -8571,10 +9064,12 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_NickServ);
+    ETCB();
 }
 
 void NickServ::PostLoad()
 {
+    BTCB();
     NFT("NickServ::PostLoad");
     unsigned int i, j;
 
@@ -8622,4 +9117,5 @@ void NickServ::PostLoad()
 	    }
 	}
     }
+    ETCB();
 }
