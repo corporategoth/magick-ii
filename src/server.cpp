@@ -2132,24 +2132,29 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
 	mstring line =
 	    ((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " ";
 
-	if (IsChan(dest))
+	if (proto.Numeric.Channel() && Magick::instance().chanserv.IsLive(dest))
 	{
+
 	    unsigned long numeric = Magick::instance().chanserv.GetLive(dest)->Numeric();
 
-	    if (numeric && proto.Numeric.Channel())
+	    if (numeric)
 		line << proto.Numeric.ChannelNumeric(numeric);
 	    else
 		line << dest;
 	}
-	else
+	else if (proto.Numeric.User() && Magick::instance().nickserv.IsLive(dest))
 	{
+
 	    unsigned long numeric = Magick::instance().nickserv.GetLive(dest)->Numeric();
 
-	    if (numeric && proto.Numeric.User())
+	    if (numeric)
 		line << proto.Numeric.UserNumeric(numeric);
 	    else
 		line << dest;
 	}
+	else
+	    line << dest;
+
 	line << " :";
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    nraw(nick, line + text.ExtractWord(i, "\n\r"));
@@ -2234,24 +2239,28 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
 	    ((proto.Tokens() &&
 	      !proto.GetNonToken("PRIVMSG").empty()) ? proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) + " ";
 
-	if (IsChan(dest))
+	if (proto.Numeric.Channel() && Magick::instance().chanserv.IsLive(dest))
 	{
+
 	    unsigned long numeric = Magick::instance().chanserv.GetLive(dest)->Numeric();
 
-	    if (numeric && proto.Numeric.Channel())
+	    if (numeric)
 		line << proto.Numeric.ChannelNumeric(numeric);
 	    else
 		line << dest;
 	}
-	else
+	else if (proto.Numeric.User() && Magick::instance().nickserv.IsLive(dest))
 	{
+
 	    unsigned long numeric = Magick::instance().nickserv.GetLive(dest)->Numeric();
 
-	    if (numeric && proto.Numeric.User())
+	    if (numeric)
 		line << proto.Numeric.UserNumeric(numeric);
 	    else
 		line << dest;
 	}
+	else
+	    line << dest;
 
 	line << " :";
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
