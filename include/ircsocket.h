@@ -6,6 +6,10 @@
 #include <ace/Method_Object.h>
 #include "mstring.h"
 
+
+// change this shit over to ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR>
+// and make IrcSvcHandler : public ACE_Svc_Handler
+
 class IrcSocket : public ACE_Task<ACE_MT_SYNCH>
 {
 public:
