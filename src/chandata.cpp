@@ -1228,7 +1228,7 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (i_Key == new_key)
 			    {
-				if (!cstored || s_key.empty())
+				if (!cstored || s_key.empty() || s_key != new_key)
 				{
 				    if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
 					RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
@@ -3515,47 +3515,51 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 
 	if (clive != NULL)
 	{
-	    mstring modes_param;
-
+	    mstring modes_param, tmpmodes;
 	    modes.erase();
-	    if (old_key != setting.Mlock_Key)
-	    {
-		modes << "-k";
-		modes_param << " " << old_key;
-	    }
 
-	    modes << "+";
-	    for (i = 0; i < setting.Mlock_On.size(); i++)
-	    {
-		if (!clive->HasMode(setting.Mlock_On[i]))
-		{
-		    modes << setting.Mlock_On[i];
-		}
-	    }
-	    modes << "-";
 	    for (i = 0; i < setting.Mlock_Off.size(); i++)
 	    {
 		if (setting.Mlock_Off[i] == 'k' && !clive->Key().empty())
 		{
-		    modes << "k";
+		    tmpmodes << "k";
 		    modes_param << " " << clive->Key();
 		}
 		else if (clive->HasMode(setting.Mlock_Off[i]))
 		{
-		    modes << setting.Mlock_Off[i];
+		    tmpmodes << setting.Mlock_Off[i];
 		}
 	    }
-	    if (!setting.Mlock_Key.empty())
+	    if (!old_key.empty() && !tmpmodes.Contains("k") && old_key != setting.Mlock_Key)
 	    {
-		modes << "+k";
+		tmpmodes << "k";
+		modes_param << " " << old_key;
+	    }
+	    if (!tmpmodes.empty())
+		modes << "-" << tmpmodes;
+
+	    tmpmodes.erase();
+	    for (i = 0; i < setting.Mlock_On.size(); i++)
+	    {
+		if (!clive->HasMode(setting.Mlock_On[i]))
+		{
+		    tmpmodes << setting.Mlock_On[i];
+		}
+	    }
+	    if (!setting.Mlock_Key.empty() && setting.Mlock_Key != clive->Key())
+	    {
+		tmpmodes << "k";
 		modes_param << " " << setting.Mlock_Key;
 	    }
-	    if (setting.Mlock_Limit)
+	    if (setting.Mlock_Limit && setting.Mlock_Limit != clive->Limit())
 	    {
-		modes << "+l";
+		tmpmodes << "l";
 		modes_param << " " << setting.Mlock_Limit;
 	    }
-	    if (modes.length() > 2 && clive != NULL)
+	    if (!tmpmodes.empty())
+		modes << "+" << tmpmodes;
+
+	    if (modes.length() && clive != NULL)
 		clive->SendMode(modes + modes_param);
 	}
     }
