@@ -24,6 +24,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/05/08 14:42:01  prez
+** More on xmlisation of nickserv and chanserv
+**
 ** Revision 1.35  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -226,7 +229,7 @@ public:
 
 struct NickInfo;
 
-class Nick_Stored_t : public mUserDef
+class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend class Nick_Live_t;
     friend class NickServ;
@@ -276,6 +279,17 @@ class Nick_Stored_t : public mUserDef
     void Signon(mstring realname, mstring mask);
     void ChgNick(mstring nick);
     void ChangeOver(mstring oldnick);
+
+    static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime,
+	tag_Password, tag_Email, tag_URL, tag_ICQ, tag_Description,
+	tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure,
+	tag_set_NoExpire, tag_set_NoMemo, tag_set_Private,
+	tag_set_PRIVMSG, tag_set_Language, tag_Forbidden,
+	tag_lock_Protect, tag_lock_Secure, tag_lock_NoExpire,
+	tag_lock_NoMemo, tag_lock_Private, tag_lock_PRIVMSG,
+	tag_lock_Language, tag_Picture, tag_Suspend_By,
+	tag_Suspend_Time, tag_LastSeenTime, tag_LastRealName,
+	tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
 public:
     Nick_Stored_t();
     Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
@@ -383,6 +397,11 @@ public:
     mstring LastMask();
     mstring LastQuit();
     void Quit(mstring message);
+
+    SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in);
 wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);

@@ -24,6 +24,9 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/05/08 14:42:01  prez
+** More on xmlisation of nickserv and chanserv
+**
 ** Revision 1.35  2000/04/02 13:06:02  prez
 ** Fixed the channel TOPIC and MODE LOCK stuff ...
 **
@@ -154,7 +157,7 @@ public:
 
 struct ChanInfo;
 
-class Chan_Stored_t : public mUserDef
+class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend class Nick_Live_t;
     friend class Chan_Live_t;
@@ -221,6 +224,20 @@ class Chan_Stored_t : public mUserDef
     set<entlist_val_t<mstring> > i_Akick;
     list<entlist_t> i_Greet;
     list<entlist_t> i_Message;
+
+    static SXP::Tag tag_Chan_Stored_t, tag_Name, tag_RegTime, tag_LastUsed,
+	tag_Founder, tag_CoFounder, tag_Description, tag_Password, tag_Email,
+	tag_URL, tag_Comment, tag_Topic, tag_Topic_Setter, tag_Topic_Set_Time,
+	tag_set_Mlock_On, tag_set_Mlock_Off, tag_set_Mlock_Key, tag_set_Mlock_Limit,
+	tag_set_Bantime, tag_set_Parttime, tag_set_KeepTopic, tag_set_TopicLock,
+	tag_set_Private, tag_set_SecureOps, tag_set_Secure, tag_set_NoExpire,
+	tag_set_Anarchy, tag_set_KickOnBan, tag_set_Restricted, tag_set_Join,
+	tag_set_Revenge, tag_Forbidden, tag_lock_Mlock_On, tag_lock_Mlock_Off,
+	tag_lock_Bantime, tag_lock_Parttime, tag_lock_KeepTopic, tag_lock_TopicLock,
+	tag_lock_Private, tag_lock_SecureOps, tag_lock_Secure, tag_lock_NoExpire,
+	tag_lock_Anarchy, tag_lock_KickOnBan, tag_lock_Restricted, tag_lock_Join,
+	tag_lock_Revenge, tag_Suspend_By, tag_Suspend_Time, tag_Level, tag_Access,
+	tag_Akick, tag_Greet, tag_Message, tag_UserDef;
 
     void ChgAttempt(mstring nick, mstring newnick);
     void Join(mstring nick);
@@ -409,6 +426,11 @@ public:
     size_t Message_size()			{ return i_Message.size(); }
     bool Message_find(unsigned int num);
     entlist_i Message;
+
+    SXP::Tag& GetClassTag() const { return tag_Chan_Stored_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in);

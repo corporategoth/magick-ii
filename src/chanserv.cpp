@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.164  2000/05/08 14:42:01  prez
+** More on xmlisation of nickserv and chanserv
+**
 ** Revision 1.163  2000/04/30 03:48:28  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -3488,7 +3491,7 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     size_t i, count;
     set<entlist_t>::size_type ei,ecount;
     set<entlist_val_t<long> >::size_type vli,vlcount;
-    set<entlist_val_t<long> >::size_type vsi,vscount;
+    set<entlist_val_t<mstring> >::size_type vsi,vscount;
     mstring dummy,dummy2;
     entlist_t edummy;
     entlist_val_t<long> eldummy;
@@ -3550,6 +3553,214 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     }
     return in;
 }
+
+SXP::Tag Chan_Stored_t::tag_Chan_Stored_t("Chan_Stored_t");
+SXP::Tag Chan_Stored_t::tag_Name("Name");
+SXP::Tag Chan_Stored_t::tag_RegTime("Reg Time");
+SXP::Tag Chan_Stored_t::tag_LastUsed("Last Used");
+SXP::Tag Chan_Stored_t::tag_Founder("Founder");
+SXP::Tag Chan_Stored_t::tag_CoFounder("Co-Founder");
+SXP::Tag Chan_Stored_t::tag_Description("Description");
+SXP::Tag Chan_Stored_t::tag_Password("Password");
+SXP::Tag Chan_Stored_t::tag_Email("Email");
+SXP::Tag Chan_Stored_t::tag_URL("URL");
+SXP::Tag Chan_Stored_t::tag_Comment("Comment");
+SXP::Tag Chan_Stored_t::tag_Topic("Topic");
+SXP::Tag Chan_Stored_t::tag_Topic_Setter("Topic Setter");
+SXP::Tag Chan_Stored_t::tag_Topic_Set_Time("Topic Set Time");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_On("SET Mlock On");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_Off("SET Mlock Off");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_Key("SET Mlock Key");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_Limit("SET Mlock Limit");
+SXP::Tag Chan_Stored_t::tag_set_Bantime("SET Ban Time");
+SXP::Tag Chan_Stored_t::tag_set_Parttime("SET Part Time");
+SXP::Tag Chan_Stored_t::tag_set_KeepTopic("SET Keep Topic");
+SXP::Tag Chan_Stored_t::tag_set_TopicLock("SET Topic Lock");
+SXP::Tag Chan_Stored_t::tag_set_Private("SET Private");
+SXP::Tag Chan_Stored_t::tag_set_SecureOps("SET Secure Ops");
+SXP::Tag Chan_Stored_t::tag_set_Secure("SET Secure");
+SXP::Tag Chan_Stored_t::tag_set_NoExpire("SET No Expire");
+SXP::Tag Chan_Stored_t::tag_set_Anarchy("SET Anarchy");
+SXP::Tag Chan_Stored_t::tag_set_KickOnBan("SET Kick On Ban");
+SXP::Tag Chan_Stored_t::tag_set_Restricted("SET Restricted");
+SXP::Tag Chan_Stored_t::tag_set_Join("SET Join");
+SXP::Tag Chan_Stored_t::tag_set_Revenge("SET Revenge");
+SXP::Tag Chan_Stored_t::tag_Forbidden("Forbidden");
+SXP::Tag Chan_Stored_t::tag_lock_Mlock_On("LOCK Mlock On");
+SXP::Tag Chan_Stored_t::tag_lock_Mlock_Off("LOCK Mlock Off");
+SXP::Tag Chan_Stored_t::tag_lock_Bantime("LOCK Ban Time");
+SXP::Tag Chan_Stored_t::tag_lock_Parttime("LOCK Part Time");
+SXP::Tag Chan_Stored_t::tag_lock_KeepTopic("LOCK Keep Topic");
+SXP::Tag Chan_Stored_t::tag_lock_TopicLock("LOCK TopicLock");
+SXP::Tag Chan_Stored_t::tag_lock_Private("LOCK Private");
+SXP::Tag Chan_Stored_t::tag_lock_SecureOps("LOCK SecureOps");
+SXP::Tag Chan_Stored_t::tag_lock_Secure("LOCK Secure");
+SXP::Tag Chan_Stored_t::tag_lock_NoExpire("LOCK No Expire");
+SXP::Tag Chan_Stored_t::tag_lock_Anarchy("LOCK Anarchy");
+SXP::Tag Chan_Stored_t::tag_lock_KickOnBan("LOCK Kick On Ban");
+SXP::Tag Chan_Stored_t::tag_lock_Restricted("LOCK Restricted");
+SXP::Tag Chan_Stored_t::tag_lock_Join("LOCK Join");
+SXP::Tag Chan_Stored_t::tag_lock_Revenge("LOCK Revenge");
+SXP::Tag Chan_Stored_t::tag_Suspend_By("Suspend By");
+SXP::Tag Chan_Stored_t::tag_Suspend_Time("Suspend Time");
+SXP::Tag Chan_Stored_t::tag_Level("Level");
+SXP::Tag Chan_Stored_t::tag_Access("Access");
+SXP::Tag Chan_Stored_t::tag_Akick("Akick");
+SXP::Tag Chan_Stored_t::tag_Greet("Greet");
+SXP::Tag Chan_Stored_t::tag_Message("Message");
+SXP::Tag Chan_Stored_t::tag_UserDef("UserDef");
+
+void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    set<entlist_t>::size_type ei,ecount;
+    set<entlist_val_t<long> >::size_type vli,vlcount;
+    set<entlist_val_t<mstring> >::size_type vsi,vscount;
+    mstring dummy,dummy2;
+    entlist_t edummy;
+    entlist_val_t<long> eldummy;
+    entlist_val_t<mstring> esdummy;
+
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Name) )			pElement->Retrieve(i_Name);
+	if( pElement->IsA(tag_RegTime) )		pElement->Retrieve(i_RegTime);
+	if( pElement->IsA(tag_LastUsed) )		pElement->Retrieve(i_LastUsed);
+	if( pElement->IsA(tag_Founder) )		pElement->Retrieve(i_Founder);
+	if( pElement->IsA(tag_CoFounder) )		pElement->Retrieve(i_CoFounder);
+	if( pElement->IsA(tag_Description) )		pElement->Retrieve(i_Description);
+	if( pElement->IsA(tag_Password) )		pElement->Retrieve(i_Password);
+	if( pElement->IsA(tag_Email) )			pElement->Retrieve(i_Email);
+	if( pElement->IsA(tag_URL) )			pElement->Retrieve(i_URL);
+	if( pElement->IsA(tag_Comment) )		pElement->Retrieve(i_Comment);
+	if( pElement->IsA(tag_Topic) )			pElement->Retrieve(i_Topic);
+	if( pElement->IsA(tag_Topic_Setter) )		pElement->Retrieve(i_Topic_Setter);
+	if( pElement->IsA(tag_Topic_Set_Time) )		pElement->Retrieve(i_Topic_Set_Time);
+	if( pElement->IsA(tag_set_Mlock_On) )		pElement->Retrieve(i_Mlock_On);
+	if( pElement->IsA(tag_set_Mlock_Off) )		pElement->Retrieve(i_Mlock_Off);
+	if( pElement->IsA(tag_set_Mlock_Key) )		pElement->Retrieve(i_Mlock_Key);
+	if( pElement->IsA(tag_set_Mlock_Limit) )	pElement->Retrieve(i_Mlock_Limit);
+	if( pElement->IsA(tag_set_Bantime) )		pElement->Retrieve(i_Bantime);
+	if( pElement->IsA(tag_set_Parttime) )		pElement->Retrieve(i_Parttime);
+	if( pElement->IsA(tag_set_KeepTopic) )		pElement->Retrieve(i_Keeptopic);
+	if( pElement->IsA(tag_set_TopicLock) )		pElement->Retrieve(i_Topiclock);
+	if( pElement->IsA(tag_set_Private) )		pElement->Retrieve(i_Private);
+	if( pElement->IsA(tag_set_SecureOps) )		pElement->Retrieve(i_Secureops);
+	if( pElement->IsA(tag_set_Secure) )		pElement->Retrieve(i_Secure);
+	if( pElement->IsA(tag_set_NoExpire) )		pElement->Retrieve(i_NoExpire);
+	if( pElement->IsA(tag_set_Anarchy) )		pElement->Retrieve(i_Anarchy);
+	if( pElement->IsA(tag_set_KickOnBan) )		pElement->Retrieve(i_KickOnBan);
+	if( pElement->IsA(tag_set_Restricted) )		pElement->Retrieve(i_Restricted);
+	if( pElement->IsA(tag_set_Join) )		pElement->Retrieve(i_Join);
+	if( pElement->IsA(tag_set_Revenge) )		pElement->Retrieve(i_Revenge);
+	if( pElement->IsA(tag_Forbidden) )		pElement->Retrieve(i_Forbidden);
+	if( pElement->IsA(tag_lock_Mlock_On) )		pElement->Retrieve(l_Mlock_On);
+	if( pElement->IsA(tag_lock_Mlock_Off) )		pElement->Retrieve(l_Mlock_Off);
+	if( pElement->IsA(tag_lock_Bantime) )		pElement->Retrieve(l_Bantime);
+	if( pElement->IsA(tag_lock_Parttime) )		pElement->Retrieve(l_Parttime);
+	if( pElement->IsA(tag_lock_KeepTopic) )		pElement->Retrieve(l_Keeptopic);
+	if( pElement->IsA(tag_lock_TopicLock) )		pElement->Retrieve(l_Topiclock);
+	if( pElement->IsA(tag_lock_Private) )		pElement->Retrieve(l_Private);
+	if( pElement->IsA(tag_lock_SecureOps) )		pElement->Retrieve(l_Secureops);
+	if( pElement->IsA(tag_lock_Secure) )		pElement->Retrieve(l_Secure);
+	if( pElement->IsA(tag_lock_NoExpire) )		pElement->Retrieve(l_NoExpire);
+	if( pElement->IsA(tag_lock_Anarchy) )		pElement->Retrieve(l_Anarchy);
+	if( pElement->IsA(tag_lock_KickOnBan) )		pElement->Retrieve(l_KickOnBan);
+	if( pElement->IsA(tag_lock_Restricted) )	pElement->Retrieve(l_Restricted);
+	if( pElement->IsA(tag_lock_Join) )		pElement->Retrieve(l_Join);
+	if( pElement->IsA(tag_lock_Revenge) )		pElement->Retrieve(l_Revenge);
+	if( pElement->IsA(tag_Suspend_By) )		pElement->Retrieve(i_Suspend_By);
+	if( pElement->IsA(tag_Suspend_Time) )		pElement->Retrieve(i_Suspend_Time);
+
+/* Ungod; here is where i need to load a subclass
+
+    if( pElement->IsA(tag_Level) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_level.insert(tmp);
+    } */
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
+    }
+}
+
+void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    set<entlist_val_t<long> >::const_iterator j;
+    set<entlist_val_t<mstring> >::const_iterator k;
+    entlist_ci l;
+
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_Chan_Stored_t, attribs);
+
+	pOut->WriteElement(tag_Name, i_Name);
+	pOut->WriteElement(tag_RegTime, i_RegTime);
+	pOut->WriteElement(tag_LastUsed, i_LastUsed);
+	pOut->WriteElement(tag_Founder, i_Founder);
+	pOut->WriteElement(tag_CoFounder, i_CoFounder);
+	pOut->WriteElement(tag_Description, i_Description);
+	pOut->WriteElement(tag_Password, i_Password);
+	pOut->WriteElement(tag_Email, i_Email);
+	pOut->WriteElement(tag_URL, i_URL);
+	pOut->WriteElement(tag_Comment, i_Comment);
+	pOut->WriteElement(tag_Topic, i_Topic);
+	pOut->WriteElement(tag_Topic_Setter, i_Topic_Setter);
+	pOut->WriteElement(tag_Topic_Set_Time, i_Topic_Set_Time);
+	pOut->WriteElement(tag_set_Mlock_On, i_Mlock_On);
+	pOut->WriteElement(tag_set_Mlock_Off, i_Mlock_Off);
+	pOut->WriteElement(tag_set_Mlock_Key, i_Mlock_Key);
+	pOut->WriteElement(tag_set_Mlock_Limit, i_Mlock_Limit);
+	pOut->WriteElement(tag_set_Bantime, i_Bantime);
+	pOut->WriteElement(tag_set_Parttime, i_Parttime);
+	pOut->WriteElement(tag_set_KeepTopic, i_Keeptopic);
+	pOut->WriteElement(tag_set_TopicLock, i_Topiclock);
+	pOut->WriteElement(tag_set_Private, i_Private);
+	pOut->WriteElement(tag_set_SecureOps, i_Secureops);
+	pOut->WriteElement(tag_set_Secure, i_Secure);
+	pOut->WriteElement(tag_set_NoExpire, i_NoExpire);
+	pOut->WriteElement(tag_set_Anarchy, i_Anarchy);
+	pOut->WriteElement(tag_set_KickOnBan, i_KickOnBan);
+	pOut->WriteElement(tag_set_Restricted, i_Restricted);
+	pOut->WriteElement(tag_set_Join, i_Join);
+	pOut->WriteElement(tag_set_Revenge, i_Revenge);
+	pOut->WriteElement(tag_Forbidden, i_Forbidden);
+	pOut->WriteElement(tag_lock_Mlock_On, l_Mlock_On);
+	pOut->WriteElement(tag_lock_Mlock_Off, l_Mlock_Off);
+	pOut->WriteElement(tag_lock_Bantime, l_Bantime);
+	pOut->WriteElement(tag_lock_Parttime, l_Parttime);
+	pOut->WriteElement(tag_lock_KeepTopic, l_Keeptopic);
+	pOut->WriteElement(tag_lock_TopicLock, l_Topiclock);
+	pOut->WriteElement(tag_lock_Private, l_Private);
+	pOut->WriteElement(tag_lock_SecureOps, l_Secureops);
+	pOut->WriteElement(tag_lock_Secure, l_Secure);
+	pOut->WriteElement(tag_lock_NoExpire, l_NoExpire);
+	pOut->WriteElement(tag_lock_Anarchy, l_Anarchy);
+	pOut->WriteElement(tag_lock_KickOnBan, l_KickOnBan);
+	pOut->WriteElement(tag_lock_Restricted, l_Restricted);
+	pOut->WriteElement(tag_lock_Join, l_Join);
+	pOut->WriteElement(tag_lock_Revenge, l_Revenge);
+	pOut->WriteElement(tag_Suspend_By, i_Suspend_By);
+	pOut->WriteElement(tag_Suspend_Time, i_Suspend_Time);
+
+/* Ungod; here is where i need to save a subclass
+
+	for(j=i_level.begin(); j!=i_level.end(); j++)
+	{
+	    pOut->WriteElement(tag_Level, *j);
+	} */
+
+        map<mstring,mstring>::const_iterator iter;
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+        {
+            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+        }
+
+	pOut->EndObject(tag_Chan_Stored_t);
+}
+
 
 
 // --------- end of Chan_Stored_t ---------------------------------

@@ -18,7 +18,17 @@ interface IDataOutput :
 IFilePointer<T> {
 	// add more simple type writers here
 
+	inline void WriteElement(Tag& t, bool val) {
+		Indent();
+		fprintf(FP(), "<%s>%d</%s>\n", t.ch, val, t.ch);
+	}
+
 	inline void WriteElement(Tag& t, int val) {
+		Indent();
+		fprintf(FP(), "<%s>%d</%s>\n", t.ch, val, t.ch);
+	}
+
+	inline void WriteElement(Tag& t, long val) {
 		Indent();
 		fprintf(FP(), "<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
@@ -26,6 +36,16 @@ IFilePointer<T> {
 	inline void WriteElement(Tag& t, double val) {
 		Indent();
 		fprintf(FP(), "<%s>%g</%s>\n", t.ch, val, t.ch);
+	}
+
+	inline void WriteElement(Tag& t, unsigned int val) {
+		Indent();
+		fprintf(FP(), "<%s>%u</%s>\n", t.ch, val, t.ch);
+	}
+
+	inline void WriteElement(Tag& t, unsigned long val) {
+		Indent();
+		fprintf(FP(), "<%s>%u</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, string val) {
@@ -58,12 +78,28 @@ IFilePointer<T> {
 template<class T>
 interface IDataInput:
 IData<T> {
+	inline void Retrieve(bool& val) {
+		val = atoi(Data());
+	}
+
 	inline void Retrieve(int& val) {
+		val = atoi(Data());
+	}
+
+	inline void Retrieve(long& val) {
 		val = atol(Data());
 	}
 
 	inline void Retrieve(double& val) {
 		val = atof(Data());
+	}
+
+	inline void Retrieve(unsigned int& val) {
+		val = atoi(Data()) - (unsigned int) 0;
+	}
+
+	inline void Retrieve(unsigned long& val) {
+		val = atol(Data()) - (unsigned long) 0;
 	}
 
 	inline void Retrieve(string& val) {

@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/05/08 14:42:01  prez
+** More on xmlisation of nickserv and chanserv
+**
 ** Revision 1.59  2000/05/01 03:11:39  ungod
 ** xmlisation of entlist_t done
 **
@@ -104,6 +107,9 @@ class entlist_t : public mUserDef, public SXP::IPersistObj
     mstring i_Entry;
     mDateTime i_Last_Modify_Time;
     mstring i_Last_Modifier;
+
+    static SXP::Tag tag_entlist_t, tag_Entry, tag_Last_Modify_Time,
+	tag_Last_Modifier, tag_UserDef;
 public:
     entlist_t () {}
     entlist_t (const entlist_t& in) { *this = in; }
@@ -119,11 +125,9 @@ public:
     mstring Entry()const		{ return i_Entry; }
     mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
     mstring Last_Modifier()const	{ return i_Last_Modifier; }
+
     // XML handling section
-	static SXP::Tag tag_Entry, tag_Last_Modify_Time, tag_Last_Modifier;
-	static SXP::Tag tag_UserDef;
-	static SXP::Tag tag_entlist_t;
-	SXP::Tag& GetClassTag() const { return tag_entlist_t; }
+    SXP::Tag& GetClassTag() const { return tag_entlist_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);

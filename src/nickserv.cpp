@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/05/08 14:42:02  prez
+** More on xmlisation of nickserv and chanserv
+**
 ** Revision 1.83  2000/05/03 14:12:23  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -3202,6 +3205,153 @@ wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out)
     return in;
 }
 
+
+SXP::Tag Nick_Stored_t::tag_Nick_Stored_t("Nick_Stored_t");
+SXP::Tag Nick_Stored_t::tag_Name("Name");
+SXP::Tag Nick_Stored_t::tag_RegTime("Reg Time");
+SXP::Tag Nick_Stored_t::tag_Password("Password");
+SXP::Tag Nick_Stored_t::tag_Email("E-Mail");
+SXP::Tag Nick_Stored_t::tag_URL("URL");
+SXP::Tag Nick_Stored_t::tag_ICQ("ICQ");
+SXP::Tag Nick_Stored_t::tag_Description("Description");
+SXP::Tag Nick_Stored_t::tag_Comment("Comment");
+SXP::Tag Nick_Stored_t::tag_Host("Host");
+SXP::Tag Nick_Stored_t::tag_set_Protect("SET Protect");
+SXP::Tag Nick_Stored_t::tag_set_Secure("SET Secure");
+SXP::Tag Nick_Stored_t::tag_set_NoExpire("SET NoExpire");
+SXP::Tag Nick_Stored_t::tag_set_NoMemo("SET NoMemo");
+SXP::Tag Nick_Stored_t::tag_set_Private("SET Private");
+SXP::Tag Nick_Stored_t::tag_set_PRIVMSG("SET PRIVMSG");
+SXP::Tag Nick_Stored_t::tag_set_Language("SET Language");
+SXP::Tag Nick_Stored_t::tag_Forbidden("Forbidden");
+SXP::Tag Nick_Stored_t::tag_lock_Protect("LOCK Protect");
+SXP::Tag Nick_Stored_t::tag_lock_Secure("LOCK Secure");
+SXP::Tag Nick_Stored_t::tag_lock_NoExpire("LOCK NoExpire");
+SXP::Tag Nick_Stored_t::tag_lock_NoMemo("LOCK NoMemo");
+SXP::Tag Nick_Stored_t::tag_lock_Private("LOCK Private");
+SXP::Tag Nick_Stored_t::tag_lock_PRIVMSG("LOCK PRIVMSG");
+SXP::Tag Nick_Stored_t::tag_lock_Language("LOCK Language");
+SXP::Tag Nick_Stored_t::tag_Picture("Picture");
+SXP::Tag Nick_Stored_t::tag_Suspend_By("Suspend By");
+SXP::Tag Nick_Stored_t::tag_Suspend_Time("Suspend Time");
+SXP::Tag Nick_Stored_t::tag_LastSeenTime("Last Seen Time");
+SXP::Tag Nick_Stored_t::tag_LastRealName("Last Real Name");
+SXP::Tag Nick_Stored_t::tag_LastMask("Last Mask");
+SXP::Tag Nick_Stored_t::tag_LastQuit("Last Quit");
+SXP::Tag Nick_Stored_t::tag_Access("Access");
+SXP::Tag Nick_Stored_t::tag_Ignore("Ignore");
+SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
+
+void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
+	if( pElement->IsA(tag_RegTime) )	pElement->Retrieve(i_RegTime);
+	if( pElement->IsA(tag_Password) )	pElement->Retrieve(i_Password);
+	if( pElement->IsA(tag_Email) )		pElement->Retrieve(i_Email);
+	if( pElement->IsA(tag_URL) )		pElement->Retrieve(i_URL);
+	if( pElement->IsA(tag_ICQ) )		pElement->Retrieve(i_ICQ);
+	if( pElement->IsA(tag_Description) )	pElement->Retrieve(i_Description);
+	if( pElement->IsA(tag_Comment) )	pElement->Retrieve(i_Comment);
+	if( pElement->IsA(tag_Host) )		pElement->Retrieve(i_Host);
+	if( pElement->IsA(tag_set_Protect) )	pElement->Retrieve(i_Protect);
+	if( pElement->IsA(tag_set_Secure) )	pElement->Retrieve(i_Secure);
+	if( pElement->IsA(tag_set_NoExpire) )	pElement->Retrieve(i_NoExpire);
+	if( pElement->IsA(tag_set_NoMemo) )	pElement->Retrieve(i_NoMemo);
+	if( pElement->IsA(tag_set_Private) )	pElement->Retrieve(i_Private);
+	if( pElement->IsA(tag_set_PRIVMSG) )	pElement->Retrieve(i_PRIVMSG);
+	if( pElement->IsA(tag_set_Language) )	pElement->Retrieve(i_Language);
+	if( pElement->IsA(tag_Forbidden) )	pElement->Retrieve(i_Forbidden);
+	if( pElement->IsA(tag_lock_Protect) )	pElement->Retrieve(l_Protect);
+	if( pElement->IsA(tag_lock_Secure) )	pElement->Retrieve(l_Secure);
+	if( pElement->IsA(tag_lock_NoExpire) )	pElement->Retrieve(l_NoExpire);
+	if( pElement->IsA(tag_lock_NoMemo) )	pElement->Retrieve(l_NoMemo);
+	if( pElement->IsA(tag_lock_Private) )	pElement->Retrieve(l_Private);
+	if( pElement->IsA(tag_lock_PRIVMSG) )	pElement->Retrieve(l_PRIVMSG);
+	if( pElement->IsA(tag_lock_Language) )	pElement->Retrieve(l_Language);
+	if( pElement->IsA(tag_Picture) )	pElement->Retrieve(i_Picture);
+	if( pElement->IsA(tag_Suspend_By) )	pElement->Retrieve(i_Suspend_By);
+	if( pElement->IsA(tag_Suspend_Time) )	pElement->Retrieve(i_Suspend_Time);
+	if( pElement->IsA(tag_LastSeenTime) )	pElement->Retrieve(i_LastSeenTime);
+	if( pElement->IsA(tag_LastRealName) )	pElement->Retrieve(i_LastRealName);
+	if( pElement->IsA(tag_LastMask) )	pElement->Retrieve(i_LastMask);
+	if( pElement->IsA(tag_LastQuit) )	pElement->Retrieve(i_LastQuit);
+
+    if( pElement->IsA(tag_Access) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_access.insert(tmp);
+    }
+    if( pElement->IsA(tag_Ignore) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_ignore.insert(tmp);
+    }
+    if( pElement->IsA(tag_UserDef) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
+    }
+}
+
+void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_Nick_Stored_t, attribs);
+
+	pOut->WriteElement(tag_Name, i_Name);
+	pOut->WriteElement(tag_RegTime, i_RegTime);
+	pOut->WriteElement(tag_Password, i_Password);
+	pOut->WriteElement(tag_Email, i_Email);
+	pOut->WriteElement(tag_URL, i_URL);
+	pOut->WriteElement(tag_ICQ, i_ICQ);
+	pOut->WriteElement(tag_Description, i_Description);
+	pOut->WriteElement(tag_Comment, i_Comment);
+	pOut->WriteElement(tag_Host, i_Host);
+	pOut->WriteElement(tag_set_Protect, i_Protect);
+	pOut->WriteElement(tag_set_Secure, i_Secure);
+	pOut->WriteElement(tag_set_NoExpire, i_NoExpire);
+	pOut->WriteElement(tag_set_NoMemo, i_NoMemo);
+	pOut->WriteElement(tag_set_Private, i_Private);
+	pOut->WriteElement(tag_set_PRIVMSG, i_PRIVMSG);
+	pOut->WriteElement(tag_set_Language, i_Language);
+	pOut->WriteElement(tag_Forbidden, i_Forbidden);
+	pOut->WriteElement(tag_lock_Protect, l_Protect);
+	pOut->WriteElement(tag_lock_Secure, l_Secure);
+	pOut->WriteElement(tag_lock_NoExpire, l_NoExpire);
+	pOut->WriteElement(tag_lock_NoMemo, l_NoMemo);
+	pOut->WriteElement(tag_lock_Private, l_Private);
+	pOut->WriteElement(tag_lock_PRIVMSG, l_PRIVMSG);
+	pOut->WriteElement(tag_lock_Language, l_Language);
+	pOut->WriteElement(tag_Picture, i_Picture);
+	pOut->WriteElement(tag_Suspend_By, i_Suspend_By);
+	pOut->WriteElement(tag_Suspend_Time, i_Suspend_Time);
+	pOut->WriteElement(tag_LastSeenTime, i_LastSeenTime);
+	pOut->WriteElement(tag_LastRealName, i_LastRealName);
+	pOut->WriteElement(tag_LastMask, i_LastMask);
+	pOut->WriteElement(tag_LastQuit, i_LastQuit);
+
+	set<mstring>::const_iterator iter2;
+	for(iter2=i_access.begin(); iter2!=i_access.end(); iter2++)
+	{
+	    pOut->WriteElement(tag_Access, *iter2);
+	}	
+	for(iter2=i_ignore.begin(); iter2!=i_ignore.end(); iter2++)
+	{
+	    pOut->WriteElement(tag_Ignore, *iter2);
+	}	
+
+        map<mstring,mstring>::const_iterator iter;
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+        {
+            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+        }
+
+	pOut->EndObject(tag_Nick_Stored_t);
+}
 
 // =======================================================================
 
