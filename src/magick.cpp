@@ -542,6 +542,7 @@ int Magick::doparamparse()
 		--gmt X		-g
 		--save X	-s	--update
 		--help		-?
+		--keyfile	-k
 	    */
 
 	    bool ArgUsed=false;
@@ -694,6 +695,19 @@ bool Magick::paramlong(mstring first, mstring second)
 	config.cycletime=atoi(second.c_str());
 	RET(true);
     }
+    else if(first=="--keyfile")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--keyfile");
+	}
+	if(!wxFile::Exists(second.c_str()))
+	{
+	    wxLogFatal("--keyfile: keyfile doesn't exist");
+	}
+	files.keyfile=second;
+	RET(true);
+    }
     else
     {
    	wxLogError("Unknown option %s, ignoring.",first.c_str());
@@ -785,6 +799,13 @@ bool Magick::paramshort(mstring first, mstring second)
 	    else
 		ArgUsed = paramlong ("--save", second);
 	}
+	else if(first[i]=='k')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--keyfile", second);
+	}
 	else
 	{
 	    wxLogError("Unknown option -%c, ignoring.",first[i]);
@@ -833,6 +854,7 @@ bool Magick::check_config()
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [ChanServ] PASSFAIL < 1.");
     }
+    // todo check if the keyfile exists and load in the encryption/decryption password
     RET(true);
 
 }
@@ -897,6 +919,7 @@ void Magick::get_config_values()
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"LANGUAGE",&files.language,"english");
     in.Read(ts_Files+"COMMANDS",&files.commands,"default");
+    in.Read(ts_Files+"MAIN_DB",&files.main_db,"magick.mnd");
     in.Read(ts_Files+"LINK_DB",&files.link_db,"link.db");
     in.Read(ts_Files+"NICK_DB",&files.nick_db,"nick.db");
     in.Read(ts_Files+"CHAN_DB",&files.chan_db,"chan.db");
@@ -908,6 +931,7 @@ void Magick::get_config_values()
     in.Read(ts_Files+"COMM_DB",&files.comm_db,"comm.db");
     in.Read(ts_Files+"MSGS_DB",&files.msgs_db,"msgs.db");
     in.Read(ts_Files+"COMPRESSION",&files.compression,true);
+    in.Read(ts_Files+"KEYFILE",&files.keyfile,"");
 
     in.Read(ts_Config+"SERVER_RELINK",&config.server_relink,5);
     in.Read(ts_Config+"CYCLETIME",&config.cycletime,300);
@@ -1148,9 +1172,59 @@ Magick::~Magick()
 void Magick::load_databases()
 {
     // to buggered to think about it tonight, maybe tommorow night.
+    // files.Main_DB() == output filename
+    // todo: mlock the load/save structures.
+
+    // the below is megaly fucked up, need to do load from file to memory stream, 
+    // then pass that stream on down to the load_database code
+    wxMemoryStream chanservstrm;
+    wxInputStream *strm=create_input_stream(chanservstrm);
+    chanserv.load_database(*strm);
+    destroy_input_stream();
 }
 
 void Magick::save_databases()
 {
     // to buggered to think about it tonight, maybe tommorow night.
+}
+
+wxInputStream *Magick::create_input_stream(wxMemoryStream &in)
+{
+    wxInputStream *Result=&in;
+    if(files.Password()!="")
+    {
+	cstrm=new mDecryptStream(*Result,files.Password());
+	Result=cstrm;
+    }
+    else
+	cstrm=NULL;
+    if(files.Compression())
+    {
+	zstrm=new wxZlibInputStream(*Result);
+	Result=zstrm;
+    }
+    else
+	zstrm=NULL;
+    return Result;
+}
+
+void Magick::destroy_input_stream()
+{
+    if(zstrm!=NULL)
+    {
+	delete zstrm;
+	zstrm=NULL;
+    }
+    if(cstrm!=NULL)
+    {
+	delete cstrm;
+	cstrm=NULL;
+    }
+}
+wxOutputStream *Magick::create_output_stream(wxMemoryStream &out)
+{
+    return NULL;
+}
+void Magick::destroy_output_stream()
+{
 }

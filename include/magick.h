@@ -29,6 +29,7 @@
 #include "variant.h"
 #include "version.h"
 #include "log.h"
+#include "cryptstream.h"
 
 const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;
@@ -59,6 +60,14 @@ private:
 
 	bool messages;		// Wether to process /MSG, /NOTICE.
 	bool automation;	// Wether to do automatic tasks.
+
+	// loading and saving internal stuff
+	wxInputStream *create_input_stream(wxMemoryStream &in);
+	void destroy_input_stream();
+	wxOutputStream *create_output_stream(wxMemoryStream &out);
+	void destroy_output_stream();
+        wxZlibInputStream *zstrm;
+	mDecryptStream *cstrm;
 
 
 public:
@@ -115,6 +124,8 @@ public:
 		mstring comm_db;
 		mstring msgs_db;
 		bool compression;
+		mstring keyfile;
+		mstring password;
 	public:
 		mstring Pidfile()const	{ return pidfile; }
 		mstring Logfile()const	{ return logfile; }
@@ -133,6 +144,8 @@ public:
 		mstring Msgs_DB()const	{ return msgs_db; }
 		mstring Main_DB()const	{ return main_db; }
 		bool Compression()const	{ return compression; }
+		mstring KeyFile()const	{ return keyfile; }
+		mstring Password()const { return password; }
 	} files;
 
 	class config_t{
