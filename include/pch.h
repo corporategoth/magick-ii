@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/05/28 05:20:46  prez
+** More stuff ..
+**
 ** Revision 1.19  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -100,6 +103,7 @@
 #ifdef STDC_HEADERS
 #  include <stdlib.h>
 #  include <stdarg.h>
+#  include <string.h>
 #endif
 
 #ifdef WIN32
@@ -175,6 +179,11 @@
 #  include <queue.h>
 #else
 #  include <queue>
+#endif
+#ifdef HAVE_STACK_H
+#  include <stack.h>
+#else
+#  include <stack>
 #endif
 #ifdef HAVE_SET_H
 #  include <set.h>

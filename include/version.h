@@ -25,6 +25,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2000/05/28 05:20:46  prez
+** More stuff ..
+**
 ** Revision 1.94  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -74,7 +77,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 7;
+const int BUILD_NUMBER = 9;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 

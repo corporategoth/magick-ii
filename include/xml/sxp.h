@@ -15,6 +15,7 @@
 #if !defined(__SXP__H)
 #define __SXP__H
 static const char *ident_sxp_h = "@(#) $Id$";
+#include "pch.h"
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -24,6 +25,9 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/05/28 05:20:46  prez
+** More stuff ..
+**
 ** Revision 1.4  2000/05/20 00:08:01  ungod
 ** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
 **
@@ -106,22 +110,6 @@ static const char *ident_sxp_h = "@(#) $Id$";
 #	define	STD
 #	define	SXP
 #endif /* !HAVE_NAMESPACES */
-
-
-// STL
-#include <stack>
-#include <string>
-#include <list>
-#include <map>
-
-// atol, ltoa etc.
-#include <stdlib.h>
-
-// fopen, fread, fprintf
-#include <stdio.h>
-
-// strcmp :-/
-#include <string.h>
 
 SXP_NS_BEGIN
 
