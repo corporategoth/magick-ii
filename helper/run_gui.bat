@@ -16,7 +16,7 @@ REM
 REM Otherwise, run in local mode, its much nicer :)
 REM
 :have_java
-java -jar mct.jar
+java -jar mct.jar %*
 goto end
 
 REM
