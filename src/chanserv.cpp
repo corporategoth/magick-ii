@@ -50,7 +50,7 @@ void *chanserv_thread_handler(void *level)
 	    if(ilevel==highestlevel)
 	    {
 		// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
-		if(MagickObject->chanserv.inputbuffer.size()<(highestlevel-1)*MagickObject->chanserv.msg_thresh+MagickObject->chanserv.msg_thresh/2)
+		if(MagickObject->chanserv.inputbuffer.size()<(highestlevel-1)*MagickObject->high_water_mark+MagickObject->low_water_mark)
 		{
 		    if(highestlevel!=0)
 		    {
@@ -81,7 +81,7 @@ void ChanServ::push_message(const mstring& servicename, const mstring& message)
     inputbuffer.push_back(dummyvar);
     // put this here in case the processing loop get's hung up, it just *shrugs* and 
     // starts up another when the threshhold gets hit
-    if(inputbuffer.size()>highestlevel*msg_thresh)
+    if(inputbuffer.size()>highestlevel*MagickObject->high_water_mark)
         ACE_Thread::spawn(chanserv_thread_handler,(void *)(highestlevel+1));
 }
 

@@ -57,7 +57,10 @@ private:
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
 	SignalHandler *signalhandler;
+	IrcSvcHandler *ircsvchandler;
 public:
+	int high_water_mark;
+	int low_water_mark;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
 	void get_config_values();

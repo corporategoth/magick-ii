@@ -28,6 +28,8 @@ Magick::Magick(int inargc, char **inargv)
     config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
+    low_water_mark=100;
+    high_water_mark=200;
 }
 
 int Magick::Start()
@@ -168,6 +170,21 @@ int Magick::Start()
     signalhandler=new SignalHandler;
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
+#ifdef SIGPIPE
+    ACE_Reactor::instance()->register_handler(SIGPIPE,signalhandler);
+#endif
+#ifdef SIGQUIT
+    ACE_Reactor::instance()->register_handler(SIGQUIT,signalhandler);
+#endif
+    ACE_Reactor::instance()->register_handler(SIGSEGV,signalhandler);
+#ifdef SIGBUS
+    ACE_Reactor::instance()->register_handler(SIGBUS,signalhandler);
+#endif
+#ifdef SIGHUP
+    ACE_Reactor::instance()->register_handler(SIGHUP,signalhandler);
+#endif
+
+    // etc.
 
     // calibrate the threshholds.
     //
@@ -179,12 +196,23 @@ int Magick::Start()
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
-    //tobe changed to
+    //this little piece of code creates the actual connection from magick
+    // to the irc server and sets up the socket handler that receives
+    // incoming data and pushes it out to the appropriate service.
 
     ACE_INET_Addr addr(remote_port,remote_server);
     IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-    //server.connect(??,addr);
+    ircsvchandler=new IrcSvcHandler;
+    if(server.connect(ircsvchandler,addr)==-1)
+    {
+	//okay we got a connection problem here. log it and shutdown
+	RET(MAGICK_RET_TERMINATE);
+    }
     
+    // next thing to be done here is set up a connector mechanism to listen
+    // for incoming "magickgui" connections and handle them.
+
+
     // not so temporary event handling mechanism
     while(shutdown!=true)
 	ACE_Reactor::instance()->handle_events();
@@ -249,7 +277,6 @@ void Magick::LoadInternalMessages()
     /* note left side of message can have spaces before '=' that will be trimmed
 	right side will *not* be trimmed*/
 
-    //ACE_Thread_Mutex_Guard guard(mutex);
     WLOCK lock("Magick","LoadMessages");
     // so that the language file strings are only loaded in memory while this function is in effect.
 #include "language.h"
@@ -689,28 +716,23 @@ void Magick::get_config_values()
     // do we need the below anymore?
     in.Read(ts_Chanserv+"AKick_Max",&chanserv.akick_max,32);
     in.Read(ts_Chanserv+"Def_AKick_Reason",&chanserv.def_akick_reason,"You have been banned from the channel");
-    in.Read(ts_Chanserv+"Msg_Threshhold",&chanserv.msg_thresh,150);
 
     //in.Read(ts_Nickserv+"Nick_Expire",&nickserv.nick_expire,28);
     //in.Read(ts_Nickserv+"Release_Timeout",&nickserv.release_timeout,60);
     //in.Read(ts_Nickserv+"Wait_Collide",&nickserv.wait_collide,0);
     //in.Read(ts_Nickserv+"Passfail_Max",&nickserv.passfail_max,5);
-    //in.Read(ts_Nickserv+"Msg_Threshhold",&nickserv.msg_thresh,150);
 
     //in.Read(ts_Memoserv+"News_Expire",&memoserv.news_expire,21);
-    //in.Read(ts_Memoserv+"Msg_Threshhold",&memoserv.msg_thresh,150);
 
     //in.Read(ts_Operserv+"Services_Admin",&operserv.services_admin);
     //in.Read(ts_Operserv+"AKill_Expire",&operserv.akill_expire,7);
     //in.Read(ts_Operserv+"Clones_Allowed",&operserv,clones_allowed,2);
     //in.Read(ts_Operserv+"Def_Clone_Reason",&operserv.def_clone_reason,"Exceeded maximum amount of connections from one host.");
-    //in.Read(ts_Operserv+"Msg_Threshhold",&operserv.msg_thresh,150);
 
     //in.Read(ts_DevNull+"Flood_Messages",&devnull.flood_messages,5);
     //in.Read(ts_DevNull+"Flood_Time",&devnull.flood_time,10);
     //in.Read(ts_DevNull+"Ignore_Time",&devnull.ignore_time,20);
     //in.Read(ts_DevNull+"Ignore_Offences",&devnull.ignore_offences,5);
-    //in.Read(ts_DevNull+"Msg_Threshhold",&devnull.msg_thresh,250);
 }
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)

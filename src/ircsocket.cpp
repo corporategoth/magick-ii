@@ -25,8 +25,13 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
     //todo this is the sucker that get's data from the socket, so this is our main routine.
     // might set this up to be an active object here.
-    // char data[512];
-    // peer.recv_n(data,512);
+    char data[512];
+    peer().recv_n(data,512);
+    T_Chatter chatter(T_Chatter::From,mstring("IrcServer :")+mstring(data));
+
+    // okay here's the meat.
+
+
     RET(0);
 }
 
