@@ -70,7 +70,7 @@ cd $servicesdir
 if test -r ${pidfile}; then
   # there is a pid file -- is it current?
   servicespid=`cat ${pidfile}`
-  if `kill -CHLD $servicespid >/dev/null 2>&1`; then
+  if `kill -0 $servicespid >/dev/null 2>&1`; then
     if test 0$savetime -gt 0; then
       # it's still going
       if test -n "`find . -name $dbfile -mmin +$savetime 2>/dev/null`"; then
