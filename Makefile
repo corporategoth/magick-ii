@@ -51,5 +51,5 @@ magick:
 
 clean:
 	@for x in $(SUBDIRS) ./src; \
-	do	$(MAKE) $(PASSTHRU) -C $$x clean; \
+	do	$(MAKE) $(PASSTHRU) -C $$x clean TOPDIR=$(TOPDIR); \
 	done
