@@ -169,6 +169,14 @@ SOURCE=.\include\datetime.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\dccengine.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\dccengine.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\des\des_enc.c
 # End Source File
 # Begin Source File
