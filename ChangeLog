@@ -1,3 +1,19 @@
+* 2002-11-30 00:05  Preston A. Elder <prez@magick.tm>
+  include/magick.h (1.191), src/ircsocket.cpp (1.242), src/magick.cpp
+  (1.380), src/nickserv.cpp (1.224):
+  
+  Some bugfixes, etc.
+
+* 2002-11-25 18:52  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.223), src/operserv.cpp (1.169):
+  
+  Forgot 2 lists with the size checking.
+
+* 2002-11-25 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.59):
+  
+  Created version 2.0s20021125
+
 * 2002-11-23 14:49  Preston A. Elder <prez@magick.tm>
   src/chanserv.cpp (1.313), src/commserv.cpp (1.134), src/memoserv.cpp
   (1.130), src/operserv.cpp (1.168):
