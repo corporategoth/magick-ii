@@ -24,6 +24,10 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/05/09 09:11:59  prez
+** Added XMLisation to non-mapped structures ... still need to
+** do the saving stuff ...
+**
 ** Revision 1.24  2000/04/03 09:45:21  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -51,7 +55,7 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 struct MemoList;
 struct NewsList;
 
-class Memo_t : public mUserDef
+class Memo_t : public mUserDef, public SXP::IPersistObj
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, Memo_t& out);
@@ -64,6 +68,9 @@ class Memo_t : public mUserDef
 
     bool i_Read;
     unsigned long i_File;
+
+    static SXP::Tag tag_Memo_t, tag_Nick, tag_Sender, tag_Time,
+	tag_Text, tag_Read, tag_File, tag_UserDef;
 public:
     Memo_t() {}
     Memo_t(const Memo_t &in) { *this = in; }
@@ -85,9 +92,14 @@ public:
     bool IsRead()const	    { return i_Read; }
     void Read()		    { i_Read = true; }
     void Unread()	    { i_Read = false; }
+
+    SXP::Tag& GetClassTag() const { return tag_Memo_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 
-class News_t : public mUserDef
+class News_t : public mUserDef, public SXP::IPersistObj
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,News_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, News_t& out);
@@ -99,6 +111,9 @@ class News_t : public mUserDef
     mstring i_Text;
     
     set<mstring> i_Read;
+    
+    static SXP::Tag tag_News_t, tag_Channel, tag_Sender, tag_Time,
+	tag_Text, tag_Read, tag_UserDef;
 public:
     News_t() {}
     News_t(const News_t &in) { *this = in; }
@@ -119,6 +134,11 @@ public:
     bool IsRead(mstring name);
     void Read(mstring name);
     void Unread(mstring name);
+
+    SXP::Tag& GetClassTag() const { return tag_News_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 
 // todo: move this over to a ACE_TASK style architecture

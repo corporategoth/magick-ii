@@ -147,7 +147,7 @@ TIMEOUT            =DCC %s aborted (timeout).
 SOCKERR            =DCC %s aborted (socket error %d).
 ABORTED            =DCC %s aborted (internal server error).
 
-LOOKUP_MEMOATTACH  =Memo Attachment %08e belongs to %s, memo #%d (sent by %s, %s ago).
+LOOKUP_MEMOATTACH  =Memo Attachment %08e is %s and belongs to %s, memo #%d (sent by %s, %s ago).
 LOOKUP_PICTURE     =Picture %08e belongs to %s.
 LOOKUP_PUBLIC      =Public file %08e is %s, available for %s.
 NLOOKUP_MEMOATTACH =Memo Attachment %80e does not exist.
@@ -671,12 +671,13 @@ DEFUNCT            =DEFUNCT
 ;
 [COMMSERV_INFO]
 DESCRIPTION        =%s is %s
-HEADCOM            =\     Head: %s
-HEAD               =\     Head: %s
-EMAIL              =\   E-Mail: %s
-URL                =WWW Page: %s
-STATS              =\    Stats: %s
-OPTIONS            =\  Options: %s
+REGISTERED         =Registered: %s
+HEADCOM            =\      Head: %s
+HEAD               =\      Head: %s
+EMAIL              =\    E-Mail: %s
+URL                =\  WWW Page: %s
+STATS              =\     Stats: %s
+OPTIONS            =\   Options: %s
 MEMBERS            =members
 MESSAGES           =messages
 SET_HEAD           =Head

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/05/09 09:11:59  prez
+** Added XMLisation to non-mapped structures ... still need to
+** do the saving stuff ...
+**
 ** Revision 1.41  2000/05/03 14:12:23  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -153,9 +157,9 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE* SEND*", Parent->commserv.ALL_Name(), ServMsg::do_file_Send);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* LOOK*", Parent->commserv.ALL_Name(), ServMsg::do_file_Lookup);
+	    "FILE* LOOK*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* RES*", Parent->commserv.ALL_Name(), ServMsg::do_file_Lookup);
+	    "FILE* RES*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* *", Parent->commserv.OPER_Name() + " " +
@@ -954,8 +958,8 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	    	    if (j->File() == number)
 	    	    {
 			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
-	  			number, j->Nick().c_str(), k, j->Sender().c_str(),
-	  			j->Time().Ago().c_str());
+				number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
+				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
 	  		return;
 	    	    }
 	    	}

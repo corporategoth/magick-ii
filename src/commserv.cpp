@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/05/09 09:11:59  prez
+** Added XMLisation to non-mapped structures ... still need to
+** do the saving stuff ...
+**
 ** Revision 1.50  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -93,6 +97,7 @@ Committee::Committee(mstring name, mstring head, mstring description)
 {
     FT("Committee::Committee", (name, head, description));
     i_Name = name.UpperCase();
+    i_RegTime = Now();
     i_Head = head.LowerCase();
     i_HeadCom = "";
     i_Description = description;
@@ -109,6 +114,7 @@ Committee::Committee(mstring name, Committee *head, mstring description)
 {
     FT("Committee::Committee", (name, "(Committee *) head", description));
     i_Name = name.UpperCase();
+    i_RegTime = Now();
     i_Head = "";
     i_HeadCom = head->Name();
     i_Description = description;
@@ -125,6 +131,7 @@ Committee::Committee(mstring name, mstring description)
 {
     FT("Committee::Committee", (name, description));
     i_Name = name.UpperCase();
+    i_RegTime = Now();
     i_Head = "";
     i_HeadCom = "";
     i_Description = description;
@@ -142,6 +149,7 @@ void Committee::operator=(const Committee &in)
     FT("Committee::operator=", ("(const Committee &) in"));
 
     i_Name = in.i_Name;
+    i_RegTime = in.i_RegTime;
     i_Head = in.i_Head;
     i_HeadCom = in.i_HeadCom;
     i_Description = in.i_Description;
@@ -1006,6 +1014,8 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     Committee *comm = &Parent->commserv.list[committee];
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/DESCRIPTION"),
 		committee.c_str(), comm->Description().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/REGISTERED"),
+    			comm->RegTime().Ago().c_str());
     if (comm->HeadCom() != "")
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/HEADCOM"),
@@ -2277,7 +2287,7 @@ void CommServ::save_database(wxOutputStream& out)
 
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
 {
-    out<<in.i_Name<<in.i_HeadCom<<in.i_Head<<in.i_Description;
+    out<<in.i_Name<<in.i_HeadCom<<in.i_Head<<in.i_Description<<in.i_Email<<in.i_URL;
 
     if (in.i_Name == Parent->commserv.ALL_Name()  ||
 	in.i_Name == Parent->commserv.REGD_Name() ||
@@ -2310,7 +2320,7 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
     entlist_t locent;
     // need to write lock out.
 
-    in>>out.i_Name>>out.i_HeadCom>>out.i_Head>>out.i_Description;
+    in>>out.i_Name>>out.i_HeadCom>>out.i_Head>>out.i_Description>>out.i_Email>>out.i_URL;
 
     in>>locsize;
     out.i_Members.clear();
@@ -2344,4 +2354,70 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
     }
 
     return in;
+}
+
+SXP::Tag Committee::tag_Committee("Committee");
+SXP::Tag Committee::tag_Name("Name");
+SXP::Tag Committee::tag_RegTime("Reg Time");
+SXP::Tag Committee::tag_HeadCom("Head Committee");
+SXP::Tag Committee::tag_Head("Head");
+SXP::Tag Committee::tag_Description("Description");
+SXP::Tag Committee::tag_Email("E-Mail");
+SXP::Tag Committee::tag_URL("URL");
+SXP::Tag Committee::tag_set_OpenMemos("OpenMemos");
+SXP::Tag Committee::tag_set_Private("Private");
+SXP::Tag Committee::tag_set_Secure("Secure");
+SXP::Tag Committee::tag_Members("Members");
+SXP::Tag Committee::tag_Messages("Messages");
+SXP::Tag Committee::tag_UserDef("UserDef");
+
+void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
+	if( pElement->IsA(tag_RegTime) )	pElement->Retrieve(i_RegTime);
+	if( pElement->IsA(tag_HeadCom) )	pElement->Retrieve(i_HeadCom);
+	if( pElement->IsA(tag_Head) )		pElement->Retrieve(i_Head);
+	if( pElement->IsA(tag_Description) )	pElement->Retrieve(i_Description);
+	if( pElement->IsA(tag_Email) )		pElement->Retrieve(i_Email);
+	if( pElement->IsA(tag_URL) )		pElement->Retrieve(i_URL);
+	if( pElement->IsA(tag_set_OpenMemos) )	pElement->Retrieve(i_OpenMemos);
+	if( pElement->IsA(tag_set_Private) )	pElement->Retrieve(i_Private);
+	if( pElement->IsA(tag_set_Secure) )	pElement->Retrieve(i_Secure);
+
+/* Ungod: more entlist lists and sets */
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
+    }
+}
+
+void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_Committee, attribs);
+
+	pOut->WriteElement(tag_Name, i_Name);
+	pOut->WriteElement(tag_RegTime, i_RegTime);
+	pOut->WriteElement(tag_HeadCom, i_HeadCom);
+	pOut->WriteElement(tag_Head, i_Head);
+	pOut->WriteElement(tag_Description, i_Description);
+	pOut->WriteElement(tag_Email, i_Email);
+	pOut->WriteElement(tag_URL, i_URL);
+	pOut->WriteElement(tag_set_OpenMemos, i_OpenMemos);
+	pOut->WriteElement(tag_set_Private, i_Private);
+	pOut->WriteElement(tag_set_Secure, i_Secure);
+
+/* Ungod: more entlist lists and sets */
+
+        map<mstring,mstring>::const_iterator iter;
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+        {
+            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+        }
+
+	pOut->EndObject(tag_Committee);
 }

@@ -24,6 +24,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/05/09 09:11:59  prez
+** Added XMLisation to non-mapped structures ... still need to
+** do the saving stuff ...
+**
 ** Revision 1.26  2000/03/28 09:42:10  prez
 ** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
 ** and NEW/KILL -> ADD/DEL and created a new LIST
@@ -43,11 +47,12 @@ static const char *ident_commserv_h = "@(#) $Id$";
 
 #include "base.h"
 
-class Committee : public mUserDef
+class Committee : public mUserDef, public SXP::IPersistObj
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
     friend wxInputStream &operator>>(wxInputStream& in, Committee& out);
     mstring i_Name;
+    mDateTime i_RegTime;
     mstring i_HeadCom;
     mstring i_Head;
     mstring i_Description;
@@ -63,6 +68,10 @@ class Committee : public mUserDef
     bool l_Secure;
     list<entlist_t> i_Messages;
 
+    static SXP::Tag tag_Committee, tag_Name, tag_HeadCom, tag_Head,
+	tag_Description, tag_Email, tag_URL, tag_set_Private,
+	tag_set_OpenMemos, tag_set_Secure, tag_Members, tag_Messages,
+	tag_UserDef, tag_RegTime;
 public:
     Committee() {}
     Committee(const Committee &in) { *this = in; }
@@ -78,6 +87,7 @@ public:
     	{ return (i_Name < in.i_Name); }
 
     mstring Name()const		{ return i_Name; }
+    mDateTime RegTime()const	{ return i_RegTime; }
     mstring HeadCom()const	{ return i_HeadCom; }
     mstring Head()const		{ return i_Head; }
     mstring Description()const	{ return i_Description; }
@@ -121,6 +131,10 @@ public:
     bool MSG_find(int num);
     entlist_i message;
 
+    SXP::Tag& GetClassTag() const { return tag_Committee; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
 wxInputStream &operator>>(wxInputStream& in, Committee& out);

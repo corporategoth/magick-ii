@@ -2048,7 +2048,8 @@
 03 =::
 04 =::This service allows you to use the following commands:
 05 =::    HELP         CREDITS      CONTRIB      BREAKDOWN
-06 =REGD::    STATS
+06 =:REGD:    FILE
+06 =REGD::    STATS        FILE
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
 09 =::You may also obtain help on the following:
@@ -2123,7 +2124,6 @@
 04 =OPER SOP::services, showing amount of records in existance,
 05 =OPER SOP::and how much memory they take up collectively.
 
-
 [SERVMSG/STATS/ALL]
 01 =OPER SOP::STATS ALL
 02 =OPER SOP::
@@ -2132,6 +2132,79 @@
 05 =OPER SOP::
 06 =OPER SOP::Please see the respective help on each of these commands
 07 =OPER SOP::to see what they do individually.
+
+[SERVMSG/FILE]
+01 =::Services have an internal public file system, that is
+02 =::maintained by Services Operators.  Users may download
+03 =::files from this filesystem via. DCC if they have access
+04 =::to them.
+05 =::
+06 =::You may use the Public FileSystem with these commands:
+07 =::    LIST         SEND
+08 =SOP::As a Services Operator, you may maintain it with:
+09 =SOP::    ADD          DEL          RENAME       SECURE
+10 =SADMIN::    LOOKUP
+
+[SERVMSG/FILE/LIST]
+01 =::FILE LIST [mask [max]]
+02 =::
+03 =::This will list out all files you have available to you,
+04 =::and how big they are in kb.  The names listed are the
+05 =::names you type into the FILE SEND command.
+
+[SERVMSG/FILE/SEND]
+01 =::FILE SEND <filename>
+02 =::
+03 =::This will initiate a DCC SEND from services to you with
+04 =::the filename you have requested, as long as you have
+05 =::permissions to download it.
+
+[SERVMSG/FILE/ADD]
+01 =SOP::FILE ADD [committees]
+02 =SOP::
+03 =SOP::This will initiate a DCC GET from you to services. The
+04 =SOP::file once completed will be added to the public file
+05 =SOP::system as the name it is sent as.  If you specify any
+06 =SOP::committees after the ADD, only people in one of these
+07 =SOP::committees will be able to download the file.
+
+[SERVMSG/FILE/DEL]
+01 =SOP::FILE DEL <filename>
+02 =SOP::
+03 =SOP::This will remove a file from the public file system.
+04 =SOP::This does no checking as to who has access to download
+05 =SOP::the file, and is permanent, so please ensure you type
+06 =SOP::correct filename, and wish to remove that file.
+
+[SERVMSG/FILE/RENAME]
+01 =SOP::FILE RENAME <filename> <new filename>
+02 =SOP::
+03 =SOP::This will rename a file in the file system, without the
+04 =SOP::need to download, delete and re-upload the file.
+
+[SERVMSG/FILE/SECURE]
+01 =SOP::FILE SECURE <filename> [committees]
+02 =SOP::
+03 =SOP::This will reset the security on the file you specify to
+04 =SOP::the committees you specify, if any.  If no committees
+05 =SOP::are specified, then it will reset the security to ALL
+06 =SOP::users.  Once set, only users of the listed committees
+07 =SOP::will be able to download the file specifed.
+
+[SERVMSG/FILE/LOOKUP]
+01 =SADMIN::FILE LIST <type> <hexfile>
+02 =SADMIN::
+03 =SADMIN::This will lookup how and where a raw filename (listed in
+04 =SADMIN::actual directories on Magick's host system) are stored
+05 =SADMIN::in the file system map.  There are three types of files,
+06 =SADMIN::this command recognizes:
+07 =SADMIN::    FileAttach - which will show you the filename, who
+08 =SADMIN::owns the memo the file is attached to, and what number.
+09 =SADMIN::    Picture - which will show you whose picture it is.
+10 =SADMIN::    Public - which will show you the filename, and who
+11 =SADMIN::has privilages to download it.
+12 =SADMIN::The hexfile is the actual name the file is stored as on
+13 =SADMIN::the host system (which is always an 8-digit hex number).
 
 [SERVMSG/TIME]
 01 =::Standard Time Format

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/05/09 09:11:59  prez
+** Added XMLisation to non-mapped structures ... still need to
+** do the saving stuff ...
+**
 ** Revision 1.51  2000/05/03 14:12:23  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -1891,4 +1895,105 @@ wxInputStream &operator>>(wxInputStream& in, News_t& out)
     }
 
     return in;
+}
+
+SXP::Tag Memo_t::tag_Memo_t("Memo_t");
+SXP::Tag Memo_t::tag_Nick("Nick");
+SXP::Tag Memo_t::tag_Sender("Sender");
+SXP::Tag Memo_t::tag_Time("Time");
+SXP::Tag Memo_t::tag_Text("Text");
+SXP::Tag Memo_t::tag_Read("Read");
+SXP::Tag Memo_t::tag_File("File");
+SXP::Tag Memo_t::tag_UserDef("UserDef");
+SXP::Tag News_t::tag_News_t("News_t");
+SXP::Tag News_t::tag_Channel("Channel");
+SXP::Tag News_t::tag_Sender("Sender");
+SXP::Tag News_t::tag_Time("Time");
+SXP::Tag News_t::tag_Text("Text");
+SXP::Tag News_t::tag_Read("Read");
+SXP::Tag News_t::tag_UserDef("UserDef");
+
+void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Nick) )		pElement->Retrieve(i_Nick);
+	if( pElement->IsA(tag_Sender) )		pElement->Retrieve(i_Sender);
+	if( pElement->IsA(tag_Time) )		pElement->Retrieve(i_Time);
+	if( pElement->IsA(tag_Text) )		pElement->Retrieve(i_Text);
+	if( pElement->IsA(tag_Read) )		pElement->Retrieve(i_Read);
+	if( pElement->IsA(tag_File) )		pElement->Retrieve(i_File);
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
+    }
+}
+
+void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_Memo_t, attribs);
+
+	pOut->WriteElement(tag_Nick, i_Nick);
+	pOut->WriteElement(tag_Sender, i_Sender);
+	pOut->WriteElement(tag_Time, i_Time);
+	pOut->WriteElement(tag_Text, i_Text);
+	pOut->WriteElement(tag_Read, i_Read);
+	pOut->WriteElement(tag_File, i_File);
+
+        map<mstring,mstring>::const_iterator iter;
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+        {
+            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+        }
+	pOut->EndObject(tag_Memo_t);
+}
+
+void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Channel) )	pElement->Retrieve(i_Channel);
+	if( pElement->IsA(tag_Sender) )		pElement->Retrieve(i_Sender);
+	if( pElement->IsA(tag_Time) )		pElement->Retrieve(i_Time);
+	if( pElement->IsA(tag_Text) )		pElement->Retrieve(i_Text);
+
+    if( pElement->IsA(tag_Read) )
+    {
+	mstring tmp;
+	pElement->Retrieve(tmp);
+	i_Read.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+        mstring tmp;
+        pElement->Retrieve(tmp);
+        i_UserDef[tmp.Before("\n")]=tmp.After("\n");
+    }
+}
+
+void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_News_t, attribs);
+
+	pOut->WriteElement(tag_Channel, i_Channel);
+	pOut->WriteElement(tag_Sender, i_Sender);
+	pOut->WriteElement(tag_Time, i_Time);
+	pOut->WriteElement(tag_Text, i_Text);
+
+	set<mstring>::iterator iter2;
+	for (iter2=i_Read.begin(); iter2!=i_Read.end(); iter2++)
+	{
+		pOut->WriteElement(tag_Read, *iter2);
+	}
+
+        map<mstring,mstring>::const_iterator iter;
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+        {
+            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+        }
+	pOut->EndObject(tag_News_t);
 }
