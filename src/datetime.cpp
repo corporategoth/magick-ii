@@ -27,6 +27,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/04/13 00:46:38  prez
+** Fixec channel registering
+**
 ** Revision 1.68  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -184,57 +187,57 @@ mDateTime mDateTime::CurrentTime()
 
 mDateTime::mDateTime(const mstring& src, const mDateTimeFlag flag)
 {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
-		"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)"));
+    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
+	"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)"));
 #if 0
-	if(flag==Date)
-		*this=StringToDate(src);
-	else if(flag=Time)
-		*this=StringToTime(src);
-	else if(flag=DateTime)
-		*this=StringToDateTime(src);
+    if(flag==Date)
+	*this=StringToDate(src);
+    else if(flag=Time)
+	*this=StringToTime(src);
+    else if(flag=DateTime)
+	*this=StringToDateTime(src);
 #endif
 }
 
 static mDayTable &GetDayTable(int Year)
 {
-  if((Year % 4 == 0) && ((Year % 100 != 0) || (Year % 400 == 0)))
-	  return DayTable2;
-  else 
-	  return DayTable1;
+    if((Year % 4 == 0) && ((Year % 100 != 0) || (Year % 400 == 0)))
+	return DayTable2;
+    else 
+	return DayTable1;
 }
 
 bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Date)
 {
-  int I;
-  bool Result = false;
-  int tmpDay=Day-1;
+    int I;
+    bool Result = false;
+    int tmpDay=Day-1;
 
-  mDayTable &DayTable = GetDayTable(Year);
-  if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) &&
-    (Day >= 1) && (Day <= DayTable[Month-1]))
-  {
-    for(I = 1; I<Month;I++) 
-		tmpDay+=DayTable[I-1];
-    I = Year - 1;
-    Date.Val = static_cast<double>(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
-    Result = true;
-  }
-  return Result;
+    mDayTable &DayTable = GetDayTable(Year);
+    if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) &&
+	(Day >= 1) && (Day <= DayTable[Month-1]))
+    {
+	for(I = 1; I<Month;I++) 
+	    tmpDay+=DayTable[I-1];
+	I = Year - 1;
+	Date.Val = static_cast<double>(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
+	Result = true;
+    }
+    return Result;
 }
 
 bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime& Time)
 {
-  bool Result = false;
-  if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
-  {
-    Time.Val = (static_cast<double>(Hour) * 3600000.0 +
+    bool Result = false;
+    if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
+    {
+	Time.Val = (static_cast<double>(Hour) * 3600000.0 +
 		static_cast<double>(Min) * 60000.0 +
 		static_cast<double>(Sec) * 1000.0 +
 		static_cast<double>(MSec)) / static_cast<double>(MSecsPerDay);
-    Result = true;
-  }
-  return Result;
+	Result = true;
+    }
+    return Result;
 }
 
 mstring mDateTime::FormatString(const mstring& format)const
@@ -256,233 +259,225 @@ mstring mDateTime::FormatString(const mstring& format)const
 
 	while(i<format.size())
 	{
-		switch(tolower(format[i]))
+	    switch(tolower(format[i]))
+	    {
+	    case 'c':
+		Result += FormatString(ShortDateFormat);
+		break;
+	    case 'd':
+		count=1;
+		while(i+1<format.size()&&tolower(format[i+1])=='d')
 		{
-		case 'c':
-			Result<<FormatString(ShortDateFormat);
-			break;
-		case 'd':
-			count=1;
-			while(i+1<format.size()&&tolower(format[i+1])=='d')
-			{
-				i++;
-				count++;
-			}
-			switch(count)
-			{
-			case 1:
-				Result<<Day;
-				break;
-			case 2:
-				if(Day<10)
-					Result=Result+"0";
-				Result<<Day;
-				break;
-			case 3:
-				Result<<ShortDayNames[DayOfWeek()];
-				break;
-			case 4:
-				Result<<LongDayNames[DayOfWeek()];
-				break;
-			case 5:
-				Result<<FormatString(ShortDateFormat);
-				break;
-			case 6:
-				Result<<FormatString(LongDateFormat);
-				break;
-			default:
-				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str()));
-			};
-			break;
-		case 'm':
-			count=1;
-			while(i+1<format.size()&&tolower(format[i+1])=='m')
-			{
-				i++;
-				count++;
-			}
-			switch(count)
-			{
-			case 1:
-				Result<<Month;
-				break;
-			case 2:
-				if(Month<10)
-					Result=Result+"0";
-				Result<<Month;
-				break;
-			case 3:
-				Result<<ShortMonthNames[Month-1];
-				break;
-			case 4:
-				Result<<LongMonthNames[Month-1];
-				break;
-			default:
-				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str()));
-			}
-			break;
-		case 'y':
-			count=1;
-			while(i+1<format.size()&&tolower(format[i+1])=='y')
-			{
-				i++;
-				count++;
-			}
-			switch(count)
-			{
-			case 2:
-				Result<<Year%100;
-				break;
-			case 4:
-				Result<<Year;
-				break;
-			default:
-				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str()));
-			}
-			break;
-		case 'h':
-			if(i+1<format.size()&&tolower(format[i+1])=='h')
-			{
-				i++;
-				if(ampmtype>0)
-				{
-					if(Hour%12<10)
-						Result=Result+"0";
-				}
-				else
-				{
-					if(Hour<10)
-						Result=Result+"0";
-				}
-
-			}
-			if(ampmtype>0)
-				Result<<Hour%12;
-			else
-				Result<<Hour;
-			break;
-		case 'n':
-			if(i+1<format.size()&&tolower(format[i+1])=='n')
-			{
-				i++;
-				if(Min<10)
-					Result=Result+"0";
-			}
-			Result<<Min;
-			break;
-		case 's':
-			if(i+1<format.size()&&tolower(format[i+1])=='s')
-			{
-				i++;
-				if(Sec<10)
-					Result=Result+"0";
-			}
-			Result<<Sec;
-			break;
-		case 'u':
-			count=1;
-			while(i+1<format.size()&&tolower(format[i+1])=='u')
-			{
-				i++;
-				count++;
-			}
-			switch(count)
-			{
-			case 1:
-				break;
-			case 3:
-				if(MSec<100)
-					Result=Result+"0";
-				if(MSec<10)
-					Result=Result+"0";
-				break;
-			default:
-				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str()));
-			}
-			Result<<MSec;
-			break;
-		case 't':
-			if(i+1<format.size()&&tolower(format[i+1])=='t')
-			{
-				i++;
-				Result=Result+FormatString(LongTimeFormat);
-			}
-			else
-				Result=Result+FormatString(ShortTimeFormat);
-			break;
-		case 'a':
-			if(i+2<format.size()&&format[i+1]=='/'&&tolower(format[i+2])=='p')
-			{
-				//found a/p
-				i=i+2;
-				if(Hour<12)
-					Result=Result+"a";
-				else
-					Result=Result+"p";
-			}
-			else if(i+3<format.size()&&tolower(format[i+1])=='m'&&tolower(format[i+2])=='p'&&tolower(format[i+3])=='m')
-			{
-				//found ampm
-				i=i+3;
-				if(Hour<12)
-					Result=Result+TimeAMString;
-				else
-					Result=Result+TimePMString;
-			}
-			else if(i+4<format.size()&&tolower(format[i+1])=='m'&&format[i+2]=='/'&&tolower(format[i+3])=='p'&&tolower(format[i+4])=='m')
-			{
-				//found am/pm
-				i=i+2;
-				if(Hour<12)
-					Result=Result+"am";
-				else
-					Result=Result+"pm";
-			}
-			else
-			{
-				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					1, format[i], format.c_str()));
-				Result=Result+"a";
-			}
-			break;
-		case '/':
-			Result=Result+DateSeparator;
-			break;
-		case ':':
-			Result=Result+TimeSeparator;
-			break;
-		case '\'':
-			i++;
-			while(i<format.size()&&format[i]!='\'')
-			{
-				Result=Result+mstring(format[i]);
-				i++;
-			}
-			break;
-		case '"':
-			i++;
-			while(i<format.size()&&format[i]!='"')
-			{
-				Result=Result+mstring(format[i]);
-				i++;
-			}
-			break;
-		case ' ':
-		case '.':
-		case '\t':
-		case '\n':
-			Result=Result+mstring(format[i]);
-			break;
+		    i++;
+		    count++;
+		}
+		switch(count)
+		{
+		case 1:
+		    Result += Day;
+		    break;
+		case 2:
+		    if(Day<10)
+			Result += "0";
+		    Result += Day;
+		    break;
+		case 3:
+		    Result += ShortDayNames[DayOfWeek()];
+		    break;
+		case 4:
+		    Result += LongDayNames[DayOfWeek()];
+		    break;
+		case 5:
+		    Result += FormatString(ShortDateFormat);
+		    break;
+		case 6:
+		    Result += FormatString(LongDateFormat);
+		    break;
 		default:
-			LOG((LM_TRACE, Parent->getLogMessage("SYS_ERRORS/NOT_LITERAL"),
-				format[i], format.c_str()));
-			Result=Result+mstring(format[i]);
+		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+			count, format[i], format.c_str()));
 		};
+		break;
+	    case 'm':
+		count=1;
+		while(i+1<format.size()&&tolower(format[i+1])=='m')
+		{
+		    i++;
+		    count++;
+		}
+		switch(count)
+		{
+		case 1:
+		    Result += Month;
+		    break;
+		case 2:
+		    if(Month<10)
+			Result += "0";
+		    Result += Month;
+		    break;
+		case 3:
+		    Result += ShortMonthNames[Month-1];
+		    break;
+		case 4:
+		    Result += LongMonthNames[Month-1];
+		    break;
+		default:
+		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+			count, format[i], format.c_str()));
+		}
+		break;
+	    case 'y':
+		count=1;
+		while(i+1<format.size()&&tolower(format[i+1])=='y')
+		{
+		    i++;
+		    count++;
+		}
+		switch(count)
+		{
+		case 2:
+		    Result += Year%100;
+		    break;
+		case 4:
+		    Result += Year;
+		    break;
+		default:
+		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+			count, format[i], format.c_str()));
+		}
+		break;
+	    case 'h':
+		if(i+1<format.size()&&tolower(format[i+1])=='h')
+		{
+		    i++;
+		    if(ampmtype>0)
+		    {
+			if(Hour%12<10)
+			    Result += "0";
+		    }
+		    else
+		    {
+			if(Hour<10)
+			    Result += "0";
+		    }
+		}
+		if(ampmtype>0)
+		    Result += Hour%12;
+		else
+		    Result += Hour;
+		break;
+	    case 'n':
+		if(i+1<format.size()&&tolower(format[i+1])=='n')
+		{
+		    i++;
+		    if(Min<10)
+			Result += "0";
+		}
+		Result += Min;
+		break;
+	    case 's':
+		if(i+1<format.size()&&tolower(format[i+1])=='s')
+		{
+		    i++;
+		    if(Sec<10)
+			Result += "0";
+		}
+		Result += Sec;
+		break;
+	    case 'u':
+		count=1;
+		while(i+1<format.size()&&tolower(format[i+1])=='u')
+		{
+		    i++;
+		    count++;
+		}
+		switch(count)
+		{
+		case 1:
+		    break;
+		case 3:
+		    if(MSec<100)
+			Result += "0";
+		    if(MSec<10)
+			Result += "0";
+		    break;
+		default:
+		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+			count, format[i], format.c_str()));
+		}
+		Result += MSec;
+		break;
+	    case 't':
+		if(i+1<format.size()&&tolower(format[i+1])=='t')
+		{
+		    i++;
+		    Result += FormatString(LongTimeFormat);
+		}
+		else
+		    Result += FormatString(ShortTimeFormat);
+		break;
+	    case 'a':
+		if(i+2<format.size() && format.substr(i+1, 2).IsSameAs("/p", true))
+		{
+		    //found a/p
+		    i=i+2;
+		    if(Hour<12)
+			Result += "a";
+		    else
+			Result += "p";
+		}
+		else if(i+3<format.size() && format.substr(i+1, 3).IsSameAs("MPM", true))
+		{
+		    //found ampm
+		    i=i+3;
+		    if(Hour<12)
+			Result += TimeAMString;
+		    else
+			Result += TimePMString;
+		}
+		else if(i+4<format.size() && format.substr(i+1, 4).IsSameAs("m/pm", true))
+		{
+		    //found am/pm
+		    i=i+2;
+		    if(Hour<12)
+			Result += "am";
+		    else
+			Result += "pm";
+		}
+		else
+		{
+		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+			1, format[i], format.c_str()));
+		    Result += "a";
+		}
+		break;
+	    case '/':
+		Result += DateSeparator;
+		break;
+	    case ':':
+		Result += TimeSeparator;
+		break;
+	    case '\'':
 		i++;
+		while (i<format.size()&&format[i]!='\'')
+		    Result += format[i++];
+		break;
+	    case '"':
+		i++;
+		while (i<format.size()&&format[i]!='\"')
+		    Result += format[i++];
+	    case ' ':
+	    case '.':
+	    case '\t':
+	    case '\n':
+		Result += format[i];
+		break;
+	    default:
+		LOG((LM_TRACE, Parent->getLogMessage("SYS_ERRORS/NOT_LITERAL"),
+		    format[i], format.c_str()));
+		Result += format[i];
+	    };
+	    i++;
 	}
 	return Result;
 }
@@ -498,8 +493,8 @@ mstring mDateTime::DateTimeString()const
 	if(Hour!=0||Min!=0||Sec!=0||MSec!=0)
 	{
 	    if(!Result.empty())
-			Result<<" ";
-	    Result<<FormatString(LongTimeFormat);
+		Result += " ";
+	    Result += FormatString(LongTimeFormat);
 	}
 
 	return Result;
@@ -530,44 +525,43 @@ int mDateTime::DayOfWeek()const
 
 void mDateTime::DecodeDate(int &year, int &month, int &day)const
 {
-  const int D1 = 365;
-  const int D4 = D1 * 4 + 1;
-  const int D100 = D4 * 25 - 1;
-  const int D400 = D100 * 4 + 1;
-  int NumDays = static_cast<int>(Val);
-  int Y400,Y100,Y4,Y1,Y,M=1;
-  int LeftOver;
+    const int D1 = 365;
+    const int D4 = D1 * 4 + 1;
+    const int D100 = D4 * 25 - 1;
+    const int D400 = D100 * 4 + 1;
+    int NumDays = static_cast<int>(Val);
+    int Y400,Y100,Y4,Y1,Y,M=1;
+    int LeftOver;
 
-  LeftOver=NumDays%D400;
-  Y400=NumDays/D400;
-  NumDays=LeftOver;
+    LeftOver=NumDays%D400;
+    Y400=NumDays/D400;
+    NumDays=LeftOver;
 
-  LeftOver=NumDays%D100;
-  Y100=NumDays/D100;
-  NumDays=LeftOver;
+    LeftOver=NumDays%D100;
+    Y100=NumDays/D100;
+    NumDays=LeftOver;
 
-  LeftOver=NumDays%D4;
-  Y4=NumDays/D4;
-  NumDays=LeftOver;
+    LeftOver=NumDays%D4;
+    Y4=NumDays/D4;
+    NumDays=LeftOver;
   
-  LeftOver=NumDays%D1;
-  Y1=NumDays/D1;
-  NumDays=LeftOver;
+    LeftOver=NumDays%D1;
+    Y1=NumDays/D1;
+    NumDays=LeftOver;
 
-  Y=Y400*400+Y100*100+Y4*4+Y1;
-  year=Y+1900;
+    Y=Y400*400+Y100*100+Y4*4+Y1;
+    year=Y+1900;
 
-  int i=0;
-  mDayTable &DayTable=GetDayTable(year);
-  while(DayTable[i]<NumDays)
-  {
-	  M++;
-	  NumDays-=DayTable[i];
-	  i++;
-  }
-  day=NumDays;
-  month=M;
-
+    int i=0;
+    mDayTable &DayTable=GetDayTable(year);
+    while(DayTable[i]<NumDays)
+    {
+	M++;
+	NumDays-=DayTable[i];
+	i++;
+    }
+    day=NumDays;
+    month=M;
 }
 
 void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const

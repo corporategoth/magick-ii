@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.163  2001/04/13 00:46:38  prez
+** Fixec channel registering
+**
 ** Revision 1.162  2001/04/05 05:59:51  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -5003,7 +5006,7 @@ void Server::parse_S(const mstring &data)
 
 	    if (source.Contains("."))
 	    {
-		mstring chan = params.ExtractWord(2, ": ");
+		mstring chan(params.ExtractWord(2, ": "));
 		WLOCK(("UsingChan", chan.LowerCase()));
 
 		unsigned int i;
@@ -6432,7 +6435,7 @@ void Server::parse_W(const mstring &data)
 		}
 		else
 		{
-		    mstring target = params.ExtractWord(1, ": ");
+		    mstring target(params.ExtractWord(1, ": "));
 		    sraw("401 " + source + " " + target + " :No such nickname/channel.");
 		}
 	    }}

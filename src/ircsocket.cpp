@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.153  2001/04/13 00:46:38  prez
+** Fixec channel registering
+**
 ** Revision 1.152  2001/04/09 07:52:22  prez
 ** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
 **
@@ -659,23 +662,21 @@ mstring Reconnect_Handler::FindNext(const mstring& i_server) {
 
 	if (iter != serverlist.end()) iter++;
 
-	if (iter == serverlist.end()) {
+	if (iter == serverlist.end())
+	{
 	    serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).first+1);
 
-	    if (serverlist.size()) {
+	    if (serverlist.size())
+	    {
 		RET(*serverlist.begin());
-
-	    } else {
-		RET("");
 	    }
-
-	} else {
+	}
+	else
+	{
 	    RET(*iter);
 	}
-
-    } else {
-	RET("");
     }
+    RET("");
 }
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
@@ -875,23 +876,20 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     }
 
     // QUIT all user's who did not come back from SQUIT
-    NickServ::live_t::iterator i;
     vector<mstring> SquitMe;
-    vector<mstring>::iterator k;
+    NickServ::live_t::iterator i;
     { RLOCK(("NickServ", "live"));
     for (i=Parent->nickserv.LiveBegin(); i != Parent->nickserv.LiveEnd(); i++)
     {
 	if (i->second.Squit() == *tmp)
-	{
 	    SquitMe.push_back(i->first);
-	}
     }}
+    vector<mstring>::iterator k;
     for (k=SquitMe.begin(); k != SquitMe.end(); k++)
     {
 	if (Parent->nickserv.IsLiveAll(*k))
 	{
 	    Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
-	    WLOCK(("NickServ", "live"));
 	    Parent->nickserv.RemLive(*k);
 	}
     }

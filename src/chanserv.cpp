@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.236  2001/04/13 00:46:38  prez
+** Fixec channel registering
+**
 ** Revision 1.235  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -6242,8 +6245,9 @@ void ChanServ::do_Register(const mstring &mynick, const mstring &source, const m
     Parent->nickserv.GetLive(source).SetLastChanReg();
     Chan_Stored_t tmp(channel, founder, password, desc);
     tmp.Topic(clive.Topic(), clive.Topic_Setter(), clive.Topic_Set_Time());
+    clive.SendMode(tmp.Mlock());
+    Parent->chanserv.AddStored(&tmp);
     Parent->nickserv.GetLive(source).ChanIdentify(channel, password);
-    clive.SendMode(Parent->chanserv.GetStored(channel).Mlock());
     Parent->chanserv.stats.i_Register++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/REGISTERED"),
 		channel.c_str(), founder.c_str());
