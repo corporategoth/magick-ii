@@ -70,8 +70,7 @@ Trace::Trace()
 }
 
 Trace::~Trace()
-{
-}
+{}
 
 Trace::TraceTypes Trace::resolve(Trace::level_enum level, ThreadID *tid)
 { 
@@ -121,18 +120,18 @@ mstring ThreadID::logname()
 
 void ThreadID::WriteOut(mstring &message)
 {
-	//below for now till i get the operator bool happening.
-	if (out.LastError()!=wxStream_NOERROR) 
-	{
-	    out=wxFileOutputStream(logname());
-	    out.SeekO(0,wxFromEnd);
-	}
-	assert(out.LastError()==wxStream_NOERROR);
-	mstring finalout;
-	for (int i=0; i<indent; i++)
-	    finalout += "  ";
-	finalout += message;
-	out << finalout;
+    //below for now till i get the operator bool happening.
+    if (out.LastError()!=wxStream_NOERROR) 
+    {
+        out=wxFileOutputStream(logname());
+        out.SeekO(0,wxFromEnd);
+    }
+    assert(out.LastError()==wxStream_NOERROR);
+    mstring finalout;
+    for (int i=0; i<indent; i++)
+        finalout += "  ";
+    finalout += message;
+    out << finalout;
 }
 
 // ===================================================
