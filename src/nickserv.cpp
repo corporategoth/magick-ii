@@ -921,13 +921,16 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 	retval = i_Name + "!" + i_user + "@" + i_host;
 	break;
 
-    case N_U_H:		// nick!user@*.host
+    case N_U_H:		// nick!*user@*.host
+	mstring user = i_user;
+	if (user[0u] == '~')
+	    user = user.After("~");
 	if (i_host.IsNumber())
-	    retval = i_Name + "!" + i_user + "@" + i_host.Before(".", 3) + ".*";
+	    retval = i_Name + "!*" + user + "@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains("."))
-	    retval = i_Name + "!" + i_user + "@*." + i_host.After(".");
+	    retval = i_Name + "!*" + user + "@*." + i_host.After(".");
 	else
-	    retval = i_Name + "!" + i_user + "@" + i_host;
+	    retval = i_Name + "!*" + user + "@" + i_host;
 	break;
 
     case N_P_H:		// nick!*@port.host
@@ -947,13 +950,16 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 	retval = "*!" + i_user + "@" + i_host;
 	break;
 
-    case U_H:		// *!user@*.host
+    case U_H:		// *!*user@*.host
+	mstring user = i_user;
+	if (user[0u] == '~')
+	    user = user.After("~");
 	if (i_host.IsNumber())
-	    retval = "*!" + i_user + "@" + i_host.Before(".", 3) + ".*";
+	    retval = "*!*" + user + "@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains("."))
-	    retval = "*!" + i_user + "@*." + i_host.After(".");
+	    retval = "*!*" + user + "@*." + i_host.After(".");
 	else
-	    retval = "*!" + i_user + "@" + i_host;
+	    retval = "*!*" + user + "@" + i_host;
 	break;
 
     case P_H:		// *!*@port.host

@@ -2936,11 +2936,11 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     entlist_ci l;
     out<<in.i_Greet.size();
     for(l=in.i_Greet.begin();l!=in.i_Greet.end();l++)
-	out<<*k;
+	out<<*l;
 
     out<<in.i_Message.size();
     for(l=in.i_Message.begin();l!=in.i_Message.end();l++)
-	out<<*k;
+	out<<*l;
 
     map<mstring,mstring>::iterator i;
     out<<in.i_UserDef.size();

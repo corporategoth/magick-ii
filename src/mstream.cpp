@@ -680,8 +680,8 @@ mstring wxInputStream::ReadString()
     char str[513];
     unsigned long len;
     
-    len = Read32();
     wx_string = "";
+    len = Read32();
     while (len > 512)
     {
 	Read(&str, 512);
@@ -691,6 +691,7 @@ mstring wxInputStream::ReadString()
     }
     Read(&str, len);
     str[len] = 0;
+    wx_string += str;
     
     return wx_string;
 }
@@ -828,7 +829,7 @@ wxOutputStream& wxOutputStream::WriteDouble(double d)
 wxOutputStream& wxOutputStream::WriteString(const mstring& string)
 {
   Write32(string.length());
-  return Write(&string, string.length());
+  return Write(string.c_str(), string.length());
 }
 
 
