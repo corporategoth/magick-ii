@@ -72,7 +72,6 @@ public:
 	Magick(int inargc, char **inargv);
 	int Start();
 
-	IrcSocket serversocket;
 	ChanServ chanserv;
 	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	Bob bob;

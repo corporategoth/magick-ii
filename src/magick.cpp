@@ -11,11 +11,12 @@
 //
 // ===================================================
 
-#include "magick.h"
-#include "log.h"
 #include <iostream>
 #include <strstream>
 using namespace std;
+#include <ace/INET_Addr.h>
+#include "magick.h"
+#include "log.h"
 #include "EscLexer.hpp"
 #include "EscParser.hpp"
 #include "lockable.h"
@@ -168,8 +169,12 @@ int Magick::Start()
 
     // calibrate the threshholds.
     // try and see how many iterations of 500 random NickInfo's into a map occur in 60s
+    
+    //tobe changed to
 
-    serversocket.open(0);
+    ACE_INET_Addr addr(remote_port,remote_server);
+    IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
+    //server.connect(??,addr);
     
     // temporary placeholder
     while(shutdown!=true)

@@ -1,52 +1,22 @@
 #ifndef IRC_SOCKET_H
 #define IRC_SOCKET_H
 
-#include <ace/Task.h>
-#include <ace/Activation_Queue.h>
-#include <ace/Method_Object.h>
+#include <ace/Reactor.h>
+#include <ace/Svc_Handler.h>
+#include <ace/Connector.h>
+#include <ace/Synch.h>
+#include <ace/SOCK_Connector.h>
 #include "mstring.h"
 
 
 // change this shit over to ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR>
-// and make IrcSvcHandler : public ACE_Svc_Handler
-
-class IrcSocket : public ACE_Task<ACE_MT_SYNCH>
+class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
 public:
-    IrcSocket();
-    virtual ~IrcSocket();
-    virtual int open(void *);
-    virtual int close(unsigned long flags = 0);
-    virtual int svc(void);
-
-
-// todo here the socket stuff which basically splits the data off to the appropriate server
-    void process(mstring input);
-    void shutdown();
-
-    void process_i(mstring input);
-private:
-    ACE_Activation_Queue activation_queue;
+    int open(void *);
+    int handle_input(ACE_HANDLE);
 };
 
-class process_MO : public ACE_Method_Object
-{
-public:
-    process_MO(IrcSocket *socket, mstring input);
-    virtual ~process_MO();
-    virtual int call();
-
-private:
-    mstring input_i;
-    IrcSocket *socket_i;
-};
-
-class shutdown_MO : public ACE_Method_Object
-{
-public:
-    shutdown_MO();
-    virtual ~shutdown_MO();
-    virtual int call();
-};
+typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;
 
 #endif
