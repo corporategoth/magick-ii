@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2000/09/05 10:53:07  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.129  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -326,10 +333,12 @@ void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
     FT("Nick_Live_t::InFlight_t::ChgNick", (newnick));
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
     WLOCK2(("NickServ", "live", newnick.LowerCase(), "InFlight"));
+    MCB(nick);
     nick = newnick;
     MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     if (timer)
     {
+	CB(1, timer);
 	mstring *arg = NULL;
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
@@ -340,7 +349,9 @@ void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
 	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
+	CE(1, timer);
     }
+    MCE(nick);
 }
 
 void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
@@ -370,12 +381,15 @@ Nick_Live_t::InFlight_t::~InFlight_t()
 	End(0u);
     mstring *arg = NULL;
     if (timer)
+    {
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
 	    arg != NULL)
 	{
 	    delete arg;
 	}
+	timer = 0;
+    }
 }
 
 
@@ -401,7 +415,9 @@ void Nick_Live_t::InFlight_t::File(unsigned long filenum)
 {
     FT("Nick_Live_t::InFlight_t::File", (filenum));
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "fileinprog"));
+    MCB(fileinprog);
     fileinprog = false;
+    MCE(fileinprog);
     if (filenum)
 	End(filenum);
     else
@@ -415,16 +431,23 @@ void Nick_Live_t::InFlight_t::SetInProg()
 {
     NFT("Nick_Live_t::InFlight_t::SetInProg");
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "fileinprog"));
+    MCB(fileinprog);
     fileinprog = true;
     mstring *arg = NULL;
     MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     if (timer)
+    {
+	CB(1, timer);
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
 	    arg != NULL)
 	{
 	    delete arg;
 	}
+	timer = 0;
+	CE(1, timer);
+    }
+    MCE(fileinprog);
 }
 
 
@@ -503,6 +526,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     }
 
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
+    DumpB();
     type = FileMap::MemoAttach;
     fileattach = file;
     service = mynick;
@@ -514,6 +538,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
+    DumpE();
 
     if (!silent)
     {
@@ -537,19 +562,25 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
 	return;
     }
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "text"));
+    MCB(text);
     text += message;
     mstring *arg = NULL;
     MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     if (timer)
+    {
+	CB(1, timer);
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
 	    arg != NULL)
 	{
 	    delete arg;
 	}
-    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
+	CE(1, timer);
+    }
+    MCE(text);
     send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CONTINUE"),
 	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
 }
@@ -563,12 +594,17 @@ void Nick_Live_t::InFlight_t::Cancel()
     mstring *arg = NULL;
     MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     if (timer)
+    {
+	MCB(timer);
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
 	    arg != NULL)
 	{
 	    delete arg;
 	}
+	timer = 0;
+	MCE(timer);
+    }
     if (Memo() && !File())
     {
 	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
@@ -598,12 +634,17 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	mstring *arg = NULL;
 	MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
 	if (timer)
+	{
+	    MCB(timer);
 	    if (ACE_Reactor::instance()->cancel_timer(timer,
 		(const void **) arg) &&
 		arg != NULL)
 	    {
 		delete arg;
 	    }
+	    timer = 0;
+	    MCE(timer);
+	}
 	RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
 	if (Parent->nickserv.IsStored(sender))
 	{
@@ -819,6 +860,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     }
 
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
+    DumpB();
     type = FileMap::Picture;
     fileattach = true;
     sender = nick;
@@ -828,6 +870,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
+    DumpE();
 
     send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
 }
@@ -868,6 +911,7 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     }
 
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
+    DumpB();
     type = FileMap::Public;
     fileattach = true;
     sender = nick;
@@ -878,6 +922,7 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
+    DumpE();
 
     send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PUB_PENDING"));
 }
@@ -1020,6 +1065,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 	if (IsRecognized() && !Parent->nickserv.stored[i_Name.LowerCase()].Secure())
 	    Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
     }
+    DumpE();
 }
 
 
@@ -1040,6 +1086,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     InFlight.nick = i_Name;
     InFlight.init();
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
+    DumpE();
 }
 
 
@@ -1104,7 +1151,9 @@ void Nick_Live_t::Join(mstring chan)
 	Parent->chanserv.stored[chan.LowerCase()].Join(i_Name);
 
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    MCB(joined_channels.size());
     joined_channels.insert(chan.LowerCase());
+    MCE(joined_channels.size());
 }
 
 
@@ -1127,7 +1176,9 @@ void Nick_Live_t::Part(mstring chan)
     }
 
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    MCB(joined_channels.size());
     joined_channels.erase(chan.LowerCase());
+    MCE(joined_channels.size());
 }
 
 void Nick_Live_t::Kick(mstring kicker, mstring chan)
@@ -1149,7 +1200,9 @@ void Nick_Live_t::Kick(mstring kicker, mstring chan)
     }
 
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    MCB(joined_channels.size());
     joined_channels.erase(chan.LowerCase());
+    MCE(joined_channels.size());
 }
 
 
@@ -1218,6 +1271,7 @@ set<mstring> Nick_Live_t::Channels()
 bool Nick_Live_t::FloodTrigger()
 {
     NFT("Nick_Live_t::FloodTrigger");
+    bool retval = false;
 
     // We DONT ignore OPER's
     if (HasMode("o") || IsServices())
@@ -1246,15 +1300,16 @@ bool Nick_Live_t::FloodTrigger()
 
     // Clean up previous entries and push current entry
     { WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_msg_times"));
+    MCB(last_msg_times.size());
     while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Parent->operserv.Flood_Time())
 	last_msg_times.erase(last_msg_times.begin());
     last_msg_times.push_back(Now());
-    }
 
     // Check if we just triggered ignore.
     if (last_msg_times.size() > Parent->operserv.Flood_Msgs())
     {
 	WLOCK2(("NickServ", "live", i_Name.LowerCase(), "flood_triggered_times"));
+	CB(1, flood_triggered_times);
 	flood_triggered_times++;
 	// Add To ignore, they're naughty.
 	if (flood_triggered_times >= Parent->operserv.Ignore_Limit())
@@ -1283,11 +1338,12 @@ bool Nick_Live_t::FloodTrigger()
 			i_Name.c_str());
 	}
  
-	RET(true);
+ 	CE(1, flood_triggered_times);
+	retval = true;
     }
 
-    RET(false);
-
+    MCE(last_msg_times.size()); }
+    RET(retval);
 }
 
 
@@ -1334,15 +1390,23 @@ void Nick_Live_t::Name(mstring in)
 	    Parent->chanserv.stored[try_chan_ident[i]].ChgAttempt(i_Name, in);
     }
 
+    MCB(i_Name);
+    CB(1, i_My_Signon_Time);
     if (Parent->nickserv.IsStored(i_Name))
     {
 	// We are not related (by brotherhood, or parentage)
 	if (!(Parent->nickserv.stored[i_Name.LowerCase()].IsSibling(in) ||
 	    Parent->nickserv.stored[i_Name.LowerCase()].Host().LowerCase() == i_Name.LowerCase()))
 	{
+	    CB(2, identified);
+	    CB(3, chans_founder_identd.size());
+	    CB(4, failed_passwds);
 	    identified = false;
 	    chans_founder_identd.clear();
 	    failed_passwds = 0;
+	    CE(2, identified);
+	    CE(3, chans_founder_identd.size());
+	    CE(4, failed_passwds);
 	}
 	// Last Seen and Last Quit
 	Parent->nickserv.stored[i_Name.LowerCase()].ChgNick(in);
@@ -1368,9 +1432,13 @@ void Nick_Live_t::Name(mstring in)
     }
 
     // Clean up non-existant channels ...
+    CB(5, joined_channels.size());
     for (i=0; i<chunked.size(); i++)
 	joined_channels.erase(chunked[i]);
+    CE(5, joined_channels.size());
 
+    CE(1, i_My_Signon_Time);
+    MCE(i_Name);
     if (Parent->nickserv.IsStored(i_Name))
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].Forbidden())
@@ -1451,6 +1519,7 @@ void Nick_Live_t::Mode(mstring in)
 
     bool add = true;
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "modes"));
+    MCB(modes);
     for (unsigned int i=0; i<in.size(); i++)
     {
 	switch(in[i])
@@ -1578,7 +1647,8 @@ void Nick_Live_t::Mode(mstring in)
 	    }
 	    break;
 	}
-    }    
+    }
+    MCE(modes);
 }
 
 
@@ -1600,7 +1670,9 @@ void Nick_Live_t::Away(mstring in)
 {
     FT("Nick_Live_t::Away", (in));
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_away"));
+    MCB(i_away);
     i_away = in;
+    MCE(i_away);
 }
 
 mstring Nick_Live_t::Away()
@@ -1629,7 +1701,9 @@ void Nick_Live_t::Action()
     if (IsServices())
     {
 	WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Last_Action"));
+	MCB(i_Last_Action);
 	i_Last_Action = Now();
+	MCE(i_Last_Action);
     }
 }
 
@@ -1680,7 +1754,9 @@ void Nick_Live_t::AltHost(mstring in)
 {
     FT("Nick_Live_t::AltHost", (in));
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_alt_host"));
+    MCB(i_alt_host);
     i_alt_host = in;
+    MCE(i_alt_host);
 }
 
 mstring Nick_Live_t::Server()
@@ -1703,7 +1779,9 @@ void Nick_Live_t::SetSquit()
     NFT("Nick_Live_t::SetSquit");
     { WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_squit"));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_server"));
+    MCB(i_squit);
     i_squit = i_server;
+    MCE(i_squit);
     }
 
     { RLOCK2(("NickServ", "live", i_Name.LowerCase(), "i_host"));
@@ -1725,16 +1803,24 @@ void Nick_Live_t::SetSquit()
 void Nick_Live_t::ClearSquit()
 {
     NFT("Nick_Live_t::ClearSquit");
+
+    // This stops 3 locks being re-set 3 times...
+    RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
+    MCB(i_squit);
+
     { WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_squit"));
     i_squit = "";
     }
 
     // These will all be set again
     { WLOCK2(("NickServ", "live", i_Name.LowerCase(), "modes"));
+    CB(1, modes);
     modes = "";
+    CE(1, modes);
     }
 
     { WLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    CB(2, joined_channels.size());
     set<mstring>::iterator i;
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
@@ -1744,18 +1830,17 @@ void Nick_Live_t::ClearSquit()
 		"UNSQUIT", i_Name.c_str(), i->c_str());
 
     joined_channels.clear();
+    CE(2, joined_channels.size());
     }
+    MCE(i_squit);
 
-    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
-    if (!IsServices())
-	if (Parent->operserv.AddHost(i_host))
-	{
-	    Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_CLONE"),
+    if (!IsServices() && Parent->operserv.AddHost(i_host))
+    {
+	Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_CLONE"),
 		Mask(N_U_P_H).c_str());
-	    Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
+	Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->operserv.Def_Clone());
-	    return;
-	}
+	return;
     }
 }
 
@@ -1928,7 +2013,9 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	if (!failtimes)
 	{
 	    WLOCK(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
+	    MCB(chans_founder_identd.size());
 	    chans_founder_identd.insert(channel.LowerCase());
+	    MCE(chans_founder_identd.size());
 	    retval = Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED");
 	}
 	else
@@ -1939,7 +2026,11 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	    WLOCK(("NickServ", "live", i_Name.LowerCase(), "try_chan_ident"));
 	    for (iter=try_chan_ident.begin(); iter!=try_chan_ident.end(); iter++) ;
 	    if (iter == try_chan_ident.end())
+	    {
+		MCB(try_chan_ident.size());
 		try_chan_ident.push_back(channel.LowerCase());
+		MCE(try_chan_ident.size());
+	    }
 
 	    if (failtimes >= Parent->chanserv.Passfail())
 	    {
@@ -1970,7 +2061,9 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
     if (IsChanIdentified(channel))
     {
 	WLOCK(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
+	MCB(chans_founder_identd.size());
 	chans_founder_identd.erase(channel.LowerCase());
+	MCE(chans_founder_identd.size());
     }
 }
 
@@ -2004,8 +2097,12 @@ mstring Nick_Live_t::Identify(mstring password)
 		if (iter->second.IsOn(i_Name))
 		    wason.insert(iter->first);
 
+	    MCB(identified);
+	    CB(1, failed_passwds);
 	    identified = true;
 	    failed_passwds = 0;
+	    CE(1, failed_passwds);
+	    MCE(identified);
 	    if (Parent->nickserv.stored[i_Name.LowerCase()].Secure())
 		Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
 
@@ -2027,7 +2124,9 @@ mstring Nick_Live_t::Identify(mstring password)
 	}
 	else
 	{
+	    MCB(failed_passwds);
 	    failed_passwds++;
+	    MCE(failed_passwds);
 	    if (failed_passwds >= Parent->nickserv.Passfail())
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
@@ -2053,7 +2152,9 @@ void Nick_Live_t::UnIdentify()
 {
     NFT("Nick_Live_t::UnIdentify");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "identified"));
+    MCB(identified);
     identified = false;
+    MCE(identified);
 }
 
 bool Nick_Live_t::IsIdentified()
@@ -2085,7 +2186,9 @@ void Nick_Live_t::SetLastNickReg()
 {
     NFT("Nick_Live_t::SetLastNickReg");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_nick_reg"));
+    MCB(last_nick_reg);
     last_nick_reg = Now();
+    MCE(last_nick_reg);
 }
 
 mDateTime Nick_Live_t::LastNickReg()
@@ -2099,7 +2202,9 @@ void Nick_Live_t::SetLastChanReg()
 {
     NFT("Nick_Live_t::SetLastChanReg");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_chan_reg"));
+    MCB(last_chan_reg);
     last_chan_reg = Now();
+    MCE(last_chan_reg);
 }
 
 mDateTime Nick_Live_t::LastChanReg()
@@ -2113,7 +2218,9 @@ void Nick_Live_t::SetLastMemo()
 {
     NFT("Nick_Live_t::SetLastMemo");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_memo"));
+    MCB(last_memo);
     last_memo = Now();
+    MCE(last_memo);
 }
 
 mDateTime Nick_Live_t::LastMemo()
@@ -2206,8 +2313,12 @@ void Nick_Stored_t::Signon(mstring realname, mstring mask)
     FT("Nick_Stored_t::Signon", (realname, mask));
     { WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastRealName"));
     WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_LastMask"));
+    MCB(i_LastRealName);
+    CB(1, i_LastMask);
     i_LastRealName = realname;
     i_LastMask = mask;
+    CE(1, i_LastMask);
+    MCE(i_LastRealName);
     }
 
     if (Parent->memoserv.IsNick(i_Name))
@@ -2234,8 +2345,12 @@ void Nick_Stored_t::ChgNick(mstring nick)
     FT("Nick_Stored_t::ChgNick", (nick));
     WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastQuit"));
     WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_LastSeenTime"));
+    MCB(i_LastQuit);
+    CB(1, i_LastSeenTime);
     i_LastQuit = "NICK CHANGE -> " + nick;
     i_LastSeenTime = Now();
+    CE(1, i_LastSeenTime);
+    MCE(i_LastQuit);
 }
 
 
@@ -2275,6 +2390,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mstring password)
 	i_LastMask = Parent->nickserv.live[i_Name.LowerCase()].Mask(Nick_Live_t::U_P_H).After("!");
         Parent->nickserv.live[i_Name.LowerCase()].Identify(Password());
     }
+    DumpE();
 }
 
 
@@ -2286,6 +2402,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick)
     i_Forbidden = true;
     i_Picture = 0;
     i_RegTime = Now();
+    DumpE();
 } 
 
 
@@ -2305,6 +2422,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_
 	i_LastMask = Parent->nickserv.live[i_Name.LowerCase()].Mask(Nick_Live_t::U_P_H).After("!");
         Parent->nickserv.live[i_Name.LowerCase()].Identify(Password());
     }
+    DumpE();
 }
 
 
@@ -2595,8 +2713,12 @@ void Nick_Stored_t::Suspend(mstring name)
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
+	MCB(i_Suspend_By);
+	CB(1, i_Suspend_Time);
 	i_Suspend_By = name;
 	i_Suspend_Time = Now();
+	CE(1, i_Suspend_Time);
+	MCE(i_Suspend_By);
     }
     else
     {
@@ -2611,7 +2733,9 @@ void Nick_Stored_t::UnSuspend()
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+	MCB(i_Suspend_By);
 	i_Suspend_By = "";
+	MCE(i_Suspend_By);
     }
     else
     {
@@ -2629,7 +2753,9 @@ mstring Nick_Stored_t::Host()
 	Log(LM_ERROR, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
 		i_Host.c_str(), i_Name.c_str());
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
+	MCB(i_Host);
 	i_Host = "";
+	MCE(i_Host);
     }
     else
 	retval = Parent->nickserv.stored[i_Host.LowerCase()].Name();
@@ -2658,7 +2784,9 @@ void Nick_Stored_t::Password(mstring in)
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Password"));
+	MCB(i_Password);
 	i_Password = in;
+	MCE(i_Password);
     }
     else
     {
@@ -2690,7 +2818,9 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 
 	Parent->nickserv.stored[nick.LowerCase()] = Nick_Stored_t(nick, regtime, *this);
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
+	MCB(i_slaves.size());
 	i_slaves.insert(nick.LowerCase());
+	MCE(i_slaves.size());
 	RET(true);
     }
     else
@@ -2745,10 +2875,13 @@ mstring Nick_Stored_t::Sibling(unsigned int count)
 		i--;
 	    }
 	}
-	for (i=0; i<chunked.size(); i++)
+	if (chunked.size())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
-	    i_slaves.erase(chunked[i]);
+	    MCB(i_slaves.size());
+	    for (i=0; i<chunked.size(); i++)
+		i_slaves.erase(chunked[i]);
+	    MCE(i_slaves.size());
 	}
     }
     else
@@ -2775,7 +2908,9 @@ bool Nick_Stored_t::IsSibling(mstring nick)
 	    Log(LM_ERROR, Parent->getLogMessage("ERROR/SLAVE_NOTREGD"),
 			nick.c_str(), i_Name.c_str());
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
+	    MCB(i_slaves.size());
 	    i_slaves.erase(nick);
+	    MCE(i_slaves.size());
 	    retval = false;
 	}
 	RET(retval);
@@ -2986,6 +3121,7 @@ bool Nick_Stored_t::MakeHost()
 	// and finally set my host pointer to "".
 	WLOCK(("NickServ", "stored", i_Name.LowerCase()));
 	WLOCK2(("NickServ", "stored", i_Host.LowerCase()));
+	DumpB();
 	for (unsigned int i=0; i<Parent->nickserv.stored[i_Host.LowerCase()].Siblings(); i++)
 	{
 	    if (Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).LowerCase() != i_Name.LowerCase())
@@ -3024,6 +3160,7 @@ bool Nick_Stored_t::MakeHost()
 	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name.LowerCase();
 	mstring tmp = i_Host;
 	i_Host = "";
+	DumpE();
 	ChangeOver(tmp);
 	RET(true);
     }
@@ -3041,6 +3178,7 @@ bool Nick_Stored_t::Unlink()
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase()));
 	WLOCK2(("NickServ", "stored", i_Host.LowerCase()));
+	DumpB();
 	i_slaves.clear();
 	i_Password = Parent->nickserv.stored[i_Host.LowerCase()].i_Password;
 	i_Email = Parent->nickserv.stored[i_Host.LowerCase()].i_Email;
@@ -3069,6 +3207,7 @@ bool Nick_Stored_t::Unlink()
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.erase(i_Name.LowerCase());
 	i_Host = "";
+	DumpE();
 	RET(true);
     }
 }
@@ -3141,10 +3280,12 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 	    {
 		chunked.push_back(*iter);
 	    }
+	MCB(i_access.size());
 	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_access.erase(chunked[i]);
 
 	i_access.insert(in.LowerCase());
+	MCE(i_access.size());
 	RET(true);
     }
     else
@@ -3170,8 +3311,10 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 		chunked.push_back(*iter);
 	    }
 
+	MCB(i_access.size());
 	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_access.erase(chunked[i].LowerCase());
+	MCE(i_access.size());
 	retval = chunked.size();
     }
     else
@@ -3260,7 +3403,9 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
 	    RET(false);
 	}
 
+	MCB(i_ignore.size());
 	i_ignore.insert(in.LowerCase());
+	MCE(i_ignore.size());
 	RET(true);
     }
     else
@@ -3286,8 +3431,10 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 		chunked.push_back(*iter);
 	    }
 
+	MCB(i_ignore.size());
 	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_ignore.erase(chunked[i].LowerCase());
+	MCE(i_ignore.size());
 	retval = chunked.size();
     }
     else
@@ -3348,7 +3495,9 @@ void Nick_Stored_t::Protect(bool in)
 	if (!L_Protect())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Protect"));
+	    MCB(i_Protect);
 	    i_Protect = in;
+	    MCE(i_Protect);
 	}
     }
     else
@@ -3386,7 +3535,9 @@ void Nick_Stored_t::L_Protect(bool in)
 	if (!Parent->nickserv.LCK_Protect())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Protect"));
+	    MCB(l_Protect);
 	    l_Protect = in;
+	    MCE(l_Protect);
 	}
     }
     else
@@ -3424,7 +3575,9 @@ void Nick_Stored_t::Secure(bool in)
 	if (!L_Secure())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Secure"));
+	    MCB(i_Secure);
 	    i_Secure = in;
+	    MCE(i_Secure);
 	}
     }
     else
@@ -3462,7 +3615,9 @@ void Nick_Stored_t::L_Secure(bool in)
 	if (!Parent->nickserv.LCK_Secure())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Secure"));
+	    MCB(l_Secure);
 	    l_Secure = in;
+	    MCE(l_Secure);
 	}
     }
     else
@@ -3500,7 +3655,9 @@ void Nick_Stored_t::NoExpire(bool in)
 	if (!L_NoExpire())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_NoExpire"));
+	    MCB(i_NoExpire);
 	    i_NoExpire = in;
+	    MCE(i_NoExpire);
 	}
     }
     else
@@ -3538,7 +3695,9 @@ void Nick_Stored_t::L_NoExpire(bool in)
 	if (!Parent->nickserv.LCK_NoExpire())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_NoExpire"));
+	    MCB(l_NoExpire);
 	    l_NoExpire = in;
+	    MCE(l_NoExpire);
 	}
     }
     else
@@ -3576,7 +3735,9 @@ void Nick_Stored_t::NoMemo(bool in)
 	if (!L_NoMemo())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_NoMemo"));
+	    MCB(i_NoMemo);
 	    i_NoMemo = in;
+	    MCE(i_NoMemo);
 	}
     }
     else
@@ -3614,7 +3775,9 @@ void Nick_Stored_t::L_NoMemo(bool in)
 	if (!Parent->nickserv.LCK_NoMemo())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_NoMemo"));
+	    MCB(l_NoMemo);
 	    l_NoMemo = in;
+	    MCE(l_NoMemo);
 	}
     }
     else
@@ -3652,7 +3815,9 @@ void Nick_Stored_t::Private(bool in)
 	if (!L_Private())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Private"));
+	    MCB(i_Private);
 	    i_Private = in;
+	    MCE(i_Private);
 	}
     }
     else
@@ -3690,7 +3855,9 @@ void Nick_Stored_t::L_Private(bool in)
 	if (!Parent->nickserv.LCK_Private())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Private"));
+	    MCB(l_Private);
 	    l_Private = in;
+	    MCE(l_Private);
 	}
     }
     else
@@ -3728,7 +3895,9 @@ void Nick_Stored_t::PRIVMSG(bool in)
 	if (!L_PRIVMSG())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_PRIVMSG"));
+	    MCB(i_PRIVMSG);
 	    i_PRIVMSG = in;
+	    MCE(i_PRIVMSG);
 	}
     }
     else
@@ -3766,7 +3935,9 @@ void Nick_Stored_t::L_PRIVMSG(bool in)
 	if (!Parent->nickserv.LCK_PRIVMSG())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_PRIVMSG"));
+	    MCB(l_PRIVMSG);
 	    l_PRIVMSG = in;
+	    MCE(l_PRIVMSG);
 	}
     }
     else
@@ -3804,7 +3975,9 @@ void Nick_Stored_t::Language(mstring in)
 	if (!L_Language())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Language"));
+	    MCB(i_Language);
 	    i_Language = in.UpperCase();
+	    MCE(i_Language);
 	}
     }
     else
@@ -3842,7 +4015,9 @@ void Nick_Stored_t::L_Language(bool in)
 	if (!Parent->nickserv.LCK_Language())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Language"));
+	    MCB(l_Language);
 	    l_Language = in;
+	    MCE(l_Language);
 	}
     }
     else
@@ -3934,7 +4109,9 @@ void Nick_Stored_t::GotPic(unsigned long picnum)
 	if (Parent->nickserv.PicExt() != "")
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Picture"));
+	    MCB(i_Picture);
 	    i_Picture = picnum;
+	    MCE(i_Picture);
 	}
     }
     else
@@ -4094,8 +4271,12 @@ void Nick_Stored_t::Quit(mstring message)
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastSeenTime"));
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_LastQuit"));
+	MCB(i_LastSeenTime);
+	CB(1, i_LastQuit);
 	i_LastSeenTime = Now();
 	i_LastQuit = message;
+	CE(1, i_LastQuit);
+	MCE(i_LastSeenTime);
     }
 }
 

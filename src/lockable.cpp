@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/09/05 10:53:07  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.46  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -509,7 +516,9 @@ void mSocket::operator=(const mSocket &in)
     local = in.local;
     remote = in.remote;
     last_error = in.last_error;
+#ifdef MAGICK_TRACE_WORKS
     trace = in.trace;
+#endif
     sock = in.sock;
     mSocket *tmp = (mSocket *) &in;
     tmp->sock = NULL;

@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/09/05 10:53:07  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.74  2000/09/02 07:20:46  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -203,6 +210,7 @@ Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
     i_Text = text;
     i_File = file;
     i_Read = false;
+    DumpE();
 }
 
 
@@ -222,7 +230,9 @@ void Memo_t::ChgNick(mstring in)
 {
     FT("Memo_t::ChgNick", (in));
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Nick"));
+    MCB(i_Nick);
     i_Nick = in;
+    MCE(i_Nick);
 }
 
 mstring Memo_t::Sender()
@@ -263,13 +273,17 @@ void Memo_t::Read()
 {
     NFT(("Memo_t::Read"));
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
+    MCB(i_Read);
     i_Read = true;
+    MCE(i_Read);
 }
 void Memo_t::Unread()
 {
     NFT(("Memo_t::Unread"));
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
+    MCB(i_Read);
     i_Read = false;
+    MCE(i_Read);
 }
 
 size_t Memo_t::Usage()
@@ -312,6 +326,7 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
     i_Time = Now();
     i_Sender = sender;
     i_Text = text;
+    DumpE();
 }
 
 
@@ -372,7 +387,9 @@ void News_t::Read(mstring name)
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
+    MCB(i_Read.size());
     i_Read.insert(target.LowerCase());
+    MCE(i_Read.size());
 }
 
 
@@ -385,8 +402,10 @@ void News_t::Unread(mstring name)
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
+    MCB(i_Read.size());
     i_Read.erase(name.LowerCase());
     i_Read.erase(target.LowerCase());
+    MCE(i_Read.size());
 }
 
 size_t News_t::Usage()

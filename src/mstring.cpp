@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/09/05 10:53:07  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.67  2000/08/03 13:06:31  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -113,11 +120,11 @@ mstring const IRC_Color((char) 3);	// ^C
 mstring const IRC_Off((char) 15);	// ^O
 
 mstring::mstring(const mstring& in)
-:inherited(in)
+:inherited((string) in)
 {
 }
 mstring::mstring(const mstring& in, inherited::size_type pos, inherited::size_type n)
-:inherited(in,pos,n)
+:inherited((string) in,pos,n)
 {
 }
 mstring::mstring(const char *in)
@@ -141,7 +148,6 @@ mstring::mstring(inherited::const_iterator first, inherited::const_iterator last
 {
 }
 mstring::mstring()
-:inherited("")
 {
 }
 

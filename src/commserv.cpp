@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/09/05 10:53:06  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.71  2000/09/02 07:20:45  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -192,6 +199,7 @@ Committee::Committee(mstring name, mstring head, mstring description)
     l_Secure = false;
     i_Private = Parent->commserv.DEF_Private();
     l_Private = false;
+    DumpE();
 }
 
 
@@ -210,6 +218,7 @@ Committee::Committee(mstring name, Committee *head, mstring description)
     l_Secure = false;
     i_Private = Parent->commserv.DEF_Private();
     l_Private = false;
+    DumpE();
 }
 
 
@@ -228,6 +237,7 @@ Committee::Committee(mstring name, mstring description)
     l_Secure = false;
     i_Private = Parent->commserv.DEF_Private();
     l_Private = false;
+    DumpE();
 }
 
 
@@ -292,10 +302,16 @@ void Committee::Head(mstring newhead)
 
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+    MCB(i_Head);
     if (i_HeadCom != "")
+    {
+	CB(1, i_HeadCom);
 	i_HeadCom = "";
+	CE(1, i_HeadCom);
+    }
 
     i_Head = newhead.LowerCase();
+    MCE(i_Head);
 }
 
 bool Committee::insert(mstring entry, mstring nick, mDateTime modtime)
@@ -311,7 +327,9 @@ bool Committee::insert(mstring entry, mstring nick, mDateTime modtime)
     if (i_Members.empty() || iter == i_Members.end())
     {
 	pair<entlist_ui, bool> tmp;
+	MCB(i_Members.size());
 	tmp = i_Members.insert(entlist_t(entry, nick, modtime));
+	MCE(i_Members.size());
 	if (tmp.second)
 	    member = tmp.first;
 	else
@@ -332,7 +350,9 @@ bool Committee::erase()
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     if (member != i_Members.end())
     {
+	MCB(i_Members.size());
 	i_Members.erase(member);
+	MCE(i_Members.size());
 	member = i_Members.end();
 	RET(true);
     }
@@ -511,7 +531,9 @@ void Committee::Email(mstring in)
 {
     FT("Committee::Email", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
+    MCB(i_Email);
     i_Email = in;
+    MCE(i_Email);
 }
 
 mstring Committee::Email()
@@ -525,7 +547,9 @@ void Committee::URL(mstring in)
 {
     FT("Committee::URL", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
+    MCB(i_URL);
     i_URL = in;
+    MCE(i_URL);
 }
 
 mstring Committee::URL()
@@ -541,7 +565,9 @@ void Committee::Private(bool in)
     if (!L_Private())
     {
 	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Private"));
+	MCB(i_Private);
 	i_Private = in;
+	MCE(i_Private);
     }
 }
 
@@ -552,7 +578,9 @@ void Committee::Secure(bool in)
     if (!L_Secure())
     {
 	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
+	MCB(i_Secure);
 	i_Secure = in;
+	MCE(i_Secure);
     }
 }
 
@@ -575,7 +603,9 @@ void Committee::L_Secure(bool in)
     if (!Parent->commserv.LCK_Secure())
     {
 	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
+	MCB(l_Secure);
 	l_Secure = in;
+	MCE(l_Secure);
     }
 }
 
@@ -610,7 +640,9 @@ void Committee::L_Private(bool in)
     if (!Parent->commserv.LCK_Private())
     {
 	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Private"));
+	MCB(l_Private);
 	l_Private = in;
+	MCE(l_Private);
     }
 }
 
@@ -633,7 +665,9 @@ void Committee::OpenMemos(bool in)
     if (!L_OpenMemos())
     {
 	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_OpenMemos"));
+	MCB(i_OpenMemos);
 	i_OpenMemos = in;
+	MCE(i_OpenMemos);
     }
 }
 
@@ -656,7 +690,9 @@ void Committee::L_OpenMemos(bool in)
     if (!Parent->commserv.LCK_OpenMemos())
     {
 	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_OpenMemos"));
+	MCB(l_OpenMemos);
 	l_OpenMemos = in;
+	MCE(l_OpenMemos);
     }
 }
 
@@ -680,7 +716,9 @@ bool Committee::MSG_insert(mstring entry, mstring nick)
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     if (IsHead(nick))
     {
+	MCB(i_Messages.size());
 	i_Messages.push_back(entlist_t(entry, nick));
+	MCE(i_Messages.size());
 	message = i_Messages.end(); message--;
 	RET(true);
     }
@@ -699,7 +737,9 @@ bool Committee::MSG_erase()
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     if (message != i_Messages.end())
     {
+	MCB(i_Messages.size());
 	i_Messages.erase(message);
+	MCE(i_Messages.size());
 	message = i_Messages.end();
 	RET(true);
     }

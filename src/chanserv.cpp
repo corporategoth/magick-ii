@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.202  2000/09/05 10:53:06  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.201  2000/09/02 07:20:45  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -302,7 +309,9 @@ bool Chan_Live_t::Join(mstring nick)
     }
     else
     {
+	MCB(users.size());
 	users[nick.LowerCase()] = pair<bool,bool>(false,false);
+	MCE(users.size());
 	RET(true);
     }
 }
@@ -319,20 +328,32 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    Parent->nickserv.stored[nick.LowerCase()].IsOnline() &&
 	    Parent->nickserv.stored[nick.LowerCase()].Host() != "")
 	    target = Parent->nickserv.stored[nick.LowerCase()].Host().LowerCase();
+	MCB(users.size());
+	CB(1, recent_parts.size());
 	recent_parts[target] = Now();
 	users.erase(nick.LowerCase());
 	if (!users.size())
 	{
+	    CB(2, modes);
+	    CB(3, i_Limit);
+	    CB(4, i_Key);
 	    modes = "";
 	    i_Limit = 0;
 	    i_Key = "";
+	    CE(2, modes);
+	    CE(3, i_Limit);
+	    CE(4, i_Key);
 	}
+	CE(1, recent_parts.size());
+	MCE(users.size());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
     else if (squit.find(nick.LowerCase())!=squit.end())
     {
+	MCB(squit.size());
 	squit.erase(nick.LowerCase());
+	MCE(squit.size());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
@@ -351,8 +372,12 @@ void Chan_Live_t::Squit(mstring nick)
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     if (users.find(nick.LowerCase())!=users.end())
     {
+	MCB(squit.size());
+	CB(1, users.size());
 	squit[nick.LowerCase()] = users[nick.LowerCase()];
 	users.erase(nick.LowerCase());
+	CE(1, users.size());
+	MCE(squit.size());
     }
 }
 
@@ -363,7 +388,11 @@ void Chan_Live_t::UnSquit(mstring nick)
     // We'll get ALL modes if all users are squit
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     if (!users.size())
+    {
+	MCB(modes);
 	modes = "";
+	MCE(modes);
+    }
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     if (squit.find(nick.LowerCase())==squit.end())
@@ -382,13 +411,17 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     if (users.find(nick.LowerCase())!=users.end())
     {
+	MCB(users.size());
 	users.erase(nick.LowerCase());
+	MCE(users.size());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Kick(nick, kicker);
     }
     else if (squit.find(nick.LowerCase())!=squit.end())
     {
+	MCB(squit.size());
 	squit.erase(nick.LowerCase());
+	MCE(squit.size());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Kick(nick, kicker);
     }
@@ -409,15 +442,19 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     if (users.find(nick.LowerCase())!=users.end())
     {
+	MCB(users.size());
 	users[newnick.LowerCase()] = users[nick.LowerCase()];
 	users.erase(nick.LowerCase());
+	MCE(users.size());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].ChgNick(nick, newnick);
     }
     else if (squit.find(nick.LowerCase())!=squit.end())
     {
+	MCB(squit.size());
 	squit[newnick.LowerCase()] = squit[nick.LowerCase()];
 	squit.erase(nick.LowerCase());
+	MCE(squit.size());
     }
     else
     {
@@ -434,6 +471,7 @@ Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
     i_Name = name;
     i_Limit = 0;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
+    DumpB();
 }
 
 
@@ -479,9 +517,15 @@ void Chan_Live_t::Topic(mstring source, mstring topic, mstring setter, mDateTime
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Setter"));
     WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Set_Time"));
+    MCB(i_Topic);
+    CB(1, i_Topic_Setter);
+    CB(2, i_Topic_Set_Time);
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = time;
+    CE(1, i_Topic_Setter);
+    CE(2, i_Topic_Set_Time);
+    MCE(i_Topic);
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Topic(source, i_Topic, i_Topic_Setter, i_Topic_Set_Time);
 }
@@ -735,9 +779,11 @@ void Chan_Live_t::LockDown()
     // Override the MLOCK checking.
     SendMode("+s");
     MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
+    MCB(ph_timer);
     ph_timer = ACE_Reactor::instance()->schedule_timer(&(Parent->chanserv.ph),
 			    new mstring(i_Name),
 			    ACE_Time_Value(Parent->chanserv.ChanKeep()));
+    MCE(ph_timer);
 }
 
 void Chan_Live_t::UnLock()
@@ -753,6 +799,7 @@ void Chan_Live_t::UnLock()
 
     mstring *arg = NULL;
     MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
+    MCB(ph_timer);
     if (ph_timer &&
 	ACE_Reactor::instance()->cancel_timer(ph_timer,
 		(const void **) arg) &&
@@ -761,6 +808,7 @@ void Chan_Live_t::UnLock()
 	    delete arg;
     }
     ph_timer = 0;
+    MCE(ph_timer);
 }
 
 bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
@@ -860,6 +908,10 @@ void Chan_Live_t::SendMode(mstring in)
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
     WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
     WLOCK4(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off_params"));
+    MCB(p_modes_on);
+    CB(1, p_modes_on_params.size());
+    CB(2, p_modes_off);
+    CB(3, p_modes_off_params.size());
     for (i=0; i<mode.size(); i++)
     {
 	if (mode[i] == '+')
@@ -1080,6 +1132,10 @@ void Chan_Live_t::SendMode(mstring in)
 	    }
 	}
     }	
+    CE(1, p_modes_on_params.size());
+    CE(2, p_modes_off);
+    CE(3, p_modes_off_params.size());
+    MCE(p_modes_on);
 }
 
 
@@ -1124,6 +1180,11 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
     WLOCK4(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
     WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off_params"));
+    MCB(modes);
+    CB(1, p_modes_on);
+    CB(2, p_modes_on_params.size());
+    CB(3, p_modes_off);
+    CB(4, p_modes_off_params.size());
     for (i=0; i<change.size(); i++)
     {
 	if (change[i] == '+')
@@ -1205,9 +1266,10 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'b':
 		if (wc <= fwdargs)
 		{
+		WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+		CB(5, bans.size());
 		if (add)
 		{
-		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		    bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": "));
@@ -1219,6 +1281,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": "));
 		}
+		CE(5, bans.size());
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		fwdargs++;
@@ -1228,16 +1291,16 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'k':
 		if (wc <= fwdargs)
 		{
+		WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+		CB(5, i_Key);
 		if (add)
 		{
-		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
 		    i_Key = in.ExtractWord(fwdargs, ": ");
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": "));
 		}
 		else
 		{
-		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
 		    if (i_Key != in.ExtractWord(fwdargs, ": "))
 			Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 				i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
@@ -1246,6 +1309,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
 		}
+		CE(5, i_Key);
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		fwdargs++;
@@ -1258,6 +1322,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    if (wc <= fwdargs)
 		    {
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+		    CB(5, i_Limit);
 		    if (fwdargs > in.WordCount(": "))
 		    {
 			Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
@@ -1278,13 +1343,16 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 			newmode += change[i];
 			newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		    }
+		    CE(5, i_Limit);
 		    fwdargs++;
 		    }
 		}
 		else
 		{
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+		    CB(5, i_Limit);
 		    i_Limit = 0;
+		    CE(5, i_Limit);
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
 		    newmode += change[i];
@@ -1321,6 +1389,11 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    newmode += change[i];
 	}
     }
+    CE(1, p_modes_on);
+    CE(2, p_modes_on_params.size());
+    CE(3, p_modes_off);
+    CE(4, p_modes_off_params.size());
+    MCE(modes);
 
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source,
@@ -1467,6 +1540,7 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
 
     // Create a new one if we find the entry
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
+    MCB(failed_passwds.size());
     for (iter=failed_passwds.begin(); iter!=failed_passwds.end(); iter++)
 	if (iter->first == nick.LowerCase())
 	{
@@ -1474,6 +1548,7 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
 	    break;
 	}
     failed_passwds.erase(nick.LowerCase());
+    MCE(failed_passwds.size());
 }
 
 
@@ -1628,7 +1703,9 @@ void Chan_Stored_t::Join(mstring nick)
     if (GetAccess(nick)>0)
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
+	MCB(i_LastUsed);
 	i_LastUsed = Now();
+	MCE(i_LastUsed);
     }
 
     if (GetAccess(nick, "AUTOOP"))
@@ -1707,7 +1784,9 @@ void Chan_Stored_t::Part(mstring nick)
     if (GetAccess(nick)>0)
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
+	MCB(i_LastUsed);
 	i_LastUsed = Now();
+	MCE(i_LastUsed);
     }
 
     Chan_Live_t *clive = NULL;
@@ -1744,16 +1823,12 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
 
     // Users shouldnt kick us, but we just rejoin!
     if (Parent->nickserv.IsLive(nick) &&
-	Parent->nickserv.live[nick.LowerCase()].IsServices() &&
-	Join())
+	Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	Parent->server.JOIN(nick, i_Name);
-    }
-
-    // WE can kick anyone we want
-    if (!Parent->nickserv.IsLive(kicker) ||
-	Parent->nickserv.live[kicker.LowerCase()].IsServices())
+	if (Join())
+	    Parent->server.JOIN(nick, i_Name);
 	return;
+    }
 
     if (DoRevenge("KICK", kicker, nick))
 	Parent->server.INVITE(Parent->chanserv.FirstName(),
@@ -1863,9 +1938,9 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
-    RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
+    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
+    WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
     if (Topiclock())
     {
 	Parent->server.TOPIC(Parent->chanserv.FirstName(),
@@ -1874,9 +1949,16 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
     }
     else
     {
+	MCB(i_Topic);
+	CB(1, i_Topic_Setter);
+	CB(2, i_Topic_Set_Time);
 	i_Topic = topic;
 	i_Topic_Setter = setter;
 	i_Topic_Set_Time = time;
+	CE(1, i_Topic_Setter);
+	CE(2, i_Topic_Set_Time);
+	MCE(i_Topic);
+	
     }
 }
 
@@ -1903,9 +1985,15 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
     WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+    MCB(i_Topic);
+    CB(1, i_Topic_Setter);
+    CB(2, i_Topic_Set_Time);
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = Now();
+    CE(1, i_Topic_Setter);
+    CE(2, i_Topic_Set_Time);
+    MCE(i_Topic);
     Parent->server.TOPIC(source, setter, i_Name, topic,
 	Parent->chanserv.live[i_Name.LowerCase()].Topic_Set_Time() -
 		(double) (1.0 / (60.0 * 60.0 * 24.0)));
@@ -2040,7 +2128,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			    (Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")) ||
 			    Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "))))
 			{
-			    if (DoRevenge(bantype, setter, clive->User(j)))
+			    if (DidRevenge = DoRevenge(bantype, setter, clive->User(j)))
 				clive->SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
 			    else
 				tobekicked.push_back(clive->User(j));
@@ -2354,6 +2442,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, ms
     i_Founder = founder;
     i_Password = password;
     i_Description = desc;
+    DumpE();
 }
 
 
@@ -2367,6 +2456,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name)
     i_Mlock_On = "nits";
     i_RegTime = i_LastUsed = Now();
     i_Forbidden = true;
+    DumpE();
 }
 
 
@@ -2489,10 +2579,16 @@ void Chan_Stored_t::Founder(mstring in)
 
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
-    if (i_CoFounder == in)
+    MCB(i_Founder);
+    if (i_CoFounder.CmpNoCase(in)==0)
+    {
+	CB(1, i_CoFounder);
 	i_CoFounder = "";
+	CE(1, i_CoFounder);
+    }
 
     i_Founder = in;
+    MCE(i_Founder);
 }
 
 
@@ -2508,11 +2604,13 @@ void Chan_Stored_t::CoFounder(mstring in)
     }
 
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
-    if (i_Founder == in)
+    if (i_Founder.CmpNoCase(in)==0)
 	return;
+    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
 
+    MCB(i_CoFounder);
     i_CoFounder = in;
+    MCE(i_CoFounder);
 }
 
 mstring Chan_Stored_t::Founder()
@@ -2533,7 +2631,9 @@ void Chan_Stored_t::Description(mstring in)
 {
     FT("Chan_Stored_t::Description", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
+    MCB(i_Description);
     i_Description = in;
+    MCE(i_Description);
 }
 
 mstring Chan_Stored_t::Description()
@@ -2547,7 +2647,9 @@ void Chan_Stored_t::Password(mstring in)
 {
     FT("Chan_Stored_t::Password", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
+    MCB(i_Password);
     i_Password = in;
+    MCE(i_Password);
 }
 
 mstring Chan_Stored_t::Password()
@@ -2561,7 +2663,9 @@ void Chan_Stored_t::Email(mstring in)
 {
     FT("Chan_Stored_t::Email", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
+    MCB(i_Email);
     i_Email = in;
+    MCE(i_Email);
 }
 
 mstring Chan_Stored_t::Email()
@@ -2575,7 +2679,9 @@ void Chan_Stored_t::URL(mstring in)
 {
     FT("Chan_Stored_t::URL", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
+    MCB(i_URL);
     i_URL = in;
+    MCE(i_URL);
 }
 
 mstring Chan_Stored_t::URL()
@@ -2589,7 +2695,9 @@ void Chan_Stored_t::Comment(mstring in)
 {
     FT("Chan_Stored_t::Comment", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
+    MCB(i_Comment);
     i_Comment = in;
+    MCE(i_Comment);
 }
 	
 mstring Chan_Stored_t::Comment()
@@ -2604,16 +2712,18 @@ unsigned int Chan_Stored_t::CheckPass(mstring nick, mstring password)
 {
     FT("Chan_Stored_t::CheckPass", (nick, password));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
+    unsigned int retval = 0;
+    MCB(failed_passwds.size());
     if (i_Password == password)
-    {
 	failed_passwds.erase(nick.LowerCase());
-	RET(0);
-    }
     else
     {
-	unsigned int retval = ++failed_passwds[nick.LowerCase()];
-	RET(retval);
+	if (failed_passwds.find(nick.LowerCase()) == failed_passwds.end())
+	    failed_passwds[nick.LowerCase()]=0;
+	retval = ++failed_passwds[nick.LowerCase()];
     }
+    MCE(failed_passwds.size());
+    RET(retval);
 }
 
 
@@ -2622,8 +2732,12 @@ void Chan_Stored_t::Suspend(mstring name)
     FT("Chan_Stored_t::Suspend", (name));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
+    MCB(i_Suspend_By);
+    CB(1, i_Suspend_Time);
     i_Suspend_By = name;
     i_Suspend_Time = Now();
+    CE(1, i_Suspend_Time);
+    MCE(i_Suspend_By);
 }
 
 
@@ -2631,7 +2745,9 @@ void Chan_Stored_t::UnSuspend()
 {
     NFT("Chan_Stored_t::UnSuspend");
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+    MCB(i_Suspend_By);
     i_Suspend_By = "";
+    MCE(i_Suspend_By);
 }
 
 
@@ -2677,6 +2793,10 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
     WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
     WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
+    MCB(i_Mlock_On);
+    CB(1, i_Mlock_Off);
+    CB(2, i_Mlock_Key);
+    CB(3, i_Mlock_Limit);
     i_Mlock_On = i_Mlock_Off = i_Mlock_Key = "";
     i_Mlock_Limit = 0;
     vector<mstring> retval;
@@ -2934,6 +3054,10 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str());
     }
+    CE(1, i_Mlock_Off);
+    CE(2, i_Mlock_Key);
+    CE(3, i_Mlock_Limit);
+    MCE(i_Mlock_On);
     NRET(vector<mstring>, retval);
 }
 
@@ -2999,6 +3123,8 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_Off"));
     WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
+    MCB(l_Mlock_Off);
+    CB(1, l_Mlock_On);
     l_Mlock_On = l_Mlock_Off = "";
     vector<mstring> retval;
     mstring output, change = mode.ExtractWord(1, ": ");
@@ -3086,6 +3212,8 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 
     { WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
     WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
+    CB(2, i_Mlock_Off);
+    CB(3, i_Mlock_On);
     // Have to change the REAL mlock
     for (i=0; i<l_Mlock_On.size(); i++)
     {
@@ -3119,7 +3247,10 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	{
 	    i_Mlock_On.Remove((mstring) l_Mlock_Off[i]);
 	}
-    }}
+    }
+    CE(2, i_Mlock_Off);
+    CE(3, i_Mlock_Off);
+    }
 
     if (override_on != "" || override_off != "")
     {
@@ -3157,6 +3288,8 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str());
     }
+    CE(1, l_Mlock_On);
+    MCE(l_Mlock_Off);
     NRET(vector<mstring>, retval);
 }
 
@@ -3201,7 +3334,9 @@ void Chan_Stored_t::Bantime(unsigned long in)
     if (!L_Bantime())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Bantime"));
+	MCB(i_Bantime);
 	i_Bantime = in;
+	MCE(i_Bantime);
     }
 }
 
@@ -3224,7 +3359,9 @@ void Chan_Stored_t::L_Bantime(bool in)
     if (!Parent->chanserv.LCK_Bantime())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Bantime"));
+	MCB(l_Bantime);
 	l_Bantime = in;
+	MCE(l_Bantime);
     }
 }
 
@@ -3247,7 +3384,9 @@ void Chan_Stored_t::Parttime(unsigned long in)
     if (!L_Parttime())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Parttime"));
+	MCB(i_Parttime);
 	i_Parttime = in;
+	MCE(i_Parttime);
     }
 }
 
@@ -3270,7 +3409,9 @@ void Chan_Stored_t::L_Parttime(bool in)
     if (!Parent->chanserv.LCK_Parttime())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Parttime"));
+	MCB(l_Parttime);
 	l_Parttime = in;
+	MCE(l_Parttime);
     }
 }
 
@@ -3293,7 +3434,9 @@ void Chan_Stored_t::Keeptopic(bool in)
     if (!L_Keeptopic())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Keeptopic"));
+	MCB(i_Keeptopic);
 	i_Keeptopic = in;
+	MCE(i_Keeptopic);
     }
 }
 
@@ -3316,7 +3459,9 @@ void Chan_Stored_t::L_Keeptopic(bool in)
     if (!Parent->chanserv.LCK_Keeptopic())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Keeptopic"));
+	MCB(l_Keeptopic);
 	l_Keeptopic = in;
+	MCE(l_Keeptopic);
     }
 }
 
@@ -3339,7 +3484,9 @@ void Chan_Stored_t::Topiclock(bool in)
     if (!L_Topiclock())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topiclock"));
+	MCB(i_Topiclock);
 	i_Topiclock = in;
+	MCE(i_Topiclock);
     }
 }
 
@@ -3362,7 +3509,9 @@ void Chan_Stored_t::L_Topiclock(bool in)
     if (!Parent->chanserv.LCK_Topiclock())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Topiclock"));
+	MCB(l_Topiclock);
 	l_Topiclock = in;
+	MCE(l_Topiclock);
     }
 }
 
@@ -3385,7 +3534,9 @@ void Chan_Stored_t::Private(bool in)
     if (!L_Private())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Private"));
+	MCB(i_Private);
 	i_Private = in;
+	MCE(i_Private);
     }
 }
 
@@ -3408,7 +3559,9 @@ void Chan_Stored_t::L_Private(bool in)
     if (!Parent->chanserv.LCK_Private())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Private"));
+	MCB(l_Private);
 	l_Private = in;
+	MCE(l_Private);
     }
 }
 
@@ -3431,7 +3584,9 @@ void Chan_Stored_t::Secureops(bool in)
     if (!L_Secureops())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Secureops"));
+	MCB(i_Secureops);
 	i_Secureops = in;
+	MCE(i_Secureops);
     }
 }
 
@@ -3454,7 +3609,9 @@ void Chan_Stored_t::L_Secureops(bool in)
     if (!Parent->chanserv.LCK_Secureops())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Secureops"));
+	MCB(l_Secureops);
 	l_Secureops = in;
+	MCE(l_Secureops);
     }
 }
 
@@ -3477,7 +3634,9 @@ void Chan_Stored_t::Secure(bool in)
     if (!L_Secure())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Secure"));
+	MCB(i_Secure);
 	i_Secure = in;
+	MCE(i_Secure);
     }
 }
 
@@ -3500,7 +3659,9 @@ void Chan_Stored_t::L_Secure(bool in)
     if (!Parent->chanserv.LCK_Secure())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Secure"));
+	MCB(l_Secure);
 	l_Secure = in;
+	MCE(l_Secure);
     }
 }
 
@@ -3523,7 +3684,9 @@ void Chan_Stored_t::NoExpire(bool in)
     if (!L_NoExpire())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_NoExpire"));
+	MCB(i_NoExpire);
 	i_NoExpire = in;
+	MCE(i_NoExpire);
     }
 }
 
@@ -3546,7 +3709,9 @@ void Chan_Stored_t::L_NoExpire(bool in)
     if (!Parent->chanserv.LCK_NoExpire())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_NoExpire"));
+	MCB(l_NoExpire);
 	l_NoExpire = in;
+	MCE(l_NoExpire);
     }
 }
 
@@ -3569,7 +3734,9 @@ void Chan_Stored_t::Anarchy(bool in)
     if (!L_Anarchy())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Anarchy"));
+	MCB(i_Anarchy);
 	i_Anarchy = in;
+	MCE(i_Anarchy);
     }
 }
 
@@ -3592,7 +3759,9 @@ void Chan_Stored_t::L_Anarchy(bool in)
     if (!Parent->chanserv.LCK_Anarchy())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Anarchy"));
+	MCB(l_Anarchy);
 	l_Anarchy = in;
+	MCE(l_Anarchy);
     }
 }
 
@@ -3615,7 +3784,9 @@ void Chan_Stored_t::KickOnBan(bool in)
     if (!L_KickOnBan())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_KickOnBan"));
+	MCB(i_KickOnBan);
 	i_KickOnBan = in;
+	MCE(i_KickOnBan);
     }
 }
 
@@ -3638,7 +3809,9 @@ void Chan_Stored_t::L_KickOnBan(bool in)
     if (!Parent->chanserv.LCK_KickOnBan())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_KickOnBan"));
+	MCB(l_KickOnBan);
 	l_KickOnBan = in;
+	MCE(l_KickOnBan);
     }
 }
 
@@ -3661,7 +3834,9 @@ void Chan_Stored_t::Restricted(bool in)
     if (!L_Restricted())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Restricted"));
+	MCB(i_Restricted);
 	i_Restricted = in;
+	MCE(i_Restricted);
     }
 }
 
@@ -3684,7 +3859,9 @@ void Chan_Stored_t::L_Restricted(bool in)
     if (!Parent->chanserv.LCK_Restricted())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Restricted"));
+	MCB(l_Restricted);
 	l_Restricted = in;
+	MCE(l_Restricted);
     }
 }
 
@@ -3707,7 +3884,9 @@ void Chan_Stored_t::Join(bool in)
     if (!L_Join())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Join"));
+	MCB(i_Join);
 	i_Join = in;
+	MCE(i_Join);
     }
 }
 
@@ -3730,7 +3909,9 @@ void Chan_Stored_t::L_Join(bool in)
     if (!Parent->chanserv.LCK_Join())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Join"));
+	MCB(l_Join);
 	l_Join = in;
+	MCE(l_Join);
     }
 }
 
@@ -3753,7 +3934,9 @@ bool Chan_Stored_t::Revenge(mstring in)
     if (!L_Revenge())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Revenge"));
+	MCB(i_Revenge);
 	i_Revenge = in;
+	MCE(i_Revenge);
 	RET(true);
     }
     RET(false);
@@ -3778,7 +3961,9 @@ void Chan_Stored_t::L_Revenge(bool in)
     if (!Parent->chanserv.LCK_Revenge())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Revenge"));
+	MCB(l_Revenge);
 	l_Revenge = in;
+	MCE(l_Revenge);
     }
 }
 
@@ -3929,8 +4114,10 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDate
     if (!Access_find(entry))
     {
 	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
+	MCB(i_Access.size());
 	tmp = i_Access.insert(entlist_val_t<long>(
 				entry, value, nick, modtime));
+	MCE(i_Access.size());
 	if (tmp.second)
 	    Access = tmp.first;
 	else
@@ -3952,7 +4139,9 @@ bool Chan_Stored_t::Access_erase()
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     if (Access != i_Access.end())
     {
+	MCB(i_Access.size());
 	i_Access.erase(Access);
+	MCE(i_Access.size());
 	Access = i_Access.end();
 	RET(true);
     }
@@ -4147,8 +4336,10 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
     if (!Akick_find(entry))
     {
 	pair<set<entlist_val_t<mstring> >::iterator, bool> tmp;
+	MCB(i_Akick.size());
 	tmp = i_Akick.insert(entlist_val_t<mstring>(
 				entry, value, nick, modtime));
+	MCE(i_Akick.size());
 	if (tmp.second)
 	    Akick = tmp.first;
 	else
@@ -4165,7 +4356,9 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
 bool Chan_Stored_t::Akick_insert(mstring entry, mstring nick, mDateTime modtime)
 {
     FT("Chan_Stored_t::Akick_insert", (entry, nick, modtime));
+    MCB(i_Akick.size());
     bool retval = Akick_insert(entry, Parent->chanserv.DEF_Akick_Reason(), nick, modtime);
+    MCE(i_Akick.size());
     RET(retval);
 }
 
@@ -4176,7 +4369,9 @@ bool Chan_Stored_t::Akick_erase()
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick != i_Akick.end())
     {
+	MCB(i_Akick.size());
 	i_Akick.erase(Akick);
+	MCE(i_Akick.size());
 	Akick = i_Akick.end();
 	RET(true);
     }
@@ -4262,7 +4457,9 @@ bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick, mDateTime modtime)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     if (!Greet_find(entry))
     {
+	MCB(i_Greet.size());
 	i_Greet.push_back(entlist_t(entry, nick, modtime));
+	MCE(i_Greet.size());
 	Greet = i_Greet.end();
 	Greet--;
 	RET(true);
@@ -4282,7 +4479,9 @@ bool Chan_Stored_t::Greet_erase()
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     if (Greet != i_Greet.end())
     {
+	MCB(i_Greet.size());
 	i_Greet.erase(Greet);
+	MCE(i_Greet.size());
 	Greet = i_Greet.end();
 	RET(true);
     }
@@ -4323,7 +4522,9 @@ bool Chan_Stored_t::Message_insert(mstring entry, mstring nick)
     FT("Chan_Stored_t::Message_insert", (entry, nick));
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    MCB(i_Message.size());
     i_Message.push_back(entlist_t(entry, nick));
+    MCE(i_Message.size());
     Message = i_Message.end(); Message--;
     RET(true);
 }
@@ -4336,7 +4537,9 @@ bool Chan_Stored_t::Message_erase()
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
     if (Message != i_Message.end())
     {
+	MCB(i_Message.size());
 	i_Message.erase(Message);
+	MCE(i_Message.size());
 	Message = i_Message.end();
 	RET(true);
     }

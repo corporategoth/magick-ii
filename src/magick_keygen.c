@@ -19,6 +19,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2000/09/05 10:53:07  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.6  2000/08/28 10:51:38  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -84,7 +91,7 @@ int main(int argc, char **argv)
 #else
     size_t i, key_size;
     unsigned char inkey[KEYLEN], outkey[KEYLEN], filename[512];
-    FILE *outfile, *tty;
+    FILE *infile, *outfile, *tty;
     des_key_schedule key1, key2;
     des_cblock ckey1, ckey2;
 #ifdef HAVE_TERMIO_H
@@ -99,18 +106,26 @@ int main(int argc, char **argv)
     memset(inkey, 0, KEYLEN);
     memset(outkey, 0, KEYLEN);
 
-    printf("Enter filename to output to [%s]: ", DEF_KEYNAME);
-    fgets(filename, 512, stdin);
-    if (strlen(filename) < 2)
+    if (argc>1)
     {
-	strcpy(filename, DEF_KEYNAME);
+	strcpy(filename, argv[1]);
+	filename[511]=0;
     }
     else
     {
-	filename[511]=0;
-	for (i=0; i<strlen(filename); i++)
-	    if (filename[i]<32)
-		filename[i]=0;
+	printf("Enter filename to output to [%s]: ", DEF_KEYNAME);
+	fgets(filename, 512, stdin);
+	if (strlen(filename) < 2)
+	{
+	    strcpy(filename, DEF_KEYNAME);
+	}
+	else
+	{
+	    filename[511]=0;
+	    for (i=0; i<strlen(filename); i++)
+		if (filename[i]<32)
+		    filename[i]=0;
+	}
     }
     if ((outfile = fopen(filename, "w")) == NULL)
     {
@@ -118,52 +133,69 @@ int main(int argc, char **argv)
 	return 1;
     }
 
-    /* This crap is needed to turn of echoing password */
+    memset(filename, 0, 512);
+    if (argc>2)
+    {
+	strcpy(filename, argv[2]);
+	filename[511]=0;
+	if ((infile = fopen(filename, "r")) == NULL)
+	{
+	    fprintf(stderr, "Could not open plain-text keyfile.\n");
+	    return 2;
+	}
+	key_size = fread(inkey, sizeof(char), KEYLEN, infile);
+	inkey[KEYLEN-1]=0;
+    }
+    else
+    {
+
+	/* This crap is needed to turn of echoing password */
 #ifdef HAVE_TERMIO_H
-    if ((tty = fopen("/dev/tty", "r")) == NULL)
-	tty = stdin;
-    ioctl(fileno(tty), TCGETA,&tty_orig);
-    memcpy(&tty_new, &tty_orig, sizeof(tty_orig));
-    tty_new.c_lflag &= ~ECHO;
-    ioctl(fileno(tty), TCSETA, &tty_new);
+	if ((tty = fopen("/dev/tty", "r")) == NULL)
+	    tty = stdin;
+	ioctl(fileno(tty), TCGETA,&tty_orig);
+	memcpy(&tty_new, &tty_orig, sizeof(tty_orig));
+	tty_new.c_lflag &= ~ECHO;
+	ioctl(fileno(tty), TCSETA, &tty_new);
 #endif
 
-    printf("Enter database key: ");
-    fgets(inkey, KEYLEN, tty);
-    inkey[KEYLEN-1]=0;
-    key_size = strlen(inkey);
-    if (key_size != KEYLEN-1)
-	inkey[--key_size]=0;
-    printf("\n");
-    if (key_size < MIN_KEYLEN)
-    {
-	fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
+	printf("Enter database key: ");
+	fgets(inkey, KEYLEN, tty);
+	inkey[KEYLEN-1]=0;
+	key_size = strlen(inkey);
+	if (key_size != KEYLEN-1)
+	    inkey[--key_size]=0;
+	printf("\n");
+	if (key_size < MIN_KEYLEN)
+	{
+	    fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
+#ifdef HAVE_TERMIO_H
+	    ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+	    return 3;
+	}
+
+	printf("Re-Enter database key: ");
+	fgets(outkey, KEYLEN, tty);
+	outkey[KEYLEN-1]=0;
+	key_size = strlen(outkey);
+	if (key_size != KEYLEN-1)
+	    outkey[--key_size]=0;
+	printf("\n");
+	if (strcmp(inkey, outkey)!=0)
+	{
+	    fprintf(stderr, "Key mismatch, aborting key generation.\n");
+#ifdef HAVE_TERMIO_H
+	    ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+	    return 4;
+	}
+
+	memset(outkey, 0, KEYLEN);
 #ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
-	return 2;
     }
-
-    printf("Re-Enter database key: ");
-    fgets(outkey, KEYLEN, tty);
-    outkey[KEYLEN-1]=0;
-    key_size = strlen(outkey);
-    if (key_size != KEYLEN-1)
-	outkey[--key_size]=0;
-    printf("\n");
-    if (strcmp(inkey, outkey)!=0)
-    {
-	fprintf(stderr, "Key mismatch, aborting key generation.\n");
-#ifdef HAVE_TERMIO_H
-	ioctl(fileno(tty), TCSETA, &tty_orig);
-#endif
-	return 3;
-    }
-
-    memset(outkey, 0, KEYLEN);
-#ifdef HAVE_TERMIO_H
-    ioctl(fileno(tty), TCSETA, &tty_orig);
-#endif
 
     des_string_to_key(crypto_key1,&ckey1);
     des_set_key(&ckey1,key1);
@@ -176,6 +208,7 @@ int main(int argc, char **argv)
 
     fwrite(outkey, sizeof(unsigned char), key_size, outfile);
     fclose(outfile);
+    printf("Created %d byte keyfile.\n", key_size);
 
 #endif
     return 0;

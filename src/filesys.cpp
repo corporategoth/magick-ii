@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/09/05 10:53:06  prez
+** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
+** tracing -- also modified keygen to allow for cmdline generation (ie.
+** specify 1 option and enter keys, or 2 options and the key is read from
+** a file).  This allows for paragraphs with \n's in them, and helps so you
+** do not have to type out 1024 bytes :)
+**
 ** Revision 1.47  2000/09/02 07:20:45  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -1005,6 +1012,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
+    DumpE();
     Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
 		i_DccId, i_Source.c_str(), "SEND");
     CP(("DCC %d initialized", i_DccId));
@@ -1062,6 +1070,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
+    DumpE();
     Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
 		i_DccId, i_Source.c_str(), "GET");
     CP(("DCC %d initialized", i_DccId));
@@ -1250,7 +1259,9 @@ void DccXfer::ChgNick(mstring in)
 {
     FT("DccXfer::ChgNick", (in));
     WLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
+    MCB(i_Source);
     i_Source = in;
+    MCE(i_Source);
 }
 
 void DccXfer::Cancel()
@@ -1260,8 +1271,12 @@ void DccXfer::Cancel()
     WLOCK2(("DccMap", "xfers", i_DccId, "i_File"));
     if (Parent->nickserv.IsLive(i_Source))
 	Parent->nickserv.live[i_Source.LowerCase()].InFlight.Cancel();
+    MCB(i_Total);
+    CB(1, i_File.Length());
     i_Total = 0;
     i_File.Close();
+    CE(1, i_File.Length());
+    MCE(i_Total);
 }
 
 void DccXfer::Action()
@@ -1271,6 +1286,7 @@ void DccXfer::Action()
     unsigned long verify;
 
     WLOCK(("DccMap", "xfers", i_DccId));
+    DumpB();
     if (i_Type == Get)
     {
 	COM(("Executing action for DCC %d GET", i_DccId));
@@ -1458,6 +1474,7 @@ void DccXfer::Action()
 	    i_File.Close();
 	}
     }
+    DumpE();
 }
 
 size_t DccXfer::Average(time_t secs)
