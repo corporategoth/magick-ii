@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/05/13 14:05:25  ungod
+** no message
+**
 ** Revision 1.63  2000/05/13 08:26:44  ungod
 ** no message
 **
@@ -269,8 +272,27 @@ protected:
 public:
     entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false);
-    void operator=(const entlist_val_t &in);
+    entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false)
+        : entlist_t(entry,nick,modtime)
+    {
+        FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "(T) value", nick,
+    							modtime, stupid));
+        i_Value = value;
+        i_Stupid = stupid;
+    }
+    void operator=(const entlist_val_t &in)
+    {
+        FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t<T> &) in"));
+        i_Entry=in.i_Entry;
+        i_Value=in.i_Value;
+        i_Last_Modify_Time=in.i_Last_Modify_Time;
+        i_Last_Modifier=in.i_Last_Modifier;
+        i_Stupid = in.i_Stupid;
+        map<mstring,mstring>::const_iterator i;
+        i_UserDef.clear();
+        for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+    	i_UserDef[i->first]=i->second;
+    }
 
     bool Value(pair<T1,T2> value, mstring nick);
     pair<T1,T2> Value()const			{ return i_Value; }
