@@ -358,9 +358,10 @@ private:
     set<mstring> Revenge_Levels;
 
     // Config Entries ...
-    unsigned long expire;			// How long to keep channels
+    bool hide;			// Wether to set +s
+    unsigned long expire;	// How long to keep channels
     mstring def_akick_reason;	// Default AKICK reason
-    unsigned int passfail;		// How many times they can fail ident
+    unsigned int passfail;	// How many times they can fail ident
     unsigned long chankeep;	// Time to keep channel after AKICK
     mstring def_mlock;		// Default MLOCK string
     mstring lck_mlock;		// Locked MLOCK modes
@@ -468,6 +469,7 @@ public:
     bool IsRevengeLevel(mstring level)
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }
+    bool Hide()			{ return hide; }
     unsigned long Expire()	{ return expire; }
     mstring DEF_Akick_Reason()	{ return def_akick_reason; }
     unsigned int Passfail()	{ return passfail; }

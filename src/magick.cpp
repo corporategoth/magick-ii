@@ -1061,6 +1061,8 @@ bool Magick::get_config_values()
 	    if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
 	    {
 		chanserv.signon(chanserv.names.ExtractWord(i+1, " "));
+		if (i==0 && chanserv.hide)
+		    Parent->server.MODE(chanserv.names.ExtractWord(i+1, " "), "+s");
 	    }
 	}
     }
@@ -1302,6 +1304,20 @@ bool Magick::get_config_values()
     in.Read(ts_NickServ+"LCK_LANGUAGE",&nickserv.lck_language,false);
     in.Read(ts_NickServ+"PICSIZE",&nickserv.picsize,0);
     in.Read(ts_NickServ+"PICEXT",&nickserv.picext,"jpg gif bmp tif");
+
+    in.Read(ts_ChanServ+"HIDE",&value_bool,false);
+    if (!reconnect && Connected() && value_bool != chanserv.hide)
+    {
+	chanserv.hide = value_bool;
+	if (nickserv.IsLive(chanserv.FirstName()))
+	{
+	    if (chanserv.hide)
+		Parent->server.MODE(chanserv.FirstName(), "+s");
+	    else
+		Parent->server.MODE(chanserv.FirstName(), "-s");
+	}
+    }
+
 
     in.Read(ts_ChanServ+"EXPIRE",&value_mstring,"2w");
     if (FromHumanTime(value_mstring))

@@ -2009,13 +2009,16 @@ void NetworkServ::numeric_execute(const mstring & data)
 
 		    if (Parent->chanserv.FirstName() == *k)
 		    {
+			if (Parent->chanserv.Hide())
+			    MODE(*k, "+s");
 			map<mstring,Chan_Stored_t>::iterator iter;
 			for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
 			{
 			    // If its live and got JOIN on || not live and mlock +k or +i
 			    if ((Parent->chanserv.IsLive(iter->first) && iter->second.Join()) ||
 				(!Parent->chanserv.IsLive(iter->first) &&
-				(iter->second.Mlock_Key() || iter->second.Mlock().Contains("i"))))
+				(iter->second.Mlock_On().Contains("k") ||
+				iter->second.Mlock_On().Contains("i"))))
 				JOIN(Parent->chanserv.FirstName(), iter->first);
 			}
 		    }

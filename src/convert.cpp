@@ -951,20 +951,20 @@ CreateChanEntry(ChanInfo *ci)
 
 	if (ci->flags & CI_KEEPTOPIC && !out.L_Keeptopic())
 	    out.i_Keeptopic = true;
-	if (ci->flags & CI_SECUREOPS && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
-	if (ci->flags & CI_PRIVATE && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
-	if (ci->flags & CI_TOPICLOCK && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
-	if (ci->flags & CI_RESTRICTED && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
-	if (ci->flags & CI_LEAVEOPS && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
-	if (ci->flags & CI_SECURE && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
-	if (ci->flags & CI_JOIN && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
+	if (ci->flags & CI_SECUREOPS && !out.L_Secureops())
+	    out.i_Secureops = true;
+	if (ci->flags & CI_PRIVATE && !out.L_Private())
+	    out.i_Private = true;
+	if (ci->flags & CI_TOPICLOCK && !out.L_Topiclock())
+	    out.i_Topiclock = true;
+	if (ci->flags & CI_RESTRICTED && !out.L_Restricted())
+	    out.i_Restricted = true;
+	if (ci->flags & CI_LEAVEOPS && !out.L_Anarchy())
+	    out.i_Anarchy = true;
+	if (ci->flags & CI_SECURE && !out.L_Secure())
+	    out.i_Secure = true;
+	if (ci->flags & CI_JOIN && !out.L_Join())
+	    out.i_Join = true;
 	if (!out.L_Revenge())
 	{
 	    char revlevel = ((ci->flags & CI_REV3) << 2) |
