@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2001/05/14 07:17:28  prez
+** Fixed encryption :)
+**
 ** Revision 1.15  2001/05/14 04:46:32  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -235,21 +238,27 @@ int main(int argc, char **argv)
     ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
 
+    if (memcmp(key1, key2, MAX_KEYLEN)==0)
+    {
+	fprintf(stderr, "Key 1 and key 2 must be different!\n");
+	return 5;
+    }
+
     memset(instr, 0, VERIFY_SIZE);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
     mstring_snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
 #else
     mstring_snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
-    mCRYPT(instr, outstr, VERIFY_SIZE, key1, key2, 1);
-    fwrite(outstr, sizeof(unsigned char), VERIFY_SIZE, outfile);
+    mCRYPT(instr, outstr, VERIFY_SIZE, CRYPTO_KEY1, CRYPTO_KEY2, 1);
+    fwrite(outstr, sizeof(char), VERIFY_SIZE, outfile);
 
     memset(verify, 0, MAX_KEYLEN+1);
     mCRYPT(key1, verify, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
-    fwrite(verify, sizeof(unsigned char), MAX_KEYLEN, outfile);
+    fwrite(verify, sizeof(char), MAX_KEYLEN, outfile);
     memset(verify, 0, MAX_KEYLEN+1);
     mCRYPT(key2, verify, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
-    fwrite(verify, sizeof(unsigned char), MAX_KEYLEN, outfile);
+    fwrite(verify, sizeof(char), MAX_KEYLEN, outfile);
     fclose(outfile);
     printf("Created %d byte keyfile.\n", VERIFY_SIZE + (2*MAX_KEYLEN));
 
@@ -286,7 +295,7 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
 	BF_cbc_encrypt(buf2, buf1, 8, &bfkey2, ivec2, enc ? BF_DECRYPT : BF_ENCRYPT);
 	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec3, enc ? BF_ENCRYPT : BF_DECRYPT);
 
-	memcpy(out, buf2, 8);
+	memcpy(&out[i], buf2, 8);
     }
 
     return i;

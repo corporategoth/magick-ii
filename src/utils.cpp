@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/05/14 07:17:28  prez
+** Fixed encryption :)
+**
 ** Revision 1.63  2001/05/14 04:46:32  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -567,7 +570,7 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
 	BF_cbc_encrypt(buf2, buf1, 8, &bfkey2, ivec2, enc ? BF_DECRYPT : BF_ENCRYPT);
 	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec3, enc ? BF_ENCRYPT : BF_DECRYPT);
 
-	memcpy(out, buf2, 8);
+	memcpy(&out[i], buf2, 8);
     }
 
     return i;
