@@ -15,8 +15,8 @@ using namespace std;
 class Magick
 {
 	vector<mstring> argv;
-	Bob bob;
 public:
+	Bob bob;
 	Magick(int inargc, char **inargv);
 	int Start();
 };

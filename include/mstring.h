@@ -7,6 +7,16 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
+	mstring& Prepend(char ch, int count=1);
+	mstring& Prepend(const mstring& in);
+	mstring& Append(char ch, int count=1);
+	mstring& Append(const mstring& in);
+	// values for second parameter of CompareTo function
+	enum caseCompare {ccExact, ccIgnoreCase};
+    // values for first parameter of Strip function
+	enum stripType {stLeading, stTrailing , stBoth };
+
+	int CompareTo(const mstring& in, caseCompare cmp=ccExact);
 	int FormatV(const char *pszFormat, va_list argptr);
 	int Format(const char *pszFormat, ...);
 	// Matches using '*' and '?' rules

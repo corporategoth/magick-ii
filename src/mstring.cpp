@@ -248,3 +248,35 @@ int mstring::FormatV(const char * pszFormat, va_list argptr)
 		delete [] buffer;
 	return iLen;
 }
+
+int mstring::CompareTo(const mstring & in, caseCompare cmp)
+{
+	if(cmp==ccExact)
+		return Cmp(in);
+	else
+		return CmpNoCase(in);
+}
+
+mstring& mstring::Append(const mstring & in)
+{
+	*this=*this+in;
+	return *this;
+}
+
+mstring& mstring::Append(char ch, int count)
+{
+	*this=*this+mstring(count,ch);
+	return *this;
+}
+
+mstring& mstring::Prepend(const mstring & in)
+{
+	*this=in+*this;
+	return *this;
+}
+
+mstring& mstring::Prepend(char ch, int count)
+{
+	*this=mstring(count,ch)+*this;
+	return *this;
+}
