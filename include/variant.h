@@ -23,13 +23,13 @@ using namespace std;
 class mVariant
 {
 private:
-	union value {
+	union value_union_t {
 		short ShortValue;
 		int IntValue;
 		char CharValue;
 		float FloatValue;
 		double DoubleValue;
-		char *StringValue;
+		const char *StringValue;
 		// this will use the raw datatype
 		//mDateTime DateValue;
 		bool BoolValue;
@@ -37,13 +37,25 @@ private:
 		unsigned short UShortValue;
 		unsigned int UIntValue;
 		void *PtrValue;
-	};
+	} value;
 public:
 	enum typeenum { VarEmpty, VarShort, VarInt, VarChar, 
 		VarFloat, VarDouble, VarString, VarNull, VarDate, VarBoolean, VarUChar, VarUShort, VarUInt, VarPtr};
 private:
 	typeenum valuetype;
-
+public:
+	 mVariant(void *in);
+	 mVariant(unsigned int in);
+	 mVariant(unsigned short in);
+	 mVariant(unsigned char in);
+	 mVariant(bool in);
+	 mVariant(const char *in);
+	 mVariant(double in);
+	 mVariant(float in);
+	 mVariant(char in);
+	 mVariant(int in);
+	 mVariant(short in);
+	mVariant();
 	
 };
 
