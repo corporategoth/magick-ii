@@ -252,9 +252,9 @@ AC_CHECK_HEADERS(vector.h)
 AC_CHECK_HEADERS(list.h)
 AC_CHECK_HEADERS(deque.h)
 AC_CHECK_HEADERS(algorithm.h)
-AC_CHECK_HEADERS(utility.h)
 AC_CHECK_HEADERS(exceptions.h)
 dnl Cant check this, conflicts with STD C
+dnl AC_CHECK_HEADERS(utility.h)
 dnl AC_CHECK_HEADERS(string.h)
 
 AC_CHECK_FUNCS(itoa)
