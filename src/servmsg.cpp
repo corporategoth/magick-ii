@@ -230,8 +230,10 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 
 void ServMsg::load_database(wxInputStream& in)
 {
+    FT("ServMsg::load_database", ("(wxInputStream &) in"));
 }
 
 void ServMsg::save_database(wxOutputStream& out)
 {
+    FT("ServMsg::save_database", ("(wxOutputStream &) out"));
 }

@@ -8164,6 +8164,7 @@ bool ChanServ::IsLVL(mstring level)
 
 void ChanServ::save_database(wxOutputStream& out)
 {
+    FT("ChanServ::save_database", ("(wxOutputStream &) out"));
 	map<mstring,Chan_Stored_t>::iterator i;
 	out<<stored.size();
         // todo call script saving hooks.
@@ -8176,12 +8177,13 @@ void ChanServ::save_database(wxOutputStream& out)
 
 void ChanServ::load_database(wxInputStream& in)
 {
+    FT("ChanServ::load_database", ("(wxInputStream &) in"));
     map<mstring,Chan_Stored_t>::size_type i,j;
     in>>i;
     Chan_Stored_t tmpstored;
     for(j=0;j<i;j++)
     {
 	in>>tmpstored;
-	stored[tmpstored.Name()]=tmpstored;
+	stored[tmpstored.Name().LowerCase()]=tmpstored;
     }
 }

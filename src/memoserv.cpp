@@ -1508,6 +1508,7 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 
 void MemoServ::load_database(wxInputStream& in)
 {
+    FT("MemoServ::load_database", ("(wxInputStream &) in"));
     map<mstring,list<Memo_t> >::size_type i,count, i2, count2;
     in>>count;
     nick.clear();
@@ -1539,6 +1540,7 @@ void MemoServ::load_database(wxInputStream& in)
 
 void MemoServ::save_database(wxOutputStream& out)
 {
+    FT("MemoServ::save_database", ("(wxOutputStream &) out"));
     out<<nick.size();
     map<mstring,list<Memo_t> >::iterator i;
     for(i=nick.begin();i!=nick.end();i++)

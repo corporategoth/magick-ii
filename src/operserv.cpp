@@ -2267,8 +2267,10 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 
 void OperServ::load_database(wxInputStream& in)
 {
+    FT("OperServ::load_database", ("(wxInputStream &) in"));
 }
 
 void OperServ::save_database(wxOutputStream& out)
 {
+    FT("OperServ::save_database", ("(wxOutputStream &) out"));
 }

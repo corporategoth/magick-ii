@@ -153,6 +153,7 @@ int Magick::Start()
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
 
+#if 0
 #ifndef WIN32
     if ((i = fork ()) < 0)
     {
@@ -166,6 +167,7 @@ int Magick::Start()
 	//log_perror ("setpgid()");
 	RET(1);
     }
+#endif
 #endif
 
     wxFile pidfile;
@@ -1725,6 +1727,7 @@ void Magick::load_databases()
     // the below is megaly fucked up, need to do load from file to memory stream, 
     // then pass that stream on down to the load_database code
 
+    NFT("Magick::load_databases");
 /*    wxMemoryStream chanservstrm;
     wxInputStream *strm=create_input_stream(chanservstrm);
     chanserv.load_database(*strm);
@@ -1738,19 +1741,22 @@ void Magick::load_databases()
 	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
 
     wxFileInputStream finput(databasefile);
-    Parent->operserv.load_database(finput);
-    Parent->nickserv.load_database(finput);
-    Parent->chanserv.load_database(finput);
-    Parent->memoserv.load_database(finput);
-    Parent->commserv.load_database(finput);
-    Parent->servmsg.load_database(finput);
-    // Scripted services?
-
+    if (finput.Ok())
+    {
+	Parent->operserv.load_database(finput);
+	Parent->nickserv.load_database(finput);
+	Parent->chanserv.load_database(finput);
+	Parent->memoserv.load_database(finput);
+	Parent->commserv.load_database(finput);
+	Parent->servmsg.load_database(finput);
+	// Scripted services?
+    }
 }
 
 void Magick::save_databases()
 {
     // to buggered to think about it tonight, maybe tommorow night.
+    NFT("Magick::save_databases");
 /*    wxOutputStream *strm;
 
     wxMemoryStream chanservstream;
@@ -1772,6 +1778,7 @@ void Magick::save_databases()
     else
 	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
 
+    CP(("Database Filename being used: %s", databasefile.c_str()));
     wxFileOutputStream foutput(databasefile);
     Parent->operserv.save_database(foutput);
     Parent->nickserv.save_database(foutput);

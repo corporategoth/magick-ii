@@ -1499,18 +1499,20 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 
 void CommServ::load_database(wxInputStream& in)
 {
+    FT("CommServ::load_database", ("(wxInputStream &) in"));
     int i;
     in>>i;
     Committee tmpcommitee;
     for(int j=0;j<i;j++)
     {
 	in>>tmpcommitee;
-	list[tmpcommitee.Name()]=tmpcommitee;
+	list[tmpcommitee.Name().UpperCase()]=tmpcommitee;
     }
 }
 
 void CommServ::save_database(wxOutputStream& out)
 {
+    FT("CommServ::save_database", ("(wxOutputStream &) out"));
     out<<list.size();
     for(map<mstring,Committee>::iterator i=list.begin();i!=list.end();i++)
 	out<<i->second;

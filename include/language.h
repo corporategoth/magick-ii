@@ -2,10 +2,10 @@
  *
  * Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Monday January 17 23:54:53 EST 2000
+ * Created on Tuesday January 18 20:11:51 EST 2000
  */
 
-int def_langent =      684;
+int def_langent =      685;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -30,7 +30,7 @@ char *def_lang[] = {
 "; the code with a value direct from Magick.  There are three",
 "; tables listed below which outline the codes and their meanings.",
 "; All lines in this file starting with ';' are comments.  If your",
-"; response string has leading spaces, you MUST put a '\' in front",
+"; response string has leading spaces, you MUST put a '\\' in front",
 "; of the first space, else leading spaces are stripped.",
 ";",
 "; The C replacement codes are used to insert a value from Magick",
@@ -167,7 +167,7 @@ char *def_lang[] = {
 "ONOFF_ONE          =Service %s has been turned %s by %s.",
 "",
 "BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)",
-"BREAKDOWN          =%-40s  % 3.3fs  %5d (%3d)  %3.2f%%",
+"BREAKDOWN          =\"%-40s  % 3.3fs  %5d (%3d)  %3.2f%%\"",
 "ON                 =ON",
 "OFF                =OFF",
 "",
@@ -495,6 +495,7 @@ char *def_lang[] = {
 "NOTLOCKGREET       =Your greeting for channel %s is not locked.",
 "ISLOCKED           =%s for channel %s is locked.",
 "ISNOTLOCKED        =%s for channel %s is not locked.",
+"NOREVENGE          =Revenge level %s is not valid.",
 "",
 ";",
 "; This section contains the output used at the end of SUCCESSFULL",
@@ -674,13 +675,13 @@ char *def_lang[] = {
 "NEWS               =#%d from %s to %s sent %s ago.",
 "NEWS_LIST          =%c#%d from %s to %s sent %s ago - \"%s\"",
 "MEMO               =#%d from %s sent %s ago.",
-"NEWS_LIST          =%c#%d from %s sent %s ago - \"%s\"",
+"MEMO_LIST          =%c#%d from %s sent %s ago - \"%s\"",
 "CS_UNREAD          =News articles %s for channel %s have been unread.",
 "CS_UNREAD_ALL      =All news articles for channel %s have been unread.",
 "NS_UNREAD          =Your memos %s have been unread.",
 "NS_UNREAD_ALL      =All your memos have been unread.",
 "CS_NOTDEL          =News articles %s for channel %s have NOT been deleted.",
- "CS_DEL             =News articles %s for channel %s have been deleted.",
+"CS_DEL             =News articles %s for channel %s have been deleted.",
 "CS_DEL_ALL         =All news articles for channel %s have been deleted.",
 "NS_DEL             =Your memos %s have been deleted.",
 "NS_DEL_ALL         =All your memos have been deleted.",

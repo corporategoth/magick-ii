@@ -552,6 +552,6 @@ mstring LoggerTask::logname(threadtype_enum type)
 
 void LoggerTask::logmessage_i(threadtype_enum type,const mstring& data)
 {
-    wxFileOutputStream out(logname(type),true); // true sets append to true.
+    wxFileOutputStream out(Parent->Services_Dir()+DirSlash+logname(type),true); // true sets append to true.
     out << data.c_str() << wxEndL;
 }
