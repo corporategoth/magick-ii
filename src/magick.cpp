@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.312  2001/05/22 22:57:10  prez
+** Fixed nick linking/idetify, and recognition of committee heads.
+**
 ** Revision 1.311  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -3184,7 +3187,7 @@ bool Magick::ValidateLogger(ACE_Log_Msg *instance) const
     FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
     if (instance == NULL)
-	return false;
+	RET(false);
 
     if (instance->msg_callback() != logger)
     {
@@ -3208,7 +3211,7 @@ bool Magick::ValidateLogger(ACE_Log_Msg *instance) const
 	    instance->clr_flags(ACE_Log_Msg::MSG_CALLBACK);
 	}
     }
-    return true;
+    RET(true);
 }
 
 bool Magick::ActivateLogger()

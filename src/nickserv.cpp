@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.177  2001/05/22 22:57:10  prez
+** Fixed nick linking/idetify, and recognition of committee heads.
+**
 ** Revision 1.176  2001/05/22 05:17:44  prez
 ** Fixed nickserv ident from slave nick bug.
 **
@@ -3047,7 +3050,7 @@ bool Nick_Stored_t::Slave(const mstring& nick, const mstring& password,
     if (Host().empty())
     {
 	{ RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Forbidden"));
-	if (i_Forbidden || CheckPass(password))
+	if (i_Forbidden || !CheckPass(password))
 	{
 	    RET(false);
 	}}

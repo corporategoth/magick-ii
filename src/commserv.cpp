@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2001/05/22 22:57:10  prez
+** Fixed nick linking/idetify, and recognition of committee heads.
+**
 ** Revision 1.100  2001/05/17 19:18:54  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -602,7 +605,7 @@ bool Committee_t::IsHead(const mstring& nick) const
     FT("Committee_t::IsHead", (nick));
 
     RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "i_Head"),
-	!i_Head.empty() && i_Head.IsSameAs(nick, false))
+	!i_Head.empty() && i_Head.IsSameAs(nick, true))
     {
 	RET(true);
     }
