@@ -1185,7 +1185,9 @@ bool Chan_Stored_t::Revenge(mstring in)
     {
 	// Sanity checks (valid case)
 	i_Revenge = in;
+	RET(true);
     }
+    RET(false);
 }
 
 
