@@ -25,7 +25,7 @@ include Makefile.inc
 TOPDIR=$${PWD}
 
 # What directories to enter and compile.
-SUBDIRS=$(CRYPTDIR)
+SUBDIRS=$(ZDIR)
 
 # --[ Dont edit below this line ]-----------------------------------------
 
