@@ -25,6 +25,7 @@ int start_server(int argc, char **argv)
     MagickObject=&internalobject;
     RET(internalobject.Start());
 }
+
 int main(int argc, char **argv)
 {
     Start_Time=Now();
