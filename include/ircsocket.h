@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.61  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -242,7 +245,7 @@ public:
     void ForcePing();
     mstring SyncTime(const mstring& source = "") const;
     int open(void *in=0);
-    int close(u_long in = 0);
+    int close(unsigned long in = 0);
     int svc(void);
     int fini() { return 0; }
     void DumpB() const;

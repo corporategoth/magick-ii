@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.25  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -285,7 +288,7 @@ namespace SXP {
 // hashtable size
 // this should be at least 3-4 times the number of tags you use
 // the more, the better
-#define HASHTABLESIZE		256
+#define HASHTABLESIZE		1024
 
 	// a singleton hashtable
 	// for tags
@@ -421,17 +424,17 @@ namespace SXP {
 
 		void ExpandBuf();
 	public:
-		void Print(const char *format, ...);
-		void PrintV(const char *format, va_list argptr);
-		void Indent();
+		virtual void Print(const char *format, ...);
+		virtual void PrintV(const char *format, va_list argptr);
+		virtual void Indent();
 		MOutStream();
-		~MOutStream();
+		virtual ~MOutStream();
 		inline size_t BufSize() { return buf_cnt; }
 		inline const char *Buf() { return buffer; }
-		void BeginXML(void);
-		void BeginObject(Tag& t, dict& attribs = blank_dict);
-		void EndObject  (Tag& t);
-		void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
+		virtual void BeginXML(void);
+		virtual void BeginObject(Tag& t, dict& attribs = blank_dict);
+		virtual void EndObject  (Tag& t);
+		virtual void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
 	};
 
 	typedef IOutStreamT<MOutStream> IOutStream;
@@ -536,7 +539,7 @@ namespace SXP {
 		// The parser begins feeding element events into a "root" object -
 		// typically an object factory of sorts
 		CParser(IPersistObj *pRoot);
-		virtual ~CParser() {}
+		virtual ~CParser() { DoShutdown(); }
 
 		int GetErrorLine() { return m_nErrorLine; }
 		int GetErrorCol()  { return m_nErrorCol; }

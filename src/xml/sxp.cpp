@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.28  2001/12/25 05:57:28  prez
 ** Updated SXP and EXPAT -- untested, but should work.
 **
@@ -488,7 +491,8 @@ namespace SXP {
 	// the feed loop; however, events are NOT received
 
 	void CParser::DoShutdown() {
-		XML_ParserFree(m_parser);
+		if (m_parser != 0)
+		    XML_ParserFree(m_parser);
 		while( !m_EHStack.empty() ) {
 			//delete m_EHStack.top(); 
 			m_EHStack.pop();
@@ -528,13 +532,10 @@ namespace SXP {
 
 	void MOutStream::Indent()
 	{
+		while (buf_cnt+m_nIndent >= buf_sz)
+		    ExpandBuf();
 		for(int i=0; i<m_nIndent; i++)
-		{
-		    if (buf_cnt+1 >= buf_sz)
-			ExpandBuf();
-		    buffer[buf_cnt] = '\t';
-		    buf_cnt++;
-		}
+		    buffer[buf_cnt++] = '\t';
 	}
 
 	MOutStream::MOutStream()

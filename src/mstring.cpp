@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.119  2001/12/16 01:30:46  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -1446,7 +1449,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	// Must happen at least once ...
 	do {
 	    sz *= 2;
-	} while (len > sz);
+	} while (len >= sz);
     }
     if (buffer)
     {

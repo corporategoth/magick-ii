@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.179  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.178  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -487,10 +490,11 @@ void entlist_t::DumpE() const
 // --------- end of entlist_t -----------------------------------
 
 mMessage::mMessage(const mstring& p_source, const mstring& p_msgtype,
-	const mstring& p_params, const u_long p_priority)
-	: ACE_Method_Request(p_priority), source_(p_source), params_(p_params),
-	  creation_(mDateTime::CurrentDateTime())
+	const mstring& p_params, const unsigned long p_priority)
+	: ACE_Method_Request(p_priority), msgid_(0), source_(p_source),
+	  params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
+    FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
     if (source_ != " " && Magick::instance().server.proto.Tokens())
     {
 	mstring tmp(Magick::instance().server.proto.GetToken(p_msgtype));
@@ -1075,7 +1079,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 	if (msg != NULL)
 	{
 	    CP(("No more dependancies for %d.", msg->msgid()));
-	    msg->priority(static_cast<u_long>(P_DepFilled));
+	    msg->priority(static_cast<unsigned long>(P_DepFilled));
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)
 		Magick::instance().ircsvchandler->enqueue(msg);

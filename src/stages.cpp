@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.13  2001/12/25 11:15:29  prez
 ** Fixed up my ASC hack in XML parsing
 **
@@ -613,10 +616,11 @@ long XMLStage::Consume()
 	    xres = parser->Feed(buffer, res, 1);
 	else
 	    xres = parser->Feed(buffer, res, 0);
-	COM(("XML parser returned %d\n", xres));
+	COM(("XMLStage: Parser returned %d\n", xres));
 	total += res;
 	COM(("XMLStage: Reading from previous stage ...")); FLUSH();
     }
+    parser->DoShutdown();
     CP(("XMLStage: Read from previous stage returned %d", res)); FLUSH();
     if (res < 0)
     {

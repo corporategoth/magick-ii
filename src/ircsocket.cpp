@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.189  2001/12/26 23:30:35  prez
+** More fixes to see if I can fix the memory leak ...
+**
 ** Revision 1.188  2001/12/21 05:02:29  prez
 ** Changed over from using a global ACE_Reactor to using an instance inside
 ** of the Magick instance.
@@ -448,6 +451,7 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 const char *Heartbeat_Handler::names[] = { "invalid", "worker", "main",
 					"IRC server", "events", "DCC" };
 
+static const char *immediate_process[] = { "PROTOCTL", "CAPAB", NULL };
 
 void *IrcSvcHandler::worker(void *in)
 {
@@ -960,39 +964,51 @@ void IrcSvcHandler::enqueue(mMessage *mm)
     if (mm == NULL)
 	return;
 
-    // Make sure we have at LEAST our minimum ...
-    while (static_cast<unsigned int>(tm.count_threads()) < Magick::instance().config.Min_Threads())
+    if (mm->priority() == static_cast<u_long>(P_Highest))
     {
-	if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
-	{
-	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
-	}
-	else
-	    CP(("Could not start new thread (below thread threshold)!"));
+	mm->call();
+	delete mm;
     }
-
-    // Only spawn if we are less than our maximum ... and need it :)
-    if (message_queue.method_count() > static_cast<int>(tm.count_threads() * Magick::instance().config.High_Water_Mark()))
+    else
     {
-	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	if (static_cast<unsigned int>(tm.count_threads()) >= Magick::instance().config.Max_Threads())
-	{
-	    NLOG(LM_WARNING, "EVENT/MAX_THREADS");
-	}
-	else
+	// Make sure we have at LEAST our minimum ...
+	while (static_cast<unsigned int>(tm.count_threads()) <
+				Magick::instance().config.Min_Threads())
 	{
 	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
 	    {
 		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	    }
 	    else
+		CP(("Could not start new thread (below thread threshold)!"));
+	}
+
+	// Only spawn if we are less than our maximum ... and need it :)
+	if (message_queue.method_count() >
+				static_cast<int>(tm.count_threads() *
+				Magick::instance().config.High_Water_Mark()))
+	{
+	    CP(("Queue is full - Starting new thread and increasing watermarks ..."));
+	    if (static_cast<unsigned int>(tm.count_threads()) >=
+				Magick::instance().config.Max_Threads())
 	    {
-		NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+		NLOG(LM_WARNING, "EVENT/MAX_THREADS");
+	    }
+	    else
+	    {
+		if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
+		{
+		    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+		}
+		else
+		{
+		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+		}
 	    }
 	}
-    }
 
-    message_queue.enqueue(mm);
+	message_queue.enqueue(mm);
+    }
 }
 
 void IrcSvcHandler::enqueue(const mstring &message, const u_long pri)
@@ -1024,7 +1040,13 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long pri)
 
     try {
 	mMessage *msg = new mMessage(source, msgtype, params, p);
-	if (!msg->OutstandingDependancies())
+	for (int i=0; immediate_process[i] != NULL; i++)
+	    if (msg->msgtype().IsSameAs(immediate_process[i], true))
+	    {
+		msg->priority(static_cast<u_long>(P_Highest));
+		break;
+	    }
+	if (msg != NULL && !msg->OutstandingDependancies())
 	    enqueue(msg);
     }
     catch (E_NickServ_Live &e)
@@ -1950,7 +1972,7 @@ int EventTask::open(void *in)
     RET(retval);
 }
 
-int EventTask::close(unsigned long in)
+int EventTask::close(u_long in)
 {
     static_cast<void>(in);
     FT("EventTask::close", (in));
