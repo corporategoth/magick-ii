@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.221  2000/05/13 15:06:42  ungod
+** no message
+**
 ** Revision 1.220  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -2826,3 +2829,32 @@ void Magick::send(mstring in)
     if (ircsvchandler != NULL)
 	ircsvchandler->send(in);
 }
+
+SXP::Tag Magick::tag_Magick("Magick");
+
+void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+}
+
+void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+}
+
+void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+}
+
+void Magick::SaveXML()
+{
+	SXP::CFileOutStream o(files.Database().c_str());
+	o.BeginXML();
+	SXP::dict attribs;
+	WriteElement(&o, attribs);
+}
+
+void Magick::LoadXML()
+{
+   	SXP::CParser p( this ); // let the parser know which is the object
+	p.FeedFile(	(char *)files.Database().c_str() );
+}
+

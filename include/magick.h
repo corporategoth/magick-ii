@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.121  2000/05/13 15:06:42  ungod
+** no message
+**
 ** Revision 1.120  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -103,6 +106,7 @@ static const char *ident_magick_h = "@(#) $Id$";
 #include "version.h"
 #include "log.h"
 #include "cryptstream.h"
+#include "xml/sxp.h"
 
 const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;
@@ -121,7 +125,7 @@ public:
     int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext);
 };
 
-class Magick
+class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
     friend class ServMsg;
@@ -391,6 +395,13 @@ public:
 	    }
 	    return "";
 	}
+    static SXP::Tag tag_Magick;
+    virtual SXP::Tag& GetClassTag() const { return tag_Magick; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void SaveXML();
+    void LoadXML();
 };
 
 extern Magick *Parent;
