@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.125  2000/08/22 08:43:41  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.124  2000/08/19 10:59:47  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -322,14 +327,26 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     {
 	for(i=1;i<data2.WordCount("\n\r");i++)
 	{
-	    if(data2.ExtractWord(i,"\n\r")!="")
-		mBase::push_message(data2.ExtractWord(i,"\n\r"));
+	    mstring text = data2.ExtractWord(i,"\n\r");
+	    if(text!="")
+	    {
+		if (text.SubString(0, 4) == "PING ")
+		    mBase::push_message_immediately(text);
+		else
+		    mBase::push_message(text);
+	    }
 	}
 
 	if (data2.Last() == '\n' || data2.Last() == '\r')
 	{
-	    if(data2.ExtractWord(i,"\n\r")!="")
-		mBase::push_message(data2.ExtractWord(i,"\n\r"));
+	    mstring text = data2.ExtractWord(i,"\n\r");
+	    if(text!="")
+	    {
+		if (text.SubString(0, 4) == "PING ")
+		    mBase::push_message_immediately(text);
+		else
+		    mBase::push_message(text);
+	    }
 	}
 	else
 	{

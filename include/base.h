@@ -25,6 +25,11 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.70  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -132,6 +137,7 @@ class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 protected:
     ACE_Activation_Queue activation_queue_;
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
+    size_t thread_count;
     int message_i(const mstring& message);
 public:
     mBaseTask() :  activation_queue_(&message_queue_) {}
@@ -368,6 +374,7 @@ public:
     static void shutdown();
 
     static void push_message(const mstring& message);
+    static void push_message_immediately(const mstring& message);
     virtual void execute(const mstring& message) =0;
 
     mstring FirstName() { return names.Before(" "); }

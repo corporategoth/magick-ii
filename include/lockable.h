@@ -25,6 +25,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.37  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -75,39 +80,49 @@ static const char *ident_lockable_h = "@(#) $Id$";
 #include "trace.h"
 
 #ifdef MAGICK_LOCKS_WORK
+
 #define MAX_LOCKS 15 /* Max variants */
 class mLOCK
 {
-    mstring lockname;
-    ACE_Thread_Mutex *mlock;
-    ACE_RW_Thread_Mutex *rwlock;
-    ACE_RW_Thread_Mutex *lock[MAX_LOCKS-1];
-    locktype_enum last_type;
+    static map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > LockMap;
+
+    vector<mstring> locks;
 #ifdef MAGICK_TRACE_WORKS
     T_Locking tlock[MAX_LOCKS];
 #endif
 
-    int count;
 public:
     mLOCK(locktype_enum type, const mVarArray &args);
     ~mLOCK();
+    bool Locked();
+    size_t Locks() { return locks.size(); }
+    size_t AllLocks() { return LockMap.size(); }
 };
 
-#define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(L_Read,  __lockR1_VarArray)
-#define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(L_Read,  __lockR2_VarArray)
-#define RLOCK3(y)  mVarArray __lockR3_VarArray y; mLOCK __lockR3(L_Read,  __lockR3_VarArray)
-#define RLOCK4(y)  mVarArray __lockR4_VarArray y; mLOCK __lockR4(L_Read,  __lockR4_VarArray)
-#define RLOCK5(y)  mVarArray __lockR5_VarArray y; mLOCK __lockR5(L_Read,  __lockR5_VarArray)
-#define WLOCK(y)   mVarArray __lockW1_VarArray y; mLOCK __lockW1(L_Write, __lockW1_VarArray)
-#define WLOCK2(y)  mVarArray __lockW2_VarArray y; mLOCK __lockW2(L_Write, __lockW2_VarArray)
-#define WLOCK3(y)  mVarArray __lockW3_VarArray y; mLOCK __lockW3(L_Write, __lockW3_VarArray)
-#define WLOCK4(y)  mVarArray __lockW4_VarArray y; mLOCK __lockW4(L_Write, __lockW4_VarArray)
-#define WLOCK5(y)  mVarArray __lockW5_VarArray y; mLOCK __lockW5(L_Write, __lockW5_VarArray)
-#define MLOCK(y)   mVarArray __lockM1_VarArray y; mLOCK __lockM1(L_Mutex, __lockM1_VarArray)
-#define MLOCK2(y)  mVarArray __lockM2_VarArray y; mLOCK __lockM2(L_Mutex, __lockM2_VarArray)
-#define MLOCK3(y)  mVarArray __lockM3_VarArray y; mLOCK __lockM3(L_Mutex, __lockM3_VarArray)
-#define MLOCK4(y)  mVarArray __lockM4_VarArray y; mLOCK __lockM4(L_Mutex, __lockM4_VarArray)
-#define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(L_Mutex, __lockM5_VarArray)
+#define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(L_Read,  __lockR1_VarArray); __lockR1.Locked()
+#define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(L_Read,  __lockR2_VarArray); __lockR2.Locked()
+#define RLOCK3(y)  mVarArray __lockR3_VarArray y; mLOCK __lockR3(L_Read,  __lockR3_VarArray); __lockR3.Locked()
+#define RLOCK4(y)  mVarArray __lockR4_VarArray y; mLOCK __lockR4(L_Read,  __lockR4_VarArray); __lockR4.Locked()
+#define RLOCK5(y)  mVarArray __lockR5_VarArray y; mLOCK __lockR5(L_Read,  __lockR5_VarArray); __lockR5.Locked()
+#define RLOCK6(y)  mVarArray __lockR6_VarArray y; mLOCK __lockR6(L_Read,  __lockR6_VarArray); __lockR6.Locked()
+#define RLOCK7(y)  mVarArray __lockR7_VarArray y; mLOCK __lockR7(L_Read,  __lockR7_VarArray); __lockR7.Locked()
+#define RLOCK8(y)  mVarArray __lockR8_VarArray y; mLOCK __lockR8(L_Read,  __lockR8_VarArray); __lockR8.Locked()
+#define WLOCK(y)   mVarArray __lockW1_VarArray y; mLOCK __lockW1(L_Write, __lockW1_VarArray); __lockW1.Locked()
+#define WLOCK2(y)  mVarArray __lockW2_VarArray y; mLOCK __lockW2(L_Write, __lockW2_VarArray); __lockW2.Locked()
+#define WLOCK3(y)  mVarArray __lockW3_VarArray y; mLOCK __lockW3(L_Write, __lockW3_VarArray); __lockW3.Locked()
+#define WLOCK4(y)  mVarArray __lockW4_VarArray y; mLOCK __lockW4(L_Write, __lockW4_VarArray); __lockW4.Locked()
+#define WLOCK5(y)  mVarArray __lockW5_VarArray y; mLOCK __lockW5(L_Write, __lockW5_VarArray); __lockW5.Locked()
+#define WLOCK6(y)  mVarArray __lockW6_VarArray y; mLOCK __lockW6(L_Write, __lockW6_VarArray); __lockW6.Locked()
+#define WLOCK7(y)  mVarArray __lockW7_VarArray y; mLOCK __lockW7(L_Write, __lockW7_VarArray); __lockW7.Locked()
+#define WLOCK8(y)  mVarArray __lockW8_VarArray y; mLOCK __lockW8(L_Write, __lockW8_VarArray); __lockW8.Locked()
+#define MLOCK(y)   mVarArray __lockM1_VarArray y; mLOCK __lockM1(L_Mutex, __lockM1_VarArray); __lockM1.Locked()
+#define MLOCK2(y)  mVarArray __lockM2_VarArray y; mLOCK __lockM2(L_Mutex, __lockM2_VarArray); __lockM2.Locked()
+#define MLOCK3(y)  mVarArray __lockM3_VarArray y; mLOCK __lockM3(L_Mutex, __lockM3_VarArray); __lockM3.Locked()
+#define MLOCK4(y)  mVarArray __lockM4_VarArray y; mLOCK __lockM4(L_Mutex, __lockM4_VarArray); __lockM4.Locked()
+#define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(L_Mutex, __lockM5_VarArray); __lockM5.Locked()
+#define MLOCK6(y)  mVarArray __lockM6_VarArray y; mLOCK __lockM6(L_Mutex, __lockM6_VarArray); __lockM6.Locked()
+#define MLOCK7(y)  mVarArray __lockM7_VarArray y; mLOCK __lockM7(L_Mutex, __lockM7_VarArray); __lockM7.Locked()
+#define MLOCK8(y)  mVarArray __lockM8_VarArray y; mLOCK __lockM8(L_Mutex, __lockM8_VarArray); __lockM8.Locked()
 
 #else /* MAGICK_LOCKS_WORK */
 #define RLOCK(y)   do_nothing()
@@ -115,16 +130,25 @@ public:
 #define RLOCK3(y)  do_nothing()
 #define RLOCK4(y)  do_nothing()
 #define RLOCK5(y)  do_nothing()
+#define RLOCK6(y)  do_nothing()
+#define RLOCK7(y)  do_nothing()
+#define RLOCK8(y)  do_nothing()
 #define WLOCK(y)   do_nothing()
 #define WLOCK2(y)  do_nothing()
 #define WLOCK3(y)  do_nothing()
 #define WLOCK4(y)  do_nothing()
 #define WLOCK5(y)  do_nothing()
+#define WLOCK6(y)  do_nothing()
+#define WLOCK7(y)  do_nothing()
+#define WLOCK8(y)  do_nothing()
 #define MLOCK(y)   do_nothing()
 #define MLOCK2(y)  do_nothing()
 #define MLOCK3(y)  do_nothing()
 #define MLOCK4(y)  do_nothing()
 #define MLOCK5(y)  do_nothing()
+#define MLOCK6(y)  do_nothing()
+#define MLOCK7(y)  do_nothing()
+#define MLOCK8(y)  do_nothing()
 
 #endif /* MAGICK_LOCKS_WORK */
 

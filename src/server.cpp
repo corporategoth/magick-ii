@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.121  2000/08/22 08:43:41  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.120  2000/08/19 14:45:03  prez
 ** Fixed mode settings upon commitee recognitition syntax checking
 **
@@ -2085,7 +2090,11 @@ void NetworkServ::execute(const mstring & data)
 	numeric_execute(data);
 	break;
     case 'A':
-	if (msgtype=="ADMIN")
+	if (msgtype=="ADCHAT")
+	{
+	    // Useless admin chatter.
+	}
+	else if (msgtype=="ADMIN")
 	{
 
 	    if (Parent->ircsvchandler->HTM_Level() > 3)

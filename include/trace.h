@@ -25,6 +25,11 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.61  2000/08/06 05:27:46  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -68,7 +73,7 @@ static const char *ident_trace_h = "@(#) $Id$";
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
 extern unsigned short makehex(mstring SLevel);
-enum locktype_enum { L_Read, L_Write, L_Mutex };
+enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_Mutex };
 
 class shutdown_MO : public ACE_Method_Object
 {
@@ -83,6 +88,7 @@ class ThreadID {
 private:
     threadtype_enum t_internaltype;
     short t_indent;
+    bool t_intrace;
     mstring t_lastfunc;
     list<mstring> messages;
     
@@ -90,6 +96,7 @@ public:
     ThreadID();
     ThreadID(threadtype_enum Type);
     ~ThreadID();
+    bool InTrace() { return t_intrace; }
     mstring LastFunc() { return t_lastfunc; }
     void LastFunc(mstring in) { t_lastfunc = in; }
     void assign(threadtype_enum Type);
@@ -102,7 +109,7 @@ public:
     void Flush();
 };
 
-inline void do_nothing() {}
+inline int do_nothing() { return 1; }
 
 #ifndef MAGICK_TRACE_WORKS
 
@@ -156,7 +163,7 @@ inline void do_nothing() {}
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) { T_Chatter __ch(x,y); }
 
-#define FLUSH() { ThreadID *tid = mThread::find(); if (tid != NULL) tid->Flush(); }
+#define FLUSH() { ThreadID *tid = mThread::find(); if (tid != NULL && !tid->InTrace()) tid->Flush(); }
 
 // OperServ TRACE Syntax:
 //

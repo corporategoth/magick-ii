@@ -29,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.265  2000/08/22 08:43:41  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.264  2000/08/19 15:17:39  ungod
 ** no message
 **
@@ -858,11 +863,12 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     // Load requested language if its NOT loaded.
     // and then look for the message of THAT type.
     CP(("Trying SPECIFIED language ..."));
+    { WLOCK(("Messages", lang.UpperCase()));
     if (lang != "" &&
 	Messages.find(lang.UpperCase()) == Messages.end())
     {
 	LoadExternalMessages(lang);
-    }
+    }}
     { RLOCK(("Messages", lang.UpperCase(), name.UpperCase()));
     if (lang != "" &&
 	Messages.find(lang.UpperCase()) != Messages.end() &&
@@ -876,13 +882,14 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     // Load nickserv default language if its NOT loaded.
     // and then look for the message of THAT type.
     CP(("Trying DEFAULT language ..."));
+    { WLOCK(("Messages", nickserv.DEF_Language().UpperCase()));
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
 	nickserv.DEF_Language() != "" &&
 	Messages.find(nickserv.DEF_Language().UpperCase()) ==
 	Messages.end())
     {
 	LoadExternalMessages(nickserv.DEF_Language());
-    }
+    }}
     { RLOCK(("Messages", nickserv.DEF_Language().UpperCase(), name.UpperCase()));
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
 	nickserv.DEF_Language() != "" &&
@@ -1103,7 +1110,10 @@ void Magick::LoadInternalMessages()
     fconf.LoadFromArray(lang);
     map<mstring,mstring> tmp = fconf.GetMap(); 
     if (tmp.size())
+    {
+	Messages.erase("DEFAULT");
 	Messages["DEFAULT"].insert(tmp.begin(), tmp.end());
+    }
 }
 
 bool Magick::LoadExternalMessages(mstring language)
@@ -1124,6 +1134,7 @@ bool Magick::LoadExternalMessages(mstring language)
 	map<mstring,mstring> tmp = fconf.GetMap();
 	if (tmp.size())
 	{
+	    Messages.erase(language.UpperCase());
 	    Messages[language.UpperCase()].insert(tmp.begin(), tmp.end());
 	    RET(true);
 	}

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/08/22 08:43:42  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.46  2000/08/06 05:27:48  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -124,6 +129,7 @@ static const char *ident = "@(#)$Id$";
 #ifdef HASCRYPT
 #include "des/spr.h"
 #endif
+#include "des/md5_locl.h"
 
 const unsigned long TxnIds::min = 1000000000;
 const unsigned long TxnIds::keeptime = 60 * 60 * 24;
@@ -518,4 +524,16 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 	t1 = tuple[1]; l2c(t1, out);
     }
 #endif
+}
+
+void mHASH(unsigned char *in, size_t size, unsigned char *out)
+{
+// Turn off trace here, coz its called with EVERY lock
+//    FT("mHASH", ("(unsigned char *) in", size, "(unsignecd char *) out"));
+    MD5_CTX c;
+    ACE_OS::memset(out, 0, MD5_DIGEST_LENGTH);
+    MD5_Init(&c);
+    MD5_Update(&c, in, size);
+    MD5_Final(out, &c);
+    ACE_OS::memset(&c, 0, sizeof(MD5_CTX));
 }

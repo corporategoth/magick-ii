@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/08/22 08:43:41  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.42  2000/08/19 10:59:47  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -85,131 +90,255 @@ static const char *ident = "@(#)$Id$";
 
 #ifdef MAGICK_LOCKS_WORK
 
+map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > mLOCK::LockMap;
+
+typedef ACE_RW_Thread_Mutex	mLock_Read;
+typedef ACE_RW_Thread_Mutex	mLock_Write;
+typedef ACE_Thread_Mutex	mLock_Mutex;
+
 mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 {
-    int i;
-    count=0;
+    int i, count = 0;
+    map<mstring, pair<locktype_enum, void *> > *lockroot;
+    mstring lockname;
+    unsigned char hash[ACE_MAXTOKENNAMELEN];
+    mLock_Mutex *mlock;
+    mLock_Write *wlock;
+    mLock_Read *rlock;
+
+    lockroot = &LockMap[ACE_Thread::self()];
+
     for (i=0; i<args.count()-1; i++)
     {
 	if (lockname != "")
 	    lockname += "::";
 	lockname += args[i].AsString();
-	lock[i] = NULL;
-	lock[i] = new ACE_RW_Thread_Mutex(lockname.c_str());
-	if (lock[i] == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		"READ", lockname.c_str());
-	else if (lock[i]->acquire_read() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"READ", lockname.c_str());
-	else count++;
+	rlock = NULL;
+
+	if ((*lockroot).find(lockname) == (*lockroot).end())
+	{
+	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    rlock = new mLock_Read((const char *) hash);
+	    if (rlock != NULL)
+	    {
+		if (rlock->acquire_read() < 0)
+		{
+		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"READ", lockname.c_str());
+		    delete rlock;
+		    rlock = NULL;
+		}
+		else
+		{
+		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Read, rlock);
+		    locks.push_back(lockname);
 #ifdef MAGICK_TRACE_WORKS
-	tlock[i].open(L_Read, lockname);
+		    tlock[count++].open(L_Read, lockname);
 #endif
+		}
+	    }
+	    else
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "READ", lockname.c_str());
+	}
     }
 
     if (lockname != "")
 	lockname += "::";
     lockname += args[i].AsString();
+    rlock = NULL;
+    wlock = NULL;
+    mlock = NULL;
 
     if (type == L_Read)
     {
-	rwlock = NULL;
-	rwlock = new ACE_RW_Thread_Mutex(lockname.c_str());
-	if (rwlock == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		"READ", lockname.c_str());
-	else if (rwlock->acquire_read() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"READ", lockname.c_str());
-	else count++;
+	if ((*lockroot).find(lockname) == (*lockroot).end())
+	{
+	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    rlock = new mLock_Read((const char *) hash);
+	    if (rlock != NULL)
+	    {
+		if (rlock->acquire_read() < 0)
+		{
+		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"READ", lockname.c_str());
+		    delete rlock;
+		    rlock = NULL;
+		}
+		else
+		{
+		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Read, rlock);
+		    locks.push_back(lockname);
+#ifdef MAGICK_TRACE_WORKS
+		    tlock[count++].open(L_Read, lockname);
+#endif
+		}
+	    }
+	    else
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "READ", lockname.c_str());
+	}
     }
     else if (type == L_Write)
     {
-	rwlock = NULL;
-	rwlock = new ACE_RW_Thread_Mutex(lockname.c_str());
-	if (rwlock == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		"WRITE", lockname.c_str());
-	else if (rwlock->acquire_write() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"WRITE", lockname.c_str());
-	else count++;
+	if ((*lockroot).find(lockname) != (*lockroot).end() &&
+	    (*lockroot)[lockname].first == L_Read)
+	{
+	    rlock = (mLock_Read *) (*lockroot)[lockname].second;
+	    if (rlock != NULL)
+	    {
+		if (rlock->release() < 0)
+		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"READ", lockname.c_str());
+		delete rlock;
+		rlock = NULL;
+	    }
+	    (*lockroot).erase(lockname);
+	}
+	if ((*lockroot).find(lockname) == (*lockroot).end())
+	{
+	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    wlock = new mLock_Write((const char *) hash);
+	    if (wlock != NULL)
+	    {
+		if (wlock->acquire_write() < 0)
+		{
+		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"WRITE", lockname.c_str());
+		    delete wlock;
+		    wlock = NULL;
+		}
+		else
+		{
+		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Write, wlock);
+		    locks.push_back(lockname);
+#ifdef MAGICK_TRACE_WORKS
+		    tlock[count++].open(L_Write, lockname);
+#endif
+		}
+	    }
+	    else
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "WRITE", lockname.c_str());
+	}
     }
     else if (type == L_Mutex)
     {
-	mlock = NULL;
-	mlock = new ACE_Thread_Mutex(lockname.c_str());
-	if (mlock == NULL)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		"MUTEX", lockname.c_str());
-	else if (mlock->acquire() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", lockname.c_str());
-	else count++;
-    }
-    else
-    {
-	// Unknown Lock Type
-    }
+	if ((*lockroot).find(lockname) != (*lockroot).end() &&
+	    (*lockroot)[lockname].first == L_Read)
+	{
+	    rlock = (mLock_Read *) (*lockroot)[lockname].second;
+	    if (rlock != NULL)
+	    {
+		if (rlock->release() < 0)
+		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"READ", lockname.c_str());
+		delete rlock;
+		rlock = NULL;
+	    }
+	    (*lockroot).erase(lockname);
+	}
+	if ((*lockroot).find(lockname) == (*lockroot).end())
+	{
+	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
+	    mlock = new mLock_Mutex((const char *) hash);
+	    if (mlock != NULL)
+	    {
+		if (mlock->acquire() < 0)
+		{
+		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"MUTEX", lockname.c_str());
+		    delete mlock;
+		    mlock = NULL;
+		}
+		else
+		{
+		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Mutex, mlock);
+		    locks.push_back(lockname);
 #ifdef MAGICK_TRACE_WORKS
-    tlock[i].open(type, lockname);
+		    tlock[count++].open(L_Mutex, lockname);
 #endif
-    last_type = type;
+		}
+	    }
+	    else
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "MUTEX", lockname.c_str());
+	}
+    }
+    ACE_OS::memset(hash, 0, sizeof(hash));
 }
 
 mLOCK::~mLOCK()
 {
-    if (last_type == L_Read && rwlock != NULL)
+    int i;
+    map<mstring, pair<locktype_enum, void *> > *lockroot;
+    mLock_Mutex *mlock;
+    mLock_Write *wlock;
+    mLock_Read *rlock;
+
+    lockroot = &LockMap[ACE_Thread::self()];
+
+    for (i=locks.size()-1; i>=0; i--)
     {
-	if (rwlock->release() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"READ", lockname.c_str());
-	else
+	if ((*lockroot).find(locks[i]) != (*lockroot).end())
 	{
-	    delete rwlock;
-	    count--;
+	    if ((*lockroot)[locks[i]].first == L_Read)
+	    {
+		rlock = (mLock_Read *) (*lockroot)[locks[i]].second;
+		if (rlock != NULL)
+		{
+		    if (rlock->release() < 0)
+			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+				"READ", locks[i].c_str());
+		    delete rlock;
+		    rlock = NULL;
+		}
+	    }
+	    else if ((*lockroot)[locks[i]].first == L_Write)
+	    {
+		wlock = (mLock_Write *) (*lockroot)[locks[i]].second;
+		if (wlock != NULL)
+		{
+		    if (wlock->release() < 0)
+			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+				"WRITE", locks[i].c_str());
+		    delete wlock;
+		    wlock = NULL;
+		}
+	    }
+	    else if ((*lockroot)[locks[i]].first == L_Mutex)
+	    {
+		mlock = (mLock_Mutex *) (*lockroot)[locks[i]].second;
+		if (mlock != NULL)
+		{
+		    if (mlock->release() < 0)
+			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+				"MUTEX", locks[i].c_str());
+		    delete mlock;
+		    mlock = NULL;
+		}
+	    }
+	    (*lockroot).erase(locks[i]);
 	}
     }
-    else if (last_type == L_Write && rwlock != NULL)
+}
+
+bool mLOCK::Locked()
+{
+    if (locks.size())
     {
-	if (rwlock->release() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"WRITE", lockname.c_str());
-	else
-	{
-	    delete rwlock;
-	    count--;
-	}
+	map<mstring, pair<locktype_enum, void *> > *lockroot;
+	lockroot = &LockMap[ACE_Thread::self()];
+	if ((*lockroot).find(locks[locks.size()-1]) != (*lockroot).end() &&
+		(*lockroot)[locks[locks.size()-1]].first != L_Invalid &&
+		(*lockroot)[locks[locks.size()-1]].second != NULL)
+	    return true;
     }
-    else if (last_type == L_Mutex && mlock != NULL)
-    {
-	if (mlock->release() < 0)
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", lockname.c_str());
-	else
-	{
-	    delete mlock;
-	    count--;
-	}
-    }
-    else
-    {
-	// Unknown lock type
-    }
-    for(;count;count--)
-    {
-	if (lockname.Contains("::"))
-	    lockname.Truncate(lockname.Find(':', true)-1);
-	if (lock[count-1] != NULL)
-	{
-	    if (lock[count-1]->release() < 0)
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"READ", lockname.c_str());
-	    else
-		delete lock[count-1];
-	}
-    }
+    return false;
 }
 
 #endif /* MAGICK_LOCKS_WORK */

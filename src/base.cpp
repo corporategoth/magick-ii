@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.129  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -270,9 +275,17 @@ void mBase::push_message(const mstring& message)
 		return;
 	    }
 	}
+	BaseTask.thread_count = BaseTask.thr_count();
     }
     CH(T_Chatter::From,message);
     BaseTask.message(message);
+}
+
+void mBase::push_message_immediately(const mstring& message)
+{
+    FT("mBase::push_message_immediately", (message));
+    CH(T_Chatter::From,message);
+    BaseTask.message_i(message);
 }
 
 void mBase::init()
@@ -294,6 +307,7 @@ void mBase::init()
 		return;
 	    }
 	}
+	BaseTask.thread_count = BaseTask.thr_count();
     }
     MLOCK(("MessageQueue"));
     BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (sizeof(ACE_Method_Object *) * 2));
@@ -472,13 +486,6 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
-
-    RLOCK(("NickServ", "live", source.LowerCase()));
-    if (!Parent->nickserv.IsLive(source))
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"PRIVMSG", source.c_str());
-    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
-    {
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.privmsgV(source, dest, pszFormat, argptr);
 
@@ -501,10 +508,6 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
 	else
 	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
 		"PRIVMSG", source.c_str());
-    }
-    else
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"PRIVMSG", source.c_str());
     va_end(argptr);
 }
 
@@ -516,12 +519,6 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
-    RLOCK(("NickServ", "live", source.LowerCase()));
-    if (!Parent->nickserv.IsLive(source))
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"NOTICE", source.c_str());
-    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
-    {
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.noticeV(source, dest, pszFormat, argptr);
 
@@ -544,10 +541,6 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
 	else
 	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
 		"NOTICE", source.c_str());
-    }
-    else
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"NOTICE", source.c_str());
     va_end(argptr);
 }
 
@@ -559,12 +552,6 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
-    RLOCK(("NickServ", "live", source.LowerCase()));
-    if (!Parent->nickserv.IsLive(source))
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"SEND", source.c_str());
-    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
-    {
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.sendV(source, dest, pszFormat, argptr);
 
@@ -587,10 +574,6 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
 	else
 	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
 		"SEND", source.c_str());
-    }
-    else
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SEND", source.c_str());
 
     va_end(argptr);
 }
@@ -605,20 +588,10 @@ void announce(const mstring& source, const mstring &pszFormat, ...)
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
     va_end(argptr);
-
-    if (!Parent->nickserv.IsLive(source))
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"ANNOUNCE", source.c_str());
-    else if (Parent->nickserv.live[source.LowerCase()].IsServices())
-    {
 	if (Parent->server.proto.Globops())
 	    Parent->server.GLOBOPS(source, message);
 	else
 	    Parent->server.WALLOPS(source, message);
-    }
-    else
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"ANNOUNCE", source.c_str());
 }
 
 void mBase::shutdown()
@@ -688,7 +661,8 @@ void mBaseTask::message(const mstring& message)
 	}
 	else
 	{
-	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()) * (sizeof(ACE_Method_Object *) * 2));
+	    thread_count = thr_count();
+	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count) * (sizeof(ACE_Method_Object *) * 2));
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
 	}
@@ -770,32 +744,33 @@ int mBaseTask::message_i(const mstring& message)
 
     // Theoretically, under mutex lock, only ONE can access this
     // at once.  Under pressure tho, the thread system may need
-    // to be looked at.
+    // to be looked at.  Could be optimization.
     {MLOCK(("MessageQueue"));
-    size_t thrcnt = thr_count();
     size_t msgcnt = message_queue_.message_count();
-    if (thrcnt > 1)
+    if (thread_count > 1)
     {
 	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thrcnt, msgcnt,
-		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thrcnt-2)),
-		thrcnt * Parent->config.High_Water_Mark()));
+		thread_count, msgcnt,
+		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thread_count-2)),
+		thread_count * Parent->config.High_Water_Mark()));
     }
     else
     {
 	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thrcnt, msgcnt, 0,
-		thrcnt * Parent->config.High_Water_Mark()));
+		thread_count, msgcnt, 0,
+		thread_count * Parent->config.High_Water_Mark()));
     }
-    if(thrcnt > Parent->config.Min_Threads() &&
+    if(thread_count > Parent->config.Min_Threads() &&
 	msgcnt < Parent->config.Low_Water_Mark() +
-			(Parent->config.High_Water_Mark() * (thrcnt-2)))
+		(Parent->config.High_Water_Mark() * (thread_count-2)))
     {
-	COM(("Low water mark reached, killing thread."));
-	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thrcnt-1) * (sizeof(ACE_Method_Object *) * 2));
-	message_queue_.low_water_mark(message_queue_.high_water_mark());
-	Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
-	RET(-1);
+	    COM(("Low water mark reached, killing thread."));
+	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count-1) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.low_water_mark(message_queue_.high_water_mark());
+	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
+	    thread_count--;
+	    FLUSH();
+	    RET(-1);
     }}
     FLUSH();
     RET(0);

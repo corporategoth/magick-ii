@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.199  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.198  2000/08/19 14:45:02  prez
 ** Fixed mode settings upon commitee recognitition syntax checking
 **
@@ -814,7 +819,6 @@ void Chan_Live_t::RemoveMode(mstring mode, vector<mstring> mode_params,
 	    }
 	    if (mode[i] != 'l' || !change)
 		param++;
-	    break;
 	}
 	else
 	{
@@ -1128,7 +1132,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'o':
 		if (IsIn(in.ExtractWord(fwdargs, ": ")))
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "users"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "users"));
 		    if (add)
 		    {
 			users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
@@ -1155,7 +1159,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'v':
 		if (IsIn(in.ExtractWord(fwdargs, ": ")))
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "users"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "users"));
 		    if (add)
 		    {
 			users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
@@ -1182,14 +1186,14 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'b':
 		if (add)
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		    bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": "));
 		}
 		else
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		    bans.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": "));
@@ -1202,14 +1206,14 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'k':
 		if (add)
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
 		    i_Key = in.ExtractWord(fwdargs, ": ");
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": "));
 		}
 		else
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
 		    if (i_Key != in.ExtractWord(fwdargs, ": "))
 			Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 				i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
@@ -1226,7 +1230,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'l':
 		if (add)
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 		    if (fwdargs > in.WordCount(": "))
 		    {
 			Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
@@ -1251,7 +1255,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		}
 		else
 		{
-		    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 		    i_Limit = 0;
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
@@ -1260,6 +1264,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		}
 		break;
 	    default:
+		newmode += change[i];
+		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		fwdargs++;
 	    }
 	}
@@ -1496,12 +1502,13 @@ void Chan_Stored_t::Join(mstring nick)
 	else
 	    clive->SendMode("+b " + Akick->Entry());
 
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
+			nick.c_str(), i_Name.c_str(), Akick->Value().c_str());
+
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
-			nick.c_str(), i_Name.c_str(), Akick->Value().c_str());
 	return;
     }}
 
@@ -1517,12 +1524,13 @@ void Chan_Stored_t::Join(mstring nick)
 	else
 	    clive->SendMode("+b " + nick + "!*@*");
 
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
+			nick.c_str(), i_Name.c_str());
+
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
-			nick.c_str(), i_Name.c_str());
 	return;
     }
 
@@ -1743,12 +1751,13 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 	else
 	    clive->SendMode("+b " + Akick->Entry());
 
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
+			newnick.c_str(), i_Name.c_str(), Akick->Value().c_str());
+
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
 		i_Name, Akick->Value());
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
-			newnick.c_str(), i_Name.c_str(), Akick->Value().c_str());
 	return;
     }}
 
@@ -1765,12 +1774,13 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 	else
 	    clive->SendMode("+b " + newnick + "!*@*");
 
+	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
+			newnick.c_str(), i_Name.c_str());
+
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
 		i_Name, Parent->getMessage(newnick, "MISC/KICK_RESTRICTED"));
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
-			newnick.c_str(), i_Name.c_str());
 	return;
     }
 }
@@ -1884,7 +1894,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	{
 	    add = false;
 	}
-	else if (Parent->server.proto.ChanModeArg().Contains(mode[i]))
+	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
 	{
 	    switch(change[i])
 	    {
@@ -1899,7 +1909,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			clive->SendMode("-o " + mode.ExtractWord(fwdargs, ": "));
 		    }
 		}
-		else
+		else if (!setter.Contains("."))
 		{
 		    if ((Parent->nickserv.IsLive(mode.ExtractWord(fwdargs, ": ")) &&
 			Parent->nickserv.live[mode.ExtractWord(fwdargs, ": ").LowerCase()].IsServices()) ||
@@ -1928,7 +1938,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		break;
 
 	    case 'b':
-		if (add)
+		if (add && !setter.Contains("."))
 		{
 		    long SetAccess = GetAccess(setter);
 		    vector<mstring> tobekicked;

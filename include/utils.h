@@ -25,6 +25,11 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.29  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -114,10 +119,9 @@ mstring ToHumanTime(unsigned long in);
 mstring ToHumanNumber(unsigned long in);
 unsigned long FromHumanSpace(mstring in);
 mstring ToHumanSpace(unsigned long in);
-#ifdef HASCRYPT
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc);
-#endif
+void mHASH(unsigned char *in, size_t size, unsigned char *out);
 
 // extrapolated from the ms's pair<T1,T2> template code
 

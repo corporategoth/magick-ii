@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2000/08/22 08:43:41  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.97  2000/08/06 05:27:48  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -239,12 +244,14 @@ ThreadID::ThreadID()
 {
     t_indent = 0;
     t_internaltype = tt_LOST;
+    t_intrace = false;
 }
 
 ThreadID::ThreadID(threadtype_enum Type)
 {
     t_indent = 0;
     t_internaltype = Type;
+    t_intrace = false;
 }
 
 ThreadID::~ThreadID()
@@ -286,6 +293,7 @@ mstring ThreadID::logname()
 void ThreadID::Flush()
 {
 #ifdef MAGICK_TRACE_WORKS
+    t_intrace = true;
     list<pair<threadtype_enum, mstring> >::iterator iter, iter2;
     { WLOCK(("ThreadMessageQueue"));
     iter = ThreadMessageQueue.end();
@@ -309,10 +317,12 @@ void ThreadID::Flush()
     }}
     if (!messages.size())
 	return;
-    COM(("Trace transaction completed ..."));
 
+    { MLOCK(("TraceDump", logname()));
     mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
+    }
     messages.clear();
+    t_intrace = false;
 #endif
 }
 
@@ -340,7 +350,7 @@ T_Functions::T_Functions(const mstring &name)
 {
     m_name=name;
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
@@ -357,7 +367,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     m_name=name;
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
@@ -379,7 +389,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     tid->indentdown(); 
     tid->LastFunc(i_prevfunc);
@@ -415,7 +425,7 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 void T_CheckPoint::common(const char *input)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(CheckPoint);
     if (IsOn(tid)) {
@@ -446,7 +456,7 @@ T_Comments::T_Comments(const char *fmt, ...)
 void T_Comments::common(const char *input)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Comments);
     if (IsOn(tid)) {
@@ -464,7 +474,7 @@ void T_Comments::common(const char *input)
 T_Modify::T_Modify(const mVarArray &args)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
@@ -482,7 +492,7 @@ T_Modify::T_Modify(const mVarArray &args)
 void T_Modify::End(const mVarArray &args)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
@@ -502,7 +512,7 @@ void T_Modify::End(const mVarArray &args)
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Chatter);
     if (IsOn(tid)) {
@@ -536,7 +546,7 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 void T_Locking::open(locktype_enum ltype, mstring lockname) 
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) 
@@ -561,7 +571,7 @@ void T_Locking::open(locktype_enum ltype, mstring lockname)
 T_Locking::~T_Locking()
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) {
@@ -593,7 +603,7 @@ T_Locking::~T_Locking()
 T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Sockets);
     if (IsOn(tid)) 
@@ -607,7 +617,7 @@ T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
 T_Sockets::End(mstring reason)
 {
     tid = mThread::find();
-    if (tid == NULL)
+    if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Sockets);
     if (IsOn(tid)) 

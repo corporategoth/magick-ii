@@ -24,6 +24,11 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
 ** Revision 1.19  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -117,7 +122,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b3";
+const mstring RELEASE			= "b4";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
