@@ -2182,8 +2182,8 @@
 03 =OPER SOP::
 04 =OPER SOP::This service allows you to use the following commands:
 05 =OPER SOP::    HELP         CLONE        AKILL        IGNORE
-06 =OPER:SOP:    MODE         PING         SETTINGS
-06 =SOP::    OPERDENY     MODE         PING         SETTINGS
+06A=OPER:SOP:    MODE         PING         SETTINGS
+06B=SOP::    OPERDENY     MODE         PING         SETTINGS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
 09 =ADMIN::    KILL

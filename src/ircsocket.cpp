@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2000/04/04 03:13:50  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.95  2000/03/28 16:20:58  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -763,12 +766,16 @@ int EventTask::svc(void)
 		wxLogInfo(Parent->getLogMessage("EVENT/KILLPROTECT"),
 			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str());
 		if (newnick != "" && Parent->server.proto.SVS())
+		{
 		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
 			oldnick, newnick);
+		    send(Parent->nickserv.FirstName(), newnick,
+			Parent->getMessage(newnick, "MISC/RENAMED"));
+		}
 		else
 		{
 		    Parent->server.KILL(Parent->nickserv.FirstName(),
-			oldnick, "Kill Protection enforced.");
+			oldnick, Parent->getMessage("NS_SET/PROTECT"));
 		    Parent->server.NICK(oldnick, (Parent->startup.Ownuser() ?
 				    oldnick.LowerCase() :
 				    Parent->startup.Services_User()),

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2000/04/04 03:13:51  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.86  2000/04/03 09:45:24  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -327,6 +330,7 @@ Server::Server(mstring name, mstring description)
 {
     FT("Server::Server", (name, description));
     i_Name = name.LowerCase();
+    i_AltName = name.LowerCase();
     i_Uplink = Parent->startup.Server_Name().LowerCase();
     i_Hops = 0;
     i_Description = description;
@@ -339,6 +343,7 @@ Server::Server(mstring name, int hops, mstring description)
 {
     FT("Server::Server", (name, hops, description));
     i_Name = name.LowerCase();
+    i_AltName = name.LowerCase();
     i_Uplink = Parent->startup.Server_Name().LowerCase();
     i_Hops = hops;
     i_Description = description;
@@ -351,6 +356,7 @@ Server::Server(mstring name, mstring uplink, int hops, mstring description)
 {
     FT("Server::Server", (name, uplink, hops, description));
     i_Name = name.LowerCase();
+    i_AltName = name.LowerCase();
     i_Uplink = uplink.LowerCase();
     i_Hops = hops;
     i_Description = description;
@@ -362,6 +368,7 @@ void Server::operator=(const Server &in)
 {
     FT("Server::operator=", ("(const Server &) in"));
     i_Name = in.i_Name;
+    i_AltName = in.i_AltName;
     i_Uplink = in.i_Uplink;
     i_Hops = in.i_Hops;
     i_Description = in.i_Description;
@@ -1846,12 +1853,21 @@ void NetworkServ::execute(const mstring & data)
 			}
 		    }
 		}
-		if (Parent->nickserv.IsStored(sourceL) &&
-		    Parent->nickserv.stored[sourceL].Protect() &&
-		    !Parent->nickserv.stored[sourceL].IsOnline())
+		if (Parent->nickserv.IsStored(sourceL))
 		{
-		    Parent->nickserv.send(sourceL,
-			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"));
+		
+		    if (Parent->nickserv.stored[sourceL].Forbidden())
+		    {
+			Parent->nickserv.send(sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+						ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    }
+		    else if (Parent->nickserv.stored[sourceL].Protect() &&
+		    	     !Parent->nickserv.stored[sourceL].IsOnline())
+		    {
+			Parent->nickserv.send(sourceL,
+			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+			    ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    }
 		}
 	    }
 	    else
@@ -2207,12 +2223,20 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 	    }
-	    if (Parent->nickserv.IsStored(sourceL) &&
-		    Parent->nickserv.stored[sourceL].Protect() &&
-		    !Parent->nickserv.stored[sourceL].IsOnline())
+	    if (Parent->nickserv.IsStored(sourceL))
 	    {
-		Parent->nickserv.send(sourceL,
-			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"));
+		if (Parent->nickserv.stored[sourceL].Forbidden())
+		{
+		    Parent->nickserv.send(sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+						ToHumanTime(Parent->nickserv.Ident()).c_str());
+		}
+		else if (Parent->nickserv.stored[sourceL].Protect() &&
+			!Parent->nickserv.stored[sourceL].IsOnline())
+		{
+		    Parent->nickserv.send(sourceL,
+			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+					ToHumanTime(Parent->nickserv.Ident()).c_str());
+		}
 	    }
 	}
 	else if (msgtype=="SQLINE")
@@ -2493,12 +2517,20 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 	    }
-	    if (Parent->nickserv.IsStored(sourceL) &&
-		    Parent->nickserv.stored[sourceL].Protect() &&
-		    !Parent->nickserv.stored[sourceL].IsOnline())
+	    if (Parent->nickserv.IsStored(sourceL))
 	    {
-		Parent->nickserv.send(sourceL,
-			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"));
+		if (Parent->nickserv.stored[sourceL.LowerCase()].Forbidden())
+		{
+		    Parent->nickserv.send(sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+						ToHumanTime(Parent->nickserv.Ident()).c_str());
+		}
+		else if (Parent->nickserv.stored[sourceL].Protect() &&
+			!Parent->nickserv.stored[sourceL].IsOnline())
+		{
+		    Parent->nickserv.send(sourceL,
+			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+					ToHumanTime(Parent->nickserv.Ident()).c_str());
+		}
 	    }
 	}
 	else if (msgtype=="USERHOST")

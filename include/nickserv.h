@@ -24,6 +24,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/04/04 03:13:50  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.32  2000/04/03 09:45:21  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -73,6 +76,7 @@ class Nick_Live_t : public mUserDef
     mstring i_realname;
     mstring i_user;
     mstring i_host;
+    mstring i_alt_host;
     mstring i_server;
     mstring i_squit;
     mstring i_away;
@@ -174,6 +178,8 @@ public:
     mstring RealName()		{ return i_realname; }
     mstring User()		{ return i_user; }
     mstring Host()		{ return i_host; }
+    mstring AltHost()		{ return i_alt_host; }
+    void AltHost(mstring in)	{ i_alt_host = in; }
     mstring Server()		{ return i_server; } 
     void SetSquit();
     void ClearSquit();
@@ -192,6 +198,7 @@ public:
     	};
 
     mstring Mask(styles type);
+    mstring AltMask(styles type);
 
     // Will KILL user if >PassFailMax
     mstring ChanIdentify(mstring channel, mstring password);

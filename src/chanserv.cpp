@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.161  2000/04/04 03:13:50  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.160  2000/04/03 09:45:21  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -1092,7 +1095,7 @@ void Chan_Stored_t::Join(mstring nick)
 
 	if (Parent->nickserv.IsLive(Akick->Entry()))
 	    clive->SendMode("+b " +
-		nlive->Mask(Nick_Live_t::P_H));
+		nlive->AltMask(Nick_Live_t::P_H));
 	else
 	    clive->SendMode("+b " + Akick->Entry());
 
@@ -1113,7 +1116,7 @@ void Chan_Stored_t::Join(mstring nick)
 
 	if (Parent->nickserv.IsLive(nick))
 	    clive->SendMode("+b " +
-		nlive->Mask(Nick_Live_t::P_H));
+		nlive->AltMask(Nick_Live_t::P_H));
 	else
 	    clive->SendMode("+b " + nick + "!*@*");
 
@@ -1430,7 +1433,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    for (j=0; !DidRevenge && j<clive->Users(); j++)
 	    {
 		if (Parent->nickserv.IsLive(clive->User(j)) &&
-		    Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")))
+		    (Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")) ||
+		     Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "))))
 		{
 		    if (DoRevenge(bantype, setter, clive->User(j)))
 		    {
@@ -1660,7 +1664,7 @@ DoRevenge_Ban1:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
-		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::N));
+		Parent->nickserv.live[target.LowerCase()].AltMask(Nick_Live_t::N));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
 			type.c_str(), Parent->getLname(source).c_str());
@@ -1673,7 +1677,7 @@ DoRevenge_Ban2:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
-		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::U_H));
+		Parent->nickserv.live[target.LowerCase()].AltMask(Nick_Live_t::U_H));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
 			type.c_str(), Parent->getLname(source).c_str());
@@ -1686,7 +1690,7 @@ DoRevenge_Ban3:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
-		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::P_H));
+		Parent->nickserv.live[target.LowerCase()].AltMask(Nick_Live_t::P_H));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
 			type.c_str(), Parent->getLname(source).c_str());
@@ -1699,7 +1703,7 @@ DoRevenge_Ban4:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
-		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::H));
+		Parent->nickserv.live[target.LowerCase()].AltMask(Nick_Live_t::H));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
 			type.c_str(), Parent->getLname(source).c_str());
@@ -5046,7 +5050,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 
     for (i=0; i<chan->Users(); i++)
     {
-	user = chan->User(i);
+	user = Parent->getLname(chan->User(i));
 	if (output.size() + user.Len() > 450)
 	{
 	    ::send(mynick, source, output);
@@ -5068,7 +5072,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
     output = channel + " (SPLIT): ";
     for (i=0; i<chan->Squit(); i++)
     {
-	user = chan->Squit(i);
+	user = Parent->getLname(chan->Squit(i));
 	if (output.size() + user.Len() > 450)
 	{
 	    ::send(mynick, source, output);
@@ -5216,7 +5220,8 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     bool found = false;
     for (i=0; i < clive->Bans(); i++)
     {
-	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i).LowerCase()))
+	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i).LowerCase()) ||
+	    nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i).LowerCase()))
 	{
 	    clive->SendMode("-b " + clive->Ban(i));
 	    i--;

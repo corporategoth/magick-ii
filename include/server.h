@@ -24,6 +24,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/04/04 03:13:50  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.34  2000/04/03 09:45:21  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -137,6 +140,7 @@ public:
 class Server
 {
     mstring i_Name;
+    mstring i_AltName;
     mstring i_Uplink;
     int i_Hops;
     mstring i_Description;
@@ -158,6 +162,8 @@ public:
 	{ return (i_Name < in.i_Name); }
 
     mstring Name()		{ return i_Name; }
+    mstring AltName()		{ return i_AltName; }
+    void AltName(mstring in)	{ i_AltName = in; }
     mstring Uplink()		{ return i_Uplink; }
     int Hops()			{ return i_Hops; }
     mstring Description()	{ return i_Description; }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2000/04/04 03:13:51  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.76  2000/04/03 09:45:24  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -536,6 +539,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     i_server = server;
     i_user = username;
     i_host = hostname;
+    i_alt_host = hostname;
     i_realname = realname;
     identified = false;
     InFlight.nick=i_Name;
@@ -584,6 +588,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     i_Last_Action = time(NULL);
     i_user = username;
     i_host = hostname;
+    i_alt_host = hostname;
     i_realname = realname;
     identified = true;
     InFlight.nick = i_Name;
@@ -602,6 +607,7 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
     i_realname=in.i_realname;
     i_user=in.i_user;
     i_host=in.i_host;
+    i_alt_host=in.i_alt_host;
     i_server=in.i_server;
     modes=in.modes;
     set<mstring>::const_iterator i;
@@ -876,13 +882,15 @@ void Nick_Live_t::Name(mstring in)
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].Forbidden())
 	{
-	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"));
+	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"),
+						ToHumanTime(Parent->nickserv.Ident()).c_str());
 	    return;
 	}
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
 	    Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].Protect())
-	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"));
+	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"),
+					ToHumanTime(Parent->nickserv.Ident()).c_str());
     }
 
     // Send notices for committees we were NOT on
@@ -1058,7 +1066,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 	    user = user.After("~");
 	if (i_host.IsNumber())
 	    retval = i_Name + "!*" + user + "@" + i_host.Before(".", 3) + ".*";
-	else if (i_host.Contains("."))
+	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = i_Name + "!*" + user + "@*." + i_host.After(".");
 	else
 	    retval = i_Name + "!*" + user + "@" + i_host;
@@ -1071,7 +1079,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     case N_H:		// nick!*@*.host
 	if (i_host.IsNumber())
 	    retval = i_Name + "!*@" + i_host.Before(".", 3) + ".*";
-	else if (i_host.Contains("."))
+	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = i_Name + "!*@*." + i_host.After(".");
 	else
 	    retval = i_Name + "!*@" + i_host;
@@ -1086,7 +1094,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 	    user = user.After("~");
 	if (i_host.IsNumber())
 	    retval = "*!*" + user + "@" + i_host.Before(".", 3) + ".*";
-	else if (i_host.Contains("."))
+	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = "*!*" + user + "@*." + i_host.After(".");
 	else
 	    retval = "*!*" + user + "@" + i_host;
@@ -1099,10 +1107,87 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     case H:		// *!*@*.host
 	if (i_host.IsNumber())
 	    retval = "*!*@" + i_host.Before(".", 3) + ".*";
-	else if (i_host.Contains("."))
+	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = "*!*@*." + i_host.After(".");
 	else
 	    retval = "*!*@" + i_host;
+	break;
+
+    default:
+	retval = "*!*@*";
+	break;
+    }
+    
+    RET(retval);
+}
+
+
+mstring Nick_Live_t::AltMask(Nick_Live_t::styles type)
+{
+    FT("Nick_Live_t::AltMask", ((int) type));
+
+    mstring retval;
+    mstring user = i_user;
+    switch (type)
+    {
+    case N:		// nick!*@*
+	retval = i_Name + "!*@*";
+	break;
+
+    case N_U_P_H:	// nick!user@port.host
+	retval = i_Name + "!" + user + "@" + i_alt_host;
+	break;
+
+    case N_U_H:		// nick!*user@*.host
+	if (user[0u] == '~')
+	    user = user.After("~");
+	if (i_alt_host.IsNumber())
+	    retval = i_Name + "!*" + user + "@" + i_alt_host.Before(".", 3) + ".*";
+	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
+	    retval = i_Name + "!*" + user + "@*." + i_alt_host.After(".");
+	else
+	    retval = i_Name + "!*" + user + "@" + i_alt_host;
+	break;
+
+    case N_P_H:		// nick!*@port.host
+	retval = i_Name + "!*@" + i_alt_host;
+	break;
+
+    case N_H:		// nick!*@*.host
+	if (i_alt_host.IsNumber())
+	    retval = i_Name + "!*@" + i_alt_host.Before(".", 3) + ".*";
+	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
+	    retval = i_Name + "!*@*." + i_alt_host.After(".");
+	else
+	    retval = i_Name + "!*@" + i_alt_host;
+	break;
+
+    case U_P_H:		// *!user@port.host
+	retval = "*!" + user + "@" + i_alt_host;
+	break;
+
+    case U_H:		// *!*user@*.host
+	if (user[0u] == '~')
+	    user = user.After("~");
+	if (i_alt_host.IsNumber())
+	    retval = "*!*" + user + "@" + i_alt_host.Before(".", 3) + ".*";
+	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
+	    retval = "*!*" + user + "@*." + i_alt_host.After(".");
+	else
+	    retval = "*!*" + user + "@" + i_alt_host;
+	break;
+
+    case P_H:		// *!*@port.host
+	retval = "*!*@" + i_alt_host;
+	break;
+
+    case H:		// *!*@*.host
+	if (i_alt_host.IsNumber())
+	    retval = "*!*@" + i_alt_host.Before(".", 3) + ".*";
+	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
+	    retval = "*!*@*." + i_alt_host.After(".");
+	else
+	    retval = "*!*@" + i_alt_host;
 	break;
 
     default:

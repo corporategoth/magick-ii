@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/04/04 03:13:51  prez
+** Added support for masking hostnames.
+**
 ** Revision 1.35  2000/03/15 08:23:52  prez
 ** Added locking stuff for commserv options, and other stuff
 **
@@ -228,7 +231,7 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 {
     FT("ServMsg::do_BreakDown2", (mynick, source, previndent, server));
     vector<mstring> downlinks;
-    mstring out;
+    mstring out, servername;
     unsigned int users, opers;
     float lag;
 
@@ -256,17 +259,18 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 	    users = Parent->server.ServerList[downlinks[i]].Users();
 	    opers = Parent->server.ServerList[downlinks[i]].Opers();
 	    lag = Parent->server.ServerList[downlinks[i]].Lag();
+	    servername = Parent->server.ServerList[downlinks[i]].AltName();
 	    if (i<downlinks.size()-1)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
-			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
+			(previndent + "|-" + servername).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 		do_BreakDown2(mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
-			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
+			(previndent + "`-" + servername).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 		do_BreakDown2(mynick, source, previndent + "  ", downlinks[i]);
 	    }
