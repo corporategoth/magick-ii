@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2001/06/07 06:21:06  prez
+** Think I fixed staging encryption layer ... ugh.
+**
 ** Revision 1.4  2001/06/07 03:58:05  prez
 ** Aparently we dont need or want a Feed call with 1
 **
@@ -263,18 +266,14 @@ long CryptStage::Read(char *buf, size_t size)
 	{
 	    memset(buffer, 0, sizeof(buffer));
 	    ret = input->Read(buffer, sizeof(buffer));
-	    if (ret < 8)
-	    {
-		if (ret < 0)
-		    return ret;
-		else
-		    return i;
-	    }
+	    if (ret < 0)
+		return ret;
 	    else
 	    {
 		bufsize = ret;
+		// go up to even boundary ...
 		if ((bufsize % 8) != 0)
-		    bufsize -= (bufsize % 8);
+		    bufsize += 8-(bufsize % 8);
 	    }
 	}
 	else if (lastpos >= bufsize)
@@ -300,6 +299,8 @@ long CryptStage::Read(char *buf, size_t size)
 	    outbufsize = 8-(size-i);
 	}
     }
+    // Ignore trailing null's ...
+    while (buf[i-1]==0) i--;
     return i;
 }
 
@@ -443,9 +444,9 @@ long XMLStage::Consume()
     char buffer[DEF_STAGE_BUFFER];
     while ((res = input->Read(buffer, sizeof(buffer))) > 0)
     {
-/*	if (res < static_cast<long>(sizeof(buffer)))
+	if (res < static_cast<long>(sizeof(buffer)))
 	    xres = parser->Feed(buffer, res, 1);
-	else */
+	else
 	    xres = parser->Feed(buffer, res, 0);
 	total += res;
     }

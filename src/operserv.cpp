@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.126  2001/06/07 06:21:06  prez
+** Think I fixed staging encryption layer ... ugh.
+**
 ** Revision 1.125  2001/06/03 05:04:53  prez
 ** small fixes in operdeny and akill adding
 **
@@ -1990,6 +1993,13 @@ void OperServ::do_Jupe(const mstring &mynick, const mstring &source, const mstri
 
     mstring target = params.ExtractWord(2, " ");
     mstring reason = params.After(" ", 2);
+
+    if (!target.Contains("."))
+    {
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+				"JUPE", '.'));
+	return;
+    }
 
     Parent->server.Jupe(target, reason);
     Parent->operserv.stats.i_Jupe++;
