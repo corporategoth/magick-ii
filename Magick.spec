@@ -19,7 +19,9 @@ control mechanisms to stop things like flooding, abusive users,
 and many other things.
 
 %prep
+
 %setup
+
 %build
 ./configure --prefix=$RPM_BUILD_ROOT/usr --sysconfdir=$RPM_BUILD_ROOT/etc --enable-quick --disable-hostlock --enable-convert
 helper/build-ver .
@@ -44,7 +46,3 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/magick_stampkeys
 /usr/share/magick
 /usr/man
-
-%changelog
-* Sat Apr 21 2001 Preston A. Elder <prez@antisocial.com>
-- added a build root (to stop infecting host system).
