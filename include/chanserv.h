@@ -156,7 +156,7 @@ class Chan_Stored_t : public mUserDef
     mstring i_Suspend_By;
     mDateTime i_Suspend_Time;
 
-    set<entlist_val_t<long> > i_Access_Level;
+    set<entlist_val_t<long> > i_Level;
     set<entlist_val_t<long> > i_Access;
     set<entlist_val_t<mstring> > i_Akick;
     list<entlist_t> i_Greet;
@@ -267,17 +267,17 @@ public:
     bool Forbidden()			{ return i_Forbidden; }
 
     // FIND: Looks for EXACT MATCH of passed entry.
-//  bool Access_Level_insert(mstring entry, long value, mstring nick);
-//  bool Access_Level_erase();
-    bool Access_Level_change(mstring entry, long value, mstring nick);
-    set<entlist_val_t<long> >::iterator Access_Level_begin()
-	{ return i_Access_Level.begin(); }
-    set<entlist_val_t<long> >::iterator Access_Level_end()
-	{ return i_Access_Level.end(); }
-    size_t Access_Level_size()			{ return i_Access_Level.size(); }
-    bool Access_Level_find(mstring entry);
-    long Access_Level_value(mstring entry);
-    set<entlist_val_t<long> >::iterator Access_Level;
+//  bool Level_insert(mstring entry, long value, mstring nick);
+//  bool Level_erase();
+    bool Level_change(mstring entry, long value, mstring nick);
+    set<entlist_val_t<long> >::iterator Level_begin()
+	{ return i_Level.begin(); }
+    set<entlist_val_t<long> >::iterator Level_end()
+	{ return i_Level.end(); }
+    size_t Level_size()			{ return i_Level.size(); }
+    bool Level_find(mstring entry);
+    long Level_value(mstring entry);
+    set<entlist_val_t<long> >::iterator Level;
 
     // FIND: Looks for EXACT MATCH of passed entry, if !found,
     //       then if entry contains "@", REGEX match on entry,

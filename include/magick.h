@@ -182,7 +182,6 @@ public:
 	bool AUTO() { return automation; }
 	void AUTO(bool on) { automation = on; }
 
-	wxFileConfig* MagickIni;
 	long runflags;
 	mstring services_dir;
 	mstring config_file;
@@ -199,7 +198,7 @@ public:
 	bool GotConnect;
 	mstring Server;
 
-	void get_config_values();
+	bool get_config_values();
 	bool check_config();
 	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);

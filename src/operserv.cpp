@@ -981,8 +981,15 @@ void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Reload", (mynick, source, params));
-    ::send(mynick, source, "Configuration reloaded.");
-    Parent->get_config_values();
+    if (Parent->get_config_values())
+    {
+	::send(mynick, source, "Configuration reloaded.");
+    }
+    else
+    {
+	wxLogError("Could not read magick config file %s.", Parent->config_file.c_str());
+	::send(mynick, source, "WARNING: Could not read config file.");
+    }
 }
 
 

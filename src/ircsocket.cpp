@@ -270,7 +270,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	}
 	else
 	{
-	    entry->InFlight.End(0);
+	    entry->InFlight.End(0u);
 	}
     }
     delete tmp;

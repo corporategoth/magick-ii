@@ -256,7 +256,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		    }
 		    else
 		    {
-			output << "...";
+			if (sentsize > 0)
+			    output << "...";
 			output << iter->Text().SubString(sentsize, iter->Text().size()-1);
 		    }
 		    ::send(mynick, source, "    " + output);
@@ -310,7 +311,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			    }
 			    else
 			    {
-				output << "...";
+				if (sentsize > 0)
+				    output << "...";
 				output << iter->Text().SubString(sentsize, iter->Text().size()-1);
 			    }
 			    ::send(mynick, source, "    " + output);
@@ -811,7 +813,7 @@ void MemoServ::do_Flush(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, "Memos with file attachments cannot be flushed.");
 	    return;
 	}
-	Parent->nickserv.live[source.LowerCase()].InFlight.End(0);
+	Parent->nickserv.live[source.LowerCase()].InFlight.End(0u);
     }
     else
     {

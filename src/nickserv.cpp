@@ -26,12 +26,14 @@ void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
     nick = newnick;
     if (timer)
     {
+/*
 	mstring *arg;
 	if (ACE_Reactor::instance()->cancel_timer(timer,
 					    (const void **) arg))
 	{
 	    delete arg;
 	}
+*/
 	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -60,7 +62,8 @@ Nick_Live_t::InFlight_t::~InFlight_t()
 {
     NFT("Nick_Live_t::InFlight_t::~InFlight_t");
     if (Exists())
-	End(0);
+	End(0u);
+/*
     mstring *arg;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
@@ -68,6 +71,7 @@ Nick_Live_t::InFlight_t::~InFlight_t()
 	{
 	    delete arg;
 	}
+*/
 }
 
 
@@ -105,6 +109,7 @@ void Nick_Live_t::InFlight_t::SetInProg()
 {
     NFT("Nick_Live_t::InFlight_t::SetInProg");
     fileinprog = true;
+/*
     mstring *arg;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
@@ -112,6 +117,7 @@ void Nick_Live_t::InFlight_t::SetInProg()
 	{
 	    delete arg;
 	}
+*/
 }
 
 
@@ -138,7 +144,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     }
     else if (Exists())
     {
-	End(0);
+	End(0u);
     }
 
     if (!Parent->nickserv.IsStored(nick))
@@ -207,6 +213,7 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
     FT("Nick_Live_t::InFlight_t::Continue", (message));
     if (memo)
   	text += message;
+/*
     mstring *arg;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
@@ -217,6 +224,7 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
+*/
     ::send(service, nick, "Pending memo timer reset ... You have " +
 	    ToHumanTime(Parent->memoserv.InFlight()) +
 	    " to continue or cancel it before it is delivered.");
@@ -228,6 +236,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 {
     NFT("Nick_Live_t::InFlight_t::Cancel");
 
+/*
     mstring *arg;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
@@ -235,6 +244,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 	{
 	    delete arg;
 	}
+*/
     if (memo)
 	send(service, nick, "Memo has been cancelled.");
     else
@@ -261,6 +271,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
     }
     else
     {
+/*
 	mstring *arg;
 	if (timer)
 	    if (ACE_Reactor::instance()->cancel_timer(timer,
@@ -268,6 +279,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    {
 		delete arg;
 	    }
+*/
 	if (Parent->nickserv.IsStored(sender))
 	{
 	    if (Parent->nickserv.stored[sender.LowerCase()].Host() != "" &&
@@ -366,7 +378,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     }
     else if (Exists())
     {
-	End(0);
+	End(0u);
     }
 
     if (Parent->nickserv.IsStored(nick))
@@ -557,7 +569,7 @@ void Nick_Live_t::Quit(mstring reason)
 	Part(*joined_channels.begin());
 
     if (InFlight.Exists())
-	InFlight.End(0);
+	InFlight.End(0u);
 
     // We successfully ident to all channels we tried to
     // ident for before, so that they 0 our count -- we dont
@@ -626,7 +638,7 @@ bool Nick_Live_t::FloodTrigger()
 	if (flood_triggered_times >= Parent->operserv.Ignore_Limit()) {
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), true, i_Name);
 	    message << "You have triggered services IGNORE (" << Parent->operserv.Flood_Msgs()
-		<< " messages in " << Parent->operserv.Flood_Time() << " seconds).";
+		<< " messages in " << ToHumanTime(Parent->operserv.Flood_Time()) << ").";
 	    Parent->nickserv.send(i_Name, message); message = "";
 	    message << "You have been ignored the maximum " << Parent->operserv.Ignore_Limit()
 		<< " times.  Services will no longer respond.";
@@ -634,11 +646,11 @@ bool Nick_Live_t::FloodTrigger()
 	} else {
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), false, i_Name);
 	    message << "You have triggered services IGNORE (" << Parent->operserv.Flood_Msgs()
-		<< " messages in " << Parent->operserv.Flood_Time() << " seconds).";
+		<< " messages in " << ToHumanTime(Parent->operserv.Flood_Time()) << ").";
 	    Parent->nickserv.send(i_Name, message); message = "";
 	    message << "You have been ignored " << flood_triggered_times << " times (of a maximum "
 		<< Parent->operserv.Ignore_Limit() << ").  Services will not respond for "
-		<< Parent->operserv.Ignore_Time() << " seconds.";
+		<< ToHumanTime(Parent->operserv.Ignore_Time()) << ".";
 	    Parent->nickserv.send(i_Name, message); message = "";
 	}}
  

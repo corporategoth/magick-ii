@@ -905,7 +905,7 @@ void Chan_Stored_t::Join(mstring nick)
 	return;
     }}
 
-    if (Secure() && Restricted() && Access_value(nick) < (long) 1)
+    if (Restricted() && GetAccess(nick) < (long) 1)
     {
 	// If this user is the only user in channel
 	if (Parent->chanserv.IsLive(i_Name))
@@ -925,7 +925,7 @@ void Chan_Stored_t::Join(mstring nick)
 	if (Parent->chanserv.IsLive(i_Name))
 	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
 	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode	("+s");
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+s");
 		// Activate timer to PART in ? seconds ...
 		// Probably should set something in live to say that
 		// chanserv is only there to keep the channel (and probably
@@ -963,6 +963,37 @@ void Chan_Stored_t::Join(mstring nick)
 	}
     }
 
+    mstring target = nick;
+    if (Parent->nickserv.IsStored(nick) &&
+	Parent->nickserv.stored[nick.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[nick.LowerCase()].Host()))
+    {
+	target = Parent->nickserv.stored[nick.LowerCase()].Host();
+    }
+    {
+	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+	if (Greet_find(target))
+	{
+	    if (Greet->Entry()[0U] == '!')
+	    {
+		Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
+					Greet->Entry().After("!"));
+	    }
+	    else
+	    {
+		Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
+						Greet->Entry());
+	    }
+	}
+    }
+
+    {
+	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+	for(Message = Message_begin(); Message != Message_end(); Message++)
+	{
+	    Parent->chanserv.notice(nick, "[" + i_Name + "] " + Message->Entry());
+	}
+    }
 }
 
 
@@ -1050,7 +1081,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	case 'o':
 	    if (add)
 	    {
-		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Access_Level_value("AUTODEOP") ||
+		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDOP") ||
 			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOOP")) &&
 			Secureops()))
@@ -1073,7 +1104,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	case 'v':
 	    if (add)
 	    {
-		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Access_Level_value("AUTODEOP") ||
+		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDVOICE") ||
 			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOVOICE")) &&
 			Secureops()))
@@ -1282,7 +1313,7 @@ void Chan_Stored_t::defaults()
     for (i=0; i<levels.size(); i++)
     {
 	if (Parent->chanserv.LVL(levels[i]) >= Parent->chanserv.Level_Min())
-	    i_Access_Level.insert(entlist_val_t<long>(levels[i],
+	    i_Level.insert(entlist_val_t<long>(levels[i],
 					Parent->chanserv.LVL(levels[i]),
 					Parent->chanserv.FirstName()));
     }    
@@ -1358,9 +1389,9 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 
 //  entlist_val_cui<long> j;
     set<entlist_val_t<long> >::const_iterator j;
-    i_Access_Level.clear();
-    for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
-	i_Access_Level.insert(*j);
+    i_Level.clear();
+    for(j=in.i_Level.begin();j!=in.i_Level.end();j++)
+	i_Level.insert(*j);
 
     i_Access.clear();
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
@@ -2315,68 +2346,68 @@ bool Chan_Stored_t::L_Revenge()
 }
 
 
-bool Chan_Stored_t::Access_Level_change(mstring entry, long value, mstring nick)
+bool Chan_Stored_t::Level_change(mstring entry, long value, mstring nick)
 {
-    FT("Chan_Stored_t::Access_Level_change", (entry, value, nick));
+    FT("Chan_Stored_t::Level_change", (entry, value, nick));
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access_Level"));
-    if (Access_Level_find(entry))
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+    if (Level_find(entry))
     {
 	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
-	i_Access.erase(Access_Level);
-	tmp = i_Access_Level.insert(entlist_val_t<long>(
+	i_Access.erase(Level);
+	tmp = i_Level.insert(entlist_val_t<long>(
 			entry.UpperCase(), value, nick));
 	if (tmp.second)
-	    Access_Level = tmp.first;
+	    Level = tmp.first;
 	else
-	    Access_Level = i_Access_Level.end();
+	    Level = i_Level.end();
 	RET(true);
     }
     else
     {
-	Access_Level = i_Access_Level.end();
+	Level = i_Level.end();
 	RET(false);
     }
 }
 
 
-bool Chan_Stored_t::Access_Level_find(mstring entry)
+bool Chan_Stored_t::Level_find(mstring entry)
 {
-    FT("Chan_Stored_t::Access_Level_find", (entry));
+    FT("Chan_Stored_t::Level_find", (entry));
 
-    //  entlist_val_ui<long> iter = i_Access_Level.end();
-    set<entlist_val_t<long> >::iterator iter = i_Access_Level.end();
-    if (!i_Access_Level.empty())
-	for (iter=i_Access_Level.begin(); iter!=i_Access_Level.end(); iter++)
+    //  entlist_val_ui<long> iter = i_Level.end();
+    set<entlist_val_t<long> >::iterator iter = i_Level.end();
+    if (!i_Level.empty())
+	for (iter=i_Level.begin(); iter!=i_Level.end(); iter++)
 	    if (iter->Entry().LowerCase() == entry.LowerCase())
 		break;
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access_Level"));
-    if (iter != i_Access_Level.end())
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+    if (iter != i_Level.end())
     {
-	Access_Level = iter;
+	Level = iter;
 	RET(true);
     }
     else
     {
-	Access_Level = i_Access_Level.end();
+	Level = i_Level.end();
 	RET(false);
     }
 }
 
 
-long Chan_Stored_t::Access_Level_value(mstring entry)
+long Chan_Stored_t::Level_value(mstring entry)
 {
-    FT("Chan_Stored_t::Access_Level_value", (entry));
+    FT("Chan_Stored_t::Level_value", (entry));
 
     long retval = 0;
-//  entlist_val_ui<long> iter = Access_Level;
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access_Level"));
-    set<entlist_val_t<long> >::iterator iter = Access_Level;
+//  entlist_val_ui<long> iter = Level;
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+    set<entlist_val_t<long> >::iterator iter = Level;
 
-    if (Access_Level_find(entry))
-	retval=Access_Level->Value();
-    Access_Level = iter;
+    if (Level_find(entry))
+	retval=Level->Value();
+    Level = iter;
     RET(retval);
 }
 
@@ -2553,7 +2584,7 @@ bool Chan_Stored_t::GetAccess(mstring entry, mstring type)
 {
     FT("Chan_Stored_t::GetAccess", (entry, type));
 
-    RET(GetAccess(entry) >= Access_Level_value(type));
+    RET(GetAccess(entry) >= Level_value(type));
 }
 
 
@@ -2832,8 +2863,8 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 
 //  entlist_val_cui<long> j;
     set<entlist_val_t<long> >::const_iterator j;
-    out<<in.i_Access_Level.size();
-    for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
+    out<<in.i_Level.size();
+    for(j=in.i_Level.begin();j!=in.i_Level.end();j++)
 	out<<*j;
 
     out<<in.i_Access.size();
@@ -2878,12 +2909,12 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 	>>out.l_NoExpire>>out.l_Anarchy>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
-    out.i_Access_Level.clear();
+    out.i_Level.clear();
     in>>count;
     for(i=0;i<count;i++)
     {
 	in>>eldummy;
-	out.i_Access_Level.insert(eldummy);
+	out.i_Level.insert(eldummy);
     }
 
     out.i_Access.clear();
@@ -3417,21 +3448,22 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 	if (chan->Comment() != "")
 	    ::send(mynick, source, "    Comment: " + chan->Comment());
     }
-    ::send(mynick, source, " Last Topic: " + chan->Last_Topic());
-    ::send(mynick, source, "     Set By: " + chan->Last_Topic_Setter() + " " +
+    if (chan->Last_Topic() != "")
+    {
+	::send(mynick, source, " Last Topic: " + chan->Last_Topic());
+	::send(mynick, source, "     Set By: " + chan->Last_Topic_Setter() + " " +
 				    chan->Last_Topic_Set_Time().Ago() + " Ago");
+    }
     if (chan->Mlock() != "")
 	::send(mynick, source, "  Mode Lock: " + chan->Mlock());
     if (chan->Revenge() != "")
 	::send(mynick, source, "    Revenge: " + chan->Revenge());
-    mstring output = "";
     if (chan->Bantime())
     {
-	output << chan->Bantime();
-	::send(mynick, source, "Ban Removal: " + output + " seconds");
-	output = "";
+	::send(mynick, source, "Ban Removal: " + ToHumanTime(chan->Bantime()));
     }
 
+    mstring output = "";
     if (chan->Keeptopic())
     {
 	if (output != "")
@@ -3770,7 +3802,9 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 						" is already opped.");
 	    return;
 	}
-	else if (chan->Secureops() && chan->GetAccess(target) < 1)
+	else if (chan->Secureops() &&
+		!(chan->GetAccess(target, "CMDOP") ||
+		chan->GetAccess(target, "AUTOOP")))
 	{
 	    ::send(mynick, source, "Channel " + channel + " is Secure Ops.");
 	    return;
@@ -3787,11 +3821,6 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, "You are already opped.");
 	    return;
-	}
-	else if (chan->Secureops() && chan->GetAccess(target) < 1)
-	{
-	    ::send(mynick, source, "Channel " + channel + " is Secure Ops.");
-	    return;	    
 	}
 	else if (!chan->GetAccess(target, "CMDOP"))
 	{
@@ -3925,7 +3954,9 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 						" is already voiced.");
 	    return;
 	}
-	else if (chan->Secureops() && chan->GetAccess(target) < 1)
+	else if (chan->Secureops() &&
+		!(chan->GetAccess(target, "CMDVOICE") ||
+		chan->GetAccess(target, "AUTOVOICE")))
 	{
 	    ::send(mynick, source, "Channel " + channel + " is Secure Ops.");
 	    return;
@@ -3942,11 +3973,6 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, "You are already voiced.");
 	    return;
-	}
-	else if (chan->Secureops() && chan->GetAccess(target) < 1)
-	{
-	    ::send(mynick, source, "Channel " + channel + " is Secure Ops.");
-	    return;	    
 	}
 	else if (!chan->GetAccess(target, "CMDVOICE"))
 	{
@@ -4207,7 +4233,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (Parent->chanserv.stored[channel.LowerCase()].GetAccess(source,
+    if (!Parent->chanserv.stored[channel.LowerCase()].GetAccess(source,
 								"VIEW"))
     {
 	::send(mynick, source, "Access denied.");
@@ -4732,12 +4758,12 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
-    if (cstored->Access_Level_find(what))
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Level"));
+    if (cstored->Level_find(what))
     {
-	cstored->Access_Level_change(cstored->Access_Level->Entry(),
+	cstored->Level_change(cstored->Level->Entry(),
 					    atol(level.c_str()), source);
-	::send(mynick, source, "Level for " + cstored->Access_Level->Entry() +
+	::send(mynick, source, "Level for " + cstored->Level->Entry() +
 				    " has now been set to " + level + ".");
     }
     else
@@ -4777,16 +4803,16 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
-    if (cstored->Access_Level_find(what) &&
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Level"));
+    if (cstored->Level_find(what) &&
 	Parent->chanserv.LVL(what) > Parent->chanserv.Level_Min())
     {
-	cstored->Access_Level_change(cstored->Access_Level->Entry(),
+	cstored->Level_change(cstored->Level->Entry(),
 				    Parent->chanserv.LVL(what), source);
 	::send(mynick, source, "Level for " +
-				    cstored->Access_Level->Entry() +
+				    cstored->Level->Entry() +
 				    " has now been set to " +
-				    ltoa(cstored->Access_Level->Value()) + ".");
+				    ltoa(cstored->Level->Value()) + ".");
     }
     else
     {
@@ -4829,21 +4855,21 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     long myaccess = cstored->GetAccess(source);
     bool haveset = cstored->GetAccess(source, "SET");
 
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
-    for (cstored->Access_Level = cstored->Access_Level_begin();
-		    cstored->Access_Level != cstored->Access_Level_end();
-		    cstored->Access_Level++)
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Level"));
+    for (cstored->Level = cstored->Level_begin();
+		    cstored->Level != cstored->Level_end();
+		    cstored->Level++)
     {
 	if (haveset)
 	{
 	    output = "";
-	    output.Format("%5l  %s", cstored->Access_Level->Value(),
-					cstored->Access_Level->Entry().c_str());
+	    output.Format("%5l  %s", cstored->Level->Value(),
+					cstored->Level->Entry().c_str());
 	    ::send(mynick, source, output);
 	}
-	else if(cstored->Access_Level->Value() >= myaccess)
+	else if(cstored->Level->Value() >= myaccess)
 	{
-	    ::send(mynick, source, "You have " + cstored->Access_Level->Entry() +
+	    ::send(mynick, source, "You have " + cstored->Level->Entry() +
 					    " access.");
 	}
     }
@@ -5271,6 +5297,11 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
     {
 	target = params.ExtractWord(4, " ").After("!");
 	option = params.After(" ", 4);
+	if (!Parent->nickserv.IsStored(target))
+	{
+	    ::send(mynick, source, "Nickname " + target + " is not registered.");
+	    return;
+	}
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {
@@ -5281,6 +5312,12 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
     {
 	while (option[0U] == '!')
 	    option = option.After("!");
+    }
+
+    if (Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+    {
+	target = Parent->nickserv.stored[target.LowerCase()].Host();
     }
 
     if (cstored->Greet_find(target))
@@ -5348,9 +5385,19 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	target = params.ExtractWord(3, " ").After("!");
 	if (!cstored->Greet_find(target))
 	{
-	    ::send(mynick, source, "Nick " + target + " does not have " +
-		"a channel greeting for " + cstored->Name() + ".");
-	    return;
+	    if (Parent->nickserv.IsStored(target) &&
+		Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
+		Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+	    {
+		target = Parent->nickserv.stored[target.LowerCase()].Host();
+	    }
+
+	    if (!cstored->Greet_find(target))
+	    {
+		::send(mynick, source, "Nick " + target + " does not have " +
+		    "a channel greeting for " + cstored->Name() + ".");
+		return;
+	    }
 	}
     }
     else if (!cstored->GetAccess(source, "GREET"))
@@ -5367,6 +5414,12 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     }
     else
     {
+	if (Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+	{
+	    target = Parent->nickserv.stored[target.LowerCase()].Host();
+	}
+
 	if (cstored->Greet_find(target))
 	{
 	    if (cstored->Greet->Entry()[0U] == '!' &&
@@ -5402,6 +5455,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel = params.ExtractWord(2, " ");
+    mstring target = source;
     bool all = false;
 
     if (!Parent->chanserv.IsStored(channel))
@@ -5425,10 +5479,16 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+    {
+	target = Parent->nickserv.stored[target.LowerCase()].Host();
+    }
+
     for (cstored->Greet = cstored->Greet_begin();
 		    cstored->Greet != cstored->Greet_end(); cstored->Greet++)
     {
-	if (cstored->Greet->Last_Modifier().LowerCase() == source.LowerCase()
+	if (cstored->Greet->Last_Modifier().LowerCase() == target.LowerCase()
 	    || all)
 	{
 	    ::send(mynick, source, "[" + cstored->Greet->Last_Modifier() +
@@ -5691,7 +5751,7 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -5770,7 +5830,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -5812,7 +5872,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -5889,7 +5949,7 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -5928,7 +5988,7 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -5976,7 +6036,7 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6032,7 +6092,7 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6088,7 +6148,7 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6144,7 +6204,7 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6200,7 +6260,7 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6305,7 +6365,7 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6361,7 +6421,7 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6417,7 +6477,7 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -6473,7 +6533,7 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source, "SET"))
+    if (!cstored->GetAccess(source, "SET"))
     {
 	::send(mynick, source, "Access denied.");
 	return;

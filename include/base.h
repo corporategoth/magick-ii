@@ -241,11 +241,14 @@ public:
     bool signon(const mstring& nickname);
     bool signoff(const mstring& nickname);
     void privmsg(const mstring& source, const mstring &dest, const mstring &message);
-    void privmsg(const mstring &dest, const mstring &message); // FIRST nick
+    void privmsg(const mstring &dest, const mstring &message)
+    		{ privmsg(FirstName(), dest, message); }
     void notice(const mstring& source, const mstring &dest, const mstring &message);
-    void notice(const mstring &dest, const mstring &message); // FIRST nick
+    void notice(const mstring &dest, const mstring &message)
+    		{ notice(FirstName(), dest, message); }
     void send(const mstring& source, const mstring &dest, const mstring &message);
-    void send(const mstring &dest, const mstring &message); // FIRST nick
+    void send(const mstring &dest, const mstring &message)
+    		{ send(FirstName(), dest, message); }
 
     operator mVariant() const
     {
