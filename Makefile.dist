@@ -6,8 +6,8 @@ dist:
 	autoheader
 # use --include-deps, if you want to release the stuff. Don't use it for
 # yourself
-	automake --include-deps
-	perl automoc
+	automake --add-missing --include-deps
+	#perl automoc
 	autoconf
 	touch stamp-h.in
 	LIST=`find ./po -name "*.po"`; \
@@ -15,11 +15,23 @@ dist:
 	 file2=`echo $$i | sed -e "s#\.po#\.gmo#"`; \
 	 msgfmt -o $$file2 $$i; \
 	done 
+	cp config.sub config1.sub
+	cp config.guess config1.guess
+	rm -f config.* *.ini *.log *.key *.mnd *.pid magick
+	rm -f `find . -type f -name "*~"`
+	rm -f `find . -type f -name ".#*"`
+	rm -f `find . -type f -name .cvsignore`
+	rm -rf `find . -type d -name CVS`
 	rm -f Makefile.dist
+	mv config1.sub config.sub
+	mv config1.guess config.guess
 
 all:
-	aclocal
-	autoheader
-	automake
-	autoconf
-
+	rm -f Makefile
+	./configure
+	@if test -f Makefile ;\
+	then	echo "make" ;\
+		make ;\
+	else	ehco "Configure failed, please check why and re-run ./configure before running make again" ;\
+	fi
+		
