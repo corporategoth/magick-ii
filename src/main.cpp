@@ -12,28 +12,31 @@
 // ===================================================
 
 #include "magick.h"
+#include "datetime.h"
+mDateTime Reset_Time;
 
 Magick *MagickObject;
 
 int start_server(int argc, char **argv)
 {
-	Magick internalobject(argc, argv);
-	MagickObject=&internalobject;
-	return internalobject.Start();
+    Reset_Time=Now();
+    Magick internalobject(argc, argv);
+    MagickObject=&internalobject;
+    return internalobject.Start();
 }
 int main(int argc, char **argv)
 {
-	try
-	{
-		int Result;
+    try
+    {
+	int Result;
 restart:
-		Result=start_server(argc,argv);
-		if(Result==MAGICK_RET_RESTART)
-			goto restart;
-		return Result;
-	}
-	catch(...)
-	{
-		printf("Unhandled exception\n");
-	}
+	Result=start_server(argc,argv);
+	if(Result==MAGICK_RET_RESTART)
+	    goto restart;
+	return Result;
+    }
+    catch(...)
+    {
+	printf("Unhandled exception\n");
+    }
 }

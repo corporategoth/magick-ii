@@ -62,5 +62,6 @@ public:
 };
 
 extern Magick *MagickObject;
+extern mDateTime Reset_Time;
 
 #endif
