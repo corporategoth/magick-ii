@@ -79,5 +79,13 @@ LINK32=link.exe
 
 # Name "magick - Win32 Release"
 # Name "magick - Win32 Debug"
+# Begin Source File
+
+SOURCE=.\src\lockable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\lockable.h
+# End Source File
 # End Target
 # End Project
