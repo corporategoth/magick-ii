@@ -1,3 +1,35 @@
+* 2003-02-02 19:47  Preston A. Elder <prez@magick.tm>
+  README (1.33), docs/en/index.sgml (1.51), include/convert/ircservices.h
+  (1.5), src/magick.cpp (1.392), src/convert/ircservices.cpp (1.5):
+  
+  Updated version of ircservices conversion, no changes needed, just
+  version bump.
+
+* 2003-02-02 12:05  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.269):
+  
+  Fixed token lock error.
+
+* 2003-02-02 11:29  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.79), include/version.h (1.144), src/server.cpp (1.268):
+  
+  Made magick compile in release mode on win32
+
+* 2003-02-02 09:44  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.ircu2.10.ini (1.13), ircd/ircd.ircu2.10ext.ini (1.13):
+  
+  Added missing S token.
+
+* 2003-02-02 08:34  Preston A. Elder <prez@magick.tm>
+  convert.dsp (1.1):
+  
+  Forgot to commit the DSP
+
+* 2003-02-02 05:30  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.71):
+  
+  Created version 2.0rc3
+
 * 2003-02-02 05:24  Preston A. Elder <prez@magick.tm>
   ChangeLog.old (1.3):
   
