@@ -24,6 +24,9 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/05/22 13:00:08  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.31  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -85,6 +88,7 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
     mstring flack;
+    map<time_t, size_t> traffic;
 public:
     virtual int close(unsigned long in);
     int send(const mstring& data);

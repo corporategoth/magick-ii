@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/05/22 13:00:09  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.28  2000/05/17 14:08:11  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -277,7 +280,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    */
 
 	    Parent->server.NOTICE(mynick, source, encode("FINGER",
-		"Magick II Service - " + mynick));
+		PRODUCT + " Service - " + mynick));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="VERSION")
 	{
@@ -292,28 +295,28 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    */
 
 	    mstring tmp;
-	    tmp << "Magick:";
+	    tmp << PRODUCT << ":";
 	    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
 	    if(RELEASE!="")
 		tmp+="-" + RELEASE;
 	    if(PATCH1!="")
 		tmp+="+"+PATCH1;
 	    if(PATCH2!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH2;
 	    if(PATCH3!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH3;
 	    if(PATCH4!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH4;
 	    if(PATCH5!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH5;
 	    if(PATCH6!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH6;
 	    if(PATCH7!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH7;
 	    if(PATCH8!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH8;
 	    if(PATCH9!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH9;
 	    tmp<<":"<<BUILD_TYPE;
 
 	    Parent->server.NOTICE(mynick, source, encode("VERSION", tmp));
@@ -338,7 +341,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 		tmp+="-" + RELEASE;
 
 	    Parent->server.NOTICE(mynick, source, encode("SOURCE",
-		    "ftp.magick.tm:/pub/Magick:Magick-"+tmp+".tar.gz"));
+		    DOWNLOAD+":"+PRODUCT+tmp+".tar.gz"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
 	{
@@ -349,7 +352,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    */
 
 	    Parent->server.NOTICE(mynick, source, encode("USERINFO",
-		    mstring("Magick II - Power to the PEOPLE!!")));
+		    FULLNAME+" - "+SLOGAN));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="CLIENTINFO")
 	{
@@ -389,7 +392,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    query" or "failed decrypting text".
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode(ResHigh));
+	    Parent->server.NOTICE(mynick, source, encode(ResHigh + " :No Error"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="PING")
 	{

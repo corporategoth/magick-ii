@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2000/05/22 13:00:10  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.97  2000/05/21 04:49:40  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -1495,7 +1498,7 @@ void NetworkServ::execute(const mstring & data)
 		Parent->startup.Server_Name());
 	    sraw("257 " + source + " :" + Parent->startup.Server_Desc());
 	    sraw("258 " + source + " :Admins - " + Parent->operserv.Services_Admin());
-	    sraw("259 " + source + " :" + FULL_NAME + " - " + FULL_EMAIL);
+	    sraw("259 " + source + " :" + FULLNAME + " - " + EMAIL);
 	}
 	else if (msgtype=="AKILL")
 	{
@@ -2020,6 +2023,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source NOTICE target/#channel :message
 	    // NOTICE target :message
+	    if (!Parent->GotConnect())
+		return;
+
 	    if (!source && !IsChan(data.ExtractWord(2, ": ")))
 		Log(LM_NOTICE, "Received NOTICE for unknown user " + data.ExtractWord(2, ": "));
 	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
@@ -2093,6 +2099,9 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PRIVMSG")
 	{
 	    // :source PRIVMSG target/#channel :message
+	    if (!Parent->GotConnect())
+		return;
+
 	    if (source && !IsChan(data.ExtractWord(2, ": ")))
 		Log(LM_NOTICE, "Received PRIVMSG for unknown user " + data.ExtractWord(2, ": "));
 	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
@@ -2753,21 +2762,21 @@ void NetworkServ::execute(const mstring & data)
 	    if(PATCH1!="")
 		tmp+="+"+PATCH1;
 	    if(PATCH2!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH2;
 	    if(PATCH3!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH3;
 	    if(PATCH4!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH4;
 	    if(PATCH5!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH5;
 	    if(PATCH6!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH6;
 	    if(PATCH7!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH7;
 	    if(PATCH8!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH8;
 	    if(PATCH9!="")
-		tmp+="+"+PATCH1;
+		tmp+="+"+PATCH9;
 	    tmp+=" [";
 	    if(Parent->operserv.GetNames() != "")
 		tmp+="O";

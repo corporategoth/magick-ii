@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2000/05/22 13:00:09  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.102  2000/05/21 04:49:40  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -146,6 +149,15 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
 
+    // Traffic Accounting ...
+    map<time_t, size_t>::iterator iter;
+    for (iter=traffic.begin(); iter != traffic.end() &&
+		iter->second < time(NULL) - 60; iter = traffic.begin())
+	traffic.erase(iter->first);
+    if (traffic.find(time(NULL)) == traffic.end())
+	traffic[time(NULL)] = 0;
+    traffic[time(NULL)] += ACE_OS::strlen(data);
+
     mstring data2 = flack + data;
     flack = "";
     // if(recvResult==-1) major problem.
@@ -255,6 +267,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     Parent->GotConnect(false);
     Parent->i_server = server;
+    if (Parent->ircsvchandler != NULL)
+	delete Parent->ircsvchandler;
     Parent->ircsvchandler=new IrcSvcHandler;
     Log(LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
 		server.c_str(), details.first);

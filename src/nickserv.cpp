@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2000/05/22 13:00:09  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.95  2000/05/21 04:49:40  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -673,7 +676,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 				Parent->operserv.Akill->Last_Modify_Time().SecondsSince());
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
 	    new mstring(i_Name + ":" + Parent->operserv.Akill->Value().second),
-	    ACE_Time_Value(1));
+	    ACE_Time_Value::zero);
 	return;
     }}
 
@@ -684,7 +687,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
 	    new mstring(i_Name + ":" + Parent->operserv.Def_Clone()),
-	    ACE_Time_Value(1));
+	    ACE_Time_Value::zero);
 
 	return;
     }

@@ -24,19 +24,8 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.90  2000/05/20 15:17:00  prez
-** Changed LOG system to use ACE's log system, removed wxLog, and
-** added wrappers into pch.h and magick.cpp.
-**
-** Revision 1.89  2000/04/30 03:48:28  prez
-** Replaced all system calls with ACE_OS equivilants,
-** also removed any dependancy on ACE from sxp (xml)
-**
-** Revision 1.88  2000/04/26 11:34:12  prez
-** *** empty log message ***
-**
-** Revision 1.87  2000/04/26 10:31:07  prez
-** Added KDE Development Studio project (and associated stuff)
+** Revision 1.91  2000/05/22 13:00:08  prez
+** Updated version.h and some other stuff
 **
 ** Revision 1.12  2000/03/26 14:59:36  prez
 ** LOADS of bugfixes due to testing in the real-time environment
@@ -71,20 +60,19 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 10;
-const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
-const mstring BUILD_SYS = "haven";
-const unsigned short Magick_Major_Ver=2;
-const unsigned short Magick_Minor_Ver=0;
-const unsigned long FileVersionNumber=(Magick_Major_Ver*0x10000)+Magick_Minor_Ver;
-const mstring FileIdentificationTag = "DFLY";
+const int BUILD_NUMBER = 0;
+const mstring BUILD_TYPE = "Windows 95/98/NT";
+const mstring BUILD_SYS = "localhost";
 
 /* Versioning Information
  *
- * The PRODUCT and VERSION should only ever be changed
- * by the Magick Development Team.  PLEASE do not change
- * this because you think it'd be funky to have 'MyNet
- * services', we DO diserve SOME creditation for what
+ * All of the below information should only EVER be
+ * changed by the Magick Development Team except the
+ * PATCH? tags, which may be updated using the
+ * add-patch and rem-patch utilies provided in the
+ * helper directory.  PLEASE do not change these
+ * because you think it'd be funky to have 'MyNet
+ * Services', we DO diserve SOME creditation for what
  * we've done, dont you think?  The PRODUCT text may
  * only be ONE word (else it stuffs up version replies).
  *
@@ -101,39 +89,44 @@ const mstring FileIdentificationTag = "DFLY";
  * for various reasons, but if you need more than nine
  * patches on the original source, you should re-think.
  */
-const mstring FULL_NAME		= "Magick IRC Services";
-const mstring FULL_EMAIL	= "magick@magick.tm";
-const mstring FULL_URL		= "http://www.magick.tm";
-const mstring PRODUCT		= "Magick";
-const mstring RELEASE		= "pre-a2";
-const mstring PATCH1		= "";
-const mstring PATCH2		= "";
-const mstring PATCH3		= "";
-const mstring PATCH4		= "";
-const mstring PATCH5		= "";
-const mstring PATCH6		= "";
-const mstring PATCH7		= "";
-const mstring PATCH8		= "";
-const mstring PATCH9		= "";
+const mstring FULLNAME			= "Magick IRC Services";
+const mstring SLOGAN			= "Power to the PEOPLE!";
+const mstring EMAIL			= "magick@magick.tm";
+const mstring HOMEPAGE			= "http://www.magick.tm";
+const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
+const mstring PRODUCT			= "Magick";
+const unsigned short Magick_Major_Ver	= 2;
+const unsigned short Magick_Minor_Ver	= 0;
+const mstring RELEASE			= "pre-a2";
+const mstring PATCH1			= "";
+const mstring PATCH2			= "";
+const mstring PATCH3			= "";
+const mstring PATCH4			= "";
+const mstring PATCH5			= "";
+const mstring PATCH6			= "";
+const mstring PATCH7			= "";
+const mstring PATCH8			= "";
+const mstring PATCH9			= "";
 
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
-"Magick IRC Services",
+FULLNAME+" - "+SLOGAN,
+"  (c) 1997-2000 Preston Elder <prez@magick.tm>",
+"  (c) 1998-2000 William King <ungod@magick.tm>",
 "",
-"Magick is dedicated to the memory of PreZ's beloved",
+PRODUCT+" is dedicated to the memory of PreZ's beloved",
 "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",
 "Ungod's brother Edward Kevin King (Aug 1982 - Nov 1997).",
 "",
-"The Magick home page can be found at:",
-"    http://www.magick.tm",
+"The "+PRODUCT+" home page can be found at:",
+"    "+HOMEPAGE+"",
 "",
-"Magick is freely downloadable from:",
-"    ftp://ftp.magick.tm/pub/Magick, or",
-"    http://www.magick.tm/download",
+PRODUCT+" is freely downloadable from:",
+"    "+DOWNLOAD+"",
 "",
-"The Magick public mailing list is magick@magick.tm.",
+"The "+PRODUCT+" public mailing list is "+EMAIL+".",
 "To subscribe, email majordomo@magick.tm with 'subscribe",
-"magick' (no quotes) in the text of the message.",
+PRODUCT+"' (no quotes) in the text of the message.",
 "",
 "Please type /MSG %s CONTRIB for full credits (flood).",
 "---EOM---"
@@ -142,7 +135,7 @@ const mstring credits[] = {
 // This gets sent with /msg HelpServ CONTRIB
 // or a /INFO request on the magick server.
 const mstring contrib[] = {
-"Magick IRC Services",
+FULLNAME+" - "+SLOGAN,
 "",
 "Programmers: ",
 "    PreZ           Preston A. Elder        prez@magick.tm",
@@ -161,7 +154,6 @@ const mstring contrib[] = {
 "",
 "Library Creditations: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
-"    wxWindows      http://web.ukonline.co.uk/julian.smart/wxwin",
 "    antlr          http://www.antlr.org",
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
 "    zlib           http://www.cdrom.com/pub/infozip/zlib",

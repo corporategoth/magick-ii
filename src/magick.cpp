@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.236  2000/05/22 13:00:09  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.235  2000/05/21 04:49:40  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -310,6 +313,7 @@ Magick::Magick(int inargc, char **inargv)
 	argv.push_back(inargv[i]);
     i_programname=argv[0].RevAfter("/");
 
+    ircsvchandler = NULL;
     i_level=0;
     i_reconnect = true;
     i_gotconnect = false;
@@ -424,11 +428,13 @@ int Magick::Start()
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
+    Log(LM_STARTUP, "Loading default language file ...");
     LoadInternalMessages();
 
     FLUSH();
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
+    Log(LM_STARTUP, "Spawning to background ...");
     Result = ACE_OS::fork();
     if (Result < 0)
     {
@@ -451,6 +457,7 @@ int Magick::Start()
 		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
 			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
 
+    Log(LM_STARTUP, "Starting events engine ...");
     events = new EventTask;
     events->open();
     dcc = new DccMap;
@@ -528,6 +535,7 @@ int Magick::Start()
 
     // etc.
 
+    //Log(LM_STARTUP, "Running thread threshold loop ...");
     // calibrate the threshholds.
     //
     // register 250 nicks and 1000 channels (to random nicknames in the nick pool).
@@ -538,48 +546,12 @@ int Magick::Start()
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
-    CP((PRODUCT + " II has been started ..."));
     //load_databases();
     i_ResetTime=Now();
 
-    //this little piece of code creates the actual connection from magick
-    // to the irc server and sets up the socket handler that receives
-    // incoming data and pushes it out to the appropriate service.
+    // Use the reconnect handler to get a connection
 
-    // Grabs the FIRST entry of PRIORITY 1.
-    mstring tmp = startup.PriorityList(1)[0];
-    if (tmp == "")
-	RET(MAGICK_RET_TERMINATE);
-    ACE_INET_Addr addr(startup.Server(tmp).first, tmp);
-
-//  ACE_INET_Addr addr(startup.Remote_Port(),startup.Remote_Server());
-    //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-    GotConnect(false);
-    i_server = tmp;
-    ircsvchandler=new IrcSvcHandler;
-    if(ACO_server.connect(ircsvchandler,addr)==-1)
-    {
-	//okay we got a connection problem here. log it and shutdown
-	RET(MAGICK_RET_TERMINATE);
-    }
-    // if the blocking version is used, use below
-    /*
-    ircsvchandler->send(mstring); // ie server line.
-    */
-    ACE_INET_Addr localaddr;
-    ircsvchandler->peer().get_local_addr(localaddr);
-    CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-    i_localhost = localaddr.get_ip_address();
-    if (server.proto.Protoctl() != "")
-	server.raw(server.proto.Protoctl());
-    server.raw("PASS " + startup.Server(tmp).second);
-    tmp = "";
-    tmp.Format(server.proto.Server().c_str(),
-	    startup.Server_Name().c_str(), 1,
-	    startup.Server_Desc().c_str());
-    server.raw(tmp);
-    i_connected = true;
-        
+    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value::zero);
     AUTO(true); // Activate events from here.
 
     // next thing to be done here is set up the acceptor mechanism to listen
@@ -588,6 +560,8 @@ int Magick::Start()
     // This is the main loop.  When we get a Shutdown(),
     // we wait for everything to shutdown cleanly.
     // All that will be left is US and the LOGGER.
+    Log(LM_STARTUP, "%s %d.%d Startup Complete.", PRODUCT.c_str(),
+				Magick_Major_Ver, Magick_Minor_Ver);
     while(!Shutdown())
     {
 	ACE_Reactor::instance()->run_event_loop();
@@ -929,7 +903,7 @@ void Magick::dump_help()
 {
     // This needs to be re-written.
     cout << "\n"
-	 << FULL_NAME + " - " + FULL_URL + "\n"
+	 << FULLNAME + " - " + HOMEPAGE + "\n"
 	 << "    (c) 1997-2000 Preston A. Elder <prez@magick.tm>\n"
 	 << "    (c) 1998-2000 William King <ungod@magick.tm>\n"
 	 << "\n"
@@ -1830,7 +1804,7 @@ bool Magick::get_config_values()
 	reconnect = true;
     startup.server_name = value_mstring;
 
-    in.Read(ts_Startup+"SERVER_DESC",&value_mstring,FULL_NAME);
+    in.Read(ts_Startup+"SERVER_DESC",&value_mstring,FULLNAME);
     if (value_mstring != startup.server_desc)
 	reconnect = true;
     startup.server_desc = value_mstring;

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/05/22 13:00:09  prez
+** Updated version.h and some other stuff
+**
 ** Revision 1.4  2000/05/21 14:01:10  ungod
 ** body for decomment and load/save to files.
 **
@@ -209,24 +212,17 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
     vector<mstring> Result;
     for(vector<mstring>::const_iterator i=in.begin();i!=in.end();i++)
     {
-        mstring currline=*i;
-        mstring newlinestr="";
-        if(currline[0]!='#'&&currline[0]!=';')
+        if(*i[0] != '#' && *i[0] != ';')
         {
             // if we find ; then it's a comment to end of line, but /; is not a comment.
             bool founddelim=false;
             int j=1;
-            while(founddelim=false&&j<currline.Len())
+            while(founddelim = false && j < i->Len())
             {
-                if(currline[j]=';'&&currline[j-1]!='\\')
+                if(*i[j] == ';' && *i[j-1] != '\\')
                     founddelim=true;
-                else
-                {
-                    newlinestr=newlinestr+currline[j];
-                    j++;
-                }
             }
-            Result.push_back(newlinestr);
+            Result.push_back(i->SubString(0, j-1));
         }
     }
     return Result;
