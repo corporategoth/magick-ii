@@ -37,14 +37,16 @@ int Magick::Start()
     int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
+
+    FILE *logfile=fopen("magick.log","w+");
+    // the below defaults to stderr if logfile cannot be opened
+    wxLogStderr logger(logfile);
+
     if(bob.StartBob("")==false)
     {
     	/*log that bob couldn't start*/
 	bob.bobavail=false;
     }
-    FILE *logfile=fopen("magick.log","w+");
-    // the below defaults to stderr if logfile cannot be opened
-    wxLogStderr logger(logfile);
     // more stuff to do
     ProgramName=argv[0].RevAfter("/");
     int argc=argv.size();
