@@ -1,6 +1,6 @@
 # KDE Config File
 [include/Makefile.am]
-files=include/base.h,include/chanserv.h,include/commserv.h,include/convert.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
+files=include/base.h,include/chanserv.h,include/commserv.h,include/convert.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/mmemory.h,include/version.h-release,include/config.h.win,
 sub_dirs=des,xml,
 type=normal
 [src/xml/dllmain.c]
@@ -501,6 +501,11 @@ dist=true
 install=false
 type=HEADER
 [include/mconfig.h]
+install_location=
+dist=true
+install=false
+type=HEADER
+[include/mmemory.h]
 install_location=
 dist=true
 install=false

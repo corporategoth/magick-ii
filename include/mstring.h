@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/10/14 04:25:31  prez
+** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
+** TODO - make mstring use MemoryManager.
+**
 ** Revision 1.51  2000/10/11 08:38:10  prez
 ** Changes so mstring works better ... kinda
 **
@@ -205,11 +209,11 @@ mstring operator+ (const double lhs, const mstring &rhs);
 class mstring
 {
     char *i_str;
-    size_t i_len;
+    size_t i_len, i_res;
 
 public:
     mstring()
-	{ i_str = NULL; i_len = 0; }
+	{ i_str = NULL; i_len = 0, i_res = 0; }
     mstring(const mstring &in)
 	{ i_str = NULL; copy(in); }
     mstring(const string &in)
@@ -252,7 +256,7 @@ public:
     size_t size() const
 	{ return i_len; }
     size_t capacity() const
-	{ return i_len+1; }
+	{ return i_res; }
     bool empty() const
 	{ return (i_str == NULL); }
 

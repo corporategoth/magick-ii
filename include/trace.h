@@ -25,6 +25,10 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/10/14 04:25:31  prez
+** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
+** TODO - make mstring use MemoryManager.
+**
 ** Revision 1.65  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -109,7 +113,7 @@ public:
     ~ThreadID();
     bool InTrace() { return t_intrace; }
     mstring LastFunc() { return t_lastfunc; }
-    void LastFunc(mstring in) { t_lastfunc = in; }
+    void LastFunc(const mstring &in) { t_lastfunc = in; }
     void assign(threadtype_enum Type);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }

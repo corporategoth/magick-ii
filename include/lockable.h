@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/10/14 04:25:31  prez
+** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
+** TODO - make mstring use MemoryManager.
+**
 ** Revision 1.45  2000/10/07 11:01:13  prez
 ** Took out placement new's from lockable.cpp, now using derived classes.
 **
@@ -110,71 +114,7 @@ static const char *ident_lockable_h = "@(#) $Id$";
 
 #include "mstring.h"
 #include "trace.h"
-
-template <class ACE_LOCK> class MemCluster
-{
-    ACE_Locked_Free_List<ACE_Cached_Mem_Pool_Node<void *>, ACE_LOCK> free_list;
-    vector<char *> pool;
-    size_t e_size;
-    size_t e_max;
-
-    // Disallow blank construction and copying
-    MemCluster();
-    MemCluster(const MemCluster<ACE_LOCK> &);
-    void operator=(const MemCluster<ACE_LOCK> &);
-public:
-    MemCluster(size_t size, size_t count) : free_list(ACE_PURE_FREE_LIST)
-    {
-	e_size = size;
-	e_max = count;
-	char *tmp = new char[e_size * e_max];
-	memset(tmp, 0, sizeof(char) * e_size * e_max);
-	pool.push_back(tmp);
-
-	for (unsigned int i=0; i < e_max; i++)
-	{
-	    void *ptr = (void *) &tmp[i * e_size];
-	    free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
-	}
-    }
-
-    ~MemCluster()
-    {
-	vector<char *>::iterator iter;
-	for (iter=pool.begin(); iter!=pool.end(); iter++)
-	    delete [] *iter;
-    }
-    
-    void * alloc()
-    {
-	// If we dont have any left, add a segment
-	if (!free_list.size())
-	{
-	    char *tmp = new char[e_size * e_max];
-	    memset(tmp, 0, sizeof(char) * e_size * e_max);
-	    pool.push_back(tmp);
-	    for (unsigned int i=0; i < e_max; i++)
-	    {
-		void *ptr = (void *) &tmp[i * e_size];
-		free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
-	    }
-	}
-	return free_list.remove ()->addr ();
-    }
-
-    void dealloc(void *ptr)
-    {
-	memset(ptr, 0, sizeof(char) * e_size);
-	free_list.add (new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
-    }
-
-    size_t size()	{ return e_max * pool.size(); }
-    size_t segsize()	{ return e_max; }
-    size_t segments()	{ return pool.size(); }
-    size_t elesize()	{ return e_size; }
-    size_t count()	{ return (size() - free_list.size()); }
-};
-
+#include "mmemory.h"
 
 #ifdef MAGICK_LOCKS_WORK
 

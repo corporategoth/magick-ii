@@ -24,6 +24,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/10/14 04:25:31  prez
+** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
+** TODO - make mstring use MemoryManager.
+**
 ** Revision 1.42  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -119,17 +123,22 @@ restart:
     catch(exception &e)
     {
 	// new style STL exceptions
-	ACE_OS::fprintf(stderr,"Unhandled exception: %s\n",e.what());
+	ACE_OS::fprintf(stderr,"(EXC) Unhandled exception: %s\n",e.what());
+    }
+    catch(char *str)
+    {
+	// exceptions from memory management
+	ACE_OS::fprintf(stderr,"(STR) Unhandled exception: %s\n",str);
     }
     catch(int i)
     {
 	// old style c exceptions
-	ACE_OS::fprintf(stderr,"Unhandled exception: %d\n",i);
+	ACE_OS::fprintf(stderr,"(INT) Unhandled exception: %d\n",i);
     }
     catch(...)
     {
 	// even older style exceptions like SIGSEGV
-	ACE_OS::fprintf(stderr,"Unhandled exception: Unknown\n");
+	ACE_OS::fprintf(stderr,"(OTH) Unhandled exception.\n");
 	return -1;
     }
 #endif

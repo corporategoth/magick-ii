@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/10/14 04:25:31  prez
+** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
+** TODO - make mstring use MemoryManager.
+**
 ** Revision 1.72  2000/10/11 08:38:10  prez
 ** Changes so mstring works better ... kinda
 **
@@ -122,12 +126,21 @@ void mstring::copy(const char *in, size_t length)
 {
     if (i_str != NULL)
 	delete [] i_str;
-    i_len = length;
     if (i_len)
     {
-	i_str = new char[i_len+1];
+	i_len = length;
+	i_res = 2;
+	while (i_res <= i_len)
+	    i_res *= 2;
+	i_str = new char[i_res];
+	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
-	i_str[i_len] = 0;
+    }
+    else
+    {
+	i_len = 0;
+	i_res = 0;
+	i_str = NULL;
     }
 }
 
@@ -135,23 +148,37 @@ void mstring::append(const char *in, size_t length)
 {
     if (length == 0)
 	return;
+    size_t oldres = i_res;
+    char *tmp = NULL;
 
-    char *tmp = new char[i_len + length + 1];
-    if (i_str != NULL)
-	memcpy(tmp, i_str, i_len);
+    if (i_res==0)
+	i_res = 2;
+    while (i_res <= i_len + length)
+	i_res *= 2;
+    if (oldres != i_res)
+    {
+	tmp = new char[i_res];
+	memset(tmp, 0, i_res);
+	if (i_str != NULL)
+	    memcpy(tmp, i_str, i_len);
+    }
+    else
+	tmp = i_str;
     memcpy(&tmp[i_len], in, length);
-    tmp[i_len + length] = 0;
 
-    if (i_str != NULL)
-	delete [] i_str;
+    if (tmp != i_str)
+    {
+	if (i_str != NULL)
+	    delete [] i_str;
+	i_str = tmp;
+    }
 
     i_len += length;
-    i_str = tmp;
 }
 
 void mstring::erase(int begin, int end)
 {
-    int i;
+    size_t i, oldres = i_res;
     char *tmp = NULL;
     if (i_str == NULL)
 	return;
@@ -172,34 +199,50 @@ void mstring::erase(int begin, int end)
     if (begin > 0 || end+1 < i_len)
     {
 	i=0;
-	tmp = new char[i_len - (end-begin) + 1];
-	if (begin > 0)
+	if (i_res==0)
+	    i_res = 2;
+	while (i_res / 2 > i_len - (end-begin));
+	    i_res /= 2;
+	if (i_res != oldres)
 	{
-	    memcpy(tmp, i_str, begin);
-	    i += begin;
+	    tmp = new char[i_res];
+	    memset(tmp, 0, i_res);
+	    if (begin > 0)
+	    {
+		memcpy(tmp, i_str, begin);
+		i += begin;
+	    }
 	}
+	else
+	{
+	    i += begin;
+	    tmp = i_str;
+	}
+
 	if (end+1 < i_len)
 	{
 	    memcpy(&tmp[i], &i_str[end+1], i_len-end+1);
+	    i_len -= (end-begin);
+	    memset(&tmp[i_len], 0, i_res-i_len);
 	}
-	tmp[i_len - (end-begin)] = 0;
     }
-    delete [] i_str;
-    if (tmp == NULL)
+    if (tmp != i_str)
+    {
+	if (i_str != NULL)
+	    delete [] i_str;
+	i_str = tmp;
+    }
+    else if (tmp == NULL)
     {
 	i_str = NULL;
 	i_len = 0;
-    }
-    else
-    {
-	i_str = tmp;
-	i_len -= (end-begin);
+	i_res = 0;
     }
 }
 
 void mstring::insert(size_t pos, const char *in, size_t length)
 {
-    int i;
+    size_t i;
     char *tmp = NULL;
 
     if (length == 0)
@@ -211,7 +254,12 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	return;
     }
 
-    tmp = new char[i_len + length + 1];
+    if (i_res==0)
+	i_res = 2;
+    while (i_res <= i_len + length)
+	i_res *= 2;
+    tmp = new char[i_res];
+    memset(tmp, 0, i_res);
 
     i=0;
     if (pos > 0)
@@ -221,8 +269,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     }
     memcpy(&tmp[i], in, length);
     i += length;
-    memcpy(&tmp[i], &i_str[pos], i_len-pos);
-    tmp[i_len + length] = 0;
+    memcpy(&tmp[i], &i_str[i_len-pos], i_len-pos);
 
     if (i_str != NULL)
 	delete [] i_str;
@@ -452,7 +499,6 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     if (i_str == NULL)
 	return;
 
-printf("STRING (BEFORE) = %s\n", i_str); fflush(stdout);
     old_len = i_len;
     find_len = strlen(i_find);
     replace_len = strlen(i_replace);
@@ -471,20 +517,21 @@ printf("STRING (BEFORE) = %s\n", i_str); fflush(stdout);
     }
     ptrs.push_back(pair<char *, int>(start,-1));
 
-printf("CHK1: %d / %d / %d / %d / %d\n", i_len, ptrs.size(),
-		amt_replace, replace_len, find_len); fflush(stdout);
     i_len += (amt_replace * (replace_len - find_len));
-printf("CHK2: %d / %d / %d / %d / %d\n", i_len, ptrs.size(),
-		amt_replace, replace_len, find_len); fflush(stdout);
     if (i_len == 0)
     {
 	delete [] i_str;
-printf("String is now NULL!\n"); fflush(stdout);
 	return;
     }
-printf("I am past i_len!\n"); fflush(stdout);
 
-    tmp = new char[i_len + 1];
+    if (i_res==0)
+	i_res = 2;
+    while (i_res <= i_len)
+	i_res *= 2;
+    while (i_res / 2 > i_len);
+	i_res /= 2;
+    tmp = new char[i_res];
+    memset(tmp, 0, i_res);
 
     i = j = 0;
     for (iter=ptrs.begin(); iter!=ptrs.end(); iter++)
@@ -502,10 +549,8 @@ printf("I am past i_len!\n"); fflush(stdout);
 	    memcpy(&tmp[j], iter->first, old_len - i);
 	}
     }
-    tmp[i_len] = 0;
     delete [] i_str;
     i_str = tmp;
-printf("STRING (AFTER) = %s\n", i_str); fflush(stdout);
 }
 
 void mstring::replace(int begin, int end, char *replace, size_t length)
@@ -715,18 +760,17 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	buffer = new char[size];
     }
     if (buffer && length < 1)
-	delete [] buffer;
-    if (i_str != NULL)
     {
-	i_str = NULL;
-	i_len = 0;
+	delete [] buffer;
+	buffer = NULL;
     }
     if (buffer)
     {
-	buffer[length] = 0;
-	i_str = buffer;
-	i_len = length;
+	copy(buffer, length);
+	delete [] buffer;
     }
+    else
+	copy(NULL, 0);
     return length;
 }
 
