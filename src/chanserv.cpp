@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.220  2000/12/31 17:54:29  prez
+** Added checking to see if 'http://' was entered in the SET URL commands.
+**
 ** Revision 1.219  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -9613,6 +9616,12 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 
     if (option.IsSameAs("none", true))
 	option = "";
+
+    if (option.SubString(0, 6).IsSameAs("http://", true))
+    {
+	option.erase(0, 6);
+    }
+
     cstored->URL(option);
     Parent->chanserv.stats.i_Set++;
     if (option.empty())

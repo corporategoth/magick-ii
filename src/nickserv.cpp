@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.150  2000/12/31 17:54:29  prez
+** Added checking to see if 'http://' was entered in the SET URL commands.
+**
 ** Revision 1.149  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -6806,6 +6809,11 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
 
     if (newvalue.IsSameAs("none", true))
 	newvalue = "";
+
+    if (newvalue.SubString(0, 6).IsSameAs("http://", true))
+    {
+	newvalue.erase(0, 6);
+    }
 
     Parent->nickserv.stored[source.LowerCase()].URL(newvalue);
     Parent->nickserv.stats.i_Set++;

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.149  2000/12/31 17:54:29  prez
+** Added checking to see if 'http://' was entered in the SET URL commands.
+**
 ** Revision 1.148  2000/12/31 12:00:32  prez
 ** JOIN no longer uses PushMessage
 **
@@ -2967,7 +2970,7 @@ void NetworkServ::execute(const mstring & data)
 		    Parent->chanserv.live[chan.LowerCase()].IsIn(sourceL) &&
 		    SeenMessage(data) < Parent->config.MSG_Seen_Act())
 		{
-		    mBase::push_message(data.Before(" ", 2) + chan);
+		    mBase::push_message(data.Before(" ", 2) + " " + chan);
 		}
 		else
 		{
