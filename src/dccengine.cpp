@@ -5,7 +5,6 @@
 #include <algorithm>
 using namespace std;
 #include "trace.h"
-#include "ace/INET_Addr.h"
 
 const char CTCP_DELIM_CHAR='\001';
 const char CTCP_QUOTE_CHAR='\\';
@@ -331,5 +330,38 @@ void DccEngine::GotDCC(const mstring & in)
 	sscanf(strsize.c_str(),"%u",&size);
     else
 	size=0;
-    ACE_INET_Addr Client(port,address);
+    ACE_INET_Addr Server(port,address);
+    if(type.UpperCase()=="CHAT")
+    {
+	DoDccChat(Server);
+    }
+    else if(type.UpperCase()=="SEND")
+    {
+	DoDccSend(Server,size);
+    }
+    else
+    {
+	CP(("Invalid Type in DCC Command of:"+type));
+	return;
+    }
 }   
+
+void DccEngine::DoDccChat(ACE_INET_Addr addr)
+{
+    //todo: check if we should accept this dcc (ie is it an oper?)
+
+    // create a new threaded connection that is nothing more than a standard
+    // tcp/ip socket connection for two way chatting.
+    // using addr.address and addr.port
+    // the text "DCC CLOSE" accross the connection signal's end of session
+}
+
+void DccEngine::DoDccSend(ACE_INET_Addr addr, size_t size)
+{
+    //todo: check if we should accept this dcc (ie is it an oper?)
+    // create a new threaded connection that is nothing more than a standard
+    // tcp/ip socket connection for sending files
+    // upon receiving each packet, we transmit a 4byte "received bytes" count.
+    // in network bytesex.
+    // using addr.address and addr.port
+}
