@@ -217,10 +217,7 @@ ThreadID ThreadID::assign(threadtype_enum Type, int Number)
 mstring ThreadID::logname()
 {
     mstring name;
-	if (t_internaltype)
-	    name << "trace_" << threadname[t_internaltype] << "_" << t_number << ".log";
-	else
-	    name << "trace.log";
+    name << "trace_" << threadname[t_internaltype] << ".log";
     return name;
 }
 
