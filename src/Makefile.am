@@ -4,7 +4,7 @@ bin_PROGRAMS = $(STAMPED_PROGS) magick_stampkeys
 
 magick_stampkeys_SOURCES = magick_stampkeys.c
 
-magick_SOURCES = variant.cpp utils.cpp trace.cpp stages.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp nickdata.cpp mstring.cpp memoserv.cpp main.cpp mconfig.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp dccengine.cpp datetime.cpp convert_magick.cpp convert_esper.cpp convert_epona.cpp commserv.cpp chanserv.cpp chandata.cpp base.cpp 
+magick_SOURCES = variant.cpp utils.cpp trace.cpp stages.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp nickdata.cpp mstring.cpp memoserv.cpp main.cpp mconfig.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp dccengine.cpp datetime.cpp convert_magick.cpp convert_hybserv.cpp convert_esper.cpp convert_epona.cpp commserv.cpp chanserv.cpp chandata.cpp base.cpp 
 magick_LDADD   = ./xml/libxml.a ./crypt/libcrypt.a
 
 magick_keygen_SOURCES = magick_keygen.c
@@ -12,11 +12,11 @@ magick_keygen_LDADD   = ./crypt/libcrypt.a
 
 SUBDIRS = crypt xml 
 
-AM_CPPFLAGS = -Wunused -Wundef
+AM_CPPFLAGS = -Wunused
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS)
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CFLAGS) $(AM_CFLAGS)
 
-EXTRA_DIST = base.cpp chanserv.cpp chandata.cpp commserv.cpp convert_magick.cpp convert_esper.cpp convert_epona.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp mconfig.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp nickdata.cpp operserv.cpp server.cpp servmsg.cpp stages.cpp trace.cpp utils.cpp variant.cpp magick_keygen.c magick_stampkeys.c
+EXTRA_DIST = base.cpp chanserv.cpp chandata.cpp commserv.cpp convert_magick.cpp convert_hybserv.cpp convert_esper.cpp convert_epona.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp mconfig.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp nickdata.cpp operserv.cpp server.cpp servmsg.cpp stages.cpp trace.cpp utils.cpp variant.cpp magick_keygen.c magick_stampkeys.c
 
 ####### kdevelop will overwrite this part!!! (end)############
 

@@ -68,14 +68,12 @@ Instead, you should follow the instructions that are outlined in the
 ACE-INSTALL file, which is simply (from the ACE_wrappers directory):
 
 export ACE_ROOT=$PWD
-cd ace
-ls config*     (find the one for your system)
-ln -s config-your-system.h config.h
-cd ..
 cd include/makeinclude
 ls platform*     (find the one for your system)
 ln -s platform_your_system.GNU platform_macros.GNU
-cd ../..
+cd ../../ace
+ls config*     (find the one for your system)
+ln -s config-your-system.h config.h
 make
 
 Linux Note: All linux systems with kernel versions 2.2.0 and beyond

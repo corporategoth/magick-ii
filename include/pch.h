@@ -185,6 +185,10 @@ enum bool
 #  include <vector.h>
 #endif
 
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 600
+#endif
+
 /* ACE Extensions */
 #include <ace/Version.h>
 #include <ace/Reactor.h>

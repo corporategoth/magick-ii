@@ -314,7 +314,7 @@ install_location=
 type=DATA
 
 [include/Makefile.am]
-files=include/base.h,include/chanserv.h,include/commserv.h,include/convert_magick.h,include/convert_esper.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/stages.h,include/mexceptions.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
+files=include/base.h,include/chanserv.h,include/commserv.h,include/convert_magick.h,include/convert_hybserv.h,include/convert_epona.h,include/convert_esper.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/stages.h,include/mexceptions.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
 sub_dirs=crypt,xml,
 type=normal
 
@@ -343,6 +343,18 @@ install_location=
 type=HEADER
 
 [include/convert_esper.h]
+dist=true
+install=false
+install_location=
+type=HEADER
+
+[include/convert_epona.h]
+dist=true
+install=false
+install_location=
+type=HEADER
+
+[include/convert_hybserv.h]
 dist=true
 install=false
 install_location=
@@ -641,7 +653,7 @@ install_location=
 type=DATA
 
 [src/Makefile.am]
-files=src/base.cpp,src/chanserv.cpp,src/chandata.cpp,src/commserv.cpp,src/convert_magick.cpp,src/convert_esper.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/nickdata.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/stages.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
+files=src/base.cpp,src/chanserv.cpp,src/chandata.cpp,src/commserv.cpp,src/convert_magick.cpp,src/convert_hybserv.cpp,src/convert_epona.cpp,src/convert_esper.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/nickdata.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/stages.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
 sub_dirs=crypt,xml,
 type=prog_main
 
@@ -670,6 +682,18 @@ install_location=
 type=SOURCE
 
 [src/convert_esper.cpp]
+dist=true
+install=false
+install_location=
+type=SOURCE
+
+[src/convert_epona.cpp]
+dist=true
+install=false
+install_location=
+type=SOURCE
+
+[src/convert_hybserv.cpp]
 dist=true
 install=false
 install_location=

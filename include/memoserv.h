@@ -39,12 +39,14 @@ struct MemoList_CUR;
 struct NewsList_CUR;
 struct ESP_MemoInfo;
 struct EPO_MemoInfo;
+struct HYB_MemoInfo;
 
 class Memo_t : public mUserDef, public SXP::IPersistObj
 {
     friend list < Memo_t > CreateMemoEntry(MemoList_CUR * ml);
     friend list < Memo_t > ESP_CreateMemoEntry(ESP_MemoInfo * ml, char *nick);
     friend list < Memo_t > EPO_CreateMemoEntry(EPO_MemoInfo * ml, char *nick);
+    friend list < Memo_t > HYB_CreateMemoEntry(HYB_MemoInfo * mi);
     friend class MemoServ;
 
     mstring i_Nick;

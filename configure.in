@@ -97,11 +97,11 @@ dnl          -Wreorder -Wunknown-pragmas
 dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wcast-align
 dnl          -Wold-style-cast -Wundef -Wredundant-decls
 dnl          -Winline -Wtemplate-debugging -Wpacked
+dnl          -Wtraditional -Wstrict-prototypes 
+dnl          -Wformat-security -Wundef
 dnl POSSIBLES: -Wunreachable-code -Wdisabled-optimization
-CPPWARN="-W -Wall  -Wimport -Wmissing-prototypes \
-	-Wpointer-arith -Wsign-compare -Wtraditional \
-	-Wstrict-prototypes -Wwrite-strings \
-	-Wformat-security"
+CPPWARN="-W -Wall -Wimport -Wmissing-prototypes \
+	-Wpointer-arith -Wsign-compare -Wwrite-strings"
 CWARN="-Wbad-function-cast -Wmissing-declarations -Wnested-externs"
 CXXWARN="-Woverloaded-virtual -Wsynth -Wno-deprecated"
 JWARN=""

@@ -241,6 +241,7 @@ struct NickInfo_CUR;
 struct ESP_NickInfo;
 struct EPO_NickAlias;
 struct EPO_NickCore;
+struct HYB_NickInfo;
 
 class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
@@ -249,6 +250,7 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     friend Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni);
     friend Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo * ni);
     friend Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias * na, EPO_NickCore * nc);
+    friend Nick_Stored_t *HYB_CreateNickEntry(HYB_NickInfo * ni);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -273,6 +275,7 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 	friend Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni);
 	friend Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo * ni);
 	friend Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias * na, EPO_NickCore * nc);
+	friend Nick_Stored_t *HYB_CreateNickEntry(HYB_NickInfo * ni);
 
 	mstring Language;
 	bool Protect:1;

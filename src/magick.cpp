@@ -44,6 +44,7 @@ RCSID(magick_cpp, "@(#)$Id$");
 #include "convert_magick.h"
 #include "convert_esper.h"
 #include "convert_epona.h"
+#include "convert_hybserv.h"
 #endif
 
 mDateTime Magick::i_StartTime;
@@ -1062,6 +1063,7 @@ void Magick::dump_help() const
 	"                           to Magick II format, where X is the type of\n" <<
 	"                           database to convert.  Currently recognized:\n" <<
 	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n" <<
+	"                               hybserv (1.9.0)\n" <<
 #endif
 #ifdef MAGICK_TRACE_WORKS
 	"--trace X:Y                Set the trace level on startup, equivilant of\n" <<
@@ -1736,6 +1738,14 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    EPO_load_os_dbase();
 	    EPO_load_news();
 	    EPO_load_exceptions();
+	}
+	else if (second.IsSameAs("hybserv", true))
+	{
+	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
+	    HYB_load_ns_dbase();
+	    HYB_load_cs_dbase();
+	    HYB_load_ms_dbase();
+	    HYB_load_ignore_dbase();
 	}
 	else
 	{
