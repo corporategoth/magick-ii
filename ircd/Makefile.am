@@ -18,3 +18,5 @@ uninstall-data-am:
 	@list=$(ircd_CONF); for p in $$list; do \
 	  rm -f $(DESTDIR)$(datadir)/magick/ircd/$$p ;\
 	done
+
+clean:
