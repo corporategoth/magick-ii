@@ -135,9 +135,6 @@ public:
 	inline void Retrieve(mstring& val) const {
 		val = XMLUnEscape(Data());
 	}
-	inline void Retrieve(wstring& val) const {
-		val = XMLUnEscapeW(Data());
-	}
 
     void Retrieve(mDateTime& val) const
     {

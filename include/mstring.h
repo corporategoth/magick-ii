@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2001/12/27 04:54:46  prez
+** Converted SXP to not use STL strings, use mstring instead.
+**
 ** Revision 1.89  2001/12/27 01:02:15  prez
 ** Fixed up init, moved to header (for efficiancy)
 **
@@ -494,11 +497,9 @@ class mstring
 	i_lock = new LOCK_TYPE(lockname);
 #endif
 
-	lock_write();
 	i_len = 0;
 	i_res = 0;
 	i_str = NULL;
-	lock_rel();
     }
 
     int occurances(const char *str, const size_t len) const;

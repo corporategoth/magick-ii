@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2001/12/27 04:54:46  prez
+** Converted SXP to not use STL strings, use mstring instead.
+**
 ** Revision 1.29  2001/12/26 23:30:35  prez
 ** More fixes to see if I can fix the memory leak ...
 **
@@ -178,7 +181,6 @@ namespace SXP {
 	dict blank_dict;
 	pair<mstring,mstring> blank_mstring_pair;
 
-//	std::string TagHashtable::table[HTSIZE];
 	TagHashtable *g_pHashTable = 0;
 
 	// add the tag to the table right on construction
@@ -233,85 +235,49 @@ namespace SXP {
 	IData::~IData() {}
 
 	// escape a char string - remove &<>" and replace with escape codes
-	string XMLEscape(const char *pstr) 
+	mstring XMLEscape(const char *pstr) 
 	{
 		const char *p;
-		string ret;
+		mstring ret;
 		for(p = pstr; *p; p++) {
 			switch( *p ) {
-			case '&': ret.append("&amp;",  5); break;
-			case '<': ret.append("&lt;",   4); break;
-			case '>': ret.append("&gt;",   4); break;
-			case '"': ret.append("&quot;", 6); break;
+			case '&': ret.append("&amp;");  break;
+			case '<': ret.append("&lt;");   break;
+			case '>': ret.append("&gt;");   break;
+			case '"': ret.append("&quot;"); break;
 			default:
 			    if (*p < 32 || *p > 126)
 			    {
 				mstring tmp;
 				tmp.Format("&asc%d;", static_cast<unsigned char>(*p));
-				ret.append(tmp.c_str(), tmp.length());
+				ret.append(tmp);
 			    }
 			    else
-				ret.append(1, *p);
+				ret.append(*p);
 			}
 		}
 		return ret;
 	}
 
-	// escape a wide character char string - remove &<>" and replace with escape codes, convert UCS-16 to UTF-8
-	string XMLEscapeW(const wchar_t *pstr) 
-	{
-		const wchar_t *p;
-		string ret;
-		for(p = pstr; *p; p++) {
-			if( *p < 0x80 ) {
-				switch( *p ) {
-				case L'&': ret.append("&amp;"); break;
-				case L'"': ret.append("&quot;"); break;
-				case L'<': ret.append("&lt;"); break;
-				case L'>': ret.append("&gt;"); break;
-				default:
-				    if (*p < 32 || *p > 126)
-				    {
-					mstring tmp;
-					tmp.Format("&asc%d;", static_cast<unsigned char>(*p));
-					ret.append(tmp.c_str());
-				    }
-				    else
-					ret.append(1, static_cast<char>(*p));
-				}
-			} else {
-				if( *p < 0x800 ) {
-					ret.append(1, static_cast<char>(0xC0 | ((*p) >> 6) ));
-					ret.append(1, static_cast<char>(0x80 | ((*p) & 0x3F )));
-				} else {
-					ret.append(1, static_cast<char>(0xE0 | ( (*p) >> 12)         ));
-					ret.append(1, static_cast<char>(0x80 | (((*p) >>  6) & 0x3F )));
-					ret.append(1, static_cast<char>(0x80 | ( (*p)        & 0x3F )));
-				}
-			}
-		}
-		return ret;
-	}
-
-	string XMLUnEscape(const char *pstr) {
+	mstring XMLUnEscape(const char *pstr) {
 		const char *p;
-		string ret;
+		mstring ret;
 		for(p = pstr; *p; p++) {
 			if( *p != '&' ) {
-				ret.append(1, *p);
+				ret.append(*p);
 			} else {
 				if( strcmp(p+1, "amp;") == 0 ) {
 					p += 4;
-					ret.append(1, '&');
+					ret.append('&');
 				} else if( strcmp(p+1, "lt;") == 0 ) {
 					p += 3;
-					ret.append(1, '<');
+					ret.append('<');
 				} else if( strcmp(p+1, "gt;") == 0 ) {
 					p += 3;
-					ret.append(1, '>');
+					ret.append('>');
 				} else if( strcmp(p+1, "quot;") == 0 ) {
 					p += 5;
-					ret.append(1, '"');
+					ret.append('"');
 				} else if (strncmp(p+1, "asc", 3)==0) {
 					p += 4;
 					char tmp[5];
@@ -320,63 +286,9 @@ namespace SXP {
 					    tmp[i] = *p;
 					p--;
 					if (strlen(tmp))
-					    ret.append(1, static_cast<char>(atoi(tmp)));
+					    ret.append(static_cast<char>(atoi(tmp)));
 				} else {
-					ret.append(1, '&');
-				}
-			}
-		}
-		return ret;
-	}
-
-	// remove XML escapes (&amp; etc), convert UTF-8 to UCS-16
-	wstring XMLUnEscapeW(const char *pstr) {
-		std::wstring ret;
-		unsigned len = strlen(pstr);
-		wchar_t wch;
-		for(unsigned pos = 0; pos<len; pos++) {
-			unsigned char c0, c1, c2;
-			c0 = pstr[pos];
-			if( c0 == '&' ) {
-				if( strncmp(pstr+pos+1, "amp;", 4) == 0) {
-					ret.append(1, L'&');
-				} else if( strncmp(pstr+pos+1, "lt;", 3) == 0 ) {
-					ret.append(1, L'<');
-				} else if( strncmp(pstr+pos+1, "gt;", 3) == 0 ) {
-					ret.append(1, L'>');
-				} else if( strncmp(pstr+pos+1, "quot;", 5) == 0 ) {
-					ret.append(1, L'"');
-				} else if (strncmp(pstr+pos+1, "asc", 3)==0) {
-					/*char tmp[5];
-					memset(tmp, 0, 5);
-					for (short i=0; pstr+pos+2+i != ';' && i<5; i++)
-					    tmp[i] = pstr+pos+2+i;
-					if (strlen(tmp))
-					    ret.append(1, L((char) atoi(tmp)));*/
-				} else {
-					ret.append(1, L'&');
-				}
-			} else {
-				if( c0 < 0x80 ) {
-					ret.append(1, wchar_t(pstr[pos]));
-				} else {
-					c1 = pstr[pos+1];
-					if( (c0 & 0xE0) == 0xC0 ) {
-						wch = (c0 & 0x1F);
-						wch <<= 6;
-						wch |= (c1 & 0x3F);
-						ret.append(1, wch);
-						pos++;
-					} else {
-						c2 = pstr[pos+2];
-						wch = (c0 & 0xF);
-						wch <<= 6;
-						wch |= (c1 & 0x3F);
-						wch <<= 6;
-						wch |= (c2 & 0x3F);
-						ret.append(1, wch);
-						pos++; pos++;
-					}
+					ret.append('&');
 				}
 			}
 		}

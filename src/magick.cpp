@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.339  2001/12/27 04:54:46  prez
+** Converted SXP to not use STL strings, use mstring instead.
+**
 ** Revision 1.338  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -1152,18 +1155,20 @@ int Magick::Stop()
 	signalhandler = NULL;
     }
 
-    { WLOCK(("Events"));
+    { RLOCK(("Events"));
     if (events != NULL)
     {
 	events->close(0);
+	WLOCK(("Events"));
 	delete events;
 	events = NULL;
     }}
 
-    { WLOCK(("DCC"));
+    { RLOCK(("DCC"));
     if (dcc != NULL)
     {
 	dcc->close(0);
+	WLOCK(("DCC"));
 	delete dcc;
 	dcc = NULL;
     }}

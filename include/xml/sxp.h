@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2001/12/27 04:54:46  prez
+** Converted SXP to not use STL strings, use mstring instead.
+**
 ** Revision 1.26  2001/12/26 23:30:35  prez
 ** More fixes to see if I can fix the memory leak ...
 **
@@ -174,10 +177,7 @@ namespace SXP {
 	ErrCode RemapError(int expat_err);
 	
 	// a few shortcuts
-	typedef std::string string; // we deserve a string of our own!
-	typedef std::wstring wstring; // and a wchar_t variation
-	typedef std::map<string, string> dict; // for the attribs
-
+	typedef std::map<mstring, mstring> dict; // for the attribs
 	extern pair<mstring,mstring> blank_mstring_pair;
 	extern dict blank_dict;
 
@@ -217,16 +217,10 @@ namespace SXP {
 	// helper functions
 
 	// escape a char string - remove &<>" and replace with escape codes
-	string XMLEscape(const char *pstr);
-
-	// escape a wide character char string - remove &<>" and replace with escape codes, convert UCS-16 to UTF-8
-	string XMLEscapeW(const wchar_t *pstr);
+	mstring XMLEscape(const char *pstr);
 
 	// remove XML escapes (&amp; etc)
-	string XMLUnEscape(const char *pstr);
-
-	// remove XML escapes (&amp; etc), convert UTF-8 to UCS-16
-	inline wstring XMLUnEscapeW(const char *pstr);
+	mstring XMLUnEscape(const char *pstr);
 
 #include "xml/sxp_data.h"
 
@@ -309,7 +303,7 @@ namespace SXP {
 			}
 		}
 
-		string table[HASHTABLESIZE]; // if you have lots of tags, increase this
+		mstring table[HASHTABLESIZE]; // if you have lots of tags, increase this
 
 		// the basic hash function
 		inline unsigned long Hash(const char *ch) {
@@ -442,8 +436,8 @@ namespace SXP {
 	// IElement implemented with STL strings
 
 	class CElement : public IElement {
-		string m_strName;
-		string m_strData;
+		mstring m_strName;
+		mstring m_strData;
 		dict m_Attribs;
 		unsigned long m_dwTagHash;
 
@@ -460,8 +454,7 @@ namespace SXP {
 			m_Attribs.clear();
 
 			for(const char **pp = ppchAttrib; *pp != 0; pp += 2) {
-				m_Attribs[ string(pp[0]) ] =
-					string( pp[1] );
+				m_Attribs[pp[0]] = pp[1];
 			}
 		}
 
@@ -479,10 +472,10 @@ namespace SXP {
 			return m_strName.c_str();
 		}
 		inline const char *Attrib(const char *attrName) {
-			return (m_Attribs[ string(attrName) ]).c_str();
+			return (m_Attribs[ attrName ]).c_str();
 		}
 		inline int AttribIs(const char *attrName, const char *val) {
-			return ((m_Attribs[ string(attrName) ]).compare(val) == 0);
+			return ((m_Attribs[ attrName ]).compare(val) == 0);
 		}
 		inline int IsA(Tag& t) {
 			if( m_dwTagHash == (unsigned long) ~0 ) {
@@ -533,7 +526,7 @@ namespace SXP {
 
 		int m_bShuttingDown;
 		int m_nErrorLine, m_nErrorCol; // position of error as reported by expat
-		std::string m_strError;
+		mstring m_strError;
 
 	public:
 		// The parser begins feeding element events into a "root" object -
@@ -543,7 +536,7 @@ namespace SXP {
 
 		int GetErrorLine() { return m_nErrorLine; }
 		int GetErrorCol()  { return m_nErrorCol; }
-		std::string GetErrorStr() { return m_strError; }
+		mstring GetErrorStr() { return m_strError; }
 		void GetErrorPos(int& line, int& col) {
 			line = m_nErrorLine;
 			col  = m_nErrorCol;
