@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ace.lib ..\bob\Release\bob.lib ..\cryptlib21\Release\cl32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ace.lib ..\bob\Release\bob.lib ..\cryptlib21\Release\cl32.lib zlib.lib /nologo /subsystem:console /machine:I386
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
@@ -73,7 +73,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib aced.lib ..\bob\Debug\bobd.lib ..\cryptlib21\Debug\cl32d.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib aced.lib ..\bob\Debug\bobd.lib ..\cryptlib21\Debug\cl32d.lib zlib.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 
 !ENDIF 
 
@@ -88,10 +88,6 @@ SOURCE=.\src\bob.cpp
 # Begin Source File
 
 SOURCE=.\include\bob.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wx\Datstrm.cpp
 # End Source File
 # Begin Source File
 
@@ -115,7 +111,11 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wx\Mstream.cpp
+SOURCE=.\src\mstream.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\mstream.h
 # End Source File
 # Begin Source File
 
@@ -127,19 +127,7 @@ SOURCE=.\include\mstring.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wx\Stream.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\docs\todo.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wx\Wfstream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wx\Zstream.cpp
 # End Source File
 # End Target
 # End Project
