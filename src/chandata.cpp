@@ -1809,7 +1809,10 @@ bool Chan_Stored_t::Join(const mstring & nick)
 
     if (nlive->IsServices() && Magick::instance().chanserv.FirstName().IsSameAs(nick, true))
     {
-	Magick::instance().server.MODE(Magick::instance().operserv.FirstName(), i_Name, "+o " + nick);
+	mstring realnick(nick);
+	if (Magick::instance().server.proto.Numeric.User())
+	    realnick = Magick::instance().server.proto.Numeric.UserNumeric(nlive->Numeric());
+	Magick::instance().server.MODE(Magick::instance().operserv.FirstName(), i_Name, "+o " + realnick);
 	RET(true);
     }
 

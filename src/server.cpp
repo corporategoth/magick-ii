@@ -1987,12 +1987,16 @@ void Server::MODE(const mstring & nick, const mstring & channel, const mstring &
     }
     else
     {
-	Magick::instance().chanserv.GetLive(channel)->Mode(nick, mode);
+	map_entry<Chan_Live_t> chan = Magick::instance().chanserv.GetLive(channel);
+	chan->Mode(nick, mode);
 	mstring out;
 	out << ((proto.Tokens() && !proto.GetNonToken("MODE").empty()) ?
 		proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " + mode;
+//	if (proto.TSora())
+//	    out << " " << mDateTime::CurrentDateTime().timetstring();
 	if (proto.TSora())
-	    out << " " << mDateTime::CurrentDateTime().timetstring();
+	    out << " " << chan->Creation_Time().timetstring();
+
 	if (proto.ServerModes())
 	    sraw(out);
 	else
@@ -3129,16 +3133,12 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 	if (params.WordCount(" ") > 2)
 	{
 	    mstring chan(params.ExtractWord(1, " "));
-	    unsigned int i, offset = 3;
 
-	    vector < mstring > users;
-
+	    size_t i, offset = 3;
 	    mstring modes = params.ExtractWord(offset, " ");
-
+	    mstring mode_params;
 	    if (modes[0u] != '+')
 		modes.erase();
-
-	    mstring mode_params, nick, opts;
 
 	    if (!modes.empty())
 	    {
@@ -3148,37 +3148,26 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 			mode_params += " " + params.ExtractWord(offset++, " ");
 	    }
 
-	    vector < mstring > parsed;
+	    vector < mstring > users;
 	    mstring usermodes;
-
-	    for (i = offset; i <= params.WordCount(", "); i++)
-		parsed.push_back(params.ExtractWord(i, " "));
-
-	    for (i = parsed.size() - 1; i < parsed.size(); i--)
+	    mstring user_string = params.After(" ", offset);
+	    for (i=1; i<=user_string.WordCount(","); i++)
 	    {
-		if (parsed[i].Contains(":"))
-		    usermodes = parsed[i].After(":");
-		else
-		    parsed[i] += ":" + usermodes;
-	    }
+		mstring user = user_string.ExtractWord(i, ",");
+		if (user.Contains(":"))
+		    usermodes = user.After(":");
 
-	    for (i = 0; i <= parsed.size(); i++)
-	    {
-		nick = GetUser("!" + parsed[i].Before(":"));
-		opts = parsed[i].After(":");
-
+		mstring nick = GetUser("!" + user.Before(":"));
 		if (!nick.empty())
 		{
-		    if (!opts.empty())
+		    if (!usermodes.empty())
 		    {
 			if (modes.empty())
 			    modes = "+";
 
-			unsigned int j;
-
-			for (j = 0; j < opts.length(); j++)
+			for (unsigned int j=0; j<usermodes.size(); j++)
 			{
-			    modes += opts[i];
+			    modes += usermodes[j];
 			    mode_params += " " + nick;
 			}
 		    }

@@ -2065,7 +2065,9 @@ int EventTask::svc(void)
 	    }
 
 	    if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
+	    {
 		do_modes(synctime);
+	    }
 
 	    if_RLOCK2 ((lck_Events, "last_msgcheck"),
 		       last_msgcheck.SecondsSince() > Magick::instance().config.MSG_Check_Time())
