@@ -17,7 +17,6 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
 public:
-    Reconnect_Handler rh;
     virtual int close(unsigned long in);
     int send(const mstring& data);
     virtual int open(void *);

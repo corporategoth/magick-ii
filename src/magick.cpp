@@ -312,7 +312,10 @@ int Magick::Start()
     // not so temporary event handling mechanism
     //todo: while( below!=-1(TimeValue) { do cleanup's } that way every
     // say 5 mins or so it breaks from the event loop to cleanup
-    ACE_Reactor::instance()->run_event_loop();
+    while(this->i_shutdown==false)
+    {
+	ACE_Reactor::instance()->run_event_loop();
+    }
 
     mBase::shutdown();
     //ircsvchandler->shutdown();

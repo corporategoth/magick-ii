@@ -43,7 +43,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	// sleep and then reconnect
 	CP(("No data, scheduling reconnect, then closing down"));
 	if(Parent->reconnect==true||Parent->shutdown()==false)
-	    ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
+	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
 	return -1;
     }
     // possibly mstring(data,0,recvResult); rather than mstring(data)
@@ -79,7 +79,7 @@ int IrcSvcHandler::close(unsigned long in)
 {
     FT("IrcSvcHandler::close",(in));
     CP(("Socket closed"));
-    RET(inherited::close(in));
+    RET(this->handle_close());
 }
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
@@ -88,10 +88,11 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
     if(Parent->Config_SERVER_RELINK==-1||Parent->reconnect!=true||Parent->shutdown()==true)
 	return 0;
+    Parent->ircsvchandler=new IrcSvcHandler;
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
     {
 	//okay we got a connection problem here. log it and try again
-	ACE_Reactor::instance()->schedule_timer(this,0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
+	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
     }
     return 0;
 }

@@ -103,6 +103,7 @@ public:
 	bool debug;
 	bool live;
 	bool reconnect;
+        Reconnect_Handler rh;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
 	void get_config_values();

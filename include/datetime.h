@@ -160,19 +160,19 @@ public:
 
   assigns 'The meeting is on Wednesday, February 15, 1995 at 10:30 AM' to
   the string variable S. */
-    mstring FormatString(const mstring& format);
+    mstring FormatString(const mstring& format)const;
 
-    mstring DateString();
-    mstring TimeString();
-    mstring DateTimeString();
+    mstring DateString()const;
+    mstring TimeString()const;
+    mstring DateTimeString()const;
 
     operator double(){return Val;}
     operator time_t();
     operator mstring();
 
-    int DayOfWeek();
-    void DecodeDate(int &year, int &month, int &day);
-    void DecodeTime(int &hour, int &min, int &sec, int& msec); 
+    int DayOfWeek()const;
+    void DecodeDate(int &year, int &month, int &day)const;
+    void DecodeTime(int &hour, int &min, int &sec, int& msec)const;
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);

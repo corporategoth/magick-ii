@@ -19,13 +19,13 @@
 #include "log.h"
 
 mstring DateSeparator="/";
-mstring ShortDateFormat="m/d/yy";
+mstring ShortDateFormat="d/m/yyyy";
 mstring LongDateFormat="mmmm d, yyyy";
 mstring TimeSeparator=":";
 mstring TimeAMString="am";
 mstring TimePMString="pm";
-mstring ShortTimeFormat="h:mm AMPM";
-mstring LongTimeFormat="hh:mm:ss AMPM";
+mstring ShortTimeFormat="h:nn AMPM";
+mstring LongTimeFormat="hh:nn:ss AMPM";
 mstring ShortMonthNames[12] =
 {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 mstring LongMonthNames[12] =
@@ -254,7 +254,7 @@ bool mDateTime::operator<=(const mDateTime& in)const
 	return Val<=in.Val;
 }
 
-mstring mDateTime::FormatString(const mstring& format)
+mstring mDateTime::FormatString(const mstring& format)const
 {
 	mstring Result;
 	int Year, Month, Day, Hour, Min, Sec, MSec;
@@ -273,10 +273,11 @@ mstring mDateTime::FormatString(const mstring& format)
 
 	while(i<format.size())
 	{
+	    buffer="";
 		switch(tolower(format[i]))
 		{
 		case 'c':
-			Result+=FormatString(ShortDateFormat);
+			Result<<FormatString(ShortDateFormat);
 			break;
 		case 'd':
 			count=1;
@@ -289,25 +290,25 @@ mstring mDateTime::FormatString(const mstring& format)
 			{
 			case 1:
 				buffer << Day;
-				Result+=buffer;
+				Result<<buffer;
 				break;
 			case 2:
 				if(Day<10)
-					Result+="0";
+					Result<<"0";
 				buffer << Day;
-				Result+=buffer;
+				Result<<buffer;
 				break;
 			case 3:
-				Result+=ShortDayNames[DayOfWeek()];
+				Result<<ShortDayNames[DayOfWeek()];
 				break;
 			case 4:
-				Result+=LongDayNames[DayOfWeek()];
+				Result<<LongDayNames[DayOfWeek()];
 				break;
 			case 5:
-				Result+=FormatString(ShortDateFormat);
+				Result<<FormatString(ShortDateFormat);
 				break;
 			case 6:
-				Result+=FormatString(LongDateFormat);
+				Result<<FormatString(LongDateFormat);
 				break;
 			default:
 				wxLogError("mDateTime::FormatString Invalid date format string");
@@ -324,19 +325,19 @@ mstring mDateTime::FormatString(const mstring& format)
 			{
 			case 1:
 				buffer << Month;
-				Result+=buffer;
+				Result<<buffer;
 				break;
 			case 2:
 				if(Month<10)
-					Result+="0";
+					Result<<"0";
 				buffer << Month;
-				Result+=buffer;
+				Result<<buffer;
 				break;
 			case 3:
-				Result+=ShortMonthNames[Month-1];
+				Result<<ShortMonthNames[Month-1];
 				break;
 			case 4:
-				Result+=LongMonthNames[Month-1];
+				Result<<LongMonthNames[Month-1];
 				break;
 			default:
 				wxLogError("mDateTime::FormatString Invalid month format string");
@@ -353,11 +354,11 @@ mstring mDateTime::FormatString(const mstring& format)
 			{
 			case 2:
 				buffer << Year%100;
-				Result+=buffer;
+				Result<<buffer;
 				break;
 			case 4:
 				buffer << Year;
-				Result+=buffer;
+				Result<<buffer;
 				break;
 			default:
 				wxLogError("mDateTime::FormatString Invalid year format string");
@@ -370,12 +371,12 @@ mstring mDateTime::FormatString(const mstring& format)
 				if(ampmtype>0)
 				{
 					if(Hour%12<10)
-						Result+="0";
+						Result<<"0";
 				}
 				else
 				{
 					if(Hour<10)
-						Result+="0";
+						Result<<"0";
 				}
 
 			}
@@ -383,36 +384,36 @@ mstring mDateTime::FormatString(const mstring& format)
 				buffer << Hour%12;
 			else
 				buffer << Hour;
-			Result+=buffer;
+			Result<<buffer;
 			break;
 		case 'n':
 			if(i+1<format.size()&&tolower(format[i+1])=='n')
 			{
 				i++;
 				if(Min<10)
-					Result+="0";
+					Result<<"0";
 			}
 			buffer << Min;
-			Result+=buffer;
+			Result<<buffer;
 			break;
 		case 's':
 			if(i+1<format.size()&&tolower(format[i+1])=='s')
 			{
 				i++;
 				if(Sec<10)
-					Result+="0";
+					Result<<"0";
 			}
 			buffer << Sec;
-			Result+=buffer;
+			Result<<buffer;
 			break;
 		case 't':
 			if(i+1<format.size()&&tolower(format[i+1])=='t')
 			{
 				i++;
-				Result+=FormatString(LongTimeFormat);
+				Result<<FormatString(LongTimeFormat);
 			}
 			else
-				Result+=FormatString(ShortTimeFormat);
+				Result<<FormatString(ShortTimeFormat);
 			break;
 		case 'a':
 			if(i+2<format.size()&&format[i+1]=='/'&&tolower(format[i+2])=='p')
@@ -420,84 +421,84 @@ mstring mDateTime::FormatString(const mstring& format)
 				//found a/p
 				i=i+2;
 				if(Hour<12)
-					Result+="a";
+					Result<<"a";
 				else
-					Result+="p";
+					Result<<"p";
 			}
 			else if(i+3<format.size()&&tolower(format[i+1])=='m'&&tolower(format[i+2])=='p'&&tolower(format[i+3])=='m')
 			{
 				//found ampm
 				i=i+3;
 				if(Hour<12)
-					Result+=TimeAMString;
+					Result<<TimeAMString;
 				else
-					Result+=TimePMString;
+					Result<<TimePMString;
 			}
 			else if(i+4<format.size()&&tolower(format[i+1])=='m'&&format[i+2]=='/'&&tolower(format[i+3])=='p'&&tolower(format[i+4])=='m')
 			{
 				//found am/pm
 				i=i+2;
 				if(Hour<12)
-					Result+="am";
+					Result<<"am";
 				else
-					Result+="pm";
+					Result<<"pm";
 			}
 			else
 			{
 				wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
-				Result+="a";
+				Result<<"a";
 			}
 			break;
 		case '/':
-			Result+=DateSeparator;
+			Result<<DateSeparator;
 			break;
 		case ':':
-			Result+=TimeSeparator;
+			Result<<TimeSeparator;
 			break;
 		case '\'':
 			i++;
 			while(i<format.size()&&format[i]!='\'')
-				Result+=mstring(format[i]);
+				Result<<mstring(format[i]);
 			break;
 		case '"':
 			i++;
 			while(i<format.size()&&format[i]!='"')
-				Result+=mstring(format[i]);
+				Result<<mstring(format[i]);
 			break;
 		case ' ':
 		case '\t':
 		case '\n':
-			Result+=mstring(format[i]);
+			Result<<mstring(format[i]);
 			break;
 		default:
 			wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
-			Result+=mstring(format[i]);
+			Result<<mstring(format[i]);
 		};
 		i++;
 	}
 	return Result;
 }
-mstring mDateTime::DateString()
+mstring mDateTime::DateString()const
 {
 	return FormatString(ShortDateFormat);
 }
-mstring mDateTime::TimeString()
+mstring mDateTime::TimeString()const
 {
 	return FormatString(LongTimeFormat);
 }
-mstring mDateTime::DateTimeString()
+mstring mDateTime::DateTimeString()const
 {
 	mstring Result;
 	int Year,Month,Day,Hour,Min,Sec,MSec;
 	DecodeDate(Year,Month,Day);
 	DecodeTime(Hour,Min,Sec,MSec);
 	if(Year!=0||Month!=0||Day!=0)
-		Result=FormatString(ShortDateFormat);
+		Result=FormatString(LongDateFormat);
 	if(Hour!=0||Min!=0||Sec!=0||MSec!=0)
 	{
 		if(Result!="")
-			Result+=" ";
-		Result+=FormatString(LongTimeFormat);
+			Result<<" ";
+		Result<<FormatString(LongTimeFormat);
 	}
 	return Result;
 }
@@ -521,13 +522,15 @@ mDateTime::operator mstring()
 {
 	return DateTimeString();
 }
-int mDateTime::DayOfWeek()
+
+int mDateTime::DayOfWeek()const
 {
 	mDateTime knownmonday(1970,1,5);
 	int Result=((int)(Val-knownmonday.Val))%7;
 	return Result;
 }
-void mDateTime::DecodeDate(int &year, int &month, int &day)
+
+void mDateTime::DecodeDate(int &year, int &month, int &day)const
 {
   const int D1 = 365;
   const int D4 = D1 * 4 + 1;
@@ -557,22 +560,22 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)
 
   int i=0;
   mDayTable &DayTable=GetDayTable(Y);
-  while(DayTable[i]>NumDays)
+  while(DayTable[i]<NumDays)
   {
 	  M++;
 	  i++;
 	  NumDays-=DayTable[i];
   }
   D=NumDays;
-  year=Y;
+  year=Y+1900;
   month=M;
   day=D;
 
 }
-void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)
+void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)const
 {
 	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
-	int CurrentVal=(int)(Val*(double)MSecsPerDay);
+	int CurrentVal=(int)(Val*(double)MSecsPerDay)%MSecsPerDay;
 	int LeftOver;
 
 	LeftOver=CurrentVal%3600000;

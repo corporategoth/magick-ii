@@ -28,21 +28,22 @@
 class mVariant
 {
 private:
-	union value_union_t {
+	//union value_union_t {
 		short ShortValue;
 		int IntValue;
 		char CharValue;
 		float FloatValue;
 		double DoubleValue;
-		const char *StringValue;
+		//const char *StringValue;
+		mstring StringValue;
 		// this will use the raw datatype
-		//mDateTime DateValue;
+		mDateTime DateValue;
 		bool BoolValue;
 		unsigned char UCharValue;
 		unsigned short UShortValue;
 		unsigned int UIntValue;
 		void *PtrValue;
-	} value;
+	//} value;
 	
 public:
 	mstring valuetype;
@@ -55,7 +56,6 @@ public:
 	mVariant(unsigned short in);
 	mVariant(unsigned char in);
 	mVariant(bool in);
-	mVariant(const char *in);
 	mVariant(double in);
 	mVariant(float in);
 	mVariant(char in);

@@ -28,96 +28,82 @@ mVariant::mVariant()
 mVariant::mVariant(short in)
 {
     truevaluetype=valuetype="short";
-    value.ShortValue=in;
+    ShortValue=in;
 }
 
 mVariant::mVariant(int in)
 {
     truevaluetype=valuetype="int";
-    value.IntValue=in;
+    IntValue=in;
 }
 
 mVariant::mVariant(long in)
 {
     truevaluetype="long";
     valuetype="int";
-    value.IntValue=in;
+    IntValue=in;
 }
 
 mVariant::mVariant(char in)
 {
     truevaluetype=valuetype="char";
-    value.CharValue=in;
+    CharValue=in;
 }
 
 mVariant::mVariant(float in)
 {
     truevaluetype=valuetype="float";
-    value.FloatValue=in;
+    FloatValue=in;
 }
 
 mVariant::mVariant(double in)
 {
     truevaluetype=valuetype="double";
-    value.DoubleValue=in;
-}
-
-mVariant::mVariant(const char * in)
-{
-	if(in!=NULL)
-	{
-		truevaluetype=valuetype="char *";
-		value.StringValue=in;
-	}
-	else
-	{
-		truevaluetype="char *";
-		valuetype="NULL";
-	}
+    DoubleValue=in;
 }
 
 mVariant::mVariant(const mstring& in)
 {
 	truevaluetype="mstring";
-	valuetype="char *";
-	value.StringValue=in.c_str();
+	valuetype="string";
+	StringValue=in;
 }
 
 mVariant::mVariant(mDateTime in)
 {
 	truevaluetype="mDateTime";
-	valuetype="char *";
-	value.StringValue=in.DateTimeString().c_str();
+	valuetype="string";
+	StringValue=in.DateTimeString();
 }
 
 mVariant::mVariant(bool in)
 {
 	truevaluetype=valuetype="bool";
-	value.BoolValue=in;
+	BoolValue=in;
 }
 
 mVariant::mVariant(unsigned char in)
 {
 	truevaluetype=valuetype="unsigned char";
-	value.UCharValue=in;
+	UCharValue=in;
 }
 
 mVariant::mVariant(unsigned short in)
 {
 	truevaluetype=valuetype="unsigned short";
-	value.UShortValue=in;
+	UShortValue=in;
 }
 
 mVariant::mVariant(unsigned int in)
 {
 	truevaluetype=valuetype="unsigned int";
-	value.UIntValue=in;
+	UIntValue=in;
 }
 
 mVariant::mVariant(unsigned long in)
 {
 	truevaluetype=valuetype="unsigned int";
-	value.UIntValue=in;
+	UIntValue=in;
 }
 
 mVariant::mVariant(void * in)
@@ -125,7 +111,7 @@ mVariant::mVariant(void * in)
 	if(in!=NULL)
 	{
 		truevaluetype=valuetype="void *";
-		value.PtrValue=in;
+		PtrValue=in;
 	}
 	else
 	{
@@ -143,20 +129,20 @@ mVariant::mVariant(const mVariant & in)
 mVariant::mVariant(wxTextFileType in)
 {
     truevaluetype="wxTextFileType";
-    valuetype="char *";
+    valuetype="string";
     switch(in)
     {
     case wxTextFileType_None:
-	value.StringValue="wxTextFileType_None";
+	StringValue="wxTextFileType_None";
 	break;
     case wxTextFileType_Unix:
-	value.StringValue="wxTextFileType_Unix";
+	StringValue="wxTextFileType_Unix";
 	break;
     case wxTextFileType_Dos:
-	value.StringValue="wxTextFileType_Dos";
+	StringValue="wxTextFileType_Dos";
 	break;
     case wxTextFileType_Mac:
-	value.StringValue="wxTextFileType_Mac";
+	StringValue="wxTextFileType_Mac";
 	break;
     }
 }
@@ -166,8 +152,8 @@ mVariant::mVariant(LineList *in)
     if(in!=NULL)
     {
         truevaluetype="LineList";
-        valuetype="char *";
-        value.StringValue=(in->Text()).c_str();
+        valuetype="string";
+        StringValue=(in->Text());
     }
     else
     {
@@ -181,11 +167,11 @@ mVariant::mVariant(ConfigEntry *in)
     if(in!=NULL)
     {
     	truevaluetype="ConfigEntry";
-	valuetype="char *";
+	valuetype="string";
 	if(in->GetLine()!=NULL)
-	    value.StringValue=in->GetLine()->Text();
+	    StringValue=in->GetLine()->Text();
 	else
-	    value.StringValue=in->Name().c_str();
+	    StringValue=in->Name();
     }
     else
     {
@@ -199,8 +185,8 @@ mVariant::mVariant(ConfigGroup *in)
     if(in!=NULL)
     {
 	truevaluetype="ConfigGroup";
-	valuetype="char *";
-	value.StringValue=in->Name().c_str();
+	valuetype="string";
+	StringValue=in->Name();
     }
     else
     {
@@ -213,7 +199,28 @@ mVariant& mVariant::operator=(const mVariant& in)
 {
     valuetype=in.valuetype;
     truevaluetype=in.truevaluetype;
-    value=in.value;
+    if(valuetype=="bool")
+        BoolValue=in.BoolValue;
+    else if(valuetype=="char")
+	CharValue=in.CharValue;
+    else if(valuetype=="double")
+        DoubleValue=in.DoubleValue;
+    else if(valuetype=="float")
+        FloatValue=in.FloatValue;
+    else if(valuetype=="int")
+        IntValue=in.IntValue;
+    else if(valuetype=="void *")
+        PtrValue=in.PtrValue;
+    else if(valuetype=="short")
+        ShortValue=in.ShortValue;
+    else if(valuetype=="string")
+        StringValue=in.StringValue;
+    else if(valuetype=="unsigned char")
+        UCharValue=in.UCharValue;
+    else if(valuetype=="unsigned int")
+        UIntValue=in.UIntValue;
+    else if(valuetype=="unsigned short")
+        UShortValue=in.UShortValue;
     return *this;
 }
 
@@ -223,77 +230,77 @@ bool mVariant::operator==(const mVariant& in)const
 		return false;
 	if(valuetype=="bool")
 	{
-	    if(value.BoolValue==in.value.BoolValue)
+	    if(BoolValue==in.BoolValue)
 		return true;
 	    else 
 	    	return false;
 	}
 	else if(valuetype=="char")
 	{
-	    if(value.CharValue==in.value.CharValue)
+	    if(CharValue==in.CharValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="double")
 	{
-	    if(value.DoubleValue==in.value.DoubleValue)
+	    if(DoubleValue==in.DoubleValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="float")
 	{
-	    if(value.FloatValue==in.value.FloatValue)
+	    if(FloatValue==in.FloatValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="int")
 	{
-	    if(value.IntValue==in.value.IntValue)
+	    if(IntValue==in.IntValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="void *")
 	{
-	    if(value.PtrValue==in.value.PtrValue)
+	    if(PtrValue==in.PtrValue)
 		return true;
 	    else 
 	    	return false;
 	}
 	else if(valuetype=="short")
 	{
-	    if(value.ShortValue==in.value.ShortValue)
+	    if(ShortValue==in.ShortValue)
 	    	return true;
 	    else 
 	    	return false;
 	}
-	else if(valuetype=="char *")
+	else if(valuetype=="string")
 	{
-	    if(mstring(value.StringValue)==mstring(in.value.StringValue))
+	    if(StringValue==in.StringValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="unsigned char")
 	{
-	    if(value.UCharValue==in.value.UCharValue)
+	    if(UCharValue==in.UCharValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="unsigned int")
 	{
-	    if(value.UIntValue==in.value.UIntValue)
+	    if(UIntValue==in.UIntValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="unsigned short")
 	{
-	    if(value.UShortValue==in.value.UShortValue)
+	    if(UShortValue==in.UShortValue)
 	    	return true;
 	    else 
 	    	return false;
@@ -309,77 +316,77 @@ bool mVariant::operator<(const mVariant& in)const
 	    return false;
 	if(valuetype=="bool")
 	{
-	    if((int)value.BoolValue<(int)in.value.BoolValue)
+	    if((int)BoolValue<(int)in.BoolValue)
 	    	return true;
 	    else 
 	    	return false;
 	}
 	else if(valuetype=="char")
 	{
-	    if(value.CharValue<in.value.CharValue)
+	    if(CharValue<in.CharValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="double")
 	{
-	    if(value.DoubleValue<in.value.DoubleValue)
+	    if(DoubleValue<in.DoubleValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="float")
 	{
-	    if(value.FloatValue<in.value.FloatValue)
+	    if(FloatValue<in.FloatValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="int")
 	{
-	    if(value.IntValue<in.value.IntValue)
+	    if(IntValue<in.IntValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="void *")
 	{
-	    if(value.PtrValue<in.value.PtrValue)
+	    if(PtrValue<in.PtrValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="short")
 	{
-	    if(value.ShortValue<in.value.ShortValue)
+	    if(ShortValue<in.ShortValue)
 		return true;
 	    else 
 		return false;
 	}
-	else if(valuetype=="char *")
+	else if(valuetype=="string")
 	{
-	    if(mstring(value.StringValue)<mstring(in.value.StringValue))
+	    if(StringValue<in.StringValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="unsigned char")
 	{
-	    if(value.UCharValue<in.value.UCharValue)
+	    if(UCharValue<in.UCharValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="unsigned int")
 	{
-	    if(value.UIntValue<in.value.UIntValue)
+	    if(UIntValue<in.UIntValue)
 		return true;
 	    else 
 		return false;
 	}
 	else if(valuetype=="unsigned short")
 	{
-	    if(value.UShortValue<in.value.UShortValue)
+	    if(UShortValue<in.UShortValue)
 		return true;
 	    else 
 		return false;
@@ -395,31 +402,31 @@ mstring mVariant::AsString()const
     mstring dummystring="";
     if(valuetype=="bool")
     {
-	if(value.BoolValue==true)
+	if(BoolValue==true)
 	    dummystring="true";
 	else
 	    dummystring="false";
     }
     else if(valuetype=="char")
-	dummystring.Format("%c",value.CharValue);
+	dummystring.Format("%c",CharValue);
     else if(valuetype=="double")
-	dummystring.Format("%f",value.DoubleValue);
+	dummystring.Format("%f",DoubleValue);
     else if(valuetype=="float")
-	dummystring.Format("%f",value.FloatValue);
+	dummystring.Format("%f",FloatValue);
     else if(valuetype=="int")
-	dummystring.Format("%d",value.IntValue);
+	dummystring.Format("%d",IntValue);
     else if(valuetype=="void *")
-	dummystring.Format("%p",value.PtrValue);
+	dummystring.Format("%p",PtrValue);
     else if(valuetype=="short")
-	dummystring.Format("%d",value.ShortValue);
-    else if(valuetype=="char *")
-	dummystring=mstring(value.StringValue);
+	dummystring.Format("%d",ShortValue);
+    else if(valuetype=="string")
+	dummystring=StringValue;
     else if(valuetype=="unsigned char")
-	dummystring.Format("%u",value.UCharValue);
+	dummystring.Format("%u",UCharValue);
     else if(valuetype=="unsigned int")
-	dummystring.Format("%u",value.UIntValue);
+	dummystring.Format("%u",UIntValue);
     else if(valuetype=="unsigned short")
-	dummystring.Format("%u",value.UShortValue);
+	dummystring.Format("%u",UShortValue);
     else if(valuetype=="NULL")
 	dummystring="NULL";
 

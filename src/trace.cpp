@@ -521,10 +521,17 @@ int LoggerTask::svc(void)
     while(1)
     {
 	// Destructor automatically deletes it.
-        auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue ());
-	// Call it.
-	if (mo->call () == -1)
-	    break;
+	try
+	{
+	    auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue ());
+	    // Call it.
+	    if (mo->call () == -1)
+		break;
+	}
+	catch(...)
+	{
+	    return 0;
+	}
     }
     return 0;
 }
@@ -546,6 +553,6 @@ void LoggerTask::logmessage_i(ThreadID *out,const mstring& data)
 
 void ThreadID::WriteOut2(const mstring & message)
 {
-	*out << message.c_str() << wxEndL;
-	out->Sync();
+    wxFileOutputStream out(logname(),true); // true sets append to true.
+    out << message.c_str() << wxEndL;
 }

@@ -31,11 +31,11 @@ int main(int argc, char **argv)
 #endif
 
 	int Result;
+        mThread::Attach(tt_MAIN);
 	StartTime=Now();
 restart:
 	{
 	    Magick internalobject(argc, argv);
-	    mThread::Attach(tt_MAIN);
 	    Result=internalobject.Start();
 	}
 	if(Result==MAGICK_RET_RESTART) {
