@@ -63,7 +63,7 @@ void mBase::send_cmd(const mstring & source, const mstring & fmt, ...)
 {
     FT("send_cmd", (source, fmt));
     va_list args;
-    va_start(args,fmt);
+    va_start(args,fmt.c_str());
     //if(runflags & RUN_NOSEND)
 	//return;
     mstring data1;
@@ -580,16 +580,16 @@ void NetworkServ::execute(const mstring & data)
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp;
 	    SendSVR("351 " + source + " " + PRODUCT + " " + Parent->Startup_SERVER_NAME +
-			" :" + VERSION + ((RELEASE != "") ? "-" + RELEASE : "") +
-			((PATCH1 != "") ? "+" + PATCH1 : "") +
-			((PATCH2 != "") ? "+" + PATCH2 : "") +
-			((PATCH3 != "") ? "+" + PATCH3 : "") +
-			((PATCH4 != "") ? "+" + PATCH4 : "") +
-			((PATCH5 != "") ? "+" + PATCH5 : "") +
-			((PATCH6 != "") ? "+" + PATCH6 : "") +
-			((PATCH7 != "") ? "+" + PATCH7 : "") +
-			((PATCH8 != "") ? "+" + PATCH8 : "") +
-			((PATCH9 != "") ? "+" + PATCH9 : "") + " (" +
+			" :" + VERSION + ((RELEASE != "") ? ("-" + RELEASE).c_str() : "") +
+			((PATCH1 != "") ? ("+" + PATCH1).c_str() : "") +
+			((PATCH2 != "") ? ("+" + PATCH2).c_str() : "") +
+			((PATCH3 != "") ? ("+" + PATCH3).c_str() : "") +
+			((PATCH4 != "") ? ("+" + PATCH4).c_str() : "") +
+			((PATCH5 != "") ? ("+" + PATCH5).c_str() : "") +
+			((PATCH6 != "") ? ("+" + PATCH6).c_str() : "") +
+			((PATCH7 != "") ? ("+" + PATCH7).c_str() : "") +
+			((PATCH8 != "") ? ("+" + PATCH8).c_str() : "") +
+			((PATCH9 != "") ? ("+" + PATCH9).c_str() : "") + " (" +
 			((Parent->operserv.getnames() != "")	? "O" : "o") +
 			((Parent->operserv.getnames() != "" &&
 				Parent->operserv.Akill())	? "A" : "a") +

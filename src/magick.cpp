@@ -532,9 +532,9 @@ int Magick::doparamparse()
 
 	    bool ArgUsed=false;
 	    if (argv[i][1U]=='-')
-		ArgUsed=paramlong(argv[i], (i-1 < argc) ? argv[i+1] : "");
+		ArgUsed=paramlong(argv[i], (i-1 < argc) ? argv[i+1].c_str() : "");
 	    else
-		ArgUsed=paramshort(argv[i], (i-1 < argc) ? argv[i+1] : "");
+		ArgUsed=paramshort(argv[i], (i-1 < argc) ? argv[i+1].c_str() : "");
 	    
 	    if (ArgUsed)
 		i++;
