@@ -1,3 +1,49 @@
+* 2002-03-31 22:10  Preston A. Elder <prez@magick.tm>
+  README (1.23), docs/en/index.sgml (1.36), gui/mct.java (1.3):
+  
+  Added the GUI to the README and documentation.
+
+* 2002-03-30 16:35  Preston A. Elder <prez@magick.tm>
+  src/Makefile.am (1.29):
+  
+  Fixed up make install in src directory.
+
+* 2002-03-30 03:35  Preston A. Elder <prez@magick.tm>
+  gui/ChanServ.java (1.2), gui/CommServ.java (1.2), gui/Config.java (1.2),
+  gui/ConfigView.java (1.2), gui/Files.java (1.3), gui/HexFormat.java
+  (1.2), gui/IpAddressFormat.java (1.2), gui/JMultiLineToolTip.java (1.2),
+  gui/MemoServ.java (1.2), gui/NickServ.java (1.2),
+  gui/NumberRangeFormat.java (1.2), gui/OctalFormat.java (1.2),
+  gui/OperServ.java (1.3), gui/PercentageFormat.java (1.2),
+  gui/ServMsg.java (1.2), gui/Services.java (1.2), gui/SpaceFormat.java
+  (1.2), gui/Startup.java (1.2), gui/TabbedPane.java (1.2),
+  gui/TimeFormat.java (1.2), gui/ToolTips.java (1.2), gui/mct.java (1.2),
+  gui/myTableCellEditor.java (1.2):
+  
+  Added standardized headers to all files, and removed imports that were
+  redundant or not needed.
+
+* 2002-03-30 03:16  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.26), docs/en/index.sgml (1.35):
+  
+  Added --enable-test to the documentation.
+
+* 2002-03-30 03:10  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.16), configure.in (1.56), include/config.h.in (1.28),
+  src/utils.cpp (1.83):
+  
+  Fixed mkdir and also accomodated for AC_CHECK_TYPE not existing.
+
+* 2002-03-27 02:23  Preston A. Elder <prez@magick.tm>
+  gui/.cvsignore (1.1):
+  
+  Added CVS ignore file.
+
+* 2002-03-25 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.28):
+  
+  Created version 2.0s20020325
+
 * 2002-03-25 02:12  Preston A. Elder <prez@magick.tm>
   gui/Files.java (1.2), gui/OperServ.java (1.2):
   
