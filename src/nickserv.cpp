@@ -449,6 +449,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
 	    new mstring(i_Name + ":" + Parent->operserv.Akill->Value().second),
 	    ACE_Time_Value(1));
+	return;
     }}
 
     if (Parent->operserv.AddHost(i_host))
@@ -548,6 +549,7 @@ void Nick_Live_t::Part(mstring chan)
     FT("Nick_Live_t::Part", (chan));
     if (Parent->chanserv.IsLive(chan))
     {
+	// If this returns 0, then the channel is empty.
 	if (Parent->chanserv.live[chan.LowerCase()].Part(i_Name) == 0)
 	    Parent->chanserv.live.erase(chan.LowerCase());
     }
@@ -564,6 +566,7 @@ void Nick_Live_t::Kick(mstring kicker, mstring chan)
     FT("Nick_Live_t::Kick", (kicker, chan));
     if (Parent->chanserv.IsLive(chan))
     {
+	// If this returns 0, then the channel is empty.
 	if (Parent->chanserv.live[chan.LowerCase()].Kick(i_Name, kicker) == 0)
 	    Parent->chanserv.live.erase(chan.LowerCase());
     }
@@ -668,6 +671,8 @@ bool Nick_Live_t::FloodTrigger()
 			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time()).c_str());
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PERM_IGNORE"),
 			Parent->operserv.Ignore_Limit());
+	    wxLogNotice(Parent->getLogMessage("OTHER/PERM_IGNORE"),
+			Mask(N_U_P_H).c_str());
 	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_PERM"),
 			i_Name.c_str());
 	}
@@ -679,6 +684,8 @@ bool Nick_Live_t::FloodTrigger()
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/TEMP_IGNORE"),
 			ToHumanNumber(flood_triggered_times).c_str(), Parent->operserv.Ignore_Limit(),
 			ToHumanTime(Parent->operserv.Ignore_Time()).c_str());
+	    wxLogNotice(Parent->getLogMessage("OTHER/TEMP_IGNORE"),
+			Mask(N_U_P_H).c_str());
 	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_TEMP"),
 			i_Name.c_str());
 	}}
@@ -700,6 +707,8 @@ void Nick_Live_t::Name(mstring in)
     unsigned int i;
 
     // Store what committee's we WERE on ...
+    // This is needed to send logon notices ONLY for committees
+    // we have joined by a nick change.
     set<mstring> wason;
     map<mstring, Committee>::iterator iter2;
     for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
@@ -725,6 +734,11 @@ void Nick_Live_t::Name(mstring in)
     for (i=0; i<chunked.size(); i++)
 	joined_channels.erase(chunked[i]);
 
+    // Carry over failed attempts (so /nick doesnt cure all!)
+    for (i=0; i<try_chan_ident.size(); i++)
+	if (Parent->chanserv.IsStored(try_chan_ident[i]))
+	    Parent->chanserv.stored[try_chan_ident[i]].ChgAttempt(i_Name, in);
+
     if (Parent->nickserv.IsStored(i_Name))
     {
 	if (!Parent->nickserv.stored[i_Name.LowerCase()].IsSibling(in))
@@ -736,11 +750,6 @@ void Nick_Live_t::Name(mstring in)
 	// Last Seen and Last Quit
 	Parent->nickserv.stored[i_Name.LowerCase()].ChgNick(in);
     }
-
-    // Carry over failed attempts (so /nick doesnt cure all!)
-    for (i=0; i<try_chan_ident.size(); i++)
-	if (Parent->chanserv.IsStored(try_chan_ident[i]))
-	    Parent->chanserv.stored[try_chan_ident[i]].ChgAttempt(i_Name, in);
 
     // WooHoo, we have a new nick!
     i_Name = in;
@@ -1007,6 +1016,8 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
+		wxLogNotice(Parent->getLogMessage("OTHER/KLLL_CHAN_PASS"),
+			Mask(N_U_P_H).c_str(), channel.c_str());
 		RET("");
 	    }
 	    else
@@ -1085,6 +1096,8 @@ mstring Nick_Live_t::Identify(mstring password)
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
+		wxLogNotice(Parent->getLogMessage("OTHER/KLLL_NICK_PASS"),
+			Mask(N_U_P_H).c_str(), i_Name.c_str());
 		RET("");
 	    }
 	    else
@@ -1241,6 +1254,9 @@ void Nick_Stored_t::Drop()
     {
 	Parent->chanserv.stored.erase(killchans[i]);
     }
+
+    if (Parent->memoserv.IsNick(i_Name))
+	Parent->memoserv.nick.erase(i_Name.LowerCase());
 }
 
 
@@ -4446,7 +4462,15 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    Parent->nickserv.live[source.LowerCase()].InFlight.Picture(mynick);
+    if (params.WordCount(" ") > 1 &&
+	params.ExtractWord(2, " ").CmpNoCase("NONE")==0)
+    {
+	Parent->nickserv.stored[source.LowerCase()].GotPic(0u);
+    }
+    else
+    {
+	Parent->nickserv.live[source.LowerCase()].InFlight.Picture(mynick);
+    }
 }
 
 void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)

@@ -135,11 +135,11 @@ int Magick::Start()
 
     if (!get_config_values())
     {
-	wxLogFatal("Could not read magick config file %s.", i_config_file.c_str());
+	wxLogFatal(getLogMessage("COMMANDLINE/NO_CFG_FILE"), i_config_file.c_str());
     }
 
     if(i_shutdown==true)
-	wxLogFatal("CONFIG: [Startup] STOP code received.");
+	wxLogFatal(getLogMessage("COMMANDLINE/STOP"));
 
     Result=doparamparse();
     if(Result!=MAGICK_RET_NORMAL)
@@ -152,6 +152,8 @@ int Magick::Start()
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
 
+    // Need to shut down, it wont be carried over fork.
+    // We will re-start it ASAP after fork.
     if (loggertask != NULL)
     {
 	loggertask->close(0);
@@ -160,19 +162,20 @@ int Magick::Start()
 #ifndef WIN32
     if ((i = fork ()) < 0)
     {
-	//log_perror ("fork()");
+	wxLogFatal(Parent->getMessage("ERROR/FAILED_FORK"), i);
 	RET(1);
     }
     else if (i != 0)
     {
 	RET(0);
     }
-    if (setpgid (0, 0) < 0)
+    if ((i = setpgid (0, 0)) < 0)
     {
-	//log_perror ("setpgid()");
+	wxLogFatal(Parent->getMessage("ERROR/FAILED_SETPGID"), i);
 	RET(1);
     }
 #endif
+    // Can only open these after fork if we want then to live
     loggertask = new LoggerTask;
     loggertask->open();
     events = new EventTask;
@@ -263,7 +266,6 @@ int Magick::Start()
     CP((PRODUCT + " II has been started ..."));
     load_databases();
     i_ResetTime=Now();
-    AUTO(true);
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives
@@ -295,6 +297,8 @@ int Magick::Start()
     server.raw("PASS " + startup.Server(tmp).second);
     server.raw("SERVER " + startup.Server_Name() + " 1 :" + startup.Server_Desc());
     i_connected = true;
+        
+    AUTO(true); // Activate events from here.
 
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
@@ -425,6 +429,8 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.find(lang.UpperCase()) == Messages.end())
     {
 	LoadExternalMessages(lang);
+	wxLogInfo(Parent->getLogMessage("OTHER/LOAD_LANGUAGE"),
+		lang.c_str());
 	CP(("Language %s was loaded into memory.", lang.c_str()));
     }
     if (lang != "" &&
@@ -444,6 +450,8 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.end())
     {
 	LoadExternalMessages(nickserv.DEF_Language());
+	wxLogInfo(Parent->getLogMessage("OTHER/LOAD_LANGUAGE"),
+		lang.c_str());
 	CP(("Language %s was loaded into memory.", nickserv.DEF_Language().c_str()));
     }
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
@@ -708,9 +716,7 @@ mstring Magick::parseEscapes(const mstring & in)
     catch(ParserException &E)
     {
 	//todo
-	mstring blah;
-	blah.Format("Escape parser threw and exception at line: %d, column:%d of %s",E.line,E.column,E.getMessage().c_str());
-	wxLogWarning(blah);
+	wxLogWarning(getLogMessage("ERROR/EXCEPTION"),E.line,E.column,E.getMessage().c_str());
     }
     RET(lexer.retstring);
 }
@@ -900,7 +906,7 @@ int Magick::doparamparse()
 	}
 	else
 	{
-	    wxLogFatal("Non-option arguments not allowed");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NONOPTION"));
 	}
     }
     RET(MAGICK_RET_NORMAL);
@@ -973,7 +979,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    wxLogFatal("--relink parameter must be positive");
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"), "--relink");
 	}
 	config.server_relink=atoi(first.c_str());
 	RET(true);
@@ -988,7 +994,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	if(atoi(second.c_str())<=0)
 	{
-	    wxLogFatal("--level paramater must be positive");
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"), "--level");
 	}
 	startup.level=atoi(second.c_str());
 	RET(true);
@@ -1001,7 +1007,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	if(atoi(second.c_str())<=0)
 	{
-	    wxLogFatal("--save: number of seconds must be positive");
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"), "--save");
 	}
 	config.cycletime=atoi(second.c_str());
 	RET(true);
@@ -1014,7 +1020,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	if(!wxFile::Exists(second.c_str()))
 	{
-	    wxLogFatal("--keyfile: keyfile doesn't exist");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NO_KEYFILE"), second.c_str());
 	}
 	files.keyfile=second;
 	RET(true);
@@ -1038,13 +1044,13 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	else
 	{
-	    wxLogFatal("Database type is not valid.");
+	    wxLogFatal(getLogMessage("COMMANDLINE/CANNOT_CONVERT"), second.c_str());
 	}
 	RET(true);
     }
     else
     {
-   	wxLogError("Unknown option %s, ignoring.",first.c_str());
+   	wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str());
     }
     RET(false);
 }
@@ -1062,21 +1068,21 @@ bool Magick::paramshort(mstring first, mstring second)
 	{
 
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--name", second);
 	}
 	else if(first[i]=='d')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--desc", second);
 	}
 	else if(first[i]=='u')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--user", second);
 	}
@@ -1087,7 +1093,7 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='h')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--host", second);
 	}
@@ -1102,34 +1108,34 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='r')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--relink", second);
 	}
 	else if(first[i]=='l')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--level", second);
 	}
 	else if(first[i]=='s')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--save", second);
 	}
 	else if(first[i]=='k')
 	{
 	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--keyfile", second);
 	}
 	else
 	{
-	    wxLogError("Unknown option -%c, ignoring.",first[i]);
+   	    wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str());
 	}
     }
     RET(ArgUsed);
@@ -1225,7 +1231,7 @@ bool Magick::get_config_values()
 		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
 		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
 		else
-		    wxLogWarning("REMOTE entry for %s contained incorrect syntax, ignored!", tmp[0].c_str());
+		    wxLogWarning(getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str());
 	}
 	i++;
     } while (ent!="");
@@ -1745,7 +1751,8 @@ bool Magick::get_config_values()
 	operserv.ignore_remove = FromHumanTime("5m");
 
     in.Read(ts_OperServ+"IGNORE_METHOD",&operserv.ignore_method,8);
-    
+    in.Read(ts_OperServ+"LOG_IGNORE",&operserv.log_ignore,false);
+
     RemCommands();
     in.Read(ts_CommServ+"DEF_OPENMEMOS",&commserv.def_openmemos,true);
     in.Read(ts_CommServ+"LCK_OPENMEMOS",&commserv.lck_openmemos,false);
@@ -2083,9 +2090,9 @@ void Magick::load_databases()
 	CP(("Data TAG: %s | %d | %d | %d", tag.c_str(), ver, compressed, encrypted));
 
 	if (tag != FileIdentificationTag)
-	    wxLogFatal("Invalid data file (not Magick II)");
+	    wxLogFatal(getLogMessage("COMMANDLINE/DBASE_ID"));
 	if (ver != FileVersionNumber)
-	    wxLogFatal("Version numbers do not match.");
+	    wxLogFatal(getLogMessage("COMMANDLINE/DBASE_VER"));
 
 	// Thread pipes ... create them.
 /*	if (encrypted)
@@ -2122,6 +2129,7 @@ CP(("Compressed datastream inactive ..."));
 	    delete zinput;
 	}
 	input = &finput;
+	wxLogInfo(getLogMessage("EVENT/LOAD"));
     }
 }
 
@@ -2192,6 +2200,8 @@ CP(("Compressed datastream inactive ..."));
 	    delete zoutput;
 	}
 	output = &foutput;
+
+	wxLogVerbose(getLogMessage("EVENT/SAVE"));
     }
 }
 

@@ -541,8 +541,9 @@ void mBaseTask::message_i(const mstring& message)
 	    else
 	    {
 		// Check if we're to log ignore messages, and log them here.
-		//if Parent->operserv.LogIgnored())
-		//    wxLogInfo("IGNORED: ", message.c_str());
+		if (Parent->operserv.Log_Ignore())
+		    wxLogInfo(Parent->getMessage("OPERSERV/IGNORED"),
+			source.c_str(), message.After(" ").c_str());
 	    }
 	}
 	else	// Channel messages

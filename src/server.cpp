@@ -1054,11 +1054,13 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'B':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     case 'C':
 	if (msgtype=="CONNECT")
@@ -1081,25 +1083,30 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'D':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     case 'E':
 	if (msgtype=="ERROR")
 	{
 	    // ERROR :This is my error
-	    wxLogNotice("SERVER reported ERROR: %s", data.After(":").c_str());
+	    wxLogNotice(Parent->getLogMessage("OTHER/SERVER_MSG"),
+		    msgtype.c_str(), data.After(":").c_str());
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'F':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     case 'G':
 	if (msgtype=="GLINE")
@@ -1115,7 +1122,8 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="GNOTICE")
 	{
 	    // :server GNOTICE :This message
-	    wxLogInfo("SERVER MESSAGE: %s", data.After(":").c_str());
+	    wxLogNotice(Parent->getLogMessage("OTHER/SERVER_MSG"),
+		    msgtype.c_str(), data.After(":").c_str());
 	}
 	else if (msgtype=="GOPER")
 	{
@@ -1123,11 +1131,13 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'H':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     case 'I':
 	if (msgtype=="INFO")
@@ -1169,7 +1179,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'J':
@@ -1184,7 +1195,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'K':
@@ -1216,7 +1228,12 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		// sign on services again if they're killed.
 		if (Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
+		{
+		    wxLogWarning(Parent->getLogMessage("OTHER/KILLED"),
+			    data.ExtractWord(3, ": ").c_str(),
+			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str());
 		    sraw("ISON " + data.ExtractWord(3, ": "));
+		}
 		int wc = data.After(":", 2).WordCount("!");
 		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
 			"Killed (" + data.After(":", 2).After("!", wc-1) + ")");
@@ -1231,7 +1248,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'L':
@@ -1268,7 +1286,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'M':
@@ -1304,7 +1323,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'N':
@@ -1437,7 +1457,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'O':
@@ -1446,7 +1467,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'P':
@@ -1463,6 +1485,8 @@ void NetworkServ::execute(const mstring & data)
 	    // PASS :password
 	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server()).second)
 	    {
+		wxLogError(Parent->getLogMessage("OTHER/WRONGPASS"),
+			Parent->Server().c_str());
 		CP(("Server password mismatch.  Closing socket."));
 		raw("ERROR :No Access (passwd mismatch) [" + Parent->Server() + "]");
 		raw("ERROR :Closing Link: [" + Parent->Server() + "] (Bad Password)");
@@ -1510,7 +1534,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'Q':
@@ -1538,6 +1563,10 @@ void NetworkServ::execute(const mstring & data)
 		 */
 		Parent->nickserv.live[sourceL].SetSquit();
 		ToBeSquit[data.ExtractWord(4, ": ").LowerCase()].push_back(sourceL);
+		wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_FIRST"),
+			data.ExtractWord(4, ": ").c_str(),
+			data.ExtractWord(3, ": ").c_str());
+
 		if (ServerSquit.find(Parent->nickserv.live[sourceL].Server().LowerCase()) == ServerSquit.end())
 		{
 		    ServerSquit[Parent->nickserv.live[sourceL].Server().LowerCase()] =
@@ -1557,7 +1586,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'R':
@@ -1576,7 +1606,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'S':
@@ -1600,6 +1631,8 @@ void NetworkServ::execute(const mstring & data)
 			sourceL,
 			atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			data.After(":", 2));
+		    wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
+			data.ExtractWord(3, ": ").c_str(), sourceL);
 		}
 		else
 		{
@@ -1622,6 +1655,11 @@ void NetworkServ::execute(const mstring & data)
 		target = data.ExtractWord(2, ": ").LowerCase();
 	    else
 		target = data.ExtractWord(3, ": ").LowerCase();
+
+	    wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_SECOND"),
+		    target.c_str(),
+		    ServerList[target.LowerCase()].Uplink().c_str());
+
 	    ServerList.erase(target);
 	    if (ServerSquit.find(target) != ServerSquit.end())
 	    {
@@ -1700,7 +1738,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'T':
@@ -1765,7 +1804,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'U':
@@ -1786,12 +1826,24 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
-		sraw("302 " + source + " :" +
+		if (!Parent->nickserv.IsStored(data.ExtractWord(3, ": ")) ? 1 :
+			!Parent->nickserv.stored[data.ExtractWord(3, ": ").LowerCase()].Private())
+		{
+		    sraw("302 " + source + " :" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
 			"*=-" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
 			"@" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Host());
+		}
+		else
+		{
+		    sraw("302 " + source + " :" +
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
+			"*=-" +
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
+			"@ONLINE");
+		}
 
 	    }
 	    else
@@ -1807,7 +1859,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'V':
@@ -1884,7 +1937,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'W':
@@ -2036,6 +2090,8 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    else
 	    {
+		mstring target = data.ExtractWord(3, ": ");
+		sraw("401 " + source + " " + target + " :No such nickname/channel.");
 	    }
 
 	}
@@ -2045,20 +2101,25 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	}
 	break;
     case 'X':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     case 'Y':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     case 'Z':
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     default:
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     }
 
@@ -2353,10 +2414,14 @@ void NetworkServ::numeric_execute(const mstring & data)
 	break;
     case 464:     // ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
+	wxLogError(Parent->getLogMessage("OTHER/WRONGPASS"),
+		Parent->Server().c_str());
 	Parent->Disconnect();
 	break;
     case 465:     // ERR_YOUREBANNEDCREEP
 	// MUST handle (Stop connecting).
+	wxLogError(Parent->getLogMessage("OTHER/WEAREBANNED"),
+		Parent->Server().c_str());
 	Parent->Disconnect();
 	break;
     case 467:     // ERR_KEYSET
@@ -2384,7 +2449,8 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 502:     // ERR_USERSDONTMATCH
 	break;
     default:
-	wxLogWarning("Unknown message from server: %s", data.c_str());
+	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str());
 	break;
     }
 }

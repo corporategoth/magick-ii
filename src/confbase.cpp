@@ -29,6 +29,7 @@
 #include "confbase.h"
 #include "fileconf.h"
 #include "trace.h"
+#include "magick.h"
 
 mstring wxExpandEnvVars(const mstring& str)
 {
@@ -106,8 +107,7 @@ mstring wxExpandEnvVars(const mstring& str)
           // check the closing bracket
           if ( bracket != Bracket_None ) {
             if ( m == str.length() || str[m] != (char)bracket ) {
-              wxLogWarning("Environment variables expansion failed: "
-                             "missing '%c' at position %d in '%s'.",
+              wxLogWarning(Parent->getLogMessage("WX_ERRORS/ENVIRONMENT"),
                            (char)bracket, m + 1, str.c_str());
             }
             else {
@@ -156,7 +156,7 @@ void wxSplitPath(mArrayString& aParts, const mstring &sz)
       else if ( strCurrent == ".." ) {
         // go up one level
         if ( aParts.size()==0 )
-          wxLogWarning("'%s' has extra '..', ignored.", sz.c_str());
+          wxLogWarning(Parent->getLogMessage("WX_ERRORS/EXTRA"), sz.c_str());
         else
           aParts.erase(aParts.end() - 1);
 

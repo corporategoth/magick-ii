@@ -40,6 +40,7 @@ private:
     unsigned int ignore_limit;
     unsigned long ignore_remove;
     unsigned int ignore_method;
+    bool log_ignore;
 
     bool flood;
     bool akill;
@@ -125,6 +126,7 @@ public:
     unsigned long Ignore_Remove()   { return ignore_remove; }
     Nick_Live_t::styles Ignore_Method()
 	{ return (Nick_Live_t::styles) ignore_method; }
+    bool Log_Ignore()		    { return log_ignore; }
 
     bool Flood()		{ return flood; }
     bool oAkill()		{ return akill; }

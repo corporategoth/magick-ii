@@ -161,8 +161,12 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->GotConnect(false);
     Parent->i_server = server;
     Parent->ircsvchandler=new IrcSvcHandler;
+    wxLogInfo(Parent->getLogMessage("OTHER/CONNECTING"),
+		server.c_str(), details.first);
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
     {
+	wxLogError(Parent->getLogMessage("OTHER/REFUSED"),
+		server.c_str(), details.first);
 	//okay we got a connection problem here. log it and try again
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
@@ -205,6 +209,14 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     Parent->server.ServerSquit.erase(*tmp);
 
+    if (Parent->server.IsServer(*tmp))
+	wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
+		tmp->c_str(),
+		Parent->server.ServerList[tmp->Lowercase()].Uplink().c_str());
+    else
+	wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
+		tmp->c_str(), "?");
+
     // QUIT all user's who faked it ...
     if (Parent->server.ToBeSquit.find(*tmp) != Parent->server.ToBeSquit.end())
     {
@@ -213,7 +225,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	{
 	    if (Parent->nickserv.IsLive(*iter))
 	    {
-		Parent->nickserv.live[*iter].Quit("SQUIT - " + *tmp);
+		Parent->nickserv.live[*iter].Quit("FAKE SQUIT - " + *tmp);
 		Parent->nickserv.live.erase(*iter);
 	    }
 	}
@@ -369,6 +381,11 @@ int EventTask::svc(void)
 		    {
 			if (Parent->operserv.Akill == Parent->operserv.Akill_begin())
 			{
+			    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+				    Parent->operserv.Akill->Entry().c_str(),
+				    Parent->operserv.Akill->Value().second.c_str(),
+				    Parent->operserv.Akill->Last_Modifier().c_str(),
+				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
 			    Parent->operserv.Akill_erase();
 			    firstgone = true;
 			}
@@ -376,6 +393,11 @@ int EventTask::svc(void)
 			{
 			    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
 			    LastEnt--;
+			    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+				    Parent->operserv.Akill->Entry().c_str(),
+				    Parent->operserv.Akill->Value().second.c_str(),
+				    Parent->operserv.Akill->Last_Modifier().c_str(),
+				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
 			    Parent->operserv.Akill_erase();
 			    Parent->operserv.Akill = LastEnt;
 			}
@@ -408,6 +430,8 @@ int EventTask::svc(void)
 		}
 		for (i=0; i<expired_nicks.size(); i++)
 		{
+		    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_NICK"),
+			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str());
 		    Parent->nickserv.stored[expired_nicks[i]].Drop();
 		    Parent->nickserv.stored.erase(expired_nicks[i]);
 		}
@@ -428,7 +452,11 @@ int EventTask::svc(void)
 		    }
 		}
 		for (i=0; i<expired_chans.size(); i++)
+		{
+		    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
+			    Parent->chanserv.stored[expired_chans[i]].Name().c_str());
 		    Parent->chanserv.stored.erase(expired_chans[i]);
+		}
 	    }
 
 	    // news articles
@@ -453,6 +481,8 @@ int EventTask::svc(void)
 			{
 			    if (lni == ni->second.begin())
 			    {
+				wxLogVerbose(Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
+					lni->Text().c_str());
 				ni->second.erase(lni);
 				firstgone = true;
 				lni = ni->second.end();
@@ -460,6 +490,8 @@ int EventTask::svc(void)
 			    else
 			    {
 				list<News_t>::iterator lastnews = lni;
+				wxLogVerbose(Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
+					lni->Text().c_str());
 				lastnews--;
 				ni->second.erase(lni);
 				lni = lastnews;
@@ -617,6 +649,8 @@ int EventTask::svc(void)
 		nsi = Parent->nickserv.stored.find(chunked[i]);
 		mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
 		mstring oldnick = nli->second.Name();
+		wxLogInfo(Parent->getLogMessage("EVENT/KILLPROTECT"),
+			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str());
 		if (newnick != "")
 		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
 			oldnick, newnick);
@@ -676,14 +710,21 @@ int EventTask::svc(void)
 		avg = sum / (double) pingtimes.size();
 
 	    if (avg > (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+	    {
 		Parent->LevelUp();
+		wxLogWarning(Parent->getLogMessage("EVENT/LEVELUP"));
+	    }
 	    else if (Parent->Level() > Parent->startup.Level() &&
 		avg <= (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
+	    {
 		Parent->LevelDown();
+		wxLogWarning(Parent->getLogMessage("EVENT/LEVELDOWN"));
+	    }
 
 	    for (si=Parent->server.ServerList.begin();
 		    si!=Parent->server.ServerList.end();si++)
 		si->second.Ping();
+	    wxLogVerbose(Parent->getLogMessage("EVENT/PING"));
 	    last_ping = Now();
 	}
 	

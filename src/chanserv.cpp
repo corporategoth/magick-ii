@@ -28,7 +28,8 @@ void Chan_Live_t::Join(mstring nick)
 
     if (users.find(nick.LowerCase())!=users.end())
     {
-	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick.c_str(), i_Name.c_str());	
+	wxLogWarning(Parent->getMessage("ERROR/DUP_CHAN"),
+		"JOIN", nick.c_str(), i_Name.c_str());
     }
     else
     {
@@ -54,7 +55,8 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
     else
-	wxLogWarning("PART received for %s who is not in %s.", nick.c_str(), i_Name.c_str());
+	wxLogWarning(Parent->getMessage("ERROR/FORNOTINCHAN"),
+	    "PART", nick.c_str(), i_Name.c_str());
 
     RET(users.size() + squit.size());
 }
@@ -79,7 +81,8 @@ void Chan_Live_t::UnSquit(mstring nick)
 
     if (squit.find(nick.LowerCase())==squit.end())
     {
-	wxLogWarning("UNSQUIT for %s received, and is not in %s.", nick.c_str(), i_Name.c_str());
+	wxLogWarning(Parent->getMessage("ERROR/FORNOTINCHAN"),
+		"UNSQUIT", nick.c_str(), i_Name.c_str());
     }
     else
 	Part(nick);

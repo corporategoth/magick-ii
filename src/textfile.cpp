@@ -31,6 +31,7 @@
 #include "textfile.h"
 #include "log.h"
 #include "trace.h"
+#include "magick.h"
 
 // default type is the native one
 const wxTextFileType wxTextFile::typeDefault =
@@ -126,7 +127,8 @@ wxTextFileType wxTextFile::GuessType() const
   if ( nDos + nUnix + nMac == 0 ) 
   {
     // no newlines at all
-    wxLogWarning("'%s' is probably a binary file.", m_strFile.c_str());
+    wxLogWarning(Parent->getLogMessage("WX_ERRORS/BINFILE"),
+		m_strFile.c_str());
   }
   else 
   {
@@ -235,7 +237,8 @@ bool wxTextFile::Write(wxTextFileType typeNew)
   wxTempFile fileTmp(m_strFile);
 
   if ( !fileTmp.IsOpened() ) {
-    wxLogError("can't write file '%s' to disk.", m_strFile.c_str());
+    wxLogError(Parent->getLogMessage("WX_ERRORS/CANTWRITE"),
+		m_strFile.c_str());
     RET(false);
   }
 

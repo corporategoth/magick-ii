@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "log.h"
 #include "trace.h"
+#include "magick.h"
 
 void wxSplitPath(const char *pszFileName,
                              mstring *pstrPath,
@@ -98,7 +99,7 @@ mstring &wxGetHomeDir(mstring &pstr)
     const char *szHome = getenv("HOME");
     if ( szHome == NULL ) {
       // we're homeless...
-      wxLogWarning("can't find user's HOME, using current directory.");
+      wxLogWarning(Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
       strDir = ".";
     }
     else
@@ -165,7 +166,7 @@ unsigned long TxnIds::Create()
     }
     else
     {
-	wxLogError("Cannot generate new TxnIds!");
+	wxLogError(Parent->getLogMessage("WX_ERRORS/OUTOFTXNIDS"));
 	RET(0);
     }
 }

@@ -78,3 +78,48 @@
 17=::total control over it, including forbidding you access
 18=::to it.  If you have lost your password, you can contact
 19=::a Services Operator to retrieve it for you.
+
+[NICKSERV/DROP]
+01=::DROP [nickname]
+02=::
+03=::This will de-register your nickname.  Doing so will
+04=::remove you from all channel access lists you are on,
+05=::force all channels you are founder of to be given to
+06=::the co-founder or be dropped if there is none, remove
+07=::all your memos (read or unread), and if done on a host
+08=::nickname, drop all slaves of it.
+09=::
+10a=:SOP:If you specify a nickname after the drop command, and
+11a=:SOP:the nickname is linked to you, it will drop it, if not,
+12a=:SOP:it will drop your current nickname.
+10b=SOP::If you specify a nickname after the drop command, it
+11b=SOP::will drop that nickname (wether you own it or not).
+12b=SOP::Otherwise it will drop your current nickname.
+
+[NICKSERV/LINK]
+01=::LINK <nickname> <password>
+02=::
+03=::This will link your current nickname to another, making
+04=::it your host nickname.  From that point, both nicknames
+05=::will be considered equivliant, they will share access
+06=::lists (both nickname and channel), if one is added to a
+07=::committee they will all be members of it, they will
+08=::share the same memo list, etc.
+09=::
+10=::IMPORTANT: IF YOUR CURRENT NICKNAME IS REGISTERED,
+11=::IT WILL BE DROPPED BEFORE BEING LINKED TO YOUR HOST.
+
+[NICKSERV/HOST]
+01=::UNLINK [nick]
+02=::
+03=::This will unlink your nick from your host nick, first
+04=::duplicating all settings, the access and ignore lists.
+05=::Any modifications made to your nickname after this
+06=::command is executed will NOT be reciprocated on the
+07=::host nickname.  You will also be removing yourself
+08=::from all access lists that the host nickname is on.
+09=::
+10=::If a nickname is specified after the unlink command,
+11=::and it is linked to you, it will be unlinked instead.
+
+
