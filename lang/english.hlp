@@ -442,10 +442,10 @@
 06 =REGD::enough (which is the same thing if Secure is set).
 07 =REGD::
 08 =REGD::You may alter your settings with these commands:
-09 =REGD::    PASSWORD     EMAIL        URL          ICQ
-10 =REGD::    AIM          DESCRIPTION  PICTURE      LANGUAGE
-11 =REGD::    PROTECT      SECURE       PRIVATE      PRIVMSG
-12 =REGD::    NOMEMO
+09 =REGD::    PASSWORD     DESCRIPTION  EMAIL        URL
+10 =REGD::    ICQ          AIM          MSN          YAHOO
+11 =REGD::    PICTURE      LANGUAGE     PROTECT      SECURE
+12 =REGD::    PRIVATE      PRIVMSG      NOMEMO
 13 =SOP::As a SOP you may also use the following commands:
 14 =SOP::    COMMENT      NOEXPIRE
 
@@ -511,6 +511,30 @@
 04 =REGD::Name.  Right now, it is a free-text field, however it
 05 =REGD::is recommended you ensure the data you put in this is
 06 =REGD::a valid screen name, as it may be used later for such
+07 =REGD::things as current users status, etc.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
+
+[NICKSERV/SET/MSN]
+01 =REGD::SET MSN <sign-in name>
+02 =REGD::
+03 =REGD::This is a field provided to represent your MSN sign-in
+04 =REGD::name.  Right now, it is a free-text field, however it
+05 =REGD::is recommended you ensure the data you put in this is
+06 =REGD::a valid sign-in name, as it may be used later for such
+07 =REGD::things as current users status, etc.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
+
+[NICKSERV/SET/YAHOO]
+01 =REGD::SET YAHOO <id>
+02 =REGD::
+03 =REGD::This is a field provided to represent your Yahoo! ID.
+04 =REGD::Right now, it is a free-text field, however it is
+05 =REGD::recommended you ensure the data you put in this is a
+06 =REGD::valid Yahoo! ID, as it may be used later for such
 07 =REGD::things as current users status, etc.
 08 =REGD::
 09 =REGD::This value will display as-is in your INFO display.

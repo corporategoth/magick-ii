@@ -477,6 +477,34 @@ in your info.
 Setting this to NONE will clear this field.
 
 
+<sect2>MSN<label id="NickServ_AIM">
+<p>
+<verb>
+SYNTAX: SET MSN <sign-in name>
+</verb>
+This will set your MSN Messenger sign-in name in services.  This is a
+purely informational field, and will show up in your INFO (<pageref id="NickServ_INFO">) display.
+Right now nothing is done with this information, but it is possible that
+a method may be put into services that allow them to also show your status
+in your info.
+
+Setting this to NONE will clear this field.
+
+
+<sect2>YAHOO<label id="NickServ_AIM">
+<p>
+<verb>
+SYNTAX: SET YAHOO <id>
+</verb>
+This will set your Yahoo! Messenger ID in services.  This is a purely
+informational field, and will show up in your INFO (<pageref id="NickServ_INFO">) display.
+Right now nothing is done with this information, but it is possible that
+a method may be put into services that allow them to also show your status
+in your info.
+
+Setting this to NONE will clear this field.
+
+
 <sect2>DESCRIPTION<label id="NickServ_DESCRIPTION">
 <p>
 <verb>

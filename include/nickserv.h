@@ -258,6 +258,8 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     mstring i_URL;
     mstring i_ICQ;
     mstring i_AIM;
+    mstring i_MSN;
+    mstring i_Yahoo;
     mstring i_Description;
     mstring i_Comment;
     mstring i_Host;
@@ -312,8 +314,8 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     void ChangeOver(const mstring & oldnick);
     void defaults();
 
-    static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime, tag_Password, tag_Email, tag_URL, tag_ICQ, tag_AIM,
-	tag_Description, tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure, tag_set_NoExpire, tag_set_NoMemo,
+    static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime, tag_Password, tag_Email, tag_URL, tag_ICQ, tag_AIM, tag_MSN,
+	tag_Yahoo, tag_Description, tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure, tag_set_NoExpire, tag_set_NoMemo,
 	tag_set_Private, tag_set_PRIVMSG, tag_set_Language, tag_Forbidden, tag_lock_Protect, tag_lock_Secure,
 	tag_lock_NoExpire, tag_lock_NoMemo, tag_lock_Private, tag_lock_PRIVMSG, tag_lock_Language, tag_Picture, tag_Suspend_By,
 	tag_Suspend_Time, tag_LastSeenTime, tag_LastRealName, tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
@@ -365,6 +367,10 @@ public:
     void ICQ(const mstring & in);
     mstring AIM();
     void AIM(const mstring & in);
+    mstring MSN();
+    void MSN(const mstring & in);
+    mstring Yahoo();
+    void Yahoo(const mstring & in);
     mstring Description();
     void Description(const mstring & in);
     mstring Comment();
@@ -938,6 +944,8 @@ public:
     static void do_set_URL(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_ICQ(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_AIM(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_set_MSN(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_set_Yahoo(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_Description(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_Comment(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_Picture(const mstring & mynick, const mstring & source, const mstring & params);

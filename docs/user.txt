@@ -39,14 +39,16 @@ Contents
 2.2.3	URL
 2.2.4	ICQ
 2.2.5	AIM
-2.2.6	DESCRIPTION
-2.2.7	PICTURE
-2.2.8	PROTECT
-2.2.9	SECURE
-2.2.10	NOMEMO
-2.2.11	PRIVATE
-2.2.12	PRIVMSG
-2.2.13	LANGUAGE
+2.2.6	MSN
+2.2.7	YAHOO
+2.2.8	DESCRIPTION
+2.2.9	PICTURE
+2.2.10	PROTECT
+2.2.11	SECURE
+2.2.12	NOMEMO
+2.2.13	PRIVATE
+2.2.14	PRIVMSG
+2.2.15	LANGUAGE
 2.3	Other Commands
 2.3.1	HELP
 2.3.2	LIST
@@ -472,12 +474,12 @@ be set as the host.
 SYNTAX: IDENTIFY <password>
 
 This will identify you to your current nickname.  If you are coming from
-a host not on your access list (2.1.7) and kill protection (2.2.8) is on
+a host not on your access list (2.1.7) and kill protection (2.2.10) is on
 this is required else services will take action against you.  The password
 specified is the password either set with the REGISTER (2.1.1) command or
 changed with the PASSWORD (2.2.1) setting.
 
-If secure (2.2.9) is on, you must identify even if your current hostmask
+If secure (2.2.11) is on, you must identify even if your current hostmask
 (1.4.2) is on your access list.  Identification enables many commands that
 are not available if just recognized (ie. your hostmask (1.4.2) matches
 one on the access list, but your not identified).  The main ones are the
@@ -494,7 +496,7 @@ SYNTAX: ACCESS ADD <hostmask>
 
 This maintains your access list.  Your access list is simply a list of
 hostmasks (1.4.2) that you will be recognized from without using the
-IDENTIFY (2.1.6) command.  When on the access list, unless SECURE (2.2.9)
+IDENTIFY (2.1.6) command.  When on the access list, unless SECURE (2.2.11)
 is set on, you do not need to identify to do most commands.  Note that
 channels and committees may also individually set SECURE (3.2.13/5.2.5)
 on, in which case you will still need to identify to gain the relevant
@@ -519,7 +521,7 @@ the network.  Only registered nicknames may be removed from the network.
 
 This feature is designed to remove either clients that have not yet
 timed out, but are no longer active, or services who are still holding
-your nickname after kill protection (2.2.8) has activated.
+your nickname after kill protection (2.2.10) has activated.
 
 
 2.1.9	RECOVER
@@ -605,8 +607,36 @@ Setting this to NONE will clear this field.
 
 SYNTAX: SET AIM <screen name>
 
-This will set your AIM ID (AKA. screen name) in services.  This is a
+This will set your AIM screen name in services.  This is a purely
+informational field, and will show up in your INFO (2.3.3) display. Right
+now nothing is done with this information, but it is possible that a method
+may be put into services that allow them to also show your status in your
+info.
+
+Setting this to NONE will clear this field.
+
+
+2.2.6	MSN
+-----------
+
+SYNTAX: SET MSN <sign-in name>
+
+This will set your MSN Messenger sign-in name in services.  This is a
 purely informational field, and will show up in your INFO (2.3.3) display.
+Right now nothing is done with this information, but it is possible that a
+method may be put into services that allow them to also show your status in
+your info.
+
+Setting this to NONE will clear this field.
+
+
+2.2.7	YAHOO
+-------------
+
+SYNTAX: SET YAHOO <id>
+
+This will set your Yahoo! Messenger ID in services.  This is a purely
+informational field, and will show up in your INFO (2.3.3) display.
 Right now nothing is done with this information, but it is possible that
 a method may be put into services that allow them to also show your status
 in your info.
@@ -614,7 +644,7 @@ in your info.
 Setting this to NONE will clear this field.
 
 
-2.2.6	DESCRIPTION
+2.2.8	DESCRIPTION
 -------------------
 
 SYNTAX: SET DESCRIPTION <description>
@@ -626,7 +656,7 @@ I doubt anyone expects this to be accurate, so be as vain as you want.
 Setting this to NONE will clear this field.
 
 
-2.2.7	PICTURE
+2.2.9	PICTURE
 ---------------
 
 SYNTAX: SET PICTURE [NONE]
@@ -641,7 +671,7 @@ Including the optional parameter of NONE will remove a picture if you
 have one already stored in your nickname record.
 
 
-2.2.8	PROTECT
+2.2.10	PROTECT
 ---------------
 
 SYNTAX: SET PROTECT <ON|OFF|RESET>
@@ -652,14 +682,14 @@ access list, your will be required to IDENTIFY (2.1.6) to your nickname.
 If you fail to identify within a specific time period, you will be either
 renamed to another nickname if the IRC server supports it, or killed.
 
-If SECURE (2.2.9) is also set on your nickname, then you will be required
+If SECURE (2.2.11) is also set on your nickname, then you will be required
 to IDENTIFY (2.1.6) whether you are on your access list or not.
 
 Setting this to RESET will set the value to whatever newly registered
 	nicknames are set to (ie. the default value).
 
 
-2.2.9	SECURE
+2.2.11	SECURE
 --------------
 
 SYNTAX: SET SECURE <ON|OFF|RESET>
@@ -672,7 +702,7 @@ Setting this to RESET will set the value to whatever newly registered
 	nicknames are set to (ie. the default value).
 
 
-2.2.10	NOMEMO
+2.2.12	NOMEMO
 --------------
 
 SYNTAX: SET NOMEMO <ON|OFF|RESET>
@@ -686,7 +716,7 @@ Setting this to RESET will set the value to whatever newly registered
 	nicknames are set to (ie. the default value).
 
 
-2.2.11	PRIVATE
+2.2.13	PRIVATE
 ---------------
 
 SYNTAX: SET PRIVATE <ON|OFF|RESET>
@@ -700,7 +730,7 @@ Setting this to RESET will set the value to whatever newly registered
 	nicknames are set to (ie. the default value).
 
 
-2.2.12	PRIVMSG
+2.2.14	PRIVMSG
 ---------------
 
 SYNTAX: SET PRIVMSG <ON|OFF|RESET>
@@ -713,7 +743,7 @@ Setting this to RESET will set the value to whatever newly registered
 	nicknames are set to (ie. the default value).
 
 
-2.2.13	LANGUAGE
+2.2.15	LANGUAGE
 ----------------
 
 SYNTAX: SET LANGUAGE <language|RESET>
@@ -762,7 +792,7 @@ by the IRC network staff, so you may ask an IRC operators what it is.
 There is also an absolute maximum above which you may not set your
 maximum to, once again, you may ask your IRC operators what this is.
 
-Any nickname set PRIVATE (2.2.11) will not show up in this list.
+Any nickname set PRIVATE (2.2.13) will not show up in this list.
 
 
 2.3.3	INFO
@@ -809,7 +839,7 @@ SYNTAX: IGNORE ADD <nickname>
         IGNORE LIST
 
 This maintains your ignore list.  Your ignore list is a list of nicknames
-that you will not accept memos from.  When the NOMEMO (2.2.10) option is
+that you will not accept memos from.  When the NOMEMO (2.2.12) option is
 set, the purpose of this list is reversed, and it becomes a list of
 nicknames that you will accept memos from (meaning you will deny anyone
 not on this list).
@@ -2165,7 +2195,7 @@ since services have been up) and how many clones are online.
 SYNTAX: LANGUAGES
 
 This will tell you what languages are available as settings for the
-LANGUAGE (2.2.13) nickname setting.  If you set your language to one
+LANGUAGE (2.2.15) nickname setting.  If you set your language to one
 of these languages, services will reply to all commands in that language.
 If there is help available in that language, it will also be used.
 

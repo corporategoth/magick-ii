@@ -2446,6 +2446,8 @@ Nick_Stored_t &Nick_Stored_t::operator=(const Nick_Stored_t & in)
     i_URL = in.i_URL;
     i_ICQ = in.i_ICQ;
     i_AIM = in.i_AIM;
+    i_MSN = in.i_MSN;
+    i_Yahoo = in.i_Yahoo;
     i_Description = in.i_Description;
     i_Comment = in.i_Comment;
     i_Host = in.i_Host;
@@ -2614,6 +2616,70 @@ void Nick_Stored_t::AIM(const mstring & in)
     else
     {
 	Magick::instance().nickserv.GetStored(i_Host)->AIM(in);
+    }
+}
+
+mstring Nick_Stored_t::MSN()
+{
+    NFT("Nick_Stored_t::MSN");
+    if (Host().empty())
+    {
+	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_MSN"));
+	RET(i_MSN);
+    }
+    else
+    {
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host)->MSN();
+
+	RET(retval);
+    }
+}
+
+void Nick_Stored_t::MSN(const mstring & in)
+{
+    FT("Nick_Stored_t::MSN", (in));
+    if (Host().empty())
+    {
+	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_MSN"));
+	MCB(i_MSN);
+	i_MSN = in;
+	MCE(i_MSN);
+    }
+    else
+    {
+	Magick::instance().nickserv.GetStored(i_Host)->MSN(in);
+    }
+}
+
+mstring Nick_Stored_t::Yahoo()
+{
+    NFT("Nick_Stored_t::Yahoo");
+    if (Host().empty())
+    {
+	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Yahoo"));
+	RET(i_Yahoo);
+    }
+    else
+    {
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host)->Yahoo();
+
+	RET(retval);
+    }
+}
+
+void Nick_Stored_t::Yahoo(const mstring & in)
+{
+    FT("Nick_Stored_t::Yahoo", (in));
+    if (Host().empty())
+    {
+	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Yahoo"));
+	MCB(i_Yahoo);
+	i_Yahoo = in;
+	MCE(i_Yahoo);
+    }
+    else
+    {
+	Magick::instance().nickserv.GetStored(i_Host)->Yahoo(in);
     }
 }
 
@@ -3148,6 +3214,8 @@ bool Nick_Stored_t::MakeHost()
 	i_URL = host->i_URL;
 	i_ICQ = host->i_ICQ;
 	i_AIM = host->i_AIM;
+	i_MSN = host->i_MSN;
+	i_Yahoo = host->i_Yahoo;
 	i_Description = host->i_Description;
 	i_Comment = host->i_Comment;
 	i_access = host->i_access;
@@ -3201,6 +3269,8 @@ bool Nick_Stored_t::Unlink()
 	i_URL = host->i_URL;
 	i_ICQ = host->i_ICQ;
 	i_AIM = host->i_AIM;
+	i_MSN = host->i_MSN;
+	i_Yahoo = host->i_Yahoo;
 	i_Description = host->i_Description;
 	i_Comment = host->i_Comment;
 	i_access = host->i_access;
@@ -4320,6 +4390,8 @@ SXP::Tag Nick_Stored_t::tag_Email("EMail");
 SXP::Tag Nick_Stored_t::tag_URL("URL");
 SXP::Tag Nick_Stored_t::tag_ICQ("ICQ");
 SXP::Tag Nick_Stored_t::tag_AIM("AIM");
+SXP::Tag Nick_Stored_t::tag_MSN("MSN");
+SXP::Tag Nick_Stored_t::tag_Yahoo("Yahoo");
 SXP::Tag Nick_Stored_t::tag_Description("Description");
 SXP::Tag Nick_Stored_t::tag_Comment("Comment");
 SXP::Tag Nick_Stored_t::tag_Host("Host");
@@ -4408,6 +4480,10 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(i_ICQ);
     if (pElement->IsA(tag_AIM))
 	pElement->Retrieve(i_AIM);
+    if (pElement->IsA(tag_MSN))
+	pElement->Retrieve(i_MSN);
+    if (pElement->IsA(tag_Yahoo))
+	pElement->Retrieve(i_Yahoo);
     if (pElement->IsA(tag_Description))
 	pElement->Retrieve(i_Description);
     if (pElement->IsA(tag_Comment))
@@ -4562,6 +4638,8 @@ void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_URL, i_URL);
     pOut->WriteElement(tag_ICQ, i_ICQ);
     pOut->WriteElement(tag_AIM, i_AIM);
+    pOut->WriteElement(tag_MSN, i_MSN);
+    pOut->WriteElement(tag_Yahoo, i_Yahoo);
     pOut->WriteElement(tag_Description, i_Description);
     pOut->WriteElement(tag_Comment, i_Comment);
     pOut->WriteElement(tag_Host, i_Host);
@@ -4619,6 +4697,8 @@ size_t Nick_Stored_t::Usage()
     retval += i_URL.capacity();
     retval += i_ICQ.capacity();
     retval += i_AIM.capacity();
+    retval += i_MSN.capacity();
+    retval += i_Yahoo.capacity();
     retval += i_Description.capacity();
     retval += i_Comment.capacity();
     retval += i_Host.capacity();
@@ -4662,25 +4742,25 @@ size_t Nick_Stored_t::Usage()
 void Nick_Stored_t::DumpB()
 {
     MB(0,
-       (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ, i_AIM, i_Description, i_Comment, i_Host, i_slaves.size(),
-	i_access.size(), i_ignore.size(), setting.Protect, lock.Protect, setting.Secure));
+       (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ, i_AIM, i_MSN, i_Yahoo, i_Description, i_Comment, i_Host,
+	i_slaves.size(), i_access.size(), i_ignore.size(), setting.Protect));
     MB(16,
-       (lock.Secure, setting.NoExpire, setting.NoMemo, lock.NoMemo, setting.Private, lock.Private, setting.PRIVMSG,
-	lock.PRIVMSG, setting.Language, lock.Language, setting.Forbidden, setting.Picture, i_Suspend_By, i_Suspend_Time,
-	i_LastSeenTime, i_LastRealName));
-    MB(32, (i_LastMask, i_LastQuit, i_UserDef.size()));
+       (lock.Protect, setting.Secure, lock.Secure, setting.NoExpire, setting.NoMemo, lock.NoMemo, setting.Private,
+	lock.Private, setting.PRIVMSG, lock.PRIVMSG, setting.Language, lock.Language, setting.Forbidden, setting.Picture,
+	i_Suspend_By, i_Suspend_Time));
+    MB(32, (i_LastSeenTime, i_LastRealName, i_LastMask, i_LastQuit, i_UserDef.size()));
 }
 
 void Nick_Stored_t::DumpE()
 {
     ME(0,
-       (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ, i_AIM, i_Description, i_Comment, i_Host, i_slaves.size(),
-	i_access.size(), i_ignore.size(), setting.Protect, lock.Protect, setting.Secure));
+       (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ, i_AIM, i_MSN, i_Yahoo, i_Description, i_Comment, i_Host,
+	i_slaves.size(), i_access.size(), i_ignore.size(), setting.Protect));
     ME(16,
-       (lock.Secure, setting.NoExpire, setting.NoMemo, lock.NoMemo, setting.Private, lock.Private, setting.PRIVMSG,
-	lock.PRIVMSG, setting.Language, lock.Language, setting.Forbidden, setting.Picture, i_Suspend_By, i_Suspend_Time,
-	i_LastSeenTime, i_LastRealName));
-    ME(32, (i_LastMask, i_LastQuit, i_UserDef.size()));
+       (lock.Protect, setting.Secure, lock.Secure, setting.NoExpire, setting.NoMemo, lock.NoMemo, setting.Private,
+	lock.Private, setting.PRIVMSG, lock.PRIVMSG, setting.Language, lock.Language, setting.Forbidden, setting.Picture,
+	i_Suspend_By, i_Suspend_Time));
+    ME(32, (i_LastSeenTime, i_LastRealName, i_LastMask, i_LastQuit, i_UserDef.size()));
 }
 
 // =======================================================================
@@ -4780,6 +4860,14 @@ void NickServ::AddCommands()
 						 NickServ::do_set_ICQ);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* AIM*", Magick::instance().commserv.REGD_Name(),
 						 NickServ::do_set_AIM);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* MSN*", Magick::instance().commserv.REGD_Name(),
+						 NickServ::do_set_MSN);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* MIM*", Magick::instance().commserv.REGD_Name(),
+						 NickServ::do_set_MSN);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* YAHOO*", Magick::instance().commserv.REGD_Name(),
+						 NickServ::do_set_Yahoo);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* YIM*", Magick::instance().commserv.REGD_Name(),
+						 NickServ::do_set_Yahoo);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* DESC*", Magick::instance().commserv.REGD_Name(),
 						 NickServ::do_set_Description);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* COMM*", Magick::instance().commserv.SOP_Name(),
@@ -4927,6 +5015,10 @@ void NickServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* WEB*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* ICQ*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* AIM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* MSN*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* MIM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* YAHOO*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* YIM*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* DESC*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* COMM*", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* PIC*", Magick::instance().commserv.REGD_Name());
@@ -5960,6 +6052,10 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	    SEND(mynick, source, "NS_INFO/ICQ", (nick->ICQ()));
 	if (!nick->AIM().empty())
 	    SEND(mynick, source, "NS_INFO/AIM", (nick->AIM()));
+	if (!nick->MSN().empty())
+	    SEND(mynick, source, "NS_INFO/MSN", (nick->MSN()));
+	if (!nick->Yahoo().empty())
+	    SEND(mynick, source, "NS_INFO/YAHOO", (nick->Yahoo()));
 	if (!nick->Description().empty())
 	    SEND(mynick, source, "NS_INFO/DESCRIPTION", (nick->Description()));
 	if (!nick->Comment().empty() && (isoper || issop))
@@ -7246,6 +7342,76 @@ void NickServ::do_set_AIM(const mstring & mynick, const mstring & source, const 
 	LOG(LM_DEBUG, "NICKSERV/UNSET",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("NS_SET/AIM"), source));
+    }
+}
+
+void NickServ::do_set_MSN(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    FT("NickServ::do_set_MSN", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring newvalue = params.ExtractWord(3, " ");
+
+    if (newvalue.IsSameAs("none", true))
+	newvalue.erase();
+
+    Magick::instance().nickserv.GetStored(source)->MSN(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
+    if (!newvalue.empty())
+    {
+	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (Magick::instance().getMessage(source, "NS_SET/MSN"), newvalue));
+	LOG(LM_DEBUG, "NICKSERV/SET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage("NS_SET/MSN"), source, newvalue));
+    }
+    else
+    {
+	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (Magick::instance().getMessage(source, "NS_SET/MSN")));
+	LOG(LM_DEBUG, "NICKSERV/UNSET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage("NS_SET/MSN"), source));
+    }
+}
+
+void NickServ::do_set_Yahoo(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    FT("NickServ::do_set_Yahoo", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring newvalue = params.ExtractWord(3, " ");
+
+    if (newvalue.IsSameAs("none", true))
+	newvalue.erase();
+
+    Magick::instance().nickserv.GetStored(source)->Yahoo(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
+    if (!newvalue.empty())
+    {
+	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (Magick::instance().getMessage(source, "NS_SET/YAHOO"), newvalue));
+	LOG(LM_DEBUG, "NICKSERV/SET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage("NS_SET/YAHOO"), source, newvalue));
+    }
+    else
+    {
+	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (Magick::instance().getMessage(source, "NS_SET/YAHOO")));
+	LOG(LM_DEBUG, "NICKSERV/UNSET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage("NS_SET/YAHOO"), source));
     }
 }
 
