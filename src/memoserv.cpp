@@ -241,7 +241,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    {
 		iter->Read(whoami);
 		output << "#" << i << " from " << iter->Sender() << " to "
-		    << iter->Channel() << " sent " << iter->Time().Ago();
+		    << iter->Channel() << " sent " << iter->Time().Ago() << " ago.";
 		::send(mynick, source, output);
 		output = "";
 		unsigned int sentsize = 0;
@@ -295,7 +295,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		    {
 			iter->Read(whoami);
 			output << "#" << i << " from " << iter->Sender() << " to "
-			    << iter->Channel() << " sent " << iter->Time().Ago();
+			    << iter->Channel() << " sent " << iter->Time().Ago() << " ago.";
 			::send(mynick, source, output);
 			output = "";
 			unsigned int sentsize = 0;
@@ -701,7 +701,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	    else
 		output << "*";
 	    output << "#" << i << " from " << iter->Sender() << " to "
-		<< iter->Channel() << " sent " << iter->Time().Ago() << " \"";
+		<< iter->Channel() << " sent " << iter->Time().Ago() << " ago - \"";
 	    if (iter->Text().size() > 20)
 		output << iter->Text().SubString(0, 19) << "...\"";
 	    else
@@ -737,7 +737,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	    else
 		output << "*";
 	    output << "#" << i << " from " << iter->Sender() <<
-		" sent " << iter->Time().Ago() << " \"";
+		" sent " << iter->Time().Ago() << " ago - \"";
 	    if (iter->Text().size() > 20)
 		output << iter->Text().SubString(0, 19) << "...\"";
 	    else
