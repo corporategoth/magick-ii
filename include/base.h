@@ -24,6 +24,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/03/29 09:41:17  prez
+** Attempting to fix thread problem with mBase, and added notification
+** of new memos on join of channel or signon to network.
+**
 ** Revision 1.55  2000/03/19 08:50:52  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -76,7 +80,7 @@ protected:
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
     void message_i(const mstring& message);
 public:
-    mBaseTask() : activation_queue_(&message_queue_) {}
+    mBaseTask() :  activation_queue_(&message_queue_) {}
     virtual int open(void *in=0);
     virtual int svc(void);
     void message(const mstring& message);

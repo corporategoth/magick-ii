@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/03/29 09:41:19  prez
+** Attempting to fix thread problem with mBase, and added notification
+** of new memos on join of channel or signon to network.
+**
 ** Revision 1.72  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -1243,6 +1247,23 @@ void Nick_Stored_t::Signon(mstring realname, mstring mask)
     FT("Nick_Stored_t::Signon", (realname, mask));
     i_LastRealName = realname;
     i_LastMask = mask;
+
+    if (Parent->memoserv.IsNick(i_Name))
+    {
+	list<Memo_t>::iterator iter;
+	unsigned int count = 0;
+	for (iter = Parent->memoserv.nick[i_Name.LowerCase()].begin();
+		iter != Parent->memoserv.nick[i_Name.LowerCase()].end();
+		iter++)
+	{
+	    if (!iter->IsRead())
+		count++;
+	}
+	if (count)
+	    send(Parent->memoserv.FirstName(), i_Name,
+		Parent->getMessage(i_Name, "MS_STATUS/NS_UNREAD"),
+		count, Parent->memoserv.FirstName().c_str());
+    }
 }
 
 

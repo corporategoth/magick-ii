@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2000/03/29 09:41:17  prez
+** Attempting to fix thread problem with mBase, and added notification
+** of new memos on join of channel or signon to network.
+**
 ** Revision 1.107  2000/03/28 16:20:57  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -197,7 +201,6 @@ void mBase::push_message(const mstring& message)
 	    CP(("Failed to create initial thread"));
 	    return;
 	}
-	TaskOpened = true;
     }
     CH(T_Chatter::From,message);
     BaseTask.message(message);
@@ -214,10 +217,9 @@ void mBase::init()
 	    CP(("Failed to create initial thread"));
 	    return;
 	}
-	TaskOpened = true;
     }
-    BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark()*sizeof(ACE_Method_Object *));
-    BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
+    BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * sizeof(ACE_Method_Object *));
+    BaseTask.message_queue_.low_water_mark(0);
 }
 
 bool mBase::signon(const mstring &nickname)
@@ -569,10 +571,12 @@ void mBaseTask::message(const mstring& message)
     if(message_queue_.is_full())
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	message_queue_.high_water_mark(Parent->config.High_Water_Mark()*(thr_count()+1)*sizeof(ACE_Method_Object *));
-	message_queue_.low_water_mark(message_queue_.high_water_mark());
 	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
 	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
+
+	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()) * sizeof(ACE_Method_Object *));
+	message_queue_.low_water_mark(((Parent->config.High_Water_Mark() * (thr_count()-2)) +
+					Parent->config.Low_Water_Mark()) * sizeof(ACE_Method_Object *));
     }
     activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
 }
@@ -648,12 +652,15 @@ void mBaseTask::message_i(const mstring& message)
     else	// Non PRIVMSG and NOTICE
 	Parent->server.execute(data);
 
-    if(thr_count()>1&&message_queue_.message_count()<
-	    Parent->config.High_Water_Mark()*(thr_count()-2)+Parent->config.Low_Water_Mark())
+    if(message_queue_.message_count() < message_queue_.low_water_mark())
     {
-	message_queue_.high_water_mark(Parent->config.High_Water_Mark()*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
-	message_queue_.low_water_mark(message_queue_.high_water_mark());
 	COM(("Low water mark reached, killing thread."));
+	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()-1) * sizeof(ACE_Method_Object *));
+	if (thr_count() == 2)
+	    message_queue_.low_water_mark(0);
+	else
+	    message_queue_.low_water_mark(((Parent->config.High_Water_Mark() * (thr_count()-3)) +
+					Parent->config.Low_Water_Mark()) * sizeof(ACE_Method_Object *));
 	i_shutdown();
     }
 }

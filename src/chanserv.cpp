@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.157  2000/03/29 09:41:17  prez
+** Attempting to fix thread problem with mBase, and added notification
+** of new memos on join of channel or signon to network.
+**
 ** Revision 1.156  2000/03/28 16:20:57  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -1173,6 +1177,26 @@ void Chan_Stored_t::Join(mstring nick)
 	    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 		Parent->chanserv.notice(nick, "[" + i_Name + "] " + Message->Entry());
 	}
+    }
+
+    if (nstored != NULL && GetAccess(nick, "MEMOREAD") &&
+	Parent->memoserv.IsChannel(i_Name))
+    {
+	MLOCK(("MemoServ", "channel", i_Name.c_str()));
+	list<News_t>::iterator iter;
+	unsigned int count = 0;
+	for (iter = Parent->memoserv.channel[i_Name.LowerCase()].begin();
+		iter != Parent->memoserv.channel[i_Name.LowerCase()].end();
+		iter++)
+	{
+	    if (!iter->IsRead(target))
+		count++;
+	}
+	if (count)
+	    send(Parent->memoserv.FirstName(), nick,
+		Parent->getMessage(nick, "MS_STATUS/CS_UNREAD"),
+		i_Name.c_str(), count,
+		Parent->memoserv.FirstName().c_str(), i_Name.c_str());
     }
 }
 

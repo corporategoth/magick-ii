@@ -752,10 +752,10 @@ ONOFF_ONE          =Service %s has been turned %s.
 ;
 [MS_STATUS]
 CS_EMPTY           =Channel %s has no news articles.
-CS_UNREAD          =Channel %s has %d new news article%s.  Type /MSG %s LIST %s to list them.
+CS_UNREAD          =Channel %s has %d new news article(s).  Type /MSG %s LIST %s to list them.
 CS_NOUNREAD        =Channel %s has no unread news articles.
 NS_EMPTY           =You have no memos.
-NS_UNREAD          =You have %d new memo%s.  Type /MSG %s LIST to list them.
+NS_UNREAD          =You have %d new memo(s).  Type /MSG %s LIST to list them.
 NS_NOUNREAD        =You have no news memos.
 IGNORE             =Nickname %s is ignoring your memos.
 TRUNCATE           =Message truncated at "...%s".  Type /MSG %s CONTINUE <text> to continue message.

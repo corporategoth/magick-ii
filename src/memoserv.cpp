@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/03/29 09:41:19  prez
+** Attempting to fix thread problem with mBase, and added notification
+** of new memos on join of channel or signon to network.
+**
 ** Revision 1.46  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -124,7 +128,12 @@ void News_t::operator=(const News_t &in)
 bool News_t::IsRead(mstring name)
 {
     FT("News_t::IsRead", (name));
-    bool retval (i_Read.find(name.LowerCase())!=i_Read.end());
+    mstring target = name;
+    if (!Parent->nickserv.IsStored(name))
+	RET(false);
+    if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+	target = Parent->nickserv.stored[name.LowerCase()].Host();
+    bool retval (i_Read.find(target.LowerCase())!=i_Read.end());
     RET(retval);
 }
 
@@ -132,14 +141,24 @@ bool News_t::IsRead(mstring name)
 void News_t::Read(mstring name)
 {
     FT("News_t::Read", (name));
-    i_Read.insert(name.LowerCase());
+    mstring target = name;
+    if (!Parent->nickserv.IsStored(name))
+	return;
+    if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+	target = Parent->nickserv.stored[name.LowerCase()].Host();
+    i_Read.insert(target.LowerCase());
 }
 
 
 void News_t::Unread(mstring name)
 {
     FT("News_t::Unread", (name));
-    i_Read.erase(name.LowerCase());
+    mstring target = name;
+    if (!Parent->nickserv.IsStored(name))
+	return;
+    if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+	target = Parent->nickserv.stored[name.LowerCase()].Host();
+    i_Read.erase(target.LowerCase());
 }
 
 MemoServ::MemoServ()

@@ -156,7 +156,7 @@ CORE
 x ini loading mechanism, allows for local and global ini files. (local
 	overrides global ini values but global values are unmodifiable)
 
-+ All messages from IRCD read into main thread, which pushes them to "parser" thread,
+x All messages from IRCD read into main thread, which pushes them to "parser" thread,
 	responds to all the numeric codes, and passes on messages
 	that goto the services clients goto the generic services thread.
 	THRESHOLD:  ??    MAX:  ??
@@ -218,7 +218,7 @@ x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
 	keep a map of servers,timerid's to make this work.
 
 - Custom thread class: unfeasible, ACE_Tasks used, note: Attach and Detach must
-	be used (see chanserv::execute for an example) 
+	be used (see chanserv::execute for an example)
 
 * Priority Enqueing in mbase dependant upon service. include time-in value when
 	enqueueing message, when dequeueing, check now-timeout<time-in. if ! then
@@ -255,7 +255,7 @@ x Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mD
 	Hour() = 13, Min() = 12, Sec() = 43, Msec() = 905
 
 * Redo the locking with some macros to setup/emulate  a try..finally type
-	scenario on gcc, msvc and bcb . Note Function macros only, so that we don't get 
+	scenario on gcc, msvc and bcb . Note Function macros only, so that we don't get
 	that damn triplet argument fuckup again.
 
 Scripting
