@@ -178,7 +178,8 @@ T_Functions::T_Functions(const mstring &name)
 {
     ShortLevel(Functions);
     m_name+=name;
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "()";
 	tid->WriteOut(message);
@@ -191,7 +192,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
     m_name=name;
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
@@ -209,7 +211,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     ShortLevel(Functions);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     tid->indentdown(); 
     if (IsOn(tid)) {
 	mstring message;
@@ -242,7 +245,8 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 void T_CheckPoint::common(const char *input)
 {
     ShortLevel(CheckPoint);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -258,7 +262,8 @@ void T_CheckPoint::common(const char *input)
 T_Modify::T_Modify(const mVarArray &args)
 {
     ShortLevel(Modify);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -274,7 +279,8 @@ T_Modify::T_Modify(const mVarArray &args)
 void T_Modify::End(const mVarArray &args)
 {
     ShortLevel(Modify);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -292,7 +298,8 @@ void T_Modify::End(const mVarArray &args)
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
     ShortLevel(Chatter);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
@@ -325,7 +332,8 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
     ShortLevel(Locking);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) 
     {
 	locktype = ltype;
@@ -347,7 +355,8 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking() {
     ShortLevel(Locking);
-    tid = mThread::find();
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
     if (IsOn(tid)) {
 	if (strlen(name)) {
     	    mstring message;
