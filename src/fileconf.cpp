@@ -418,18 +418,24 @@ void wxFileConfig::SetPath(const mstring& strPath)
 
   // change current group
   size_t n;
+  m_strPath.Empty();
   m_pCurrentGroup = m_pRootGroup;
   for ( n = 0; n < aParts.size(); n++ ) {
     ConfigGroup *pNextGroup = m_pCurrentGroup->FindSubgroup(aParts[n]);
     if ( pNextGroup == NULL )
-      pNextGroup = m_pCurrentGroup->AddSubgroup(aParts[n]);
-    m_pCurrentGroup = pNextGroup;
-  }
-
-  // recombine path parts in one variable
-  m_strPath.Empty();
-  for ( n = 0; n < aParts.size(); n++ ) {
-    m_strPath << wxCONFIG_PATH_SEPARATOR << aParts[n];
+      if (wxConfigBase::CreateOnDemand() )
+      {
+        pNextGroup = m_pCurrentGroup->AddSubgroup(aParts[n]);
+      }
+      else
+      {
+        n=aParts.size();
+      }
+    if (n<aParts.size())
+    {
+      m_pCurrentGroup = pNextGroup;
+      m_strPath << wxCONFIG_PATH_SEPARATOR << aParts[n];
+    }
   }
 }
 
@@ -518,7 +524,11 @@ bool wxFileConfig::HasGroup(const mstring& strName) const
   FT("wxFileConfig::HasGroup", (strName));
   wxConfigPathChanger path(this, strName);
 
-  ConfigGroup *pGroup = m_pCurrentGroup->FindSubgroup(path.Name());
+  ConfigGroup *pGroup;
+  if (strName.Contains("/"))
+    pGroup = m_pCurrentGroup->FindSubgroup(path.Name());
+  else
+    pGroup = m_pCurrentGroup;
   RET(pGroup != NULL);
 }
 

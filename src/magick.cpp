@@ -469,39 +469,26 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 {
     FT("Magick::getHelp", (nick, name));
 
-    if (nickserv.IsStored(nick) &&
-	nickserv.stored[nick.LowerCase()].IsOnline())
-    {
-	CP(("Using USER-DEIFNED language."));
-	NRET(vector<mstring>, getHelpL(nickserv.stored[nick.LowerCase()].Language(), name));
-    }
-    else
-    {
-	CP(("Using DEFAULT language."));
-	NRET(vector<mstring>, getHelpL(nickserv.DEF_Language(), name));
-    }
-}
-
-vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
-{
-    FT("Magick::getHelpL", (lang, name));
-
     vector<mstring> helptext;
 
     // Load requested language if its NOT loaded.
     // and then look for the Help of THAT type.
-    CP(("Trying SPECIFIED language ..."));
-    if (lang != "" && lang != "DEFAULT")
+    if (nick != "" && nickserv.IsStored(nick) &&
+	nickserv.stored[nick.LowerCase()].IsOnline())
     {
+	CP(("Trying SPECIFIED language ..."));
 	WLOCK(("Magick","LoadHelp"));
 
-	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+lang.LowerCase()+".hlp");
+	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+nickserv.stored[nick.LowerCase()].Language().LowerCase()+".hlp");
 
-	bool bContEntries;
+	bool bContEntries, oldCOD, sendline;
 	long dummy=0;
 	int i;
 	mstring entryname, tempstr;
-	vector<mstring> entries;
+	mstring yescom, nocom, text;
+
+	oldCOD = wxConfigBase::CreateOnDemand();
+	wxConfigBase::CreateOnDemand(false);
 
 	if (fconf.HasGroup(name.UpperCase()))
 	{
@@ -509,30 +496,51 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
 	    while(bContEntries)
 	    {
-		entries.push_back(name.UpperCase()+"/"+entryname.UpperCase());
+		fconf.Read(entryname.UpperCase(), &tempstr, "");
+		sendline = true;
+		yescom = tempstr.ExtractWord(1, ":");
+		nocom  = tempstr.ExtractWord(2, ":");
+		text   = tempstr.After(":", 2);
+		if (text == "")
+		    text = " ";
+		if (yescom != "")
+		    for (i=0; sendline && i<yescom.WordCount(" "); i++)
+		    {
+			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
+			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    sendline = false;
+		    }
+		if (nocom != "")
+		    for (i=0; sendline && i<nocom.WordCount(" "); i++)
+		    {
+			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
+			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    sendline = false;
+		    }
+		if (sendline)
+		    helptext.push_back(text);
 		bContEntries=fconf.GetNextEntry(entryname,dummy);
 	    }
 	    fconf.SetPath("/");
-
-	    for (i=0; i<entries.size(); i++)
-	    {
-		fconf.Read(entries[i], &tempstr, "");
-		helptext.push_back(tempstr);
-	    }
 	}
+	wxConfigBase::CreateOnDemand(oldCOD);
     }
 
     if (!helptext.size())
     {
+	CP(("Trying DEFAULT language ..."));
 	WLOCK(("Magick","LoadHelp"));
 
 	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+nickserv.DEF_Language().LowerCase()+".hlp");
 
-	bool bContEntries;
-	long dummy=0;
+	bool bContEntries, oldCOD, sendline;
 	int i;
+	long dummy=0;
 	mstring entryname, tempstr;
-	vector<mstring> entries;
+	mstring yescom, nocom, text;
+
+	oldCOD = wxConfigBase::CreateOnDemand();
+	wxConfigBase::CreateOnDemand(false);
 
 	if (fconf.HasGroup(name.UpperCase()))
 	{
@@ -540,16 +548,34 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
 	    while(bContEntries)
 	    {
-		entries.push_back(name.UpperCase()+"/"+entryname.UpperCase());
+		fconf.Read(entryname.UpperCase(), &tempstr, "");
+		sendline = true;
+		yescom = tempstr.ExtractWord(1, ":");
+		nocom  = tempstr.ExtractWord(2, ":");
+		text   = tempstr.After(":", 2);
+		if (text == "")
+		    text = " ";
+		if (yescom != "")
+		    for (i=0; sendline && i<yescom.WordCount(" "); i++)
+		    {
+			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
+			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    sendline = false;
+		    }
+		if (nocom != "")
+		    for (i=0; sendline && i<nocom.WordCount(" "); i++)
+		    {
+			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
+			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    sendline = false;
+		    }
+		if (sendline)
+		    helptext.push_back(text);
 		bContEntries=fconf.GetNextEntry(entryname,dummy);
 	    }
 	    fconf.SetPath("/");
-	    for (i=0; i<entries.size(); i++)
-	    {
-		fconf.Read(entries[i], &tempstr, "");
-		helptext.push_back(tempstr);
-	    }
 	}
+	wxConfigBase::CreateOnDemand(oldCOD);
     }
 
     if (!helptext.size())
@@ -557,7 +583,7 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 	mstring tmpstr, tmpstr2;
 	tmpstr2 = name;
 	tmpstr2.Replace(mstring("/"), mstring(" "));
-	tmpstr.Format(Parent->getMessageL(lang, "ERR_SITUATION/NOHELP"),
+	tmpstr.Format(Parent->getMessage(nick, "ERR_SITUATION/NOHELP"),
 	    tmpstr2.After(" ").c_str());
 	helptext.push_back(tmpstr);
     }

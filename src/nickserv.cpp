@@ -3053,14 +3053,10 @@ void NickServ::do_Help(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_Help", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 2)
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
-	return;
-    }
 
-    mstring HelpTopic = Parent->nickserv.GetInternalName() + " " + params.After(" ");
+    mstring HelpTopic = Parent->nickserv.GetInternalName();
+    if (params.WordCount(" ") > 1)
+	HelpTopic += " " + params.After(" ");
     HelpTopic.Replace(" ", "/");
     vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
 					

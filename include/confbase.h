@@ -82,7 +82,9 @@ public:
     // the created object and also sets it as ms_pConfig.
   static wxConfigBase *Create();
     // should Get() try to create a new log object if the current one is NULL?
-  static void DontCreateOnDemand();
+  static void CreateOnDemand(bool in);
+    // Return status of above command
+  static bool CreateOnDemand();
 
   // ctor & virtual dtor
     // environment variable expansion is on by default

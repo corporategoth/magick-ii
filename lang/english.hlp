@@ -19,20 +19,44 @@
 ; ensure that ALL tags are in order -- the actual name of the
 ; tags does not matter.
 ;
-; Each entry contains 3 fields, First is 'committees do display
-; for', if left blank, it will assume ALL.  If this is set, a
-; user must be on this committee to see this line of the help
-; text.  The second is 'committees not to display for', if left
-; blank, it will assume none.  If this is set, if a user is on
-; this committee, then it will not display this line of the help
-; text.  The second field overrides the first.  The last field
-; is the actual text of the help file, as displayed to the user.
+; Each entry has 3 fields, seperated by a colon (':').
+;    1. Committees to display for:
+;       If specified, the user must be on ALL committees you
+;       specify in this field, committees are seperated by a
+;       space.  If not specified, it will assume 'ALL'.
+;    2. Committees not to display for:
+;       If specified, the user may not be on ANY of the
+;       committees you specify in this field, committees are
+;       seperated by a space.  If not specify it will assume
+;       none (ie. do not deny anone).
+;    3. The actual text of the help entry, which will be
+;       displayed to the user verbatum.  If this field is
+;       left blank, a blank line will be sent to the user.
+;       This field MAY contain colons (':'), they will be
+;       treated like any other character.
 ;
 ; It is usually not a good idea to output anything more than
 ; about 15-20 lines to a user unless absolutely nessicary.  You
 ; should be descriptive about what the command does, and how
 ; to use it.
 ;
+
+[NICKSERV]
+01=::NickServ is a service that allows you to register your
+02=::nickname so that it may not be taken by anyone else.
+03=::
+04=::NickServ allows you to use the following commands:
+05=::    HELP         REGISTER     LINK         IDENTIFY
+06=::    INFO         GHOST        RECOVER      LIST
+07=REGD::    HOST         SLAVES       ACCESS       IGNORE
+08=REGD::    SET
+09=SOP::And as a Services Operator, the following commands:
+10=SOP::    GETPASS      FORBID       LOCK         UNLOCK
+11=SOP::    SUSPEND      UNSUSPEND
+12=::
+13=::You may request help on the syntax and functionalty
+14=::of any and all of the above commands by specifying
+15=::the command name after the HELP request.
 
 [NICKSERV/REGISTER]
 01=::REGISTER <password>
@@ -54,4 +78,3 @@
 17=::total control over it, including forbidding you access
 18=::to it.  If you have lost your password, you can contact
 19=::a Services Operator to retrieve it for you.
-

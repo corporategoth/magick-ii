@@ -448,10 +448,16 @@ wxConfigBase *wxConfigBase::Get()
     NRET(wxConfigBase, ms_pConfig); 
 }
 
-void wxConfigBase::DontCreateOnDemand() 
+void wxConfigBase::CreateOnDemand(bool in) 
 {
-    NFT("wxConfigBase::DontCreateOnDemand");
-    ms_bAutoCreate = false; 
+    FT("wxConfigBase::CreateOnDemand", (in));
+    ms_bAutoCreate = in; 
+}
+
+bool wxConfigBase::CreateOnDemand() 
+{
+    NFT("wxConfigBase::CreateOnDemand");
+    RET(ms_bAutoCreate); 
 }
 
 bool wxConfigBase::Exists(const mstring& strName) const 
