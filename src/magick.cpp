@@ -930,6 +930,8 @@ void Magick::get_config_values()
     in.Read(ts_Config+"CHECKTIME",&config.checktime,5);
     in.Read(ts_Config+"PING_FREQUENCY",&config.ping_frequency,30);
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
+    in.Read(ts_Config+"LISTSIZE",&config.listsize, 50);
+    in.Read(ts_Config+"MAXLIST",&config.maxlist, 250);
     in.Read(ts_Config+"STARTUP_THREADS",&config.startup_threads, 2);
     in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);
     in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 25);

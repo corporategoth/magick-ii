@@ -3009,24 +3009,37 @@ void NickServ::AddCommands()
     NFT("NickServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    // These simply throw the command back onto the map
-    // with 2 paramaters (seperated by a space)  These
-    // MUST be specified without '*' wildcards.
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET", Parent->commserv.REGD_Name(), do_1_2param);
+		"HELP", Parent->commserv.ALL_Name(), NickServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK", Parent->commserv.REGD_Name(), do_1_2param);
+		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC", Parent->commserv.REGD_Name(), do_1_2param);
+		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACCESS", Parent->commserv.REGD_Name(), do_1_2param);
+		"LINK*", Parent->commserv.ALL_Name(), NickServ::do_Link);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN", Parent->commserv.REGD_Name(), do_1_2param);
+		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGNORE", Parent->commserv.REGD_Name(), do_1_2param);
+		"*HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"REC*", Parent->commserv.ALL_Name(), NickServ::do_Recover);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
 
-    // Dual paramater options (seperated by a space) should
-    // come before ALL single paramater wildcarded options.
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* CUR*", Parent->commserv.REGD_Name(), NickServ::do_access_Current);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3068,7 +3081,7 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* SEC*", Parent->commserv.REGD_Name(), NickServ::do_set_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* NOEXP*", Parent->commserv.REGD_Name(), NickServ::do_set_NoExpire);
+		"SET* NOEX*", Parent->commserv.REGD_Name(), NickServ::do_set_NoExpire);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* NOMEMO", Parent->commserv.REGD_Name(), NickServ::do_set_NoMemo);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3084,8 +3097,6 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_lock_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK NOEXP*", Parent->commserv.SOP_Name(), NickServ::do_lock_NoExpire);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK NOMEMO", Parent->commserv.SOP_Name(), NickServ::do_lock_NoMemo);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK PRIVM*", Parent->commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
@@ -3096,36 +3107,26 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_lock_Language);
 
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"HELP", Parent->commserv.ALL_Name(), NickServ::do_Help);
+		"SET* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
+		"SET*", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
+		"LOCK", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"LINK*", Parent->commserv.ALL_Name(), NickServ::do_Link);
+		"ACC* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
+		"ACC*", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"*HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
+		"IGN* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"REC*", Parent->commserv.ALL_Name(), NickServ::do_Recover);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
+		"IGN*", Parent->commserv.REGD_Name(), do_1_2param);
+
 }
 
 void NickServ::RemCommands()
@@ -3742,12 +3743,56 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 {
     FT("NickServ::do_List", (mynick, source, params));
 
+    int listsize, i, count;
+    mstring mask;
+
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
-	return;
+	mask = "*";
+	listsize = Parent->config.Listsize();
     }
+    else if (params.WordCount(" ") < 3)
+    {
+	mask = params.ExtractWord(2, " ");
+	listsize = Parent->config.Listsize();
+    }
+    else
+    {
+	mask = params.ExtractWord(2, " ");
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	if (listsize > Parent->config.Maxlist())
+	{
+	    mstring output;
+	    output << "You may only list up to " << Parent->config.Maxlist()
+		    << " entries per line.";
+	    ::send(mynick, source, output);
+	    return;
+	}
+    }
+
+    ::send(mynick, source, "Nicknames matching " + mask + ":");
+    map<mstring, Nick_Stored_t>::iterator iter;
+
+    for (iter = Parent->nickserv.stored.begin(), i=0, count = 0;
+			iter != Parent->nickserv.stored.end(); iter++)
+    {
+	if (iter->second.Name().Matches(mask))
+	{
+	    if (i < listsize && iter->second.Host() == "" && (!iter->second.Private() ||
+		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+	    {
+		::send(mynick, source, iter->second.Name() + "  (" +
+					iter->second.LastAllMask() + ")");
+		i++;
+	    }
+	    count++;
+	}
+    }
+    mstring output;
+    output << IRC_Bold << i << IRC_Off << " of " << count << " entries shown.";
+    ::send(mynick, source, output);
 }
 
 void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)

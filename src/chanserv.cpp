@@ -2762,8 +2762,174 @@ void ChanServ::AddCommands()
     NFT("ChanServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-//  Parent->commands.AddSystemCommand(GetInternalName(),
-//		    "TRACE", "ALL", OperServ::do_Trace);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HELP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "REG*", Parent->commserv.REGD_Name(), ChanServ::do_Register);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "DROP", Parent->commserv.REGD_Name(), ChanServ::do_Drop);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.REGD_Name(), ChanServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "INFO*", Parent->commserv.ALL_Name(), ChanServ::do_Info);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LIST", Parent->commserv.ALL_Name(), ChanServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SUSP*", Parent->commserv.SOP_Name(), ChanServ::do_Suspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNSUSP*", Parent->commserv.SOP_Name(), ChanServ::do_UnSuspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FORB*", Parent->commserv.SOP_Name(), ChanServ::do_Forbid);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*MODE", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "OP*", Parent->commserv.REGD_Name(), ChanServ::do_Op);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "D*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeOp);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_Voice);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "D*VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_DeVoice);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_Topic);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "KICK*", Parent->commserv.REGD_Name(), ChanServ::do_Kick);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "REM*", Parent->commserv.REGD_Name(), ChanServ::do_AnonKick);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "USER*", Parent->commserv.REGD_Name(), ChanServ::do_Users);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "INV*", Parent->commserv.REGD_Name(), ChanServ::do_Invite);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNBAN*", Parent->commserv.REGD_Name(), ChanServ::do_Unban);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*CLEAR*", Parent->commserv.REGD_Name(), ChanServ::do_Clear);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV* SET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Set);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV* RESET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Reset);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV LIST", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV VIEW", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* ADD", Parent->commserv.REGD_Name(), ChanServ::do_access_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_access_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* REM*", Parent->commserv.REGD_Name(), ChanServ::do_access_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* LIST", Parent->commserv.REGD_Name(), ChanServ::do_access_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_access_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK ADD", Parent->commserv.REGD_Name(), ChanServ::do_akick_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK DEL*", Parent->commserv.REGD_Name(), ChanServ::do_akick_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK REM*", Parent->commserv.REGD_Name(), ChanServ::do_akick_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK LIST", Parent->commserv.REGD_Name(), ChanServ::do_akick_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK VIEW", Parent->commserv.REGD_Name(), ChanServ::do_akick_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET* ADD", Parent->commserv.REGD_Name(), ChanServ::do_greet_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_greet_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET* REM*", Parent->commserv.REGD_Name(), ChanServ::do_greet_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET* LIST", Parent->commserv.REGD_Name(), ChanServ::do_greet_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_greet_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* FOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_Founder);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* COFOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_CoFounder);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* DESC*", Parent->commserv.REGD_Name(), ChanServ::do_set_Description);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* PASS*", Parent->commserv.REGD_Name(), ChanServ::do_set_Password);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* EMAIL", Parent->commserv.REGD_Name(), ChanServ::do_set_Email);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* URL", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* WWW*", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* WEB*", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* COMM*", Parent->commserv.SOP_Name(), ChanServ::do_set_Comment);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* M*LOCK", Parent->commserv.REGD_Name(), ChanServ::do_set_Mlock);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* BAN*TIME", Parent->commserv.REGD_Name(), ChanServ::do_set_BanTime);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* KEEP*", Parent->commserv.REGD_Name(), ChanServ::do_set_KeepTopic);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_set_TopicLock);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* PRIV*", Parent->commserv.REGD_Name(), ChanServ::do_set_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* SEC*OP*", Parent->commserv.REGD_Name(), ChanServ::do_set_SecureOps);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* SEC*", Parent->commserv.REGD_Name(), ChanServ::do_set_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Parent->commserv.SOP_Name(), ChanServ::do_set_NoExpire);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* RES*", Parent->commserv.REGD_Name(), ChanServ::do_set_Restricted);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* *JOIN*", Parent->commserv.REGD_Name(), ChanServ::do_set_Join);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* REV*", Parent->commserv.REGD_Name(), ChanServ::do_set_Revenge);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK M*LOCK", Parent->commserv.REGD_Name(), ChanServ::do_lock_Mlock);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK BAN*TIME", Parent->commserv.REGD_Name(), ChanServ::do_lock_BanTime);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK KEEP*", Parent->commserv.REGD_Name(), ChanServ::do_lock_KeepTopic);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_lock_TopicLock);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOOOCK PRIV*", Parent->commserv.REGD_Name(), ChanServ::do_lock_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK SEC*OP*", Parent->commserv.REGD_Name(), ChanServ::do_lock_SecureOps);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK SEC*", Parent->commserv.REGD_Name(), ChanServ::do_lock_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK RES*", Parent->commserv.REGD_Name(), ChanServ::do_lock_Restricted);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK *JOIN*", Parent->commserv.REGD_Name(), ChanServ::do_lock_Join);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK REV*", Parent->commserv.REGD_Name(), ChanServ::do_lock_Revenge);
+
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK", Parent->commserv.SOP_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV*", Parent->commserv.REGD_Name(), do_1_3param);
 }
 
 void ChanServ::RemCommands()
@@ -2816,6 +2982,454 @@ void ChanServ::execute(const mstring & data)
 
     mThread::ReAttach(tt_mBase);
 }
+
+void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Help", (mynick, source, params));
+}
+
+void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Register", (mynick, source, params));
+
+    mstring message = params.Before(" ");
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring password  = params.ExtractWord(3, " ");
+    mstring desc      = params.After(" ", 3);
+
+    if (Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is already registered.");
+	return;
+    }
+
+    if (!Parent->chanserv.IsLive(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not being used.");
+	return;
+    }
+
+    if (!Parent->chanserv.live[channel.LowerCase()].IsOp(source))
+    {
+	::send(mynick, source, "You are not opped in " + channel + ".");
+	return;
+    }
+
+    if (password.Len() < 5 || password.CmpNoCase(channel) == 0 ||
+	password.CmpNoCase(source) == 0)
+    {
+	::send(mynick, source, "Please choose a more complex password.");
+	return;
+    }
+
+    Parent->chanserv.stored[channel.LowerCase()] =
+			Chan_Stored_t(channel, source, password, desc);
+    ::send(mynick, source, "Channel " + channel + " has been registered.");
+}
+
+void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Drop", (mynick, source, params));
+
+    mstring message = params.Before(" ");
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    if (!Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel))
+    {
+	::send(mynick, source, "You are not identified for " + channel + ".");
+	return;
+    }
+
+    Parent->chanserv.stored.erase(channel.LowerCase());
+    ::send(mynick, source, "Channel " + channel + " has been dropped.");
+}
+
+void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Identify", (mynick, source, params));
+
+    mstring message = params.Before(" ");
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring pass      = params.ExtractWord(3, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    ::send(mynick, source,
+	Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, pass));
+}
+
+void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Info", (mynick, source, params));
+
+}
+
+void ChanServ::do_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_List", (mynick, source, params));
+
+    int listsize, i, count;
+    mstring mask;
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	mask = "*";
+	listsize = Parent->config.Listsize();
+    }
+    else if (params.WordCount(" ") < 3)
+    {
+	mask = params.ExtractWord(2, " ");
+	listsize = Parent->config.Listsize();
+    }
+    else
+    {
+	mask = params.ExtractWord(2, " ");
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	if (listsize > Parent->config.Maxlist())
+	{
+	    mstring output;
+	    output << "You may only list up to " << Parent->config.Maxlist()
+		    << " entries per line.";
+	    ::send(mynick, source, output);
+	    return;
+	}
+    }
+
+    ::send(mynick, source, "Channels matching " + mask + ":");
+    map<mstring, Chan_Stored_t>::iterator iter;
+
+    for (iter = Parent->chanserv.stored.begin(), i=0, count = 0;
+			iter != Parent->chanserv.stored.end(); iter++)
+    {
+	if (iter->second.Name().Matches(mask))
+	{
+	    if (i < listsize && (!iter->second.Private() ||
+		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+	    {
+		::send(mynick, source, iter->second.Name() + "  " +
+					    iter->second.Description());
+		i++;
+	    }
+	    count++;
+	}
+    }
+    mstring output;
+    output << IRC_Bold << i << IRC_Off << " of " << count << " entries shown.";
+    ::send(mynick, source, output);
+}
+
+void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Suspend", (mynick, source, params));
+}
+
+void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_UnSuspend", (mynick, source, params));
+}
+
+void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Forbid", (mynick, source, params));
+}
+
+
+void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Mode", (mynick, source, params));
+}
+
+void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Op", (mynick, source, params));
+}
+
+void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_DeOp", (mynick, source, params));
+}
+
+void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Voice", (mynick, source, params));
+}
+
+void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_DeVoice", (mynick, source, params));
+}
+
+void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Topic", (mynick, source, params));
+}
+
+void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Kick", (mynick, source, params));
+}
+
+void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_AnonKick", (mynick, source, params));
+}
+
+void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Users", (mynick, source, params));
+}
+
+void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Invite", (mynick, source, params));
+}
+
+void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Unban", (mynick, source, params));
+}
+
+void ChanServ::do_Clear(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Clear", (mynick, source, params));
+}
+
+
+void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_level_Set", (mynick, source, params));
+}
+
+void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_level_Reset", (mynick, source, params));
+}
+
+void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_level_List", (mynick, source, params));
+}
+
+void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_access_Add", (mynick, source, params));
+}
+
+void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_access_Del", (mynick, source, params));
+}
+
+void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_access_List", (mynick, source, params));
+}
+
+void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_akick_Add", (mynick, source, params));
+}
+
+void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_akick_Del", (mynick, source, params));
+}
+
+void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_akick_List", (mynick, source, params));
+}
+
+void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_greet_Add", (mynick, source, params));
+}
+
+void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_greet_Del", (mynick, source, params));
+}
+
+void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_greet_List", (mynick, source, params));
+}
+
+void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Founder", (mynick, source, params));
+}
+
+void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_CoFounder", (mynick, source, params));
+}
+
+void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Description", (mynick, source, params));
+}
+
+void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Password", (mynick, source, params));
+}
+
+void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Email", (mynick, source, params));
+}
+
+void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_URL", (mynick, source, params));
+}
+
+void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Comment", (mynick, source, params));
+}
+
+void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Mlock", (mynick, source, params));
+}
+
+void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_BanTime", (mynick, source, params));
+}
+
+void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_KeepTopic", (mynick, source, params));
+}
+
+void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_TopicLock", (mynick, source, params));
+}
+
+void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Private", (mynick, source, params));
+}
+
+void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_SecureOps", (mynick, source, params));
+}
+
+void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Secure", (mynick, source, params));
+}
+
+void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_NoExpire", (mynick, source, params));
+}
+
+void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Restricted", (mynick, source, params));
+}
+
+void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Join", (mynick, source, params));
+}
+
+void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_set_Revenge", (mynick, source, params));
+}
+
+void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_Mlock", (mynick, source, params));
+}
+
+void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_BanTime", (mynick, source, params));
+}
+
+void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_KeepTopic", (mynick, source, params));
+}
+
+void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_TopicLock", (mynick, source, params));
+}
+
+void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_Private", (mynick, source, params));
+}
+
+void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_SecureOps", (mynick, source, params));
+}
+
+void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_Secure", (mynick, source, params));
+}
+
+void ChanServ::do_lock_NoExpire(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_NoExpire", (mynick, source, params));
+}
+
+void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_Restricted", (mynick, source, params));
+}
+
+void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_Join", (mynick, source, params));
+}
+
+void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_lock_Revenge", (mynick, source, params));
+}
+
 
 void ChanServ::save_database(wxOutputStream& out)
 {

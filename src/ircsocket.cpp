@@ -376,7 +376,7 @@ int EventTask::svc(void)
 
 	    // channels
 	    {
-		MLOCK("ChanServ", "stored");
+		// MLOCK("ChanServ", "stored");
 		vector<mstring> expired_chans;
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); nsi++)
@@ -391,7 +391,7 @@ int EventTask::svc(void)
 
 	    // news articles
 	    {
-		MLOCK("MemoServ", "news");
+		// MLOCK("MemoServ", "news");
 		for (ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 		{

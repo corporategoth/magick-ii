@@ -740,7 +740,10 @@ bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
     pair<bool,functor> cmd = GetUserCommand(mynick, command, user);
     if (cmd.first)
     {
-	(*cmd.second)(mynick, user, params);
+	if (cmd.second != NULL)
+	    (*cmd.second)(mynick, user, params);
+	else
+	    send(mynick, user, "Invalid Command.");
 	RET(true);
     }
     RET(false);
@@ -755,7 +758,10 @@ bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
     pair<bool,functor> cmd = GetSystemCommand(mynick, command, user);
     if (cmd.first)
     {
-	(*cmd.second)(mynick, user, params);
+	if (cmd.second != NULL)
+	    (*cmd.second)(mynick, user, params);
+	else
+	    send(mynick, user, "Invalid Command.");
 	RET(true);
     }
     RET(false);
@@ -764,6 +770,7 @@ bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
 
 void do_1_2param(mstring mynick, mstring source, mstring params)
 {
+    FT("do_1_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, "Not enough paramaters");
@@ -779,6 +786,7 @@ void do_1_2param(mstring mynick, mstring source, mstring params)
 
 void do_1_3param(mstring mynick, mstring source, mstring params)
 {
+    FT("do_1_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, "Not enough paramaters");
@@ -791,4 +799,3 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
     }
 
 }
-

@@ -140,6 +140,8 @@ public:
 		int checktime;
 		int ping_frequency;
 		int starthresh;
+		int listsize;
+		int maxlist;
 		int startup_threads;
 		int low_water_mark;
 		int high_water_mark;
@@ -151,6 +153,8 @@ public:
 		int Checktime()		{ return checktime; }
 		int Ping_Frequency()	{ return ping_frequency; }
 		int Starthresh()	{ return starthresh; }
+		int Listsize()		{ return listsize; }
+		int Maxlist()		{ return maxlist; }
 		int Startup_Threads()	{ return startup_threads; }
 		int Low_Water_Mark()	{ return low_water_mark; }
 		int High_Water_Mark()	{ return high_water_mark; }

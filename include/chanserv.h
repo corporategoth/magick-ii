@@ -171,6 +171,7 @@ public:
     Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
     Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc);
     Chan_Stored_t(mstring name); // Forbidden
+    ~Chan_Stored_t() {}
     void operator=(const Chan_Stored_t &in);
     bool operator==(const Chan_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -468,6 +469,9 @@ public:
     static void do_Unban(mstring mynick, mstring source, mstring params);
     static void do_Clear(mstring mynick, mstring source, mstring params);
 
+    static void do_level_Set(mstring mynick, mstring source, mstring params);
+    static void do_level_Reset(mstring mynick, mstring source, mstring params);
+    static void do_level_List(mstring mynick, mstring source, mstring params);
     static void do_access_Add(mstring mynick, mstring source, mstring params);
     static void do_access_Del(mstring mynick, mstring source, mstring params);
     static void do_access_List(mstring mynick, mstring source, mstring params);

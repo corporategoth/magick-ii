@@ -253,13 +253,6 @@ void CommServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOGON", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOGIN", Parent->commserv.REGD_Name(), do_1_3param);
-
-    Parent->commands.AddSystemCommand(GetInternalName(),
 		"NEW", Parent->commserv.SOP_Name(), CommServ::do_AddComm);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"KILL", Parent->commserv.SOP_Name(), CommServ::do_DelComm);
@@ -275,6 +268,20 @@ void CommServ::AddCommands()
 		"VIEW", Parent->commserv.REGD_Name(), CommServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"INFO", Parent->commserv.ALL_Name(), CommServ::do_Info);
+
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOG* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOG*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET*", Parent->commserv.REGD_Name(), do_1_3param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* ADD", Parent->commserv.REGD_Name(), CommServ::do_logon_Add);
