@@ -34,6 +34,10 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "HELP", Parent->commserv.ADMIN_Name(), ServMsg::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CRED*", Parent->commserv.ADMIN_Name(), ServMsg::do_Credits);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CONRIB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Contrib);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
@@ -99,6 +103,26 @@ void ServMsg::execute(const mstring & data)
 void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_Help", (mynick, source, params));
+}
+
+
+void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_Credits", (mynick, source, params));
+
+    Parent->servmsg.stats.i_Credits++;
+    for (int i=0; credits[i] != "---EOM---"; i++)
+	::send(mynick, source, credits[i]);
+}
+
+
+void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_Contrib", (mynick, source, params));
+
+    Parent->servmsg.stats.i_Credits++;
+    for (int i=0; contrib[i] != "---EOM---"; i++)
+	::send(mynick, source, contrib[i]);
 }
 
 
@@ -181,18 +205,206 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
+
+    unsigned long linked = 0, suspended = 0, forbidden = 0;
+    map<mstring,Nick_Stored_t>::iterator i;
+    for (i=Parent->nickserv.stored.begin();
+		i!=Parent->nickserv.stored.end(); i++)
+    {
+	if (i->second.Forbidden())
+	    forbidden++;
+	else
+	{
+	    if (i->second.Host() != "")
+		linked++;
+	    if (i->second.Suspended())
+		suspended++;
+	}
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_REGD"),
+		Parent->nickserv.stored.size(), linked);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_DENIED"),
+		suspended, forbidden);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD"));
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD1"),
+		Parent->nickserv.stats.Register(),
+		Parent->nickserv.stats.Drop());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD2"),
+		Parent->nickserv.stats.Link(),
+		Parent->nickserv.stats.Unlink());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD3"),
+		Parent->nickserv.stats.Host(),
+		Parent->nickserv.stats.Identify());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD4"),
+		Parent->nickserv.stats.Ghost(),
+		Parent->nickserv.stats.Recover());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD5"),
+		Parent->nickserv.stats.Suspend(),
+		Parent->nickserv.stats.Unsuspend());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD6"),
+		Parent->nickserv.stats.Forbid(),
+		Parent->nickserv.stats.Getpass());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD7"),
+		Parent->nickserv.stats.Access(),
+		Parent->nickserv.stats.Ignore());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD8"),
+		Parent->nickserv.stats.Set(),
+		Parent->nickserv.stats.NoExpire());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD9"),
+		Parent->nickserv.stats.Lock(),
+		Parent->nickserv.stats.Unlock());
 }
 
 
 void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
+
+    unsigned long suspended = 0, forbidden = 0;
+    map<mstring,Chan_Stored_t>::iterator i;
+    for (i=Parent->chanserv.stored.begin();
+		i!=Parent->chanserv.stored.end(); i++)
+    {
+	if (i->second.Forbidden())
+	    forbidden++;
+	else
+	{
+	    if (i->second.Suspended())
+		suspended++;
+	}
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_REGD"),
+		Parent->chanserv.stored.size());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_DENIED"),
+		suspended, forbidden);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD"));
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD1"),
+		Parent->chanserv.stats.Register(),
+		Parent->chanserv.stats.Drop());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD2"),
+		Parent->chanserv.stats.Identify());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD3"),
+		Parent->chanserv.stats.Suspend(),
+		Parent->chanserv.stats.Unsuspend());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD4"),
+		Parent->chanserv.stats.Forbid(),
+		Parent->chanserv.stats.Getpass());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD5"),
+		Parent->chanserv.stats.Mode(),
+		Parent->chanserv.stats.Topic());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD6"),
+		Parent->chanserv.stats.Op(),
+		Parent->chanserv.stats.Deop());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD7"),
+		Parent->chanserv.stats.Voice(),
+		Parent->chanserv.stats.Devoice());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD8"),
+		Parent->chanserv.stats.Kick(),
+		Parent->chanserv.stats.Anonkick());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD9"),
+		Parent->chanserv.stats.Invite(),
+		Parent->chanserv.stats.Unban());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD10"),
+		Parent->chanserv.stats.Clear(),
+		Parent->chanserv.stats.Akick());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD11"),
+		Parent->chanserv.stats.Level(),
+		Parent->chanserv.stats.Access());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD12"),
+		Parent->chanserv.stats.Greet(),
+		Parent->chanserv.stats.Message());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD13"),
+		Parent->chanserv.stats.Set(),
+		Parent->chanserv.stats.NoExpire());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD14"),
+		Parent->chanserv.stats.Lock(),
+		Parent->chanserv.stats.Unlock());
 }
 
 
 void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Other", (mynick, source, params));
+
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_MEMO"),
+		Parent->memoserv.nick.size());
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_NEWS"),
+		Parent->memoserv.channel.size());
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_COMM"),
+		Parent->commserv.list.size());
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_CLONE"),
+		Parent->operserv.Clone_size());
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_AKILL"),
+		Parent->operserv.Akill_size());
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_OPERDENY"),
+		Parent->operserv.OperDeny_size());
+    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_IGNORE"),
+		Parent->operserv.Ignore_size());
+    
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
+		Parent->memoserv.GetInternalName().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD1"),
+		Parent->memoserv.stats.Read(),
+		Parent->memoserv.stats.Unread());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD2"),
+		Parent->memoserv.stats.Send(),
+		Parent->memoserv.stats.Flush());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD3"),
+		Parent->memoserv.stats.Reply(),
+		Parent->memoserv.stats.Forward());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD4"),
+		Parent->memoserv.stats.Cancel(),
+		Parent->memoserv.stats.Del());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD5"),
+		Parent->memoserv.stats.Continue(),
+		Parent->memoserv.stats.File());
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
+		Parent->commserv.GetInternalName().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD6"),
+		Parent->commserv.stats.New(),
+		Parent->commserv.stats.Kill());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD7"),
+		Parent->commserv.stats.AddDel(),
+		Parent->commserv.stats.Memo());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD8"),
+		Parent->commserv.stats.Logon(),
+		Parent->commserv.stats.Set());
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
+		Parent->servmsg.GetInternalName().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD9"),
+		Parent->servmsg.stats.Global(),
+		Parent->servmsg.stats.Credits());
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
+		Parent->operserv.GetInternalName().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
+		Parent->operserv.stats.Trace(),
+		Parent->operserv.stats.Mode());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+		Parent->operserv.stats.Qline(),
+		Parent->operserv.stats.Unqline());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
+		Parent->operserv.stats.Noop(),
+		Parent->operserv.stats.Kill());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
+		Parent->operserv.stats.Ping(),
+		Parent->operserv.stats.Update());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD14"),
+		Parent->operserv.stats.Reload(),
+		Parent->operserv.stats.Unload());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD15"),
+		Parent->operserv.stats.Jupe(),
+		Parent->operserv.stats.OnOff());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD16"),
+		Parent->operserv.stats.Clone(),
+		Parent->operserv.stats.Akill());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD17"),
+		Parent->operserv.stats.OperDeny(),
+		Parent->operserv.stats.Ignore());
 }
 
 
@@ -201,38 +413,38 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_stats_Usage", (mynick, source, params));
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
-			Parent->nickserv.live.size(),
-			Parent->nickserv.live.size() * sizeof(Nick_Live_t) / 1024);
+		Parent->nickserv.live.size(),
+		Parent->nickserv.live.size() * sizeof(Nick_Live_t) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
-			Parent->chanserv.live.size(),
-			Parent->chanserv.live.size() * sizeof(Chan_Live_t) / 1024);
+		Parent->chanserv.live.size(),
+		Parent->chanserv.live.size() * sizeof(Chan_Live_t) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
-			Parent->nickserv.stored.size(),
-			Parent->nickserv.stored.size() * sizeof(Nick_Stored_t) / 1024);
+		Parent->nickserv.stored.size(),
+		Parent->nickserv.stored.size() * sizeof(Nick_Stored_t) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
-			Parent->chanserv.stored.size(),
-			Parent->chanserv.stored.size() * sizeof(Chan_Stored_t) / 1024);
+		Parent->chanserv.stored.size(),
+		Parent->chanserv.stored.size() * sizeof(Chan_Stored_t) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_MEMO"),
-			Parent->memoserv.nick.size(),
-			Parent->memoserv.nick.size() * sizeof(Memo_t) / 1024);
+		Parent->memoserv.nick.size(),
+		Parent->memoserv.nick.size() * sizeof(Memo_t) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NEWS"),
-			Parent->memoserv.channel.size(),
-			Parent->memoserv.channel.size() * sizeof(News_t) / 1024);
+		Parent->memoserv.channel.size(),
+		Parent->memoserv.channel.size() * sizeof(News_t) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
-			Parent->commserv.list.size(),
-			Parent->commserv.list.size() * sizeof(Committee) / 1024);
+		Parent->commserv.list.size(),
+		Parent->commserv.list.size() * sizeof(Committee) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OPERSERV"),
-			Parent->operserv.Clone_size() +
-			Parent->operserv.Akill_size() +
-			Parent->operserv.OperDeny_size() +
-			Parent->operserv.Ignore_size(),
-			Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) / 1024 +
-			Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) / 1024 +
-			Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) / 1024 +
-			Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore) / 1024);
+		Parent->operserv.Clone_size() +
+		Parent->operserv.Akill_size() +
+		Parent->operserv.OperDeny_size() +
+		Parent->operserv.Ignore_size(),
+		Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) / 1024 +
+		Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) / 1024 +
+		Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) / 1024 +
+		Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore) / 1024);
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
-			Parent->server.ServerList.size(),
-			Parent->server.ServerList.size() * sizeof(Server) / 1024);
+		Parent->server.ServerList.size(),
+		Parent->server.ServerList.size() * sizeof(Server) / 1024);
 }
 
 void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
@@ -295,6 +507,7 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 	Parent->server.NOTICE(Parent->servmsg.FirstName(), "$" +
 						    iter->first, text);
     }
+    Parent->servmsg.stats.i_Global++;
     announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
 				source.c_str());
 }

@@ -241,6 +241,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	Parent->memoserv.stats.i_Read++;
 	if (what.CmpNoCase("all")==0 ||
 	    what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0)
 	{
@@ -362,6 +363,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	Parent->memoserv.stats.i_Read++;
 	if (what.CmpNoCase("all")==0 ||
 	    what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0)
 	{
@@ -514,6 +516,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	Parent->memoserv.stats.i_Unread++;
 	if (what.CmpNoCase("all")==0)
 	{
 	    list<News_t>::iterator iter;
@@ -594,6 +597,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	Parent->memoserv.stats.i_Unread++;
 	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
@@ -822,6 +826,7 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 		    text.SubString(430, 450).c_str(), mynick.c_str());
     }
 
+    Parent->memoserv.stats.i_Send++;
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, name, text);
 }
@@ -840,6 +845,7 @@ void MemoServ::do_Flush(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOFLUSH"));
 	    return;
 	}
+	Parent->memoserv.stats.i_Flush++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.End(0u);
     }
     else
@@ -1016,6 +1022,7 @@ void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 	}
     }
 
+    Parent->memoserv.stats.i_Forward++;
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, dest, text);
     Parent->nickserv.live[source.LowerCase()].InFlight.End(0);
@@ -1099,6 +1106,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 		    iter->Text().SubString(0, iter->Text().size()).c_str(),
 		text.c_str());
 
+	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, who, text);
     }
@@ -1170,6 +1178,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 		    iter->Text().SubString(0, iter->Text().size()).c_str(),
 		text.c_str());
 
+	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, who, text);
     }
@@ -1184,6 +1193,7 @@ void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
     {
+	Parent->memoserv.stats.i_Cancel++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
     }
     else
@@ -1244,6 +1254,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	Parent->memoserv.stats.i_Del++;
 	if (what.CmpNoCase("all")==0)
 	{
 	    if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO"))
@@ -1352,6 +1363,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	Parent->memoserv.stats.i_Del++;
 	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
@@ -1445,6 +1457,7 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
     {
+	Parent->memoserv.stats.i_Continue++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Continue(text);
     }
     else
@@ -1501,6 +1514,7 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 		    text.SubString(430, 450).c_str(), mynick.c_str());
     }
 
+    Parent->memoserv.stats.i_File++;
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    true, mynick, name, text);
 }

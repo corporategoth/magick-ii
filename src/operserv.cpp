@@ -838,6 +838,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 	tmp.Format("%#06x  ", Trace::TraceLevel((threadtype_enum) i));
 	line2 += tmp;
     }
+    Parent->operserv.stats.i_Trace++;
     ::send(mynick, source, line1);
     ::send(mynick, source, line2);
 }
@@ -863,6 +864,7 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 	if (Parent->chanserv.IsLive(target))
 	{
 	    Parent->server.MODE(mynick, target, mode);
+	    Parent->operserv.stats.i_Mode++;
 	    announce(mynick, Parent->getMessage("MISC/CHAN_MODE"),
 			source.c_str(), mode.c_str(), target.c_str());
 	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/CHAN_MODE"),
@@ -882,6 +884,7 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 	    if (Parent->nickserv.IsLive(target))
 	    {
 		Parent->server.SVSMODE(mynick, target, mode);
+		Parent->operserv.stats.i_Mode++;
 		announce(mynick, Parent->getMessage("MISC/NICK_MODE"),
 			source.c_str(), mode.c_str(), target.c_str());
 		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NICK_MODE"),
@@ -917,6 +920,7 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
     mstring target  = params.ExtractWord(2, " ");
     mstring reason  = params.After(" ", 2);
     Parent->server.QLINE(mynick, target, reason);
+    Parent->operserv.stats.i_Qline++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
 		target.c_str(), Parent->getMessage(source, "MISC/ON").c_str());
     announce(mynick, Parent->getMessage("MISC/QLINE"),
@@ -939,6 +943,7 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 
     mstring target  = params.ExtractWord(2, " ");
     Parent->server.UNQLINE(mynick, target);
+    Parent->operserv.stats.i_Unqline++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
 		target.c_str(), Parent->getMessage(source, "MISC/OFF").c_str());
     announce(mynick, Parent->getMessage("MISC/QLINE"),
@@ -976,6 +981,7 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
     }
 
     Parent->server.NOOP(mynick, target, onoff.GetBool());
+    Parent->operserv.stats.i_Noop++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NOOP"),
 	    onoff.GetBool() ?
 		Parent->getMessage(source, "MISC/ON").c_str() :
@@ -1007,6 +1013,7 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
     if (Parent->nickserv.IsLive(target))
     {
 	Parent->server.SVSKILL(mynick, target, reason);
+	Parent->operserv.stats.i_Kill++;
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/KILL"),
 		    target.c_str());
 	announce(mynick, Parent->getMessage("MISC/KILL"),
@@ -1024,6 +1031,7 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Ping", (mynick, source, params));
     Parent->events.ForcePing();
+    Parent->operserv.stats.i_Ping++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
 }
 
@@ -1032,6 +1040,7 @@ void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Update", (mynick, source, params));
     Parent->events.ForceSave();
+    Parent->operserv.stats.i_Update++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
 }
 
@@ -1056,6 +1065,7 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Reload", (mynick, source, params));
     if (Parent->get_config_values())
     {
+	Parent->operserv.stats.i_Reload++;
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD"));
 	announce(mynick, Parent->getMessage("MISC/RELOAD"), source.c_str());
     }
@@ -1083,6 +1093,7 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 
     if (Parent->UnloadExternalMessages(language))
     {
+	Parent->operserv.stats.i_Unload++;
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UNLOAD"),
 			language.c_str());
     }
@@ -1110,6 +1121,7 @@ void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
     mstring reason = params.After(" ", 2);
 
     Parent->server.Jupe(target, reason);
+    Parent->operserv.stats.i_Jupe++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/JUPE"),
 		target.c_str());
     announce(mynick, Parent->getMessage(source, "MISC/JUPE"),
@@ -1124,6 +1136,7 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
     // Later, make the ability to turn on/off specific services
     // also the ability to turn of either MSG, or AUTO or BOTH
     Parent->MSG(true);
+    Parent->operserv.stats.i_OnOff++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
 	    Parent->getMessage(source, "MISC/ON").c_str());
     announce(mynick, Parent->getMessage("MISC/ONOFF"),
@@ -1138,6 +1151,7 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
     // Later, make the ability to turn on/off specific services
     // also the ability to turn of either MSG, or AUTO or BOTH
     Parent->MSG(false);
+    Parent->operserv.stats.i_OnOff++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
 	    Parent->getMessage(source, "MISC/OFF").c_str());
     announce(mynick, Parent->getMessage("MISC/ONOFF"),
@@ -1552,6 +1566,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	mstring entry = Parent->operserv.Clone->Entry();
 	Parent->operserv.Clone_erase();
 	Parent->operserv.Clone_insert(entry, num, reason, source);
+	Parent->operserv.stats.i_Clone++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_LEVEL"),
 		    entry.c_str(),
 		    Parent->getMessage(source, "LIST/CLONE").c_str(),
@@ -1560,6 +1575,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
     else
     {
 	Parent->operserv.Clone_insert(host, num, reason, source);
+	Parent->operserv.stats.i_Clone++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/ADD_LEVEL"),
 		    host.c_str(),
 		    Parent->getMessage(source, "LIST/CLONE").c_str(),
@@ -1610,6 +1626,7 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.Clone++) ;
 	if (Parent->operserv.Clone != Parent->operserv.Clone_end())
 	{
+	    Parent->operserv.stats.i_Clone++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
 			Parent->operserv.Clone->Entry().c_str(),
 			Parent->getMessage(source, "LIST/CLONE").c_str());
@@ -1629,6 +1646,7 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
 
 	if (count)
 	{
+	    Parent->operserv.stats.i_Clone++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
 			count, host.c_str(),
 			Parent->getMessage(source, "LIST/CLONE").c_str());
@@ -1784,6 +1802,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	mstring entry = Parent->operserv.Akill->Entry();
 	Parent->operserv.Akill_erase();
 	Parent->operserv.Akill_insert(entry, time, reason, source);
+	Parent->operserv.stats.i_Akill++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
 		    entry.c_str(),
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
@@ -1792,6 +1811,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
     else
     {
 	Parent->operserv.Akill_insert(host, time, reason, source);
+	Parent->operserv.stats.i_Akill++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/ADD_TIME"),
 		    host.c_str(),
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
@@ -1836,6 +1856,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.Akill++) ;
 	if (Parent->operserv.Akill != Parent->operserv.Akill_end())
 	{
+	    Parent->operserv.stats.i_Akill++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
 			Parent->operserv.Akill->Entry().c_str(),
 			Parent->getMessage(source, "LIST/AKILL").c_str());
@@ -1855,6 +1876,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 
 	if (count)
 	{
+	    Parent->operserv.stats.i_Akill++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
 			count, host.c_str(),
 			Parent->getMessage(source, "LIST/AKILL").c_str());
@@ -1960,6 +1982,7 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	Parent->operserv.OperDeny_erase();
     }
     Parent->operserv.OperDeny_insert(host, reason, source);
+    Parent->operserv.stats.i_OperDeny++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
 	host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
 }
@@ -1994,6 +2017,7 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.OperDeny++) ;
 	if (Parent->operserv.OperDeny != Parent->operserv.OperDeny_end())
 	{
+	    Parent->operserv.stats.i_OperDeny++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
 			Parent->operserv.OperDeny->Entry().c_str(),
 			Parent->getMessage(source, "LIST/OPERDENY").c_str());
@@ -2028,6 +2052,7 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 
 	if (count)
 	{
+	    Parent->operserv.stats.i_OperDeny++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
 			count, host.c_str(),
 			Parent->getMessage(source, "LIST/OPERDENY").c_str());
@@ -2139,6 +2164,7 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
 	Parent->operserv.Ignore_erase();
     }
     Parent->operserv.Ignore_insert(host, true, source);
+    Parent->operserv.stats.i_Ignore++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
 	    host.c_str(), Parent->getMessage(source, "LIST/SIGNORE").c_str());
 }
@@ -2173,6 +2199,7 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.Ignore++) ;
 	if (Parent->operserv.Ignore != Parent->operserv.Ignore_end())
 	{
+	    Parent->operserv.stats.i_Ignore++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
 			Parent->operserv.Ignore->Entry().c_str(),
 			Parent->getMessage(source, "LIST/SIGNORE").c_str());
@@ -2207,6 +2234,7 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 
 	if (count)
 	{
+	    Parent->operserv.stats.i_Ignore++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
 			count, host.c_str(),
 			Parent->getMessage(source, "LIST/SIGNORE").c_str());

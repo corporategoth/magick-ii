@@ -106,6 +106,36 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    class stats_t
+    {
+	friend class MemoServ;
+
+	unsigned long i_Read;
+	unsigned long i_Unread;
+	unsigned long i_Send;
+	unsigned long i_Flush;
+	unsigned long i_Reply;
+	unsigned long i_Forward;
+	unsigned long i_Cancel;
+	unsigned long i_Del;
+	unsigned long i_Continue;
+	unsigned long i_File;
+    public:
+	stats_t() {
+	    i_Read = i_Unread = i_Send = i_Flush = i_Reply =
+		i_Cancel = i_Del = i_Continue = i_File = 0; }
+	unsigned long Read()	    { return i_Read; }
+	unsigned long Unread()	    { return i_Unread; }
+	unsigned long Send()	    { return i_Send; }
+	unsigned long Flush()	    { return i_Flush; }
+	unsigned long Reply()	    { return i_Reply; }
+	unsigned long Forward()	    { return i_Forward; }
+	unsigned long Cancel()	    { return i_Cancel; }
+	unsigned long Del()	    { return i_Del; }
+	unsigned long Continue()    { return i_Continue; }
+	unsigned long File()	    { return i_File; }
+    } stats;
+
     bool IsNick(mstring nick);
     bool IsChannel(mstring channel);
     map<mstring,list<Memo_t> > nick;

@@ -493,6 +493,7 @@ void CommServ::do_AddComm(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list[committee] = Committee(committee, head, desc);
+    Parent->commserv.stats.i_New++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/NEW"),
 				committee.c_str(), head.c_str());
 }
@@ -532,6 +533,7 @@ void CommServ::do_DelComm(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list.erase(committee);
+    Parent->commserv.stats.i_Kill++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/KILL"), committee.c_str());
 }
 
@@ -593,6 +595,7 @@ void CommServ::do_Add(mstring mynick, mstring source, mstring params)
     Committee *comm = &Parent->commserv.list[committee];
     MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
     comm->insert(member, source);
+    Parent->commserv.stats.i_AddDel++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 				member.c_str(), committee.c_str(),
 				Parent->getMessage(source, "LIST/MEMBER").c_str());
@@ -657,6 +660,7 @@ void CommServ::do_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
     if (comm->find(member))
     {
+	Parent->commserv.stats.i_AddDel++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 			comm->member->Entry().c_str(), committee.c_str(),
 			Parent->getMessage(source, "LIST/MEMBER").c_str());
@@ -716,6 +720,7 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
     }
 
     CommServ::do_Memo2(source, committee, text);
+    Parent->commserv.stats.i_Memo++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/MEMO"),
 				committee.c_str());
 }
@@ -1008,6 +1013,7 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
 
     Committee *comm = &Parent->commserv.list[committee];
     MLOCK(("CommServ", "list", comm->Name().LowerCase(), "message"));
+    Parent->commserv.stats.i_Logon++;
     comm->MSG_insert(msgnum, source);
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_NUMBER"),
 		comm->MSG_size(), committee.c_str(),
@@ -1062,6 +1068,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("CommServ", "list", comm->Name().LowerCase(), "message"));
     if (comm->find(num))
     {
+	Parent->commserv.stats.i_Logon++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2_NUMBER"),
 		num, committee.c_str(),
 		Parent->getMessage(source, "LIST/MESSAGES").c_str());
@@ -1198,6 +1205,7 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list[committee].Head(newhead);
+    Parent->commserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_HEAD").c_str(),
 		committee.c_str(), newhead.c_str());
@@ -1246,8 +1254,16 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (email.CmpNoCase("none") == 0)
+	email = "";
     Parent->commserv.list[committee].Email(email);
-    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
+    Parent->commserv.stats.i_Set++;
+    if (email == "")
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNSET"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(),
+		committee.c_str());
+    else
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(),
 		committee.c_str(), email.c_str());
 }
@@ -1295,8 +1311,16 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (url.CmpNoCase("none") == 0)
+	url = "";
     Parent->commserv.list[committee].URL(url);
-    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
+    Parent->commserv.stats.i_Set++;
+    if (url == "")
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNSET"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),
+		committee.c_str());
+    else
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),
 		committee.c_str(), url.c_str());
 }
@@ -1359,6 +1383,7 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list[committee].Secure(onoff.GetBool());
+    Parent->commserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
 		committee.c_str(), onoff.GetBool() ?
@@ -1424,6 +1449,7 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list[committee].Private(onoff.GetBool());
+    Parent->commserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
 		committee.c_str(), onoff.GetBool() ?
@@ -1489,6 +1515,7 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list[committee].OpenMemos(onoff.GetBool());
+    Parent->commserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
 		committee.c_str(), onoff.GetBool() ?

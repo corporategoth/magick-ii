@@ -3400,6 +3400,7 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 		Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time());
     Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, password);
     Parent->chanserv.live[channel.LowerCase()].SendMode(Parent->chanserv.stored[channel.LowerCase()].Mlock());
+    Parent->chanserv.stats.i_Register++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/REGISTERED"),
 		channel.c_str(), founder.c_str());
 }
@@ -3435,6 +3436,7 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stored.erase(channel.LowerCase());
     Parent->nickserv.live[source.LowerCase()].UnChanIdentify(channel);
+    Parent->chanserv.stats.i_Drop++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/DROPPED"),
 	    channel.c_str());
 }
@@ -3462,7 +3464,10 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
     }
     channel = Parent->getSname(channel);
 
+    bool wasident = Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel);
     mstring output = Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, pass);
+    if (!wasident)
+	Parent->chanserv.stats.i_Identify++;
     if (output != "")
 	::send(mynick, source, output);
 }
@@ -3752,6 +3757,7 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].Suspend(source, reason);
+    Parent->chanserv.stats.i_Suspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SUSPENDED"),
 	    channel.c_str());
 }
@@ -3779,6 +3785,7 @@ void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
     channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].UnSuspend();
+    Parent->chanserv.stats.i_Unsuspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSUSPENDED"),
 	    channel.c_str());
 }
@@ -3806,6 +3813,7 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
     channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()] = Chan_Stored_t(channel);
+    Parent->chanserv.stats.i_Forbid++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/FORBIDDEN"),
 	    channel.c_str());
 }
@@ -3843,6 +3851,7 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    Parent->chanserv.stats.i_Getpass++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/GETPASS"),
 			chan->Name().c_str(),
 			Parent->getSname(chan->Founder()).c_str(),
@@ -3892,6 +3901,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
     {
 	mstring modes = params.After(" ", 2);
 	clive->SendMode(modes);
+	Parent->chanserv.stats.i_Mode++;
 	return;
     }
     else if (cstored->GetAccess(source, "VIEW"))
@@ -3918,6 +3928,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 	    output << " " << clive->Limit();
 	}
 
+	Parent->chanserv.stats.i_Mode++;
 	::send(mynick, source, output);
 	return;
     }
@@ -4012,6 +4023,7 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    Parent->chanserv.stats.i_Op++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("+o " + target);
 }
 
@@ -4089,6 +4101,7 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    Parent->chanserv.stats.i_Deop++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("-o " + target);
 }
 
@@ -4179,6 +4192,7 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    Parent->chanserv.stats.i_Voice++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("+v " + target);
 }
 
@@ -4256,6 +4270,7 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    Parent->chanserv.stats.i_Devoice++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("-v " + target);
 }
 
@@ -4297,6 +4312,7 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    Parent->chanserv.stats.i_Topic++;
     Parent->server.TOPIC(mynick, channel, topic);
 }
 
@@ -4363,6 +4379,7 @@ void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
     mstring output;
     output.Format(Parent->getMessage(target, "CS_COMMAND/KICK").c_str(),
 	    source.c_str(), reason.c_str());
+    Parent->chanserv.stats.i_Kick++;
     Parent->server.KICK(mynick, target, channel, output);
 }
 
@@ -4426,6 +4443,7 @@ void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    Parent->chanserv.stats.i_Anonkick++;
     Parent->server.KICK(mynick, target, channel, reason);
 }
 
@@ -4576,6 +4594,7 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
 		channel.c_str());
     }
 
+    Parent->chanserv.stats.i_Invite++;
     Parent->server.INVITE(mynick, target, channel);
 }
 
@@ -4649,6 +4668,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     }
     if (found)
     {
+	Parent->chanserv.stats.i_Unban++;
 	if (target == source)
 	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNBANNED"),
 		    channel.c_str());
@@ -4710,6 +4730,7 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 
     Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
     unsigned int i;
+    Parent->chanserv.stats.i_Clear++;
     for (i=0; i<clive->Users(); i++)
     {
 	mstring output;
@@ -4769,6 +4790,8 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
 		    message.c_str(), source.c_str(), channel.c_str());
 	clive->SendMode("-o " + clive->Op(i));
     }
+    if (!message.After(" ").Matches("*ALL*"))
+	Parent->chanserv.stats.i_Clear++;
 }
 
 void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
@@ -4822,12 +4845,14 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 		    message.c_str(), source.c_str(), channel.c_str());
 	clive->SendMode("-v " + clive->Voice(i));
     }
-    for (i=0; i<clive->Ops(); i++)
-    {
-	if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*"))
+	for (i=0; i<clive->Ops(); i++)
+	{
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
-    }
+	}
+    if (!message.After(" ").Matches("*ALL*"))
+	Parent->chanserv.stats.i_Clear++;
 }
 
 void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
@@ -4875,12 +4900,14 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
     unsigned int i;
 
     clive->SendMode("-" + clive->Mode() + " " + clive->Key());
-    for (i=0; i<clive->Ops(); i++)
-    {
-	if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*"))
+	for (i=0; i<clive->Ops(); i++)
+	{
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
-    }
+	}
+    if (!message.After(" ").Matches("*ALL*"))
+	Parent->chanserv.stats.i_Clear++;
 }
 
 void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
@@ -4931,12 +4958,14 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
     {
 	clive->SendMode("-b " + clive->Ban(i));
     }
-    for (i=0; i<clive->Ops(); i++)
-    {
-	if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*"))
+	for (i=0; i<clive->Ops(); i++)
+	{
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
-    }
+	}
+    if (!message.After(" ").Matches("*ALL*"))
+	Parent->chanserv.stats.i_Clear++;
 }
 
 void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
@@ -4985,6 +5014,7 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
     ChanServ::do_clear_Voices(mynick, source, params);
     ChanServ::do_clear_Bans(mynick, source, params);
 
+    Parent->chanserv.stats.i_Clear++;
     ::notice(mynick, channel, Parent->getMessage("CS_COMMAND/CLEAR"),
 		message.c_str(), source.c_str(), channel.c_str());
 }
@@ -5044,6 +5074,7 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
     if (cstored->Level_find(what))
     {
 	cstored->Level_change(cstored->Level->Entry(), num, source);
+	Parent->chanserv.stats.i_Level++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_LEVEL"),
 		    cstored->Level->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/LEVEL").c_str(),
@@ -5097,6 +5128,7 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
     {
 	cstored->Level_change(cstored->Level->Entry(),
 				    Parent->chanserv.LVL(what), source);
+	Parent->chanserv.stats.i_Level++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_LEVEL"),
 		    cstored->Level->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/LEVEL").c_str(),
@@ -5234,6 +5266,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 	mstring entry = cstored->Access->Entry();
 	cstored->Access_erase();
 	cstored->Access_insert(entry, num, source);
+	Parent->chanserv.stats.i_Access++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_LEVEL"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str(),
@@ -5242,6 +5275,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
     else
     {
 	cstored->Access_insert(who, num, source);
+	Parent->chanserv.stats.i_Access++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_LEVEL"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str(),
@@ -5298,6 +5332,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 				i++, cstored->Access++) ;
 	if (cstored->Access != cstored->Access_end())
 	{
+	    Parent->chanserv.stats.i_Access++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
@@ -5315,6 +5350,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
 	if (cstored->Access_find(who))
 	{
+	    Parent->chanserv.stats.i_Access++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
@@ -5495,6 +5531,7 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
     else
     {
 	cstored->Akick_insert(who, reason, source);
+	Parent->chanserv.stats.i_Akick++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 		who.c_str(), channel.c_str(),
 		Parent->getMessage(source, "LIST/AKICK").c_str());
@@ -5550,6 +5587,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 				i++, cstored->Akick++) ;
 	if (cstored->Akick != cstored->Akick_end())
 	{
+	    Parent->chanserv.stats.i_Akick++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Akick->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/AKICK").c_str());
@@ -5578,6 +5616,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
 	if (cstored->Akick_find(who))
 	{
+	    Parent->chanserv.stats.i_Akick++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Akick->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/AKICK").c_str());
@@ -5726,6 +5765,7 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	cstored->Greet_erase();
     }
     cstored->Greet_insert(option, target);
+    Parent->chanserv.stats.i_Greet++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 		target.c_str(), channel.c_str(),
 		Parent->getMessage(source, "LIST/GREET").c_str());
@@ -5791,6 +5831,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     if (source != target)
     {
 	cstored->Greet_erase();
+	Parent->chanserv.stats.i_Greet++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 			target.c_str(), channel.c_str(),
 			Parent->getMessage(source, "LIST/GREET").c_str());
@@ -5814,6 +5855,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 		return;
 	    }
 	    cstored->Greet_erase();
+	    Parent->chanserv.stats.i_Greet++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 			target.c_str(), channel.c_str(),
 			Parent->getMessage(source, "LIST/GREET").c_str());
@@ -5931,6 +5973,7 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Message_insert(text, source);
+    Parent->chanserv.stats.i_Message++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_NUMBER"),
 		cstored->Message_size(), channel.c_str(),
 		Parent->getMessage(source, "LIST/JOINMSG").c_str());
@@ -5988,6 +6031,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
     if (cstored->Message_find(num))
     {
         cstored->Message_erase();
+	Parent->chanserv.stats.i_Message++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2_NUMBER"),
 		num, channel.c_str(),
 		Parent->getMessage(source, "LIST/JOINMSG").c_str());
@@ -6100,6 +6144,7 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
     founder = Parent->getSname(founder);
 
     cstored->Founder(founder);
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/FOUNDER").c_str(),
 	    channel.c_str(), founder.c_str());
@@ -6159,6 +6204,7 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
     }
 
     cstored->CoFounder(founder);
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/COFOUNDER").c_str(),
 	    channel.c_str(), founder.c_str());
@@ -6199,6 +6245,7 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
     }
 
     cstored->Description(option);
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/DESCRIPTION").c_str(),
 	    channel.c_str(), option.c_str());
@@ -6246,6 +6293,7 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Password(password);
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/PASSWORD").c_str(),
 	    channel.c_str(), password.c_str());
@@ -6288,6 +6336,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
     if (option.CmpNoCase("none") == 0)
 	option = "";
     cstored->Email(option);
+    Parent->chanserv.stats.i_Set++;
     if (option == "")
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/EMAIL").c_str(),
@@ -6335,6 +6384,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
     if (option.CmpNoCase("none") == 0)
 	option = "";
     cstored->URL(option);
+    Parent->chanserv.stats.i_Set++;
     if (option == "")
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/URL").c_str(),
@@ -6375,6 +6425,7 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     if (option.CmpNoCase("none") == 0)
 	option = "";
     cstored->Comment(option);
+    Parent->chanserv.stats.i_Set++;
     if (option == "")
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/COMMENT").c_str(),
@@ -6425,6 +6476,7 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
     }
 
     vector<mstring> retval = cstored->Mlock(source, option);
+    Parent->chanserv.stats.i_Set++;
     for (unsigned int i=0; i<retval.size(); i++)
 	::send(mynick, source, retval[i]);
 }
@@ -6473,6 +6525,7 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 
     unsigned long num = FromHumanTime(value);
     cstored->Bantime(num);
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
 	    channel.c_str(), ToHumanTime(num).c_str());
@@ -6535,6 +6588,7 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Keeptopic(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6599,6 +6653,7 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Topiclock(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6663,6 +6718,7 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Private(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6727,6 +6783,7 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Secureops(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6791,6 +6848,7 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Secure(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6848,6 +6906,7 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
     }
 
     cstored->NoExpire(onoff.GetBool());
+    Parent->chanserv.stats.i_NoExpire++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/NOEXPIRE").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6912,6 +6971,7 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Anarchy(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -6976,6 +7036,7 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Restricted(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7040,6 +7101,7 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Join(onoff.GetBool());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7113,6 +7175,7 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Revenge(option.UpperCase());
+    Parent->chanserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
 	    channel.c_str(),
@@ -7152,6 +7215,7 @@ void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
     }
 
     vector<mstring> retval = cstored->L_Mlock(source, option);
+    Parent->chanserv.stats.i_Lock++;
     for (unsigned int i=0; i<retval.size(); i++)
 	::send(mynick, source, retval[i]);
 }
@@ -7195,6 +7259,7 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
     cstored->L_Bantime(false);
     cstored->Bantime(num);
     cstored->L_Bantime(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
 	    channel.c_str(), ToHumanTime(num).c_str());
@@ -7252,6 +7317,7 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
     cstored->L_Keeptopic(false);
     cstored->Keeptopic(onoff.GetBool());
     cstored->L_Keeptopic(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7311,6 +7377,7 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
     cstored->L_Topiclock(false);
     cstored->Topiclock(onoff.GetBool());
     cstored->L_Topiclock(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7370,6 +7437,7 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
     cstored->L_Private(false);
     cstored->Private(onoff.GetBool());
     cstored->L_Private(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7429,6 +7497,7 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
     cstored->L_Secureops(false);
     cstored->Secureops(onoff.GetBool());
     cstored->L_Secureops(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7488,6 +7557,7 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
     cstored->L_Secure(false);
     cstored->Secure(onoff.GetBool());
     cstored->L_Secure(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7547,6 +7617,7 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
     cstored->L_Anarchy(false);
     cstored->Anarchy(onoff.GetBool());
     cstored->L_Anarchy(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7606,6 +7677,7 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
     cstored->L_Restricted(false);
     cstored->Restricted(onoff.GetBool());
     cstored->L_Restricted(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7665,6 +7737,7 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
     cstored->L_Join(false);
     cstored->Join(onoff.GetBool());
     cstored->L_Join(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
 	    channel.c_str(), onoff.GetBool() ?
@@ -7721,6 +7794,7 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
     cstored->L_Revenge(false);
     cstored->Revenge(option.UpperCase());
     cstored->L_Revenge(true);
+    Parent->chanserv.stats.i_Lock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
 	    channel.c_str(),
@@ -7754,6 +7828,7 @@ void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
     channel = cstored->Name();
 
     vector<mstring> retval = cstored->L_Mlock(source, "");
+    Parent->chanserv.stats.i_Unlock++;
     for (unsigned int i=0; i<retval.size(); i++)
 	::send(mynick, source, retval[i]);
 }
@@ -7793,6 +7868,7 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
     }
 
     cstored->L_Bantime(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
 	    channel.c_str());
@@ -7833,6 +7909,7 @@ void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring param
     }
 
     cstored->L_Keeptopic(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
 	    channel.c_str());
@@ -7874,6 +7951,7 @@ void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring param
     }
 
     cstored->L_Topiclock(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
 	    channel.c_str());
@@ -7914,6 +7992,7 @@ void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
     }
 
     cstored->L_Private(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
 	    channel.c_str());
@@ -7954,6 +8033,7 @@ void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring param
     }
 
     cstored->L_Secureops(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
 	    channel.c_str());
@@ -7994,6 +8074,7 @@ void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
     }
 
     cstored->L_Secure(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
 	    channel.c_str());
@@ -8034,6 +8115,7 @@ void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
     }
 
     cstored->L_Anarchy(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
 	    channel.c_str());
@@ -8074,6 +8156,7 @@ void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring para
     }
 
     cstored->L_Restricted(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
 	    channel.c_str());
@@ -8114,6 +8197,7 @@ void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
     }
 
     cstored->L_Join(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
 	    channel.c_str());
@@ -8154,6 +8238,7 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
     }
 
     cstored->L_Revenge(false);
+    Parent->chanserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
 	    channel.c_str());

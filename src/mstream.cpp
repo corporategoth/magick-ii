@@ -644,7 +644,7 @@ wxInputStream& wxInputStream::operator>>(double& f)
 
 wxInputStream& wxInputStream::operator>>(bool& b)
 {
-    b=Read8();
+    b=(Read8() != 0);
     return *this;
 }
 

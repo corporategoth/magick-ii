@@ -395,6 +395,76 @@ private:
 protected:
 
 public:
+    class stats_t
+    {
+	friend class ChanServ;
+
+	unsigned long i_Register;
+	unsigned long i_Drop;
+	unsigned long i_Identify; //
+	unsigned long i_Suspend;
+	unsigned long i_Unsuspend;
+	unsigned long i_Forbid;
+	unsigned long i_Getpass;
+	unsigned long i_Mode;
+	unsigned long i_Topic;
+	unsigned long i_Op;
+	unsigned long i_Deop;
+	unsigned long i_Voice;
+	unsigned long i_Devoice;
+	unsigned long i_Kick;
+	unsigned long i_Anonkick;
+	unsigned long i_Invite;
+	unsigned long i_Unban;
+	unsigned long i_Clear;
+	unsigned long i_Akick;
+	unsigned long i_Level;
+	unsigned long i_Access;
+	unsigned long i_Greet;
+	unsigned long i_Message;
+	unsigned long i_Set;
+	unsigned long i_NoExpire;
+	unsigned long i_Lock;
+	unsigned long i_Unlock;
+	    
+    public:
+	stats_t() {
+	    i_Register = i_Drop = i_Identify = i_Suspend =
+		i_Unsuspend = i_Forbid = i_Getpass = i_Mode =
+		i_Topic = i_Op = i_Deop = i_Voice = i_Devoice =
+		i_Kick = i_Anonkick = i_Invite = i_Unban =
+		i_Clear = i_Akick = i_Level = i_Access =
+		i_Greet = i_Message = i_Set = i_NoExpire =
+		i_Lock = i_Unlock = 0; }
+	unsigned long Register()    { return i_Register; }
+	unsigned long Drop()	    { return i_Drop; }
+	unsigned long Identify()    { return i_Identify; }
+	unsigned long Suspend()	    { return i_Suspend; }
+	unsigned long Unsuspend()   { return i_Unsuspend; }
+	unsigned long Forbid()	    { return i_Forbid; }
+	unsigned long Getpass()	    { return i_Getpass; }
+	unsigned long Mode()	    { return i_Mode; }
+	unsigned long Topic()	    { return i_Topic; }
+	unsigned long Op()	    { return i_Op; }
+	unsigned long Deop()	    { return i_Deop; }
+	unsigned long Voice()	    { return i_Voice; }
+	unsigned long Devoice()	    { return i_Devoice; }
+	unsigned long Kick()	    { return i_Kick; }
+	unsigned long Anonkick()    { return i_Anonkick; }
+	unsigned long Invite()	    { return i_Invite; }
+	unsigned long Unban()	    { return i_Unban; }
+	unsigned long Clear()	    { return i_Clear; }
+	unsigned long Akick()	    { return i_Akick; }
+	unsigned long Level()	    { return i_Level; }
+	unsigned long Access()	    { return i_Access; }
+	unsigned long Greet()	    { return i_Greet; }
+	unsigned long Message()	    { return i_Message; }
+	unsigned long Set()	    { return i_Set; }
+	unsigned long NoExpire()    { return i_NoExpire; }
+	unsigned long Lock()	    { return i_Lock; }
+	unsigned long Unlock()	    { return i_Unlock; }
+    } stats;
+
     bool IsRevengeLevel(mstring level)
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }

@@ -128,8 +128,29 @@ private:
 
     void AddCommands();
     void RemCommands();
-protected:
 public:
+    class stats_t
+    {
+	friend class CommServ;
+
+	unsigned long i_New;
+	unsigned long i_Kill;
+	unsigned long i_AddDel;
+	unsigned long i_Memo;
+	unsigned long i_Logon;
+	unsigned long i_Set;
+    public:
+	stats_t() {
+	    i_New = i_Kill = i_AddDel = i_Memo =
+		i_Logon = i_Set = 0; }
+	unsigned long New()	{ return i_New; }
+	unsigned long Kill()	{ return i_Kill; }
+	unsigned long AddDel()	{ return i_AddDel; }
+	unsigned long Memo()	{ return i_Memo; }
+	unsigned long Logon()	{ return i_Logon; }
+	unsigned long Set()	{ return i_Set; }
+    } stats;
+
     bool    DEF_OpenMemos()	{ return def_openmemos; }
     bool    LCK_OpenMemos()	{ return lck_openmemos; }
     bool    DEF_Private()	{ return def_private; }

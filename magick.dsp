@@ -136,6 +136,10 @@ SOURCE=".\docs\rfcs\The Client-To-Client Protocol (CTCP).txt"
 # End Group
 # Begin Source File
 
+SOURCE=.\docs\commands.txt
+# End Source File
+# Begin Source File
+
 SOURCE=.\docs\communication.txt
 # End Source File
 # Begin Source File
@@ -400,6 +404,10 @@ SOURCE=.\include\variant.h
 # Begin Source File
 
 SOURCE=.\include\version.h
+# End Source File
+# Begin Source File
+
+SOURCE=".\include\version.h-release"
 # End Source File
 # End Target
 # End Project

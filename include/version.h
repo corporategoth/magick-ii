@@ -21,9 +21,9 @@
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 254;
-const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
-const mstring BUILD_SYS = "castle";
+const int BUILD_NUMBER = 0;
+const mstring BUILD_TYPE = "Windows 95/98/NT";
+const mstring BUILD_SYS = "localhost";
 const unsigned short Magick_Major_Ver=2;
 const unsigned short Magick_Minor_Ver=0;
 const unsigned long FileVersionNumber=(Magick_Major_Ver*0x10000)+Magick_Minor_Ver;
@@ -84,7 +84,8 @@ const mstring credits[] = {
 "To subscribe, email majordomo@magick.tm with 'subscribe",
 "magick' (no quotes) in the text of the message.",
 "",
-"Please type /MSG HelpServ CONTRIB for full credits (flood)."
+"Please type /MSG HelpServ CONTRIB for full credits (flood).",
+"---EOM---"
 };
 
 // This gets sent with /msg HelpServ CONTRIB
@@ -103,8 +104,9 @@ const mstring contrib[] = {
 "    Coca Cola Amatil     Life support ... *bleep, bleep*",
 "    Nescafe Blend 43     See above (really, any kind of caffine!)",
 "    Tschaicovski         If you dont understand ... you never will.",
-"    Kelly Hill           ",
-"    Emma Ellison         ",
+"",
+"Also Thanks To:",
+"    Kelly Hill, Emma Ellison, Marieke Burmon",
 "",
 "Library Creditations: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt",
@@ -120,7 +122,7 @@ const mstring contrib[] = {
 "modified are kept, AND the original copyrights are untouched.",
 "Magick II and ALL derivatives must be bundled with FULL source",
 "code and documentation.  No charge may be imposed for Magick.",
-""
+"---EOM---"
 };
 
 #endif

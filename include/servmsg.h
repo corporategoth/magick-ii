@@ -28,6 +28,19 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    class stats_t
+    {
+	friend class ServMsg;
+
+	unsigned long i_Global;
+	unsigned long i_Credits;
+    public:
+	stats_t() {
+	    i_Global = i_Credits = 0; }
+	unsigned long Global()	{ return i_Global; }
+	unsigned long Credits()	{ return i_Credits; }
+    } stats;
+
     bool ShowSync() { return showsync; }
 
     virtual void load_database(wxInputStream& in);
@@ -38,6 +51,8 @@ public:
     virtual void execute(const mstring & message);
 
     static void do_Help(mstring mynick, mstring source, mstring params);
+    static void do_Credits(mstring mynick, mstring source, mstring params);
+    static void do_Contrib(mstring mynick, mstring source, mstring params);
     static void do_BreakDown(mstring mynick, mstring source, mstring params);
     static void do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server);
     static void do_Global(mstring mynick, mstring source, mstring params);

@@ -64,6 +64,50 @@ private:
     bool AddHost(mstring host);
     void RemHost(mstring host);
 public:
+    class stats_t
+    {
+	friend class OperServ;
+
+	unsigned long i_Trace;
+	unsigned long i_Mode;
+	unsigned long i_Qline;
+	unsigned long i_Unqline;
+	unsigned long i_Noop;
+	unsigned long i_Kill;
+	unsigned long i_Ping;
+	unsigned long i_Update;
+	unsigned long i_Reload;
+	unsigned long i_Unload;
+	unsigned long i_Jupe;
+	unsigned long i_OnOff;
+	unsigned long i_Clone;
+	unsigned long i_Akill;
+	unsigned long i_OperDeny;
+	unsigned long i_Ignore;
+    public:
+	stats_t() {
+	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop =
+		i_Kill = i_Ping = i_Update = i_Reload =
+		i_Unload = i_Jupe = i_OnOff = i_Clone =
+		i_Akill = i_OperDeny = i_Ignore = 0; }
+	unsigned long Trace()	    { return i_Trace; }
+	unsigned long Mode()	    { return i_Mode; }
+	unsigned long Qline()	    { return i_Qline; }
+	unsigned long Unqline()	    { return i_Unqline; }
+	unsigned long Noop()	    { return i_Noop; }
+	unsigned long Kill()	    { return i_Kill; }
+	unsigned long Ping()	    { return i_Ping; }
+	unsigned long Update()	    { return i_Update; }
+	unsigned long Reload()	    { return i_Reload; }
+	unsigned long Unload()	    { return i_Unload; }
+	unsigned long Jupe()	    { return i_Jupe; }
+	unsigned long OnOff()	    { return i_OnOff; }
+	unsigned long Clone()	    { return i_Clone; }
+	unsigned long Akill()	    { return i_Akill; }
+	unsigned long OperDeny()    { return i_OperDeny; }
+	unsigned long Ignore()	    { return i_Ignore; }
+    } stats;
+
     mstring Services_Admin()	    { return services_admin; }
     bool Secure()		    { return secure; }
     unsigned long Def_Expire()	    { return def_expire; }

@@ -354,6 +354,55 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    class stats_t
+    {
+	friend class NickServ;
+
+	unsigned long i_Register;
+	unsigned long i_Drop;
+	unsigned long i_Link;
+	unsigned long i_Unlink;
+	unsigned long i_Host;
+	unsigned long i_Identify;
+	unsigned long i_Ghost;
+	unsigned long i_Recover;
+	unsigned long i_Suspend;
+	unsigned long i_Unsuspend;
+	unsigned long i_Forbid;
+	unsigned long i_Getpass;
+	unsigned long i_Access;
+	unsigned long i_Ignore;
+	unsigned long i_Set;
+	unsigned long i_NoExpire;
+	unsigned long i_Lock;
+	unsigned long i_Unlock;
+    public:
+	stats_t() {
+	    i_Register = i_Drop = i_Link = i_Unlink = i_Host =
+		i_Identify = i_Ghost = i_Recover = i_Suspend =
+		i_Unsuspend = i_Forbid = i_Getpass = i_Access =
+		i_Ignore = i_Set = i_NoExpire = i_Lock =
+		i_Unlock = 0; }
+	unsigned long Register()    { return i_Register; }
+	unsigned long Drop()	    { return i_Drop; }
+	unsigned long Link()	    { return i_Link; }
+	unsigned long Unlink()	    { return i_Unlink; }
+	unsigned long Host()	    { return i_Host; }
+	unsigned long Identify()    { return i_Identify; }
+	unsigned long Ghost()	    { return i_Ghost; }
+	unsigned long Recover()	    { return i_Recover; }
+	unsigned long Suspend()	    { return i_Suspend; }
+	unsigned long Unsuspend()   { return i_Unsuspend; }
+	unsigned long Forbid()	    { return i_Forbid; }
+	unsigned long Getpass()	    { return i_Getpass; }
+	unsigned long Access()	    { return i_Access; }
+	unsigned long Ignore()	    { return i_Ignore; }
+	unsigned long Set()	    { return i_Set; }
+	unsigned long NoExpire()    { return i_NoExpire; }
+	unsigned long Lock()	    { return i_Lock; }
+	unsigned long Unlock()	    { return i_Unlock; }
+    } stats;
+
     unsigned int Maxlen()	{ return maxlen; }
     mstring Suffixes()		{ return suffixes; }
     unsigned long Expire()	{ return expire; }
