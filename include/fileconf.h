@@ -24,6 +24,9 @@ static const char *ident_fileconf_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/03/13 09:36:18  prez
+** Completed help file, we now have full help text.
+**
 ** Revision 1.15  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -122,8 +125,6 @@ static const char *ident_fileconf_h = "@(#) $Id$";
 class wxFileConfig;
 class ConfigGroup;
 class ConfigEntry;
-
-const char* wxGetHomeDir(mstring *pstr);
 
 // ----------------------------------------------------------------------------
 /**

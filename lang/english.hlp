@@ -56,7 +56,7 @@
 08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
 10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
-11 =SOP::    SUSPEND      UNSUSPEND
+11 =SOP::    SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::You may request help on the syntax and functionalty
 14 =::of any and all of the above commands by specifying
@@ -266,6 +266,16 @@
 05 =SOP::global message to all IRCOPS will be broadcast!
 06 =SOP:SADMIN:You may not retrieve the password of a Services
 07 =SOP:SADMIN:Administrator.
+
+[NICKSERV/LIVE]
+01 =SOP::LIVE [mask [maximum]]
+02 =SOP::
+03 =SOP::This will list all online nicknames that match the
+04 =SOP::full nick!user@host mask specified.  If the nick is
+05 =SOP::left off, * will be assumed.  If the host is left
+06 =SOP::off, *@* will be assumed.  This will display the
+07 =SOP::users full host, what server they are on, and what
+08 =SOP::modes they currently have set.
 
 [NICKSERV/ACCESS]
 01 =REGD::Your access list is a method to be able to come in
@@ -649,7 +659,7 @@
 10 =REGD::    ACCESS       AKICK        GREET        MESSAGE
 11 =SOP::And as a Services Operator, the following commands:
 12 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
-13 =SOP::    SUSPEND      UNSUSPEND
+13 =SOP::    SUSPEND      UNSUSPEND    LIVE
 14 =::
 15 =::You may request help on the syntax and functionalty
 16 =::of any and all of the above commands by specifying
@@ -884,6 +894,16 @@
 08A=REGD:SOP:this command on yourself, and SUPER access to use
 09A=REGD:SOP:it on another user.
 07B=SOP::online user.
+
+[CHANSERV/LIVE]
+01 =SOP::LIVE [mask [maximum]]
+02 =SOP::
+03 =SOP::This will list all channels active that match the
+04 =SOP::full mask specified.  This will display the full
+05 =SOP::channel name, the amount of users, ops, voices
+06 =SOP::squit users and bans are active in channel, and
+07 =SOP::what modes the channel currently has set (including
+08 =SOP::key and limit).
 
 [CHANSERV/CLEAR]
 01 =REGD::Sometimes it is nessicary (as a juditial measure,
@@ -1621,46 +1641,126 @@
 [MEMOSERV/READ]
 01 =REGD::READ [channel] <NUM|ALL|UNREAD>
 02 =REGD::
+03 =REGD::This will display the contents of a memo or channel
+04 =REGD::news article.  You may specify a number, range of
+05 =REGD::numbers (1-5), list of numbers (1,3,5), ALL for all
+06 =REGD::memos or news articles, or UNREAD for only the ones
+07 =REGD::you have not previously read (or have set to unread).
+08 =REGD::The numbers specified may be obtained from the LIST
+09 =REGD::command.  If you are reading a channel news article,
+10 =REGD::you must have MEMOREAD access.
 
 [MEMOSERV/UNREAD]
 01 =REGD::UNREAD [channel] <NUM|ALL>
 02 =REGD::
+03 =REGD::This will remove the read flag from a memo or channel
+04 =REGD::news article.  This means it will show up in any
+05 =REGD::unread listing (eg. READ UNREAD), and will be skipped
+06 =REGD::with a DEL READ command.  You may specify a number,
+07 =REGD::range of numbers (1-5), list of numbers (1,3,5), or ALL
+08 =REGD::for all memos or news articles.  The numbers specified
+09 =REGD::may be obtained from the LIST command.  If you are
+10 =REGD::unreading a channel news article, you must have MEMOREAD
+11 =REGD::access.
 
 [MEMOSERV/LIST]
 01 =REGD::LIST [channel]
 02 =REGD::
+03 =REGD::This will list (and preview) all memos or channel news
+04 =REGD::articles.  A '*' will be displayed before the memo or
+05 =REGD::news article number to indicate this memo is unread.
+06 =REGD::This list will also show who sent the memo or news
+07 =REGD::article, how long ago it was sent, and the first 20
+08 =REGD::characters of the message.  If your are listing channel
+09 =REGD::news articles, you must have MEMOREAD access.
 
 [MEMOSERV/SEND]
 01 =REGD::SEND [channel] <message>
 02 =REGD::
+03 =REGD::This will send a memo to another user, or a news article
+04 =REGD::to a channel.  You must have MEMOWRITE access to send a
+05 =REGD::channel news article.  This will not send the memo or
+06 =REGD::news article immediately, it will mark it as pending. A
+07 =REGD::memo or news article is only sent when the pending timer
+08 =REGD::times out, you send another memo or news article, you
+09 =REGD::use the FLUSH command, or you quit.  You may also use
+10 =REGD::the CANCEL command to not send the memo or news article,
+11 =REGD::or the CONTINUE command to add more text to it, and reset
+12 =REGD::the pending timer.
 
 [MEMOSERV/FLUSH]
 01 =REGD::FLUSH
 02 =REGD::
+03 =REGD::This will send a pending memo or news article immediately,
+04 =REGD::and not wait for the pending timer to time out.
 
 [MEMOSERV/REPLY]
-01 =REGD::REPLY [channel] <NUM>
+01 =REGD::REPLY [channel] <NUM> <text>
 02 =REGD::
+03 =REGD::This will reply to the sender of the memo or channel news
+04 =REGD::article you specify, where NUM is a number obtained with
+05 =REGD::the LIST command.  For news articles, it will show who
+06 =REGD::the original sender was, and the first 20 chars (preview)
+07 =REGD::of the original news article.  For memos, it will display
+08 =REGD::the name of the original file attachment if any, and the
+09 =REGD::first 20 chars (preview) of the original memo.  In both
+10 =REGD::cases it will indicate that this is a reply to another
+11 =REGD::memo or news article.  The text is your reply, verbatum.
+12 =REGD::You must have MEMOREAD and MEMOWRITE privilages to reply
+13 =REGD::to a channel news article.
 
 [MEMOSERV/FORWARD]
 01 =REGD::FORWARD [channel] <NUM> <nickname|channel>
 02 =REGD::
+03 =REGD::This will forward a memo or channel news article to
+04 =REGD::another user or channel, where NUM is a number obtained
+05 =REGD::with the LIST command.  For news articles, it will show
+06 =REGD::who the original sender was, and what channel it came
+07 =REGD::from.  For memos it will show who the original sender
+08 =REGD::was, and the name of the file attachment if any.  In
+10 =REGD::both cases, it will indicate this is a forwarded memo.
+11 =REGD::You must have MEMOREAD privilages to forward from a
+12 =REGD::channel, and MEMOWRITE to forward to one.
 
 [MEMOSERV/CANCEL]
 01 =REGD::CANCEL
 02 =REGD::
+03 =REGD::This will cancel a pending memo or channel news article.
+04 =REGD::If this is executed, it will never get sent.  Once a
+05 =REGD::memo or news article is sent, its too late to cancel it.
 
 [MEMOSERV/DEL]
 01 =REGD::DEL [channel] <NUM|ALL|READ>
 02 =REGD::
+03 =REGD::This will delete a memo or channel news article from
+04 =REGD::your memo list or a channel news list.  This action
+05 =REGD::is perminant.  You may specify a number, range of
+06 =REGD::numbers (1-5), list of numbers (1,3,5), ALL for all
+07 =REGD::memos or news articles, or READ for only the ones you
+08 =REGD::have previously read.  The numbers specified may be
+09 =REGD::obtained from the LIST command.  You must either be
+10 =REGD::the original sender, or have MEMODEL privilages to
+11 =REGD::delete a channel news article.
 
 [MEMOSERV/CONTINUE]
 01 =REGD::CONTINUE <message>
 02 =REGD::
+03 =REGD::This will continue a pending memo or news article,
+04 =REGD::theoretically making it limitless in size.  This will
+05 =REGD::also reset the pending timer to zero.  This is useful
+06 =REGD::if your memo was truncated when using the SEND command.
 
 [MEMOSERV/FILE]
 01 =REGD::FILE <nickname> <filename> [message]
 02 =REGD::
+03 =REGD::This will send a file attachment to a user.  You may
+04 =REGD::specify an optional message, which will be displayed
+05 =REGD::with the notification of a file attachment.  This
+06 =REGD::command will expect a DCC SEND from you with a file
+07 =REGD::name matching the one specified.  If it does not
+08 =REGD::recieve one before the pending timer times out, it
+09 =REGD::will cancel this file attachment.  Once the DCC is
+10 =REGD::recieved, the memo will be sent upon its completion.
 
 
 [COMMSERV]
@@ -1684,70 +1784,145 @@
 [COMMSERV/NEW]
 01 =SOP::NEW <committee> <head> <description>
 02 =SOP::
+03 =SOP::This will create a new committee.  You must assign
+04 =SOP::a committee head and decription for the committee on
+05 =SOP::creation.  Please be sure to choose each committee's
+06 =SOP::head carefully, as will be able to add and remove
+07 =SOP::people to that committee at will, or transfer it to
+08 =SOP::another head, etc. without any way to intervene except
+09 =SOP::to KILL the committee.
 
 [COMMSERV/KILL]
 01 =SOP::KILL <committee>
 02 =SOP::
+03 =SOP::This will remove a committee.  This will also remove
+04 =SOP::any access from users that they gained by being in
+05 =SOP::this committee.
 
 [COMMSERV/ADD]
 01 =REGD::ADD <committee> <nickname>
 02 =REGD::
+03 =REGD::This will add a member to a committee, granting them
+04 =REGD::any access the committe itself has.  You may only
+05 =REGD::specify a registered nickname.
 
 [COMMSERV/DEL]
 01 =REGD::DEL <committee> <nickname|NUM>
 02 =REGD::
+03 =REGD::This will remove a member from a committee.  You
+04 =REGD::may either specify the users nickname, or a number
+05 =REGD::obtained from the LIST command.
 
 [COMMSERV/LIST]
 01 =REGD::LIST <committee>
 02 =REGD::
+03 =REGD::This will list out the members of the specified
+04 =REGD::committee.  DEFUNCT will appear after their nickname
+05 =REGD::if their nickname has been dropped since being added.
 
 [COMMSERV/MEMO]
 01 =REGD::MEMO <committee> <message>
 02 =REGD::
+03 =REGD::This will send a memo to all members of a committee.
+04 =REGD::If OPENMEMOS is on, then any member of a committee
+05 =REGD::execute this command,  otherwise only the head of a
+06 =REGD::execute this command.  Memos will be sent immediately.
 
 [COMMSERV/INFO]
 01 =::INFO <committee>
 02 =::
+04 =::This will display information about a committee,
+05 =::including who its head is, its mailing list address,
+06 =::web address, and options it currently has set.
 
 [COMMSERV/LOGON]
+01 =REGD::Committee's can have LOGON noticies, which will be
+02 =REGD::sent to the user as soon as they are reognized by
+03 =REGD::services (ie. on access list or after ident).
+04 =REGD::
+05 =REGD::You may maintain the logon messages with:
+06 =REGD::    ADD          DEL          LIST
 
 [COMMSERV/LOGON/ADD]
 01 =REGD::LOGON <committee> ADD <message>
 02 =REGD::
+03 =REGD::This will add a new message to the LOGON messages
+04 =REGD::of a committee, which will be displayed on signon
+05 =REGD::to all members of that committee.
 
 [COMMSERV/LOGON/DEL]
 01 =REGD::LOGON <committee> DEL <NUM>
 02 =REGD::
+03 =REGD::This will remove a message from the LOGON messages
+04 =REGD::of a committee.  The number of the message may be
+05 =REGD::obtained from the LOGON LIST command.
 
 [COMMSERV/LOGON/LIST]
 01 =REGD::LOGON <committee> LIST
 02 =REGD::
+03 =REGD::This will list the LOGON messages for a committee, in
+04 =REGD::order of which they will be displayed to committee
+05 =REGD::members.  They will also number these messages for
+06 =REGD::deletion purposes.
 
 [COMMSERV/SET]
+01 =REGD::Services maintains many settings on your committee
+02 =REGD::record, ranging from the head of it, to an email
+03 =REGD::address you specify, to options that effect how
+04 =REGD::services treat your committee.
+05 =REGD::
+06 =REGD::You may alter your settings with these commands:
+07 =REGD::    HEAD         EMAIL        URL          SECURE
+08 =REGD::    PRIVATE      OPENMEMOS
 
 [COMMSERV/SET/HEAD]
 01 =REGD::SET <committee> HEAD <head>
 02 =REGD::
+03 =REGD::This will change who the head of a committee is.  The
+04 =REGD::head of a committee has full power over all options,
+05 =REGD::members, memos and logon messages.  Please be sure
+06 =REGD::you wish to relinquish all power of the committee
+07 =REGD::before using this command.
 
 [COMMSERV/SET/EMAIL]
 01 =REGD::SET <committee> EMAIL <email>
 02 =REGD::
+03 =REGD::This will set the mailing list address of a committee,
+04 =REGD::which will show up as-is on an INFO display.  Setting
+05 =REGD::this to NONE will clear this field.
 
 [COMMSERV/SET/URL]
 01 =REGD::SET <committee> URL <url>
 02 =REGD::
+03 =REGD::This will set the web page address of a committee,
+04 =REGD::which will show up as-is on an INFO display.  Setting
+05 =REGD::this to NONE will clear this field.
 
 [COMMSERV/SET/SECURE]
 01 =REGD::SET <committee> SECURE <ON|OFF|RESET>
 02 =REGD::
+03 =REGD::This will turn on or off Secure.
+04 =REGD::When this option is on, users will have to identify
+05 =REGD::to their nicknames to be recognized as themselves
+06 =REGD::as far as committee membership goes.
 
 [COMMSERV/SET/PRIVATE]
 01 =REGD::SET <committee> PRIVATE <ON|OFF|RESET>
 02 =REGD::
+03 =REGD::This will turn on or off Private.
+04 =REGD::When this option is on, non-members of a committee
+05 =REGD::will not be able to find out who is on it with the
+06 =REGD::LIST command, and it will not show up on members
+07 =REGD::INFO displays.
 
 [COMMSERV/SET/OPENMEMOS]
 01 =REGD::SET <committee> OPENMEMOS <ON|OFF|RESET>
 02 =REGD::
+03 =REGD::This will turn on or off Open Memos.
+04 =REGD::When this option is on, any member may send a memo
+05 =REGD::all other members (and the head) of a committee,
+06 =REGD::turning it into a community announcement system of
+07 =REGD::sorts.  Otherwise only the head can send memos.
 
 
 
@@ -1760,13 +1935,15 @@
 06 =REGD::    STATS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
-09 =::
-10 =::You may request help on the syntax and functionalty
-11 =::of any and all of the above commands by specifying
-12 =::the command name after the HELP request.
-13 =::NOTE: Only commands you currently may use are listed
-14 =::      above, and things such as nickname registration
-15 =::      may change what is displayed above.
+09 =::You may also obtain help on the following:
+10 =::    TIME         HOSTMASKS
+11 =::
+12 =::You may request help on the syntax and functionalty
+13 =::of any and all of the above commands by specifying
+14 =::the command name after the HELP request.
+15 =::NOTE: Only commands you currently may use are listed
+16 =::      above, and things such as nickname registration
+17 =::      may change what is displayed above.
 
 [SERVMSG/BREAKDOWN]
 01 =::BREAKDOWN
@@ -1801,28 +1978,86 @@
 [SERVMSG/STATS/NICK]
 01 =OPER SOP::STATS NICK
 02 =OPER SOP::
+03 =OPER SOP::This will show you general information about nickname
+04 =OPER SOP::usage (eg. how many registered, suspended, etc), and
+05 =OPER SOP::it will show the amount of times (since services have
+06 =OPER SOP::been up) each command has been used.
 
 [SERVMSG/STATS/CHANNEL]
 01 =OPER SOP::STATS CHANNEL
 02 =OPER SOP::
+03 =OPER SOP::This will show you general information about channel
+04 =OPER SOP::usage (eg. how many registered, suspended, etc), and
+05 =OPER SOP::it will show the amount of times (since services have
+06 =OPER SOP::been up) each command has been used.
 
 [SERVMSG/STATS/OTHER]
 01 =OPER SOP::STATS OTHER
 02 =OPER SOP::
+03 =OPER SOP::This will give a large output containing general
+04 =OPER SOP::services usgae (eg. how many clone overrides, akills,
+05 =OPER SOP::active committees, etc), and it will show the amount
+06 =OPER SOP::of times (since services have been up) each command
+07 =OPER SOP::has been used.
 
 [SERVMSG/STATS/USAGE]
 01 =OPER SOP::STATS USAGE
 02 =OPER SOP::
+03 =OPER SOP::This will give a breakdown of memory usage by
+04 =OPER SOP::services, showing amount of records in existance,
+05 =OPER SOP::and how much memory they take up collectively.
+
 
 [SERVMSG/STATS/ALL]
 01 =OPER SOP::STATS ALL
 02 =OPER SOP::
+03 =OPER SOP::This is equivilant to executing:
+04 =OPER SOP::    STATS NICK, STATS CHANNEL, STATS OTHER, STATS USAGE
+05 =OPER SOP::
+06 =OPER SOP::Please see the respective help on each of these commands
+07 =OPER SOP::to see what they do individually.
 
 [SERVMSG/TIME]
 01 =::Standard Time Format
+02 =::
+03 =::Services accept all time values in something it calls
+04 =::Standard Time Format, ie. any combination of years, weeks,
+05 =::days, hours, minutes or seconds.  You may indicate what
+06 =::unit of time you are speaking of with a 'token' after the
+07 =::amount involved.  ie. 30s = 30 Seconds, 4m = 4 Minutes
+09 =::The tokens are:
+10 =::    s = Seconds    m = Minutes    h = Hours
+11 =::    d = Days       w = Weeks      y = Years
+12 =::
+13 =::You may specify these numbers and tokens in any order and
+14 =::combination you wish.  eg:
+15 =::    8m,  3d4h52m2s,  3s6d4w,  1y27s6w32m5d9h
+16 =::You may also go beyond the unit's boundaries of each, eg:
+17 =::    120s,  72m,  60w8d37h
+18 =::
+19 =::You may only specify posetive time values, and the default
+20 =::time unit is seconds if none is specified.
+
 
 [SERVMSG/HOSTMASKS]
-01 =::Wildcards, etc.
+01 =::Hostmasks and Wildcards
+02 =::
+03 =::A hostmask refers to either the full nick!user@port.host
+04 =::that is displayed in a user's whois, or just the part
+05 =::after the user's nickname, eg:
+06 =::    PreZ!prez@castle.srealm.net.au   or
+07 =::    prez@castle.srealm.net.au
+08 =::
+09 =::Many places (such as access lists) in services require you
+10 =::to input a hostmask (they will warn you if you've entered
+11 =::the wrong type of hostmask).  In all places where you may
+12 =::enter hostmasks, you may also use wildcards.  Wildcards
+13 =::are a method of saying 'any character or characters'.
+14 =::   ? = one, and only one character (does not matter what)
+15 =::   * = zero or more characters (of anything).
+16 =::
+18 =::Your default access mask is as follows:
+19 =::   *user@*.host   (eg: *prez@*.srealm.net.au)
 
 
 [OPERSERV]
@@ -1847,146 +2082,400 @@
 19 =OPER SOP::      may change what is displayed above.
 
 [OPERSERV/TRACE]
+01 =SADMIN::Services support 'Tracing', ie. a method of finding
+02 =SADMIN::out exactly what the underlying code is doing at any
+03 =SADMIN::given time.  This is used for finding bugs easily,
+04 =SAMDIN::so they can be fixed faster.  When a trace is on, it
+05 =SADMIN::output to files on the services system.
+06 =SADMIN::DO NOT LEAVE TRACE ON, AS IT CAN FILL UP YOUR HARD
+07 =SADMIN::DISK VERY QUCIKLY AND CAUSE SERVICES TO CRASH!
+08 =SADMIN::
+09 =SADMIN::You may toggle trace levels with the following:
+10 =SADMIN::    UP           DOWN         SET
+10 =SADMIN::    TYPES        LEVELS
 
 [OPERSERV/TRACE/UP]
-01 =SADMIN::TRACE UP <type> <level|name> [name [...]]
+01 =SADMIN::TRACE UP <type> <level|name [name [...]]>
 02 =SADMIN::
+03 =SADMIN::This will 'turn up' the trace level or names you
+04 =SADMIN::specify for type.  This is a relative operation, ie.
+05 =SADMIN::it will work from the current trace level, and all
+06 =SADMIN::previous traces will remain set.  Once a trace level
+07 =SADMIN::is turned up, all output for that trace level will
+08 =SADMIN::go into the trace files on the services host.
+09 =SADMIN::Please see help on TRACE TYPES and TRACE LEVELS for
+10 =SADMIN::available paramaters.
 
 [OPERSERV/TRACE/DOWN]
-01 =SADMIN::TRACE DOWN <type> <level|name> [name [...]]
+01 =SADMIN::TRACE DOWN <type> <level|name [name [...]]>
 02 =SADMIN::
+03 =SADMIN::This will 'turn down' the trace level or names you
+04 =SADMIN::specify for type.  This is a relative operation, ie.
+05 =SADMIN::it will work from the current trace level, and all
+06 =SADMIN::previous traces will remain set.  Once a trace level
+07 =SADMIN::is turned down, all output for that trace level will
+08 =SADMIN::no longer go into the trace files on the services host.
+09 =SADMIN::Please see help on TRACE TYPES and TRACE LEVELS for
+10 =SADMIN::available paramaters.
 
 [OPERSERV/TRACE/SET]
-01 =SADMIN::TRACE SET <type> <level|name> [name [...]]
+01 =SADMIN::TRACE SET <type> <level|name [name [...]]>
 02 =SADMIN::
+03 =SADMIN::This will set the trace level or names you specify
+04 =SADMIN::as the trace level for type.  This is an absolute
+05 =SADMIN::operation, ie. it will celar the trace level before
+06 =SADMIN::setting the specified level.  Once a trace level is
+07 =SADMIN::set, all output for that trace level will go into
+08 =SADMIN::trae files on the services host.
+09 =SADMIN::Please see help on TRACE TYPES and TRACE LEVELS for
+10 =SADMIN::available paramaters.
+
+[OPERSERV/TRACE/TYPES]
+01 =SADMIN::Trace Types
+02 =SADMIN::
+03 =SADMIN::MAIN    Events, incomming (unclassified) data, etc.
+04 =SADMIN::NS      NickServ processing (/MSG NickServ)
+05 =SADMIN::CS      ChanServ processing (/MSG ChanServ)
+06 =SADMIN::MS      MemoServ processing (/MSG MemoServ)
+07 =SADMIN::OS      OperServ processing (/MSG OperServ)
+08 =SADMIN::XS      All other services processing
+09 =SADMIN::NET     Inter-Magick data, processing, etc.
+10 =SADMIN::SCRIPT  Script (and scripted services) processing
+11 =SADMIN::MBASE   Server data (ie. ircd interfact)
+12 =SADMIN::LOST    Anything not in the above
+13 =SADMIN::ALL     All of the above
+
+[OPERSERV/TRACE/LEVELS]
+01 =SADMIN::Trace Levels and Names
+02 =SADMIN::
+03 =SADMIN::0x0000  Off         No tracing.
+04 =SADMIN::0x0001  Stats       Statistical displays only
+05 =SADMIN::0x0002  Source      Reading source files (cfg, scripts)
+06 =SADMIN::0x0004  Bind        Binding and Unbinding of commands
+07 =SADMIN::0x0008              Unused
+07 =SADMIN::0x0010  CheckPoint  Pre-defined Checkpoints
+08 =SADMIN::0x0020  Comments    More verbose checkpoints
+09 =SADMIN::0x0040  Locking     Acquiring and releasing locks
+10 =SADMIN::0x0080  Functions   In and out of functions (and params)
+12 =SADMIN::0x0100  Changing    What data is changing
+13 =SADMIN::0x0200  Modify      An in/out difference of the record
+14 =SADMIN::0x0400              Unused
+15 =SADMIN::0x0800              Unused
+16 =SADMIN::0x1000  Sockets     Socket establishes and disconnects
+17 =SADMIN::0x2000  Chatter     Data in and out of a socket
+18 =SADMIN::0x4000              Unused
+19 =SADMIN::0x8000  External    All output from external calls
+20 =SADMIN::0xffff  All         All of the above
 
 [OPERSERV/MODE]
 01 =OPER SOP::MODE <nick|channel> [modes]
 02 =OPER SOP::
+03 =OPER SOP::This will display the current modes (including keys
+04 =OPER SOP::and limits where applicable) that are set on a nick
+05 =OPER SOP::channel.  If modes are specified after the nick or
+06 =OPER SOP::channel, it will also attempt to set them.  You may
+07A=OPER:SOP:not set modes on a nickname.
+07B=SOP:OPER:set modes on a nickname as long as the IRC network
+08B=SOP:OPER:supports it (Please check with an IRC Admin).
 
 [OPERSERV/QLINE]
 01 =ADMIN::QLINE <mask>
 02 =ADMIN::
+03 =ADMIN::This will attempt to quarentine a nickname from being
+04 =ADMIN::used on the network, as long as the IRC network
+05 =ADMIN::supports it.  This is equivilant to setting a Q:line
+06 =ADMIN::on that nickname on every server.  Wildcards are
+07 =ADMIN::allowed in the nickname.  Please use this CAREFULLY.
 
 [OPERSERV/UNQLINE]
 01 =ADMIN::UNQLINE <mask>
 02 =ADMIN::
+03 =ADMIN::This will remove a quarentine on a nickname set by
+04 =ADMIN::the QULINE command.  You must specify the exact mask
+05 =ADMIN::that was specified in the initial quarentine.  You
+06 =ADMIN::may obtain this with a /STATS Q command.
 
 [OPERSERV/NOOP]
 01 =ADMIN::NOOP <server> <ON|OFF>
 02 =ADMIN::
+03 =ADMIN::This will attempt to force all IRC Operators on a
+04 =ADMIN::specified server to be forced LOCAL OPER ONLY.  This
+05 =ADMIN::should be used with EXTREME caution, and only when
+06 =ADMIN::a large number of opers (or the admin) on that server
+07 =ADMIN::are breeching the network policy.  If you use this
+08 =ADMIN::without a very good reason, it is likely your server
+09 =ADMIN::will be delinked.
 
 [OPERSERV/KILL]
 01 =ADMIN::KILL <nickname> <reason>
 02 =ADMIN::
+03 =ADMIN::This will 'silently' kill a user from the network.
+04 =ADMIN::ie. there will be no "Killed ()" in the quit message,
+05 =ADMIN::and the user will not know they have been killed, it
+06 =ADMIN::will look as if the server kicked them off with the
+07 =ADMIN::reason you specify.
 
 [OPERSERV/PING]
 01 =OPER SOP::PING
 02 =OPER SOP::
+03 =OPER SOP::This will force services to ping all servers (used for
+04 =OPER SOP::obtaining the figures in the BREAKDOWN command, and
+05 =OPER SOP::to guage how lagged it is from the network) immediately.
+06 =OPER SOP::Normally all servers are pinged periodically anyway.
 
 [OPERSERV/UPDATE]
 01 =SADMIN::UPDATE
 02 =SADMIN::
+03 =SADMIN::This will force a save of the databases immediately.
+04 =SADMIN::This is done automatically periodically.
+
 
 [OPERSERV/SHUTDOWN]
 01 =SADMIN::SHUTDOWN <reason>
 02 =SADMIN::
+03 =SADMIN::This will terminate services totally.  They will not
+04 =SADMIN::restart unless you restart them manually.
+05 =SADMIN::THIS SHOULD BE USED WITH EXTREME CAUTION!
 
 [OPERSERV/RELOAD]
 01 =SADMIN::RELOAD
 02 =SADMIN::
+03 =SADMIN::This will reload the config file for services.  This
+04 =SADMIN::used to implement changes made in this config file.
+05 =SADMIN::Services will squit and re-connect, or sign off and
+06 =SADMIN::sign on clients as nessicary (in most cases, it will
+07 =SADMIN::not be nessicary).
 
 [OPERSERV/UNLOAD]
 01 =SADMIN::UNLOAD <language>
 02 =SADMIN::
+03 =SADMIN::This will unload a language file from memory.  This
+04 =SADMIN::language file will be re-loaded when it is first
+05 =SADMIN::used again (which may mean immediately if you unload
+06 =SADMIN::your own language).  This is used to implement
+07 =SADMIN::changes to a language file.
 
 [OPERSERV/JUPE]
 01 =ADMIN::JUPE <server> [reason]
 02 =ADMIN::
+03 =ADMIN::This will create a phantom server connected to
+04 =ADMIN::services, usually to stop the real server of the
+05 =ADMIN::being able to link.  If you specify a reason, it
+06 =ADMIN::will be used as the server description.  You may
+07 =ADMIN::get rid of this phantom server by SQUITing it.
 
 [OPERSERV/ON]
 01 =SADMIN::ON [service]
 02 =SADMIN::
+03 =SADMIN::This turns message processing back on again.  If
+04 =SADMIN::a service is specified, it will only turn that
+05 =SADMIN::service back on.
 
 [OPERSERV/OFF]
 01 =SADMIN::OFF [service] <reason>
 02 =SADMIN::
+03 =SADMIN::This will turn off all message processing except
+04 =SADMIN::for the IDENTIFY and ON commands.  If a service
+05 =SADMIN::is specified, it will only turn that service off.
 
 [OPERSERV/SETTINGS]
+01 =OPER SOP::Services has many settings set with its configuration
+02 =OPER SOP::file.  You may view these settings for informational
+03 =OPER SOP::purposes (eg. find out how long a nickname lasts
+04 =OPER SOP::before expiring) to help users with their queries.
+05 =OPER SOP::
+06 =OPER SOP::The following catagories of settings exist:
+07 =OPER SOP::    CONFIG       NICK         CHANNEL      OTHER
+08 =OPER SOP::    ALL
 
 [OPERSERV/SETTINGS/CONFIG]
 01 =OPER SOP::SETTINGS CONFIG
 02 =OPER SOP::
+03 =OPER SOP::This will give you general configuration option
+04 =OPER SOP::settings, eg. Level and Lag settings, cycle times,
+05 =OPER SOP::SQUIT protecion settings, connection stats, etc.
 
 [OPERSERV/SETTINGS/NICK]
 01 =OPER SOP::SETTINGS NICK
 02 =OPER SOP::
+03 =OPER SOP::This will give you the settings relating to nicknames
+04 =OPER SOP::including how long until they expire, Other timers
+05 =OPER SOP::(eg. how long they have to ident), default settings
+06 =OPER SOP::on a registered nickname, and file settings.
 
 [OPERSERV/SETTINGS/CHANNEL]
 01 =OPER SOP::SETTINGS CHANNEL
 02 =OPER SOP::
+03 =OPER SOP::This will give you the settings relating to channels
+04 =OPER SOP::including how long until they expire, Other timers
+05 =OPER SOP::(eg. how long to keep a channel after banning the last
+06 =OPER SOP::user), default settings on a registered channel,
+07 =OPER SOP::access and news settings.
 
 [OPERSERV/SETTINGS/OTHER]
 01 =OPER SOP::SETTINGS OTHER
 02 =OPER SOP::
+03 =OPER SOP::This will give you settings relating to all other
+04 =OPER SOP::services and lists maintained by them.  Including
+05 =OPER SOP::the AutoKill list, clone override list, services
+06 =OPER SOP::flood protection, etc.
 
 [OPERSERV/SETTINGS/ALL]
 01 =OPER SOP::SETTINGS ALL
 02 =OPER SOP::
+03 =OPER SOP::This is equivilant to executing:
+04 =OPER SOP::    SETTINGS CONFIG, SETTINGS NICK, SETTINGS CHANNEL
+05 =OPER SOP::    SETTINGS OTHER
+05 =OPER SOP::
+06 =OPER SOP::Please see the respective help on each of these
+07 =OPER SOP::commands to see what they do individually.
 
 [OPERSERV/CLONE]
+01 =OPER SOP::Services have in-built clone protection, which will
+02 =OPER SOP::automatically kill a user once their are more than
+03 =OPER SOP::a pre-defined number of connections from their host.
+04 =OPER SOP::You may override that pre-defined number here.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the clone override list with:
+06B=SOP:OPER:You may mainatin the clone override list with:
+07A=OPER:SOP:    LIST
+07B=SOP:OPER:    ADD          DEL          LIST
 
 [OPERSERV/CLONE/ADD]
 01 =SOP::CLONE ADD <mask> <amount> <reason>
 02 =SOP::
+03 =SOP::This will add a mask to the clone override list.  You
+04 =SOP::must only enter a HOST here (ie. no '!' or '@').  You
+05 =SOP::may use wildcards aswell.  You must also specify a new
+06 =SOP::maximum amount of clones from the host specified, and
+07 =SOP::a reason for adding this override.  This reason is
+08 =SOP::not used anywhere but the CLONE LIST command.
 
 [OPERSERV/CLONE/DEL]
 01 =SOP::CLONE DEL <mask|NUM>
 02 =SOP::
+03 =SOP::This will delete a mask from the clone override list,
+04 =SOP::enforcing the same clone limit as all other users are
+05 =SOP::subject to.  You may specify a mask, and all matching
+06 =SOP::entries will be removed, or a number obtained form the
+07 =SOP::LIST command.
 
 [OPERSERV/CLONE/LIST]
 01 =OPER SOP::CLONE LIST
 02 =OPER SOP::
+03 =OPER SOP::This will display the clone override list, including
+04 =OPER SOP::who added them to it, how long they have been on the
+05 =OPER SOP::list, the amount of clones they are allowed, and a
+06 =OPER SOP::number that may be used to delete the entry.
 
 [OPERSERV/AKILL]
+01 =OPER SOP::Sometimes a user becomes so abusive, that it is better
+02 =OPER SOP::for the network as a whole to kill them from it.  This
+03 =OPER SOP::list facilitates this need.  All people who match the
+04 =OPER SOP::masks on this list will be automatically killed.
+05 =OPER SOP::
+06 =OPER SOP:You may mainatin the AutoKill list with:
+07 =OPER SOP:    ADD          DEL          LIST
 
 [OPERSERV/AKILL/ADD]
 01 =OPER SOP::AKILL ADD <mask> [time] <reason>
 02 =OPER SOP::
+03 =OPER SOP::This will add the full user@host mask you specify to
+04 =OPER SOP::the AutoKill list, and kill any users matching it.
+05 =OPER SOP::The mask you specify may include wildcards.  You must
+06 =OPER SOP::also specify a reason for the user being killed, which
+07 =OPER SOP::will be used in their kill reason.  You may optionally
+08 =OPER SOP::specify a time in Standard Time Format.  If you do so,
+09 =OPER SOP::it will be used as the time to keep the AutoKill in
+10 =OPER SOP::effect (depending on access, there are various maximum
+11 =OPER SOP::times specifiable).  If you do not specify a time, the
+12 =OPER SOP::default will be used (see SETTINGS OTHER for this).
 
 [OPERSERV/AKILL/DEL]
 01 =OPER SOP::AKILL DEL <mask|NUM>
-02 =OPER SOP:
+02 =OPER SOP::
+03 =OPER SOP::This will remove a mask from the AutoKill list, allowing
+04 =OPER SOP::all users matching this mask back on the network.  You
+05 =OPER SOP::may specify a mask, and all entries matching this mask
+06 =OPER SOP::will be removed from the list, or you may specify a
+07 =OPER SOP::number obtained from the AKILL LIST command.
 
 [OPERSERV/AKILL/LIST]
 01 =OPER SOP::AKILL LIST
 02 =OPER SOP::
+03 =OPER SOP::This will display the AutoKill list, including the mask
+04 =OPER SOP::banned, how long they have been banned for, how long
+05 =OPER SOP::they were killed for, the reason they were AutoKilled,
+06 =OPER SOP::who added them, and numbers that may be used to delete
+07 =OPER SOP::them from the AutoKill list.
 
 [OPERSERV/OPERDENY]
+01 =OPER SOP::From time to time, an oper will breech the network
+02 =OPER SOP::policies, or go insane and start harming the network.
+03 =OPER SOP::OperDeny is used to strip an oper of their oper powers
+04 =OPER SOP::until their admin can get online and deal with them.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the oper deny list with:
+06B=SOP:OPER:You may mainatin the oper deny list with:
+07A=OPER:SOP:    LIST
+07B=SOP:OPER:    ADD          DEL          LIST
 
 [OPERSERV/OPERDENY/ADD]
 01 =SOP::OPERDENY ADD <mask>
 02 =SOP::
+03 =SOP::This will add the specified mask to the Oper Deny list
+04 =SOP::effectively stopping them from setting mode +o (opering
+05 =SOP::up).  You may use wildcards in this mask.  You must
+06 =SOP::specify a full nick!user@host mask (*! will be assumed).
 
 [OPERSERV/OPERDENY/DEL]
 01 =SOP::OPERDENY DEL <mask|NUM>
 02 =SOP::
+03 =SOP::This will remove a mask from the Oper Deny list.  You
+04 =SOP::may specify a mask, and all entries matching that mask
+05 =SOP::will be removed, or you may specify a number obtained
+06 =SOP::with the OPERDENY LIST command.
 
 [OPERSERV/OPERDENY/LIST]
 01 =OPER SOP::OPERDENY LIST
 02 =OPER SOP::
+03 =OPER SOP::This will list all entries on the Oper Deny list,
+04 =OPER SOP::including who added them, how long the mask has been
+05 =OPER SOP::denied for, and a number that can be used to delete it.
 
 [OPERSERV/IGNORE]
+01 =OPER SOP::Services has 2 ignore lists, one temporary, and one
+02 =OPER SOP::permanent.  A user can be added to either by triggering
+03 =OPER SOP::services flood protection, but a user may be manually
+04 =OPER SOP::added to the permanent ignore list aswell.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the permanent ignore list with:
+06B=SOP:OPER:You may mainatin the permanent ignore list with:
+07A=OPER:SOP:    LIST
+07B=SOP:OPER:    ADD          DEL          LIST
 
 [OPERSERV/IGNORE/ADD]
 01 =SOP::IGNORE ADD <mask>
 02 =SOP::
+03 =SOP::This will add a mask to the permanent ignore list.  Any
+04 =SOP::user matching this mask will not get a response from
+05 =SOP::services, even on pings, etc.  This also means they WILL
+06 =SOP::NOT BE ABLE TO IDENT.  You may use wildcards in this
+07 =SOP::mask, and you must specify a full nick!user@host mask.
 
 [OPERSERV/IGNORE/DEL]
 01 =SOP::IGNORE DEL <mask|NUM>
 02 =SOP::
+03 =SOP::This will remove a mask from the permanent ignore list.
+04 =SOP::You may specify a mask, and all entries matching that mask
+05 =SOP::will be removed, or you may specify a number obtained with
+06 =SOP::the IGNORE LIST command.
 
 [OPERSERV/IGNORE/LIST]
 01 =OPER SOP::IGNORE LIST
 02 =OPER SOP::
+03 =OPER SOP::This will display all entries on the permanent ignore
+04 =OPER SOP::list.  It will also show who added them, how long they
+05 =OPER SOP::have been on ignore for, and a number that may be used
+06 =OPER SOP::to delete them from the list.
 

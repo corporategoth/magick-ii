@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/03/13 09:36:18  prez
+** Completed help file, we now have full help text.
+**
 ** Revision 1.72  2000/03/08 23:38:37  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -483,7 +486,8 @@ void NetworkServ::JOIN(mstring nick, mstring channel)
     }
     else
     {
-	Parent->nickserv.live[nick.LowerCase()].Join(channel);
+	for (unsigned int i=0; i<channel.WordCount(", "); i++)
+	    Parent->nickserv.live[nick.LowerCase()].Join(channel.ExtractWord(i+1, ", "));
 	raw(":" + nick + " JOIN :" + channel);
     }
 }
@@ -2289,6 +2293,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 		    {
 			if (Parent->chanserv.Hide())
 			    MODE(*k, "+s");
+			mstring joinline;
 			map<mstring,Chan_Stored_t>::iterator iter;
 			for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
 			{
@@ -2297,7 +2302,21 @@ void NetworkServ::numeric_execute(const mstring & data)
 				(!Parent->chanserv.IsLive(iter->first) &&
 				(iter->second.Mlock_On().Contains("k") ||
 				iter->second.Mlock_On().Contains("i"))))
-				JOIN(Parent->chanserv.FirstName(), iter->first);
+			    {
+				if (joinline.Size())
+				    joinline << ",";
+				joinline << iter->first;
+				if (joinline.Size() > 450)
+				{
+				    JOIN(Parent->chanserv.FirstName(), joinline);
+				    joinline.clear();
+				}
+			    }
+			}
+			if (joinline.Size())
+			{
+			    JOIN(Parent->chanserv.FirstName(), joinline);
+			    joinline.clear();
 			}
 		    }
 		}

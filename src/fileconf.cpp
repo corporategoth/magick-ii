@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/03/13 09:36:18  prez
+** Completed help file, we now have full help text.
+**
 ** Revision 1.36  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -136,7 +139,7 @@ mstring wxFileConfig::GetLocalDir()
   NFT("WxFileConfig::GetLocalDir");
   mstring strDir;
 
-  wxGetHomeDir(&strDir);
+  wxGetHomeDir(strDir);
 
 #ifdef WIN32
   if (strDir.Last() != '\\') strDir << '\\';
@@ -1144,7 +1147,8 @@ ConfigGroup::FindEntry(const char *szName) const
     i = (lo + hi)/2;
     pEntry = m_aEntries[i];
 
-      res = strcmp(pEntry->Name(), szName);
+      mstring tmp = szName;
+      res = tmp.CmpNoCase(pEntry->Name());
 
     if ( res > 0 )
       hi = i;
@@ -1171,7 +1175,8 @@ ConfigGroup::FindSubgroup(const char *szName) const
     i = (lo + hi)/2;
     pGroup = m_aSubgroups[i];
 
-      res = strcmp(pGroup->Name(), szName);
+      mstring tmp = szName;
+      res = tmp.CmpNoCase(pGroup->Name());
 
     if ( res > 0 )
       hi = i;
@@ -1461,14 +1466,18 @@ int CompareEntries(ConfigEntry *p1,
                    ConfigEntry *p2)
 {
     FT("CompareEntries", (p1, p2));
-    RET(strcmp(p1->Name(), p2->Name()));
+    mstring tmp = p1->Name();
+    int retval = tmp.CmpNoCase(p2->Name());
+    RET(retval);
 }
 
 int CompareGroups(ConfigGroup *p1,
                   ConfigGroup *p2)
 {
     FT("CompareGroups", (p1, p2));
-    RET(strcmp(p1->Name(), p2->Name()));
+    mstring tmp = p1->Name();
+    int retval = tmp.CmpNoCase(p2->Name());
+    RET(retval);
 }
 
 // ----------------------------------------------------------------------------
@@ -1851,60 +1860,6 @@ void wxBaseArray::Sort(CMPFUNC fCmp)
 {
   FT("wxBaseArray::Sort", ("(CMPFUNC) fCmp"));
   qsort(m_pItems, m_nCount, sizeof(long), fCmp);
-}
-
-const char* wxGetHomeDir(mstring *pstr)
-{
-  FT("wxGetHomeDir", (pstr));
-  mstring& strDir = *pstr;
-
-  #ifdef WIN32
-      const char *szHome = getenv("HOMEDRIVE");
-      if ( szHome != NULL )
-        strDir << szHome;
-      szHome = getenv("HOMEPATH");
-      if ( szHome != NULL ) {
-        strDir << szHome;
-
-        // the idea is that under NT these variables have default values
-        // of "%systemdrive%:" and "\\". As we don't want to create our
-        // config files in the root directory of the system drive, we will
-        // create it in our program's dir. However, if the user took care
-        // to set HOMEPATH to something other than "\\", we suppose that he
-        // knows what he is doing and use the supplied value.
-        if ( strcmp(szHome, "\\") != 0 )
-          RET(strDir.c_str());
-      }
-
-    // 260 was taken from windef.h
-    #ifndef MAX_PATH
-      #define MAX_PATH  260
-    #endif
-
-	char cstrPath[MAX_PATH];
-    mstring strPath;
-    ::GetModuleFileName(::GetModuleHandle(NULL),
-                        cstrPath, MAX_PATH);
-    strPath=cstrPath;
-
-    // extract the dir name
-    wxSplitPath(strPath, &strDir, NULL, NULL);
-  #else
-    const char *szHome = getenv("HOME");
-    if ( szHome == NULL ) {
-      // we're homeless...
-      wxLogWarning(Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
-      strDir = ".";
-    }
-    else
-       strDir = szHome;
-
-    // add a trailing slash if needed
-    if ( strDir.Last() != '/' )
-      strDir << '/';
-  #endif
-
-  RET(strDir.c_str());
 }
 
 size_t  wxBaseArray::Count() const   

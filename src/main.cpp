@@ -24,6 +24,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/03/13 09:36:18  prez
+** Completed help file, we now have full help text.
+**
 ** Revision 1.38  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -74,7 +77,7 @@ int main(int argc, char **argv)
     Trace::levelname.push_back(Trace::levelname_struct( "CHAT*", Trace::Chatter ));
     Trace::levelname.push_back(Trace::levelname_struct( "CHE*", Trace::CheckPoint ));
     Trace::levelname.push_back(Trace::levelname_struct( "C*P*", Trace::CheckPoint ));
-    Trace::levelname.push_back(Trace::levelname_struct( "COM*", Trace::CheckPoint ));
+    Trace::levelname.push_back(Trace::levelname_struct( "COM*", Trace::Comments ));
     Trace::levelname.push_back(Trace::levelname_struct( "F*NC*", Trace::Functions ));
     Trace::levelname.push_back(Trace::levelname_struct( "MOD*", Trace::Modify ));
     Trace::levelname.push_back(Trace::levelname_struct( "CHANG*", Trace::Changing ));
