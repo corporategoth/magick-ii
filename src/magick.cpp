@@ -1177,7 +1177,9 @@ void Magick::load_databases()
 
     // the below is megaly fucked up, need to do load from file to memory stream, 
     // then pass that stream on down to the load_database code
-    wxMemoryStream chanservstrm;
+
+    unsigned char temporarybuffer_to_facilitate_code_completion[5000];
+    wxMemoryInputStream chanservstrm(temporarybuffer_to_facilitate_code_completion,5000);
     wxInputStream *strm=create_input_stream(chanservstrm);
     chanserv.load_database(*strm);
     destroy_input_stream();
@@ -1188,7 +1190,7 @@ void Magick::save_databases()
     // to buggered to think about it tonight, maybe tommorow night.
 }
 
-wxInputStream *Magick::create_input_stream(wxMemoryStream &in)
+wxInputStream *Magick::create_input_stream(wxMemoryInputStream &in)
 {
     wxInputStream *Result=&in;
     if(files.Password()!="")
@@ -1221,7 +1223,7 @@ void Magick::destroy_input_stream()
 	cstrm=NULL;
     }
 }
-wxOutputStream *Magick::create_output_stream(wxMemoryStream &out)
+wxOutputStream *Magick::create_output_stream(wxMemoryOutputStream &out)
 {
     return NULL;
 }
