@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.145  2000/12/29 22:00:17  prez
+** Some changes to the message dequeing (using release now
+**
 ** Revision 1.144  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -346,37 +349,43 @@ int mBaseTask::svc(void)
     mThread::Attach(tt_mBase);
     NFT("mBaseTask::svc");
     ACE_Message_Block *mblock;
+    ACE_Message_Block::ACE_Message_Type type = 0;
     char *transit;
     int retval = 0;
     
     while(!Parent->Shutdown() && retval >= 0)
     {
+	type = 0;
 	mblock = NULL;
+	transit = NULL;
 	{
 	    MLOCK(("MessageQueue"));
 	    message_queue_.dequeue(mblock);
-	}
-	if (mblock != NULL)
-	{
-	    switch (mblock->msg_type())
+	    if (mblock != NULL)
 	    {
-	    case ACE_Message_Block::MB_DATA:
-		transit = NULL;
-		transit = mblock->base();
-		if (transit != NULL)
-		{
-		    retval = message_i(transit);
-		    delete [] transit;
-		}
-		break;
-	    case ACE_Message_Block::MB_HANGUP:
-		retval = -1;
-		break;
-	    default:
-		LOG((LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
-							mblock->msg_type()));
+		type = mblock->msg_type();
+		if (mblock->data_block() != NULL)
+		    transit = mblock->base();
+		mblock->release();
 	    }
-	    delete mblock;
+	}
+	switch (type)
+	{
+	case ACE_Message_Block::MB_DATA:
+	    if (transit != NULL)
+	    {
+		retval = message_i(transit);
+		delete [] transit;
+	    }
+	    break;
+	case ACE_Message_Block::MB_HANGUP:
+	    retval = -1;
+	    break;
+	case 0:
+	    break;
+	default:
+	    LOG((LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
+							mblock->msg_type()));
 	}
     }
     DRET(retval);
