@@ -76,6 +76,8 @@ int Magick::Start()
 		return MAGICK_RET_ERROR;
 	}
 	// load the local messages database and internal "default messages"
+	// could we maybe have the external messages as part of the ini?
+	LoadInternalMessages();
 
 	if(logfile!=NULL)
 		fclose(logfile);
@@ -116,25 +118,340 @@ void Magick::dump_help(mstring & progname)
 		<<endl;
 }
 
-void Magick::LoadLocalMessages()
+void Magick::LoadInternalMessages()
 {
-	mstring tempstor=
-	// initial mstring needed here to convert it from char *'s to
-	// mstring operator+'s
-	mstring("ERR_READ_DB=Error reading %s database.")+
-	"ERR_WRITE_DB=Error writing %s database."+
-	"ERR_UNKNOWN_SERVMSG=Unknown message from server (%s).";
+	/* note left side of message can have spaces before '=' that will be trimmed
+		right side will *not* be trimmed*/
+	mstring tempstor[]=
+	{
+	/* Log stuff (NO FORMATTING HERE!) */
+	"ERR_READ_DB=Error reading %s database.",
+	"ERR_WRITE_DB=Error writing %s database.",
+	"ERR_UNKNOWN_SERVMSG=Unknown message from server (%s).",
 
-	mstring currentword,rest=tempstor;
+	/* Incorrect Syntax */
+	"ERR_UNKNOWN_COMMAND=Unrecognized command \2%s\2.  Type \2/msg %s HELP\2 for help.",
+	"ERR_UNKNOWN_OPTION=Unrecognized option \2%s\2.  Type \2/msg %s HELP %s\2 for help.",
+	"ERR_MORE_INFO=Type \2/msg %s HELP %s\2 for more information.",
+	"ERR_NOHELP=No help available for command \2%s\2.",
+	"ERR_STARTHRESH=Entry must have at least %d non-*, ? or . characters.",
+	"ERR_REQ_PARAM=%s requires a parameter.\n",
+	"ERR_NEED_MLOCK_PARAM=Paramater required for MLOCK +%c.",
+	"ERR_MLOCK_POSITIVE=Paramater for MLOCK +%c must be positive.",
+	"ERR_MLOCK_UNKNOWN=Unknown MLOCK character \2%c\2 ignored.",
+	"ERR_SECURE_NICKS=SECURE access lists may only contain registered nicknames.",
+	"ERR_FORMATTING=You must specify \2%s\2 only.",
+	"ERR_MAY_NOT_HAVE=You may not use a %c character.",
+	"ERR_MUST_HAVE=You must include a %c character.",
 
-	while(rest!="")
+	/* Access Denied */
+	"ERR_WRONG_PASSWORD=Password incorrect.",
+	"ERR_ACCESS_DENIED=Access denied.",
+	"ERR_SUSPENDED_NICK=Access denied for SUSPENDED nicknames.",
+	"ERR_SUSPENDED_CHAN=Access denied for SUSPENDED channels.",
+	"ERR_TEMP_DISABLED=Sorry, \2%s\2 is temporarily disabled.",
+	"ERR_FAILED=Sorry, \2%s\2 failed.",
+	"ERR_YOU_DONT_EXIST=Sorry, could not obtain your user information.",
+	"ERR_CHAN_NOTVALID=\2%s\2 is not a valid channel name.",
+	"ERR_READ_ONLY=\2WARNING\2: Services are in read-only mode, changes will not be saved.",
+
+	/* Need verification */
+	"ERR_NEED_PASSWORD=Password identification required for \2%s\2.",
+	"ERR_NEED_OPS=You must be a channel operator for \2%s\2.",
+	"ERR_IDENT_NICK_FIRST=Please retry after typing \2/MSG %s IDENTIFY \37password\37.",
+	"ERR_IDENT_CHAN_FIRST=Please retry after typing \2/MSG %s IDENTIFY \37%s password\37.",
+	"ERR_NICK_FORBIDDEN=This nickname may not be used.  Please choose another.",
+	"ERR_NICK_OWNED=This nickname is owned by someone else.  Please choose another.",
+	"ERR_NICK_SECURE=This nickname is registered and protected.",
+	"ERR_NICK_IDENTIFY=If this is your nick, type \2/MSG %s IDENTIFY \37password\37",
+	"ERR_WILL_KILL_YOU=If you do not change within one minute, you will be disconnected.",
+
+	/* Done as or to wrong person */
+	"ERR_MUST_BE_HOST=\2%s\2 must be done as the HOST nickname.",
+	"ERR_CANT_BE_HOST=\2%s\2 may not be done as the HOST nickname.",
+	"ERR_MUST_BE_LINK=\2%s\2 must be done as a LINKED nickname.",
+	"ERR_CANT_BE_LINK=\2%s\2 may not be done on a LINKED nickname.",
+	"ERR_MUST_BETO_HOST=\2%s\2 must be performed on a HOST nickname.",
+	"ERR_CANT_BETO_HOST=\2%s\2 may not be performed on a HOST nickname.",
+	"ERR_MUST_BETO_LINK=\2%s\2 must be performed on a LINKED nickname.",
+	"ERR_CANT_BETO_LINK=\2%s\2 may not be performed on a LINKED nickname.",
+	"ERR_NOT_ON_YOURSELF=\2%s\2 may not be performed on yourself.",
+	"ERR_NOT_ON_IRCOP=\2%s\2 may not be performed on an IRC Operator.",
+	"ERR_ONLY_ON_IRCOP=\2%s\2 may only be performed on an IRC Operator.",
+	"ERR_MUST_BE_IRCOP=You must have the IRC Operator flag set to \2%s\2.",
+
+	/****************************************************************************
+	 *********************************** MISC ***********************************
+	 ****************************************************************************/
+
+	"INFO_SYNC_TIME=Databases will sync in %s.",
+	"INFO_LIST_MATCH=List of entries matching \2%s\2:",
+	"INFO_END_OF_LIST=End of list - %d/%d matches shown.",
+	"INFO_EMAIL=E-Mail",
+	"INFO_URL=WWW Page (URL)",
+	"INFO_FOUNDER=Founder",
+	"INFO_DESC=Description",
+	"INFO_MLOCK=Mode Lock",
+	"INFO_JOIN=ChanServ Join",
+
+	/* Different lists maintinance */
+	"LIST_THERE=\2%s\2 is already present (or inclusive) on %s %s list.",
+	"LIST_NOT_THERE=\2%s\2 not found on %s %s list.",
+	"LIST_NOT_FOUND=No such entry \2#%d\2 on %s %s list.",
+	"LIST_ADDED=\2%s\2 has been added to %s %s list.",
+	"LIST_ADDED_AT=\2%s\2 has been added to %s %s at \2%s\2.",
+	"LIST_REMOVED=\2%s\2 has been removed from %s %s list.",
+	"LIST_REMOVED_NUM=Entry \2#%d\2 has been removed from %s %s list.",
+	"LIST_REMOVED_MASK=%d entr%s matching \2%s\2 removed from %s %s list.",
+	"LIST_REMOVED_ALL=All entries on %s %s list removed.",
+	"LIST_UNCHANGED=\2%s\2 unchanged on %s %s list at \2%s\2.",
+	"LIST_CHANGED=\2%s\2 changed on %s %s list to \2%s\2.",
+	"LIST_LIMIT=Sorry, you may only have %d entries on %s %s list.",
+
+	/* Output in multi files */
+	"MULTI_GETPASS=Password for %s (%s) is \2%s\2.",
+	"MULTI_GETPASS_WALLOP=\2%s\2 used GETPASS on \2%s\2 (%s).",
+	"MULTI_FORBID=\2%s\2 has been FORBIDDEN.",
+	"MULTI_SUSPEND=\2%s\2 (%s) has been SUSPENDED.",
+	"MULTI_UNSUSPEND=\2%s\2 (%s) has been UNSUSPENDED.",
+
+	/* process stuff */
+	"FLOODING=%s is FLOODING services (placed on %s ignore).",
+	"TEMP_FLOOD=Services FLOOD triggered (>%d messages in %d seconds).  You are being ignored for %d seconds.",
+	"PERM_FLOOD=Services FLOOD triggered >%d times in one connection.  You are now on perminant ignore.",
+	"IS_IGNORED=You have triggered PERM ignore on a previous connection.  You will not be answered by services.",
+	"SERVICES_OFF_REASON=Services are currently \2OFF\2 (%s).",
+	"SERVICES_OFF=Services are currently \2OFF\2.",
+	"SERVICES_ON=Services have now been switched back \2ON\2 - Please use them at will.",
+	"ONOFF_NOTIFY=Services switched \2%s\2 by request of \2%s\2.",
+
+	/****************************************************************************
+	 ********************************* NickServ *********************************
+	 ****************************************************************************/
+
+	/* INFO displays */
+	"NS_INFO_INTRO		=%s is %s",
+	"NS_INFO_HOST		=        Host Nick: \2%s\2",
+	"NS_INFO_EMAIL		=   E-Mail Address: %s",
+	"NS_INFO_URL		=   WWW Page (URL): %s",
+	"NS_INFO_SUSPENDED	=    Suspended For: %s",
+	"NS_INFO_USERMASK	=Last Seen Address: %s",
+	"NS_INFO_REGISTERED	=       Registered: %s ago",
+	"NS_INFO_ONLINE_AS	=        Online As: %s",
+	"NS_INFO_AONLINE_AS	=   Also Online As: %s",
+	"NS_INFO_LAST_SEEN	=        Last Seen: %s ago",
+	"NS_INFO_LAST_ONLINE=      Last Online: %s ago",
+	"NS_INFO_OPTIONS	=          Options: %s",
+	"NS_INFO_COUNT=%d nicknames currently registered.",
+	"NS_INFO_ONLINE=This user is currently online, type \2/whois %s\2 for more information."
+
+	/* FLAG names */
+	"NS_FLAG_SUSPENDED=\2SUSPENDED USER\2",
+	"NS_FLAG_KILLPROTECT=Kill Protection",
+	"NS_FLAG_SECURE=Security",
+	"NS_FLAG_PRIVATE=Private",
+	"NS_FLAG_IRCOP=IRC Operator",
+	"NS_FLAG_SOP=Services Operator",
+	"NS_FLAG_NONE=None",
+
+	/* General returns */
+	"NS_REGISTERED=Your nickname is now registered under host \2%s\2.",
+	"NS_LINKED=Your nickname has now been linked to \2%s\2.",
+	"NS_DROPPED=Nickname %s%s%s%s has been dropped.",
+	"NS_CHANGE_PASSWORD=Your password is now \2%s\2 - Please remember this for later use.",
+	"NS_KILLED_IMPOSTER=User claiming your nickname has been killed.",
+	"NS_RELEASE=Type \2/MSG %s RELEASE %s \37password\37 to use it before the one-minute timeout.",
+	"NS_FORCED_CHANGE=Your nickname has been forcibly changed.",
+	"NS_FORCED_KILL=Nickname protection enforced",
+	"NS_FAILMAX_KILL=Repeated password failure",
+	"NS_GHOST_KILL=Removing GHOST user",
+	"NS_IDENTIFIED=Password accepted - you are now recognized.",
+	"NS_FORBID_WALLOP=\2%s\2 used FORBID on nickname \2%s\2 (%d slave nicks dropped).",
+
+	/* Ownership and status */
+	"NS_NOT_YOURS=Nickname %s does not belong to you.",
+	"NS_IN_USE=Nickname %s is currently in use.",
+	"NS_NOT_IN_USE=Nickname %s is not currently in use.",
+	"NS_YOU_NO_SLAVES=You have no slave nicks.",
+	"NS_NO_SLAVES=Nickname %s has no slave nicks.",
+	"NS_YOU_NOT_REGISTERED=Your nickname is not registered.",
+	"NS_NOT_REGISTERED=Nickname %s is not registered.",
+	"NS_TAKEN=Nickname %s is already registered.",
+	"NS_CANNOT_REGISTER=Nickname %s may not be registered.",
+	"NS_CANNOT_LINK=Nickname %s may not be linked.",
+	"NS_AM_IGNORED=%s is ignoring your memos.",
+	"NS_IS_SUSPENDED_MEMO=%s is SUSPENDED, therefore may not retrieve memos.",
+	"NS_IS_SUSPENDED=Nickname %s is SUSPENDED.",
+	"NS_IS_NOT_SUSPENDED=Nickname %s is not SUSPENDED.",
+
+
+	/****************************************************************************
+	 ********************************* ChanServ *********************************
+	 ****************************************************************************/
+
+	/* INFO Displays */
+	"CS_INFO_INTRO		=Information on channel %s",
+	"CS_INFO_FOUNDER	=       Founder: %s%s%s%s",
+	"CS_INFO_DESC		=   Description: %s",
+	"CS_INFO_URL		=WWW Page (URL): %s",
+	"CS_INFO_REG_TIME	=    Registered: %s ago",
+	"CS_INFO_LAST_USED	=     Last Used: %s ago",
+	"CS_INFO_SUSPENDED	= Suspended For: %s",
+	"CS_INFO_SUSPENDER	=  Suspended By: %s",
+	"CS_INFO_TOPIC		=    Last Topic: %s",
+	"CS_INFO_TOPIC_SET	=  Topic Set By: %s",
+	"CS_INFO_REVENGE	= Revenge Level: %s",
+	"CS_INFO_CHAN_STAT	= Channel Stats: %d user%s, %d voice%s, %d op%s.",
+	"CS_INFO_OPTIONS	=       Options: %s",
+	"CS_INFO_MLOCK		=     Mode Lock: %s",
+	"CS_INFO_COUNT		=%d channels currently registered.",
+
+	/* FLAG Names */
+	"CS_FLAG_SUSPENDED=\2SUSPENDED CHANNEL\2",
+	"CS_FLAG_PRIVATE=Private",
+	"CS_FLAG_KEEPTOPIC=Topic Retention",
+	"CS_FLAG_TOPICLOCK=Topic Lock",
+	"CS_FLAG_SECUREOPS=Secure Ops",
+	"CS_FLAG_SECURE=Secure",
+	"CS_FLAG_RESTRICTED=Restricted",
+	"CS_FLAG_NONE=None",
+
+	/* Bitchy Stuff */
+	"CS_REV_LEVEL=Revenge level for %s currently at \2%s\2 (%s).",
+	"CS_REV_SET=Revenge level for %s set to \2%s\2 (%s).",
+	"CS_REV_DEOP=\2REVENGE\2 - Do not deop %s.",
+	"CS_REV_KICK=\2REVENGE\2 - Do not kick %s.",
+	"CS_REV_BAN=\2REVENGE\2 - Do not ban %s.",
+	"CS_SUSPENDED_TOPIC=[\2SUSPENDED\2] %s [\2SUSPENDED\2]",
+	"CS_FORBID_WALLOP=\2%s\2 used FORBID on channel \2%s\2.",
+
+	/* Levels and Access */
+	"CS_LEVEL_YOU=You can %s.",
+	"CS_LEVEL_LIST=Level required for commands on %s:",
+	"CS_LEVEL_LOW=Cannot change levels below %d.",
+	"CS_LEVEL_HIGH=Cannot change levels above %d.",
+	"CS_LEVEL_CHANGE=Level for %s on %s changed to \2%d\2.",
+	"CS_LEVEL_NO_CHANGE=Level for %s on %s unchanged at \2%d\2.",
+	"CS_LEVEL_RESET=All levels for %s reset.",
+	"CS_LEVEL_NONE=Unknown level type \2%s\2.",
+	"CS_ACCESS_ZERO=Access levels must be non-zero.",
+	"CS_ACCESS_LOW=Cannot add or change to access levels below %d.",
+	"CS_ACCESS_HIGH=Cannot add or change to access levels above %d.",
+	"CS_ACCESS_HIGHER=Sorry, %s is higher or equal on access list.",
+	"CS_ACCESS_HIGHER_MATCH=Sorry, %s matches %s (higher or equal on access list).",
+
+	/* General Outputs */
+	"CS_REGISTERED=Channel %s has been registered under your nickname \2%s\2.",
+	"CS_DROPPED=Channel %s has been dropped.",
+	"CS_CHANGE_PASSWORD=Channel %s password is now \2%s\2 - Please remember this for later use.",
+	"CS_IDENTIFIED=Password accepted - you now have founder access to %s.",
+	"CS_YOU_UNBANNED=You have been unbanned from %s.",
+	"CS_UNBANNED=%s has been unbanned from %s.",
+	"CS_CLEARED=\2%s\2 have been cleared from channel %s.",
+	"CS_CLEAR_KICK=CLEAR USERS command from %s",
+
+	/* Ownerships */
+	"CS_ERR_SUSPENDED=Channel %s is currently SUSPENDED, no ops/voices will be allowed.",
+	"CS_ERR_REGISTERED=Channel %s is a registered channel, access privilages apply.",
+	"CS_IN_USE=Channel %s is currently in use.",
+	"CS_NOT_IN_USE=Channel %s is not currently in use.",
+	"CS_NOT_REGISTERED=Channel %s is not registered.",
+	"CS_TAKEN=Channel %s is already registered.",
+	"CS_CANNOT_REGISTER=Channel %s may not be registered.",
+	"CS_FORBIDDEN=Channel %s may not be used.",
+	"CS_GET_OUT=You are not permitted in this channel",
+	"CS_IS_SUSPENDED=Channel %s is SUSPENDED.",
+	"CS_IS_NOT_SUSPENDED=Channel %s is not SUSPENDED.",
+	"CS_YOU_NOT_IN_CHAN=You are not in channel %s.",
+	"CS_YOU_IN_CHAN=You are already in channel %s.",
+	"CS_NOT_IN_CHAN=%s is not in channel %s.",
+	"CS_IN_CHAN=%s is already in channel %s.",
+	"CS_YOU_NOT_GOT=You are not %s in channel %s.",
+	"CS_NOT_GOT=%s is not %s in channel %s.",
+	"CS_YOU_ALREADY_GOT=You are already %s in channel %s.",
+	"CS_ALREADY_GOT=%s is already %s in channel %s.",
+
+	/****************************************************************************
+	 ********************************* MemoServ *********************************
+	 ****************************************************************************/
+
+	"MS_IS_BACKUP=Sorry, backup services currently in use, MEMOS and NEWS are disabled.",
+
+	"MS_YOU_DONT_HAVE=You have no memos.",
+	"NS_YOU_DONT_HAVE=There are no news articles for %s.",
+	"MS_YOU_HAVE=You have %d memo%s.",
+	"NS_YOU_HAVE=There %s %d news article%s for %s.",
+	"MS_DOESNT_EXIST=Memo %d does not exist!",
+	"NS_DOESNT_EXIST=News article %d does not exist for %s!",
+	"NS_MAY_NOT=You may not %s a news article.",
+
+	"MS_LIST=To read, type \2/msg %s READ \37num\37.",
+	"NS_LIST=To read, type \2/msg %s READ %s \37num\37.",
+	"MS_NEW=You have a new %smemo (#%d) from %s.",
+	"MS_READ_NEW=Type \2/msg %s READ %d\2 to read it.",
+	"NS_NEW=There is a new news article (#%d) for %s from %s.",
+	"NS_READ_NEW=Type \2/msg %s READ %s %d\2 to read it.",
+	"MS_MEMO=Memo %d from %s (sent %s ago).",
+	"NS_MEMO=News article %d for %s from %s (sent %s ago)",
+	"MS_TODEL=To delete, type \2/msg %s DEL %d\2.",
+	"MS_TODEL_ALL=To delete, type \2/msg %s DEL ALL\2.",
+
+	"MS_SEND=Memo sent to %s (%s).",
+	"NS_SEND=News article posted for %s.",
+	"MS_MASS_SEND=Memo sent to all %s.",
+	"MS_DELETE=Memo %d has been deleted.",
+	"NS_DELETE=News article %d for %s has been deleted.",
+	"MS_DELETE_ALL=All of your memos have been deleted.",
+	"NS_DELETE_ALL=All news articles for %s have been deleted.",
+
+	/****************************************************************************
+ 	 ********************************* OperServ *********************************
+	 ****************************************************************************/
+
+
+	"OS_GLOBAL_WALLOP=\2%s\2 just sent a message to ALL users.",
+
+	"OS_SET_EXP=Expiries (days):",
+	"OS_SET_EXP_CHAN =    Channels : \2%d\2",
+	"OS_SET_EXP_NICK =    Nicknames: \2%d\2",
+	"OS_SET_EXP_NEWS =    News     : \2%d\2",
+	"OS_SET_EXP_AKILL=    AutoKills: \2%d\2",
+	"OS_SET_SOPS=Maximum of \2%d\2 Services Operators (%d currently).",
+	"OS_SET_CLONES=Each user may have \2%d\2 connections.",
+	"OS_SET_RELEASE=Nicknames held for \2%d\2 seconds.",
+	"OS_SET_AKICKS=Maximum of \2%d\2 AKICK's per channel.",
+	"OS_SET_FLOOD=Flood triggered on \2%d\2 messages in \2%d\2 seconds.",
+	"OS_SET_IGNORE=Ignore lasts for \2%d\2 seconds, \2%d\2 ignores makes it perminant.",
+	"OS_SET_RELINK=Services relink in \2%d\2 seconds upon SQUIT.",
+	"OS_SET_OVERRIDE=ChanServ Override is \2%s\2",
+	"OS_SET_UPDATE=Databases saved every \2%d\2 seconds.",
+	"OS_SET_ADMINS=Services Admins: \2%s\2",
+
+	"OS_QLINE=\2%s\2 activated QUARENTINE on nick \2%s\2.",
+	"OS_UNQLINE=\2%s\2 removed QUARENTINE on nick \2%s\2.",
+	"OS_SVSNOOP_ON=\2%s\2 activated OPER QUARENTINE on \2%s\2.",
+	"OS_SVSNOOP_OFF=\2%s\2 removed OPER QUARENTINE on \2%s\2.",
+	"OS_JUPE=JUPING \2%s\2 by request of \2%s\2.",
+	"OS_UPDATE=Updating databases.",
+	"OS_NEW_MESSAGE=\2%s\2 created a new %s message.",
+	"OS_AKILL_ADDED=\2%s\2 has been added to services %sAKILL list (%d users killed).",
+	"OS_AKILL_NOT_THERE=\2%s\2 not found on services AKILL list or is PERMANENT.",
+	"OS_AKILL_EXPIRE=Expring AKILL on %s (%s) by %s.",
+	"OS_AKILL_BANNED=You are banned (%s)",
+	"OS_CLONE_HIGH=CLONE AMOUNT must be less than %d.",
+	"OS_CLONE_LOW=CLONE AMOUNT must be greater than %d.",
+
+	""};
+
+	int i=0;
+
+	while(tempstor[i]!="")
 	{
 		mstring name,value;
-		currentword=rest.Before('\n');
-		rest=rest.After('\n');
-		name=currentword.Before('=');
-		value=currentword.After('=');
+		name=tempstor[i].Before('=').Trim().Trim(false);
+		value=tempstor[i].After('=');
 		Messages[name]=value;
+		i++;
 	}
 }
 

@@ -29,7 +29,7 @@ class Magick
 	ACE_Thread_Mutex mutex;
 public:
 	mstring parseEscapes(const mstring& in);
-	void LoadLocalMessages();
+	void LoadInternalMessages();
 	void dump_help(mstring& progname);
 	mstring getMessage(const mstring& name);
 	mstring config_file;
