@@ -40,7 +40,9 @@ void mBase::push_message(const mstring& message)
 	    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
 	    Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
 	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
-		    CP(("High water mark reached, failed to create a new thread"));
+		CP(("High water mark reached, failed to create a new thread"));
+	    else
+		COM(("High water mark reached, creating new thread"));
 	}
 	ACE_Message_Block *mb=new ACE_Message_Block();
 	//todo: enqueue_prio
@@ -78,20 +80,66 @@ void *thread_handler(void *owner)
 	{
 	    unsigned long messageid=*(mb->rd_ptr());
 	    delete mb; // as it's no longer needed once we get the message id.
-	    // lock here temporarily
-	    mstring message=mBase::Buffer_Tuple[messageid];
-	    mBase::Buffer_Tuple.erase(messageid);
-	    // unlock here and start splitting and siphoning.
-
-	    // lock here temporarily
-	    if(mBase::Buffer_Queue.message_count()<
-		MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+MagickObject->low_water_mark*sizeof(unsigned long))
+	    mstring message;
 	    {
-		mBase::Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
-		 mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
-		 return NULL;
+		WLOCK("thread_handler", "pop_message");
+		message=mBase::Buffer_Tuple[messageid];
+		mBase::Buffer_Tuple.erase(messageid);
 	    }
-	    // unlock here and return if necessary. return will kill off this thread.
+
+	    mstring tmp[3];
+	    tmp[0]=message.Before(" ");				// 1st arg
+	    tmp[1]=message.After(" ").Before(" ");		// 2nd arg
+	    tmp[2]=message.After(" ").After(" ").Before(" ");	// 3rd arg
+	    tmp[1].MakeUpper();
+
+	    if (tmp[1] == "PRIVMSG" || tmp[1] == "NOTICE") {
+		// We pass to services all except target.
+		// We send target as a seperate argument.
+		mstring pass=tmp[0]+tmp[1]+message.After(" ").After(" ").After(" ");
+		mstring names;
+
+		// Find out if the target nick is one of the services 'clones'
+		// (and if it is, which one?)  Pass the message to them if so.
+//		     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//		    MagickObject->operserv.execute(tmp[2], pass);
+		     if ((names=" "+MagickObject->nickserv.getnames()+" ").Find(" "+tmp[2]+" "))
+		    MagickObject->nickserv.execute(tmp[2], pass);
+		else if ((names=" "+MagickObject->chanserv.getnames()+" ").Find(" "+tmp[2]+" "))
+		    MagickObject->chanserv.execute(tmp[2], pass);
+//		else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//		    MagickObject->memoserv.execute(tmp[2], pass);
+//		else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//		    MagickObject->helpserv.execute(tmp[2], pass);
+
+		// How do we want to handle custom services (BOB created)?
+
+		// Not a MSG/NOTICE to services, fall through
+		// (it could be to a channel, or unrecognised nick).
+//		else
+//		    Server.execute (message);
+
+	    } else {
+		// This handles all non-msgs/notices.
+//		Server.execute (message);
+	    }
+
+	    /* Locking here because we dont want two threads
+	     * dieing because they both counted at the same
+	     * time and before the other had died.  Unlikely,
+	     * but it CAN happen.
+	     */
+	    {
+		MLOCK("thread_handler", "LWM");
+		if(mBase::Buffer_Queue.message_count()<
+			MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+MagickObject->low_water_mark*sizeof(unsigned long))
+		{
+		    mBase::Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
+		    mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
+		    COM(("Low water mark reached, killing thread."));
+		    return NULL;
+		}
+	    }
 	}
     }
 
