@@ -85,7 +85,6 @@ public:
 			Print("<%s%s/>\n", t.ch, param.c_str());
 	}
 
-#if HAVE_WSTRING
 	inline void WriteElement(Tag& t, const wstring& val, dict& attribs = blank_dict) {
 		Indent();
 		mstring param;
@@ -97,7 +96,6 @@ public:
 		else
 			Print("<%s%s/>\n", t.ch, param.c_str());
 	}
-#endif /* HAVE_WSTRING */
 
 	inline void WriteElement(Tag& t, const mDateTime& val, dict& attribs = blank_dict) {
 		WriteElement(t,static_cast<double>(GMT(val, true)), attribs);
@@ -107,9 +105,8 @@ public:
 // IDataInput: bundles together methods for converting from the char*
 // returned by the Data() method (inherited from IData).
 
-template<class T>
 class IDataInput:
-public IData<T> {
+public IData {
 public:
 	inline void Retrieve(bool& val) const {
 		val = (atoi(Data()) != 0);
@@ -138,11 +135,9 @@ public:
 	inline void Retrieve(mstring& val) const {
 		val = XMLUnEscape(Data());
 	}
-#if HAVE_WSTRING
 	inline void Retrieve(wstring& val) const {
 		val = XMLUnEscapeW(Data());
 	}
-#endif /* HAVE_WSTRING */
 
     void Retrieve(mDateTime& val) const
     {

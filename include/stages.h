@@ -25,6 +25,9 @@ RCSID(stages_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/12/25 05:57:27  prez
+** Updated SXP and EXPAT -- untested, but should work.
+**
 ** Revision 1.5  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -89,6 +92,7 @@ class StringStage : public Stage
     mstring i_str;
     size_t offset;
 
+    StringStage();
 public:
     StringStage(const mstring &in);
     StringStage(Stage &PrevStage);
@@ -156,6 +160,7 @@ class XMLStage : public Stage
     SXP::CParser *parser;
     size_t curpos;
 
+    XMLStage();
 public:
     XMLStage(SXP::IPersistObj *pRoot, SXP::dict &attribs = SXP::blank_dict);
     XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot);

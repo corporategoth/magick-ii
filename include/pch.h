@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2001/12/25 05:57:27  prez
+** Updated SXP and EXPAT -- untested, but should work.
+**
 ** Revision 1.44  2001/12/12 07:43:52  prez
 ** Some more platform changes.  Made it look for _snprintf and _vsnprintf
 ** aswell (is the case on windows).  Also updated windows config.h.win.
@@ -168,10 +171,12 @@
 #ifdef STDC_HEADERS
 #  ifdef  __cplusplus
 #    include <cstdlib>
+#    include <cstddef>
 #    include <cstdarg>
 #    include <cstring>
 #  else
 #    include <stdlib.h>
+#    include <stddef.h>
 #    include <stdio.h>
 #    include <string.h>
 #  endif
