@@ -12,6 +12,8 @@ int mrandom(int upper)
 {
 #ifdef __BORLANDC__
 	return random(upper);
+#elseif _MSC_VER
+	return rand() % upper;
 #else
 	return random() % upper;
 #endif
