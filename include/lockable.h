@@ -416,10 +416,10 @@ public:
     ACE_SOCK_Stream *Unbind();
 
     mstring Local_Host() const;
-    unsigned long Local_IP() const;
+    mstring Local_IP() const;
     unsigned short Local_Port() const;
     mstring Remote_Host() const;
-    unsigned long Remote_IP() const;
+    mstring Remote_IP() const;
     unsigned short Remote_Port() const;
 
     bool IsConnected() const;

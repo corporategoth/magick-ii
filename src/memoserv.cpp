@@ -1755,12 +1755,16 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
 		    if (Magick::instance().dcc != NULL)
 		    {
 			unsigned short port = mSocket::FindAvailPort();
+			mstring address = DccEngine::addressEncode(Magick::instance().LocalHost());
+			if (port == static_cast<unsigned short>(0) || address.empty())
+			{
+			    SEND(mynick, source, "DCC/FAILED", ("SEND"));
+			    return;
+			}
 
-			::privmsg(mynick, source,
-				  DccEngine::encode("DCC SEND",
-						    filename + " " + mstring(Magick::instance().LocalHost()) + " " +
-						    mstring(port) + " " + mstring(fsize)));
 			Magick::instance().dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
+			::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename + " " + address + " " + mstring(port) +
+								    " " + mstring(fsize)));
 		    }
 		}
 	    }

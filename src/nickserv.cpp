@@ -1784,12 +1784,16 @@ void NickServ::do_Send(const mstring & mynick, const mstring & source, const mst
 	{
 	    Magick::instance().nickserv.stats.i_Send++;
 	    unsigned short port = mSocket::FindAvailPort();
+	    mstring address = DccEngine::addressEncode(Magick::instance().LocalHost());
+	    if (port == static_cast<unsigned short>(0) || address.empty())
+	    {
+		SEND(mynick, source, "DCC/FAILED", ("SEND"));
+		return;
+	    }
 
-	    ::privmsg(mynick, source,
-		      DccEngine::encode("DCC SEND",
-					filename + " " + mstring(Magick::instance().LocalHost()) + " " + mstring(port) + " " +
-					mstring(filesize)));
 	    Magick::instance().dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
+	    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename + " " + address + " " + mstring(port) + " " +
+							mstring(filesize)));
 	}
     }
     ETCB();

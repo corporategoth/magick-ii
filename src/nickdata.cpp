@@ -795,7 +795,7 @@ Nick_Live_t::Nick_Live_t()
 Nick_Live_t::Nick_Live_t(const mstring & name, const mDateTime & signon, const mstring & server, const mstring & username,
 			 const mstring & hostname, const mstring & realname)
 : i_Name(name), i_Numeric(0), i_Signon_Time(signon), i_My_Signon_Time(mDateTime::CurrentDateTime()),
-i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname), i_user(username), i_host(hostname), i_alt_host(hostname),
+i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname), i_user(username), i_host(hostname),
 i_server(server.LowerCase()), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false),
 services(false), InFlight(name)
 {
@@ -848,7 +848,7 @@ services(false), InFlight(name)
 Nick_Live_t::Nick_Live_t(const mstring & name, const mstring & username, const mstring & hostname,
 			 const mstring & realname) : i_Name(name), i_Numeric(0), i_Signon_Time(mDateTime::CurrentDateTime()),
 i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname),
-i_user(username), i_host(hostname), i_alt_host(hostname), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0),
+i_user(username), i_host(hostname), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0),
 identified(false), services(true), InFlight(name)
 {
     BTCB();
@@ -1901,9 +1901,17 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
     BTCB();
     FT("Nick_Live_t::AltMask", (static_cast < int > (type)));
 
-    RLOCK2((lck_NickServ, lck_live, i_Name.LowerCase(), "i_user"));
-    RLOCK3((lck_NickServ, lck_live, i_Name.LowerCase(), "i_alt_host"));
+    RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "i_alt_host"));
     mstring retval;
+
+    // If we dont have an althost, use the normal one ...
+    if (i_alt_host.empty())
+    {
+	retval = Mask(type);
+	RET(retval);
+    }
+
+    RLOCK2((lck_NickServ, lck_live, i_Name.LowerCase(), "i_user"));
     mstring user = i_user;
 
     switch (type)

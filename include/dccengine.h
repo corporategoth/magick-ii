@@ -55,6 +55,8 @@ public:
     static mstring lowDequote(const mstring & in);
     static mstring ctcpQuote(const mstring & in);
     static mstring ctcpDequote(const mstring & in);
+    static mstring addressEncode(const mstring & in);
+    static mstring addressDecode(const mstring & in);
     static vector < mstring > ctcpExtract(const mstring & in);
 };
 

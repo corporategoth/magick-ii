@@ -5374,10 +5374,11 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	    if (!nick.empty())
 	    {
 		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
-		if (!Magick::instance().nickserv.IsStored(nlive->Name()) ? 1 :
+		if (!Magick::instance().nickserv.IsStored(nlive->Name()) ||
 		    !Magick::instance().nickserv.GetStored(nlive->Name())->Private())
 		{
-		    sraw("302 " + source + " :" + nlive->Name() + "*=-" + nlive->User() + "@" + nlive->AltHost());
+		    sraw("302 " + source + " :" + nlive->Name() + "*=-" + nlive->User() + "@" +
+						nlive->AltHost().empty() ? nlive->Host() : nlive->AltHost());
 		}
 		else
 		{

@@ -760,7 +760,12 @@ bool mSocket::Connect(const unsigned long host, const unsigned short port, const
 {
     BTCB();
     FT("mSocket::Connect", (host, port, timeout));
-    ACE_INET_Addr tmp(port, host);
+    ACE_INET_Addr tmp;
+    if (tmp.set(port, host) < 0)
+    {
+	last_error = EINVAL;
+	RET(false);
+    }
     bool retval = Connect(tmp, timeout);
 
     RET(retval);
@@ -771,7 +776,12 @@ bool mSocket::Connect(const mstring & host, const unsigned short port, const uns
 {
     BTCB();
     FT("mSocket::Connect", (host, port, timeout));
-    ACE_INET_Addr tmp(port, host);
+    ACE_INET_Addr tmp;
+    if (tmp.set(port, host) < 0)
+    {
+	last_error = EINVAL;
+	RET(false);
+    }
     bool retval = Connect(tmp, timeout);
 
     RET(retval);
@@ -782,7 +792,12 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
 {
     BTCB();
     FT("mSocket::Accept", (port, timeout));
-    ACE_INET_Addr addr(port, Magick::instance().LocalHost());
+    ACE_INET_Addr addr;
+    if (addr.set(port, Magick::instance().LocalHost()) < 0)
+    {
+	last_error = EINVAL;
+	RET(false);
+    }
 
     WLOCK((lck_mSocket, sockid));
     if (sock != NULL)
@@ -869,18 +884,18 @@ mstring mSocket::Local_Host() const
     BTCB();
     NFT("mSocket::Local_Host");
     RLOCK((lck_mSocket, sockid));
-    mstring retval(local.get_host_addr());
+    mstring retval(local.get_host_name());
 
     RET(retval);
     ETCB();
 }
 
-unsigned long mSocket::Local_IP() const
+mstring mSocket::Local_IP() const
 {
     BTCB();
     NFT("mSocket::Local_IP");
     RLOCK((lck_mSocket, sockid));
-    unsigned long retval = local.get_ip_address();
+    mstring retval(local.get_host_addr());
 
     RET(retval);
     ETCB();
@@ -902,18 +917,18 @@ mstring mSocket::Remote_Host() const
     BTCB();
     NFT("mSocket::Remote_Host");
     RLOCK((lck_mSocket, sockid));
-    mstring retval = remote.get_host_addr();
+    mstring retval(remote.get_host_name());
 
     RET(retval);
     ETCB();
 }
 
-unsigned long mSocket::Remote_IP() const
+mstring mSocket::Remote_IP() const
 {
     BTCB();
     NFT("mSocket::Remote_IP");
     RLOCK((lck_mSocket, sockid));
-    unsigned long retval = remote.get_ip_address();
+    mstring retval(remote.get_host_addr());
 
     RET(retval);
     ETCB();

@@ -4,46 +4,53 @@
 *** Magick Development Team Policy ***
 **************************************
 
-
-
 * ALL full releases should compile with NO errors or and minimal
   (unavoidable) warnings on ANY supported platform.
 
-* Alpha releases are to be released in the design phase of
-  any release, for the alpha team to supply feedback of how
-  the core design could be changed, enhanced, etc.  This
-  includes the user interface (or proposed one) as well as the
-  internal data structures, etc.
-  ALPHA TEAM: The code here is guarenteed to be incomplete.
+* Alpha releases are to be released in the design phase of any
+  release, for the alpha team to supply feedback of how the core
+  design could be changed, enhanced, etc.  This includes the user
+  interface as well as the internal data structures, etc.
+  ALPHA TEAM: The code here is guarenteed to be incomplete, so
+              while bugs are welcome, remember this fact.
 
-* Beta releases are to be released before ALL releases.
-  There can be (and usually will be) more than one beta release.
-  These are for the beta team to test out new features, etc and
-  supply feedback on any bugs found.  The object of this team is
-  to ensure no bugs get into full releases.  Beta releases will
-  be released after each major 'module' of code is completed.
+* Beta releases are to be released after all the major modules
+  for that release have been implemented.  There can be (and usually
+  will be) more than one beta release.  These are for the beta team
+  to test out new features, etc and supply feedback on any bugs found.
+  The object of this team is to ensure no bugs get into full releases.
 
-* A full release may not be released until AT LEAST 1 week (the
-  more time the better) has passed since the last beta release.
+* Release candidates are to be released after the beta releases have
+  gone through their testing, and only bugs that are less than 'major'
+  are turning up.  Once release candidates are started, the code will
+  be branched.  At this point, only bugs that are 'critical' and above
+  or have been given the explicit blessing of the head of the Magick
+  Development Team will be fixed.  These releases are geared towards
+  the general user base, there should be very few release candidates.
+
+* A full release may not be released until AT LEAST 1 week (the more
+  time the better) has passed since the last release candidate.
 
 * Patches are only to be released on full releases, and must only
   contain BUG FIXES -- never any new features unless it in itself
   is a bug fix.
 
-* The magick version number should always have a +aX or +bX code
-  appended to the end of it on Alpha and Beta releases.  Patches
-  to full release versions will always append a +pX.
+* The magick version number should always have a -aX, -bX or -rcX
+  appended to the end of it for alpha, beta and release candidate
+  releases respectively.  Patches to full release versions should
+  always append a +pX to the version number.
 
 * Read/Write access to the central CVS archive may only EVER be
   given to official Magick Development Team members.
 
-* Magick must ALWAYS be backward compatable -- any new features
-  must be able to upgrade any data files from any old version
-  of magick.  Magick's preferred way to do this is transperantly.
-  However if they totally conflict of bloat code too much, and
-  conversion utility is acceptable, however code must be internal
-  to Magick to inform the end-user of magick that it is required
-  to run this conversion utility to run this version of magick.
+* Full releases of Magick must ALWAYS be backward compatable -- any
+  new features must be able to upgrade any data files from any old
+  version of magick.  Magick's preferred way to do this is without
+  the user even knowing data has been changed.  However if thw new
+  format totally conflicts the old, and would cause too much code
+  bloat, a conversion utility is acceptable, however code must added
+  to Magick to inform the end-user that it is required to run this
+  conversion utility to run (and subsequent) this version of Magick.
 
 * Always at least try and get you're compiles working before you
   commit to the repository. Reasonable fubars will be understood
@@ -56,10 +63,13 @@
   able to look at your code and understand what its doing, either
   by a good and well-illustrated code flow, or comments about it.
 
-* Pointers are evil and the work of the devil, avoid them if you
-  can use a string that represents a unique 'key' and then create
-  a lookup function that returns the data your after.  Error
-  checking is ESSENTIAL for both pointer and lookup approaches.
+* Pointer should be short-lived in Magick.  While they are useful
+  in pointing to an existing record for short amounts of time, the
+  preferred method of longer-term references to other data items
+  is a simple unique 'key' that can be used to look up the other
+  data item on demand.  This helps with debugging (as all lookup
+  functions can be traced, and exceptions raised on failure), and
+  gives an advantage when we need to make the data persistent.
 
 * Magick II has trace code for a reason -- it should be 'live
   debugable' without a debugger, simply by following the output
@@ -76,14 +86,16 @@
   the actual text (with formatting), so you should only have
   language 'tokens' in your code.
 
-* It is recommended you every so often run your code through the
-  package 'mpatrol', which is a GNU memory profiling and error
-  checking program.  This will tell you about any memory errors
-  that have been introduced to the code base (exceeding memory
-  bounds, failing to free memory, accessing unitialized memory).
-  The INSTALL file tells how to enable this, and where to get it.
-  Alternately you can run magick with Electric Fence (easier to
-  install/use) -- however this is less thorough than mpatrol.
+* Try to limit the amount of compile-time configuration (ie. some
+  kind of behavioral change based on a #define) as much as possible.
+  Its often better to just add a new configuration item.
+
+* It is recommended you every so often run your code through both
+  a code profiler, and memory tracker from time to time.  These
+  utilities will tell you both where efficiency gains would be
+  most beneficial, and about any memory errors that may be in the
+  code (such as failing to free memory, etc).  This should be done
+  at least once before Magick enters the release candidate stage.
   
 
 RULE OF THUMB
@@ -96,9 +108,6 @@ your code will be a violent psychopath who knows where you live.
 Omnipotence has it's benefits, like knowing where you live.
  -- Ungod
 
-People never know where you live when your dead.
- -- PreZ
-
 
 Tracing
 -------
@@ -107,32 +116,23 @@ Magick II developers MUST add trace code to any non-inline
 functions they create.  The types of tracing are listed
 below, and how/where/when to use them:
 
-Stats		0x0001
-    <TBA> should be used to print out vital statistics before
-	and after a process.
-Source		0x0002
-    CSRC(sect, opt, val) should be used when loading INI
-	style source files, and passed 3 options, first
-	the section name, second the option being set, and
-	third the value of that option.
-	This tracing is automatic when you use mConfigEngine.
-    SRC(text) should be used when loading a generic source
-	file of some kind (non-ini style), and simply dumps
-	the text out.
-Bind		0x0004
-    <TBA> should be used when a scripted command is BOUND
-    <TBA> should be used when a scripted command is UNBOUND
-
-CheckPoint	0x0010
+CheckPoint	0x0001
     CP((str, arg...)) should be used at major points in a
 	function that indicate what it is doing at the time.
 	This can also be used to indicate the return value
 	of a function that returns a non-standard type, or
 	an inline function that does not have trace code.
-Comments	0x0020
+Comment		0x0001
     COM((str, arg...)) should be used in for() and while()
 	loops to show up the values being worked on, or
 	looked at (useful for debugging infinate loops!).
+
+Exception	0x0010
+    BTCB() and ETCB() should be added as the very first and
+	last lines in every function, to ensure that if an
+	exception is raised, although it will still be passed
+	to a function above it, it will be traced as passing
+	through (with filename and line number).
 Locking		0x0040
     This tracing is automatic when you use [RWM]LOCK(())
 Functions	0x0080
@@ -160,7 +160,6 @@ Modify		0x0200
 	the arguments as data elements starting at 1 + offset.
     ME(offset, (args)) should be called with the same args as MB,
 	and used at the END of any data modification.
-
     MCB(arg) will call the DumpB() function (which you must
 	write to use this), which is expected to have any MB()
 	calls in it to dump your current object, it will then
@@ -169,15 +168,31 @@ Modify		0x0200
 	The argument should be the same, and this should be
 	called after the data has been modified.  These two
 	options essentially implement Modify + Changing.
+Source		0x0400
+    CSRC(sect, opt, val) should be used when loading INI
+	style source files, and passed 3 options, first
+	the section name, second the option being set, and
+	third the value of that option.
+	This tracing is automatic when you use mConfigEngine.
+    SRC(text) should be used when loading a generic source
+	file of some kind (non-ini style), and simply dumps
+	the text out.
+Bind		0x0800
+    <TBA> should be used when a scripted command is BOUND
+    <TBA> should be used when a scripted command is UNBOUND
 
-Sockets		0x1000
+Stats		0x1000
+    <TBA> should be used to print out vital statistics before
+	and after a process.
+Sockets		0x2000
     This tracing is automatic when you use the mSocket class.
-Chatter 	0x2000
+Chatter 	0x4000
     CH(direction, str) should be used when receiving OR sending
 	data to or from clients.
 External	0x8000
     <TBA> should be used with the external CALL being made
     <TBA> should be used to capture the data RETURNED externally.
+
 
 NOTE: Tracing may be activated at commandline with:
     magick --trace ALL:0xffff
@@ -203,7 +218,7 @@ variant.h for a list of known types).
 Magick also has the ability JUST to lock for an IF (ie. you only
 need the condition within the if, not while inside the conditional
 block).  These are accessed with RLOCK_IF((),cond),
-WLOCK_IF((), cond) and MLOCK((), cond).  As above the arguments
+WLOCK_IF((), cond) and MLOCK_IF((), cond).  As above the arguments
 inside the inner () is a vararray.  If you need a second IF in
 the same subroutine to be locked, then you may put the number 2
 after the LOCK_IF.  But remember, after the IF condition is

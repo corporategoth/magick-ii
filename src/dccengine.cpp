@@ -133,6 +133,38 @@ mstring DccEngine::ctcpDequote(const mstring & in)
     ETCB();
 }
 
+mstring DccEngine::addressEncode(const mstring &in)
+{
+    BTCB();
+    FT("DccEngine::addressEncode", (in));
+
+    ACE_INET_Addr addr;
+    if (addr.set(static_cast<unsigned short>(0), in) < 0)
+    {
+	RET("");
+    }
+    mstring rv(addr.get_ip_address());
+
+    RET(rv);
+    ETCB();
+}
+
+mstring DccEngine::addressDecode(const mstring &in)
+{
+    BTCB();
+    FT("DccEngine::addressDecode", (in));
+
+    ACE_INET_Addr addr;
+    if (addr.set(static_cast<unsigned short>(0), atoui(in.c_str())) < 0)
+    {
+	RET("");
+    }
+    mstring rv(addr.get_host_addr());
+
+    RET(rv);
+    ETCB();
+}
+
 vector < mstring > DccEngine::ctcpExtract(const mstring & in)
 {
     BTCB();
@@ -381,31 +413,37 @@ void DccEngine::GotDCC(const mstring & mynick, const mstring & source, const mst
     BTCB();
     FT("DccEngine::GotDCC", (mynick, source, in));
     mstring type, argument, straddress, strport, strsize;
+    mstring address;
     unsigned short port;
-    unsigned long address, size, longport;
+    unsigned long size, longport;
 
-    type = in.ExtractWord(1, " ");
+    type = in.ExtractWord(1, " ").UpperCase();
     argument = in.ExtractWord(2, " ");
     straddress = in.ExtractWord(3, " ");
     strport = in.ExtractWord(4, " ");
     if (in.WordCount(" ") > 4)
 	strsize = in.ExtractWord(5, " ");
 
-    address = atoul(straddress.c_str());
+    address = addressDecode(straddress.c_str());
     longport = atoul(strport.c_str());
     port = static_cast < unsigned short > (longport);
+
+    ACE_INET_Addr server;
+    if (address.empty() || port == static_cast<unsigned short>(0) || server.set(port, address) < 0)
+    {
+	SEND(mynick, source, "DCC/FAILED", (type));
+	return;
+    }
 
     size = 0;
     if (!strsize.empty())
 	size = atoul(strsize.c_str());
 
-    ACE_INET_Addr server(port, address);
-
-    if (type.UpperCase() == "CHAT")
+    if (type == "CHAT")
     {
 	DoDccChat(mynick, source, server);
     }
-    else if (type.UpperCase() == "SEND")
+    else if (type == "SEND")
     {
 	DoDccSend(mynick, source, server, argument, size);
     }

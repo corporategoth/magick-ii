@@ -126,6 +126,7 @@ void Magick::register_instance(Magick * ins, ACE_thread_t id)
 void Magick::deregister_instance(ACE_thread_t id)
 {
     BTCB();
+    FLUSH();
     InstanceMap.erase(id);
     ETCB();
 }

@@ -171,7 +171,7 @@ public:
     int handle_close(ACE_HANDLE = ACE_INVALID_HANDLE, ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
     int fini();
 
-    unsigned long Local_IP() const
+    mstring Local_IP() const
     {
 	return sock.Local_IP();
     }

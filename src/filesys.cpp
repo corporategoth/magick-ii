@@ -1733,8 +1733,8 @@ int DccMap::close(const unsigned long in)
 int DccMap::svc(void)
 {
     BTCB();
-    mThread::Attach(tt_MAIN);
     Magick::register_instance(magick_instance);
+    mThread::Attach(tt_MAIN);
     NFT("DccMap::svc");
     Magick::instance().hh.AddThread(Heartbeat_Handler::H_DCC);
 
@@ -1998,12 +1998,12 @@ vector < unsigned long > DccMap::GetList(const mstring & in)
 void *DccMap::Connect2(void *in)
 {
     BTCB();
+    NewSocket *val = reinterpret_cast < NewSocket * > (in);
+    Magick::register_instance(val->magick_instance);
+
     mThread::Attach(tt_MAIN);
     FT("DccMap::Connect2", ("(void *) in"));
 
-    NewSocket *val = reinterpret_cast < NewSocket * > (in);
-
-    Magick::register_instance(val->magick_instance);
 
     mSocket DCC_SOCK(val->address, Magick::instance().files.Timeout());
 
@@ -2033,6 +2033,8 @@ void *DccMap::Connect2(void *in)
 	else
 	    SEND(val->mynick, val->source, "DCC/FAILED", ("GET"));
     }
+    else if (DCC_SOCK.Last_Error() == EINVAL)
+	SEND(val->mynick, val->source, "DCC/FAILED", ("GET"));
     else
 	SEND(val->mynick, val->source, "DCC/NOCONNECT", ("GET"));
 
@@ -2047,12 +2049,11 @@ void *DccMap::Connect2(void *in)
 void *DccMap::Accept2(void *in)
 {
     BTCB();
+    NewSocket *val = reinterpret_cast < NewSocket * > (in);
+    Magick::register_instance(val->magick_instance);
+
     mThread::Attach(tt_MAIN);
     FT("DccMap::Accept2", ("(void *) in"));
-
-    NewSocket *val = reinterpret_cast < NewSocket * > (in);
-
-    Magick::register_instance(val->magick_instance);
 
     mSocket DCC_SOCK(val->port, Magick::instance().files.Timeout());
 
@@ -2082,6 +2083,8 @@ void *DccMap::Accept2(void *in)
 	else
 	    SEND(val->mynick, val->source, "DCC/FAILED", ("SEND"));
     }
+    else if (DCC_SOCK.Last_Error() == EINVAL)
+	SEND(val->mynick, val->source, "DCC/FAILED", ("SEND"));
     else
 	SEND(val->mynick, val->source, "DCC/NOCONNECT", ("SEND"));
 
@@ -2127,6 +2130,11 @@ void DccMap::Accept(const unsigned short port, const mstring & mynick, const mst
     tmp->filenum = filenum;
 
     thr_mgr()->spawn(Accept2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
+
+    // Yield 2 cycles of our CPU ...
+    ACE_Thread::yield();
+    ACE_Thread::yield();
+
     ETCB();
 }
 

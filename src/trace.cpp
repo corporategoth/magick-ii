@@ -878,7 +878,7 @@ void T_Socket::Begin(const unsigned long id, const unsigned short local, const u
 	    message << " -> ";
 	else
 	    message << " <-> ";
-	message << host << ":" << remote;
+	message << host << "[" << remote << "]";
 	tid->WriteOut(message);
     }
     ETCB();

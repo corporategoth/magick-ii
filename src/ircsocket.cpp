@@ -45,8 +45,8 @@ static const char *immediate_process[] =
 void *IrcSvcHandler::worker(void *in)
 {
     BTCB();
-    mThread::Attach(tt_mBase);
     Magick::register_instance(reinterpret_cast < Magick * > (in));
+    mThread::Attach(tt_mBase);
     FT("IrcSvcHandler::worker", (in));
     mMessage *msg = NULL;
     bool active = true;
@@ -1303,7 +1303,11 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > details =
 	Magick::instance().startup.Server(server);
 
-    ACE_INET_Addr addr(details.second.first, server);
+    ACE_INET_Addr addr;
+    if (addr.set(details.second.first, server) < 0)
+    {
+	LOG(LM_EMERGENCY, "SYS_ERRORS/IPADDR_SERVER", (server, details.second.first));
+    }
 
     Magick::instance().DumpB();
     CB(1, Magick::instance().i_currentserver);
@@ -1322,21 +1326,16 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 #else
     IrcConnector C_server(&Magick::instance().reactor(), ACE_NONBLOCK);
 
-    unsigned int i;
-
-    for (i = 1; i < 5; i++)
-    {
-	mstring octet = Magick::instance().startup.Bind().ExtractWord(i, ".", false);
-
-	if (!octet.IsNumber() || atoi(octet.c_str()) < 0 || atoi(octet.c_str()) > 255)
-	    break;
-    }
-
     ACE_INET_Addr laddr;
     unsigned short port = mSocket::FindAvailPort();
 
-    if (i == 5)
-	laddr.set(port, Magick::instance().startup.Bind().c_str());
+    if (Magick::instance().startup.Bind().length())
+    {
+	if (laddr.set(port, Magick::instance().startup.Bind()) < 0)
+	{
+	    LOG(LM_EMERGENCY, "SYS_ERRORS/IPADDR_BIND", (Magick::instance().startup.Bind(), port));
+	}
+    }
     else
 	laddr.set(port);
 
@@ -1739,9 +1738,9 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 void *EventTask::save_databases(void *in)
 {
     BTCB();
+    Magick::register_instance(reinterpret_cast < Magick * > (in));
     mThread::Attach(tt_MAIN);
     FT("EventTask::save_databases", (in));
-    Magick::register_instance(reinterpret_cast < Magick * > (in));
     Magick::instance().save_databases();
     Magick::deregister_instance();
     DTRET(static_cast < void * > (NULL));
@@ -1818,8 +1817,8 @@ int EventTask::close(u_long in)
 int EventTask::svc(void)
 {
     BTCB();
-    mThread::Attach(tt_MAIN);
     Magick::register_instance(magick_instance);
+    mThread::Attach(tt_MAIN);
     // The biggie, so big, it has its own zip code ... uhh .. thread.
     NFT("EventTask::svc");
     Magick::instance().hh.AddThread(Heartbeat_Handler::H_Events);

@@ -121,7 +121,7 @@ private:
     bool i_shutdown;
 
     bool i_reconnect;
-    unsigned long i_localhost;
+    mstring i_localhost;
     bool i_gotconnect;
     mstring i_currentserver;
     bool i_connected;
@@ -603,7 +603,7 @@ public:
     {
 	i_gotconnect = in;
     }
-    unsigned long LocalHost() const
+    mstring LocalHost() const
     {
 	return i_localhost;
     }
