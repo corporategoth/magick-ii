@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.227  2000/05/17 09:10:35  ungod
+** changed most wxOutputStream to ofstream and wxInputStream
+** to ifstream
+**
 ** Revision 1.226  2000/05/17 07:47:59  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -908,14 +912,10 @@ void Magick::LoadInternalMessages()
     unsigned int i;
     {
 #include "language.h"
-	remove((files.TempDir()+DirSlash+"default.lng").c_str());
-	wxFileOutputStream out(files.TempDir()+DirSlash+"default.lng");
-
-	for(i=0;i<def_langent;i++)
-	{
-	    out.Write(def_lang[i], ACE_OS::strlen(def_lang[i]));
-	    out << wxEndL;
-	}
+    	remove((files.TempDir()+DirSlash+"default.lng").c_str());
+        ofstream out(files.TempDir()+DirSlash+"default.lng");
+        for(i=0;i<def_langent;i++)
+            out<<def_lang[i]<<endl;
     }
 
     wxFileConfig fconf("magick","",files.TempDir()+DirSlash+"default.lng");
@@ -950,7 +950,7 @@ mstring Magick::parseEscapes(const mstring & in)
     MLOCK(("Magick","parseEscapes"));
     mstring Result;
     strstream inputstream;
-    inputstream<<in.c_str();
+    inputstream<<in;
     EscLexer lexer(inputstream);
     EscParser parser(lexer);
     try
@@ -1020,14 +1020,11 @@ bool Magick::LoadLogMessages(mstring language)
     unsigned int i;
     {
 #include "logfile.h"
-	remove((files.TempDir()+DirSlash+"default.lfo").c_str());
-	wxFileOutputStream out(files.TempDir()+DirSlash+"default.lfo");
+    	remove((files.TempDir()+DirSlash+"default.lfo").c_str());
 
-	for(i=0;i<def_logent;i++)
-	{
-	    out.Write(def_log[i], ACE_OS::strlen(def_log[i]));
-	    out << wxEndL;
-	}
+        ofstream out(files.TempDir()+DirSlash+"default.lfo");
+    	for(i=0;i<def_logent;i++)
+    	    out<<def_log[i]<<endl;
     }
 
     wxFileConfig *fconf;

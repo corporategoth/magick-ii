@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/05/17 09:10:36  ungod
+** changed most wxOutputStream to ofstream and wxInputStream
+** to ifstream
+**
 ** Revision 1.57  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -1645,7 +1649,7 @@ long wxFile::Tell() const
 {
   wxASSERT( IsOpened() );
 
-  long iRc = ftell(m_fd);
+  long iRc = ACE_OS::fseek(m_fd,0,SEEK_CUR);
   if ( iRc == -1 ) {
     wxLogSysError("can't get seek position on file: %p", m_fd);
     return -1;

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2000/05/17 09:10:36  ungod
+** changed most wxOutputStream to ofstream and wxInputStream
+** to ifstream
+**
 ** Revision 1.89  2000/03/24 15:35:18  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -616,7 +620,6 @@ mstring LoggerTask::logname(threadtype_enum type)
 
 void LoggerTask::logmessage_i(threadtype_enum type,const mstring& data)
 {
-    wxFileOutputStream out(Parent->Services_Dir()+DirSlash+logname(type),true); // true sets append to true.
-    out.Write(data.c_str(), data.length());
-    out << wxEndL;
+    ofstream out(Parent->Services_Dir()+DirSlash+logname(type),ios_base::out|ios_base::app);
+    out<<data<<endl;
 }

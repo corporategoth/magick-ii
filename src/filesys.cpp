@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/05/17 09:10:35  ungod
+** changed most wxOutputStream to ofstream and wxInputStream
+** to ifstream
+**
 ** Revision 1.18  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -455,8 +459,8 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
     }
     if (wxFile::Exists(i_Tempfile.c_str()))
 	remove(i_Tempfile.c_str());
-    wxFileInputStream fin(tmp.c_str());
-    wxFileOutputStream fout(i_Tempfile.c_str());
+    ifstream fin(tmp.c_str());
+    ofstream fout(i_Tempfile.c_str());
     fout << fin;
     i_File.Open(i_Tempfile.c_str(), wxFile::read);
     i_Filesize = i_File.Length();
@@ -573,8 +577,8 @@ DccXfer::~DccXfer()
 	    {
 		if (wxFile::Exists(tmp.c_str()))
 		    remove(tmp.c_str());
-		wxFileInputStream fin(i_Tempfile.c_str());
-		wxFileOutputStream fout(tmp.c_str());
+        ifstream fin(i_Tempfile.c_str());
+        ofstream fout(tmp.c_str());
 		fout << fin;
 		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
 		CP(("Added entry %d to FileMap", filenum));

@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/05/17 09:10:35  ungod
+** changed most wxOutputStream to ofstream and wxInputStream
+** to ifstream
+**
 ** Revision 1.12  2000/03/23 10:22:24  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -82,6 +86,7 @@
 #include <deque>
 #include <exception>
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <map>
 #include <queue>

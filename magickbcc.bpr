@@ -55,7 +55,7 @@ IDLCFLAGS = -Isrc -Iinclude -I..\support\ace_wrappers -I..\support\zlib -I..\inc
   -I..\include\expat -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp \
   -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 \
   -DACE_USE_RCSID=0
-PFLAGS = -Usrc;$(BCB)\lib;$(RELEASELIBPATH) \
+PFLAGS = -Usrc;$(BCB)\lib;$(DEBUGLIBPATH) \
   -Isrc;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -N2Debug -N0Debug \
   -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 \
@@ -67,7 +67,7 @@ AFLAGS = /isrc /iinclude /i..\support\ace_wrappers /i..\support\zlib /i..\includ
   /i..\include\expat /i$(BCB)\include /i$(BCB)\include\ATL /d_DEBUG /dDEBUG \
   /dWIN32 /d_CONSOLE /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /dACE_USE_RCSID=0 /mx \
   /w2 /zi
-LFLAGS = -Lsrc;$(BCB)\lib;$(RELEASELIBPATH) -ap -Tpe -s -v -q
+LFLAGS = -Lsrc;$(BCB)\lib;$(DEBUGLIBPATH) -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)
