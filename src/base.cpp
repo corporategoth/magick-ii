@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.129  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.128  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -763,26 +768,31 @@ int mBaseTask::message_i(const mstring& message)
     else
 	Parent->server.execute(data);
 
+    // Theoretically, under mutex lock, only ONE can access this
+    // at once.  Under pressure tho, the thread system may need
+    // to be looked at.
     {MLOCK(("MessageQueue"));
-    if (thr_count() > 1)
+    size_t thrcnt = thr_count();
+    size_t msgcnt = message_queue_.message_count();
+    if (thrcnt > 1)
     {
 	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thr_count(), message_queue_.message_count(),
-		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thr_count()-2)),
-		thr_count() * Parent->config.High_Water_Mark()));
+		thrcnt, msgcnt,
+		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thrcnt-2)),
+		thrcnt * Parent->config.High_Water_Mark()));
     }
     else
     {
 	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thr_count(), message_queue_.message_count(), 0,
-		thr_count() * Parent->config.High_Water_Mark()));
+		thrcnt, msgcnt, 0,
+		thrcnt * Parent->config.High_Water_Mark()));
     }
-    if(thr_count() > Parent->config.Min_Threads() &&
-	message_queue_.message_count() < Parent->config.Low_Water_Mark() +
-			(Parent->config.High_Water_Mark() * (thr_count()-2)))
+    if(thrcnt > Parent->config.Min_Threads() &&
+	msgcnt < Parent->config.Low_Water_Mark() +
+			(Parent->config.High_Water_Mark() * (thrcnt-2)))
     {
 	COM(("Low water mark reached, killing thread."));
-	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()-1) * (sizeof(ACE_Method_Object *) * 2));
+	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thrcnt-1) * (sizeof(ACE_Method_Object *) * 2));
 	message_queue_.low_water_mark(message_queue_.high_water_mark());
 	Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
 	RET(-1);

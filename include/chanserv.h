@@ -25,6 +25,11 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.43  2000/08/10 22:44:22  prez
 ** Added 'binding to IP' options for shell servers, etc.  Also added akick
 ** triggers for when a user changes their nick and suddenly matches akick.
@@ -484,6 +489,8 @@ private:
     // Config Entries ...
     bool hide;			// Wether to set +s
     unsigned long expire;	// How long to keep channels
+    unsigned long delay;	// How long between registrations
+    unsigned int max_per_nick;	// Max channels per nickname
     mstring def_akick_reason;	// Default AKICK reason
     unsigned int passfail;	// How many times they can fail ident
     unsigned long chankeep;	// Time to keep channel after AKICK
@@ -602,6 +609,8 @@ public:
 				    Revenge_Levels.end()); }
     bool Hide()			{ return hide; }
     unsigned long Expire()	{ return expire; }
+    unsigned long Delay()	{ return delay; }
+    unsigned int Max_Per_Nick()	{ return max_per_nick; }
     mstring DEF_Akick_Reason()	{ return def_akick_reason; }
     unsigned int Passfail()	{ return passfail; }
     unsigned long ChanKeep()	{ return chankeep; }

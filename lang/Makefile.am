@@ -1,6 +1,9 @@
 magick_LANG = *.lng *.lfo *.hlp
 EXTRA_DIST = *.lng *.lfo *.hlp
 
+distclean: distclean-recursive
+	-rm -f *.change
+
 install-data-am:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/magick/lang

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.126  2000/08/19 10:59:47  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.125  2000/08/10 23:59:03  prez
 ** Fixed REC_FORNOTINCHAN
 **
@@ -1353,11 +1358,25 @@ void Nick_Live_t::Name(mstring in)
     }
 
     // Send notices for committees we were NOT on
+    mstring setmode;
     for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
 								iter2++)
     {
 	if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
 	{
+	    if (iter2->first == Parent->commserv.ALL_Name())
+		setmode += Parent->commserv.ALL_SetMode();
+	    else if (iter2->first == Parent->commserv.REGD_Name())
+		setmode += Parent->commserv.REGD_SetMode();
+	    else if (iter2->first == Parent->commserv.OPER_Name())
+		setmode += Parent->commserv.OPER_SetMode();
+	    else if (iter2->first == Parent->commserv.ADMIN_Name())
+		setmode += Parent->commserv.ADMIN_SetMode();
+	    else if (iter2->first == Parent->commserv.SOP_Name())
+		setmode += Parent->commserv.SOP_SetMode();
+	    else if (iter2->first == Parent->commserv.SADMIN_Name())
+		setmode += Parent->commserv.SADMIN_SetMode();
+
 	    for (iter2->second.message = iter2->second.MSG_begin();
 		iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
 	    {
@@ -1365,6 +1384,16 @@ void Nick_Live_t::Name(mstring in)
 					    "] " + iter2->second.message->Entry());
 	    }
 	}
+    }
+    if (setmode != "")
+    {
+	mstring setmode2;
+	for (i=0; i<setmode.size(); i++)
+	{
+	    if (!HasMode(setmode[i]))
+	        setmode2 += setmode[i];
+	}
+	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, setmode2);
     }
 }
 
@@ -1407,6 +1436,19 @@ void Nick_Live_t::Mode(mstring in)
 	    // duplicate +o/-o (dont want to overhost it!)
 	    if (add && !modes.Contains(in[i]) && !IsServices())
 	    {
+		// Store what committee's we WERE on ...
+		// This is needed to send logon notices ONLY for committees
+		// we have joined by a nick change.
+		set<mstring> wason;
+		map<mstring, Committee>::iterator iter2;
+		for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
+								iter2++)
+		{
+		    if (iter2->second.IsOn(i_Name))
+			wason.insert(iter2->first);
+		}
+
+		modes += in[i];
 		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
 		Parent->operserv.RemHost(i_host);
 		MLOCK(("OperServ", "OperDeny"));
@@ -1437,11 +1479,53 @@ void Nick_Live_t::Mode(mstring in)
 			return;
 		    }
 		}
+		else
+		{
+		    mstring setmode;
+		    for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
+								iter2++)
+		    {
+			if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
+			{
+			    if (iter2->first == Parent->commserv.ALL_Name())
+				setmode += Parent->commserv.ALL_SetMode();
+			    else if (iter2->first == Parent->commserv.REGD_Name())
+				setmode += Parent->commserv.REGD_SetMode();
+			    else if (iter2->first == Parent->commserv.OPER_Name())
+				setmode += Parent->commserv.OPER_SetMode();
+			    else if (iter2->first == Parent->commserv.ADMIN_Name())
+				setmode += Parent->commserv.ADMIN_SetMode();
+			    else if (iter2->first == Parent->commserv.SOP_Name())
+				setmode += Parent->commserv.SOP_SetMode();
+			    else if (iter2->first == Parent->commserv.SADMIN_Name())
+				setmode += Parent->commserv.SADMIN_SetMode();
+
+			    for (iter2->second.message = iter2->second.MSG_begin();
+				iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
+			    {
+				Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
+					    "] " + iter2->second.message->Entry());
+			    }
+			}
+		    }
+		    if (setmode != "")
+		    {
+			mstring setmode2;
+			for (i=0; i<setmode.size(); i++)
+			{
+			    if (!HasMode(setmode[i]))
+			        setmode2 += setmode[i];
+			}
+			Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, setmode2);
+		    }
+		}
 	    }
 	    else if (modes.Contains(in[i]) && !IsServices())
 	    {
 		Parent->operserv.AddHost(i_host);
+		modes.Remove((mstring) in[i]);
 	    }
+	    break;
 
 	default:
 	    if (add && !modes.Contains(in[i]))
@@ -1960,6 +2044,48 @@ bool Nick_Live_t::IsServices()
     NFT("Nick_Live_t::IsServices");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "services"));
     RET(services);
+}
+
+void Nick_Live_t::SetLastNickReg()
+{
+    NFT("Nick_Live_t::SetLastNickReg");
+    WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_nick_reg"));
+    last_nick_reg = Now();
+}
+
+mDateTime Nick_Live_t::LastNickReg()
+{
+    NFT("Nick_Live_t::LastNickReg");
+    RLOCK(("NickServ", "live", i_Name.LowerCase(), "last_nick_reg"));
+    RET(last_nick_reg);
+}
+
+void Nick_Live_t::SetLastChanReg()
+{
+    NFT("Nick_Live_t::SetLastChanReg");
+    WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_chan_reg"));
+    last_chan_reg = Now();
+}
+
+mDateTime Nick_Live_t::LastChanReg()
+{
+    NFT("Nick_Live_t::LastChanReg");
+    RLOCK(("NickServ", "live", i_Name.LowerCase(), "last_chan_reg"));
+    RET(last_chan_reg);
+}
+
+void Nick_Live_t::SetLastMemo()
+{
+    NFT("Nick_Live_t::SetLastMemo");
+    WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_memo"));
+    last_memo = Now();
+}
+
+mDateTime Nick_Live_t::LastMemo()
+{
+    NFT("Nick_Live_t::LastMemo");
+    RLOCK(("NickServ", "live", i_Name.LowerCase(), "last_memo"));
+    RET(last_memo);
 }
 
 size_t Nick_Live_t::Usage()
@@ -3901,6 +4027,21 @@ void Nick_Stored_t::Quit(mstring message)
     }
 }
 
+size_t Nick_Stored_t::MyChannels()
+{
+    NFT("Nick_Stored_t::MyChannels");
+
+    size_t count = 0;
+    map<mstring, Chan_Stored_t>::iterator i;
+    RLOCK(("ChanServ", "stored"));
+    for (i=Parent->chanserv.stored.begin(); i!=Parent->chanserv.stored.end(); i++)
+    {
+	if (i->second.Founder().CmpNoCase(i_Name)==0 ||
+	    i->second.CoFounder().CmpNoCase(i_Name)==0)
+	    count++;
+    }
+    RET(count);
+}
 
 SXP::Tag Nick_Stored_t::tag_Nick_Stored_t("Nick_Stored_t");
 SXP::Tag Nick_Stored_t::tag_Name("Name");
@@ -4559,12 +4700,21 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISSTORED"));
     }
+    else if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince() <
+    		Parent->nickserv.Delay())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->nickserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince()).c_str());
+    }
     else if (password.Len() < 5 || !password.CmpNoCase(source))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
     }
     else
     {
+	Parent->nickserv.live[source.LowerCase()].SetLastNickReg();
 	Parent->nickserv.stored[source.LowerCase()] = Nick_Stored_t(source, password);
 	Parent->nickserv.stored[source.LowerCase()].AccessAdd(
 	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!"));
@@ -4672,6 +4822,15 @@ void NickServ::do_Link(mstring mynick, mstring source, mstring params)
 					hostnick.c_str());
 	return;
     }
+    else if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince() <
+    		Parent->nickserv.Delay())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->nickserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince()).c_str());
+	return;
+    }
 
     mDateTime regtime = Now();
     if (Parent->nickserv.IsStored(source))
@@ -4687,6 +4846,7 @@ void NickServ::do_Link(mstring mynick, mstring source, mstring params)
 
     if (Parent->nickserv.stored[hostnick.LowerCase()].Slave(source, password, regtime))
     {
+	Parent->nickserv.live[source.LowerCase()].SetLastNickReg();
 	Parent->nickserv.stats.i_Link++;
 	Parent->nickserv.live[source.LowerCase()].Identify(password);
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/LINKED"),

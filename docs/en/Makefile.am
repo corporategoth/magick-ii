@@ -1,15 +1,17 @@
 magick_INFO = index.sgml
 EXTRA_DIST = index.html index-1.html index-2.html index-3.html index-4.html index-5.html index-6.html 
 
-SGML2HTMLCMD = sgml2html
+SGML2HTMLPARAM = 
 
 all-am:
-	if test `which sgml2html` ;\
+	if test -n "`which sgml2html`" ;\
+	then	if test -r `which sgml2html` ;\
+	then	if test -x `which sgml2html` ;\
 	then	for x in $(magick_INFO) ;\
-		do	echo "$(SGML2HTMLCMD) $$x" ;\
-		$(SGML2HTMLCMD) $$x ;\
+		do	echo "`which sgml2html` $(SGML2HTMLPARAM) $$x" ;\
+		`which sgml2html` $(SGML2HTMLPARAM) $$x ;\
 		done ;\
-	fi
+	fi; fi; fi
 
 install-exec-am:
 	@$(NORMAL_INSTALL)

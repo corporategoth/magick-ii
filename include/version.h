@@ -24,6 +24,11 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.105  2000/08/08 03:46:20  prez
 ** Fixed problem with dcc not connecting (eg. connection refused) crashing
 ** services.
@@ -86,9 +91,9 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
-const mstring BUILD_TYPE = "Windows 95/98/NT";
-const mstring BUILD_SYS = "localhost";
+const int BUILD_NUMBER = 1;
+const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
+const mstring BUILD_SYS = "haven";
 
 /* Versioning Information
  *
@@ -119,7 +124,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b2";
+const mstring RELEASE			= "b3";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";

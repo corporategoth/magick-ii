@@ -29,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.263  2000/08/19 10:59:47  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.262  2000/08/10 22:44:23  prez
 ** Added 'binding to IP' options for shell servers, etc.  Also added akick
 ** triggers for when a user changes their nick and suddenly matches akick.
@@ -1870,6 +1875,8 @@ bool Magick::get_config_values()
     startup.bind = value_mstring;
 
     in.Read(ts_Startup+"SETMODE",value_mstring, "");
+    value_mstring.Replace("+", "", true);
+    value_mstring.Replace(" ", "", true);
     if (value_mstring != startup.setmode)
 	reconnect_clients = true;
     startup.setmode = value_mstring;
@@ -2315,6 +2322,12 @@ bool Magick::get_config_values()
     else
 	nickserv.expire = FromHumanTime("4w");
 
+    in.Read(ts_NickServ+"DELAY",value_mstring,"30s");
+    if (FromHumanTime(value_mstring))
+	nickserv.delay = FromHumanTime(value_mstring);
+    else
+	nickserv.delay = FromHumanTime("30s");
+
     in.Read(ts_NickServ+"IDENT",value_mstring,"1m");
     if (FromHumanTime(value_mstring))
 	nickserv.ident = FromHumanTime(value_mstring);
@@ -2369,13 +2382,19 @@ bool Magick::get_config_values()
 	}
     }
 
-
     in.Read(ts_ChanServ+"EXPIRE",value_mstring,"2w");
     if (FromHumanTime(value_mstring))
 	chanserv.expire = FromHumanTime(value_mstring);
     else
 	chanserv.expire = FromHumanTime("2w");
 
+    in.Read(ts_ChanServ+"DELAY",value_mstring,"30s");
+    if (FromHumanTime(value_mstring))
+	chanserv.delay = FromHumanTime(value_mstring);
+    else
+	chanserv.delay = FromHumanTime("30s");
+
+    in.Read(ts_ChanServ+"MAX_PER_NICK",chanserv.max_per_nick,15);
     in.Read(ts_ChanServ+"DEF_AKICK",chanserv.def_akick_reason,"You have been banned from channel");
     in.Read(ts_ChanServ+"PASSFAIL",chanserv.passfail,5);
     in.Read(ts_ChanServ+"CHANKEEP",value_mstring,"15s");
@@ -2463,6 +2482,12 @@ bool Magick::get_config_values()
 	memoserv.inflight = FromHumanTime(value_mstring);
     else
 	memoserv.inflight = FromHumanTime("3m");
+
+    in.Read(ts_MemoServ+"DELAY",value_mstring,"10s");
+    if (FromHumanTime(value_mstring))
+	memoserv.delay = FromHumanTime(value_mstring);
+    else
+	memoserv.delay = FromHumanTime("10s");
 
     in.Read(ts_MemoServ+"FILES",memoserv.files,0);
     in.Read(ts_MemoServ+"FILESIZE",value_mstring,"0");
@@ -2572,27 +2597,33 @@ bool Magick::get_config_values()
     in.Read(ts_CommServ+"DEF_PRIVATE",commserv.def_private,false);
     in.Read(ts_CommServ+"LCK_PRIVATE",commserv.lck_private,false);
     in.Read(ts_CommServ+"ALL_NAME",commserv.all_name,"ALL");
+    in.Read(ts_CommServ+"ALL_SETMODE",commserv.all_setmode,"");
     in.Read(ts_CommServ+"REGD_NAME",commserv.regd_name,"REGD");
+    in.Read(ts_CommServ+"REGD_SETMODE",commserv.regd_setmode,"");
     in.Read(ts_CommServ+"SADMIN_NAME",commserv.sadmin_name,"SADMIN");
     in.Read(ts_CommServ+"SADMIN_SECURE",commserv.sadmin_secure,true);
     in.Read(ts_CommServ+"SADMIN_PRIVATE",commserv.sadmin_private,false);
     in.Read(ts_CommServ+"SADMIN_OPENMEMOS",commserv.sadmin_openmemos,true);
     in.Read(ts_CommServ+"SADMIN_MODEO",commserv.sadmin_modeo,true);
+    in.Read(ts_CommServ+"SADMIN_SETMODE",commserv.sadmin_setmode,"");
     in.Read(ts_CommServ+"SOP_NAME",commserv.sop_name,"SOP");
     in.Read(ts_CommServ+"SOP_SECURE",commserv.sop_secure,true);
     in.Read(ts_CommServ+"SOP_PRIVATE",commserv.sop_private,false);
     in.Read(ts_CommServ+"SOP_OPENMEMOS",commserv.sop_openmemos,true);
     in.Read(ts_CommServ+"SOP_MODEO",commserv.sop_modeo,true);
+    in.Read(ts_CommServ+"SOP_SETMODE",commserv.sop_setmode,"");
     in.Read(ts_CommServ+"ADMIN_NAME",commserv.admin_name,"ADMIN");
     in.Read(ts_CommServ+"ADMIN_SECURE",commserv.admin_secure,true);
     in.Read(ts_CommServ+"ADMIN_PRIVATE",commserv.admin_private,false);
     in.Read(ts_CommServ+"ADMIN_OPENMEMOS",commserv.admin_openmemos,true);
     in.Read(ts_CommServ+"ADMIN_MODEO",commserv.admin_modeo,true);
+    in.Read(ts_CommServ+"ADMIN_SETMODE",commserv.admin_setmode,"");
     in.Read(ts_CommServ+"OPER_NAME",commserv.oper_name,"OPER");
     in.Read(ts_CommServ+"OPER_SECURE",commserv.oper_secure,true);
     in.Read(ts_CommServ+"OPER_PRIVATE",commserv.oper_private,false);
     in.Read(ts_CommServ+"OPER_OPENMEMOS",commserv.oper_openmemos,true);
     in.Read(ts_CommServ+"OPER_MODEO",commserv.oper_modeo,true);
+    in.Read(ts_CommServ+"OPER_SETMODE",commserv.oper_setmode,"");
     commserv.all_name.MakeUpper();
     commserv.regd_name.MakeUpper();
     commserv.sadmin_name.MakeUpper();

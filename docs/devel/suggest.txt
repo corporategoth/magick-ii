@@ -36,9 +36,6 @@ x Done
 * Restart command in OperServ.
 * Log and announce new max users (optional).
 * Limit memos per user/channel (user definable with system max).
-* Limit registered channels per user.
-* Enforce time delay between allowing memo send.
-* Enforce time delay between allowing nick/channel registrations.
 * Ability to 'rename' a channel (eg. #aic -> #lucida).
 * Have AKILL check online to ensure they are not akilling anyone on
   a committee higher than themselves.

@@ -25,6 +25,11 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.46  2000/08/06 05:27:46  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -161,15 +166,20 @@ class Protocol
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */
+    mstring i_ChanModeArg; /* Channel Modes that have arguments */
 
-    mstring i_Server;	/* Should have %s %d %s in it */
+    mstring i_Server;	/* Should have %s %d %s in it (in order) */
 
-    /* PROTOCTL identifiers
+    /* PROTOCTL and CAPAB identifiers
      *
      * NOQUIT      Do not quit each user on SQUIT (assume it)
      * TOKEN       Use one-char tokens instead of PRIVMSG, etc
-     * WATCH=128   .
-     * SAFELIST    .
+     * WATCH=128   ?
+     * SAFELIST    ?
+     * TS3         Timestamp everything (aka. TSora)
+     * SSJOIN      Use SJOIN as opposed to multi JOINS/modes
+     * BURST       Allow the BURST keyword (to indicate sync)
+     * UNCONNECT   ?
      */
     mstring i_Protoctl; /* Verbatum (null if not sent) */
 public:
@@ -192,6 +202,7 @@ public:
     unsigned int Akill()    { return i_Akill; }
     unsigned int Signon()   { return i_Signon; }
     unsigned int Modes()    { return i_Modes; }
+    mstring ChanModeArg()   { return i_ChanModeArg; }
     mstring Server()	    { return i_Server; }
     mstring Protoctl()	    { return i_Protoctl; }
 };

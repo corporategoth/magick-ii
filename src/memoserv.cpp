@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/08/19 10:59:47  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.71  2000/08/07 12:20:28  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -1365,6 +1370,16 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+	Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince() <
+    		Parent->memoserv.Delay())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+	return;
+    }
+
     if (text.size() > Parent->server.proto.MaxLine())
     {
 	text.Truncate(Parent->server.proto.MaxLine());
@@ -1475,6 +1490,16 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince() <
+    		Parent->memoserv.Delay())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+	    return;
+	}
+
 	unsigned int i;
 	mstring output = "";
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
@@ -1516,6 +1541,16 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 			1, Parent->memoserv.nick[who.LowerCase()].size());
+	    return;
+	}
+
+	if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince() <
+    		Parent->memoserv.Delay())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
 	    return;
 	}
 
@@ -1668,6 +1703,16 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince() <
+    		Parent->memoserv.Delay())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+	    return;
+	}
+
 	mstring output = "";
 	unsigned int i;
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
@@ -1715,6 +1760,16 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 			1, Parent->memoserv.nick[who.LowerCase()].size());
+	    return;
+	}
+
+	if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince() <
+    		Parent->memoserv.Delay())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
 	    return;
 	}
 
@@ -2177,6 +2232,16 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 			    name.c_str());
 	    return;
 	}
+    }
+
+    if (!Parent->nickserv.live[source.LowerCase()].HasMode("o") &&
+	Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince() <
+    		Parent->memoserv.Delay())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
+		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+	return;
     }
 
     if (text.size() > Parent->server.proto.MaxLine())

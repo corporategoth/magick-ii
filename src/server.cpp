@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2000/08/19 10:59:47  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.118  2000/08/10 22:44:24  prez
 ** Added 'binding to IP' options for shell servers, etc.  Also added akick
 ** triggers for when a user changes their nick and suddenly matches akick.
@@ -246,6 +251,7 @@ Protocol::Protocol()
     i_Akill = 0;
     i_Signon = 0000;
     i_Modes = 3;
+    i_ChanModeArg = "ovbkl";
     i_Server = "SERVER %s %d :%s";
     i_Protoctl = "";
 
@@ -416,6 +422,7 @@ void Protocol::Set(unsigned int in)
 	i_Signon = 1003;
 	i_Akill = 4;
 	i_Modes = 6;
+	i_ChanModeArg = "ovbekl";
 	i_Server = "SERVER %s %d relic2.1 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 
@@ -1367,7 +1374,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	    else
 		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
-		" " << user << " " << host << " " << server << " 1 ";
+		" " << user << " " << host << " " << server << " 1";
 	    if (proto.P12())
 		send << " +" << Parent->startup.Setmode();
 	    send << " :" << realname;
@@ -1397,7 +1404,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << host << " " <<
-		server << " 1 ";
+		server << " 1";
 	    if (proto.P12())
 		send << " +" << Parent->startup.Setmode();
 	    send << " :" << realname;
@@ -2651,6 +2658,7 @@ void NetworkServ::execute(const mstring & data)
 
 		    // HAS to be AFTER the nickname is added to map.
 		    map<mstring, Committee>::iterator iter;
+		    mstring setmode;
 		    { RLOCK(("CommServ", "list"));
 		    for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
@@ -2658,6 +2666,19 @@ void NetworkServ::execute(const mstring & data)
 		    {
 			if (iter->second.IsOn(sourceL))
 			{
+			    if (iter->first == Parent->commserv.ALL_Name())
+				setmode += Parent->commserv.ALL_SetMode();
+			    else if (iter->first == Parent->commserv.REGD_Name())
+				setmode += Parent->commserv.REGD_SetMode();
+			    else if (iter->first == Parent->commserv.OPER_Name())
+				setmode += Parent->commserv.OPER_SetMode();
+			    else if (iter->first == Parent->commserv.ADMIN_Name())
+				setmode += Parent->commserv.ADMIN_SetMode();
+			    else if (iter->first == Parent->commserv.SOP_Name())
+				setmode += Parent->commserv.SOP_SetMode();
+			    else if (iter->first == Parent->commserv.SADMIN_Name())
+				setmode += Parent->commserv.SADMIN_SetMode();
+
 			    MLOCK(("CommServ", "list", iter->first, "message"));
 			    for (iter->second.message = iter->second.MSG_begin();
 				iter->second.message != iter->second.MSG_end();
@@ -2669,6 +2690,16 @@ void NetworkServ::execute(const mstring & data)
 			    }
 			}
 		    }}
+		    if (setmode != "")
+		    {
+			mstring setmode2;
+			for (int j=0; j<setmode.size(); j++)
+			{
+			    if (!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
+			        setmode2 += setmode[j];
+			}
+			SVSMODE(Parent->nickserv.FirstName(), sourceL, setmode2);
+		    }
 		    if (Parent->nickserv.IsStored(sourceL))
 		    {
 			if (Parent->nickserv.stored[sourceL].Forbidden())
@@ -3172,6 +3203,7 @@ void NetworkServ::execute(const mstring & data)
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
+		mstring setmode;
 		{ RLOCK(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
@@ -3179,6 +3211,18 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    if (iter->second.IsOn(sourceL))
 		    {
+			if (iter->first == Parent->commserv.ALL_Name())
+			    setmode += Parent->commserv.ALL_SetMode();
+			else if (iter->first == Parent->commserv.REGD_Name())
+			    setmode += Parent->commserv.REGD_SetMode();
+			else if (iter->first == Parent->commserv.OPER_Name())
+			    setmode += Parent->commserv.OPER_SetMode();
+			else if (iter->first == Parent->commserv.ADMIN_Name())
+			    setmode += Parent->commserv.ADMIN_SetMode();
+			else if (iter->first == Parent->commserv.SOP_Name())
+			    setmode += Parent->commserv.SOP_SetMode();
+			else if (iter->first == Parent->commserv.SADMIN_Name())
+			    setmode += Parent->commserv.SADMIN_SetMode();
 			MLOCK(("CommServ", "list", iter->first, "message"));
 			for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
@@ -3190,6 +3234,16 @@ void NetworkServ::execute(const mstring & data)
 			}
 		    }
 		}}
+		if (setmode != "")
+		{
+		    mstring setmode2;
+		    for (int j=0; j<setmode.size(); j++)
+		    {
+			if (!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
+			    setmode2 += setmode[j];
+		    }
+		    SVSMODE(Parent->nickserv.FirstName(), sourceL, setmode2);
+		}
 		if (Parent->nickserv.IsStored(sourceL))
 		{
 		    if (Parent->nickserv.stored[sourceL].Forbidden())
@@ -3525,6 +3579,7 @@ void NetworkServ::execute(const mstring & data)
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
+		mstring setmode;
 		{ RLOCK(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
@@ -3532,6 +3587,18 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    if (iter->second.IsOn(sourceL))
 		    {
+			if (iter->first == Parent->commserv.ALL_Name())
+			    setmode += Parent->commserv.ALL_SetMode();
+			else if (iter->first == Parent->commserv.REGD_Name())
+			    setmode += Parent->commserv.REGD_SetMode();
+			else if (iter->first == Parent->commserv.OPER_Name())
+			    setmode += Parent->commserv.OPER_SetMode();
+			else if (iter->first == Parent->commserv.ADMIN_Name())
+			    setmode += Parent->commserv.ADMIN_SetMode();
+			else if (iter->first == Parent->commserv.SOP_Name())
+			    setmode += Parent->commserv.SOP_SetMode();
+			else if (iter->first == Parent->commserv.SADMIN_Name())
+			    setmode += Parent->commserv.SADMIN_SetMode();
 			MLOCK(("CommServ", "list", iter->first, "message"));
 			for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
@@ -3543,6 +3610,16 @@ void NetworkServ::execute(const mstring & data)
 			}
 		    }
 		}}
+		if (setmode != "")
+		{
+		    mstring setmode2;
+		    for (int j=0; j<setmode.size(); j++)
+		    {
+			if (!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
+			    setmode2 += setmode[j];
+		    }
+		    SVSMODE(Parent->nickserv.FirstName(), sourceL, setmode2);
+		}
 		if (Parent->nickserv.IsStored(sourceL))
 		{
 		    if (Parent->nickserv.stored[sourceL].Forbidden())

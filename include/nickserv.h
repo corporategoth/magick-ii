@@ -25,6 +25,11 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.47  2000/08/06 05:27:46  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -150,6 +155,7 @@ class Nick_Live_t : public mUserDef
     vector<mstring> try_chan_ident;
     bool identified;
     bool services;
+    mDateTime last_nick_reg, last_chan_reg, last_memo;
 
 public:
 
@@ -272,6 +278,13 @@ public:
     bool IsIdentified();
     bool IsRecognized();
     bool IsServices();
+
+    void SetLastNickReg();
+    mDateTime LastNickReg();
+    void SetLastChanReg();
+    mDateTime LastChanReg();
+    void SetLastMemo();
+    mDateTime LastMemo();
 
     size_t Usage();
 };
@@ -445,6 +458,8 @@ public:
     mstring LastQuit();
     void Quit(mstring message);
 
+    size_t MyChannels();
+
     SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
@@ -465,6 +480,7 @@ private:
     bool append_rename;		// Type of renaming scheme to use.
     mstring suffixes;		// What to add to unidentified nicks
     unsigned long expire;	// How long to keep nicknames
+    unsigned long delay;	// How long between registrations
     unsigned long ident;	// How long to wait for IDENT
     unsigned long release;	// How long to keep after failed ident
     unsigned int passfail;	// Number of password fails before kill
@@ -544,6 +560,7 @@ public:
     bool Append_Rename()	{ return append_rename; }
     mstring Suffixes()		{ return suffixes; }
     unsigned long Expire()	{ return expire; }
+    unsigned long Delay()	{ return delay; }
     unsigned long Ident()	{ return ident; }
     unsigned long Release()	{ return release; }
     unsigned int Passfail()	{ return passfail; }

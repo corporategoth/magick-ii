@@ -1,17 +1,19 @@
 magick_MANS = magick.pod magick_keygen.pod
 EXTRA_DIST = man1/magick.1 man1/magick_keygen.1
 
-POD2MANCMD = pod2man --center="Magick Development Team" --release="$(PACKAGE) $(VERSION)"
+POD2MANPARAM = --center="Magick Development Team" --release="$(PACKAGE) $(VERSION)"
 
 all-am:
-	if test `which pod2man` ;\
+	if test -n "`which pod2man`" ;\
+	then	if test -r `which pod2man` ;\
+	then	if test -x `which pod2man` ;\
 	then	rm -fr man1 ;\
 		mkdir man1 ;\
 		for x in $(magick_MANS) ;\
-		do	echo "$(POD2MANCMD) $$x >man1/`echo $$x | cut -f1 -d.`.1" ;\
-		$(POD2MANCMD) $$x >man1/`echo $$x | cut -f1 -d.`.1 ;\
+		do	echo "`which pod2man` $(POD2MANPARAM) $$x >man1/`echo $$x | cut -f1 -d.`.1" ;\
+		`which pod2man` $(POD2MANPARAM) $$x >man1/`echo $$x | cut -f1 -d.`.1 ;\
 		done ;\
-	fi
+	fi; fi; fi
 
 install-exec-am:
 	@$(NORMAL_INSTALL)

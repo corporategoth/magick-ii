@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2000/08/19 10:59:47  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.123  2000/08/10 22:44:23  prez
 ** Added 'binding to IP' options for shell servers, etc.  Also added akick
 ** triggers for when a user changes their nick and suddenly matches akick.
@@ -978,6 +983,7 @@ int EventTask::svc(void)
 	{
 	    CP(("Starting CHECK cycle ..."));
 
+	    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 	    { RLOCK2(("ChanServ", "live"));
 	    for (cli=Parent->chanserv.live.begin();
 		    cli!=Parent->chanserv.live.end(); cli++)
@@ -1015,27 +1021,24 @@ int EventTask::svc(void)
 		chunked.clear();
 		if (csi != Parent->chanserv.stored.end())
 		{
-		    RLOCK3(("ChanServ", "live", cli->first, "recent_parts"));
+		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		    for (di=cli->second.recent_parts.begin();
 				di!=cli->second.recent_parts.end(); di++)
 		    {
 			if (di->second.SecondsSince() > csi->second.Parttime())
 			    chunked.push_back(di->first);
 		    }
+		    for (i=0; i<chunked.size(); i++)
+			cli->second.recent_parts.erase(chunked[i]);
 		}
 		else
 		{
 		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		    cli->second.recent_parts.clear();
 		}
-		{ WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
-		for (i=0; i<chunked.size(); i++)
-		    cli->second.recent_parts.erase(chunked[i]);
-		}
 
 		// Send pending ChanServ modes ...
 		// Make sure we got someone to send them first.
-		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 		{
 		    RLOCK(("ChanServ", "live", cli->first, "p_modes_on"));
 		    RLOCK2(("ChanServ", "live", cli->first, "p_modes_off"));
@@ -1059,12 +1062,9 @@ int EventTask::svc(void)
 			    if (mode == "")
 				mode += "-";
 			    mode += cli->second.p_modes_off[i];
-			    switch (cli->second.p_modes_off[i])
+			    if (cli->second.p_modes_off[i] != 'l' &&
+				Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_off[i]))
 			    {
-			    case 'o':
-			    case 'v':
-			    case 'b':
-			    case 'k':
 				if (modeparam != "")
 				    modeparam += " ";
 				modeparam +=  cli->second.p_modes_off_params[k];
@@ -1089,13 +1089,8 @@ int EventTask::svc(void)
 			    if (mode == "")
 				mode += "+";
 			    mode += cli->second.p_modes_on[i];
-			    switch (cli->second.p_modes_on[i])
+			    if (Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_on[i]))
 			    {
-			    case 'o':
-			    case 'v':
-			    case 'b':
-			    case 'k':
-			    case 'l':
 				if (modeparam != "")
 				    modeparam += " ";
 				modeparam += cli->second.p_modes_on_params[k];
@@ -1122,6 +1117,7 @@ int EventTask::svc(void)
 	    // grace time on ident (if KillProtect is on, and they
 	    // are not on access list or secure is on).
 	    chunked.clear();
+	    if (Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
 	    { RLOCK(("NickServ", "live"));
 	    for (nli = Parent->nickserv.live.begin();
 			    nli != Parent->nickserv.live.end(); nli++)

@@ -25,6 +25,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.36  2000/08/06 05:27:46  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -74,7 +79,7 @@ static const char *ident_lockable_h = "@(#) $Id$";
 class mLOCK
 {
     mstring lockname;
-    ACE_Recursive_Thread_Mutex *mlock;
+    ACE_Thread_Mutex *mlock;
     ACE_RW_Thread_Mutex *rwlock;
     ACE_RW_Thread_Mutex *lock[MAX_LOCKS-1];
     locktype_enum last_type;

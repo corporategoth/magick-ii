@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/08/19 10:59:47  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.41  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -134,7 +139,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     else if (type == L_Mutex)
     {
 	mlock = NULL;
-	mlock = new ACE_Recursive_Thread_Mutex(lockname.c_str());
+	mlock = new ACE_Thread_Mutex(lockname.c_str());
 	if (mlock == NULL)
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
 		"MUTEX", lockname.c_str());

@@ -25,6 +25,11 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.36  2000/08/08 09:58:55  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -195,27 +200,33 @@ private:
     bool    def_secure;
     bool    lck_secure;
     mstring all_name;
+    mstring all_setmode;
     mstring regd_name;
+    mstring regd_setmode;
     mstring sadmin_name;
     bool    sadmin_secure;
     bool    sadmin_private;
     bool    sadmin_openmemos;
     bool    sadmin_modeo;
+    mstring sadmin_setmode;
     mstring sop_name;
     bool    sop_secure;
     bool    sop_private;
     bool    sop_openmemos;
     bool    sop_modeo;
+    mstring sop_setmode;
     mstring admin_name;
     bool    admin_secure;
     bool    admin_private;
     bool    admin_openmemos;
     bool    admin_modeo;
+    mstring admin_setmode;
     mstring oper_name;
     bool    oper_secure;
     bool    oper_private;
     bool    oper_openmemos;
     bool    oper_modeo;
+    mstring oper_setmode;
     static SXP::Tag tag_CommServ;
 
     vector<Committee *> c_array;
@@ -256,27 +267,33 @@ public:
     bool    DEF_Secure()	{ return def_secure; }
     bool    LCK_Secure()	{ return lck_secure; }
     mstring ALL_Name()		{ return all_name; }
+    mstring ALL_SetMode()	{ return all_setmode; }
     mstring REGD_Name()		{ return regd_name; }
+    mstring REGD_SetMode()	{ return regd_setmode; }
     mstring SADMIN_Name()	{ return sadmin_name; }
     bool    SADMIN_Secure()	{ return sadmin_secure; }
     bool    SADMIN_Private()	{ return sadmin_private; }
     bool    SADMIN_OpenMemos()	{ return sadmin_openmemos; }
     bool    SADMIN_ModeO()	{ return sadmin_modeo; }
+    mstring SADMIN_SetMode()	{ return sadmin_setmode; }
     mstring SOP_Name()		{ return sop_name; }
     bool    SOP_Secure()	{ return sop_secure; }
     bool    SOP_Private()	{ return sop_private; }
     bool    SOP_OpenMemos()	{ return sop_openmemos; }
     bool    SOP_ModeO()		{ return sop_modeo; }
+    mstring SOP_SetMode()	{ return sop_setmode; }
     mstring ADMIN_Name()	{ return admin_name; }
     bool    ADMIN_Secure()	{ return admin_secure; }
     bool    ADMIN_Private()	{ return admin_private; }
     bool    ADMIN_OpenMemos()	{ return admin_openmemos; }
     bool    ADMIN_ModeO()	{ return admin_modeo; }
+    mstring ADMIN_SetMode()	{ return admin_setmode; }
     mstring OPER_Name()		{ return oper_name; }
     bool    OPER_Secure()	{ return oper_secure; }
     bool    OPER_Private()	{ return oper_private; }
     bool    OPER_OpenMemos()	{ return oper_openmemos; }
     bool    OPER_ModeO()	{ return oper_modeo; }
+    mstring OPER_SetMode()	{ return oper_setmode; }
 
     map<mstring,Committee> list;
     bool IsList(mstring in);

@@ -25,6 +25,11 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/08/19 10:59:46  prez
+** Added delays between nick/channel registering and memo sending,
+** Added limit of channels per reg'd nick
+** Added setting of user modes when recognized on hard-coded committees
+**
 ** Revision 1.32  2000/08/07 12:20:26  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -188,6 +193,7 @@ class MemoServ : public mBase, public SXP::IPersistObj
 private:
     unsigned long news_expire;
     unsigned long inflight;
+    unsigned long delay;
     unsigned int files;
     unsigned long filesize;
     static SXP::Tag tag_MemoServ;
@@ -236,6 +242,7 @@ public:
 
     unsigned long News_Expire()	{ return news_expire; }
     unsigned long InFlight()	{ return inflight; }
+    unsigned long Delay()	{ return delay; }
     unsigned int Files()	{ return files; }
     unsigned long FileSize()	{ return filesize; }
 
