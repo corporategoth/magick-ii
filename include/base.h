@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.86  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -171,7 +175,7 @@ protected:
     mutable map<mstring,mstring> i_UserDef;
 public:
     virtual ~mUserDef() {}
-    inline mstring UserDef(const mstring &type) const
+    mstring UserDef(const mstring &type) const
     {
 	FT("mUserDef::UserDef", (type));
 	map<mstring,mstring>::const_iterator iter = i_UserDef.find(type.LowerCase());
@@ -181,7 +185,7 @@ public:
 	}
 	RET("");
     }
-    inline void UserDef(const mstring &type, const mstring &val)
+    void UserDef(const mstring &type, const mstring &val)
     {
 	FT("mUserDef::UserDef", (type, val));
 	if (val.IsSameAs("NONE", true))
@@ -205,7 +209,7 @@ protected:
     size_t thread_count;
     int message_i(const mstring& message);
 public:
-    inline mBaseTask() {}
+    mBaseTask() {}
     virtual ~mBaseTask() {}
     virtual int open(void *in=0);
     virtual int close(unsigned long flags=0);
@@ -230,7 +234,7 @@ protected:
     virtual void RemCommands() {};
 
 public:
-    inline mBase() {}
+    mBase() {}
     virtual ~mBase() {}
     static void init();
     static void shutdown();
@@ -292,9 +296,9 @@ protected:
     mstring i_Last_Modifier;
 
 public:
-    inline entlist_t () {}
-    inline entlist_t (const entlist_t& in) { *this = in; }
-    inline entlist_t(const mstring &entry, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime())
+    entlist_t () {}
+    entlist_t (const entlist_t& in) { *this = in; }
+    entlist_t(const mstring &entry, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime())
 	: i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
     {
 	FT("entlist_t::entlist_t", (entry, nick, modtime));
@@ -302,11 +306,11 @@ public:
 
     virtual ~entlist_t () {}
     void operator=(const entlist_t &in);
-    inline bool operator==(const entlist_t &in) const
+    bool operator==(const entlist_t &in) const
 	{ return (i_Entry == in.i_Entry); }
-    inline bool operator!=(const entlist_t &in) const
+    bool operator!=(const entlist_t &in) const
 	{ return (i_Entry != in.i_Entry); }
-    inline bool operator<(const entlist_t &in) const
+    bool operator<(const entlist_t &in) const
 	{ return (i_Entry < in.i_Entry); }
 
     virtual mstring Entry()const		{ return i_Entry; }
@@ -337,9 +341,9 @@ protected:
     bool i_Stupid;	// if TRUE, Value() does nothing.
 
 public:
-    inline entlist_val_t () {}
-    inline entlist_val_t (const entlist_val_t& in) { *this = in; }
-    inline entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+    entlist_val_t () {}
+    entlist_val_t (const entlist_val_t& in) { *this = in; }
+    entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
@@ -441,9 +445,9 @@ protected:
     bool i_Stupid;	// if TRUE, Value() does nothing.
 
 public:
-    inline entlist_val_t () {}
-    inline entlist_val_t (const entlist_val_t& in) { *this = in; }
-    inline entlist_val_t (const mstring &entry, const pair<T1,T2> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+    entlist_val_t () {}
+    entlist_val_t (const entlist_val_t& in) { *this = in; }
+    entlist_val_t (const mstring &entry, const pair<T1,T2> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,

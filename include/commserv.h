@@ -25,6 +25,10 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.52  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -138,7 +142,107 @@ RCSID(commserv_h, "@(#) $Id$");
 
 #include "base.h"
 
-class Committee_t;
+class Committee_t : public mUserDef, public SXP::IPersistObj
+{
+    friend class CommServ;
+
+    mstring i_Name;
+    mDateTime i_RegTime;
+    mstring i_HeadCom;
+    mstring i_Head;
+    mstring i_Description;
+    mstring i_Email;
+    mstring i_URL;
+
+    set<entlist_t> i_Members;
+    bool i_Private;
+    bool l_Private;
+    bool i_OpenMemos;
+    bool l_OpenMemos;
+    bool i_Secure;
+    bool l_Secure;
+    list<entlist_t> i_Messages;
+
+    vector<entlist_t *> members_array;
+    vector<entlist_t *> messages_array;
+
+    static SXP::Tag tag_Committee_t, tag_Name, tag_HeadCom, tag_Head,
+	tag_Description, tag_Email, tag_URL, tag_set_Private,
+	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private,
+	tag_lock_OpenMemos, tag_lock_Secure, tag_Members,
+	tag_Messages, tag_UserDef, tag_RegTime;
+public:
+    Committee_t() {}
+    Committee_t(const Committee_t &in) { *this = in; }
+    Committee_t(const mstring& name, const mstring& head, const mstring& description);
+    Committee_t(const mstring& name, const Committee_t& head, const mstring& description);
+    Committee_t(const mstring& name, const mstring& description);
+    ~Committee_t() {}
+    void operator=(const Committee_t &in);
+    bool operator==(const Committee_t &in) const
+    	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Committee_t &in) const
+    	{ return (i_Name != in.i_Name); }
+    bool operator<(const Committee_t &in) const
+    	{ return (i_Name < in.i_Name); }
+
+    mstring Name()const		{ return i_Name; }
+    mDateTime RegTime() const;
+    mstring HeadCom() const;
+    mstring Head() const;
+    void Head(const mstring& newhead);
+
+    bool insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime = mDateTime::CurrentDateTime());
+    bool erase();
+    entlist_ui begin()		{ return i_Members.begin(); }
+    entlist_ui end()		{ return i_Members.end(); }
+    size_t size()const		{ return i_Members.size(); }
+    bool find(const mstring& entry);
+    entlist_ui member;
+
+    bool IsIn(const mstring& nick) const;
+    bool IsHead(const mstring& nick) const;
+    bool IsOn(const mstring& nick) const;
+
+    void Description(const mstring& in);
+    mstring Description() const;
+    void Email(const mstring& in);
+    mstring Email() const;
+    void URL(const mstring& in);
+    mstring URL() const;
+    void Private(const bool in);
+    bool Private() const;
+    void L_Private(const bool in);
+    bool L_Private() const;
+    void OpenMemos(const bool in);
+    bool OpenMemos() const;
+    void L_OpenMemos(const bool in);
+    bool L_OpenMemos() const;
+    void Secure(const bool in);
+    bool Secure() const;
+    void L_Secure(const bool in);
+    bool L_Secure() const;
+
+    bool MSG_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& time = mDateTime::CurrentDateTime());
+    bool MSG_erase();
+    entlist_i MSG_begin()	{ return i_Messages.begin(); }
+    entlist_i MSG_end()		{ return i_Messages.end(); }
+    size_t MSG_size()const	{ return i_Messages.size(); }
+    bool MSG_find(const int num);
+    entlist_i message;
+
+    SXP::Tag& GetClassTag() const { return tag_Committee_t; }
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
+};
+
 
 class CommServ : public mBase, public SXP::IPersistObj
 {
@@ -216,65 +320,65 @@ public:
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
     public:
-	inline stats_t() { clear(); }
-	inline void clear() {
+	stats_t() { clear(); }
+	void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Add = i_Del = i_Member = i_Logon = i_Memo =
 		i_Set = i_Lock = i_Unlock = 0; }
-	inline mDateTime ClearTime()const	{ return i_ClearTime; }
-	inline unsigned long Add()const	{ return i_Add; }
-	inline unsigned long Del()const	{ return i_Del; }
-	inline unsigned long Member()const	{ return i_Member; }
-	inline unsigned long Logon()const	{ return i_Logon; }
-	inline unsigned long Memo()const	{ return i_Memo; }
-	inline unsigned long Set()const	{ return i_Set; }
-	inline unsigned long Lock()const	{ return i_Lock; }
-	inline unsigned long Unlock()const	{ return i_Unlock; }
+	mDateTime ClearTime()const	{ return i_ClearTime; }
+	unsigned long Add()const	{ return i_Add; }
+	unsigned long Del()const	{ return i_Del; }
+	unsigned long Member()const	{ return i_Member; }
+	unsigned long Logon()const	{ return i_Logon; }
+	unsigned long Memo()const	{ return i_Memo; }
+	unsigned long Set()const	{ return i_Set; }
+	unsigned long Lock()const	{ return i_Lock; }
+	unsigned long Unlock()const	{ return i_Unlock; }
     } stats;
 
-    inline unsigned int Max_Logon()const	{ return max_logon; }
-    inline bool    DEF_OpenMemos()const	{ return def_openmemos; }
-    inline bool    LCK_OpenMemos()const	{ return lck_openmemos; }
-    inline bool    DEF_Private()const		{ return def_private; }
-    inline bool    LCK_Private()const		{ return lck_private; }
-    inline bool    DEF_Secure()const		{ return def_secure; }
-    inline bool    LCK_Secure()const		{ return lck_secure; }
-    inline mstring ALL_Name()const		{ return all_name; }
-    inline mstring ALL_SetMode()const		{ return all_setmode; }
-    inline mstring REGD_Name()const		{ return regd_name; }
-    inline mstring REGD_SetMode()const		{ return regd_setmode; }
-    inline mstring SADMIN_Name()const		{ return sadmin_name; }
-    inline bool    SADMIN_Secure()const	{ return sadmin_secure; }
-    inline bool    SADMIN_Private()const	{ return sadmin_private; }
-    inline bool    SADMIN_OpenMemos()const	{ return sadmin_openmemos; }
-    inline bool    SADMIN_ModeO()const		{ return sadmin_modeo; }
-    inline mstring SADMIN_SetMode()const	{ return sadmin_setmode; }
-    inline mstring SOP_Name()const		{ return sop_name; }
-    inline bool    SOP_Secure()const		{ return sop_secure; }
-    inline bool    SOP_Private()const		{ return sop_private; }
-    inline bool    SOP_OpenMemos()const	{ return sop_openmemos; }
-    inline bool    SOP_ModeO()const		{ return sop_modeo; }
-    inline mstring SOP_SetMode()const		{ return sop_setmode; }
-    inline mstring ADMIN_Name()const		{ return admin_name; }
-    inline bool    ADMIN_Secure()const		{ return admin_secure; }
-    inline bool    ADMIN_Private()const	{ return admin_private; }
-    inline bool    ADMIN_OpenMemos()const	{ return admin_openmemos; }
-    inline bool    ADMIN_ModeO()const		{ return admin_modeo; }
-    inline mstring ADMIN_SetMode()const	{ return admin_setmode; }
-    inline mstring OPER_Name()const		{ return oper_name; }
-    inline bool    OPER_Secure()const		{ return oper_secure; }
-    inline bool    OPER_Private()const		{ return oper_private; }
-    inline bool    OPER_OpenMemos()const	{ return oper_openmemos; }
-    inline bool    OPER_ModeO()const		{ return oper_modeo; }
-    inline mstring OPER_SetMode()const		{ return oper_setmode; }
-    inline mstring OVR_View()const		{ return ovr_view; }
-    inline mstring OVR_Owner()const		{ return ovr_owner; }
-    inline mstring OVR_CS_Mode()const		{ return ovr_cs_mode; }
-    inline mstring OVR_CS_Op()const		{ return ovr_cs_op; }
-    inline mstring OVR_CS_Voice()const		{ return ovr_cs_voice; }
-    inline mstring OVR_CS_Invite()const	{ return ovr_cs_invite; }
-    inline mstring OVR_CS_Unban()const		{ return ovr_cs_unban; }
-    inline mstring OVR_CS_Clear()const		{ return ovr_cs_clear; }
+    unsigned int Max_Logon()const	{ return max_logon; }
+    bool    DEF_OpenMemos()const	{ return def_openmemos; }
+    bool    LCK_OpenMemos()const	{ return lck_openmemos; }
+    bool    DEF_Private()const		{ return def_private; }
+    bool    LCK_Private()const		{ return lck_private; }
+    bool    DEF_Secure()const		{ return def_secure; }
+    bool    LCK_Secure()const		{ return lck_secure; }
+    mstring ALL_Name()const		{ return all_name; }
+    mstring ALL_SetMode()const		{ return all_setmode; }
+    mstring REGD_Name()const		{ return regd_name; }
+    mstring REGD_SetMode()const		{ return regd_setmode; }
+    mstring SADMIN_Name()const		{ return sadmin_name; }
+    bool    SADMIN_Secure()const	{ return sadmin_secure; }
+    bool    SADMIN_Private()const	{ return sadmin_private; }
+    bool    SADMIN_OpenMemos()const	{ return sadmin_openmemos; }
+    bool    SADMIN_ModeO()const		{ return sadmin_modeo; }
+    mstring SADMIN_SetMode()const	{ return sadmin_setmode; }
+    mstring SOP_Name()const		{ return sop_name; }
+    bool    SOP_Secure()const		{ return sop_secure; }
+    bool    SOP_Private()const		{ return sop_private; }
+    bool    SOP_OpenMemos()const	{ return sop_openmemos; }
+    bool    SOP_ModeO()const		{ return sop_modeo; }
+    mstring SOP_SetMode()const		{ return sop_setmode; }
+    mstring ADMIN_Name()const		{ return admin_name; }
+    bool    ADMIN_Secure()const		{ return admin_secure; }
+    bool    ADMIN_Private()const	{ return admin_private; }
+    bool    ADMIN_OpenMemos()const	{ return admin_openmemos; }
+    bool    ADMIN_ModeO()const		{ return admin_modeo; }
+    mstring ADMIN_SetMode()const	{ return admin_setmode; }
+    mstring OPER_Name()const		{ return oper_name; }
+    bool    OPER_Secure()const		{ return oper_secure; }
+    bool    OPER_Private()const		{ return oper_private; }
+    bool    OPER_OpenMemos()const	{ return oper_openmemos; }
+    bool    OPER_ModeO()const		{ return oper_modeo; }
+    mstring OPER_SetMode()const		{ return oper_setmode; }
+    mstring OVR_View()const		{ return ovr_view; }
+    mstring OVR_Owner()const		{ return ovr_owner; }
+    mstring OVR_CS_Mode()const		{ return ovr_cs_mode; }
+    mstring OVR_CS_Op()const		{ return ovr_cs_op; }
+    mstring OVR_CS_Voice()const		{ return ovr_cs_voice; }
+    mstring OVR_CS_Invite()const	{ return ovr_cs_invite; }
+    mstring OVR_CS_Unban()const		{ return ovr_cs_unban; }
+    mstring OVR_CS_Clear()const		{ return ovr_cs_clear; }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddList(Committee_t *in) throw(E_CommServ_List);
@@ -285,11 +389,11 @@ public:
     Committee_t &GetList(const mstring &in);
     void RemList(const mstring &in);
 #endif
-    inline list_t::iterator ListBegin() { return i_list.begin(); }
-    inline list_t::iterator ListEnd() { return i_list.end(); }
-    inline list_t::const_iterator ListBegin() const { return i_list.begin(); }
-    inline list_t::const_iterator ListEnd() const { return i_list.end(); }
-    inline size_t ListSize() const { return i_list.size(); }
+    list_t::iterator ListBegin() { return i_list.begin(); }
+    list_t::iterator ListEnd() { return i_list.end(); }
+    list_t::const_iterator ListBegin() const { return i_list.begin(); }
+    list_t::const_iterator ListEnd() const { return i_list.end(); }
+    size_t ListSize() const { return i_list.size(); }
     bool IsList(const mstring& in)const;
 
     threadtype_enum Get_TType() const { return tt_OtherServ; };
@@ -329,107 +433,6 @@ public:
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
-};
-
-class Committee_t : public mUserDef, public SXP::IPersistObj
-{
-    friend void CommServ::PostLoad();
-
-    mstring i_Name;
-    mDateTime i_RegTime;
-    mstring i_HeadCom;
-    mstring i_Head;
-    mstring i_Description;
-    mstring i_Email;
-    mstring i_URL;
-
-    set<entlist_t> i_Members;
-    bool i_Private;
-    bool l_Private;
-    bool i_OpenMemos;
-    bool l_OpenMemos;
-    bool i_Secure;
-    bool l_Secure;
-    list<entlist_t> i_Messages;
-
-    vector<entlist_t *> members_array;
-    vector<entlist_t *> messages_array;
-
-    static SXP::Tag tag_Committee_t, tag_Name, tag_HeadCom, tag_Head,
-	tag_Description, tag_Email, tag_URL, tag_set_Private,
-	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private,
-	tag_lock_OpenMemos, tag_lock_Secure, tag_Members,
-	tag_Messages, tag_UserDef, tag_RegTime;
-public:
-    inline Committee_t() {}
-    inline Committee_t(const Committee_t &in) { *this = in; }
-    Committee_t(const mstring& name, const mstring& head, const mstring& description);
-    Committee_t(const mstring& name, const Committee_t& head, const mstring& description);
-    Committee_t(const mstring& name, const mstring& description);
-    ~Committee_t() {}
-    void operator=(const Committee_t &in);
-    inline bool operator==(const Committee_t &in) const
-    	{ return (i_Name == in.i_Name); }
-    inline bool operator!=(const Committee_t &in) const
-    	{ return (i_Name != in.i_Name); }
-    inline bool operator<(const Committee_t &in) const
-    	{ return (i_Name < in.i_Name); }
-
-    inline mstring Name()const		{ return i_Name; }
-    mDateTime RegTime() const;
-    mstring HeadCom() const;
-    mstring Head() const;
-    void Head(const mstring& newhead);
-
-    bool insert(const mstring& entry, const mstring& nick,
-	const mDateTime& modtime = mDateTime::CurrentDateTime());
-    bool erase();
-    inline entlist_ui begin()		{ return i_Members.begin(); }
-    inline entlist_ui end()		{ return i_Members.end(); }
-    inline size_t size()const		{ return i_Members.size(); }
-    bool find(const mstring& entry);
-    entlist_ui member;
-
-    bool IsIn(const mstring& nick) const;
-    bool IsHead(const mstring& nick) const;
-    bool IsOn(const mstring& nick) const;
-
-    void Description(const mstring& in);
-    mstring Description() const;
-    void Email(const mstring& in);
-    mstring Email() const;
-    void URL(const mstring& in);
-    mstring URL() const;
-    void Private(const bool in);
-    bool Private() const;
-    void L_Private(const bool in);
-    bool L_Private() const;
-    void OpenMemos(const bool in);
-    bool OpenMemos() const;
-    void L_OpenMemos(const bool in);
-    bool L_OpenMemos() const;
-    void Secure(const bool in);
-    bool Secure() const;
-    void L_Secure(const bool in);
-    bool L_Secure() const;
-
-    bool MSG_insert(const mstring& entry, const mstring& nick,
-	const mDateTime& time = mDateTime::CurrentDateTime());
-    bool MSG_erase();
-    inline entlist_i MSG_begin()	{ return i_Messages.begin(); }
-    inline entlist_i MSG_end()		{ return i_Messages.end(); }
-    inline size_t MSG_size()const	{ return i_Messages.size(); }
-    bool MSG_find(const int num);
-    entlist_i message;
-
-    SXP::Tag& GetClassTag() const { return tag_Committee_t; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-
-    size_t Usage() const;
-    void DumpB() const;
-    void DumpE() const;
 };
 
 #endif

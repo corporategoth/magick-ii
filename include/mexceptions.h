@@ -22,6 +22,10 @@ RCSID(mexceptions_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.2  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -45,21 +49,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_NickServ_Stored(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_NickServ_Stored(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_NickServ_Stored(const char *reason)
+    E_NickServ_Stored(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -75,21 +79,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_NickServ_Live(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_NickServ_Live(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_NickServ_Live(const char *reason)
+    E_NickServ_Live(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -105,21 +109,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_NickServ_Recovered(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_NickServ_Recovered(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_NickServ_Recovered(const char *reason)
+    E_NickServ_Recovered(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -135,21 +139,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_ChanServ_Stored(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_ChanServ_Stored(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_ChanServ_Stored(const char *reason)
+    E_ChanServ_Stored(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -165,21 +169,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_ChanServ_Live(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_ChanServ_Live(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_ChanServ_Live(const char *reason)
+    E_ChanServ_Live(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -195,21 +199,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_CommServ_List(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_CommServ_List(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_CommServ_List(const char *reason)
+    E_CommServ_List(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -225,21 +229,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_Server_List(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_Server_List(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_Server_List(const char *reason)
+    E_Server_List(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -256,23 +260,23 @@ private:
     size_t i_memo;
 
 public:
-    inline E_MemoServ_Nick(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "", size_t memo = 0)
+    E_MemoServ_Nick(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "", size_t memo = 0)
 	: i_where(where), i_type(type), i_memo(memo)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_MemoServ_Nick(const char *reason, size_t memo = 0)
+    E_MemoServ_Nick(const char *reason, size_t memo = 0)
 	: i_where(W_Other), i_type(T_Other), i_memo(memo)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
-    inline const size_t memo() const
+    const size_t memo() const
 	{ return i_memo; }
 };
 
@@ -289,23 +293,23 @@ private:
     size_t i_news;
 
 public:
-    inline E_MemoServ_Channel(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "", size_t news = 0)
+    E_MemoServ_Channel(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "", size_t news = 0)
 	: i_where(where), i_type(type), i_news(news)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_MemoServ_Channel(const char *reason, size_t news = 0)
+    E_MemoServ_Channel(const char *reason, size_t news = 0)
 	: i_where(W_Other), i_type(T_Other), i_news(news)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
-    inline const size_t news() const
+    const size_t news() const
 	{ return i_news; }
 };
 
@@ -321,21 +325,21 @@ private:
     char i_reason[1024];
 
 public:
-    inline E_DccMap_Xfers(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
+    E_DccMap_Xfers(const E_where where = W_Other, const E_type type = T_Other, const char *reason = "")
 	: i_where(where), i_type(type)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline E_DccMap_Xfers(const char *reason)
+    E_DccMap_Xfers(const char *reason)
 	: i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-    inline const E_where where() const
+    const E_where where() const
 	{ return i_where; }
-    inline const E_type type() const
+    const E_type type() const
 	{ return i_type; }
-    inline const char *what() const
+    const char *what() const
 	{ return i_reason; };
 };
 

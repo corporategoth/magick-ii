@@ -25,6 +25,10 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.19  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -99,12 +103,12 @@ private:
     map<mstring,mstring> i_keys;
     map<mstring,ceNode * > i_children;
 public:
-    inline ceNode() {}
-    inline ceNode(ceNode &in) { *this=in; }
+    ceNode() {}
+    ceNode(ceNode &in) { *this=in; }
     ~ceNode();
     ceNode& operator=(const ceNode &in);
     bool operator==(const ceNode &in)const;
-    inline bool operator<(const ceNode &in)const
+    bool operator<(const ceNode &in)const
 	{ return (i_Name < in.i_Name); }
     bool SetKey(const mstring &KeyName, const mstring &Value);
     bool DeleteKey(const mstring &KeyName);
@@ -125,8 +129,8 @@ private:
     mstring i_FileName;
     vector<mstring> DeComment(const vector<mstring>& in);
 public:
-    inline mConfigEngine() {}
-    inline mConfigEngine(const mstring& FileName)
+    mConfigEngine() {}
+    mConfigEngine(const mstring& FileName)
 	{
 	    i_FileName=FileName;
 	    LoadFile();
@@ -137,7 +141,7 @@ public:
     bool SaveFile();
     void Empty();
 
-    inline map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
+    map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
     mstring Read(const mstring &key, const mstring& Defailt="") const;
     bool Read(const mstring &key, mstring &outvar, const mstring& Default="") const;
     bool Read(const mstring &key, bool &outvar, const bool Default=false) const;

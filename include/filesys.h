@@ -25,6 +25,10 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.38  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -168,12 +172,12 @@ class mFile
     FILE *fd;
     mstring i_name;
 public:
-    inline mFile() { fd = NULL; }
-    inline mFile(const mFile &in) { *this = in; }
+    mFile() { fd = NULL; }
+    mFile(const mFile &in) { *this = in; }
     mFile(const mstring& name, FILE *in);
     mFile(const mstring& name, const mstring& mode = "r");
-    inline ~mFile() { Close(); }
-    inline mstring Name() const	{ return i_name; }
+    ~mFile() { Close(); }
+    mstring Name() const	{ return i_name; }
     bool Open(const mstring& name, const mstring& mode = "r");
     void Close();
     bool IsOpened() const;
@@ -213,8 +217,8 @@ unsigned short FindAvailPort();
 class FileMap : public SXP::IPersistObj
 {
 public:
-    inline FileMap() {}
-    inline ~FileMap() {}
+    FileMap() {}
+    ~FileMap() {}
     enum FileType { MemoAttach, Picture, Public, Unknown };
     typedef map<FileType, map<unsigned long, pair<mstring, mstring> > > filemap_t;
 
@@ -271,20 +275,20 @@ private:
     map<time_t, size_t> i_Traffic;
 
 public:
-    inline DccXfer() { i_Transiant = NULL; }
+    DccXfer() { i_Transiant = NULL; }
     DccXfer(const unsigned long dccid, const mSocket& socket,
 	const mstring& mynick, const mstring& source,
 	const FileMap::FileType filetype, const unsigned long filenum);
     DccXfer(const unsigned long dccid, const mSocket& socket,
 	const mstring& mynick, const mstring& source, const mstring& filename,
 	const size_t filesize, const size_t blocksize);
-    inline DccXfer(const DccXfer &in)
+    DccXfer(const DccXfer &in)
 	{ *this = in; }
     void operator=(const DccXfer &in);
 
     ~DccXfer();
 
-    inline unsigned long DccId() const	{ return i_DccId; }
+    unsigned long DccId() const	{ return i_DccId; }
     bool Ready() const;
     XF_Type Type() const;
     mstring Mynick() const;
@@ -298,7 +302,7 @@ public:
     void Cancel();
     void Action();	// Do what we want!
     size_t Average(time_t secs = 0) const;
-    inline size_t Traffic() const	{ return i_Traffic.size(); }
+    size_t Traffic() const	{ return i_Traffic.size(); }
     size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
@@ -353,9 +357,9 @@ public:
     static bool IsXfers(const unsigned long in);
     static vector<unsigned long> GetList(const mstring& in);
 #endif
-    static inline xfers_t::iterator XfersBegin() { return xfers.begin(); }
-    static inline xfers_t::iterator XfersEnd() { return xfers.begin(); }
-    static inline size_t XfersSize() { return xfers.size(); }
+    static xfers_t::iterator XfersBegin() { return xfers.begin(); }
+    static xfers_t::iterator XfersEnd() { return xfers.begin(); }
+    static size_t XfersSize() { return xfers.size(); }
 
     // These start in their own threads.
     void Connect(const ACE_INET_Addr& address, const mstring& mynick,

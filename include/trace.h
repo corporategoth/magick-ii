@@ -25,6 +25,10 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.72  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -128,14 +132,14 @@ public:
     ThreadID();
     ThreadID(const threadtype_enum Type);
     ~ThreadID();
-    inline bool InTrace() const { return t_intrace; }
-    inline mstring LastFunc() const { return t_lastfunc; }
-    inline void LastFunc(const mstring &in) { t_lastfunc = in; }
+    bool InTrace() const { return t_intrace; }
+    mstring LastFunc() const { return t_lastfunc; }
+    void LastFunc(const mstring &in) { t_lastfunc = in; }
     void assign(const threadtype_enum Type);
-    inline threadtype_enum type() const { return t_internaltype; }
-    inline void indentup() { t_indent++; }
-    inline void indentdown() { if (t_indent>0) t_indent--; }
-    inline short indent() const { return t_indent; }
+    threadtype_enum type() const { return t_internaltype; }
+    void indentup() { t_indent++; }
+    void indentdown() { if (t_indent>0) t_indent--; }
+    short indent() const { return t_indent; }
     mstring logname() const;
     void WriteOut (const mstring &message);
     void Flush();
@@ -307,22 +311,22 @@ public:
     Trace() {};
     ~Trace() {};
     
-    inline static unsigned short TraceLevel(const threadtype_enum type)
+    static unsigned short TraceLevel(const threadtype_enum type)
 	{ return traces[type]; }
-    inline static bool IsOn(const threadtype_enum type, const level_enum level)
+    static bool IsOn(const threadtype_enum type, const level_enum level)
 	{ return (traces[type] & level) ? true : false; }
-    inline static void TurnUp(const threadtype_enum type, const level_enum param)
+    static void TurnUp(const threadtype_enum type, const level_enum param)
 	{ traces[type] |= param; }
-    inline static void TurnDown(const threadtype_enum type, const level_enum param)
+    static void TurnDown(const threadtype_enum type, const level_enum param)
 	{ traces[type] &= ~param; }
-    inline static void TurnSet(const threadtype_enum type, const unsigned short param)
+    static void TurnSet(const threadtype_enum type, const unsigned short param)
 	{ traces[type] = param; }
 
-    static inline bool IsOn(ThreadID *tid, const level_enum level)
+    static bool IsOn(ThreadID *tid, const level_enum level)
 	{ return IsOn(tid->type(), level); }
-    static inline void TurnUp(ThreadID *tid, const level_enum level)
+    static void TurnUp(ThreadID *tid, const level_enum level)
 	{ TurnUp(tid->type(), level); }
-    static inline void TurnDown(ThreadID *tid, const level_enum level)
+    static void TurnDown(ThreadID *tid, const level_enum level)
 	{ TurnDown(tid->type(), level); }
 };
 

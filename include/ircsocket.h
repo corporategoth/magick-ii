@@ -25,6 +25,10 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.49  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -167,10 +171,10 @@ public:
     int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
 		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
 
-    inline unsigned long Local_IP() const { return sock.Local_IP(); }
-    inline size_t In_Traffic() const { return in_traffic; }
-    inline size_t Out_Traffic() const { return out_traffic; }
-    inline mDateTime Connect_Time() const { return connect_time; }
+    unsigned long Local_IP() const { return sock.Local_IP(); }
+    size_t In_Traffic() const { return in_traffic; }
+    size_t Out_Traffic() const { return out_traffic; }
+    mDateTime Connect_Time() const { return connect_time; }
     time_t HTM_Gap() const;
     unsigned short HTM_Level() const;
     size_t HTM_Threshold() const;

@@ -25,6 +25,10 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.64  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -175,8 +179,359 @@ RCSID(nickserv_h, "@(#) $Id$");
 #include "base.h"
 #include "ircsocket.h"
 
-class Nick_Live_t;
-class Nick_Stored_t;
+
+class Nick_Live_t : public mUserDef
+{
+    mstring i_Name;
+    mDateTime i_Signon_Time;
+    mDateTime i_My_Signon_Time;
+    mDateTime i_Last_Action;
+    mstring i_realname;
+    mstring i_user;
+    mstring i_host;
+    mstring i_alt_host;
+    mstring i_server;
+    mstring i_squit;
+    mstring i_away;
+    mstring modes;
+    set<mstring> joined_channels;
+    vector<mDateTime> last_msg_times;
+    unsigned int last_msg_entries;
+    unsigned int flood_triggered_times;
+    unsigned int failed_passwds;
+    set<mstring> chans_founder_identd;
+    vector<mstring> try_chan_ident;
+    bool identified;
+    bool services;
+    mDateTime last_nick_reg, last_chan_reg, last_memo;
+
+public:
+    class InFlight_t {
+	friend class Nick_Live_t;
+	friend class DccXfer;
+	friend class InFlight_Handler;
+
+	mstring nick;
+	FileMap::FileType type;
+	long timer;
+	bool fileattach;
+	bool fileinprog;
+	mstring service;
+	mstring sender;
+	mstring recipiant;
+	mstring text;
+
+	InFlight_t(const mstring &name) : nick(name) { init(); }
+	InFlight_t() { init(); }
+	~InFlight_t();
+
+	void ChgNick(const mstring& newnick);
+	void operator=(const InFlight_t &in);
+	void init();
+	// Called upon completion
+	// 0 means it failed
+	void File(const unsigned long filenum);
+	// Called upon start
+	void SetInProg();
+    public:
+	void Memo (const bool file, const mstring& mynick,
+		const mstring& recipiant, const mstring& message,
+		const bool silent = false);
+	void Continue(const mstring& message);
+	void Cancel();
+	void End(const unsigned long filenum);
+	void Picture (const mstring& mynick);
+	void Public (const mstring& mynick, const mstring& committees = "");
+	mstring Text();
+	mstring Recipiant();
+	bool Memo() const;
+	bool Picture() const;
+	bool Public() const;
+	bool Exists() const;
+	bool File() const;
+	bool InProg() const;
+	size_t Usage() const;
+	void DumpB() const;
+	void DumpE() const;
+    } InFlight;
+
+    Nick_Live_t();
+    Nick_Live_t(const Nick_Live_t &in)
+	{ *this = in; }
+    Nick_Live_t(const mstring& name, const mDateTime& signon,
+	const mstring& server, const mstring& username,
+	const mstring& hostname, const mstring& realname);
+    Nick_Live_t(const mstring& name, const mstring& username,
+	const mstring& hostname, const mstring& realname); // Services ONLY
+    ~Nick_Live_t() {}
+    void operator=(const Nick_Live_t &in);
+    bool operator==(const Nick_Live_t &in) const
+    	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Nick_Live_t &in) const
+    	{ return (i_Name != in.i_Name); }
+    bool operator<(const Nick_Live_t &in) const
+    	{ return (i_Name < in.i_Name); }
+
+    // channel maintinance
+    void Join(const mstring& channel);
+    void Part(const mstring& channel);
+    void Kick(const mstring& kicker, const mstring& channel);
+    void Quit(const mstring& reason);
+    bool IsInChan(const mstring& channel);
+    set<mstring> Channels() const;
+
+    // true if user ignored
+    bool FloodTrigger();
+
+    // Data maintinance
+    void Name(const mstring& in);
+    mstring Name() const	{ return i_Name; }
+
+    void SendMode(const mstring& in);
+    void Mode(const mstring& in);
+    mstring Mode() const;
+    bool HasMode(const mstring& in) const;
+
+    void Away(const mstring& in);
+    mstring Away() const;
+
+    mDateTime LastAction() const;
+    void Action();
+
+    mDateTime SignonTime() const;
+    mDateTime MySignonTime() const;
+    mstring RealName() const;
+    mstring User() const;
+    mstring Host() const;
+    mstring AltHost() const;
+    void AltHost(const mstring& in);
+    mstring Server() const;
+    void SetSquit();
+    void ClearSquit();
+    mstring Squit() const;
+
+    enum styles {
+    	N = 1,		// nick!*@*
+    	N_U_P_H,	// nick!user@port.host
+    	N_U_H,		// nick!user@*.host
+    	N_P_H,		// nick!*@port.host
+    	N_H,		// nick!*@*.host
+    	U_P_H,		// *!user@port.host
+    	U_H,		// *!user@*.host
+    	P_H,		// *!*@port.host
+    	H		// *!*@*.host
+    	};
+
+    mstring Mask(const styles type) const;
+    mstring AltMask(const styles type) const;
+
+    // Will KILL user if >PassFailMax
+    mstring ChanIdentify(const mstring& channel, const mstring& password);
+    void UnChanIdentify(const mstring& channel);
+    bool IsChanIdentified(const mstring& channel);
+    mstring Identify(const mstring& password);
+    void UnIdentify();
+    bool IsIdentified() const;
+    bool IsRecognized() const;
+    bool IsServices() const;
+
+    void SetLastNickReg();
+    mDateTime LastNickReg() const;
+    void SetLastChanReg();
+    mDateTime LastChanReg() const;
+    void SetLastMemo();
+    mDateTime LastMemo() const;
+
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
+};
+
+struct NickInfo_CUR;
+struct ESP_NickInfo;
+
+class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
+{
+    friend class Nick_Live_t;
+    friend class NickServ;
+    friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
+    friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
+
+    mstring i_Name;
+    mDateTime i_RegTime;
+    mstring i_Password;
+    mstring i_Email;
+    mstring i_URL;
+    mstring i_ICQ;
+    mstring i_Description;
+    mstring i_Comment;
+    mstring i_Host;
+    set<mstring> i_slaves; // HOST only
+    set<mstring> i_access;
+    set<mstring> i_ignore;
+    bool i_Protect;
+    bool l_Protect;
+    bool i_Secure;
+    bool l_Secure;
+    bool i_NoExpire;
+    bool l_NoExpire;
+    bool i_NoMemo;
+    bool l_NoMemo;
+    bool i_Private;
+    bool l_Private;
+    bool i_PRIVMSG;
+    bool l_PRIVMSG;
+    mstring i_Language;
+    bool l_Language;
+    bool i_Forbidden;
+    unsigned long i_Picture;
+
+    mstring i_Suspend_By;
+    mDateTime i_Suspend_Time;
+
+    // offline
+    mDateTime i_LastSeenTime;
+    mstring i_LastRealName;
+    mstring i_LastMask;
+    mstring i_LastQuit;
+
+    Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
+	const Nick_Stored_t &host); // Slave
+    void Signon(const mstring& realname, const mstring& mask);
+    void ChgNick(const mstring& nick);
+    void ChangeOver(const mstring& oldnick);
+
+    static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime,
+	tag_Password, tag_Email, tag_URL, tag_ICQ, tag_Description,
+	tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure,
+	tag_set_NoExpire, tag_set_NoMemo, tag_set_Private,
+	tag_set_PRIVMSG, tag_set_Language, tag_Forbidden,
+	tag_lock_Protect, tag_lock_Secure, tag_lock_NoExpire,
+	tag_lock_NoMemo, tag_lock_Private, tag_lock_PRIVMSG,
+	tag_lock_Language, tag_Picture, tag_Suspend_By,
+	tag_Suspend_Time, tag_LastSeenTime, tag_LastRealName,
+	tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
+public:
+    Nick_Stored_t();
+    Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
+    Nick_Stored_t(const mstring& nick, const mstring& password);
+    Nick_Stored_t(const mstring& nick); // Services Only (forbidden)
+    ~Nick_Stored_t() {}
+    void operator=(const Nick_Stored_t &in);
+    bool operator==(const Nick_Stored_t &in) const
+	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Nick_Stored_t &in) const
+	{ return (i_Name != in.i_Name); }
+    bool operator<(const Nick_Stored_t &in) const
+	{ return (i_Name < in.i_Name); }
+
+    mstring Name() const	{ return i_Name; }
+    mDateTime RegTime() const;
+
+    unsigned long Drop();
+    mstring Password();
+    void Password(const mstring& in);
+    mstring Email();
+    void Email(const mstring& in);
+    mstring URL();
+    void URL(const mstring& in);
+    mstring ICQ();
+    void ICQ(const mstring& in);
+    mstring Description();
+    void Description(const mstring& in);
+    mstring Comment();
+    void Comment(const mstring& in);
+
+    void Suspend(const mstring& name, const mstring& reason)
+	{ Comment(reason); Suspend(name); }
+    void Suspend(const mstring& name);
+    void UnSuspend();
+
+    mstring Host();
+    unsigned int Siblings();
+    mstring Sibling(const unsigned int count);
+    bool IsSibling(const mstring& nick);
+    bool Slave(const mstring& nick, const mstring& password, const mDateTime& regtime = mDateTime::CurrentDateTime());
+    bool MakeHost();
+    bool Unlink();
+
+    unsigned int Access();
+    mstring Access(const unsigned int count);
+    bool AccessAdd(const mstring& in);
+    unsigned int AccessDel(const mstring& in);
+    unsigned int AccessDel(const unsigned int in)
+	{ return AccessDel(Access(in)); }
+    bool IsAccess(const mstring& in);
+
+    unsigned int Ignore();
+    mstring Ignore(const unsigned int count);
+    bool IgnoreAdd(const mstring& in);
+    unsigned int IgnoreDel(const mstring& in);
+    unsigned int IgnoreDel(const unsigned int in)
+	{ return IgnoreDel(Ignore(in)); }
+    bool IsIgnore(const mstring& in);
+
+    // flags
+    bool Protect();
+    void Protect(const bool in);
+    bool L_Protect();
+    void L_Protect(const bool in);
+    bool Secure();
+    void Secure(const bool in);
+    bool L_Secure();
+    void L_Secure(const bool in);
+    bool NoExpire();
+    void NoExpire(const bool in);
+    bool L_NoExpire();
+    void L_NoExpire(const bool in);
+    bool NoMemo();
+    void NoMemo(const bool in);
+    bool L_NoMemo();
+    void L_NoMemo(const bool in);
+    bool Private();
+    void Private(const bool in);
+    bool L_Private();
+    void L_Private(const bool in);
+    bool PRIVMSG();
+    void PRIVMSG(const bool in);
+    bool L_PRIVMSG();
+    void L_PRIVMSG(const bool in);
+    mstring Language();
+    void Language(const mstring& in);
+    bool L_Language();
+    void L_Language(const bool in);
+    bool Suspended();
+    mstring Suspend_By();
+    mDateTime Suspend_Time();
+    bool Forbidden() const;
+    void SendPic(const mstring& nick);
+    unsigned long PicNum();
+    void GotPic(const unsigned long picnum);
+
+    // IF Online, returns live realname and ONLINE.
+    // IF non-slave and Offline, returns local data.
+    // IF slave and Offline, returns host data.
+    bool IsOnline();
+    mDateTime LastAllSeenTime();
+    mDateTime LastSeenTime();
+    mstring LastRealName();
+    mstring LastAllMask();
+    mstring LastMask();
+    mstring LastQuit();
+    void Quit(const mstring& message);
+
+    size_t MyChannels() const;
+
+    SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    size_t Usage();
+    void DumpB();
+    void DumpE();
+};
+
 
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
@@ -258,61 +613,61 @@ public:
 	unsigned long i_SetPicture;
 	unsigned long i_Send;
     public:
-	inline stats_t() { clear(); }
-	inline void clear() {
+	stats_t() { clear(); }
+	void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Link = i_Unlink = i_Host =
 		i_Identify = i_Ghost = i_Recover = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Access =
 		i_Ignore = i_Set = i_NoExpire = i_Lock =
 		i_Unlock = i_SetPicture = i_Send = 0; }
-	inline mDateTime ClearTime()const	{ return i_ClearTime; }
-	inline unsigned long Register()const	{ return i_Register; }
-	inline unsigned long Drop()const	{ return i_Drop; }
-	inline unsigned long Link()const	{ return i_Link; }
-	inline unsigned long Unlink()const	{ return i_Unlink; }
-	inline unsigned long Host()const	{ return i_Host; }
-	inline unsigned long Identify()const	{ return i_Identify; }
-	inline unsigned long Ghost()const	{ return i_Ghost; }
-	inline unsigned long Recover()const	{ return i_Recover; }
-	inline unsigned long Suspend()const	{ return i_Suspend; }
-	inline unsigned long Unsuspend()const	{ return i_Unsuspend; }
-	inline unsigned long Forbid()const	{ return i_Forbid; }
-	inline unsigned long Getpass()const	{ return i_Getpass; }
-	inline unsigned long Access()const	{ return i_Access; }
-	inline unsigned long Ignore()const	{ return i_Ignore; }
-	inline unsigned long Set()const	{ return i_Set; }
-	inline unsigned long NoExpire()const	{ return i_NoExpire; }
-	inline unsigned long Lock()const	{ return i_Lock; }
-	inline unsigned long Unlock()const	{ return i_Unlock; }
-	inline unsigned long SetPicture()const	{ return i_SetPicture; }
-	inline unsigned long Send()const	{ return i_Send; }
+	mDateTime ClearTime()const	{ return i_ClearTime; }
+	unsigned long Register()const	{ return i_Register; }
+	unsigned long Drop()const	{ return i_Drop; }
+	unsigned long Link()const	{ return i_Link; }
+	unsigned long Unlink()const	{ return i_Unlink; }
+	unsigned long Host()const	{ return i_Host; }
+	unsigned long Identify()const	{ return i_Identify; }
+	unsigned long Ghost()const	{ return i_Ghost; }
+	unsigned long Recover()const	{ return i_Recover; }
+	unsigned long Suspend()const	{ return i_Suspend; }
+	unsigned long Unsuspend()const	{ return i_Unsuspend; }
+	unsigned long Forbid()const	{ return i_Forbid; }
+	unsigned long Getpass()const	{ return i_Getpass; }
+	unsigned long Access()const	{ return i_Access; }
+	unsigned long Ignore()const	{ return i_Ignore; }
+	unsigned long Set()const	{ return i_Set; }
+	unsigned long NoExpire()const	{ return i_NoExpire; }
+	unsigned long Lock()const	{ return i_Lock; }
+	unsigned long Unlock()const	{ return i_Unlock; }
+	unsigned long SetPicture()const	{ return i_SetPicture; }
+	unsigned long Send()const	{ return i_Send; }
     } stats;
 
-    inline mstring Enforcer_Name()const	{ return enforcer_name; }
-    inline bool Append_Rename()const		{ return append_rename; }
-    inline mstring Suffixes()const		{ return suffixes; }
-    inline unsigned long Expire()const		{ return expire; }
-    inline unsigned long Delay()const		{ return delay; }
-    inline unsigned long Ident()const		{ return ident; }
-    inline unsigned long Release()const	{ return release; }
-    inline unsigned int Passfail()const	{ return passfail; }
-    inline bool DEF_Protect()const		{ return def_protect; }
-    inline bool LCK_Protect()const		{ return lck_protect; }
-    inline bool DEF_Secure()const		{ return def_secure; }
-    inline bool LCK_Secure()const		{ return lck_secure; }
-    inline bool DEF_NoExpire()const		{ return def_noexpire; }
-    inline bool LCK_NoExpire()const		{ return lck_noexpire; }
-    inline bool DEF_NoMemo()const		{ return def_nomemo; }
-    inline bool LCK_NoMemo()const		{ return lck_nomemo; }
-    inline bool DEF_Private()const		{ return def_private; }
-    inline bool LCK_Private()const		{ return lck_private; }
-    inline bool DEF_PRIVMSG()const		{ return def_privmsg; }
-    inline bool LCK_PRIVMSG()const		{ return lck_privmsg; }
-    inline mstring DEF_Language()const		{ return def_language; }
-    inline bool LCK_Language()const		{ return lck_language; }
-    inline unsigned long PicSize()const	{ return picsize; }
-    inline mstring PicExt()const		{ return picext; }
+    mstring Enforcer_Name()const	{ return enforcer_name; }
+    bool Append_Rename()const		{ return append_rename; }
+    mstring Suffixes()const		{ return suffixes; }
+    unsigned long Expire()const		{ return expire; }
+    unsigned long Delay()const		{ return delay; }
+    unsigned long Ident()const		{ return ident; }
+    unsigned long Release()const	{ return release; }
+    unsigned int Passfail()const	{ return passfail; }
+    bool DEF_Protect()const		{ return def_protect; }
+    bool LCK_Protect()const		{ return lck_protect; }
+    bool DEF_Secure()const		{ return def_secure; }
+    bool LCK_Secure()const		{ return lck_secure; }
+    bool DEF_NoExpire()const		{ return def_noexpire; }
+    bool LCK_NoExpire()const		{ return lck_noexpire; }
+    bool DEF_NoMemo()const		{ return def_nomemo; }
+    bool LCK_NoMemo()const		{ return lck_nomemo; }
+    bool DEF_Private()const		{ return def_private; }
+    bool LCK_Private()const		{ return lck_private; }
+    bool DEF_PRIVMSG()const		{ return def_privmsg; }
+    bool LCK_PRIVMSG()const		{ return lck_privmsg; }
+    mstring DEF_Language()const		{ return def_language; }
+    bool LCK_Language()const		{ return lck_language; }
+    unsigned long PicSize()const	{ return picsize; }
+    mstring PicExt()const		{ return picext; }
 
     InFlight_Handler ifh;
 
@@ -325,11 +680,11 @@ public:
     Nick_Stored_t &GetStored(const mstring &in);
     void RemStored(const mstring &in);
 #endif
-    inline stored_t::iterator StoredBegin() { return stored.begin(); }
-    inline stored_t::iterator StoredEnd() { return stored.end(); }
-    inline stored_t::const_iterator StoredBegin() const { return stored.begin(); }
-    inline stored_t::const_iterator StoredEnd() const { return stored.end(); }
-    inline size_t StoredSize() const { return stored.size(); }
+    stored_t::iterator StoredBegin() { return stored.begin(); }
+    stored_t::iterator StoredEnd() { return stored.end(); }
+    stored_t::const_iterator StoredBegin() const { return stored.begin(); }
+    stored_t::const_iterator StoredEnd() const { return stored.end(); }
+    size_t StoredSize() const { return stored.size(); }
     bool IsStored(const mstring& in)const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -341,11 +696,11 @@ public:
     Nick_Live_t &GetLive(const mstring &in) const;
     void RemLive(const mstring &in);
 #endif
-    inline live_t::iterator LiveBegin() { return live.begin(); }
-    inline live_t::iterator LiveEnd() { return live.end(); }
-    inline live_t::const_iterator LiveBegin() const { return live.begin(); }
-    inline live_t::const_iterator LiveEnd() const { return live.end(); }
-    inline size_t LiveSize() const { return live.size(); }
+    live_t::iterator LiveBegin() { return live.begin(); }
+    live_t::iterator LiveEnd() { return live.end(); }
+    live_t::const_iterator LiveBegin() const { return live.begin(); }
+    live_t::const_iterator LiveEnd() const { return live.end(); }
+    size_t LiveSize() const { return live.size(); }
     bool IsLive(const mstring& in)const;
     bool IsLiveAll(const mstring& in)const;
 
@@ -358,11 +713,11 @@ public:
     const mDateTime &GetRecovered(const mstring &in) const;
     void RemRecovered(const mstring &in);
 #endif
-    inline recovered_t::iterator RecoveredBegin() { return recovered.begin(); }
-    inline recovered_t::iterator RecoveredEnd() { return recovered.end(); }
-    inline recovered_t::const_iterator RecoveredBegin() const { return recovered.begin(); }
-    inline recovered_t::const_iterator RecoveredEnd() const { return recovered.end(); }
-    inline size_t RecoveredSize() const { return recovered.size(); }
+    recovered_t::iterator RecoveredBegin() { return recovered.begin(); }
+    recovered_t::iterator RecoveredEnd() { return recovered.end(); }
+    recovered_t::const_iterator RecoveredBegin() const { return recovered.begin(); }
+    recovered_t::const_iterator RecoveredEnd() const { return recovered.end(); }
+    size_t RecoveredSize() const { return recovered.size(); }
     bool IsRecovered(const mstring& in)const;
 
     static mstring findnextnick(const mstring& in);
@@ -433,357 +788,5 @@ public:
     void PostLoad();
 };
 
-
-class Nick_Live_t : public mUserDef
-{
-    mstring i_Name;
-    mDateTime i_Signon_Time;
-    mDateTime i_My_Signon_Time;
-    mDateTime i_Last_Action;
-    mstring i_realname;
-    mstring i_user;
-    mstring i_host;
-    mstring i_alt_host;
-    mstring i_server;
-    mstring i_squit;
-    mstring i_away;
-    mstring modes;
-    set<mstring> joined_channels;
-    vector<mDateTime> last_msg_times;
-    unsigned int last_msg_entries;
-    unsigned int flood_triggered_times;
-    unsigned int failed_passwds;
-    set<mstring> chans_founder_identd;
-    vector<mstring> try_chan_ident;
-    bool identified;
-    bool services;
-    mDateTime last_nick_reg, last_chan_reg, last_memo;
-
-public:
-    class InFlight_t {
-	friend class Nick_Live_t;
-	friend class DccXfer;
-	friend class InFlight_Handler;
-
-	mstring nick;
-	FileMap::FileType type;
-	long timer;
-	bool fileattach;
-	bool fileinprog;
-	mstring service;
-	mstring sender;
-	mstring recipiant;
-	mstring text;
-
-	inline InFlight_t(const mstring &name) : nick(name) { init(); }
-	inline InFlight_t() { init(); }
-	inline ~InFlight_t();
-
-	void ChgNick(const mstring& newnick);
-	void operator=(const InFlight_t &in);
-	void init();
-	// Called upon completion
-	// 0 means it failed
-	void File(const unsigned long filenum);
-	// Called upon start
-	void SetInProg();
-    public:
-	void Memo (const bool file, const mstring& mynick,
-		const mstring& recipiant, const mstring& message,
-		const bool silent = false);
-	void Continue(const mstring& message);
-	void Cancel();
-	void End(const unsigned long filenum);
-	void Picture (const mstring& mynick);
-	void Public (const mstring& mynick, const mstring& committees = "");
-	mstring Text();
-	mstring Recipiant();
-	bool Memo() const;
-	bool Picture() const;
-	bool Public() const;
-	bool Exists() const;
-	bool File() const;
-	bool InProg() const;
-	size_t Usage() const;
-	void DumpB() const;
-	void DumpE() const;
-    } InFlight;
-
-    Nick_Live_t();
-    inline Nick_Live_t(const Nick_Live_t &in)
-	{ *this = in; }
-    Nick_Live_t(const mstring& name, const mDateTime& signon,
-	const mstring& server, const mstring& username,
-	const mstring& hostname, const mstring& realname);
-    Nick_Live_t(const mstring& name, const mstring& username,
-	const mstring& hostname, const mstring& realname); // Services ONLY
-    ~Nick_Live_t() {}
-    void operator=(const Nick_Live_t &in);
-    inline bool operator==(const Nick_Live_t &in) const
-    	{ return (i_Name == in.i_Name); }
-    inline bool operator!=(const Nick_Live_t &in) const
-    	{ return (i_Name != in.i_Name); }
-    inline bool operator<(const Nick_Live_t &in) const
-    	{ return (i_Name < in.i_Name); }
-
-    // channel maintinance
-    void Join(const mstring& channel);
-    void Part(const mstring& channel);
-    void Kick(const mstring& kicker, const mstring& channel);
-    void Quit(const mstring& reason);
-    bool IsInChan(const mstring& channel);
-    set<mstring> Channels() const;
-
-    // true if user ignored
-    bool FloodTrigger();
-
-    // Data maintinance
-    void Name(const mstring& in);
-    inline mstring Name() const	{ return i_Name; }
-
-    void SendMode(const mstring& in);
-    void Mode(const mstring& in);
-    mstring Mode() const;
-    bool HasMode(const mstring& in) const;
-
-    void Away(const mstring& in);
-    mstring Away() const;
-
-    mDateTime LastAction() const;
-    void Action();
-
-    mDateTime SignonTime() const;
-    mDateTime MySignonTime() const;
-    mstring RealName() const;
-    mstring User() const;
-    mstring Host() const;
-    mstring AltHost() const;
-    void AltHost(const mstring& in);
-    mstring Server() const;
-    void SetSquit();
-    void ClearSquit();
-    mstring Squit() const;
-
-    enum styles {
-    	N = 1,		// nick!*@*
-    	N_U_P_H,	// nick!user@port.host
-    	N_U_H,		// nick!user@*.host
-    	N_P_H,		// nick!*@port.host
-    	N_H,		// nick!*@*.host
-    	U_P_H,		// *!user@port.host
-    	U_H,		// *!user@*.host
-    	P_H,		// *!*@port.host
-    	H		// *!*@*.host
-    	};
-
-    mstring Mask(const styles type) const;
-    mstring AltMask(const styles type) const;
-
-    // Will KILL user if >PassFailMax
-    mstring ChanIdentify(const mstring& channel, const mstring& password);
-    void UnChanIdentify(const mstring& channel);
-    bool IsChanIdentified(const mstring& channel);
-    mstring Identify(const mstring& password);
-    void UnIdentify();
-    bool IsIdentified() const;
-    bool IsRecognized() const;
-    bool IsServices() const;
-
-    void SetLastNickReg();
-    mDateTime LastNickReg() const;
-    void SetLastChanReg();
-    mDateTime LastChanReg() const;
-    void SetLastMemo();
-    mDateTime LastMemo() const;
-
-    size_t Usage() const;
-    void DumpB() const;
-    void DumpE() const;
-};
-
-struct NickInfo_CUR;
-struct ESP_NickInfo;
-
-class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
-{
-    friend class Nick_Live_t;
-    friend void NickServ::PostLoad();
-    friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
-    friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
-
-    mstring i_Name;
-    mDateTime i_RegTime;
-    mstring i_Password;
-    mstring i_Email;
-    mstring i_URL;
-    mstring i_ICQ;
-    mstring i_Description;
-    mstring i_Comment;
-    mstring i_Host;
-    set<mstring> i_slaves; // HOST only
-    set<mstring> i_access;
-    set<mstring> i_ignore;
-    bool i_Protect;
-    bool l_Protect;
-    bool i_Secure;
-    bool l_Secure;
-    bool i_NoExpire;
-    bool l_NoExpire;
-    bool i_NoMemo;
-    bool l_NoMemo;
-    bool i_Private;
-    bool l_Private;
-    bool i_PRIVMSG;
-    bool l_PRIVMSG;
-    mstring i_Language;
-    bool l_Language;
-    bool i_Forbidden;
-    unsigned long i_Picture;
-
-    mstring i_Suspend_By;
-    mDateTime i_Suspend_Time;
-
-    // offline
-    mDateTime i_LastSeenTime;
-    mstring i_LastRealName;
-    mstring i_LastMask;
-    mstring i_LastQuit;
-
-    Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
-	const Nick_Stored_t &host); // Slave
-    void Signon(const mstring& realname, const mstring& mask);
-    void ChgNick(const mstring& nick);
-    void ChangeOver(const mstring& oldnick);
-
-    static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime,
-	tag_Password, tag_Email, tag_URL, tag_ICQ, tag_Description,
-	tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure,
-	tag_set_NoExpire, tag_set_NoMemo, tag_set_Private,
-	tag_set_PRIVMSG, tag_set_Language, tag_Forbidden,
-	tag_lock_Protect, tag_lock_Secure, tag_lock_NoExpire,
-	tag_lock_NoMemo, tag_lock_Private, tag_lock_PRIVMSG,
-	tag_lock_Language, tag_Picture, tag_Suspend_By,
-	tag_Suspend_Time, tag_LastSeenTime, tag_LastRealName,
-	tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
-public:
-    Nick_Stored_t();
-    inline Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
-    Nick_Stored_t(const mstring& nick, const mstring& password);
-    Nick_Stored_t(const mstring& nick); // Services Only (forbidden)
-    ~Nick_Stored_t() {}
-    void operator=(const Nick_Stored_t &in);
-    inline bool operator==(const Nick_Stored_t &in) const
-	{ return (i_Name == in.i_Name); }
-    inline bool operator!=(const Nick_Stored_t &in) const
-	{ return (i_Name != in.i_Name); }
-    inline bool operator<(const Nick_Stored_t &in) const
-	{ return (i_Name < in.i_Name); }
-
-    inline mstring Name() const	{ return i_Name; }
-    mDateTime RegTime() const;
-
-    unsigned long Drop();
-    mstring Password();
-    void Password(const mstring& in);
-    mstring Email();
-    void Email(const mstring& in);
-    mstring URL();
-    void URL(const mstring& in);
-    mstring ICQ();
-    void ICQ(const mstring& in);
-    mstring Description();
-    void Description(const mstring& in);
-    mstring Comment();
-    void Comment(const mstring& in);
-
-    inline void Suspend(const mstring& name, const mstring& reason)
-	{ Comment(reason); Suspend(name); }
-    void Suspend(const mstring& name);
-    void UnSuspend();
-
-    mstring Host();
-    unsigned int Siblings();
-    mstring Sibling(const unsigned int count);
-    bool IsSibling(const mstring& nick);
-    bool Slave(const mstring& nick, const mstring& password, const mDateTime& regtime = mDateTime::CurrentDateTime());
-    bool MakeHost();
-    bool Unlink();
-
-    unsigned int Access();
-    mstring Access(const unsigned int count);
-    bool AccessAdd(const mstring& in);
-    unsigned int AccessDel(const mstring& in);
-    inline unsigned int AccessDel(const unsigned int in)
-	{ return AccessDel(Access(in)); }
-    bool IsAccess(const mstring& in);
-
-    unsigned int Ignore();
-    mstring Ignore(const unsigned int count);
-    bool IgnoreAdd(const mstring& in);
-    unsigned int IgnoreDel(const mstring& in);
-    inline unsigned int IgnoreDel(const unsigned int in)
-	{ return IgnoreDel(Ignore(in)); }
-    bool IsIgnore(const mstring& in);
-
-    // flags
-    bool Protect();
-    void Protect(const bool in);
-    bool L_Protect();
-    void L_Protect(const bool in);
-    bool Secure();
-    void Secure(const bool in);
-    bool L_Secure();
-    void L_Secure(const bool in);
-    bool NoExpire();
-    void NoExpire(const bool in);
-    bool L_NoExpire();
-    void L_NoExpire(const bool in);
-    bool NoMemo();
-    void NoMemo(const bool in);
-    bool L_NoMemo();
-    void L_NoMemo(const bool in);
-    bool Private();
-    void Private(const bool in);
-    bool L_Private();
-    void L_Private(const bool in);
-    bool PRIVMSG();
-    void PRIVMSG(const bool in);
-    bool L_PRIVMSG();
-    void L_PRIVMSG(const bool in);
-    mstring Language();
-    void Language(const mstring& in);
-    bool L_Language();
-    void L_Language(const bool in);
-    bool Suspended();
-    mstring Suspend_By();
-    mDateTime Suspend_Time();
-    bool Forbidden() const;
-    void SendPic(const mstring& nick);
-    unsigned long PicNum();
-    void GotPic(const unsigned long picnum);
-
-    // IF Online, returns live realname and ONLINE.
-    // IF non-slave and Offline, returns local data.
-    // IF slave and Offline, returns host data.
-    bool IsOnline();
-    mDateTime LastAllSeenTime();
-    mDateTime LastSeenTime();
-    mstring LastRealName();
-    mstring LastAllMask();
-    mstring LastMask();
-    mstring LastQuit();
-    void Quit(const mstring& message);
-
-    size_t MyChannels() const;
-
-    SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
-    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-
-    size_t Usage();
-    void DumpB();
-    void DumpE();
-};
 
 #endif

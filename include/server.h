@@ -25,6 +25,10 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.65  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -260,42 +264,94 @@ class Protocol
 
 public:
     Protocol();
-    inline ~Protocol() {}
+    ~Protocol() {}
     void Set(const unsigned int in);
     mstring GetToken(const mstring& in) const;
     mstring GetNonToken(const mstring& in) const;
 
-    inline unsigned int Number() const   { return i_Number; }
-    inline unsigned int NickLen() const  { return i_NickLen; }
-    inline unsigned int MaxLine() const  { return i_MaxLine; }
-    inline bool Globops() const	  { return i_Globops; }
-    inline bool Helpops() const	  { return i_Helpops; }
-    inline bool Tokens() const		  { return i_Tokens; }
-    inline void Tokens(const bool in)	  { i_Tokens = in; }
-    inline bool P12() const		  { return i_P12; }
-    inline bool TSora() const		  { return i_TSora; }
-    inline unsigned int Akill() const    { return i_Akill; }
-    inline unsigned int Signon() const   { return i_Signon; }
-    inline unsigned int Modes() const    { return i_Modes; }
-    inline mstring ChanModeArg() const   { return i_ChanModeArg; }
-    inline mstring Server() const	  { return i_Server; }
-    inline int Numeric() const		  { return i_Numeric; }
-    inline mstring SVSNICK() const	  { return i_SVSNICK; }
-    inline mstring SVSMODE() const	  { return i_SVSMODE; }
-    inline mstring SVSKILL() const	  { return i_SVSKILL; }
-    inline mstring SVSNOOP() const	  { return i_SVSNOOP; }
-    inline mstring SQLINE() const	  { return i_SQLINE; }
-    inline mstring UNSQLINE() const	  { return i_UNSQLINE; }
-    inline mstring SVSHOST() const	  { return i_SVSHOST; }
-    inline mstring Burst() const	  { return i_Burst; }
-    inline mstring EndBurst() const	  { return i_EndBurst; }
-    inline mstring Protoctl() const	  { return i_Protoctl; }
+    unsigned int Number() const   { return i_Number; }
+    unsigned int NickLen() const  { return i_NickLen; }
+    unsigned int MaxLine() const  { return i_MaxLine; }
+    bool Globops() const	  { return i_Globops; }
+    bool Helpops() const	  { return i_Helpops; }
+    bool Tokens() const		  { return i_Tokens; }
+    void Tokens(const bool in)	  { i_Tokens = in; }
+    bool P12() const		  { return i_P12; }
+    bool TSora() const		  { return i_TSora; }
+    unsigned int Akill() const    { return i_Akill; }
+    unsigned int Signon() const   { return i_Signon; }
+    unsigned int Modes() const    { return i_Modes; }
+    mstring ChanModeArg() const   { return i_ChanModeArg; }
+    mstring Server() const	  { return i_Server; }
+    int Numeric() const		  { return i_Numeric; }
+    mstring SVSNICK() const	  { return i_SVSNICK; }
+    mstring SVSMODE() const	  { return i_SVSMODE; }
+    mstring SVSKILL() const	  { return i_SVSKILL; }
+    mstring SVSNOOP() const	  { return i_SVSNOOP; }
+    mstring SQLINE() const	  { return i_SQLINE; }
+    mstring UNSQLINE() const	  { return i_UNSQLINE; }
+    mstring SVSHOST() const	  { return i_SVSHOST; }
+    mstring Burst() const	  { return i_Burst; }
+    mstring EndBurst() const	  { return i_EndBurst; }
+    mstring Protoctl() const	  { return i_Protoctl; }
 
     void DumpB() const;
     void DumpE() const;
 };
 
-class Server_t;
+class Server_t
+{
+    mstring i_Name;
+    mstring i_AltName;
+    unsigned long i_Numeric;
+    mstring i_Uplink;
+    int i_Hops;
+    mstring i_Description;
+    long i_Ping;
+    long i_Lag;
+    bool i_Jupe;
+public:
+    Server_t() {}
+    Server_t(const Server_t &in) { *this = in; }
+    Server_t(const mstring& name, const mstring& description,
+    				const unsigned long numeric = 0);
+    Server_t(const mstring& name, const int hops, const mstring& description,
+				const unsigned long numeric = 0);
+    Server_t(const mstring& name, const mstring& uplink, const int hops,
+		const mstring& description, const unsigned long numeric = 0);
+    void operator=(const Server_t &in);
+    bool operator==(const Server_t &in) const
+	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Server_t &in) const
+	{ return (i_Name == in.i_Name); }
+    bool operator<(const Server_t &in) const
+	{ return (i_Name < in.i_Name); }
+
+    mstring Name() const	{ return i_Name; }
+    mstring AltName() const;
+    void AltName(const mstring& in);
+    unsigned long Numeric() const;
+    void Numeric(const unsigned long num);
+    mstring Uplink() const;
+    int Hops() const;
+    mstring Description() const;
+    void Ping();
+    void Pong();
+    float Lag() const;
+    bool Jupe() const;
+    unsigned int Users() const;
+    unsigned int Opers() const;
+
+    vector<mstring> Downlinks() const;
+    vector<mstring> AllDownlinks() const;
+    
+    ~Server_t();
+
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
+};
+
 
 class Server : public mBase
 {
@@ -354,11 +410,11 @@ public:
     Server_t &GetServer(const mstring &in);
     void RemServer(const mstring &in);
 #endif
-    inline list_t::iterator ListBegin() { return i_list.begin(); }
-    inline list_t::iterator ListEnd() { return i_list.end(); }
-    inline list_t::const_iterator ListBegin() const { return i_list.begin(); }
-    inline list_t::const_iterator ListEnd() const { return i_list.end(); }
-    inline size_t ListSize() const { return i_list.size(); }
+    list_t::iterator ListBegin() { return i_list.begin(); }
+    list_t::iterator ListEnd() { return i_list.end(); }
+    list_t::const_iterator ListBegin() const { return i_list.begin(); }
+    list_t::const_iterator ListEnd() const { return i_list.end(); }
+    size_t ListSize() const { return i_list.size(); }
     bool IsList(const mstring& server) const;
     mstring ServerNumeric(const unsigned long num) const;
 
@@ -411,61 +467,34 @@ public:
     threadtype_enum Get_TType() const { return tt_ServNet; }
     mstring GetInternalName() const { return "Server"; }
     void execute(const mstring & message);
+    void parse_A(const mstring & data);
+    void parse_B(const mstring & data);
+    void parse_C(const mstring & data);
+    void parse_D(const mstring & data);
+    void parse_E(const mstring & data);
+    void parse_F(const mstring & data);
+    void parse_G(const mstring & data);
+    void parse_H(const mstring & data);
+    void parse_I(const mstring & data);
+    void parse_J(const mstring & data);
+    void parse_K(const mstring & data);
+    void parse_L(const mstring & data);
+    void parse_M(const mstring & data);
+    void parse_N(const mstring & data);
+    void parse_O(const mstring & data);
+    void parse_P(const mstring & data);
+    void parse_Q(const mstring & data);
+    void parse_R(const mstring & data);
+    void parse_S(const mstring & data);
+    void parse_T(const mstring & data);
+    void parse_U(const mstring & data);
+    void parse_V(const mstring & data);
+    void parse_W(const mstring & data);
+    void parse_X(const mstring & data);
+    void parse_Y(const mstring & data);
+    void parse_Z(const mstring & data);
     void numeric_execute(const mstring & message);
 
-    void DumpB() const;
-    void DumpE() const;
-};
-
-class Server_t
-{
-    mstring i_Name;
-    mstring i_AltName;
-    unsigned long i_Numeric;
-    mstring i_Uplink;
-    int i_Hops;
-    mstring i_Description;
-    long i_Ping;
-    long i_Lag;
-    bool i_Jupe;
-public:
-    inline Server_t() {}
-    inline Server_t(const Server_t &in) { *this = in; }
-    Server_t(const mstring& name, const mstring& description,
-    				const unsigned long numeric = 0);
-    Server_t(const mstring& name, const int hops, const mstring& description,
-				const unsigned long numeric = 0);
-    Server_t(const mstring& name, const mstring& uplink, const int hops,
-		const mstring& description, const unsigned long numeric = 0);
-    void operator=(const Server_t &in);
-    inline bool operator==(const Server_t &in) const
-	{ return (i_Name == in.i_Name); }
-    inline bool operator!=(const Server_t &in) const
-	{ return (i_Name == in.i_Name); }
-    inline bool operator<(const Server_t &in) const
-	{ return (i_Name < in.i_Name); }
-
-    inline mstring Name() const	{ return i_Name; }
-    mstring AltName() const;
-    void AltName(const mstring& in);
-    unsigned long Numeric() const;
-    void Numeric(const unsigned long num);
-    mstring Uplink() const;
-    int Hops() const;
-    mstring Description() const;
-    void Ping();
-    void Pong();
-    float Lag() const;
-    bool Jupe() const;
-    unsigned int Users() const;
-    unsigned int Opers() const;
-
-    vector<mstring> Downlinks() const;
-    vector<mstring> AllDownlinks() const;
-    
-    ~Server_t();
-
-    size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
 };

@@ -43,16 +43,16 @@ dnl Optimisation and Debugging flags
 dnl -O3   Increased optimisation
 dnl -g3   Increased output to gdb (for macros, etc)
 dnl -pg   Profiling output for gprof
-OPTFLAGS="-O3 -g3"
+dnl -dm   Output memory stats when compile is done
+OPTFLAGS=""
 
 dnl What warnings we will give off
 dnl REMOVED: -Wold-style-cast
 WARNFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
 	-Wmissing-declarations -Wnested-externs -Woverloaded-virtual"
 
-dnl Add no-default-inline else gcc spinlocks (not-nice)
-CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS -fno-default-inline \
-	-fshort-enums -pipe"
+dnl Add -fno-default-inline else gcc spinlocks (not-nice)
+CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
 
 dnl Now we include SGI's STL -- if you have it
 dnl CXXFLAGS="$CXXFLAGS -ftemplate-depth-25 -I\$(top_srcdir)/include/stl"

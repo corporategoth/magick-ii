@@ -25,6 +25,10 @@ RCSID(variant_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2001/04/05 05:59:51  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.37  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -102,90 +106,90 @@ class mVariant
 //    } value;
 	
 public:
-    inline mVariant()
+    mVariant()
 	: truevaluetype("NULL"),
 	  valuetype(EMPTY) {}
-    inline mVariant(const mVariant& in)
+    mVariant(const mVariant& in)
 	{ *this = in; }
-    inline mVariant(const bool in)
+    mVariant(const bool in)
 	: truevaluetype("bool"),
 	  valuetype(BOOL),
 	  BoolValue(in) {}
-    inline mVariant(const char in)
+    mVariant(const char in)
 	: truevaluetype("char"),
 	  valuetype(CHAR),
 	  CharValue(in) {}
-    inline mVariant(const short in)
+    mVariant(const short in)
 	: truevaluetype("short"),
 	  valuetype(SHORT),
 	  ShortValue(in) {}
-    inline mVariant(const int in)
+    mVariant(const int in)
 	: truevaluetype("int"),
 	  valuetype(INT),
 	  IntValue(in) {}
-    inline mVariant(const long in)
+    mVariant(const long in)
 	: truevaluetype("long"),
 	  valuetype(LONG),
 	  LongValue(in) {}
-    inline mVariant(const float in)
+    mVariant(const float in)
 	: truevaluetype("float"),
 	  valuetype(FLOAT),
 	  FloatValue(in) {}
-    inline mVariant(const double in)
+    mVariant(const double in)
 	: truevaluetype("double"),
 	  valuetype(DOUBLE),
 	  DoubleValue(in) {}
-    inline mVariant(const unsigned char in)
+    mVariant(const unsigned char in)
 	: truevaluetype("unsigned char"),
 	  valuetype(UCHAR),
 	  UCharValue(in) {}
-    inline mVariant(const unsigned short in)
+    mVariant(const unsigned short in)
 	: truevaluetype("unsigned short"),
 	  valuetype(USHORT),
 	  UShortValue(in) {}
-    inline mVariant(const unsigned int in)
+    mVariant(const unsigned int in)
 	: truevaluetype("unsigned int"),
 	  valuetype(UINT),
 	  UIntValue(in) {}
-    inline mVariant(const unsigned long in)
+    mVariant(const unsigned long in)
 	: truevaluetype("unsigned long"),
 	  valuetype(ULONG),
 	  ULongValue(in) {}
-    inline mVariant(void * in)
+    mVariant(void * in)
 	: truevaluetype("void *"),
 	  valuetype(PTR),
 	  PtrValue(in) {}
 
     // Magick ONLY types ...
-    inline mVariant(const mstring& in)
+    mVariant(const mstring& in)
 	: truevaluetype("mstring"),
 	  valuetype(MSTRING),
 	  StringValue(in) {}
-    inline mVariant(const mDateTime& in)
+    mVariant(const mDateTime& in)
 	: truevaluetype("mDateTime"),
 	  valuetype(MDATETIME),
 	  DateTimeValue(in) {}
 
     // Aliases ...
-    inline mVariant(const char * in)
+    mVariant(const char * in)
 	: truevaluetype("char *"),
 	  valuetype(MSTRING),
 	  StringValue(in) {}
-    inline mVariant(const string& in)
+    mVariant(const string& in)
 	: truevaluetype("string"),
 	  valuetype(MSTRING),
 	  StringValue(in) {}
 
-    inline ~mVariant() {}
+    ~mVariant() {}
 
     mVariant& operator=(const mVariant& in);
     bool operator==(const mVariant& in)const;
-    inline bool operator!=(const mVariant& in)const
+    bool operator!=(const mVariant& in)const
 	{ return !operator==(in); }
     bool operator<(const mVariant& in)const;
 
     mstring AsString()const;
-    inline mstring type()const
+    mstring type()const
 	{ return truevaluetype; }
 };
 
@@ -236,13 +240,13 @@ public:
 	const mVariant& thirteen, const mVariant& fourteen, const mVariant& fifteen,
 	const mVariant& sixteen);
     // if we need any more, you get the drift
-    inline int count()const
+    int count()const
 	{ return values.size(); }
-    inline const mVariant &operator[](int position)const
+    const mVariant &operator[](int position)const
 	{ return values[position]; }
-    inline mVariant &operator[](int position)
+    mVariant &operator[](int position)
 	{ return values[position]; }
-    inline static const mVarArray EmptyArray()
+    static const mVarArray EmptyArray()
 	{
 	    const mVarArray Result;
 	    return Result;

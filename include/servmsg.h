@@ -25,6 +25,10 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.30  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -134,26 +138,26 @@ public:
 	unsigned long i_file_Rename;
 	unsigned long i_file_Cancel;
     public:
-	inline stats_t() { clear(); }
-	inline void clear() {
+	stats_t() { clear(); }
+	void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Global = i_Ask = i_Stats = i_Credits = i_file_Add =
 	    i_file_Del = i_file_Send = i_file_Priv = i_file_Rename =
 	    i_file_Cancel = 0; }
-	inline mDateTime ClearTime()const		{ return i_ClearTime; }
-	inline unsigned long Global()const		{ return i_Global; }
-	inline unsigned long Ask()const		{ return i_Ask; }
-	inline unsigned long Stats()const		{ return i_Stats; }
-	inline unsigned long Credits()const		{ return i_Credits; }
-	inline unsigned long File_Add()const		{ return i_file_Add; }
-	inline unsigned long File_Del()const		{ return i_file_Del; }
-	inline unsigned long File_Send()const		{ return i_file_Send; }
-	inline unsigned long File_Priv()const		{ return i_file_Priv; }
-	inline unsigned long File_Rename()const	{ return i_file_Rename; }
-	inline unsigned long File_Cancel()const	{ return i_file_Cancel; }
+	mDateTime ClearTime()const		{ return i_ClearTime; }
+	unsigned long Global()const		{ return i_Global; }
+	unsigned long Ask()const		{ return i_Ask; }
+	unsigned long Stats()const		{ return i_Stats; }
+	unsigned long Credits()const		{ return i_Credits; }
+	unsigned long File_Add()const		{ return i_file_Add; }
+	unsigned long File_Del()const		{ return i_file_Del; }
+	unsigned long File_Send()const		{ return i_file_Send; }
+	unsigned long File_Priv()const		{ return i_file_Priv; }
+	unsigned long File_Rename()const	{ return i_file_Rename; }
+	unsigned long File_Cancel()const	{ return i_file_Cancel; }
     } stats;
 
-    inline bool ShowSync()const { return showsync; }
+    bool ShowSync()const { return showsync; }
 
     threadtype_enum Get_TType() const { return tt_OtherServ; }
     mstring GetInternalName() const { return "ServMsg"; }

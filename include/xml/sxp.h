@@ -25,6 +25,10 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2001/04/05 05:59:51  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.15  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -182,31 +186,31 @@ SXP_NS_BEGIN
 	template<class T>
 	class IFilePointer {
     public:
-		inline FILE *FP() { return static_cast<T *>(this)->FP(); }
-		inline void Indent()   { static_cast<T *>(this)->Indent(); }
+		FILE *FP() { return static_cast<T *>(this)->FP(); }
+		void Indent()   { static_cast<T *>(this)->Indent(); }
 	};
 
 	template<class T>
 	class IFilePrint {
     public:
-		inline void Print(char *format, ...)
+		void Print(char *format, ...)
 		{
 		    va_list argptr;
 		    va_start(argptr, format);
 		    static_cast<T *>(this)->PrintV(format, argptr);
 		    va_end(argptr);
 		}
-		inline void PrintV(char *format, va_list argptr)
+		void PrintV(char *format, va_list argptr)
 		{
 		    static_cast<T *>(this)->PrintV(format, argptr);
 		}
-		inline void Indent()   { static_cast<T *>(this)->Indent(); }
+		void Indent()   { static_cast<T *>(this)->Indent(); }
 	};
 
 	template<class T>
 	class IData {
     public:
-		inline const char *Data() { return static_cast<T *>(this)->Data(); }
+		const char *Data() { return static_cast<T *>(this)->Data(); }
 	};
 
 #include "sxp_data.h"
@@ -218,13 +222,13 @@ SXP_NS_BEGIN
 	class IOutStreamT:
 	public IDataOutput<T> {
     public:
-		inline void BeginXML(void) { static_cast<T *>(this)->BeginXML(); }
+		void BeginXML(void) { static_cast<T *>(this)->BeginXML(); }
 
-		inline void BeginObject(Tag& t, dict& attribs) { static_cast<T *>(this)->BeginObject(t, attribs); }
-		inline void EndObject  (Tag& t) { static_cast<T *>(this)->EndObject(t); }
+		void BeginObject(Tag& t, dict& attribs) { static_cast<T *>(this)->BeginObject(t, attribs); }
+		void EndObject  (Tag& t) { static_cast<T *>(this)->EndObject(t); }
 
 		// recursively write other objects
-		inline void WriteSubElement(IPersistObj *pObj, dict& attribs) { 
+		void WriteSubElement(IPersistObj *pObj, dict& attribs) { 
 			static_cast<T *>(this)->WriteSubElement(pObj, attribs); 
 		} 
 	};
@@ -240,15 +244,15 @@ SXP_NS_BEGIN
 	class IElementT:
 	public IDataInput<T>{
     public:
-		inline const char *Name() { return static_cast<T *>(this)->Name(); }
-		inline const char *Attrib(const char *attrName)
+		const char *Name() { return static_cast<T *>(this)->Name(); }
+		const char *Attrib(const char *attrName)
 			{ return static_cast<T *>(this)->Attrib(attrName); }
 
-		inline int IsA(const char *name)
+		int IsA(const char *name)
 			{ return static_cast<T *>(this)->IsA(name); }
-		inline int IsA(Tag& t)
+		int IsA(Tag& t)
 			{ return static_cast<T *>(this)->IsA(t); }
-		inline int AttribIs(const char *attrName, const char *val)
+		int AttribIs(const char *attrName, const char *val)
 			{ return static_cast<T *>(this)->AttribIs(attrName, val); }
 	};
 
@@ -288,7 +292,7 @@ SXP_NS_BEGIN
 			free(pool);
 		}
 
-		inline T* Alloc() {
+		T* Alloc() {
 			if( top > 0 ) {
 				return pool[--top]; // unused objects available
 			} else {
@@ -310,7 +314,7 @@ SXP_NS_BEGIN
 			}
 		}
 		// return an object to the pool
-		inline void Free(T *t) {
+		void Free(T *t) {
 			pool[top++] = t;
 		}
 	};
@@ -342,7 +346,7 @@ SXP_NS_BEGIN
 	private:
 		TagHashtable() { }
 	public:
-		inline static TagHashtable& TagHT() {
+		static TagHashtable& TagHT() {
 			if( g_pHashTable ) {
 				return *g_pHashTable;
 			} else {
@@ -354,7 +358,7 @@ SXP_NS_BEGIN
 		string table[SXP_HTSIZE]; // if you have lots of tags, increase this
 
 		// the basic hash function
-		inline unsigned long Hash(const char *ch) {
+		unsigned long Hash(const char *ch) {
 			unsigned long dw = 0;
 			for (; *ch; dw = (dw << 5) - dw + *ch++);
 			return dw;
@@ -363,7 +367,7 @@ SXP_NS_BEGIN
 		// add a tag's char* member to the hashtable and
 		// fill the dword member;
 		// plain vanilla hash, lookup, strcmp, linear search
-		inline unsigned long Add(Tag& t) {
+		unsigned long Add(Tag& t) {
 			unsigned int dw = Hash(t.ch) % SXP_HTSIZE;
 			while(1) {
 				if( table[dw].empty() ) {
@@ -380,7 +384,7 @@ SXP_NS_BEGIN
 
 		// find the hash value of a string which shouldn't be added to the
 		// table; return ~0 on "not found"
-		inline unsigned long Lookup(const char *ch) {
+		unsigned long Lookup(const char *ch) {
 			unsigned int dw = TagHashtable::TagHT().Hash(ch) % SXP_HTSIZE;
 			while(1) {
 				if( table[dw].empty() ) {
@@ -398,7 +402,7 @@ SXP_NS_BEGIN
 	// helper functions
 
 	// escape a char string - remove &<>" and replace with escape codes
-	inline string XMLEscape(const char *pstr) {
+	string XMLEscape(const char *pstr) {
 		const char *p;
 		string ret;
 		for(p = pstr; *p; p++) {
@@ -422,7 +426,7 @@ SXP_NS_BEGIN
 	}
 
 	// escape a wide character char string - remove &<>" and replace with escape codes, convert UCS-16 to UTF-8
-	inline string XMLEscapeW(const wchar_t *pstr) {
+	string XMLEscapeW(const wchar_t *pstr) {
 		const wchar_t *p;
 		string ret;
 		for(p = pstr; *p; p++) {
@@ -457,7 +461,7 @@ SXP_NS_BEGIN
 	}
 
 	// remove XML escapes (&amp; etc)
-	inline string XMLUnEscape(const char *pstr) {
+	string XMLUnEscape(const char *pstr) {
 		const char *p;
 		string ret;
 		for(p = pstr; *p; p++) {
@@ -495,7 +499,7 @@ SXP_NS_BEGIN
 
 #if HAVE_WSTRING
 	// remove XML escapes (&amp; etc), convert UTF-8 to UCS-16
-	inline wstring XMLUnEscapeW(const char *pstr) {
+	wstring XMLUnEscapeW(const char *pstr) {
 		std::wstring ret;
 		unsigned len = strlen(pstr);
 		wchar_t wch;
@@ -557,21 +561,21 @@ SXP_NS_BEGIN
 
 		// ugly...
 	public:
-		inline FILE *FP() {
+		FILE *FP() {
 			return m_fp;
 		}
 
-		inline void Indent() {
+		void Indent() {
 			for(int i=0; i<m_nIndent; i++)
 				fputc('\t', m_fp);
 		}
 
-		inline CFileOutStream(const char *chFilename) {
+		CFileOutStream(const char *chFilename) {
 			m_fp = fopen(chFilename, "wt");
 			m_nIndent = 0;
 		}
 
-		inline CFileOutStream(FILE *fp) {
+		CFileOutStream(FILE *fp) {
 			m_fp = fp;
 			m_nIndent = 0;
 		}
@@ -580,7 +584,7 @@ SXP_NS_BEGIN
 			fclose(m_fp);
 		}
 
-		inline void BeginXML(void) {
+		void BeginXML(void) {
 			// UTF-8 encoding is used because it allows relatively painless
 			// support for storing widechars as character data, via
 			// conversion functions in IElement::Retrieve() and 
@@ -588,7 +592,7 @@ SXP_NS_BEGIN
 			fprintf(m_fp, XML_STRING);
 		}
 
-		inline void BeginObject(Tag& t, dict& attribs) {
+		void BeginObject(Tag& t, dict& attribs) {
 			Indent(); m_nIndent++;
 			fprintf(m_fp, "<%s", t.ch);
 			for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
@@ -599,7 +603,7 @@ SXP_NS_BEGIN
 			fprintf(m_fp, ">\n");
 		}
 
-		inline void EndObject  (Tag& t) {
+		void EndObject  (Tag& t) {
 			m_nIndent--;
 			Indent();
 			fprintf(m_fp, "</%s>\n", t.ch);
@@ -645,7 +649,7 @@ SXP_NS_BEGIN
 	public:
 		CElement() {}
 		
-		inline void Init(const XML_Char *pchName, const char **ppchAttrib) 
+		void Init(const XML_Char *pchName, const char **ppchAttrib) 
 		{
 			m_dwTagHash = ~0;
 			m_strName = pchName;
@@ -658,32 +662,32 @@ SXP_NS_BEGIN
 			}
 		}
 
-		inline void AddData(const char *pchData, int len) {
+		void AddData(const char *pchData, int len) {
 			m_strData.append(pchData, len);
 		}
 
 		// IData
-		inline const char *Data() {
+		const char *Data() {
 			return m_strData.c_str();
 		}
 
 		// IElementT
-		inline const char *Name() {
+		const char *Name() {
 			return m_strName.c_str();
 		}
-		inline const char *Attrib(const char *attrName) {
+		const char *Attrib(const char *attrName) {
 			return (m_Attribs[ string(attrName) ]).c_str();
 		}
-		inline int AttribIs(const char *attrName, const char *val) {
+		int AttribIs(const char *attrName, const char *val) {
 			return ((m_Attribs[ string(attrName) ]).compare(val) == 0);
 		}
-		inline int IsA(Tag& t) {
+		int IsA(Tag& t) {
 			if( static_cast<int>(m_dwTagHash) == ~0 ) {
 				m_dwTagHash = TagHashtable::TagHT().Lookup(m_strName.c_str());
 			}
 			return( t.dw == m_dwTagHash );
 		}
-		inline int IsA(const char *pchName) {
+		int IsA(const char *pchName) {
 			return( !m_strName.compare(pchName) );
 		}
 	};
@@ -746,7 +750,7 @@ SXP_NS_BEGIN
 		virtual ~CParser() {}
 
 		// give the parser food for thought
-		inline int Feed(const char *pData, int nLen, int bFinal = 1) {
+		int Feed(const char *pData, int nLen, int bFinal = 1) {
 			if( m_parser )
 				return XML_Parse(m_parser, pData, nLen, bFinal);
 			else
@@ -757,7 +761,7 @@ SXP_NS_BEGIN
 		int FeedFile(mstring chFilename, mstring ikey = "");
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
-		inline void ReadTo( IPersistObj *pPI ) {
+		void ReadTo( IPersistObj *pPI ) {
 			m_EHStack.push(pPI);
 		}
 
@@ -787,7 +791,7 @@ SXP_NS_BEGIN
 		// DoShutdown cannot be called inside a handler call initiated by
 		// expat, so actual shutdown is deferred until the next iteration of
 		// the feed loop; however, events are NOT received
-		inline void Shutdown() {
+		void Shutdown() {
 			m_bShuttingDown = 1;
 		}
 
@@ -809,7 +813,7 @@ SXP_NS_BEGIN
 	private:
 		// opening element tag encountered; push on element stack
 		// and send to current handler
-		inline void StartElement(const XML_Char *name, const char **atts) {
+		void StartElement(const XML_Char *name, const char **atts) {
 			CElement *pElement = m_ElementAllocator.Alloc();
 			pElement->Init(name, atts);
 			m_EStack.push(pElement);
@@ -823,7 +827,7 @@ SXP_NS_BEGIN
 		// else - just feed the element with the already completed
 		// data section to the current handler, then pop it off the element
 		// stack
-		inline void EndElement(const XML_Char *name) {
+		void EndElement(const XML_Char *name) {
 			unsigned long dwHash = TagHashtable::TagHT().Lookup(name);
 			IElement *pElement = m_EStack.top();
 			m_EStack.pop();
@@ -839,7 +843,7 @@ SXP_NS_BEGIN
 		}
 
 		// add it to the current element data
-		inline void CharData(const XML_Char *data, int len) {
+		void CharData(const XML_Char *data, int len) {
 			m_EStack.top()->AddData(data, len);
 		}
 	};

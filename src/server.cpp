@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.162  2001/04/05 05:59:51  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.161  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -397,7 +401,7 @@ void Protocol::SetTokens(const unsigned int type)
     tokens.clear();
     switch (type)
     {
-    case 1000: /* ircu >= 2.10.x */
+    case 1000: // ircu >= 2.10.x
 	tokens["AB"] = "ADMIN";
 	tokens["A"]  = "AWAY";
 	tokens["CN"] = "CNOTICE";
@@ -441,17 +445,17 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["H"]  = "WHO";
 	tokens["W"]  = "WHOIS";
 	tokens["X"]  = "WHOWAS";
-/*	tokens["ACTION"] = CTCP_DELIM_CHAR + "ACTION";
-	tokens["VERSION"] = CTCP_DELIM_CHAR + "VERSION";
-	tokens["PING"] = CTCP_DELIM_CHAR + "PING";
-	tokens["PONG"] = CTCP_DELIM_CHAR + "PONG";
-	tokens["CLIENTINFO"] = CTCP_DELIM_CHAR + "CLIENTINFO";
-	tokens["USERINFO"] = CTCP_DELIM_CHAR + "USERINFO";
-	tokens["TIME"] = CTCP_DELIM_CHAR + "TIME";
-	tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG"; */
+//	tokens["ACTION"] = CTCP_DELIM_CHAR + "ACTION";
+//	tokens["VERSION"] = CTCP_DELIM_CHAR + "VERSION";
+//	tokens["PING"] = CTCP_DELIM_CHAR + "PING";
+//	tokens["PONG"] = CTCP_DELIM_CHAR + "PONG";
+//	tokens["CLIENTINFO"] = CTCP_DELIM_CHAR + "CLIENTINFO";
+//	tokens["USERINFO"] = CTCP_DELIM_CHAR + "USERINFO";
+//	tokens["TIME"] = CTCP_DELIM_CHAR + "TIME";
+//	tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG";
 	break;
 
-    case 0001: /* DAL >= 4.4.15 */
+    case 0001: // DAL >= 4.4.15
 	tokens["!"] = "PRIVMSG";
 	tokens["\\"] = "WHO";
 	tokens["#"] = "WHOIS";
@@ -533,7 +537,7 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["s"] = "PRIVMSG HelpServ";
 	break;
 
-    case 0002: /* Relic >= 2.1 */
+    case 0002: // Relic >= 2.1
 	SetTokens(0001);
 	tokens.erase("1");
 	tokens.erase("3");
@@ -559,12 +563,12 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["Rz"] = "RW";
 	break;
 
-    case 0003: /* Bahamut */
+    case 0003: // Bahamut
 	SetTokens(0001);
 	tokens["e"] = "MODNICK";
 	break;
 
-    case 0004: /* Unreal */
+    case 0004: // Unreal
 	SetTokens(0001);
 	tokens["t"] = "RULES";
 	tokens["u"] = "MAP";
@@ -641,19 +645,19 @@ void Protocol::Set(const unsigned int in)
     DumpB();
     switch (in)
     {
-    case 0: /* RFC */
+    case 0: // RFC
 	i_Signon = 0000;
 	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
-    case 1: /* RFC with TS8 */
+    case 1: // RFC with TS8
 	i_Signon = 0001;
 	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
-    case 10: /* DAL < 4.4.15 */
+    case 10: // DAL < 4.4.15
 	i_NickLen = 32;
 	i_Signon = 1000;
 	i_Globops = true;
@@ -662,7 +666,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0000);
 	break;
 
-    case 11: /* DAL >= 4.4.15 */
+    case 11: // DAL >= 4.4.15
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
@@ -679,7 +683,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 12: /* Bahamut */
+    case 12: // Bahamut
 	i_NickLen = 32;
 	i_Signon = 2001;
 	i_Globops = true;
@@ -699,13 +703,13 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0003);
 	break;
 
-    case 20: /* UnderNet < 2.10.x  */
+    case 20: // UnderNet < 2.10.x
 	i_Signon = 1000;
 	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
-    case 21: /* UnderNet >= 2.10.x */
+    case 21: // UnderNet >= 2.10.x
 	i_Signon = 1000;
 	i_Akill = 2000;
 	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
@@ -715,14 +719,14 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(1000);
 	break;
 
-    case 30: /* Hybrid */
+    case 30: // Hybrid
 	i_Signon = 2000;
 	SetTokens(0000);
 	i_TSora = true;
 	i_Protoctl = "CAPAB EX DE";
 	break;
 
-    case 40: /* Elite */
+    case 40: // Elite
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
@@ -737,7 +741,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 50: /* Relic 2.0 */
+    case 50: // Relic 2.0
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
@@ -755,7 +759,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 51: /* Relic 2.1 */
+    case 51: // Relic 2.1
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
@@ -775,7 +779,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0002);
 	break;
 
-    case 53: /* Relic 4.0 */
+    case 53: // Relic 4.0
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
@@ -794,7 +798,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0003);
 	break;
 
-    case 60: /* Aurora */
+    case 60: // Aurora
 	i_NickLen = 32;
 	i_Signon = 1002;
 	i_Globops = true;
@@ -812,7 +816,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 70: /* Unreal */
+    case 70: // Unreal
 	i_NickLen = 32;
 	i_Signon = 2003;
 	i_Globops = true;
@@ -820,7 +824,7 @@ void Protocol::Set(const unsigned int in)
 	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 SJ3 NS VHP";
-	/* Check serveropts in s_debug.c for what the letters are */
+	// Check serveropts in s_debug.c for what the letters are
 	i_Server = "SERVER %s %d :U2301-CFhiIpnXS-%d %s";
 	i_Numeric = 3;
 	i_ChanModeArg = "ovbehklLf";
@@ -833,7 +837,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0004);
 	break;
 
-    case 80: /* UltimateIRCD */
+    case 80: // UltimateIRCD
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
@@ -1090,7 +1094,6 @@ vector<mstring> Server_t::Downlinks() const
 	    downlinks.push_back(serv->first);
     }
     NRET(vector<mstring>, downlinks);
-    
 }
 
 vector<mstring> Server_t::AllDownlinks() const
@@ -1180,6 +1183,7 @@ void Server_t::DumpE() const
 	i_Ping, i_Lag, i_Jupe));
 }
 
+
 void Server::raw(const mstring& text) const
 {
     FT("Server::raw", (text));
@@ -1189,9 +1193,9 @@ void Server::raw(const mstring& text) const
 void Server::sraw(const mstring& text) const
 {
     mstring out;
-/*    if (proto.Numeric())
-	out << "@" << base64_to_str(GetOurNumeric()) << " ";
-    else */
+//  if (proto.Numeric())
+//	out << "@" << base64_to_str(GetOurNumeric()) << " ";
+//  else
     if (!proto.Numeric())
 	out << ":" << Parent->startup.Server_Name() << " ";
     out << text;
@@ -1528,7 +1532,7 @@ void Server::AddList(Server_t *in)
     }
 
     WLOCK(("Server", "list"));
-    /* i_list[in->Name().LowerCase()] = in; */
+    // i_list[in->Name().LowerCase()] = in;
     i_list[in->Name().LowerCase()] = *in;
 }
 
@@ -1552,16 +1556,16 @@ Server_t &Server::GetList(const mstring &in) const
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
-    /* if (iter->second == NULL)
-    {
+//  if (iter->second == NULL)
+//  {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
+//	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Invalid - %s", in.c_str()));
-	NRET(Server_t &, GLOB_Server_t);
+//	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Invalid - %s", in.c_str()));
+//	NRET(Server_t &, GLOB_Server_t);
 #endif
-    }
-    if (iter->second->Name().empty()) */
+//  }
+//  if (iter->second->Name().empty())
     if (iter->second.Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1572,7 +1576,7 @@ Server_t &Server::GetList(const mstring &in) const
 #endif
     }
 
-    /* NRET(Server_t &, const_cast<Server_t &>(*iter->second)); */
+    // NRET(Server_t &, const_cast<Server_t &>(*iter->second));
     NRET(Server_t &, const_cast<Server_t &>(iter->second));
 }
 
@@ -1597,10 +1601,10 @@ void Server::RemList(const mstring &in)
 #endif
     }
     WLOCK2(("Server", "list", iter->first));
-    /* if (iter->second != NULL)
-    {
-	delete iter->second;
-    } */
+//  if (iter->second != NULL)
+//  {
+//	delete iter->second;
+//  }
     i_list.erase(iter);
 }
 
@@ -2936,13 +2940,122 @@ unsigned int Server::SeenMessage(const mstring& data)
     RET(times);
 }
 
-
 void Server::execute(const mstring & data)
 {
     //okay this is the main networkserv command switcher
     FT("Server::execute", (data));
 
-    mstring source, sourceL, msgtype, params;
+    mstring msgtype;
+    if (data[0u] == ':' || data[0u] == '@')
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+    else
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+
+    // Message names direct from RFC1459, with DAL4.4.15+
+    // extensions.  Will add to for other ircd's.
+    switch (msgtype[0U])
+    {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+	numeric_execute(data);
+	break;
+    case 'A':
+	parse_A(data);
+	break;
+    case 'B':
+	parse_B(data);
+	break;
+    case 'C':
+	parse_C(data);
+	break;
+    case 'D':
+	parse_D(data);
+	break;
+    case 'E':
+	parse_E(data);
+	break;
+    case 'F':
+	parse_F(data);
+	break;
+    case 'G':
+	parse_G(data);
+	break;
+    case 'H':
+	parse_H(data);
+	break;
+    case 'I':
+	parse_I(data);
+	break;
+    case 'J':
+	parse_J(data);
+	break;
+    case 'K':
+	parse_K(data);
+	break;
+    case 'L':
+	parse_L(data);
+	break;
+    case 'M':
+	parse_M(data);
+	break;
+    case 'N':
+	parse_N(data);
+	break;
+    case 'O':
+	parse_O(data);
+	break;
+    case 'P':
+	parse_P(data);
+	break;
+    case 'Q':
+	parse_Q(data);
+	break;
+    case 'R':
+	parse_R(data);
+	break;
+    case 'S':
+	parse_S(data);
+	break;
+    case 'T':
+	parse_T(data);
+	break;
+    case 'U':
+	parse_U(data);
+	break;
+    case 'V':
+	parse_V(data);
+	break;
+    case 'W':
+	parse_W(data);
+	break;
+    case 'X':
+	parse_X(data);
+	break;
+    case 'Y':
+	parse_Y(data);
+	break;
+    case 'Z':
+	parse_Z(data);
+	break;
+    default:
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+			data.c_str()));
+	break;
+    }
+}
+
+void Server::parse_A(const mstring &data)
+{
+    FT("Server::parse_A", (data));
+    mstring source, msgtype, params;
 
     if (data[0u] == ':' || data[0u] == '@')
     {
@@ -2976,25 +3089,9 @@ void Server::execute(const mstring & data)
     }
     if (source.empty())
 	source = Parent->startup.Server_Name();
-    sourceL = source.LowerCase();
+    mstring sourceL(source.LowerCase());
 
-    // Message names direct from RFC1459, with DAL4.4.15+
-    // extensions.  Will add to for other ircd's.
-    switch (msgtype[0U])
-    {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-	numeric_execute(data);
-	break;
-    case 'A':
+
 	if (msgtype=="ADCHAT")
 	{
 	    // Useless admin chatter.
@@ -3081,8 +3178,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'B':
+}
+
+void Server::parse_B(const mstring &data)
+{
+    FT("Server::parse_B", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="BURST")
 	{
 	    // Thanks to bahamut :)
@@ -3092,8 +3229,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'C':
+}
+
+void Server::parse_C(const mstring &data)
+{
+    FT("Server::parse_C", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="CAPAB")
 	{
 	    // Bahamut version of the PROTOCTL line
@@ -3128,12 +3305,92 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'D':
+}
+
+void Server::parse_D(const mstring &data)
+{
+    FT("Server::parse_D", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
-	break;
-    case 'E':
+}
+
+void Server::parse_E(const mstring &data)
+{
+    FT("Server::parse_E", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="END_OF_BURST" || msgtype=="EOB")
 	{
 	    // Tis only nice, afterall ...
@@ -3157,12 +3414,92 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'F':
+}
+
+void Server::parse_F(const mstring &data)
+{
+    FT("Server::parse_F", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
-	break;
-    case 'G':
+}
+
+void Server::parse_G(const mstring &data)
+{
+    FT("Server::parse_G", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="GLINE")
 	{
 	    // We will ignore GLINES because they're not relivant to us.
@@ -3188,8 +3525,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'H':
+}
+
+void Server::parse_H(const mstring &data)
+{
+    FT("Server::parse_H", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="HELP")
 	{
 	    // ignore ...
@@ -3203,8 +3580,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'I':
+}
+
+void Server::parse_I(const mstring &data)
+{
+    FT("Server::parse_I", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="INFO")
 	{
 	    // :source INFO :server/nick
@@ -3262,15 +3679,55 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'J':
+}
+
+void Server::parse_J(const mstring &data)
+{
+    FT("Server::parse_J", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="JOIN")
 	{
 	    if (source.Contains("."))
 		return;
 
 	    RLOCK(("UsingNick", sourceL));
-	    /* In burst mode, make sure NICK processing is done */
+	    // In burst mode, make sure NICK processing is done
 	    { RLOCK2(("IrcSvcHandler"));
 	      RLOCK3(("Server", "proc_NICK"));
 	    if (proc_NICK && Parent->ircsvchandler != NULL &&
@@ -3305,8 +3762,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'K':
+}
+
+void Server::parse_K(const mstring &data)
+{
+    FT("Server::parse_K", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="KICK")
 	{
 	    // :source KICK #channel target :reason
@@ -3371,8 +3868,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'L':
+}
+
+void Server::parse_L(const mstring &data)
+{
+    FT("Server::parse_L", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="LINKS")
 	{
 	    //:ChanServ LINKS :temple.magick.tm
@@ -3444,8 +3981,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'M':
+}
+
+void Server::parse_M(const mstring &data)
+{
+    FT("Server::parse_M", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="MODE")
 	{
 	    // :source MODE source :mode
@@ -3542,8 +4119,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'N':
+}
+
+void Server::parse_N(const mstring &data)
+{
+    FT("Server::parse_N", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="NAMES")
 	{
 	    // :source NAMES #channel our.server
@@ -3597,7 +4214,7 @@ void Server::execute(const mstring & data)
 		    }
 		}
 
-		/* In burst mode, make sure SERVER processing is done */
+		// In burst mode, make sure SERVER processing is done
 		{ RLOCK(("IrcSvcHandler"));
 		  RLOCK2(("Server", "proc_SERVER"));
 		if (proc_SERVER && Parent->ircsvchandler != NULL &&
@@ -3859,8 +4476,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'O':
+}
+
+void Server::parse_O(const mstring &data)
+{
+    FT("Server::parse_O", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="OPER")
 	{
 	}
@@ -3869,8 +4526,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'P':
+}
+
+void Server::parse_P(const mstring &data)
+{
+    FT("Server::parse_P", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="PART")
 	{
 	    if (source.Contains("."))
@@ -3947,8 +4644,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'Q':
+}
+
+void Server::parse_Q(const mstring &data)
+{
+    FT("Server::parse_Q", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="QUIT")
 	{
 	    // :source QUIT :reason
@@ -3963,14 +4700,13 @@ void Server::execute(const mstring & data)
 	    if (params.WordCount(": ")==2 && IsList(params.ExtractWord(2, ": ")) &&
 		GetList(params.ExtractWord(2, ": ").LowerCase()).Uplink() == params.ExtractWord(1, ": ").LowerCase())
 	    {
-		/* Suspected SQUIT
-		 *
-		 * - Add user to ToBeSquit map under servername
-		 * - Add data(4) to ServerSquit map with a timer to clear
-		 *
-		 * IF no SQUIT message received, user is QUIT and server
-		 * is removed from ServerSquit map -- ie. its FAKE!
-		 */
+		// Suspected SQUIT
+		//
+		// - Add user to ToBeSquit map under servername
+		// - Add data(4) to ServerSquit map with a timer to clear
+		//
+		// IF no SQUIT message received, user is QUIT and server
+		// is removed from ServerSquit map -- ie. its FAKE!
 		Parent->nickserv.GetLive(sourceL).SetSquit();
 		WLOCK2(("Server", "ToBeSquit"));
 		MCB(ToBeSquit.size());
@@ -4011,8 +4747,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'R':
+}
+
+void Server::parse_R(const mstring &data)
+{
+    FT("Server::parse_R", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="RAKILL")
 	{
 	    // We will ignore AKILLS because they're not relivant to us.
@@ -4031,8 +4807,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'S':
+}
+
+void Server::parse_S(const mstring &data)
+{
+    FT("Server::parse_S", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="SETHOST")
 	{
 	    if (source.Contains("."))
@@ -4058,7 +4874,7 @@ void Server::execute(const mstring & data)
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
 
-	    /* Ensure only ONE server is added at a time ... */
+	    // Ensure only ONE server is added at a time ...
 	    { RLOCK(("IrcSvcHandler"));
 	      RLOCK2(("Server", "proc_SERVER"));
 	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
@@ -4107,10 +4923,10 @@ void Server::execute(const mstring & data)
 		}
 		else
 		{
-		    /* announce(Parent->operserv.FirstName(),
-			Parent->getMessage("MISC/INVALIDLINK"),
-			params.ExtractWord(1, ": ").c_str(),
-			Parent->startup.Server_Name().c_str()); */
+//		    announce(Parent->operserv.FirstName(),
+//			Parent->getMessage("MISC/INVALIDLINK"),
+//			params.ExtractWord(1, ": ").c_str(),
+//			Parent->startup.Server_Name().c_str());
 		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
 			params.ExtractWord(1, ": ").c_str(),
 			Parent->startup.Server_Name().c_str()));
@@ -4174,7 +4990,7 @@ void Server::execute(const mstring & data)
 	    
 	    //:user SJOIN chan-stamp #channel #channel etc...
 
-	    /* In burst mode, make sure NICK processing is done */
+	    // In burst mode, make sure NICK processing is done
 	    { RLOCK(("IrcSvcHandler"));
 	      RLOCK2(("Server", "proc_NICK"));
 	    if (proc_NICK && Parent->ircsvchandler != NULL &&
@@ -4450,7 +5266,7 @@ void Server::execute(const mstring & data)
 	    // services = 1 for service, 0 for user
 	    // DAL4.4.15+ SNICK name hops time user host server services modes :real name
 
-	    /* In burst mode, make sure SERVER processing is done */
+	    // In burst mode, make sure SERVER processing is done
 	    { RLOCK(("IrcSvcHandler"));
 	      RLOCK2(("Server", "proc_SERVER"));
 	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
@@ -4803,8 +5619,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'T':
+}
+
+void Server::parse_T(const mstring &data)
+{
+    FT("Server::parse_T", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="TIME")
 	{
 	    // :source TIME :our.server
@@ -4967,8 +5823,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'U':
+}
+
+void Server::parse_U(const mstring &data)
+{
+    FT("Server::parse_U", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="UMODE2")
 	{
 	    if (source.Contains("."))
@@ -5034,7 +5930,7 @@ void Server::execute(const mstring & data)
 	        }
 	    }
 
-	    /* In burst mode, make sure SERVER processing is done */
+	    // In burst mode, make sure SERVER processing is done
 	    { RLOCK(("IrcSvcHandler"));
 	      RLOCK2(("Server", "proc_SERVER"));
 	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
@@ -5218,8 +6114,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'V':
+}
+
+void Server::parse_V(const mstring &data)
+{
+    FT("Server::parse_V", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="VERSION")
 	{
 	    // :source VERSION :our.server
@@ -5280,8 +6216,48 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'W':
+}
+
+void Server::parse_W(const mstring &data)
+{
+    FT("Server::parse_W", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="WALLOPS")
 	{
 	    // :source WALLOPS :text
@@ -5471,16 +6447,136 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    case 'X':
+}
+
+void Server::parse_X(const mstring &data)
+{
+    FT("Server::parse_X", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
-	break;
-    case 'Y':
+}
+
+void Server::parse_Y(const mstring &data)
+{
+    FT("Server::parse_Y", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
-	break;
-    case 'Z':
+}
+
+void Server::parse_Z(const mstring &data)
+{
+    FT("Server::parse_Z", (data));
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	if (data[0u] == '@' && proto.Numeric())
+	{
+	    RLOCK(("ServerLinking"));
+	    source = GetServer(data.ExtractWord(1, "@ "));
+	    for (unsigned int i = 0; source.empty() && i < 10; i++)
+	    {
+		ACE_OS::sleep(1);
+		source = GetServer(data.ExtractWord(1, "@ "));
+	    }
+	}
+	else
+	    source = data.ExtractWord(1,": ");
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
+	{
+	    PushUser(source, data);
+	    return;
+	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+	source = OurUplink();
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    mstring sourceL(source.LowerCase());
+
+
 	if (msgtype=="ZLINE")
 	{
 	    // We will ignore ZLINES because they're not relivant to us.
@@ -5491,20 +6587,13 @@ void Server::execute(const mstring & data)
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
 	}
-	break;
-    default:
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			data.c_str()));
-	break;
-    }
-
 }
 
 void Server::numeric_execute(const mstring & data)
 {
     FT("Server::numeric_execute", (data));
 
-    mstring source, sourceL, params;
+    mstring source, params;
     unsigned int msgtype;
     
     if (data[0u] == ':' || data[0u] == '@')
@@ -5539,7 +6628,7 @@ void Server::numeric_execute(const mstring & data)
     }
     if (source.empty())
 	source = Parent->startup.Server_Name();
-    sourceL = source.LowerCase();
+    mstring sourceL(source.LowerCase());
 
     // Numerics direct from RFC1459
     // MOST we can (and will) ignore.
@@ -5703,9 +6792,8 @@ void Server::numeric_execute(const mstring & data)
 	break;
     default:
 	// We dont bother with what we get back -- useless anyway.
-/*	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			data.c_str()));
-*/
+//	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+//			data.c_str()));
 	break;
     }
 }
@@ -5721,4 +6809,3 @@ void Server::DumpE() const
     ME(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
 	i_OurUplink, ToBeSent.size(), ToBeDone.size()));
 }
-

@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.155  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.154  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -339,22 +343,22 @@ public:
 	bool IsServer(const mstring& server)const;
 	pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Server(const mstring& server)const;
 	vector<mstring> PriorityList(const unsigned int pri)const;
-	inline size_t Server_size()const { return servers.size(); }
+	size_t Server_size()const { return servers.size(); }
 
 	bool IsAllowed(const mstring& server, const mstring& uplink)const;
 	vector<mstring> Allow(const mstring& server)const;
 	vector<mstring> AllowList()const;
-	inline size_t Allow_size()const { return allows.size(); }
+	size_t Allow_size()const { return allows.size(); }
 
-	inline mstring Server_Name()const    { return server_name; }
-	inline mstring Server_Desc()const    { return server_desc; }
-	inline mstring Services_User()const    { return services_user; }
-	inline mstring Services_Host()const    { return services_host; }
-	inline bool Ownuser()const	{ return ownuser; }
-	inline mstring Setmode()const	{ return setmode; }
-	inline mstring Bind()const	{ return bind; }
-	inline unsigned int Level()const    { return level; }
-	inline unsigned long Lagtime()const    { return lagtime; }
+	mstring Server_Name()const    { return server_name; }
+	mstring Server_Desc()const    { return server_desc; }
+	mstring Services_User()const    { return services_user; }
+	mstring Services_Host()const    { return services_host; }
+	bool Ownuser()const	{ return ownuser; }
+	mstring Setmode()const	{ return setmode; }
+	mstring Bind()const	{ return bind; }
+	unsigned int Level()const    { return level; }
+	unsigned long Lagtime()const    { return lagtime; }
     } startup;
 
     class files_t {
@@ -397,28 +401,28 @@ public:
 		    return Parent->Services_Dir() + DirSlash + in;
 #endif
 	    }
-	inline mstring Pidfile()const	    { return MakePath(pidfile); }
-	inline mstring Logfile()const	    { return MakePath(logfile); }
-	inline mstring Logchan()const	    { return logchan; }
-	inline mstring Motdfile()const	    { return MakePath(motdfile); }
-	inline mstring Langdir()const	    { return MakePath(langdir); }
-	inline mstring Database()const	    { return MakePath(database); }
-	inline unsigned int Compression()const	{ return compression; }
-	inline mstring KeyFile()const	    { return MakePath(keyfile); }
-	inline bool Encryption()const	    { return encryption; }
-	inline mstring MemoAttach()const	{ return MakePath(memoattach); }
-	inline unsigned long MemoAttachSize()const { return memoattachsize; }
-	inline mstring Picture()const	    { return MakePath(picture); }
-	inline unsigned long PictureSize()const    { return picturesize; }
-	inline mstring Public()const	    { return MakePath(i_public); }
-	inline unsigned long PublicSize()const	{ return publicsize; }
-	inline mstring TempDir()const	    { return MakePath(tempdir); }
-	inline unsigned long TempDirSize()const    { return tempdirsize; }
-	inline unsigned long Blocksize()const	{ return blocksize; }
-	inline unsigned long Timeout()const	{ return timeout; }
-	inline unsigned long Min_Speed()const	{ return min_speed; }
-	inline unsigned long Max_Speed()const	{ return max_speed; }
-	inline unsigned long Sampletime()const	{ return sampletime; }
+	mstring Pidfile()const	    { return MakePath(pidfile); }
+	mstring Logfile()const	    { return MakePath(logfile); }
+	mstring Logchan()const	    { return logchan; }
+	mstring Motdfile()const	    { return MakePath(motdfile); }
+	mstring Langdir()const	    { return MakePath(langdir); }
+	mstring Database()const	    { return MakePath(database); }
+	unsigned int Compression()const	{ return compression; }
+	mstring KeyFile()const	    { return MakePath(keyfile); }
+	bool Encryption()const	    { return encryption; }
+	mstring MemoAttach()const	{ return MakePath(memoattach); }
+	unsigned long MemoAttachSize()const { return memoattachsize; }
+	mstring Picture()const	    { return MakePath(picture); }
+	unsigned long PictureSize()const    { return picturesize; }
+	mstring Public()const	    { return MakePath(i_public); }
+	unsigned long PublicSize()const	{ return publicsize; }
+	mstring TempDir()const	    { return MakePath(tempdir); }
+	unsigned long TempDirSize()const    { return tempdirsize; }
+	unsigned long Blocksize()const	{ return blocksize; }
+	unsigned long Timeout()const	{ return timeout; }
+	unsigned long Min_Speed()const	{ return min_speed; }
+	unsigned long Max_Speed()const	{ return max_speed; }
+	unsigned long Sampletime()const	{ return sampletime; }
     } files;
 
     class config_t {
@@ -440,50 +444,50 @@ public:
 	unsigned long msg_seen_time;
 	unsigned int msg_seen_act;
     public:
-	inline unsigned long Server_Relink()const    { return server_relink; }
-	inline unsigned long Squit_Protect()const    { return squit_protect; }
-	inline unsigned long Squit_Cancel()const    { return squit_cancel; }
-	inline unsigned long Cycletime()const	{ return cycletime; }
-	inline unsigned long Savetime()const	{ return savetime; }
-	inline unsigned long Checktime()const	{ return checktime; }
-	inline unsigned long Ping_Frequency()const    { return ping_frequency; }
-	inline unsigned int Starthresh()const	{ return starthresh; }
-	inline unsigned int Listsize()const	{ return listsize; }
-	inline unsigned int Maxlist()const	{ return maxlist; }
-	inline unsigned int Min_Threads()const	{ return min_threads; }
-	inline unsigned int Low_Water_Mark()const    { return low_water_mark; }
-	inline unsigned int High_Water_Mark()const    { return high_water_mark; }
-	inline unsigned long MSG_Seen_Time()const    { return msg_seen_time; }
-	inline unsigned int MSG_Seen_Act()const    { return msg_seen_act; }
+	unsigned long Server_Relink()const    { return server_relink; }
+	unsigned long Squit_Protect()const    { return squit_protect; }
+	unsigned long Squit_Cancel()const    { return squit_cancel; }
+	unsigned long Cycletime()const	{ return cycletime; }
+	unsigned long Savetime()const	{ return savetime; }
+	unsigned long Checktime()const	{ return checktime; }
+	unsigned long Ping_Frequency()const    { return ping_frequency; }
+	unsigned int Starthresh()const	{ return starthresh; }
+	unsigned int Listsize()const	{ return listsize; }
+	unsigned int Maxlist()const	{ return maxlist; }
+	unsigned int Min_Threads()const	{ return min_threads; }
+	unsigned int Low_Water_Mark()const    { return low_water_mark; }
+	unsigned int High_Water_Mark()const    { return high_water_mark; }
+	unsigned long MSG_Seen_Time()const    { return msg_seen_time; }
+	unsigned int MSG_Seen_Act()const    { return msg_seen_act; }
     } config;
 
     bool ActivateLogger();
     void DeactivateLogger();
     bool ValidateLogger(ACE_Log_Msg *instance) const;
-    inline bool Verbose()const	{ return i_verbose; }
-    inline mstring Services_Dir()const    { return i_services_dir; }
-    inline mstring Config_File()const    { return files.MakePath(i_config_file); }
-    inline mstring ProgramName()const    { return i_programname; }
+    bool Verbose()const	{ return i_verbose; }
+    mstring Services_Dir()const    { return i_services_dir; }
+    mstring Config_File()const    { return files.MakePath(i_config_file); }
+    mstring ProgramName()const    { return i_programname; }
 
     // Current STATES, and switching between them.
     Magick(int inargc, char **inargv);
     ~Magick() {}
 
     int Start();
-    inline mDateTime ResetTime()const    { return i_ResetTime; }
-    inline unsigned int Level()const    { return i_level; }
-    inline void LevelUp()
+    mDateTime ResetTime()const    { return i_ResetTime; }
+    unsigned int Level()const    { return i_level; }
+    void LevelUp()
     {
 	i_level++;
     }
-    inline void LevelDown()
+    void LevelDown()
     {
 	if (i_level > startup.Level())
 	i_level--;
     }
-    inline void AUTO(const bool on)    { i_auto = on; }
-    inline bool AUTO()const	{ return i_auto; }
-    inline void MSG(const bool on)
+    void AUTO(const bool on)    { i_auto = on; }
+    bool AUTO()const	{ return i_auto; }
+    void MSG(const bool on)
     {
     //  operserv.MSG(on);
 	nickserv.MSG(on);
@@ -492,19 +496,19 @@ public:
 	servmsg.MSG(on);
 	commserv.MSG(on);
     }
-    inline void Die()	    { ACE_Reactor::instance()->end_event_loop(); }
-    inline void Shutdown(const bool in)    { i_shutdown = in; }
-    inline bool Shutdown()const	{ return i_shutdown; }
+    void Die()	    { ACE_Reactor::instance()->end_event_loop(); }
+    void Shutdown(const bool in)    { i_shutdown = in; }
+    bool Shutdown()const	{ return i_shutdown; }
 
     // Streams, etc
-    inline bool Reconnect()const	{ return i_reconnect; }
-    inline bool GotConnect()const	{ return i_gotconnect; }
-    inline void GotConnect(bool in)	{ i_gotconnect = in; }
-    inline unsigned long LocalHost()const    { return i_localhost; }
-    inline mstring CurrentServer()const    { return i_currentserver; }
-    inline bool Connected()const	{ return i_connected; }
-    inline void Connected(bool in)	{ i_connected = in; }
-    inline bool Saving()const	{ return i_saving; }
+    bool Reconnect()const	{ return i_reconnect; }
+    bool GotConnect()const	{ return i_gotconnect; }
+    void GotConnect(bool in)	{ i_gotconnect = in; }
+    unsigned long LocalHost()const    { return i_localhost; }
+    mstring CurrentServer()const    { return i_currentserver; }
+    bool Connected()const	{ return i_connected; }
+    void Connected(bool in)	{ i_connected = in; }
+    bool Saving()const	{ return i_saving; }
     void Disconnect(const bool reconnect=true);
     void send(const mstring& text)const;
     mstring GetKey()const;
@@ -512,7 +516,7 @@ public:
     void load_databases();
     Reconnect_Handler rh;
 
-    inline operator mVariant() const
+    operator mVariant() const
 	{
 	    mVariant locvar("Magick");
 	    locvar.truevaluetype="Magick";
@@ -530,15 +534,15 @@ public:
     bool UnloadExternalMessages(const mstring& language);
     bool UnloadHelp(const mstring& language);
     mstring getMessage(const mstring& nick, const mstring& name);
-    inline mstring getMessage(const mstring& name)
+    mstring getMessage(const mstring& name)
 	{ return getMessageL(nickserv.DEF_Language(), name); }
     mstring getMessageL(const mstring& language, const mstring& name);
     mstring getLogMessage(const mstring& name);
     vector<mstring> getHelp(const mstring& nick, const mstring& name);
-    inline vector<mstring> getHelp(const mstring& name)
+    vector<mstring> getHelp(const mstring& name)
 	{ return getHelp("", name); }
 
-    inline void AddCommands(void)
+    void AddCommands(void)
     {
 	operserv.AddCommands();
 	nickserv.AddCommands();
@@ -547,7 +551,7 @@ public:
 	servmsg.AddCommands();
 	commserv.AddCommands();
     }
-    inline void RemCommands(void)
+    void RemCommands(void)
     {
 	operserv.RemCommands();
 	nickserv.RemCommands();
@@ -557,7 +561,7 @@ public:
 	commserv.RemCommands();
     }
 
-    inline mstring getLname(const mstring& in)
+    mstring getLname(const mstring& in)
     {
 	if (IsChan(in))
 	{
@@ -572,7 +576,7 @@ public:
 	return "";
     }
 
-    inline mstring getSname(const mstring& in)
+    mstring getSname(const mstring& in)
     {
 	if (IsChan(in))
 	{

@@ -18,37 +18,37 @@ public IFilePrint<T> {
 public:
 	// add more simple type writers here
 
-	inline void WriteElement(Tag& t, bool val) {
+	void WriteElement(Tag& t, bool val) {
 		Indent();
 		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, int val) {
+	void WriteElement(Tag& t, int val) {
 		Indent();
 		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, long val) {
+	void WriteElement(Tag& t, long val) {
 		Indent();
 		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, double val) {
+	void WriteElement(Tag& t, double val) {
 		Indent();
 		Print("<%s>%5.5f</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, unsigned int val) {
+	void WriteElement(Tag& t, unsigned int val) {
 		Indent();
 		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, unsigned long val) {
+	void WriteElement(Tag& t, unsigned long val) {
 		Indent();
 		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, mstring val) {
+	void WriteElement(Tag& t, mstring val) {
 		Indent();
 		if( !val.empty() )
 			Print("<%s>%s</%s>\n", t.ch, XMLEscape(val.c_str()).c_str(), t.ch);
@@ -57,7 +57,7 @@ public:
 	}
 
 #if HAVE_WSTRING
-	inline void WriteElement(Tag& t, wstring val) {
+	void WriteElement(Tag& t, wstring val) {
 		Indent();
 		if( !val.empty() )
 			Print("<%s>%s</%s>\n", t.ch, XMLEscapeW(val.c_str()).c_str(), t.ch);
@@ -66,7 +66,7 @@ public:
 	}
 #endif /* HAVE_WSTRING */
 
-	inline void WriteElement(Tag& t, mDateTime &val) {
+	void WriteElement(Tag& t, mDateTime &val) {
 		WriteElement(t,static_cast<double>(GMT(val, true)));
 	}
 };
@@ -78,35 +78,35 @@ template<class T>
 class IDataInput:
 public IData<T> {
 public:
-	inline void Retrieve(bool& val) {
+	void Retrieve(bool& val) {
 		val = atoi(Data());
 	}
 
-	inline void Retrieve(int& val) {
+	void Retrieve(int& val) {
 		val = atoi(Data());
 	}
 
-	inline void Retrieve(long& val) {
+	void Retrieve(long& val) {
 		val = atol(Data());
 	}
 
-	inline void Retrieve(double& val) {
+	void Retrieve(double& val) {
 		val = atof(Data());
 	}
 
-	inline void Retrieve(unsigned int& val) {
+	void Retrieve(unsigned int& val) {
 		val = atoi(Data()) - static_cast<unsigned int>(0);
 	}
 
-	inline void Retrieve(unsigned long& val) {
+	void Retrieve(unsigned long& val) {
 		val = atol(Data()) - static_cast<unsigned long>(0);
 	}
 
-	inline void Retrieve(mstring& val) {
+	void Retrieve(mstring& val) {
 		val = XMLUnEscape(Data());
 	}
 #if HAVE_WSTRING
-	inline void Retrieve(wstring& val) {
+	void Retrieve(wstring& val) {
 		val = XMLUnEscapeW(Data());
 	}
 #endif /* HAVE_WSTRING */

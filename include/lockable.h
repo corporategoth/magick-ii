@@ -25,6 +25,10 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.57  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -164,11 +168,11 @@ class mLOCK
 #endif
 
 public:
-    inline mLOCK() {}
+    mLOCK() {}
     mLOCK(const locktype_enum type, const mVarArray &args);
     ~mLOCK();
     bool Locked() const;
-    inline size_t Locks() const { return locks.size(); }
+    size_t Locks() const { return locks.size(); }
     static size_t AllLocks();
 };
 
@@ -184,11 +188,11 @@ class mLock_Read : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
 public:
-	inline mLock_Read (const char *name = 0)
+	mLock_Read (const char *name = 0)
 		: base(name) {}
 
-	inline int acquire()		{ return acquire_read(); }
-	inline int tryacquire()		{ return tryacquire_read(); }
+	int acquire()		{ return acquire_read(); }
+	int tryacquire()		{ return tryacquire_read(); }
 
 	void *operator new (size_t size)
 		{ return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
@@ -200,11 +204,11 @@ class mLock_Write : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
 public:
-	inline mLock_Write (const char *name = 0)
+	mLock_Write (const char *name = 0)
 		: base(name) {}
 
-	inline int acquire()		{ return acquire_write(); }
-	inline int tryacquire()		{ return tryacquire_write(); }
+	int acquire()		{ return acquire_write(); }
+	int tryacquire()		{ return tryacquire_write(); }
 
 	void *operator new (size_t size)
 		{ return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
@@ -216,7 +220,7 @@ class mLock_Mutex : public ACE_Thread_Mutex
 {
 	typedef ACE_Thread_Mutex base;
 public:
-	inline mLock_Mutex (const char *name = 0)
+	mLock_Mutex (const char *name = 0)
 		: base(name) {}
 
 	void *operator new (size_t size)
@@ -307,30 +311,30 @@ public:
     static map<unsigned long, mSocket *> SockMap;
     static unsigned short FindAvailPort();
 
-    inline mSocket()
+    mSocket()
     { init(); }
-    inline mSocket(const ACE_INET_Addr &addr, const unsigned long timeout)
+    mSocket(const ACE_INET_Addr &addr, const unsigned long timeout)
     {
 	init();
 	Connect(addr, timeout);
     }
-    inline mSocket(const mstring& host, const unsigned short port, const unsigned long timeout)
+    mSocket(const mstring& host, const unsigned short port, const unsigned long timeout)
     {
 	init();
 	Connect(host, port, timeout);
     }
-    inline mSocket(const unsigned short port, const unsigned long timeout)
+    mSocket(const unsigned short port, const unsigned long timeout)
     {
 	init();
 	Accept(port, timeout);
     }
-    inline mSocket(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
+    mSocket(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
     {
 	init();
 	Bind(in, direction, alloc);
     }
 
-    inline mSocket(const mSocket &in) { *this = in; }
+    mSocket(const mSocket &in) { *this = in; }
     ~mSocket();
     void operator=(const mSocket &in);
 
@@ -377,7 +381,7 @@ private:
 public:
     static ThreadID* find(const ACE_thread_t thread=ACE_Thread::self());
     static vector<ThreadID*> findall();
-    static inline size_t size() { return selftothreadidmap.size(); }
+    static size_t size() { return selftothreadidmap.size(); }
     static void Attach(const threadtype_enum ttype);
     static void Detach();
     static void ReAttach(const threadtype_enum ttype);

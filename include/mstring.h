@@ -25,6 +25,10 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/04/05 05:59:50  prez
+** Turned off -fno-default-inline, and split up server.cpp, it should
+** compile again with no special options, and have default inlines :)
+**
 ** Revision 1.71  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -204,10 +208,10 @@ class mstring_noalloc : public exception
 {
     char i_reason[1024];
 public:
-    inline mstring_noalloc(const char *reason = "")
+    mstring_noalloc(const char *reason = "")
 	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    inline ~mstring_noalloc() {}
-    inline const char *what() const
+    ~mstring_noalloc() {}
+    const char *what() const
 	{ return i_reason; };
 };
 
@@ -215,10 +219,10 @@ class mstring_nodealloc : public exception
 {
     char i_reason[1024];
 public:
-    inline mstring_nodealloc(const char *reason = "")
+    mstring_nodealloc(const char *reason = "")
 	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    inline ~mstring_nodealloc() {}
-    inline const char *what() const
+    ~mstring_nodealloc() {}
+    const char *what() const
 	{ return i_reason; };
 };
 #endif
@@ -266,35 +270,35 @@ class mstring
     static int vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
 
 public:
-    inline mstring()
+    mstring()
 	{ init(); }
-    inline mstring(const mstring &in)
+    mstring(const mstring &in)
 	{ init(); copy(in); }
-    inline mstring(const string &in)
+    mstring(const string &in)
 	{ init(); copy(in); }
-    inline mstring(const char *in, const size_t length)
+    mstring(const char *in, const size_t length)
 	{ init(); copy(in, length); }
-    inline mstring(const char *in)
+    mstring(const char *in)
 	{ init(); copy(in); }
-    inline mstring(const char in)
+    mstring(const char in)
 	{ init(); copy(in); }
-    inline mstring(const unsigned char in)
+    mstring(const unsigned char in)
 	{ init(); copy(in); }
-    inline mstring(const int in)
+    mstring(const int in)
 	{ init(); copy(in); }
-    inline mstring(const unsigned int in)
+    mstring(const unsigned int in)
 	{ init(); copy(in); }
-    inline mstring(const long in)
+    mstring(const long in)
 	{ init(); copy(in); }
-    inline mstring(const unsigned long in)
+    mstring(const unsigned long in)
 	{ init(); copy(in); }
-    inline mstring(const float in)
+    mstring(const float in)
 	{ init(); copy(in); }
-    inline mstring(const double in)
+    mstring(const double in)
 	{ init(); copy(in); }
-    inline mstring(const vector<mstring> in)
+    mstring(const vector<mstring> in)
 	{ init(); Assemble(in); }
-    inline mstring(const list<mstring> in)
+    mstring(const list<mstring> in)
 	{ init(); Assemble(in); }
     ~mstring();
 
@@ -314,49 +318,49 @@ public:
     bool empty() const;
 
     // Aliases for the above ...
-    inline void copy(const mstring &in)
+    void copy(const mstring &in)
 	{ copy(in.i_str, in.i_len); }
-    inline void copy(const string &in)
+    void copy(const string &in)
 	{ copy(in.c_str(), in.length()); }
-    inline void copy(const char *in)
+    void copy(const char *in)
 	{ copy(in, strlen(in)); }
-    inline void copy(const char in)
+    void copy(const char in)
 	{ copy(&in, 1); }
-    inline void copy(const unsigned char in)
+    void copy(const unsigned char in)
 	{ copy(&static_cast<const char>(in), 1); }
-    inline void copy(const int in)
+    void copy(const int in)
 	{ mstring out; out.Format("%d", in); copy(out); }
-    inline void copy(const unsigned int in)
+    void copy(const unsigned int in)
 	{ mstring out; out.Format("%u", in); copy(out); }
-    inline void copy(const long in)
+    void copy(const long in)
 	{ mstring out; out.Format("%ld", in); copy(out); }
-    inline void copy(const unsigned long in)
+    void copy(const unsigned long in)
 	{ mstring out; out.Format("%lu", in); copy(out); }
-    inline void copy(const float in)
+    void copy(const float in)
 	{ mstring out; out.Format("%f", in); copy(out); }
-    inline void copy(const double in)
+    void copy(const double in)
 	{ mstring out; out.Format("%f", in); copy(out); }
 
-    inline void prepend(const mstring &in)
+    void prepend(const mstring &in)
 	{ insert(0, in.i_str, in.i_len); }
-    inline void append(const mstring &in)
+    void append(const mstring &in)
 	{ append(in.i_str, in.i_len); }
-    inline void insert(const size_t pos, const mstring &in)
+    void insert(const size_t pos, const mstring &in)
 	{ insert(pos, in.i_str, in.i_len); }
-    inline int compare(const mstring &in) const
+    int compare(const mstring &in) const
 	{ return compare(in.i_str, in.i_len); }
 
     const char operator[] (const size_t off) const;
-    inline operator const char *() const
+    operator const char *() const
 	{ return c_str(); }
-    inline operator const string () const
+    operator const string () const
 	{ return string(c_str()); }
 
-    inline mstring &operator= (const mstring &rhs)
+    mstring &operator= (const mstring &rhs)
 	{ copy(rhs); return *this; }
-    inline mstring &operator+= (const mstring &rhs)
+    mstring &operator+= (const mstring &rhs)
 	{ append(rhs); return *this; }
-    inline mstring &operator<< (const mstring &rhs)
+    mstring &operator<< (const mstring &rhs)
 	{ append(rhs); return *this; }
 
     // ALL return -1 if not found, or the offset
@@ -368,32 +372,32 @@ public:
     int find_first_not_of(const char *str, const size_t length) const;
     int find_last_not_of(const char *str, const size_t length) const;
 
-    inline int find_first_of(const mstring &in) const
+    int find_first_of(const mstring &in) const
 	{ return find_first_of(in.i_str, in.i_len); }
-    inline int find_last_of(const mstring &in) const
+    int find_last_of(const mstring &in) const
 	{ return find_last_of(in.i_str, in.i_len); }
-    inline int find_first_not_of(const mstring &in) const
+    int find_first_not_of(const mstring &in) const
 	{ return find_first_not_of(in.i_str, in.i_len); }
-    inline int find_last_not_of(const mstring &in) const
+    int find_last_not_of(const mstring &in) const
 	{ return find_last_not_of(in.i_str, in.i_len); }
 
     // str here is used completely
     int find(const mstring &str, int occurance = 1) const;
     int rfind(const mstring &str, int occurance = 1) const;
     void replace(const mstring &i_find, const mstring &i_replace, const bool all = true);
-    inline void replace(const int begin, const int end, const char *i_replace, const size_t length)
+    void replace(const int begin, const int end, const char *i_replace, const size_t length)
 	{
 	    erase(begin, end);
 	    insert(begin, i_replace, length);
 	}
-    inline void replace(const int begin, const int end, const mstring &i_replace)
+    void replace(const int begin, const int end, const mstring &i_replace)
 	{ replace(begin, end, i_replace.i_str, i_replace.i_len); }
     bool replace(const size_t offs, const char c);
 
     mstring substr(int nFirst, int nCount) const;
 
     /* From here is our own additions ... */
-    inline bool Contains(const mstring &in) const
+    bool Contains(const mstring &in) const
 	{ return (find(in) >= 0); }
 
     int Format(const char *fmt, ...);
@@ -414,14 +418,14 @@ public:
     int Find(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
     int RevFind(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
     int Cmp(const mstring &in, const bool NoCase = false) const;
-    inline bool IsSameAs(const mstring &in, const bool NoCase = false) const
+    bool IsSameAs(const mstring &in, const bool NoCase = false) const
 	{ return (Cmp(in, NoCase)==0); }
-    inline bool Matches(const mstring &in, const bool NoCase = false) const
+    bool Matches(const mstring &in, const bool NoCase = false) const
 	{ return match_wild(in.c_str(), c_str(), NoCase); }
 
-    inline void Remove(const mstring &in, const bool All = true)
+    void Remove(const mstring &in, const bool All = true)
 	{ replace(in, "", All); }
-    inline void Truncate(const size_t pos, const bool right = true)
+    void Truncate(const size_t pos, const bool right = true)
 	{
 	    if (right)
 		erase(right);
@@ -436,9 +440,9 @@ public:
     mstring RevBefore(const mstring &in, const int occurance = 1) const;
     mstring RevAfter(const mstring &in, const int occurance = 1) const;
     mstring SubString(int from = 0, int to = -1) const;
-    inline mstring Left(const int pos) const
+    mstring Left(const int pos) const
 	{ return SubString(0, pos-1); }
-    inline mstring Right(const int pos) const
+    mstring Right(const int pos) const
 	{ return SubString(pos); }
     unsigned int WordCount(const mstring &delim, const bool assemble = true) const;
     mstring ExtractWord(const unsigned int count, const mstring &delim,
