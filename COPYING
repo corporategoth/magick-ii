@@ -28,27 +28,27 @@ arrangement.
 
                                 Definitions
 
-`Package' refers to the collection of files distributed by the
+"Package" refers to the collection of files distributed by the
 Originator(s), and derivatives of that collection of files
 created through textual modification.
 
-`Standard Version' refers to the Package if it has not been modified, or
+"Standard Version" refers to the Package if it has not been modified, or
 has been modified only in ways suggested by the Originator(s).
 
-`Modified Version' refers to the Package, if it has been changed by You
+"Modified Version" refers to the Package, if it has been changed by You
 via textual modification of the source code, and such changes were not
 suggested by the Originator(s).
 
-`Originator' refers to the author(s) and/or copyright
+"Originator" refers to the author(s) and/or copyright
 holder(s) of the Standard Version of the Package.
 
-`You' and `Your' refers to any person who would like to copy,
+"You" and "Your" refers to any person who would like to copy,
 distribute, or modify the Package.
 
-`Distribution Fee' is any fee that You charge for providing a copy of
+"Distribution Fee" is any fee that You charge for providing a copy of
 this Package to another party. It does not refer to licensing fees.
 
-`Freely Available' means that:
+"Freely Available" means that:
 
        (a) no fee is charged for the right to use the item (though a
            Distribution Fee may be charged).
