@@ -882,8 +882,25 @@ void Nick_Live_t::Join(const mstring & chan)
 	if (Magick::instance().chanserv.IsStored(chan))
 	    Magick::instance().chanserv.GetStored(chan)->Join(i_Name);
     }
+
     mMessage::CheckDependancies(mMessage::ChanExists, chan);
+    map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(chan);
+    if (clive->Numeric())
+	mMessage::CheckDependancies(mMessage::ChanExists,
+				    Magick::instance().server.proto.Numeric.ChannelNumeric(clive->Numeric()));
     mMessage::CheckDependancies(mMessage::UserInChan, chan, i_Name);
+    if (Numeric())
+	mMessage::CheckDependancies(mMessage::UserInChan, chan,
+				    "!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
+    if (clive->Numeric())
+    {
+	mMessage::CheckDependancies(mMessage::UserInChan,
+				    Magick::instance().server.proto.Numeric.ChannelNumeric(clive->Numeric()), i_Name);
+	if (Numeric())
+	    mMessage::CheckDependancies(mMessage::UserInChan,
+					Magick::instance().server.proto.Numeric.ChannelNumeric(clive->Numeric()),
+					"!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
+    }
 }
 
 void Nick_Live_t::Part(const mstring & chan)
@@ -898,11 +915,14 @@ void Nick_Live_t::Part(const mstring & chan)
     }
 
     unsigned int res = 0;
+    unsigned long chan_numeric = 0;
 
     if (Magick::instance().chanserv.IsLive(chan))
     {
 	// If this returns 0, then the channel is empty.
-	res = Magick::instance().chanserv.GetLive(chan)->Part(i_Name);
+	map_entry < Chan_Live_t > clive(Magick::instance().chanserv.GetLive(chan));
+	chan_numeric = clive->Numeric();
+	res = clive->Part(i_Name);
 	if (!res)
 	    Magick::instance().chanserv.RemLive(chan);
     }
@@ -912,8 +932,25 @@ void Nick_Live_t::Part(const mstring & chan)
     }
 
     mMessage::CheckDependancies(mMessage::UserNoInChan, chan, i_Name);
+    if (Numeric())
+	mMessage::CheckDependancies(mMessage::UserInChan, chan,
+				    "!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
+    if (chan_numeric)
+    {
+	mMessage::CheckDependancies(mMessage::UserInChan, Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric),
+				    i_Name);
+	if (Numeric())
+	    mMessage::CheckDependancies(mMessage::UserInChan,
+					Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric),
+					"!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
+    }
     if (!res)
+    {
 	mMessage::CheckDependancies(mMessage::ChanNoExists, chan);
+	if (chan_numeric)
+	    mMessage::CheckDependancies(mMessage::ChanNoExists,
+					Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric));
+    }
 }
 
 void Nick_Live_t::Kick(const mstring & kicker, const mstring & chan)
@@ -928,11 +965,14 @@ void Nick_Live_t::Kick(const mstring & kicker, const mstring & chan)
     }
 
     unsigned int res = 0;
+    unsigned long chan_numeric = 0;
 
     if (Magick::instance().chanserv.IsLive(chan))
     {
 	// If this returns 0, then the channel is empty.
-	res = Magick::instance().chanserv.GetLive(chan)->Kick(i_Name, kicker);
+	map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(chan);
+	chan_numeric = clive->Numeric();
+	res = clive->Kick(i_Name, kicker);
 	if (!res)
 	    Magick::instance().chanserv.RemLive(chan);
 
@@ -943,8 +983,25 @@ void Nick_Live_t::Kick(const mstring & kicker, const mstring & chan)
     }
 
     mMessage::CheckDependancies(mMessage::UserNoInChan, chan, i_Name);
+    if (Numeric())
+	mMessage::CheckDependancies(mMessage::UserInChan, chan,
+				    "!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
+    if (chan_numeric)
+    {
+	mMessage::CheckDependancies(mMessage::UserInChan, Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric),
+				    i_Name);
+	if (Numeric())
+	    mMessage::CheckDependancies(mMessage::UserInChan,
+					Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric),
+					"!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
+    }
     if (!res)
+    {
 	mMessage::CheckDependancies(mMessage::ChanNoExists, chan);
+	if (chan_numeric)
+	    mMessage::CheckDependancies(mMessage::ChanNoExists,
+					Magick::instance().server.proto.Numeric.ChannelNumeric(chan_numeric));
+    }
 }
 
 void Nick_Live_t::Quit(const mstring & reason)

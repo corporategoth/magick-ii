@@ -164,22 +164,23 @@ public:
 
 	bool i_Trim:1;		/* Trim numeric results ... */
 	bool i_Extended:1;	/* 2 char server, 3 char nick */
-	bool i_Server:1;	/* Uses server numerics ... */
 	bool i_ServerNumber:1;	/* Use decimal number (not base64) in SERVER line */
-	bool i_User:1;		/* Use nickname numerics ... */
 	bool i_Combine:1;	/* Combine server and nick numeric in messages */
-	bool i_Channel:1;	/* Use channel numerics ... */
+	bool i_Prefix:1;	/* When sending messages as server, prefix with '@' */
+	int i_Server;		/* Uses server numerics ... */
 	int i_Field;		/* Field in SERVER line that contains numeric */
+	int i_User;		/* Use nickname numerics ... */
+	int i_Channel;		/* Use channel numerics ... */
 
 	char base64_to_char[64], char_to_base64[256];
 	void SetBase64(unsigned int type);
 
-    public:
 	unsigned long str_to_base64(const mstring & in) const;
 	mstring base64_to_str(unsigned long in) const;
 
-	Numeric_t() : i_Trim(false), i_Extended(false), i_Server(false), i_ServerNumber(false), i_User(false),
-	    i_Combine(false), i_Channel(false), i_Field(0)
+    public:
+	Numeric_t() : i_Trim(false), i_ServerNumber(false), i_Combine(false), i_Prefix(false), i_Server(0), i_Field(0),
+	    i_User(0), i_Channel(false)
 	{
 	    memset(base64_to_char, 0, sizeof(base64_to_char));
 	    memset(char_to_base64, 0, sizeof(char_to_base64));
@@ -188,47 +189,45 @@ public:
 	{
 	    return i_Trim;
 	}
-	bool Extended() const
-	{
-	    return i_Extended;
-	}
-	bool Server() const
-	{
-	    return i_Server;
-	}
 	bool ServerNumber() const
 	{
 	    return i_ServerNumber;
-	}
-	bool User() const
-	{
-	    return i_User;
 	}
 	bool Combine() const
 	{
 	    return i_Combine;
 	}
-	bool Channel() const
+	bool Prefix() const
 	{
-	    return i_Channel;
+	    return i_Prefix;
+	}
+	int Server() const
+	{
+	    return i_Server;
 	}
 	int Field() const
 	{
 	    return i_Field;
 	}
+	int User() const
+	{
+	    return i_User;
+	}
+	int Channel() const
+	{
+	    return i_Channel;
+	}
 
-	mstring ServerToNumeric(const mstring & s) const;
-	mstring NumericToServer(const mstring & n) const;
-	unsigned long ServerToNumeric2(const mstring & s) const;
-	mstring NumericToServer2(unsigned long n) const;
-	mstring UserToNumeric(const mstring & u) const;
-	mstring NumericToUser(const mstring & n) const;
-	unsigned long UserToNumeric2(const mstring & u) const;
-	mstring NumericToUser2(unsigned long n) const;
-	mstring ChannelToNumeric(const mstring & c) const;
-	mstring NumericToChannel(const mstring & n) const;
-	unsigned long ChannelToNumeric2(const mstring & c) const;
-	mstring NumericToChannel2(unsigned long n) const;
+	unsigned long ServerNumeric(const mstring & in) const;
+	mstring ServerNumeric(unsigned long in) const;
+	unsigned long UserNumeric(const mstring & in) const;
+	mstring UserNumeric(unsigned long in) const;
+	unsigned long ChannelNumeric(const mstring & in) const;
+	mstring ChannelNumeric(unsigned long in) const;
+
+	mstring FindServerNumeric(unsigned long in) const;
+	mstring FindUserNumeric(unsigned long in) const;
+	mstring FindChannelNumeric(unsigned long in) const;
 
 	unsigned long FindServerNumeric() const;
 	unsigned long FindUserNumeric() const;
@@ -439,6 +438,7 @@ class Server : public mBase
 
     void raw(const mstring & send) const;
     void sraw(const mstring & send) const;
+    void nraw(const mstring & nick, const mstring & send) const;
 
     set < mstring > WaitIsOn;
 

@@ -667,14 +667,25 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 
     source = message.ExtractWord(1, ": ");
 
-    // Undernet IRCD hacks ... *sigh* Only in effect if we dont start with ':' or '@'
-    if (Magick::instance().server.proto.Number() >= 21 && Magick::instance().server.proto.Number() < 30 && source[0u] != ':' &&
-	source[0u] != '@' && !source.IsSameAs("PING", true) && !source.IsSameAs("SERVER", true))
+    // IF we dont start with ':' or '@', and its not PING or SERVER ...
+    if (source[0u] != ':' && source[0u] != '@' && !source.IsSameAs("PING", true) && !source.IsSameAs("SERVER", true))
     {
-	// If we're < 3 chars, its a server, if below 6 or 4 (depending if EXTENDED_NUMERIC is set), a nick.
-	if (source.length() < 3)
+	// AND we have server numerics, AND the length of the message is <= the
+	// server numeric maximum length ... assume its a server numeric ...
+	if (Magick::instance().server.proto.Numeric.Server() &&
+	    source.length() <= static_cast < size_t > (Magick::instance().server.proto.Numeric.Server()))
 	    source.prepend("@");
-	else if (source.length() < (Magick::instance().server.proto.Numeric.Extended() ? 6 : 4))
+
+	// AND we have user numerics, AND the length of the message is <= the
+	// user numeric maximum length (combined with server numeric maximum
+	// length if necessary) ... assume its a user numeric ...
+	else if (Magick::instance().server.proto.Numeric.User() &&
+		 (Magick::instance().server.proto.Numeric.
+		  Combine() ? (source.length() == static_cast < size_t >
+			       (Magick::instance().server.proto.Numeric.Server() +
+				Magick::instance().server.proto.Numeric.User())) : (source.length() == static_cast < size_t >
+										    (Magick::instance().server.proto.Numeric.
+										     User()))))
 	    source.prepend("!");
     }
 
@@ -1380,9 +1391,14 @@ DRET(0);
 	     {
 		 if (Magick::instance().nickserv.IsLiveAll(*k))
 		 {
-		     Magick::instance().nickserv.GetLive(*k)->Quit("FAKE SQUIT - " + *tmp);
+		     map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(*k);
+		     nlive->Quit("FAKE SQUIT - " + *tmp);
 		     Magick::instance().nickserv.RemLive(*k);
 		     mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+		     if (nlive->Numeric())
+			 mMessage::CheckDependancies(mMessage::NickNoExists,
+						     "!" +
+						     Magick::instance().server.proto.Numeric.UserNumeric(nlive->Numeric()));
 		 }
 	     }
 	     catch (E_NickServ_Live & e)
@@ -1464,9 +1480,13 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	{
 	    if (Magick::instance().nickserv.IsLiveAll(*k))
 	    {
-		Magick::instance().nickserv.GetLive(*k)->Quit("SQUIT - " + *tmp);
+		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(*k);
+		nlive->Quit("SQUIT - " + *tmp);
 		Magick::instance().nickserv.RemLive(*k);
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickNoExists,
+						"!" + Magick::instance().server.proto.Numeric.UserNumeric(nlive->Numeric()));
 	    }
 	}
 	catch (E_NickServ_Live & e)
@@ -1758,9 +1778,9 @@ int EventTask::svc(void)
 	    continue;
 	}
 
-	CP(("TIMERS:  Current time: %ld,  Earliest Timer: %ld", ACE_OS::gettimeofday().sec(),
-	    Magick::instance().reactor().timer_queue()->is_empty() ? 0 : Magick::instance().reactor().timer_queue()->
-	    earliest_time().sec()));
+	COM(("TIMERS:  Current time: %ld,  Earliest Timer: %ld", ACE_OS::gettimeofday().sec(),
+	     Magick::instance().reactor().timer_queue()->is_empty() ? 0 : Magick::instance().reactor().timer_queue()->
+	     earliest_time().sec()));
 
 	try
 	{

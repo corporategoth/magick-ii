@@ -167,12 +167,6 @@ source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
     FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
 
-    if (Magick::instance().server.proto.Numeric.User() && source_[0u] == '!')
-    {
-	source_.erase(0, 0);
-	sourceToken_ = true;
-    }
-
     if (source_ != " " && Magick::instance().server.proto.Tokens())
     {
 	mstring tmp(Magick::instance().server.proto.GetToken(p_msgtype));
@@ -197,13 +191,13 @@ void mMessage::AddDependancies()
     {
 	if (source_[0u] == '@')
 	{
-	    AddDepend(ServerExists, source_.After("@"));
+	    AddDepend(ServerExists, source_);
 	}
 	else if (source_.Contains("."))
 	{
 	    AddDepend(ServerExists, source_.LowerCase());
 	}
-	else if (sourceToken_)
+	else if (source_[0u] == '!')
 	{
 	    AddDepend(NickExists, source_);
 	}
@@ -213,11 +207,43 @@ void mMessage::AddDependancies()
 	}
     }
 
-    if (msgtype_ == "JOIN")
+    if (msgtype_ == "BURST")
+    {
+	if (params_.WordCount(" :") > 2)
+	{
+	    unsigned int i, offset = 3;
+	    mstring modes = params_.ExtractWord(offset, " ");
+
+	    if (modes[0u] != '+')
+		modes.erase();
+	    if (modes.length())
+	    {
+		offset++;
+		for (i = 0; i < modes.length(); i++)
+		    if (Magick::instance().server.proto.ChanModeArg().Contains(modes[i]))
+			offset++;
+	    }
+
+	    for (i = offset; i <= params_.WordCount(" "); i++)
+	    {
+		mstring nick(params_.ExtractWord(i, " ").Before(":"));
+
+		AddDepend(NickExists, "!" + nick);
+	    }
+	}
+    }
+    else if (msgtype_ == "JOIN")
     {
 	// User is NOT in channel
 	for (unsigned int i = 1; i <= params_.WordCount(":, "); i++)
-	    AddDepend(UserNoInChan, params_.ExtractWord(i, ":, ").LowerCase() + ":" + source_.After(":"));
+	{
+	    mstring chan = params_.ExtractWord(i, ":, ");
+
+	    if (IsChan(chan))
+		AddDepend(UserNoInChan, chan.LowerCase() + ":" + source_);
+	    else
+		AddDepend(UserNoInChan, chan + ":" + source_);
+	}
     }
     else if (msgtype_ == "KICK")
     {
@@ -238,6 +264,28 @@ void mMessage::AddDependancies()
 	// Channel exists
 	// ALL params_ that are users exist ... ?
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
+
+	mstring mode = params_.ExtractWord(2, ": ");
+	unsigned int fwdarg = 3;
+
+	for (unsigned int i = 0; i < mode.length() && fwdarg <= params_.WordCount(": "); i++)
+	{
+	    if (Magick::instance().server.proto.ChanModeArg().Contains(mode[i]))
+	    {
+		switch (mode[i])
+		{
+		case 'o':
+		case 'h':
+		case 'v':
+		    if (Magick::instance().server.proto.Numeric.User())
+			AddDepend(NickExists, "!" + params_.ExtractWord(fwdarg, ": "));
+		    else
+			AddDepend(NickExists, params_.ExtractWord(fwdarg, ": "));
+		    break;
+		}
+		fwdarg++;
+	    }
+	}
     }
     else if (msgtype_ == "NICK" || msgtype_ == "SNICK" || msgtype_ == "USER")
     {
@@ -271,7 +319,7 @@ void mMessage::AddDependancies()
 		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
 		break;
 	    case 3000:
-		AddDepend(ServerExists, source_.After("@"));
+		// Source is already added ...
 		break;
 	    }
 	}
@@ -280,8 +328,18 @@ void mMessage::AddDependancies()
     {
 	// Channel exists
 	// User in channel
-	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
-	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + source_.After(":"));
+	mstring chan = params_.ExtractWord(1, ": ");
+
+	if (IsChan(chan))
+	{
+	    AddDepend(ChanExists, chan.LowerCase());
+	    AddDepend(UserInChan, chan.LowerCase() + ":" + source_);
+	}
+	else
+	{
+	    AddDepend(ChanExists, chan);
+	    AddDepend(UserInChan, chan + ":" + source_);
+	}
     }
     else if (msgtype_ == "SERVER")
     {
@@ -302,7 +360,7 @@ void mMessage::AddDependancies()
 		    char c = 0;
 		    bool IsNotNick = false;
 
-		    while (c != nick[0u])
+		    while (!IsNotNick && c != nick[0u])
 		    {
 			c = nick[0u];
 			switch (nick[0u])
@@ -356,12 +414,22 @@ void mMessage::AddDependancies()
     else if (msgtype_ == "SQUIT")
     {
 	// Uplink exists
-	AddDepend(ServerExists, params_.ExtractWord(1, ": ").LowerCase());
+	mstring server = params_.ExtractWord(1, ": ");
+
+	if (server.Contains("."))
+	    AddDepend(ServerExists, server.LowerCase());
+	else
+	    AddDepend(ServerExists, "@" + server);
     }
     else if (msgtype_ == "TOPIC")
     {
 	// Channel exists
-	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
+	mstring chan = params_.ExtractWord(1, ": ");
+
+	if (IsChan(chan))
+	    AddDepend(ChanExists, chan.LowerCase());
+	else
+	    AddDepend(ChanExists, chan);
     }
 
     {
@@ -414,7 +482,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case NickExists:
-	    if (!Magick::instance().nickserv.IsLive(iter->second))
+	    if (Magick::instance().server.GetUser(iter->second).empty())
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -431,7 +499,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case NickNoExists:
-	    if (Magick::instance().nickserv.IsLive(iter->second))
+	    if (!Magick::instance().server.GetUser(iter->second).empty())
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -448,7 +516,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case ChanExists:
-	    if (!Magick::instance().chanserv.IsLive(iter->second))
+	    if (Magick::instance().server.GetChannel(iter->second).empty())
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -465,7 +533,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case ChanNoExists:
-	    if (Magick::instance().chanserv.IsLive(iter->second))
+	    if (!Magick::instance().server.GetChannel(iter->second).empty())
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -482,39 +550,10 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserInChan:
-	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")))
-	    {
-		if (!Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
-		{
-		    added++;
-		    MLOCK2(("AllDependancies"));
-		    if (added == 1)
-		    {
-			MLOCK(("MsgIdMap"));
-			MsgIdMap[msgid_] = this;
-		    }
-		    AllDependancies[iter->first] [iter->second].insert(msgid_);
-		}
-		else
-		{
-		    iter->third = true;
-		}
-	    }
-	    else
-	    {
-		added++;
-		MLOCK2(("AllDependancies"));
-		if (added == 1)
-		{
-		    MLOCK(("MsgIdMap"));
-		    MsgIdMap[msgid_] = this;
-		}
-		AllDependancies[iter->first] [iter->second].insert(msgid_);
-	    }
-	    break;
-	case UserNoInChan:
-	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
-		Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
+	    if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
+		Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
+		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
+		IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -528,6 +567,26 @@ void mMessage::AddDependancies()
 	    else
 	    {
 		iter->third = true;
+	    }
+	    break;
+	case UserNoInChan:
+	    if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
+		Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
+		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
+		IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+	    {
+		iter->third = true;
+	    }
+	    else
+	    {
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    break;
 	}
@@ -551,11 +610,13 @@ bool mMessage::RecheckDependancies()
 
 	for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
 	{
+	    if (iter->third)
+		continue;
 	    resolved = false;
 	    switch (iter->first)
 	    {
 	    case ServerExists:
-		if (!iter->third && !Magick::instance().server.GetServer(iter->second).empty())
+		if (!Magick::instance().server.GetServer(iter->second).empty())
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -570,7 +631,7 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case ServerNoExists:
-		if (!iter->third && Magick::instance().server.GetServer(iter->second).empty())
+		if (Magick::instance().server.GetServer(iter->second).empty())
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -585,7 +646,7 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case NickExists:
-		if (!iter->third && Magick::instance().nickserv.IsLive(iter->second))
+		if (!Magick::instance().server.GetUser(iter->second).empty())
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -600,7 +661,7 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case NickNoExists:
-		if (!iter->third && !Magick::instance().nickserv.IsLive(iter->second))
+		if (Magick::instance().server.GetUser(iter->second).empty())
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -615,7 +676,7 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case ChanExists:
-		if (!iter->third && Magick::instance().chanserv.IsLive(iter->second))
+		if (!Magick::instance().server.GetChannel(iter->second).empty())
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -630,7 +691,7 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case ChanNoExists:
-		if (!iter->third && !Magick::instance().chanserv.IsLive(iter->second))
+		if (Magick::instance().server.GetChannel(iter->second).empty())
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -645,8 +706,10 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case UserInChan:
-		if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
-		    Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
+		if (!Magick::instance().server.GetChannel(iter->second.Before(":")).empty() &&
+		    !Magick::instance().server.GetUser(iter->second.After(":")).empty() &&
+		    Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
+		    IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -661,9 +724,10 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case UserNoInChan:
-		if (!iter->third &&
-		    (!Magick::instance().chanserv.IsLive(iter->second.Before(":")) ||
-		     !Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":"))))
+		if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
+		    Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
+		    !Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
+		    IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -734,10 +798,43 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 
     mstring target;
 
-    if (!param2.empty())
-	target = param1.LowerCase() + ":" + param2.LowerCase();
-    else
-	target = param1.LowerCase();
+    switch (type)
+    {
+    case ServerExists:
+    case ServerNoExists:
+	if (param1[0u] == '@')
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	break;
+    case NickExists:
+    case NickNoExists:
+	if (param1[0u] == '!')
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	break;
+    case ChanExists:
+    case ChanNoExists:
+	if (!IsChan(param1))
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	break;
+    case UserInChan:
+    case UserNoInChan:
+	if (!IsChan(param1))
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	target += ":";
+	if (param2[0u] == '!')
+	    target += param2;
+	else
+	    target += param2.LowerCase();
+	break;
+    }
+
     set < unsigned long > mydep;
 
     {
@@ -833,12 +930,28 @@ int mMessage::call()
 	RET(0);
     }
 
-    CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
+    mstring source;
+
+    if (source_[0u] == '!')
+	source = Magick::instance().server.GetUser(source_);
+    else if (source_[0u] == '@')
+	source = Magick::instance().server.GetServer(source_);
+    else if (source_.empty())
+    {
+	if (Magick::instance().server.OurUplink().empty())
+	    source = Magick::instance().startup.Server_Name();
+	else
+	    source = Magick::instance().server.OurUplink();
+    }
+    else
+	source = source_;
+
+    CP(("Processing message (%s) %s %s", source.c_str(), msgtype_.c_str(), params_.c_str()));
 
     try
     {
 
-	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source_) &&
+	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source) &&
 	    !IsChan(params_.ExtractWord(1, ": ")))
 	{
 	    mstring target(params_.ExtractWord(1, ": "));
@@ -849,8 +962,26 @@ int mMessage::call()
 		params_.replace(0, params_.find(" ") - 1, target);
 		CP(("Target changed, new params: %s", params_.c_str()));
 	    }
+	    else if (Magick::instance().server.proto.Numeric.User() &&
+		     (Magick::instance().server.proto.Numeric.
+		      Combine() ? (target.length() == static_cast < size_t >
+				   (Magick::instance().server.proto.Numeric.Server() +
+				    Magick::instance().server.proto.Numeric.User())) : (target.length() == static_cast <
+											size_t >
+											(Magick::instance().server.proto.
+											 Numeric.User()))))
+	    {
+		mstring tmp = Magick::instance().server.GetUser("!" + target);
 
-	    if (!Magick::instance().nickserv.GetLive(source_)->FloodTrigger())
+		if (!tmp.empty())
+		{
+		    target = tmp;
+		    params_.replace(0, params_.find(" ") - 1, target);
+		    CP(("Target changed, new params: %s", params_.c_str()));
+		}
+	    }
+
+	    if (!Magick::instance().nickserv.GetLive(source)->FloodTrigger())
 	    {
 		// Find out if the target nick is one of the services 'clones'
 		// Pass the message to them if so.
@@ -859,38 +990,38 @@ int mMessage::call()
 		// if so, Magick::instance().doscripthandle(server,command,data);
 
 		if (Magick::instance().operserv.IsName(target))
-		    Magick::instance().operserv.execute(source_, msgtype_, params_);
+		    Magick::instance().operserv.execute(source, msgtype_, params_);
 
 		else if (Magick::instance().nickserv.IsName(target) && Magick::instance().nickserv.MSG())
-		    Magick::instance().nickserv.execute(source_, msgtype_, params_);
+		    Magick::instance().nickserv.execute(source, msgtype_, params_);
 
 		else if (Magick::instance().chanserv.IsName(target) && Magick::instance().chanserv.MSG())
-		    Magick::instance().chanserv.execute(source_, msgtype_, params_);
+		    Magick::instance().chanserv.execute(source, msgtype_, params_);
 
 		else if (Magick::instance().memoserv.IsName(target) && Magick::instance().memoserv.MSG())
-		    Magick::instance().memoserv.execute(source_, msgtype_, params_);
+		    Magick::instance().memoserv.execute(source, msgtype_, params_);
 
 		else if (Magick::instance().commserv.IsName(target) && Magick::instance().commserv.MSG())
-		    Magick::instance().commserv.execute(source_, msgtype_, params_);
+		    Magick::instance().commserv.execute(source, msgtype_, params_);
 
 		else if (Magick::instance().servmsg.IsName(target) && Magick::instance().servmsg.MSG())
-		    Magick::instance().servmsg.execute(source_, msgtype_, params_);
+		    Magick::instance().servmsg.execute(source, msgtype_, params_);
 
 		// else check if it's script handled, might do up a list of script servers
 		// in the magick object to check against, else trash it.
 
 		else		// PRIVMSG or NOTICE to non-service
-		    Magick::instance().server.execute(source_, msgtype_, params_);
+		    Magick::instance().server.execute(source, msgtype_, params_);
 
 	    }
 	    else if (Magick::instance().operserv.Log_Ignore())
 	    {
 		// Check if we're to log ignore messages, and log them here.
-		LOG(LM_DEBUG, "OPERSERV/IGNORED", (source_, msgtype_ + " " + params_));
+		LOG(LM_DEBUG, "OPERSERV/IGNORED", (source, msgtype_ + " " + params_));
 	    }
 	}
 	else
-	    Magick::instance().server.execute(source_, msgtype_, params_);
+	    Magick::instance().server.execute(source, msgtype_, params_);
 
     }
     catch (E_NickServ_Stored & e)

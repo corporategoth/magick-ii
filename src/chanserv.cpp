@@ -908,16 +908,23 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'o':
 		    if (in.WordCount(" ") >= param)
 		    {
+			mstring arg = in.ExtractWord(param, " ");
+
+			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
+			    arg =
+				Magick::instance().server.proto.Numeric.UserNumeric(Magick::instance().nickserv.GetLive(arg)->
+										    Numeric());
+
 			if (add)
 			{
 			    if (!IsOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
 				{
 				    p_modes_on += "o";
-				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_on_params.push_back(arg);
 				}
 			    }
 			}
@@ -925,12 +932,12 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
 				{
 				    p_modes_off += "o";
-				    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_off_params.push_back(arg);
 				}
 			    }
 			}
@@ -941,16 +948,23 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'h':
 		    if (in.WordCount(" ") >= param)
 		    {
+			mstring arg = in.ExtractWord(param, " ");
+
+			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
+			    arg =
+				Magick::instance().server.proto.Numeric.UserNumeric(Magick::instance().nickserv.GetLive(arg)->
+										    Numeric());
+
 			if (add)
 			{
 			    if (!IsHalfOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'h', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'h', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, 'h', arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
 				{
 				    p_modes_on += "h";
-				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_on_params.push_back(arg);
 				}
 			    }
 			}
@@ -958,12 +972,12 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsHalfOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'h', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'h', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, 'h', arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
 				{
 				    p_modes_off += "h";
-				    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_off_params.push_back(arg);
 				}
 			    }
 			}
@@ -974,16 +988,23 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'v':
 		    if (in.WordCount(" ") >= param)
 		    {
+			mstring arg = in.ExtractWord(param, " ");
+
+			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
+			    arg =
+				Magick::instance().server.proto.Numeric.UserNumeric(Magick::instance().nickserv.GetLive(arg)->
+										    Numeric());
+
 			if (add)
 			{
 			    if (!IsVoice(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
 				{
 				    p_modes_on += "v";
-				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_on_params.push_back(arg);
 				}
 			    }
 			}
@@ -991,12 +1012,12 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsVoice(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
 				{
 				    p_modes_off += "v";
-				    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_off_params.push_back(arg);
 				}
 			    }
 			}
