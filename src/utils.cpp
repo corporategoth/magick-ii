@@ -28,6 +28,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2002/01/13 05:18:42  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.76  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -327,7 +330,6 @@ bool MakeDirectory(const mstring & in)
     RET(true);
 }
 
-
 unsigned long FromHumanTime(const mstring & in)
 {
     FT("FromHumanTime", (in));
@@ -461,7 +463,6 @@ mstring ToHumanNumber(const unsigned long in)
     }
     RET(retval);
 }
-
 
 mstring ToHumanSpace(const unsigned long in)
 {
@@ -628,7 +629,6 @@ mstring parseMessage(const mstring & message, const mVarArray & va)
     RET(data);
 }
 
-
 size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, const char *key2, const bool enc)
 {
     FT("mCRYPT", ("(const char *) in", "(char *) out", size, "(const char *) key1", "(const char *) key2", enc));
@@ -718,7 +718,6 @@ static const char char_to_base64[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-
 static const char base64_to_char[] = {
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
@@ -729,7 +728,6 @@ static const char base64_to_char[] = {
     'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
     'u', 'v', 'w', 'x', 'y', 'z', '{', '}'
 };
-
 
 unsigned long str_to_base64(const mstring & in)
 {
@@ -746,7 +744,6 @@ unsigned long str_to_base64(const mstring & in)
 
     return v;
 }
-
 
 mstring base64_to_str(unsigned long in)
 {

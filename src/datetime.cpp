@@ -28,6 +28,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.74  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -527,7 +530,7 @@ mstring mDateTime::DateTimeString() const
     return Result;
 }
 
-mDateTime::operator  time_t() const
+mDateTime::operator       time_t() const
 {
     int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 
@@ -629,8 +632,8 @@ mDateTime StringToDate(const mstring & in)
     sscanf(in.c_str(), formatspec.c_str(), &first, &second, &third);
     if (shortdateformat.Before(mDateTime::DateSeparator) == "mm" || shortdateformat.Before(mDateTime::DateSeparator) == "m")
 	month = first;
-    else if (shortdateformat.Before(mDateTime::DateSeparator) == "dd"
-	     || shortdateformat.Before(mDateTime::DateSeparator) == "d")
+    else if (shortdateformat.Before(mDateTime::DateSeparator) == "dd" ||
+	     shortdateformat.Before(mDateTime::DateSeparator) == "d")
 	day = first;
     else if (shortdateformat.Before(mDateTime::DateSeparator) == "yyyy")
 	year = first;
@@ -639,11 +642,11 @@ mDateTime StringToDate(const mstring & in)
 	    year = first + mDateTime::CurrentDateTime().Century();
 	else
 	    year = first + mDateTime::CurrentDateTime().Century() - 100;
-    if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "mm"
-	|| shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "m")
+    if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "mm" ||
+	shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "m")
 	month = second;
-    else if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "dd"
-	     || shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "d")
+    else if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "dd" ||
+	     shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "d")
 	day = second;
     else if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "yyyy")
 	year = second;
@@ -652,11 +655,11 @@ mDateTime StringToDate(const mstring & in)
 	    year = second + mDateTime::CurrentDateTime().Century();
 	else
 	    year = second + mDateTime::CurrentDateTime().Century() - 100;
-    if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "mm"
-	|| shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "m")
+    if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "mm" ||
+	shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "m")
 	month = third;
-    else if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "dd"
-	     || shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "d")
+    else if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "dd" ||
+	     shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "d")
 	day = third;
     else if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "yyyy")
 	year = third;
@@ -680,7 +683,6 @@ mDateTime StringToDateTime(const mstring & in)
 }
 
 #endif
-
 
 mstring mDateTime::timetstring() const
 {

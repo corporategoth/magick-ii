@@ -28,6 +28,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2002/01/13 05:18:42  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.97  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -401,7 +404,8 @@ void ServMsg::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "STAT* *",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name(), NULL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "STAT*", Magick::instance().commserv.REGD_Name(), do_Stats);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "STAT*", Magick::instance().commserv.REGD_Name(),
+						 do_Stats);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "FILE* *", Magick::instance().commserv.ALL_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "FILE*", Magick::instance().commserv.ALL_Name(),
 						 do_1_2param);
@@ -519,7 +523,6 @@ void ServMsg::do_Help(const mstring & mynick, const mstring & source, const mstr
 	::send(mynick, source, help[i]);
 }
 
-
 void ServMsg::do_Credits(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_Credits", (mynick, source, params));
@@ -543,7 +546,6 @@ void ServMsg::do_Credits(const mstring & mynick, const mstring & source, const m
 	    ::send(mynick, source, " ");
 }
 
-
 void ServMsg::do_Contrib(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_Contrib", (mynick, source, params));
@@ -566,7 +568,6 @@ void ServMsg::do_Contrib(const mstring & mynick, const mstring & source, const m
 	else
 	    ::send(mynick, source, " ");
 }
-
 
 void ServMsg::do_Languages(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -615,7 +616,6 @@ void ServMsg::do_Languages(const mstring & mynick, const mstring & source, const
 	NSEND(mynick, source, "MISC/LANG_NOLIST");
     }
 }
-
 
 void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -717,7 +717,6 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
     }
 }
 
-
 void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
@@ -733,9 +732,9 @@ void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, cons
 	}
     }
 
-    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true)
-	&& Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-	&& Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
+    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().nickserv.stats.clear();
 	return;
@@ -803,7 +802,6 @@ void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, cons
     Magick::instance().servmsg.stats.i_Stats++;
 }
 
-
 void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
@@ -819,9 +817,9 @@ void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, c
 	}
     }
 
-    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true)
-	&& Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-	&& Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
+    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().chanserv.stats.clear();
 	return;
@@ -900,7 +898,6 @@ void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, c
     Magick::instance().servmsg.stats.i_Stats++;
 }
 
-
 void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_stats_Other", (mynick, source, params));
@@ -916,17 +913,15 @@ void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, con
 	}
     }
 
-    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true)
-	&& Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-	&& Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
+    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().memoserv.stats.clear();
 	Magick::instance().commserv.stats.clear();
 	Magick::instance().servmsg.stats.clear();
 	return;
     }
-
-
 
     SEND(mynick, source, "STATS/OTH_MEMO", (Magick::instance().memoserv.NickSize()));
     SEND(mynick, source, "STATS/OTH_NEWS", (Magick::instance().memoserv.ChannelSize()));
@@ -991,7 +986,6 @@ void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, con
     Magick::instance().servmsg.stats.i_Stats++;
 }
 
-
 void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_stats_Oper", (mynick, source, params));
@@ -1007,14 +1001,13 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
 	}
     }
 
-    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true)
-	&& Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-	&& Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
+    if (params.WordCount(" ") > 2 && params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().operserv.stats.clear();
 	return;
     }
-
 
     SEND(mynick, source, "STATS/OPER_CLONE", (Magick::instance().operserv.Clone_size()));
     SEND(mynick, source, "STATS/OPER_AKILL", (Magick::instance().operserv.Akill_size()));
@@ -1056,7 +1049,6 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
 	SEND(mynick, source, "STATS/OPER_CMD9", (fmstring("%10d", Magick::instance().operserv.stats.Hide())));
     Magick::instance().servmsg.stats.i_Stats++;
 }
-
 
 void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1213,7 +1205,6 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     }
     SEND(mynick, source, "STATS/USE_COMMITTEE", (fmstring("%5d", Magick::instance().commserv.ListSize()), ToHumanSpace(size)));
 
-
     SEND(mynick, source, "STATS/USE_OPERSERV",
 	 (fmstring
 	  ("%5d",
@@ -1287,12 +1278,11 @@ void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mst
 {
     FT("ServMsg::do_Stats", (mynick, source, params));
 
-    if (params.WordCount(" ") > 1
-	&&
-	((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name())
-	  && Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source))
-	 || (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))))
+    if (params.WordCount(" ") > 1 &&
+	((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source)) ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))))
     {
 	do_1_2param(mynick, source, params);
 	return;
@@ -1333,7 +1323,6 @@ void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mst
 	      Magick::instance().operserv.CloneList_size() - Magick::instance().operserv.CloneList_size(1)));
     Magick::instance().servmsg.stats.i_Stats++;
 }
-
 
 void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1387,8 +1376,8 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
 
     SEND(mynick, source, "LIST/DISPLAY_MATCH", (mask, Magick::instance().getMessage(source, "LIST/FILES")));
 
-    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-		  && Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
+    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
 
     for (j = 0, i = 0, count = 0; j < filelist.size(); j++)
     {
@@ -1410,8 +1399,8 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
 		    else
 		    {
 			for (unsigned int k = 1; k <= priv.WordCount(" "); k++)
-			    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " "))
-				&& Magick::instance().commserv.GetList(priv.ExtractWord(k, " "))->IsOn(source))
+			    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " ")) &&
+				Magick::instance().commserv.GetList(priv.ExtractWord(k, " "))->IsOn(source))
 			    {
 				display = true;
 				break;
@@ -1430,7 +1419,6 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
 }
-
 
 void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1462,7 +1450,6 @@ void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const 
     Magick::instance().nickserv.GetLive(source)->InFlight.Public(mynick, priv);
 }
 
-
 void ServMsg::do_file_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_file_Del", (mynick, source, params));
@@ -1489,7 +1476,6 @@ void ServMsg::do_file_Del(const mstring & mynick, const mstring & source, const 
 	 (Magick::instance().filesys.GetName(FileMap::Public, num), Magick::instance().getMessage(source, "LIST/FILES")));
     Magick::instance().filesys.EraseFile(FileMap::Public, num);
 }
-
 
 void ServMsg::do_file_Rename(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1521,7 +1507,6 @@ void ServMsg::do_file_Rename(const mstring & mynick, const mstring & source, con
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), file, newfile));
     Magick::instance().filesys.Rename(FileMap::Public, num, newfile);
 }
-
 
 void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1558,7 +1543,6 @@ void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const
     Magick::instance().filesys.SetPriv(FileMap::Public, num, priv);
 }
 
-
 void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ServMsg::do_file_Send", (mynick, source, params));
@@ -1591,8 +1575,8 @@ void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const
     else
     {
 	for (unsigned int k = 1; k <= priv.WordCount(" "); k++)
-	    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " "))
-		&& Magick::instance().commserv.GetList(priv.ExtractWord(k, " "))->IsOn(source))
+	    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " ")) &&
+		Magick::instance().commserv.GetList(priv.ExtractWord(k, " "))->IsOn(source))
 	    {
 		display = true;
 		break;
@@ -1615,8 +1599,8 @@ void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const
     }
 
     if (!
-	(Magick::instance().files.TempDirSize() == 0
-	 || mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
+	(Magick::instance().files.TempDirSize() == 0 ||
+	 mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
     {
 	NSEND(mynick, source, "DCC/NOSPACE2");
 	return;
@@ -1639,7 +1623,6 @@ void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const
 	}
     }
 }
-
 
 void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1696,7 +1679,6 @@ void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const 
 	NSEND(mynick, source, "DCC/NOACTIVE");
     }
 }
-
 
 void ServMsg::do_file_Cancel(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1758,7 +1740,6 @@ void ServMsg::do_file_Cancel(const mstring & mynick, const mstring & source, con
 	}
     }
 }
-
 
 void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1872,7 +1853,6 @@ void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, con
 	SEND(mynick, source, "DCC/NLOOKUP_OTHER", (type));
     }
 }
-
 
 void ServMsg::do_Global(const mstring & mynick, const mstring & source, const mstring & params)
 {

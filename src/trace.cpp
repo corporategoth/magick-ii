@@ -28,6 +28,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2002/01/13 05:18:42  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.115  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -554,7 +557,6 @@ void ThreadID::Flush()
 #endif
 }
 
-
 #ifdef MAGICK_TRACE_WORKS
 //
 // Tracing functions -- Include making TraceMap's and
@@ -569,7 +571,6 @@ int levelname_count()
 {
     return sizeof(Trace::levelname) / sizeof(Trace::levelname_struct);
 }
-
 
 // ===================================================
 
@@ -959,7 +960,6 @@ void T_Sockets::Failed(const unsigned long id, const unsigned short local, const
 	tid->WriteOut(message);
     }
 }
-
 
 void T_Sockets::Resolve(const socktype_enum type, const mstring & info)
 {

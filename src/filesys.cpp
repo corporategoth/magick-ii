@@ -28,6 +28,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.92  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -860,7 +863,6 @@ long mFile::Dump(const vector < mstring > &invector, const mstring & outfile, co
     RET(total);
 }
 
-
 // CANNOT trace this, it is used by TRACE code ...
 long mFile::Dump(const list < mstring > &inlist, const mstring & outfile, const bool append, const bool endline)
 {
@@ -963,7 +965,6 @@ size_t mFile::DirUsage(const mstring & directory)
     RET(0);
 }
 
-
 set < mstring > mFile::DirList(const mstring & directory, const mstring & filemask)
 {
     FT("mFile::DirList", (directory, filemask));
@@ -1021,7 +1022,6 @@ unsigned long FileMap::FindAvail(const FileMap::FileType type)
     RET(0);
 }
 
-
 bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 {
     FT("FileMap::Exists", (static_cast < int >(type), num));
@@ -1067,7 +1067,6 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
     RET(false);
 }
 
-
 mstring FileMap::GetName(const FileMap::FileType type, const unsigned long num)
 {
     FT("FileMap::GetName", (static_cast < int >(type), num));
@@ -1079,7 +1078,6 @@ mstring FileMap::GetName(const FileMap::FileType type, const unsigned long num)
     }
     RET("");
 }
-
 
 mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long num)
 {
@@ -1102,7 +1100,6 @@ mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long n
     RET("");
 }
 
-
 mstring FileMap::GetPriv(const FileMap::FileType type, const unsigned long num)
 {
     FT("FileMap::GetPriv", (static_cast < int >(type), num));
@@ -1114,7 +1111,6 @@ mstring FileMap::GetPriv(const FileMap::FileType type, const unsigned long num)
     }
     RET("");
 }
-
 
 bool FileMap::SetPriv(const FileMap::FileType type, const unsigned long num, const mstring & priv)
 {
@@ -1129,7 +1125,6 @@ bool FileMap::SetPriv(const FileMap::FileType type, const unsigned long num, con
     RET(false);
 }
 
-
 bool FileMap::Rename(const FileMap::FileType type, const unsigned long num, const mstring & newname)
 {
     FT("FileMap::SetPriv", (static_cast < int >(type), num, newname));
@@ -1142,7 +1137,6 @@ bool FileMap::Rename(const FileMap::FileType type, const unsigned long num, cons
     }
     RET(false);
 }
-
 
 size_t FileMap::GetSize(const FileMap::FileType type, const unsigned long num)
 {
@@ -1160,7 +1154,6 @@ size_t FileMap::GetSize(const FileMap::FileType type, const unsigned long num)
     }
     RET(0);
 }
-
 
 unsigned long FileMap::NewFile(const FileMap::FileType type, const mstring & filename, const mstring & priv)
 {
@@ -1219,8 +1212,8 @@ vector < unsigned long >FileMap::GetList(const FileMap::FileType type, const mst
 		else
 		    for (i = 1; i <= iter->second.second.WordCount(" "); i++)
 		    {
-			if (Magick::instance().commserv.IsList(iter->second.second.ExtractWord(i, " "))
-			    && Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase())->
+			if (Magick::instance().commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
+			    Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase())->
 			    IsOn(source))
 			{
 			    retval.push_back(iter->first);
@@ -1232,7 +1225,6 @@ vector < unsigned long >FileMap::GetList(const FileMap::FileType type, const mst
     }
     NRET(vector < unsigned long >, retval);
 }
-
 
 unsigned long FileMap::GetNum(const FileMap::FileType type, const mstring & name)
 {
@@ -1272,7 +1264,6 @@ size_t FileMap::FileSysSize(const FileMap::FileType type) const
 
     RET(retval);
 }
-
 
 SXP::Tag FileMap::tag_FileMap("FileMap");
 SXP::Tag FileMap::tag_File("File");
@@ -1319,7 +1310,8 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++)
 	{
 	    out.erase();
-	    out << static_cast < int >(i1->first) << "\n" << i2->first << "\n" << i2->second.first << "\n" << i2->second.second;
+	    out << static_cast <
+		int >(i1->first) << "\n" << i2->first << "\n" << i2->second.first << "\n" << i2->second.second;
 
 	    pOut->WriteElement(tag_File, out);
 	}
@@ -1327,7 +1319,6 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 
     pOut->EndObject(tag_FileMap);
 }
-
 
 void FileMap::PostLoad()
 {
@@ -1416,7 +1407,6 @@ i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
     CP(("DCC %d initialized", i_DccId));
 }
 
-
 DccXfer::DccXfer(const unsigned long dccid, const mSocket & sock, const mstring & mynick, const mstring & source,
 		 const mstring & filename, const size_t filesize, const size_t blocksize):i_Socket(sock), i_Source(source),
 i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Get), i_DccId(dccid)
@@ -1430,7 +1420,6 @@ i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blo
 	i_Blocksize = blocksize;
     i_Tempfile.Format("%s%s%08x", Magick::instance().files.TempDir().c_str(), DirSlash.c_str(), i_DccId);
 //    i_Filename = filename;
-
 
     // Verify Paramaters
     if (!Magick::instance().nickserv.IsLive(i_Source))
@@ -1684,8 +1673,8 @@ void DccXfer::Action()
     {
 	COM(("Executing action for DCC %d GET", i_DccId));
 	XferAmt = 0;
-	if (i_Traffic.size()
-	    && (Magick::instance().files.Max_Speed() == 0 || Average() <= Magick::instance().files.Max_Speed()))
+	if (i_Traffic.size() &&
+	    (Magick::instance().files.Max_Speed() == 0 || Average() <= Magick::instance().files.Max_Speed()))
 	{
 	    XferAmt = i_Socket.recv(reinterpret_cast < void *>(&i_Transiant[i_XferTotal]), i_Blocksize - i_XferTotal, 1);
 
@@ -1750,8 +1739,8 @@ void DccXfer::Action()
 		i_File.Close();
 	    }
 	}
-	if (i_File.IsOpened() && i_Traffic.size() > Magick::instance().files.Sampletime()
-	    && Average() < Magick::instance().files.Min_Speed())
+	if (i_File.IsOpened() && i_Traffic.size() > Magick::instance().files.Sampletime() &&
+	    Average() < Magick::instance().files.Min_Speed())
 	{
 	    SEND(i_Mynick, i_Source, "DCC/TOOSLOW", ("GET"));
 	    i_File.Close();
@@ -1761,8 +1750,8 @@ void DccXfer::Action()
     {
 	COM(("Executing action for DCC %d SEND", i_DccId));
 	XferAmt = 0;
-	if (i_Traffic.size()
-	    && (Magick::instance().files.Max_Speed() == 0 || Average() <= Magick::instance().files.Max_Speed()))
+	if (i_Traffic.size() &&
+	    (Magick::instance().files.Max_Speed() == 0 || Average() <= Magick::instance().files.Max_Speed()))
 	{
 	    if (i_XferTotal == i_Blocksize)
 	    {
@@ -1850,8 +1839,8 @@ void DccXfer::Action()
 		i_File.Close();
 	    }
 	}
-	if (i_File.IsOpened() && i_Traffic.size() > Magick::instance().files.Sampletime()
-	    && Average() < Magick::instance().files.Min_Speed())
+	if (i_File.IsOpened() && i_Traffic.size() > Magick::instance().files.Sampletime() &&
+	    Average() < Magick::instance().files.Min_Speed())
 	{
 	    SEND(i_Mynick, i_Source, "DCC/TOOSLOW", ("GET"));
 	    i_File.Close();
@@ -2069,7 +2058,6 @@ void DccMap::AddXfers(DccXfer * in)
     WLOCK(("DccMap", "xfers"));
     xfers[in->DccId()] = in;
 }
-
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 DccXfer & DccMap::GetXfers(const unsigned long in) throw(E_DccMap_Xfers)
@@ -2323,8 +2311,8 @@ void DccMap::Connect(const ACE_INET_Addr & address, const mstring & mynick, cons
     tm.spawn(Connect2, reinterpret_cast < void *>(tmp), THR_NEW_LWP | THR_DETACHED);
 }
 
-void DccMap::Accept(const unsigned short port, const mstring & mynick, const mstring & source, const FileMap::FileType filetype,
-		    const unsigned long filenum)
+void DccMap::Accept(const unsigned short port, const mstring & mynick, const mstring & source,
+		    const FileMap::FileType filetype, const unsigned long filenum)
 {
     FT("DccMap::Accept", (port, mynick, source, static_cast < int >(filetype), filenum));
     NewSocket *tmp = new NewSocket;

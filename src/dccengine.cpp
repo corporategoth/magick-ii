@@ -28,6 +28,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.50  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -597,7 +600,6 @@ void DccEngine::DoDccSend(const mstring & mynick, const mstring & source, const 
 	return;
     }
 
-
     if (nlive->InFlight.Picture())
     {
 	if (size && Magick::instance().nickserv.PicSize() && size > Magick::instance().nickserv.PicSize())
@@ -609,8 +611,8 @@ void DccEngine::DoDccSend(const mstring & mynick, const mstring & source, const 
 	mstring extension = filename.ExtractWord(filename.WordCount("."), ".").LowerCase();
 
 	if (!
-	    (filename.Contains(".")
-	     && (" " + Magick::instance().nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
+	    (filename.Contains(".") &&
+	     (" " + Magick::instance().nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
 	{
 	    NSEND(mynick, source, "NS_YOU_STATUS/INVALIDEXT");
 	    nlive->InFlight.Cancel();

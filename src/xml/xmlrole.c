@@ -377,7 +377,6 @@ static int entity3(PROLOG_STATE * state, int tok, const char *ptr, const char *e
     return common(state, tok);
 }
 
-
 static int entity4(PROLOG_STATE * state, int tok, const char *ptr, const char *end, const ENCODING * enc)
 {
     switch (tok)
@@ -666,7 +665,6 @@ static int attlist5(PROLOG_STATE * state, int tok, const char *ptr, const char *
     }
     return common(state, tok);
 }
-
 
 static int attlist6(PROLOG_STATE * state, int tok, const char *ptr, const char *end, const ENCODING * enc)
 {

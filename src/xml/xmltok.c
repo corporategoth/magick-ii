@@ -695,7 +695,6 @@ static const struct normal_encoding internal_little2_encoding = {
 
 #endif
 
-
 #define BIG2_BYTE_TYPE(enc, p) \
  ((p)[0] == 0 \
   ? ((struct normal_encoding *)(enc))->type[(unsigned char)(p)[1]] \
@@ -963,8 +962,8 @@ static int parsePseudoAttribute(const ENCODING * enc, const char *ptr, const cha
 	c = toAscii(enc, ptr, end);
 	if (c == open)
 	    break;
-	if (!(ASCII_a <= c && c <= ASCII_z) && !(ASCII_A <= c && c <= ASCII_Z) && !(ASCII_0 <= c && c <= ASCII_9)
-	    && c != ASCII_PERIOD && c != ASCII_MINUS && c != ASCII_UNDERSCORE)
+	if (!(ASCII_a <= c && c <= ASCII_z) && !(ASCII_A <= c && c <= ASCII_Z) && !(ASCII_0 <= c && c <= ASCII_9) &&
+	    c != ASCII_PERIOD && c != ASCII_MINUS && c != ASCII_UNDERSCORE)
 	{
 	    *nextTokPtr = ptr;
 	    return 0;
@@ -1230,7 +1229,8 @@ static void unknown_toUtf8(const ENCODING * enc, const char **fromP, const char 
 	n = *utf8++;
 	if (n == 0)
 	{
-	    int c = ((const struct unknown_encoding *) enc)->convert(((const struct unknown_encoding *) enc)->userData, *fromP);
+	    int c =
+		((const struct unknown_encoding *) enc)->convert(((const struct unknown_encoding *) enc)->userData, *fromP);
 
 	    n = XmlUtf8Encode(c, buf);
 	    if (n > toLim - *toP)
@@ -1416,7 +1416,6 @@ state is XML_CONTENT_STATE if we're parsing an external text entity,
 and XML_PROLOG_STATE otherwise.
 */
 
-
 static int initScan(const ENCODING ** encodingTable, const INIT_ENCODING * enc, int state, const char *ptr, const char *end,
 		    const char **nextTokPtr)
 {
@@ -1533,7 +1532,6 @@ static int initScan(const ENCODING ** encodingTable, const INIT_ENCODING * enc, 
     *encPtr = encodingTable[INIT_ENC_INDEX(enc)];
     return XmlTok(*encPtr, state, ptr, end, nextTokPtr);
 }
-
 
 #define NS(x) x
 #define ns(x) x

@@ -28,6 +28,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.279  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.278  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -789,7 +792,6 @@ void Chan_Live_t::ChgNick(const mstring & nick, const mstring & newnick)
     }
 }
 
-
 Chan_Live_t::Chan_Live_t():i_Limit(0), ph_timer(0)
 {
     NFT("Chan_Live_t::Chan_Live_t");
@@ -804,7 +806,6 @@ Chan_Live_t::Chan_Live_t(const mstring & name, const mstring & first_user):i_Nam
     users[first_user.LowerCase()] = triplet < bool, bool, bool > (false, false, false);
     DumpB();
 }
-
 
 Chan_Live_t & Chan_Live_t::operator=(const Chan_Live_t & in)
 {
@@ -856,7 +857,6 @@ mDateTime Chan_Live_t::Creation_Time() const
     RET(i_Creation_Time);
 }
 
-
 void Chan_Live_t::Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & settime)
 {
     FT("Chan_Live_t::Topic", (source, topic, setter, settime));
@@ -877,7 +877,6 @@ void Chan_Live_t::Topic(const mstring & source, const mstring & topic, const mst
     if (Magick::instance().chanserv.IsStored(i_Name))
 	Magick::instance().chanserv.GetStored(i_Name)->Topic(source, topic, setter, settime);
 }
-
 
 mstring Chan_Live_t::Topic() const
 {
@@ -900,7 +899,6 @@ mDateTime Chan_Live_t::Topic_Set_Time() const
     RET(i_Topic_Set_Time);
 }
 
-
 unsigned int Chan_Live_t::Squit() const
 {
     NFT("Chan_Live_t::Squit");
@@ -908,7 +906,6 @@ unsigned int Chan_Live_t::Squit() const
 
     RET(retval);
 }
-
 
 mstring Chan_Live_t::Squit(const unsigned int num) const
 {
@@ -926,7 +923,6 @@ mstring Chan_Live_t::Squit(const unsigned int num) const
     RET("");
 }
 
-
 unsigned int Chan_Live_t::Users() const
 {
     NFT("Chan_Live_t::Users");
@@ -934,7 +930,6 @@ unsigned int Chan_Live_t::Users() const
 
     RET(retval);
 }
-
 
 mstring Chan_Live_t::User(const unsigned int num) const
 {
@@ -952,7 +947,6 @@ mstring Chan_Live_t::User(const unsigned int num) const
     RET("");
 }
 
-
 unsigned int Chan_Live_t::Ops() const
 {
     NFT("Chan_Live_t::Ops");
@@ -965,7 +959,6 @@ unsigned int Chan_Live_t::Ops() const
 	    count++;
     RET(count);
 }
-
 
 mstring Chan_Live_t::Op(const unsigned int num) const
 {
@@ -987,7 +980,6 @@ mstring Chan_Live_t::Op(const unsigned int num) const
     RET("");
 }
 
-
 unsigned int Chan_Live_t::HalfOps() const
 {
     NFT("Chan_Live_t::HalfOps");
@@ -1000,7 +992,6 @@ unsigned int Chan_Live_t::HalfOps() const
 	    count++;
     RET(count);
 }
-
 
 mstring Chan_Live_t::HalfOp(const unsigned int num) const
 {
@@ -1022,7 +1013,6 @@ mstring Chan_Live_t::HalfOp(const unsigned int num) const
     RET("");
 }
 
-
 unsigned int Chan_Live_t::Voices() const
 {
     NFT("Chan_Live_t::Voices");
@@ -1035,7 +1025,6 @@ unsigned int Chan_Live_t::Voices() const
 	    count++;
     RET(count);
 }
-
 
 mstring Chan_Live_t::Voice(const unsigned int num) const
 {
@@ -1056,8 +1045,6 @@ mstring Chan_Live_t::Voice(const unsigned int num) const
     RET("");
 }
 
-
-
 triplet < bool, bool, bool > Chan_Live_t::User(const mstring & name) const
 {
     FT("Chan_Live_t::User", (name));
@@ -1074,7 +1061,6 @@ triplet < bool, bool, bool > Chan_Live_t::User(const mstring & name) const
     }
 }
 
-
 unsigned int Chan_Live_t::Bans() const
 {
     NFT("Chan_Live_t::Bans");
@@ -1082,7 +1068,6 @@ unsigned int Chan_Live_t::Bans() const
 
     RET(retval);
 }
-
 
 mstring Chan_Live_t::Ban(const unsigned int num) const
 {
@@ -1100,7 +1085,6 @@ mstring Chan_Live_t::Ban(const unsigned int num) const
     RET("");
 }
 
-
 mDateTime Chan_Live_t::Ban(const mstring & mask) const
 {
     FT("Chan_Live_t::Ban", (mask));
@@ -1115,7 +1099,6 @@ mDateTime Chan_Live_t::Ban(const mstring & mask) const
     RET(retval);
 }
 
-
 unsigned int Chan_Live_t::Exempts() const
 {
     NFT("Chan_Live_t::Exempts");
@@ -1123,7 +1106,6 @@ unsigned int Chan_Live_t::Exempts() const
 
     RET(retval);
 }
-
 
 mstring Chan_Live_t::Exempt(const unsigned int num) const
 {
@@ -1141,7 +1123,6 @@ mstring Chan_Live_t::Exempt(const unsigned int num) const
     RET("");
 }
 
-
 mDateTime Chan_Live_t::Exempt(const mstring & mask) const
 {
     FT("Chan_Live_t::Exempt", (mask));
@@ -1156,7 +1137,6 @@ mDateTime Chan_Live_t::Exempt(const mstring & mask) const
     RET(retval);
 }
 
-
 bool Chan_Live_t::IsSquit(const mstring & nick) const
 {
     FT("Chan_Live_t::IsSquit", (nick));
@@ -1166,7 +1146,6 @@ bool Chan_Live_t::IsSquit(const mstring & nick) const
     RET(retval);
 }
 
-
 bool Chan_Live_t::IsIn(const mstring & nick) const
 {
     FT("Chan_Live_t::IsIn", (nick));
@@ -1175,7 +1154,6 @@ bool Chan_Live_t::IsIn(const mstring & nick) const
 
     RET(retval);
 }
-
 
 bool Chan_Live_t::IsOp(const mstring & nick) const
 {
@@ -1190,7 +1168,6 @@ bool Chan_Live_t::IsOp(const mstring & nick) const
     RET(false);
 }
 
-
 bool Chan_Live_t::IsHalfOp(const mstring & nick) const
 {
     FT("Chan_Live_t::IsHalfOp", (nick));
@@ -1204,7 +1181,6 @@ bool Chan_Live_t::IsHalfOp(const mstring & nick) const
     RET(false);
 }
 
-
 bool Chan_Live_t::IsVoice(const mstring & nick) const
 {
     FT("Chan_Live_t::IsVoice", (nick));
@@ -1217,7 +1193,6 @@ bool Chan_Live_t::IsVoice(const mstring & nick) const
     }
     RET(false);
 }
-
 
 bool Chan_Live_t::IsBan(const mstring & mask) const
 {
@@ -1288,8 +1263,8 @@ void Chan_Live_t::UnLock()
 {
     NFT("Chan_Live_t::UnLock");
 
-    if (modes.Contains("s") && Magick::instance().chanserv.IsStored(i_Name)
-	&& !Magick::instance().chanserv.GetStored(i_Name)->Mlock_On().Contains("s"))
+    if (modes.Contains("s") && Magick::instance().chanserv.IsStored(i_Name) &&
+	!Magick::instance().chanserv.GetStored(i_Name)->Mlock_On().Contains("s"))
 	SendMode("-s");
 
     mstring *arg = NULL;
@@ -1304,8 +1279,8 @@ void Chan_Live_t::UnLock()
     MCE(ph_timer);
 }
 
-bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > &mode_params, const bool change, const char reqmode,
-			     const mstring & reqparam)
+bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > &mode_params, const bool change,
+			     const char reqmode, const mstring & reqparam)
 {
     FT("Chan_Live_t::ModeExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
@@ -1341,7 +1316,6 @@ bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > &mod
     }
     RET(false);
 }
-
 
 void Chan_Live_t::RemoveMode(mstring & mode, vector < mstring > &mode_params, const bool change, const char reqmode,
 			     const mstring & reqparam)
@@ -1387,7 +1361,6 @@ void Chan_Live_t::RemoveMode(mstring & mode, vector < mstring > &mode_params, co
     mode = new_mode;
     mode_params = new_params;
 }
-
 
 void Chan_Live_t::SendMode(const mstring & in)
 {
@@ -1711,7 +1684,6 @@ void Chan_Live_t::SendMode(const mstring & in)
     if (Magick::instance().events != NULL)
 	Magick::instance().events->AddChannelModePending(i_Name);
 }
-
 
 void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 {
@@ -2096,7 +2068,6 @@ mDateTime Chan_Live_t::PartTime(const mstring & nick) const
     RET(retval);
 }
 
-
 size_t Chan_Live_t::Usage() const
 {
     size_t retval = 0;
@@ -2155,12 +2126,12 @@ size_t Chan_Live_t::Usage() const
     return retval;
 }
 
-
 void Chan_Live_t::DumpB() const
 {
     MB(0,
        (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
-	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size(), p_modes_off_params.size()));
+	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size(),
+	p_modes_off_params.size()));
     MB(16, (ph_timer, recent_parts.size()));
 }
 
@@ -2168,13 +2139,12 @@ void Chan_Live_t::DumpE() const
 {
     ME(0,
        (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
-	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size(), p_modes_off_params.size()));
+	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size(),
+	p_modes_off_params.size()));
     ME(16, (ph_timer, recent_parts.size()));
 }
 
-
 // --------- end of Chan_Live_t -----------------------------------
-
 
 void Chan_Stored_t::ChgAttempt(const mstring & nick, const mstring & newnick)
 {
@@ -2194,7 +2164,6 @@ void Chan_Stored_t::ChgAttempt(const mstring & nick, const mstring & newnick)
     failed_passwds.erase(nick.LowerCase());
     MCE(failed_passwds.size());
 }
-
 
 bool Chan_Stored_t::Join(const mstring & nick)
 {
@@ -2423,7 +2392,6 @@ bool Chan_Stored_t::Join(const mstring & nick)
     RET(true);
 }
 
-
 void Chan_Stored_t::Part(const mstring & nick)
 {
     FT("Chan_Stored_t::Part", (nick));
@@ -2465,7 +2433,6 @@ void Chan_Stored_t::Part(const mstring & nick)
 	}
     }
 }
-
 
 void Chan_Stored_t::Kick(const mstring & nick, const mstring & kicker)
 {
@@ -2516,9 +2483,9 @@ void Chan_Stored_t::ChgNick(const mstring & nick, const mstring & newnick)
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
 	bool rv = (Akick_find(nick, C_IsOn, true) || Akick_find(newnick, C_IsOn));
 
-	if (rv
-	    && ((Akick->Entry().Contains("@"))
-		|| (Magick::instance().nickserv.IsStored(nick) && Magick::instance().nickserv.GetStored(nick)->IsOnline())))
+	if (rv &&
+	    ((Akick->Entry().Contains("@")) ||
+	     (Magick::instance().nickserv.IsStored(nick) && Magick::instance().nickserv.GetStored(nick)->IsOnline())))
 	{
 	    if (clive.entry() != NULL)
 	    {
@@ -2553,7 +2520,6 @@ void Chan_Stored_t::Quit(const mstring & nick)
     MCE(failed_passwds.size());
 }
 
-
 void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & settime)
 {
     FT("Chan_Stored_t::Topic", (source, topic, setter, settime));
@@ -2568,8 +2534,8 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
     }
 
     // Its us re-setting it!
-    if (!source.Contains(".") && Magick::instance().nickserv.IsLive(source)
-	&& Magick::instance().nickserv.GetLive(source)->IsServices())
+    if (!source.Contains(".") && Magick::instance().nickserv.IsLive(source) &&
+	Magick::instance().nickserv.GetLive(source)->IsServices())
 	return;
 
     if (!Magick::instance().chanserv.IsLive(i_Name))
@@ -2618,14 +2584,13 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
     }
 }
 
-
 void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, const mstring & topic)
 {
     FT("Chan_Stored_t::SetTopic", (source, setter, topic));
 
     // Its us re-setting it!
-    if (!setter.Contains(".") && Magick::instance().nickserv.IsLive(setter)
-	&& Magick::instance().nickserv.GetLive(setter)->IsServices())
+    if (!setter.Contains(".") && Magick::instance().nickserv.IsLive(setter) &&
+	Magick::instance().nickserv.GetLive(setter)->IsServices())
 	return;
 
     if (!Magick::instance().chanserv.IsLive(i_Name))
@@ -2655,7 +2620,6 @@ void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, con
 				    Magick::instance().chanserv.GetLive(i_Name)->Topic_Set_Time() -
 				    (1.0 / (60.0 * 60.0 * 24.0)));
 }
-
 
 void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 {
@@ -2701,11 +2665,11 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 			// IF not (a server set the mode and we've got anarchy set) and
 			// not (services user set mode), AND (user is AUTODEOP OR
 			// (channel is secure ops AND (user is not AUTOOP or CMDOP)))
-			if (!(setter.Contains(".") && Anarchy())
-			    && !(Magick::instance().nickserv.IsLive(arg)
-				 && Magick::instance().nickserv.GetLive(arg)->IsServices())
-			    && (GetAccess(arg) <= Level_value("AUTODEOP")
-				|| (!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) && Secureops())))
+			if (!(setter.Contains(".") && Anarchy()) &&
+			    !(Magick::instance().nickserv.IsLive(arg) &&
+			      Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			    (GetAccess(arg) <= Level_value("AUTODEOP") ||
+			     (!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) && Secureops())))
 			{
 			    out_mode += "-o";
 			    out_param += " " + arg;
@@ -2735,11 +2699,11 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 			// IF not (a server set the mode and we've got anarchy set) and
 			// not (services user set mode), AND (user is AUTODEOP OR
 			// (channel is secure ops AND (user is not AUTOHALFOP or CMDHALFOP)))
-			if (!(setter.Contains(".") && Anarchy())
-			    && !(Magick::instance().nickserv.IsLive(arg)
-				 && Magick::instance().nickserv.GetLive(arg)->IsServices())
-			    && (GetAccess(arg) <= Level_value("AUTODEOP")
-				|| (!(GetAccess(arg, "CMDHALFOP") || GetAccess(arg, "AUTOHALFOP")) && Secureops())))
+			if (!(setter.Contains(".") && Anarchy()) &&
+			    !(Magick::instance().nickserv.IsLive(arg) &&
+			      Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			    (GetAccess(arg) <= Level_value("AUTODEOP") ||
+			     (!(GetAccess(arg, "CMDHALFOP") || GetAccess(arg, "AUTOHALFOP")) && Secureops())))
 			{
 			    out_mode += "-h";
 			    out_param += " " + arg;
@@ -2758,11 +2722,11 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 			// IF not (a server set the mode and we've got anarchy set) and
 			// not (services user set mode), AND (user is AUTODEOP OR
 			// (channel is secure ops AND (user is not AUTOVOICE or CMDVOICE)))
-			if (!(setter.Contains(".") && Anarchy())
-			    && !(Magick::instance().nickserv.IsLive(arg)
-				 && Magick::instance().nickserv.GetLive(arg)->IsServices())
-			    && (GetAccess(arg) <= Level_value("AUTODEOP")
-				|| (!(GetAccess(arg, "CMDVOICE") || GetAccess(arg, "AUTOVOICE")) && Secureops())))
+			if (!(setter.Contains(".") && Anarchy()) &&
+			    !(Magick::instance().nickserv.IsLive(arg) &&
+			      Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			    (GetAccess(arg) <= Level_value("AUTODEOP") ||
+			     (!(GetAccess(arg, "CMDVOICE") || GetAccess(arg, "AUTOVOICE")) && Secureops())))
 			{
 			    out_mode += "-v";
 			    out_param += " " + arg;
@@ -2819,15 +2783,15 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 			    map_entry < Nick_Live_t > nlive;
 			    if (Magick::instance().nickserv.IsLive(clive->User(j)))
 				nlive = Magick::instance().nickserv.GetLive(clive->User(j));
-			    if (nlive.entry() != NULL
-				&& (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(arg, true)
-				    || nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(arg, true)))
+			    if (nlive.entry() != NULL &&
+				(nlive->Mask(Nick_Live_t::N_U_P_H).Matches(arg, true) ||
+				 nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(arg, true)))
 			    {
 				// Only do revenge or kickonban if user
 				// is not exempt from bans (+e).
 				if (!
-				    (clive->MatchExempt(nlive->Mask(Nick_Live_t::N_U_P_H))
-				     || clive->MatchExempt(nlive->AltMask(Nick_Live_t::N_U_P_H))))
+				    (clive->MatchExempt(nlive->Mask(Nick_Live_t::N_U_P_H)) ||
+				     clive->MatchExempt(nlive->AltMask(Nick_Live_t::N_U_P_H))))
 				{
 				    DidRevenge = DoRevenge(bantype, setter, clive->User(j));
 				    if (DidRevenge)
@@ -2919,7 +2883,6 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
     if (out_mode.size() && Magick::instance().chanserv.IsLive(i_Name))
 	clive->SendMode(out_mode + out_param);
 }
-
 
 void Chan_Stored_t::defaults()
 {
@@ -3040,8 +3003,8 @@ bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, co
     FT("Chan_Stored_t::DoRevenge", (i_type, target, source));
 
     if (!
-	(Magick::instance().chanserv.IsLive(i_Name) && Magick::instance().nickserv.IsLive(source)
-	 && Magick::instance().nickserv.IsLive(target)))
+	(Magick::instance().chanserv.IsLive(i_Name) && Magick::instance().nickserv.IsLive(source) &&
+	 Magick::instance().nickserv.IsLive(target)))
 	RET(false);
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(i_Name);
@@ -3168,7 +3131,6 @@ i_LastUsed(mDateTime::CurrentDateTime()), i_Founder(founder), i_Description(desc
     DumpE();
 }
 
-
 Chan_Stored_t::Chan_Stored_t(const mstring & name):i_Name(name), i_RegTime(mDateTime::CurrentDateTime()),
 i_LastUsed(mDateTime::CurrentDateTime())
 {
@@ -3179,7 +3141,6 @@ i_LastUsed(mDateTime::CurrentDateTime())
     setting.Forbidden = true;
     DumpE();
 }
-
 
 Chan_Stored_t & Chan_Stored_t::operator=(const Chan_Stored_t & in)
 {
@@ -3320,7 +3281,6 @@ void Chan_Stored_t::Founder(const mstring & in)
     MCE(i_Founder);
 }
 
-
 mstring Chan_Stored_t::Founder() const
 {
     NFT("Chan_Stored_t::Founder");
@@ -3444,7 +3404,6 @@ mstring Chan_Stored_t::Comment() const
     RET(i_Comment);
 }
 
-
 unsigned int Chan_Stored_t::CheckPass(const mstring & nick, const mstring & password)
 {
     FT("Chan_Stored_t::CheckPass", (nick, password));
@@ -3472,7 +3431,6 @@ unsigned int Chan_Stored_t::CheckPass(const mstring & nick, const mstring & pass
     RET(retval);
 }
 
-
 void Chan_Stored_t::Suspend(const mstring & name)
 {
     FT("Chan_Stored_t::Suspend", (name));
@@ -3486,7 +3444,6 @@ void Chan_Stored_t::Suspend(const mstring & name)
     MCE(i_Suspend_By);
 }
 
-
 void Chan_Stored_t::UnSuspend()
 {
     NFT("Chan_Stored_t::UnSuspend");
@@ -3495,7 +3452,6 @@ void Chan_Stored_t::UnSuspend()
     i_Suspend_By.erase();
     MCE(i_Suspend_By);
 }
-
 
 mstring Chan_Stored_t::Mlock_Off() const
 {
@@ -3530,7 +3486,6 @@ mstring Chan_Stored_t::Mlock() const
 	Result << "-" << setting.Mlock_Off;
     RET(Result);
 }
-
 
 vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & mode)
 {
@@ -3623,7 +3578,8 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		    {
 			output.erase();
 			output =
-			    parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"), mVarArray(1, 32768));
+			    parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+					 mVarArray(1, 32768));
 			retval.push_back(output);
 		    }
 		    else
@@ -3665,8 +3621,8 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	    else
 	    {
 		// Nothing with arguments unless its k or l
-		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i])
-		    || ((change[i] == 'k' && !ignorek) || (change[i] == 'l' && !ignorel)))
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i]) ||
+		    ((change[i] == 'k' && !ignorek) || (change[i] == 'l' && !ignorel)))
 		{
 		    if (!setting.Mlock_Off.Contains(change[i]))
 			setting.Mlock_Off += change[i];
@@ -3858,7 +3814,6 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
     NRET(vector < mstring >, retval);
 }
 
-
 mstring Chan_Stored_t::L_Mlock() const
 {
     NFT("Chan_Stored_t::L_Mlock");
@@ -3913,7 +3868,6 @@ mstring Chan_Stored_t::L_Mlock() const
 	Result += "-" + mode_off;
     RET(Result);
 }
-
 
 vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring & mode)
 {
@@ -4139,7 +4093,6 @@ void Chan_Stored_t::Bantime(const unsigned long in)
     }
 }
 
-
 unsigned long Chan_Stored_t::Bantime() const
 {
     NFT("Chan_Stored_t::Bantime");
@@ -4150,7 +4103,6 @@ unsigned long Chan_Stored_t::Bantime() const
     }
     RET(Magick::instance().chanserv.DEF_Bantime());
 }
-
 
 void Chan_Stored_t::L_Bantime(const bool in)
 {
@@ -4164,7 +4116,6 @@ void Chan_Stored_t::L_Bantime(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Bantime() const
 {
     NFT("Chan_Stored_t::L_Bantime");
@@ -4175,7 +4126,6 @@ bool Chan_Stored_t::L_Bantime() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Parttime(const unsigned long in)
 {
@@ -4189,7 +4139,6 @@ void Chan_Stored_t::Parttime(const unsigned long in)
     }
 }
 
-
 unsigned long Chan_Stored_t::Parttime() const
 {
     NFT("Chan_Stored_t::Parttime");
@@ -4200,7 +4149,6 @@ unsigned long Chan_Stored_t::Parttime() const
     }
     RET(Magick::instance().chanserv.DEF_Parttime());
 }
-
 
 void Chan_Stored_t::L_Parttime(const bool in)
 {
@@ -4214,7 +4162,6 @@ void Chan_Stored_t::L_Parttime(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Parttime() const
 {
     NFT("Chan_Stored_t::L_Parttime");
@@ -4225,7 +4172,6 @@ bool Chan_Stored_t::L_Parttime() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Keeptopic(const bool in)
 {
@@ -4239,7 +4185,6 @@ void Chan_Stored_t::Keeptopic(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Keeptopic() const
 {
     NFT("Chan_Stored_t::Keeptopic");
@@ -4250,7 +4195,6 @@ bool Chan_Stored_t::Keeptopic() const
     }
     RET(Magick::instance().chanserv.DEF_Keeptopic());
 }
-
 
 void Chan_Stored_t::L_Keeptopic(const bool in)
 {
@@ -4264,7 +4208,6 @@ void Chan_Stored_t::L_Keeptopic(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Keeptopic() const
 {
     NFT("Chan_Stored_t::L_Keeptopic");
@@ -4275,7 +4218,6 @@ bool Chan_Stored_t::L_Keeptopic() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Topiclock(const bool in)
 {
@@ -4289,7 +4231,6 @@ void Chan_Stored_t::Topiclock(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Topiclock() const
 {
     NFT("Chan_Stored_t::Topiclock");
@@ -4300,7 +4241,6 @@ bool Chan_Stored_t::Topiclock() const
     }
     RET(Magick::instance().chanserv.DEF_Topiclock());
 }
-
 
 void Chan_Stored_t::L_Topiclock(const bool in)
 {
@@ -4314,7 +4254,6 @@ void Chan_Stored_t::L_Topiclock(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Topiclock() const
 {
     NFT("Chan_Stored_t::L_Topiclock");
@@ -4325,7 +4264,6 @@ bool Chan_Stored_t::L_Topiclock() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Private(const bool in)
 {
@@ -4339,7 +4277,6 @@ void Chan_Stored_t::Private(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Private() const
 {
     NFT("Chan_Stored_t::Private");
@@ -4350,7 +4287,6 @@ bool Chan_Stored_t::Private() const
     }
     RET(Magick::instance().chanserv.DEF_Private());
 }
-
 
 void Chan_Stored_t::L_Private(const bool in)
 {
@@ -4364,7 +4300,6 @@ void Chan_Stored_t::L_Private(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Private() const
 {
     NFT("Chan_Stored_t::L_Private");
@@ -4375,7 +4310,6 @@ bool Chan_Stored_t::L_Private() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Secureops(const bool in)
 {
@@ -4389,7 +4323,6 @@ void Chan_Stored_t::Secureops(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Secureops() const
 {
     NFT("Chan_Stored_t::Secureops");
@@ -4400,7 +4333,6 @@ bool Chan_Stored_t::Secureops() const
     }
     RET(Magick::instance().chanserv.DEF_Secureops());
 }
-
 
 void Chan_Stored_t::L_Secureops(const bool in)
 {
@@ -4414,7 +4346,6 @@ void Chan_Stored_t::L_Secureops(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Secureops() const
 {
     NFT("Chan_Stored_t::L_Secureops");
@@ -4425,7 +4356,6 @@ bool Chan_Stored_t::L_Secureops() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Secure(const bool in)
 {
@@ -4439,7 +4369,6 @@ void Chan_Stored_t::Secure(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Secure() const
 {
     NFT("Chan_Stored_t::Secure");
@@ -4450,7 +4379,6 @@ bool Chan_Stored_t::Secure() const
     }
     RET(Magick::instance().chanserv.DEF_Secure());
 }
-
 
 void Chan_Stored_t::L_Secure(const bool in)
 {
@@ -4464,7 +4392,6 @@ void Chan_Stored_t::L_Secure(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Secure() const
 {
     NFT("Chan_Stored_t::L_Secure");
@@ -4475,7 +4402,6 @@ bool Chan_Stored_t::L_Secure() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::NoExpire(const bool in)
 {
@@ -4489,7 +4415,6 @@ void Chan_Stored_t::NoExpire(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::NoExpire() const
 {
     NFT("Chan_Stored_t::NoExpire");
@@ -4500,7 +4425,6 @@ bool Chan_Stored_t::NoExpire() const
     }
     RET(Magick::instance().chanserv.DEF_NoExpire());
 }
-
 
 void Chan_Stored_t::Anarchy(const bool in)
 {
@@ -4514,7 +4438,6 @@ void Chan_Stored_t::Anarchy(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Anarchy() const
 {
     NFT("Chan_Stored_t::Anarchy");
@@ -4525,7 +4448,6 @@ bool Chan_Stored_t::Anarchy() const
     }
     RET(Magick::instance().chanserv.DEF_Anarchy());
 }
-
 
 void Chan_Stored_t::L_Anarchy(const bool in)
 {
@@ -4539,7 +4461,6 @@ void Chan_Stored_t::L_Anarchy(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Anarchy() const
 {
     NFT("Chan_Stored_t::L_Anarchy");
@@ -4550,7 +4471,6 @@ bool Chan_Stored_t::L_Anarchy() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::KickOnBan(const bool in)
 {
@@ -4564,7 +4484,6 @@ void Chan_Stored_t::KickOnBan(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::KickOnBan() const
 {
     NFT("Chan_Stored_t::KickOnBan");
@@ -4575,7 +4494,6 @@ bool Chan_Stored_t::KickOnBan() const
     }
     RET(Magick::instance().chanserv.DEF_KickOnBan());
 }
-
 
 void Chan_Stored_t::L_KickOnBan(const bool in)
 {
@@ -4589,7 +4507,6 @@ void Chan_Stored_t::L_KickOnBan(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_KickOnBan() const
 {
     NFT("Chan_Stored_t::L_KickOnBan");
@@ -4600,7 +4517,6 @@ bool Chan_Stored_t::L_KickOnBan() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Restricted(const bool in)
 {
@@ -4614,7 +4530,6 @@ void Chan_Stored_t::Restricted(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Restricted() const
 {
     NFT("Chan_Stored_t::Restricted");
@@ -4625,7 +4540,6 @@ bool Chan_Stored_t::Restricted() const
     }
     RET(Magick::instance().chanserv.DEF_Restricted());
 }
-
 
 void Chan_Stored_t::L_Restricted(const bool in)
 {
@@ -4639,7 +4553,6 @@ void Chan_Stored_t::L_Restricted(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Restricted() const
 {
     NFT("Chan_Stored_t::L_Restricted");
@@ -4650,7 +4563,6 @@ bool Chan_Stored_t::L_Restricted() const
     }
     RET(true);
 }
-
 
 void Chan_Stored_t::Join(const bool in)
 {
@@ -4664,7 +4576,6 @@ void Chan_Stored_t::Join(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::Join() const
 {
     NFT("Chan_Stored_t::Join");
@@ -4675,7 +4586,6 @@ bool Chan_Stored_t::Join() const
     }
     RET(Magick::instance().chanserv.DEF_Join());
 }
-
 
 void Chan_Stored_t::L_Join(const bool in)
 {
@@ -4689,7 +4599,6 @@ void Chan_Stored_t::L_Join(const bool in)
     }
 }
 
-
 bool Chan_Stored_t::L_Join() const
 {
     NFT("Chan_Stored_t::L_Join");
@@ -4700,7 +4609,6 @@ bool Chan_Stored_t::L_Join() const
     }
     RET(true);
 }
-
 
 bool Chan_Stored_t::Revenge(const mstring & in)
 {
@@ -4716,7 +4624,6 @@ bool Chan_Stored_t::Revenge(const mstring & in)
     RET(false);
 }
 
-
 mstring Chan_Stored_t::Revenge() const
 {
     NFT("Chan_Stored_t::Revenge");
@@ -4727,7 +4634,6 @@ mstring Chan_Stored_t::Revenge() const
     }
     RET(Magick::instance().chanserv.DEF_Revenge());
 }
-
 
 void Chan_Stored_t::L_Revenge(const bool in)
 {
@@ -4740,7 +4646,6 @@ void Chan_Stored_t::L_Revenge(const bool in)
 	MCE(lock.Revenge);
     }
 }
-
 
 bool Chan_Stored_t::L_Revenge() const
 {
@@ -4780,7 +4685,6 @@ bool Chan_Stored_t::Forbidden() const
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Forbidden"));
     RET(setting.Forbidden);
 }
-
 
 bool Chan_Stored_t::Level_change(const mstring & entry, const long value, const mstring & nick)
 {
@@ -4825,7 +4729,6 @@ bool Chan_Stored_t::Level_find(const mstring & entry)
     }
 }
 
-
 long Chan_Stored_t::Level_value(const mstring & entry)
 {
     FT("Chan_Stored_t::Level_value", (entry));
@@ -4841,7 +4744,6 @@ long Chan_Stored_t::Level_value(const mstring & entry)
     Level = iter;
     RET(retval);
 }
-
 
 bool Chan_Stored_t::Access_insert(const mstring & i_entry, const long value, const mstring & nick, const mDateTime & modtime)
 {
@@ -4908,7 +4810,6 @@ bool Chan_Stored_t::Access_insert(const mstring & i_entry, const long value, con
     }
 }
 
-
 bool Chan_Stored_t::Access_erase()
 {
     NFT("Chan_Stored_t::Access_erase");
@@ -4928,7 +4829,6 @@ bool Chan_Stored_t::Access_erase()
     }
 
 }
-
 
 bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
@@ -4968,8 +4868,8 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
 		    // It is indeed a committee entry ...
 		    if (iter->Entry()[0u] == '@' && Magick::instance().commserv.IsList(iter->Entry().After("@")))
 			// Verify that we do the right check ...
-			if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(tmp))
-			    || (commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(tmp)))
+			if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(tmp)) ||
+			    (commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(tmp)))
 			    // Update iter2 if we have a higher value
 			    if (iter2 == i_Access.end() || iter->Value() > iter2->Value())
 				iter2 = iter;
@@ -5018,7 +4918,6 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
     }
 }
 
-
 long Chan_Stored_t::Access_value(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
     FT("Chan_Stored_t::Access_value", (entry));
@@ -5034,7 +4933,6 @@ long Chan_Stored_t::Access_value(const mstring & entry, const Chan_Stored_t::com
     Access = iter;
     RET(retval);
 }
-
 
 long Chan_Stored_t::GetAccess(const mstring & entry)
 {
@@ -5069,23 +4967,23 @@ long Chan_Stored_t::GetAccess(const mstring & entry)
 
 	    if (Suspended())
 	    {
-		if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		    && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(realentry))
+		if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(realentry))
 		{
 		    retval = Magick::instance().chanserv.Level_Max() + 1;
 		}
-		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-			 && Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(realentry))
+		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+			 Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(realentry))
 		{
 		    retval = Level_value("SUPER");
 		}
-		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name())
-			 && Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->IsOn(realentry))
+		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+			 Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->IsOn(realentry))
 		{
 		    retval = Level_value("AUTOOP");
 		}
-		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name())
-			 && Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(realentry))
+		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+			 Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(realentry))
 		{
 		    retval = Level_value("AUTOVOICE");
 		}
@@ -5093,7 +4991,6 @@ long Chan_Stored_t::GetAccess(const mstring & entry)
 	    }
 	}
     }
-
 
     if (!Secure() || nlive->IsIdentified())
     {
@@ -5126,7 +5023,6 @@ bool Chan_Stored_t::GetAccess(const mstring & entry, const mstring & type)
 
     RET(retval);
 }
-
 
 bool Chan_Stored_t::Akick_insert(const mstring & i_entry, const mstring & value, const mstring & nick,
 				 const mDateTime & modtime)
@@ -5222,7 +5118,6 @@ bool Chan_Stored_t::Akick_erase()
 
 }
 
-
 bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
     FT("Chan_Stored_t::Akick_find", (entry, livelook));
@@ -5256,8 +5151,8 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
 	    {
 		for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
 		    if (iter->Entry()[0u] == '@' && Magick::instance().commserv.IsList(iter->Entry().After("@")))
-			if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(tmp))
-			    || (commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(tmp)))
+			if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(tmp)) ||
+			    (commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(tmp)))
 			    break;
 	    }
 	}
@@ -5300,7 +5195,6 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
     }
 }
 
-
 mstring Chan_Stored_t::Akick_string(const mstring & entry, const Chan_Stored_t::commstat_t commstat, const bool livelook)
 {
     FT("Chan_Stored_t::Akick_string", (entry));
@@ -5316,7 +5210,6 @@ mstring Chan_Stored_t::Akick_string(const mstring & entry, const Chan_Stored_t::
     Akick = iter;
     RET(retval);
 }
-
 
 bool Chan_Stored_t::Greet_insert(const mstring & entry, const mstring & nick, const mDateTime & modtime)
 {
@@ -5339,7 +5232,6 @@ bool Chan_Stored_t::Greet_insert(const mstring & entry, const mstring & nick, co
     }
 }
 
-
 bool Chan_Stored_t::Greet_erase()
 {
     NFT("Chan_Stored_t::Greet_erase");
@@ -5359,7 +5251,6 @@ bool Chan_Stored_t::Greet_erase()
     }
 
 }
-
 
 bool Chan_Stored_t::Greet_find(const mstring & nick)
 {
@@ -5385,7 +5276,6 @@ bool Chan_Stored_t::Greet_find(const mstring & nick)
     }
 }
 
-
 bool Chan_Stored_t::Message_insert(const mstring & entry, const mstring & nick)
 {
     FT("Chan_Stored_t::Message_insert", (entry, nick));
@@ -5398,7 +5288,6 @@ bool Chan_Stored_t::Message_insert(const mstring & entry, const mstring & nick)
     Message--;
     RET(true);
 }
-
 
 bool Chan_Stored_t::Message_erase()
 {
@@ -5419,7 +5308,6 @@ bool Chan_Stored_t::Message_erase()
     }
 
 }
-
 
 bool Chan_Stored_t::Message_find(const unsigned int num)
 {
@@ -5447,7 +5335,6 @@ bool Chan_Stored_t::Message_find(const unsigned int num)
 	RET(false);
     }
 }
-
 
 SXP::Tag Chan_Stored_t::tag_Chan_Stored_t("Chan_Stored_t");
 SXP::Tag Chan_Stored_t::tag_Name("Name");
@@ -5927,7 +5814,6 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->EndObject(tag_Chan_Stored_t);
 }
 
-
 size_t Chan_Stored_t::Usage() const
 {
     size_t retval = 0;
@@ -6034,7 +5920,6 @@ void Chan_Stored_t::DumpB() const
     MB(48, (i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
 }
 
-
 void Chan_Stored_t::DumpE() const
 {
     ME(0,
@@ -6050,7 +5935,6 @@ void Chan_Stored_t::DumpE() const
 	i_Suspend_By, i_Suspend_Time));
     ME(48, (i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
 }
-
 
 // --------- end of Chan_Stored_t ---------------------------------
 
@@ -6348,7 +6232,6 @@ void ChanServ::RemCommands()
     NFT("ChanServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "CLEAR* USER*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "CLEAR* OP*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "CLEAR* H*OP*", Magick::instance().commserv.REGD_Name());
@@ -6426,7 +6309,8 @@ void ChanServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK H*LP", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK M*LOCK", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK BAN*TIME", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK PART*TIME", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK PART*TIME",
+						 Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK KEEP*", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK TOPIC*", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK PRIV*", Magick::instance().commserv.SOP_Name());
@@ -6541,7 +6425,6 @@ void ChanServ::AddStored(Chan_Stored_t * in)
     stored[in->Name().LowerCase()] = in;
 }
 
-
 #ifdef MAGICK_HAS_EXCEPTIONS
 map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const throw(E_ChanServ_Stored)
 #else
@@ -6583,7 +6466,6 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
     NRET(map_entry < Chan_Stored_t >, map_entry < Chan_Stored_t > (iter->second));
 }
 
-
 #ifdef MAGICK_HAS_EXCEPTIONS
 void ChanServ::RemStored(const mstring & in) throw(E_ChanServ_Stored)
 #else
@@ -6612,7 +6494,6 @@ void ChanServ::RemStored(const mstring & in)
     WLOCK(("ChanServ", "stored"));
     stored.erase(iter);
 }
-
 
 bool ChanServ::IsStored(const mstring & in) const
 {
@@ -6662,7 +6543,6 @@ void ChanServ::AddLive(Chan_Live_t * in)
     live[in->Name().LowerCase()] = in;
 }
 
-
 #ifdef MAGICK_HAS_EXCEPTIONS
 map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const throw(E_ChanServ_Live)
 #else
@@ -6703,7 +6583,6 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 
     NRET(map_entry < Chan_Live_t >, map_entry < Chan_Live_t > (iter->second));
 }
-
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 void ChanServ::RemLive(const mstring & in) throw(E_ChanServ_Live)
@@ -6765,7 +6644,6 @@ void ChanServ::execute(mstring & source, const mstring & msgtype, const mstring 
     {
 	// Invalid command or not enough privs.
     }
-
 
     mThread::ReAttach(tt_mBase);
 }
@@ -6844,8 +6722,8 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
 	return;
     }
 
-    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) || password.IsSameAs(channel, true)
-	|| password.IsSameAs(source, true))
+    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) || password.IsSameAs(channel, true) ||
+	password.IsSameAs(source, true))
     {
 	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
 	return;
@@ -6900,9 +6778,9 @@ void ChanServ::do_Drop(const mstring & mynick, const mstring & source, const mst
 
     map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
     if (!
-	((Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-	  && Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))
-	 || nlive->IsChanIdentified(channel)))
+	((Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source)) ||
+	 nlive->IsChanIdentified(channel)))
     {
 	SEND(mynick, source, "ERR_SITUATION/NEED_CHAN_IDENT", (message, mynick, channel));
 	return;
@@ -6910,8 +6788,8 @@ void ChanServ::do_Drop(const mstring & mynick, const mstring & source, const mst
 
     mstring founder = cstored->Founder();
 
-    if (cstored->Join() && Magick::instance().chanserv.IsLive(channel)
-	&& Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    if (cstored->Join() && Magick::instance().chanserv.IsLive(channel) &&
+	Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
     {
 	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
@@ -7004,10 +6882,10 @@ void ChanServ::do_Info(const mstring & mynick, const mstring & source, const mst
 
     map_entry < Chan_Stored_t > chan = Magick::instance().chanserv.GetStored(channel);
 
-    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name())
-		   && Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source));
-    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-		  && Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		   Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source));
+    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
 
     if (chan->Forbidden())
     {
@@ -7227,10 +7105,10 @@ void ChanServ::do_List(const mstring & mynick, const mstring & source, const mst
     SEND(mynick, source, "LIST/CHAN_LIST", (mask));
     ChanServ::stored_t::iterator iter;
 
-    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name())
-		   && Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source));
-    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-		  && Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		   Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source));
+    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
     {
 	RLOCK(("ChanServ", "stored"));
 	for (iter = Magick::instance().chanserv.StoredBegin(), i = 0, count = 0;
@@ -7318,18 +7196,18 @@ void ChanServ::do_Suspend(const mstring & mynick, const mstring & source, const 
 
 	for (unsigned int i = 0; i < clive->Users(); i++)
 	{
-	    if (clive->IsOp(clive->User(i))
-		&& !(cstored->GetAccess(clive->User(i), "AUTOOP") || cstored->GetAccess(clive->User(i), "CMDOP")))
+	    if (clive->IsOp(clive->User(i)) &&
+		!(cstored->GetAccess(clive->User(i), "AUTOOP") || cstored->GetAccess(clive->User(i), "CMDOP")))
 	    {
 		clive->SendMode("-o " + clive->User(i));
 	    }
-	    if (clive->IsHalfOp(clive->User(i))
-		&& !(cstored->GetAccess(clive->User(i), "AUTOHALFOP") || cstored->GetAccess(clive->User(i), "CMDHALFOP")))
+	    if (clive->IsHalfOp(clive->User(i)) &&
+		!(cstored->GetAccess(clive->User(i), "AUTOHALFOP") || cstored->GetAccess(clive->User(i), "CMDHALFOP")))
 	    {
 		clive->SendMode("-h " + clive->User(i));
 	    }
-	    if (clive->IsVoice(clive->User(i))
-		&& !(cstored->GetAccess(clive->User(i), "AUTOVOICE") || cstored->GetAccess(clive->User(i), "CMDVOICE")))
+	    if (clive->IsVoice(clive->User(i)) &&
+		!(cstored->GetAccess(clive->User(i), "AUTOVOICE") || cstored->GetAccess(clive->User(i), "CMDVOICE")))
 	    {
 		clive->SendMode("-v " + clive->User(i));
 	    }
@@ -7491,8 +7369,8 @@ void ChanServ::do_Setpass(const mstring & mynick, const mstring & source, const 
 	return;
     }
 
-    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) || password.IsSameAs(channel, true)
-	|| password.IsSameAs(source, true))
+    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) || password.IsSameAs(channel, true) ||
+	password.IsSameAs(source, true))
     {
 	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
 	return;
@@ -7550,8 +7428,8 @@ void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mst
 
     bool change = false;
 
-    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
-	&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))
     {
 	if (cstored.entry() != NULL)
 	    channel = cstored->Name();
@@ -7559,8 +7437,8 @@ void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mst
 	    channel = Magick::instance().getLname(channel);
 
 	// If we have 2 params, and we have SUPER access, or are a SOP
-	if (params.WordCount(" ") > 2 && Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Mode())
-	    && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Mode())->IsOn(source))
+	if (params.WordCount(" ") > 2 && Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Mode()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Mode())->IsOn(source))
 	    change = true;
     }
     else
@@ -7659,8 +7537,8 @@ void ChanServ::do_Op(const mstring & mynick, const mstring & source, const mstri
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
     // If we have 2 params, and we have SUPER access, or are a SOP
 
-    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op())
-		   && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op())->IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op()) &&
+		   Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op())->IsOn(source));
     if (params.WordCount(" ") > 2 && (chan->GetAccess(source, "SUPER") || isoper))
     {
 	target = params.ExtractWord(3, " ");
@@ -7746,10 +7624,10 @@ void ChanServ::do_DeOp(const mstring & mynick, const mstring & source, const mst
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2
-	&& (chan->GetAccess(source, "SUPER")
-	    || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op())
-		&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op())->IsOn(source))))
+    if (params.WordCount(" ") > 2 &&
+	(chan->GetAccess(source, "SUPER") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op())->IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Magick::instance().nickserv.IsLive(target))
@@ -7829,8 +7707,8 @@ void ChanServ::do_HalfOp(const mstring & mynick, const mstring & source, const m
 	return;
     }
 
-    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp())
-		   && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp())->IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp()) &&
+		   Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp())->IsOn(source));
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
 
     // If we have 2 params, and we have SUPER access, or are a SOP
@@ -7852,8 +7730,8 @@ void ChanServ::do_HalfOp(const mstring & mynick, const mstring & source, const m
 	    SEND(mynick, source, "CS_STATUS/OTH_HALFOPPED", (target, channel));
 	    return;
 	}
-	else if (!isoper && chan->Secureops()
-		 && !(chan->GetAccess(target, "CMDHALFOP") || chan->GetAccess(target, "AUTOHALFOP")))
+	else if (!isoper && chan->Secureops() &&
+		 !(chan->GetAccess(target, "CMDHALFOP") || chan->GetAccess(target, "AUTOHALFOP")))
 	{
 	    SEND(mynick, source, "CS_STATUS/RESTRICT", (channel, Magick::instance().getMessage(source, "CS_SET/SECUREOPS")));
 	    return;
@@ -7929,10 +7807,10 @@ void ChanServ::do_DeHalfOp(const mstring & mynick, const mstring & source, const
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2
-	&& (chan->GetAccess(source, "SUPER")
-	    || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp())
-		&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp())->IsOn(source))))
+    if (params.WordCount(" ") > 2 &&
+	(chan->GetAccess(source, "SUPER") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp())->IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Magick::instance().nickserv.IsLive(target))
@@ -8007,8 +7885,8 @@ void ChanServ::do_Voice(const mstring & mynick, const mstring & source, const ms
 	return;
     }
 
-    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice())
-		   && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice())->IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice()) &&
+		   Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice())->IsOn(source));
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
 
     // If we have 2 params, and we have SUPER access, or are a SOP
@@ -8030,7 +7908,8 @@ void ChanServ::do_Voice(const mstring & mynick, const mstring & source, const ms
 	    SEND(mynick, source, "CS_STATUS/OTH_VOICED", (target, channel));
 	    return;
 	}
-	else if (!isoper && chan->Secureops() && !(chan->GetAccess(target, "CMDVOICE") || chan->GetAccess(target, "AUTOVOICE")))
+	else if (!isoper && chan->Secureops() &&
+		 !(chan->GetAccess(target, "CMDVOICE") || chan->GetAccess(target, "AUTOVOICE")))
 	{
 	    SEND(mynick, source, "CS_STATUS/RESTRICT", (channel, Magick::instance().getMessage(source, "CS_SET/SECUREOPS")));
 	    return;
@@ -8057,7 +7936,8 @@ void ChanServ::do_Voice(const mstring & mynick, const mstring & source, const ms
 
     Magick::instance().chanserv.stats.i_Voice++;
     clive->SendMode("+v " + target);
-    LOG(LM_DEBUG, "CHANSERV/VOICE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
+    LOG(LM_DEBUG, "CHANSERV/VOICE",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
 }
 
 void ChanServ::do_DeVoice(const mstring & mynick, const mstring & source, const mstring & params)
@@ -8098,10 +7978,10 @@ void ChanServ::do_DeVoice(const mstring & mynick, const mstring & source, const 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2
-	&& (chan->GetAccess(source, "SUPER")
-	    || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice())
-		&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice())->IsOn(source))))
+    if (params.WordCount(" ") > 2 &&
+	(chan->GetAccess(source, "SUPER") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice())->IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Magick::instance().nickserv.IsLive(target))
@@ -8365,8 +8245,8 @@ void ChanServ::do_Users(const mstring & mynick, const mstring & source, const ms
     map_entry < Chan_Live_t > chan = Magick::instance().chanserv.GetLive(channel);
     channel = chan->Name();
     if (!
-	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
-	 && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
     {
 	if (!Magick::instance().chanserv.IsStored(channel))
 	{
@@ -8467,10 +8347,10 @@ void ChanServ::do_Invite(const mstring & mynick, const mstring & source, const m
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2
-	&& (chan->GetAccess(source, "SUPER")
-	    || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Invite())
-		&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Invite())->IsOn(source))))
+    if (params.WordCount(" ") > 2 &&
+	(chan->GetAccess(source, "SUPER") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Invite()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Invite())->IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Magick::instance().nickserv.IsLive(target))
@@ -8543,10 +8423,10 @@ void ChanServ::do_Unban(const mstring & mynick, const mstring & source, const ms
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2
-	&& (cstored->GetAccess(source, "SUPER")
-	    || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Unban())
-		&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Unban())->IsOn(source))))
+    if (params.WordCount(" ") > 2 &&
+	(cstored->GetAccess(source, "SUPER") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Unban()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Unban())->IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Magick::instance().nickserv.IsLive(target))
@@ -8571,8 +8451,8 @@ void ChanServ::do_Unban(const mstring & mynick, const mstring & source, const ms
 
     for (i = 0; i < clive->Bans(); i++)
     {
-	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i), true)
-	    || nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i), true))
+	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i), true) ||
+	    nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i), true))
 	{
 	    bans.push_back(clive->Ban(i));
 	}
@@ -8752,7 +8632,6 @@ void ChanServ::do_Detail(const mstring & mynick, const mstring & source, const m
 	SEND(mynick, source, "CS_STATUS/HASNOACCESS", (nick));
 }
 
-
 void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("ChanServ::do_clear_Users", (mynick, source, params));
@@ -8797,9 +8676,9 @@ void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, co
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -8813,8 +8692,8 @@ void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, co
     {
 	mstring user = clive->User(i);
 
-	if (!user.IsSameAs(source) && Magick::instance().nickserv.IsLive(user)
-	    && !Magick::instance().nickserv.GetLive(user)->IsServices())
+	if (!user.IsSameAs(source) && Magick::instance().nickserv.IsLive(user) &&
+	    !Magick::instance().nickserv.GetLive(user)->IsServices())
 	    kickees.push_back(user);
     }
     for (i = 0; i < kickees.size(); i++)
@@ -8873,9 +8752,9 @@ void ChanServ::do_clear_Ops(const mstring & mynick, const mstring & source, cons
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -8892,8 +8771,8 @@ void ChanServ::do_clear_Ops(const mstring & mynick, const mstring & source, cons
 
     for (i = 0; i < clive->Ops(); i++)
     {
-	if (!Magick::instance().nickserv.IsLive(clive->Op(i))
-	    || Magick::instance().nickserv.GetLive(clive->Op(i))->IsServices())
+	if (!Magick::instance().nickserv.IsLive(clive->Op(i)) ||
+	    Magick::instance().nickserv.GetLive(clive->Op(i))->IsServices())
 	    continue;
 	deop.push_back(clive->Op(i));
 	if (!allmode)
@@ -8962,9 +8841,9 @@ void ChanServ::do_clear_HalfOps(const mstring & mynick, const mstring & source, 
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -8981,8 +8860,8 @@ void ChanServ::do_clear_HalfOps(const mstring & mynick, const mstring & source, 
 
     for (i = 0; i < clive->HalfOps(); i++)
     {
-	if (!Magick::instance().nickserv.IsLive(clive->HalfOp(i))
-	    || Magick::instance().nickserv.GetLive(clive->HalfOp(i))->IsServices())
+	if (!Magick::instance().nickserv.IsLive(clive->HalfOp(i)) ||
+	    Magick::instance().nickserv.GetLive(clive->HalfOp(i))->IsServices())
 	    continue;
 	dehalfop.push_back(clive->HalfOp(i));
 	if (!allmode)
@@ -9051,9 +8930,9 @@ void ChanServ::do_clear_Voices(const mstring & mynick, const mstring & source, c
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9070,8 +8949,8 @@ void ChanServ::do_clear_Voices(const mstring & mynick, const mstring & source, c
 
     for (i = 0; i < clive->Voices(); i++)
     {
-	if (!Magick::instance().nickserv.IsLive(clive->Voice(i))
-	    || Magick::instance().nickserv.GetLive(clive->Voice(i))->IsServices())
+	if (!Magick::instance().nickserv.IsLive(clive->Voice(i)) ||
+	    Magick::instance().nickserv.GetLive(clive->Voice(i))->IsServices())
 	    continue;
 	devoice.push_back(clive->Voice(i));
 	if (!allmode)
@@ -9140,9 +9019,9 @@ void ChanServ::do_clear_Modes(const mstring & mynick, const mstring & source, co
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9167,8 +9046,8 @@ void ChanServ::do_clear_Modes(const mstring & mynick, const mstring & source, co
     {
 	for (i = 0; i < clive->Ops(); i++)
 	{
-	    if (!Magick::instance().nickserv.IsLive(clive->Op(i))
-		|| Magick::instance().nickserv.GetLive(clive->Op(i))->IsServices())
+	    if (!Magick::instance().nickserv.IsLive(clive->Op(i)) ||
+		Magick::instance().nickserv.GetLive(clive->Op(i))->IsServices())
 		continue;
 	    SEND(mynick, clive->Op(i), "CS_COMMAND/CLEAR", (message, source, channel));
 	}
@@ -9239,9 +9118,9 @@ void ChanServ::do_clear_Bans(const mstring & mynick, const mstring & source, con
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9266,8 +9145,8 @@ void ChanServ::do_clear_Bans(const mstring & mynick, const mstring & source, con
     {
 	for (i = 0; i < clive->Ops(); i++)
 	{
-	    if (!Magick::instance().nickserv.IsLive(clive->Op(i))
-		|| Magick::instance().nickserv.GetLive(clive->Op(i))->IsServices())
+	    if (!Magick::instance().nickserv.IsLive(clive->Op(i)) ||
+		Magick::instance().nickserv.GetLive(clive->Op(i))->IsServices())
 		continue;
 	    SEND(mynick, clive->Op(i), "CS_COMMAND/CLEAR", (message, source, channel));
 	}
@@ -9325,9 +9204,9 @@ void ChanServ::do_clear_All(const mstring & mynick, const mstring & source, cons
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!chan->GetAccess(source, "CMDCLEAR")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
+    if (!chan->GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9495,7 +9374,8 @@ void ChanServ::do_level_Reset(const mstring & mynick, const mstring & source, co
 	}
 	Magick::instance().chanserv.stats.i_Level++;
 	SEND(mynick, source, "LIST/CHANGE2_ALL", (channel, Magick::instance().getMessage(source, "LIST/LEVEL")));
-	LOG(LM_DEBUG, "CHANSERV/LEVEL_ALL", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
+	LOG(LM_DEBUG, "CHANSERV/LEVEL_ALL",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel));
     }
 }
 
@@ -9544,8 +9424,8 @@ void ChanServ::do_level_List(const mstring & mynick, const mstring & source, con
     long myaccess = cstored->GetAccess(source);
     bool haveset = cstored->GetAccess(source, "SET");
 
-    if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name())
-	&& Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsIn(source))
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsIn(source))
 	haveset = true;
 
     if (haveset)
@@ -9737,7 +9617,8 @@ void ChanServ::do_access_Add(const mstring & mynick, const mstring & source, con
 	cstored->Access_erase();
 	cstored->Access_insert(entry, num, source);
 	Magick::instance().chanserv.stats.i_Access++;
-	SEND(mynick, source, "LIST/CHANGE2_LEVEL", (entry, channel, Magick::instance().getMessage(source, "LIST/ACCESS"), num));
+	SEND(mynick, source, "LIST/CHANGE2_LEVEL",
+	     (entry, channel, Magick::instance().getMessage(source, "LIST/ACCESS"), num));
 	LOG(LM_DEBUG, "CHANSERV/ACCESS_CHANGE",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), entry, channel, num));
     }
@@ -9922,9 +9803,9 @@ void ChanServ::do_access_List(const mstring & mynick, const mstring & source, co
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored->GetAccess(source, "VIEW")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
+    if (!cstored->GetAccess(source, "VIEW") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10137,8 +10018,8 @@ void ChanServ::do_akick_Add(const mstring & mynick, const mstring & source, cons
 		for (i = 0; i < clive->Users(); i++)
 		{
 		    // MAN these commands can get REAL long .. ;)
-		    if (Magick::instance().nickserv.IsLive(clive->User(i))
-			&& Magick::instance().nickserv.GetLive(clive->User(i))->Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
+		    if (Magick::instance().nickserv.IsLive(clive->User(i)) &&
+			Magick::instance().nickserv.GetLive(clive->User(i))->Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
 		    {
 			kickees.push_back(clive->User(i));
 		    }
@@ -10243,7 +10124,8 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	}
 	else
 	{
-	    SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER", (num, channel, Magick::instance().getMessage(source, "LIST/AKICK")));
+	    SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER",
+		 (num, channel, Magick::instance().getMessage(source, "LIST/AKICK")));
 	}
     }
     else
@@ -10327,9 +10209,9 @@ void ChanServ::do_akick_List(const mstring & mynick, const mstring & source, con
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored->GetAccess(source, "VIEW")
-	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
+    if (!cstored->GetAccess(source, "VIEW") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10441,7 +10323,8 @@ void ChanServ::do_greet_Add(const mstring & mynick, const mstring & source, cons
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
 	if (cstored->Greet_find(target))
 	{
-	    if (cstored->Greet->Entry()[0U] == '!' && source.IsSameAs(target, true) && !cstored->GetAccess(source, "OVERGREET"))
+	    if (cstored->Greet->Entry()[0U] == '!' && source.IsSameAs(target, true) &&
+		!cstored->GetAccess(source, "OVERGREET"))
 	    {
 		SEND(mynick, source, "CS_STATUS/LOCKGREET", (channel));
 		return;
@@ -10530,7 +10413,8 @@ void ChanServ::do_greet_Del(const mstring & mynick, const mstring & source, cons
 	    }
 	    else
 	    {
-		SEND(mynick, source, "LIST/NOTEXISTS2", (target, channel, Magick::instance().getMessage(source, "LIST/GREET")));
+		SEND(mynick, source, "LIST/NOTEXISTS2",
+		     (target, channel, Magick::instance().getMessage(source, "LIST/GREET")));
 	    }
 	}
     }
@@ -10577,10 +10461,10 @@ void ChanServ::do_greet_List(const mstring & mynick, const mstring & source, con
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 3
-	&& (cstored->GetAccess(source, "OVERGREET")
-	    || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
-		&& Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
+    if (params.WordCount(" ") > 3 &&
+	(cstored->GetAccess(source, "OVERGREET") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
     {
 	if (params.ExtractWord(4, " ").IsSameAs("all", true))
 	    all = true;
@@ -10791,9 +10675,9 @@ void ChanServ::do_message_List(const mstring & mynick, const mstring & source, c
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!
-	(cstored->GetAccess(source, "MESSAGE")
-	 || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
+	(cstored->GetAccess(source, "MESSAGE") ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10874,9 +10758,9 @@ void ChanServ::do_set_Founder(const mstring & mynick, const mstring & source, co
     }
 
     if (!
-	(cstored->GetAccess(source) > Magick::instance().chanserv.Level_Max()
-	 || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
+	(cstored->GetAccess(source) > Magick::instance().chanserv.Level_Max() ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10951,9 +10835,9 @@ void ChanServ::do_set_CoFounder(const mstring & mynick, const mstring & source, 
     }
 
     if (!
-	(cstored->GetAccess(source) > Magick::instance().chanserv.Level_Max()
-	 || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner())
-	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
+	(cstored->GetAccess(source) > Magick::instance().chanserv.Level_Max() ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
+	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -11047,8 +10931,8 @@ void ChanServ::do_set_Password(const mstring & mynick, const mstring & source, c
 	return;
     }
 
-    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) || password.IsSameAs(channel, true)
-	|| password.IsSameAs(source, true))
+    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) || password.IsSameAs(channel, true) ||
+	password.IsSameAs(source, true))
     {
 	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
 	return;
@@ -12110,13 +11994,13 @@ void ChanServ::do_set_Join(const mstring & mynick, const mstring & source, const
 	 channel,
 	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
-    if (onoff.GetBool() && Magick::instance().chanserv.IsLive(channel)
-	&& !Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    if (onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	!Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
     {
 	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), channel);
     }
-    else if (!onoff.GetBool() && Magick::instance().chanserv.IsLive(channel)
-	     && Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    else if (!onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	     Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
     {
 	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
@@ -12918,13 +12802,13 @@ void ChanServ::do_lock_Join(const mstring & mynick, const mstring & source, cons
 	 channel,
 	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
-    if (onoff.GetBool() && Magick::instance().chanserv.IsLive(channel)
-	&& !Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    if (onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	!Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
     {
 	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), channel);
     }
-    else if (!onoff.GetBool() && Magick::instance().chanserv.IsLive(channel)
-	     && Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    else if (!onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	     Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
     {
 	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
@@ -13530,7 +13414,6 @@ void ChanServ::do_unlock_Revenge(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("CS_SET/REVENGE"), channel));
 }
 
-
 long ChanServ::LVL(const mstring & level) const
 {
     FT("ChanServ::LVL", (level));
@@ -13548,7 +13431,6 @@ long ChanServ::LVL(const mstring & level) const
     RET(retval);
 }
 
-
 vector < mstring > ChanServ::LVL() const
 {
     NFT("ChanServ::LVL");
@@ -13563,7 +13445,6 @@ vector < mstring > ChanServ::LVL() const
     NRET(vector < mstring >, retval);
 }
 
-
 bool ChanServ::IsLVL(const mstring & level) const
 {
     FT("ChanServ::IsLVL", (level));
@@ -13571,7 +13452,6 @@ bool ChanServ::IsLVL(const mstring & level) const
 
     RET(retval);
 }
-
 
 SXP::Tag ChanServ::tag_ChanServ("ChanServ");
 
@@ -13768,8 +13648,8 @@ void ChanServ::PostLoad()
 		    else if (locked[i] == 'l')
 			cstored->setting.Mlock_Limit = 0;
 
-		    if (locked[i] == 'k' || locked[i] == 'l'
-			|| !Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
+		    if (locked[i] == 'k' || locked[i] == 'l' ||
+			!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		    {
 			if (!cstored->setting.Mlock_Off.Contains(locked[i]))
 			    cstored->setting.Mlock_Off += locked[i];

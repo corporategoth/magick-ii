@@ -28,6 +28,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.200  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.199  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -532,8 +535,8 @@ void *IrcSvcHandler::worker(void *in)
 		Magick::instance().config.Low_Water_Mark() + (Magick::instance().config.High_Water_Mark() * (thrcnt - 2)),
 		thrcnt * Magick::instance().config.High_Water_Mark()));
 
-	    if (thrcnt > Magick::instance().config.Min_Threads()
-		&& msgcnt <
+	    if (thrcnt > Magick::instance().config.Min_Threads() &&
+		msgcnt <
 		Magick::instance().config.Low_Water_Mark() + (Magick::instance().config.High_Water_Mark() * (thrcnt - 2)))
 	    {
 		COM(("Low water mark reached, killing thread."));
@@ -553,7 +556,6 @@ void *IrcSvcHandler::worker(void *in)
     Magick::deregister_instance();
     DTRET(static_cast < void *>(NULL));
 }
-
 
 int IrcSvcHandler::open(void *in)
 {
@@ -615,8 +617,8 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     {
 	WLOCK(("IrcSvcHandler", "traffic"));
 	for (iter = traffic.begin();
-	     iter != traffic.end()
-	     && iter->first < now - static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap() + 2);
+	     iter != traffic.end() &&
+	     iter->first < now - static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap() + 2);
 	     iter = traffic.begin())
 	    traffic.erase(iter->first);
 	if (traffic.find(now) == traffic.end())
@@ -917,7 +919,6 @@ void IrcSvcHandler::HTM_Threshold(const size_t in)
     htm_threshold = in;
     MCE(htm_threshold);
 }
-
 
 void IrcSvcHandler::HTM(const bool in)
 {
@@ -1592,8 +1593,8 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	    if (!server.empty())
 	    {
 		server = FindNext(server);
-		while (!server.empty()
-		       && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
+		while (!server.empty() &&
+		       !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 		{
 		    server = FindNext(server);
 		}
@@ -1601,8 +1602,8 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	    if (server.empty())
 	    {
 		server = Magick::instance().startup.PriorityList(1)[0];
-		while (!server.empty()
-		       && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
+		while (!server.empty() &&
+		       !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 		{
 		    server = FindNext(server);
 		}
@@ -1879,7 +1880,6 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     DRET(0);
 }
 
-
 int InFlight_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
     mThread::Attach(tt_MAIN);
@@ -1913,7 +1913,6 @@ int InFlight_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     DRET(0);
 }
 
-
 int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
     mThread::Attach(tt_MAIN);
@@ -1926,8 +1925,8 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     // in them).  ie. after AKICK, etc.
     try
     {
-	if (Magick::instance().chanserv.IsLive(*tmp)
-	    && Magick::instance().chanserv.GetLive(*tmp)->IsIn(Magick::instance().chanserv.FirstName()))
+	if (Magick::instance().chanserv.IsLive(*tmp) &&
+	    Magick::instance().chanserv.GetLive(*tmp)->IsIn(Magick::instance().chanserv.FirstName()))
 	{
 	    Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), *tmp);
 	    if (Magick::instance().chanserv.IsLive(*tmp))
@@ -2042,7 +2041,6 @@ void EventTask::AddChannelModePending(const mstring & in)
     MCE(cmodes_pending.size());
 }
 
-
 void EventTask::ForceSave()
 {
     NFT("EventTask::ForceSave");
@@ -2087,7 +2085,6 @@ int EventTask::close(u_long in)
     // dump all and close open file handles.
     RET(0);
 }
-
 
 int EventTask::svc(void)
 {
@@ -2190,7 +2187,6 @@ int EventTask::svc(void)
 
 	    if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
 		do_modes(synctime);
-
 
 	    if_RLOCK2 (("Events", "last_msgcheck"), last_msgcheck.SecondsSince() > Magick::instance().config.MSG_Check_Time())
 	    {
@@ -2704,8 +2700,8 @@ void EventTask::do_check(mDateTime & synctime)
     // grace time on ident (if KillProtect is on, and they
     // are not on access list or secure is on).
     chunked.clear();
-    if (synctime.SecondsSince() >= Magick::instance().nickserv.Ident()
-	&& Magick::instance().nickserv.IsLive(Magick::instance().nickserv.FirstName()))
+    if (synctime.SecondsSince() >= Magick::instance().nickserv.Ident() &&
+	Magick::instance().nickserv.IsLive(Magick::instance().nickserv.FirstName()))
     {
 	{
 	    RLOCK(("NickServ", "live"));
@@ -2715,8 +2711,8 @@ void EventTask::do_check(mDateTime & synctime)
 		if (Magick::instance().nickserv.IsStored(nli->first))
 		{
 		    map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(nli->first);
-		    if (!nstored->IsOnline() && nstored->Protect() && !nlive->IsServices() && nlive->Squit().empty()
-			&& nlive->MySignonTime().SecondsSince() >= Magick::instance().nickserv.Ident())
+		    if (!nstored->IsOnline() && nstored->Protect() && !nlive->IsServices() && nlive->Squit().empty() &&
+			nlive->MySignonTime().SecondsSince() >= Magick::instance().nickserv.Ident())
 		    {
 			chunked.push_back(nstored->Name());
 		    }
@@ -2768,8 +2764,8 @@ void EventTask::do_check(mDateTime & synctime)
 	    {
 		if (di->second.SecondsSince() >= Magick::instance().nickserv.Release())
 		{
-		    if (Magick::instance().nickserv.IsLive(di->first)
-			&& Magick::instance().nickserv.GetLive(di->first)->IsServices())
+		    if (Magick::instance().nickserv.IsLive(di->first) &&
+			Magick::instance().nickserv.GetLive(di->first)->IsServices())
 		    {
 			chunked.push_back(di->first);
 		    }
@@ -2832,8 +2828,8 @@ void EventTask::do_modes(mDateTime & synctime)
 			if (mode.empty())
 			    mode += "-";
 			mode += chan->p_modes_off[i];
-			if (chan->p_modes_off[i] != 'l'
-			    && Magick::instance().server.proto.ChanModeArg().Contains(chan->p_modes_off[i]))
+			if (chan->p_modes_off[i] != 'l' &&
+			    Magick::instance().server.proto.ChanModeArg().Contains(chan->p_modes_off[i]))
 			{
 			    if (!modeparam.empty())
 				modeparam += " ";
@@ -2924,8 +2920,8 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 
 			if (m != mMessage::MsgIdMap.end())
 			{
-			    if (m->second == NULL
-				|| m->second->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
+			    if (m->second == NULL ||
+				m->second->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
 			    {
 				Ids.insert(m->first);
 				if (m->second != NULL)
@@ -2999,9 +2995,10 @@ void EventTask::do_ping(mDateTime & synctime)
 	Magick::instance().LevelUp();
 	LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
     }
-    else if (Magick::instance().Level() > Magick::instance().startup.Level()
-	     && avg <= static_cast <
-	     double >(Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level())))
+    else if (Magick::instance().Level() > Magick::instance().startup.Level() &&
+	     avg <= static_cast <
+	     double >(Magick::instance().startup.Lagtime() *
+		      (Magick::instance().Level() - Magick::instance().startup.Level())))
     {
 	Magick::instance().LevelDown();
 	LOG(LM_WARNING, "EVENT/LEVEL_DOWN", (fmstring("%.3f", avg)));

@@ -29,6 +29,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.205  2002/01/13 05:18:42  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.204  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -1216,8 +1219,8 @@ void Server_t::Ping()
     if (!i_Ping)
     {
 	Magick::instance().server.
-	    sraw(((Magick::instance().server.proto.Tokens()
-		   && !Magick::instance().server.proto.GetNonToken("PING").empty())? Magick::instance().server.proto.
+	    sraw(((Magick::instance().server.proto.Tokens() &&
+		   !Magick::instance().server.proto.GetNonToken("PING").empty())? Magick::instance().server.proto.
 		  GetNonToken("PING") : mstring("PING")) + " " + Magick::instance().startup.Server_Name() + " :" + i_Name);
 	MCB(i_Ping);
 	i_Ping = ACE_OS::gettimeofday().msec();
@@ -1360,7 +1363,6 @@ vector < mstring > Server_t::AllDownlinks() const
     NRET(vector < mstring >, downlinks);
 }
 
-
 size_t Server_t::Usage() const
 {
     size_t retval = 0;
@@ -1387,7 +1389,6 @@ void Server_t::DumpE() const
 {
     ME(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description, i_Ping, i_Lag, i_Jupe));
 }
-
 
 void Server::raw(const mstring & text) const
 {
@@ -1466,10 +1467,9 @@ void Server::SignOnAll()
     }
 
     if (!doison.empty())
-	sraw(((proto.Tokens()
-	       && !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + doison);
+	sraw(((proto.Tokens() &&
+	       !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + doison);
 }
-
 
 void Server::SignOffAll(const mstring & reason)
 {
@@ -1508,7 +1508,6 @@ void Server::SignOffAll(const mstring & reason)
 	    Magick::instance().servmsg.signoff(Magick::instance().servmsg.GetNames().ExtractWord(i, " "), reason);
     }
 }
-
 
 Server::Server()
 {
@@ -1674,7 +1673,6 @@ void Server::AddList(Server_t * in)
     i_list[in->Name().LowerCase()] = in;
 }
 
-
 #ifdef MAGICK_HAS_EXCEPTIONS
 map_entry < Server_t > Server::GetList(const mstring & in) const throw(E_Server_List)
 #else
@@ -1715,7 +1713,6 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
 
     NRET(map_entry < Server_t >, map_entry < Server_t > (iter->second));
 }
-
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 void Server::RemList(const mstring & in, bool downlinks) throw(E_Server_List)
@@ -1773,7 +1770,6 @@ void Server::RemList(const mstring & in, bool downlinks)
     }
 }
 
-
 bool Server::IsList(const mstring & server) const
 {
     FT("Server::IsList", (server));
@@ -1782,7 +1778,6 @@ bool Server::IsList(const mstring & server) const
 
     RET(retval);
 }
-
 
 mstring Server::ServerNumeric(const unsigned long num) const
 {
@@ -1806,7 +1801,6 @@ mstring Server::ServerNumeric(const unsigned long num) const
     RET(retval);
 }
 
-
 mstring Server::GetServer(const mstring & server) const
 {
     FT("Server::GetServer", (server));
@@ -1824,7 +1818,6 @@ mstring Server::GetServer(const mstring & server) const
     RET(retval);
 }
 
-
 unsigned long Server::GetOurNumeric() const
 {
     NFT("Server::GetOurNumeric");
@@ -1832,7 +1825,6 @@ unsigned long Server::GetOurNumeric() const
 
     RET(retval);
 }
-
 
 bool Server::IsSquit(const mstring & server) const
 {
@@ -1847,9 +1839,9 @@ void Server::Jupe(const mstring & server, const mstring & reason)
 {
     FT("Server::Jupe", (server, reason));
     if (IsList(server))
-	raw(((proto.Tokens()
-	      && !proto.GetNonToken("SQUIT").empty())? proto.GetNonToken("SQUIT") : mstring("SQUIT")) + " " +
-	    server.LowerCase() + " :JUPE command used.");
+	raw(((proto.Tokens() &&
+	      !proto.GetNonToken("SQUIT").empty())? proto.GetNonToken("SQUIT") : mstring("SQUIT")) + " " + server.LowerCase() +
+	    " :JUPE command used.");
     // SERVER downlink hops :description
     // :uplink SERVER downlink hops :description
     mstring tmp;
@@ -2000,13 +1992,11 @@ void Server::ANONKILL(const mstring & nick, const mstring & dest, const mstring 
 	Magick::instance().nickserv.GetLive(dest)->Quit("Killed (" + reason + ")");
 	Magick::instance().nickserv.RemLive(dest);
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" +
-	    reason);
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" + reason);
 	mMessage::CheckDependancies(mMessage::NickNoExists, dest);
     }
 }
-
 
 void Server::AWAY(const mstring & nick, const mstring & reason)
 {
@@ -2035,7 +2025,6 @@ void Server::AWAY(const mstring & nick, const mstring & reason)
     }
 }
 
-
 void Server::GLOBOPS(const mstring & nick, const mstring & message)
 {
     FT("Server::GLOBOPS", (nick, message));
@@ -2061,18 +2050,17 @@ void Server::GLOBOPS(const mstring & nick, const mstring & message)
 
 	if (proto.Globops())
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
 	else
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
-
 
 void Server::HELPOPS(const mstring & nick, const mstring & message)
 {
@@ -2100,22 +2088,21 @@ void Server::HELPOPS(const mstring & nick, const mstring & message)
 
 	if (proto.Helpops())
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("HELPOPS").empty())? proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("HELPOPS").empty())? proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) + " :";
 	else if (proto.Globops())
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
 	else
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
-
 
 void Server::CHATOPS(const mstring & nick, const mstring & message)
 {
@@ -2143,22 +2130,21 @@ void Server::CHATOPS(const mstring & nick, const mstring & message)
 
 	if (proto.Chatops())
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("CHATOPS").empty())? proto.GetNonToken("CHATOPS") : mstring("CHATOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("CHATOPS").empty())? proto.GetNonToken("CHATOPS") : mstring("CHATOPS")) + " :";
 	else if (proto.Globops())
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
 	else
 	    line +=
-		((proto.Tokens()
-		  && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+		((proto.Tokens() &&
+		  !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
-
 
 void Server::INVITE(const mstring & nick, const mstring & dest, const mstring & channel)
 {
@@ -2189,12 +2175,11 @@ void Server::INVITE(const mstring & nick, const mstring & dest, const mstring & 
     else
     {
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("INVITE").empty())? proto.GetNonToken("INVITE") : mstring("INVITE")) + " " + dest + " :" +
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("INVITE").empty())? proto.GetNonToken("INVITE") : mstring("INVITE")) + " " + dest + " :" +
 	    channel);
     }
 }
-
 
 void Server::JOIN(const mstring & nick, const mstring & channel)
 {
@@ -2263,7 +2248,6 @@ void Server::JOIN(const mstring & nick, const mstring & channel)
     }
 }
 
-
 void Server::KICK(const mstring & nick, const mstring & dest, const mstring & channel, const mstring & reason)
 {
     FT("Server::KICK", (nick, dest, channel, reason));
@@ -2298,12 +2282,11 @@ void Server::KICK(const mstring & nick, const mstring & dest, const mstring & ch
     {
 	Magick::instance().nickserv.GetLive(dest)->Kick(nick, channel);
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("KICK").empty())? proto.GetNonToken("KICK") : mstring("KICK")) + " " + channel + " " +
-	    dest + " :" + reason);
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("KICK").empty())? proto.GetNonToken("KICK") : mstring("KICK")) + " " + channel + " " + dest +
+	    " :" + reason);
     }
 }
-
 
 void Server::KILL(const mstring & nick, const mstring & dest, const mstring & reason)
 {
@@ -2332,13 +2315,12 @@ void Server::KILL(const mstring & nick, const mstring & dest, const mstring & re
 	Magick::instance().nickserv.GetLive(dest)->Quit("Killed (" + nick + " (" + reason + "))");
 	Magick::instance().nickserv.RemLive(dest);
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" +
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" +
 	    Magick::instance().nickserv.GetLive(nick)->Host() + "!" + nick + " (" + reason + ")");
 	mMessage::CheckDependancies(mMessage::NickNoExists, dest);
     }
 }
-
 
 void Server::MODE(const mstring & nick, const mstring & mode)
 {
@@ -2356,11 +2338,10 @@ void Server::MODE(const mstring & nick, const mstring & mode)
     {
 	Magick::instance().nickserv.GetLive(nick)->Mode(mode);
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("MODE").empty())? proto.GetNonToken("MODE") : mstring("MODE")) + " " + nick + " :" + mode);
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("MODE").empty())? proto.GetNonToken("MODE") : mstring("MODE")) + " " + nick + " :" + mode);
     }
 }
-
 
 void Server::MODE(const mstring & nick, const mstring & channel, const mstring & mode)
 {
@@ -2382,12 +2363,11 @@ void Server::MODE(const mstring & nick, const mstring & channel, const mstring &
     {
 	Magick::instance().chanserv.GetLive(channel)->Mode(nick, mode);
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("MODE").empty())? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("MODE").empty())? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
 	    mode.Before(" ") + " " + mode.After(" "));
     }
 }
-
 
 void Server::NICK(const mstring & nick, const mstring & user, const mstring & host, const mstring & i_server,
 		  const mstring & name)
@@ -2554,7 +2534,6 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
     }
 }
 
-
 void Server::NICK(const mstring & oldnick, const mstring & newnick)
 {
     FT("Server::NICK", (oldnick, newnick));
@@ -2582,14 +2561,13 @@ void Server::NICK(const mstring & oldnick, const mstring & newnick)
 	}
 	Magick::instance().nickserv.AddLive(nlive);
 	raw(":" + oldnick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("NICK").empty())? proto.GetNonToken("NICK") : mstring("NICK")) + " " + newnick +
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("NICK").empty())? proto.GetNonToken("NICK") : mstring("NICK")) + " " + newnick +
 	    (proto.TSora()? " :" + mDateTime::CurrentDateTime().timetstring() : mstring("")));
 	mMessage::CheckDependancies(mMessage::NickNoExists, oldnick);
 	mMessage::CheckDependancies(mMessage::NickExists, newnick);
     }
 }
-
 
 void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & text)
 {
@@ -2610,8 +2588,8 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("NOTICE", nick));
     }
     else if (!
-	     (dest[0u] == '$' || dest[0u] == '#' || Magick::instance().nickserv.IsLive(dest)
-	      || Magick::instance().chanserv.IsLive(dest)))
+	     (dest[0u] == '$' || dest[0u] == '#' || Magick::instance().nickserv.IsLive(dest) ||
+	      Magick::instance().chanserv.IsLive(dest)))
     {
 	if (IsChan(dest))
 	{
@@ -2632,13 +2610,12 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
 
 	mstring line =
 	    ":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + dest + " :";
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + dest + " :";
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    raw(line + text.ExtractWord(i, "\n\r"));
     }
 }
-
 
 void Server::PART(const mstring & nick, const mstring & channel, const mstring & reason)
 {
@@ -2670,11 +2647,10 @@ void Server::PART(const mstring & nick, const mstring & channel, const mstring &
 	else
 	    tmpResult = "";
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("PART").empty())? proto.GetNonToken("PART") : mstring("PART")) + " " + channel + tmpResult);
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("PART").empty())? proto.GetNonToken("PART") : mstring("PART")) + " " + channel + tmpResult);
     }
 }
-
 
 void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring & text)
 {
@@ -2695,8 +2671,8 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("PRIVMSG", nick));
     }
     else if (!
-	     (dest[0u] == '$' || dest[0u] == '#' || Magick::instance().nickserv.IsLive(dest)
-	      || Magick::instance().chanserv.IsLive(dest)))
+	     (dest[0u] == '$' || dest[0u] == '#' || Magick::instance().nickserv.IsLive(dest) ||
+	      Magick::instance().chanserv.IsLive(dest)))
     {
 	if (IsChan(dest))
 	{
@@ -2717,13 +2693,12 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
 
 	mstring line =
 	    ":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("PRIVMSG").empty())? proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) + " " + dest + " :";
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("PRIVMSG").empty())? proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) + " " + dest + " :";
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    raw(line + text.ExtractWord(i, "\n\r"));
     }
 }
-
 
 void Server::SQLINE(const mstring & nick, const mstring & target, const mstring & reason)
 {
@@ -2760,7 +2735,6 @@ void Server::SQLINE(const mstring & nick, const mstring & target, const mstring 
     }
 }
 
-
 void Server::QUIT(const mstring & nick, const mstring & reason)
 {
     FT("Server::QUIT", (nick, reason));
@@ -2778,12 +2752,11 @@ void Server::QUIT(const mstring & nick, const mstring & reason)
 	Magick::instance().nickserv.GetLive(nick)->Quit(reason);
 	Magick::instance().nickserv.RemLive(nick);
 	raw(":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("QUIT").empty())? proto.GetNonToken("QUIT") : mstring("QUIT")) + " :" + reason);
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("QUIT").empty())? proto.GetNonToken("QUIT") : mstring("QUIT")) + " :" + reason);
 	mMessage::CheckDependancies(mMessage::NickNoExists, nick);
     }
 }
-
 
 void Server::RAKILL(const mstring & host)
 {
@@ -2884,7 +2857,6 @@ void Server::SVSHOST(const mstring & mynick, const mstring & nick, const mstring
     }
 }
 
-
 void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring & reason)
 {
     FT("Server::SVSKILL", (mynick, nick, reason));
@@ -2926,7 +2898,6 @@ void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring
 	mMessage::CheckDependancies(mMessage::NickNoExists, nick);
     }
 }
-
 
 void Server::SVSNICK(const mstring & mynick, const mstring & nick, const mstring & newnick)
 {
@@ -2971,7 +2942,6 @@ void Server::SVSNICK(const mstring & mynick, const mstring & nick, const mstring
     }
 }
 
-
 void Server::SVSNOOP(const mstring & nick, const mstring & server, const bool onoff)
 {
     FT("Server::SVSNOOP", (nick, server, onoff));
@@ -3004,7 +2974,6 @@ void Server::SVSNOOP(const mstring & nick, const mstring & server, const bool on
 	raw(output);
     }
 }
-
 
 void Server::SVSMODE(const mstring & mynick, const mstring & nick, const mstring & mode)
 {
@@ -3046,12 +3015,10 @@ void Server::SVSMODE(const mstring & mynick, const mstring & nick, const mstring
     }
 }
 
-
 void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring & channel, const mstring & topic,
 		   const mDateTime & settime)
 {
     FT("Server::TOPIC", (nick, setter, channel, topic, settime));
-
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
@@ -3106,7 +3073,6 @@ void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring &
     }
 }
 
-
 void Server::UNSQLINE(const mstring & nick, const mstring & target)
 {
     FT("Server::UNSQLINE", (nick, target));
@@ -3142,7 +3108,6 @@ void Server::UNSQLINE(const mstring & nick, const mstring & target)
     }
 }
 
-
 void Server::WALLOPS(const mstring & nick, const mstring & message)
 {
     FT("Server::WALLOPS", (nick, message));
@@ -3167,24 +3132,22 @@ void Server::WALLOPS(const mstring & nick, const mstring & message)
 
 	mstring line =
 	    ":" + nick + " " +
-	    ((proto.Tokens()
-	      && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+	    ((proto.Tokens() &&
+	      !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
-
 void Server::KillUnknownUser(const mstring & user) const
 {
     FT("Server::KillUnknownUser", (user));
-    sraw(((proto.Tokens()
-	   && !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + user + " :" +
+    sraw(((proto.Tokens() &&
+	   !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + user + " :" +
 	 Magick::instance().startup.Server_Name() + " (" + user + "(?) <- " + Magick::instance().CurrentServer() + ")");
     LOG(LM_ERROR, "OTHER/KILL_UNKNOWN", (user));
 }
-
 
 void Server::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
@@ -3317,9 +3280,9 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		return;
 	    }
 	}
@@ -3443,19 +3406,19 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
 	// :source CONNECT some.server port :our.server
-	if (IsList(params.ExtractWord(1, ": "))
-	    || params.ExtractWord(1, ": ").IsSameAs(Magick::instance().startup.Server_Name(), true))
+	if (IsList(params.ExtractWord(1, ": ")) ||
+	    params.ExtractWord(1, ": ").IsSameAs(Magick::instance().startup.Server_Name(), true))
 	{
-	    sraw(((proto.Tokens()
-		   && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+	    sraw(((proto.Tokens() &&
+		   !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
 		 " :Connect: Server " + params.ExtractWord(1,
 							   ": ") + " already exists from " +
 		 Magick::instance().startup.Server_Name());
 	}
 	else
 	{
-	    sraw(((proto.Tokens()
-		   && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+	    sraw(((proto.Tokens() &&
+		   !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
 		 " :Connect: Host " + params.ExtractWord(1, ": ") + " not listed in irc.conf");
 	}
     }
@@ -3500,8 +3463,8 @@ void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// Tis only nice, afterall ...
 	Magick::instance().server.
-	    sraw(((proto.Tokens()
-		   && !proto.GetNonToken("EOB_ACK").empty())? proto.GetNonToken("EOB_ACK") : mstring("EOB_ACK")));
+	    sraw(((proto.Tokens() &&
+		   !proto.GetNonToken("EOB_ACK").empty())? proto.GetNonToken("EOB_ACK") : mstring("EOB_ACK")));
     }
     else if (msgtype == "EOB_ACK")
     {
@@ -3626,9 +3589,9 @@ void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		return;
 	    }
 	    else
@@ -3732,8 +3695,8 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 	}
 
 	if (!source.Contains(".") && !Magick::instance().nickserv.GetLive(source)->IsInChan(params.ExtractWord(1, ": ")))
-	    sraw(((proto.Tokens()
-		   && !proto.GetNonToken("KICK").empty())? proto.GetNonToken("KICK") : mstring("KICK")) + " " +
+	    sraw(((proto.Tokens() &&
+		   !proto.GetNonToken("KICK").empty())? proto.GetNonToken("KICK") : mstring("KICK")) + " " +
 		 params.ExtractWord(1, ": ") + " " + source + " :You are not in this channel");
 
 	// NOTE: as the message has already been broadcasted,
@@ -3757,8 +3720,8 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 		      Mask(Nick_Live_t::N_U_P_H))));
 		WLOCK2(("Server", "WaitIsOn"));
 		WaitIsOn.insert(params.ExtractWord(1, ": "));
-		sraw(((proto.Tokens()
-		       && !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " " +
+		sraw(((proto.Tokens() &&
+		       !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " " +
 		     params.ExtractWord(1, ": "));
 	    }
 	    int wc = params.After(":").WordCount("!");
@@ -3807,9 +3770,9 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		return;
 	    }
 	    else
@@ -3842,9 +3805,9 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		return;
 	    }
 	    else
@@ -3856,7 +3819,8 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 		    {
 			map_entry < Chan_Live_t > clive(iter->second);
 			if (!(clive->HasMode("s") || clive->HasMode("p")))
-			    sraw("322 " + source + " " + clive->Name() + " " + mstring(clive->Users()) + " :" + clive->Topic());
+			    sraw("322 " + source + " " + clive->Name() + " " + mstring(clive->Users()) + " :" +
+				 clive->Topic());
 		    }
 		}
 	    }
@@ -3927,8 +3891,8 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 		    mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					       mVarArray(msgtype));
 
-		    raw(((proto.Tokens()
-			  && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    raw(((proto.Tokens() &&
+			  !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
 			source + " :" + tmp.c_str());
 		    return;
 		}
@@ -4040,8 +4004,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		     nlive->SignonTime().DateTimeString().c_str(),
 		     mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
 		// IF the squit server = us, and the signon time matches
-		if (nlive->Squit().IsSameAs(server, true)
-		    && nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
+		if (nlive->Squit().IsSameAs(server, true) &&
+		    nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
 		{
 		    nlive->ClearSquit(modes);
 		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
@@ -4426,12 +4390,12 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	{
 	    LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer()));
 	    CP(("Server password mismatch.  Closing socket."));
-	    raw(((proto.Tokens()
-		  && !proto.GetNonToken("ERROR").empty())? proto.GetNonToken("ERROR") : mstring("ERROR")) +
+	    raw(((proto.Tokens() &&
+		  !proto.GetNonToken("ERROR").empty())? proto.GetNonToken("ERROR") : mstring("ERROR")) +
 		" :No Access (passwd mismatch) [" + Magick::instance().CurrentServer() + "]");
-	    raw(((proto.Tokens()
-		  && !proto.GetNonToken("ERROR").empty())? proto.GetNonToken("ERROR") : mstring("ERROR")) +
-		" :Closing Link: [" + Magick::instance().CurrentServer() + "] (Bad Password)");
+	    raw(((proto.Tokens() &&
+		  !proto.GetNonToken("ERROR").empty())? proto.GetNonToken("ERROR") : mstring("ERROR")) + " :Closing Link: [" +
+		Magick::instance().CurrentServer() + "] (Bad Password)");
 	    sraw("464 " + Magick::instance().CurrentServer() + " :" + "Password Incorrect");
 	    Magick::instance().Disconnect();
 	}
@@ -4440,8 +4404,8 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// PING :some.server
 	// :some.server PING some.server :our.server
-	sraw(((proto.Tokens()
-	       && !proto.GetNonToken("PONG").empty())? proto.GetNonToken("PONG") : mstring("PONG")) + " " +
+	sraw(((proto.Tokens() &&
+	       !proto.GetNonToken("PONG").empty())? proto.GetNonToken("PONG") : mstring("PONG")) + " " +
 	     Magick::instance().startup.Server_Name() + " :" + source);
     }
     else if (msgtype == "PONG")
@@ -4528,8 +4492,8 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 
 	// OK, 4 words (always for squit), the 4nd word is a server
 	// and the 3rd word is the uplink of the 4th word (a server)
-	if (params.WordCount(": ") == 2 && IsList(params.ExtractWord(2, ": "))
-	    && GetList(params.ExtractWord(2, ": "))->Uplink().IsSameAs(params.ExtractWord(1, ": "), true))
+	if (params.WordCount(": ") == 2 && IsList(params.ExtractWord(2, ": ")) &&
+	    GetList(params.ExtractWord(2, ": "))->Uplink().IsSameAs(params.ExtractWord(1, ": "), true))
 	{
 	    // Suspected SQUIT
 	    //
@@ -4566,8 +4530,8 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 
 	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
 	    if (nlive->IsServices())
-		sraw(((proto.Tokens()
-		       && !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " " + source);
+		sraw(((proto.Tokens() &&
+		       !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " " + source);
 	    nlive->Quit(params.After(":"));
 	    Magick::instance().nickserv.RemLive(source);
 	}
@@ -5036,8 +5000,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		 nlive->SignonTime().DateTimeString().c_str(),
 		 mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
 	    // IF the squit server = us, and the signon time matches
-	    if (nlive->Squit().IsSameAs(server, true)
-		&& nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
+	    if (nlive->Squit().IsSameAs(server, true) &&
+		nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
 	    {
 		nlive->ClearSquit(modes);
 		mMessage::CheckDependancies(mMessage::NickExists, newnick);
@@ -5243,8 +5207,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	{
 	    map_entry < Server_t > server = GetList(params.ExtractWord(1, ": "));
 	    if (server->Jupe())
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("SQUIT").empty())? proto.GetNonToken("SQUIT") : mstring("SQUIT")) + " " +
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("SQUIT").empty())? proto.GetNonToken("SQUIT") : mstring("SQUIT")) + " " +
 		    server->Name() + " :" + params.After(": ", 2));
 
 	    unsigned int i;
@@ -5473,16 +5437,16 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		return;
 	    }
 	}
 	mstring out;
 
-	if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": "))
-	    && Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->IsServices())
+	if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")) &&
+	    Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->IsServices())
 	{
 	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
 	    if (nlive->HasMode("o"))
@@ -5651,8 +5615,8 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 		 nlive->SignonTime().DateTimeString().c_str(),
 		 mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
 	    // IF the squit server = us, and the signon time matches
-	    if (nlive->Squit().IsSameAs(server, true)
-		&& nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
+	    if (nlive->Squit().IsSameAs(server, true) &&
+		nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
 	    {
 		nlive->ClearSquit(modes);
 		mMessage::CheckDependancies(mMessage::NickExists, newnick);
@@ -5982,9 +5946,9 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		return;
 	    }
 	}
@@ -6011,9 +5975,9 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
 					   mVarArray(msgtype));
 
-		raw(((proto.Tokens()
-		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
-		    source + " :" + tmp.c_str());
+		raw(((proto.Tokens() &&
+		      !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		    " :" + tmp.c_str());
 		sraw("318 " + source + " " + params.ExtractWord(1, ": ") + " :End of /WHOIS list.");
 		return;
 	    }
@@ -6204,11 +6168,10 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 		    Magick::instance().ircsvchandler->EndBurst();
 		    if (!proto.Burst().empty())
 			Magick::instance().server.
-			    sraw(((proto.Tokens()
-				   && !proto.GetNonToken(proto.Burst()).empty())? proto.GetNonToken(proto.
-												    Burst()) : mstring(proto.
-														       Burst
-														       ())));
+			    sraw(((proto.Tokens() &&
+				   !proto.GetNonToken(proto.Burst()).empty())? proto.GetNonToken(proto.
+												 Burst()) : mstring(proto.
+														    Burst())));
 		}
 	    }
 
@@ -6260,9 +6223,9 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 					clive = Magick::instance().chanserv.GetLive(iter->first);
 
 				    // If its live and got JOIN on || not live and mlock +k or +i
-				    if ((clive.entry() != NULL && cstored->Join())
-					|| (clive.entry() == NULL && !cstored->Forbidden()
-					    && (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
+				    if ((clive.entry() != NULL && cstored->Join()) ||
+					(clive.entry() == NULL && !cstored->Forbidden() &&
+					 (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
 				    {
 					joins.push_back(iter->first);
 					if (clive.entry() == NULL)
@@ -6277,8 +6240,8 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 
 				    if (clive.entry() != NULL && !cstored->Last_Topic().empty() && !cstored->Suspended())
 				    {
-					if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic())
-					    || (cstored->Keeptopic() && clive->Topic().empty()))
+					if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic()) ||
+					    (cstored->Keeptopic() && clive->Topic().empty()))
 					{
 					    topics[iter->first] =
 						triplet < mstring, mstring, mDateTime > (cstored->Last_Topic_Setter(),
@@ -6338,8 +6301,8 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 			    Magick::instance().server.MODE(*k, "+o");
 		    }
 
-		    if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
-			&& Magick::instance().nickserv.IsLive(*k) && !Magick::instance().startup.Setmode().empty())
+		    if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000)) &&
+			Magick::instance().nickserv.IsLive(*k) && !Magick::instance().startup.Setmode().empty())
 			Magick::instance().server.MODE(*k, "+" + Magick::instance().startup.Setmode());
 		    FlushMsgs(*k);
 		}
@@ -6350,11 +6313,10 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 	    }
 	    if (!proto.EndBurst().empty())
 		Magick::instance().server.
-		    sraw(((proto.Tokens()
-			   && !proto.GetNonToken(proto.EndBurst()).empty())? proto.GetNonToken(proto.
-											       EndBurst()) : mstring(proto.
-														     EndBurst
-														     ())));
+		    sraw(((proto.Tokens() &&
+			   !proto.GetNonToken(proto.EndBurst()).empty())? proto.GetNonToken(proto.EndBurst()) : mstring(proto.
+															EndBurst
+															())));
 	}
 	break;
     case 436:			// ERR_NICKCOLLISION

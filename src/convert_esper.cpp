@@ -28,6 +28,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.13  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -225,7 +228,6 @@ void ESP_close_db(ESP_dbFILE * f)
  * All routines return -1 on error, 0 otherwise.
  */
 
-
 int ESP_read_int16(int16 * ret, ESP_dbFILE * f)
 {
     int c1, c2;
@@ -278,7 +280,6 @@ int ESP_read_string(char **ret, ESP_dbFILE * f)
 
 /* Load/save data files. */
 
-
 #define SAFE(x) do {					\
     if ((x) < 0) {					\
 	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_NickDBName));	\
@@ -286,7 +287,6 @@ int ESP_read_string(char **ret, ESP_dbFILE * f)
 	break;						\
     }							\
 } while (0)
-
 
 void ESP_load_old_ns_dbase(ESP_dbFILE * f, int ver)
 {
@@ -603,7 +603,6 @@ int ESP_delnick(ESP_NickInfo * ni)
 
 /* Load/save data files. */
 
-
 #define SAFE(x) do {					\
     if ((x) < 0) {					\
 	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_ChanDBName));	\
@@ -696,7 +695,6 @@ void ESP_load_old_cs_dbase(ESP_dbFILE * f, int ver)
 	struct channel_ *c;
     }
     old_channelinfo;
-
 
     for (i = 33; i < 256 && !failed; i++)
     {
@@ -873,7 +871,6 @@ void ESP_load_old_cs_dbase(ESP_dbFILE * f, int ver)
 	}			/* while (ESP_getc_db(f) != 0) */
     }				/* for (i) */
 }
-
 
 void ESP_load_cs_dbase(void)
 {
@@ -1142,7 +1139,6 @@ int ESP_delchan(ESP_ChannelInfo * ci)
     return 1;
 }
 
-
 #undef SAFE
 
 /*************************************************************************/
@@ -1302,8 +1298,8 @@ void ESP_load_news()
 													mDateTime(news[i].
 														  time));
 	    }
-	    else if (news[i].type == ESP_NEWS_OPER
-		     && Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
+	    else if (news[i].type == ESP_NEWS_OPER &&
+		     Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	    {
 		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->MSG_insert(mstring(news[i].text),
 													 mstring(news[i].who),
@@ -1368,8 +1364,8 @@ void ESP_load_os_dbase(void)
 		    continue;
 
 		if (!
-		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
+		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
 		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(s),
 													Magick::instance().
 													commserv.FirstName());
@@ -1396,10 +1392,10 @@ void ESP_load_os_dbase(void)
 		    continue;
 
 		if (!
-		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s))
-		    && !(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name())
-			 && Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(s)))
+		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)) &&
+		    !(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		      Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(s)))
 		    Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(mstring(s),
 													 Magick::instance().
 													 commserv.FirstName());
@@ -1436,8 +1432,8 @@ void ESP_load_os_dbase(void)
 		    continue;
 
 		if (!
-		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
+		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
 		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(s),
 													Magick::instance().
 													commserv.FirstName());
@@ -1893,8 +1889,8 @@ Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo * ci)
 	ESP_AutoKick *akick;
 	int i;
 
-	if (ci->founder == NULL || !strlen(ci->founder) || ci->desc == NULL || !strlen(ci->desc) || ci->founderpass == NULL
-	    || !strlen(ci->founderpass))
+	if (ci->founder == NULL || !strlen(ci->founder) || ci->desc == NULL || !strlen(ci->desc) || ci->founderpass == NULL ||
+	    !strlen(ci->founderpass))
 	{
 	    return NULL;
 	}

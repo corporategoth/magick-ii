@@ -299,7 +299,6 @@ static int PREFIX(scanPi) (const ENCODING * enc, const char *ptr, const char *en
     return XML_TOK_PARTIAL;
 }
 
-
 static int PREFIX(scanCdataSection) (const ENCODING * enc, const char *ptr, const char *end, const char **nextTokPtr)
 {
     static const char CDATA_LSQB[] = { ASCII_C, ASCII_D, ASCII_A, ASCII_T, ASCII_A, ASCII_LSQB };
@@ -1612,9 +1611,9 @@ static int PREFIX(getAtts) (const ENCODING * enc, const char *ptr, int attsMax, 
 	case BT_S:
 	    if (state == inName)
 		state = other;
-	    else if (state == inValue && nAtts < attsMax && atts[nAtts].normalized
-		     && (ptr == atts[nAtts].valuePtr || BYTE_TO_ASCII(enc, ptr) != ASCII_SPACE
-			 || BYTE_TO_ASCII(enc, ptr + MINBPC(enc)) == ASCII_SPACE || BYTE_TYPE(enc, ptr + MINBPC(enc)) == open))
+	    else if (state == inValue && nAtts < attsMax && atts[nAtts].normalized &&
+		     (ptr == atts[nAtts].valuePtr || BYTE_TO_ASCII(enc, ptr) != ASCII_SPACE ||
+		      BYTE_TO_ASCII(enc, ptr + MINBPC(enc)) == ASCII_SPACE || BYTE_TYPE(enc, ptr + MINBPC(enc)) == open))
 		atts[nAtts].normalized = 0;
 	    break;
 	case BT_CR:

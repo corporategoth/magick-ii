@@ -28,6 +28,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.182  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.181  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -380,7 +383,6 @@ map < mMessage::type_t, map < mstring, set < unsigned long > > >mMessage::AllDep
 map < unsigned long, mMessage * >mMessage::MsgIdMap;
 unsigned long mMessage::LastMsgId = 0;
 
-
 entlist_t & entlist_t::operator=(const entlist_t & in)
 {
     FT("entlist_t::operator=", ("(const entlist_t &) in"));
@@ -393,7 +395,6 @@ entlist_t & entlist_t::operator=(const entlist_t & in)
 	i_UserDef[i->first] = i->second;
     NRET(entlist_t &, *this);
 }
-
 
 SXP::Tag tag_entlist_t("entlist_t");
 SXP::Tag tag_entlist_val_t("entlist_val_t");
@@ -499,7 +500,6 @@ void entlist_t::DumpE() const
 {
     ME(0, (i_Entry, i_Last_Modifier, i_Last_Modify_Time, i_UserDef.size()));
 }
-
 
 // --------- end of entlist_t -----------------------------------
 
@@ -840,8 +840,8 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserNoInChan:
-	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":"))
-		&& Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
+	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
+		Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -972,8 +972,8 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case UserInChan:
-		if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":"))
-		    && Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
+		if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
+		    Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -988,9 +988,9 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case UserNoInChan:
-		if (!iter->third
-		    && (!Magick::instance().chanserv.IsLive(iter->second.Before(":"))
-			|| !Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":"))))
+		if (!iter->third &&
+		    (!Magick::instance().chanserv.IsLive(iter->second.Before(":")) ||
+		     !Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":"))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -1158,8 +1158,8 @@ int mMessage::call()
     try
     {
 
-	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source_)
-	    && !IsChan(params_.ExtractWord(1, ": ")))
+	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source_) &&
+	    !IsChan(params_.ExtractWord(1, ": ")))
 	{
 	    mstring target(params_.ExtractWord(1, ": "));
 
@@ -1412,8 +1412,8 @@ bool mBase::signon(const mstring & nickname) const
     else
     {
 	Magick::instance().server.NICK(nickname,
-				       (Magick::instance().startup.Ownuser()? nickname.LowerCase() : Magick::instance().startup.
-					Services_User()), Magick::instance().startup.Services_Host(),
+				       (Magick::instance().startup.Ownuser()? nickname.LowerCase() : Magick::instance().
+					startup.Services_User()), Magick::instance().startup.Services_Host(),
 				       Magick::instance().startup.Server_Name(), realname);
 	RET(true);
     }
@@ -1433,7 +1433,6 @@ bool mBase::signoff(const mstring & nickname, const mstring & msg) const
 	RET(false);
     }
 }
-
 
 void mBase::privmsgV(const mstring & dest, const char *pszFormat, ...) const
 {
@@ -1476,7 +1475,6 @@ void mBase::privmsg(const mstring & source, const mstring & dest, const mstring 
     if (IsName(source) && !Magick::instance().getLname(dest).empty())
 	Magick::instance().server.PRIVMSG(source, dest, message);
 }
-
 
 void mBase::noticeV(const mstring & dest, const char *pszFormat, ...) const
 {
@@ -1560,8 +1558,8 @@ void mBase::send(const mstring & source, const mstring & dest, const mstring & m
 
     if (IsName(source) && Magick::instance().nickserv.IsLive(dest))
     {
-	if (!Magick::instance().nickserv.LCK_PRIVMSG() && Magick::instance().nickserv.IsStored(dest)
-	    && Magick::instance().nickserv.GetStored(dest)->IsOnline())
+	if (!Magick::instance().nickserv.LCK_PRIVMSG() && Magick::instance().nickserv.IsStored(dest) &&
+	    Magick::instance().nickserv.GetStored(dest)->IsOnline())
 	{
 	    if (Magick::instance().nickserv.GetStored(dest)->PRIVMSG())
 	    {
@@ -1585,7 +1583,6 @@ void mBase::send(const mstring & source, const mstring & dest, const mstring & m
 	}
     }
 }
-
 
 void privmsgV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
@@ -1750,7 +1747,6 @@ void CommandMap::AddSystemCommand(const mstring & service, const mstring & comma
 						       function));
 }
 
-
 void CommandMap::RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees)
 {
     FT("CommandMap::RemSystemCommand", (service, command, committees));
@@ -1761,8 +1757,8 @@ void CommandMap::RemSystemCommand(const mstring & service, const mstring & comma
 	cmdtype::iterator iter;
 	for (iter = i_system[service.LowerCase()].begin(); iter != i_system[service.LowerCase()].end(); iter++)
 	{
-	    if (iter->first == command.UpperCase()
-		&& mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
+	    if (iter->first == command.UpperCase() &&
+		mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
 	    {
 		i_system[service.LowerCase()].erase(iter);
 		if (!i_system[service.LowerCase()].size())
@@ -1772,7 +1768,6 @@ void CommandMap::RemSystemCommand(const mstring & service, const mstring & comma
 	}
     }
 }
-
 
 void CommandMap::AddCommand(const mstring & service, const mstring & command, const mstring & committees, functor function)
 {
@@ -1785,7 +1780,6 @@ void CommandMap::AddCommand(const mstring & service, const mstring & command, co
 						     function));
 }
 
-
 void CommandMap::RemCommand(const mstring & service, const mstring & command, const mstring & committees)
 {
     FT("CommandMap::RemCommand", (service, command, committees));
@@ -1796,8 +1790,8 @@ void CommandMap::RemCommand(const mstring & service, const mstring & command, co
 	cmdtype::iterator iter;
 	for (iter = i_user[service.LowerCase()].begin(); iter != i_user[service.LowerCase()].end(); iter++)
 	{
-	    if (iter->first == command.UpperCase()
-		&& mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
+	    if (iter->first == command.UpperCase() &&
+		mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
 	    {
 		i_user[service.LowerCase()].erase(iter);
 		if (!i_user[service.LowerCase()].size())
@@ -1807,7 +1801,6 @@ void CommandMap::RemCommand(const mstring & service, const mstring & command, co
 	}
     }
 }
-
 
 pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & service, const mstring & command,
 							      const mstring & user) const
@@ -1988,7 +1981,6 @@ bool CommandMap::DoCommand(const mstring & mynick, const mstring & user, const m
     RET(false);
 }
 
-
 bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
@@ -2019,7 +2011,6 @@ bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, con
     RET(false);
 }
 
-
 bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
@@ -2049,7 +2040,6 @@ bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, c
     }
     RET(false);
 }
-
 
 void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params)
 {

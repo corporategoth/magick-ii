@@ -28,6 +28,9 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.38  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -593,7 +596,6 @@ map < mstring, mstring > ceNode::GetMap() const
     NRET(map < mstring_mstring >, Result);
 }
 
-
 bool mConfigEngine::LoadFile()
 {
     NFT("mConfigEngine::LoadFile");
@@ -630,7 +632,6 @@ void mConfigEngine::Empty()
     RootNode.i_children.clear();
     RootNode.i_keys.clear();
 }
-
 
 mstring mConfigEngine::Read(const mstring & key, const mstring & Default) const
 {
@@ -857,7 +858,6 @@ double mConfigEngine::Write(const mstring & key, const double value)
     Write(key, tmp);
     RET(Result);
 }
-
 
 ceNode *mConfigEngine::GetNode(const mstring & NodeName)
 {

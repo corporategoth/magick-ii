@@ -34,7 +34,6 @@ typedef unsigned short ICHAR;
 typedef char ICHAR;
 #endif
 
-
 #ifndef XML_NS
 
 #define XmlInitEncodingNS XmlInitEncoding
@@ -567,7 +566,6 @@ XML_Parser XML_ParserCreate_MM(const XML_Char * encodingName, const XML_Memory_H
 	XML_T('\0')
     };
 
-
     if (memsuite)
     {
 	XML_Memory_Handling_Suite *mtemp;
@@ -1018,7 +1016,6 @@ void XML_SetEndNamespaceDeclHandler(XML_Parser parser, XML_EndNamespaceDeclHandl
     endNamespaceDeclHandler = end;
 }
 
-
 void XML_SetNotStandaloneHandler(XML_Parser parser, XML_NotStandaloneHandler handler)
 {
     notStandaloneHandler = handler;
@@ -1444,7 +1441,8 @@ static enum XML_Error externalEntityInitProcessor3(XML_Parser parser, const char
     return doContent(parser, 1, encoding, start, end, endPtr);
 }
 
-static enum XML_Error externalEntityContentProcessor(XML_Parser parser, const char *start, const char *end, const char **endPtr)
+static enum XML_Error externalEntityContentProcessor(XML_Parser parser, const char *start, const char *end,
+						     const char **endPtr)
 {
     return doContent(parser, 1, encoding, start, end, endPtr);
 }
@@ -2845,8 +2843,8 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	    break;
 	case XML_ROLE_IMPLIED_ATTRIBUTE_VALUE:
 	case XML_ROLE_REQUIRED_ATTRIBUTE_VALUE:
-	    if (dtd.complete
-		&& !defineAttribute(declElementType, declAttributeId, declAttributeIsCdata, declAttributeIsId, 0, parser))
+	    if (dtd.complete &&
+		!defineAttribute(declElementType, declAttributeId, declAttributeIsCdata, declAttributeIsId, 0, parser))
 		return XML_ERROR_NO_MEMORY;
 	    if (attlistDeclHandler && declAttributeType)
 	    {
@@ -3161,8 +3159,8 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	case XML_ROLE_GROUP_CHOICE:
 	    if (groupConnector[prologState.level] == ',')
 		return XML_ERROR_SYNTAX;
-	    if (dtd.in_eldecl && !groupConnector[prologState.level]
-		&& dtd.scaffold[dtd.scaffIndex[dtd.scaffLevel - 1]].type != XML_CTYPE_MIXED)
+	    if (dtd.in_eldecl && !groupConnector[prologState.level] &&
+		dtd.scaffold[dtd.scaffIndex[dtd.scaffLevel - 1]].type != XML_CTYPE_MIXED)
 	    {
 		dtd.scaffold[dtd.scaffIndex[dtd.scaffLevel - 1]].type = XML_CTYPE_CHOICE;
 	    }
@@ -3826,7 +3824,6 @@ static void reportDefault(XML_Parser parser, const ENCODING * enc, const char *s
 	defaultHandler(handlerArg, (XML_Char *) s, (XML_Char *) end - (XML_Char *) s);
 }
 
-
 static int defineAttribute(ELEMENT_TYPE * type, ATTRIBUTE_ID * attId, int isCdata, int isId, const XML_Char * value,
 			   XML_Parser parser)
 {
@@ -3922,8 +3919,8 @@ static ATTRIBUTE_ID *getAttributeId(XML_Parser parser, const ENCODING * enc, con
 	poolFinish(&dtd.pool);
 	if (!ns)
 	    ;
-	else if (name[0] == 'x' && name[1] == 'm' && name[2] == 'l' && name[3] == 'n' && name[4] == 's'
-		 && (name[5] == XML_T('\0') || name[5] == XML_T(':')))
+	else if (name[0] == 'x' && name[1] == 'm' && name[2] == 'l' && name[3] == 'n' && name[4] == 's' &&
+		 (name[5] == XML_T('\0') || name[5] == XML_T(':')))
 	{
 	    if (name[5] == '\0')
 		id->prefix = &dtd.defaultPrefix;
@@ -4012,7 +4009,6 @@ static const XML_Char *getContext(XML_Parser parser)
 	needSep = 1;
     }
 
-
     hashTableIterInit(&iter, &(dtd.generalEntities));
     for (;;)
     {
@@ -4098,7 +4094,6 @@ static int setContext(XML_Parser parser, const XML_Char * context)
     }
     return 1;
 }
-
 
 static void normalizePublicId(XML_Char * publicId)
 {
@@ -4508,7 +4503,6 @@ static NAMED *hashTableIterNext(HASH_TABLE_ITER * iter)
     }
     return 0;
 }
-
 
 static void poolInit(STRING_POOL * pool, XML_Memory_Handling_Suite * ms)
 {

@@ -28,6 +28,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.9  2002/01/12 14:42:08  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -229,7 +232,6 @@ void EPO_close_db(EPO_dbFILE * f)
  * All routines return -1 on error, 0 otherwise.
  */
 
-
 int EPO_read_int16(int16 * ret, EPO_dbFILE * f)
 {
     int c1, c2;
@@ -282,7 +284,6 @@ int EPO_read_string(char **ret, EPO_dbFILE * f)
 
 /* Load/save data files. */
 
-
 #define HASH(nick)	((tolower((nick)[0])&31)<<5 | (tolower((nick)[1])&31))
 #define SAFE(x) do {					\
     if ((x) < 0) {					\
@@ -291,7 +292,6 @@ int EPO_read_string(char **ret, EPO_dbFILE * f)
 	break;						\
     }							\
 } while (0)
-
 
 void EPO_load_old_ns_dbase(EPO_dbFILE * f, int ver)
 {
@@ -691,7 +691,6 @@ void EPO_load_ns_dbase(void)
     }
 }
 
-
 EPO_NickCore *EPO_findcore(const char *nick, EPO_NickCore ** nclists)
 {
     EPO_NickCore *nc;
@@ -704,8 +703,6 @@ EPO_NickCore *EPO_findcore(const char *nick, EPO_NickCore ** nclists)
 
     return NULL;
 }
-
-
 
 int EPO_delnick(EPO_NickAlias * na)
 {
@@ -768,7 +765,6 @@ int EPO_delcore(EPO_NickCore * nc)
 /*************************************************************************/
 
 /* Load/save data files. */
-
 
 #define SAFE(x) do {					\
     if ((x) < 0) {					\
@@ -1225,7 +1221,6 @@ int EPO_delchan(EPO_ChannelInfo * ci)
     return 1;
 }
 
-
 #undef SAFE
 
 /*************************************************************************/
@@ -1278,11 +1273,13 @@ void EPO_load_news()
 													mstring(news->who),
 													mDateTime(news->time));
 	    }
-	    else if (news->type == EPO_NEWS_OPER && Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
+	    else if (news->type == EPO_NEWS_OPER &&
+		     Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	    {
 		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->MSG_insert(mstring(news->text),
 													 mstring(news->who),
-													 mDateTime(news->time));
+													 mDateTime(news->
+														   time));
 	    }
 
 	    if (news->text)
@@ -1414,8 +1411,8 @@ void EPO_load_os_dbase(void)
 	    if (s)
 	    {
 		if (!
-		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
+		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
 		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(s),
 													Magick::instance().
 													commserv.FirstName());
@@ -1632,8 +1629,9 @@ void EPO_load_exceptions()
 
 	    if (exception->mask != NULL && exception->reason != NULL)
 	    {
-		Magick::instance().operserv.Clone_insert(mstring(exception->mask), exception->limit, mstring(exception->reason),
-							 mstring(exception->who), mDateTime(exception->time));
+		Magick::instance().operserv.Clone_insert(mstring(exception->mask), exception->limit,
+							 mstring(exception->reason), mstring(exception->who),
+							 mDateTime(exception->time));
 	    }
 	    if (exception->mask)
 		free(exception->mask);
@@ -1730,21 +1728,21 @@ Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias * na, EPO_NickCore * nc)
 	    && !Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->find(na->nick))
 	{
 	    if (!
-		(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		 && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(na->nick)))
+		(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(na->nick)))
 		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(na->nick),
-												    Magick::instance().commserv.
-												    FirstName());
+												    Magick::instance().
+												    commserv.FirstName());
 	}
-	else if ((nc->flags & EPO_NI_SERVICES_OPER)
-		 && Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name())
-		 && !Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->find(na->nick))
+	else if ((nc->flags & EPO_NI_SERVICES_OPER) &&
+		 Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		 !Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->find(na->nick))
 	{
 	    if (!
-		(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		 && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(na->nick))
-		&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(na->nick)))
+		(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(na->nick)) &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(na->nick)))
 		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(mstring(na->nick),
 												     Magick::instance().
 												     commserv.FirstName());
@@ -1889,8 +1887,8 @@ Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo * ci)
 	EPO_AutoKick *akick;
 	int i;
 
-	if (ci->founder == NULL || !strlen(ci->founder) || ci->desc == NULL || !strlen(ci->desc) || ci->founderpass == NULL
-	    || !strlen(ci->founderpass))
+	if (ci->founder == NULL || !strlen(ci->founder) || ci->desc == NULL || !strlen(ci->desc) || ci->founderpass == NULL ||
+	    !strlen(ci->founderpass))
 	{
 	    return NULL;
 	}

@@ -28,6 +28,9 @@ RCSID(variant_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2002/01/13 05:18:42  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.50  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -206,7 +209,6 @@ bool mVariant::operator<(const mVariant & in) const
 {
     if (valuetype != in.valuetype)
 	return false;
-
 
     switch (valuetype)
     {

@@ -28,6 +28,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.110  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -349,7 +352,6 @@ i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text), i_Read(fal
     DumpE();
 }
 
-
 Memo_t & Memo_t::operator=(const Memo_t & in)
 {
     FT("Memo_t::operator=", ("(const Memo_t &) in"));
@@ -454,14 +456,12 @@ void Memo_t::DumpE() const
     ME(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File, i_UserDef.size()));
 }
 
-
 News_t::News_t(const mstring & channel, const mstring & sender, const mstring & text, const bool noexpire):i_Channel(channel),
 i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text), i_NoExpire(noexpire)
 {
     FT("News_t::News_t", (channel, sender, text));
     DumpE();
 }
-
 
 News_t & News_t::operator=(const News_t & in)
 {
@@ -474,7 +474,6 @@ News_t & News_t::operator=(const News_t & in)
     i_NoExpire = in.i_NoExpire;
     NRET(News_t &, *this);
 }
-
 
 mstring News_t::Sender() const
 {
@@ -496,7 +495,6 @@ mstring News_t::Text() const
     RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Text"));
     RET(i_Text);
 }
-
 
 bool News_t::NoExpire() const
 {
@@ -532,7 +530,6 @@ bool News_t::IsRead(const mstring & name)
     RET(retval);
 }
 
-
 void News_t::Read(const mstring & name)
 {
     FT("News_t::Read", (name));
@@ -550,7 +547,6 @@ void News_t::Read(const mstring & name)
     i_Read.insert(target.LowerCase());
     MCE(i_Read.size());
 }
-
 
 void News_t::Unread(const mstring & name)
 {
@@ -602,7 +598,6 @@ void News_t::DumpE() const
 {
     ME(0, (i_Channel, i_Sender, i_Text, i_Time, i_NoExpire, i_Read.size(), i_UserDef.size()));
 }
-
 
 MemoServ::MemoServ()
 {
@@ -996,7 +991,6 @@ bool MemoServ::IsNickMemo(const mstring & in, const size_t num) const
     RET(false);
 }
 
-
 size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
 {
     FT("MemoServ::NickMemoCount", (in, isread));
@@ -1016,7 +1010,6 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
     }
     RET(retval);
 }
-
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 void MemoServ::AddChannel(channel_news_t in) throw(E_MemoServ_Channel)
@@ -1321,7 +1314,6 @@ void MemoServ::execute(mstring & source, const mstring & msgtype, const mstring 
 	// Invalid command or not enough privs.
     }
 
-
     mThread::ReAttach(tt_mBase);
 
 }
@@ -1496,7 +1488,8 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 				if (sentsize > 0)
 				    output << "...";
 				output << iter->Text().SubString(sentsize,
-								 sentsize + Magick::instance().server.proto.MaxLine()) << "...";
+								 sentsize +
+								 Magick::instance().server.proto.MaxLine()) << "...";
 			    }
 			    else
 			    {
@@ -1636,7 +1629,8 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 				if (sentsize > 0)
 				    output << "...";
 				output << iter->Text().SubString(sentsize,
-								 sentsize + Magick::instance().server.proto.MaxLine()) << "...";
+								 sentsize +
+								 Magick::instance().server.proto.MaxLine()) << "...";
 			    }
 			    else
 			    {
@@ -1657,7 +1651,6 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	}
     }
 }
-
 
 void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -1861,7 +1854,6 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
     }
 }
 
-
 void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("MemoServ::do_Get", (mynick, source, params));
@@ -1946,8 +1938,8 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
 		}
 
 		if (!
-		    (Magick::instance().files.TempDirSize() == 0
-		     || mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
+		    (Magick::instance().files.TempDirSize() == 0 ||
+		     mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
 		{
 		    NSEND(mynick, source, "DCC/NOSPACE2");
 		    return;
@@ -1976,7 +1968,6 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
     if (nonfiles)
 	NSEND(mynick, source, "ERR_SYNTAX/NONFILES");
 }
-
 
 void MemoServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -2086,7 +2077,6 @@ void MemoServ::do_List(const mstring & mynick, const mstring & source, const mst
     }
 }
 
-
 void MemoServ::do_Send(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("MemoServ::do_Send", (mynick, source, params));
@@ -2168,7 +2158,6 @@ void MemoServ::do_Send(const mstring & mynick, const mstring & source, const mst
     Magick::instance().memoserv.stats.i_Send++;
     nlive->InFlight.Memo(false, mynick, name, text);
 }
-
 
 void MemoServ::do_Flush(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -2344,7 +2333,6 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
     }
 }
 
-
 void MemoServ::do_Forward2(const mstring & mynick, const mstring & source, mstring dest, const mstring & text)
 {
     FT("MemoServ::do_Forward2", (mynick, source, dest, text));
@@ -2392,7 +2380,6 @@ void MemoServ::do_Forward2(const mstring & mynick, const mstring & source, mstri
     nlive->InFlight.Memo(false, mynick, dest, text, true);
     nlive->InFlight.End(0);
 }
-
 
 void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -2568,7 +2555,6 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 
 }
 
-
 void MemoServ::do_Cancel(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("MemoServ::do_Cancel", (mynick, source, params));
@@ -2589,7 +2575,6 @@ void MemoServ::do_Cancel(const mstring & mynick, const mstring & source, const m
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
-
 
 void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -2852,7 +2837,6 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
     }
 }
 
-
 void MemoServ::do_Continue(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("MemoServ::do_Continue", (mynick, source, params));
@@ -2886,7 +2870,6 @@ void MemoServ::do_Continue(const mstring & mynick, const mstring & source, const
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
-
 
 void MemoServ::do_Preview(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -2922,7 +2905,6 @@ void MemoServ::do_Preview(const mstring & mynick, const mstring & source, const 
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
-
 
 void MemoServ::do_File(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -3030,7 +3012,6 @@ void MemoServ::do_File(const mstring & mynick, const mstring & source, const mst
     Magick::instance().memoserv.stats.i_File++;
     nlive->InFlight.Memo(true, mynick, name, text);
 }
-
 
 void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, const mstring & params)
 {
@@ -3171,7 +3152,8 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    {
 		SEND(mynick, source, "MS_COMMAND/CS_SET",
 		     (Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), output, who,
-		      (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+		      (onoff.GetBool()? Magick::instance().getMessage("VALS/ON") : Magick::instance().
+		       getMessage("VALS/OFF"))));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/SET",
 		    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
@@ -3284,7 +3266,6 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 */
     }
 }
-
 
 SXP::Tag Memo_t::tag_Memo_t("Memo_t");
 SXP::Tag Memo_t::tag_Nick("Nick");
@@ -3510,7 +3491,6 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 
     pOut->EndObject(tag_MemoServ);
 }
-
 
 void MemoServ::PostLoad()
 {

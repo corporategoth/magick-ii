@@ -28,6 +28,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.79  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -295,7 +298,8 @@ bool mLOCK::ReleaseMapLock()
 mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 {
     islocked = false;
-    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() || Magick::instance().ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
+	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     int i;
@@ -389,7 +393,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
     read_lock = NULL;
     write_lock = NULL;
     mutex_lock = NULL;
-
 
     if (type == L_Read)
     {
@@ -625,7 +628,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 
 mLOCK::~mLOCK()
 {
-    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() || Magick::instance().ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
+	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     int i;
@@ -781,7 +785,6 @@ list < pair < void *, locktype_enum > >mLOCK::GetLocks(ACE_thread_t thr)
     return retval;
 }
 
-
 #endif /* MAGICK_LOCKS_WORK */
 
 unsigned short mSocket::FindAvailPort()
@@ -807,7 +810,8 @@ void mSocket::init()
     sockid = 0;
     DestroyMe = false;
 
-    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() || Magick::instance().ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
+	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     unsigned long i;
@@ -852,7 +856,6 @@ mSocket & mSocket::operator=(const mSocket & in)
     }
     NRET(mSocket &, *this);
 }
-
 
 bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
 {
@@ -1179,8 +1182,6 @@ bool mThread::ReleaseMapLock()
     }
     return true;
 }
-
-
 
 ThreadID *mThread::find(const ACE_thread_t thread)
 {

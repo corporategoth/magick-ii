@@ -28,6 +28,9 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.10  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -185,7 +188,6 @@ char *read_string(FILE * f, const char *filename)
     }
     return s;
 }
-
 
 void load_ns_dbase(void)
 {
@@ -489,11 +491,11 @@ Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni)
 	    out->setting.NoExpire = true;
 	    // NOT a SADMIN, and OPER does exist.
 	    if (!
-		(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		 && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(out->i_Name))
-		&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(out->i_Name))
-		&& Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
+		(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(out->i_Name)) &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(out->i_Name)) &&
+		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(mstring(out->i_Name),
 												     Magick::instance().
 												     commserv.FirstName());
@@ -995,7 +997,6 @@ void load_cs_dbase(void)
     fclose(f);
 }
 
-
 char *oldmodeconv(short inmode)
 {
     static char outmode[MODEMAX];
@@ -1019,7 +1020,6 @@ char *oldmodeconv(short inmode)
 	ACE_OS::strcat(outmode, "l");
     return outmode;
 }
-
 
 void delchan(ChanInfo * ci)
 {
@@ -1068,8 +1068,8 @@ Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci)
 	AutoKick *akick;
 	int i;
 
-	if (ci->founder == NULL || !strlen(ci->founder) || ci->desc == NULL || !strlen(ci->desc) || ci->founderpass == NULL
-	    || !strlen(ci->founderpass))
+	if (ci->founder == NULL || !strlen(ci->founder) || ci->desc == NULL || !strlen(ci->desc) || ci->founderpass == NULL ||
+	    !strlen(ci->founderpass))
 	{
 	    return NULL;
 	}
@@ -1303,8 +1303,6 @@ void load_ms_dbase(void)
     fclose(f);
 }
 
-
-
 void load_news_dbase(void)
 {
     FILE *f = ACE_OS::fopen(newsserv_db, "r");
@@ -1476,8 +1474,8 @@ void load_sop()
 	    for (j = 0; j < nsop; ++j)
 	    {
 		if (!
-		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name())
-		     && Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(sops[j].nick)))
+		    (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(sops[j].nick)))
 		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(sops[j].nick),
 													Magick::instance().
 													commserv.FirstName());

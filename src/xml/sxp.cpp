@@ -28,6 +28,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2002/01/13 05:18:42  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.32  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -439,7 +442,6 @@ namespace SXP
 	    return err_cant_open_file;
 	}
 
-
 	do
 	{
 	    size_t len = fread(buf, 1, sizeof(buf), fp);
@@ -541,7 +543,6 @@ namespace SXP
 	    delete[]buffer;
 	buffer = newbuf;
     }
-
 
     void MOutStream::Print(const char *format, ...)
     {

@@ -28,6 +28,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2002/01/13 05:18:41  prez
+** More formatting, changed style slightly
+**
 ** Revision 1.123  2002/01/12 14:42:09  prez
 ** Pretty-printed all code ... looking at implementing an auto-prettyprint.
 **
@@ -814,7 +817,6 @@ bool mstring::empty() const
     return retval;
 }
 
-
 // Index value of any of these chars
 int mstring::find_first_of(const char *str, const size_t len) const
 {
@@ -943,7 +945,6 @@ int mstring::find_last_not_of(const char *str, const size_t len) const
     return retval;
 }
 
-
 /* PRIVATE METHOD - NO LOCKING! */
 int mstring::occurances(const char *str, const size_t len) const
 {
@@ -1029,7 +1030,6 @@ int mstring::find(const mstring & str, int occurance) const
     return retval;
 }
 
-
 // Reverse Find occurance of full string
 int mstring::rfind(const mstring & str, int occurance) const
 {
@@ -1049,7 +1049,6 @@ int mstring::rfind(const mstring & str, int occurance) const
 
     return retval;
 }
-
 
 // Replace find string with replace string (optionally for all)
 void mstring::replace(const mstring & i_find, const mstring & i_replace, const bool all)
@@ -1183,9 +1182,7 @@ mstring mstring::substr(int nFirst, int nCount) const
     return retval;
 }
 
-
 /********************************************************/
-
 
 bool mstring::IsWord() const
 {
@@ -1273,8 +1270,8 @@ bool mstring::IsAscii() const
 bool mstring::IsBool() const
 {
     if (IsSameAs("true", true) || IsSameAs("on", true) || IsSameAs("yes", true) || IsSameAs("y", true) || IsSameAs("t", true)
-	|| IsSameAs("1") || IsSameAs("false", true) || IsSameAs("off", true) || IsSameAs("no", true) || IsSameAs("n", true)
-	|| IsSameAs("f", true) || IsSameAs("0"))
+	|| IsSameAs("1") || IsSameAs("false", true) || IsSameAs("off", true) || IsSameAs("no", true) || IsSameAs("n", true) ||
+	IsSameAs("f", true) || IsSameAs("0"))
 	return true;
     else
 	return false;
@@ -1288,7 +1285,6 @@ bool mstring::GetBool() const
     else
 	return false;
 }
-
 
 mstring mstring::UpperCase() const
 {
@@ -1337,7 +1333,6 @@ void mstring::MakeLower()
 	i_str[i] = tolower(i_str[i]);
     lock_rel();
 }
-
 
 int mstring::Occurances(const mstring & in, const bool NoCase) const
 {
@@ -1483,7 +1478,6 @@ int mstring::FormatV(const char *fmt, va_list argptr)
     return len;
 }
 
-
 mstring mstring::Before(const mstring & in, const int occurance) const
 {
     int m_pos = Find(in, false, occurance);
@@ -1571,7 +1565,6 @@ mstring mstring::SubString(int from, int to) const
     }
     return substr(from, to - from + 1);
 }
-
 
 unsigned int mstring::WordCount(const mstring & delim, const bool assemble) const
 {
