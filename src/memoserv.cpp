@@ -42,3 +42,9 @@ void MemoServ::execute(const mstring & data)
 
 }
 
+void MemoServ::load_database(void)
+{
+}
+void MemoServ::save_database(void)
+{
+}

@@ -41,7 +41,7 @@ public:
 	mstring& operator <<(double d);
 	mstring& operator <<(float f);
 	mstring& operator <<(long l);
-	mstring& operator<<(int i);
+	mstring& operator <<(int i);
 	mstring operator()(size_t start,size_t len);
 	mstring UpperCase() const;
     // values for first parameter of Strip function

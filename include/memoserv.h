@@ -38,12 +38,12 @@ public:
     bool Memo() { return memo; }
     bool News() { return news; }
 
-    void load_database(void);
-    void save_database(void);
+    virtual void load_database(void);
+    virtual void save_database(void);
     MemoServ();
     virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
     virtual mstring GetInternalName() const { return "MemoServ"; }
-    void execute(const mstring & message);
+    virtual void execute(const mstring & message);
 };
 
 #endif

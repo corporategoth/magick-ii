@@ -65,12 +65,12 @@ public:
     bool Akill()		{ return akill; }
     bool OperDeny()		{ return operdeny; }
 
-    void load_database(void);
-    void save_database(void);
+    virtual void load_database(void);
+    virtual void save_database(void);
     OperServ();
     virtual threadtype_enum Get_TType() const { return tt_OperServ; }
     virtual mstring GetInternalName() const { return "OperServ"; }
-    void execute(const mstring & message);
+    virtual void execute(const mstring & message);
 };
 
 #endif

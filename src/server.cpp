@@ -1034,10 +1034,12 @@ void NetworkServ::execute(const mstring & data)
 
 		if (Parent->nickserv.live[targetL].HasMode("h"))
 		    SendSVR("310 " + source + " " + target + " :looks very helpful.");
-
 		if (Parent->nickserv.live[targetL].IsServices())
-		    SendSVR("317 " + source + " " + target + " " + Parent->nickserv.live[targetL].IdleTime() +
-			" " + (time_t) Parent->nickserv.live[targetL].SignonTime() + " :seconds idle, signon time");
+		{
+    		    mstring signon_idletime;
+		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<(time_t)Parent->nickserv.live[targetL].SignonTime();
+		    SendSVR("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
+		}
 
 		SendSVR("313 " + source + " " + target + " :End of /WHOIS list.");
 
@@ -1339,4 +1341,11 @@ void NetworkServ::numeric_execute(const mstring & data)
     default:
 	break;
     }
+}
+
+void NetworkServ::load_database(void)
+{
+}
+void NetworkServ::save_database(void)
+{
 }

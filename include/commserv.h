@@ -10,8 +10,8 @@
 // code must be clearly documented and labelled.
 //
 // ===================================================
-#ifndef _servmsg_h
-#define _servmsg_h
+#ifndef _commserv_h
+#define _commserv_h
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
@@ -20,23 +20,23 @@
 #include "mstring.h"
 #include "variant.h"
 #include "base.h"
-// todo: move this over to a ACE_TASK style architecture
-// maybe even use an ACE  message queue for passing data too
-// but then again, maybe not.
-class ServMsg : public mBase
+
+class CommServ : public mBase
 {
     friend class Magick;
 private:
-    bool showsync;
-
+    bool secure_oper;
+protected:
 public:
-    bool ShowSync() { return showsync; }
+    bool Secure_Oper() { return secure_oper; }
+
 
     virtual void load_database(void);
     virtual void save_database(void);
-    ServMsg();
-    virtual threadtype_enum Get_TType() const { return tt_OtherServ; }
-    virtual mstring GetInternalName() const { return "ServMsg"; }
+
+    CommServ();
+    virtual threadtype_enum Get_TType() const { return tt_CommServ; };
+    virtual mstring GetInternalName() const { return "CommServ"; };
     virtual void execute(const mstring & message);
 };
 

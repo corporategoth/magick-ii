@@ -67,7 +67,7 @@ private:
 
 public:
 	// Config Values
-        class {
+        class statup_t{
 		friend Magick;
 
 		mstring remote_server;
@@ -97,7 +97,7 @@ public:
 		float GMT()		{ return gmt; }
 	} startup;
 
-	class {
+	class files_t{
 		friend Magick;
 
 		mstring pidfile;
@@ -135,7 +135,7 @@ public:
 		bool Compression()	{ return compression; }
 	} files;
 
-	class {
+	class config_t{
 		friend Magick;
 
 		int server_relink;

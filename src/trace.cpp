@@ -26,7 +26,7 @@
 #include "lockable.h"
 #include "magick.h"
 
-mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE", "LOST" };
+mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE", "COMMS", "LOST" };
 Trace::level_enum Trace::SLevel = Off;
 unsigned short Trace::traces[tt_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 

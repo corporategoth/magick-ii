@@ -71,12 +71,12 @@ public:
     bool AUTO() { return automation; }
     void AUTO(bool on) { automation = on; }
 
-    void load_database(void);
-    void save_database(void);
+    virtual void load_database(void);
+    virtual void save_database(void);
     NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }
-    void execute(const mstring & message);
+    virtual void execute(const mstring & message);
     void numeric_execute(const mstring & message);
 };
 

@@ -62,7 +62,7 @@ public:
     {
         mstring tmp = " "+names.UpperCase()+" ";
 	return tmp.Contains(" "+in.UpperCase()+" ");
-    }
+    };
 
     virtual threadtype_enum Get_TType() const =0;
     virtual mstring GetInternalName() const =0;
@@ -80,7 +80,7 @@ public:
 	mVariant locvar(GetInternalName());
 	locvar.truevaluetype=GetInternalName();
 	return locvar;
-    }
+    };
     static void shutdown();
 };
 

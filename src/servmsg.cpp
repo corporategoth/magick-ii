@@ -42,3 +42,9 @@ void ServMsg::execute(const mstring & data)
 
 }
 
+void ServMsg::load_database(void)
+{
+}
+void ServMsg::save_database(void)
+{
+}

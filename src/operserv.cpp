@@ -42,3 +42,9 @@ void OperServ::execute(const mstring & data)
 
 }
 
+void OperServ::load_database(void)
+{
+}
+void OperServ::save_database(void)
+{
+}
