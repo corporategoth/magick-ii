@@ -10,9 +10,35 @@ ALPHA and BETA releases are not listed, nor are patches.
 Magick II (Magick Development Team <magick-devel@magick.tm>)
 ---------
 
-Total re-write in C++.
+Total re-write in C++, so version .0 is merely a 'new feature' list.
 
-2000/??/?? .0	This is a total re-write.
+2000/??/?? .0	Fully multi-threaded (can do >1 thing at once)
+		Database saves in XML and supports compression and
+		    encryption. Is also no longer endian specific.
+		Works on *NIX and all Win32 platforms.
+		Fully multi-lingual (log files, help, etc).
+		Supports DCC file transfers and a filesystem (memo
+		    attachments, nickserv pictures or public FS).
+		Times saved in GMT, so timezone inspecific.
+		Committee-based, can also add new committees.
+		Can now lock any SET option (except text fields).
+		Supports HTM (High Traffic Mode).
+		Supports ALOT more IRC protocols (and alot of their
+		    more specialised features) and can switch
+		    irc protocols without need to recompile.
+		Can now set time limits on akills.
+		Supports IRC Operator Deny (ensures mask cant oper).
+		Services ignore now ignores by mask, not nickname.
+		Supports TRACING, for on-line debugging.
+		Has SQUIT protection (to save on IDENT's).
+		Many new ChanServ features like Kick On Ban, timed
+		    ban removal, channel greetings, on-join messages.
+		Nicknames & Channels now have a NoExpire flag.
+		Time delay on memo sending to allow continuance or
+		    cancellation of memos, or DCC of file attachments.
+		'Read' and 'Unread' status on memos / news articles.
+		MANY, MANY, MANY more enhancements.
+		
 
 Magick I (Preston Elder <prez@magick.tm>)
 --------

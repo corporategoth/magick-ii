@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2000/11/09 10:58:19  prez
+** THINK I have it working again ... with the free list.
+** Will check, still thinking of sorting free list by size.
+**
 ** Revision 1.76  2000/10/26 07:59:52  prez
 ** The goddamn memory system and mstring WORK!  Well, so far ;)
 **
@@ -139,10 +143,10 @@ mstring const IRC_Color((char) 3);	// ^C
 mstring const IRC_Off((char) 15);	// ^O
 
 #define NOMEM { \
-	fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
+	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
 	return; }
 #define NOMEMR(X) { \
-	fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
+	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
 	return X; }
 	
 
@@ -157,10 +161,12 @@ void mstring::copy(const char *in, size_t length)
 	while (i_res <= i_len)
 	    i_res *= 2;
 	i_str = (char *) memory_area.alloc(i_res);
+printf("i_str = %p\n", i_str); fflush(stdout);
 	if (i_str == NULL)
 	    NOMEM;
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
+printf("STRING = %s\n", i_str); fflush(stdout);
     }
     else
     {
@@ -315,24 +321,27 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 // same length and have the same text.
 int mstring::compare (const char *in, size_t length) const
 {
-    int retval = 0;
+/*    int retval = 0;
+
     if (length && i_len)
     {
 	retval = memcmp(i_str, in, ((length < i_len) ? length : i_len));
 	if (retval == 0)
 	{
 	    if (length < i_len)
-		retval = i_len * -1;
+		retval = (i_len - length) * -1 * 256;
 	    else if (i_len < length)
-		retval = length;
+		retval = (length - i_len) * 256;
 	}
     }
     else if (i_len)
-	retval = i_len * -1;
+	retval = i_len * -1 * 256;
     else if (length)
-	retval = length;
+	retval = length * 256;
 
     return retval;
+*/
+    return strcmp((i_str ? i_str : ""), (length ? in : ""));
 }
 
 void mstring::swap(mstring &in)
@@ -667,7 +676,7 @@ bool mstring::IsBool() const
       IsSameAs("t", true) || compare("1") ||
       IsSameAs("false", true) || IsSameAs("off", true) ||
       IsSameAs("no", true) || IsSameAs("n", true) ||
-      IsSameAs("f", true) || compare("0"))
+      IsSameAs("f", true) || IsSameAs("0"))
     return true;
   else
     return false;
@@ -678,7 +687,7 @@ bool mstring::GetBool() const
   mstring tmp(*this);
   if (IsSameAs("true", true) || IsSameAs("on", true) ||
       IsSameAs("yes", true) || IsSameAs("y", true) ||
-      IsSameAs("t", true) || compare("1"))
+      IsSameAs("t", true) || IsSameAs("1"))
     return true;
   else
     return false;
@@ -753,13 +762,15 @@ int mstring::RevFind(const mstring &in, bool NoCase, int occurance) const
 
 int mstring::Cmp(const mstring &in, bool NoCase) const
 {
+    int retval = 0;
     if (NoCase)
     {
 	mstring tmp(in);
-	return UpperCase().compare(tmp.UpperCase());
+	retval = UpperCase().compare(tmp.UpperCase());
     }
     else
-	return compare(in);
+	retval = compare(in);
+    return retval;
 }
 
 bool mstring::Matches(const mstring &in, bool NoCase) const
@@ -769,10 +780,19 @@ bool mstring::Matches(const mstring &in, bool NoCase) const
 
 void mstring::Trim(bool right, const mstring &delims)
 {
+    int pos = 0;
     if (right)
-	erase(find_last_not_of(delims.i_str)+1);
+    {
+	pos = find_last_not_of(delims.i_str);
+	if (pos > 0)
+	    erase(pos+1);
+    }
     else
-	erase(0, find_first_not_of(delims.i_str)-1);
+    {
+	pos = find_first_not_of(delims.i_str);
+	if (pos > 0)
+	    erase(0, pos-1);
+    }
 }
 
 mstring mstring::Strip(bool right, const mstring &deilms) const

@@ -15,8 +15,7 @@ fi
 cd $1/include
 
 mv version.h version.h~
-sed	-e "s/BUILD_TIME.*;/BUILD_TIME = \"N\/A\";/" \
-	-e "s/BUILD_NUMBER.*;/BUILD_NUMBER = 0;/" \
-	-e "s/BUILD_TYPE.*;/BUILD_TYPE = \"N\/A\";/" \
-	-e "s/BUILD_SYS.*;/BUILD_SYS = \"N\/A\";/" \
+sed	-e "s/BUILD_NUMBER.*;/BUILD_NUMBER = 0;/" \
+	-e "s/BUILD_TYPE.*;/BUILD_TYPE = \"32-Bit Windows\";/" \
+	-e "s/BUILD_SYS.*;/BUILD_SYS = \"localhost\";/" \
 	version.h~ >version.h

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/11/09 10:58:19  prez
+** THINK I have it working again ... with the free list.
+** Will check, still thinking of sorting free list by size.
+**
 ** Revision 1.19  2000/10/10 11:47:52  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -151,10 +155,10 @@ bool ceNode::operator==(const ceNode &in)const
         map<mstring,ceNode * >::const_iterator i;
         for(i=in.i_children.begin();i!=in.i_children.end();i++)
         {
-            if(i_children.find(i->first)==i_children.end())
+            if(i_children.find(i->first) == i_children.end())
                 RET(false);
             // the below line *will* recursively check it's children
-            if(!(*(i_children.find(i->first)->second)==*(i->second)))
+            if(!(*(i_children.find(i->first)->second) == *(i->second)))
                 RET(false);
         }
         Result=true;
@@ -188,7 +192,8 @@ bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
+        if (i_children.find(next) == i_children.end() ||
+	    i_children[next] == NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -212,7 +217,7 @@ bool ceNode::DeleteKey(const mstring &KeyName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_keys.find(temppath)==i_keys.end())
+        if (i_keys.find(temppath) == i_keys.end())
         {
             i_keys.erase(temppath);
             Result=true;
@@ -223,7 +228,8 @@ bool ceNode::DeleteKey(const mstring &KeyName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
+        if (i_children.find(next) == i_children.end() ||
+	    i_children[next] == NULL)
             Result=false;
         else
             Result=i_children[next]->DeleteKey(rest);
@@ -246,7 +252,7 @@ bool ceNode::CreateNode(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_children.find(temppath)==i_children.end())
+        if (i_children.find(temppath) == i_children.end())
         {
             i_children[temppath]=new ceNode;
             i_children[temppath]->i_Name=temppath;
@@ -257,7 +263,8 @@ bool ceNode::CreateNode(const mstring &NodeName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
+        if (i_children.find(next) == i_children.end() ||
+	    i_children[next] == NULL)
         {
             i_children[next]=new ceNode;
 	    i_children[next]->i_Name=next;
@@ -280,7 +287,7 @@ bool ceNode::DeleteNode(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_children.find(temppath)!=i_children.end())
+        if (i_children.find(temppath) != i_children.end())
         {
             if(i_children[temppath]!=NULL)
                 delete i_children[temppath];
@@ -292,7 +299,8 @@ bool ceNode::DeleteNode(const mstring &NodeName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
+        if (i_children.find(next) != i_children.end() &&
+	    i_children[next] != NULL)
         {
             i_children[next]->DeleteNode(rest);
         }
@@ -317,7 +325,8 @@ bool ceNode::NodeExists(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_children.find(temppath)!=i_children.end()&&(i_children[temppath]!=NULL))
+        if (i_children.find(temppath) != i_children.end() &&
+	    i_children[temppath] != NULL)
             Result=true;
     }
     else
@@ -325,7 +334,8 @@ bool ceNode::NodeExists(const mstring &NodeName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
+        if (i_children.find(next) != i_children.end() &&
+	    i_children[next] != NULL)
         {
             Result=i_children[next]->NodeExists(rest);
         }
@@ -354,7 +364,8 @@ bool ceNode::KeyExists(const mstring &KeyName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
+        if (i_children.find(next) != i_children.end() &&
+	    i_children[next] != NULL)
         {
             Result=i_children[next]->KeyExists(rest);
         }
@@ -375,7 +386,8 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_keys.find(temppath)!=i_keys.end()&&(i_keys[temppath]!=""))
+        if (i_keys.find(temppath) != i_keys.end() &&
+	    i_keys[temppath] != "")
             Result=i_keys[temppath];
 	else
 	    Result=DefValue;
@@ -385,7 +397,8 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
+        if (i_children.find(next) != i_children.end() &&
+	    i_children[next] != NULL)
         {
             Result=i_children[next]->GetKey(rest,DefValue);
         }
@@ -406,7 +419,8 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_children.find(temppath)!=i_children.end()&&(i_children[temppath]!=NULL))
+        if (i_children.find(temppath) != i_children.end() &&
+	    i_children[temppath] != NULL)
             Result=i_children[temppath];
     }
     else
@@ -416,7 +430,8 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
 	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
+        if (i_children.find(next) == i_children.end() ||
+	    i_children[next] == NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -449,7 +464,8 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
 	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
+        if (i_children.find(next) == i_children.end() ||
+	    i_children[next] == NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;

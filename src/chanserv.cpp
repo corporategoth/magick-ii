@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.213  2000/11/09 10:58:19  prez
+** THINK I have it working again ... with the free list.
+** Will check, still thinking of sorting free list by size.
+**
 ** Revision 1.212  2000/10/10 11:47:50  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -12088,6 +12092,8 @@ void ChanServ::PostLoad()
     }
     cs_array.clear();
 
+    mstring locked = Parent->chanserv.LCK_MLock();
+
     map<mstring,Chan_Stored_t>::iterator iter;
     entlist_val_t<long> *ptr1;
     entlist_val_t<mstring> *ptr2;
@@ -12122,5 +12128,48 @@ void ChanServ::PostLoad()
 		iter->second.Message != iter->second.Message_end();
 		iter->second.Message++)
 	    iter->second.Message->PostLoad();
+
+	// Now, we're fully loaded, do sanity checks from CFG ...
+	bool add = true;
+	for (i=0; i<locked.size(); i++)
+	{
+	    if (locked[i] == '+')
+	    {
+		add = true;
+	    }
+	    else if (locked[i] == '-')
+	    {
+		add = false;
+	    }
+	    else
+	    {
+		if (add)
+		{
+		    if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		    {
+			if (!iter->second.i_Mlock_On.Contains(locked[i]))
+			    iter->second.i_Mlock_On += locked[i];
+			if (iter->second.i_Mlock_Off.Contains(locked[i]))
+			    iter->second.i_Mlock_Off.Remove((mstring) locked[i]);
+		    }
+		}
+		else
+		{
+		    if (locked[i] == 'k')
+			iter->second.i_Mlock_Key = "";
+		    else if (locked[i] == 'l')
+			iter->second.i_Mlock_Limit = 0;
+
+		    if (locked[i] == 'k' || locked[i] == 'l' ||
+			!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		    {
+			if (!iter->second.i_Mlock_Off.Contains(locked[i]))
+			    iter->second.i_Mlock_Off += locked[i];
+			if (iter->second.i_Mlock_On.Contains(locked[i]))
+			    iter->second.i_Mlock_On.Remove((mstring) locked[i]);
+		    }
+		}
+	    }
+	}
     }
 }

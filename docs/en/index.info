@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index21290.info.2.
+/tmp/sgmltmp.index28492.info.2.
 
    \input texinfo
 
@@ -147,6 +147,55 @@ File: index.info,  Node: Magick II,  Next: Magick I,  Up: Changes
 
 Magick II
 ---------
+
+   Total re-write in C++, so version .0 is merely a 'new feature' list.
+
+   * 2000/??/?? .0
+        * Fully multi-threaded (can do >1 thing at once)
+
+        * Database saves in XML and supports compression and
+          encryption. Is also no longer endian specific.
+
+        * Works on *NIX and all Win32 platforms.
+
+        * Fully multi-lingual (log files, help, etc).
+
+        * Supports DCC file transfers and a filesystem (memo
+          attachments, nickserv pictures or public FS).
+
+        * Times saved in GMT, so timezone inspecific.
+
+        * Committee-based, can also add new committees.
+
+        * Can now lock any SET option (except text fields).
+
+        * Supports HTM (High Traffic Mode).
+
+        * Supports ALOT more IRC protocols (and alot of their more
+          specialised features) and can switch irc protocols without
+          need to recompile.
+
+        * Can now set time limits on akills.
+
+        * Supports IRC Operator Deny (ensures mask cant oper).
+
+        * Services ignore now ignores by mask, not nickname.
+
+        * Supports TRACING, for on-line debugging.
+
+        * Has SQUIT protection (to save on IDENT's).
+
+        * Many new ChanServ features like Kick On Ban, timed ban
+          removal, channel greetings, on-join messages.
+
+        * Nicknames & Channels now have a NoExpire flag.
+
+        * Time delay on memo sending to allow continuance or
+          cancellation of memos, or DCC of file attachments.
+
+        * 'Read' and 'Unread' status on memos / news articles.
+
+        * MANY, MANY, MANY more enhancements.
 
 
 File: index.info,  Node: Magick I,  Next: Services 3-0,  Prev: Magick II,  Up: Changes
@@ -1562,30 +1611,30 @@ Node: Dedication1519
 Node: Authors2135
 Node: Changes4384
 Node: Magick II4547
-Node: Magick I4637
-Node: Services 3-08414
-Node: Pre-Services 3-012805
-Node: Installation13078
-Node: How to obtain Magick13492
-Node: Requirements13879
-Node: ACE Installation14725
-Node: Basic Installation17881
-Node: Compilers and Options20431
-Node: Compiling For Multiple Architectures21078
-Node: Installation Names22069
-Node: Optional Features23252
-Node: Specifying the System Type24022
-Node: Sharing Defaults25045
-Node: Operation Controls25691
-Node: Security Tips30260
-Node: Usage32273
-Node: Support files32445
-Node: General Usage37044
-Node: Functionality42812
-Node: Questions and Answers46619
-Node: My IRCD isn't supported what can I do?46861
-Node: I like these services and want to pay the author!47627
-Node: License48397
-Node: Copyright63889
+Node: Magick I6205
+Node: Services 3-09982
+Node: Pre-Services 3-014373
+Node: Installation14646
+Node: How to obtain Magick15060
+Node: Requirements15447
+Node: ACE Installation16293
+Node: Basic Installation19449
+Node: Compilers and Options21999
+Node: Compiling For Multiple Architectures22646
+Node: Installation Names23637
+Node: Optional Features24820
+Node: Specifying the System Type25590
+Node: Sharing Defaults26613
+Node: Operation Controls27259
+Node: Security Tips31828
+Node: Usage33841
+Node: Support files34013
+Node: General Usage38612
+Node: Functionality44380
+Node: Questions and Answers48187
+Node: My IRCD isn't supported what can I do?48429
+Node: I like these services and want to pay the author!49195
+Node: License49965
+Node: Copyright65457
 
 End Tag Table

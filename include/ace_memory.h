@@ -21,6 +21,10 @@ static const char *ident_ace_memory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/11/09 10:58:18  prez
+** THINK I have it working again ... with the free list.
+** Will check, still thinking of sorting free list by size.
+**
 ** Revision 1.2  2000/10/26 07:59:52  prez
 ** The goddamn memory system and mstring WORK!  Well, so far ;)
 **
@@ -81,6 +85,7 @@ private:
 template <class T, class ACE_LOCK> ACE_INLINE void
 ACE_Expandable_Cached_Allocator<T, ACE_LOCK>::free (void * ptr)
 {
+  ACE_OS::memset(ptr, 0, sizeof(T));
   this->free_list_.add ((ACE_Cached_Mem_Pool_Node<T> *) ptr) ;
 }
 
@@ -100,6 +105,7 @@ ACE_Expandable_Cached_Allocator<T, ACE_LOCK>::ACE_Expandable_Cached_Allocator (s
       return;
     }
 
+  ACE_OS::memset(temp, 0, n_chunks_ * sizeof(T));
   for (size_t c = 0;
        c < n_chunks_;
        c++)
@@ -142,6 +148,7 @@ ACE_Expandable_Cached_Allocator<T, ACE_LOCK>::malloc (size_t nbytes)
         return NULL;
       }
     // We could not add to the map ...
+    ACE_OS::memset(temp, 0, n_chunks_ * sizeof(T));
 
     for (size_t c = 0;
          c < n_chunks_;
@@ -225,6 +232,7 @@ ACE_Cached_Fixed_Allocator<ACE_LOCK>::malloc (size_t nbytes)
 template <class ACE_LOCK> ACE_INLINE void
 ACE_Cached_Fixed_Allocator<ACE_LOCK>::free (void * ptr)
 {
+  ACE_OS::memset(ptr, 0, n_size_);
   this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) ptr) ;
 }
 
@@ -263,6 +271,7 @@ ACE_Cached_Fixed_Allocator<ACE_LOCK>::ACE_Cached_Fixed_Allocator (size_t n_size,
   ACE_NEW (pool_,
            char[n_chunks_ * n_size_]);
 
+  ACE_OS::memset(n_chunks_ * n_size_);
   for (size_t c = 0;
        c < n_chunks_;
        c++)
@@ -336,6 +345,7 @@ private:
 template <class ACE_LOCK> ACE_INLINE void
 ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::free (void * ptr)
 {
+  ACE_OS::memset(ptr, 0, n_size_);
   this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) ptr) ;
 }
 
@@ -381,6 +391,7 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::ACE_Expandable_Cached_Fixed_All
       return;
     }
 
+  ACE_OS::memset(temp, 0, n_chunks_ * n_size_);
   for (size_t c = 0;
        c < n_chunks_;
        c++)
@@ -424,6 +435,7 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::malloc (size_t nbytes)
       }
     // We could not add to the map ...
 
+    ACE_OS::memset(temp, 0, n_chunks_ * n_size_);
     for (size_t c = 0;
          c < n_chunks_;
          c++)
