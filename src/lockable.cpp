@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/08/28 10:51:37  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.43  2000/08/22 08:43:41  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -99,14 +107,29 @@ typedef ACE_Thread_Mutex	mLock_Mutex;
 mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 {
     int i, count = 0;
-    map<mstring, pair<locktype_enum, void *> > *lockroot;
+    map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
     mstring lockname;
     unsigned char hash[ACE_MAXTOKENNAMELEN];
     mLock_Mutex *mlock;
     mLock_Write *wlock;
     mLock_Read *rlock;
 
+    mLock_Mutex maplock("LockMap");
+    if (maplock.acquire() < 0)
+    {
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap");
+	return;
+    }
+
     lockroot = &LockMap[ACE_Thread::self()];
+    if (lockroot == NULL)
+    {
+	if (maplock.release() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap");
+	return;
+    }
 
     for (i=0; i<args.count()-1; i++)
     {
@@ -269,18 +292,36 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		    "MUTEX", lockname.c_str());
 	}
     }
+    if (maplock.release() < 0)
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap");
     ACE_OS::memset(hash, 0, sizeof(hash));
 }
 
 mLOCK::~mLOCK()
 {
     int i;
-    map<mstring, pair<locktype_enum, void *> > *lockroot;
+    map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
     mLock_Mutex *mlock;
     mLock_Write *wlock;
     mLock_Read *rlock;
 
+    mLock_Mutex maplock("LockMap");
+    if (maplock.acquire() < 0)
+    {
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap");
+	return;
+    }
+
     lockroot = &LockMap[ACE_Thread::self()];
+    if (lockroot == NULL)
+    {
+	if (maplock.release() < 0)
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap");
+	return;
+    }
 
     for (i=locks.size()-1; i>=0; i--)
     {
@@ -325,20 +366,62 @@ mLOCK::~mLOCK()
 	    (*lockroot).erase(locks[i]);
 	}
     }
+    maplock.release();
 }
 
 bool mLOCK::Locked()
 {
+    bool retval = false;
     if (locks.size())
     {
-	map<mstring, pair<locktype_enum, void *> > *lockroot;
+	map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
+
+	mLock_Mutex maplock("LockMap");
+	if (maplock.acquire() < 0)
+	{
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap");
+	    return false;
+	}
+
 	lockroot = &LockMap[ACE_Thread::self()];
+	if (lockroot == NULL)
+	{
+	    if (maplock.release() < 0)
+		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"MUTEX", "LockMap");
+	    return false;
+	}
+
 	if ((*lockroot).find(locks[locks.size()-1]) != (*lockroot).end() &&
 		(*lockroot)[locks[locks.size()-1]].first != L_Invalid &&
 		(*lockroot)[locks[locks.size()-1]].second != NULL)
-	    return true;
+	    retval = true;
+	maplock.release();
     }
-    return false;
+    return retval;
+}
+
+size_t mLOCK::AllLocks()
+{
+    map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > >::iterator iter;
+    size_t count = 0;
+
+    mLock_Mutex maplock("LockMap");
+    if (maplock.acquire() < 0)
+    {
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+	    "MUTEX", "LockMap");
+	return false;
+    }
+
+    for (iter=LockMap.begin(); iter!=LockMap.end(); iter++)
+    {
+	count += iter->second.size();
+    }
+
+    maplock.release();
+    return count;
 }
 
 #endif /* MAGICK_LOCKS_WORK */

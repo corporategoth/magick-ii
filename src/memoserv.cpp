@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/08/28 10:51:38  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.72  2000/08/19 10:59:47  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -535,12 +543,14 @@ void MemoServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mstring HelpTopic = Parent->memoserv.GetInternalName();
     if (params.WordCount(" ") > 1)
@@ -559,12 +569,14 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -876,12 +888,14 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1083,12 +1097,14 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1184,12 +1200,14 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 1)
     {
@@ -1310,12 +1328,14 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -1422,12 +1442,14 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -1635,12 +1657,14 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -1850,12 +1874,14 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -2155,12 +2181,14 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {

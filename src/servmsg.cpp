@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/08/28 10:51:40  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.63  2000/08/06 05:27:48  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -368,12 +376,14 @@ void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mstring HelpTopic = Parent->servmsg.GetInternalName();
     if (params.WordCount(" ") > 1)
@@ -392,12 +402,14 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_Credits", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
@@ -413,12 +425,14 @@ void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_Contrib", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
@@ -434,12 +448,14 @@ void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_Languages", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     set<mstring> langs = mFile::DirList(Parent->files.Langdir(), "*.lng");
     mstring output, val;
@@ -476,12 +492,14 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN_HEAD"));
     mstring out;
@@ -569,12 +587,14 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     unsigned long linked = 0, suspended = 0, forbidden = 0;
     map<mstring,Nick_Stored_t>::iterator i;
@@ -633,12 +653,14 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     unsigned long suspended = 0, forbidden = 0;
     map<mstring,Chan_Stored_t>::iterator i;
@@ -709,12 +731,14 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_stats_Other", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_MEMO"),
 		Parent->memoserv.nick.size());
@@ -775,12 +799,14 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_stats_Oper", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CLONE"),
 		Parent->operserv.Clone_size());
@@ -832,13 +858,16 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
     size_t size;
 
     mstring message = params.Before(" ", 2);
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
+    { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)
     {
 	::send(mynick, source, Parent->getMessage(source, "STATS/USE_TRAFFIC"),
@@ -849,7 +878,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		ToHumanSpace(Parent->ircsvchandler->Out_Traffic() /
 		Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str(),
 		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str());
-    }
+    }}
 
     size = 0;
     map<mstring, Nick_Live_t>::iterator i;
@@ -984,12 +1013,14 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_stats_All", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     do_Stats(mynick, source, params.ExtractWord(1, " "));
     do_stats_Nick(mynick, source, params);
@@ -1014,12 +1045,14 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
     }
 
     mstring message = params.Before(" ");
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mDateTime tmp = StartTime;
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_UPTIME"),
@@ -1057,12 +1090,14 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -1151,12 +1186,14 @@ void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1283,12 +1320,14 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {

@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.200  2000/08/28 10:51:35  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.199  2000/08/22 08:43:39  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -1077,9 +1085,10 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 
     mstring change = in.ExtractWord(1, ": ");
     mstring newmode, newmode_param, requeue, requeue_param;
-    unsigned int fwdargs = 2, i;
+    unsigned int fwdargs = 2, i, wc;
     bool add = true;
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
+    wc = in.WordCount(": ");
 
     requeue << ":" << source << " MODE " << i_Name << " ";
     if (Parent->server.SeenMessage(requeue+in) >= Parent->config.MSG_Seen_Act())
@@ -1130,6 +1139,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    switch(change[i])
 	    {
 	    case 'o':
+		if (wc <= fwdargs)
+		{
 		if (IsIn(in.ExtractWord(fwdargs, ": ")))
 		{
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -1154,9 +1165,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    requeue_param += " " + in.ExtractWord(fwdargs, ": ");
 		}
 		fwdargs++;
+		}
 		break;
 
 	    case 'v':
+		if (wc <= fwdargs)
+		{
 		if (IsIn(in.ExtractWord(fwdargs, ": ")))
 		{
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -1181,9 +1195,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    requeue_param += " " + in.ExtractWord(fwdargs, ": ");
 		}
 		fwdargs++;
+		}
 	        break;
 
 	    case 'b':
+		if (wc <= fwdargs)
+		{
 		if (add)
 		{
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "bans"));
@@ -1201,9 +1218,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		fwdargs++;
+		}
 		break;
 
 	    case 'k':
+		if (wc <= fwdargs)
+		{
 		if (add)
 		{
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
@@ -1225,11 +1245,14 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		newmode += change[i];
 		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		fwdargs++;
+		}
 		break;
 
 	    case 'l':
 		if (add)
 		{
+		    if (wc <= fwdargs)
+		    {
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 		    if (fwdargs > in.WordCount(": "))
 		    {
@@ -1252,6 +1275,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 			newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		    }
 		    fwdargs++;
+		    }
 		}
 		else
 		{
@@ -1260,13 +1284,15 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
 		    newmode += change[i];
-		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		}
 		break;
 	    default:
-		newmode += change[i];
-		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
-		fwdargs++;
+		if (wc <= fwdargs)
+		{
+		    newmode += change[i];
+		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		    fwdargs++;
+		}
 	    }
 	}
 	else
@@ -1881,11 +1907,11 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    return;
 
     mstring change = mode.Before(" ");
-    unsigned int fwdargs = 2, i;
+    unsigned int fwdargs = 2, i, wc;
     bool add = true;
+    wc = mode.WordCount(": ");
     for (i=0; i<change.size(); i++)
     {
-	CP(("Checking change %c", change[i]));
 	if (change[i] == '+')
 	{
 	    add = true;
@@ -1899,6 +1925,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    switch(change[i])
 	    {
 	    case 'o':
+		if (wc <= fwdargs)
+		{
 		if (add)
 		{
 		    if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Level_value("AUTODEOP") ||
@@ -1920,9 +1948,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		}
 
 		fwdargs++;
+		}
 		break;
 
 	    case 'v':
+		if (wc <= fwdargs)
+		{
 		if (add)
 		{
 		    if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Level_value("AUTODEOP") ||
@@ -1935,9 +1966,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		}
 
 		fwdargs++;
+		}
 		break;
 
 	    case 'b':
+		if (wc <= fwdargs)
+		{
 		if (add && !setter.Contains("."))
 		{
 		    long SetAccess = GetAccess(setter);
@@ -1998,9 +2032,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    }
 		}
 		fwdargs++;
+		}
 		break;
 
 	    case 'k':
+		if (wc <= fwdargs)
+		{
 		{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
 		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
 		if (add && i_Mlock_Off.Contains("k"))
@@ -2013,6 +2050,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		}}
 
 		fwdargs++;
+		}
 		break;
 
 	    case 'l':
@@ -2030,10 +2068,14 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    }
 		}}
 
-		fwdargs++;
+		if (add && wc <= fwdargs)
+		    fwdargs++;
 		break;
 	    default:
-		fwdargs++;
+		if (wc <= fwdargs)
+		{
+		    fwdargs++;
+		}
 	    }
 	}
 	else
@@ -5271,12 +5313,14 @@ void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mstring HelpTopic = Parent->chanserv.GetInternalName();
     if (params.WordCount(" ") > 1)
@@ -5463,12 +5507,14 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     mstring output;
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -6557,12 +6603,14 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -6815,12 +6863,14 @@ void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -6883,12 +6933,14 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -6955,12 +7007,14 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7022,12 +7076,14 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7095,12 +7151,14 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7182,12 +7240,14 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7252,12 +7312,14 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7445,12 +7507,14 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7736,12 +7800,14 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -8095,12 +8161,14 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -8358,12 +8426,14 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -8553,12 +8623,14 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -9844,12 +9916,14 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 4)
     {
@@ -10663,12 +10737,14 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 4)
     {

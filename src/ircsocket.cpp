@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.126  2000/08/28 10:51:37  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.125  2000/08/22 08:43:41  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -206,6 +214,7 @@ static const char *ident = "@(#)$Id$";
 
 int IrcSvcHandler::open(void *in)
 {
+    mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::open", (in));
     CP(("Socket opened"));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
@@ -217,6 +226,9 @@ int IrcSvcHandler::open(void *in)
     htm_gap = Parent->operserv.Init_HTM_Gap();
     htm_threshold = Parent->operserv.Init_HTM_Thresh();
     last_htm_check = Now();
+
+    // Only activate the threads when we're ready.
+    mBase::init();
     CP(("IrcSvcHandler activated"));
     RET(0);
 }
@@ -231,14 +243,8 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     ACE_OS::memset(data,0,513);
     recvResult=peer().recv(data,512);
     if(recvResult<=0 || Parent->Shutdown())
-    {
-	// sleep and then reconnect
-	CP(("No data, scheduling reconnect, then closing down"));
-	Parent->Connected(false);
-	if(Parent->Reconnect() && !Parent->Shutdown())
-	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
 	return -1;
-    }
+
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
 
@@ -277,9 +283,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    {
 		announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/HTM_DIE"));
-		Parent->Connected(false);
-		if(Parent->Reconnect() && !Parent->Shutdown())
-		    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
+		CP(("HTM gap limit reached"));
 		return -1;
 	    }
 	    else
@@ -361,6 +365,29 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     RET(0);
 }
 
+int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
+{
+    FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
+    CP(("IrcSvcHandler closed, scheduling reconnect, then closing down"));
+
+    // We DONT want any processing once we're gone ... nowhere to send
+    // back the messages (duh!).
+    mBase::shutdown();
+    // Should I do this with SQUIT protection ...?
+    Parent->nickserv.live.clear();
+    Parent->chanserv.live.clear();
+
+    if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
+	    Parent->Shutdown()) && Parent->Connected())
+    {
+	Parent->Connected(false);
+	if(Parent->Reconnect() && !Parent->Shutdown())
+	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
+    }
+
+    DRET(0);
+}
+
 time_t IrcSvcHandler::HTM_Gap()
 {
     NFT("IrcSvcHandler::HTM_Gap");
@@ -434,7 +461,6 @@ size_t IrcSvcHandler::Average(time_t secs)
 int IrcSvcHandler::send(const mstring & data)
 {
     FT("IrcSvcHandler::send",(data));
-    //activation_queue_.enqueue(new send_MO(this,mstring(data)));
     int recvResult;
     out_traffic += data.Len();
     recvResult=peer().send((data + "\r\n").c_str(),data.Len()+2);
@@ -447,7 +473,8 @@ int IrcSvcHandler::close(unsigned long in)
     FT("IrcSvcHandler::close",(in));
     // todo: shutdown the ping timer
     CP(("Socket closed"));
-    int retval = handle_close();
+    int retval = 0;
+//    int retval = handle_close();
     RET(retval);
 }
 
@@ -526,6 +553,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	delete Parent->ircsvchandler;
 	Parent->ircsvchandler = NULL;
     }
+    Parent->Connected(false);
     Parent->ircsvchandler=new IrcSvcHandler;
     Log(LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
 		server.c_str(), details.first);
@@ -559,6 +587,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Log(LM_ERROR, Parent->getLogMessage("OTHER/REFUSED"),
 		server.c_str(), details.first);
 	//okay we got a connection problem here. log it and try again
+	CP(("Refused connection, rescheduling and trying again ..."));
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
     else
@@ -567,6 +596,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
 	Parent->i_localhost = localaddr.get_ip_address();
+	//Parent->ircsvchandler->open(NULL);
 	if (Parent->server.proto.TSora())
 	    Parent->server.raw("PASS " + details.second + " :TS");
 	else

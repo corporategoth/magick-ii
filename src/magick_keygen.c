@@ -19,6 +19,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/08/28 10:51:38  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.5  2000/08/03 13:06:31  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -74,7 +82,7 @@ int main(int argc, char **argv)
     fprintf(stderr, "You do not have encryption support.\n");
 
 #else
-    int i, data_sz, data_cnt;
+    size_t i, key_size;
     unsigned char inkey[KEYLEN], outkey[KEYLEN], filename[512];
     FILE *outfile, *tty;
     des_key_schedule key1, key2;
@@ -123,10 +131,11 @@ int main(int argc, char **argv)
     printf("Enter database key: ");
     fgets(inkey, KEYLEN, tty);
     inkey[KEYLEN-1]=0;
-    if (strlen(inkey) != KEYLEN-1)
-	inkey[strlen(inkey)-1]=0;
+    key_size = strlen(inkey);
+    if (key_size != KEYLEN-1)
+	inkey[--key_size]=0;
     printf("\n");
-    if (strlen(inkey) < MIN_KEYLEN)
+    if (key_size < MIN_KEYLEN)
     {
 	fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
 #ifdef HAVE_TERMIO_H
@@ -138,8 +147,9 @@ int main(int argc, char **argv)
     printf("Re-Enter database key: ");
     fgets(outkey, KEYLEN, tty);
     outkey[KEYLEN-1]=0;
-    if (strlen(outkey) != KEYLEN-1)
-	outkey[strlen(outkey)-1]=0;
+    key_size = strlen(outkey);
+    if (key_size != KEYLEN-1)
+	outkey[--key_size]=0;
     printf("\n");
     if (strcmp(inkey, outkey)!=0)
     {
@@ -160,9 +170,11 @@ int main(int argc, char **argv)
     des_string_to_key(crypto_key2,&ckey2);
     des_set_key(&ckey2,key2);
 
-    mDES(inkey, outkey, KEYLEN, key1, key2, 1);
+    // normalize to a derivitive of sizeof(unsigned long) * 2
+    key_size += (key_size % (sizeof(unsigned long) * 2));
+    mDES(inkey, outkey, key_size, key1, key2, 1);
 
-    fwrite(outkey, sizeof(unsigned char), KEYLEN, outfile);
+    fwrite(outkey, sizeof(unsigned char), key_size, outfile);
     fclose(outfile);
 
 #endif

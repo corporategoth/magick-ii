@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/08/28 10:51:37  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.44  2000/08/08 03:46:21  prez
 ** Fixed problem with dcc not connecting (eg. connection refused) crashing
 ** services.
@@ -984,7 +992,7 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
     i_Filesize = i_File.Length();
 
     // Initialize Transfer
-    i_Transiant = (unsigned char *) ACE_OS::malloc (sizeof(unsigned char) * (i_Blocksize + 1));
+    i_Transiant = new unsigned char[i_Blocksize + 1];
     ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
@@ -1041,7 +1049,7 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
     i_Filesize = filesize;
 
     // Initialize Transfer
-    i_Transiant = (unsigned char *) ACE_OS::malloc (sizeof(unsigned char) * (i_Blocksize + 1));
+    i_Transiant = new unsigned char[i_Blocksize + 1];
     ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
@@ -1057,7 +1065,7 @@ DccXfer::~DccXfer()
 
     WLOCK(("DccMap", "xfers", i_DccId));
     if (i_Transiant != NULL)
-	ACE_OS::free(i_Transiant);
+	delete [] i_Transiant;
     i_Transiant = NULL;
 
     if (i_File.IsOpened())
@@ -1164,11 +1172,11 @@ void DccXfer::operator=(const DccXfer &in)
 	}
     }
     i_Transiant = NULL;
-    if (in.i_Transiant != NULL && ACE_OS::strlen((const char *) in.i_Transiant))
+    if (in.i_Transiant != NULL && in.i_XferTotal)
     {
-	i_Transiant=(unsigned char *) ACE_OS::malloc(sizeof(unsigned char) * i_Blocksize + 1);
+	i_Transiant=new unsigned char[i_Blocksize + 1];
 	ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
-	ACE_OS::strcpy((char *) i_Transiant, (char *) in.i_Transiant);
+	ACE_OS::memcpy(i_Transiant, in.i_Transiant, i_XferTotal);
     }
     i_LastData=in.i_LastData;
 }

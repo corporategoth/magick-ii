@@ -25,6 +25,14 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/08/28 10:51:35  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.38  2000/08/06 05:27:46  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -124,6 +132,7 @@ public:
     int send(const mstring& data);
     virtual int open(void *);
     virtual int handle_input(ACE_HANDLE handle);
+    virtual int handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
 
     size_t In_Traffic() { return in_traffic; }
     size_t Out_Traffic() { return out_traffic; }

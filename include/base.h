@@ -25,6 +25,14 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/08/28 10:51:35  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.71  2000/08/22 08:43:39  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -131,21 +139,83 @@ public:
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;
-    friend class mBaseTaskmessage_MO;
 
     mstring PreParse(const mstring& message);
 protected:
-    ACE_Activation_Queue activation_queue_;
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
     size_t thread_count;
     int message_i(const mstring& message);
 public:
-    mBaseTask() :  activation_queue_(&message_queue_) {}
+    mBaseTask() {}
     virtual int open(void *in=0);
     virtual int svc(void);
     void message(const mstring& message);
     void i_shutdown();
 };
+
+class mBase
+{
+    friend mBaseTask;
+
+protected:
+    mstring names;		// Names of service (space delimited)
+    mstring realname;		// 'Real Name' of service
+
+    bool messages;		// Wether to process /MSG, /NOTICE.
+
+    //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
+    static bool TaskOpened;
+    static mBaseTask BaseTask;
+    virtual void AddCommands() {};
+    virtual void RemCommands() {};
+
+public:
+    mBase() {}
+    static void init();
+    static void shutdown();
+
+    static void push_message(const mstring& message);
+    static void push_message_immediately(const mstring& message);
+    virtual void execute(const mstring& message) =0;
+
+    mstring FirstName() { return names.Before(" "); }
+    mstring GetNames() { return names; }
+    bool IsName(mstring in)
+    {
+        mstring tmp = " "+names.UpperCase()+" ";
+	return tmp.Contains(" "+in.UpperCase()+" ");
+    };
+
+    virtual threadtype_enum Get_TType() const =0;
+    virtual mstring GetInternalName() const =0;
+
+    virtual bool MSG()		{ return messages; }
+    virtual void MSG(bool on)	{ messages=on; } 
+
+    bool signon(const mstring& nickname);
+    bool signoff(const mstring& nickname);
+    void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+    void privmsg(const mstring &dest, const mstring &pszFormat, ...);
+    void privmsgV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
+    void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+    void notice(const mstring &dest, const mstring &pszFormat, ...);
+    void noticeV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
+    void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+    void send(const mstring &dest, const mstring &pszFormat, ...);
+    void sendV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
+
+    operator mVariant() const
+    {
+	mVariant locvar(GetInternalName());
+	locvar.truevaluetype=GetInternalName();
+	return locvar;
+    };
+};
+
+void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+void announce(const mstring &source, const mstring &pszFormat, ...);
 
 extern SXP::Tag tag_entlist_val_t;
 extern SXP::Tag tag_entlist_t;
@@ -351,70 +421,6 @@ public:
     	pOut->EndObject(tag_entlist_val_t);
     }
 };
-
-class mBase
-{
-    friend mBaseTask;
-
-protected:
-    mstring names;		// Names of service (space delimited)
-    mstring realname;		// 'Real Name' of service
-
-    bool messages;		// Wether to process /MSG, /NOTICE.
-
-    //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
-    static bool TaskOpened;
-    static mBaseTask BaseTask;
-    virtual void AddCommands() {};
-    virtual void RemCommands() {};
-
-public:
-    mBase();
-    static void init();
-    static void shutdown();
-
-    static void push_message(const mstring& message);
-    static void push_message_immediately(const mstring& message);
-    virtual void execute(const mstring& message) =0;
-
-    mstring FirstName() { return names.Before(" "); }
-    mstring GetNames() { return names; }
-    bool IsName(mstring in)
-    {
-        mstring tmp = " "+names.UpperCase()+" ";
-	return tmp.Contains(" "+in.UpperCase()+" ");
-    };
-
-    virtual threadtype_enum Get_TType() const =0;
-    virtual mstring GetInternalName() const =0;
-
-    virtual bool MSG()		{ return messages; }
-    virtual void MSG(bool on)	{ messages=on; } 
-
-    bool signon(const mstring& nickname);
-    bool signoff(const mstring& nickname);
-    void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-    void privmsg(const mstring &dest, const mstring &pszFormat, ...);
-    void privmsgV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
-    void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-    void notice(const mstring &dest, const mstring &pszFormat, ...);
-    void noticeV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
-    void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-    void send(const mstring &dest, const mstring &pszFormat, ...);
-    void sendV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
-
-    operator mVariant() const
-    {
-	mVariant locvar(GetInternalName());
-	locvar.truevaluetype=GetInternalName();
-	return locvar;
-    };
-};
-
-void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-void announce(const mstring &source, const mstring &pszFormat, ...);
 
 class CommandMap
 {

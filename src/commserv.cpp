@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/08/28 10:51:37  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.69  2000/08/08 09:58:56  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -1007,12 +1015,14 @@ void CommServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mstring HelpTopic = Parent->commserv.GetInternalName();
     if (params.WordCount(" ") > 1)
@@ -1138,12 +1148,14 @@ void CommServ::do_List(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1200,12 +1212,14 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -1364,12 +1378,14 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1630,12 +1646,14 @@ void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1847,12 +1865,14 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {

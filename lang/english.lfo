@@ -317,3 +317,4 @@ NOLIMIT          =No limit specified when required for channel %s from %s.
 NOLANGTOKEN      =Invalid token %s for language %s used, error returned.
 BADSET           =Tried to set BAD data (%s) for %s on %s.
 CORRUPT_DB       =Database file corrupted or invalid key in keyfile.
+INVALID_TYPE     =Invalid data type %d on message queue, ignored.

@@ -27,6 +27,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2000/08/28 10:51:39  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.121  2000/08/22 08:43:41  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -2026,7 +2034,7 @@ unsigned int NetworkServ::SeenMessage(mstring data)
     vector<mstring> chunked;
     unsigned int times = 0;
 
-    WLOCK(("Server", "ReDoMessages"));
+    MLOCK(("Server", "ReDoMessages"));
     for (iter=ReDoMessages.begin(); iter!=ReDoMessages.end(); iter++)
     {
 	if (iter->second.second.SecondsSince() > Parent->config.MSG_Seen_Time())
@@ -2039,6 +2047,7 @@ unsigned int NetworkServ::SeenMessage(mstring data)
     {
 	times = ReDoMessages[data].first;
 	times++;
+	ReDoMessages.erase(data);
     }
 
     ReDoMessages[data] = pair<unsigned int,mDateTime>(times, Now());
@@ -2096,8 +2105,9 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="ADMIN")
 	{
-
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -2106,7 +2116,7 @@ void NetworkServ::execute(const mstring & data)
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
 		return;
-	    }
+	    }}
 	    // :source ADMIN
 	    sraw("256 " + source + " :Administrative info about " +
 		Parent->startup.Server_Name());
@@ -2269,7 +2279,9 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="INFO")
 	{
 	    // :source INFO :server/nick
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -2282,6 +2294,7 @@ void NetworkServ::execute(const mstring & data)
 	    else
 		for (int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
 		    sraw("371 " + source + " :" + contrib[i]);
+	    }
 	    sraw("374 " + source + " :End of /INFO report");
 	}
 	else if (msgtype=="INVITE")
@@ -2404,7 +2417,9 @@ void NetworkServ::execute(const mstring & data)
 	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
 	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
 
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -2426,7 +2441,7 @@ void NetworkServ::execute(const mstring & data)
 		    sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
 		}
-	    }
+	    }}
 
 	    sraw("365 " + source + " " + Parent->startup.Server_Name() + " :End of /LINKS list.");
 
@@ -2435,7 +2450,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    sraw("321 " + source + " Channel :Users  Name");
 
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -2456,7 +2473,7 @@ void NetworkServ::execute(const mstring & data)
 				mstring(chan->second.Users()) +  " :" +
 				chan->second.Topic());
 		}
-	    }
+	    }}
 
 	    sraw("323 " + source + " :End of /LIST");
 	}
@@ -2508,7 +2525,9 @@ void NetworkServ::execute(const mstring & data)
 	    if (mFile::Exists(Parent->files.Motdfile()))
 	    {
 		sraw("375 " + source + " :Message Of The Day");
-		if (Parent->ircsvchandler->HTM_Level() > 3)
+		{ RLOCK(("IrcSvcHandler"));
+		if (Parent->ircsvchandler != NULL &&
+		    Parent->ircsvchandler->HTM_Level() > 3)
 		{
 		    mstring tmp;
 		    tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -2524,7 +2543,7 @@ void NetworkServ::execute(const mstring & data)
 		    int i;
 		    for (i=0; i<tmp.size(); i++)
 			sraw("372 " + source + " :" + tmp[i].c_str());
-		}
+		}}
 		sraw("376 " + source + " :End of MOTD.");
 	    }
 	    else
@@ -3469,7 +3488,9 @@ void NetworkServ::execute(const mstring & data)
 //:vampire.darker.net 209 ChanServ Class 50 :1
 //:vampire.darker.net 209 ChanServ Class 10 :1
 //:vampire.darker.net 209 ChanServ Class 1 :7
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -3478,10 +3499,7 @@ void NetworkServ::execute(const mstring & data)
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
 		return;
-	    }
-
-
-
+	    }}
 	}
 	else
 	{
@@ -3819,7 +3837,9 @@ void NetworkServ::execute(const mstring & data)
 //:soul.darker.net 352 ChanServ #chatzone ~jason axe.net.au vampire.darker.net Wau|oK G%@ :2 Nothing really matters..
 //:soul.darker.net 352 ChanServ #operzone satan680 pc134.net19.ktv.koping.se vampire.darker.net Alien G*@ :2 am I GOD ?
 //:soul.darker.net 315 ChanServ vampire.darker.net :End of /WHO list.
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -3828,7 +3848,7 @@ void NetworkServ::execute(const mstring & data)
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
 		return;
-	    }
+	    }}
 
 	}
 	else if (msgtype=="WHOIS")
@@ -3847,7 +3867,9 @@ void NetworkServ::execute(const mstring & data)
 
 	    mstring target = data.ExtractWord(3, ": ");
 	    mstring targetL = target.LowerCase();
-	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp;
 		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
@@ -3932,7 +3954,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		mstring target = data.ExtractWord(3, ": ");
 		sraw("401 " + source + " " + target + " :No such nickname/channel.");
-	    }
+	    }}
 
 	}
 	else if (msgtype=="WHOWAS")

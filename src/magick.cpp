@@ -29,6 +29,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.266  2000/08/28 10:51:37  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.265  2000/08/22 08:43:41  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -694,8 +702,6 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
 #endif
 
-    mBase::init();
-
 /* Please leave this somewhere in this file, as it
  * is quite handy when you are getting a segfault
  * after load but before you can turn on trace.
@@ -751,8 +757,6 @@ int Magick::Start()
 	delete ircsvchandler;
 	ircsvchandler = NULL;
     }}
-    mBase::shutdown();
-    // Main Thread, DCC and Events engine
     while (mThread::size() > 3)
     {
 	ACE_OS::sleep(1);
@@ -1112,7 +1116,7 @@ void Magick::LoadInternalMessages()
     if (tmp.size())
     {
 	Messages.erase("DEFAULT");
-	Messages["DEFAULT"].insert(tmp.begin(), tmp.end());
+	Messages["DEFAULT"] = tmp;
     }
 }
 
@@ -1135,7 +1139,7 @@ bool Magick::LoadExternalMessages(mstring language)
 	if (tmp.size())
 	{
 	    Messages.erase(language.UpperCase());
-	    Messages[language.UpperCase()].insert(tmp.begin(), tmp.end());
+	    Messages[language.UpperCase()] = tmp;
 	    RET(true);
 	}
     }
@@ -2750,14 +2754,13 @@ bool Magick::get_config_values()
 	server.raw(((server.proto.Tokens() && server.proto.GetNonToken("ERROR") != "") ?
 		server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
 		" :Closing Link: Configuration reload required restart!");
-	WLOCK(("IrcSvcHandler"));
+	{ WLOCK(("IrcSvcHandler"));
 	if (ircsvchandler != NULL)
 	{
 	    ircsvchandler->shutdown();
 	    delete ircsvchandler;
 	    ircsvchandler = NULL;
-	}
-	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value::zero);
+	}}
     }
 
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
@@ -2845,12 +2848,12 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	}
 	else
 	{
+	    LastSEGV = Now();
 	    tid = mThread::find();
 	    if (tid != NULL)
 		LastFunc = tid->LastFunc();
 	    FLUSH();
 	    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/SIGNAL_RETRY"), signum);
-	    LastSEGV = Now();
 	    CP(("Got first sigsegv call, giving it another chance"));
 	}
 	break;
@@ -2945,12 +2948,13 @@ mstring Magick::GetKey()
     {
 	mFile keyfile(files.KeyFile());
 	unsigned char tmp[KEYLEN], key[KEYLEN];
+	size_t key_size;
 	des_key_schedule key1, key2;
 	des_cblock ckey1, ckey2;
 
 #include "crypt.h"
 	ACE_OS::memset(tmp, 0, KEYLEN);
-	keyfile.Read(tmp, KEYLEN);
+	key_size = keyfile.Read(tmp, KEYLEN);
 	tmp[KEYLEN-1]=0;
 
 	/* Unscramble keyfile keys */
@@ -2960,7 +2964,7 @@ mstring Magick::GetKey()
 	des_set_key(&ckey2,key2);
 
 	/* Use keyfile keys to get REAL key */
-	mDES(tmp, key, KEYLEN, key1, key2, 0);
+	mDES(tmp, key, key_size, key1, key2, 0);
 	retval = (char *) key;
     }
 #endif
@@ -2973,13 +2977,13 @@ void Magick::Disconnect()
     NFT("Magick::Disconnect");
     i_reconnect = false;
     i_connected = false;
-    WLOCK(("IrcSvcHandler"));
+    { WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
 	ircsvchandler->shutdown();
 	delete ircsvchandler;
 	ircsvchandler = NULL;
-    }
+    }}
 }
 
 void Magick::send(mstring in)

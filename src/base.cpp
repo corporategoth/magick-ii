@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2000/08/28 10:51:35  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.130  2000/08/22 08:43:39  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -251,10 +259,217 @@ size_t entlist_t::Usage()
 // --------- end of entlist_t -----------------------------------
 
 
-mBase::mBase()
+int mBaseTask::open(void *in)
 {
-    NFT("mBase::mBase");
-    TaskOpened=false;
+    NFT("mBaseTask::open");
+    mBase::TaskOpened=true;
+    int retval = activate();
+    RET(retval);
+}
+
+int mBaseTask::svc(void)
+{
+    mThread::Attach(tt_mBase);
+    NFT("mBaseTask::svc");
+    ACE_Message_Block *mblock;
+    char *transit;
+    
+    while(!Parent->Shutdown())
+    {
+	mblock = NULL;
+	transit = NULL;
+	{
+	    MLOCK(("MessageQueue"));
+	    message_queue_.dequeue(mblock);
+	}
+	if (mblock != NULL)
+	{
+	    switch (mblock->msg_type())
+	    {
+	    case ACE_Message_Block::MB_DATA:
+		transit = mblock->base();
+		if (transit != NULL)
+		{
+		    message_i(mstring(transit));
+		    delete transit;
+		}
+		break;
+	    case ACE_Message_Block::MB_HANGUP:
+		delete mblock;
+		DRET(-1);
+		break;
+	    default:
+		Log(LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
+							mblock->msg_type());
+	    }
+	    delete mblock;
+	}
+    }
+    DRET(0);
+}
+
+void mBaseTask::message(const mstring& message)
+{
+    FT("mBaseTask::message",(message));
+    MLOCK(("MessageQueue"));
+    if(message_queue_.is_full() || thread_count < Parent->config.Min_Threads())
+    {
+	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
+	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
+	{
+	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
+	}
+	else
+	{
+	    thread_count = thr_count();
+	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.low_water_mark(message_queue_.high_water_mark());
+	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
+	}
+    }
+    char *transit = new char[message.Len()+1];
+    ACE_OS::memset(transit, 0, message.Len()+1);
+    ACE_OS::strncpy(transit, message.c_str(), message.Len());
+    ACE_Message_Block *data = new ACE_Message_Block(message.Len(),
+		ACE_Message_Block::MB_DATA, 0, transit);
+    message_queue_.enqueue(data);
+}
+
+int mBaseTask::message_i(const mstring& message)
+{
+    FT("mBaseTask::message_i",(message));
+    // NOTE: No need to handle 'non-user messages' here, because
+    // anything that is not a user PRIVMSG/NOTICE goes directly
+    // to the server routine anyway.
+
+    mstring data = PreParse(message);
+
+    mstring source, type, target;
+    if (data == "")
+	RET(0);
+    source=data.ExtractWord(1,": ");
+    type  =data.ExtractWord(2,": ").UpperCase();
+    target=data.ExtractWord(3,": ");
+
+    CH(T_Chatter::From,data);	    
+
+    if ((type == "PRIVMSG" || type == "NOTICE") && !IsChan(target) &&
+    	Parent->nickserv.IsLive(source))
+    {
+	if (target.Contains("@"))
+	{
+	    target = target.Before("@");
+	    data = data.Before(" ", 2) + " " + target + " " + data.After(" ", 3);
+	    CP(("Target changed, new data: %s", data.c_str()));
+	}
+
+	if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
+	{
+	    // Find out if the target nick is one of the services 'clones'
+	    // Pass the message to them if so.
+	    // before even that, check if it's script overriden via
+	    //     Parent->checkifhandled(servername,command)
+	    // if so, Parent->doscripthandle(server,command,data);
+
+	    if (Parent->operserv.IsName(target))
+		Parent->operserv.execute(data);
+
+	    else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
+		Parent->nickserv.execute(data);
+
+	    else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
+		Parent->chanserv.execute(data);
+
+	    else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
+		Parent->memoserv.execute(data);
+
+	    else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
+		Parent->commserv.execute(data);
+
+	    else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
+		Parent->servmsg.execute(data);
+
+	    // else check if it's script handled, might do up a list of script servers
+	    // in the magick object to check against, else trash it.
+
+	    else	// PRIVMSG or NOTICE to non-service
+		Parent->server.execute(data);
+
+	}
+	else if (Parent->operserv.Log_Ignore())
+	{
+	    // Check if we're to log ignore messages, and log them here.
+	    Log(LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
+			source.c_str(), data.After(" ").c_str());
+	}
+    }
+    else
+	Parent->server.execute(data);
+
+    // Theoretically, under mutex lock, only ONE can access this
+    // at once.  Under pressure tho, the thread system may need
+    // to be looked at.  Could be optimization.
+    {MLOCK(("MessageQueue"));
+    size_t msgcnt = message_queue_.message_count();
+    if (thread_count > 1)
+    {
+	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+		thread_count, msgcnt,
+		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thread_count-2)),
+		thread_count * Parent->config.High_Water_Mark()));
+    }
+    else
+    {
+	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+		thread_count, msgcnt, 0,
+		thread_count * Parent->config.High_Water_Mark()));
+    }
+    if(thread_count > Parent->config.Min_Threads() &&
+	msgcnt < Parent->config.Low_Water_Mark() +
+		(Parent->config.High_Water_Mark() * (thread_count-2)))
+    {
+	    COM(("Low water mark reached, killing thread."));
+	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count-1) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.low_water_mark(message_queue_.high_water_mark());
+	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
+	    thread_count--;
+	    FLUSH();
+	    RET(-1);
+    }}
+    FLUSH();
+    RET(0);
+}
+
+mstring mBaseTask::PreParse(const mstring& message)
+{
+    FT("mBaseTask::PreParse", (message));
+    mstring data = message;
+
+    if (Parent->server.proto.Tokens())
+    {
+	if (message[0u] == ':' &&
+	   Parent->server.proto.GetToken(message.ExtractWord(2, " ")) != "")
+	{
+	    data = "";
+	    data << message.ExtractWord(1, " ") << " " <<
+		Parent->server.proto.GetToken(message.ExtractWord(2, " ")) <<
+		" " << message.After(" ", 2);
+	}
+	else if (Parent->server.proto.GetToken(message.ExtractWord(1, " ")) != "")
+	{
+	    data = "";
+	    data << Parent->server.proto.GetToken(message.ExtractWord(1, " ")) <<
+		" " << message.After(" ", 1);
+	}
+    }
+    RET(data);
+}
+
+void mBaseTask::i_shutdown()
+{
+    NFT("mBaseTask::i_shutdown");
+    MLOCK(("MessageQueue"));
+    message_queue_.enqueue(new ACE_Message_Block(0, ACE_Message_Block::MB_HANGUP));
 }
 
 void mBase::push_message(const mstring& message)
@@ -292,26 +507,33 @@ void mBase::init()
 {
     NFT("mBase::init");
 
-    if(TaskOpened==false)
-    {
-	if(BaseTask.open()!=0)
-	{
-	    CP(("Failed to create initial thread"));
-	    return;
-	}
-	while (BaseTask.thr_count() < Parent->config.Min_Threads())
-	{
-	    if(BaseTask.activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
-	    {
-		CP(("Failed to create additional (minimum) thread"));
-		return;
-	    }
-	}
-	BaseTask.thread_count = BaseTask.thr_count();
-    }
+    TaskOpened = false;    
     MLOCK(("MessageQueue"));
     BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (sizeof(ACE_Method_Object *) * 2));
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
+}
+
+void mBase::shutdown()
+{
+    NFT("mBase::shutdown");
+    ACE_Message_Block *mblock;
+    char *transit;
+    { MLOCK(("MessageQueue"));
+    while (!BaseTask.message_queue_.is_empty())
+    {
+	BaseTask.message_queue_.dequeue(mblock);
+	if (mblock != NULL)
+	{
+	    transit = mblock->base();
+	    if (transit != NULL)
+		delete transit;
+	    delete mblock;
+	}
+    }}
+    int j=BaseTask.thr_count();
+    for(int i=0;i<j;i++)
+	BaseTask.i_shutdown();
+    mBase::TaskOpened=false;
 }
 
 bool mBase::signon(const mstring &nickname)
@@ -592,220 +814,6 @@ void announce(const mstring& source, const mstring &pszFormat, ...)
 	    Parent->server.GLOBOPS(source, message);
 	else
 	    Parent->server.WALLOPS(source, message);
-}
-
-void mBase::shutdown()
-{
-    NFT("mBase::shutdown");
-    int j=BaseTask.thr_count();
-    for(int i=0;i<j;i++)
-	BaseTask.i_shutdown();
-}
-
-int mBaseTask::open(void *in)
-{
-    NFT("mBaseTask::open");
-    mBase::TaskOpened=true;
-    int retval = activate();
-    RET(retval);
-}
-
-int mBaseTask::svc(void)
-{
-    mThread::Attach(tt_mBase);
-    NFT("mBaseTask::svc");
-    while(!Parent->Shutdown())
-    {
-	ACE_Method_Object *tmp;
-	{
-	    MLOCK(("ActivationQueue"));
-	    tmp = this->activation_queue_.dequeue();
-	}
-	auto_ptr<ACE_Method_Object> mo(tmp);
-	if(mo->call()<0)
-	    break;
-    }
-    DRET(0);
-}
-
-class mBaseTaskmessage_MO : public ACE_Method_Object
-{
-public:
-    mBaseTaskmessage_MO(mBaseTask *parent, const mstring& data)
-    {
-	FT("mBaseTaskmessage_MO::mBaseTaskmessage_MO",((void *)parent,data));
-	i_parent=parent;
-	i_data=data;
-    }
-    virtual int call()
-    {
-	NFT("mBaseTaskmessage_MO::call");
-	int retval = i_parent->message_i(i_data);
-	RET(retval);
-    }
-private:
-    mBaseTask *i_parent;
-    mstring i_data;
-};
-
-void mBaseTask::message(const mstring& message)
-{
-    FT("mBaseTask::message",(message));
-    { MLOCK(("MessageQueue"));
-    if(message_queue_.is_full())
-    {
-	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
-	{
-	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
-	}
-	else
-	{
-	    thread_count = thr_count();
-	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count) * (sizeof(ACE_Method_Object *) * 2));
-	    message_queue_.low_water_mark(message_queue_.high_water_mark());
-	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
-	}
-    }}
-    MLOCK2(("ActivationQueue"));
-    activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
-}
-
-int mBaseTask::message_i(const mstring& message)
-{
-    FT("mBaseTask::message_i",(message));
-    // NOTE: No need to handle 'non-user messages' here, because
-    // anything that is not a user PRIVMSG/NOTICE goes directly
-    // to the server routine anyway.
-
-    mstring data = PreParse(message);
-
-    mstring source, type, target;
-    if (data == "")
-	RET(0);
-    source=data.ExtractWord(1,": ");
-    type  =data.ExtractWord(2,": ").UpperCase();
-    target=data.ExtractWord(3,": ");
-
-    CH(T_Chatter::From,data);	    
-
-    if ((type == "PRIVMSG" || type == "NOTICE") && !IsChan(target) &&
-    	Parent->nickserv.IsLive(source))
-    {
-	if (target.Contains("@"))
-	{
-	    target = target.Before("@");
-	    data = data.Before(" ", 2) + " " + target + " " + data.After(" ", 3);
-	    CP(("Target changed, new data: %s", data.c_str()));
-	}
-
-	if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
-	{
-	    // Find out if the target nick is one of the services 'clones'
-	    // Pass the message to them if so.
-	    // before even that, check if it's script overriden via
-	    //     Parent->checkifhandled(servername,command)
-	    // if so, Parent->doscripthandle(server,command,data);
-
-	    if (Parent->operserv.IsName(target))
-		Parent->operserv.execute(data);
-
-	    else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
-		Parent->nickserv.execute(data);
-
-	    else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
-		Parent->chanserv.execute(data);
-
-	    else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
-		Parent->memoserv.execute(data);
-
-	    else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
-		Parent->commserv.execute(data);
-
-	    else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
-		Parent->servmsg.execute(data);
-
-	    // else check if it's script handled, might do up a list of script servers
-	    // in the magick object to check against, else trash it.
-
-	    else	// PRIVMSG or NOTICE to non-service
-		Parent->server.execute(data);
-
-	}
-	else if (Parent->operserv.Log_Ignore())
-	{
-	    // Check if we're to log ignore messages, and log them here.
-	    Log(LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
-			source.c_str(), data.After(" ").c_str());
-	}
-    }
-    else
-	Parent->server.execute(data);
-
-    // Theoretically, under mutex lock, only ONE can access this
-    // at once.  Under pressure tho, the thread system may need
-    // to be looked at.  Could be optimization.
-    {MLOCK(("MessageQueue"));
-    size_t msgcnt = message_queue_.message_count();
-    if (thread_count > 1)
-    {
-	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thread_count, msgcnt,
-		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thread_count-2)),
-		thread_count * Parent->config.High_Water_Mark()));
-    }
-    else
-    {
-	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thread_count, msgcnt, 0,
-		thread_count * Parent->config.High_Water_Mark()));
-    }
-    if(thread_count > Parent->config.Min_Threads() &&
-	msgcnt < Parent->config.Low_Water_Mark() +
-		(Parent->config.High_Water_Mark() * (thread_count-2)))
-    {
-	    COM(("Low water mark reached, killing thread."));
-	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count-1) * (sizeof(ACE_Method_Object *) * 2));
-	    message_queue_.low_water_mark(message_queue_.high_water_mark());
-	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
-	    thread_count--;
-	    FLUSH();
-	    RET(-1);
-    }}
-    FLUSH();
-    RET(0);
-}
-
-mstring mBaseTask::PreParse(const mstring& message)
-{
-    FT("mBaseTask::PreParse", (message));
-    mstring data = message;
-
-    if (Parent->server.proto.Tokens())
-    {
-	if (message[0u] == ':' &&
-	   Parent->server.proto.GetToken(message.ExtractWord(2, " ")) != "")
-	{
-	    data = "";
-	    data << message.ExtractWord(1, " ") << " " <<
-		Parent->server.proto.GetToken(message.ExtractWord(2, " ")) <<
-		" " << message.After(" ", 2);
-	}
-	else if (Parent->server.proto.GetToken(message.ExtractWord(1, " ")) != "")
-	{
-	    data = "";
-	    data << Parent->server.proto.GetToken(message.ExtractWord(1, " ")) <<
-		" " << message.After(" ", 1);
-	}
-    }
-    RET(data);
-}
-
-void mBaseTask::i_shutdown()
-{
-    NFT("mBaseTask::i_shutdown");
-    MLOCK(("ActivationQueue"));
-    activation_queue_.enqueue(new shutdown_MO);
 }
 
 // Command Map stuff ...

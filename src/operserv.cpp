@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2000/08/28 10:51:39  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.94  2000/08/09 12:14:44  prez
 ** Ensured chanserv infinate loops wont occur, added 2 new cmdline
 ** paramaters, and added a manpage (you need to perl2pod it tho).
@@ -195,8 +203,7 @@ bool OperServ::AddHost(mstring host)
     FT("OperServ::AddHost", (host));
 
     WLOCK(("OperServ", "CloneList"));
-    if (CloneList.find(host.LowerCase()) == CloneList.end() ||
-	CloneList[host.LowerCase()].first < 1)
+    if (CloneList.find(host.LowerCase()) == CloneList.end())
 	CloneList[host.LowerCase()].first = 0;
     CloneList[host.LowerCase()].first++;
 
@@ -1139,12 +1146,14 @@ void OperServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mstring HelpTopic = Parent->operserv.GetInternalName();
     if (params.WordCount(" ") > 1)
@@ -1667,12 +1676,14 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Ping", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     Parent->events->ForcePing();
     Parent->operserv.stats.i_Ping++;
@@ -1713,12 +1724,14 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Reload", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (Parent->get_config_values())
     {
@@ -1742,12 +1755,14 @@ void OperServ::do_Signon(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Reload", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     Parent->server.SignOnAll();
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SIGNON"));
@@ -1759,12 +1774,14 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Unload", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -1937,12 +1954,14 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
     FT("OperServ::do_settings_Config", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
 /*
 -   Databases are (not) encrypted, and compressed at level ?.
@@ -1983,12 +2002,14 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_settings_Nick", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_EXPIRE"),
 			ToHumanTime(Parent->nickserv.Expire()).c_str());
@@ -2094,12 +2115,14 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     FT("OperServ::do_settings_Channel", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_EXPIRE"),
 		    ToHumanTime(Parent->chanserv.Expire()).c_str());
@@ -2265,12 +2288,14 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_INFLIGHT"),
 		    ToHumanTime(Parent->memoserv.InFlight()).c_str());
@@ -2344,12 +2369,14 @@ void OperServ::do_settings_All(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_settings_All", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     do_settings_Config(mynick, source, params);
     do_settings_Nick(mynick, source, params);
@@ -2558,12 +2585,14 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -2875,12 +2904,14 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -3127,12 +3158,14 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -3362,12 +3395,14 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {

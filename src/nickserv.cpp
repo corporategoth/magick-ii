@@ -26,6 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.128  2000/08/28 10:51:38  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.127  2000/08/19 14:45:03  prez
 ** Fixed mode settings upon commitee recognitition syntax checking
 **
@@ -1456,8 +1464,9 @@ void Nick_Live_t::Mode(mstring in)
 		}
 
 		modes += in[i];
-		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
+		{ RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
 		Parent->operserv.RemHost(i_host);
+		}
 		MLOCK(("OperServ", "OperDeny"));
 		// IF we are SecureOper and NOT (on oper list && recoznized)
 		// OR user is on OperDeny and NOT (on sadmin list && recognized)
@@ -1475,7 +1484,7 @@ void Nick_Live_t::Mode(mstring in)
 		{
 		    if (Parent->server.proto.SVS())
 		    {
-			SendMode("-oAa");
+			SendMode("-o");
 			send(Parent->operserv.FirstName(), i_Name,
 				Parent->getMessage(i_Name, "OS_STATUS/ISOPERDENY"));
 		    }
@@ -1530,6 +1539,7 @@ void Nick_Live_t::Mode(mstring in)
 	    }
 	    else if (modes.Contains(in[i]) && !IsServices())
 	    {
+		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
 		Parent->operserv.AddHost(i_host);
 		modes.Remove((mstring) in[i]);
 	    }
@@ -4672,12 +4682,14 @@ void NickServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     mstring HelpTopic = Parent->nickserv.GetInternalName();
     if (params.WordCount(" ") > 1)
@@ -5103,12 +5115,14 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -5474,12 +5488,14 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -5552,12 +5568,14 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -5816,12 +5834,14 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 2)
     {
@@ -6037,12 +6057,14 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ", 2).UpperCase();
     mstring target = source;
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") >= 3 &&
 	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
@@ -6203,12 +6225,14 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ", 2).UpperCase();
     mstring target = source;
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") >= 3 &&
 	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
@@ -6892,12 +6916,14 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 3)
     {
@@ -7293,12 +7319,14 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    if (Parent->ircsvchandler->HTM_Level() > 3)
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
-    }
+    }}
 
     if (params.WordCount(" ") < 4)
     {

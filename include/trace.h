@@ -25,6 +25,14 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/08/28 10:51:35  prez
+** Changes: Locking mechanism only allows one lock to be set at a time.
+** Activation_Queue removed, and use pure message queue now, mBase::init()
+** now resets us back to the stage where we havnt started threads, and is
+** called each time we re-connect.  handle_close added to ircsvchandler.
+** Also added in locking for all accesses of ircsvchandler, and checking
+** to ensure it is not null.
+**
 ** Revision 1.62  2000/08/22 08:43:39  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -74,15 +82,6 @@ enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_Op
 extern mstring threadname[tt_MAX];
 extern unsigned short makehex(mstring SLevel);
 enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_Mutex };
-
-class shutdown_MO : public ACE_Method_Object
-{
-public:
-    virtual int call()
-    {
-	return -1;
-    }
-};
 
 class ThreadID {
 private:
