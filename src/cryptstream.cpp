@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/04/16 06:12:13  prez
+** Started adding body to the documentation...
+**
 ** Revision 1.16  2000/04/15 11:11:45  ungod
 ** starting xmlage of magick
 **
@@ -64,6 +67,7 @@ static const char *ident = "@(#)$Id$";
 #include "cryptstream.h"
 #include "log.h"
 #include "trace.h"
+
 #ifdef HASCRYPT
 extern "C"
 {
@@ -105,15 +109,16 @@ wxCryptInputStream::wxCryptInputStream(wxInputStream& stream, const mstring& pas
 
 size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 {
+    //FT("wxCryptOutputStream::OnSysWrite", ("(const viod *) buffer", size));
     wxASSERT(buffer!=NULL);
-    FT("wxCryptOutputStream::OnSysWrite", ("const viod *) buffer", size));
 
 #ifdef HASCRYPT
     if(ppgiven==false)
     {
 #endif
 	Write(buffer,size);
-	RET(size);
+	return size;
+	//RET(size);
 #ifdef HASCRYPT
     }
     unsigned char *buff=new unsigned char[size];
@@ -138,20 +143,22 @@ size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 	delete [] buff;
     if(buff2!=NULL)
 	delete [] buff2;
-    RET(size);
+    return size;
+    //RET(size);
 #endif
 }
 
 size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 {
+    //FT("wxCryptOutputStream::OnSysRead", ("(const viod *) buffer", size));
     wxASSERT(buffer!=NULL);
-    FT("wxCryptOutputStream::OnSysRead", ("const viod *) buffer", size));
 #ifdef HASCRYPT
     if(ppgiven==false)
     {
 #endif
 	Read(buffer,size);
-	RET(size);
+	return size;
+	//RET(size);
 #ifdef HASCRYPT
     }
     unsigned char *buff=new unsigned char[size];
@@ -176,7 +183,8 @@ size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 	delete [] buff;
     if(buff2!=NULL)
 	delete [] buff2;
-    RET(size);
+    return size;
+    //RET(size);
 #endif
 }
 

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2000/04/16 06:12:13  prez
+** Started adding body to the documentation...
+**
 ** Revision 1.78  2000/04/04 03:21:35  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -5224,7 +5227,7 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+lang.LowerCase()+".lng");
+	wxFileConfig fconf("magick","",Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng");
 	// check for valid language ...
 	if (!fconf.GetNumberOfGroups())
 	{
@@ -5559,7 +5562,7 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+lang.LowerCase()+".lng");
+	wxFileConfig fconf("magick","",Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng");
 	// check for valid language ...
 	if (!fconf.GetNumberOfGroups())
 	{

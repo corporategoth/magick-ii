@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.215  2000/04/16 06:12:13  prez
+** Started adding body to the documentation...
+**
 ** Revision 1.214  2000/04/06 12:52:50  prez
 ** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
 **
@@ -649,7 +652,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	CP(("Trying SPECIFIED language ..."));
 	WLOCK(("Magick","LoadHelp"));
 
-	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+nickserv.stored[nick.LowerCase()].Language().LowerCase()+".hlp");
+	wxFileConfig fconf("magick","",files.Langdir()+DirSlash+nickserv.stored[nick.LowerCase()].Language().LowerCase()+".hlp");
 
 	bool bContEntries, oldCOD, sendline;
 	long dummy=0;
@@ -709,7 +712,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	CP(("Trying DEFAULT language ..."));
 	WLOCK(("Magick","LoadHelp"));
 
-	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+nickserv.DEF_Language().LowerCase()+".hlp");
+	wxFileConfig fconf("magick","",files.Langdir()+DirSlash+nickserv.DEF_Language().LowerCase()+".hlp");
 
 	bool bContEntries, oldCOD, sendline;
 	unsigned int i;
@@ -779,33 +782,58 @@ void Magick::dump_help()
     // This needs to be re-written.
     cout << "\n"
 	 << FULL_NAME + " - " + FULL_URL + "\n"
-	 << "    (c) 1996-2000 Preston A. Elder <prez@magick.tm>\n"
-	 << "    (c) 1999-2000 William King <ungod@magick.tm>\n"
+	 << "    (c) 1997-2000 Preston A. Elder <prez@magick.tm>\n"
+	 << "    (c) 1998-2000 William King <ungod@magick.tm>\n"
 	 << "\n"
-	 << "Syntax: " << i_programname << " [ops]\n"
+	 << "Syntax: " << i_programname << " [options]\n"
 	 << "\n"
-	 << "    -n, --name servername          Override SERVER_NAME in the config file.\n"
-	 << "    -d, --desc description         Override SERVER_DESC in the config file.\n"
-	 << "    -u, --user user                Override SERVICES_USER in the config file.\n"
-	 << "    -o, --ownuser                  Sets OWNUSER in the config file to TRUE.\n"
-	 << "    -h, --host host                Override SERVICES_HOST in the config file.\n"
-	 << "    -s, --save time                Override CYCLETIME in the config file.\n"
-	 << "    -v, --verbose                  Logs EVERY command to services.\n"
-         << "    -l, --level level              Override LEVEL in config file.\n"
-         << "    -f, --fg                       Output logs to console, fork() on CTRL-C.\n"
-         << "    -r, --relink time              Override SERVER_RELINK in config file.\n"
-         << "        --norelink                 Set SERVER_RELINK to 0.\n"
-         << "        --dir directory            Change working (database) directory.\n"
-	 << "        --convert type             Convet another verion of services database.\n"
-         << "	     --config config            Specify filename for config file.\n"
-         << "	     --log logfile              Output logs to different file.\n"
-         << "	     --trace type:level         Turn on tracing from the onset.\n"
-         << "\n"
-         << "For more help on the usage of " + PRODUCT + ", please browse the docs directory.\n"
-         << "This software is free to the public, no registration or licensing fee\n"
-         << "may be charged under any circumstances.  Media charges may be imposed.\n"
-	 << "\n";
-    
+	 << "--help		-?     	Help output (summary of the below).\n"
+	 << "--dir X			Set the initial services directory.\n"
+	 << "--config X			Set the name of the config file.\n"
+	 << "--convert X		Convert another version of services databases\n"
+	 << "				to Magick II format, where X is the type of\n"
+	 << "				database to convert.  Currently recognized:\n"
+	 << "					magick\n"
+	 << "--trace X:Y		Set the trace level on startup, equivilant of\n"
+	 << "				using the OperServ TRACE SET command while\n"
+	 << "				running, where X is the trace type (or ALL),\n"
+	 << "				and Y is the trace level in hex.\n"
+	 << "--name X		-n	Override [STARTUP/SERVER_NAME] to X.\n"
+	 << "--desc X		-d	Override [STARTUP/SERVER_DESC] to X.\n"
+	 << "--user X		-u	Override [STARTUP/SERVICES_USER] to X.\n"
+	 << "--host X		-h	Override [STARTUP/SERVICES_HOST] to X.\n"
+	 << "--ownuser		-o	Override [STARTUP/OWNUSER] to X.\n"
+	 << "--protocol X	-P	Override [STARTUP/PROTOCOL] to X.\n"
+	 << "--level X		-l	Override [STARTUP/LEVEL] to X.\n"
+	 << "--lagtime X	-g	Override [STARTUP/LAGTIME] to X.\n"
+	 << "--verbose		-v	Override [FILES/VERBOSE] to X.\n"
+	 << "--log X		-L	Override [FILES/LOGFILE] to X.\n"
+	 << "--dbase X		-D	Override [FILES/DATABASE] to X.\n"
+	 << "--langdir X	-S	Override [FILES/LANGDIR] to X.\n"
+	 << "--encrypt		-E	Override [FILES/ENCRYPTION] to true.\n"
+	 << "--decrypt		-e	Override [FILES/ENCRYPTION] to false.\n"
+	 << "--keyfile X	-K	Override [FILES/KEYFILE] to X.\n"
+	 << "--compress X	-c	Override [FILES/COMPRESSION] to X.\n"
+	 << "--relink X		-r	Override [CONFIG/SERVER_RELINK] to X.\n"
+	 << "--cycle X		-t	Override [CONFIG/CYCLETIME] to X.\n"
+	 << "--check X		-T 	Override [CONFIG/CHECKTIME] to X.\n"
+	 << "--ping X		-p	Override [CONFIG/PING_FREQUENCY] to X.\n"
+	 << "--lwm X		-m	Override [CONFIG/LOW_WATER_MARK] to X.\n"
+	 << "--hwm X		-M	Override [CONFIG/HIGH_WATER_MARK] to X.\n"
+	 << "--append		-a	Override [NICKSERV/APPEND_RENAME] to true.\n"
+	 << "--rename		-A	Override [NICKSERV/APPEND_RENAME] to false.\n"
+	 << "--ident X		-R	Override [NICKSERV/IDENT] to X.\n"
+	 << "--language X       -s      Override [NICKSERV/DEF_LANGUAGE] to X.\n"
+	 << "--nodcc            -x      Override [NICKSERV/PICEXT] to "" and\n"
+	 << "                           Override [MEMOSERV/FILES] to 0.\n"
+	 << "--inflight X       -f      Override [MEMOSERV/INFLIGHT] to X.\n"
+	 << "--logignore	-i      Override [OPERSERV/LOG_IGNORE] to true.\n"
+	 << "--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n"
+	 << "\n"
+	 << "For more help on the usage of " + PRODUCT + ", please browse the docs directory.\n"
+	 << "This released under the GNU General Public License.  Please see the\n"
+	 << "\"COPYING\" file for more details.\n\n";
+
 }
 
 void Magick::LoadInternalMessages()
@@ -817,8 +845,8 @@ void Magick::LoadInternalMessages()
     unsigned int i;
     {
 #include "language.h"
-	remove((wxGetCwd()+DirSlash+"default.lng").c_str());
-	wxFileOutputStream out(wxGetCwd()+DirSlash+"default.lng");
+	remove((files.TempDir()+DirSlash+"default.lng").c_str());
+	wxFileOutputStream out(files.TempDir()+DirSlash+"default.lng");
 
 	for(i=0;i<def_langent;i++)
 	{
@@ -828,17 +856,14 @@ void Magick::LoadInternalMessages()
     }
 
     // need to transfer wxGetWorkingDirectory() and prepend it to default.lng
-    wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"default.lng");
-    remove((wxGetCwd()+DirSlash+"default.lng").c_str());
+    wxFileConfig fconf("magick","",files.TempDir()+DirSlash+"default.lng");
+    remove((files.TempDir()+DirSlash+"default.lng").c_str());
     bool bContGroup, bContEntries;
     long dummy1=0,dummy2=0;
     mstring groupname,entryname,combined;
     vector<mstring> entries;
 
     bContGroup=fconf.GetFirstGroup(groupname,dummy1);
-    // this code is fucked up and won't work. debug to find why it's not
-    // finding the entries when it is actually loading them.
-    // *sigh* spent an hour so far with no luck.
     while(bContGroup)
     {
 	fconf.SetPath(groupname);
@@ -891,7 +916,7 @@ bool Magick::LoadExternalMessages(mstring language)
     }
     else
     {
-	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lng");
+	wxFileConfig fconf("magick","",files.Langdir()+DirSlash+language.LowerCase()+".lng");
 
 	bool bContGroup, bContEntries;
 	long dummy1=0,dummy2=0;
@@ -933,8 +958,8 @@ bool Magick::LoadLogMessages(mstring language)
     unsigned int i;
     {
 #include "logfile.h"
-	remove((wxGetCwd()+DirSlash+"default.lfo").c_str());
-	wxFileOutputStream out(wxGetCwd()+DirSlash+"default.lfo");
+	remove((files.TempDir()+DirSlash+"default.lfo").c_str());
+	wxFileOutputStream out(files.TempDir()+DirSlash+"default.lfo");
 
 	for(i=0;i<def_logent;i++)
 	{
@@ -950,8 +975,8 @@ bool Magick::LoadLogMessages(mstring language)
     mstring groupname,entryname,combined;
     vector<mstring> entries;
 
-    fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"default.lfo");
-    remove((wxGetCwd()+DirSlash+"default.lfo").c_str());
+    fconf = new wxFileConfig("magick","",files.TempDir()+DirSlash+"default.lfo");
+    remove((files.TempDir()+DirSlash+"default.lfo").c_str());
     bContGroup=fconf->GetFirstGroup(groupname,dummy1);
     // this code is fucked up and won't work. debug to find why it's not
     // finding the entries when it is actually loading them.
@@ -979,7 +1004,7 @@ bool Magick::LoadLogMessages(mstring language)
 	dummy1=dummy2=0;
 	groupname=entryname=combined="";
 
-	fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lfo");
+	fconf = new wxFileConfig("magick","",files.Langdir()+DirSlash+language.LowerCase()+".lfo");
 	bContGroup=fconf->GetFirstGroup(groupname,dummy1);
 	// this code is fucked up and won't work. debug to find why it's not
 	// finding the entries when it is actually loading them.
@@ -1031,26 +1056,6 @@ int Magick::doparamparse()
     {
 	if(argv[i][0U]=='-')
 	{
-	    /*	COMMAND		SHORT	ALIASES
-		--name X	-n
-		--desc X	-d
-		--user X	-u
-		--ownuser	-o
-		--host X	-h
-		--dir X
-		--config X
-		--trace X
-		--log X
-		--verbose	-v	--debug
-		--fg	   	-f	--live, --nofork
-		--relink X	-r
-		--norelink
-		--level X	-l
-		--save X	-s	--update
-		--help		-?
-		--keyfile	-k
-	    */
-
 	    bool ArgUsed=false;
 	    if (argv[i][1U]=='-')
 		ArgUsed=paramlong(argv[i], (i+1 < argc) ? argv[i+1].c_str() : "");
@@ -1081,7 +1086,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--name");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.server_name=second;
 	RET(true);
@@ -1090,7 +1095,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--desc");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.server_name=second;
 	RET(true);
@@ -1099,7 +1104,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--user");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.services_user=second;
 	RET(true);
@@ -1112,67 +1117,98 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--host");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.services_host=second;
+    }
+    else if(first=="--protocol")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<=0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	if (atoi(second.c_str()) != server.proto.Number())
+	{
+	    server.proto.Set(atoi(second.c_str()));
+	    if (atoi(second.c_str()) != server.proto.Number())
+		wxLogWarning(getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
+			    atoi(second.c_str()), server.proto.Number());
+	}
+	RET(true);
+    }
+    else if(first=="--level")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<=0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	startup.level=atoi(second.c_str());
+	RET(true);
+    }
+    else if(first=="--lagtime")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	startup.lagtime=FromHumanTime(second);
+    }
+    else if(first=="--verbose" || first=="--debug")
+    {
+	logger->SetVerbose(true);
     }
     else if(first=="--log")
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--log");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	files.logfile=second;
 	RET(true);
     }
-    else if(first=="--verbose" || first=="--debug")
-	logger->SetVerbose(true);
-    else if(first=="--relink")
+    else if(first=="--dbase" || first=="--database")
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--relink");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<0)
-	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"), "--relink");
-	}
-	config.server_relink=atoi(first.c_str());
+	files.database=second;
 	RET(true);
     }
-    else if(first=="--norelink")
-	config.server_relink=0;
-    else if(first=="--level")
+    else if(first=="--langdir")
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--level");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<=0)
-	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"), "--level");
-	}
-	startup.level=atoi(second.c_str());
+	files.langdir=second;
 	RET(true);
     }
-    else if(first=="--save" || first=="--update")
+    else if(first=="--encrypt")
     {
-	if(second.IsEmpty() || second[0U]=='-')
-	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--save");
-	}
-	if(atoi(second.c_str())<=0)
-	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"), "--save");
-	}
-	config.cycletime=atoi(second.c_str());
-	RET(true);
+	files.encryption=true;
+    }
+    else if(first=="--decrypt")
+    {
+	files.encryption=false;
     }
     else if(first=="--keyfile")
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--keyfile");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!wxFile::Exists(second.c_str()))
 	{
@@ -1181,11 +1217,183 @@ bool Magick::paramlong(mstring first, mstring second)
 	files.keyfile=second;
 	RET(true);
     }
+    else if(first=="--compress" || first=="--compression")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	if (atoi(second.c_str())>9)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
+	}
+	files.compression=atoi(second.c_str());
+	RET(true);
+    }
+    else if(first=="--relink")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	config.server_relink=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--norelink")
+    {
+	config.server_relink=0;
+    }
+    else if(first=="--cycle" || first=="--save" || first=="--update")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	config.cycletime=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--check" || first=="--hyperactive")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	config.checktime=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--ping")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	config.ping_frequency=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--lwm" || first=="--low_water_mark")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	config.low_water_mark=atoi(second.c_str());
+	if (config.high_water_mark < config.low_water_mark)
+	    config.high_water_mark = config.low_water_mark;
+	RET(true);
+    }
+    else if(first=="--hwm" || first=="--high_water_mark")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	config.high_water_mark=atoi(second.c_str());
+	if (config.high_water_mark < config.low_water_mark)
+	    config.high_water_mark = config.low_water_mark;
+	RET(true);
+    }
+    else if(first=="--append")
+    {
+	nickserv.append_rename=true;
+    }
+    else if(first=="--rename")
+    {
+	nickserv.append_rename=false;
+    }
+    else if(first=="--ident")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	nickserv.ident=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--language")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	nickserv.def_language=second;
+	RET(true);
+    }
+    else if(first=="--nodcc")
+    {
+	nickserv.picext="";
+	memoserv.files=0;
+    }
+    else if(first=="--inflight")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	nickserv.ident=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--logignore")
+    {
+	operserv.log_ignore=true;
+    }
+    else if(first=="--ignore")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	if (atoi(second.c_str())>9)
+	{
+	    wxLogFatal(getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
+	}
+	operserv.ignore_method=atoi(second.c_str());
+	RET(true);
+    }
     else if(first=="--convert")
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--convert");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if (second.CmpNoCase("magick")==0)
 	{
@@ -1206,7 +1414,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else
     {
-   	wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str());
+	wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str());
     }
     RET(false);
 }
@@ -1222,7 +1430,6 @@ bool Magick::paramshort(mstring first, mstring second)
 	}
 	else if(first[i]=='n')
 	{
-
 	    if (ArgUsed)
 		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
@@ -1242,10 +1449,6 @@ bool Magick::paramshort(mstring first, mstring second)
 	    else
 		ArgUsed = paramlong ("--user", second);
 	}
-	else if(first[i]=='o')
-	{
-	    ArgUsed = paramlong ("--ownuser", second);
-	}
 	else if(first[i]=='h')
 	{
 	    if (ArgUsed)
@@ -1253,20 +1456,16 @@ bool Magick::paramshort(mstring first, mstring second)
 	    else
 		ArgUsed = paramlong ("--host", second);
 	}
-	else if(first[i]=='v')
+	else if(first[i]=='o')
 	{
-	    ArgUsed = paramlong ("--verbose", second);
+	    ArgUsed = paramlong ("--ownuser", second);
 	}
-	else if(first[i]=='f')
-	{
-	    ArgUsed = paramlong ("--fg", second);
-	}
-	else if(first[i]=='r')
+	else if(first[i]=='P')
 	{
 	    if (ArgUsed)
 		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
-		ArgUsed = paramlong ("--relink", second);
+		ArgUsed = paramlong ("--protocol", second);
 	}
 	else if(first[i]=='l')
 	{
@@ -1275,23 +1474,155 @@ bool Magick::paramshort(mstring first, mstring second)
 	    else
 		ArgUsed = paramlong ("--level", second);
 	}
-	else if(first[i]=='s')
+	else if(first[i]=='g')
 	{
 	    if (ArgUsed)
 		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
-		ArgUsed = paramlong ("--save", second);
+		ArgUsed = paramlong ("--lagtime", second);
 	}
-	else if(first[i]=='k')
+	else if(first[i]=='v')
+	{
+	    ArgUsed = paramlong ("--verbose", second);
+	}
+	else if(first[i]=='L')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--log", second);
+	}
+	else if(first[i]=='D')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--dbase", second);
+	}
+	else if(first[i]=='S')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--langdir", second);
+	}
+	else if(first[i]=='E')
+	{
+	    ArgUsed = paramlong ("--encrypt", second);
+	}
+	else if(first[i]=='e')
+	{
+	    ArgUsed = paramlong ("--decrypt", second);
+	}
+	else if(first[i]=='K')
 	{
 	    if (ArgUsed)
 		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--keyfile", second);
 	}
+	else if(first[i]=='c')
+	{
+	    ArgUsed = paramlong ("--compress", second);
+	}
+	else if(first[i]=='r')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--relink", second);
+	}
+	else if(first[i]=='t')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--cycle", second);
+	}
+	else if(first[i]=='T')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--check", second);
+	}
+	else if(first[i]=='p')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--ping", second);
+	}
+	else if(first[i]=='m')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--lwm", second);
+	}
+	else if(first[i]=='M')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--hwm", second);
+	}
+	else if(first[i]=='a')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--append", second);
+	}
+	else if(first[i]=='A')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--rename", second);
+	}
+	else if(first[i]=='R')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--ident", second);
+	}
+	else if(first[i]=='s')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--language", second);
+	}
+	else if(first[i]=='x')
+	{
+	    ArgUsed = paramlong ("--nodcc", second);
+	}
+	else if(first[i]=='f')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--inflight", second);
+	}
+	else if(first[i]=='i')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--logignore", second);
+	}
+	else if(first[i]=='I')
+	{
+	    if (ArgUsed)
+		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--ignore", second);
+	}
 	else
 	{
-   	    wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str());
+	    wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str());
 	}
     }
     RET(ArgUsed);
@@ -1657,6 +1988,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"VERBOSE", &value_bool, false);
     logger->SetVerbose(value_bool);
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
+    in.Read(ts_Files+"LANGDIR",&files.langdir,"lang");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
     in.Read(ts_Files+"COMPRESSION",&files.compression,6);
     if (files.compression > 9)
@@ -2254,11 +2586,7 @@ void Magick::load_databases()
     NFT("Magick::load_databases");
 
     mstring databasefile;
-    if (mstring(files.Database()[0u]) == DirSlash ||
-	files.Database()[1u] == ':')
-	databasefile = files.Database();
-    else
-	databasefile = wxGetCwd()+DirSlash+files.Database();
+    databasefile = files.Database();
 
     mstring tag;
     unsigned long ver;
@@ -2339,11 +2667,7 @@ void Magick::save_databases()
     NFT("Magick::save_databases");
 
     mstring databasefile;
-    if (mstring(files.Database()[0u]) == DirSlash ||
-	files.Database()[1u] == ':')
-	databasefile = files.Database();
-    else
-	databasefile = wxGetCwd()+DirSlash+files.Database();
+    databasefile = files.Database();
 
     CP(("Database Filename being used: %s", databasefile.c_str()));
     wxFile dbase((files.Database() + ".new").c_str(), wxFile::write);

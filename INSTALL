@@ -1,7 +1,31 @@
+Magick IRC Services
+
+$Id$
+(c) 1997-2000 Preston A. Elder <prez@magick.tm>
+(c) 1998-2000 William King <ungod@magick.tm>
+
+Requirements
+============
+
+Before you begin compilation of Magick, you must have a fully compiled
+version of the Adaptive Communications Environment (ACE), the ZLIB
+compression library, and a threads library such as pthreads.
+
+If you are missing any of the above, you may obtain them as follows:
+ACE 	http://www.cs.wustl.edu/~schmidt/ACE.html
+ZLIB	http://www.cdrom.com/pub/infozip/zlib
+PTH	http://www.gnu.org/pth
+
+BSD USERS - BSD has inbuilt its threads library into its default
+operating system, and you do not need a separate threads library,
+however all versions before 3.4 with the threads patch applied, or
+4.0 will not work, due to a badly implemented threads library.
+
+You must compile each of the above products before attempting to
+build Magick.  Magick will look for them in the configure phase.
+
 Basic Installation
 ==================
-
-   These are generic installation instructions.
 
    The `configure' shell script attempts to guess correct values for
 various system-dependent variables used during compilation.  It uses
@@ -178,5 +202,35 @@ operates.
 `--version'
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
+
+--with-acelib=path
+--with-aceinc=path
+     This specifies where the makefile should look for the ACE library
+file, and its includes respectively.  You must specify full pathnames.
+Verification on what you have entered is minimal (ie. will only verify
+the existance of the library file, and OS.h in the include directory).
+This should only be used if Magick does not detect the ACE library.
+
+--with-zlib=path
+--with-zinc=path
+     This specifies where the makefile should look for the ZLIB library
+file, and its includes respectively.  You must specify full pathnames.
+Verification on what you have entered is minimal (ie. will only verify
+the existance of the library file, and zlib.h in the include directory).
+This should only be used if Magick does not detect the ZLIB library.
+
+--enable-bsdthreads
+     This is mutually exclusive of --with-threadlib and --with-threadinc,
+it specifies to use the -pthreads option with GCC or CC when linking the
+magick binary.  This is used for systems where pthreads is ingrained in
+the standard C library, specifically, BSD.
+
+--with-threadlib=path
+--with-threadinc=path
+     This specifies where the makefile should look for a threads library
+file, and its includes respectively.  You must specify full pathnames.
+Verification on what you have entered is minimal (ie. will only verify
+the existance of the library file, and the include directory exists).
+This should only be used if Magick does not detect a threads library.
 
 `configure' also accepts some other, not widely useful, options.

@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2000/04/16 06:12:13  prez
+** Started adding body to the documentation...
+**
 ** Revision 1.116  2000/04/06 12:44:09  prez
 ** Removed SXP and EXPAT directories
 **
@@ -191,7 +194,7 @@ public:
 		mstring pidfile;
 		mstring logfile;
 		mstring motdfile;
-		mstring language;
+		mstring langdir;
 		mstring database;
 		unsigned int compression;
 		mstring keyfile;
@@ -208,7 +211,7 @@ public:
 		mstring Pidfile()const		    { return pidfile; }
 		mstring Logfile()const		    { return logfile; }
 		mstring Motdfile()const		    { return motdfile; }
-		mstring Language()const		    { return language; }
+		mstring Langdir()const		    { return langdir; }
 		mstring Database()const		    { return database; }
 		unsigned int Compression()const	    { return compression; }
 		mstring KeyFile()const		    { return keyfile; }
