@@ -3634,7 +3634,7 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 
 		unsigned int i, wc = IrcParamCount(params);
 		mstring mode_param;
-		for (i=2; i<=wc; i++)
+		for (i=3; i<=wc; i++)
 		    mode_param += " " + IrcParam(params, i);
 
 		if (proto.Numeric.User())
@@ -4560,7 +4560,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		for (i = 0; i < proto.ChanModeArg().length(); i++)
 		    if (modes.Contains(proto.ChanModeArg() [i]))
 		    {
-			mode_params = params.Before(" :").After(" ", 3);
+			// NOTE: muse be 4, not 3, because line STARTS with a space.
+			mode_params = params.Before(" :").After(" ", 4);
 			break;
 		    }
 	    }
@@ -4608,11 +4609,37 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			    break;
 			}
 		    }
-		    if (!(isban || isexcept) && !GetUser(nick).empty())
+		    if (isban)
 		    {
-			nick = GetUser(nick);
-			if (nick.empty())
+			modes += "b";
+			mode_params += " " + nick;
+			nick.erase();
+		    }
+		    else if (isexcept)
+		    {
+			modes += "e";
+			mode_params += " " + nick;
+			nick.erase();
+		    }
+		    else
+		    {
+			mstring newnick = GetUser(nick);
+			if (newnick.empty())
+			{
+			    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("SJOIN", source, nick));
+			    if (oped)
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'o', source, nick, chan));
+			    if (halfoped)
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'h', source, nick, chan));
+			    if (voiced)
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'v', source, nick, chan));
+			    if (owner)
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'q', source, nick, chan));
+			    if (prot)
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'a', source, nick, chan));
 			    continue;
+			}
+			nick = newnick;
 
 			if (oped)
 			{
@@ -4641,32 +4668,6 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			}
 
 			users.push_back(nick);
-		    }
-		    else if (isban)
-		    {
-			modes += "b";
-			mode_params += " " + nick;
-			nick.erase();
-		    }
-		    else if (isexcept)
-		    {
-			modes += "e";
-			mode_params += " " + nick;
-			nick.erase();
-		    }
-		    else
-		    {
-			LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("SJOIN", source, nick));
-			if (oped)
-			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'o', source, nick, chan));
-			if (halfoped)
-			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'h', source, nick, chan));
-			if (voiced)
-			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'v', source, nick, chan));
-			if (owner)
-			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'q', source, nick, chan));
-			if (prot)
-			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'a', source, nick, chan));
 		    }
 		}
 	    }
@@ -4900,7 +4901,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 
 		unsigned int i, wc = IrcParamCount(params);
 		mstring mode_param;
-		for (i=2; i<=wc; i++)
+		for (i=3; i<=wc; i++)
 		    mode_param += " " + IrcParam(params, i);
 
 		if (proto.Numeric.User())

@@ -1973,10 +1973,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	}
 
 	if (!modes.empty() && Magick::instance().chanserv.IsLive(i_Name))
-	{
-	    clive->SendMode("+" + modes + " " + setting.Mlock_Key + " " +
-			    (setting.Mlock_Limit ? mstring(setting.Mlock_Limit) : mstring("")));
-	}
+	    clive->SendMode("+" + modes);
 
 	{
 	    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
