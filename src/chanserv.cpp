@@ -1009,6 +1009,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
     i_Founder=in.i_Founder;
+    i_CoFounder=in.i_CoFounder;
     i_Description=in.i_Description;
     i_Password=in.i_Password;
     i_URL=in.i_URL;
@@ -1065,6 +1066,34 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     map<mstring, mstring>::const_iterator i;
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
     i_UserDef.insert(*i);
+}
+
+
+void Chan_Stored_t::Founder(mstring in)
+{
+    FT("Chan_Stored_t::Founder", (in));
+
+    if (!Parent->chanserv.IsStored(in))
+	return;
+
+    if (i_CoFounder == in)
+	i_CoFounder = "";
+
+    i_Founder = in;
+}
+
+
+void Chan_Stored_t::CoFounder(mstring in)
+{
+    FT("Chan_Stored_t::CoFounder", (in));
+
+    if (!Parent->chanserv.IsStored(in))
+	return;
+
+    if (i_Founder == in)
+	return;
+
+    i_CoFounder = in;
 }
 
 
@@ -2245,7 +2274,7 @@ bool Chan_Stored_t::Greet_find(mstring entry)
 
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
-    out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
+    out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_CoFounder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
     out<<in.i_Bantime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
 	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
@@ -2289,7 +2318,7 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     entlist_t edummy;
     entlist_val_t<long> eldummy;
     entlist_val_t<mstring> esdummy;
-    in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
+    in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_CoFounder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Bantime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
 	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;

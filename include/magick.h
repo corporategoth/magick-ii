@@ -215,6 +215,7 @@ public:
 	CommServ commserv;
 	NetworkServ server;
 	LoggerTask loggertask;
+	EventTask events;
         IrcServer ACO_server;
 
 //protected:

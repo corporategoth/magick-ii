@@ -98,6 +98,7 @@ class Chan_Stored_t : public mUserDef
     mDateTime i_RegTime;
     mDateTime i_LastUsed;
     mstring i_Founder;
+    mstring i_CoFounder;
     mstring i_Description;
     mstring i_Password;
     mstring i_Email;
@@ -166,6 +167,10 @@ public:
     mstring Name()			{ return i_Name; }
     mDateTime RegTime()			{ return i_RegTime; }
     mDateTime LastUsed()		{ return i_LastUsed; }
+    void Founder(mstring in);
+    void CoFounder(mstring in);
+    mstring Founder()			{ return i_Founder; }
+    mstring CoFounder()			{ return i_CoFounder; }
     void Description(mstring in)	{ i_Description = in; }
     mstring Description()		{ return i_Description; }
     void Password(mstring in)		{ i_Password = in; }

@@ -25,7 +25,6 @@ int IrcSvcHandler::open(void *in)
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     //activate();
     // todo activate the task
-    ACE_Reactor::instance()->schedule_timer(&sph,0,ACE_Time_Value(Parent->config.Ping_Frequency()),ACE_Time_Value(Parent->config.Ping_Frequency()));
     CP(("IrcSvcHandler activated"));
     RET(0);
 }
@@ -87,7 +86,6 @@ int IrcSvcHandler::close(unsigned long in)
 {
     FT("IrcSvcHandler::close",(in));
     // todo: shutdown the ping timer
-    ACE_Reactor::instance()->cancel_timer(&sph);
     CP(("Socket closed"));
     RET(handle_close());
 }
@@ -170,17 +168,6 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
 	Parent->server.raw("PASS " + details.second);
 	Parent->server.raw("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
-    }
-    RET(0);
-}
-
-int ServerPing_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
-{
-    FT("ServerPing_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    map<mstring,Server>::iterator i;
-    for(i=Parent->server.ServerList.begin();i!=Parent->server.ServerList.end();i++)
-    {
-	i->second.Ping();
     }
     RET(0);
 }
@@ -287,6 +274,71 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	}
     }
     delete tmp;
+    RET(0);
+}
+
+
+
+int EventTask::open(void *in)
+{
+    FT("EventTask::open", (in));
+    RET(activate());
+}
+
+int EventTask::close(unsigned long in)
+{
+    FT("EventTask::close", (in));
+    // dump all and close open file handles.
+    RET(0);
+}
+
+int EventTask::svc(void)
+{
+    NFT("EventTask::svc");
+    while(!Parent->shutdown())
+    {
+	// Main routine -- when we end this, we're done!!
+
+	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
+	{
+	    CP(("Starting EXPIRATION check ..."));
+
+	    last_expire = Now();
+	}
+
+	if (last_save.SecondsSince() >= Parent->config.Cycletime())
+	{
+	    CP(("Starting DATABASE SAVE ..."));
+
+	    last_save = Now();
+	}
+
+	if (last_bancheck.SecondsSince() >= 5)
+	{
+	    CP(("Starting check for EXPIRED bans ..."));
+
+	    last_bancheck = Now();
+	}
+
+	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
+	{
+	    CP(("Starting SERVER PING ..."));
+	    map<mstring, Server>::iterator iter;
+	    for(iter=Parent->server.ServerList.begin();
+		    iter!=Parent->server.ServerList.end();iter++)
+	    {
+		iter->second.Ping();
+	    }
+
+	    last_ping = Now();
+	}
+	
+#ifdef WIN32
+	Sleep(1000);
+#else
+	sleep(1);
+#endif
+    }
     RET(0);
 }
 

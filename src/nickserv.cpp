@@ -967,11 +967,12 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, const Nick_Stored_t &in)
 Nick_Stored_t::~Nick_Stored_t()
 {
     NFT("Nick_Stored_t::~Nick_Stored_t");
+    unsigned int i;
 
     // When we go, we take all our slaves with us!
     if (i_Host == "")
     {
-	for (int i=0; i<Siblings(); i++)
+	for (i=0; i<Siblings(); i++)
 	{
 	    Parent->nickserv.live.erase(Sibling(i));
 	}
@@ -979,6 +980,31 @@ Nick_Stored_t::~Nick_Stored_t()
     else if (Parent->nickserv.IsStored(i_Host))
     {
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.erase(i_Name.LowerCase());
+    }
+
+    // Now we go for our channels ...
+    vector<mstring> killchans;
+    map<mstring, Chan_Stored_t>::iterator iter;
+    for (iter = Parent->chanserv.stored.begin();
+	    iter != Parent->chanserv.stored.end(); iter++)
+    {
+	if (iter->second.Founder() == i_Name)
+	{
+	    if (iter->second.CoFounder() != "" &&
+		Parent->nickserv.IsStored(iter->second.CoFounder()))
+	    {
+		iter->second.Founder(iter->second.CoFounder());
+	    }
+	    else
+		killchans.push_back(iter->first);
+	}
+	else
+	    killchans.push_back(iter->first);
+    }
+
+    for (i=0; i<killchans.size(); i++)
+    {
+	Parent->chanserv.stored.erase(killchans[i]);
     }
 }
 

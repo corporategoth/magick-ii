@@ -180,6 +180,12 @@ public:
     int Year();
     mstring Ago(bool call);
     mstring Disect(bool call);
+    int MSecondsSince();
+    int SecondsSince();
+    int MinutesSince();
+    int HoursSince();
+    int DaysSince();
+    int YearsSince();
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);

@@ -797,5 +797,37 @@ mstring mDateTime::Disect(bool call)
 	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
     }
     return Result;
-
 }
+
+int mDateTime::MSecondsSince()
+{
+    mDateTime dummyvar=Now()-(*this);
+    int CurrentVal=(int)(dummyvar.Val*(double)MSecsPerDay);
+    return CurrentVal;
+}
+
+int mDateTime::SecondsSince()
+{
+    return (MSecondsSince() / 1000);
+}
+
+int mDateTime::MinutesSince()
+{
+    return (SecondsSince() / 60);
+}
+
+int mDateTime::HoursSince()
+{
+    return (MinutesSince() / 60);
+}
+
+int mDateTime::DaysSince()
+{
+    return (HoursSince() / 24);
+}
+
+int mDateTime::YearsSince()
+{
+    return (DaysSince() / 365.5);
+}
+

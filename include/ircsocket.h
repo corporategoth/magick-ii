@@ -2,18 +2,13 @@
 #define IRC_SOCKET_H
 
 #include "mstring.h"
+#include "datetime.h"
 
 class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
     virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
     mstring Reconnect_Handler::FindNext(mstring server);
-};
-
-class ServerPing_Handler : public ACE_Event_Handler
-{
-public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class KillOnSignon_Handler : public ACE_Event_Handler
@@ -46,7 +41,6 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
     mstring flack;
-    ServerPing_Handler sph;
 public:
     virtual int close(unsigned long in);
     int send(const mstring& data);
@@ -55,5 +49,18 @@ public:
 };
 
 typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;
+
+class EventTask : public ACE_Task<ACE_MT_SYNCH>
+{
+    mDateTime last_expire;
+    mDateTime last_ping;
+    mDateTime last_bancheck;
+    mDateTime last_save;
+public:
+    void ForceSave() { last_save = mDateTime(0.0); }
+    virtual int open(void *in=0);
+    virtual int close(unsigned long in);
+    virtual int svc(void);
+};
 
 #endif

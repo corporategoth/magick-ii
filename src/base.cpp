@@ -219,9 +219,8 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &mess
 
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
-	if (Parent->nickserv.IsStored(dest) &&
-		Parent->nickserv.live[dest.LowerCase()].IsRecognized() ||
-		Parent->nickserv.live[dest.LowerCase()].IsIdentified())
+	if (Parent->nickserv.IsStored(dest) && !Parent->nickserv.LCK_PRIVMSG() &&
+		Parent->nickserv.stored[dest.LowerCase()].IsOnline())
 	{
 	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
 		privmsg(source, dest, message);
@@ -252,9 +251,8 @@ void mBase::send(const mstring &dest, const mstring &message)
 
     if (Parent->nickserv.IsLive(dest))
     {
-	if (Parent->nickserv.IsStored(dest) &&
-		Parent->nickserv.live[dest.LowerCase()].IsRecognized() ||
-		Parent->nickserv.live[dest.LowerCase()].IsIdentified())
+	if (Parent->nickserv.IsStored(dest) && !Parent->nickserv.LCK_PRIVMSG() &&
+		Parent->nickserv.stored[dest.LowerCase()].IsOnline())
 	{
 	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
 		privmsg(dest, message);
