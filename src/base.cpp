@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.162  2001/05/06 18:44:25  prez
+** Fixed problem with kill/rejoin
+**
 ** Revision 1.161  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -471,6 +474,7 @@ void mMessage::AddDependancies()
     {
 	// Server exists OR
 	// Target nick does NOT exist
+	AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
 	if (source_.empty())
 	{
 	    switch (Parent->server.proto.Signon())
@@ -498,10 +502,6 @@ void mMessage::AddDependancies()
 		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
 		break;
 	    }
-	}
-	else
-	{
-	    AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
 	}
     }
     else if (msgtype_ == "PART")
