@@ -22,7 +22,7 @@
 
 Magick::Magick(int inargc, char **inargv)
 {
-    FT("Magick::Magick", (inargc, "(char) **inargv"));
+    FT("Magick::Magick", (inargc, "(char **) inargv"));
     services_dir=".";
     config_file="magick.ini";
     for(int i=0;i<inargc;i++)
@@ -807,7 +807,7 @@ void Magick::get_config_values()
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
 {
-    FT("SignalHandler::handle_signal", (signum, "(siginfo_t) *siginfo", "(ucontext_t) *ucontext"));
+    FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
     // todo: fill this sucker in
     switch(signum)
     {

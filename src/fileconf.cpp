@@ -1110,7 +1110,7 @@ bool ConfigGroup::DeleteSubgroupByName(const char *szName)
 // deleted a.s.a.p. because there is nothing much to be done with it anyhow)
 bool ConfigGroup::DeleteSubgroup(ConfigGroup *pGroup)
 {
-  FT("ConfigGroup::DeleteSubgroup", ("(ConfigGroup) *pGroup"));
+  FT("ConfigGroup::DeleteSubgroup", (pGroup));
   wxCHECK( pGroup != NULL, false ); // deleting non existing group?
 
   // delete all entries
@@ -1247,7 +1247,7 @@ ConfigEntry::ConfigEntry(ConfigGroup *pParent,
                                        int nLine)
                          : m_strName(strName)
 {
-  FT("ConfigEntry::ConfigEntry", ("(ConfigGroup) *pParent", strName, nLine));
+  FT("ConfigEntry::ConfigEntry", (pParent, strName, nLine));
   wxASSERT( !strName.IsEmpty() );
 
   m_pParent = pParent;
@@ -1334,14 +1334,14 @@ void ConfigEntry::SetDirty()
 int CompareEntries(ConfigEntry *p1,
                    ConfigEntry *p2)
 {
-    FT("CompareEntries", ("(ConfigEntry) *p1", "(ConfigEntry) *p2"));
+    FT("CompareEntries", (p1, p2));
     RET(strcmp(p1->Name(), p2->Name()));
 }
 
 int CompareGroups(ConfigGroup *p1,
                   ConfigGroup *p2)
 {
-    FT("CompareGroups", ("(ConfigGroup) *p1", "(ConfigGroup) *p2"));
+    FT("CompareGroups", (p1, p2));
     RET(strcmp(p1->Name(), p2->Name()));
 }
 
@@ -2013,12 +2013,12 @@ bool  ConfigGroup::IsEmpty() const
 
 void ConfigGroup::SetLastEntry(ConfigEntry *pEntry) 
 {
-    FT("ConfigGroup::SetLastEntry", ("(ConfigEntry) *pEntry"));
+    FT("ConfigGroup::SetLastEntry", (pEntry));
     m_pLastEntry = pEntry; 
 }
 
 void ConfigGroup::SetLastGroup(ConfigGroup *pGroup) 
 {
-    FT("ConfigGroup::SetLastGroup", ("(ConfigGroup) *pGroup"));
+    FT("ConfigGroup::SetLastGroup", (pGroup));
     m_pLastGroup = pGroup; 
 }

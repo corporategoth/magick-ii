@@ -203,7 +203,7 @@ wxConfigBase::wxConfigBase(const mstring& appName, const mstring& vendorName,
 
 wxConfigBase *wxConfigBase::Set(wxConfigBase *pConfig)
 {
-  FT("wxConfigBase::Set", ("(wxConfigBase) *pConfig"));
+  FT("wxConfigBase::Set", ("(wxConfigBase *) pConfig"));
   wxConfigBase *pOld = ms_pConfig;
   ms_pConfig = pConfig;
   NRET(wxConfBase, pOld);
@@ -357,7 +357,7 @@ mstring wxConfigBase::ExpandEnvVars(const mstring& str) const
 wxConfigPathChanger::wxConfigPathChanger(const wxConfigBase *pContainer,
                                  const mstring& strEntry)
 {
-  FT("wxConfigPathChanger::wxConfigPathChanger", ("(wxConfigBase) *pContainer", strEntry));
+  FT("wxConfigPathChanger::wxConfigPathChanger", ("(wxConfigBase *) pContainer", strEntry));
   m_pContainer = (wxConfigBase *)pContainer;
   mstring strPath = strEntry.Before(wxCONFIG_PATH_SEPARATOR);
 
