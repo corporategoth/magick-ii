@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2000/09/02 07:20:46  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.96  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -3641,3 +3645,16 @@ void OperServ::PostLoad()
 	i_ptr->PostLoad();
     }
 }
+
+void OperServ::DumpB()
+{
+    MB(0, (i_Clone.size(), CloneList.size(), i_Akill.size(),
+	i_OperDeny.size(), i_Ignore.size()));
+}
+
+void OperServ::DumpE()
+{
+    ME(0, (i_Clone.size(), CloneList.size(), i_Akill.size(),
+	i_OperDeny.size(), i_Ignore.size()));
+}
+

@@ -25,6 +25,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.27  2000/08/31 06:25:08  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -261,6 +265,8 @@ public:
     size_t Average(time_t secs = 0);
     size_t Traffic()		{ return i_Traffic.size(); }
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>

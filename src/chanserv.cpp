@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.201  2000/09/02 07:20:45  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.200  2000/08/28 10:51:35  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -1417,6 +1421,25 @@ size_t Chan_Live_t::Usage()
     }
 
     return retval;
+}
+
+
+void Chan_Live_t::DumpB()
+{
+    MB(0, (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(),
+	i_Topic, i_Topic_Setter, i_Topic_Set_Time, modes, i_Limit, i_Key,
+	p_modes_on, p_modes_off, p_modes_on_params.size(),
+	p_modes_off_params.size(), ph_timer));
+    MB(16, (recent_parts.size()));
+}
+
+void Chan_Live_t::DumpE()
+{
+    ME(0, (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(),
+	i_Topic, i_Topic_Setter, i_Topic_Set_Time, modes, i_Limit, i_Key,
+	p_modes_on, p_modes_off, p_modes_on_params.size(),
+	p_modes_off_params.size(), ph_timer));
+    ME(16, (recent_parts.size()));
 }
 
 
@@ -4733,6 +4756,41 @@ size_t Chan_Stored_t::Usage()
     }
 
     return retval;
+}
+
+void Chan_Stored_t::DumpB()
+{
+    MB(0, (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder,
+	i_Description, i_Password, i_Email, i_URL, i_Comment,
+	failed_passwds.size(), i_Mlock_On, l_Mlock_On, i_Mlock_Off,
+	l_Mlock_Off, i_Mlock_Key));
+    MB(16, (i_Mlock_Limit, i_Topic, i_Topic_Setter, i_Topic_Set_Time,
+	i_Bantime, l_Bantime, i_Parttime, l_Parttime, i_Keeptopic,
+	l_Keeptopic, i_Topiclock, l_Topiclock, i_Private, l_Private,
+	i_Secureops, l_Secureops));
+    MB(32, (i_Secure, l_Secure, i_NoExpire, l_NoExpire, i_Anarchy,
+	l_Anarchy, i_KickOnBan, l_KickOnBan, i_Restricted, l_Restricted,
+	i_Join, l_Join, i_Forbidden, i_Revenge, l_Revenge, i_Suspend_By));
+    MB(48, (i_Suspend_Time, i_Level.size(), i_Access.size(),
+	i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
+}
+
+
+void Chan_Stored_t::DumpE()
+{
+    ME(0, (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder,
+	i_Description, i_Password, i_Email, i_URL, i_Comment,
+	failed_passwds.size(), i_Mlock_On, l_Mlock_On, i_Mlock_Off,
+	l_Mlock_Off, i_Mlock_Key));
+    ME(16, (i_Mlock_Limit, i_Topic, i_Topic_Setter, i_Topic_Set_Time,
+	i_Bantime, l_Bantime, i_Parttime, l_Parttime, i_Keeptopic,
+	l_Keeptopic, i_Topiclock, l_Topiclock, i_Private, l_Private,
+	i_Secureops, l_Secureops));
+    ME(32, (i_Secure, l_Secure, i_NoExpire, l_NoExpire, i_Anarchy,
+	l_Anarchy, i_KickOnBan, l_KickOnBan, i_Restricted, l_Restricted,
+	i_Join, l_Join, i_Forbidden, i_Revenge, l_Revenge, i_Suspend_By));
+    ME(48, (i_Suspend_Time, i_Level.size(), i_Access.size(),
+	i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
 }
 
 

@@ -25,6 +25,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.72  2000/08/28 10:51:35  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -254,6 +258,8 @@ public:
     void PostLoad();
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 typedef list<entlist_t>::iterator entlist_i;
 typedef list<entlist_t>::const_iterator entlist_ci;
@@ -338,6 +344,17 @@ public:
 	retval += sizeof(i_Stupid);
 	return retval;
     }
+
+    void DumpB()
+    {
+	entlist_t::DumpB();
+	WB(4, (i_Stupid));
+    }
+    void DumpE()
+    {
+	entlist_t::DumpE();
+	WE(4, (i_Stupid));
+    }
 };
 
 /*  These dont work with templates
@@ -420,6 +437,27 @@ public:
 
     	pOut->EndObject(tag_entlist_val_t);
     }
+
+    size_t Usage()
+    {
+	size_t retval = entlist_t::Usage();
+	retval += sizeof(i_Value.first);
+	retval += sizeof(i_Value.second);
+	retval += sizeof(i_Stupid);
+	return retval;
+    }
+
+    void DumpB()
+    {
+	entlist_t::DumpB();
+	WB(4, (i_Stupid));
+    }
+    void DumpE()
+    {
+	entlist_t::DumpE();
+	WE(4, (i_Stupid));
+    }
+
 };
 
 class CommandMap

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.134  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.133  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -262,6 +266,16 @@ size_t entlist_t::Usage()
 	retval += i->second.capacity();
     }
     return retval;
+}
+
+void entlist_t::DumpB()
+{
+    MB(0, (i_Entry, i_Last_Modifier, i_Last_Modify_Time, i_UserDef.size()));
+}
+
+void entlist_t::DumpE()
+{
+    ME(0, (i_Entry, i_Last_Modifier, i_Last_Modify_Time, i_UserDef.size()));
 }
 
 

@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.47  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -128,7 +132,6 @@ class Protocol
     // Max length of line excluding nickname / comamnd.
     // ie. reasonable max length (def: 512 - 62 = 450).
     unsigned int i_MaxLine;
-    map<mstring,mstring> tokens;
 
     bool i_Globops;
     bool i_Tokens;
@@ -182,6 +185,11 @@ class Protocol
      * UNCONNECT   ?
      */
     mstring i_Protoctl; /* Verbatum (null if not sent) */
+
+    // This is a map of real commands -> tokenized commands
+    // to save bandwidth.
+    map<mstring,mstring> tokens;
+
 public:
     Protocol();
     ~Protocol() {}
@@ -205,6 +213,9 @@ public:
     mstring ChanModeArg()   { return i_ChanModeArg; }
     mstring Server()	    { return i_Server; }
     mstring Protoctl()	    { return i_Protoctl; }
+
+    void DumpB();
+    void DumpE();
 };
 
 class Server
@@ -250,6 +261,8 @@ public:
     ~Server();
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 class NetworkServ : public mBase
@@ -328,6 +341,9 @@ public:
     virtual mstring GetInternalName() const { return "NetworkServ"; }
     virtual void execute(const mstring & message);
     void numeric_execute(const mstring & message);
+
+    void DumpB();
+    void DumpE();
 };
 
 #endif

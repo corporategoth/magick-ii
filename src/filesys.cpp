@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/09/02 07:20:45  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.46  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -1507,6 +1511,20 @@ size_t DccXfer::Usage()
     return retval;
 }
 
+void DccXfer::DumpB()
+{
+    MB(0, (i_Socket.Last_Error(), i_File.Length(), i_Source, i_Mynick,
+	i_Tempfile, i_Filename, i_Blocksize, i_XferTotal, i_Total, i_Filesize,
+	i_Type, i_DccId, i_Transiant, i_LastData, i_Traffic.size()));
+}
+
+void DccXfer::DumpE()
+{
+    ME(0, (i_Socket.Last_Error(), i_File.Length(), i_Source, i_Mynick,
+	i_Tempfile, i_Filename, i_Blocksize, i_XferTotal, i_Total, i_Filesize,
+	i_Type, i_DccId, i_Transiant, i_LastData, i_Traffic.size()));
+}
+
 int DccMap::open(void *in)
 {
     FT("DccMap::open", ("(void *) in"));
@@ -1619,6 +1637,7 @@ void *DccMap::Connect2(void *in)
     {
 	unsigned long WorkId;
 	bool found = false;
+	DCC_SOCK.Resolve(S_DCCFile, val->source);
 	RLOCK(("DccMap", "xfers"));
 	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
@@ -1659,6 +1678,7 @@ void *DccMap::Accept2(void *in)
     {
 	unsigned long WorkId;
 	bool found = false;
+	DCC_SOCK.Resolve(S_DCCFile, val->source);
 	RLOCK(("DccMap", "xfers"));
 	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{

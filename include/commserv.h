@@ -25,6 +25,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.37  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -187,6 +191,8 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 class CommServ : public mBase, public SXP::IPersistObj

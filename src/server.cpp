@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.123  2000/09/02 07:20:46  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.122  2000/08/28 10:51:39  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -496,6 +500,20 @@ mstring Protocol::GetNonToken(mstring in)
     RET(retval);
 }
 
+void Protocol::DumpB()
+{
+    MB(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Tokens, i_SVS,
+	i_SVSHOST, i_P12, i_TSora, i_Akill, i_Signon, i_Modes,
+	i_ChanModeArg, i_Server, i_Protoctl, tokens.size()));
+}
+
+void Protocol::DumpE()
+{
+    ME(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Tokens, i_SVS,
+	i_SVSHOST, i_P12, i_TSora, i_Akill, i_Signon, i_Modes,
+	i_ChanModeArg, i_Server, i_Protoctl, tokens.size()));
+}
+
 Server::Server(mstring name, mstring description)
 {
     FT("Server::Server", (name, description));
@@ -741,6 +759,18 @@ size_t Server::Usage()
     retval += sizeof(i_Jupe);
 
     return retval;
+}
+
+void Server::DumpB()
+{
+    MB(0, (i_Name, i_AltName, i_Uplink, i_Hops, i_Description, i_Ping,
+	i_Lag, i_Jupe));
+}
+
+void Server::DumpE()
+{
+    ME(0, (i_Name, i_AltName, i_Uplink, i_Hops, i_Description, i_Ping,
+	i_Lag, i_Jupe));
 }
 
 void NetworkServ::raw(mstring text)
@@ -4377,3 +4407,16 @@ void NetworkServ::numeric_execute(const mstring & data)
 	break;
     }
 }
+
+void NetworkServ::DumpB()
+{
+    MB(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
+	i_OurUplink,ToBeSent.size()));
+}
+
+void NetworkServ::DumpE()
+{
+    ME(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
+	i_OurUplink,ToBeSent.size()));
+}
+

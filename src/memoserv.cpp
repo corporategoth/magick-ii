@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/09/02 07:20:46  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.73  2000/08/28 10:51:38  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -268,7 +272,6 @@ void Memo_t::Unread()
     i_Read = false;
 }
 
-
 size_t Memo_t::Usage()
 {
     size_t retval = 0;
@@ -277,15 +280,27 @@ size_t Memo_t::Usage()
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
     retval += sizeof(i_Time.Internal());
-    retval += sizeof(i_Read);
     retval += sizeof(i_File);
-    map<mstring,mstring>::iterator i;
-    for (i=i_UserDef.begin(); i!=i_UserDef.end(); i++)
+    retval += sizeof(i_Read);
+    map<mstring,mstring>::iterator j;
+    for (j=i_UserDef.begin(); j!=i_UserDef.end(); j++)
     {
-	retval += i->first.capacity();
-	retval += i->second.capacity();
+	retval += j->first.capacity();
+	retval += j->second.capacity();
     }
     return retval;
+}
+
+void Memo_t::DumpB()
+{
+    MB(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File,
+	i_UserDef.size()));
+}
+
+void Memo_t::DumpE()
+{
+    ME(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File,
+	i_UserDef.size()));
 }
 
 
@@ -392,6 +407,18 @@ size_t News_t::Usage()
 	retval += j->second.capacity();
     }
     return retval;
+}
+
+void News_t::DumpB()
+{
+    MB(0, (i_Channel, i_Sender, i_Text, i_Time, i_Read.size(),
+	i_UserDef.size()));
+}
+
+void News_t::DumpE()
+{
+    ME(0, (i_Channel, i_Sender, i_Text, i_Time, i_Read.size(),
+	i_UserDef.size()));
 }
 
 

@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.139  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.138  2000/08/10 22:44:22  prez
 ** Added 'binding to IP' options for shell servers, etc.  Also added akick
 ** triggers for when a user changes their nick and suddenly matches akick.
@@ -495,6 +499,8 @@ public:
     set<mstring> HLP_Loaded();
     size_t HLP_Usage(mstring lang);
     size_t LFO_Usage();
+    void DumpB();
+    void DumpE();
 };
 
 extern Magick *Parent;

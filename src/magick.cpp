@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.268  2000/09/02 07:20:45  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.267  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -3193,5 +3197,23 @@ size_t Magick::LFO_Usage()
     }
 
     return retval;
+}
+
+void Magick::DumpB()
+{
+    MB(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
+	handlermap.size(), i_verbose, i_services_dir, i_config_file,
+	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
+	i_localhost, i_gotconnect));
+    MB(16, (i_server, i_connected, i_saving));
+}
+
+void Magick::DumpE()
+{
+    ME(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
+	handlermap.size(), i_verbose, i_services_dir, i_config_file,
+	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
+	i_localhost, i_gotconnect));
+    ME(16, (i_server, i_connected, i_saving));
 }
 

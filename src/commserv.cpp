@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2000/09/02 07:20:45  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.70  2000/08/28 10:51:37  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -773,6 +777,20 @@ size_t Committee::Usage()
     }
 
     return retval;    
+}
+
+void Committee::DumpB()
+{
+    MB(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
+	i_URL, i_Members.size(), i_Private, l_Private, i_OpenMemos,
+	l_OpenMemos, i_Secure, l_Secure, i_Messages.size(), i_UserDef.size()));
+}
+
+void Committee::DumpE()
+{
+    ME(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
+	i_URL, i_Members.size(), i_Private, l_Private, i_OpenMemos,
+	l_OpenMemos, i_Secure, l_Secure, i_Messages.size(), i_UserDef.size()));
 }
 
 CommServ::CommServ()

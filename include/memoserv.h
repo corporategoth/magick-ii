@@ -25,6 +25,10 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/09/02 07:20:44  prez
+** Added the DumpB/DumpE functions to all major objects, and put in
+** some example T_Modify/T_Changing code in NickServ (set email).
+**
 ** Revision 1.33  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -139,6 +143,8 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 class News_t : public mUserDef, public SXP::IPersistObj
@@ -182,6 +188,8 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 // todo: move this over to a ACE_TASK style architecture
