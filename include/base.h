@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/05/13 14:20:44  ungod
+** no message
+**
 ** Revision 1.64  2000/05/13 14:05:25  ungod
 ** no message
 **
@@ -275,14 +278,14 @@ public:
     entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false)
         : entlist_t(entry,nick,modtime)
     {
-        FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "(T) value", nick,
+        FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
     							modtime, stupid));
         i_Value = value;
         i_Stupid = stupid;
     }
     void operator=(const entlist_val_t &in)
     {
-        FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t<T> &) in"));
+        FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t< pair<T1,T2> > &) in"));
         i_Entry=in.i_Entry;
         i_Value=in.i_Value;
         i_Last_Modify_Time=in.i_Last_Modify_Time;
@@ -294,7 +297,21 @@ public:
     	i_UserDef[i->first]=i->second;
     }
 
-    bool Value(pair<T1,T2> value, mstring nick);
+    bool Value(pair<T1,T2> value, mstring nick)
+    {
+        FT("entlist_val_t< pair<T1,T2> >::Change", ("(pair<T1,T2>) value", nick));
+        if (i_Stupid)
+        {
+    	    RET(false);
+        }
+        else
+        {
+        	i_Value = value;
+        	i_Last_Modify_Time = Now();
+        	i_Last_Modifier = nick;
+        	RET(true);
+        }
+    }
     pair<T1,T2> Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; }
