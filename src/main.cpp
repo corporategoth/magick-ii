@@ -126,9 +126,6 @@ int main(int argc, char **argv)
 	if (instance->DoItAll())
 	{
 	    Result = fc->svc();
-	    fc->instance()->Finish();
-	    Magick::deregister_instance();
-	    delete fc->instance();
 #ifdef WIN32
 	}
 	else
@@ -140,11 +137,9 @@ int main(int argc, char **argv)
 	break;
     case MAGICK_RET_LOCKED:
 	mFile::Erase(argv[0]);
-    default:
-	Magick::deregister_instance();
-	delete fc->instance();
     }
 
+    delete fc;
     mThread::Detach();
     ACE::fini();
 
@@ -161,9 +156,12 @@ Flow_Control::Flow_Control(Magick * i)
 
 Flow_Control::~Flow_Control()
 {
-    magick_instance->Finish();
+    reactor(NULL);
     if (magick_instance != NULL)
+    {
+	magick_instance->Finish();
 	delete magick_instance;
+    }
 }
 
 int Flow_Control::svc()

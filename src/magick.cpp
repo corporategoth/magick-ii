@@ -774,6 +774,12 @@ int Magick::Stop()
 int Magick::Finish()
 {
     NFT("Magick::Finish");
+
+    // Special case, we never completed Init, so we shouldnt
+    // need to destroy anything, so we're already done ...
+    if (CurrentState == Constructed)
+	RET(MAGICK_RET_NORMAL);
+
     if (CurrentState != Initialized && CurrentState != Stopped)
     {
 	LOG(LM_ERROR, "ERROR/SEQUENCE", (Finished, CurrentState));
@@ -3363,7 +3369,7 @@ void Magick::EndLogMessage(ACE_Log_Msg * instance) const
 	return;
 
     if (instance->flags() & ACE_Log_Msg::STDERR)
-	ACE_OS::fprintf(stderr, "\n");
+	fprintf(stderr, "\n");
 }
 
 Logger::Logger()
@@ -3394,6 +3400,9 @@ Logger::~Logger()
 void Logger::log(ACE_Log_Record & log_record)
 {
     FT("Logger::log", ("(ACE_Log_Record &) log_record"));
+
+    if (!Magick::instance_exists())
+	return;
 
     if (!fout.IsOpened())
 	return;

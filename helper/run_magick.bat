@@ -1,5 +1,6 @@
 @ECHO OFF
 
+TITLE Magick IRC Services
 REM
 REM First we do the semaphore check, and stamp new binaries.
 REM
@@ -20,7 +21,7 @@ REM
 REM No --nofork specified, so if its NT, we run as a service
 REM
 IF "%OS%" == "Windows_NT" GOTO AsService
-goto NotAsService
+GOTO NotAsService
 
 :AsService
 REM
@@ -29,8 +30,10 @@ REM
 ECHO Launching Magick IRC Services ...
 ECHO.
 magick.exe --service insert %*
+IF NOT %ERRORLEVEL% == 0 GOTO Error
 magick.exe --service start %*
-goto End
+IF NOT %ERRORLEVEL% == 0 GOTO Error
+GOTO End
 
 :NotAsService
 REM
@@ -39,9 +42,15 @@ REM
 ECHO Launching Magick IRC Services ...
 ECHO.
 magick.exe %*
+IF NOT %ERRORLEVEL% == 0 GOTO Error
 ECHO.
 ECHO Executed has ended.
 pause
-goto End
+GOTO End
+
+:Error
+ECHO.
+echo Magick has NOT been started.
+pause
 
 :End
