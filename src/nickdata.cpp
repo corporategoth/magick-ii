@@ -1776,7 +1776,7 @@ void Nick_Live_t::ClearSquit(const mstring & inmodes)
 	WLOCK2((lck_NickServ, lck_live, i_Name.LowerCase(), "modes"));
 	CB(1, modes);
 	modes = inmodes;
-	modes.Replace("+", "");
+	modes.replace("+", "");
 	CE(1, modes);
     }
 
