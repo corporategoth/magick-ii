@@ -33,12 +33,22 @@ mstring LongDayNames[7] =
 
 mDateTime mDateTime::CurrentDate()
 {
-	return ::Date();
+    mDateTime Result;
+    int Day,Month,Year;
+    Result=mDateTime(time(NULL));
+    Result.DecodeDate(Year,Month,Day);
+    Result=mDateTime(Year,Month,Day);
+    return Result;
 }
 
 mDateTime mDateTime::CurrentTime()
 {
-	return ::Time();
+    mDateTime Result;
+    int Hour,Min,Sec,MSec;
+    Result=mDateTime(time(NULL));
+    Result.DecodeTime(Hour,Min,Sec,MSec);
+    Result=mDateTime(Hour,Min,Sec,MSec);
+    return Result;
 }
 
 mDateTime mDateTime::CurrentDateTime()
