@@ -37,8 +37,7 @@ RCSID(trace_cpp, "@(#)$Id$");
 #include "magick.h"
 
 mstring threadname[tt_MAX] =
-{
-"LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE"};
+{ "LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE" };
 
 unsigned short makehex(const mstring & SLevel)
 {
@@ -1125,8 +1124,8 @@ void Logger::log(ACE_Log_Record & log_record)
 		{
 		    for (i = 1; i <= tmp.WordCount("\n\r"); i++)
 			Magick::instance().server.PRIVMSG(Magick::instance().operserv.FirstName(),
-							  Magick::instance().files.Logchan(), out + tmp.ExtractWord(i,
-														    "\n\r"));
+							  Magick::instance().files.Logchan(),
+							  out + tmp.ExtractWord(i, "\n\r"));
 		}
 	    }
 	}
