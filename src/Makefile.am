@@ -12,7 +12,7 @@ magick_keygen_LDADD   = ./crypt/libcrypt.a
 
 SUBDIRS = crypt xml 
 
-AM_CPPFLAGS = -Wunused
+AM_CPPFLAGS = -Wunused -Wredundant-decls -Wundef
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS)
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CFLAGS) $(AM_CFLAGS)
 

@@ -1562,7 +1562,7 @@ void DccXfer::DumpE() const
 int DccMap::open(void *in)
 {
     FT("DccMap::open", ("(void *) in"));
-    magick_instance = (Magick *) in;
+    magick_instance = reinterpret_cast < Magick * > (in);
     int retval = activate();
 
     RET(retval);
@@ -1954,7 +1954,7 @@ void DccMap::Connect(const ACE_INET_Addr & address, const mstring & mynick, cons
     tmp->filesize = filesize;
     tmp->blocksize = blocksize;
 
-    tm.spawn(Connect2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
+    thr_mgr()->spawn(Connect2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
 }
 
 void DccMap::Accept(const unsigned short port, const mstring & mynick, const mstring & source,
@@ -1970,7 +1970,7 @@ void DccMap::Accept(const unsigned short port, const mstring & mynick, const mst
     tmp->filetype = filetype;
     tmp->filenum = filenum;
 
-    tm.spawn(Accept2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
+    thr_mgr()->spawn(Accept2, reinterpret_cast < void * > (tmp), THR_NEW_LWP | THR_DETACHED);
 }
 
 void DccMap::Cancel(const unsigned long DccId, const bool silent)
@@ -2006,5 +2006,5 @@ void DccMap::Cancel(const unsigned long DccId, const bool silent)
 	}
     }
 #endif
-    tm.cancel_all();
+    thr_mgr()->cancel_all();
 }

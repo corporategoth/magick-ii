@@ -947,28 +947,28 @@ int mMessage::call()
 	RET(0);
     }
 
-    mstring source;
+    mstring src;
 
     if (source_[0u] == '!')
-	source = Magick::instance().server.GetUser(source_);
+	src = Magick::instance().server.GetUser(source_);
     else if (source_[0u] == '@')
-	source = Magick::instance().server.GetServer(source_);
+	src = Magick::instance().server.GetServer(source_);
     else if (source_.empty())
     {
 	if (Magick::instance().server.OurUplink().empty())
-	    source = Magick::instance().startup.Server_Name();
+	    src = Magick::instance().startup.Server_Name();
 	else
-	    source = Magick::instance().server.OurUplink();
+	    src = Magick::instance().server.OurUplink();
     }
     else
-	source = source_;
+	src = source_;
 
-    CP(("Processing message (%s) %s %s", source.c_str(), msgtype_.c_str(), params_.c_str()));
+    CP(("Processing message (%s) %s %s", src.c_str(), msgtype_.c_str(), params_.c_str()));
 
     try
     {
 
-	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source) &&
+	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(src) &&
 	    !IsChan(params_.ExtractWord(1, ": ")))
 	{
 	    mstring target(params_.ExtractWord(1, ": "));
@@ -998,7 +998,7 @@ int mMessage::call()
 		}
 	    }
 
-	    if (!Magick::instance().nickserv.GetLive(source)->FloodTrigger())
+	    if (!Magick::instance().nickserv.GetLive(src)->FloodTrigger())
 	    {
 		// Find out if the target nick is one of the services 'clones'
 		// Pass the message to them if so.
@@ -1007,38 +1007,38 @@ int mMessage::call()
 		// if so, Magick::instance().doscripthandle(server,command,data);
 
 		if (Magick::instance().operserv.IsName(target))
-		    Magick::instance().operserv.execute(source, msgtype_, params_);
+		    Magick::instance().operserv.execute(src, msgtype_, params_);
 
 		else if (Magick::instance().nickserv.IsName(target) && Magick::instance().nickserv.MSG())
-		    Magick::instance().nickserv.execute(source, msgtype_, params_);
+		    Magick::instance().nickserv.execute(src, msgtype_, params_);
 
 		else if (Magick::instance().chanserv.IsName(target) && Magick::instance().chanserv.MSG())
-		    Magick::instance().chanserv.execute(source, msgtype_, params_);
+		    Magick::instance().chanserv.execute(src, msgtype_, params_);
 
 		else if (Magick::instance().memoserv.IsName(target) && Magick::instance().memoserv.MSG())
-		    Magick::instance().memoserv.execute(source, msgtype_, params_);
+		    Magick::instance().memoserv.execute(src, msgtype_, params_);
 
 		else if (Magick::instance().commserv.IsName(target) && Magick::instance().commserv.MSG())
-		    Magick::instance().commserv.execute(source, msgtype_, params_);
+		    Magick::instance().commserv.execute(src, msgtype_, params_);
 
 		else if (Magick::instance().servmsg.IsName(target) && Magick::instance().servmsg.MSG())
-		    Magick::instance().servmsg.execute(source, msgtype_, params_);
+		    Magick::instance().servmsg.execute(src, msgtype_, params_);
 
 		// else check if it's script handled, might do up a list of script servers
 		// in the magick object to check against, else trash it.
 
 		else		// PRIVMSG or NOTICE to non-service
-		    Magick::instance().server.execute(source, msgtype_, params_);
+		    Magick::instance().server.execute(src, msgtype_, params_);
 
 	    }
 	    else if (Magick::instance().operserv.Log_Ignore())
 	    {
 		// Check if we're to log ignore messages, and log them here.
-		LOG(LM_DEBUG, "OPERSERV/IGNORED", (source, msgtype_ + " " + params_));
+		LOG(LM_DEBUG, "OPERSERV/IGNORED", (src, msgtype_ + " " + params_));
 	    }
 	}
 	else
-	    Magick::instance().server.execute(source, msgtype_, params_);
+	    Magick::instance().server.execute(src, msgtype_, params_);
 
     }
     catch (E_NickServ_Stored & e)

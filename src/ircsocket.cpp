@@ -47,7 +47,7 @@ static const char *immediate_process[] =
 void *IrcSvcHandler::worker(void *in)
 {
     mThread::Attach(tt_mBase);
-    Magick::register_instance((Magick *) in);
+    Magick::register_instance(reinterpret_cast < Magick * > (in));
     FT("IrcSvcHandler::worker", (in));
     mMessage *msg = NULL;
     bool active = true;
@@ -156,8 +156,8 @@ int IrcSvcHandler::open(void *in)
     i_synctime = mDateTime(0.0);
 
     // Only activate the threads when we're ready.
-    tm.spawn_n(Magick::instance().config.Min_Threads(), IrcSvcHandler::worker, (void *) &Magick::instance(),
-	       THR_NEW_LWP | THR_DETACHED);
+    tm.spawn_n(Magick::instance().config.Min_Threads(), IrcSvcHandler::worker,
+	       reinterpret_cast < void * > (&Magick::instance()), THR_NEW_LWP | THR_DETACHED);
 
     DumpB();
     CP(("IrcSvcHandler activated"));
@@ -438,7 +438,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     if (tm.count_threads())
     {
-	ACE_Time_Value tv(time(NULL) + 4);
+	tv.set(time(NULL) + 4);
 
 	tm.wait(&tv);
 	if (tm.count_threads())
@@ -623,7 +623,9 @@ void IrcSvcHandler::enqueue(mMessage * mm)
 	// Make sure we have at LEAST our minimum ...
 	while (static_cast < unsigned int > (tm.count_threads()) < Magick::instance().config.Min_Threads())
 	{
-	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) != -1)
+	    if (tm.
+		spawn(IrcSvcHandler::worker, reinterpret_cast < void * > (&Magick::instance()),
+		      THR_NEW_LWP | THR_DETACHED) != -1)
 	    {
 		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	    }
@@ -1673,7 +1675,7 @@ void *EventTask::save_databases(void *in)
 {
     mThread::Attach(tt_MAIN);
     FT("EventTask::save_databases", (in));
-    Magick::register_instance((Magick *) in);
+    Magick::register_instance(reinterpret_cast < Magick * > (in));
     Magick::instance().save_databases();
     Magick::deregister_instance();
     DTRET(static_cast < void * > (NULL));
@@ -1718,7 +1720,7 @@ mstring EventTask::SyncTime(const mstring & source) const
 int EventTask::open(void *in)
 {
     FT("EventTask::open", ("(void *) in"));
-    magick_instance = (Magick *) in;
+    magick_instance = reinterpret_cast < Magick * > (in);
     int retval = activate();
 
     RET(retval);
@@ -1815,7 +1817,8 @@ int EventTask::svc(void)
 
 		if (tm == NULL)
 		    tm = & Magick::instance().thr_mgr();
-		if (tm->spawn(save_databases, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) < 0)
+		if (tm->spawn(save_databases, reinterpret_cast < void * > (&Magick::instance()), THR_NEW_LWP | THR_DETACHED) <
+		    0)
 		{
 		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
 		}

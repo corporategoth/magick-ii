@@ -1603,14 +1603,14 @@ void mstring::Assemble(const list < mstring > & text, const mstring & delim)
 
 /********************************************************/
 
-/*
- * Credit to Jack Handy for writing this and to Daniel Andersson for the
- * case sensitive and C++-ified modifications to it.
- * Thanks to Brian King for handing me this one :)
+/* The original version of this was written by Jack Handy, and is available
+ * from: http://www.codeproject.com/string/wildcmp.asp
+ * Thanks also to Daniel Andersson <calvin@joshua.haninge.kth.se>, for doing
+ * the appropriate modifications for C++ and canse insensitivity.
  */
 bool match_wild(const char *wild, const char *text, bool nocase)
 {
-    const char *cp, *mp;
+    const char *cp = 0, *mp = 0;
 
     while ((*text != 0) && (*wild != '*'))
     {

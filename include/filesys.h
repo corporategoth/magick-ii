@@ -228,7 +228,6 @@ class DccMap : public ACE_Task < ACE_MT_SYNCH >
     static std::queue < unsigned long > active;
 
     Magick *magick_instance;
-    ACE_Thread_Manager tm;
     struct NewSocket
     {
 	mstring mynick;

@@ -603,12 +603,12 @@ int Magick::Run()
     {
 	WLOCK(("Events"));
 	if (events != NULL)
-	    events->open((void *) this);
+	    events->open(reinterpret_cast < void * > (this));
     }
     {
 	WLOCK(("DCC"));
 	if (dcc != NULL)
-	    dcc->open((void *) this);
+	    dcc->open(reinterpret_cast < void * > (this));
     }
 
     reactor().schedule_timer(&Magick::instance().hh, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
@@ -3200,7 +3200,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 		    if (thr_mgr == NULL)
 			thr_mgr = & Magick::instance().thr_mgr();
 		    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
-		    Magick::instance().events->open((void *) &Magick::instance());
+		    Magick::instance().events->open(reinterpret_cast < void * > (&Magick::instance()));
 		}
 		break;
 	    case Heartbeat_Handler::H_DCC:
@@ -3219,7 +3219,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 		    if (thr_mgr == NULL)
 			thr_mgr = & Magick::instance().thr_mgr();
 		    Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
-		    Magick::instance().dcc->open((void *) &Magick::instance());
+		    Magick::instance().dcc->open(reinterpret_cast < void * > (&Magick::instance()));
 		}
 		break;
 	    case Heartbeat_Handler::H_Main:	// Its a REAL SIGABRT ...
@@ -3302,34 +3302,34 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
     return 0;
 }
 
-bool Magick::ValidateLogger(ACE_Log_Msg * instance) const
+bool Magick::ValidateLogger(ACE_Log_Msg * inst) const
 {
     // Removed so it stops appearing as LastFunction
     // FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
-    if (instance == NULL)
+    if (inst == NULL)
 	return false;
 
-    if (instance->msg_callback() != logger)
+    if (inst->msg_callback() != logger)
     {
-	instance->open(ProgramName().c_str());
-	instance->msg_callback(logger);
+	inst->open(ProgramName().c_str());
+	inst->msg_callback(logger);
     }
 
     if (logger != NULL)
     {
-	if (!(instance->flags() & ACE_Log_Msg::MSG_CALLBACK))
+	if (!(inst->flags() & ACE_Log_Msg::MSG_CALLBACK))
 	{
-	    instance->set_flags(ACE_Log_Msg::MSG_CALLBACK);
-	    instance->clr_flags(ACE_Log_Msg::STDERR);
+	    inst->set_flags(ACE_Log_Msg::MSG_CALLBACK);
+	    inst->clr_flags(ACE_Log_Msg::STDERR);
 	}
     }
     else
     {
-	if (!(instance->flags() & ACE_Log_Msg::STDERR))
+	if (!(inst->flags() & ACE_Log_Msg::STDERR))
 	{
-	    instance->set_flags(ACE_Log_Msg::STDERR);
-	    instance->clr_flags(ACE_Log_Msg::MSG_CALLBACK);
+	    inst->set_flags(ACE_Log_Msg::STDERR);
+	    inst->clr_flags(ACE_Log_Msg::MSG_CALLBACK);
 	}
     }
     return true;
@@ -3360,15 +3360,15 @@ void Magick::DeactivateLogger()
     logger = NULL;
 }
 
-void Magick::EndLogMessage(ACE_Log_Msg * instance) const
+void Magick::EndLogMessage(ACE_Log_Msg * inst) const
 {
     // Removed so it stops appearing as LastFunction
     // FT("Magick::EndLogMessage", ("(ACE_Log_Msg *) instance"));
 
-    if (instance == NULL)
+    if (inst == NULL)
 	return;
 
-    if (instance->flags() & ACE_Log_Msg::STDERR)
+    if (inst->flags() & ACE_Log_Msg::STDERR)
 	fprintf(stderr, "\n");
 }
 
@@ -3750,12 +3750,12 @@ void Magick::Disconnect(const bool reconnect)
 	    {
 		if (dh_timer == 0)
 		{
-		    ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
+		    ACE_Thread_Manager *thrmgr = Magick::instance().ircsvchandler->thr_mgr();
 
-		    if (thr_mgr == NULL)
-			thr_mgr = & Magick::instance().thr_mgr();
+		    if (thrmgr == NULL)
+			thrmgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
-		    thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
+		    thrmgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 #endif
 		    while (Magick::instance().Pause())
 			ACE_OS::sleep(1);

@@ -1830,7 +1830,7 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
 	for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 	{
 	    map_entry < Nick_Live_t > nlive(iter->second);
-	    if (nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(host, true))
+	    if (!nlive->IsServices() && nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(host, true))
 		killusers.push_back(pair < mstring, unsigned long > (nlive->Name(), nlive->Numeric()));
 	}
     }
@@ -4653,7 +4653,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		// unreal puts the numeric in the desctiption, ie.
 		// SERVER downlink hops :Uversion-servopts-numeric description
 		//        Only this way for direct links --^^^^^^^
-		if (proto.UnrealNumeric())
+		if (proto.Numeric.UnrealNumeric())
 		{
 		    numeric = proto.Numeric.ServerLineNumeric(params.After(":").ExtractWord(3, "-"));
 		    map_entry < Server_t >

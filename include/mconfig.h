@@ -85,9 +85,9 @@ public:
     mConfigEngine()
     {
     }
-    mConfigEngine(const mstring & FileName)
+    mConfigEngine(const mstring & iFileName)
     {
-	i_FileName = FileName;
+	i_FileName = iFileName;
 	LoadFile();
     }
 

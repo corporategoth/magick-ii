@@ -397,8 +397,8 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
 	RLOCK(("Server", "list"));
 	for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	{
-	    map_entry < Server_t > server(iter->second);
-	    if (!server->Name().empty() && server->Uplink().IsSameAs(Magick::instance().startup.Server_Name(), true))
+	    map_entry < Server_t > svr(iter->second);
+	    if (!svr->Name().empty() && svr->Uplink().IsSameAs(Magick::instance().startup.Server_Name(), true))
 		downlinks.push_back(iter->first);
 	}
     }
@@ -415,9 +415,9 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
 	    users = ServCounts[downlinks[i]].first;
 	    opers = ServCounts[downlinks[i]].second;
 	    {
-		map_entry < Server_t > server = Magick::instance().server.GetList(downlinks[i]);
-		lag = server->Lag();
-		servername = server->AltName();
+		map_entry < Server_t > svr = Magick::instance().server.GetList(downlinks[i]);
+		lag = svr->Lag();
+		servername = svr->AltName();
 	    }
 	    if (i < downlinks.size() - 1)
 	    {

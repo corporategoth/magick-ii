@@ -2778,7 +2778,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
 		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
 		    map_entry < Nick_Live_t > nlive(iter->second);
-		    if (nlive->Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
+		    if (!nlive->IsServices() && nlive->Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
 			killusers.push_back(iter->first);
 		}
 	    }

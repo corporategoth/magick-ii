@@ -97,11 +97,11 @@ namespace SXP
     {
 	inline FILE *FP()
 	{
-	    return ((T *) this)->FP();
+	    return static_cast < T * > (this)->FP();
 	}
 	inline void Indent()
 	{
-	    ((T *) this)->Indent();
+	    static_cast < T * > (this)->Indent();
 	}
     };
 
@@ -156,22 +156,22 @@ namespace SXP
 
 	virtual void BeginXML(void)
 	{
-	    ((T *) this)->BeginXML();
+	    static_cast < T * > (this)->BeginXML();
 	}
 
 	virtual void BeginObject(Tag & t, dict & attribs = blank_dict)
 	{
-	    ((T *) this)->BeginObject(t, attribs);
+	    static_cast < T * > (this)->BeginObject(t, attribs);
 	}
 	virtual void EndObject(Tag & t)
 	{
-	    ((T *) this)->EndObject(t);
+	    static_cast < T * > (this)->EndObject(t);
 	}
 
 	// recursively write other objects
 	virtual void WriteSubElement(IPersistObj * pObj, dict & attribs = blank_dict)
 	{
-	    ((T *) this)->WriteSubElement(pObj, attribs);
+	    static_cast < T * > (this)->WriteSubElement(pObj, attribs);
 	}
     };
 
@@ -504,7 +504,7 @@ namespace SXP
 	}
 	virtual bool IsA(Tag & t)
 	{
-	    if (m_dwTagHash == (unsigned long) ~0)
+	    if (m_dwTagHash == static_cast < unsigned long > (~0))
 	    {
 		m_dwTagHash = TagHashtable::TagHT().Lookup(m_strName.c_str());
 	    }
