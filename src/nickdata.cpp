@@ -877,31 +877,18 @@ Nick_Live_t &Nick_Live_t::operator=(const Nick_Live_t & in)
     i_squit = in.i_squit;
     i_away = in.i_away;
     modes = in.modes;
-    set < mstring >::const_iterator i;
-    joined_channels.clear();
-    for (i = in.joined_channels.begin(); i != in.joined_channels.end(); i++)
-	joined_channels.insert(*i);
-    last_msg_times.empty();
-    last_msg_times.reserve(in.last_msg_times.size());
-    unsigned int k;
-
-    for (k = 0; k < in.last_msg_times.size(); k++)
-	last_msg_times.push_back(in.last_msg_times[k]);
+    joined_channels = in.joined_channels;
+    last_msg_times = in.last_msg_times;
     last_msg_entries = in.last_msg_entries;
     flood_triggered_times = in.flood_triggered_times;
     failed_passwds = in.failed_passwds;
-    chans_founder_identd.clear();
-    for (i = in.chans_founder_identd.begin(); i != in.chans_founder_identd.end(); i++)
-	chans_founder_identd.insert(*i);
+    chans_founder_identd = in.chans_founder_identd;
     identified = in.identified;
     services = in.services;
     last_nick_reg = in.last_nick_reg;
     last_chan_reg = in.last_chan_reg;
     last_memo = in.last_memo;
-    map < mstring, mstring >::const_iterator j;
-    i_UserDef.clear();
-    for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
-	i_UserDef.insert(*j);
+    i_UserDef = in.i_UserDef;
     InFlight = in.InFlight;
     if (!InFlight.nick.IsSameAs(i_Name))
 	InFlight.nick = i_Name;
@@ -1076,14 +1063,13 @@ void Nick_Live_t::Quit(const mstring & reason)
     }
 
     set < mstring > jc;
-    set < mstring >::iterator c;
     {
 	WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "joined_channels"));
 	jc = joined_channels;
 	joined_channels.clear();
     }
-    for (c = jc.begin(); c != jc.end(); c++)
-	Part(*c);
+
+    for_each(jc.begin(), jc.end(), CallMemberFunction<Nick_Live_t, void, mstring>(this, &Nick_Live_t::Part));
 
     if (IsServices())
 	return;
@@ -1177,8 +1163,9 @@ bool Nick_Live_t::FloodTrigger()
     {
 	WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "last_msg_times"));
 	MCB(last_msg_times.size());
-	while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Magick::instance().operserv.Flood_Time())
-	    last_msg_times.erase(last_msg_times.begin());
+	mDateTime thr(static_cast<time_t>(time(NULL) - Magick::instance().operserv.Flood_Time()));
+	vector<mDateTime>::iterator iter = lower_bound(last_msg_times.begin(), last_msg_times.end(), thr);
+	last_msg_times.erase(last_msg_times.begin(), iter);
 	last_msg_times.push_back(mDateTime::CurrentDateTime());
 	MCE(last_msg_times.size());
     }
@@ -1327,6 +1314,7 @@ set < mstring > Nick_Live_t::Name(const mstring & in)
 	RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "joined_channels"));
 	jc = joined_channels;
     }
+
     for (iter = jc.begin(); iter != jc.end(); iter++)
     {
 	if (Magick::instance().chanserv.IsLive(*iter))
@@ -2018,10 +2006,9 @@ mstring Nick_Live_t::ChanIdentify(const mstring & channel, const mstring & passw
 	{
 	    // Keep record of all channel attempts, so that when
 	    // we change nick or quit, we can let chanserv know.
-	    vector < mstring >::iterator iter;
 	    {
 		WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "try_chan_ident"));
-		for (iter = try_chan_ident.begin(); iter != try_chan_ident.end() && !iter->IsSameAs(channel); iter++);
+		vector < mstring >::iterator iter = find(try_chan_ident.begin(), try_chan_ident.end(), channel.LowerCase());
 		if (iter == try_chan_ident.end())
 		{
 		    MCB(try_chan_ident.size());
@@ -2638,16 +2625,9 @@ Nick_Stored_t &Nick_Stored_t::operator=(const Nick_Stored_t & in)
     i_Description = in.i_Description;
     i_Comment = in.i_Comment;
     i_Host = in.i_Host;
-    set < mstring >::const_iterator i;
-    i_slaves.clear();
-    for (i = in.i_slaves.begin(); i != in.i_slaves.end(); i++)
-	i_slaves.insert(*i);
-    i_access.clear();
-    for (i = in.i_access.begin(); i != in.i_access.end(); i++)
-	i_access.insert(*i);
-    i_ignore.clear();
-    for (i = in.i_ignore.begin(); i != in.i_ignore.end(); i++)
-	i_ignore.insert(*i);
+    i_slaves = in.i_slaves;
+    i_access = in.i_access;
+    i_ignore = in.i_ignore;
     setting.Protect = in.setting.Protect;
     lock.Protect = in.lock.Protect;
     setting.Secure = in.setting.Secure;
@@ -2671,10 +2651,7 @@ Nick_Stored_t &Nick_Stored_t::operator=(const Nick_Stored_t & in)
     i_LastRealName = in.i_LastRealName;
     i_LastMask = in.i_LastMask;
     i_LastQuit = in.i_LastQuit;
-    map < mstring, mstring >::const_iterator j;
-    i_UserDef.clear();
-    for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
-	i_UserDef.insert(*j);
+    i_UserDef = in.i_UserDef;
     NRET(Nick_Stored_t &, *this);
     ETCB();
 }
@@ -3572,15 +3549,10 @@ mstring Nick_Stored_t::Access(const unsigned int count)
     FT("Nick_Stored_t::Access", (count));
     if (Host().empty())
     {
-	set < mstring >::iterator iter;
-	unsigned int i;
-
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_access"));
-	for (i = 0, iter = i_access.begin(); iter != i_access.end(); i++, iter++)
-	    if (i == count)
-	    {
-		RET(*iter);
-	    }
+	set<mstring>::const_iterator iter = find_if(i_access.begin(), i_access.end(), FindNumberedEntry(count));
+	if (iter != i_access.end())
+	    RET(*iter);
 	RET("");
     }
     else
@@ -3606,24 +3578,20 @@ bool Nick_Stored_t::AccessAdd(const mstring & in)
 
 	// Already exists (or inclusive)
 	WLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_access"));
-	set < mstring >::iterator iter;
-	for (iter = i_access.begin(); iter != i_access.end(); iter++)
-	    if (in.Matches(*iter, true))
-	    {
-		RET(false);
-	    }
+	set<mstring>::const_iterator iter = find_if(i_access.begin(), i_access.end(), Matches(in, true));
+	if (iter != i_access.end())
+	    RET(false);
 
+	MCB(i_access.size());
 	// NEW one includes existing ones ...
 	// Remove all obsolite entries.
-	vector < mstring > chunked;
-	for (iter = i_access.begin(); iter != i_access.end(); iter++)
+	for (iter=i_access.begin(); iter != i_access.end(); )
+	{
 	    if (iter->Matches(in, true))
-	    {
-		chunked.push_back(*iter);
-	    }
-	MCB(i_access.size());
-	for (unsigned int i = 0; i < chunked.size(); i++)
-	    i_access.erase(chunked[i]);
+		i_access.erase(iter++);
+	    else
+		iter++;
+	}
 
 	i_access.insert(in.LowerCase());
 	MCE(i_access.size());
@@ -3642,24 +3610,24 @@ unsigned int Nick_Stored_t::AccessDel(const mstring & in)
 {
     BTCB();
     FT("Nick_Stored_t::AccessDel", (in));
-    unsigned int retval = 0;
+    unsigned int retval;
 
     if (Host().empty())
     {
-	vector < mstring > chunked;
 	set < mstring >::iterator iter;
 	WLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_access"));
-	for (iter = i_access.begin(); iter != i_access.end(); iter++)
-	    if (in.Matches(*iter, true))
-	    {
-		chunked.push_back(*iter);
-	    }
-
+	retval = i_access.size();
 	MCB(i_access.size());
-	for (unsigned int i = 0; i < chunked.size(); i++)
-	    i_access.erase(chunked[i].LowerCase());
+	for (iter = i_access.begin(); iter != i_access.end(); )
+	{
+	    if (in.Matches(*iter, true))
+		i_access.erase(iter++);
+	    else
+		iter++;
+	}
+
 	MCE(i_access.size());
-	retval = chunked.size();
+	retval -= i_access.size();
     }
     else
     {
@@ -3675,14 +3643,9 @@ bool Nick_Stored_t::IsAccess(const mstring & in)
     FT("Nick_Stored_t::IsAccess", (in));
     if (Host().empty())
     {
-	set < mstring >::iterator iter;
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_access"));
-	for (iter = i_access.begin(); iter != i_access.end(); iter++)
-	    if (in.Matches(*iter, true))
-	    {
-		RET(true);
-	    }
-	RET(false);
+	set < mstring >::iterator iter = find_if(i_access.begin(), i_access.end(), Matches(in, true));
+	RET(iter != i_access.end());
     }
     else
     {
@@ -3717,15 +3680,10 @@ mstring Nick_Stored_t::Ignore(const unsigned int count)
     FT("Nick_Stored_t::Ignore", (count));
     if (Host().empty())
     {
-	set < mstring >::iterator iter;
-	unsigned int i;
-
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_ignore"));
-	for (i = 0, iter = i_ignore.begin(); iter != i_ignore.end(); i++, iter++)
-	    if (i == count)
-	    {
-		RET(*iter);
-	    }
+	set<mstring>::const_iterator iter = find_if(i_ignore.begin(), i_ignore.end(), FindNumberedEntry(count));
+	if (iter != i_ignore.end())
+	    RET(*iter);
 	RET("");
     }
     else
@@ -3777,38 +3735,42 @@ unsigned int Nick_Stored_t::IgnoreDel(const mstring & in)
 {
     BTCB();
     FT("Nick_Stored_t::IgnoreDel", (in));
-    unsigned int retval = 0;
+    unsigned int retval;
 
     if (Host().empty())
     {
 	mstring target(in.LowerCase());
 
-	vector < mstring > chunked;
 	set < mstring >::iterator iter;
 	WLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_ignore"));
-	for (iter = i_ignore.begin(); iter != i_ignore.end(); iter++)
-	    if (in.Matches(*iter, true))
-	    {
-		chunked.push_back(*iter);
-	    }
+	retval = i_ignore.size();
+
+	MCB(i_ignore.size());
+	for (iter = i_ignore.begin(); iter != i_ignore.end(); )
+	{
+	    if (target.Matches(*iter, true))
+		i_ignore.erase(iter++);
+	    else
+		iter++;
+	}
 
 	if (Magick::instance().nickserv.IsStored(in))
 	{
 	    target = Magick::instance().nickserv.GetStored(in)->Host();
 	    if (!target.empty())
 	    {
-		for (iter = i_ignore.begin(); iter != i_ignore.end(); iter++)
+		for (iter = i_ignore.begin(); iter != i_ignore.end(); )
+		{
 		    if (target.Matches(*iter, true))
-		    {
-			chunked.push_back(*iter);
-		    }
+			i_ignore.erase(iter++);
+		    else
+			iter++;
+		}
 	    }
 	}
-	MCB(i_ignore.size());
-	for (unsigned int i = 0; i < chunked.size(); i++)
-	    i_ignore.erase(chunked[i].LowerCase());
+
 	MCE(i_ignore.size());
-	retval = chunked.size();
+	retval -= i_ignore.size();
     }
     else
     {
@@ -3826,23 +3788,19 @@ bool Nick_Stored_t::IsIgnore(const mstring & in)
     {
 	mstring target(in.LowerCase());
 
-	set < mstring >::iterator iter;
 	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_ignore"));
-	for (iter = i_ignore.begin(); iter != i_ignore.end(); iter++)
-	    if (target.Matches(*iter, true))
-	    {
-		RET(true);
-	    }
+	set < mstring >::iterator iter = i_ignore.find(target);
+	if (iter != i_ignore.end())
+	    RET(true);
+
 	if (Magick::instance().nickserv.IsStored(target))
 	{
 	    target = Magick::instance().nickserv.GetStored(target)->Host();
 	    if (!target.empty())
 	    {
-		for (iter = i_ignore.begin(); iter != i_ignore.end(); iter++)
-		    if (target.Matches(*iter, true))
-		    {
-			RET(true);
-		    }
+		set < mstring >::iterator iter = i_ignore.find(target);
+		if (iter != i_ignore.end())
+		    RET(true);
 	    }
 	}
 	RET(false);
@@ -5024,21 +4982,9 @@ void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_LastMask, i_LastMask);
     pOut->WriteElement(tag_LastQuit, i_LastQuit);
 
-    set < mstring >::const_iterator iter2;
-    for (iter2 = i_access.begin(); iter2 != i_access.end(); iter2++)
-    {
-	pOut->WriteElement(tag_Access, *iter2);
-    }
-    for (iter2 = i_ignore.begin(); iter2 != i_ignore.end(); iter2++)
-    {
-	pOut->WriteElement(tag_Ignore, *iter2);
-    }
-
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
-    {
-	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
-    }
+    for_each(i_access.begin(), i_access.end(), SXP::WriteElement(pOut, tag_Access));
+    for_each(i_ignore.begin(), i_ignore.end(), SXP::WriteElement(pOut, tag_Ignore));
+    for_each(i_UserDef.begin(), i_UserDef.end(), SXP::WritePairElement(pOut, tag_UserDef));
 
     pOut->EndObject(tag_Nick_Stored_t);
     ETCB();

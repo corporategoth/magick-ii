@@ -634,7 +634,8 @@ int Magick::Run()
     }
 
     reactor().schedule_timer(&Magick::instance().hh, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
-    reactor().schedule_timer(&(Magick::instance().rh), 0, ACE_Time_Value::zero);
+    if (startup.Server_size())
+	reactor().schedule_timer(&(Magick::instance().rh), 0, ACE_Time_Value::zero);
 #ifdef TEST_MODE
     TestInput ti;
 
@@ -1103,6 +1104,17 @@ void Magick::dump_help() const
     ETCB();
 }
 
+class AddToUCMap
+{
+    map<mstring, mstring> &ucmap;
+public:
+    AddToUCMap(map<mstring, mstring> &m) : ucmap(m) {}
+    void operator()(const pair<mstring, mstring> &in)
+    {
+	ucmap[in.first.UpperCase()] = in.second;
+    }
+};
+
 void Magick::LoadInternalMessages()
 {
     BTCB();
@@ -1123,9 +1135,7 @@ void Magick::LoadInternalMessages()
     {
 	MCB(Messages.size());
 	Messages.erase("DEFAULT");
-	map < mstring, mstring >::iterator iter;
-	for (iter = tmp.begin(); iter != tmp.end(); iter++)
-	    Messages["DEFAULT"] [iter->first.UpperCase()] = iter->second;
+	for_each(tmp.begin(), tmp.end(), AddToUCMap(Messages["DEFAULT"]));
 	MCE(Messages.size());
     }
     ETCB();
@@ -1152,9 +1162,7 @@ bool Magick::LoadExternalMessages(const mstring & language)
 	{
 	    MCB(Messages.size());
 	    Messages.erase(language.UpperCase());
-	    map < mstring, mstring >::iterator iter;
-	    for (iter = tmp.begin(); iter != tmp.end(); iter++)
-		Messages[language.UpperCase()] [iter->first.UpperCase()] = iter->second;
+	    for_each(tmp.begin(), tmp.end(), AddToUCMap(Messages[language.UpperCase()]));
 	    MCE(Messages.size());
 	    RET(true);
 	}
@@ -1172,7 +1180,6 @@ bool Magick::LoadLogMessages(const mstring & language)
     WLOCK(("LogMessages"));
     LogMessages.clear();
     MCB(LogMessages.size());
-    map < mstring, mstring >::iterator iter;
     {
 	vector < mstring > lfo;
 	unsigned int i;
@@ -1185,8 +1192,7 @@ bool Magick::LoadLogMessages(const mstring & language)
 	fconf.LoadFromArray(lfo);
 
 	map < mstring, mstring > tmp = fconf.GetMap();
-	for (iter = tmp.begin(); iter != tmp.end(); iter++)
-	    LogMessages[iter->first.UpperCase()] = iter->second;
+	for_each(tmp.begin(), tmp.end(), AddToUCMap(LogMessages));
 	CP(("After DEFAULT - LogMessages = %d", LogMessages.size()));
     }
     if (language != "DEFAULT" && mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".lfo"))
@@ -1194,8 +1200,7 @@ bool Magick::LoadLogMessages(const mstring & language)
 	mConfigEngine fconf(files.Langdir() + DirSlash + language.LowerCase() + ".lfo");
 
 	map < mstring, mstring > tmp = fconf.GetMap();
-	for (iter = tmp.begin(); iter != tmp.end(); iter++)
-	    LogMessages[iter->first.UpperCase()] = iter->second;
+	for_each(tmp.begin(), tmp.end(), AddToUCMap(LogMessages));
     }
     MCE(LogMessages.size());
 
@@ -2110,9 +2115,9 @@ bool Magick::get_config_values()
     i = 1;
     {
 	WLOCK(("Startup", "Servers"));
-	int min_level = 0;
 
 	startup.servers.clear();
+	set<unsigned int> priorities;
 	do
 	{
 	    mstring lookfor = "REMOTE_";
@@ -2134,9 +2139,8 @@ bool Magick::get_config_values()
 		    // startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
 		    startup.servers[tmp[0].LowerCase()] =
 			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > (atol(tmp[3]),
-				triplet < unsigned int, mstring, unsigned long > (atoi(tmp[1]), tmp[2], atol(tmp[4])));
-		    if (min_level < 1 || atoi(tmp[3]) < min_level)
-			min_level = atoi(tmp[3]);
+				triplet < unsigned int, mstring, unsigned long > (atoui(tmp[1]), tmp[2], atoul(tmp[4])));
+		    priorities.insert(atoui(tmp[3]));
 		}
 		else
 		{
@@ -2146,14 +2150,17 @@ bool Magick::get_config_values()
 	    }
 	    i++;
 	} while (!value_mstring.empty());
-	if (min_level > 1)
-	{
-	    // We NEED the lowest priority to be 1
-	    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::iterator iter;
 
-	    for (iter = startup.servers.begin(); iter != startup.servers.end(); iter++)
+	// Make the priorities sequencial ...
+	set<unsigned int>::iterator iter;
+	for (i=1, iter=priorities.begin(); iter!=priorities.end(); iter++, i++)
+	{
+	    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::iterator iter2;
+
+	    for (iter2 = startup.servers.begin(); iter2 != startup.servers.end(); iter2++)
 	    {
-		iter->second.first -= (min_level - 1);
+		if (iter2->second.first == *iter)
+		    iter2->second.first = i;
 	    }
 	}
     }
@@ -3406,17 +3413,17 @@ void Magick::DeactivateLogger()
 void Magick::handle(const mstring & server, const mstring & command, const mstring & functionname)
 {
     BTCB();
-   pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
-   handlermap[data].insert(handlermap[data].begin(),functionname);
+    pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
+    handlermap[data].insert(handlermap[data].begin(),functionname);
     ETCB();
 }
 
 void Magick::stophandling(const mstring & server, const mstring & command, const mstring & functionname)
 {
     BTCB();
-   pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
-   if(checkifhandled(server,command)&&find(handlermap[data].begin(),handlermap[data].end(),functionname)!=handlermap[data].end())
-       handlermap[data].erase(find(handlermap[data].begin(),handlermap[data].end(),functionname));
+    pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
+    if(checkifhandled(server,command)&&find(handlermap[data].begin(),handlermap[data].end(),functionname)!=handlermap[data].end())
+	handlermap[data].erase(find(handlermap[data].begin(),handlermap[data].end(),functionname));
     ETCB();
 }
 

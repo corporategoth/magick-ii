@@ -376,6 +376,30 @@ mstring ThreadID::logname() const
     ETCB();
 }
 
+class CreatePreMessages
+{
+    vector<mstring> pm;
+    threadtype_enum type;
+public:
+    CreatePreMessages(threadtype_enum t, ThreadID *tid) : type(t)
+    {
+	mstring tmp;
+	tmp.Format("OUTPUT FROM THREAD ID %p", tid);
+	pm.push_back(tmp);
+    }
+    template<typename T> bool operator()(const T &in)
+    {
+	if (in.first == type)
+	{
+	    pm.push_back(in.second);
+	    return true;
+	}
+	return false;
+    }
+    vector<mstring> &pre_messages() { return pm; }
+    size_t msg_count() { return pm.size() - 1; }
+};
+
 // ONLY trace function with trace codes, so people
 // dont wonder why the ThreadMessageQueue and mFile
 // locks are being set/removed.                                
@@ -390,39 +414,23 @@ void ThreadID::Flush()
 
     if (tid != NULL)
 	tid->t_intrace = true;
-    list < pair < threadtype_enum, mstring > >::iterator iter;
-    list < pair < threadtype_enum, mstring > > ThreadMessageQueue2;
-    list < mstring > pre_messages;
+
+    CreatePreMessages cpm(t_internaltype, this);
     {
 	MLOCK(("ThreadMessageQueue"));
-	for (iter = ThreadMessageQueue.begin(); iter != ThreadMessageQueue.end(); iter++)
-	{
-	    if (iter->first == t_internaltype)
-	    {
-		pre_messages.push_back(iter->second);
-	    }
-	    else
-	    {
-		ThreadMessageQueue2.push_back(*iter);
-	    }
-	}
-	if (ThreadMessageQueue2.size())
-	    ThreadMessageQueue = ThreadMessageQueue2;
+	ThreadMessageQueue.erase(remove_if(ThreadMessageQueue.begin(), ThreadMessageQueue.end(), cpm), ThreadMessageQueue.end());
     }
 
-    if (messages.size() || pre_messages.size())
+    if (messages.size() || cpm.msg_count())
     {
-	mstring tmp;
-
-	tmp.Format("OUTPUT FROM THREAD ID %p", this);
-	pre_messages.push_front(tmp);
 	{
 	    MLOCK(("TraceDump", logname()));
-	    mFile::Dump(pre_messages, Magick::instance().Services_Dir() + DirSlash + logname(), true, true);
+	    mFile::Dump(cpm.pre_messages(), Magick::instance().Services_Dir() + DirSlash + logname(), true, true);
 	    mFile::Dump(messages, Magick::instance().Services_Dir() + DirSlash + logname(), true, true);
 	}
 	messages.clear();
     }
+
     if (tid != NULL)
 	tid->t_intrace = false;
 #endif
@@ -439,7 +447,7 @@ unsigned short Trace::traces[tt_MAX] =
 0};
 
 vector < Trace::levelname_struct > Trace::levelname;	// Initialised in main.cpp
-list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
+vector < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 
 int levelname_count()
 {

@@ -117,11 +117,8 @@ Committee_t &Committee_t::operator=(const Committee_t & in)
     lock.Private = in.lock.Private;
     i_Members = in.i_Members;
     i_Messages = in.i_Messages;
+    i_UserDef = in.i_UserDef;
 
-    map < mstring, mstring >::const_iterator j;
-    i_UserDef.clear();
-    for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
-	i_UserDef.insert(*j);
     NRET(Committee_t &, *this);
     ETCB();
 }
@@ -244,9 +241,8 @@ bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDat
 
     MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "member"));
     if (!i_Members.empty())
-	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
-	    if (iter->Entry().IsSameAs(entry, true))
-		break;
+	iter = find_if(i_Members.begin(), i_Members.end(), EntryIsSameAs(entry, true));
+
     if (i_Members.empty() || iter == i_Members.end())
     {
 	pair < entlist_ui, bool > tmp;
@@ -299,12 +295,7 @@ bool Committee_t::find(const mstring & entry)
     entlist_ui iter = i_Members.end();
 
     if (!i_Members.empty())
-    {
-	// FIND exact nickname
-	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
-	    if (iter->Entry().IsSameAs(entry, true))
-		break;
-    }
+	iter = find_if(i_Members.begin(), i_Members.end(), EntryIsSameAs(entry, true));
 
     if (iter != i_Members.end())
     {
@@ -761,13 +752,9 @@ bool Committee_t::MSG_find(const int number)
 
     MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "message"));
     entlist_i iter = i_Messages.end();
-    int i;
 
     if (!i_Messages.empty())
-    {
-	// FIND exact nickname
-	for (iter = i_Messages.begin(), i = 1; iter != i_Messages.end() && i != number; iter++, i++);
-    }
+	iter = find_if(i_Messages.begin(), i_Messages.end(), FindNumberedEntry(number));
 
     if (iter != i_Messages.end())
     {
@@ -795,23 +782,10 @@ size_t Committee_t::Usage() const
     retval += i_Description.capacity();
     retval += i_Email.capacity();
     retval += i_URL.capacity();
-
-    entlist_cui i;
-
-    for (i = i_Members.begin(); i != i_Members.end(); i++)
-    {
-	retval += i->Usage();
-    }
-
+    retval = accumulate(i_Members.begin(), i_Members.end(), retval, AddUsage());
     retval += sizeof(setting);
     retval += sizeof(lock);
-
-    entlist_ci j;
-
-    for (j = i_Messages.begin(); j != i_Messages.end(); j++)
-    {
-	retval += j->Usage();
-    }
+    retval = accumulate(i_Messages.begin(), i_Messages.end(), retval, AddUsage());
 
     map < mstring, mstring >::const_iterator l;
     for (l = i_UserDef.begin(); l != i_UserDef.end(); l++)
@@ -1986,7 +1960,7 @@ void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, cons
 
     unsigned int num = atoi(msgnum.c_str());
 
-    if (num <= 0 || num > comm->MSG_size())
+    if (num < 1 || num > comm->MSG_size())
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, comm->MSG_size()));
     }
@@ -1998,7 +1972,7 @@ void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, cons
     }
 
     MLOCK((lck_CommServ, lck_list, committee.UpperCase(), "message"));
-    if (comm->MSG_find(num))
+    if (comm->MSG_find(num - 1))
     {
 	Magick::instance().commserv.stats.i_Logon++;
 	SEND(mynick, source, "LIST/DEL2_NUMBER", (num, committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
@@ -3064,34 +3038,14 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_lock_Private, lock.Private);
     pOut->WriteElement(tag_lock_Secure, lock.Secure);
 
-    if (!
-	(i_Name == Magick::instance().commserv.ALL_Name() || i_Name == Magick::instance().commserv.REGD_Name() ||
-	 i_Name == Magick::instance().commserv.SADMIN_Name()))
+    if (!(i_Name == Magick::instance().commserv.ALL_Name() || i_Name == Magick::instance().commserv.REGD_Name() ||
+	  i_Name == Magick::instance().commserv.SADMIN_Name()))
     {
-	entlist_ui l;
-
-	for (l = i_Members.begin(); l != i_Members.end(); l++)
-	{
-	    pOut->BeginObject(tag_Members);
-	    pOut->WriteSubElement(const_cast < entlist_t * > (&(*l)));
-	    pOut->EndObject(tag_Members);
-	}
+	for_each(i_Members.begin(), i_Members.end(), SXP::WriteSubElement(pOut, tag_Members));
     }
 
-    entlist_i k;
-
-    for (k = i_Messages.begin(); k != i_Messages.end(); k++)
-    {
-	pOut->BeginObject(tag_Messages);
-	pOut->WriteSubElement(&(*k));
-	pOut->EndObject(tag_Messages);
-    }
-
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
-    {
-	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
-    }
+    for_each(i_Messages.begin(), i_Messages.end(), SXP::WriteSubElement(pOut, tag_Messages));
+    for_each(i_UserDef.begin(), i_UserDef.end(), SXP::WritePairElement(pOut, tag_UserDef));
 
     pOut->EndObject(tag_Committee_t);
     ETCB();
@@ -3199,17 +3153,11 @@ void CommServ::PostLoad()
 	mstring uname = comm->Name().UpperCase();
 	{
 	    MLOCK((lck_CommServ, lck_list, uname, "member"));
-	    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
-	    {
-		comm->member->PostLoad();
-	    }
+	    for_each(comm->begin(), comm->end(), mem_fun_ref(&entlist_t::PostLoad));
 	}
 	{
 	    MLOCK((lck_CommServ, lck_list, uname, "message"));
-	    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-	    {
-		comm->message->PostLoad();
-	    }
+	    for_each(comm->MSG_begin(), comm->MSG_end(), mem_fun_ref(&entlist_t::PostLoad));
 	}
 
 	// We must ensure certain settings in pre-defined committees ...

@@ -159,6 +159,16 @@ enum bool
 #else
 #  include <set.h>
 #endif
+#ifdef HAVE_ALGORITHM
+#  include <algorithm>
+#else
+#  include <algorithm.h>
+#endif
+#ifdef HAVE_NUMERIC
+#  include <numeric>
+#else
+#  include <numeric.h>
+#endif
 #ifdef HAVE_STRING
 #  include <string>
 #else

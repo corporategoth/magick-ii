@@ -299,7 +299,7 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 // then against MAIN's thread levels (Locking, Function, SourceFiles, Stat)
 // then it gives a syntax error.
 
-extern list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
+extern vector < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 
 // Trace Codes
 //   \   Down Function (T_Function)

@@ -1633,6 +1633,15 @@ list < mstring > mstring::List(const mstring & delim, bool const assemble) const
     return Result;
 }
 
+class StringLengthSum : public binary_function<size_t, mstring, size_t>
+{
+public:
+    size_t operator()(size_t sumSoFar, const mstring &in) const
+    {
+	return sumSoFar + in.length();
+    }
+};
+
 void mstring::Assemble(const vector < mstring > & text, const mstring & delim)
 {
     lock_write();
@@ -1642,11 +1651,7 @@ void mstring::Assemble(const vector < mstring > & text, const mstring & delim)
 
     if (text.size())
     {
-	vector < mstring >::const_iterator iter;
-	i_len += text.size() - 1 * delim.length();
-	for (iter = text.begin(); iter != text.end(); iter++)
-	    i_len += iter->length();
-
+	i_len = accumulate(text.begin(), text.end(), text.size() - 1 * delim.length(), StringLengthSum());
 	i_res = sizeof(int);
 	while (i_res <= i_len)
 	    i_res *= 2;
@@ -1658,10 +1663,9 @@ void mstring::Assemble(const vector < mstring > & text, const mstring & delim)
 	}
 
 	memset(i_str, 0, i_res);
-
 	size_t offs = 0;
 
-	iter = text.begin();
+	vector < mstring >::const_iterator iter = text.begin();
 	memcpy(i_str, iter->c_str(), iter->length());
 	offs += iter->length();
 	iter++;
@@ -1693,11 +1697,7 @@ void mstring::Assemble(const list < mstring > & text, const mstring & delim)
 
     if (text.size())
     {
-	list < mstring >::const_iterator iter;
-	i_len += text.size() - 1 * delim.length();
-	for (iter = text.begin(); iter != text.end(); iter++)
-	    i_len += iter->length();
-
+	i_len = accumulate(text.begin(), text.end(), text.size() - 1 * delim.length(), StringLengthSum());
 	i_res = sizeof(int);
 	while (i_res <= i_len)
 	    i_res *= 2;
@@ -1712,7 +1712,7 @@ void mstring::Assemble(const list < mstring > & text, const mstring & delim)
 
 	size_t offs = 0;
 
-	iter = text.begin();
+	list < mstring >::const_iterator iter = text.begin();
 	memcpy(i_str, iter->c_str(), iter->length());
 	offs += iter->length();
 	iter++;

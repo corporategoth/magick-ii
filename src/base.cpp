@@ -47,10 +47,7 @@ entlist_t &entlist_t::operator=(const entlist_t & in)
     i_Entry = in.i_Entry;
     i_Last_Modify_Time = in.i_Last_Modify_Time;
     i_Last_Modifier = in.i_Last_Modifier;
-    map < mstring, mstring >::const_iterator i;
-    i_UserDef.clear();
-    for (i = in.i_UserDef.begin(); i != in.i_UserDef.end(); i++)
-	i_UserDef[i->first] = i->second;
+    i_UserDef = in.i_UserDef;
     NRET(entlist_t &, *this);
     ETCB();
 }
@@ -109,12 +106,7 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_Entry, i_Entry);
     pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
     pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
-
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
-    {
-	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
-    }
+    for_each(i_UserDef.begin(), i_UserDef.end(), SXP::WritePairElement(pOut, tag_UserDef));
 
     pOut->EndObject(tag_entlist_t);
     ETCB();

@@ -319,15 +319,9 @@ mstring Protocol::GetNonToken(const mstring & in) const
     FT("Protocol::GetNonToken", (in));
     mstring retval;
 
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = tokens.begin(); iter != tokens.end(); iter++)
-    {
-	if (iter->second.IsSameAs(in))
-	{
-	    retval = iter->first;
-	    break;
-	}
-    }
+    map < mstring, mstring >::const_iterator iter = find_if(tokens.begin(), tokens.end(), ValueIsSameAs(in));
+    if (iter != tokens.end())
+	retval = iter->first;
     RET(retval);
     ETCB();
 }
@@ -1828,8 +1822,7 @@ void Server::JOIN(const mstring & nick, const mstring & channel)
 	}
 
 	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
-	for (ci = channels.begin(); ci != channels.end(); ci++)
-	    nlive->Join(*ci);
+	for_each(channels.begin(), channels.end(), CallMemberFunction<Nick_Live_t, void, mstring>(nlive, &Nick_Live_t::Join));
     }
     ETCB();
 }
@@ -3798,21 +3791,15 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    mstring newnick = IrcParam(params, 1);
 
 	    // DONT kill when we do SQUIT protection.
-	    map < mstring, list < mstring > >::iterator i;
+	    map < mstring, set < mstring > >::iterator i;
 	    {
 		RLOCK((lck_Server, "ToBeSquit"));
 		for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 		{
-		    list < mstring >::iterator k;
 		    WLOCK2((lck_Server, "ToBeSquit", i->first));
-		    for (k = i->second.begin(); k != i->second.end(); k++)
-			if (k->IsSameAs(newnick, true))
-			{
-			    list < mstring >::iterator j = k;
-			    j--;
-			    i->second.erase(k);
-			    k = j;
-			}
+		    set < mstring >::iterator k = i->second.find(newnick.LowerCase());
+		    if (k != i->second.end())
+			i->second.erase(k);
 		}
 	    }
 
@@ -4385,7 +4372,7 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 	    nlive->SetSquit();
 	    WLOCK2((lck_Server, "ToBeSquit"));
 	    MCB(ToBeSquit.size());
-	    ToBeSquit[server2.LowerCase()].push_back(source.LowerCase());
+	    ToBeSquit[server2.LowerCase()].insert(source.LowerCase());
 	    LOG(LM_NOTICE, "OTHER/SQUIT_FIRST", (server2, server1));
 
 	    WLOCK3((lck_Server, "ServerSquit"));
@@ -5276,21 +5263,15 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	mstring newnick = IrcParam(params, 1);
 
 	// DONT kill when we do SQUIT protection.
-	map < mstring, list < mstring > >::iterator i;
+	map < mstring, set < mstring > >::iterator i;
 	{
 	    RLOCK((lck_Server, "ToBeSquit"));
 	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 	    {
-		list < mstring >::iterator k;
 		WLOCK2((lck_Server, "ToBeSquit", i->first));
-		for (k = i->second.begin(); k != i->second.end(); k++)
-		    if (k->IsSameAs(newnick, true))
-		    {
-			list < mstring >::iterator j = k;
-			j--;
-			i->second.erase(k);
-			k = j;
-		    }
+		set < mstring >::iterator k = i->second.find(newnick.LowerCase());
+		if (k != i->second.end())
+		    i->second.erase(k);
 	    }
 	}
 

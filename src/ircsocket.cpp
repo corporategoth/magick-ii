@@ -256,12 +256,9 @@ int IrcSvcHandler::handle_input(const char *data)
 
     {
 	WLOCK((lck_IrcSvcHandler, "traffic"));
-	for (iter = traffic.begin();
-	     iter != traffic.end() &&
-	     iter->first < now - static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap() + 2);
-	     iter = traffic.begin())
-	    traffic.erase(iter->first);
-	if (traffic.find(now) == traffic.end())
+	iter = traffic.lower_bound(now - static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap() + 2));
+	traffic.erase(traffic.begin(), iter);
+	if (!traffic.count(now))
 	    traffic[now] = 0;
 	traffic[now] += ACE_OS::strlen(data);
 	in_traffic += ACE_OS::strlen(data);
@@ -405,11 +402,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
     }
     {
 	MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
-	msgidmap_t::iterator mi;
-
-	for (mi = MsgIdMap.begin(); mi != MsgIdMap.end(); mi++)
-	    delete mi->second;
-
+	for_each(MsgIdMap.begin(), MsgIdMap.end(), DeleteMapData());
 	MsgIdMap.clear();
     }
 
@@ -1327,6 +1320,17 @@ size_t Heartbeat_Handler::size()
     ETCB();
 }
 
+class CountThreadType
+{
+    Heartbeat_Handler::heartbeat_enum type;
+public:
+    CountThreadType(Heartbeat_Handler::heartbeat_enum t) : type(t) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	return (in.second.first == type);
+    }
+};
+
 size_t Heartbeat_Handler::count(heartbeat_enum type)
 {
     BTCB();
@@ -1335,10 +1339,7 @@ size_t Heartbeat_Handler::count(heartbeat_enum type)
 
     {
 	RLOCK(("Heartbeat_Handler", "threads"));
-	threads_t::iterator iter;
-	for (iter = threads.begin(); iter != threads.end(); iter++)
-	    if (iter->second.first == type)
-		retval++;
+	retval = count_if(threads.begin(), threads.end(), CountThreadType(type));
     }
 
     RET(retval);
@@ -1363,10 +1364,7 @@ mstring Reconnect_Handler::FindNext(const mstring & i_server)
     {
 	vector < mstring > serverlist =
 	    Magick::instance().startup.PriorityList(Magick::instance().startup.Server(server).first);
-	vector < mstring >::iterator iter;
-	for (iter = serverlist.begin(); iter != serverlist.end(); iter++)
-	    if (*iter == server)
-		break;
+	vector < mstring >::iterator iter = find(serverlist.begin(), serverlist.end(), server);
 
 	if (iter != serverlist.end())
 	    iter++;
@@ -1594,24 +1592,20 @@ int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     }
 
     // QUIT all user's who faked it ...
-    vector < mstring > chunked;
+    set < mstring > chunked;
     {
 	WLOCK2((lck_Server, "ToBeSquit"));
-	if (Magick::instance().server.ToBeSquit.find(*tmp) != Magick::instance().server.ToBeSquit.end())
+	map<mstring, set<mstring> >::iterator iter = Magick::instance().server.ToBeSquit.find(*tmp);
+	if (iter != Magick::instance().server.ToBeSquit.end())
 	{
-	    list < mstring >::iterator iter;
 	    CB(2, Magick::instance().server.ToBeSquit.size());
-	    for (iter = Magick::instance().server.ToBeSquit[*tmp].begin();
-		 iter != Magick::instance().server.ToBeSquit[*tmp].end(); iter++)
-	    {
-		chunked.push_back(*iter);
-	    }
-	    Magick::instance().server.ToBeSquit.erase(*tmp);
+	    chunked = iter->second;
+	    Magick::instance().server.ToBeSquit.erase(iter);
 	    CE(2, Magick::instance().server.ToBeSquit.size());
 	}
     }
 
-    vector < mstring >::iterator k;
+    set < mstring >::iterator k;
     for (k = chunked.begin(); k != chunked.end(); k++)
     {
 	try
@@ -1701,6 +1695,7 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 		SquitMe.push_back(nlive->Name());
 	}
     }
+
     vector < mstring >::iterator k;
     for (k = SquitMe.begin(); k != SquitMe.end(); k++)
     {
@@ -2324,27 +2319,12 @@ void EventTask::do_expire(mDateTime & synctime)
     // akills
     //try
     {
-	vector < mstring > expired_akills;
 	MLOCK((lck_OperServ, "Akill"));
 	for (Magick::instance().operserv.Akill = Magick::instance().operserv.Akill_begin();
-	     Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end(); Magick::instance().operserv.Akill++)
+	     Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end(); )
 	{
 	    if (Magick::instance().operserv.Akill->Last_Modify_Time().SecondsSince() >
 		Magick::instance().operserv.Akill->Value().first)
-	    {
-		expired_akills.push_back(Magick::instance().operserv.Akill->Entry());
-	    }
-	}
-	// OK, ugly, but it avoids SET re-ordering...
-	for (i = 0; i < expired_akills.size(); i++)
-	{
-	    for (Magick::instance().operserv.Akill = Magick::instance().operserv.Akill_begin();
-		 Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end();
-		 Magick::instance().operserv.Akill++)
-		if (Magick::instance().operserv.Akill->Entry() == expired_akills[i])
-		    break;
-
-	    if (Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end())
 	    {
 		Magick::instance().server.RAKILL(Magick::instance().operserv.Akill->Entry());
 		LOG(LM_INFO, "EVENT/EXPIRE_AKILL",
@@ -2355,7 +2335,12 @@ void EventTask::do_expire(mDateTime & synctime)
 			 (Magick::instance().operserv.Akill->Entry(), Magick::instance().operserv.Akill->Value().second,
 			  Magick::instance().operserv.Akill->Last_Modifier(),
 			  ToHumanTime(Magick::instance().operserv.Akill->Value().first)));
+		// This will advance the iterator ...
 		Magick::instance().operserv.Akill_erase();
+	    }
+	    else
+	    {
+		Magick::instance().operserv.Akill++;
 	    }
 	}
     }
@@ -2534,7 +2519,6 @@ void EventTask::do_check(mDateTime & synctime)
     ChanServ::live_t::iterator cli;
     unsigned int i;
 
-    vector < mstring > chunked;
 
     if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
     {
@@ -2579,17 +2563,16 @@ void EventTask::do_check(mDateTime & synctime)
 		}
 	    }
 
-	    chunked.clear();
 	    if (found)
 	    {
 		WLOCK((lck_ChanServ, lck_live, clive->Name().LowerCase(), "recent_parts"));
-		for (di = clive->recent_parts.begin(); di != clive->recent_parts.end(); di++)
+		for (di = clive->recent_parts.begin(); di != clive->recent_parts.end(); )
 		{
 		    if (di->second.SecondsSince() > parttime)
-			chunked.push_back(di->first);
+			clive->recent_parts.erase(di++);
+		    else
+			di++;
 		}
-		for (i = 0; i < chunked.size(); i++)
-		    clive->recent_parts.erase(chunked[i]);
 	    }
 	    else if (clive->recent_parts.size())
 	    {
@@ -2602,10 +2585,10 @@ void EventTask::do_check(mDateTime & synctime)
     // Check if we should rename people who are past their
     // grace time on ident (if KillProtect is on, and they
     // are not on access list or secure is on).
-    chunked.clear();
     if (synctime.SecondsSince() >= Magick::instance().nickserv.Ident() &&
 	Magick::instance().nickserv.IsLive(Magick::instance().nickserv.FirstName()))
     {
+	vector < mstring > chunked;
 	{
 	    RLOCK((lck_NickServ, lck_live));
 	    for (nli = Magick::instance().nickserv.LiveBegin(); nli != Magick::instance().nickserv.LiveEnd(); nli++)
@@ -2849,19 +2832,19 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 	for (j = mMessage::AllDependancies.begin(); j != mMessage::AllDependancies.end(); j++)
 	{
 	    map < mstring, set < unsigned long > >::iterator k;
-	    vector<mstring> chunked2;
-	    for (k = j->second.begin(); k != j->second.end(); k++)
+	    for (k = j->second.begin(); k != j->second.end(); )
 	    {
 		for (i=0; i<chunked.size(); i++)
 		{
-		    if (k->second.find(chunked[i]) != k->second.end())
-			k->second.erase(chunked[i]);
+		    set<unsigned long>::iterator l = k->second.find(chunked[i]);
+		    if (l != k->second.end())
+			k->second.erase(l);
 		}
 		if (!k->second.size())
-		    chunked2.push_back(k->first);
+		    j->second.erase(k++);
+		else
+		    k++;
 	    }
-	    for (i=0; i<chunked2.size(); i++)
-		j->second.erase(chunked2[i]);
 	}
     }
     ETCB();

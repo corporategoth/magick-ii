@@ -197,6 +197,9 @@ void DccEngine::decodeReply(const mstring & mynick, const mstring & source, cons
     static_cast < void > (source);
 
     FT("DccEngine::decodeReply", (in));
+
+#if 0 // Unused code, for now, why bother wasting cycles ...
+
     vector < mstring > ResVector;
     mstring ResMid = lowDequote(in);
 
@@ -215,6 +218,9 @@ void DccEngine::decodeReply(const mstring & mynick, const mstring & source, cons
 
 	// todo if( ) { } else if( ) {} where first word is SED etc.
     }
+
+#endif // Unused code, for now, why bother wasting cycles ...
+
     ETCB();
 }
 

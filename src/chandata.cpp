@@ -302,20 +302,10 @@ Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
     i_Numeric = in.i_Numeric;
     i_Creation_Time = in.i_Creation_Time;
 
-    users.clear();
-    squit.clear();
-    map < mstring, triplet < bool, bool, bool > >::const_iterator k;
-    for (k = in.users.begin(); k != in.users.end(); k++)
-	users.insert(*k);
-    for (k = in.squit.begin(); k != in.squit.end(); k++)
-	squit.insert(*k);
-    bans.clear();
-    exempt.clear();
-    map < mstring, mDateTime >::const_iterator i;
-    for (i = in.bans.begin(); i != in.bans.end(); i++)
-	bans.insert(*i);
-    for (i = in.exempt.begin(); i != in.exempt.end(); i++)
-	exempt.insert(*i);
+    users = in.users;
+    squit = in.squit;
+    bans = in.bans;
+    exempt = in.exempt;
     i_Topic = in.i_Topic;
     i_Topic_Set_Time = in.i_Topic_Set_Time;
     i_Topic_Setter = in.i_Topic_Setter;
@@ -324,18 +314,11 @@ Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
     i_Limit = in.i_Limit;
     p_modes_on = in.p_modes_on;
     p_modes_off = in.p_modes_off;
-    p_modes_on_params.clear();
     p_modes_on_params = in.p_modes_on_params;
-    p_modes_off_params.clear();
     p_modes_off_params = in.p_modes_off_params;
     ph_timer = in.ph_timer;
-    recent_parts.clear();
-    for (i = in.recent_parts.begin(); i != in.recent_parts.end(); i++)
-	recent_parts.insert(*i);
-    i_UserDef.clear();
-    map < mstring, mstring >::const_iterator j;
-    for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
-	i_UserDef.insert(*j);
+    recent_parts = in.recent_parts;
+    i_UserDef = in.i_UserDef;
     NRET(Chan_Live_t &, *this);
     ETCB();
 }
@@ -442,16 +425,11 @@ mstring Chan_Live_t::Squit(const unsigned int num) const
 {
     BTCB();
     FT("Chan_Live_t::Squit", (num));
-    unsigned int i;
-
-    map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
-    for (i = 0, k = squit.begin(); k != squit.end(); k++, i++)
-	if (i == num)
-	{
-	    RET(k->first);
-	}
+    map<mstring, triplet < bool, bool, bool > >::const_iterator iter = find_if(squit.begin(), squit.end(), FindNumberedEntry(num));
+    if (iter != squit.end())
+	RET(iter->first);
 
     RET("");
     ETCB();
@@ -471,16 +449,11 @@ mstring Chan_Live_t::User(const unsigned int num) const
 {
     BTCB();
     FT("Chan_Live_t::User", (num));
-    unsigned int i;
-
-    map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
-    for (i = 0, k = users.begin(); k != users.end(); k++, i++)
-	if (i == num)
-	{
-	    RET(k->first);
-	}
+    map<mstring, triplet < bool, bool, bool > >::const_iterator iter = find_if(users.begin(), users.end(), FindNumberedEntry(num));
+    if (iter != users.end())
+	RET(iter->first);
 
     RET("");
     ETCB();
@@ -494,7 +467,6 @@ unsigned int Chan_Live_t::Ops() const
 
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i;
-
     for (i = users.begin(); i != users.end(); i++)
 	if (i->second.first)
 	    count++;
@@ -634,15 +606,11 @@ mstring Chan_Live_t::Ban(const unsigned int num) const
 {
     BTCB();
     FT("Chan_Live_t::Ban", (num));
-    unsigned int i;
 
-    map < mstring, mDateTime >::const_iterator k;
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
-    for (i = 0, k = bans.begin(); k != bans.end(); k++, i++)
-	if (i == num)
-	{
-	    RET(k->first);
-	}
+    map<mstring, mDateTime >::const_iterator iter = find_if(bans.begin(), bans.end(), FindNumberedEntry(num));
+    if (iter != bans.end())
+	RET(iter->first);
 
     RET("");
     ETCB();
@@ -678,15 +646,11 @@ mstring Chan_Live_t::Exempt(const unsigned int num) const
 {
     BTCB();
     FT("Chan_Live_t::Exempt", (num));
-    unsigned int i;
 
-    map < mstring, mDateTime >::const_iterator k;
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
-    for (i = 0, k = exempt.begin(); k != exempt.end(); k++, i++)
-	if (i == num)
-	{
-	    RET(k->first);
-	}
+    map<mstring, mDateTime >::const_iterator iter = find_if(exempt.begin(), exempt.end(), FindNumberedEntry(num));
+    if (iter != exempt.end())
+	RET(iter->first);
 
     RET("");
     ETCB();
@@ -793,16 +757,11 @@ bool Chan_Live_t::MatchBan(const mstring & mask) const
 {
     BTCB();
     FT("Chan_Live_t::MatchBan", (mask));
+
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
-    map < mstring, mDateTime >::const_iterator i;
-    for (i = bans.begin(); i != bans.end(); i++)
-    {
-	if (mask.Matches(i->first, true))
-	{
-	    RET(true);
-	}
-    }
-    RET(false);
+    map<mstring, mDateTime>::const_iterator iter = find_if(bans.begin(), bans.end(), KeyMatches(mask, true));
+    RET(iter != bans.end());
+
     ETCB();
 }
 
@@ -821,16 +780,11 @@ bool Chan_Live_t::MatchExempt(const mstring & mask) const
 {
     BTCB();
     FT("Chan_Live_t::MatchExempt", (mask));
+
     RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
-    map < mstring, mDateTime >::const_iterator i;
-    for (i = exempt.begin(); i != exempt.end(); i++)
-    {
-	if (mask.Matches(i->first, true))
-	{
-	    RET(true);
-	}
-    }
-    RET(false);
+    map<mstring, mDateTime>::const_iterator iter = find_if(exempt.begin(), exempt.end(), KeyMatches(mask, true));
+    RET(iter != exempt.end());
+
     ETCB();
 }
 
@@ -1745,12 +1699,14 @@ size_t Chan_Live_t::Usage() const
 	retval += i->first.capacity();
 	retval += sizeof(i->second.first);
 	retval += sizeof(i->second.second);
+	retval += sizeof(i->second.third);
     }
     for (i = users.begin(); i != users.end(); i++)
     {
 	retval += i->first.capacity();
 	retval += sizeof(i->second.first);
 	retval += sizeof(i->second.second);
+	retval += sizeof(i->second.third);
     }
     map < mstring, mDateTime >::const_iterator j;
     for (j = bans.begin(); j != bans.end(); j++)
@@ -1818,18 +1774,15 @@ void Chan_Stored_t::ChgAttempt(const mstring & nick, const mstring & newnick)
     BTCB();
     FT("Chan_Stored_t::ChgAttempt", (nick, newnick));
 
-    map < mstring, unsigned int >::iterator iter;
-
     // Create a new one if we find the entry
     WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "failed_passwds"));
     MCB(failed_passwds.size());
-    for (iter = failed_passwds.begin(); iter != failed_passwds.end(); iter++)
-	if (iter->first.IsSameAs(nick, true))
-	{
-	    failed_passwds[newnick.LowerCase()] = iter->second;
-	    break;
-	}
-    failed_passwds.erase(nick.LowerCase());
+    map < mstring, unsigned int >::iterator iter = failed_passwds.find(nick.LowerCase());
+    if (iter != failed_passwds.end())
+    {
+	failed_passwds[newnick.LowerCase()] = iter->second;
+	failed_passwds.erase(nick.LowerCase());
+    }
     MCE(failed_passwds.size());
     ETCB();
 }
@@ -2939,38 +2892,12 @@ Chan_Stored_t &Chan_Stored_t::operator=(const Chan_Stored_t & in)
     i_Suspend_By = in.i_Suspend_By;
     i_Suspend_Time = in.i_Suspend_Time;
     setting.Forbidden = in.setting.Forbidden;
-
-//  entlist_val_cui<long> j;
-    set < entlist_val_t < long > >::const_iterator j;
-
-    i_Level.clear();
-    for (j = in.i_Level.begin(); j != in.i_Level.end(); j++)
-	i_Level.insert(*j);
-
-    i_Access.clear();
-    for (j = in.i_Access.begin(); j != in.i_Access.end(); j++)
-	i_Access.insert(*j);
-
-//  entlist_val_cui<mstring> k;
-    set < entlist_val_t < mstring > >::const_iterator k;
-    i_Akick.clear();
-    for (k = in.i_Akick.begin(); k != in.i_Akick.end(); k++)
-	i_Akick.insert(*k);
-
-    entlist_ci l;
-
-    i_Greet.clear();
-    for (l = in.i_Greet.begin(); l != in.i_Greet.end(); l++)
-	i_Greet.push_back(*l);
-
-    i_Message.clear();
-    for (l = in.i_Message.begin(); l != in.i_Message.end(); l++)
-	i_Message.push_back(*l);
-
-    i_UserDef.clear();
-    map < mstring, mstring >::const_iterator i;
-    for (i = in.i_UserDef.begin(); i != in.i_UserDef.end(); i++)
-	i_UserDef.insert(*i);
+    i_Level = in.i_Level;
+    i_Access = in.i_Access;
+    i_Akick = in.i_Akick;
+    i_Greet = in.i_Greet;
+    i_Message = in.i_Message;
+    i_UserDef = in.i_UserDef;
     NRET(Chan_Stored_t &, *this);
     ETCB();
 }
@@ -4653,9 +4580,7 @@ bool Chan_Stored_t::Level_find(const mstring & entry)
     set < entlist_val_t < long > >::iterator iter = i_Level.end();
 
     if (!i_Level.empty())
-	for (iter = i_Level.begin(); iter != i_Level.end(); iter++)
-	    if (iter->Entry().IsSameAs(entry, true))
-		break;
+	iter = find_if(i_Level.begin(), i_Level.end(), EntryIsSameAs(entry, true));
 
     if (iter != i_Level.end())
     {
@@ -4791,9 +4716,7 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
     if (!i_Access.empty())
     {
 	// FIND exact nickname
-	for (iter = i_Access.begin(); iter != i_Access.end(); iter++)
-	    if (iter->Entry().IsSameAs(entry, true))
-		break;
+	iter = find_if(i_Access.begin(), i_Access.end(), EntryIsSameAs(entry, true));
 
 	// FIND host nickname
 	if (iter == i_Access.end() && Magick::instance().nickserv.IsStored(entry))
@@ -4801,11 +4724,7 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
 	    mstring tmp = Magick::instance().nickserv.GetStored(entry)->Host();
 
 	    if (!tmp.empty())
-	    {
-		for (iter = i_Access.begin(); iter != i_Access.end(); iter++)
-		    if (iter->Entry().IsSameAs(tmp, true))
-			break;
-	    }
+		iter = find_if(i_Access.begin(), i_Access.end(), EntryIsSameAs(tmp, true));
 	}
 
 	// Check if user is on a committee on the access list ...
@@ -5098,9 +5017,7 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
     if (!i_Akick.empty())
     {
 	// FIND exact nickname
-	for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
-	    if (iter->Entry().IsSameAs(entry, true))
-		break;
+	iter = find_if(i_Akick.begin(), i_Akick.end(), EntryIsSameAs(entry, true));
 
 	// FIND host nickname
 	if (iter == i_Akick.end() && Magick::instance().nickserv.IsStored(entry))
@@ -5108,11 +5025,7 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
 	    mstring tmp = Magick::instance().nickserv.GetStored(entry)->Host();
 
 	    if (!tmp.empty())
-	    {
-		for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
-		    if (iter->Entry().IsSameAs(tmp, true))
-			break;
-	    }
+		iter = find_if(i_Akick.begin(), i_Akick.end(), EntryIsSameAs(tmp, true));
 	}
 
 	    // Check if user is on a committee on the acess list ...
@@ -5236,9 +5149,7 @@ bool Chan_Stored_t::Greet_find(const mstring & nick)
     entlist_i iter = i_Greet.end();
 
     if (!i_Greet.empty())
-	for (iter = i_Greet.begin(); iter != i_Greet.end(); iter++)
-	    if (nick.IsSameAs(iter->Last_Modifier(), true))
-		break;
+	iter = find_if(i_Greet.begin(), i_Greet.end(), ModifierIsSameAs(nick, true));
 
     if (iter != i_Greet.end())
     {
@@ -5301,10 +5212,8 @@ bool Chan_Stored_t::Message_find(const unsigned int num)
 	RET(false);
     }
 
-    unsigned int i;
     entlist_i iter = i_Message.end();
-
-    for (iter = i_Message.begin(), i = 1; iter != i_Message.end() && i < num; iter++, i++);
+    iter = find_if(i_Message.begin(), i_Message.end(), FindNumberedEntry(num));
 
     if (iter != i_Message.end())
     {
@@ -5676,11 +5585,6 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     BTCB();
     static_cast < void > (attribs);
 
-    set < entlist_val_t < long > >::iterator j;
-
-    set < entlist_val_t < mstring > >::iterator k;
-    entlist_i l;
-
     //TODO: Add your source code here
     pOut->BeginObject(tag_Chan_Stored_t);
 
@@ -5743,61 +5647,30 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
-	for (j = i_Level.begin(); j != i_Level.end(); j++)
-	{
-	    pOut->BeginObject(tag_Level);
-	    pOut->WriteSubElement(const_cast < entlist_val_t < long > * > (&(*j)));
-
-	    pOut->EndObject(tag_Level);
-	}
+	for_each(i_Level.begin(), i_Level.end(), SXP::WriteSubElement(pOut, tag_Level));
     }
 
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
-	for (j = i_Access.begin(); j != i_Access.end(); j++)
-	{
-	    pOut->BeginObject(tag_Access);
-	    pOut->WriteSubElement(const_cast < entlist_val_t < long > * > (&(*j)));
-
-	    pOut->EndObject(tag_Access);
-	}
+	for_each(i_Access.begin(), i_Access.end(), SXP::WriteSubElement(pOut, tag_Access));
     }
 
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
-	for (k = i_Akick.begin(); k != i_Akick.end(); k++)
-	{
-	    pOut->BeginObject(tag_Akick);
-	    pOut->WriteSubElement(const_cast < entlist_val_t < mstring > * > (&(*k)));
-	    pOut->EndObject(tag_Akick);
-	}
+	for_each(i_Akick.begin(), i_Akick.end(), SXP::WriteSubElement(pOut, tag_Akick));
     }
 
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
-	for (l = i_Greet.begin(); l != i_Greet.end(); l++)
-	{
-	    pOut->BeginObject(tag_Greet);
-	    pOut->WriteSubElement(&(*l));
-	    pOut->EndObject(tag_Greet);
-	}
+	for_each(i_Greet.begin(), i_Greet.end(), SXP::WriteSubElement(pOut, tag_Greet));
     }
 
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
-	for (l = i_Message.begin(); l != i_Message.end(); l++)
-	{
-	    pOut->BeginObject(tag_Message);
-	    pOut->WriteSubElement(&(*l));
-	    pOut->EndObject(tag_Message);
-	}
+	for_each(i_Message.begin(), i_Message.end(), SXP::WriteSubElement(pOut, tag_Message));
     }
 
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
-    {
-	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
-    }
+    for_each(i_UserDef.begin(), i_UserDef.end(), SXP::WritePairElement(pOut, tag_UserDef));
 
     pOut->EndObject(tag_Chan_Stored_t);
     ETCB();
@@ -5842,46 +5715,27 @@ size_t Chan_Stored_t::Usage() const
     retval += i_Suspend_By.capacity();
     retval += sizeof(i_Suspend_Time.Internal());
 
-    set < entlist_val_t < long > >::const_iterator j;
-
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
-	for (j = i_Level.begin(); j != i_Level.end(); j++)
-	{
-	    j->Usage();
-	}
+	retval = accumulate(i_Level.begin(), i_Level.end(), retval, AddUsage());
     }
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
-	for (j = i_Access.begin(); j != i_Access.end(); j++)
-	{
-	    j->Usage();
-	}
+	retval = accumulate(i_Access.begin(), i_Access.end(), retval, AddUsage());
     }
 
-    set < entlist_val_t < mstring > >::const_iterator k;
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
-	for (k = i_Akick.begin(); k != i_Akick.end(); k++)
-	{
-	    k->Usage();
-	}
+	retval = accumulate(i_Akick.begin(), i_Akick.end(), retval, AddUsage());
     }
 
-    list < entlist_t >::const_iterator l;
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
-	for (l = i_Greet.begin(); l != i_Greet.end(); l++)
-	{
-	    retval += l->Usage();
-	}
+	retval = accumulate(i_Greet.begin(), i_Greet.end(), retval, AddUsage());
     }
     {
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
-	for (l = i_Message.begin(); l != i_Message.end(); l++)
-	{
-	    retval += l->Usage();
-	}
+	retval = accumulate(i_Message.begin(), i_Message.end(), retval, AddUsage());
     }
 
     map < mstring, mstring >::const_iterator m;

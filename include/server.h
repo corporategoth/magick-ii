@@ -473,7 +473,7 @@ class Server
     size_t i_UserMax;
     map < mstring, long > ServerSquit;
 
-    map < mstring, list < mstring > > ToBeSquit;
+    map < mstring, set < mstring > > ToBeSquit;
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;

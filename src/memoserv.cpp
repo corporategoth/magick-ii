@@ -252,7 +252,7 @@ void News_t::NoExpire(const bool in)
     ETCB();
 }
 
-bool News_t::IsRead(const mstring & name)
+bool News_t::IsRead(const mstring name) const
 {
     BTCB();
     FT("News_t::IsRead", (name));
@@ -619,12 +619,9 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
     RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
     MemoServ::nick_memo_t & ent = GetNick(in);
 
-    size_t i;
+    MemoServ::nick_memo_t::const_iterator iter = find_if(ent.begin(), ent.end(), FindNumberedEntry(num));
 
-    MemoServ::nick_memo_t::const_iterator iter;
-    for (iter = ent.begin(), i = 0; iter != ent.end() && i < num; iter++, i++);
-
-    if (i < num || iter == ent.end())
+    if (iter == ent.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
@@ -710,12 +707,9 @@ void MemoServ::RemNickMemo(const mstring & in, const size_t num)
     }
     WLOCK2((lck_MemoServ, lck_nick, iter->first));
 
-    size_t i;
+    MemoServ::nick_memo_t::iterator iter2 = find_if(iter->second.begin(), iter->second.end(), FindNumberedEntry(num));
 
-    MemoServ::nick_memo_t::iterator iter2;
-    for (iter2 = iter->second.begin(), i = 0; iter2 != iter->second.end() && i < num; iter2++, i++);
-
-    if (i < num || iter2 == iter->second.end())
+    if (iter2 == iter->second.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
@@ -753,12 +747,9 @@ bool MemoServ::IsNickMemo(const mstring & in, const size_t num) const
     MemoServ::nick_t::const_iterator iter = nick.find(in.LowerCase());
     if (iter != nick.end())
     {
-	size_t i;
+	MemoServ::nick_memo_t::const_iterator iter2 = find_if(iter->second.begin(), iter->second.end(), FindNumberedEntry(num));
 
-	MemoServ::nick_memo_t::const_iterator iter2;
-	for (iter2 = iter->second.begin(), i = 0; iter2 != iter->second.end() && i < num; iter2++, i++);
-
-	if (!(i < num || iter2 == iter->second.end()))
+	if (iter2 != iter->second.end())
 	{
 	    RET(true);
 	}
@@ -777,14 +768,7 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
     RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
     MemoServ::nick_t::const_iterator iter = nick.find(in.LowerCase());
     if (iter != nick.end())
-    {
-	MemoServ::nick_memo_t::const_iterator iter2;
-	for (iter2 = iter->second.begin(); iter2 != iter->second.end(); iter2++)
-	{
-	    if (iter2->IsRead() == isread)
-		retval++;
-	}
-    }
+	retval = count_if(iter->second.begin(), iter->second.end(), mem_fun_ref(&Memo_t::IsRead));
     RET(retval);
     ETCB();
 }
@@ -917,12 +901,9 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
     RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
     MemoServ::channel_news_t & ent = GetChannel(in);
 
-    size_t i;
+    MemoServ::channel_news_t::const_iterator iter = find_if(ent.begin(), ent.end(), FindNumberedEntry(num));
 
-    MemoServ::channel_news_t::const_iterator iter;
-    for (iter = ent.begin(), i = 0; iter != ent.end() && i < num; iter++, i++);
-
-    if (i < num || iter == ent.end())
+    if (iter == ent.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
@@ -1008,12 +989,9 @@ void MemoServ::RemChannelNews(const mstring & in, const size_t num)
     }
     WLOCK2((lck_MemoServ, lck_channel, iter->first));
 
-    size_t i;
+    MemoServ::channel_news_t::iterator iter2 = find_if(iter->second.begin(), iter->second.end(), FindNumberedEntry(num));
 
-    MemoServ::channel_news_t::iterator iter2;
-    for (iter2 = iter->second.begin(), i = 0; iter2 != iter->second.end() && i < num; iter2++, i++);
-
-    if (i < num || iter2 == iter->second.end())
+    if (iter2 == iter->second.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
@@ -1051,12 +1029,9 @@ bool MemoServ::IsChannelNews(const mstring & in, const size_t num) const
     MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
     {
-	size_t i;
+	MemoServ::channel_news_t::const_iterator iter2 = find_if(iter->second.begin(), iter->second.end(), FindNumberedEntry(num));
 
-	MemoServ::channel_news_t::const_iterator iter2;
-	for (iter2 = iter->second.begin(), i = 0; iter2 != iter->second.end() && i < num; iter2++, i++);
-
-	if (!(i < num || iter2 == iter->second.end()))
+	if (iter2 != iter->second.end())
 	{
 	    RET(true);
 	}
@@ -1065,7 +1040,7 @@ bool MemoServ::IsChannelNews(const mstring & in, const size_t num) const
     ETCB();
 }
 
-size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, const bool isread)
+size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, const bool isread) const
 {
     BTCB();
     FT("MemoServ::ChannelNewsCount", (in, user, isread));
@@ -1073,16 +1048,9 @@ size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, cons
     size_t retval = 0;
 
     RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
-    MemoServ::channel_t::iterator iter = channel.find(in.LowerCase());
+    MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
-    {
-	MemoServ::channel_news_t::iterator iter2;
-	for (iter2 = iter->second.begin(); iter2 != iter->second.end(); iter2++)
-	{
-	    if (iter2->IsRead(user) == isread)
-		retval++;
-	}
-    }
+	retval = count_if(iter->second.begin(), iter->second.end(), bind2nd(mem_fun_ref(&News_t::IsRead), user));
     RET(retval);
     ETCB();
 }
@@ -3181,11 +3149,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_Read, i_Read);
     pOut->WriteElement(tag_File, i_File);
 
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
-    {
-	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
-    }
+    for_each(i_UserDef.begin(), i_UserDef.end(), SXP::WritePairElement(pOut, tag_UserDef));
     pOut->EndObject(tag_Memo_t);
     ETCB();
 }
@@ -3250,18 +3214,8 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_Time, i_Time);
     pOut->WriteElement(tag_Text, i_Text);
     pOut->WriteElement(tag_set_NoExpire, i_NoExpire);
-
-    set < mstring >::iterator iter2;
-    for (iter2 = i_Read.begin(); iter2 != i_Read.end(); iter2++)
-    {
-	pOut->WriteElement(tag_Read, *iter2);
-    }
-
-    map < mstring, mstring >::const_iterator iter;
-    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
-    {
-	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
-    }
+    for_each(i_Read.begin(), i_Read.end(), SXP::WriteElement(pOut, tag_Read));
+    for_each(i_UserDef.begin(), i_UserDef.end(), SXP::WritePairElement(pOut, tag_UserDef));
     pOut->EndObject(tag_News_t);
     ETCB();
 }

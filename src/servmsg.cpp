@@ -908,7 +908,6 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 
     size = 0;
     MemoServ::nick_t::iterator m1;
-    MemoServ::nick_memo_t::iterator m2;
     {
 	RLOCK((lck_MemoServ, lck_nick));
 	for (count = 0, m1 = Magick::instance().memoserv.NickBegin(); m1 != Magick::instance().memoserv.NickEnd(); m1++)
@@ -917,10 +916,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 		RLOCK2((lck_MemoServ, lck_nick, m1->first));
 		size += m1->first.capacity();
 		count += m1->second.size();
-		for (m2 = m1->second.begin(); m2 != m1->second.end(); m2++)
-		{
-		    size += m2->Usage();
-		}
+		size = accumulate(m1->second.begin(), m1->second.end(), size, AddUsage());
 	    }
 	}
     }
@@ -928,19 +924,15 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 
     size = 0;
     MemoServ::channel_t::iterator n1;
-    MemoServ::channel_news_t::iterator n2;
     {
 	RLOCK((lck_MemoServ, lck_channel));
 	for (count = 0, n1 = Magick::instance().memoserv.ChannelBegin(); n1 != Magick::instance().memoserv.ChannelEnd(); n1++)
 	{
-	    size += n1->first.capacity();
 	    {
 		RLOCK2((lck_MemoServ, lck_channel, n1->first));
+		size += m1->first.capacity();
 		count += n1->second.size();
-		for (n2 = n1->second.begin(); n2 != n1->second.end(); n2++)
-		{
-		    size += n2->Usage();
-		}
+		size = accumulate(n1->second.begin(), n1->second.end(), size, AddUsage());
 	    }
 	}
     }
@@ -986,11 +978,9 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 
     set < mstring > tmpset, lang;
     set < mstring >::iterator iter;
-    tmpset.clear();
     tmpset = Magick::instance().LNG_Loaded();
     for (iter = tmpset.begin(); iter != tmpset.end(); iter++)
 	lang.insert(*iter);
-    tmpset.clear();
     tmpset = Magick::instance().HLP_Loaded();
     for (iter = tmpset.begin(); iter != tmpset.end(); iter++)
 	lang.insert(*iter);

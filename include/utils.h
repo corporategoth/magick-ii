@@ -277,4 +277,148 @@ template < class T1, class T2, class T3 > inline triplet < T1, T2, T3 > make_tri
     return (triplet < T1, T2, T3 > (X, Y, Z));
 }
 
+template<typename InputIterator, typename OutputIterator, typename Predicate> OutputIterator
+	copy_if(InputIterator begin, InputIterator end, OutputIterator destBegin, Predicate p)
+{
+    while (begin != end)
+    {
+	if (p(*begin)) *destBegin++ = *begin;
+	++begin;
+    }
+    return destBegin;
+}
+
+class FindNumberedEntry
+{
+    unsigned int count, lookfor;
+public:
+    FindNumberedEntry(unsigned int lf) : count(0), lookfor(lf) {}
+    template<typename T> bool operator()(const T &in)
+    {
+	static_cast<void>(in);
+	if (count++ == lookfor)
+	    return true;
+	return false;
+    }
+};
+
+class KeyIsSameAs
+{
+    const mstring &str;
+    bool IgnoreCase;
+public:
+    KeyIsSameAs(const mstring &s, bool ic = false) : str(s), IgnoreCase(ic) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	return str.IsSameAs(in.first, IgnoreCase);
+    }
+};
+
+class KeyMatches
+{
+    const mstring &str;
+    bool IgnoreCase, flip;
+public:
+    KeyMatches(const mstring &s, bool ic = false, bool f = false) : str(s), IgnoreCase(ic), flip(f) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	if (flip)
+	    return in.first.Matches(str, IgnoreCase);
+	else
+	    return str.Matches(in.first, IgnoreCase);
+    }
+    bool Flip() { return flip; }
+    void Flip(bool f) { flip = f; }
+};
+
+class ValueIsSameAs
+{
+    const mstring &str;
+    bool IgnoreCase;
+public:
+    ValueIsSameAs(const mstring &s, bool ic = false) : str(s), IgnoreCase(ic) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	return str.IsSameAs(in.second, IgnoreCase);
+    }
+};
+
+class ValueMatches
+{
+    const mstring &str;
+    bool IgnoreCase, flip;
+public:
+    ValueMatches(const mstring &s, bool ic = false, bool f = false) : str(s), IgnoreCase(ic), flip(f) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	if (flip)
+	    return in.second.Matches(str, IgnoreCase);
+	else
+	    return str.Matches(in.second, IgnoreCase);
+    }
+    bool Flip() { return flip; }
+    void Flip(bool f) { flip = f; }
+};
+
+class Matches
+{
+    const mstring &str;
+    bool IgnoreCase, flip;
+public:
+    Matches(const mstring &s, bool ic = false, bool f = false) : str(s), IgnoreCase(ic), flip(f) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	if (flip)
+	    return in.Matches(str, IgnoreCase);
+	else
+	    return str.Matches(in, IgnoreCase);
+    }
+    bool Flip() { return flip; }
+    void Flip(bool f) { flip = f; }
+};
+
+class IsSameAs
+{
+    const mstring &str;
+    bool IgnoreCase;
+public:
+    IsSameAs(const mstring &s, bool ic = false) : str(s), IgnoreCase(ic) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	return str.IsSameAs(in, IgnoreCase);
+    }
+};
+
+class AddUsage
+{
+public:
+    template<typename T> size_t operator()(size_t amtSoFar, const T &in) const
+    {
+	return amtSoFar + in.Usage();
+    }
+};
+
+class DeleteMapData
+{
+public:
+    template<typename K, typename V> void operator()(const pair<K, V> &in)
+    {
+	delete in.second;
+    }
+};
+
+template<typename C, typename R, typename T>
+class CallMemberFunction
+{
+    C *obj;
+    R (C::*funcptr)(const T&);
+
+public:
+    CallMemberFunction(C *o, R (C::*fp)(const T&)) : obj(o), funcptr(fp) {}
+    R operator()(const T &in) const
+    {
+	return (obj->*funcptr)(in);
+    }
+};
+
 #endif

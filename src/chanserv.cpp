@@ -3918,7 +3918,7 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	    NSEND(mynick, source, "ERR_STYNTAX/WHOLENUMBER");
 	    return;
 	}
-	unsigned int i, num = atoi(who);
+	unsigned int num = atoi(who);
 
 	if (num < 1 || num > cstored->Access_size())
 	{
@@ -3927,8 +3927,7 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	}
 
 	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
-	for (i = 1, cstored->Access = cstored->Access_begin(); i < num && cstored->Access != cstored->Access_end();
-	     i++, cstored->Access++);
+	cstored->Access = find_if(cstored->Access_begin(), cstored->Access_end(), FindNumberedEntry(num - 1));
 	if (cstored->Access != cstored->Access_end())
 	{
 	    if (cstored->Access->Value() >= cstored->GetAccess(source))
@@ -4345,7 +4344,7 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	    NSEND(mynick, source, "ERR_STYNTAX/WHOLENUMBER");
 	    return;
 	}
-	unsigned int i, num = atoi(who);
+	unsigned int num = atoi(who);
 
 	if (num < 1 || num > cstored->Akick_size())
 	{
@@ -4354,8 +4353,7 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	}
 
 	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Akick"));
-	for (i = 1, cstored->Akick = cstored->Akick_begin(); i < num && cstored->Akick != cstored->Akick_end();
-	     i++, cstored->Akick++);
+	cstored->Akick = find_if(cstored->Akick_begin(), cstored->Akick_end(), FindNumberedEntry(num - 1));
 	if (cstored->Akick != cstored->Akick_end())
 	{
 	    Magick::instance().chanserv.stats.i_Akick++;
@@ -4748,9 +4746,18 @@ void ChanServ::do_greet_List(const mstring & mynick, const mstring & source, con
 
     {
 	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Greet"));
-	for (cstored->Greet = cstored->Greet_begin(); cstored->Greet != cstored->Greet_end(); cstored->Greet++)
+	if (all)
 	{
-	    if (all || cstored->Greet->Last_Modifier().IsSameAs(target, true))
+	    for (cstored->Greet = cstored->Greet_begin(); cstored->Greet != cstored->Greet_end(); cstored->Greet++)
+	    {
+		::sendV(mynick, source, "[%s] %s", cstored->Greet->Last_Modifier().c_str(), cstored->Greet->Entry().c_str());
+		found = true;
+	    }
+	}
+	else
+	{
+	    cstored->Greet = find_if(cstored->Greet_begin(), cstored->Greet_end(), ModifierIsSameAs(target, true));
+	    if (cstored->Greet != cstored->Greet_end())
 	    {
 		::sendV(mynick, source, "[%s] %s", cstored->Greet->Last_Modifier().c_str(), cstored->Greet->Entry().c_str());
 		found = true;
@@ -7965,38 +7972,23 @@ void ChanServ::PostLoad()
 	mstring lname = cstored->Name().LowerCase();
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Level"));
-	    for (cstored->Level = cstored->Level_begin(); cstored->Level != cstored->Level_end(); cstored->Level++)
-	    {
-		cstored->Level->PostLoad();
-	    }
+	    for_each(cstored->Level_begin(), cstored->Level_end(), mem_fun_ref(&entlist_val_t<long>::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Access"));
-	    for (cstored->Access = cstored->Access_begin(); cstored->Access != cstored->Access_end(); cstored->Access++)
-	    {
-		cstored->Access->PostLoad();
-	    }
+	    for_each(cstored->Access_begin(), cstored->Access_end(), mem_fun_ref(&entlist_val_t<long>::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Akick"));
-	    for (cstored->Akick = cstored->Akick_begin(); cstored->Akick != cstored->Akick_end(); cstored->Akick++)
-	    {
-		cstored->Akick->PostLoad();
-	    }
+	    for_each(cstored->Akick_begin(), cstored->Akick_end(), mem_fun_ref(&entlist_val_t<mstring>::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Greet"));
-	    for (cstored->Greet = cstored->Greet_begin(); cstored->Greet != cstored->Greet_end(); cstored->Greet++)
-	    {
-		cstored->Greet->PostLoad();
-	    }
+	    for_each(cstored->Greet_begin(), cstored->Greet_end(), mem_fun_ref(&entlist_t::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Message"));
-	    for (cstored->Message = cstored->Message_begin(); cstored->Message != cstored->Message_end(); cstored->Message++)
-	    {
-		cstored->Message->PostLoad();
-	    }
+	    for_each(cstored->Message_begin(), cstored->Message_end(), mem_fun_ref(&entlist_t::PostLoad));
 	}
 
 	// Now, we're fully loaded, do sanity checks from CFG ...

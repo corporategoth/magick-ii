@@ -116,6 +116,9 @@
 /* Define if you have the vsnprintf function.  */
 #undef HAVE_VSNPRINTF
 
+/* Define if you have the <algorithm> header file.  */
+#undef HAVE_ALGORITHM
+
 /* Define if you have the <bits/stl_config.h> header file.  */
 #undef HAVE_BITS_STL_CONFIG_H
 
@@ -142,6 +145,9 @@
 
 /* Define if you have the <mpatrol.h> header file.  */
 #undef HAVE_MPATROL_H
+
+/* Define if you have the <numeric> header file.  */
+#undef HAVE_NUMERIC
 
 /* Define if you have the <queue> header file.  */
 #undef HAVE_QUEUE

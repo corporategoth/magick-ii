@@ -560,6 +560,21 @@ long mFile::Dump(const vector < mstring > & invector, const mstring & outfile, c
     ETCB();
 }
 
+class WriteToFile : public unary_function<mstring, size_t>
+{
+    mFile &file;
+    bool endline;
+public:
+    WriteToFile(mFile &f, bool e) : file(f), endline(e) {}
+    size_t operator()(const mstring &in)
+    {
+	size_t s = file.Write(in.c_str(), in.length());
+	if (endline)
+	    s += file.Write("\n", 1);
+	return s;
+    }
+};
+
 // CANNOT trace this, it is used by TRACE code ...
 long mFile::Dump(const list < mstring > & inlist, const mstring & outfile, const bool append, const bool endline)
 {
@@ -575,18 +590,7 @@ long mFile::Dump(const list < mstring > & inlist, const mstring & outfile, const
 
     size_t total = 0;
 
-    list < mstring >::const_iterator iter;
-    for (iter = inlist.begin(); iter != inlist.end(); iter++)
-    {
-	if (endline)
-	{
-	    total += out.Write((*iter + "\n").c_str(), iter->length() + 1);
-	}
-	else
-	{
-	    total += out.Write(iter->c_str(), iter->length());
-	}
-    }
+    for_each(inlist.begin(), inlist.end(), WriteToFile(out, endline));
     out.Close();
     RET(total);
     ETCB();
@@ -921,10 +925,11 @@ vector < unsigned long > FileMap::GetList(const FileMap::FileType type, const ms
     map < unsigned long, pair < mstring, mstring > >::iterator iter;
     unsigned int i;
 
-    if (i_FileMap.find(type) != i_FileMap.end())
+    filemap_t::iterator fmi = i_FileMap.find(type);
+    if (fmi != i_FileMap.end())
     {
 	RLOCK((lck_FileMap, static_cast < int > (type)));
-	for (iter = i_FileMap[type].begin(); iter != i_FileMap[type].end(); iter++)
+	for (iter = fmi->second.begin(); iter != fmi->second.end(); iter++)
 	{
 	    if (!Exists(type, iter->first))
 	    {
@@ -1450,14 +1455,12 @@ void DccXfer::Action()
 		 i_Socket.Last_Error_String().c_str()));
 	}
 	// Traffic Accounting ...
-	map < time_t, size_t >::iterator iter;
 	time_t now = time(NULL);
 
-	for (iter = i_Traffic.begin();
-	     iter != i_Traffic.end() && iter->first < now - static_cast < time_t > (Magick::instance().files.Sampletime() + 2);
-	     iter = i_Traffic.begin())
-	    i_Traffic.erase(iter->first);
-	if (i_Traffic.find(now) == i_Traffic.end())
+	map < time_t, size_t >::iterator iter = i_Traffic.lower_bound(now - static_cast < time_t > (Magick::instance().files.Sampletime() + 2));
+	i_Traffic.erase(i_Traffic.begin(), iter);
+	
+	if (!i_Traffic.count(now))
 	    i_Traffic[now] = 0;
 	i_Traffic[now] += XferAmt;
 	if (XferAmt > 0)
@@ -1570,14 +1573,12 @@ void DccXfer::Action()
 		 i_Socket.Last_Error_String().c_str()));
 	}
 	// Traffic Accounting ...
-	map < time_t, size_t >::iterator iter;
 	time_t now = time(NULL);
 
-	for (iter = i_Traffic.begin();
-	     iter != i_Traffic.end() && iter->first < now - static_cast < time_t > (Magick::instance().files.Sampletime() + 2);
-	     iter = i_Traffic.begin())
-	    i_Traffic.erase(iter->first);
-	if (i_Traffic.find(now) == i_Traffic.end())
+	map < time_t, size_t >::iterator iter = i_Traffic.lower_bound(now - static_cast < time_t > (Magick::instance().files.Sampletime() + 2));
+	i_Traffic.erase(i_Traffic.begin(), iter);
+
+	if (!i_Traffic.count(now))
 	    i_Traffic[now] = 0;
 	i_Traffic[now] += XferAmt;
 	if (XferAmt > 0)

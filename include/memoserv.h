@@ -173,7 +173,7 @@ public:
 
     bool NoExpire() const;
     void NoExpire(const bool in);
-    bool IsRead(const mstring & name);
+    bool IsRead(const mstring name) const;
     void Read(const mstring & name);
     void Unread(const mstring & name);
 
@@ -423,7 +423,7 @@ public:
     {
 	return GetChannel(in).size();
     }
-    size_t ChannelNewsCount(const mstring & in, const mstring & user, const bool isread = false);
+    size_t ChannelNewsCount(const mstring & in, const mstring & user, const bool isread = false) const;
     bool IsChannel(const mstring & in) const;
     bool IsChannelNews(const mstring & in, const size_t num) const;
 

@@ -632,6 +632,48 @@ namespace SXP
 	}
     };
 
+
+class WriteSubElement
+{
+    IOutStream *pOut;
+    Tag &tag;
+    
+public:
+    WriteSubElement(IOutStream *p, Tag &t) : pOut(p), tag(t) {}
+    template<typename T> void operator()(const T &in)
+    {
+	pOut->BeginObject(tag);
+	pOut->WriteSubElement(const_cast<T *>(&in));
+	pOut->EndObject(tag);
+    }
+};
+
+class WriteElement
+{
+    IOutStream *pOut;
+    Tag &tag;
+    
+public:
+    WriteElement(IOutStream *p, Tag &t) : pOut(p), tag(t) {}
+    template<typename T> void operator()(const T &in)
+    {
+	pOut->WriteElement(tag, in);
+    }
+};
+
+class WritePairElement
+{
+    IOutStream *pOut;
+    Tag &tag;
+    
+public:
+    WritePairElement(IOutStream *p, Tag &t) : pOut(p), tag(t) {}
+    template<typename T> void operator()(const T &in)
+    {
+	pOut->WriteElement(tag, mstring(in.first) + "\n" + mstring(in.second));
+    }
+};
+
 }
 
 #endif // _SXP__H

@@ -42,16 +42,12 @@ ceNode::~ceNode()
 {
     BTCB();
     NFT("ceNode::~ceNode");
+
     // probably not needed, but for safety's sake anyway
     for (map < mstring, ceNode * >::iterator i = i_children.begin(); i != i_children.end(); i++)
 	if (i->second != NULL)
-	{
 	    delete i->second;
 
-	    i->second = NULL;
-	}
-    i_children.clear();
-    i_keys.clear();
     ETCB();
 }
 
@@ -62,19 +58,17 @@ ceNode &ceNode::operator=(const ceNode & in)
     i_Name = in.i_Name;
     i_keys.clear();
     i_keys = in.i_keys;
+
     for (map < mstring, ceNode * >::iterator i = i_children.begin(); i != i_children.end(); i++)
 	if (i->second != NULL)
-	{
 	    delete i->second;
-
-	    i->second = NULL;
-	}
     i_children.clear();
+
     for (map < mstring, ceNode * >::const_iterator j = in.i_children.begin(); j != in.i_children.end(); j++)
     {
 	i_children[j->first] = new ceNode;
 	// the below line *will* recursively copy it's children
-	*(i_children[j->first]) = * (j->second);
+	*(i_children[j->first]) = *(j->second);
     }
     return *this;
     ETCB();
@@ -93,8 +87,9 @@ bool ceNode::operator==(const ceNode & in) const
 	{
 	    if (i_children.find(i->first) == i_children.end())
 		RET(false);
+
 	    // the below line *will* recursively check it's children
-	    if (!(*(i_children.find(i->first)->second) == * (i->second)))
+	    if (!(*(i_children.find(i->first)->second) == *(i->second)))
 		RET(false);
 	}
 	Result = true;
@@ -521,11 +516,7 @@ void mConfigEngine::Empty()
     map < mstring, ceNode * >::iterator i;
     for (i = RootNode.i_children.begin(); i != RootNode.i_children.end(); i++)
 	if (i->second != NULL)
-	{
 	    delete i->second;
-
-	    i->second = NULL;
-	}
     RootNode.i_children.clear();
     RootNode.i_keys.clear();
     ETCB();
@@ -848,7 +839,7 @@ bool mConfigEngine::LoadFromArray(const vector < mstring > & configarray)
 
     for (vector < mstring >::const_iterator i = decommented.begin(); i != decommented.end(); i++)
     {
-	currline = * i;
+	currline = *i;
 	if (currline.first() == '[' && currline.last() == ']')
 	{
 	    // new section

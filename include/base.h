@@ -505,6 +505,61 @@ public:
 
 };
 
+class EntryIsSameAs
+{
+    const mstring &str;
+    bool IgnoreCase;
+public:
+    EntryIsSameAs(const mstring &s, bool ic = false) : str(s), IgnoreCase(ic) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	return in.Entry().IsSameAs(str, IgnoreCase);
+    }
+};
+
+class EntryMatches
+{
+    const mstring &str;
+    bool IgnoreCase, flip;
+public:
+    EntryMatches(const mstring &s, bool ic = false, bool f = false) : str(s), IgnoreCase(ic), flip(f) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	if (flip)
+	    return str.Matches(in.Entry(), IgnoreCase);
+	else
+	    return in.Entry().Matches(str, IgnoreCase);
+    }
+};
+
+class ModifierIsSameAs
+{
+    const mstring &str;
+    bool IgnoreCase;
+public:
+    ModifierIsSameAs(const mstring &s, bool ic = false) : str(s), IgnoreCase(ic) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	return in.Last_Modifier().IsSameAs(str, IgnoreCase);
+    }
+};
+
+class ModifierMatches
+{
+    const mstring &str;
+    bool IgnoreCase, flip;
+public:
+    ModifierMatches(const mstring &s, bool ic = false, bool f = false) : str(s), IgnoreCase(ic), flip(f) {}
+    template<typename T> bool operator()(const T &in) const
+    {
+	if (flip)
+	    return str.Matches(in.Modifier(), IgnoreCase);
+	else
+	    return in.Modifier().Matches(str, IgnoreCase);
+    }
+};
+
+
 class CommandMap
 {
 public:
