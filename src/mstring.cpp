@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2001/12/12 15:36:06  prez
+** Moved around some strstr calls, to reduce calls, and clean code a little.
+**
 ** Revision 1.117  2001/12/12 07:19:20  prez
 ** Added check for snprintf, and changed *toa functions to use snprintf.  Also
 ** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
@@ -941,11 +944,11 @@ int mstring::occurances(const char *str, const size_t len) const
 	return 0;
 
     start = i_str;
-    end = strstr(i_str, str);
     while (consumed < i_len)
     {
 	// Find each instance of the search pattern, at least, up until
 	// the first binary 0 we encounter ...
+	end = strstr(start, str);
 	while (end != NULL)
 	{
 	    count++;
@@ -958,9 +961,6 @@ int mstring::occurances(const char *str, const size_t len) const
 	// if we havn't, resuming the above while.
 	consumed += strlen(start) + 1;
 	start += strlen(start) + 1;
-	if (consumed >= i_len)
-	    break;
-	end = strstr(start, str);
     }
     return count;
 }
@@ -986,13 +986,13 @@ int mstring::find(const mstring &str, int occurance) const
 
     size_t consumed = 0;
     start = i_str;
-    end = strstr(i_str, str.c_str());
     // While we're not at the end of the WHOLE string ...
     while (consumed < i_len)
     {
 	// Find each instance of the search pattern, at least, up until
 	// the first binary 0 we encounter ... Break when we got what
 	// we want.
+	end = strstr(start, str.c_str());
 	while (end != NULL)
 	{
 	    count++;
@@ -1010,9 +1010,6 @@ int mstring::find(const mstring &str, int occurance) const
 	// if we havn't, resuming the above while.
 	consumed += strlen(start) + 1;
 	start += strlen(start) + 1;
-	if (consumed >= i_len)
-	    break;
-	end = strstr(start, str.c_str());
     }
     if (end != NULL)
 	retval = end - i_str;
@@ -1089,13 +1086,13 @@ void mstring::replace(const mstring &i_find, const mstring &i_replace, const boo
     memset(tmp, 0, i_res);
 
     start = i_str;
-    end = strstr(i_str, i_find.c_str());
     size_t i=0, consumed = 0;
     while (consumed < old_len)
     {
 	// Find each instance of the search pattern, at least, up until
 	// the first binary 0 we encounter ... Break after the first
 	// replace if !all ...
+	end = strstr(start, i_find.c_str());
 	while (end != NULL)
 	{
 	    if ((end-start) > 0)
@@ -1129,9 +1126,6 @@ void mstring::replace(const mstring &i_find, const mstring &i_replace, const boo
 	memcpy(&tmp[i], start, strlen(start)+1);
 	i += strlen(start);
 	start += strlen(start) + 1;
-	if (consumed >= old_len)
-	    break;
-	end = strstr(start, i_find.c_str());
     }
     dealloc(i_str);
     i_str = tmp;
