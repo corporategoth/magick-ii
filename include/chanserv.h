@@ -322,6 +322,8 @@ public:
 	return i_Name;
     }
     mDateTime RegTime() const;
+    unsigned long Drop();
+
     mDateTime LastUsed();
     void SetTopic(const mstring & mynick, const mstring & topic, const mstring & setter);
     void Founder(const mstring & in);
