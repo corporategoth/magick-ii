@@ -14,7 +14,7 @@ dist=true
 install=false
 type=SOURCE
 [include/Makefile.am]
-files=include/base.h,include/chanserv.h,include/commserv.h,include/convert_magick.h,include/convert_esper.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
+files=include/base.h,include/chanserv.h,include/commserv.h,include/convert_magick.h,include/convert_esper.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/mexceptions.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
 type=normal
 sub_dirs=des,xml,
 [include/variant.h]
@@ -43,6 +43,11 @@ dist=true
 install=false
 type=SOURCE
 [include/servmsg.h]
+install_location=
+dist=true
+install=false
+type=HEADER
+[include/mexceptions.h]
 install_location=
 dist=true
 install=false
