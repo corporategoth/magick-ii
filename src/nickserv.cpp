@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2000/04/18 14:34:23  prez
+** Fixed the HELP system, it now loads into memory, and can be unloaded
+** with the OS unload command.  The stats however are inaccurate.
+**
 ** Revision 1.80  2000/04/16 14:29:44  prez
 ** Added stats for usage, and standardized grabbing paths, etc.
 **
@@ -829,6 +833,9 @@ bool Nick_Live_t::FloodTrigger()
 void Nick_Live_t::Name(mstring in)
 {
     FT("Nick_Live_t::Name", (in));
+
+    if (i_Name.CmpNoCase(in)==0)
+	return;
 
     set<mstring>::iterator iter;
     vector<mstring> chunked;

@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.218  2000/04/18 14:34:23  prez
+** Fixed the HELP system, it now loads into memory, and can be unloaded
+** with the OS unload command.  The stats however are inaccurate.
+**
 ** Revision 1.217  2000/04/18 10:20:26  prez
 ** Made helpfiles load on usage, like language files.
 **
@@ -299,18 +303,7 @@ int Magick::Start()
 	loggertask->close(0);
 	delete loggertask;
     }
-    ASYS_TCHAR **argv2;
-    argv2 = (ASYS_TCHAR **) malloc(argv.size() * sizeof(ASYS_TCHAR *));
-    for (i=0; i<argv.size(); i++)
-    {
-	argv2[i] = (ASYS_TCHAR *) malloc(argv[i].Len() + 1);
-	strcpy(argv2[i], argv[i].c_str());
-    }
-    Result = ACE_OS::fork_exec (argv2);
-    for (i=0; i<argv.size(); i++)
-	free(argv2[i]);
-    free(argv2);
-
+    Result = ACE_OS::fork();
     if (Result < 0)
     {
 	wxLogFatal(getMessage("ERROR/FAILED_FORK"), Result);
@@ -685,29 +678,35 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
     }
     WLOCK(("Magick","LoadHelp"));
 
+    unsigned int i, j;
 StartGetLang:
     if (Help.find(language) == Help.end())
     {
 	wxFileConfig fconf("magick","",files.Langdir()+DirSlash+language.LowerCase()+".hlp");
 
-	bool bContGroup;
-	long dummy=0;
-	mstring groupname,tempstr;
-	vector<mstring> entries, entries2;
+	mstring tempstr;
+	vector<mstring> entries;
 	triplet<mstring, mstring, mstring> entry;
-	bContGroup=fconf.GetFirstGroup(groupname,dummy);
-	// this code is fucked up and won't work. debug to find why it's not
-	// finding the entries when it is actually loading them.
-	// *sigh* spent an hour so far with no luck.
-	while(bContGroup)
+
+	entries = LoadHelpGroup(&fconf, "");
+	for (i=0; i<entries.size(); i++)
 	{
-	    entries2 = LoadHelpGroup(&fconf, groupname);
-	    entries.insert(entries.end(), entries2.begin(), entries2.end());
-	    bContGroup=fconf.GetNextGroup(groupname,dummy);
-	}
-	for (unsigned int i=0; i<entries.size(); i++)
-	{
-	    fconf.Read(entries[i], &tempstr, mstring(""));
+	    mstring element;
+	    if (entries[i].WordCount("/") > 2)
+	    {
+		mstring path = entries[i].UpperCase();
+		path.Truncate(path.Find('/', true));
+		path.Truncate(path.Find('/', true));
+		fconf.SetPath("/" + path);
+		element = entries[i].UpperCase().After("/", entries[i].WordCount("/")-2);
+	    }
+	    else
+	    {
+		fconf.SetPath("/");
+		element = entries[i].UpperCase();
+	    }
+
+	    fconf.Read(element, &tempstr, mstring(""));
 	    entry = triplet<mstring, mstring, mstring>(
 			tempstr.ExtractWord(1, ":", false),
 			tempstr.ExtractWord(2, ":", false),
@@ -715,39 +714,40 @@ StartGetLang:
 	    if (entry.third == "")
 		entry.third = " ";
 
+	    CP(("(1) Pushing back %s entry: %s",
+			entries[i].c_str(), tempstr.c_str()));
 	    entries[i].Truncate(entries[i].Find('/', true));
-	    Help[language.UpperCase()][entries[i]].push_back(entry);
+	    Help[language][entries[i]].push_back(entry);
 	}
     }
 
-    if (Help.find(language) == Help.end() &&
+    if (Help.find(language) != Help.end() &&
 	Help[language].find(name.UpperCase()) != Help[language].end())
     {
 	bool sendline = false;
-	int i;
 
-	for (i=0; i<Help[language][name.UpperCase()].size(); i++)
+	for (j=0; j<Help[language][name.UpperCase()].size(); j++)
 	{
-	    if (Help[language][name.UpperCase()][i].first != "")
+	    if (Help[language][name.UpperCase()][j].first != "")
 	    {
-		for (i=1; !sendline && i<=Help[language][name.UpperCase()][i].first.WordCount(" "); i++)
+		for (i=1; !sendline && i<=Help[language][name.UpperCase()][j].first.WordCount(" "); i++)
 		{
-		    if (commserv.IsList(Help[language][name.UpperCase()][i].first.ExtractWord(i, " ")) &&
-			commserv.list[Help[language][name.UpperCase()][i].first.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+		    if (commserv.IsList(Help[language][name.UpperCase()][j].first.ExtractWord(i, " ")) &&
+			commserv.list[Help[language][name.UpperCase()][j].first.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			sendline = true;
 		}
 	    }
 	    else
 		sendline = true;
-	    if (Help[language][name.UpperCase()][i].second != "")
-		for (i=1; sendline && i<=Help[language][name.UpperCase()][i].second.WordCount(" "); i++)
+	    if (Help[language][name.UpperCase()][j].second != "")
+		for (i=1; sendline && i<=Help[language][name.UpperCase()][j].second.WordCount(" "); i++)
 		{
-		    if (commserv.IsList(Help[language][name.UpperCase()][i].second.ExtractWord(i, " ")) &&
-			commserv.list[Help[language][name.UpperCase()][i].second.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+		    if (commserv.IsList(Help[language][name.UpperCase()][j].second.ExtractWord(i, " ")) &&
+			commserv.list[Help[language][name.UpperCase()][j].second.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			sendline = false;
 		}
 	    if (sendline)
-		helptext.push_back(Help[language][name.UpperCase()][i].third);
+		helptext.push_back(Help[language][name.UpperCase()][j].third);
 	}
     }
 
@@ -771,29 +771,40 @@ StartGetLang:
 vector<mstring> Magick::LoadHelpGroup(wxFileConfig *fconf, mstring basegroup)
 {
     FT("Magick::LoadHelpGroup", ("(wxFileConfig *) fconf", basegroup));
-    fconf->SetPath(basegroup);
-    long dummy1=0,dummy2=0;
+    fconf->SetPath("/" + basegroup);
+    long dummy1=0,dummy2=0, i;
     bool bContGroup, bContEntries;
     mstring groupname, entryname;
-    vector<mstring> entries, entries2;
-    bContGroup=fconf->GetFirstGroup(groupname,dummy1);
-    // this code is fucked up and won't work. debug to find why it's not
-    // finding the entries when it is actually loading them.
-    // *sigh* spent an hour so far with no luck.
-    while(bContGroup)
-    {
-	entries2 = LoadHelpGroup(fconf, groupname);
-	entries.insert(entries.end(), entries2.begin(), entries2.end());
-	bContGroup=fconf->GetNextGroup(groupname,dummy1);
-    }
+    vector<mstring> entries, entries2, subgroups;
 
+    CP(("Base Group == %s", basegroup.c_str()));
     bContEntries=fconf->GetFirstEntry(entryname,dummy2);
     while(bContEntries)
     {
+	CP(("Loading Entry %s (%s)...", entryname.c_str(),
+		(basegroup.UpperCase()+"/"+entryname.UpperCase()).c_str()));
 	entries.push_back(basegroup.UpperCase()+"/"+entryname.UpperCase());
 	bContEntries=fconf->GetNextEntry(entryname,dummy2);
     }
-    fconf->SetPath("..");
+
+    bContGroup=fconf->GetFirstGroup(groupname,dummy1);
+    while(bContGroup)
+    {
+	subgroups.push_back(groupname);
+	bContGroup=fconf->GetNextGroup(groupname,dummy1);
+    }
+    for (i=0; i<subgroups.size(); i++)
+    {
+	CP(("Loading Group %s (%s)...", subgroups[i].c_str(),
+		(basegroup.UpperCase()+"/"+subgroups[i].UpperCase()).c_str()));
+	if (basegroup != "")
+	    entries2 = LoadHelpGroup(fconf, basegroup + "/" + subgroups[i]);
+	else
+	    entries2 = LoadHelpGroup(fconf, subgroups[i]);
+	entries.insert(entries.end(), entries2.begin(), entries2.end());
+    }
+
+    fconf->SetPath("/");
 
     NRET(vector<mstring>, entries);
 }

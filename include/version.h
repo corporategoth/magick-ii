@@ -24,6 +24,10 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2000/04/18 14:34:23  prez
+** Fixed the HELP system, it now loads into memory, and can be unloaded
+** with the OS unload command.  The stats however are inaccurate.
+**
 ** Revision 1.85  2000/04/16 14:29:43  prez
 ** Added stats for usage, and standardized grabbing paths, etc.
 **
@@ -84,7 +88,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 124;
+const int BUILD_NUMBER = 125;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2000/04/18 14:34:23  prez
+** Fixed the HELP system, it now loads into memory, and can be unloaded
+** with the OS unload command.  The stats however are inaccurate.
+**
 ** Revision 1.89  2000/04/06 12:52:50  prez
 ** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
 **
@@ -1942,30 +1946,32 @@ void NetworkServ::execute(const mstring & data)
 	    else
 	    {
 		// CHANGE NICK
-		if (!Parent->nickserv.IsLive(data.ExtractWord(3, ": ").LowerCase()))
+		if (!Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
 		{
 		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()] =
 			Parent->nickserv.live[sourceL];
-
-		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].
-			Name(data.ExtractWord(3, ": "));
 		}
-		else
+		else if (sourceL != data.ExtractWord(3, ": ").LowerCase())
 		{
 		    KillUnknownUser(data.ExtractWord(3, ": "));
 		}
+		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].
+		    Name(data.ExtractWord(3, ": "));
 
-		Parent->nickserv.live.erase(sourceL);
-		// We just did a SVSNICK ...
-		if (Parent->nickserv.recovered.find(source.LowerCase()) !=
-			    Parent->nickserv.recovered.end())
+		if (sourceL != data.ExtractWord(3, ": ").LowerCase())
 		{
-		    Parent->server.NICK(source,
+		    Parent->nickserv.live.erase(sourceL);
+		    // We just did a SVSNICK ...
+		    if (Parent->nickserv.recovered.find(source.LowerCase()) !=
+			    Parent->nickserv.recovered.end())
+		    {
+			Parent->server.NICK(source,
 				(Parent->startup.Ownuser() ?
 				sourceL : Parent->startup.Services_User()),
 				Parent->startup.Services_Host(),
 				Parent->startup.Server_Name(),
 				"Nickname Enforcer");
+		    }
 		}
 	    }
 	}

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/04/18 14:34:23  prez
+** Fixed the HELP system, it now loads into memory, and can be unloaded
+** with the OS unload command.  The stats however are inaccurate.
+**
 ** Revision 1.39  2000/04/18 10:20:27  prez
 ** Made helpfiles load on usage, like language files.
 **
@@ -583,7 +587,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		helpsz += sizeof(j->first);
 	    }
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			i->first,
+			i->first.c_str(),
 			Parent->Messages[i->first].size() * sizeof(i->second) / 1024,
 			(sizeof(i->first) + helpsz) / 1024);
 	    seen.insert(i->first);
@@ -598,7 +602,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
      }
      for (k=Parent->Help.begin(); k!=Parent->Help.end(); k++)
      {
-	if (seen.find(k->first) != seen.end())
+	if (seen.find(k->first) == seen.end())
 	{
 	    size_t helpsz = 0;
 	    for (j=Parent->Help[k->first].begin(); j!=Parent->Help[k->first].end(); j++)
@@ -607,7 +611,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		helpsz += sizeof(j->first);
 	    }
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			k->first, 0,
+			k->first.c_str(), 0,
 			(sizeof(k->first) + helpsz) / 1024);
 	}
     }
