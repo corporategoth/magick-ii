@@ -3,8 +3,10 @@ Name: Magick
 Version: 2.0
 Release: 1
 Copyright: GPL
-Group: Daemons
-Source: ftp.magick.tm/pub/Magick/Magick-2.0.tar.gz
+Group: Applications/Communications
+Source: ftp.goth.net/pub/magick.tm/Magick-2.0.tar.gz
+BuildRoot: /var/tmp/%{name}-buildroot
+
 %description
 Magick IRC Services are a program that is designed to interface
 with an Internet Relay Chat (IRC) network, and offer its users,
@@ -18,18 +20,22 @@ and many other things.
 
 %prep
 %setup
-
 %build
-./configure --prefix=/usr --sysconfdir=/etc --enable-quick --disable-hostlock
+./configure --prefix=$RPM_BUILD_ROOT/usr --sysconfdir=$RPM_BUILD_ROOT/etc --enable-quick --disable-hostlock --enable-convert
 helper/build-ver .
 make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
 
 %install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/usr
 make install RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
-rm -Rf /usr/info/magick
+
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %files
-%doc AUTHORS COPYING ChangeLog INSTALL KNOWN-BUGS NEWS README TODO
+%defattr(-, root, root)
+%doc AUTHORS COPYING ChangeLog FAQ INSTALL KNOWN-BUGS NEWS README TODO rtfm
 %doc docs/en docs/rfcs
 %config /etc/magick.ini
 
@@ -37,7 +43,8 @@ rm -Rf /usr/info/magick
 /usr/bin/magick_keygen
 /usr/bin/magick_stampkeys
 /usr/share/magick
-/usr/man/man1/magick.1
-/usr/man/man1/magick_keygen.1
-/usr/man/man1/magick_stampkeys.1
+/usr/man
 
+%changelog
+* Sat Apr 21 2001 Preston A. Elder <prez@antisocial.com>
+- added a build root (to stop infecting host system).

@@ -14,6 +14,12 @@ EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp convert_magick.cpp convert_esper
 
 ####### kdevelop will overwrite this part!!! (end)############
 
+if STAMPED
+STAMP = 1
+else
+STAMP = 0
+endif
+
 mostlyclean-compile:
 	-rm -f *.o core *.core *.debug
 
@@ -39,19 +45,21 @@ magick: magick.debug
 relink:
 	@rm -f $(STAMPED_PROGS)
 	$(MAKE) $(STAMPED_PROGS)
-if STAMPED
-	$(srcdir)/magick_stampkeys $(STAMPED_PROGS)
-else
-	@echo "Creating 'open host' binaries has disabled stamping of the keyfile keys."
-	@echo "To stamp these binaries, run:"
-	@echo "    $(srcdir)/magick_stampkeys $(STAMPED_PROGS)"
-endif
+	@if test $(STAMP) -eq 1 ; then \
+	  echo "$(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
+	  $(srcdir)/magick_stampkeys $(STAMPED_PROGS) ;\
+	else \
+	  echo "Creating 'open host' binaries has disabled stamping of the keyfile keys." ;\
+	  echo "To stamp these binaries, run:" ;\
+	  echo "    $(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
+	fi
 
 all-am: Makefile $(PROGRAMS)
-if STAMPED
-	$(srcdir)/magick_stampkeys $(STAMPED_PROGS)
-else
-	@echo "Creating 'open host' binaries has disabled stamping of the keyfile keys."
-	@echo "To stamp these binaries, run:"
-	@echo "    $(srcdir)/magick_stampkeys $(STAMPED_PROGS)"
-endif
+	@if test $(STAMP) -eq 1 ; then \
+	  echo "$(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
+	  $(srcdir)/magick_stampkeys $(STAMPED_PROGS) ;\
+	else \
+	  echo "Creating 'open host' binaries has disabled stamping of the keyfile keys." ;\
+	  echo "To stamp these binaries, run:" ;\
+	  echo "    $(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
+	fi

@@ -52,16 +52,16 @@ all-am:
 
 install-exec-am:
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(infodir)/magick
-	@list=`ls -1 *.html *.latex *.info *.txt`; for p in $$list; do \
-	  if test -f $$p; then \
-	    echo "  $(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/magick/$$p" ;\
-	     $(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/magick/$$p ;\
-	  else :; fi; \
+	@BASE=`basename \`pwd\`` ;\
+	$(mkinstalldirs) $(DESTDIR)$(infodir)/magick/$$BASE ;\
+	list=`ls -1 *.html* *.latex* *.info* *.txt* 2>/dev/null`; for p in $$list; do \
+	  echo "  $(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/magick/$$BASE/$$p" ;\
+	   $(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/magick/$$BASE/$$p ;\
 	done
 
 uninstall-exec-am:
 	@$(NORMAL_UNINSTALL)
-	@list=`ls -1 *.html *.latex *.info *.txt`; for p in $$list; do \
-	  rm -f $(DESTDIR)$(infodir)/magick/$$p ;\
+	@BASE=`basename \`pwd\``
+	@list=`ls -1 *.html* *.latex* *.info* *.txt*`; for p in $$list; do \
+	  rm -f $(DESTDIR)$(infodir)/magick/$$BASE/$$p ;\
 	done

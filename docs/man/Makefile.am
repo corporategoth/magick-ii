@@ -20,12 +20,12 @@ all-am:
 
 install-exec-am:
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(mandir)
-	@list=`ls -1 man?/*.?`; for p in $$list; do \
-	  if test -f $$p; then \
-	    echo "  $(INSTALL_DATA) $$p $(DESTDIR)$(mandir)/$$p" ;\
-	     $(INSTALL_DATA) $$p $(DESTDIR)$(mandir)/$$p ;\
-	  else :; fi; \
+	@dirlist=`ls -1d man?`; for d in $$dirlist; do \
+	  $(mkinstalldirs) $(DESTDIR)$(mandir)/$$d ;\
+	  cd $$d; list=`ls -1 *.?`; for p in $$list; do \
+	    echo "  $(INSTALL_DATA) $$p $(DESTDIR)$(mandir)/$$d/$$p" ;\
+	     $(INSTALL_DATA) $$p $(DESTDIR)$(mandir)/$$d/$$p ;\
+	  done; cd .. ;\
 	done
 
 uninstall-exec-am:

@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2001/04/22 21:45:20  prez
+** Fixed make / make install and RPM spec
+**
 ** Revision 1.116  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -109,7 +112,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
+const int BUILD_NUMBER = 1;
 
 /* Versioning Information
  *

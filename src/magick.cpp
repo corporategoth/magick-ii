@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.298  2001/04/22 21:45:20  prez
+** Fixed make / make install and RPM spec
+**
 ** Revision 1.297  2001/04/13 07:12:48  prez
 ** Changed genrankeys style random key generation to binary stamping
 ** (allowing people to stamp the binary AFTER it has been created, and
@@ -3567,6 +3570,8 @@ void Magick::save_databases()
 	mFile::Erase(files.Database()+".old");
     if (mFile::Exists(files.Database()+".new"))
 	mFile::Erase(files.Database()+".new");
+    if (mFile::Exists(files.Database()))
+	mFile::Copy(files.Database(), files.Database()+".old");
     {
 	//SXP::CFileOutStream o(files.Database()+".new");
 	SXP::MFileOutStream o(files.Database()+".new", files.Compression(),
@@ -3575,15 +3580,13 @@ void Magick::save_databases()
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
     }
-    if (mFile::Exists(files.Database()))
-	mFile::Copy(files.Database(), files.Database()+".old");
     if (mFile::Exists(files.Database()+".new"))
     {
 	mFile::Copy(files.Database()+".new", files.Database());
 	mFile::Erase(files.Database()+".new");
-	if (mFile::Exists(files.Database()+".old"))
-	    mFile::Erase(files.Database()+".old");
     }
+    if (mFile::Exists(files.Database()+".old"))
+	mFile::Erase(files.Database()+".old");
     i_saving = false;
 }
 

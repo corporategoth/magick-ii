@@ -74,9 +74,11 @@ echo ""
 if [ -s $dbfile.new ]; then
   # If an old file exists, the new was finished
   if [ -s $dbfile.old ]; then
-    cp $dbfile.new $dbfile
+    cp $dbfile.old $dbfile
   fi
   rm -f $dbfile.old $dbfile.new
+elif [ -s $dbfile.old ]; then
+  rm -f $dbfile.old
 fi
 
 ulimit -c $coresize 2>/dev/null
