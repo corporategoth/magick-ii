@@ -1933,7 +1933,6 @@ void Server::KILL(const mstring & nick, const mstring & dest, const mstring & re
 	     ((proto.Tokens() &&
 	       !proto.GetNonToken("KILL").empty()) ? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" +
 	     Magick::instance().nickserv.GetLive(nick)->Host() + "!" + nick + " (" + reason + ")");
-
 	mMessage::CheckDependancies(mMessage::NickNoExists, dest);
 	if (numeric)
 	    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(numeric));
@@ -2487,10 +2486,10 @@ void Server::QUIT(const mstring & nick, const mstring & reason)
 	    numeric = nlive->Numeric();
 	    nlive->Quit(reason);
 	}
-	Magick::instance().nickserv.RemLive(nick);
 	nraw(nick,
 	     ((proto.Tokens() &&
 	       !proto.GetNonToken("QUIT").empty()) ? proto.GetNonToken("QUIT") : mstring("QUIT")) + " :" + reason);
+	Magick::instance().nickserv.RemLive(nick);
 	mMessage::CheckDependancies(mMessage::NickNoExists, nick);
 	if (numeric)
 	    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(numeric));
@@ -3514,14 +3513,18 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 	    if (nlive->IsServices())
 	    {
 		LOG(LM_WARNING, "OTHER/KILLED",
-		    (params.ExtractWord(1, ": "),
+		    (target,
 		     (!Magick::instance().nickserv.IsLive(source) ? source : Magick::instance().nickserv.GetLive(source)->
 		      Mask(Nick_Live_t::N_U_P_H))));
-		WLOCK2((lck_Server, "WaitIsOn"));
-		WaitIsOn.insert(params.ExtractWord(1, ": "));
-		sraw(((proto.Tokens() &&
-		       !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " " +
-		     params.ExtractWord(1, ": "));
+		if (mBase::IsAnyName(target))
+		{
+		    WLOCK2((lck_Server, "WaitIsOn"));
+		    WaitIsOn.insert(target);
+		    sraw(((proto.Tokens() &&
+			   !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + target);
+		}
+		else if (Magick::instance().nickserv.IsRecovered(target))
+		    Magick::instance().nickserv.RemRecovered(target);
 	    }
 	    int wc = params.After(":").WordCount("!");
 
@@ -4359,15 +4362,24 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 	{
 	    // Normal quit ...
 
-	    // Kind of illegal to do, but accomodate anyway, re-signon
-	    // services if someone quits them (how?!?)
-
 	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
 	    numeric = nlive->Numeric();
-	    if (nlive->IsServices())
-		sraw(((proto.Tokens() &&
-		       !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " " + source);
 	    nlive->Quit(params.After(":"));
+
+	    // Kind of illegal to do, but accomodate anyway, re-signon
+	    // services if someone quits them (how?!?)
+	    if (nlive->IsServices())
+	    {
+		if (mBase::IsAnyName(source))
+		{
+		    WLOCK2((lck_Server, "WaitIsOn"));
+		    WaitIsOn.insert(source);
+		    sraw(((proto.Tokens() &&
+			   !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + source);
+		}
+		else if (Magick::instance().nickserv.IsRecovered(source))
+		    Magick::instance().nickserv.RemRecovered(source);
+	    }
 	    Magick::instance().nickserv.RemLive(source);
 	}
 	mMessage::CheckDependancies(mMessage::NickNoExists, source);

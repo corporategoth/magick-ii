@@ -176,12 +176,18 @@ public:
     {
 	return names;
     }
-    virtual bool IsName(mstring in) const
+    virtual bool IsName(const mstring & in) const
     {
 	mstring tmp(" " + names.UpperCase() + " ");
 
 	return tmp.Contains(" " + in.UpperCase() + " ");
     };
+
+    static mBase *GetByName(const mstring & in);
+    static bool IsAnyName(const mstring & in)
+    {
+	return (GetByName(in) != NULL);
+    }
 
     virtual threadtype_enum Get_TType() const = 0;
     virtual mstring GetInternalName() const = 0;
@@ -210,7 +216,7 @@ public:
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator           mVariant() const
+    virtual operator            mVariant() const
     {
 	mVariant locvar(GetInternalName());
 

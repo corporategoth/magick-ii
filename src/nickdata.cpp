@@ -1074,18 +1074,6 @@ void Nick_Live_t::Quit(const mstring & reason)
 	    Magick::instance().operserv.RemHost(i_host);
     }
 
-    // Check if we're currently being TEMP ignored ...
-    {
-	MLOCK((lck_OperServ, "Ignore"));
-	if (Magick::instance().operserv.Ignore_find(Mask(N_U_P_H)))
-	{
-	    if (Magick::instance().operserv.Ignore->Value() != true)
-	    {
-		Magick::instance().operserv.Ignore_erase();
-	    }
-	}
-    }
-
     set < mstring > jc;
     set < mstring >::iterator c;
     {
@@ -1095,6 +1083,9 @@ void Nick_Live_t::Quit(const mstring & reason)
     }
     for (c = jc.begin(); c != jc.end(); c++)
 	Part(*c);
+
+    if (IsServices())
+	return;
 
     unsigned long i;
 

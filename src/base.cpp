@@ -1029,27 +1029,10 @@ int mMessage::call()
 		//     Magick::instance().checkifhandled(servername,command)
 		// if so, Magick::instance().doscripthandle(server,command,data);
 
-		if (Magick::instance().operserv.IsName(target))
-		    Magick::instance().operserv.execute(src, msgtype_, params_);
+		mBase *serv = mBase::GetByName(src);
 
-		else if (Magick::instance().nickserv.IsName(target) && Magick::instance().nickserv.MSG())
-		    Magick::instance().nickserv.execute(src, msgtype_, params_);
-
-		else if (Magick::instance().chanserv.IsName(target) && Magick::instance().chanserv.MSG())
-		    Magick::instance().chanserv.execute(src, msgtype_, params_);
-
-		else if (Magick::instance().memoserv.IsName(target) && Magick::instance().memoserv.MSG())
-		    Magick::instance().memoserv.execute(src, msgtype_, params_);
-
-		else if (Magick::instance().commserv.IsName(target) && Magick::instance().commserv.MSG())
-		    Magick::instance().commserv.execute(src, msgtype_, params_);
-
-		else if (Magick::instance().servmsg.IsName(target) && Magick::instance().servmsg.MSG())
-		    Magick::instance().servmsg.execute(src, msgtype_, params_);
-
-		// else check if it's script handled, might do up a list of script servers
-		// in the magick object to check against, else trash it.
-
+		if (serv != NULL && serv->MSG())
+		    serv->execute(src, msgtype_, params_);
 		else		// PRIVMSG or NOTICE to non-service
 		    Magick::instance().server.execute(src, msgtype_, params_);
 
@@ -1251,6 +1234,28 @@ int mMessage::call()
 
     RET(0);
     ETCB();
+}
+
+mBase *mBase::GetByName(const mstring & in)
+{
+    FT("mBase::GetByName", (in));
+
+    mBase *serv = NULL;
+
+    if (Magick::instance().operserv.IsName(in))
+	serv = & Magick::instance().operserv;
+    else if (Magick::instance().nickserv.IsName(in))
+	serv = & Magick::instance().nickserv;
+    else if (Magick::instance().chanserv.IsName(in))
+	serv = & Magick::instance().chanserv;
+    else if (Magick::instance().memoserv.IsName(in))
+	serv = & Magick::instance().memoserv;
+    else if (Magick::instance().commserv.IsName(in))
+	serv = & Magick::instance().commserv;
+    else if (Magick::instance().servmsg.IsName(in))
+	serv = & Magick::instance().servmsg;
+
+    NRET(mBase *, serv);
 }
 
 bool mBase::signon(const mstring & nickname) const
@@ -1485,25 +1490,10 @@ void privmsg(const mstring & source, const mstring & dest, const mstring & messa
     BTCB();
     FT("privmsg", (source, dest, message));
 
-    if (Magick::instance().operserv.IsName(source))
-	Magick::instance().operserv.privmsg(source, dest, message);
+    mBase *serv = mBase::GetByName(source);
 
-    else if (Magick::instance().nickserv.IsName(source))
-	Magick::instance().nickserv.privmsg(source, dest, message);
-
-    else if (Magick::instance().chanserv.IsName(source))
-	Magick::instance().chanserv.privmsg(source, dest, message);
-
-    else if (Magick::instance().memoserv.IsName(source))
-	Magick::instance().memoserv.privmsg(source, dest, message);
-
-    else if (Magick::instance().commserv.IsName(source))
-	Magick::instance().commserv.privmsg(source, dest, message);
-
-    else if (Magick::instance().servmsg.IsName(source))
-	Magick::instance().servmsg.privmsg(source, dest, message);
-
-    // scripted hosts ...
+    if (serv != NULL)
+	serv->privmsg(source, dest, message);
     else
     {
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("PRIVMSG", source));
@@ -1532,25 +1522,10 @@ void notice(const mstring & source, const mstring & dest, const mstring & messag
     BTCB();
     FT("notice", (source, dest, message));
 
-    if (Magick::instance().operserv.IsName(source))
-	Magick::instance().operserv.notice(source, dest, message);
+    mBase *serv = mBase::GetByName(source);
 
-    else if (Magick::instance().nickserv.IsName(source))
-	Magick::instance().nickserv.notice(source, dest, message);
-
-    else if (Magick::instance().chanserv.IsName(source))
-	Magick::instance().chanserv.notice(source, dest, message);
-
-    else if (Magick::instance().memoserv.IsName(source))
-	Magick::instance().memoserv.notice(source, dest, message);
-
-    else if (Magick::instance().commserv.IsName(source))
-	Magick::instance().commserv.notice(source, dest, message);
-
-    else if (Magick::instance().servmsg.IsName(source))
-	Magick::instance().servmsg.notice(source, dest, message);
-
-    // scripted hosts ...
+    if (serv != NULL)
+	serv->notice(source, dest, message);
     else
     {
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("NOTICE", source));
@@ -1579,25 +1554,10 @@ void send(const mstring & source, const mstring & dest, const mstring & message)
     BTCB();
     FT("send", (source, dest, message));
 
-    if (Magick::instance().operserv.IsName(source))
-	Magick::instance().operserv.send(source, dest, message);
+    mBase *serv = mBase::GetByName(source);
 
-    else if (Magick::instance().nickserv.IsName(source))
-	Magick::instance().nickserv.send(source, dest, message);
-
-    else if (Magick::instance().chanserv.IsName(source))
-	Magick::instance().chanserv.send(source, dest, message);
-
-    else if (Magick::instance().memoserv.IsName(source))
-	Magick::instance().memoserv.send(source, dest, message);
-
-    else if (Magick::instance().commserv.IsName(source))
-	Magick::instance().commserv.send(source, dest, message);
-
-    else if (Magick::instance().servmsg.IsName(source))
-	Magick::instance().servmsg.send(source, dest, message);
-
-    // scripted hosts ...
+    if (serv != NULL)
+	serv->send(source, dest, message);
     else
     {
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("SEND", source));
@@ -1727,20 +1687,10 @@ pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & se
     // ENDIF
     // RETURN false;
 
-    if (Magick::instance().operserv.IsName(service))
-	type = Magick::instance().operserv.GetInternalName().LowerCase();
-    else if (Magick::instance().nickserv.IsName(service))
-	type = Magick::instance().nickserv.GetInternalName().LowerCase();
-    else if (Magick::instance().chanserv.IsName(service))
-	type = Magick::instance().chanserv.GetInternalName().LowerCase();
-    else if (Magick::instance().memoserv.IsName(service))
-	type = Magick::instance().memoserv.GetInternalName().LowerCase();
-    else if (Magick::instance().commserv.IsName(service))
-	type = Magick::instance().commserv.GetInternalName().LowerCase();
-    else if (Magick::instance().servmsg.IsName(service))
-	type = Magick::instance().servmsg.GetInternalName().LowerCase();
-    //else
-    //  scripted stuff ...
+    mBase *serv = mBase::GetByName(service);
+
+    if (serv != NULL)
+	type = serv->GetInternalName().LowerCase();
 
     if (type.empty())
 	NRET(pair < bool_functor >, retval);
@@ -1794,20 +1744,10 @@ pair < bool, CommandMap::functor > CommandMap::GetSystemCommand(const mstring & 
     // ENDIF
     // RETURN false;
 
-    if (Magick::instance().operserv.IsName(service))
-	type = Magick::instance().operserv.GetInternalName().LowerCase();
-    else if (Magick::instance().nickserv.IsName(service))
-	type = Magick::instance().nickserv.GetInternalName().LowerCase();
-    else if (Magick::instance().chanserv.IsName(service))
-	type = Magick::instance().chanserv.GetInternalName().LowerCase();
-    else if (Magick::instance().memoserv.IsName(service))
-	type = Magick::instance().memoserv.GetInternalName().LowerCase();
-    else if (Magick::instance().commserv.IsName(service))
-	type = Magick::instance().commserv.GetInternalName().LowerCase();
-    else if (Magick::instance().servmsg.IsName(service))
-	type = Magick::instance().servmsg.GetInternalName().LowerCase();
-    //else
-    //  scripted stuff ...
+    mBase *serv = mBase::GetByName(service);
+
+    if (serv != NULL)
+	type = serv->GetInternalName().LowerCase();
 
     if (type.empty())
 	NRET(pair < bool_functor >, retval);
