@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.187  2001/07/16 03:36:14  prez
+** Got rid of mstring's strcmp, now using memcmp.  Also did a little
+** tweaking with the protocol support.
+**
 ** Revision 1.186  2001/07/12 00:28:42  prez
 ** Added propper support for Anarchy mode
 **
@@ -870,7 +874,7 @@ void Protocol::Set(const unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
-	i_Akill = 2002;
+	i_Akill = 2003;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
@@ -1720,6 +1724,13 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
+	line << " +" << host << " " << exptime << " :" << reason;
+	break;
+    case 2003:
+	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
 	line << " " << exptime << " +" << host << " " << exptime << " :" << reason;
 	break;
     }
@@ -2558,6 +2569,7 @@ void Server::RAKILL(const mstring& host)
 	line << " * -" << host;
 	break;
     case 2002:
+    case 2003:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
 	    line << proto.GetNonToken("GLINE");
 	else

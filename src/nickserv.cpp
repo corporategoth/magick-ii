@@ -27,6 +27,10 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.187  2001/07/16 03:36:14  prez
+** Got rid of mstring's strcmp, now using memcmp.  Also did a little
+** tweaking with the protocol support.
+**
 ** Revision 1.186  2001/07/15 07:35:38  prez
 ** Fixed problem of it removing access list entries on slave nickname drop.
 ** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
@@ -2729,6 +2733,13 @@ unsigned long Nick_Stored_t::Drop()
 	    else
 		killchans.push_back(iter->first);
 	}
+	else if (iter->second.CoFounder().IsSameAs(i_Name, true))
+	{
+	    if (!host)
+		iter->second.CoFounder(i_Host);
+	    else
+		iter->second.CoFounder("");
+	}
 	MLOCK(("ChanServ", "stored", iter->first, "Access"));
 	if (iter->second.Access_find(i_Name))
 	{
@@ -3283,13 +3294,18 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 			csiter != Parent->chanserv.StoredEnd(); csiter++)
     {
 	RLOCK2(("ChanServ", "stored", csiter->first));
-	if (csiter->second.CoFounder().LowerCase() == oldnick.LowerCase())
-	{
-	    csiter->second.CoFounder(i_Name);
-	}
-	if (csiter->second.Founder().LowerCase() == oldnick.LowerCase())
+	if (csiter->second.Founder().IsSameAs(oldnick, true))
 	{
 	    csiter->second.Founder(i_Name);
+	    if (csiter->second.CoFounder().IsSameAs(i_Name, true) ||
+		csiter->second.CoFounder().IsSameAs(oldnick, true))
+	    {
+		csiter->second.CoFounder("");
+	    }
+	}
+	else if (csiter->second.CoFounder().IsSameAs(oldnick, true))
+	{
+	    csiter->second.CoFounder(i_Name);
 	}
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Access"));
 	found = false;

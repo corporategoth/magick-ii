@@ -27,6 +27,10 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2001/07/16 03:36:14  prez
+** Got rid of mstring's strcmp, now using memcmp.  Also did a little
+** tweaking with the protocol support.
+**
 ** Revision 1.107  2001/06/17 05:22:12  prez
 ** Resolved compatability issues with ACE 5.1.17
 **
@@ -634,35 +638,28 @@ void mstring::insert(const size_t pos, const char *in, const size_t length)
     lock_rel();
 }
 
-// We compare up to a length they both have.  If its
-// the same, then return (-1 * i_len) if i_str is bigger,
-// or length if in is bigger.  0 means strings are the
-// same length and have the same text.
+// We compare up to a length they both have.  If its the
+// the same, same or one is zero length, we return -1 if
+// we are smaller, and 1 if they are smaller.  Otherwise
+// we will return 0 (meaning exact match).
 int mstring::compare (const char *in, const size_t length) const
 {
     lock_read();
 
     int retval = 0;
+    size_t shortest = (i_len < length ? i_len : length);
+    if (shortest != 0)
+	retval = memcmp(i_str, in, shortest);
 
-/*  if (length && i_len)
+    if (retval == 0)
     {
-	retval = memcmp(i_str, in, ((length < i_len) ? length : i_len));
-	if (retval == 0)
-	{
-	    if (length < i_len)
-		retval = (i_len - length) * -1 * 256;
-	    else if (i_len < length)
-		retval = (length - i_len) * 256;
-	}
+	if (i_len < length)
+	    retval = -1;
+        else if (length < i_len)
+	    retval = 1;
     }
-    else if (i_len)
-	retval = i_len * -1 * 256;
-    else if (length)
-	retval = length * 256;
 
-    return retval; */
-
-    retval = strcmp((i_str ? i_str : ""), (length ? in : ""));
+//    retval = strcmp((i_len ? i_str : ""), (length ? in : ""));
 
     lock_rel();
 
@@ -672,15 +669,7 @@ int mstring::compare (const char *in, const size_t length) const
 void mstring::swap(mstring &in)
 {
     lock_write();
-
-#ifdef MSTRING_LOCKS_WORK
-    if (in.i_lock != NULL)
-	if (in.i_lock->acquire_write() < 0)
-	{
-	    ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__);
-	    ACE_OS::fflush(stderr);
-	}
-#endif
+    in.lock_write();
 
     char *str = i_str;
     size_t len = i_len;
@@ -694,15 +683,7 @@ void mstring::swap(mstring &in)
     in.i_len = len;
     in.i_res = res;
 
-#ifdef MSTRING_LOCKS_WORK
-    if (in.i_lock != NULL)
-	if (in.i_lock->release() < 0)
-	{
-	    ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__);
-	    ACE_OS::fflush(stderr);
-	}
-#endif
-
+    in.lock_rel();
     lock_rel();
 }
 

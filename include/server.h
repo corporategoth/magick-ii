@@ -25,6 +25,10 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/07/16 03:36:14  prez
+** Got rid of mstring's strcmp, now using memcmp.  Also did a little
+** tweaking with the protocol support.
+**
 ** Revision 1.68  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -209,6 +213,8 @@ class Protocol
      * 2001 = GLINE * +user@host time :reason
      *        GLINE * -user@host
      * 2002 = GLINE +user@host time :reason
+     *        GLINE -user@host
+     * 2003 = GLINE time +user@host time :reason
      *        GLINE -user@host
      */
     unsigned int i_Akill;
