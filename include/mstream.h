@@ -284,46 +284,21 @@ class wxDataOutputStream: public wxFilterOutputStream {
   void WriteString(const mstring& string);
 };
 
-class wxMemoryInputStream: public wxInputStream {
- private:
-  size_t m_length;
-
- public:
-  wxMemoryInputStream(const unsigned char *data, size_t length);
-  virtual ~wxMemoryInputStream();
-  virtual size_t GetSize() const { return m_length; }
-
-  virtual unsigned char Peek();
-
-  wxStreamBuffer *InputStreamBuffer() const { return m_i_streambuf; }
-
- protected:
-  wxStreamBuffer *m_i_streambuf;
-
- protected:
-  size_t OnSysRead(void *buffer, size_t nbytes);
-  off_t OnSysSeek(off_t pos, wxSeekMode mode);
-  off_t OnSysTell() const;
-};
-
-//todo rewrite this so that it's dynamically sized
-class wxMemoryOutputStream:  public wxOutputStream {
- public:
-  wxMemoryOutputStream(unsigned char *data = NULL, size_t length = 0);
-  virtual ~wxMemoryOutputStream();
-  virtual size_t GetSize() const { return m_o_streambuf->GetLastAccess(); }
-
-  wxStreamBuffer *OutputStreamBuffer() const { return m_o_streambuf; }
-
-  size_t CopyTo(unsigned char *buffer, size_t len) const;
-
- protected:
-  wxStreamBuffer *m_o_streambuf;
-
- protected:
-  size_t OnSysWrite(const void *buffer, size_t nbytes);
-  off_t OnSysSeek(off_t pos, wxSeekMode mode);
-  off_t OnSysTell() const;
+class wxMemoryStream: public wxInputStream,wxOutputStream
+{
+public:
+    wxMemoryStream();
+    wxMemoryStream(wxInputStream& in);
+    virtual ~wxMemoryStream();
+    size_t Dump(wxOutputStream& out);
+    size_t CopyTo(unsigned char *buffer, size_t len);
+protected:
+    virtual size_t OnSysRead(void *buffer, size_t size);
+    virtual size_t OnSysWrite(const void *buffer, size_t size);
+    virtual off_t OnSysSeek(off_t seek, wxSeekMode mode);
+    virtual off_t OnSysTell() const;
+    vector<unsigned char> storage;
+    vector<unsigned char>::iterator streamptr;
 };
 
 class wxZlibInputStream: public wxFilterInputStream {

@@ -62,9 +62,9 @@ private:
 	bool automation;	// Wether to do automatic tasks.
 
 	// loading and saving internal stuff
-	wxInputStream *create_input_stream(wxMemoryInputStream &in);
+	wxInputStream *create_input_stream(wxMemoryStream &in);
 	void destroy_input_stream();
-	wxOutputStream *create_output_stream(wxMemoryOutputStream &out);
+	wxOutputStream *create_output_stream(wxMemoryStream &out);
 	void destroy_output_stream();
         wxZlibInputStream *zstrm;
 	mDecryptStream *cstrm;

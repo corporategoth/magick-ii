@@ -1760,89 +1760,93 @@ wxFileStream::wxFileStream(const mstring& fileName)
 {
 }
 
-// ----------------------------------------------------------------------------
-// wxMemoryInputStream
-// ----------------------------------------------------------------------------
-
-wxMemoryInputStream::wxMemoryInputStream(const unsigned char *data, size_t len)
-  : wxInputStream()
+wxMemoryStream::wxMemoryStream()
+:wxInputStream(),wxOutputStream()
 {
-  m_i_streambuf = new wxStreamBuffer(wxStreamBuffer::read);
-  m_i_streambuf->SetBufferIO((unsigned char*) data, (unsigned char*) (data+len));
-  m_i_streambuf->SetIntPosition(0); // seek to start pos
-  m_i_streambuf->Fixed(true);
-
-  m_length = len;
+    streamptr=storage.end();
+}
+wxMemoryStream::wxMemoryStream(wxInputStream& in)
+:wxInputStream(),wxOutputStream()
+{
+    unsigned char c;
+    int i;
+    for(i=0;i<in.StreamSize()/5;i++)
+    {
+	in>>c;
+	storage.push_back(c);
+	in>>c;
+	storage.push_back(c);
+	in>>c;
+	storage.push_back(c);
+	in>>c;
+	storage.push_back(c);
+	in>>c;
+	storage.push_back(c);
+    }
+    for(i=0;i<in.StreamSize()%5;i++)
+    {
+	in>>c;
+	storage.push_back(c);
+    }
+    streamptr=storage.end();
+}
+wxMemoryStream::~wxMemoryStream()
+{
+}
+size_t wxMemoryStream::Dump(wxOutputStream& out)
+{
+    int i=0;
+    for(streamptr=storage.begin();streamptr!=storage.end();streamptr++)
+    {
+	out<<(*streamptr);
+	i++;
+    }
+    return i;
+}
+size_t wxMemoryStream::CopyTo(unsigned char *buffer, size_t len)
+{
+    int i=0;
+    for(streamptr=storage.begin();streamptr!=storage.end(),i<len;streamptr++)
+    {
+	buffer[i]=(*streamptr);
+	i++;
+    }
+    return i;
+}
+size_t wxMemoryStream::OnSysRead(void *buffer, size_t size)
+{
+    unsigned char *ucbuffer=(unsigned char *)buffer;
+    int i;
+    for(i=0;i<size,streamptr!=storage.end();i++,streamptr++)
+    {
+	ucbuffer[i]=(*streamptr);
+    }
+    return i;
+}
+size_t wxMemoryStream::OnSysWrite(const void *buffer, size_t size)
+{
+    //hmm, dunno what happens if you assign to an end() streamptr, 
+    // does it just append to the end of the set?
+    unsigned char *ucbuffer=(unsigned char *)buffer;
+    int i;
+    for(i=0;i<size,streamptr!=storage.end();i++,streamptr++)
+    {
+	if(streamptr==storage.end())
+	{
+	    storage.push_back(ucbuffer[i]);
+	    streamptr=storage.end()-1;
+	}
+	else
+	    (*streamptr)=ucbuffer[i];
+    }
+    return i;
 }
 
-wxMemoryInputStream::~wxMemoryInputStream()
+off_t wxMemoryStream::OnSysSeek(off_t seek, wxSeekMode mode)
 {
-  delete m_i_streambuf;
+    return -1;
 }
-
-unsigned char wxMemoryInputStream::Peek()
+off_t wxMemoryStream::OnSysTell() const
 {
-  return m_i_streambuf->GetBufferStart()[m_i_streambuf->GetIntPosition()];
-}
-
-size_t wxMemoryInputStream::OnSysRead(void *buffer, size_t nbytes)
-{
-  return m_i_streambuf->Read(buffer, nbytes);
-}
-
-off_t wxMemoryInputStream::OnSysSeek(off_t pos, wxSeekMode mode)
-{
-  return m_i_streambuf->Seek(pos, mode);
-}
-
-off_t wxMemoryInputStream::OnSysTell() const
-{
-  return m_i_streambuf->Tell();
-}
-
-// ----------------------------------------------------------------------------
-// wxMemoryOutputStream
-// ----------------------------------------------------------------------------
-
-wxMemoryOutputStream::wxMemoryOutputStream(unsigned char *data, size_t len)
-  : wxOutputStream()
-{
-  m_o_streambuf = new wxStreamBuffer(wxStreamBuffer::write);
-  if (data)
-  {
-    m_o_streambuf->SetBufferIO(data, data+len);
-    m_o_streambuf->Fixed(true);
-  }
-}
-
-wxMemoryOutputStream::~wxMemoryOutputStream()
-{
-  delete m_o_streambuf;
-}
-
-size_t wxMemoryOutputStream::OnSysWrite(const void *buffer, size_t nbytes)
-{
-  return m_o_streambuf->Write(buffer, nbytes);
-}
-
-off_t wxMemoryOutputStream::OnSysSeek(off_t pos, wxSeekMode mode)
-{
-  return m_o_streambuf->Seek(pos, mode);
-}
-
-off_t wxMemoryOutputStream::OnSysTell() const
-{
-  return m_o_streambuf->Tell();
-}
-
-size_t wxMemoryOutputStream::CopyTo(unsigned char *buffer, size_t len) const
-{
-  if (!buffer)
-    return 0;
-
-  if (len > GetSize())
-    len = GetSize();
-
-  memcpy(buffer, m_o_streambuf->GetBufferStart(), len);
-  return len;
+    return Dist(storage.begin(),streamptr);
 }
