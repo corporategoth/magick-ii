@@ -46,10 +46,6 @@ RCSID(magick_cpp, "@(#)$Id$");
 #include "convert_epona.h"
 #endif
 
-#ifndef WIN32
-static bool nofork = false;
-#endif
-
 mDateTime Magick::i_StartTime;
 
 map < ACE_thread_t, Magick * > Magick::InstanceMap;
@@ -103,15 +99,40 @@ Magick &Magick::instance(ACE_thread_t id)
 #endif
 }
 
-Magick::Magick(int inargc, char **inargv) : i_verbose(false), i_level(0), i_pause(false), i_auto(false), i_shutdown(false),
-i_reconnect(true), i_localhost(0), i_gotconnect(false), i_connected(false), i_saving(false), dh_timer(0)
+Magick::Magick(int inargc, char **inargv)
 {
-    char buf[1024], *c;
-
-    i_config_file = "magick.ini";
     for (int i = 0; i < inargc; i++)
 	argv.push_back(inargv[i]);
-    i_programname = argv[0].RevAfter("/");
+    init();
+}
+
+Magick::Magick(const vector < mstring > & inargv)
+{
+    argv = inargv;
+    init();
+}
+
+void Magick::init()
+{
+    i_verbose = false;
+    i_level = 0;
+    i_pause = false;
+    i_auto = false;
+    i_shutdown = false;
+    i_reconnect = true;
+    i_localhost = 0;
+    i_gotconnect = false;
+    i_connected = false;
+    i_saving = false;
+    dh_timer = 0;
+#ifdef WIN32
+    i_fork = isWinNT();
+#else
+    i_fork = true;
+#endif
+
+    i_programname = argv[0].RevAfter(DirSlash);
+    i_config_file = "magick.ini";
     i_ResetTime = mDateTime::CurrentDateTime();
 
     ircsvchandler = NULL;
@@ -121,6 +142,9 @@ i_reconnect(true), i_localhost(0), i_gotconnect(false), i_connected(false), i_sa
     dcc = NULL;
 
     LoadLogMessages("DEFAULT");
+
+    char buf[1024], *c;
+
     c = ACE_OS::getcwd(buf, 1024);
     if (c == NULL && errno)
     {
@@ -128,7 +152,9 @@ i_reconnect(true), i_localhost(0), i_gotconnect(false), i_connected(false), i_sa
 	return;
     }
     else
+    {
 	i_services_dir = buf;
+    }
     CurrentState = Constructed;
 }
 
@@ -186,7 +212,7 @@ int Magick::Init()
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--dir"));
 		    return MAGICK_RET_ERROR;
 		}
-		i_services_dir = files.MakePath(argv[i]);
+		i_services_dir = MakePath(argv[i]);
 	    }
 	    else if (argv[i] == "--config")
 	    {
@@ -226,6 +252,29 @@ int Magick::Init()
 		    for (j = 0; j < tt_MAX; j++)
 			if (type == threadname[j] || type == "ALL")
 			    Trace::TurnSet(static_cast < threadtype_enum > (j), level);
+		}
+	    }
+#endif
+#ifdef WIN32
+	    else if (argv[i] == "--service" && isWinNT())
+	    {
+		i++;
+		if (i == argc || argv[i] [0U] == '-')
+		{
+		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service"));
+		    return MAGICK_RET_ERROR;
+		}
+		if (argv[i].IsSameAs("insert", true))
+		    return MAGICK_RET_SERVICE_INSERT;
+		else if (argv[i].IsSameAs("remove", true))
+		    return MAGICK_RET_SERVICE_REMOVE;
+		else if (argv[i].IsSameAs("start", true))
+		    return MAGICK_RET_SERVICE_START;
+		else if (argv[i].IsSameAs("stop", true))
+		    return MAGICK_RET_SERVICE_STOP;
+		else
+		{
+		    return MAGICK_RET_ERROR;
 		}
 	    }
 #endif
@@ -301,7 +350,8 @@ int Magick::Start()
 
 #else /* !WIN32 */
     // Must do this BEFORE the logger is started ...
-    NLOG(LM_INFO, "COMMANDLINE/START_NOFORK");
+    if (DoItAll())
+	NLOG(LM_INFO, "COMMANDLINE/START_NOFORK");
 #endif
 
     if (!ActivateLogger())
@@ -319,11 +369,11 @@ int Magick::Start()
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
 #ifndef WIN32
-    if (!nofork && firstrun)
+    if (!i_fork && firstrun)
     {
 	NLOG(LM_STARTUP, "COMMANDLINE/START_FORK");
 	errno = 0;
-	Result = ACE::daemonize(Services_Dir(), 0, i_programname);
+	Result = ACE::daemonize(Services_Dir(), 0, ProgramName());
 	if (Result < 0 && errno)
 	{
 	    LOG(LM_EMERGENCY, "SYS_ERRORS/OPERROR", ("fork", errno, strerror(errno)));
@@ -353,6 +403,9 @@ int Magick::Start()
 	    pidfile.Close();
 	}
     }
+#else /* WIN32 */
+    if (!DoItAll())
+	NLOG(LM_STARTUP, "COMMANDLINE/START_FORK");
 #endif
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
@@ -635,6 +688,7 @@ int Magick::Finish()
     {
 	RET(MAGICK_RET_STATE);
     }
+
     RET(MAGICK_RET_NORMAL);
 }
 
@@ -852,10 +906,8 @@ void Magick::dump_help() const
 	<< "\n" << "Syntax: " << i_programname << " [options]\n" << "\n" <<
 	"--help             -?      Help output (summary of the below).\n" <<
 	"--dir X                    Set the initial services directory.\n" <<
-	"--config X                 Set the name of the config file.\n"
-#ifndef WIN32
-	 << "--nofork                   Do not become a daemon process.\n"
-#endif
+	"--config X                 Set the name of the config file.\n" <<
+	"--nofork                   Do not become a daemon/service process.\n"
 #ifdef CONVERT
 	 << "--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
@@ -1067,7 +1119,7 @@ int Magick::doparamparse()
 bool Magick::paramlong(const mstring & first, const mstring & second)
 {
     FT("Magick::paramlong", (first, second));
-    if (first == "--dir" || first == "--config" || first == "--trace")
+    if (first == "--dir" || first == "--config" || first == "--trace" || first == "--service")
     {
 	// already handled, but we needed to i++
 	RET(true);
@@ -1159,6 +1211,10 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
     else if (first == "--verbose" || first == "--debug")
     {
 	i_verbose = true;
+    }
+    else if (first == "--nofork")
+    {
+	i_fork = false;
     }
     else if (first == "--umask")
     {
@@ -1280,12 +1336,6 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
     {
 	config.server_relink = 0;
     }
-#ifndef WIN32
-    else if (first == "--nofork")
-    {
-	nofork = true;
-    }
-#endif
     else if (first == "--cycle" || first == "--expire")
     {
 	if (second.empty() || second[0U] == '-')
@@ -3157,7 +3207,7 @@ bool Magick::ValidateLogger(ACE_Log_Msg * instance) const
 
     if (instance->msg_callback() != logger)
     {
-	instance->open(i_programname.c_str());
+	instance->open(ProgramName().c_str());
 	instance->msg_callback(logger);
     }
 

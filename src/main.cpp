@@ -51,7 +51,10 @@ bool isWinNT()
     return false;
 #endif
 }
-#endif
+
+ACE_NT_SERVICE_DEFINE(Magick, Flow_Control, ACE_TEXT(FULLNAME));
+
+#endif /* WIN32 */
 
 int main(int argc, char **argv)
 {
@@ -76,89 +79,179 @@ int main(int argc, char **argv)
     Trace::levelname.push_back(Trace::levelname_struct("F*NC*", Trace::Functions));
     Trace::levelname.push_back(Trace::levelname_struct("MOD*", Trace::Modify));
     Trace::levelname.push_back(Trace::levelname_struct("CH*G*", Trace::Changing));
+#endif /* MAGICK_TRACE_WORKS */
+
+    ACE::init();
+    Magick::StartTime(mDateTime::CurrentDateTime());
+    mThread::Attach(tt_MAIN);
+
+    Magick *instance = new Magick(argc, argv);
+
+    Magick::register_instance(instance);
+
+    int Result = instance->Init();
+    Flow_Control *fc = new Flow_Control(instance);
+
+#ifdef WIN32
+    fc->name(ACE_TEXT(PACKAGE), ACE_TEXT(FULLNAME));
 #endif
 
-#ifdef MAGICK_HAS_EXCEPTIONS
-    try
+    switch (Result)
     {
-#endif
-	// Globals ...
-	Magick::StartTime(mDateTime::CurrentDateTime());
-
-	int Result = MAGICK_RET_RESTART;
-
-	mThread::Attach(tt_MAIN);
-	while (Result == MAGICK_RET_RESTART)
+#ifdef WIN32
+    case MAGICK_RET_SERVICE_INSERT:
 	{
-	    Magick instance(argc, argv);
+	    mstring cmd =
+		"\"" + instance->ProgramName() + "\"" + " --dir \"" + instance->Services_Dir() + "\"" + " --config \"" +
+		instance->Config_File() + "\"";
 
-	    Magick::register_instance(&instance);
-
-	    Result = instance.Init();
-	    if (Result != MAGICK_RET_NORMAL)
-		continue;
-
-	    Result = instance.Start();
-	    if (Result != MAGICK_RET_NORMAL)
-	    {
-		instance.Finish();
-		continue;
-	    }
-	    Result = instance.Run();
-	    if (Result != MAGICK_RET_NORMAL)
-	    {
-		instance.Stop();
-		instance.Finish();
-		continue;
-	    }
-
-	    Result = instance.Stop();
-	    if (Result != MAGICK_RET_NORMAL)
-	    {
-		instance.Finish();
-		continue;
-	    }
-
-	    Result = instance.Finish();
+	    fc->insert(SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, cmd.c_str());
 	}
-	mThread::Detach();
+	break;
+    case MAGICK_RET_SERVICE_REMOVE:
+	fc->remove();
+	break;
+    case MAGICK_RET_SERVICE_START:
+	fc->start_svc();
+	break;
+    case MAGICK_RET_SERVICE_STOP:
+	fc->stop_svc();
+	break;
+#endif /* WIN32 */
+    case MAGICK_RET_NORMAL:
+	if (instance->DoItAll())
+	{
+	    Result = fc->svc();
+	    fc->instance()->Finish();
+	    Magick::deregister_instance();
+	    delete fc->instance();
+#ifdef WIN32
+	}
+	else
+	{
+	    ACE_NT_SERVICE_RUN(Magick, fc, err);
+	    return err == 0;
+#endif /* WIN32 */
+	}
+	break;
+    case MAGICK_RET_LOCKED:
+	mFile::Erase(argv[0]);
+    default:
+	Magick::deregister_instance();
+	delete fc->instance();
+    }
 
-	// Specicl case, the bin is locked, and we aint got a key.
-	if (Result == MAGICK_RET_LOCKED)
-	    mFile::Erase(argv[0]);
+    mThread::Detach();
+    ACE::fini();
+
+    return Result;
+}
+
+Flow_Control::Flow_Control(Magick * i)
+{
+    magick_instance = i;
 #ifdef WIN32
-	WSACleanup();
+    reactor(&magick_instance->reactor());
 #endif
-	return Result;
-#ifdef MAGICK_HAS_EXCEPTIONS
-    }
-    catch (exception & e)
-    {
-	// new style STL exceptions
-	ACE_OS::fprintf(stderr, "(EXC) Unhandled exception: %s\n", e.what());
-	ACE_OS::fflush(stderr);
-    }
-    catch (char *str)
-    {
-	// exceptions from memory management
-	ACE_OS::fprintf(stderr, "(STR) Unhandled exception: %s\n", str);
-	ACE_OS::fflush(stderr);
-    }
-    catch (int i)
-    {
-	// old style c exceptions
-	ACE_OS::fprintf(stderr, "(INT) Unhandled exception: %d\n", i);
-	ACE_OS::fflush(stderr);
-    }
-    catch (...)
-    {
-	// even older style exceptions like SIGSEGV
-	ACE_OS::fprintf(stderr, "(OTH) Unhandled exception.\n");
-	ACE_OS::fflush(stderr);
-    }
-#endif
+}
+
+Flow_Control::~Flow_Control()
+{
+    magick_instance->Finish();
+    if (magick_instance != NULL)
+	delete magick_instance;
+}
+
+int Flow_Control::svc()
+{
 #ifdef WIN32
-    WSACleanup();
+    if (report_status(SERVICE_START_PENDING) == 0)
+	reactor()->owner(ACE_Thread::self());
+    Magick::register_instance(magick_instance);
 #endif
-    return MAGICK_RET_ERROR;
+
+#ifdef WIN32
+    report_status(SERVICE_START_PENDING);
+#endif
+    int Result = magick_instance->Start();
+
+    if (Result == MAGICK_RET_NORMAL)
+    {
+#ifdef WIN32
+	report_status(SERVICE_RUNNING);
+#endif
+	Result = magick_instance->Run();
+#ifdef WIN32
+	report_status(SERVICE_STOP_PENDING);
+#endif
+	if (Result == MAGICK_RET_NORMAL)
+	    Result = magick_instance->Stop();
+#ifdef WIN32
+	report_status(SERVICE_STOPPED);
+#endif
+	if (Result == MAGICK_RET_RESTART)
+	{
+	    vector < mstring > argv = magick_instance->arguments();
+	    magick_instance->Finish();
+	    Magick::deregister_instance();
+	    delete magick_instance;
+	    magick_instance = NULL;
+	    magick_instance = new Magick(argv);
+	    Magick::register_instance(magick_instance);
+
+	    Result = magick_instance->Init();
+	    if (Result == MAGICK_RET_NORMAL)
+		Result = svc();
+	}
+    }
+#ifdef WIN32
+    else
+	report_status(SERVICE_STOPPED);
+#endif
+
+    return Result;
+}
+
+void Flow_Control::stop_requested(DWORD control_code)
+{
+#ifdef WIN32
+    if (state() != SERVICE_RUNNING && state() != SERVICE_PAUSED)
+	return;
+    report_status(SERVICE_STOP_PENDING);
+#endif
+    magick_instance->Pause(false);
+    magick_instance->Stop();
+#ifdef WIN32
+    report_status(SERVICE_STOPPED);
+#endif
+}
+
+void Flow_Control::pause_requested(DWORD control_code)
+{
+#ifdef WIN32
+    if (state() != SERVICE_RUNNING)
+	return;
+
+    report_status(SERVICE_PAUSE_PENDING);
+#endif
+    magick_instance->Pause(true);
+    suspend();
+#ifdef WIN32
+    report_status(SERVICE_PAUSED);
+#endif
+}
+
+void Flow_Control::continue_requested(DWORD control_code)
+{
+#ifdef WIN32
+    if (state() != SERVICE_PAUSED)
+	return;
+
+    report_status(SERVICE_CONTINUE_PENDING);
+#endif
+    magick_instance->Pause(false);
+    resume();
+#ifdef WIN32
+    report_status(SERVICE_RUNNING);
+#endif
 }

@@ -170,6 +170,7 @@ enum bool
 #include <ace/SOCK_Acceptor.h>
 #include <ace/SOCK_Connector.h>
 #include <ace/Activation_Queue.h>
+#include <ace/NT_Service.h>
 
 /* Added in 5.1.11, so accomodate it ... */
 #if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \

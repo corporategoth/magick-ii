@@ -52,6 +52,14 @@ const int MAGICK_RET_RESTART = 1;
 const int MAGICK_RET_ERROR = -1;
 const int MAGICK_RET_LOCKED = -2;
 const int MAGICK_RET_STATE = -3;
+const int MAGICK_RET_SERVICE_INSERT = -10;
+const int MAGICK_RET_SERVICE_REMOVE = -11;
+const int MAGICK_RET_SERVICE_START = -12;
+const int MAGICK_RET_SERVICE_STOP = -13;
+
+#ifdef WIN32
+bool isWinNT();
+#endif
 
 const mstring ChanSpec = "#&+!";
 
@@ -128,13 +136,14 @@ private:
     set < ACE_Log_Msg * > LogInstances;
     bool i_verbose;
 
+    mstring i_programname;
     mstring i_services_dir;
     mstring i_config_file;
-    mstring i_programname;
 
     static mDateTime i_StartTime;
     mDateTime i_ResetTime;
     unsigned int i_level;
+    bool i_fork;
     bool i_pause;
     bool i_auto;
     bool i_shutdown;
@@ -147,6 +156,8 @@ private:
     bool i_saving;
 
     static SXP::Tag tag_Magick;
+
+    void init();
 
 public:
     EventTask * events;
@@ -300,31 +311,17 @@ public:
 	unsigned long sampletime;
 
     public:
-	mstring MakePath(const mstring & in) const
-	{
-#ifdef WIN32
-	    if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
-		return in;
-	    else
-		return Magick::instance().Services_Dir() + DirSlash + in;
-#else
-	    if (mstring(in[0u]) == DirSlash)
-		return in;
-	    else
-		return Magick::instance().Services_Dir() + DirSlash + in;
-#endif
-	}
 	mode_t Umask() const
 	{
 	    return umask;
 	}
 	mstring Pidfile() const
 	{
-	    return MakePath(pidfile);
+	    return Magick::instance().MakePath(pidfile);
 	}
 	mstring Logfile() const
 	{
-	    return MakePath(logfile);
+	    return Magick::instance().MakePath(logfile);
 	}
 	mstring Logchan() const
 	{
@@ -332,15 +329,15 @@ public:
 	}
 	mstring Motdfile() const
 	{
-	    return MakePath(motdfile);
+	    return Magick::instance().MakePath(motdfile);
 	}
 	mstring Langdir() const
 	{
-	    return MakePath(langdir);
+	    return Magick::instance().MakePath(langdir);
 	}
 	mstring Database() const
 	{
-	    return MakePath(database);
+	    return Magick::instance().MakePath(database);
 	}
 	unsigned int Compression() const
 	{
@@ -348,7 +345,7 @@ public:
 	}
 	mstring KeyFile() const
 	{
-	    return MakePath(keyfile);
+	    return Magick::instance().MakePath(keyfile);
 	}
 	bool Encryption() const
 	{
@@ -356,7 +353,7 @@ public:
 	}
 	mstring MemoAttach() const
 	{
-	    return MakePath(memoattach);
+	    return Magick::instance().MakePath(memoattach);
 	}
 	unsigned long MemoAttachSize() const
 	{
@@ -364,7 +361,7 @@ public:
 	}
 	mstring Picture() const
 	{
-	    return MakePath(picture);
+	    return Magick::instance().MakePath(picture);
 	}
 	unsigned long PictureSize() const
 	{
@@ -372,7 +369,7 @@ public:
 	}
 	mstring Public() const
 	{
-	    return MakePath(i_public);
+	    return Magick::instance().MakePath(i_public);
 	}
 	unsigned long PublicSize() const
 	{
@@ -380,7 +377,7 @@ public:
 	}
 	mstring TempDir() const
 	{
-	    return MakePath(tempdir);
+	    return Magick::instance().MakePath(tempdir);
 	}
 	unsigned long TempDirSize() const
 	{
@@ -517,17 +514,22 @@ public:
     }
     mstring Config_File() const
     {
-	return files.MakePath(i_config_file);
+	return MakePath(i_config_file);
     }
     mstring ProgramName() const
     {
-	return i_programname;
+	return MakePath(argv[0]);
     }
 
     // Current STATES, and switching between them.
     Magick(int inargc, char **inargv);
+    Magick(const vector < mstring > & inargv);
 
     virtual ~ Magick();
+    vector < mstring > arguments() const
+    {
+	return argv;
+    }
 
     // Init and Finish are only EVER called once
     // Start should be called after Init or Stop
@@ -538,6 +540,15 @@ public:
     int Run();
     int Stop();
     int Finish();
+
+    int DoItAll()
+    {
+#ifdef WIN32
+	if (isWinNT() && i_fork)
+	    return false;
+#endif
+	return true;
+    }
 
     void Pause(bool in)
     {
@@ -647,7 +658,7 @@ public:
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator      mVariant() const
+    operator       mVariant() const
     {
 	mVariant locvar("Magick");
 
@@ -676,6 +687,21 @@ public:
     vector < mstring > getHelp(const mstring & name)
     {
 	return getHelp("", name);
+    }
+
+    mstring MakePath(const mstring & in) const
+    {
+#ifdef WIN32
+	if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
+	    return in;
+	else
+	    return i_services_dir + DirSlash + in;
+#else
+	if (mstring(in[0u]) == DirSlash)
+	    return in;
+	else
+	    return i_services_dir + DirSlash + in;
+#endif
     }
 
     void AddCommands(void)
@@ -742,6 +768,29 @@ public:
     size_t LFO_Usage() const;
     void DumpB() const;
     void DumpE() const;
+};
+
+#ifndef WIN32
+#define DWORD int
+class Flow_Control
+#else
+class Flow_Control : public ACE_NT_Service
+#endif
+{
+    Magick *magick_instance;
+
+public:
+    Flow_Control(Magick * i = & Magick::instance());
+    virtual ~ Flow_Control();
+
+    Magick *instance() const
+    {
+	return magick_instance;
+    }
+    virtual int svc();
+    virtual void stop_requested(DWORD control_code);
+    virtual void pause_requested(DWORD control_code);
+    virtual void continue_requested(DWORD control_code);
 };
 
 #endif

@@ -306,7 +306,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     while (!message_queue.is_empty())
     {
-	msg = dynamic_cast < mMessage * > (message_queue.dequeue());
+	msg = dynamic_cast < mMessage * > (message_queue.dequeue(&ACE_Time_Value(1)));
 	if (msg != NULL)
 	    delete msg;
     }
