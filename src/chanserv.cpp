@@ -5399,14 +5399,14 @@ void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, cons
     map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored->Name();
 
-    if (cstored->Forbidden())
+    // If you have OVR_CS_Mode, then you can still change the mlock ...
+    if (cstored->Forbidden() || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Mode()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Mode())->IsOn(source)))
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
-
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored->GetAccess(source, "SET"))
+    else if (!cstored->GetAccess(source, "SET"))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;

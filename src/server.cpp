@@ -6056,7 +6056,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 
 				    // If its live and got JOIN on || not live and mlock +k or +i
 				    if ((clive.entry() != NULL && cstored->Join()) ||
-					(clive.entry() == NULL && !cstored->Forbidden() &&
+					(clive.entry() == NULL &&
 					 (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
 				    {
 					joins.push_back(iter->first);

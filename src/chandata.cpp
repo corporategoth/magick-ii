@@ -1868,6 +1868,29 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), nick, i_Name, reason);
 	    RET(false);
 	}
+
+	mstring modes;
+
+	{
+	    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
+	    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
+	    RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
+	    modes = setting.Mlock_On;
+	    if (!setting.Mlock_Key.empty())
+		modes << "k";
+	    if (setting.Mlock_Limit)
+		modes << "l";
+	    if (!setting.Mlock_Key.empty())
+		modes << " " << setting.Mlock_Key;
+	    if (setting.Mlock_Limit)
+		modes << " " << setting.Mlock_Limit;
+	}
+
+	if (!modes.empty() && Magick::instance().chanserv.IsLive(i_Name))
+	{
+	    clive->SendMode("+" + modes + " " + setting.Mlock_Key + " " +
+			    (setting.Mlock_Limit ? mstring(setting.Mlock_Limit) : mstring("")));
+	}
 	RET(true);
     }
 
@@ -2816,7 +2839,7 @@ i_LastUsed(mDateTime::CurrentDateTime())
     FT("Chan_Stored_t::Chan_Stored_t", (name));
 
     defaults();
-    setting.Mlock_On = "nits";
+    setting.Mlock_On += "s";
     setting.Forbidden = true;
     DumpE();
     ETCB();
