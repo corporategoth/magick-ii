@@ -23,6 +23,8 @@
 #include <algorithm>
 using namespace std;
 
+wxLogStderr *logger;
+
 Magick::Magick(int inargc, char **inargv)
 {
     FT("Magick::Magick", (inargc, "(char **) inargv"));
@@ -45,7 +47,7 @@ int Magick::Start()
     CP(("Magick II has been started ..."));
     FILE *logfile=fopen("mdebug.log","w+");
     // the below defaults to stderr if logfile cannot be opened
-    wxLogStderr logger(logfile);
+    logger=new wxLogStderr(logfile);
 
     if(bob.StartBob("")==false)
     {
@@ -71,7 +73,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    cerr<< argv[i-1] <<" requires a paramter."<<endl;
+		    wxLogError("%s requires a paramter.",argv[i-1].c_str());
 		    RET(MAGICK_RET_ERROR);
 		}
 		services_dir=argv[i];
@@ -82,7 +84,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    cerr<< argv[i-1] <<" requires a paramter."<<endl;
+		    wxLogError("%s requires a paramter.",argv[i-1].c_str());
 		    RET(MAGICK_RET_ERROR);
 		}
 		config_file=argv[i];
@@ -106,7 +108,7 @@ int Magick::Start()
     MagickIni=new wxFileConfig("magick","",config_file);
     if(MagickIni==NULL)
     {
-	cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
+	wxLogError("Major fubar, couldn't allocate memory to read config file\nAborting");
 	RET(MAGICK_RET_ERROR);
     }
     //okay, need a function here to load all the ini file defalts
@@ -296,6 +298,8 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGUSR1);
 #endif
     delete signalhandler;
+    if(logger!=NULL)
+	delete logger;
 
     RET(MAGICK_RET_TERMINATE);
 }
@@ -440,7 +444,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    cerr<<"-remote"<<" requires hostname[:port]"<<endl;
+		    wxLogError("-remote requires a hostname[:port]");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(argv[i].Contains(":"))
@@ -448,7 +452,7 @@ int Magick::doparamparse()
 		    if(argv[i].After(':').IsNumber())
 		    {
 			if(atoi(argv[i].After(':').c_str())<0)
-			    cerr<<"port must be a positive number"<<endl;
+			    wxLogError("port must be a positive number");
 			else
 			    Startup_REMOTE_PORT=atoi(argv[i].After(':').c_str());
 		    }
@@ -460,8 +464,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-name");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-name");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVER_NAME=argv[i];
@@ -471,8 +474,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-desc");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-desc");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVER_DESC=argv[i];
@@ -482,8 +484,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-user");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-user");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVICES_USER=argv[i];
@@ -493,8 +494,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-host");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-host");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVICES_HOST=argv[i];
@@ -504,8 +504,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-dir");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-dir");
 		    RET(MAGICK_RET_ERROR);
 		}
 		// already handled, but we needed to i++
@@ -515,8 +514,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-config");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-config");
 		    RET(MAGICK_RET_ERROR);
 		}
 		// already handled, but we needed to i++
@@ -526,8 +524,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-log");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-log");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Files_LOGFILE=argv[i];
@@ -541,13 +538,12 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-relink");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-relink");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
-		    cerr<<"-relink"<<" parameter must be positive"<<endl;
+		    wxLogError("-relink parameter must be positive");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Config_SERVER_RELINK=atoi(argv[i].c_str());
@@ -559,13 +555,12 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-level");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-level");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
-		    cerr<<"-level"<<" parameter must be positive"<<endl;
+		    wxLogError("-level paramater must be positive");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_LEVEL=atoi(argv[i].c_str());
@@ -575,13 +570,12 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-gmt");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-gmt");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(abs(atoi(argv[i].c_str()))>12)
 		{
-		    cerr<<"-offset"<<" must be between -12 and 12"<<endl;
+		    wxLogError("-offset must be between -12 and 12");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_GMT=atoi(argv[i].c_str());
@@ -591,27 +585,25 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-update");
-		    cerr<<temp<<endl;
+		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-update");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
-		    cerr<<"-update"<<": number of seconds must be positive"<<endl;
+		    wxLogError("-update: number of seconds must be positive");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Config_CYCLETIME=atoi(argv[i].c_str());
 	    }
 	    else
 	    {
-		temp.Format("Unknown option %s.",argv[i].c_str());
-		cerr<<temp<<endl;
+    		wxLogError("Unknown option %s.",argv[i].c_str());
 		RET(MAGICK_RET_ERROR);
 	    }
 	}
 	else
 	{
-	    cerr<<"Non-option arguments not allowed"<<endl;
+	    wxLogError("Non-option arguments not allowed");
 	    RET(MAGICK_RET_ERROR);
 	}
     }
@@ -631,31 +623,31 @@ bool Magick::check_config()
     if (Startup_LEVEL < 1)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set [Startup] LEVEL < 1"<<endl;
+	wxLogError("CONFIG: Cannot set [Startup] LEVEL < 1");
         RET(false);
     }
     if (Startup_GMT >= 12 || Startup_GMT <= -12)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: [Startup] GMT must fall between -12 and 12."<<endl;
+        wxLogError("CONFIG: [Startup] GMT must fall between -12 and 12.");
         RET(false);
     }
     if (Config_CYCLETIME < 30)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set [Config] CYCLETIME < 30."<<endl;
+        wxLogError("CONFIG: Cannot set [Config] CYCLETIME < 30.");
         RET(false);
     }
     if (Startup_LAGTIME < 1)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set Startup_LAGTIME < 1."<<endl;
+        wxLogError("CONFIG: Cannot set Startup_LAGTIME < 1.");
         RET(false);
     }
     if (NickServ_PASSFAIL < 1)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set [NickServ] PASSFAIL < 1."<<endl;
+        wxLogError("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
         RET(false);
     }
     RET(true);
