@@ -7,6 +7,8 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
+	const char &operator[](int pos)const;
+	char &operator[](int pos);
 	mstring& operator <<(double d);
 	mstring& operator <<(float f);
 	mstring& operator<<(int i);
@@ -65,6 +67,7 @@ public:
 	mstring& operator<<(char ch);
 	mstring& operator=(const string& in);
 	mstring& operator=(const mstring& in);
+	mstring& operator=(const char *in);
 	mstring& operator<<(const char *psz);
 	mstring& operator<<(const mstring& s);
 	mstring(const mstring& in);

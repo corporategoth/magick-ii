@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 	int Result;
 restart:
 	Result=start_server(argc,argv);
-	if(Result==MAGICK_RESTART)
+	if(Result==MAGICK_RET_RESTART)
 		goto restart;
 	return Result;
 }

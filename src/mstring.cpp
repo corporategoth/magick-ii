@@ -56,6 +56,12 @@ mstring& mstring::operator =(const string & in)
 	return *this;
 }
 
+mstring& mstring::operator=(const char *in)
+{
+	*this=mstring(in);
+	return *this;
+}
+
 mstring& mstring::operator <<(char ch)
 {
 	*this=*this+mstring(1,ch);
@@ -92,7 +98,7 @@ mstring mstring::SubString(size_t from, size_t to)
 
 mstring::mstring(const string & in)
 {
-	*this=mstring(in.c_str());
+	*this=in.c_str();
 }
 
 mstring mstring::Left(size_t nCount)
@@ -246,7 +252,7 @@ int mstring::FormatV(const char * pszFormat, va_list argptr)
 		if(!buffer)
 			return -1;
 	}
-	*this=mstring(buffer);
+	*this=buffer;
 	if(buffer!=s_szScratch)
 		delete [] buffer;
 	return iLen;
@@ -291,7 +297,7 @@ bool mstring::Contains(const mstring & in)
 
 void mstring::Empty()
 {
-	*this=mstring("");
+	*this="";
 }
 
 int mstring::Find(char ch, bool bFromEnd)
@@ -365,7 +371,7 @@ bool mstring::IsAscii()
 
 bool mstring::IsEmpty()
 {
-	return *this==mstring("");
+	return *this=="";
 }
 
 bool mstring::IsNull()
@@ -493,4 +499,14 @@ mstring& mstring::operator <<(double d)
 	mstring s;
 	s.Format("%g",d);
 	return *this<<s;
+}
+
+char &mstring::operator [ ](int pos)
+{
+	return ((string)*this)[pos];
+}
+
+const char &mstring::operator[](int pos)const
+{
+	return ((string)*this)[pos];
 }

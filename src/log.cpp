@@ -229,7 +229,7 @@ mstring wxLog::TimeStamp() const
 {
 
   mstring str;
-  if ( mstring(m_szTimeFormat)!="" ) {
+  if ( m_szTimeFormat!="" ) {
     char szBuf[128];
     time_t timeNow;
     struct tm *ptmNow;
@@ -238,7 +238,7 @@ mstring wxLog::TimeStamp() const
     ptmNow = localtime(&timeNow);
 
     strftime(szBuf, sizeof(szBuf), m_szTimeFormat, ptmNow);
-    str = mstring(szBuf);
+    str = szBuf;
   }
 
   return str;
@@ -268,7 +268,7 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
     case wxLOG_Info:
       if ( GetVerbose() )
     case wxLOG_Message:
-        DoLogString((str + mstring(szString)).c_str());
+        DoLogString((str + szString).c_str());
       // fall through
 
     case wxLOG_Status:
@@ -312,7 +312,7 @@ wxLogStderr::wxLogStderr(FILE *fp)
 		m_fp = stderr;
 	else
 		m_fp = fp;
-	wxLog::SetActiveTarget(&logger);
+	wxLog::SetActiveTarget(this);
 	wxLog::EnableLogging(true);
 }
 

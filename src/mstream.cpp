@@ -823,7 +823,7 @@ mstring wxDataInputStream::ReadString()
   Read(string, len);
 
   string[len] = 0;
-  wx_string = mstring(string);
+  wx_string = string;
   delete string;
 
   return wx_string;
