@@ -27,6 +27,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2001/11/17 07:18:12  prez
+** Fixed up unbanning, so it gets ALL bans ...
+**
 ** Revision 1.4  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -128,6 +131,7 @@ EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
     EPO_dbFILE *f;
     FILE *fp;
 
+    static_cast<void>(service);
     f = (EPO_dbFILE *) malloc(sizeof(*f));
     if (!f) {
 	return NULL;
@@ -159,6 +163,8 @@ EPO_dbFILE *EPO_open_db_read(const char *service, const char *filename)
 
 EPO_dbFILE *EPO_open_db(const char *service, const char *filename, const char *mode, uint32 version)
 {
+    static_cast<void>(version);
+
     if (*mode == 'r') {
 	return EPO_open_db_read(service, filename);
     } else {

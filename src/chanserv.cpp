@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.265  2001/11/17 07:18:12  prez
+** Fixed up unbanning, so it gets ALL bans ...
+**
 ** Revision 1.264  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -8602,7 +8605,7 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
 	}
     }
 
-    bool found = false;
+    vector<mstring> bans;
     { RLOCK2(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     Nick_Live_t nlive = Parent->nickserv.GetLive(target);
@@ -8612,12 +8615,13 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
 	if (nlive.Mask(Nick_Live_t::N_U_P_H).Matches(clive.Ban(i), true) ||
 	    nlive.AltMask(Nick_Live_t::N_U_P_H).Matches(clive.Ban(i), true))
 	{
-	    clive.SendMode("-b " + clive.Ban(i));
-	    i--;
-	    found = true;
+	    bans.push_back(clive.Ban(i));
 	}
-    }}
-    if (found)
+    }
+    for (i=0; i<bans.size(); i++)
+	clive.SendMode("-b " + bans[i]);
+    }
+    if (bans.size())
     {
 	Parent->chanserv.stats.i_Unban++;
 	if (source.IsSameAs(target, true))
@@ -9250,15 +9254,16 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
     if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
-    vector<mstring> ops;
+    vector<mstring> ops, bans;
     unsigned int i;
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
 
+    // Need to get a list first, else it may not work.
     for (i=0; i<clive.Bans(); i++)
-    {
-	clive.SendMode("-b " + clive.Ban(i));
-    }
+	bans.push_back(clive.Ban(i));
+    for (i=0; i<bans.size(); i++)
+	clive.SendMode("-b " + bans[i]);
     if (!allmode)
     {
 	for (i=0; i<clive.Ops(); i++)

@@ -27,6 +27,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2001/11/17 07:18:12  prez
+** Fixed up unbanning, so it gets ALL bans ...
+**
 ** Revision 1.9  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -127,6 +130,7 @@ ESP_dbFILE *ESP_open_db_read(const char *service, const char *filename)
     ESP_dbFILE *f;
     FILE *fp;
 
+    static_cast<void>(service);
     f = (ESP_dbFILE *) malloc(sizeof(*f));
     if (!f) {
 	return NULL;
@@ -585,6 +589,8 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
     int i, j, c;
     ESP_ChannelInfo *ci;
     int failed = 0;
+
+    static_cast<void>(ver);
 
     struct {
 	short level;
