@@ -85,6 +85,16 @@ public class mct extends JApplet implements ActionListener
     {
 	if (e.getSource() == open)
 	{
+	    if (true)
+	    {
+		JOptionPane.showMessageDialog(null,
+			"This feature is not yet implemented.\n",
+			"Error",
+			JOptionPane.ERROR_MESSAGE);
+	    }
+	    else
+	    {
+
 	    JFileChooser open_file = new JFileChooser();
 
 	    if (open_file.getAccessibleContext() == null)
@@ -139,6 +149,7 @@ public class mct extends JApplet implements ActionListener
 		    commserv.parseCfg(cfg);
 		    servmsg.parseCfg(cfg);
 		}
+	    }
 	    }
 	}
 	else if (e.getSource() == save)
@@ -334,7 +345,7 @@ public class mct extends JApplet implements ActionListener
 	    open = new JMenuItem("Open");
 	    open.setMnemonic(KeyEvent.VK_O);
 	    open.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_S, ActionEvent.ALT_MASK));
+		KeyEvent.VK_O, ActionEvent.ALT_MASK));
 	    open.addActionListener(this);
 	    submenu.add(open);
 

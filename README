@@ -24,9 +24,10 @@ of changes since the previous release of Magick.
 1. DEDICATION
 2. INTRODUCTION
 3. SUPPORT FILES
-4. OPERATION
-5. FUNCTIONALITY
-6. NOTE TO DEVELOPERS
+4. CONFIGURATION
+5. GENERAL USAGE
+6. FUNCTIONALITY
+7. NOTE TO DEVELOPERS
 
 1. DEDICATION
 =============
@@ -152,8 +153,44 @@ removed. The files themselves are stored as hexadecimal numbers,
 with no extension. The path name actually used is a setting in the
 magick.ini file.
 
-4. OPERATION
-============
+4. CONFIGURATION
+================
+
+Magick may be configured in one of three ways.  First, you may
+manually edit the magick.ini file.  This file is what is read
+in by magick to tell it how to operate.  A sample INI file can
+be found in the docs directory.  This file contains full text
+on what each configuration item does, and what the valid settings
+for it are.
+
+The second method requires you to have the Java Runtime Environment
+installed on your machine.  Inside the gui directory, a jar file
+called mct.jar is included.  This will be installed in the same
+location as the magick binaries upon make install.  This is the
+Magick Configuration Tool.  To run it, type:
+    java -jar mct.jar
+
+This will load up a java applet, which allows you to create a
+magick.ini file from within.  Simply go through each of the tabs
+and configure the options within.  The advantage of this tool
+over hand-editing the INI file is that the Magick Configuration
+Tool does syntax validation for you.  However, any magick.ini
+file generated with this tool will not have comments in it.
+
+The third method of configuring magick is simply to go to the
+URL http://www.magick.tm/config.  If your browser does not have
+Java installed, it will prompt you to install it.  This web
+page will bring up the Magick Configuration Tool in your browser.
+You can then follow the same steps as if you were running the
+configuration tool locally to configure magick.  Once you have
+finished your configuration however, unlike running the Magick
+Configuration Tool locally, you will not be able to save it to
+a file.  Instead, you should click on the Current File tab,
+and then click 'Update', and then cut and paste the contents
+of the page into your own magick.ini file.
+
+5. GENERAL USAGE
+================
 
 Magick once started, becomes a background process.  It accepts
 a number of command-line options that override the settings of
@@ -279,7 +316,7 @@ Enter database key 2:
 Re-Enter database key 2:
 Created 160 byte keyfile.
 
-5. FUNCTIONALITY
+6. FUNCTIONALITY
 ================
 
 Magick has 6 main services, and offers the ability to script either
@@ -351,7 +388,7 @@ ability for Server Administrators to send a global message that
 will be sent to all users on the network, and services operators
 to offer files to users through the public file system.
 
-6. NOTE TO DEVELOPERS
+7. NOTE TO DEVELOPERS
 =====================
 
 If you feel the insane urge to modify Magick's code in any way,
