@@ -2775,7 +2775,7 @@ void OperServ::do_clone_Del(const mstring & mynick, const mstring & source, cons
 	}
 
 	Magick::instance().operserv.Clone = find_if(Magick::instance().operserv.Clone_begin(),
-		Magick::instance().operserv.Clone_begin(), FindNumberedEntry(num - 1));
+		Magick::instance().operserv.Clone_end(), FindNumberedEntry(num - 1));
 	if (Magick::instance().operserv.Clone != Magick::instance().operserv.Clone_end())
 	{
 	    Magick::instance().operserv.stats.i_Clone++;
