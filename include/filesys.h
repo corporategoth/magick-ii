@@ -24,6 +24,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/05/17 07:47:57  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.11  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -88,8 +92,6 @@ public:
     vector<unsigned long> GetList(FileType type, mstring source);
     unsigned long GetNum(FileType type, mstring name);
 
-    void load_database(wxInputStream& in);
-    void save_database(wxOutputStream& in);
     virtual SXP::Tag& GetClassTag() const { return tag_FileMap; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
@@ -126,10 +128,10 @@ private:
 
 public:
     DccXfer() { i_Transiant = NULL; }
-    DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
+    DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
 	mstring mynick, mstring source,
 	FileMap::FileType filetype, unsigned long filenum);
-    DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
+    DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
 	mstring mynick, mstring source, mstring filename,
 	size_t filesize, size_t blocksize);
     DccXfer(const DccXfer &in)
@@ -148,8 +150,7 @@ public:
     mDateTime LastData()	{ return i_LastData; }
 
     void ChgNick(mstring in)	{ i_Source = in; }
-    void Cancel()		{ i_Total = 0;
-				  i_File.Close(); }
+    void Cancel();
     void Action();	// Do what we want!
 
 };

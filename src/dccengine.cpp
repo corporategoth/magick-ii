@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.26  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -442,29 +446,24 @@ mstring DccEngine::encode(const mstring type, const mstring & in)
 void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
 		       mstring in)
 {
+    FT("DccEngine::GotDCC", (mynick, source, in));
     mstring type,argument,straddress,strport,strsize;
     unsigned short port;
     unsigned long address,size,longport;
     type	=in.ExtractWord(1, " ");
     argument	=in.ExtractWord(2, " ");
     straddress	=in.ExtractWord(3, " ");
-    if(count(strport.begin(),strport.end(),' ')>=1)
-    {
-	strport=in.ExtractWord(4, " ");
-	strsize=in.After(" ", 4);
-    }
-    else
-    {
-	strport=in.After(" ", 3);
-	strsize="";
-    }
-    sscanf(straddress.c_str(),"%u",&address);
-    sscanf(strport.c_str(),"%u",&longport);
-    port=(unsigned short)longport;
-    if(strsize!="")
-	sscanf(strsize.c_str(),"%u",&size);
-    else
-	size=0;
+    strport	=in.ExtractWord(4, " ");
+    if (in.WordCount(" ") > 4)
+	strsize = in.ExtractWord(5, " ");
+
+    address = strtoul(straddress.c_str(), NULL, 10);
+    longport = strtoul(strport.c_str(), NULL, 10);
+    port = (unsigned short) longport;
+    size = 0;
+    if (!strsize.IsEmpty())
+	size = strtoul(strsize.c_str(), NULL, 10);
+
     ACE_INET_Addr Server(port,address);
     if(type.UpperCase()=="CHAT")
     {
@@ -484,6 +483,7 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
 void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
 			  ACE_INET_Addr addr)
 {
+    FT("DccEngine::DoDccChat", (mynick, source, "(ACE_INET_Addr) addr"));
     // todo: check if we should accept this dcc (ie is it an oper?)
 
     // create a new threaded connection that is nothing more than a standard
@@ -506,6 +506,8 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 			  ACE_INET_Addr addr, mstring filename,
 			  size_t size)
 {
+    FT("DccEngine::DoDccSend", (mynick, source, "(ACE_INET_Addr) addr",
+    			  filename, size));
     // todo: check if we should accept this dcc (ie is it an oper?)
     // create a new threaded connection that is nothing more than a standard
     // tcp/ip socket connection for sending files

@@ -24,6 +24,10 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.13  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -78,8 +82,6 @@ public:
 
     bool ShowSync() { return showsync; }
 
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
     ServMsg();
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; }
     virtual mstring GetInternalName() const { return "ServMsg"; }

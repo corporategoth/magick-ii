@@ -24,6 +24,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/05/17 07:47:57  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.65  2000/05/13 14:20:44  ungod
 ** no message
 **
@@ -123,8 +127,6 @@ extern SXP::Tag tag_ValueFirst, tag_ValueSecond;
 
 class entlist_t : public mUserDef, public SXP::IPersistObj
 {
-    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, entlist_t& out);
 protected:
     mstring i_Entry;
     mDateTime i_Last_Modify_Time;
@@ -152,8 +154,6 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in);
-wxInputStream &operator>>(wxInputStream& in, entlist_t& out);
 typedef list<entlist_t>::iterator entlist_i;
 typedef list<entlist_t>::const_iterator entlist_ci;
 typedef set<entlist_t>::iterator entlist_ui;
@@ -225,32 +225,6 @@ public:
     	pOut->WriteElement(tag_Stupid, i_Stupid);
 
 	    pOut->EndObject(tag_entlist_val_t);
-    }
-    virtual wxOutputStream &operator<<(wxOutputStream& out)
-    {
-        out<<i_Entry<<i_Value<<i_Last_Modify_Time<<i_Last_Modifier<<i_Stupid;
-
-        map<mstring,mstring>::const_iterator j;
-        out<<i_UserDef.size();
-        for(j=i_UserDef.begin();j!=i_UserDef.end();j++)
-	    out<<(mstring)j->first<<(mstring)j->second;
-        return out;
-    }
-    virtual wxInputStream &operator>>(wxInputStream& in)
-    {
-        unsigned int i,count;
-        mstring dummy,dummy2;
-
-        in>>i_Entry>>i_Value>>i_Last_Modify_Time>>i_Last_Modifier>>i_Stupid;
-
-        i_UserDef.clear();
-        in>>count;
-        for(i=0;i<count;i++)
-        {
-    	    in>>dummy>>dummy2;
-    	    i_UserDef[dummy]=dummy2;
-        }
-        return in;
     }
 };
 
@@ -334,32 +308,6 @@ public:
 
     	pOut->EndObject(tag_entlist_val_t);
     }
-    virtual wxOutputStream &operator<<(wxOutputStream& out)
-    {
-        out<<i_Entry<<i_Value<<i_Last_Modify_Time<<i_Last_Modifier<<i_Stupid;
-
-        map<mstring,mstring>::const_iterator j;
-        out<<i_UserDef.size();
-        for(j=i_UserDef.begin();j!=i_UserDef.end();j++)
-	    out<<(mstring)j->first<<(mstring)j->second;
-        return out;
-    }
-    virtual wxInputStream &operator>>(wxInputStream& in)
-    {
-        unsigned int i,count;
-        mstring dummy,dummy2;
-
-        in>>i_Entry>>i_Value>>i_Last_Modify_Time>>i_Last_Modifier>>i_Stupid;
-
-        i_UserDef.clear();
-        in>>count;
-        for(i=0;i<count;i++)
-        {
-    	    in>>dummy>>dummy2;
-    	    i_UserDef[dummy]=dummy2;
-        }
-        return in;
-    }
 };
 
 class mBase
@@ -382,9 +330,6 @@ public:
     mBase();
     static void init();
     static void shutdown();
-
-    virtual void load_database(wxInputStream& in) =0;
-    virtual void save_database(wxOutputStream& out) =0;
 
     static void push_message(const mstring& message);
     virtual void execute(const mstring& message) =0;

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.115  2000/05/13 06:48:23  ungod
 ** no message
 **
@@ -176,35 +180,6 @@ void entlist_t::operator=(const entlist_t &in)
 	i_UserDef[i->first]=i->second;
 }
 
-
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in)
-{
-    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
-
-    map<mstring,mstring>::const_iterator j;
-    out<<in.i_UserDef.size();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
-    return out;
-}
-
-
-wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
-{
-    unsigned int i,count;
-    mstring dummy,dummy2;
-
-    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
-
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-    return in;
-}
 
 // --------- end of entlist_t -----------------------------------
 
@@ -1092,10 +1067,10 @@ SXP::Tag tag_entlist_t("entlist_t");
 SXP::Tag tag_entlist_val_t("entlist_val_t");
 SXP::Tag tag_Entry("Entry");
 SXP::Tag tag_Value("Value");
-SXP::Tag tag_ValueFirst("Value First");
-SXP::Tag tag_ValueSecond("Value Second");
-SXP::Tag tag_Last_Modify_Time("Last Modify Time");
-SXP::Tag tag_Last_Modifier("Last Modifier");
+SXP::Tag tag_ValueFirst("ValueFirst");
+SXP::Tag tag_ValueSecond("ValueSecond");
+SXP::Tag tag_Last_Modify_Time("Last_Modify_Time");
+SXP::Tag tag_Last_Modifier("Last_Modifier");
 SXP::Tag tag_UserDef("UserDef");
 SXP::Tag tag_Stupid("Stupid");
 

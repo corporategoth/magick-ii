@@ -24,6 +24,10 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.26  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -60,8 +64,6 @@ struct NewsList;
 
 class Memo_t : public mUserDef, public SXP::IPersistObj
 {
-    friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, Memo_t& out);
     friend list<Memo_t> CreateMemoEntry(MemoList *ml);
 
     mstring i_Nick;
@@ -104,8 +106,6 @@ public:
 
 class News_t : public mUserDef, public SXP::IPersistObj
 {
-    friend wxOutputStream &operator<<(wxOutputStream& out,News_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, News_t& out);
     friend list<News_t> CreateNewsEntry(NewsList *nl);
 
     mstring i_Channel;
@@ -201,8 +201,6 @@ public:
     unsigned int Files()	{ return files; }
     unsigned long FileSize()	{ return filesize; }
 
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
     MemoServ();
     virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
     virtual mstring GetInternalName() const { return "MemoServ"; }

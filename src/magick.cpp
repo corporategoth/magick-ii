@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.226  2000/05/17 07:47:59  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.225  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -323,6 +327,7 @@ int Magick::Start()
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
 
+
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     if (loggertask != NULL)
@@ -442,10 +447,11 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     CP((PRODUCT + " II has been started ..."));
-    //load_databases();
-    LoadXML();
-    i_ResetTime=Now();
+    Trace::TurnSet(tt_MAIN, 0xffff);
+    load_databases();
+    Trace::TurnSet(tt_MAIN, 0);
 printf("I am outside load (%d) ...\n", nickserv.stored.size()); fflush(stdout);
+    i_ResetTime=Now();
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives
@@ -2647,6 +2653,7 @@ mstring Magick::GetKey()
     NRET(mstring, retval);
 }
 
+/*
 void Magick::load_databases()
 {
     NFT("Magick::load_databases");
@@ -2828,6 +2835,7 @@ cleanup:
     wxLogError("Error saving databases, aborted ...");
     announce(operserv.FirstName(), "Warning, dbases not saved ..");
 }
+*/
 
 void Magick::Disconnect()
 {
@@ -2922,16 +2930,18 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     pOut->EndObject(tag_Magick);
 }
 
-void Magick::SaveXML()
+void Magick::save_databases()
 {
+	NFT("Magick::save_databases");
 	SXP::CFileOutStream o(files.Database());
 	o.BeginXML();
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
 }
 
-void Magick::LoadXML()
+void Magick::load_databases()
 {
+    NFT("Magick::load_databases");
     if (wxFile::Exists(files.Database()))
     {
    	SXP::CParser p( this ); // let the parser know which is the object

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.98  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -614,8 +618,7 @@ int EventTask::svc(void)
 	if (last_save.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
-//	    Parent->save_databases();
-	    Parent->SaveXML();
+	    Parent->save_databases();
 
 	    last_save = Now();
 	}

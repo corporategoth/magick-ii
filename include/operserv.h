@@ -24,6 +24,10 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.33  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -214,8 +218,6 @@ public:
     set<entlist_val_t<bool> >::iterator Ignore;
 
 
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
     OperServ();
     virtual threadtype_enum Get_TType() const { return tt_OperServ; }
     virtual mstring GetInternalName() const { return "OperServ"; }

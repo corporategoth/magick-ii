@@ -24,6 +24,10 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/05/17 07:47:57  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.37  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -165,8 +169,6 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     friend class Nick_Live_t;
     friend class Chan_Live_t;
     friend class ChanServ;
-    friend wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out);
     friend Chan_Stored_t CreateChanEntry(ChanInfo *ci);
 
     mstring i_Name;
@@ -436,9 +438,6 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
 
-wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in);
-wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out);
-
 class ChanServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
@@ -602,8 +601,6 @@ public:
     bool IsLVL(mstring level);
     vector<mstring> LVL();
 
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
     bool IsStored(mstring in);
     bool IsLive(mstring in);
     map<mstring,Chan_Stored_t> stored;

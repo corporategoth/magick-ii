@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/05/17 07:47:59  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.55  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -245,8 +249,42 @@ void MemoServ::RemCommands()
     NFT("MemoServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-//  Parent->commands.RemSystemCommand(GetInternalName(),
-//		    "TRACE", "ALL");
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "READ*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNREAD*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LIST*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "VIEW*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SEND*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FLUSH*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FORW*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "F*W*D", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "REP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CAN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ABOR*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ERA*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CONT*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*ATTACH", Parent->commserv.REGD_Name());
 }
 
 bool MemoServ::IsNick(mstring in)
@@ -1808,125 +1846,6 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 					    true, mynick, name, text);
 }
 
-
-void MemoServ::load_database(wxInputStream& in)
-{
-    FT("MemoServ::load_database", ("(wxInputStream &) in"));
-    map<mstring,list<Memo_t> >::size_type i,count, i2, count2;
-    in>>count;
-    CP(("Loading MEMO LIST entries (%d) ...", count));
-    nick.clear();
-    for(i=0;i<count;i++)
-    {
-	COM(("Loading MEMO LIST entry %d ...", i));
-	mstring temp;
-	Memo_t tmpmemo;
-	in>>temp>>count2;
-	CP(("Loading MEMO entries (%d) ...", count2));
-	for(i2=0;i2<count2;i2++)
-	{
-	    COM(("Loading MEMO entry %d ...", i2));
-	    in>>tmpmemo;
-	    nick[temp].push_back(tmpmemo);
-	    COM(("Entry MEMO %d loaded ...", i2));
-	}
-	COM(("Entry MEMO LIST %s loaded ...", temp.c_str()));
-    }
-    in>>count;
-    CP(("Loading NEWS LIST entries (%d) ...", count));
-    channel.clear();
-    for(i=0;i<count;i++)
-    {
-	COM(("Loading NEWS LIST entry %d ...", i));
-	mstring temp;
-	News_t tmpnews;
-	in>>temp>>count2;
-	CP(("Loading NEWS entries (%d) ...", count2));
-	for(i2=0;i2<count2;i2++)
-	{
-	    COM(("Loading NEWS entry %d ...", i2));
-	    in>>tmpnews;
-	    channel[temp].push_back(tmpnews);
-	    COM(("Entry NEWS %d loaded ...", i2));
-	}
-	COM(("Entry NEWS LIST %s loaded ...", temp.c_str()));
-    }
-}
-
-void MemoServ::save_database(wxOutputStream& out)
-{
-    FT("MemoServ::save_database", ("(wxOutputStream &) out"));
-    CP(("Saving MEMO LIST entries (%d) ...", nick.size()));
-    out<<nick.size();
-    map<mstring,list<Memo_t> >::iterator i;
-    int cntr;
-    for(i=nick.begin();i!=nick.end();i++)
-    {
-	out<<i->first;
-	CP(("Saving MEMO entries (%d) ...", i->second.size()));
-	out<<i->second.size();
-	list<Memo_t>::iterator j;
-	for(cntr=0, j=i->second.begin();j!=i->second.end();cntr++, j++)
-	{
-	    out<<(*j);
-	    COM(("Entry MEMO %d saved ...", cntr));
-	}
-	COM(("Entry MEMO LIST %s saved ...", i->first.c_str()));
-    }
-    CP(("Saving NEWS LIST entries (%d) ...", channel.size()));
-    out<<channel.size();
-    map<mstring,list<News_t> >::iterator i2;
-    for(i2=channel.begin();i2!=channel.end();i2++)
-    {
-	out<<i2->first;
-	CP(("Saving NEWS entries (%d) ...", i2->second.size()));
-	out<<i2->second.size();
-	list<News_t>::iterator j2;
-	for(cntr=0, j2=i2->second.begin();j2!=i2->second.end();cntr++, j2++)
-	{
-	    out<<(*j2);
-	    COM(("Entry NEWS %d saved ...", cntr));
-	}
-	COM(("Entry NEWS LIST %s saved ...", i2->first.c_str()));
-    }
-}
-
-wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in)
-{
-    out<<in.i_Nick<<in.i_Sender<<in.i_Time<<in.i_Text<<in.i_Read<<in.i_File;
-    return out;
-}
-wxInputStream &operator>>(wxInputStream& in, Memo_t& out)
-{
-    in>>out.i_Nick>>out.i_Sender>>out.i_Time>>out.i_Text>>out.i_Read>>out.i_File;
-    return in;
-}
-wxOutputStream &operator<<(wxOutputStream& out,News_t& in)
-{
-    out<<in.i_Channel<<in.i_Sender<<in.i_Time<<in.i_Text;
-    out<<in.i_Read.size();
-    
-    set<mstring>::iterator i;
-    for(i=in.i_Read.begin();i!=in.i_Read.end();i++)
-	out<<(*i);
-
-    return out;
-}
-wxInputStream &operator>>(wxInputStream& in, News_t& out)
-{
-    in>>out.i_Channel>>out.i_Sender>>out.i_Time>>out.i_Text;
-    out.i_Read.clear();
-    set<mstring>::size_type i,j;
-    in>>i;
-    for(j=0;j<i;j++)
-    {
-	mstring temp;
-	in>>temp;
-	out.i_Read.insert(temp);
-    }
-
-    return in;
-}
 
 SXP::Tag Memo_t::tag_Memo_t("Memo_t");
 SXP::Tag Memo_t::tag_Nick("Nick");

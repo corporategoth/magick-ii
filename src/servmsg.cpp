@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/05/17 07:47:59  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.44  2000/05/13 07:05:47  prez
 ** Added displaying of sizes to all file fields..
 **
@@ -182,6 +186,68 @@ void ServMsg::RemCommands()
 {
     NFT("ServMsg::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HELP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CRED*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CONTRIB*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "BREAKD*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*MAP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GLOB*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* NICK*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* CHAN*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* OPER*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* OTH*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* USAGE", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* LIST*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* VIEW*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* ADD*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* DEL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* REM*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* REN*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* SEND*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* LOOK*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* RES*", Parent->commserv.SADMIN_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* *", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE*", Parent->commserv.ALL_Name());
 }
 
 void ServMsg::execute(const mstring & data)
@@ -1047,13 +1113,3 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 				source.c_str());
 }
 
-
-void ServMsg::load_database(wxInputStream& in)
-{
-    FT("ServMsg::load_database", ("(wxInputStream &) in"));
-}
-
-void ServMsg::save_database(wxOutputStream& out)
-{
-    FT("ServMsg::save_database", ("(wxOutputStream &) out"));
-}

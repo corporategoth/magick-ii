@@ -24,6 +24,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.37  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -236,8 +240,6 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend class Nick_Live_t;
     friend class NickServ;
-    friend wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);
     friend Nick_Stored_t CreateNickEntry(NickInfo *ni);
 
     mstring i_Name;
@@ -406,8 +408,6 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 };
-wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in);
-wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);
 
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
@@ -518,8 +518,6 @@ public:
     unsigned long PicSize()	{ return picsize; }
     mstring PicExt()		{ return picext; }
 
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
     bool IsStored(mstring in);
     bool IsLive(mstring in);
     map<mstring,Nick_Stored_t> stored;

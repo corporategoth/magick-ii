@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.168  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.167  2000/05/14 06:30:13  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -3452,166 +3456,55 @@ bool Chan_Stored_t::Message_find(unsigned int num)
 }
 
 
-wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
-{
-    out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_CoFounder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
-    out<<in.i_Mlock_On<<in.l_Mlock_On<<in.i_Mlock_Off<<in.l_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit<<in.i_Forbidden;
-    out<<in.i_Bantime<<in.i_Parttime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops
-	<<in.i_Secure<<in.i_NoExpire<<in.i_Anarchy<<in.i_KickOnBan<<in.i_Restricted<<in.i_Join<<in.i_Revenge;
-    out<<in.l_Bantime<<in.l_Parttime<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops
-	<<in.l_Secure<<in.l_NoExpire<<in.l_Anarchy<<in.l_KickOnBan<<in.l_Restricted<<in.l_Join<<in.l_Revenge;
-    out<<in.i_Suspend_By<<in.i_Suspend_Time;
-
-//  entlist_val_cui<long> j;
-    set<entlist_val_t<long> >::const_iterator j;
-    out<<in.i_Level.size();
-    for(j=in.i_Level.begin();j!=in.i_Level.end();j++)
-	out<<*j;
-
-    out<<in.i_Access.size();
-    for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
-	out<<*j;
-
-//  entlist_val_cui<mstring> k;
-    set<entlist_val_t<mstring> >::const_iterator k;
-    out<<in.i_Akick.size();
-    for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
-	out<<*k;
-
-    entlist_ci l;
-    out<<in.i_Greet.size();
-    for(l=in.i_Greet.begin();l!=in.i_Greet.end();l++)
-	out<<*l;
-
-    out<<in.i_Message.size();
-    for(l=in.i_Message.begin();l!=in.i_Message.end();l++)
-	out<<*l;
-
-    map<mstring,mstring>::iterator i;
-    out<<in.i_UserDef.size();
-    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	out<<(mstring)i->first<<(mstring)i->second;
-    return out;
-}
-
-
-wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
-{
-    size_t i, count;
-    set<entlist_t>::size_type ei,ecount;
-    set<entlist_val_t<long> >::size_type vli,vlcount;
-    set<entlist_val_t<mstring> >::size_type vsi,vscount;
-    mstring dummy,dummy2;
-    entlist_t edummy;
-    entlist_val_t<long> eldummy;
-    entlist_val_t<mstring> esdummy;
-    in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_CoFounder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
-    in>>out.i_Mlock_On>>out.l_Mlock_On>>out.i_Mlock_Off>>out.l_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit>>out.i_Forbidden;
-    in>>out.i_Bantime>>out.i_Parttime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops
-	>>out.i_Secure>>out.i_NoExpire>>out.i_Anarchy>>out.i_KickOnBan>>out.i_Restricted>>out.i_Join>>out.i_Revenge;
-    in>>out.l_Bantime>>out.l_Parttime>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops
-	>>out.l_Secure>>out.l_NoExpire>>out.l_Anarchy>>out.l_KickOnBan>>out.l_Restricted>>out.l_Join>>out.l_Revenge;
-    in>>out.i_Suspend_By>>out.i_Suspend_Time;
-
-    out.i_Level.clear();
-    in>>vlcount;
-    for(vli=0;vli<vlcount;vli++)
-    {
-	in>>eldummy;
-	out.i_Level.insert(eldummy);
-    }
-
-    out.i_Access.clear();
-    in>>vlcount;
-    for(vli=0;vli<vlcount;vli++)
-    {
-	in>>eldummy;
-	out.i_Access.insert(eldummy);
-    }
-
-    out.i_Akick.clear();
-    in>>vscount;
-    for(vsi=0;vsi<vscount;vsi++)
-    {
-	in>>esdummy;
-	out.i_Akick.insert(esdummy);
-    }
-
-    out.i_Greet.clear();
-    in>>ecount;
-    for(ei=0;ei<ecount;ei++)
-    {
-	in>>edummy;
-	out.i_Greet.push_back(edummy);
-    }
-
-    out.i_Message.clear();
-    in>>ecount;
-    for(ei=0;ei<ecount;ei++)
-    {
-	in>>edummy;
-	out.i_Message.push_back(edummy);
-    }
-
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-    return in;
-}
-
 SXP::Tag Chan_Stored_t::tag_Chan_Stored_t("Chan_Stored_t");
 SXP::Tag Chan_Stored_t::tag_Name("Name");
-SXP::Tag Chan_Stored_t::tag_RegTime("Reg Time");
-SXP::Tag Chan_Stored_t::tag_LastUsed("Last Used");
+SXP::Tag Chan_Stored_t::tag_RegTime("RegTime");
+SXP::Tag Chan_Stored_t::tag_LastUsed("LastUsed");
 SXP::Tag Chan_Stored_t::tag_Founder("Founder");
-SXP::Tag Chan_Stored_t::tag_CoFounder("Co-Founder");
+SXP::Tag Chan_Stored_t::tag_CoFounder("CoFounder");
 SXP::Tag Chan_Stored_t::tag_Description("Description");
 SXP::Tag Chan_Stored_t::tag_Password("Password");
 SXP::Tag Chan_Stored_t::tag_Email("Email");
 SXP::Tag Chan_Stored_t::tag_URL("URL");
 SXP::Tag Chan_Stored_t::tag_Comment("Comment");
 SXP::Tag Chan_Stored_t::tag_Topic("Topic");
-SXP::Tag Chan_Stored_t::tag_Topic_Setter("Topic Setter");
-SXP::Tag Chan_Stored_t::tag_Topic_Set_Time("Topic Set Time");
-SXP::Tag Chan_Stored_t::tag_set_Mlock_On("SET Mlock On");
-SXP::Tag Chan_Stored_t::tag_set_Mlock_Off("SET Mlock Off");
-SXP::Tag Chan_Stored_t::tag_set_Mlock_Key("SET Mlock Key");
-SXP::Tag Chan_Stored_t::tag_set_Mlock_Limit("SET Mlock Limit");
-SXP::Tag Chan_Stored_t::tag_set_Bantime("SET Ban Time");
-SXP::Tag Chan_Stored_t::tag_set_Parttime("SET Part Time");
-SXP::Tag Chan_Stored_t::tag_set_KeepTopic("SET Keep Topic");
-SXP::Tag Chan_Stored_t::tag_set_TopicLock("SET Topic Lock");
-SXP::Tag Chan_Stored_t::tag_set_Private("SET Private");
-SXP::Tag Chan_Stored_t::tag_set_SecureOps("SET Secure Ops");
-SXP::Tag Chan_Stored_t::tag_set_Secure("SET Secure");
-SXP::Tag Chan_Stored_t::tag_set_NoExpire("SET No Expire");
-SXP::Tag Chan_Stored_t::tag_set_Anarchy("SET Anarchy");
-SXP::Tag Chan_Stored_t::tag_set_KickOnBan("SET Kick On Ban");
-SXP::Tag Chan_Stored_t::tag_set_Restricted("SET Restricted");
-SXP::Tag Chan_Stored_t::tag_set_Join("SET Join");
-SXP::Tag Chan_Stored_t::tag_set_Revenge("SET Revenge");
+SXP::Tag Chan_Stored_t::tag_Topic_Setter("Topic_Setter");
+SXP::Tag Chan_Stored_t::tag_Topic_Set_Time("Topic_Set_Time");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_On("SET_Mlock_On");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_Off("SET_Mlock_Off");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_Key("SET_Mlock_Key");
+SXP::Tag Chan_Stored_t::tag_set_Mlock_Limit("SET_Mlock_Limit");
+SXP::Tag Chan_Stored_t::tag_set_Bantime("SET_BanTime");
+SXP::Tag Chan_Stored_t::tag_set_Parttime("SET_PartTime");
+SXP::Tag Chan_Stored_t::tag_set_KeepTopic("SET_KeepTopic");
+SXP::Tag Chan_Stored_t::tag_set_TopicLock("SET_TopicLock");
+SXP::Tag Chan_Stored_t::tag_set_Private("SET_Private");
+SXP::Tag Chan_Stored_t::tag_set_SecureOps("SET_SecureOps");
+SXP::Tag Chan_Stored_t::tag_set_Secure("SET_Secure");
+SXP::Tag Chan_Stored_t::tag_set_NoExpire("SET_NoExpire");
+SXP::Tag Chan_Stored_t::tag_set_Anarchy("SET_Anarchy");
+SXP::Tag Chan_Stored_t::tag_set_KickOnBan("SET_KickOnBan");
+SXP::Tag Chan_Stored_t::tag_set_Restricted("SET_Restricted");
+SXP::Tag Chan_Stored_t::tag_set_Join("SET_Join");
+SXP::Tag Chan_Stored_t::tag_set_Revenge("SET_Revenge");
 SXP::Tag Chan_Stored_t::tag_Forbidden("Forbidden");
-SXP::Tag Chan_Stored_t::tag_lock_Mlock_On("LOCK Mlock On");
-SXP::Tag Chan_Stored_t::tag_lock_Mlock_Off("LOCK Mlock Off");
-SXP::Tag Chan_Stored_t::tag_lock_Bantime("LOCK Ban Time");
-SXP::Tag Chan_Stored_t::tag_lock_Parttime("LOCK Part Time");
-SXP::Tag Chan_Stored_t::tag_lock_KeepTopic("LOCK Keep Topic");
-SXP::Tag Chan_Stored_t::tag_lock_TopicLock("LOCK TopicLock");
-SXP::Tag Chan_Stored_t::tag_lock_Private("LOCK Private");
-SXP::Tag Chan_Stored_t::tag_lock_SecureOps("LOCK SecureOps");
-SXP::Tag Chan_Stored_t::tag_lock_Secure("LOCK Secure");
-SXP::Tag Chan_Stored_t::tag_lock_NoExpire("LOCK No Expire");
-SXP::Tag Chan_Stored_t::tag_lock_Anarchy("LOCK Anarchy");
-SXP::Tag Chan_Stored_t::tag_lock_KickOnBan("LOCK Kick On Ban");
-SXP::Tag Chan_Stored_t::tag_lock_Restricted("LOCK Restricted");
-SXP::Tag Chan_Stored_t::tag_lock_Join("LOCK Join");
-SXP::Tag Chan_Stored_t::tag_lock_Revenge("LOCK Revenge");
-SXP::Tag Chan_Stored_t::tag_Suspend_By("Suspend By");
-SXP::Tag Chan_Stored_t::tag_Suspend_Time("Suspend Time");
+SXP::Tag Chan_Stored_t::tag_lock_Mlock_On("LOCK_Mlock_On");
+SXP::Tag Chan_Stored_t::tag_lock_Mlock_Off("LOCK_Mlock_Off");
+SXP::Tag Chan_Stored_t::tag_lock_Bantime("LOCK_BanTime");
+SXP::Tag Chan_Stored_t::tag_lock_Parttime("LOCK_PartTime");
+SXP::Tag Chan_Stored_t::tag_lock_KeepTopic("LOCK_KeepTopic");
+SXP::Tag Chan_Stored_t::tag_lock_TopicLock("LOCK_TopicLock");
+SXP::Tag Chan_Stored_t::tag_lock_Private("LOCK_Private");
+SXP::Tag Chan_Stored_t::tag_lock_SecureOps("LOCK_SecureOps");
+SXP::Tag Chan_Stored_t::tag_lock_Secure("LOCK_Secure");
+SXP::Tag Chan_Stored_t::tag_lock_NoExpire("LOCK_NoExpire");
+SXP::Tag Chan_Stored_t::tag_lock_Anarchy("LOCK_Anarchy");
+SXP::Tag Chan_Stored_t::tag_lock_KickOnBan("LOCK_KickOnBan");
+SXP::Tag Chan_Stored_t::tag_lock_Restricted("LOCK_Restricted");
+SXP::Tag Chan_Stored_t::tag_lock_Join("LOCK_Join");
+SXP::Tag Chan_Stored_t::tag_lock_Revenge("LOCK_Revenge");
+SXP::Tag Chan_Stored_t::tag_Suspend_By("Suspend_By");
+SXP::Tag Chan_Stored_t::tag_Suspend_Time("Suspend_Time");
 SXP::Tag Chan_Stored_t::tag_Level("Level");
 SXP::Tag Chan_Stored_t::tag_Access("Access");
 SXP::Tag Chan_Stored_t::tag_Akick("Akick");
@@ -4103,8 +3996,253 @@ void ChanServ::RemCommands()
     NFT("ChanServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-//  Parent->commands.RemSystemCommand(GetInternalName(),
-//		    "TRACE", "ALL");
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "REG*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "DROP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "INFO*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LIST", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SUSP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNSUSP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FORB*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GET*PASS*", Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "MODE", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "D*OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "VOIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "D*VOIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "TOPIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "KICK*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "REM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "USER*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "INV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNBAN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LIVE*", Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *USER*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *VOICE*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *MODE*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *BAN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *ALL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV* SET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV* RESET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* REM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK REM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* REM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* REM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* FOUND*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* COFOUND*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* DESC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* PASS*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* EMAIL", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* URL", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* WWW*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* WEB*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* COMM*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* M*LOCK", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* BAN*TIME", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* PART*TIME", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* KEEP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* TOPIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* PRIV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* SEC*OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* SEC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* ANAR*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* KICK*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* RES*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* *JOIN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* REV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK M*LOCK", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK BAN*TIME", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK PART*TIME", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK KEEP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK TOPIC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK SEC*OP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK ANAR*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK KICK*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK RES*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK *JOIN*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK REV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK PART*TIME", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK KEEP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK TOPIC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*OP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK ANAR*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK KICK*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK RES*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK REV*", Parent->commserv.SOP_Name());
+
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK *", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK *", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK", Parent->commserv.SOP_Name());
 }
 
 bool ChanServ::IsLive(mstring in)
@@ -9517,41 +9655,6 @@ bool ChanServ::IsLVL(mstring level)
     FT("ChanServ::IsLVL", (level));
     bool retval = lvl.find(level.UpperCase()) != lvl.end();
     RET(retval);
-}
-
-
-void ChanServ::save_database(wxOutputStream& out)
-{
-    FT("ChanServ::save_database", ("(wxOutputStream &) out"));
-	map<mstring,Chan_Stored_t>::iterator i;
-	CP(("Saving CHANNEL entries (%d) ...", stored.size()));
-	out<<stored.size();
-        // todo call script saving hooks.
-	for(i=stored.begin();i!=stored.end();i++)
-	{
-	    out<<i->second;
-	    // todo call script saving hooks.
-	    COM(("Entry CHANNEL %s saved ...", i->second.Name().c_str()));
-	}
-}
-
-void ChanServ::load_database(wxInputStream& in)
-{
-    FT("ChanServ::load_database", ("(wxInputStream &) in"));
-    map<mstring,Chan_Stored_t>::size_type i,j;
-    in>>i;
-    CP(("Loading CHANNEL entries (%d) ...", i));
-    Chan_Stored_t tmpstored;
-    for(j=0;j<i;j++)
-    {
-	COM(("Loading CHANNEL entry %d ...", j));
-	in>>tmpstored;
-	if (tmpstored.Name().Len())
-	{
-	    stored[tmpstored.Name().LowerCase()]=tmpstored;
-	    COM(("Entry CHANNEL %s loaded ...", tmpstored.Name().c_str()));
-	}
-    }
 }
 
 

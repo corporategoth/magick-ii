@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2000/05/17 07:47:59  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.76  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -729,7 +733,137 @@ void OperServ::RemCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.RemSystemCommand(GetInternalName(),
-		    "TRACE", Parent->commserv.SADMIN_Name());
+	    "HELP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "TRACE", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*MODE*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "Q*LINE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNQ*LINE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "NO*OP*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "KILL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HIDE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*PING*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UPD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "RELOAD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOAD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "JUPE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ON", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "OFF", Parent->commserv.SADMIN_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* CONF*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* NICK*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* CHAN*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* OTH*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* *ALL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* ADD*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* DEL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* ERA*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL ADD*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL DEL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL ERA*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* ADD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* DEL*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* ERA*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* LIST", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* VIEW", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* ADD*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* DEL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* ERA*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
 }
 
 void OperServ::execute(const mstring & data)
@@ -2740,105 +2874,6 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     if (head == false)
 	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
 		Parent->getMessage(source, "LIST/SIGNORE").c_str());
-}
-
-void OperServ::load_database(wxInputStream& in)
-{
-    FT("OperServ::load_database", ("(wxInputStream &) in"));
-    entlist_val_t<pair<unsigned int, mstring> > clone;
-    set<entlist_val_t<pair<unsigned int, mstring> > >::size_type clone_c, i;
-    entlist_val_t<pair<unsigned long, mstring> > akill;
-    set<entlist_val_t<pair<unsigned long, mstring> > >::size_type akill_c, j;
-    entlist_val_t<mstring> operdeny;
-    set<entlist_val_t<mstring> >::size_type operdeny_c, k;
-    entlist_val_t<bool> ignore;
-    set<entlist_val_t<bool> >::size_type ignore_c, l;
-
-    in>>clone_c;
-    CP(("Loading CLONE entries (%d) ...", clone_c));
-    for (i=0; i<clone_c; i++)
-    {
-	COM(("Loading CLONE entry %d ...", i));
-	in>>clone;
-	i_Clone.insert(clone);
-	COM(("Entry CLONE %s loaded ...", clone.Entry().c_str()));
-    }
-
-    in>>akill_c;
-    CP(("Loading AKILL entries (%d) ...", akill_c));
-    for (j=0; j<akill_c; j++)
-    {
-	COM(("Loading AKILL entry %d ...", j));
-	in>>akill;
-	i_Akill.insert(akill);
-	COM(("Entry AKILL %s loaded ...", akill.Entry().c_str()));
-    }
-
-    in>>operdeny_c;
-    CP(("Loading OPERDENY entries (%d) ...", operdeny_c));
-    for (k=0; k<operdeny_c; k++)
-    {
-	COM(("Loading OPERDENY entry %d ...", k));
-	in>>operdeny;
-	i_OperDeny.insert(operdeny);
-	COM(("Entry OPERDENY %s loaded ...", operdeny.Entry().c_str()));
-    }
-
-    in>>ignore_c;
-    CP(("Loading IGNORE entries (%d) ...", ignore_c));
-    for (l=0; l<ignore_c; l++)
-    {
-	COM(("Loading IGNORE entry %d ...", l));
-	in>>ignore;
-	i_Ignore.insert(ignore);
-	COM(("Entry IGNORE %s loaded ...", ignore.Entry().c_str()));
-    }
-}
-
-void OperServ::save_database(wxOutputStream& out)
-{
-    FT("OperServ::save_database", ("(wxOutputStream &) out"));
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator clone_i;
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator akill_i;
-    set<entlist_val_t<mstring> >::iterator operdeny_i;
-    set<entlist_val_t<bool> >::iterator ignore_i;
-    set<entlist_val_t<bool> >::size_type ignore_c = 0;
-
-    CP(("Saving CLONE entries (%d) ...", i_Clone.size()));
-    out<<i_Clone.size();
-    for (clone_i=i_Clone.begin(); clone_i!=i_Clone.end(); clone_i++)
-    {
-	out<<*clone_i;
-	COM(("Entry CLONE %s saved ...", clone_i->Entry().c_str()));
-    }
-
-    CP(("Saving AKILL entries (%d) ...", i_Akill.size()));
-    out<<i_Akill.size();
-    for (akill_i=i_Akill.begin(); akill_i!=i_Akill.end(); akill_i++)
-    {
-	out<<*akill_i;
-	COM(("Entry AKILL %s saved ...", akill_i->Entry().c_str()));
-    }
-
-    CP(("Saving OPERDENY entries (%d) ...", i_OperDeny.size()));
-    out<<i_OperDeny.size();
-    for (operdeny_i=i_OperDeny.begin(); operdeny_i!=i_OperDeny.end(); operdeny_i++)
-    {
-	out<<*operdeny_i;
-	COM(("Entry OPERDENY %s saved ...", operdeny_i->Entry().c_str()));
-    }
-
-    for (ignore_i=i_Ignore.begin(); ignore_i!=i_Ignore.end(); ignore_i++)
-	if (ignore_i->Value())
-	    ignore_c++;
-    CP(("Saving IGNORE entries (%d) ...", ignore_c));
-    out<<ignore_c;
-    for (ignore_i=i_Ignore.begin(); ignore_i!=i_Ignore.end(); ignore_i++)
-	if (ignore_i->Value())
-	{
-	    out<<*ignore_i;
-	    COM(("Entry IGNORE %s saved ...", ignore_i->Entry().c_str()));
-	}
 }
 
 SXP::Tag OperServ::tag_OperServ("OperServ");

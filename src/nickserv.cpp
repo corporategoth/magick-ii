@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2000/05/17 07:47:59  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.89  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -379,8 +383,11 @@ void Nick_Live_t::InFlight_t::Cancel()
 	{
 	    delete arg;
 	}
-    if (fileattach)
-	send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "SEND");
+    if (File())
+	if (InProg())
+	    send(service, nick, Parent->getMessage(nick, "DCC/TIMEOUT"), "SEND");
+	else
+	    send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "SEND");
     else
 	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
     init();
@@ -546,14 +553,15 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 	End(0u);
     }
 
-    if (Parent->nickserv.IsStored(nick))
+    if (!Parent->nickserv.IsStored(nick))
     {
-	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
+	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
 	return;
     }
-    else if (!Parent->nickserv.PicSize())
+    else if (Parent->nickserv.PicExt() == "")
     {
-	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
+	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
+	return;
     }
 
     type = FileMap::Picture;
@@ -3158,100 +3166,38 @@ void Nick_Stored_t::Quit(mstring message)
 }
 
 
-wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in)
-{
-    set<mstring>::const_iterator i;
-    out<<in.i_Name<<in.i_RegTime<<in.i_Password<<in.i_Email<<in.i_URL<<in.i_ICQ<<in.i_Description<<in.i_Comment<<in.i_Host;
-    out<<in.i_access.size();
-    for(i=in.i_access.begin();i!=in.i_access.end();i++)
-    {
-	out<<(mstring)*i;
-    }
-    out<<in.i_ignore.size();
-    for(i=in.i_ignore.begin();i!=in.i_ignore.end();i++)
-    {
-	out<<(mstring)*i;
-    }
-    out<<in.i_Protect<<in.i_Secure<<in.i_NoExpire<<in.i_NoMemo<<in.i_Private<<in.i_PRIVMSG<<in.i_Language<<in.i_Forbidden;
-    out<<in.l_Protect<<in.l_Secure<<in.l_NoExpire<<in.l_NoMemo<<in.l_Private<<in.l_PRIVMSG<<in.l_Language<<in.i_Picture;
-    out<<in.i_Suspend_By<<in.i_Suspend_Time;
-    out<<in.i_LastSeenTime<<in.i_LastRealName<<in.i_LastMask<<in.i_LastQuit;
-    out<<in.i_UserDef.size();
-    map<mstring, mstring>::const_iterator j;
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
-    return out;
-}
-
-
-wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out)
-{
-    set<mstring>::size_type i,count;
-    mstring dummy,dummy2;
-
-    in>>out.i_Name>>out.i_RegTime>>out.i_Password>>out.i_Email>>out.i_URL>>out.i_ICQ>>out.i_Description>>out.i_Comment>>out.i_Host;
-    out.i_access.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy;
-	out.i_access.insert(dummy);
-    }
-    out.i_ignore.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy;
-	out.i_ignore.insert(dummy);
-    }
-    in>>out.i_Protect>>out.i_Secure>>out.i_NoExpire>>out.i_NoMemo>>out.i_Private>>out.i_PRIVMSG>>out.i_Language>>out.i_Forbidden;
-    in>>out.l_Protect>>out.l_Secure>>out.l_NoExpire>>out.l_NoMemo>>out.l_Private>>out.l_PRIVMSG>>out.l_Language>>out.i_Picture;
-    in>>out.i_Suspend_By>>out.i_Suspend_Time;
-    in>>out.i_LastSeenTime>>out.i_LastRealName>>out.i_LastMask>>out.i_LastQuit;
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-
-    return in;
-}
-
-
 SXP::Tag Nick_Stored_t::tag_Nick_Stored_t("Nick_Stored_t");
 SXP::Tag Nick_Stored_t::tag_Name("Name");
-SXP::Tag Nick_Stored_t::tag_RegTime("Reg Time");
+SXP::Tag Nick_Stored_t::tag_RegTime("RegTime");
 SXP::Tag Nick_Stored_t::tag_Password("Password");
-SXP::Tag Nick_Stored_t::tag_Email("E-Mail");
+SXP::Tag Nick_Stored_t::tag_Email("EMail");
 SXP::Tag Nick_Stored_t::tag_URL("URL");
 SXP::Tag Nick_Stored_t::tag_ICQ("ICQ");
 SXP::Tag Nick_Stored_t::tag_Description("Description");
 SXP::Tag Nick_Stored_t::tag_Comment("Comment");
 SXP::Tag Nick_Stored_t::tag_Host("Host");
-SXP::Tag Nick_Stored_t::tag_set_Protect("SET Protect");
-SXP::Tag Nick_Stored_t::tag_set_Secure("SET Secure");
-SXP::Tag Nick_Stored_t::tag_set_NoExpire("SET NoExpire");
-SXP::Tag Nick_Stored_t::tag_set_NoMemo("SET NoMemo");
-SXP::Tag Nick_Stored_t::tag_set_Private("SET Private");
-SXP::Tag Nick_Stored_t::tag_set_PRIVMSG("SET PRIVMSG");
-SXP::Tag Nick_Stored_t::tag_set_Language("SET Language");
+SXP::Tag Nick_Stored_t::tag_set_Protect("SET_Protect");
+SXP::Tag Nick_Stored_t::tag_set_Secure("SET_Secure");
+SXP::Tag Nick_Stored_t::tag_set_NoExpire("SET_NoExpire");
+SXP::Tag Nick_Stored_t::tag_set_NoMemo("SET_NoMemo");
+SXP::Tag Nick_Stored_t::tag_set_Private("SET_Private");
+SXP::Tag Nick_Stored_t::tag_set_PRIVMSG("SET_PRIVMSG");
+SXP::Tag Nick_Stored_t::tag_set_Language("SET_Language");
 SXP::Tag Nick_Stored_t::tag_Forbidden("Forbidden");
-SXP::Tag Nick_Stored_t::tag_lock_Protect("LOCK Protect");
-SXP::Tag Nick_Stored_t::tag_lock_Secure("LOCK Secure");
-SXP::Tag Nick_Stored_t::tag_lock_NoExpire("LOCK NoExpire");
-SXP::Tag Nick_Stored_t::tag_lock_NoMemo("LOCK NoMemo");
-SXP::Tag Nick_Stored_t::tag_lock_Private("LOCK Private");
-SXP::Tag Nick_Stored_t::tag_lock_PRIVMSG("LOCK PRIVMSG");
-SXP::Tag Nick_Stored_t::tag_lock_Language("LOCK Language");
+SXP::Tag Nick_Stored_t::tag_lock_Protect("LOCK_Protect");
+SXP::Tag Nick_Stored_t::tag_lock_Secure("LOCK_Secure");
+SXP::Tag Nick_Stored_t::tag_lock_NoExpire("LOCK_NoExpire");
+SXP::Tag Nick_Stored_t::tag_lock_NoMemo("LOCK_NoMemo");
+SXP::Tag Nick_Stored_t::tag_lock_Private("LOCK_Private");
+SXP::Tag Nick_Stored_t::tag_lock_PRIVMSG("LOCK_PRIVMSG");
+SXP::Tag Nick_Stored_t::tag_lock_Language("LOCK_Language");
 SXP::Tag Nick_Stored_t::tag_Picture("Picture");
-SXP::Tag Nick_Stored_t::tag_Suspend_By("Suspend By");
-SXP::Tag Nick_Stored_t::tag_Suspend_Time("Suspend Time");
-SXP::Tag Nick_Stored_t::tag_LastSeenTime("Last Seen Time");
-SXP::Tag Nick_Stored_t::tag_LastRealName("Last Real Name");
-SXP::Tag Nick_Stored_t::tag_LastMask("Last Mask");
-SXP::Tag Nick_Stored_t::tag_LastQuit("Last Quit");
+SXP::Tag Nick_Stored_t::tag_Suspend_By("Suspend_By");
+SXP::Tag Nick_Stored_t::tag_Suspend_Time("Suspend_Time");
+SXP::Tag Nick_Stored_t::tag_LastSeenTime("LastSeenTime");
+SXP::Tag Nick_Stored_t::tag_LastRealName("LastRealName");
+SXP::Tag Nick_Stored_t::tag_LastMask("LastMask");
+SXP::Tag Nick_Stored_t::tag_LastQuit("LastQuit");
 SXP::Tag Nick_Stored_t::tag_Access("Access");
 SXP::Tag Nick_Stored_t::tag_Ignore("Ignore");
 SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
@@ -3569,6 +3515,146 @@ void NickServ::RemCommands()
 {
     NFT("NickServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"REG*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"DROP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LINK*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"U*LIN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"HOST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"*SLAV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ID*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"INF*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"GHOST*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"REC*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LIST*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SEND*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SUSP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNSUS*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"FORB*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"GET*PASS*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LIVE*", Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* CUR*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* ERA*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* ERA*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* PASS*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* EMAIL", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* URL", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* ICQ", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* DESC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* COMM*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* PIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* PROT*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* SEC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* NOEX*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* NOMEMO", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* PRIVM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* *MSG", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* PRIV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* LANG*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK PROT*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK NOMEMO", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK PRIVM*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK *MSG", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK LANG*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PROT*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK NOMEMO", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PRIVM*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK *MSG", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK LANG*", Parent->commserv.SOP_Name());
+
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN*", Parent->commserv.REGD_Name());
 }
 
 
@@ -5159,6 +5245,7 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
 	params.ExtractWord(3, " ").CmpNoCase("NONE")==0)
     {
 	Parent->nickserv.stored[source.LowerCase()].GotPic(0u);
+	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/REMOVED"));
     }
     else
     {
@@ -6043,62 +6130,6 @@ void NickServ::do_unlock_Language(mstring mynick, mstring source, mstring params
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/UNLOCKED"),
 			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
 			nickname.c_str());
-}
-
-void NickServ::save_database(wxOutputStream& out)
-{
-    FT("NickServ::save_database", ("(wxOutputStream &) out"));
-	//
-	map<mstring,Nick_Stored_t>::iterator i;
-	CP(("Saving NICK entries (%d) ...", stored.size()));
-	out<<stored.size();
-        // todo call script saving hooks.
-	for(i=stored.begin();i!=stored.end();i++)
-	{
-	    out<<i->second;
-	    // todo call script saving hooks.
-	    COM(("Entry NICK %s saved ...", i->second.Name().c_str()));
-	}
-}
-
-void NickServ::load_database(wxInputStream& in)
-{
-    FT("NickServ::load_database", ("(wxInputStream &) in"));
-    map<mstring,Nick_Stored_t>::size_type i,count;
-    in>>count;
-    CP(("Loading NICK entries (%d) ...", count));
-    stored.clear();
-    Nick_Stored_t tmpstored;
-    for(i=0;i<count;i++)
-    {
-	COM(("Loading NICK entry %d ...", i));
-	in>>tmpstored;
-	if (tmpstored.Name().Len())
-	{
-	    stored[tmpstored.Name().LowerCase()]=tmpstored;
-	    COM(("Entry NICK %s loaded ...", tmpstored.Name().c_str()));
-	}
-    }
-
-    // Go through the map and populate 'slaves',
-    // clean up if nessicary.
-    map<mstring,Nick_Stored_t>::iterator iter;
-    CP(("Linking nickname entries ..."));
-    for (iter=stored.begin(); iter!=stored.end(); iter++)
-    {
-	if (IsStored(iter->second.i_Host))
-	{
-	    COM(("Nickname %s has been linked to %s ...",
-		iter->first.c_str(), iter->second.i_Host.c_str()));
-	    stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->first);
-	}
-	else if (iter->second.i_Host != "")
-	{
-	    wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		iter->second.i_Host.c_str(), iter->first.c_str());
-	    iter->second.i_Host = "";
-	}
-    }
 }
 
 SXP::Tag NickServ::tag_NickServ("NickServ");

@@ -24,6 +24,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.123  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.122  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -403,8 +407,6 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-    void SaveXML();
-    void LoadXML();
 };
 
 extern Magick *Parent;

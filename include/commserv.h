@@ -24,6 +24,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/05/17 07:47:57  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.28  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -52,8 +56,6 @@ static const char *ident_commserv_h = "@(#) $Id$";
 
 class Committee : public mUserDef, public SXP::IPersistObj
 {
-    friend wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
-    friend wxInputStream &operator>>(wxInputStream& in, Committee& out);
     mstring i_Name;
     mDateTime i_RegTime;
     mstring i_HeadCom;
@@ -73,8 +75,9 @@ class Committee : public mUserDef, public SXP::IPersistObj
 
     static SXP::Tag tag_Committee, tag_Name, tag_HeadCom, tag_Head,
 	tag_Description, tag_Email, tag_URL, tag_set_Private,
-	tag_set_OpenMemos, tag_set_Secure, tag_Members, tag_Messages,
-	tag_UserDef, tag_RegTime;
+	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private,
+	tag_lock_OpenMemos, tag_lock_Secure, tag_Members,
+	tag_Messages, tag_UserDef, tag_RegTime;
 public:
     Committee() {}
     Committee(const Committee &in) { *this = in; }
@@ -228,9 +231,6 @@ public:
 
     map<mstring,Committee> list;
     bool IsList(mstring in);
-
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
 
     CommServ();
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; };

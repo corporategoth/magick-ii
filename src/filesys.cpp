@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.17  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -342,64 +346,6 @@ unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
 }
 
 
-void FileMap::save_database(wxOutputStream& out)
-{
-    FT("FileMap::save_database", ("(wxOutputStream &) out"));
-    map<FileType, map <unsigned long, pair<mstring, mstring> > >::iterator i;
-    map <unsigned long, pair<mstring, mstring> >::iterator j;
-
-    CP(("Saving FILE TYPE entries (%d) ...", i_FileMap.size()));
-    out<<i_FileMap.size();
-    for (i=i_FileMap.begin(); i!=i_FileMap.end(); i++)
-    {
-	CP(("Entry FILE TYPE (%d) saved ...", (int) i->first));
-	out<<(int) i->first;
-
-	CP(("Saving FILE entries (%d) ...", i->second.size()));
-	out<<i->second.size();
-	for(j=i->second.begin();j!=i->second.end();j++)
-	{
-	    out<<j->first<<j->second;
-	    COM(("Entry FILE %08x (%s) saved ...",
-				j->first, j->second.first.c_str()));
-	}
-    }
-}
-
-
-void FileMap::load_database(wxInputStream& in)
-{
-    FT("FileMap::load_database", ("(wxInputStream &) in"));
-
-    map<FileType, map <unsigned long, pair<mstring, mstring> > >::size_type cnt1, i;
-    map <unsigned long, pair<mstring, mstring> >::size_type cnt2, j;
-
-    int val1;
-    unsigned long val2;
-    pair<mstring, mstring> val3;
-
-    in>>cnt1;
-    CP(("Loading FILE TYPE entries (%d) ...", cnt1));
-    i_FileMap.clear();
-    for(i=0; i<cnt1; i++)
-    {
-	COM(("Loading FILE TYPE entry %d ...", i));
-	in>>val1;
-
-	in>>cnt2;
-	CP(("Loading FILE entries (%d) ...", cnt2));
-	for (j=0; j<cnt2; j++)
-	{
-	    COM(("Loading FILE entry %d ...", j));
-	    in>>val2>>val3;
-	    i_FileMap[(FileType) val1][val2] = val3;
-	    COM(("Entry FILE %08x (%s) loaded ...", val2, val3.first.c_str()));
-	}
-	COM(("Entry FILE MAP %d loaded ...", (int) val1));
-    }
-}
-
-
 SXP::Tag FileMap::tag_FileMap("FileMap");
 SXP::Tag FileMap::tag_File("File");
 
@@ -460,10 +406,9 @@ void FileMap::PostLoad()
     // Linkage, etc
 }
 
-DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
+DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
 	mstring mynick, mstring source,
 	FileMap::FileType filetype, unsigned long filenum)
-	: i_Socket(socket)
 {
     FT("DccXfer::DccXfer", (dccid, "(ACE_SOCK_Stream *) socket",
 			mynick, source, (int) filetype, filenum));
@@ -474,6 +419,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Mynick = mynick;
     i_Source = source;
     i_Type = Send;
+    i_Socket = socket;
     i_Blocksize = Parent->files.Blocksize();
     i_Tempfile.Format("%s%s%08x", Parent->files.TempDir().c_str(),
 		 DirSlash.c_str(), i_DccId);
@@ -525,10 +471,9 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 }
 
 
-DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
+DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
 	mstring mynick, mstring source, mstring filename,
 	size_t filesize, size_t blocksize)
-	: i_Socket(socket)
 {
     FT("DccXfer::DccXfer", (dccid, "(ACE_SOCK_Stream *) socket",
 		mynick, source, filename, filesize, blocksize));
@@ -539,6 +484,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Mynick = mynick;
     i_Source = source;
     i_Type = Get;
+    i_Socket = socket;
     i_Blocksize = Parent->files.Blocksize();
     if (blocksize > 0)
 	i_Blocksize = blocksize;
@@ -558,7 +504,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     }
     else
     {
-	send(mynick, source, Parent->getMessage(source, "DCC/NOREQ0UEST"),
+	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
 						"GET");
 	return;
     }
@@ -591,6 +537,8 @@ DccXfer::~DccXfer()
 
     if (i_Socket.get() == NULL)
 	return;
+    else
+	i_Socket->close();
 
     CP(("DCC Xfer #%d Completed", i_DccId));
     // If we know the size, verify it, else we take
@@ -645,6 +593,12 @@ DccXfer::~DccXfer()
 void DccXfer::operator=(const DccXfer &in)
 {
     FT("DccXfer::operator=", ("(const DccXfer &) in"));
+    // Ungod, please look at this, will this still pass
+    // ownership of the auto_ptr -- because our main
+    // problem with DCC is that by the time we get it
+    // into the DccXfer struct ready for an Action call,
+    // the pointer has gone awry, which is why we get
+    // ENOACCESS returns (ie. errno 14)
     i_Socket=(auto_ptr<ACE_SOCK_Stream> &) in.i_Socket;
     // i_File=in.i_File;
     i_Source=in.i_Source;
@@ -685,6 +639,15 @@ void DccXfer::operator=(const DccXfer &in)
     i_LastData=in.i_LastData;
 }
 
+
+void DccXfer::Cancel()
+{
+    NFT("DccXfer::Cancel");
+    if (Parent->nickserv.IsLive(i_Source))
+	Parent->nickserv.live[i_Source.LowerCase()].InFlight.Cancel();
+    i_Total = 0;
+    i_File.Close();
+}
 
 void DccXfer::Action()
 {
@@ -859,6 +822,7 @@ int DccMap::svc(void)
 
 	CP(("Executing ACTION for DCC #%d", WorkId));
 	xfers[WorkId].Action();
+	// No data in X seconds...
 	if (xfers[WorkId].LastData().SecondsSince() > Parent->files.Timeout())
 	{
 	    xfers[WorkId].Cancel();
@@ -891,10 +855,11 @@ void *DccMap::Connect2(void *in)
 
     NewSocket *val = (NewSocket *) in;
 
-    ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
+    auto_ptr<ACE_SOCK_Stream> DCC_SOCK(new ACE_SOCK_Stream);
     ACE_Time_Value tv(Parent->files.Timeout());
-    ACE_SOCK_Connector tmp((ACE_SOCK_Stream &) *DCC_SOCK, (ACE_Addr &) val->address, &tv);
+    ACE_SOCK_Connector tmp(*DCC_SOCK, (ACE_Addr &) val->address, &tv);
     CP(("Connect responded with %d", errno));
+
     if (errno != ETIME)
     {
 	unsigned long WorkId;
@@ -932,10 +897,10 @@ void *DccMap::Accept2(void *in)
     NewSocket *val = (NewSocket *) in;
 
     ACE_INET_Addr local(val->port, Parent->LocalHost());
-    ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
+    auto_ptr<ACE_SOCK_Stream> DCC_SOCK(new ACE_SOCK_Stream);
     ACE_Time_Value tv(Parent->files.Timeout());
     ACE_SOCK_Acceptor tmp(local);
-    tmp.accept((ACE_SOCK_Stream &) *DCC_SOCK, NULL, &tv);
+    tmp.accept(*DCC_SOCK, NULL, &tv);
     CP(("Accept responded with %d", errno));
     if (errno != ETIME)
     {

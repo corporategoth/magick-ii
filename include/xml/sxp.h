@@ -24,6 +24,10 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.2  2000/04/15 11:11:44  ungod
 ** starting xmlage of magick
 **
@@ -708,11 +712,11 @@ SXP_NS_BEGIN
 		void DoShutdown() {
 			XML_ParserFree(m_parser);
 			while( !m_EHStack.empty() ) {
-				delete m_EHStack.top();
+				//delete m_EHStack.top();
 				m_EHStack.pop();
 			}
 			while( !m_EStack.empty() ) {
-				delete m_EStack.top();
+				//delete m_EStack.top();
 				m_EStack.pop();
 			}
 			m_parser = 0;

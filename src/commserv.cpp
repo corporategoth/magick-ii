@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/05/17 07:47:58  prez
+** Removed all save_databases calls from classes, and now using XML only.
+** To be worked on: DCC Xfer pointer transferal and XML Loading
+**
 ** Revision 1.54  2000/05/14 06:30:14  prez
 ** Trying to get XML loading working -- debug code (printf's) in code.
 **
@@ -638,8 +642,92 @@ void CommServ::RemCommands()
     NFT("CommServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-//  Parent->commands.RemSystemCommand(GetInternalName(),
-//		    "TRACE", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ADD*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"DEL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ERA*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LIST", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"*MEMO*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"INFO", Parent->commserv.ALL_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* ERA*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* ADD", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* DEL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* ERA*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* LIST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* HEAD*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* E*MAIL*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* U*R*L*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* SEC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* PRIV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* *MEMO*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK *MEMO*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK SEC*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PRIV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK *MEMO*", Parent->commserv.SOP_Name());
+
+    // These 'throw' the command back onto the map with
+    // more paramaters.  IF you want to put wildcards in
+    // it, you must add a terminator command (ie. "CMD* *"
+    // in the command map, and NULL as the function).
+    // This must be BEFORE the wildcarded map ("CMD*")
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK *", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK *", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK", Parent->commserv.SOP_Name());
+
 }
 
 
@@ -2260,122 +2348,20 @@ void CommServ::do_unlock_OpenMemos(mstring mynick, mstring source, mstring param
 }
 
 
-void CommServ::load_database(wxInputStream& in)
-{
-    FT("CommServ::load_database", ("(wxInputStream &) in"));
-    size_t i, j;
-    in>>i;
-    CP(("Loading COMMITTEE entries (%d) ...", i));
-    Committee tmpcommitee;
-    for(j=0;j<i;j++)
-    {
-	COM(("Loading COMMITTEE entry %d ...", j));
-	in>>tmpcommitee;
-	if (tmpcommitee.Name().Len())
-	{
-	    list[tmpcommitee.Name().UpperCase()]=tmpcommitee;
-	    COM(("Entry COMMITTEE %s loaded ...", tmpcommitee.Name().c_str()));
-	}
-    }
-}
-
-
-void CommServ::save_database(wxOutputStream& out)
-{
-    FT("CommServ::save_database", ("(wxOutputStream &) out"));
-    size_t sz = list.size();
-
-    out<<sz;
-    CP(("Saving COMMITTEE entries (%d) ...", sz));
-    for(map<mstring,Committee>::iterator i=list.begin();i!=list.end();i++)
-    {
-	out<<i->second;
-	COM(("Entry COMMITTEE %s saved ...", i->second.Name().c_str()));
-    }
-}
-
-wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
-{
-    out<<in.i_Name<<in.i_RegTime<<in.i_HeadCom<<in.i_Head<<in.i_Description<<in.i_Email<<in.i_URL;
-
-    if (in.i_Name == Parent->commserv.ALL_Name()  ||
-	in.i_Name == Parent->commserv.REGD_Name() ||
-	in.i_Name == Parent->commserv.SADMIN_Name())
-    {
-	out<<(size_t) 0;
-    }
-    else
-    {
-	out<<in.i_Members.size();
-	for(in.member=in.i_Members.begin();in.member!=in.i_Members.end();in.member++)
-	{
-	    out<<(*in.member);
-	    COM(("Entry %s has been saved ...", in.member->Entry().c_str()));
-	}
-    }
-
-    out<<in.i_OpenMemos<<in.i_Private<<in.i_Secure;
-    out<<in.l_OpenMemos<<in.l_Private<<in.l_Secure;
-
-    out<<in.i_Messages.size();
-    for(in.message=in.i_Messages.begin();in.message!=in.i_Messages.end();in.message++)
-	out<<(*in.message);
-
-    return out;
-}
-wxInputStream &operator>>(wxInputStream& in, Committee& out)
-{
-    set<entlist_t>::size_type locsize,i;
-    entlist_t locent;
-    // need to write lock out.
-
-    in>>out.i_Name>>out.i_RegTime>>out.i_HeadCom>>out.i_Head>>out.i_Description>>out.i_Email>>out.i_URL;
-
-    in>>locsize;
-    out.i_Members.clear();
-    if (out.i_Name == Parent->commserv.SADMIN_Name())
-    {
-	for (int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
-	    out.i_Members.insert(entlist_t(
-		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
-		Parent->operserv.FirstName()));
-    }
-    else if (!(out.i_Name == Parent->commserv.ALL_Name() ||
-		out.i_Name == Parent->commserv.REGD_Name()))
-    {
-	for(i=0;i<locsize;i++)
-	{
-	    in>>locent;
-	    out.i_Members.insert(locent);
-	    COM(("Entry %s has been loaded.", locent.Entry().c_str()));
-	}
-    }
-
-    in>>out.i_OpenMemos>>out.i_Private>>out.i_Secure;
-    in>>out.l_OpenMemos>>out.l_Private>>out.l_Secure;
-
-    in>>locsize;
-    out.i_Messages.clear();
-    for(i=0;i<locsize;i++)
-    {
-	in>>locent;
-	out.i_Messages.push_back(locent);
-    }
-
-    return in;
-}
-
 SXP::Tag Committee::tag_Committee("Committee");
 SXP::Tag Committee::tag_Name("Name");
-SXP::Tag Committee::tag_RegTime("Reg Time");
-SXP::Tag Committee::tag_HeadCom("Head Committee");
+SXP::Tag Committee::tag_RegTime("RegTime");
+SXP::Tag Committee::tag_HeadCom("HeadCom");
 SXP::Tag Committee::tag_Head("Head");
 SXP::Tag Committee::tag_Description("Description");
-SXP::Tag Committee::tag_Email("E-Mail");
+SXP::Tag Committee::tag_Email("EMail");
 SXP::Tag Committee::tag_URL("URL");
-SXP::Tag Committee::tag_set_OpenMemos("OpenMemos");
-SXP::Tag Committee::tag_set_Private("Private");
-SXP::Tag Committee::tag_set_Secure("Secure");
+SXP::Tag Committee::tag_set_OpenMemos("SET_OpenMemos");
+SXP::Tag Committee::tag_set_Private("SET_Private");
+SXP::Tag Committee::tag_set_Secure("SET_Secure");
+SXP::Tag Committee::tag_lock_OpenMemos("LOCK_OpenMemos");
+SXP::Tag Committee::tag_lock_Private("LOCK_Private");
+SXP::Tag Committee::tag_lock_Secure("LOCK_Secure");
 SXP::Tag Committee::tag_Members("Members");
 SXP::Tag Committee::tag_Messages("Messages");
 SXP::Tag Committee::tag_UserDef("UserDef");
@@ -2394,6 +2380,9 @@ void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_set_OpenMemos) )	pElement->Retrieve(i_OpenMemos);
 	if( pElement->IsA(tag_set_Private) )	pElement->Retrieve(i_Private);
 	if( pElement->IsA(tag_set_Secure) )	pElement->Retrieve(i_Secure);
+	if( pElement->IsA(tag_lock_OpenMemos) )	pElement->Retrieve(l_OpenMemos);
+	if( pElement->IsA(tag_lock_Private) )	pElement->Retrieve(l_Private);
+	if( pElement->IsA(tag_lock_Secure) )	pElement->Retrieve(l_Secure);
 
     if (i_Name == Parent->commserv.SADMIN_Name())
     {
@@ -2445,6 +2434,9 @@ void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_set_OpenMemos, i_OpenMemos);
 	pOut->WriteElement(tag_set_Private, i_Private);
 	pOut->WriteElement(tag_set_Secure, i_Secure);
+	pOut->WriteElement(tag_lock_OpenMemos, l_OpenMemos);
+	pOut->WriteElement(tag_lock_Private, l_Private);
+	pOut->WriteElement(tag_lock_Secure, l_Secure);
 
 	if (!(i_Name == Parent->commserv.ALL_Name() ||
 	      i_Name == Parent->commserv.REGD_Name() ||
