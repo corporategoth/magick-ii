@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/09/13 12:45:33  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.20  2000/05/28 05:20:46  prez
 ** More stuff ..
 **
@@ -111,29 +115,6 @@
 #include <windows.h>
 #endif
 
-/* ACE Extensions */
-#include <ace/Activation_Queue.h>
-#include <ace/Auto_Ptr.h>
-#include <ace/Connector.h>
-#include <ace/Event_Handler.h>
-#include <ace/INET_Addr.h>
-#include <ace/Local_Tokens.h>
-#include <ace/Log_Msg.h>
-#include <ace/Message_Queue.h>
-#include <ace/Method_Object.h>
-#include <ace/OS.h>
-#include <ace/Reactor.h>
-#include <ace/Singleton.h>
-#include <ace/SOCK_Acceptor.h>
-#include <ace/SOCK_Connector.h>
-#include <ace/SOCK_Stream.h>
-#include <ace/Svc_Handler.h>
-#include <ace/Synch_T.h>
-#include <ace/Synch.h>
-#include <ace/Task.h>
-#include <ace/Thread_Manager.h>
-#include <ace/Thread.h>
-
 /* Standard C++ Extensions ... */
 /* These all have IFDEF's because
  * unix machines tend to use .h files
@@ -210,9 +191,67 @@
 #else
 #  include <vector>
 #endif
-using namespace std;
+
+/* ACE Extensions */
+#include <ace/Activation_Queue.h>
+#include <ace/Auto_Ptr.h>
+#include <ace/Connector.h>
+#include <ace/Event_Handler.h>
+#include <ace/INET_Addr.h>
+#include <ace/Local_Tokens.h>
+#include <ace/Log_Msg.h>
+#include <ace/Message_Queue.h>
+#include <ace/Method_Object.h>
+#include <ace/OS.h>
+#include <ace/Reactor.h>
+#include <ace/Singleton.h>
+#include <ace/SOCK_Acceptor.h>
+#include <ace/SOCK_Connector.h>
+#include <ace/SOCK_Stream.h>
+#include <ace/Svc_Handler.h>
+#include <ace/Synch_T.h>
+#include <ace/Synch.h>
+#include <ace/Task.h>
+#include <ace/Thread_Manager.h>
+#include <ace/Thread.h>
+
+/* Debugging software -- if we dont use it, use ACE equivs */
+#if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
+#  include <mpatrol.h>
+#else
+#    define malloc	ACE_OS::malloc
+#    define calloc	ACE_OS::calloc
+// # define memalign	ACE_OS::memalign
+// # define valloc	ACE_OS::valloc
+// # define pvalloc	ACE_OS::pvalloc
+#    define strdup	ACE_OS::strdup
+// # define strndup	ACE_OS::strndup
+// # define strsave	ACE_OS::strsave
+// # define strnsave	ACE_OS::strnsave
+#    define realloc	ACE_OS::realloc
+// # define recalloc	ACE_OS::recalloc
+// # define expand	ACE_OS::expand
+#    define free	ACE_OS::free
+// # define cfree	ACE_OS::cfree
+// # define new		ACE_OS::new
+// # define new[]	ACE_OS::new[]
+// # define delete	ACE_OS::delete
+// # define delete[]	ACE_OS::delete[]
+#    define memset	ACE_OS::memset
+// # define bzero	ACE_OS::bzero
+// # define memccpy	ACE_OS::memccpy
+#    define memcpy	ACE_OS::memcpy
+#    define memmove	ACE_OS::memmove
+// # define bcopy	ACE_OS::bcopy
+#    define memchr	ACE_OS::memchr
+// # define memmem	ACE_OS::memmem
+#    define memcmp	ACE_OS::memcmp
+// # define bcmp	ACE_OS::bcmp
+#endif
 
 #include <zlib.h>
+
+using namespace std;
 
 extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
 extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);

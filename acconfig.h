@@ -28,6 +28,11 @@
 #undef MAGICK_TRACE_WORKS
 #endif
 
+/* Define if your system's locking works */
+#ifndef MAGICK_USE_MPATROL
+#undef MAGICK_USE_MPATROL
+#endif
+
 /* Define if we are on a windows system */
 #ifndef WIN32
 #undef WIN32

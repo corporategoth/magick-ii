@@ -42,6 +42,11 @@
 #undef MAGICK_TRACE_WORKS
 #endif
 
+/* Define if your system's locking works */
+#ifndef MAGICK_USE_MPATROL
+#undef MAGICK_USE_MPATROL
+#endif
+
 /* Define if we are on a windows system */
 #ifndef WIN32
 #undef WIN32
@@ -90,6 +95,9 @@
 
 /* Define if you have the <map.h> header file.  */
 #undef HAVE_MAP_H
+
+/* Define if you have the <mpatrol.h> header file.  */
+#undef HAVE_MPATROL_H
 
 /* Define if you have the <ostream.h> header file.  */
 #undef HAVE_OSTREAM_H

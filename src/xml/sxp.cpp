@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/09/13 12:45:34  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.12  2000/08/08 09:58:56  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -137,8 +141,8 @@ Tag::Tag(const char *name)
 
 void MFileOutStream::ExpandBuf()
 {
-    buffer = (char *) ACE_OS::realloc(buffer, sizeof(char) * buf_sz * 2);
-    ACE_OS::memset(&buffer[buf_sz], 0, buf_sz);
+    buffer = (char *) realloc(buffer, sizeof(char) * buf_sz * 2);
+    memset(&buffer[buf_sz], 0, buf_sz);
     buf_sz *= 2;
 }
 
@@ -181,8 +185,8 @@ MFileOutStream::MFileOutStream(mstring chFilename, int comp, mstring ikey)
 	key = ikey;
 	buf_sz = INIT_BUFSIZE;
 	buf_cnt = 0;
-	buffer = (char *) ACE_OS::malloc(sizeof(char) * buf_sz);
-	ACE_OS::memset(buffer, 0, sizeof(char) * buf_sz);
+	buffer = (char *) malloc(sizeof(char) * buf_sz);
+	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
 MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring ikey)
@@ -194,8 +198,8 @@ MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring i
 	key = ikey;
 	buf_sz = INIT_BUFSIZE;
 	buf_cnt = 0;
-	buffer = (char *) ACE_OS::malloc(sizeof(char) * buf_sz);
-	ACE_OS::memset(buffer, 0, sizeof(char) * buf_sz);
+	buffer = (char *) malloc(sizeof(char) * buf_sz);
+	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
 MFileOutStream::~MFileOutStream()
@@ -208,7 +212,7 @@ MFileOutStream::~MFileOutStream()
 	if (compress)
 	{
 	    z_streamp strm = new z_stream_s;
-	    ACE_OS::memset(strm, 0, sizeof(z_stream_s));
+	    memset(strm, 0, sizeof(z_stream_s));
 	    strm->zalloc = Z_NULL;
 	    strm->zfree  = Z_NULL;
 	    strm->opaque = Z_NULL;
@@ -218,8 +222,8 @@ MFileOutStream::~MFileOutStream()
 	    // than avail_in plus 12 bytes.
 	    new_sz = (size_t) (length * 1.001 + 12);
 	    deflateInit(strm, compress);
-	    outbuf = (char *) ACE_OS::malloc(sizeof(char) * new_sz);
-	    ACE_OS::memset(outbuf, 0, sizeof(char) * new_sz);
+	    outbuf = (char *) malloc(sizeof(char) * new_sz);
+	    memset(outbuf, 0, sizeof(char) * new_sz);
 
 	    strm->next_in   = (unsigned char *) buffer;
 	    strm->avail_in  = length;
@@ -235,9 +239,9 @@ MFileOutStream::~MFileOutStream()
 	    {
 		new_sz += 12;
 		if (outbuf != NULL)
-		    ACE_OS::free(outbuf);
-		outbuf = (char *) ACE_OS::malloc(sizeof(char) * new_sz);
-		ACE_OS::memset(outbuf, 0, sizeof(char) * new_sz);
+		    free(outbuf);
+		outbuf = (char *) malloc(sizeof(char) * new_sz);
+		memset(outbuf, 0, sizeof(char) * new_sz);
 		strm->next_out = (unsigned char *) outbuf;
 	    }
 	    deflateEnd(strm);
@@ -248,14 +252,14 @@ MFileOutStream::~MFileOutStream()
 		length = strm->total_out;
 		buf_sz = length + 1;
 		if (buffer != NULL)
-		    ACE_OS::free(buffer);
-		buffer = (char *) ACE_OS::malloc(sizeof(char) * buf_sz);
-		ACE_OS::memset(buffer, 0, sizeof(char) * buf_sz);
+		    free(buffer);
+		buffer = (char *) malloc(sizeof(char) * buf_sz);
+		memset(buffer, 0, sizeof(char) * buf_sz);
 		memcpy(buffer, outbuf, length);
 		tag |= SXP_COMPRESS;
 	    }
 	    if (outbuf != NULL)
-		ACE_OS::free(outbuf);
+		free(outbuf);
 	    outbuf = NULL;
 	    
 	}
@@ -265,8 +269,8 @@ MFileOutStream::~MFileOutStream()
 	    des_cblock ckey1, ckey2;
 
 	    new_sz = length + 8;
-	    outbuf = (char *) ACE_OS::malloc(sizeof(char) * new_sz);
-	    ACE_OS::memset(outbuf, 0, sizeof(char) * new_sz);
+	    outbuf = (char *) malloc(sizeof(char) * new_sz);
+	    memset(outbuf, 0, sizeof(char) * new_sz);
 
 	    des_string_to_2keys((char *)key.c_str(), &ckey1, &ckey2);
 	    des_set_key(&ckey1, key1);
@@ -281,7 +285,7 @@ MFileOutStream::~MFileOutStream()
 		while (outbuf[length-1]==0)
 		    length--;
 		if (buffer != NULL)
-		    ACE_OS::free(buffer);
+		    free(buffer);
 		buffer = outbuf;
 		outbuf = NULL;
 	    }
@@ -292,7 +296,7 @@ MFileOutStream::~MFileOutStream()
 	{
 	    out.Write(mstring(tag), false);
 	    out.Write(buffer, length * sizeof(char));
-	    ACE_OS::free(buffer);
+	    free(buffer);
 	}
 	out.Close();
 }
@@ -362,12 +366,12 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
     {
 	long filesize = in.Length(), new_sz;
 	unsigned char tag = 0;
-	char *tmpbuf, *buffer = (char *) ACE_OS::malloc(filesize * sizeof(char));
-	ACE_OS::memset(buffer, 0, filesize * sizeof(char));
+	char *tmpbuf, *buffer = (char *) malloc(filesize * sizeof(char));
+	memset(buffer, 0, filesize * sizeof(char));
 	new_sz = filesize + 8;
 
 	in.Read(&tag, sizeof(unsigned char));
-	ACE_OS::memset(buffer, 0, filesize);
+	memset(buffer, 0, filesize);
 	in.Read(buffer, (filesize-1) * sizeof(char));
 	in.Close();
 
@@ -378,8 +382,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		des_key_schedule key1, key2;
 		des_cblock ckey1, ckey2;
 
-		tmpbuf = (char *) ACE_OS::malloc(new_sz * sizeof(char));
-		ACE_OS::memset(tmpbuf, 0, new_sz * sizeof(char));
+		tmpbuf = (char *) malloc(new_sz * sizeof(char));
+		memset(tmpbuf, 0, new_sz * sizeof(char));
 		des_string_to_2keys((char *)ikey.c_str(), &ckey1, &ckey2);
 		des_set_key(&ckey1, key1);
 		des_set_key(&ckey2, key2);
@@ -390,7 +394,7 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		if (tmpbuf != NULL)
 		{
 		    if (buffer != NULL)
-			ACE_OS::free(buffer);
+			free(buffer);
 		    buffer = tmpbuf;
 		    tmpbuf = NULL;
 		}
@@ -399,15 +403,15 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 	    {
 		int bufsize = 1024, index = 0;
 		z_streamp strm = new z_stream_s;
-		ACE_OS::memset(strm, 0, sizeof(z_stream_s));
+		memset(strm, 0, sizeof(z_stream_s));
 
 		strm->zalloc = Z_NULL;
 		strm->zfree  = Z_NULL;
 		strm->opaque = Z_NULL;
 		inflateInit(strm);
 
-		tmpbuf = (char *) ACE_OS::malloc(bufsize * sizeof(char));
-		ACE_OS::memset(tmpbuf, 0, bufsize * sizeof(char));
+		tmpbuf = (char *) malloc(bufsize * sizeof(char));
+		memset(tmpbuf, 0, bufsize * sizeof(char));
 		strm->next_in   = (unsigned char *) buffer;
 		strm->avail_in  = new_sz;
 		strm->total_in  = 0;
@@ -422,8 +426,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    {
 			index = bufsize;
 			bufsize *= 2;
-			tmpbuf = (char *) ACE_OS::realloc(tmpbuf, bufsize * sizeof(char));
-			ACE_OS::memset(&tmpbuf[index], 0, index);
+			tmpbuf = (char *) realloc(tmpbuf, bufsize * sizeof(char));
+			memset(&tmpbuf[index], 0, index);
 			strm->next_out  = (unsigned char *) &tmpbuf[index];
 			strm->avail_out = index;
 		    }
@@ -431,19 +435,19 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		if (retval == Z_STREAM_END || retval == Z_OK)
 		{
 		    if (buffer != NULL)
-			ACE_OS::free(buffer);
+			free(buffer);
 		    new_sz = strm->total_out;
-		    buffer = (char *) ACE_OS::malloc(sizeof(char) * new_sz+1);
-		    ACE_OS::memset(buffer, 0, sizeof(char) * new_sz+1);
+		    buffer = (char *) malloc(sizeof(char) * new_sz+1);
+		    memset(buffer, 0, sizeof(char) * new_sz+1);
 		    memcpy(buffer, tmpbuf, new_sz);
 		    if (tmpbuf != NULL)
-			ACE_OS::free(tmpbuf);
+			free(tmpbuf);
 		    tmpbuf = NULL;
 		}
 		else
 		{
 		    if (tmpbuf != NULL)
-			ACE_OS::free(tmpbuf);
+			free(tmpbuf);
 		    tmpbuf = NULL;
 		}
 		inflateEnd(strm);
@@ -463,7 +467,7 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 	    }
 	}
 	if (buffer != NULL)
-	    ACE_OS::free(buffer);
+	    free(buffer);
     }
     return retval;
 }

@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.271  2000/09/13 12:45:34  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.270  2000/09/09 02:17:48  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -2984,7 +2988,7 @@ mstring Magick::GetKey()
 	des_cblock ckey1, ckey2;
 
 #include "crypt.h"
-	ACE_OS::memset(tmp, 0, KEYLEN);
+	memset(tmp, 0, KEYLEN);
 	key_size = keyfile.Read(tmp, KEYLEN);
 	tmp[KEYLEN-1]=0;
 

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/09/13 12:45:33  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.49  2000/09/12 21:17:02  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -1011,7 +1015,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
 
     // Initialize Transfer
     i_Transiant = new unsigned char[i_Blocksize + 1];
-    ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
+    memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
@@ -1069,7 +1073,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
 
     // Initialize Transfer
     i_Transiant = new unsigned char[i_Blocksize + 1];
-    ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
+    memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
@@ -1195,8 +1199,8 @@ void DccXfer::operator=(const DccXfer &in)
     if (in.i_Transiant != NULL && in.i_XferTotal)
     {
 	i_Transiant=new unsigned char[i_Blocksize + 1];
-	ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
-	ACE_OS::memcpy(i_Transiant, in.i_Transiant, i_XferTotal);
+	memset(i_Transiant, 0, i_Blocksize + 1);
+	memcpy(i_Transiant, in.i_Transiant, i_XferTotal);
     }
     i_LastData=in.i_LastData;
 }
@@ -1331,7 +1335,7 @@ void DccXfer::Action()
 		else
 		{
 		    i_XferTotal = 0;
-		    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
+		    memset(i_Transiant, 0, i_Blocksize);
 		    verify = htonl(i_Total);
 		    XferAmt = i_Socket.send((void *) &verify, 4, 1);
 		    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)",
@@ -1408,7 +1412,7 @@ void DccXfer::Action()
 	    }
 	    if (!i_XferTotal && i_Total < i_Filesize)
 	    {
-		ACE_OS::memset(i_Transiant, 0, i_Blocksize);
+		memset(i_Transiant, 0, i_Blocksize);
 		if (!i_File.IsOpened())
 		    return;
 		if (i_Total + i_Blocksize > i_Filesize)

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.132  2000/09/13 12:45:33  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.131  2000/09/12 21:17:02  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -263,7 +267,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // might set this up to be an active object here.
     char data[513];
     int recvResult;
-    ACE_OS::memset(data,0,513);
+    memset(data,0,513);
     recvResult=sock.recv(data,512);
     if(recvResult<=0 || Parent->Shutdown())
 	return -1;

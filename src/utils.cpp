@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/09/13 12:45:34  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.49  2000/09/09 02:17:49  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -502,14 +506,14 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
     FT("mDES", ("(unsigned char *) in", "(unsigned char *) out", size,
 	"(des_key_schedule) key1", "(des_key_schedule) key2", enc));
 #ifndef HASCRYPT
-    ACE_OS::memset(out, 0, size);
-    ACE_OS::memcpy(out, in, size);
+    memset(out, 0, size);
+    memcpy(out, in, size);
 #else
     DES_LONG tuple[2], t0, t1;
     unsigned char *iptr, *optr, tmp[8];
     int i, j;
 
-    ACE_OS::memset(out, 0, size);
+    memset(out, 0, size);
     for (iptr=in, optr=out, i=0; i+7<size; i+=8)
     {
 	c2l(iptr, t0); tuple[0] = t0;
@@ -522,7 +526,7 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
     }
     if (i<size)
     {
-	ACE_OS::memset(tmp, 0, 8);
+	memset(tmp, 0, 8);
 	size -= i;
 	for (i=0; i<size; i++)
 	    tmp[i] = iptr[i];
@@ -542,15 +546,15 @@ void mHASH(unsigned char *in, size_t size, unsigned char *out)
 {
     unsigned char md[MD5_DIGEST_LENGTH];
     MD5_CTX c;
-    ACE_OS::memset(md, 0, MD5_DIGEST_LENGTH);
+    memset(md, 0, MD5_DIGEST_LENGTH);
     MD5_Init(&c);
     MD5_Update(&c, in, size);
     MD5_Final(md, &c);
-    ACE_OS::memset(&c, 0, sizeof(MD5_CTX));
-    ACE_OS::memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
+    memset(&c, 0, sizeof(MD5_CTX));
+    memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
     for (int i=0; i<MD5_DIGEST_LENGTH; i++)
     {
 	sprintf((char *) &out[i*2], "%02x", md[i]);
     }
-    ACE_OS::memset(md, 0, MD5_DIGEST_LENGTH);
+    memset(md, 0, MD5_DIGEST_LENGTH);
 }

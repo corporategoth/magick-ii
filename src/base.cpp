@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.135  2000/09/13 12:45:33  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.134  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -358,7 +362,7 @@ void mBaseTask::message(const mstring& message)
 	}
     }
     char *transit = new char[length+1];
-    ACE_OS::memset(transit, 0, length+1);
+    memset(transit, 0, length+1);
     ACE_OS::strncpy(transit, message.c_str(), length);
     ACE_Message_Block *data = new ACE_Message_Block(length+1,
 		ACE_Message_Block::MB_DATA, 0, transit);

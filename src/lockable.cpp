@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/09/13 12:45:34  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.49  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -166,7 +170,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
-	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
 	    rlock = new mLock_Read((const char *) hash);
 	    if (rlock != NULL)
@@ -204,7 +208,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     {
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
-	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
 	    rlock = new mLock_Read((const char *) hash);
 	    if (rlock != NULL)
@@ -248,7 +252,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	}
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
-	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
 	    wlock = new mLock_Write((const char *) hash);
 	    if (wlock != NULL)
@@ -292,7 +296,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	}
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
-	    ACE_OS::memset(hash, 0, sizeof(hash));
+	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
 	    mlock = new mLock_Mutex((const char *) hash);
 	    if (mlock != NULL)
@@ -321,7 +325,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     if (maplock.release() < 0)
 	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
-    ACE_OS::memset(hash, 0, sizeof(hash));
+    memset(hash, 0, sizeof(hash));
 }
 
 mLOCK::~mLOCK()

@@ -271,8 +271,7 @@ if test "$trace" = "true"; then
 	AC_DEFINE(MAGICK_TRACE_WORKS)
 fi
 
-
-AC_ARG_ENABLE(trace, [  --enable-locks          Enable thread locking (default)
+AC_ARG_ENABLE(locks, [  --enable-locks          Enable thread locking (default)
   --disable-locks         Disable thread locking (dangerous!)],
 	[case "${enableval}" in
 		yes) locks=true;;
@@ -281,6 +280,19 @@ AC_ARG_ENABLE(trace, [  --enable-locks          Enable thread locking (default)
 	 esac], [locks=true])
 if test "$locks" = "true"; then
 	AC_DEFINE(MAGICK_LOCKS_WORK)
+fi
+
+
+AC_ARG_ENABLE(mpatrol, [  --enable-mpatrol        Enable mpatrol (memory debug)
+  --disable-locks         Disable mpatrol (default)],
+	[case "${enableval}" in
+		yes) mpatrol=true;;
+		no) mpatrol=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for MPATROL option);;
+	 esac], [mpatrol=false])
+if test "$mpatrol" = "true"; then
+	AC_DEFINE(MAGICK_USE_MPATROL)
+	LIBS="$LIBS -lmpatrolmt -lbfd -liberty"
 fi
 
 
@@ -327,6 +339,7 @@ location of its header files with the --with-zinc paramater."
 fi
 
 dnl Find out which to use for C++ headers ...
+AC_CHECK_HEADERS(mpatrol.h)
 AC_CHECK_HEADERS(termio.h)
 AC_CHECK_HEADERS(iostream.h)
 AC_CHECK_HEADERS(istream.h)

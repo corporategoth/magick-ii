@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/09/13 12:45:33  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.18  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -117,7 +121,7 @@ read_string (FILE * f, const char *filename)
     unsigned int len;
 
     len = fgetc (f) * 256 + fgetc (f);
-    s = (char *) ACE_OS::malloc (len);
+    s = (char *) malloc (len);
     if (len != ACE_OS::fread (s, 1, len, f))
 	Log(LM_EMERGENCY, "Read error on %s", filename);
     return s;
@@ -144,15 +148,15 @@ load_ns_dbase (void)
 	for (i = 33; i < 256; ++i)
 	while (fgetc (f) == 1)
 	{
-	    ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
-	    ACE_OS::memset(ni, 0, sizeof(NickInfo));
+	    ni = (NickInfo *) malloc (sizeof (NickInfo));
+	    memset(ni, 0, sizeof(NickInfo));
 	    if (1 != ACE_OS::fread (ni, sizeof (NickInfo), 1, f))
 		Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 	    ni->flags &= ~(NI_IDENTIFIED | NI_RECOGNIZED);
 	    if (ni->email) {
 		ni->email = read_string (f, nickserv_db);
 		if (!ACE_OS::strlen(ni->email)) {
-		    ACE_OS::free(ni->email);
+		    free(ni->email);
 		    ni->email = NULL;
 		}
 	    } else
@@ -160,7 +164,7 @@ load_ns_dbase (void)
 	    if (ni->url) {
 		ni->url = read_string (f, nickserv_db);
 		if (!ACE_OS::strlen(ni->url)) {
-		    ACE_OS::free(ni->url);
+		    free(ni->url);
 		    ni->url = NULL;
 		}
 	    } else
@@ -170,7 +174,7 @@ load_ns_dbase (void)
 	    if (ni->accesscount)
 	    {
 		char **access;
-		access = (char **) ACE_OS::malloc (sizeof (char *) * ni->accesscount);
+		access = (char **) malloc (sizeof (char *) * ni->accesscount);
 		ni->access = access;
 		for (j = 0; j < ni->accesscount; ++j, ++access)
 		    *access = read_string (f, nickserv_db);
@@ -178,7 +182,7 @@ load_ns_dbase (void)
 	    if (ni->ignorecount)
 	    {
 		char **ignore;
-		ignore = (char **) ACE_OS::malloc (sizeof (char *) * ni->ignorecount);
+		ignore = (char **) malloc (sizeof (char *) * ni->ignorecount);
 		ni->ignore = ignore;
 		for (j = 0; j < ni->ignorecount; ++j, ++ignore)
 		    *ignore = read_string (f, nickserv_db);
@@ -195,10 +199,10 @@ load_ns_dbase (void)
 	for (i = 33; i < 256; ++i)
 	    while (fgetc (f) == 1)
 	    {
-		ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
-		old_ni = (NickInfo_V3 *) ACE_OS::malloc (sizeof (NickInfo_V3));
-		ACE_OS::memset(ni, 0, sizeof(NickInfo));
-		ACE_OS::memset(old_ni, 0, sizeof(NickInfo_V3));
+		ni = (NickInfo *) malloc (sizeof (NickInfo));
+		old_ni = (NickInfo_V3 *) malloc (sizeof (NickInfo_V3));
+		memset(ni, 0, sizeof(NickInfo));
+		memset(old_ni, 0, sizeof(NickInfo_V3));
 		if (1 != ACE_OS::fread (old_ni, sizeof (NickInfo_V3), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
@@ -235,12 +239,12 @@ load_ns_dbase (void)
 		ni->last_usermask = old_ni->last_usermask;
 		old_ni->last_realname = read_string (f, nickserv_db);
 		ni->last_realname = old_ni->last_realname;
-		ACE_OS::free(old_ni);
+		free(old_ni);
 
 		if (ni->accesscount)
 		{
 		    char **access;
-		    access = (char **) ACE_OS::malloc (sizeof (char *) * ni->accesscount);
+		    access = (char **) malloc (sizeof (char *) * ni->accesscount);
 		    ni->access = access;
 		    for (j = 0; j < ni->accesscount; ++j, ++access)
 			*access = read_string (f, nickserv_db);
@@ -259,10 +263,10 @@ load_ns_dbase (void)
 	for (i = 33; i < 256; ++i)
 	    while (fgetc (f) == 1)
 	    {
-		ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
-		old_ni = (NickInfo_V1 *) ACE_OS::malloc (sizeof (NickInfo_V1));
-		ACE_OS::memset(ni, 0, sizeof(NickInfo));
-		ACE_OS::memset(old_ni, 0, sizeof(NickInfo_V1));
+		ni = (NickInfo *) malloc (sizeof (NickInfo));
+		old_ni = (NickInfo_V1 *) malloc (sizeof (NickInfo_V1));
+		memset(ni, 0, sizeof(NickInfo));
+		memset(old_ni, 0, sizeof(NickInfo_V1));
 		if (1 != ACE_OS::fread (ni, sizeof (NickInfo_V1), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
@@ -277,12 +281,12 @@ load_ns_dbase (void)
 		ni->last_usermask = old_ni->last_usermask;
 		old_ni->last_realname = read_string (f, nickserv_db);
 		ni->last_realname = old_ni->last_realname;
-		ACE_OS::free(old_ni);
+		free(old_ni);
 
 		if (ni->accesscount)
 		{
 		    char **access;
-		    access = (char **) ACE_OS::malloc (sizeof (char *) * ni->accesscount);
+		    access = (char **) malloc (sizeof (char *) * ni->accesscount);
 		    ni->access = access;
 		    for (j = 0; j < ni->accesscount; ++j, ++access)
 			*access = read_string (f, nickserv_db);
@@ -309,26 +313,26 @@ delnick (NickInfo * ni)
     int i;
 
     if (ni->email)
-	ACE_OS::free (ni->email);
+	free (ni->email);
     if (ni->url)
-	ACE_OS::free (ni->url);
+	free (ni->url);
     if (ni->last_usermask)
-	ACE_OS::free (ni->last_usermask);
+	free (ni->last_usermask);
     if (ni->last_realname)
-	ACE_OS::free (ni->last_realname);
+	free (ni->last_realname);
     if (ni->access)
     {
 	for (i = 0; i < ni->accesscount; ++i)
-	    ACE_OS::free (ni->access[i]);
-	ACE_OS::free (ni->access);
+	    free (ni->access[i]);
+	free (ni->access);
     }
     if (ni->ignore)
     {
 	for (i = 0; i < ni->ignorecount; ++i)
-	    ACE_OS::free (ni->ignore[i]);
-        ACE_OS::free (ni->ignore);
+	    free (ni->ignore[i]);
+        free (ni->ignore);
     }
-    ACE_OS::free (ni);
+    free (ni);
     ni = NULL;
 }
 
@@ -449,8 +453,8 @@ load_cs_dbase (void)
 	for (i = 33; i < 256; ++i)
 	    while (fgetc (f) == 1)
 	    {
-		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
-		ACE_OS::memset(ci, 0, sizeof(ChanInfo));
+		ci = (ChanInfo *) malloc (sizeof (ChanInfo));
+		memset(ci, 0, sizeof(ChanInfo));
 		if (1 != ACE_OS::fread (ci, sizeof (ChanInfo), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		ci->desc = read_string (f, chanserv_db);
@@ -464,7 +468,7 @@ load_cs_dbase (void)
 		if (ci->accesscount)
 		{
 		    ChanAccess *access;
-		    access = (ChanAccess *) ACE_OS::malloc (sizeof (ChanAccess) * ci->accesscount);
+		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
 		    ci->access = access;
 		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
@@ -479,9 +483,9 @@ load_cs_dbase (void)
 			if (access->is_nick < 0)
 			{
 			    --ci->accesscount;
-			    ACE_OS::free (access->name);
+			    free (access->name);
 			    if (j < ci->accesscount)
-				ACE_OS::memcpy (access, access + 1, sizeof (*access) *
+				memcpy (access, access + 1, sizeof (*access) *
 				       (ci->accesscount - j));
 			}
 			else
@@ -491,11 +495,11 @@ load_cs_dbase (void)
 			}
 		    }
 		    if (ci->accesscount)
-			ci->access = (ChanAccess *) ACE_OS::realloc (ci->access,
+			ci->access = (ChanAccess *) realloc (ci->access,
 				     sizeof (ChanAccess) * ci->accesscount);
 		    else
 		    {
-			ACE_OS::free (ci->access);
+			free (ci->access);
 			ci->access = NULL;
 		    }
 		}		/* if (ci->accesscount) */
@@ -503,7 +507,7 @@ load_cs_dbase (void)
 		if (ci->akickcount)
 		{
 		    AutoKick *akick;
-		    akick = (AutoKick *) ACE_OS::malloc (sizeof (AutoKick) * ci->akickcount);
+		    akick = (AutoKick *) malloc (sizeof (AutoKick) * ci->akickcount);
 		    ci->akick = akick;
 		    if (ci->akickcount !=
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
@@ -521,11 +525,11 @@ load_cs_dbase (void)
 			if (akick->is_nick < 0)
 			{
 			    --ci->akickcount;
-			    ACE_OS::free (akick->name);
+			    free (akick->name);
 			    if (akick->reason)
-				ACE_OS::free (akick->reason);
+				free (akick->reason);
 			    if (j < ci->akickcount)
-				ACE_OS::memcpy (akick, akick + 1, sizeof (*akick) *
+				memcpy (akick, akick + 1, sizeof (*akick) *
 				       (ci->akickcount - j));
 			}
 			else
@@ -536,12 +540,12 @@ load_cs_dbase (void)
 		    }
 		    if (ci->akickcount)
 		    {
-			ci->akick = (AutoKick *) ACE_OS::realloc (ci->akick,
+			ci->akick = (AutoKick *) realloc (ci->akick,
 					sizeof (AutoKick) * ci->akickcount);
 		    }
 		    else
 		    {
-			ACE_OS::free (ci->akick);
+			free (ci->akick);
 			ci->akick = NULL;
 		    }
 		}		/* if (ci->akickcount) */
@@ -549,7 +553,7 @@ load_cs_dbase (void)
 		if (ci->cmd_access)
 		{
 		    int n_entries;
-		    ci->cmd_access = (short *) ACE_OS::malloc (sizeof (short) * CA_SIZE);
+		    ci->cmd_access = (short *) malloc (sizeof (short) * CA_SIZE);
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
@@ -578,10 +582,10 @@ load_cs_dbase (void)
 	for (i = 33; i < 256; ++i)
 	    while (fgetc (f) == 1)
 	    {
-		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
-		old_ci = (ChanInfo_V3 *) ACE_OS::malloc (sizeof (ChanInfo_V3));
-		ACE_OS::memset(ci, 0, sizeof(ChanInfo));
-		ACE_OS::memset(old_ci, 0, sizeof(ChanInfo_V3));
+		ci = (ChanInfo *) malloc (sizeof (ChanInfo));
+		old_ci = (ChanInfo_V3 *) malloc (sizeof (ChanInfo_V3));
+		memset(ci, 0, sizeof(ChanInfo));
+		memset(old_ci, 0, sizeof(ChanInfo_V3));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V3), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		/* Convert old dbase! */
@@ -602,32 +606,32 @@ load_cs_dbase (void)
 		/* Can't guarantee the file is in a particular order...
 		 * (Well, we can, but we don't have to depend on it.) */
 		old_ci->desc = read_string (f, chanserv_db);
-		ci->desc = ACE_OS::strdup(old_ci->desc);
-		ACE_OS::free (old_ci->desc);
+		ci->desc = strdup(old_ci->desc);
+		free (old_ci->desc);
 		if (old_ci->url)
 		{
 		    old_ci->url = read_string (f, chanserv_db);
 		    if (ACE_OS::strlen(old_ci->url) > 0)
-			ci->url = ACE_OS::strdup(old_ci->url);
+			ci->url = strdup(old_ci->url);
 		    else
 			ci->url = NULL;
-		    ACE_OS::free (old_ci->url);
+		    free (old_ci->url);
 		}
 		else
 		    ci->url = NULL;
 		if (old_ci->mlock_key)
 		{
 		    old_ci->mlock_key = read_string (f, chanserv_db);
-		    ci->mlock_key = ACE_OS::strdup(old_ci->mlock_key);
-		    ACE_OS::free (old_ci->mlock_key);
+		    ci->mlock_key = strdup(old_ci->mlock_key);
+		    free (old_ci->mlock_key);
 		}
 		else
 		    ci->mlock_key = NULL;
 		if (old_ci->last_topic)
 		{
 		    old_ci->last_topic = read_string (f, chanserv_db);
-		    ci->last_topic = ACE_OS::strdup(old_ci->last_topic);
-		    ACE_OS::free (old_ci->last_topic);
+		    ci->last_topic = strdup(old_ci->last_topic);
+		    free (old_ci->last_topic);
 		}
 		else
 		    ci->last_topic = NULL;
@@ -635,7 +639,7 @@ load_cs_dbase (void)
 		if (ci->accesscount)
 		{
 		    ChanAccess *access;
-		    access = (ChanAccess *) ACE_OS::malloc (sizeof (ChanAccess) * ci->accesscount);
+		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
 		    ci->access = access;
 		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
@@ -650,9 +654,9 @@ load_cs_dbase (void)
 			if (access->is_nick < 0)
 			{
 			    --ci->accesscount;
-			    ACE_OS::free (access->name);
+			    free (access->name);
 			    if (j < ci->accesscount)
-				ACE_OS::memcpy (access, access + 1, sizeof (*access) *
+				memcpy (access, access + 1, sizeof (*access) *
 				       (ci->accesscount - j));
 			}
 			else
@@ -662,11 +666,11 @@ load_cs_dbase (void)
 			}
 		    }
 		    if (ci->accesscount)
-			ci->access = (ChanAccess *) ACE_OS::realloc (ci->access,
+			ci->access = (ChanAccess *) realloc (ci->access,
 				     sizeof (ChanAccess) * ci->accesscount);
 		    else
 		    {
-			ACE_OS::free (ci->access);
+			free (ci->access);
 			ci->access = NULL;
 		    }
 		}		/* if (ci->accesscount) */
@@ -674,7 +678,7 @@ load_cs_dbase (void)
 		if (ci->akickcount)
 		{
 		    AutoKick *akick;
-		    akick = (AutoKick *) ACE_OS::malloc (sizeof (AutoKick) * ci->akickcount);
+		    akick = (AutoKick *) malloc (sizeof (AutoKick) * ci->akickcount);
 		    ci->akick = akick;
 		    if (ci->akickcount !=
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
@@ -692,11 +696,11 @@ load_cs_dbase (void)
 			if (akick->is_nick < 0)
 			{
 			    --ci->akickcount;
-			    ACE_OS::free (akick->name);
+			    free (akick->name);
 			    if (akick->reason)
-				ACE_OS::free (akick->reason);
+				free (akick->reason);
 			    if (j < ci->akickcount)
-				ACE_OS::memcpy (akick, akick + 1, sizeof (*akick) *
+				memcpy (akick, akick + 1, sizeof (*akick) *
 				       (ci->akickcount - j));
 			}
 			else
@@ -707,12 +711,12 @@ load_cs_dbase (void)
 		    }
 		    if (ci->akickcount)
 		    {
-			ci->akick = (AutoKick *) ACE_OS::realloc (ci->akick,
+			ci->akick = (AutoKick *) realloc (ci->akick,
 					sizeof (AutoKick) * ci->akickcount);
 		    }
 		    else
 		    {
-			ACE_OS::free (ci->akick);
+			free (ci->akick);
 			ci->akick = NULL;
 		    }
 		}		/* if (ci->akickcount) */
@@ -720,7 +724,7 @@ load_cs_dbase (void)
 		if (old_ci->cmd_access)
 		{
 		    int n_entries;
-		    ci->cmd_access = (short *) ACE_OS::malloc (sizeof (short) * CA_SIZE);
+		    ci->cmd_access = (short *) malloc (sizeof (short) * CA_SIZE);
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
@@ -735,7 +739,7 @@ load_cs_dbase (void)
 			       SEEK_CUR);
 		    }
 		}
-		ACE_OS::free (old_ci);
+		free (old_ci);
 
 		chan = CreateChanEntry(ci);
 		Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
@@ -750,10 +754,10 @@ load_cs_dbase (void)
 	for (i = 33; i < 256; ++i)
 	    while (fgetc (f) == 1)
 	    {
-		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
-		old_ci = (ChanInfo_V1 *) ACE_OS::malloc (sizeof (ChanInfo_V1));
-		ACE_OS::memset(ci, 0, sizeof(ChanInfo));
-		ACE_OS::memset(old_ci, 0, sizeof(ChanInfo_V1));
+		ci = (ChanInfo *) malloc (sizeof (ChanInfo));
+		old_ci = (ChanInfo_V1 *) malloc (sizeof (ChanInfo_V1));
+		memset(ci, 0, sizeof(ChanInfo));
+		memset(old_ci, 0, sizeof(ChanInfo_V1));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V1), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		/* Convert old dbase! */
@@ -772,21 +776,21 @@ load_cs_dbase (void)
 		ci->flags = old_ci->flags;
 		ci->url = NULL;
 		old_ci->desc = read_string (f, chanserv_db);
-		ci->desc = ACE_OS::strdup(old_ci->desc);
-		ACE_OS::free (old_ci->desc);
+		ci->desc = strdup(old_ci->desc);
+		free (old_ci->desc);
 		if (old_ci->mlock_key)
 		{
 		    old_ci->mlock_key = read_string (f, chanserv_db);
-		    ci->mlock_key = ACE_OS::strdup(old_ci->mlock_key);
-		    ACE_OS::free (old_ci->mlock_key);
+		    ci->mlock_key = strdup(old_ci->mlock_key);
+		    free (old_ci->mlock_key);
 		}
 		else
 		    ci->mlock_key = NULL;
 		if (old_ci->last_topic)
 		{
 		    old_ci->last_topic = read_string (f, chanserv_db);
-		    ci->last_topic = ACE_OS::strdup(old_ci->last_topic);
-		    ACE_OS::free (old_ci->last_topic);
+		    ci->last_topic = strdup(old_ci->last_topic);
+		    free (old_ci->last_topic);
 		}
 		else
 		    ci->last_topic = NULL;
@@ -794,7 +798,7 @@ load_cs_dbase (void)
 		if (ci->accesscount)
 		{
 		    ChanAccess *access;
-		    access = (ChanAccess *) ACE_OS::malloc (sizeof (ChanAccess) * ci->accesscount);
+		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
 		    ci->access = access;
 		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
@@ -809,9 +813,9 @@ load_cs_dbase (void)
 			if (access->is_nick < 0)
 			{
 			    --ci->accesscount;
-			    ACE_OS::free (access->name);
+			    free (access->name);
 			    if (j < ci->accesscount)
-				ACE_OS::memcpy (access, access + 1, sizeof (*access) *
+				memcpy (access, access + 1, sizeof (*access) *
 				       (ci->accesscount - j));
 			}
 			else
@@ -821,11 +825,11 @@ load_cs_dbase (void)
 			}
 		    }
 		    if (ci->accesscount)
-			ci->access = (ChanAccess *) ACE_OS::realloc (ci->access,
+			ci->access = (ChanAccess *) realloc (ci->access,
 				     sizeof (ChanAccess) * ci->accesscount);
 		    else
 		    {
-			ACE_OS::free (ci->access);
+			free (ci->access);
 			ci->access = NULL;
 		    }
 		}		/* if (ci->accesscount) */
@@ -833,7 +837,7 @@ load_cs_dbase (void)
 		if (ci->akickcount)
 		{
 		    AutoKick *akick;
-		    akick = (AutoKick *) ACE_OS::malloc (sizeof (AutoKick) * ci->akickcount);
+		    akick = (AutoKick *) malloc (sizeof (AutoKick) * ci->akickcount);
 		    ci->akick = akick;
 		    if (ci->akickcount !=
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
@@ -851,11 +855,11 @@ load_cs_dbase (void)
 			if (akick->is_nick < 0)
 			{
 			    --ci->akickcount;
-			    ACE_OS::free (akick->name);
+			    free (akick->name);
 			    if (akick->reason)
-				ACE_OS::free (akick->reason);
+				free (akick->reason);
 			    if (j < ci->akickcount)
-				ACE_OS::memcpy (akick, akick + 1, sizeof (*akick) *
+				memcpy (akick, akick + 1, sizeof (*akick) *
 				       (ci->akickcount - j));
 			}
 			else
@@ -866,12 +870,12 @@ load_cs_dbase (void)
 		    }
 		    if (ci->akickcount)
 		    {
-			ci->akick = (AutoKick *) ACE_OS::realloc (ci->akick,
+			ci->akick = (AutoKick *) realloc (ci->akick,
 					sizeof (AutoKick) * ci->akickcount);
 		    }
 		    else
 		    {
-			ACE_OS::free (ci->akick);
+			free (ci->akick);
 			ci->akick = NULL;
 		    }
 		}		/* if (ci->akickcount) */
@@ -879,7 +883,7 @@ load_cs_dbase (void)
 		if (old_ci->cmd_access)
 		{
 		    int n_entries;
-		    ci->cmd_access = (short *) ACE_OS::malloc (sizeof (short) * CA_SIZE);
+		    ci->cmd_access = (short *) malloc (sizeof (short) * CA_SIZE);
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
 			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
@@ -894,7 +898,7 @@ load_cs_dbase (void)
 			       SEEK_CUR);
 		    }
 		}
-		ACE_OS::free (old_ci);
+		free (old_ci);
 
 		chan = CreateChanEntry(ci);
 		Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
@@ -932,28 +936,28 @@ delchan (ChanInfo * ci)
     int i;
 
     if (ci->desc)
-	ACE_OS::free (ci->desc);
+	free (ci->desc);
     if (ci->url)
-	ACE_OS::free (ci->url);
+	free (ci->url);
     if (ci->mlock_key)
-	ACE_OS::free (ci->mlock_key);
+	free (ci->mlock_key);
     if (ci->last_topic)
-	ACE_OS::free (ci->last_topic);
+	free (ci->last_topic);
     for (i = 0; i < ci->accesscount; ++i)
 	if (ci->access[i].name)
-	    ACE_OS::free (ci->access[i].name);
+	    free (ci->access[i].name);
     if (ci->access)
-	ACE_OS::free (ci->access);
+	free (ci->access);
     for (i = 0; i < ci->akickcount; ++i)
     {
 	if (ci->akick[i].name)
-	    ACE_OS::free (ci->akick[i].name);
+	    free (ci->akick[i].name);
 	if (ci->akick[i].reason)
-	    ACE_OS::free (ci->akick[i].reason);
+	    free (ci->akick[i].reason);
     }
     if (ci->akick)
-	ACE_OS::free (ci->akick);
-    ACE_OS::free (ci);
+	free (ci->akick);
+    free (ci);
     ci = NULL;
 }	
 
@@ -1213,12 +1217,12 @@ load_ms_dbase (void)
 	for (i = 33; i < 256; ++i)
 	    while (fgetc (f) == 1)
 	    {
-		ml = (MemoList *) ACE_OS::malloc (sizeof (MemoList));
-		ACE_OS::memset(ml, 0, sizeof(MemoList));
+		ml = (MemoList *) malloc (sizeof (MemoList));
+		memset(ml, 0, sizeof(MemoList));
 		if (1 != ACE_OS::fread (ml, sizeof (MemoList), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", memoserv_db);
-		ml->memos = memos = (Memo *) ACE_OS::malloc (sizeof (Memo) * ml->n_memos);
-		ACE_OS::memset(ml->memos, 0, sizeof(Memo) * ml->n_memos);
+		ml->memos = memos = (Memo *) malloc (sizeof (Memo) * ml->n_memos);
+		memset(ml->memos, 0, sizeof(Memo) * ml->n_memos);
 		ACE_OS::fread (memos, sizeof (Memo), ml->n_memos, f);
 		for (j = 0; j < ml->n_memos; ++j, ++memos)
 		    memos->text = read_string (f, memoserv_db);
@@ -1262,12 +1266,12 @@ load_news_dbase (void)
 	{
 	    while (fgetc (f) == 1)
 	    {
-		nl = (NewsList *) ACE_OS::malloc (sizeof (NewsList));
-		ACE_OS::memset(nl, 0, sizeof(NewsList));
+		nl = (NewsList *) malloc (sizeof (NewsList));
+		memset(nl, 0, sizeof(NewsList));
 		if (1 != ACE_OS::fread (nl, sizeof (NewsList), 1, f))
 		    Log(LM_EMERGENCY, "Read error on %s", newsserv_db);
-		nl->newss = newss = (Memo *) ACE_OS::malloc (sizeof (Memo) * nl->n_newss);
-		ACE_OS::memset(nl->newss, 0, sizeof(Memo) * nl->n_newss);
+		nl->newss = newss = (Memo *) malloc (sizeof (Memo) * nl->n_newss);
+		memset(nl->newss, 0, sizeof(Memo) * nl->n_newss);
 		ACE_OS::fread (newss, sizeof (Memo), nl->n_newss, f);
 		for (j = 0; j < nl->n_newss; ++j, ++newss)
 		    newss->text = read_string (f, newsserv_db);
@@ -1298,10 +1302,10 @@ del_memolist (MemoList * ml)
     if (!ml) return;
     memos = ml->memos;
     for (i = 0; i < ml->n_memos; ++i, ++memos)
-	ACE_OS::free(memos->text);
+	free(memos->text);
     if (ml->memos)
-	ACE_OS::free (ml->memos);
-    ACE_OS::free (ml);
+	free (ml->memos);
+    free (ml);
 }
 
 /* del_newslist:  Remove a nick's news list from the database.  Assumes
@@ -1317,10 +1321,10 @@ del_newslist (NewsList * nl)
     if (!nl) return;
     newss = nl->newss;
     for (i = 0; i < nl->n_newss; ++i, ++newss)
-	ACE_OS::free(newss->text);
+	free(newss->text);
     if (nl->newss)
-	ACE_OS::free (nl->newss);
-    ACE_OS::free (nl);
+	free (nl->newss);
+    free (nl);
 }
 
 list<Memo_t>
@@ -1413,8 +1417,8 @@ load_sop ()
 	    sop_size = 16;
 	else
 	    sop_size = 2 * nsop;
-	sops = (Sop *) ACE_OS::malloc (sizeof (Sop) * sop_size);
-	ACE_OS::memset(sops, 0, sizeof(Sop) * sop_size);
+	sops = (Sop *) malloc (sizeof (Sop) * sop_size);
+	memset(sops, 0, sizeof(Sop) * sop_size);
 	if (!nsop)
 	{
 	    fclose (f);
@@ -1433,7 +1437,7 @@ load_sop ()
 		    mstring(sops[j].nick), Parent->commserv.FirstName());
 	    }
 	}
-	ACE_OS::free(sops);
+	free(sops);
 	break;
     default:
 	Log(LM_EMERGENCY, "Unsupported version (%d) on %s", i, sop_db);
@@ -1467,8 +1471,8 @@ load_message ()
 	    message_size = 16;
 	else
 	    message_size = 2 * nmessage;
-	messages = (Message *) ACE_OS::malloc (sizeof (Message) * message_size);
-	ACE_OS::memset(messages, 0, sizeof(Message) * message_size);
+	messages = (Message *) malloc (sizeof (Message) * message_size);
+	memset(messages, 0, sizeof(Message) * message_size);
 	if (!nmessage)
 	{
 	    fclose (f);
@@ -1496,8 +1500,8 @@ load_message ()
 	}
 
 	for (j = 0; j < nmessage; ++j)
-	    ACE_OS::free(messages[j].text);
-	ACE_OS::free(messages);
+	    free(messages[j].text);
+	free(messages);
 	break;
 
     default:
@@ -1531,8 +1535,8 @@ load_akill ()
 	    akill_size = 16;
 	else
 	    akill_size = 2 * nakill;
-	akills = (Akill *) ACE_OS::malloc (sizeof (Akill) * akill_size);
-	ACE_OS::memset(akills, 0, sizeof(Akill) * akill_size);
+	akills = (Akill *) malloc (sizeof (Akill) * akill_size);
+	memset(akills, 0, sizeof(Akill) * akill_size);
 	if (!nakill)
 	{
 	    fclose (f);
@@ -1567,10 +1571,10 @@ load_akill ()
 		    mDateTime(akills[j].time));
 	    }
 
-	    ACE_OS::free(akills[j].mask);
-	    ACE_OS::free(akills[j].reason);
+	    free(akills[j].mask);
+	    free(akills[j].reason);
 	}
-	ACE_OS::free(akills);
+	free(akills);
 	break;
 
     case 1:
@@ -1581,8 +1585,8 @@ load_akill ()
 		akill_size = 16;
 	    else
 		akill_size = 2 * nakill;
-	    akills = (Akill *) ACE_OS::malloc (sizeof (Akill) * akill_size);
-	    ACE_OS::memset(akills, 0, sizeof(Akill) * akill_size);
+	    akills = (Akill *) malloc (sizeof (Akill) * akill_size);
+	    memset(akills, 0, sizeof(Akill) * akill_size);
 	    if (!nakill)
 	    {
 		fclose (f);
@@ -1623,10 +1627,10 @@ load_akill ()
 		    mDateTime(akills[j].time));
 	    }
 
-	    ACE_OS::free(akills[j].mask);
-	    ACE_OS::free(akills[j].reason);
+	    free(akills[j].mask);
+	    free(akills[j].reason);
 	}
-	ACE_OS::free(akills);
+	free(akills);
 
 	break;
 
@@ -1662,8 +1666,8 @@ load_clone ()
 	    clone_size = 16;
 	else
 	    clone_size = 2 * nclone;
-	clones = (Allow *) ACE_OS::malloc (sizeof (Allow) * clone_size);
-	ACE_OS::memset(clones, 0, sizeof(Allow) * clone_size);
+	clones = (Allow *) malloc (sizeof (Allow) * clone_size);
+	memset(clones, 0, sizeof(Allow) * clone_size);
 	if (!nclone)
 	{
 	    fclose (f);
@@ -1688,10 +1692,10 @@ load_clone ()
 	    Parent->operserv.Clone_insert(mstring(clones[j].host),
 		    clones[j].amount, mstring(clones[j].reason),
 		    mstring(clones[j].who), mDateTime(clones[j].time));
-	    ACE_OS::free(clones[j].host);
-	    ACE_OS::free(clones[j].reason);
+	    free(clones[j].host);
+	    free(clones[j].reason);
 	}
-	ACE_OS::free(clones);
+	free(clones);
 	break;
     default:
 	Log(LM_EMERGENCY, "Unsupported version (%d) on %s", i, clone_db);

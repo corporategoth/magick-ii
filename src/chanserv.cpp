@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.207  2000/09/13 12:45:33  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.206  2000/09/12 21:17:01  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -1315,7 +1319,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     CB(2, p_modes_on_params.size());
     CB(3, p_modes_off);
     CB(4, p_modes_off_params.size());
-    for (i=0; i<change.size(); i++)
+    for (fwdargs=2, i=0; i<change.size(); i++)
     {
 	if (change[i] == '+')
 	{
@@ -1551,7 +1555,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source,
 						newmode + newmode_param);
-    if (!source.Contains("."))
+    if (requeue_param != "" && !source.Contains("."))
     {
 	Parent->server.PushUser(source, requeue + requeue_param, i_Name);
     }

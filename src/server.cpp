@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.129  2000/09/13 12:45:34  prez
+** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
+** must enable with --enable-mpatrol in configure (and have mpatrol in system).
+**
 ** Revision 1.128  2000/09/12 21:17:02  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -1003,7 +1007,8 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
     vector<mstring> LastProc;
 
     // Dont report this, thats the point of the queue...
-    if (!Parent->nickserv.IsLive(nick))
+    if (!Parent->nickserv.IsLive(nick) ||
+	Parent->nickserv.live[nick.LowerCase()].IsServices())
 	return;
 
     RLOCK(("Server", "ToBeDone", nick.LowerCase()));
