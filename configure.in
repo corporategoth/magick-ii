@@ -585,7 +585,7 @@ dnl ====================================================
 dnl OK, CRYPTLIB wasnt specified.  See if we can find
 dnl it in the LD_LIBRARY_PATH, if not, error out.
 
-if test $descrypt = true -o $md5crypt = true; then
+if test "$descrypt" = true -o "$md5crypt" = true; then
   if test 0$libcrypt -eq 0; then
     AC_CHECK_LIB(c, crypt,
       [libcrypt=1])
@@ -607,6 +607,8 @@ call, please specify the library location with the option
 --with-zlib=<dir>."
   exit 1
   fi
+
+  AC_CHECK_HEADERS(crypt.h)
 fi
 
 dnl ====================================================

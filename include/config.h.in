@@ -152,6 +152,9 @@
 /* Define if you have the <bits/stl_config.h> header file.  */
 #undef HAVE_BITS_STL_CONFIG_H
 
+/* Define if you have the <crypt.h> header file.  */
+#undef HAVE_CRYPT_H
+
 /* Define if you have the <exception> header file.  */
 #undef HAVE_EXCEPTION
 
