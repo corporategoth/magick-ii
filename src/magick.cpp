@@ -493,7 +493,6 @@ int Magick::doparamparse()
     NFT("Magick::doparamparse");
     mstring temp;
     int argc=argv.size(),i;
-    bool ArgUsed = false;
     for(i=1;i<argc;i++)
     {
 	if(argv[i][0U]=='-')
@@ -519,6 +518,7 @@ int Magick::doparamparse()
 		--help		-?
 	    */
 
+	    bool ArgUsed=false;
 	    if (argv[i][1U]=='-')
 		ArgUsed=paramlong(argv[i], (i-1 < argc) ? argv[i+1] : "");
 	    else

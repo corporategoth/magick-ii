@@ -92,6 +92,7 @@ public:
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }
     void execute(const mstring & message);
+    void numeric_execute(const mstring & message);
 };
 
 #endif
