@@ -1782,3 +1782,244 @@ const char* wxGetHomeDir(mstring *pstr)
 
   RET(strDir.c_str());
 }
+
+size_t  wxBaseArray::Count() const   
+{
+    NFT("wxBaseArray::Count");
+    RET(m_nCount);      
+}
+
+size_t  wxBaseArray::GetCount() const   
+{
+    NFT("wxBaseArray::GetCount");
+    RET(m_nCount);      
+}
+
+bool  wxBaseArray::IsEmpty() const 
+{
+    NFT("wxBaseArray::IsEmpty");
+    RET(m_nCount == 0); 
+}
+
+long& wxBaseArray::Item(size_t uiIndex) const 
+{
+    FT("wxBaseArray::Item", (uiIndex));
+    wxASSERT( uiIndex < m_nCount );
+    RET(m_pItems[uiIndex]); 
+}
+
+long& wxBaseArray::operator[](size_t uiIndex) const 
+{
+    FT("wxBaseArray::operator[]", (uiIndex));
+    RET(Item(uiIndex)); 
+}
+
+void LineList::SetNext(LineList *pNext)  
+{
+    FT("LineList::SetNext", (pNext));
+    m_pNext = pNext; 
+}
+
+void LineList::SetPrev(LineList *pPrev)  
+{
+    FT("LineList::SetPtev", (pPrev));
+    m_pPrev = pPrev; 
+}
+
+LineList *LineList::Next() const              
+{
+    NFT("LineList::Next");
+    RET(m_pNext);  
+}
+
+LineList *LineList::Prev() const
+{
+    NFT("LineList::Prev");
+    RET(m_pPrev);  
+}
+
+void LineList::SetText(const mstring& str) 
+{
+    FT("LineList::SetText", (str));
+    m_strLine = str;  
+}
+
+const mstring& LineList::Text() const
+{
+    NFT("LineList::Text");
+    RET(m_strLine); 
+}
+
+const mstring& wxFileConfig::GetPath() const 
+{
+    NFT("wxFileConfig::GetPath");
+    RET(m_strPath); 
+}
+
+mstring wxFileConfig::Read(const mstring& key, const mstring& defVal) const 
+{
+    FT("wxFileConfig::Read", (key, defVal));
+    RET(wxConfigBase::Read(key, defVal)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, long *pl, long defVal) const 
+{
+    FT("wxFileConfig::Read", (key, pl, defVal));
+    RET(wxConfigBase::Read(key, pl, defVal)); 
+}
+
+long wxFileConfig::Read(const mstring& key, long defVal) const 
+{
+    FT("wxFileConfig::Read", (key, defVal));
+    RET(wxConfigBase::Read(key, defVal)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, int *pi, int defVal) const 
+{
+    FT("wxFileConfig::Read", (key, pi, defVal));
+    RET(wxConfigBase::Read(key, pi, defVal)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, int *pi) const 
+{
+    FT("wxFileConfig::Read", (key, pi));
+    RET(wxConfigBase::Read(key, pi)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, double* val) const 
+{ 
+    FT("wxFileConfig::Read", (key, val));
+    RET(wxConfigBase::Read(key, val)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, double* val, double defVal) const 
+{
+    FT("wxFileConfig::Read", (key, val, defVal));
+    RET(wxConfigBase::Read(key, val, defVal)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, bool* val) const 
+{
+    FT("wxFileConfig::Read", (key, val));
+    RET(wxConfigBase::Read(key, val)); 
+}
+
+bool wxFileConfig::Read(const mstring& key, bool* val, bool defVal) const 
+{
+    FT("wxFileConfig::Read", (key, val, defVal));
+    RET(wxConfigBase::Read(key, val, defVal)); 
+}
+
+bool wxFileConfig::Write(const mstring& key, double value) 
+{
+    FT("wxFileConfig::Write", (key, value));
+    RET(wxConfigBase::Write(key, value)); 
+}
+
+bool wxFileConfig::Write(const mstring& key, bool value) 
+{
+    FT("wxFileConfig::Write", (key, value));
+    RET(wxConfigBase::Write(key, value)); 
+}
+
+const mstring& ConfigEntry::Name()        const 
+{
+    NFT("ConfigEntry::Name");
+    RET(m_strName);    
+}
+
+const mstring& ConfigEntry::Value()       const 
+{
+    NFT("ConfigEntry::Value");
+    RET(m_strValue);   
+}
+
+ConfigGroup    *ConfigEntry::Group()       const 
+{
+    NFT("ConfigEntry::Group");
+    NRET(ConfigGroup, m_pParent);    
+}
+
+bool            ConfigEntry::IsDirty()     const 
+{
+    NFT("ConfigEntry::IsDirty");
+    RET(m_bDirty);     
+}
+
+bool            ConfigEntry::IsImmutable() const 
+{
+    NFT("ConfigEntry::IsImmutable");
+    RET(m_bImmutable); 
+}
+
+bool            ConfigEntry::IsLocal()     const 
+{
+    NFT("ConfigEntry::IsLocal");
+    RET(m_pLine != 0); 
+}
+
+int             ConfigEntry::Line()        const 
+{
+    NFT("ConfigEntry::Line");
+    RET(m_nLine);      
+}
+
+LineList       *ConfigEntry::GetLine()     const 
+{
+    NFT("ConfigEntry::GetLine");
+    RET(m_pLine);      
+}
+
+const mstring& ConfigGroup::Name()    const 
+{
+    NFT("ConfigGroup::Name");
+    RET(m_strName); 
+}
+
+ConfigGroup    *ConfigGroup::Parent()  const 
+{
+    NFT("ConfigGroup::Parent");
+    NRET(ConfigGroup, m_pParent); 
+}
+
+wxFileConfig   *ConfigGroup::Config()  const 
+{
+    NFT("ConfigGroup::Config");
+    NRET(wxFileConfig, m_pConfig); 
+}
+
+bool            ConfigGroup::IsDirty() const 
+{
+    NFT("ConfigGroup::IsDirty");
+    RET(m_bDirty);  
+}
+
+const wxFileConfig::ArrayEntries& ConfigGroup::Entries() const 
+{
+    NFT("ConfigGroup::Entries");
+    NRET(wxFileConfig::ArrayEntries, m_aEntries);   
+}
+
+const wxFileConfig::ArrayGroups&  ConfigGroup::Groups()  const 
+{
+    NFT("ConfigGroup::Groups");
+    NRET(wxFileConfig::ArrayGroups, m_aSubgroups); 
+}
+
+bool  ConfigGroup::IsEmpty() const 
+{
+    NFT("ConfigGroup::IsEmpty");
+    RET(Entries().IsEmpty() && Groups().IsEmpty()); 
+}
+
+void ConfigGroup::SetLastEntry(ConfigEntry *pEntry) 
+{
+    FT("ConfigGroup::SetLastEntry", ("(ConfigEntry) *pEntry"));
+    m_pLastEntry = pEntry; 
+}
+
+void ConfigGroup::SetLastGroup(ConfigGroup *pGroup) 
+{
+    FT("ConfigGroup::SetLastGroup", ("(ConfigGroup) *pGroup"));
+    m_pLastGroup = pGroup; 
+}

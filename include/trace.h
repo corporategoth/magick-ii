@@ -261,7 +261,7 @@ class T_Functions : public Trace
     ThreadID *tid;
     mstring m_name;
 
-    T_Functions() {} 
+    T_Functions() {}
 
 public:
     mVariant return_value;

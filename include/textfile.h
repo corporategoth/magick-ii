@@ -28,7 +28,7 @@
 #define _TEXTFILE_H
 #include "mstring.h"
 #include "mstream.h"
-#include "log.h"
+//#include "log.h"
 #include <assert.h>
 #include <vector>
 using namespace std;
@@ -65,35 +65,21 @@ public:
     // closes the file and frees memory, losing all changes
   bool Close();
     // is file currently opened?
-  bool IsOpened() const {
-	NFT("wxTextFile::IsOpened");
-	RET(m_file.IsOpened()); }
+  bool IsOpened() const;
 
   // accessors
     // get the number of lines in the file
-  size_t GetLineCount() const {
-	NFT("wxTextFile::GetLineCount");
-	RET(m_aLines.size()); }
+  size_t GetLineCount() const;
     // the returned line may be modified (but don't add CR/LF at the end!)
-  mstring& GetLine(size_t n)    const {
-	FT("wxTextFile::GetLine", (n));
-	RET(((mstring&)m_aLines[n])); }
-  mstring& operator[](size_t n) const {
-	FT("wxTextFile::operator[]", (n));
-	RET(((mstring&)m_aLines[n])); }
+  mstring& GetLine(size_t n)    const;
+  mstring& operator[](size_t n) const;
 
     // the current line has meaning only when you're using
     // GetFirstLine()/GetNextLine() functions, it doesn't get updated when
     // you're using "direct access" i.e. GetLine()
-  size_t GetCurrentLine() const {
-	NFT("wxTextFile::GetCurrentLine");
-	RET(m_nCurLine); }
-  void GoToLine(size_t n) {
-	FT("wxTextFile::GoToLine", (n));
-	m_nCurLine = n; }
-  bool Eof() const {
-	NFT("wxTextFile::Eof");
-	RET(m_nCurLine == m_aLines.size()); }
+  size_t GetCurrentLine() const;
+  void GoToLine(size_t n);
+  bool Eof() const;
 
     // these methods allow more "iterator-like" traversal of the list of
     // lines, i.e. you may write something like:
@@ -101,49 +87,27 @@ public:
 
     // @@@ const is commented out because not all compilers understand
     //     'mutable' keyword yet (m_nCurLine should be mutable)
-  mstring& GetFirstLine() /* const */ {
-	NFT("wxTextFile::GetFirstLine");
-	RET(m_aLines[m_nCurLine = 0]); }
-  mstring& GetNextLine()  /* const */ {
-	NFT("wxTextFile::GetNextLine");
-	RET(m_aLines[++m_nCurLine]);   }
-  mstring& GetPrevLine()  /* const */ {
-	NFT("wxTextFile::GetPrevLine");
-	wxASSERT(m_nCurLine > 0);
-	RET(m_aLines[--m_nCurLine]);   }
-  mstring& GetLastLine() /* const */ {
-	NFT("wxTextFile::GetLastLine");
- 	RET(m_aLines[m_nCurLine = m_aLines.size() - 1]); }
+  mstring& GetFirstLine() /* const */;
+  mstring& GetNextLine()  /* const */;
+  mstring& GetPrevLine()  /* const */;
+  mstring& GetLastLine() /* const */;
 
     // get the type of the line (see also GetEOL)
-  wxTextFileType GetLineType(size_t n) const {
-	FT("wxTextFile::GetLineType", (n));
-	RET(m_aTypes[n]); }
+  wxTextFileType GetLineType(size_t n) const;
     // guess the type of file (m_file is supposed to be opened)
   wxTextFileType GuessType() const;
     // get the name of the file
-  const char *GetName() const {
-	NFT("wxTextFile::GetName");
-	RET(m_strFile.c_str()); }
+  const char *GetName() const;
 
   // add/remove lines
     // add a line to the end
-  void AddLine(const mstring& str, wxTextFileType type = typeDefault) {
-	FT("wxTextFile::AddLine", (str, type));
-	m_aLines.push_back(str);
-	m_aTypes.push_back(type); }
+  void AddLine(const mstring& str, wxTextFileType type = typeDefault);
     // insert a line before the line number n
   void InsertLine(const mstring& str,
                   size_t n,
-                  wxTextFileType type = typeDefault) {
-	FT("wxTextFile::InsertLine", (str, n, type));
-	m_aLines.insert(m_aLines.begin()+n, str);
-	m_aTypes.insert(m_aTypes.begin()+n, type); }
+                  wxTextFileType type = typeDefault);
     // delete one line
-  void RemoveLine(size_t n) {
-	FT("wxTextFile::RemoveLine", (n));
-	m_aLines.erase(m_aLines.begin()+n);
-	m_aTypes.erase(m_aTypes.begin()+n); }
+  void RemoveLine(size_t n);
 
   // change the file on disk (default argument means "don't change type")
   // possibly in another format

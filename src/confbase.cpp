@@ -389,3 +389,102 @@ wxConfigPathChanger::~wxConfigPathChanger()
   }
 }
 
+wxConfigBase *wxConfigBase::Get() 
+{
+    NFT("wxConfigBase::Get");
+    if ( !ms_pConfig ) 
+	Create();
+    NRET(wxConfigBase, ms_pConfig); 
+}
+
+void wxConfigBase::DontCreateOnDemand() 
+{
+    NFT("wxConfigBase::DontCreateOnDemand");
+    ms_bAutoCreate = false; 
+}
+
+bool wxConfigBase::Exists(const mstring& strName) const 
+{
+    FT("wxConfigBase::Exists", (strName));
+    RET(HasGroup(strName) || HasEntry(strName)); 
+}
+
+long wxConfigBase::Read(const mstring& strKey, long defVal) const 
+{
+    FT("wxConfigBase::Read", (strKey, defVal));
+    long l;
+    Read(strKey, &l, defVal);
+    RET(l); 
+}
+
+bool wxConfigBase::IsExpandingEnvVars() const 
+{
+    NFT("wxConfigBase::IsExpandingEnvVars");
+    RET(m_bExpandEnvVars); 
+}
+
+void wxConfigBase::SetExpandEnvVars(bool bDoIt) 
+{
+    FT("wxConfigBase::SetExpandEnvVars", (bDoIt));
+    m_bExpandEnvVars = bDoIt; 
+}
+
+void wxConfigBase::SetRecordDefaults(bool bDoIt) 
+{
+    FT("wxConfigBase::SetRecordDefaults", (bDoIt));
+    m_bRecordDefaults = bDoIt; 
+}
+
+bool wxConfigBase::IsRecordingDefaults() const 
+{
+    NFT("wxConfigBase::IsRecordingDefaults");
+    RET(m_bRecordDefaults); 
+}
+
+mstring wxConfigBase::GetAppName() const 
+{
+    NFT("wxConfigBase::GetAppName");
+    RET(m_appName); 
+}
+
+mstring wxConfigBase::GetVendorName() const
+{
+    NFT("wxConfigBase::GetVendorName");
+    RET(m_vendorName); 
+}
+
+void wxConfigBase::SetAppName(const mstring& appName) 
+{
+    FT("wxConfigBase::SetAppName", (appName));
+    m_appName = appName; 
+}
+
+void wxConfigBase::SetVendorName(const mstring& vendorName) 
+{
+    FT("wxConfigBase::SetVendorName", (vendorName));
+    m_vendorName = vendorName; 
+}
+
+void wxConfigBase::SetStyle(long style) 
+{
+    FT("wxConfigBase::SetStyle", (style));
+    m_style = style; 
+}
+
+long wxConfigBase::GetStyle() const 
+{
+    NFT("wxConfigBase::GetStyle");
+    RET(m_style); 
+}
+
+bool wxConfigBase::IsImmutable(const mstring& key) 
+{
+    FT("wxConfigBase::IsImmutable", (key));
+    RET(!key.IsEmpty() && key[0] == wxCONFIG_IMMUTABLE_PREFIX); 
+}
+
+const mstring& wxConfigPathChanger::Name() const 
+{
+    NFT("wxConfigPathChanger::Name");
+    RET(m_strName); 
+}

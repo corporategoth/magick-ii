@@ -30,6 +30,7 @@
 #include "confbase.h"
 #include "mstring.h"
 #include "textfile.h"
+#include "log.h"
 
 /*
   wxFileConfig derives from base Config and implements file based config class,
@@ -158,16 +159,10 @@ public:
   /** @name simple accessors */
   //@{
     /// number of elements in the array
-  size_t  Count() const   {
-	NFT("wxBaseArray::Count");
-	RET(m_nCount);      }
-  size_t  GetCount() const   {
-	NFT("wxBaseArray::GetCount");
-	RET(m_nCoun)t;      }
+  size_t  Count() const;
+  size_t  GetCount() const;
     /// is it empty?
-  bool  IsEmpty() const 
-	NFT("wxBaseArray::IsEmpty");
-	RET(m_nCount == 0); }
+  bool  IsEmpty() const;
   //@}
 
 protected:
@@ -178,14 +173,9 @@ protected:
   /** @name items access */
   //@{
     /// get item at position uiIndex (range checking is done in debug version)
-  long& Item(size_t uiIndex) const {
-	FT("wxBaseArray::Item", (uiIndex));
-	wxASSERT( uiIndex < m_nCount );
-	RET(m_pItems[uiIndex]); }
+  long& Item(size_t uiIndex) const;
     /// same as Item()
-  long& operator[](size_t uiIndex) const {
-	FT("wxBaseArray::operator[]", (uiIndex));
-	RET(Item(uiIndex)); }
+  long& operator[](size_t uiIndex) const;
   //@}
 
   /** @name item management */
@@ -249,40 +239,31 @@ class name : public wxBaseArray 				    \
 {                                                                   \
 public:                                                             \
   name(SCMPFUNC##T fn) {                                            \
-	FT("name::name", ("(SCMPFUNC##T) fn"));                     \
 	wxASSERT( sizeof(T) <= sizeof(long) );                      \
 	m_fnCompare = fn; }                                         \
                                                                     \
   name& operator=(const name& src) {                                \
-	FT("name:operator=", (src));                                \
 	wxBaseArray* temp = (wxBaseArray*) this;                    \
 	(*temp) = ((const wxBaseArray&)src);                        \
 	m_fnCompare = src.m_fnCompare;                              \
-	NRET(name, *this); }                                        \
+	return *this; }                                        \
                                                                     \
   T& operator[](size_t uiIndex) const {                             \
-	FT("name::operator[]", (uiIndex));                          \
-	NRET(T, (T&)(wxBaseArray::Item(uiIndex))); }                \
+	return (T&)(wxBaseArray::Item(uiIndex)); }                \
   T& Item(size_t uiIndex) const {                                   \
-	FT("name::Item", (uiIndex));                                \
-	NRET(T, (T&)(wxBaseArray::Item(uiIndex))); }                \
+	return (T&)(wxBaseArray::Item(uiIndex)); }                \
   T& Last() const {                                                 \
-	FT("name::Last", (uiIndex));                                \
-	NRET(T, (T&)(wxBaseArray::Item(Count() - 1))); }            \
+	return (T&)(wxBaseArray::Item(Count() - 1)); }            \
                                                                     \
   int Index(T Item) const {                                         \
-	FT("name::Index", ("(T) Item"));                            \
-	RET(wxBaseArray::Index((long)Item, (CMPFUNC)m_fnCompare)); }\
+	return wxBaseArray::Index((long)Item, (CMPFUNC)m_fnCompare); }\
                                                                     \
   void Add(T Item) {                                                \
-	FT("name::Add, ("(T) Item"));                               \
 	wxBaseArray::Add((long)Item, (CMPFUNC)m_fnCompare); }       \
                                                                     \
   void Remove(size_t uiIndex) {                                     \
-	FT("name::Remove", (uiIndex));                              \
 	wxBaseArray::Remove(uiIndex); }                             \
   void Remove(T Item) {                                             \
-	FT("name::Remvove", ("(T) Item"));                          \
 	int iIndex = Index(Item);                                   \
 	wxCHECK2_MSG( iIndex != -1, return,                         \
 	  "removing inexisting element in wxArray::Remove" );       \
@@ -304,32 +285,20 @@ private:                                                            \
 class LineList
 {
 public:
-  void      SetNext(LineList *pNext)  {
-	FT("LineList::SetNext", (pNext));
-	m_pNext = pNext; }
-  void      SetPrev(LineList *pPrev)  {
-	FT("LineList::SetPtev", (pPrev));
-	m_pPrev = pPrev; }
+  void      SetNext(LineList *pNext);
+  void      SetPrev(LineList *pPrev);
 
   // ctor
   LineList(const mstring& str, LineList *pNext = (LineList *) NULL) : m_strLine(str)
     { SetNext(pNext); SetPrev((LineList *) NULL); }
 
   //
-  LineList *Next() const              {
-	NFT("LineList::Next");
-	RET(m_pNext);  }
-  LineList *Prev() const              {
-	NFT("LineList::Prev");
-	RET(m_pPrev);  }
+  LineList *Next() const;
+  LineList *Prev() const;
 
   //
-  void SetText(const mstring& str) {
-	FT("LineList::SetText", (str));
-	m_strLine = str;  }
-  const mstring& Text() const      {
-	NFT("LineList::Text");
-	RET(m_strLine); }
+  void SetText(const mstring& str);
+  const mstring& Text() const;
 
 private:
   mstring  m_strLine;      // line contents
@@ -380,9 +349,7 @@ public:
 
   // implement inherited pure virtual functions
   virtual void SetPath(const mstring& strPath);
-  virtual const mstring& GetPath() const {
-	NFT("wxFileConfig::GetPath");
-	RET(m_strPath); }
+  virtual const mstring& GetPath() const;
 
   virtual bool GetFirstGroup(mstring& str, long& lIndex) const;
   virtual bool GetNextGroup (mstring& str, long& lIndex) const;
@@ -400,42 +367,20 @@ public:
   virtual bool Read(const mstring& key, long *pl) const;
 
   // The following are necessary to satisfy the compiler
-  mstring Read(const mstring& key, const mstring& defVal) const {
-	FT("wxFileConfig::Read", (key, defVal));
-	RET(wxConfigBase::Read(key, defVal)); }
-  bool Read(const mstring& key, long *pl, long defVal) const {
-	FT("wxFileConfig::Read", (key, pl, defVal));
-	RET(wxConfigBase::Read(key, pl, defVal)); }
-  long Read(const mstring& key, long defVal) const {
-	FT("wxFileConfig::Read", (key, devVal));
-	RET(wxConfigBase::Read(key, defVal)); }
-  bool Read(const mstring& key, int *pi, int defVal) const {
-	FT("wxFileConfig::Read", (key, pi, defVal));
-	RET(wxConfigBase::Read(key, pi, defVal)); }
-  bool Read(const mstring& key, int *pi) const {
-	FT("wxFileConfig::Read", (key, pi));
-	RET(wxConfigBase::Read(key, pi)); }
-  bool Read(const mstring& key, double* val) const { 
-	FT("wxFileConfig::Read", (key, val));
-	RET(wxConfigBase::Read(key, val)); }
-  bool Read(const mstring& key, double* val, double defVal) const {
-	FT("wxFileConfig::Read", (key, val, defVal));
-	RET(wxConfigBase::Read(key, val, defVal)); }
-  bool Read(const mstring& key, bool* val) const {
-	FT("wxFileConfig::Read", (key, val));
-	RET(wxConfigBase::Read(key, val)); }
-  bool Read(const mstring& key, bool* val, bool defVal) const {
-	FT("wxFileConfig::Read", (key, val, defVal));
-	RET(wxConfigBase::Read(key, val, defVal)); }
+  mstring Read(const mstring& key, const mstring& defVal) const;
+  bool Read(const mstring& key, long *pl, long defVal) const;
+  long Read(const mstring& key, long defVal) const;
+  bool Read(const mstring& key, int *pi, int defVal) const;
+  bool Read(const mstring& key, int *pi) const;
+  bool Read(const mstring& key, double* val) const;
+  bool Read(const mstring& key, double* val, double defVal) const;
+  bool Read(const mstring& key, bool* val) const;
+  bool Read(const mstring& key, bool* val, bool defVal) const;
 
   virtual bool Write(const mstring& key, const mstring& szValue);
   virtual bool Write(const mstring& key, long lValue);
-  bool Write(const mstring& key, double value) {
-	FT("wxFileConfig::Write", (key, value));
-	RET(wxConfigBase::Write(key, value)); }
-  bool Write(const mstring& key, bool value) {
-	FT("wxFileConfig::Write", (key, value));
-	RET(wxConfigBase::Write(key, value)); }
+  bool Write(const mstring& key, double value);
+  bool Write(const mstring& key, bool value);
 
   virtual bool Flush(bool bCurrentOnly = FALSE);
 
@@ -505,30 +450,14 @@ public:
   ConfigEntry(ConfigGroup *pParent, const mstring& strName, int nLine);
 
   // simple accessors
-  const mstring& Name()        const {
-	NFT("ConfigEntry::Name");
-	RET(m_strName);    }
-  const mstring& Value()       const {
-	NFT("ConfigEntry::Value");
-	RET(m_strValue);   }
-  ConfigGroup    *Group()       const {
-	NFT("ConfigEntry::Group");
-	NRET(ConfigGroup, m_pParent);    }
-  bool            IsDirty()     const {
-	NFT("ConfigEntry::IsDirty");
-	RET(m_bDirty);     }
-  bool            IsImmutable() const {
-	NFT("ConfigEntry::IsImmutable");
-	RET(m_bImmutable); }
-  bool            IsLocal()     const {
-	NFT("ConfigEntry::IsLocal");
-	RET(m_pLine != 0); }
-  int             Line()        const {
-	NFT("ConfigEntry::Line");
-	RET(m_nLine);      }
-  LineList       *GetLine()     const {
-	NFT("ConfigEntry::GetLine");
-	RET(m_pLine);      }
+  const mstring& Name()        const;
+  const mstring& Value()       const;
+  ConfigGroup    *Group()       const;
+  bool            IsDirty()     const;
+  bool            IsImmutable() const;
+  bool            IsLocal()     const;
+  int             Line()        const;
+  LineList       *GetLine()     const;
 
   // modify entry attributes
   void SetValue(const mstring& strValue, bool bUser = TRUE);
@@ -560,28 +489,14 @@ public:
   ~ConfigGroup();
 
   // simple accessors
-  const mstring& Name()    const {
-	NFT("ConfigGroup::Name");
-	RET(m_strName); }
-  ConfigGroup    *Parent()  const {
-	NFT("ConfigGroup::Parent");
-	NRET(ConfigGroup, m_pParent); }
-  wxFileConfig   *Config()  const {
-	NFT("ConfigGroup::Config");
-	NRET(wxFileConfig, m_pConfig); }
-  bool            IsDirty() const {
-	NFT("ConfigGroup::IsDirty");
-	RET(m_bDirty);  }
+  const mstring& Name()    const;
+  ConfigGroup    *Parent()  const;
+  wxFileConfig   *Config()  const;
+  bool            IsDirty() const;
 
-  const wxFileConfig::ArrayEntries& Entries() const {
-	NFT("ConfigGroup::Entries");
-	NRET(wxFileConfig::ArrayEntries, m_aEntries);   }
-  const wxFileConfig::ArrayGroups&  Groups()  const {
-	NFT("ConfigGroup::Groups");
-	NRET(wxFileConfig::ArrayGroups, m_aSubgroups); }
-  bool  IsEmpty() const {
-	NFT("ConfigGroup::IsEmpty");
-	RET(Entries().IsEmpty() && Groups().IsEmpty()); }
+  const wxFileConfig::ArrayEntries& Entries() const;
+  const wxFileConfig::ArrayGroups&  Groups()  const;
+  bool  IsEmpty() const;
 
   // find entry/subgroup (NULL if not found)
   ConfigGroup *FindSubgroup(const char *szName) const;
@@ -611,12 +526,8 @@ public:
   LineList *GetLastGroupLine(); // after which the next group starts
 
   // called by entries/subgroups when they're created/deleted
-  void SetLastEntry(ConfigEntry *pEntry) {
-	FT("ConfigGroup::SetLastEntry", ("(ConfigEntry) *pEntry"));
-	m_pLastEntry = pEntry; }
-  void SetLastGroup(ConfigGroup *pGroup) {
-	FT("ConfigGroup::SetLastGroup", ("(ConfigGroup) *pGroup"));
-	m_pLastGroup = pGroup; }
+  void SetLastEntry(ConfigEntry *pEntry);
+  void SetLastGroup(ConfigGroup *pGroup);
 };
 
 

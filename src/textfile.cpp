@@ -25,6 +25,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "textfile.h"
+#include "log.h"
 #include "trace.h"
 
 // default type is the native one
@@ -241,7 +242,7 @@ bool wxTextFile::Write(wxTextFileType typeNew)
 }
 
 const char *wxTextFile::GetEOL(wxTextFileType type)
-  {
+{
     FT("wxTextFile::GetEOL", ("(wxTextFileType) type"));
     switch ( type ) {
       case wxTextFileType_None: RET("");
@@ -253,5 +254,106 @@ const char *wxTextFile::GetEOL(wxTextFileType type)
         wxFAIL_MSG("bad file type in wxTextFile::GetEOL.");
         RET((const char *) NULL);
     }
-  }
+}
 
+bool wxTextFile::IsOpened() const
+{
+    NFT("wxTextFile::IsOpened");
+    RET(m_file.IsOpened()); 
+}
+
+size_t wxTextFile::GetLineCount() const 
+{
+    NFT("wxTextFile::GetLineCount");
+    RET(m_aLines.size()); 
+}
+
+mstring& wxTextFile::GetLine(size_t n)    const 
+{
+    FT("wxTextFile::GetLine", (n));
+    RET(((mstring&)m_aLines[n])); 
+}
+
+mstring& wxTextFile::operator[](size_t n) const 
+{
+    FT("wxTextFile::operator[]", (n));
+    RET(((mstring&)m_aLines[n])); 
+}
+
+size_t wxTextFile::GetCurrentLine() const 
+{
+    NFT("wxTextFile::GetCurrentLine");
+    RET(m_nCurLine); 
+}
+
+void wxTextFile::GoToLine(size_t n) 
+{
+    FT("wxTextFile::GoToLine", (n));
+    m_nCurLine = n; 
+}
+
+bool wxTextFile::Eof() const 
+{
+    NFT("wxTextFile::Eof");
+    RET(m_nCurLine == m_aLines.size()); 
+}
+
+mstring& wxTextFile::GetFirstLine() /* const */ 
+{
+    NFT("wxTextFile::GetFirstLine");
+    RET(m_aLines[m_nCurLine = 0]); 
+}
+
+mstring& wxTextFile::GetNextLine()  /* const */ 
+{
+    NFT("wxTextFile::GetNextLine");
+    RET(m_aLines[++m_nCurLine]);   
+}
+
+mstring& wxTextFile::GetPrevLine()  /* const */ 
+{
+    NFT("wxTextFile::GetPrevLine");
+    wxASSERT(m_nCurLine > 0);
+    RET(m_aLines[--m_nCurLine]);   
+}
+
+mstring& wxTextFile::GetLastLine() /* const */ 
+{
+    NFT("wxTextFile::GetLastLine");
+    RET(m_aLines[m_nCurLine = m_aLines.size() - 1]); 
+}
+
+wxTextFileType wxTextFile::GetLineType(size_t n) const 
+{
+    FT("wxTextFile::GetLineType", (n));
+    RET(m_aTypes[n]); 
+}
+
+const char *wxTextFile::GetName() const 
+{
+    NFT("wxTextFile::GetName");
+    RET(m_strFile.c_str()); 
+}
+
+void wxTextFile::AddLine(const mstring& str, wxTextFileType type) 
+{
+    FT("wxTextFile::AddLine", (str, type));
+    m_aLines.push_back(str);
+    m_aTypes.push_back(type); 
+}
+
+void wxTextFile::InsertLine(const mstring& str,
+                  size_t n,
+                  wxTextFileType type) 
+{
+    FT("wxTextFile::InsertLine", (str, n, type));
+    m_aLines.insert(m_aLines.begin()+n, str);
+    m_aTypes.insert(m_aTypes.begin()+n, type); 
+}
+
+void wxTextFile::RemoveLine(size_t n) 
+{
+    FT("wxTextFile::RemoveLine", (n));
+    m_aLines.erase(m_aLines.begin()+n);
+    m_aTypes.erase(m_aTypes.begin()+n); 
+}
