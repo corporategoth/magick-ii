@@ -3566,7 +3566,7 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 		chan->Mlock().c_str());
     if (chan->Revenge() != "")
 	::send(mynick, source, Parent->getMessage(source, "CS_INFO/REVENGE"),
-		chan->Revenge().c_str());
+	    Parent->getMessage(source, "CS_SET/REV_" + chan->Revenge()).c_str());
     if (chan->Bantime())
 	::send(mynick, source, Parent->getMessage(source, "CS_INFO/BANTIME"),
 		ToHumanTime(chan->Bantime()).c_str());
@@ -7082,7 +7082,8 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
     cstored->Revenge(option.UpperCase());
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
-	    channel.c_str(), option.UpperCase().c_str());
+	    channel.c_str(),
+	    Parent->getMessage(source, "CS_SET/REV_" + option.UpperCase()).c_str());
 }
 
 void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
@@ -7689,7 +7690,8 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
     cstored->L_Revenge(true);
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
-	    channel.c_str(), option.UpperCase().c_str());
+	    channel.c_str(),
+	    Parent->getMessage(source, "CS_SET/REV_" + option.UpperCase()).c_str());
 }
 
 void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)

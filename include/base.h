@@ -194,7 +194,6 @@ wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out)
     return in;
 }
 
-
 class mBase
 {
     friend mBaseTask;

@@ -2268,9 +2268,70 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 void OperServ::load_database(wxInputStream& in)
 {
     FT("OperServ::load_database", ("(wxInputStream &) in"));
+    entlist_val_t<pair<unsigned int, mstring> > clone;
+    set<entlist_val_t<pair<unsigned int, mstring> > >::size_type clone_c, i;
+    entlist_val_t<pair<unsigned long, mstring> > akill;
+    set<entlist_val_t<pair<unsigned long, mstring> > >::size_type akill_c, j;
+    entlist_val_t<mstring> operdeny;
+    set<entlist_val_t<mstring> >::size_type operdeny_c, k;
+    entlist_val_t<bool> ignore;
+    set<entlist_val_t<bool> >::size_type ignore_c, l;
+
+    in>>clone_c;
+    for (i=0; i<clone_c; i++)
+    {
+	in>>clone;
+	i_Clone.insert(clone);
+    }
+
+    in>>akill_c;
+    for (j=0; j<akill_c; j++)
+    {
+	in>>akill;
+	i_Akill.insert(akill);
+    }
+
+    in>>operdeny_c;
+    for (k=0; k<operdeny_c; k++)
+    {
+	in>>operdeny;
+	i_OperDeny.insert(operdeny);
+    }
+
+    in>>ignore_c;
+    for (l=0; l<ignore_c; l++)
+    {
+	in>>ignore;
+	i_Ignore.insert(ignore);
+    }
 }
 
 void OperServ::save_database(wxOutputStream& out)
 {
     FT("OperServ::save_database", ("(wxOutputStream &) out"));
+    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator clone_i;
+    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator akill_i;
+    set<entlist_val_t<mstring> >::iterator operdeny_i;
+    set<entlist_val_t<bool> >::iterator ignore_i;
+    set<entlist_val_t<bool> >::size_type ignore_c = 0;
+
+    out<<i_Clone.size();
+    for (clone_i=i_Clone.begin(); clone_i!=i_Clone.end(); clone_i++)
+	out<<*clone_i;
+
+    out<<i_Akill.size();
+    for (akill_i=i_Akill.begin(); akill_i!=i_Akill.end(); akill_i++)
+	out<<*akill_i;
+
+    out<<i_OperDeny.size();
+    for (operdeny_i=i_OperDeny.begin(); operdeny_i!=i_OperDeny.end(); operdeny_i++)
+	out<<*operdeny_i;
+
+    for (ignore_i=i_Ignore.begin(); ignore_i!=i_Ignore.end(); ignore_i++)
+	if (ignore_i->Value())
+	    ignore_c++;
+    out<<ignore_c;
+    for (ignore_i=i_Ignore.begin(); ignore_i!=i_Ignore.end(); ignore_i++)
+	if (ignore_i->Value())
+	    out<<*ignore_i;
 }

@@ -78,6 +78,13 @@ mstring ToHumanNumber(unsigned long in);
 
 template<class T1, class T2, class T3> class triplet 
 {
+#ifdef WIN32
+    friend wxOutputStream &operator<<(wxOutputStream& out,const triplet<T1,T2,T3>& in);
+    friend wxInputStream &operator>>(wxInputStream& in, triplet<T1,T2,T3>& out);
+#else
+    friend wxOutputStream &operator<<<T1,T2,T3>(wxOutputStream& out,const triplet<T1,T2,T3>& in);
+    friend wxInputStream &operator>><T1,T2,T3>(wxInputStream& in, triplet<T1,T2,T3>& out);
+#endif
 public:
     typedef T1 first_type;
     typedef T2 second_type;
@@ -133,6 +140,35 @@ template<class T1, class T2, class T3> inline
 triplet<T1,T2,T3> make_triplet(const T1& X, const T2& Y, const T3& Z)
 {
     return (triplet<T1,T2,T3>(X,Y,Z));
+}
+
+
+template<class T1, class T2, class T3> inline
+wxOutputStream &operator<<(wxOutputStream& out,const triplet<T1,T2,T3>& in)
+{
+    out<<in.first<<in.second<<in.third;
+    return out;
+}
+
+template<class T1, class T2, class T3> inline
+wxInputStream &operator>>(wxInputStream& in, triplet<T1,T2,T3>& out)
+{
+    in>>out.first>>out.second>>out.third;
+    return in;
+}
+
+template<class T1, class T2> inline
+wxOutputStream &operator<<(wxOutputStream& out,const pair<T1,T2>& in)
+{
+    out<<in.first<<in.second;
+    return out;
+}
+
+template<class T1, class T2> inline
+wxInputStream &operator>>(wxInputStream& in, pair<T1,T2>& out)
+{
+    in>>out.first>>out.second;
+    return in;
 }
 
 #endif

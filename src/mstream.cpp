@@ -578,9 +578,30 @@ off_t wxInputStream::TellI() const
 
 wxInputStream& wxInputStream::operator>>(mstring& line)
 {
-  wxDataInputStream s(*this);
+  size_t size;
+  Read(&size, sizeof(size_t));
+  Read(&line, size);
 
-  line = s.ReadLine();
+/* If the above doesnt work ...
+
+  size_t size;
+  Read(&size, sizeof(size_t));
+  line = "";
+  char buf[512];
+  while (size > 512)
+  {
+    Read(&buf, 512);
+    line += buf;
+    size -= 512;
+  }
+  Read(&buf, size);
+  line += buf;
+*/
+
+/*  wxDataInputStream s(*this);
+
+  line = s.ReadLine(); */
+
   return *this;
 }
 
@@ -697,22 +718,26 @@ void wxOutputStream::Sync()
 
 wxOutputStream& wxOutputStream::operator<<(const char *string)
 {
+  size_t size = strlen(string);
+  Write(&size, sizeof(size_t));
   return Write(string, strlen(string));
 }
 
 wxOutputStream& wxOutputStream::operator<<(const mstring& string)
 {
+  size_t size = string.length();
+  Write(&size, sizeof(size_t));
   return Write(string, string.length());
 }
 
 wxOutputStream& wxOutputStream::operator<<(char c)
 {
-  return Write(&c, 1);
+  return Write(&c, sizeof(char));
 }
 
 wxOutputStream& wxOutputStream::operator<<(unsigned char c)
 {
-  return Write(&c, 1);
+  return Write(&c, sizeof(char));
 }
 
 wxOutputStream& wxOutputStream::operator<<(short i)
