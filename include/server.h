@@ -61,7 +61,7 @@ class NetworkServ : public mBase
 private:
     void raw(mstring send);
     void sraw(mstring send);
-
+    void SignOnAll();
 public:
     map<mstring,Server> ServerList;
     bool IsServer(mstring server);

@@ -145,6 +145,34 @@ void NetworkServ::sraw(mstring text)
     raw(":" + Parent->startup.Server_Name() + " " + text);
 }
 
+void NetworkServ::SignOnAll()
+{
+    NFT("NetworkServ::SignOnAll");
+
+    for (int i=0; i<Parent->operserv.GetNames().WordCount(" "); i++)
+	Parent->operserv.signon(Parent->operserv.GetNames().ExtractWord(i, " "));
+    for (int i=0; i<Parent->nickserv.GetNames().WordCount(" "); i++)
+	Parent->nickserv.signon(Parent->nickserv.GetNames().ExtractWord(i, " "));
+    for (int i=0; i<Parent->chanserv.GetNames().WordCount(" "); i++)
+	Parent->chanserv.signon(Parent->chanserv.GetNames().ExtractWord(i, " "));
+    for (int i=0; i<Parent->memoserv.GetNames().WordCount(" "); i++)
+	Parent->memoserv.signon(Parent->memoserv.GetNames().ExtractWord(i, " "));
+    for (int i=0; i<Parent->commserv.GetNames().WordCount(" "); i++)
+	Parent->commserv.signon(Parent->commserv.GetNames().ExtractWord(i, " "));
+    for (int i=0; i<Parent->servmsg.GetNames().WordCount(" "); i++)
+	Parent->servmsg.signon(Parent->servmsg.GetNames().ExtractWord(i, " "));
+
+    map<mstring,Chan_Stored_t>::iterator iter;
+    for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
+    {
+	// If its live and got JOIN on || not live and mlock +k or +i
+	if ((Parent->chanserv.IsLive(iter->first) && iter->second.Join()) ||
+		(!Parent->chanserv.IsLive(iter->first) &&
+		(iter->second.Mlock_Key() || iter->second.Mlock().Contains("i"))))
+	    JOIN(Parent->chanserv.FirstName(), iter->first);
+    }
+}
+
 NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
@@ -317,16 +345,25 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 
     // DAL4.4.15+ NICK name hops time user host server services? :real name
 
-    mstring send;
-    send << "NICK " << nick << " 1 " << (time_t) Now() <<
-	" " << user << " " << host << " " << server << " 1 " <<
-	host << " :" << realname;
+    if (Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("NICK command requested for already-existant user %s", nick.c_str());
+    }
+    else
+    {
+	mstring send;
+	send << "NICK " << nick << " 1 " << (time_t) Now() <<
+		" " << user << " " << host << " " << server << " 1 " <<
+		host << " :" << realname;
+	CP((send.c_str()));
 
-    // Sign ourselves in ...
-    Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
-	nick, user, host, realname);
-    raw(send);
-
+	// Sign ourselves in ...
+	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
+		nick, user, host, realname);
+	CP(("Added NICK"));
+	raw(send);
+	CP(("Signed on..."));
+    }
 }
 
 
@@ -866,6 +903,10 @@ void NetworkServ::execute(const mstring & data)
 
 		Parent->reconnect=false;
 		Parent->ircsvchandler->shutdown();
+	    }
+	    else
+	    {
+		SignOnAll();
 	    }
 	}
 	else if (msgtype=="PING")
