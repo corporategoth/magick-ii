@@ -274,7 +274,7 @@ int mBaseTask::open(void *in)
 
 int mBaseTask::svc(void)
 {
-    while(1)
+    while(Parent->shutdown()==false)
     {
 	auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue());
 	if(mo->call()==-1)
