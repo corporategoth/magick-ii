@@ -69,18 +69,14 @@ int Magick::Start()
 			}
 		}
 	}
-#if 0
 	MagickIni=new wxFileConfig("magick","",config_file,"");
 	if(MagickIni==NULL)
 	{
 		cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
 		return MAGICK_RET_ERROR;
 	}
-#endif
 	// load the local messages database and internal "default messages"
 
-	// below is just a dummy to link in the code to be taken out when the messages section is done
-		parseEscapes("\\2");
 	if(logfile!=NULL)
 		fclose(logfile);
 	return MAGICK_RET_TERMINATE;

@@ -129,18 +129,6 @@ SOURCE=.\include\confbase.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\ConfigLexer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\configparse.g
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\ConfigParser.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\EscLexer.cpp
 # End Source File
 # Begin Source File

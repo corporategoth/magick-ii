@@ -24,7 +24,7 @@ typedef map<mstring,mstring> mapstringstring;
 class Magick
 {
 	vector<mstring> argv;
-	//wxFileConfig* MagickIni;
+	wxFileConfig* MagickIni;
 	mapstringstring Messages;
 	ACE_Thread_Mutex mutex;
 public:
