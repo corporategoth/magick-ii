@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2000/06/25 10:32:41  prez
+** Fixed channel forbid.
+**
 ** Revision 1.109  2000/06/18 13:31:48  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -2332,7 +2335,7 @@ void Nick_Stored_t::UnSuspend()
 mstring Nick_Stored_t::Host()
 {
     NFT("Nick_Stored_t::Host");
-    RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+    RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
     if (i_Host != "" && !Parent->nickserv.IsStored(i_Host))
     {
 	Log(LM_ERROR, Parent->getLogMessage("ERROR/HOST_NOTREGD"),

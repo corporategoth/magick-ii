@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2000/06/25 10:32:41  prez
+** Fixed channel forbid.
+**
 ** Revision 1.112  2000/06/25 07:58:50  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -790,7 +793,8 @@ int EventTask::svc(void)
 		for (nsi = Parent->nickserv.stored.begin();
 			nsi != Parent->nickserv.stored.end(); nsi++)
 		{
-		    if (!nsi->second.NoExpire())
+		    if (!nsi->second.NoExpire() || nsi->second.Forbidden() ||
+			nsi->second.Suspended())
 		    {
 			if (nsi->second.Host() == "")
 			{
@@ -826,7 +830,8 @@ int EventTask::svc(void)
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); csi++)
 		{
-		    if (!csi->second.NoExpire())
+		    if (!csi->second.NoExpire() || csi->second.Forbidden() ||
+			csi->second.Suspended())
 		    {
 			if (csi->second.LastUsed().SecondsSince() >
 			    Parent->chanserv.Expire())

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.184  2000/06/25 10:32:41  prez
+** Fixed channel forbid.
+**
 ** Revision 1.183  2000/06/25 07:58:49  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -492,7 +495,7 @@ mstring Chan_Live_t::Op(unsigned int num)
 	    }
 	    i++;
 	}
- 
+
     RET("");
 }
 
@@ -644,7 +647,7 @@ void Chan_Live_t::LockDown()
 
     Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
     // Override the MLOCK checking.
-    Parent->server.MODE(Parent->chanserv.FirstName(), i_Name, "+s");
+    SendMode("+s");
     MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
     ph_timer = ACE_Reactor::instance()->schedule_timer(&(Parent->chanserv.ph),
 			    new mstring(i_Name),
@@ -1000,7 +1003,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 {
     FT("Chan_Live_t::Mode", (source, in));
 
-    mstring change = in.ExtractWord(1, ": ");
+    mstring change = in.ExtractWord(1, ": "), newmode, newmode_param;
     unsigned int fwdargs = 2, i;
     bool add = true;
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
@@ -1011,10 +1014,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	{
 	case '+':
 	    add = true;
+	    newmode += change[i];
 	    break;
 
 	case '-':
 	    add = false;
+	    newmode += change[i];
 	    break;
 
 	case 'o':
@@ -1025,6 +1030,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
 		else
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = false;
+		newmode += change[i];
+		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    else
 	    {
@@ -1042,6 +1049,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
 		else
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = false;
+		newmode += change[i];
+		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    else
 	    {
@@ -1062,6 +1071,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		bans.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
 	    }
+	    newmode += change[i];
+	    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    fwdargs++;
 	    break;
 
@@ -1080,6 +1091,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 			i_Name.c_str(), source.c_str());
 		i_Key = "";
 	    }
+	    newmode += change[i];
+	    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    fwdargs++;
 	    break;
 
@@ -1102,6 +1115,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		else
 		{
 		    i_Limit = ACE_OS::atoi(in.ExtractWord(fwdargs, ": ").c_str());
+		    newmode += change[i];
+		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		}
 		fwdargs++;
 	    }
@@ -1109,10 +1124,13 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 		i_Limit = 0;
+		newmode += change[i];
+		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 	    }
 	    break;
 
 	default:
+	    newmode += change[i];
 	    break;
 	}
     }
@@ -1155,7 +1173,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	}
     }
     if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source, in);
+	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source,
+						newmode + newmode_param);
 }
 
 bool Chan_Live_t::HasMode(mstring in)
@@ -1314,11 +1333,6 @@ void Chan_Stored_t::Join(mstring nick)
 	return;
     }
 
-    if (Parent->nickserv.IsStored(nick))
-	nstored = &Parent->nickserv.stored[nick.LowerCase()];
-    else
-	nstored = NULL;
-
     if (nlive->IsServices() &&
 	Parent->chanserv.FirstName().CmpNoCase(nick)==0)
     {
@@ -1326,18 +1340,22 @@ void Chan_Stored_t::Join(mstring nick)
 	return;
     }
 
+    if (Parent->nickserv.IsStored(nick))
+	nstored = &Parent->nickserv.stored[nick.LowerCase()];
+    else
+	nstored = NULL;
+
     if (Forbidden())
     {
+	{ RLOCK(("ChanServ", "stored", i_Name, "i_Mlock_On"));
+	clive->SendMode(i_Mlock_On);
+	}
 	if (!nlive->HasMode("o"))
 	{
 	    if (users == 1)
 		clive->LockDown();
 
-	    if (Parent->nickserv.IsLive(Akick->Entry()))
-		clive->SendMode("+b " +
-		    nlive->AltMask(Nick_Live_t::P_H));
-	    else
-		clive->SendMode("+b " + Akick->Entry());
+	    clive->SendMode("+b " + nlive->AltMask(Nick_Live_t::P_H));
 
 	    // Can only insert with reason or default, so its safe.
 	    mstring reason;
@@ -1346,6 +1364,7 @@ void Chan_Stored_t::Join(mstring nick)
 	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, reason);
 	}
+	return;
     }
 
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
@@ -2057,6 +2076,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name)
     i_Name = name;
     WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
     defaults();
+    i_Mlock_On = "nits";
     i_RegTime = Now();
     i_Forbidden = true;
 }
@@ -5143,7 +5163,9 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
     }
     channel = Parent->getSname(channel);
 
-    if (!Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel))
+    if (!((Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)) ||
+	Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_CHAN_IDENT"),
 		message.c_str(), mynick.c_str(), channel.c_str());
@@ -5618,15 +5640,11 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
 	reason.Format(Parent->getMessage(source, "CS_STATUS/ISFORBIDDEN"),
 		channel.c_str());
 
-	Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
-	clive->LockDown();
-	clive->SendMode("+i");
-
-	// Kick everyone out, forbidden channel.
-	while (clive->Users())
+	while (Parent->chanserv.IsLive(channel))
 	{
 	    Parent->server.KICK(Parent->chanserv.FirstName(),
-		clive->User(0), channel, reason);
+		Parent->chanserv.live[channel.LowerCase()].User(0),
+		channel, reason);
 	}
     }
 }
