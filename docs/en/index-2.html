@@ -73,26 +73,34 @@ contains results you don't want to keep, you may remove or edit it.
 called `autoconf'.  You only need `configure.in' if you want to change
 it or regenerate `configure' using a newer version of `autoconf'.
 <P>The simplest way to compile this package is:
-<P>1. `cd' to the directory containing the package's source code and type
+<P>
+<UL>
+<LI>`cd' to the directory containing the package's source code and type
 `./configure' to configure the package for your system.  If you're
 using `csh' on an old version of System V, you might need to type
 `sh ./configure' instead to prevent `csh' from trying to execute
 `configure' itself.
-<P>Running `configure' takes awhile.  While running, it prints some
+
+Running `configure' takes awhile.  While running, it prints some
 messages telling which features it is checking for.
-<P>2. Type `make' to compile the package.
-<P>3. Optionally, type `make check' to run any self-tests that come with
+</LI>
+<LI>Type `make' to compile the package.
+</LI>
+<LI>Optionally, type `make check' to run any self-tests that come with
 the package.
-<P>4. Type `make install' to install the programs and any data files and
+</LI>
+<LI>Type `make install' to install the programs and any data files and
 documentation.
-<P>5. You can remove the program binaries and object files from the
+</LI>
+<LI>You can remove the program binaries and object files from the
 source code directory by typing `make clean'.  To also remove the
 files that `configure' created (so you can compile the package for
 a different kind of computer), type `make distclean'.  There is
 also a `make maintainer-clean' target, but that is intended mainly
 for the package's developers.  If you use it, you may have to get
 all sorts of other programs in order to regenerate files that came
-with the distribution.
+with the distribution.</LI>
+</UL>
 <P>
 <H2><A NAME="ss2.4">2.4 Compilers and Options</A>
 </H2>
@@ -197,52 +205,160 @@ A warning: not all `configure' scripts look for a site script.
 <P>
 <P>`configure' recognizes the following options to control how it
 operates.
-<P>`--cache-file=FILE'
+<P>
+<PRE>
+--cache-file=FILE
+</PRE>
+
 Use and save the results of the tests in FILE instead of
 `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
 debugging `configure'.
-<P>`--help'
+<P>
+<PRE>
+--help
+</PRE>
+
 Print a summary of the options to `configure', and exit.
-<P>`--quiet'
-`--silent'
-`-q'
+<P>
+<PRE>
+--quiet
+</PRE>
+
+<PRE>
+--silent
+</PRE>
+
+<PRE>
+-q
+</PRE>
+
 Do not print messages saying which checks are being made.  To
 suppress all normal output, redirect it to `/dev/null' (any error
 messages will still be shown).
-<P>`--srcdir=DIR'
+<P>
+<PRE>
+--srcdir=DIR
+</PRE>
+
 Look for the package's source code in directory DIR.  Usually
 `configure' can determine that directory automatically.
-<P>`--version'
+<P>
+<PRE>
+--version
+</PRE>
+
 Print the version of Autoconf used to generate the `configure'
 script, and exit.
-<P>--with-acelib=file
+<P>
+<PRE>
+--with-acelib=file
+</PRE>
+
+<PRE>
 --with-aceinc=path
+</PRE>
+
 This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
-<P>--with-zlib=file
+<P>
+<PRE>
+--with-zlib=file
+</PRE>
+
+<PRE>
 --with-zinc=path
+</PRE>
+
 This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and zlib.h in the include directory).
 This should only be used if Magick does not detect the ZLIB library.
-<P>--enable-bsdthreads
+<P>
+<PRE>
+--enable-bsdthreads
+</PRE>
+
 This is mutually exclusive of --with-threadlib and --with-threadinc,
 it specifies to use the -pthreads option with GCC or CC when linking the
 magick binary.  This is used for systems where pthreads is ingrained in
 the standard C library, specifically, BSD.
-<P>--with-threadlib=file
+<P>
+<PRE>
+--with-threadlib=file
+</PRE>
+
+<PRE>
 --with-threadinc=path
+</PRE>
+
 This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
+<P>
+<PRE>
+--enable-des
+</PRE>
+
+<PRE>
+--disable-des
+</PRE>
+
+This turns on or off encryption support in Magick.
+<P>
+<PRE>
+--with-keylen=size
+</PRE>
+
+This is the maximum size of the key file, and the input key that
+you may type in.  This defaults to 1024, and you should not need more.
 <P>`configure' also accepts some other, not widely useful, options.
 <P>
+<H2><A NAME="ss2.11">2.11 Security Tips</A>
+</H2>
+
+<P>
+<P>Magick has several facilities to ensure your databases and inter-
+magick communications are kept secure and encrypted.  The main methods
+of facilitating this are:
+<UL>
+<LI>Databases and inter-magick communication is encrypted with a
+key through 3DES.  This key resides in a keyfile.</LI>
+<LI>The keyfile itself is encrypted with two keys generated at
+compile time, to ensure the keyfile is never cleartext.</LI>
+<LI>EACH compile creates new keyfile keys, which means you must
+re-generate the keyfile each time you compile, ensuring it
+does not get stale (and becomes invalid if someone gets it!)</LI>
+</UL>
+<P>To ensure the security of your databases and communication, you should
+<UL>
+<LI>Chose a long and complex database key, you must remember this
+somehow, incase you need to generate a new database key, however
+you wont need it often.  Also choose long and varied keyfile
+keys, they can be up to 1024 bytes long (or longer with the
+--with-keylen paramater to configure)!</LI>
+<LI>Recompile magick every so often.  This forces you to re-generate
+the database keyfile with new keys, which is always a good idea!</LI>
+</UL>
+<P>Windows users will not automatically generate a new keyset with each
+compile.  A default (generic, consider it hacked) keyset is supplied
+with the magick source.  It is however recommended that you create
+your own random one (each compile).  To do this, you must:
+<UL>
+<LI>Compile the genrankeys program</LI>
+<LI>From the include directory, execute:  genrankeys crypt.h</LI>
+</UL>
+<P>REMEMBER:  If you forget your database password, then you had BETTER
+decrypt your databases (via. the config file) ASAP, as if you lose
+your key, and do not know the password to generate a new one, you
+may as well remove the file and start again.
+<P>Pre-compiled binaries will not be able to change the keyfile keys.
+This could be considered an advantage of compiling yourself.
 <P>
 <HR>
 <A HREF="index-3.html">Next</A>

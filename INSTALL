@@ -58,13 +58,6 @@ The simplest way to compile this package is:
      Running `configure' takes awhile.  While running, it prints some
      messages telling which features it is checking for.
 
-     You will be prompted to enter two keys for encrypting the keyfile.
-     If this is your first time running configure, you may enter any
-     phrase, word, etc you like, or accept the defaults (ie. the system
-     name, and system type).  If you already have a keyfile for your
-     databases, you will need to re-generate it if you enter different
-     keys at these prompts.
-
   2. Type `make' to compile the package.
 
   3. Optionally, type `make check' to run any self-tests that come with
@@ -210,41 +203,41 @@ operates.
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
 
---with-acelib=file
---with-aceinc=path
+`--with-acelib=file'
+`--with-aceinc=path'
      This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
 
---with-zlib=file
---with-zinc=path
+`--with-zlib=file'
+`--with-zinc=path'
      This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and zlib.h in the include directory).
 This should only be used if Magick does not detect the ZLIB library.
 
---enable-bsdthreads
+`--enable-bsdthreads'
      This is mutually exclusive of --with-threadlib and --with-threadinc,
 it specifies to use the -pthreads option with GCC or CC when linking the
 magick binary.  This is used for systems where pthreads is ingrained in
 the standard C library, specifically, BSD.
 
---with-threadlib=file
---with-threadinc=path
+`--with-threadlib=file'
+`--with-threadinc=path'
      This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
---enable-des
---disable-des
+`--enable-des'
+`--disable-des'
      This turns on or off encryption support in Magick.
 
---with-keylen=size
+`--with-keylen=size'
      This is the maximum size of the key file, and the input key that
 you may type in.  This defaults to 1024, and you should not need more.
 
@@ -272,6 +265,13 @@ To ensure the security of your databases and communication, you should
        --with-keylen paramater to configure)!
      * Recompile magick every so often.  This forces you to re-generate
        the database keyfile with new keys, which is always a good idea!
+
+Windows users will not automatically generate a new keyset with each
+compile.  A default (generic, consider it hacked) keyset is supplied
+with the magick source.  It is however recommended that you create
+your own random one (each compile).  To do this, you must:
+     * Compile the genrankeys program
+     * From the include directory, execute:  genrankeys crypt.h
 
 REMEMBER:  If you forget your database password, then you had BETTER
 decrypt your databases (via. the config file) ASAP, as if you lose

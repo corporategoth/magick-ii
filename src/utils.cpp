@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/06/29 06:30:57  prez
+** Added the support for the 'extra' chars (ie. at the end of a string)
+** so we support odd-length strings.  Also updated documentation.
+**
 ** Revision 1.41  2000/06/28 18:52:42  prez
 ** OOps, forgot to #include des/spr.h
 **
@@ -575,11 +579,26 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 #ifdef HASCRYPT
     DES_LONG tuple[2], t0, t1;
     unsigned char *iptr, *optr, tmp[8];
-    int i;
+    int i, j;
 
     ACE_OS::memset(out, 0, size);
-    for (iptr=in, optr=out, i=0; i<size; i+=8)
+    for (iptr=in, optr=out, i=0; i+7<size; i+=8)
     {
+	c2l(iptr, t0); tuple[0] = t0;
+	c2l(iptr, t1); tuple[1] = t1;
+	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
+	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
+	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
+	t0 = tuple[0]; l2c(t0, out);
+	t1 = tuple[1]; l2c(t1, out);
+    }
+    if (i<size)
+    {
+	ACE_OS::memset(tmp, 0, 8);
+	size -= i;
+	for (i=0; i<size; i++)
+	    tmp[i] = iptr[i];
+	iptr = tmp;
 	c2l(iptr, t0); tuple[0] = t0;
 	c2l(iptr, t1); tuple[1] = t1;
 	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);

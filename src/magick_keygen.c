@@ -19,6 +19,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/06/29 06:30:57  prez
+** Added the support for the 'extra' chars (ie. at the end of a string)
+** so we support odd-length strings.  Also updated documentation.
+**
 ** Revision 1.2  2000/06/28 12:20:48  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -101,6 +105,8 @@ int main(int argc, char **argv)
     printf("Enter database key: ");
     fgets(inkey, KEYLEN, tty);
     inkey[KEYLEN-1]=0;
+    if (strlen(inkey) != KEYLEN-1)
+	inkey[strlen(inkey)-1]=0;
     printf("\n");
     if (strlen(inkey) < 16)
     {
@@ -114,6 +120,8 @@ int main(int argc, char **argv)
     printf("Re-Enter database key: ");
     fgets(outkey, KEYLEN, tty);
     outkey[KEYLEN-1]=0;
+    if (strlen(outkey) != KEYLEN-1)
+	outkey[strlen(outkey)-1]=0;
     printf("\n");
     if (strcmp(inkey, outkey)!=0)
     {
@@ -154,6 +162,21 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
     memset(out, 0, size);
     for (iptr=in, optr=out, i=0; i<size; i+=8)
     {
+	c2l(iptr, t0); tuple[0] = t0;
+	c2l(iptr, t1); tuple[1] = t1;
+	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
+	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
+	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
+	t0 = tuple[0]; l2c(t0, out);
+	t1 = tuple[1]; l2c(t1, out);
+    }
+    if (i<size)
+    {
+	memset(tmp, 0, 8);
+	size -= i;
+	for (i=0; i<size; i++)
+	    tmp[i] = iptr[i];
+	iptr = tmp;
 	c2l(iptr, t0); tuple[0] = t0;
 	c2l(iptr, t1); tuple[1] = t1;
 	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);

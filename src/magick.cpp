@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.251  2000/06/29 06:30:57  prez
+** Added the support for the 'extra' chars (ie. at the end of a string)
+** so we support odd-length strings.  Also updated documentation.
+**
 ** Revision 1.250  2000/06/28 12:20:48  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -648,7 +652,6 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     //load_databases();
-    Log(LM_ERROR, "Extracted key is %s", GetKey().c_str());
     { WLOCK(("i_ResetTime"));
     i_ResetTime=Now();
     }

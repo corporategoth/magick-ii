@@ -100,9 +100,9 @@ IRC client. This filename is a setting in the magick.ini file, and
 may be changed.
 
 magick.key - This contains the key for your databases, encrypted.
-This key file should be generated with mkeygen.  This file may not
-be used on another machine, and if you move your services to another
-machine, you will probably have to re-generate this key file.  This
+This key file should be generated with magick_keygen.  This file
+may not be used by more than one set of services (unless the binaries
+are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 
 lang/*.lng - These files contain the responses Magick will send back

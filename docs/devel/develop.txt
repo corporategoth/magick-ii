@@ -233,7 +233,7 @@ x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
 	'path' with the message ID, so it wont send to servers in the path.
 	(probably 'if I've seen this, dont pass it on' method)
 
-* Keyfile for encryption.  It should be encrypted with 3des just like the
+x Keyfile for encryption.  It should be encrypted with 3des just like the
   databases, however we use the uname -n and uname -s as keys, so they have
   to re-generate the keyfile if they move or change OS's.  They keyfile
   itself will create 2 keys (once decrypted) to be used for databased and
@@ -241,6 +241,7 @@ x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
   > Might infact be an idea to ask the user to enter in two keys (defaulting
     to uname -n and uname -s), this way we can ensure uniqueness for those
     who have a clue what they are doing.
+  > Implemented with random keys, generated at compile time, 1k each!
 
 x Add to mDateTime a 'Difference' function that will output the difference
 	of the stored value to the current time (Now()).  It should output

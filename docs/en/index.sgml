@@ -368,7 +368,8 @@ it or regenerate `configure' using a newer version of `autoconf'.
 
 The simplest way to compile this package is:
 
-  1. `cd' to the directory containing the package's source code and type
+  <itemize>
+  <item>`cd' to the directory containing the package's source code and type
      `./configure' to configure the package for your system.  If you're
      using `csh' on an old version of System V, you might need to type
      `sh ./configure' instead to prevent `csh' from trying to execute
@@ -377,15 +378,15 @@ The simplest way to compile this package is:
      Running `configure' takes awhile.  While running, it prints some
      messages telling which features it is checking for.
 
-  2. Type `make' to compile the package.
+  <item>Type `make' to compile the package.
 
-  3. Optionally, type `make check' to run any self-tests that come with
+  <item>Optionally, type `make check' to run any self-tests that come with
      the package.
 
-  4. Type `make install' to install the programs and any data files and
+  <item>Type `make install' to install the programs and any data files and
      documentation.
 
-  5. You can remove the program binaries and object files from the
+  <item>You can remove the program binaries and object files from the
      source code directory by typing `make clean'.  To also remove the
      files that `configure' created (so you can compile the package for
      a different kind of computer), type `make distclean'.  There is
@@ -393,6 +394,7 @@ The simplest way to compile this package is:
      for the package's developers.  If you use it, you may have to get
      all sorts of other programs in order to regenerate files that came
      with the distribution.
+  </itemize>
 
 <sect1>Compilers and Options
 <p>
@@ -499,61 +501,112 @@ A warning: not all `configure' scripts look for a site script.
    `configure' recognizes the following options to control how it
 operates.
 
-`--cache-file=FILE'
+<verb>--cache-file=FILE</verb>
      Use and save the results of the tests in FILE instead of
      `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
      debugging `configure'.
 
-`--help'
+<verb>--help</verb>
      Print a summary of the options to `configure', and exit.
 
-`--quiet'
-`--silent'
-`-q'
+<verb>--quiet</verb>
+<verb>--silent</verb>
+<verb>-q</verb>
      Do not print messages saying which checks are being made.  To
      suppress all normal output, redirect it to `/dev/null' (any error
      messages will still be shown).
 
-`--srcdir=DIR'
+<verb>--srcdir=DIR</verb>
      Look for the package's source code in directory DIR.  Usually
      `configure' can determine that directory automatically.
 
-`--version'
+<verb>--version</verb>
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
 
---with-acelib=file
---with-aceinc=path
+<verb>--with-acelib=file</verb>
+<verb>--with-aceinc=path</verb>
      This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
 
---with-zlib=file
---with-zinc=path
+<verb>--with-zlib=file</verb>
+<verb>--with-zinc=path</verb>
      This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and zlib.h in the include directory).
 This should only be used if Magick does not detect the ZLIB library.
 
---enable-bsdthreads
+<verb>--enable-bsdthreads</verb>
      This is mutually exclusive of --with-threadlib and --with-threadinc,
 it specifies to use the -pthreads option with GCC or CC when linking the
 magick binary.  This is used for systems where pthreads is ingrained in
 the standard C library, specifically, BSD.
 
---with-threadlib=file
---with-threadinc=path
+<verb>--with-threadlib=file</verb>
+<verb>--with-threadinc=path</verb>
      This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
+<verb>--enable-des</verb>
+<verb>--disable-des</verb>
+     This turns on or off encryption support in Magick.
+
+<verb>--with-keylen=size</verb>
+     This is the maximum size of the key file, and the input key that
+you may type in.  This defaults to 1024, and you should not need more.
+
 `configure' also accepts some other, not widely useful, options.
 
+<sect1>Security Tips
+<p>
+
+     Magick has several facilities to ensure your databases and inter-
+magick communications are kept secure and encrypted.  The main methods
+of facilitating this are:
+     <itemize>
+     <item>Databases and inter-magick communication is encrypted with a
+       key through 3DES.  This key resides in a keyfile.
+     <item>The keyfile itself is encrypted with two keys generated at
+       compile time, to ensure the keyfile is never cleartext.
+     <item>EACH compile creates new keyfile keys, which means you must
+       re-generate the keyfile each time you compile, ensuring it
+       does not get stale (and becomes invalid if someone gets it!)
+     </itemize>
+
+To ensure the security of your databases and communication, you should
+     <itemize>
+     <item>Chose a long and complex database key, you must remember this
+       somehow, incase you need to generate a new database key, however
+       you wont need it often.  Also choose long and varied keyfile
+       keys, they can be up to 1024 bytes long (or longer with the
+       --with-keylen paramater to configure)!
+     <item>Recompile magick every so often.  This forces you to re-generate
+       the database keyfile with new keys, which is always a good idea!
+     </itemize>
+
+Windows users will not automatically generate a new keyset with each
+compile.  A default (generic, consider it hacked) keyset is supplied
+with the magick source.  It is however recommended that you create
+your own random one (each compile).  To do this, you must:
+     <itemize>
+     <item>Compile the genrankeys program
+     <item>From the include directory, execute:  genrankeys crypt.h
+     </itemize>
+
+REMEMBER:  If you forget your database password, then you had BETTER
+decrypt your databases (via. the config file) ASAP, as if you lose
+your key, and do not know the password to generate a new one, you
+may as well remove the file and start again.
+
+Pre-compiled binaries will not be able to change the keyfile keys.
+This could be considered an advantage of compiling yourself.
 
 <sect> Usage <p>
 
@@ -597,9 +650,9 @@ IRC client. This filename is a setting in the magick.ini file, and
 may be changed.
 
 <verb>magick.key</verb>This contains the key for your databases, encrypted.
-This key file should be generated with mkeygen.  This file may not
-be used on another machine, and if you move your services to another
-machine, you will probably have to re-generate this key file.  This
+This key file should be generated with magick_keygen.  This file
+may not be used by more than one set of services (unless the binaries
+are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 
 <verb>lang/*.lng</verb>These files contain the responses Magick will send back
