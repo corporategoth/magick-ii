@@ -54,12 +54,7 @@ int Magick::Start()
 #endif
 
     CP(("Magick II has been started ..."));
-#ifdef WIN32
-    FILE *logfile=fopen((wxGetCwd()+"\\mdebug.log").c_str(),"w+");
-#else
-    FILE *logfile=fopen((wxGetCwd()+"/mdebug.log").c_str(),"w+");
-#endif
-    // the below defaults to stderr if logfile cannot be opened
+    // We log to STDERR until we find our logfile...
     logger=new wxLogStderr(logfile);
 
     if(bob.StartBob("")==false)
@@ -86,7 +81,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    wxLogError("%s requires a paramter.",argv[i-1].c_str());
+		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
 		    RET(MAGICK_RET_ERROR);
 		}
 		services_dir=argv[i];
@@ -97,7 +92,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    wxLogError("%s requires a paramter.",argv[i-1].c_str());
+		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
 		    RET(MAGICK_RET_ERROR);
 		}
 		config_file=argv[i];
@@ -126,15 +121,29 @@ int Magick::Start()
 #endif
     if(MagickIni==NULL)
     {
-	wxLogError("Major fubar, couldn't allocate memory to read config file\nAborting");
+	wxLogFatal("Major fubar, couldn't allocate memory to read config file\nAborting");
 	RET(MAGICK_RET_ERROR);
     }
     //okay, need a function here to load all the ini file defalts
     get_config_values();
     if(i_shutdown==true) {
-	wxLogError("CONFIG: [Startup] STOP code received.");
+	wxLogFatal("CONFIG: [Startup] STOP code received.");
 	RET(MAGICK_RET_ERROR);
     }
+
+    Result=doparamparse();
+    if(Result!=MAGICK_RET_NORMAL)
+	RET(Result);
+
+    if(!check_config())
+	RET(MAGICK_RET_TERMINATE);
+
+#ifdef WIN32
+    FILE *logfile = fopen((wxGetCwd()+"\\"+Files_LOGFILE).c_str(), "w+");
+#else
+    FILE *logfile = fopen((wxGetCwd()+"/"+Files_LOGFILE).c_str(), "w+");
+#endif
+    logger.ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
@@ -144,12 +153,6 @@ int Magick::Start()
 
     //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.
 
-    Result=doparamparse();
-    if(Result!=MAGICK_RET_NORMAL)
-	RET(Result);
-
-    if(!check_config())
-	RET(MAGICK_RET_TERMINATE);
 
     //open_log();
 
@@ -488,7 +491,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError("-remote requires a hostname[:port]");
+		    wxLogFatal("-remote requires a hostname[:port]");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(argv[i].Contains(":"))
@@ -496,7 +499,7 @@ int Magick::doparamparse()
 		    if(argv[i].After(':').IsNumber())
 		    {
 			if(atoi(argv[i].After(':').c_str())<0)
-			    wxLogError("port must be a positive number");
+			    wxLogError("port must be a positive number (ignoring)");
 			else
 			    Startup_REMOTE_PORT=atoi(argv[i].After(':').c_str());
 		    }
@@ -508,7 +511,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-name");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-name");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVER_NAME=argv[i];
@@ -518,7 +521,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-desc");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-desc");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVER_DESC=argv[i];
@@ -528,7 +531,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-user");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-user");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVICES_USER=argv[i];
@@ -538,7 +541,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-host");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-host");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_SERVICES_HOST=argv[i];
@@ -548,7 +551,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-dir");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-dir");
 		    RET(MAGICK_RET_ERROR);
 		}
 		// already handled, but we needed to i++
@@ -558,7 +561,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-config");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-config");
 		    RET(MAGICK_RET_ERROR);
 		}
 		// already handled, but we needed to i++
@@ -568,7 +571,7 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-log");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-log");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Files_LOGFILE=argv[i];
@@ -582,12 +585,12 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-relink");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-relink");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
-		    wxLogError("-relink parameter must be positive");
+		    wxLogFatal("-relink parameter must be positive");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Config_SERVER_RELINK=atoi(argv[i].c_str());
@@ -599,12 +602,12 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-level");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-level");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
-		    wxLogError("-level paramater must be positive");
+		    wxLogFatal("-level paramater must be positive");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_LEVEL=atoi(argv[i].c_str());
@@ -614,12 +617,12 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-gmt");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-gmt");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(abs(atoi(argv[i].c_str()))>12)
 		{
-		    wxLogError("-offset must be between -12 and 12");
+		    wxLogFatal("-offset must be between -12 and 12");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Startup_GMT=atoi(argv[i].c_str());
@@ -629,25 +632,25 @@ int Magick::doparamparse()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogError(getMessage("ERR_REQ_PARAM").c_str(),"-update");
+		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-update");
 		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
-		    wxLogError("-update: number of seconds must be positive");
+		    wxLogFatal("-update: number of seconds must be positive");
 		    RET(MAGICK_RET_ERROR);
 		}
 		Config_CYCLETIME=atoi(argv[i].c_str());
 	    }
 	    else
 	    {
-    		wxLogError("Unknown option %s.",argv[i].c_str());
+    		wxLogFatal("Unknown option %s.",argv[i].c_str());
 		RET(MAGICK_RET_ERROR);
 	    }
 	}
 	else
 	{
-	    wxLogError("Non-option arguments not allowed");
+	    wxLogFatal("Non-option arguments not allowed");
 	    RET(MAGICK_RET_ERROR);
 	}
     }
@@ -667,31 +670,31 @@ bool Magick::check_config()
     if (Startup_LEVEL < 1)
     {
 	// change this to the logging mechanism
-	wxLogError("CONFIG: Cannot set [Startup] LEVEL < 1");
+	wxLogFatal("CONFIG: Cannot set [Startup] LEVEL < 1");
         RET(false);
     }
     if (Startup_GMT >= 12 || Startup_GMT <= -12)
     {
 	// change this to the logging mechanism
-        wxLogError("CONFIG: [Startup] GMT must fall between -12 and 12.");
+        wxLogFatal("CONFIG: [Startup] GMT must fall between -12 and 12.");
         RET(false);
     }
     if (Config_CYCLETIME < 30)
     {
 	// change this to the logging mechanism
-        wxLogError("CONFIG: Cannot set [Config] CYCLETIME < 30.");
+        wxLogFatal("CONFIG: Cannot set [Config] CYCLETIME < 30.");
         RET(false);
     }
     if (Startup_LAGTIME < 1)
     {
 	// change this to the logging mechanism
-        wxLogError("CONFIG: Cannot set Startup_LAGTIME < 1.");
+        wxLogFatal("CONFIG: Cannot set [Startup] LAGTIME < 1.");
         RET(false);
     }
     if (nickserv.passfail < 1)
     {
 	// change this to the logging mechanism
-        wxLogError("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
+        wxLogFatal("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
         RET(false);
     }
     RET(true);
