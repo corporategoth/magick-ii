@@ -1304,7 +1304,7 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
 #endif
 
 // there is no distinction between text and binary files under Unix
-#ifndef WIN32
+#if !defined(WIN32) && !defined(O_BINARY)
   #define   O_BINARY    (0)
 #endif
 
