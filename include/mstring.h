@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2001/12/16 00:12:44  prez
+** Some code in mstring to make its vsnprintf more safe, if possible.
+**
 ** Revision 1.86  2001/12/12 15:40:21  prez
 ** Made *toa functions guarentee the result is terminated.
 **
@@ -333,7 +336,21 @@ mstring fmstring (const char *fmt, ...);
  */
 inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
 {
-    int iLen = ACE_OS::vsprintf(buf, fmt, ap);
+    if (buf == NULL)
+	return -1;
+
+    int iLen = 0;
+    char *nbuf = new char[sz];
+    if (nbuf != NULL)
+    {
+        iLen = ACE_OS::vsprintf(nbuf, fmt, ap);
+        strncpy(buf, nbuf, sz);
+        delete [] nbuf;
+    }
+    else
+    {
+        iLen = ACE_OS::vsprintf(buf, fmt, ap);
+    }
     return iLen;
 }
 #endif /* _vsnprintf */
