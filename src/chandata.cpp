@@ -1950,12 +1950,19 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	if (!modes.empty() && Magick::instance().chanserv.IsLive(i_Name))
 	    clive->SendMode("+" + modes);
 
+	if (!burst)
 	{
+	    if (Join())
+	    {
+		Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
+		users++;
+	    }
+
 	    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
 	    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
 	    RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	    // Carry over topic ..
-	    if (!burst && Keeptopic() && !i_Topic.empty() && clive->Topic().empty())
+	    if (Keeptopic() && !i_Topic.empty() && clive->Topic().empty())
 	    {
 		Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(), i_Topic_Setter, i_Name, i_Topic,
 						i_Topic_Set_Time);
@@ -1963,11 +1970,6 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	}
     }
 
-    if (!burst && Join() && users == 1)
-    {
-	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
-	users++;
-    }
 
     if (GetAccess(nick) > 0)
     {

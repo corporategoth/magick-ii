@@ -2864,10 +2864,12 @@ void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring &
 
 	bool dojoin = false;
 
-	map_entry < Chan_Live_t > chan = Magick::instance().chanserv.GetLive(channel);
-	chan->Topic(nick, topic, setter, settime);
-	if (proto.TopicJoin() && !chan->IsIn(Magick::instance().chanserv.FirstName()))
-	    dojoin = true;
+	{
+	    map_entry < Chan_Live_t > chan = Magick::instance().chanserv.GetLive(channel);
+	    chan->Topic(nick, topic, setter, settime);
+	    if (proto.TopicJoin() && !chan->IsIn(Magick::instance().chanserv.FirstName()))
+		dojoin = true;
+	}
 
 	if (dojoin)
 	    JOIN(Magick::instance().chanserv.FirstName(), channel);
