@@ -19,7 +19,7 @@
 #include "memoserv.h"
 #include "magick.h"
 
-Memo_t::Memo_t(mstring nick, mstring sender, mstring text, long file)
+Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
     i_Nick = nick;

@@ -21,10 +21,303 @@
 #include "cryptstream.h"
 
 
+void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
+{
+    NFT("Nick_Live_t::operator=");
+    memo	= in.memo;
+    fileattach	= in.fileattach;
+    fileinprog	= in.fileinprog;
+    service	= in.service;
+    sender	= in.sender;
+    recipiant	= in.recipiant;
+    text	= in.text;
+    mstring *arg;
+    if (in.timer)
+	if (ACE_Reactor::instance()->cancel_timer(in.timer,
+					    (const void **) arg))
+	{
+	    delete arg;
+	}
+    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(me->Name().LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+}
+
+    
+// NICK has been destructed, or is going to be.
+// Send any pending memos with End(0), but because
+// it may have an 'in progress' memo at the time of
+// destruction, we make sure the timer is cancelled.
+Nick_Live_t::InFlight_t::~InFlight_t()
+{
+    NFT("Nick_Live_t::InFlight_t::~InFlight_t");
+    if (Exists())
+	End(0);
+    mstring *arg;
+    if (timer)
+	if (ACE_Reactor::instance()->cancel_timer(timer,
+						(const void **) arg))
+	{
+	    delete arg;
+	}
+}
+
+
+// Initialise all veriables (done in Cancel() or End())
+void Nick_Live_t::InFlight_t::init()
+{
+    NFT("Nick_Live_t::InFlight_t::init");
+    memo = false;
+    timer = 0;
+    fileattach = false;
+    fileinprog = false;
+    service = "";
+    sender = "";
+    recipiant = "";
+    text = "";
+}
+
+
+// We have completed a file transfer, or errored out.
+// 0 if we errored, else its a file number.
+void Nick_Live_t::InFlight_t::File(unsigned long filenum)
+{
+    FT("Nick_Live_t::InFlight_t::File", (filenum));
+    fileinprog = false;
+    if (filenum)
+	End(filenum);
+    else
+	Cancel();
+}
+
+
+// Ok, we've started a file transfer, cancel timer,
+// now we wait for the File() command.
+void Nick_Live_t::InFlight_t::SetInProg()
+{
+    NFT("Nick_Live_t::InFlight_t::SetInProg");
+    fileinprog = true;
+    mstring *arg;
+    if (timer)
+	if (ACE_Reactor::instance()->cancel_timer(timer,
+						(const void **) arg))
+	{
+	    delete arg;
+	}
+}
+
+
+// New memo, send an old one if it isnt in-progress, and
+// cancel it if it was never started.
+void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
+				    mstring user, mstring message)
+{
+    FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, user, message));
+    if (File())
+    {
+	if (InProg())
+	{
+	    Parent->server.NOTICE(service, me->Name(),
+		"Cannot begin a new memo while a file is in progress.");
+	    return;
+	}
+	else
+	{
+	    Cancel();
+	    Parent->server.NOTICE(service, me->Name(),
+		"Previous pending file transfer ABORTED.");
+	}
+    }
+    else if (Exists())
+    {
+	End(0);
+    }
+
+    if (!Parent->nickserv.IsStored(me->Name()))
+    {
+	Parent->server.NOTICE(mynick, me->Name(),
+	    "You must register your nickname before you can send a memo.");
+	return;
+    }
+    else if (Parent->nickserv.IsStored(user))
+    {
+	Parent->server.NOTICE(mynick, me->Name(),
+	    "Nickname " + user + " is not registered, cannot send memo.");
+	return;
+    }
+    else if (file && !Parent->memoserv.Files())
+    {
+	Parent->server.NOTICE(mynick, me->Name(),
+	    "File attachments in MEMOs have been disabled.");
+	return;
+    }
+
+    memo = true;
+    fileattach = file;
+    service = mynick;
+    sender = me->Name();
+    recipiant = user;
+    text = message;
+
+    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(sender.LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+}
+
+
+// Add text to a memo, and re-start the timer.
+void Nick_Live_t::InFlight_t::Continue(mstring message)
+{
+    FT("Nick_Live_t::InFlight_t::Continue", (message));
+    if (memo)
+  	text += message;
+    mstring *arg;
+    if (timer)
+	if (ACE_Reactor::instance()->cancel_timer(timer,
+					    (const void **) arg))
+	{
+	    delete arg;
+	}
+    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(me->Name().LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+}
+
+
+// Cancel a memo or picture send.
+void Nick_Live_t::InFlight_t::Cancel()
+{
+    NFT("Nick_Live_t::InFlight_t::Cancel");
+
+    mstring *arg;
+    if (timer)
+	if (ACE_Reactor::instance()->cancel_timer(timer,
+					    (const void **) arg))
+	{
+	    delete arg;
+	}
+    init();
+}
+
+
+// This is the final destination of all memos.
+// It will do nothing if a file is in-progress, and
+// will call Cancel() if no file was started, but requested.
+// It accepts an argument of 'file number'.  Ignored if
+// no file attachment was requested, but set if 
+void Nick_Live_t::InFlight_t::End(unsigned long filenum)
+{
+    NFT("Nick_Live_t::InFlight_t::End");
+    if (File() && InProg())
+    {
+	// We do nothing ...
+    }
+    else if (File() && filenum == 0)
+    {
+	Cancel();
+    }
+    else
+    {
+	mstring *arg;
+	if (timer)
+	    if (ACE_Reactor::instance()->cancel_timer(timer,
+						(const void **) arg))
+	    {
+		delete arg;
+	    }
+	if (Parent->nickserv.IsStored(sender))
+	{
+	    if (memo)
+	    {
+		if (Parent->nickserv.IsStored(recipiant))
+		{
+		    mstring realrecipiant = Parent->nickserv.stored[recipiant.LowerCase()].Host();
+		    if (realrecipiant == "")
+			realrecipiant = recipiant;
+		    if (recipiant == realrecipiant ||
+			Parent->nickserv.IsStored(realrecipiant))
+		    {
+			Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
+			    Memo_t(realrecipiant, sender, text, filenum));
+		    }
+		    else if (File())
+		    {
+			// Delete file from filesystem
+		    }
+		}
+		else if (File())
+		{
+		    // Delete file from filesystem
+		}
+	    }
+	    else
+	    {
+		if (Parent->nickserv.PicSize())
+		{
+		    Parent->nickserv.stored[sender.LowerCase()].GotPic(filenum);
+		}
+		else
+		{
+		    // Delete file from filesystem
+		}
+	    }
+	}
+	init();
+    }
+}
+
+
+void Nick_Live_t::InFlight_t::Picture(mstring mynick)
+{
+    FT("Nick_Live_t::InFlight_t::Picture", (mynick));
+    if (File())
+    {
+	if (InProg())
+	{
+	    Parent->server.NOTICE(service, me->Name(),
+		"Cannot begin picture transfer while a file is in progress.");
+	    return;
+	}
+	else
+	{
+	    Cancel();
+	    Parent->server.NOTICE(service, me->Name(),
+		"Previous pending file transfer ABORTED.");
+	}
+    }
+    else if (Exists())
+    {
+	End(0);
+    }
+
+    if (Parent->nickserv.IsStored(me->Name()))
+    {
+	Parent->server.NOTICE(service, me->Name(),
+	    "Your nickname is not registered.");
+	return;
+    }
+    else if (!Parent->nickserv.PicSize())
+    {
+	Parent->server.NOTICE(service, me->Name(),
+	    "Setting pictures has been disabled.");
+    }
+
+    memo = false;
+    fileattach = true;
+    sender = me->Name();
+    service = mynick;
+    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(sender.LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+
+}
+
+
 Nick_Live_t::Nick_Live_t()
 {
     NFT("Nick_Live_t::Nick_Live_t");
     identified = false;
+    InFlight.Assign(this);
 }
 
 
@@ -41,6 +334,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     i_host = hostname;
     i_realname = realname;
     identified = false;
+    InFlight.Assign(this);
 
     if (Parent->operserv.AddHost(i_host))
     {
@@ -70,6 +364,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     i_host = hostname;
     i_realname = realname;
     identified = true;
+    InFlight.Assign(this);
 }
 
 
@@ -106,6 +401,7 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
     i_UserDef.clear();
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	i_UserDef.insert(*j);
+    InFlight=in.InFlight;
 }
 
 void Nick_Live_t::Join(mstring chan)
@@ -175,6 +471,9 @@ void Nick_Live_t::Quit(mstring reason)
 
     while (joined_channels.size())
 	Part(*joined_channels.begin());
+
+    if (InFlight.Exists())
+	InFlight.End(0);
 
     // We successfully ident to all channels we tried to
     // ident for before, so that they 0 our count -- we dont
@@ -616,12 +915,19 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mstring password)
     i_Password = password;
     i_RegTime = Now();
     i_Protect = Parent->nickserv.DEF_Protect();
+    l_Protect = false;
     i_Secure = Parent->nickserv.DEF_Secure();
+    l_Secure = false;
     i_NoExpire = Parent->nickserv.DEF_NoExpire();
+    l_NoExpire = false;
     i_NoMemo = Parent->nickserv.DEF_NoMemo();
+    l_NoMemo = false;
     i_Private = Parent->nickserv.DEF_Private();
+    l_Private = false;
     i_PRIVMSG = Parent->nickserv.DEF_PRIVMSG();
+    l_PRIVMSG = false;
     i_Forbidden = false;
+    i_Picture = 0;
 
     if (Parent->nickserv.IsLive(i_Name))
     {
@@ -700,12 +1006,19 @@ void Nick_Stored_t::operator=(const Nick_Stored_t &in)
     for(i=in.i_ignore.begin();i!=in.i_ignore.end();i++)
 	i_ignore.insert(*i);
     i_Protect=in.i_Protect;
+    l_Protect=in.l_Protect;
     i_Secure=in.i_Secure;
+    l_Secure=in.l_Secure;
     i_NoExpire=in.i_NoExpire;
+    l_NoExpire=in.l_NoExpire;
     i_NoMemo=in.i_NoMemo;
+    l_NoMemo=in.l_NoMemo;
     i_Private=in.i_Private;
+    l_Private=in.l_Private;
     i_PRIVMSG=in.i_PRIVMSG;
+    l_PRIVMSG=in.l_PRIVMSG;
     i_Forbidden=in.i_Forbidden;
+    i_Picture=in.i_Picture;
     i_Suspend_By=in.i_Suspend_By;
     i_Suspend_Time=in.i_Suspend_Time;
 
@@ -1142,6 +1455,29 @@ bool Nick_Stored_t::MakeHost()
 			Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).c_str(), i_Name.c_str());
 	    }
 	}
+	i_Password = Parent->nickserv.stored[i_Host.LowerCase()].i_Password;
+	i_Email = Parent->nickserv.stored[i_Host.LowerCase()].i_Email;
+	i_URL = Parent->nickserv.stored[i_Host.LowerCase()].i_URL;
+	i_ICQ = Parent->nickserv.stored[i_Host.LowerCase()].i_ICQ;
+	i_Description = Parent->nickserv.stored[i_Host.LowerCase()].i_Description;
+	i_Comment = Parent->nickserv.stored[i_Host.LowerCase()].i_Comment;
+	i_access = Parent->nickserv.stored[i_Host.LowerCase()].i_access;
+	i_ignore = Parent->nickserv.stored[i_Host.LowerCase()].i_ignore;
+	i_Protect = Parent->nickserv.stored[i_Host.LowerCase()].i_Protect;
+	l_Protect = Parent->nickserv.stored[i_Host.LowerCase()].l_Protect;
+	i_Secure = Parent->nickserv.stored[i_Host.LowerCase()].i_Secure;
+	l_Secure = Parent->nickserv.stored[i_Host.LowerCase()].l_Secure;
+	i_NoExpire = Parent->nickserv.stored[i_Host.LowerCase()].i_NoExpire;
+	l_NoExpire = Parent->nickserv.stored[i_Host.LowerCase()].l_NoExpire;
+	i_NoMemo = Parent->nickserv.stored[i_Host.LowerCase()].i_NoMemo;
+	l_NoMemo = Parent->nickserv.stored[i_Host.LowerCase()].l_NoMemo;
+	i_Private = Parent->nickserv.stored[i_Host.LowerCase()].i_Private;
+	l_Private = Parent->nickserv.stored[i_Host.LowerCase()].l_Private;
+	i_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].i_PRIVMSG;
+	l_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].l_PRIVMSG;
+	i_Picture = Parent->nickserv.stored[i_Host.LowerCase()].i_Picture;
+	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
+	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.clear();
 	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name;
 	i_Host = "";
@@ -1203,21 +1539,28 @@ bool Nick_Stored_t::Unlink()
     }
     else if (Parent->nickserv.IsStored(i_Host))
     {
+	i_slaves.clear();
 	i_Password = Parent->nickserv.stored[i_Host.LowerCase()].i_Password;
 	i_Email = Parent->nickserv.stored[i_Host.LowerCase()].i_Email;
 	i_URL = Parent->nickserv.stored[i_Host.LowerCase()].i_URL;
 	i_ICQ = Parent->nickserv.stored[i_Host.LowerCase()].i_ICQ;
 	i_Description = Parent->nickserv.stored[i_Host.LowerCase()].i_Description;
 	i_Comment = Parent->nickserv.stored[i_Host.LowerCase()].i_Comment;
-	i_slaves.clear(); // souldnt be nessicary
 	i_access = Parent->nickserv.stored[i_Host.LowerCase()].i_access;
 	i_ignore = Parent->nickserv.stored[i_Host.LowerCase()].i_ignore;
 	i_Protect = Parent->nickserv.stored[i_Host.LowerCase()].i_Protect;
+	l_Protect = Parent->nickserv.stored[i_Host.LowerCase()].l_Protect;
 	i_Secure = Parent->nickserv.stored[i_Host.LowerCase()].i_Secure;
+	l_Secure = Parent->nickserv.stored[i_Host.LowerCase()].l_Secure;
 	i_NoExpire = Parent->nickserv.stored[i_Host.LowerCase()].i_NoExpire;
+	l_NoExpire = Parent->nickserv.stored[i_Host.LowerCase()].l_NoExpire;
 	i_NoMemo = Parent->nickserv.stored[i_Host.LowerCase()].i_NoMemo;
+	l_NoMemo = Parent->nickserv.stored[i_Host.LowerCase()].l_NoMemo;
 	i_Private = Parent->nickserv.stored[i_Host.LowerCase()].i_Private;
+	l_Private = Parent->nickserv.stored[i_Host.LowerCase()].l_Private;
 	i_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].i_PRIVMSG;
+	l_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].l_PRIVMSG;
+	i_Picture = Parent->nickserv.stored[i_Host.LowerCase()].i_Picture;
 	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.erase(i_Name.LowerCase());
@@ -1535,7 +1878,7 @@ bool Nick_Stored_t::Protect()
     {
 	RET(Parent->nickserv.DEF_Protect());
     }
-    if (i_Host == "")
+    else if (i_Host == "")
     {
 	RET(i_Protect);
     }
@@ -1558,7 +1901,7 @@ void Nick_Stored_t::Protect(bool in)
     FT("Nick_Stored_t::Protect", (in));
     if (i_Host == "")
     {
-	if (!Parent->nickserv.LCK_Protect())
+	if (!L_Protect())
 	    i_Protect = in;
     }
     else if (Parent->nickserv.IsStored(i_Host))
@@ -1571,6 +1914,53 @@ void Nick_Stored_t::Protect(bool in)
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Protect(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_Protect()
+{
+    NFT("Nick_Stored_t::L_Protect");
+    if (Parent->nickserv.LCK_Protect())
+    {
+	RET(true);
+    }
+    else if (i_Host == "")
+    {
+	RET(l_Protect);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Protect());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_Protect());
+    }
+}
+
+
+void Nick_Stored_t::L_Protect(bool in)
+{
+    FT("Nick_Stored_t::L_Protect", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_Protect())
+	    l_Protect = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Protect(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_Protect(in);
     }
 }
 
@@ -1605,7 +1995,7 @@ void Nick_Stored_t::Secure(bool in)
     FT("Nick_Stored_t::Secure", (in));
     if (i_Host == "")
     {
-	if (!Parent->nickserv.LCK_Secure())
+	if (!L_Secure())
 	    i_Secure = in;
     }
     else if (Parent->nickserv.IsStored(i_Host))
@@ -1618,6 +2008,53 @@ void Nick_Stored_t::Secure(bool in)
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Secure(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_Secure()
+{
+    NFT("Nick_Stored_t::L_Secure");
+    if (Parent->nickserv.LCK_Secure())
+    {
+	RET(true);
+    }
+    if (i_Host == "")
+    {
+	RET(l_Secure);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Secure());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_Secure());
+    }
+}
+
+
+void Nick_Stored_t::L_Secure(bool in)
+{
+    FT("Nick_Stored_t::L_Secure", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_Secure())
+	    l_Secure = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Secure(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_Secure(in);
     }
 }
 
@@ -1652,7 +2089,7 @@ void Nick_Stored_t::NoExpire(bool in)
     FT("Nick_Stored_t::NoExpire", (in));
     if (i_Host == "")
     {
-	if (!Parent->nickserv.LCK_NoExpire())
+	if (!L_NoExpire())
 	    i_NoExpire = in;
     }
     else if (Parent->nickserv.IsStored(i_Host))
@@ -1665,6 +2102,53 @@ void Nick_Stored_t::NoExpire(bool in)
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	NoExpire(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_NoExpire()
+{
+    NFT("Nick_Stored_t::L_NoExpire");
+    if (Parent->nickserv.LCK_NoExpire())
+    {
+	RET(true);
+    }
+    if (i_Host == "")
+    {
+	RET(l_NoExpire);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_NoExpire());
+    }
+}
+
+
+void Nick_Stored_t::L_NoExpire(bool in)
+{
+    FT("Nick_Stored_t::L_NoExpire", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_NoExpire())
+	    l_NoExpire = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_NoExpire(in);
     }
 }
 
@@ -1699,7 +2183,7 @@ void Nick_Stored_t::NoMemo(bool in)
     FT("Nick_Stored_t::NoMemo", (in));
     if (i_Host == "")
     {
-	if (!Parent->nickserv.LCK_NoMemo())
+	if (!L_NoMemo())
 	    i_NoMemo = in;
     }
     else if (Parent->nickserv.IsStored(i_Host))
@@ -1712,6 +2196,53 @@ void Nick_Stored_t::NoMemo(bool in)
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	NoMemo(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_NoMemo()
+{
+    NFT("Nick_Stored_t::L_NoMemo");
+    if (Parent->nickserv.LCK_NoMemo())
+    {
+	RET(true);
+    }
+    if (i_Host == "")
+    {
+	RET(l_NoMemo);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_NoMemo());
+    }
+}
+
+
+void Nick_Stored_t::L_NoMemo(bool in)
+{
+    FT("Nick_Stored_t::L_NoMemo", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_NoMemo())
+	    l_NoMemo = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_NoMemo(in);
     }
 }
 
@@ -1746,7 +2277,7 @@ void Nick_Stored_t::Private(bool in)
     FT("Nick_Stored_t::Private", (in));
     if (i_Host == "")
     {
-	if (!Parent->nickserv.LCK_Private())
+	if (!L_Private())
 	    i_Private = in;
     }
     else if (Parent->nickserv.IsStored(i_Host))
@@ -1759,6 +2290,53 @@ void Nick_Stored_t::Private(bool in)
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Private(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_Private()
+{
+    NFT("Nick_Stored_t::L_Private");
+    if (Parent->nickserv.LCK_Private())
+    {
+	RET(true);
+    }
+    if (i_Host == "")
+    {
+	RET(l_Private);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Private());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_Private());
+    }
+}
+
+
+void Nick_Stored_t::L_Private(bool in)
+{
+    FT("Nick_Stored_t::L_Private", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_Private())
+	    l_Private = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Private(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_Private(in);
     }
 }
 
@@ -1793,8 +2371,8 @@ void Nick_Stored_t::PRIVMSG(bool in)
     FT("Nick_Stored_t::PRIVMSG", (in));
     if (i_Host == "")
     {
-	if (!Parent->nickserv.LCK_PRIVMSG())
-	    i_PRIVMSG = in;
+	if (!L_PRIVMSG())
+	i_PRIVMSG = in;
     }
     else if (Parent->nickserv.IsStored(i_Host))
     {
@@ -1806,6 +2384,53 @@ void Nick_Stored_t::PRIVMSG(bool in)
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	PRIVMSG(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_PRIVMSG()
+{
+    NFT("Nick_Stored_t::L_PRIVMSG");
+    if (Parent->nickserv.LCK_PRIVMSG())
+    {
+	RET(true);
+    }
+    if (i_Host == "")
+    {
+	RET(l_PRIVMSG);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_PRIVMSG());
+    }
+}
+
+
+void Nick_Stored_t::L_PRIVMSG(bool in)
+{
+    FT("Nick_Stored_t::L_PRIVMSG", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_PRIVMSG())
+	l_PRIVMSG = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_PRIVMSG(in);
     }
 }
 
@@ -1869,6 +2494,61 @@ mDateTime Nick_Stored_t::Suspend_Time()
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Suspend_Time());
+    }
+}
+
+
+void Nick_Stored_t::SendPic(mstring nick)
+{
+    FT("Nick_Stored_t::SendPic", (nick));
+
+    // DccEngine.PicSend(nick, PicNum());
+}
+
+
+unsigned long Nick_Stored_t::PicNum()
+{
+    NFT("PicNum");
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.PicSize())
+	{
+	    RET(i_Picture);
+	}
+	RET(0);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].PicNum())
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(PicNum());
+    }
+}
+
+
+void Nick_Stored_t::GotPic(unsigned long picnum)
+{
+    FT("Nick_Stored_t::GotPic", (picnum));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.PicSize())
+	    i_Picture = picnum;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].GotPic(picnum);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	GotPic(picnum);
     }
 }
 
@@ -2055,6 +2735,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in)
 	out<<(mstring)*i;
     }
     out<<in.i_Protect<<in.i_Secure<<in.i_NoExpire<<in.i_NoMemo<<in.i_Private<<in.i_PRIVMSG<<in.i_Forbidden;
+    out<<in.l_Protect<<in.l_Secure<<in.l_NoExpire<<in.l_NoMemo<<in.l_Private<<in.l_PRIVMSG<<in.i_Picture;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
     out<<in.i_LastSeenTime<<in.i_LastRealName<<in.i_LastMask<<in.i_LastQuit;
     out<<in.i_UserDef.size();
@@ -2086,6 +2767,7 @@ wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out)
 	out.i_ignore.insert(dummy);
     }
     in>>out.i_Protect>>out.i_Secure>>out.i_NoExpire>>out.i_NoMemo>>out.i_Private>>out.i_PRIVMSG>>out.i_Forbidden;
+    in>>out.l_Protect>>out.l_Secure>>out.l_NoExpire>>out.l_NoMemo>>out.l_Private>>out.l_PRIVMSG>>out.i_Picture;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
     in>>out.i_LastSeenTime>>out.i_LastRealName>>out.i_LastMask>>out.i_LastQuit;
     out.i_UserDef.clear();

@@ -41,9 +41,51 @@ class Nick_Live_t : public mUserDef
     vector<mstring> try_chan_ident;
     bool identified;
     bool services;
+
 public:
+
+    class InFlight_t {
+	friend class Nick_Live_t;
+	friend class DccEngine;
+	friend class InFlight_Handler;
+
+	Nick_Live_t *me;
+	bool memo;
+	long timer;
+	bool fileattach;
+	bool fileinprog;
+	mstring service;
+	mstring sender;
+	mstring recipiant;
+	mstring text;
+
+	InFlight_t() {}
+	~InFlight_t();
+	void Assign(Nick_Live_t *self) { me = self; }
+
+	void operator=(const InFlight_t &in);
+	void init();
+	// Called upon completion
+	// 0 means it failed
+	void File(unsigned long filenum);
+	// Called upon start
+	void SetInProg();
+    public:
+	void Memo (bool file, mstring mynick, mstring recipiant, mstring message);
+	void Continue(mstring message);
+	void Cancel();
+	void End(unsigned long filenum);
+	void Picture (mstring mynick);
+	bool IsMemo()	{ return memo; }
+	bool Exists()	{ return (memo || fileattach); }
+	bool File()	{ return fileattach; }
+	bool InProg()	{ return fileinprog; }
+
+    } InFlight;
+
     Nick_Live_t();
-    Nick_Live_t(const Nick_Live_t &in) { *this = in; }
+    Nick_Live_t(const Nick_Live_t &in)
+	{ *this = in; InFlight.Assign(this); }
     Nick_Live_t(mstring name, mDateTime signon, mstring server,
 	    mstring username, mstring hostname, mstring realname);
     Nick_Live_t(mstring name, mstring username, mstring hostname,
@@ -146,6 +188,7 @@ class Nick_Stored_t : public mUserDef
     bool i_PRIVMSG;
     bool l_PRIVMSG;
     bool i_Forbidden;
+    unsigned long i_Picture;
 
     mstring i_Suspend_By;
     mDateTime i_Suspend_Time;
@@ -248,6 +291,9 @@ public:
     mstring Suspend_By();
     mDateTime Suspend_Time();
     bool Forbidden() { return i_Forbidden; }
+    void SendPic(mstring nick);
+    unsigned long PicNum();
+    void GotPic(unsigned long picnum);
 
     // IF Online, returns live realname and ONLINE.
     // IF non-slave and Offline, returns local data.
@@ -289,6 +335,8 @@ private:
     bool lck_private;		// PRIVATE is locked?
     bool def_privmsg;		// Default val of PRIVMSG
     bool lck_privmsg;		// PRIVMSG is locked?
+    int picsize;		// MAX size of a personal pic
+    mstring picext;		// Valid PIC extensions
 
 public:
     int Expire()	{ return expire; }
@@ -307,6 +355,8 @@ public:
     bool LCK_Private()	{ return lck_private; }
     bool DEF_PRIVMSG()	{ return def_privmsg; }
     bool LCK_PRIVMSG()	{ return lck_privmsg; }
+    int PicSize()	{ return picsize; }
+    mstring PicExt()	{ return picext; }
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);
@@ -315,6 +365,7 @@ public:
     map<mstring,Nick_Stored_t> stored;
     map<mstring,Nick_Live_t> live;
     KillOnSignon_Handler kosh;
+    InFlight_Handler ifh;
 
     NickServ();
     virtual threadtype_enum Get_TType() const { return tt_NickServ; }

@@ -844,14 +844,24 @@ void Chan_Stored_t::defaults()
 {
     NFT("Chan_Stored_t::defaults");
 
+    l_Mlock_On = l_Mlock_Off = "";
     i_Keeptopic = Parent->chanserv.DEF_Keeptopic();
+    l_Keeptopic = false;
     i_Topiclock = Parent->chanserv.DEF_Topiclock();
+    l_Topiclock = false;
     i_Private = Parent->chanserv.DEF_Private();
+    l_Private = false;
     i_Secureops = Parent->chanserv.DEF_Secureops();
+    l_Secureops = false;
     i_Secure = Parent->chanserv.DEF_Secure();
+    l_Secure = false;
     i_Restricted = Parent->chanserv.DEF_Restricted();
+    l_Restricted = false;
     i_Join = Parent->chanserv.DEF_Join();
+    l_Join = false;
     i_Revenge = Parent->chanserv.DEF_Revenge();
+    l_Revenge = false;
+    i_Forbidden = false;
 
     mstring defaulted = Parent->chanserv.DEF_MLock();
     mstring locked = Parent->chanserv.LCK_MLock();
@@ -973,7 +983,6 @@ Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, ms
     i_Founder = founder;
     i_Password = password;
     i_Description = desc;
-    i_Forbidden = false;
 
     defaults();
 }
@@ -1001,17 +1010,26 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_URL=in.i_URL;
 
     i_Mlock_On=in.i_Mlock_On;
+    l_Mlock_On=in.l_Mlock_On;
     i_Mlock_Off=in.i_Mlock_Off;
+    l_Mlock_Off=in.l_Mlock_Off;
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
 
     i_Keeptopic=in.i_Keeptopic;
+    l_Keeptopic=in.l_Keeptopic;
     i_Topiclock=in.i_Topiclock;
+    l_Topiclock=in.l_Topiclock;
     i_Private=in.i_Private;
+    l_Private=in.l_Private;
     i_Secureops=in.i_Secureops;
+    l_Secureops=in.l_Secureops;
     i_Secure=in.i_Secure;
+    l_Secure=in.l_Secure;
     i_Restricted=in.i_Restricted;
+    l_Restricted=in.l_Restricted;
     i_Join=in.i_Join;
+    l_Join=in.l_Join;
     i_Suspend_By=in.i_Suspend_By;
     i_Suspend_Time=in.i_Suspend_Time;
     i_Forbidden=in.i_Forbidden;
@@ -1077,7 +1095,7 @@ void Chan_Stored_t::UnSuspend()
 
 mstring Chan_Stored_t::Mlock()
 {
-    NFT("Chan_Stored_t::MLock");
+    NFT("Chan_Stored_t::Mlock");
     mstring Result;
     if(i_Mlock_On!="")
 	Result+="+" + i_Mlock_On;
@@ -1089,7 +1107,7 @@ mstring Chan_Stored_t::Mlock()
 
 mstring Chan_Stored_t::Mlock(mstring mode)
 {
-    FT("Chan_Stored_t::MLock", (mode));
+    FT("Chan_Stored_t::Mlock", (mode));
 
     i_Mlock_On = i_Mlock_Off = i_Mlock_Key = "";
     i_Mlock_Limit = 0;
@@ -1228,7 +1246,8 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	}
     }
 
-    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring locked = Parent->chanserv.LCK_MLock()
+	+ "+" + l_Mlock_On + "-" + l_Mlock_Off;
     mstring override_on;
     mstring override_off;
     mstring forced_on;
@@ -1328,10 +1347,185 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 }
 
 
+mstring Chan_Stored_t::L_Mlock()
+{
+    NFT("Chan_Stored_t::L_Mlock");
+    mstring Result;
+    mstring mode_on = l_Mlock_On;
+    mstring mode_off = l_Mlock_Off;
+    mstring locked = Parent->chanserv.LCK_MLock();
+    bool add = true;
+    unsigned int i;
+    for (i; i<locked.size(); i++)
+    {
+	switch (locked[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+	case '-':
+	    add = false;
+	    break;
+	case 'o':
+	case 'v':
+	case 'b':
+	    break;
+	default:
+	    if (add)
+	    {
+		// Can't lock +k or +l
+		if (locked[i] == 'k' || locked[i] == 'l')
+		    break;
+		if (!mode_on.Contains(locked[i]))
+		    mode_on += locked[i];
+		if (mode_off.Contains(locked[i]))
+		    mode_off.Remove((mstring) locked[i]);
+	    }
+	    else
+	    {
+		if (!mode_off.Contains(locked[i]))
+		    mode_off += locked[i];
+		if (mode_on.Contains(locked[i]))
+		    mode_on.Remove((mstring) locked[i]);
+	    }
+	    break;
+	}
+    }
+
+    if(mode_on!="")
+	Result+="+" + mode_on;
+    if(mode_off!="")
+	Result+="-" + mode_off;
+    RET(Result);
+}
+
+
+mstring Chan_Stored_t::L_Mlock(mstring mode)
+{
+    FT("Chan_Stored_t::L_Mlock", (mode));
+
+    l_Mlock_On = l_Mlock_Off = "";
+    mstring retval = "";
+    mstring change = mode.ExtractWord(1, ": ");
+    bool add = true;
+    unsigned int i;
+
+    add = true;
+    for (i=0; i<change.size(); i++)
+    {
+	switch(change[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+
+	case '-':
+	    add = false;
+	    break;
+
+	case 'o':
+	case 'v':
+	case 'b':
+	    break;
+
+	default:
+	    if (add)
+	    {
+		// Cant lock +k or +l
+		if (change[i] == 'k' || change[i] == 'l')
+		    break;
+		if (!l_Mlock_On.Contains(change[i]))
+		    l_Mlock_On += change[i];
+		if (l_Mlock_Off.Contains(change[i]))
+		    l_Mlock_Off.Remove((mstring) change[i]);
+	    }
+	    else
+	    {
+		if (!l_Mlock_Off.Contains(change[i]))
+		    l_Mlock_Off += change[i];
+		if (l_Mlock_On.Contains(change[i]))
+		    l_Mlock_On.Remove((mstring) change[i]);
+	    }
+	    break;
+	}
+    }
+
+    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring override_on;
+    mstring override_off;
+    add = true;
+    for (i; i<locked.size(); i++)
+    {
+	switch (locked[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+	case '-':
+	    add = false;
+	    break;
+	case 'o':
+	case 'v':
+	case 'b':
+	    break;
+	default:
+	    if (add)
+	    {
+		// Can't lock +k or +l
+		if (locked[i] == 'k' || locked[i] == 'l')
+		    break;
+		if (l_Mlock_Off.Contains(locked[i]))
+		{
+		    override_off += locked[i];
+		    l_Mlock_Off.Remove((mstring) locked[i]);
+		}
+	    }
+	    else
+	    {
+		if (l_Mlock_On.Contains(locked[i]))
+		{
+		    override_on += locked[i];
+		    l_Mlock_On.Remove((mstring) locked[i]);
+		}
+	    }
+	    break;
+	}
+    }
+
+
+    if (retval != "")
+	retval += ", ";
+    if (override_on != "" || override_off != "")
+    {
+	retval += "MODE LOCK has reversed ";
+	if (override_on != "")
+	    retval += "+" + override_on;
+	if (override_off != "")
+	    retval += "-" + override_off;
+    }
+    if (retval != "")
+	retval += ", ";
+    if (l_Mlock_On != "" || l_Mlock_Off != "")
+    {
+	retval += "MLOCK has been set to ";
+	if(l_Mlock_On!="")
+	    retval += "+" + l_Mlock_On;
+	if(l_Mlock_Off!="")
+	    retval += "-" + l_Mlock_Off;
+    }
+    else
+    {
+	retval += "MLOCK has been turned off";
+    }
+    retval += ".";
+    RET(retval);
+}
+
+
 void Chan_Stored_t::Keeptopic(bool in)
 {
     FT("Chan_Stored_t::KeepTopic", (in));
-    if (!Parent->chanserv.LCK_Keeptopic())
+    if (!(Parent->chanserv.LCK_Keeptopic() || l_Keeptopic))
 	i_Keeptopic = in;
 }
 
@@ -1347,10 +1541,29 @@ bool Chan_Stored_t::Keeptopic()
 }
 
 
+void Chan_Stored_t::L_Keeptopic(bool in)
+{
+    FT("Chan_Stored_t::L_KeepTopic", (in));
+    if (!Parent->chanserv.LCK_Keeptopic())
+	l_Keeptopic = in;
+}
+
+
+bool Chan_Stored_t::L_Keeptopic()
+{
+    NFT("Chan_Stored_t::L_KeepTopic");
+    if (!Parent->chanserv.LCK_Keeptopic())
+    {
+	RET(l_Keeptopic);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Topiclock(bool in)
 {
     FT("Chan_Stored_t::Topiclock", (in));
-    if (!Parent->chanserv.LCK_Topiclock())
+    if (!(Parent->chanserv.LCK_Topiclock() || l_Topiclock))
 	i_Topiclock = in;
 }
 
@@ -1366,10 +1579,29 @@ bool Chan_Stored_t::Topiclock()
 }
 
 
+void Chan_Stored_t::L_Topiclock(bool in)
+{
+    FT("Chan_Stored_t::L_Topiclock", (in));
+    if (!Parent->chanserv.LCK_Topiclock())
+	l_Topiclock = in;
+}
+
+
+bool Chan_Stored_t::L_Topiclock()
+{
+    NFT("Chan_Stored_t::L_Topiclock");
+    if (!Parent->chanserv.LCK_Topiclock())
+    {
+	RET(l_Topiclock);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Private(bool in)
 {
     FT("Chan_Stored_t::Private", (in));
-    if (!Parent->chanserv.LCK_Private())
+    if (!(Parent->chanserv.LCK_Private() || l_Private))
 	i_Private = in;
 }
 
@@ -1385,10 +1617,29 @@ bool Chan_Stored_t::Private()
 }
 
 
+void Chan_Stored_t::L_Private(bool in)
+{
+    FT("Chan_Stored_t::L_Private", (in));
+    if (!Parent->chanserv.LCK_Private())
+	l_Private = in;
+}
+
+
+bool Chan_Stored_t::L_Private()
+{
+    NFT("Chan_Stored_t::L_Private");
+    if (!Parent->chanserv.LCK_Private())
+    {
+	RET(l_Private);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Secureops(bool in)
 {
     FT("Chan_Stored_t::Secureops", (in));
-    if (!Parent->chanserv.LCK_Secureops())
+    if (!(Parent->chanserv.LCK_Secureops() || l_Secureops))
 	i_Secureops = in;
 }
 
@@ -1404,10 +1655,29 @@ bool Chan_Stored_t::Secureops()
 }
 
 
+void Chan_Stored_t::L_Secureops(bool in)
+{
+    FT("Chan_Stored_t::L_Secureops", (in));
+    if (!Parent->chanserv.LCK_Secureops())
+	l_Secureops = in;
+}
+
+
+bool Chan_Stored_t::L_Secureops()
+{
+    NFT("Chan_Stored_t::L_Secureops");
+    if (!Parent->chanserv.LCK_Secureops())
+    {
+	RET(l_Secureops);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Secure(bool in)
 {
     FT("Chan_Stored_t::Secure", (in));
-    if (!Parent->chanserv.LCK_Secure())
+    if (!(Parent->chanserv.LCK_Secure() || l_Secure))
 	i_Secure = in;
 }
 
@@ -1423,10 +1693,29 @@ bool Chan_Stored_t::Secure()
 }
 
 
+void Chan_Stored_t::L_Secure(bool in)
+{
+    FT("Chan_Stored_t::L_Secure", (in));
+    if (!Parent->chanserv.LCK_Secure())
+	l_Secure = in;
+}
+
+
+bool Chan_Stored_t::L_Secure()
+{
+    NFT("Chan_Stored_t::L_Secure");
+    if (!Parent->chanserv.LCK_Secure())
+    {
+	RET(l_Secure);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Restricted(bool in)
 {
     FT("Chan_Stored_t::Restricted", (in));
-    if (!Parent->chanserv.LCK_Restricted())
+    if (!(Parent->chanserv.LCK_Restricted() || l_Restricted))
 	i_Restricted = in;
 }
 
@@ -1442,10 +1731,29 @@ bool Chan_Stored_t::Restricted()
 }
 
 
+void Chan_Stored_t::L_Restricted(bool in)
+{
+    FT("Chan_Stored_t::L_Restricted", (in));
+    if (!Parent->chanserv.LCK_Restricted())
+	l_Restricted = in;
+}
+
+
+bool Chan_Stored_t::L_Restricted()
+{
+    NFT("Chan_Stored_t::L_Restricted");
+    if (!Parent->chanserv.LCK_Restricted())
+    {
+	RET(l_Restricted);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Join(bool in)
 {
     FT("Chan_Stored_t::Join", (in));
-    if (!Parent->chanserv.LCK_Join())
+    if (!(Parent->chanserv.LCK_Join() || l_Join))
 	i_Join = in;
 }
 
@@ -1461,10 +1769,29 @@ bool Chan_Stored_t::Join()
 }
 
 
+void Chan_Stored_t::L_Join(bool in)
+{
+    FT("Chan_Stored_t::L_Join", (in));
+    if (!Parent->chanserv.LCK_Join())
+	l_Join = in;
+}
+
+
+bool Chan_Stored_t::L_Join()
+{
+    NFT("Chan_Stored_t::L_Join");
+    if (!Parent->chanserv.LCK_Join())
+    {
+	RET(l_Join);
+    }
+    RET(true);
+}
+
+
 bool Chan_Stored_t::Revenge(mstring in)
 {
     FT("Chan_Stored_t::Revenge", (in));
-    if (!Parent->chanserv.LCK_Revenge())
+    if (!(Parent->chanserv.LCK_Revenge() || l_Revenge))
     {
 	// Sanity checks (valid case)
 	i_Revenge = in;
@@ -1482,6 +1809,25 @@ mstring Chan_Stored_t::Revenge()
 	RET(i_Revenge);
     }
     RET(Parent->chanserv.DEF_Revenge());
+}
+
+
+void Chan_Stored_t::L_Revenge(bool in)
+{
+    FT("Chan_Stored_t::L_Revenge", (in));
+    if (!Parent->chanserv.LCK_Revenge())
+	l_Revenge = in;
+}
+
+
+bool Chan_Stored_t::L_Revenge()
+{
+    NFT("Chan_Stored_t::L_Revenge");
+    if (!Parent->chanserv.LCK_Revenge())
+    {
+	RET(l_Revenge);
+    }
+    RET(true);
 }
 
 
@@ -1859,6 +2205,8 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
     out<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
 	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
+    out<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops<<
+	in.l_Secure<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
 //  entlist_val_cui<long> j;
@@ -1901,6 +2249,8 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
 	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
+    in>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops>>
+	out.l_Secure>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
     out.i_Access_Level.clear();

@@ -265,3 +265,28 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     delete tmp;
     RET(0);
 }
+
+
+int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    mstring *tmp = (mstring *) arg;
+    Nick_Live_t *entry;
+
+    if (Parent->nickserv.IsLive(*tmp))
+    {
+	entry = &Parent->nickserv.live[tmp->LowerCase()];
+	if (entry->InFlight.File())
+	{
+	    if (!entry->InFlight.InProg())
+		entry->InFlight.Cancel();
+	}
+	else
+	{
+	    entry->InFlight.End(0);
+	}
+    }
+    delete tmp;
+    RET(0);
+}
+

@@ -943,6 +943,8 @@ void Magick::get_config_values()
     in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
     in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
     in.Read(ts_NickServ+"LCK_PRIVMSG",&nickserv.lck_privmsg,false);
+    in.Read(ts_NickServ+"PICSIZE",&nickserv.picsize,0);
+    in.Read(ts_NickServ+"PICEXT",&nickserv.picext,"jpg gif bmp tif");
 
     in.Read(ts_ChanServ+"EXPIRE",&chanserv.expire,14);
     in.Read(ts_ChanServ+"DEF_AKICK",&chanserv.def_akick_reason,"You have been banned from channel");
@@ -986,6 +988,9 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LVL_CMDCLEAR",&chanserv.lvl_cmdclear,20);
 
     in.Read(ts_MemoServ+"NEWS_EXPIRE",&memoserv.news_expire,21);
+    in.Read(ts_MemoServ+"INFLIGHT",&memoserv.inflight,180);
+    in.Read(ts_MemoServ+"FILES",&memoserv.files,0);
+    in.Read(ts_MemoServ+"FILESIZE",&memoserv.filesize,0);
 
     in.Read(ts_OperServ+"SERVICES_ADMIN",&operserv.services_admin,"");
     in.Read(ts_OperServ+"SECURE",&operserv.secure,false);

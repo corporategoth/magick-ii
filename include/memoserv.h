@@ -29,11 +29,11 @@ class Memo_t : public mUserDef
     mstring i_Text;
 
     bool i_Read;
-    long i_File;
+    unsigned long i_File;
 public:
     Memo_t() {}
     Memo_t(const Memo_t &in) { *this = in; }
-    Memo_t(mstring nick, mstring sender, mstring text, long file = 0);
+    Memo_t(mstring nick, mstring sender, mstring text, unsigned long file = 0);
     void operator=(const Memo_t &in);
     bool operator==(const Memo_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
@@ -46,7 +46,7 @@ public:
     mstring Sender()const   { return i_Sender; }
     mDateTime Time()const   { return i_Time; }
     mstring Text()const	    { return i_Text; }
-    long File()const	    { return i_File; }
+    unsigned long File()const	{ return i_File; }
 
     bool IsRead()const	    { return i_Read; }
     void Read()		    { i_Read = true; }
@@ -96,6 +96,9 @@ class MemoServ : public mBase
     friend class Magick;
 private:
     int news_expire;
+    int inflight;
+    int files;
+    int filesize;
 
     bool memo;
     bool news;
@@ -106,9 +109,12 @@ public:
     map<mstring,list<Memo_t> > nick;
     map<mstring,list<News_t> > channel;
 
-    int News_Expire() { return news_expire; }
-    bool Memo() { return memo; }
-    bool News() { return news; }
+    int News_Expire()	{ return news_expire; }
+    int InFlight()	{ return inflight; }
+    int Files()		{ return files; }
+    int FileSize()	{ return filesize; }
+    bool Memo()		{ return memo; }
+    bool News()		{ return news; }
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);

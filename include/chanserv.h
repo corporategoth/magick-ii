@@ -219,7 +219,7 @@ public:
     mstring Revenge();
     bool Revenge(mstring in);
     bool L_Revenge();
-    bool L_Revenge(mstring in);
+    void L_Revenge(bool in);
 
     bool Suspended()			{ return (i_Suspend_By != ""); }
     mstring Suspend_By()		{ return i_Suspend_By; }
