@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.152  2001/01/16 12:47:37  prez
+** Fixed mlock setting in live channels (also fixed helpop)
+**
 ** Revision 1.151  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -1687,8 +1690,8 @@ void NetworkServ::HELPOPS(mstring nick, mstring message)
 	Parent->nickserv.live[nick.LowerCase()].Action();
 	if (proto.Helpops())
 	    raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("HELPOPS").empty()) ?
-			proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) +
+		((proto.Tokens() && !proto.GetNonToken("HELPOP").empty()) ?
+			proto.GetNonToken("HELPOP") : mstring("HELPOP")) +
 		" :" + message);
     }
 }
@@ -2950,7 +2953,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // ignore ...
 	}
-	else if (msgtype=="HELPOPS")
+	else if (msgtype=="HELPOP")
 	{
 	    // ignore ...
 	}

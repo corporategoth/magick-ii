@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.223  2001/01/16 12:47:36  prez
+** Fixed mlock setting in live channels (also fixed helpop)
+**
 ** Revision 1.222  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -3308,7 +3311,45 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_SET").c_str(),
 	    i_Name.c_str(), modes.c_str());
 	retval.push_back(output);
-	
+
+	if (Parent->chanserv.IsLive(i_Name))
+	{
+	    mstring modes_param;
+	    modes = "+";
+	    Chan_Live_t *clive = &Parent->chanserv.live[i_Name.LowerCase()];
+	    for (i=0; i<i_Mlock_On.size(); i++)
+	    {
+		if (!clive->HasMode(i_Mlock_On[i]))
+		{
+		    modes << i_Mlock_On[i];
+		}
+	    }
+	    modes << "-";
+	    for (i=0; i<i_Mlock_Off.size(); i++)
+	    {
+		if (i_Mlock_Off[i] == 'k' && !clive->Key().empty())
+		{
+		    modes << "k";
+		    modes_param << " " << clive->Key();
+		}
+		else if (clive->HasMode(i_Mlock_Off[i]))
+		{
+		    modes << i_Mlock_Off[i];
+		}
+	    }
+	    if (!i_Mlock_Key.empty())
+	    {
+		modes << "+k";
+		modes_param << " " << i_Mlock_Key;
+	    }
+	    if (i_Mlock_Limit)
+	    {
+		modes << "+l";
+		modes_param << " " << i_Mlock_Limit;
+	    }
+	    if (modes.length() > 2)
+		clive->SendMode(modes + modes_param);
+	}
     }
     else
     {	
