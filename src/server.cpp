@@ -966,16 +966,17 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="WHOIS")
 	{
 	    // :source WHOIS target :target
-//:ChanServ WHOIS PreZ :PreZ
-//:soul.darker.net 311 ChanServ PreZ prez castle.srealm.net.au * :I am what the people fear, I need not fear them.
-//:soul.darker.net 307 ChanServ PreZ :is a registered nick
-//:soul.darker.net 319 ChanServ PreZ :#chatzone #darkernet @#mrcoffee #pagan @#wicca
-//:soul.darker.net 312 ChanServ PreZ soul.darker.net :Show me a dream .. I'll show you my nightmare
-//:soul.darker.net 301 ChanServ PreZ :Automatically set away [SZon]  Away since Sun Jul 18 20:15
-//:soul.darker.net 313 ChanServ PreZ :is an IRC Operator
-//:soul.darker.net 310 ChanServ PreZ :looks very helpful.
-//:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
-//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
+		//:ChanServ WHOIS PreZ :PreZ
+		//:soul.darker.net 311 ChanServ PreZ prez castle.srealm.net.au * :I am what the people fear, I need not fear them.
+		//:soul.darker.net 307 ChanServ PreZ :is a registered nick
+		//:soul.darker.net 319 ChanServ PreZ :#chatzone #darkernet @#mrcoffee #pagan @#wicca
+		//:soul.darker.net 312 ChanServ PreZ soul.darker.net :Show me a dream .. I'll show you my nightmare
+		//:soul.darker.net 301 ChanServ PreZ :Automatically set away [SZon]  Away since Sun Jul 18 20:15
+		//:soul.darker.net 313 ChanServ PreZ :is an IRC Operator
+		//:soul.darker.net 310 ChanServ PreZ :looks very helpful.
+		//:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
+		//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
+
 	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
 		mstring target = data.ExtractWord(3, ": ");
@@ -1047,6 +1048,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="WHOWAS")
 	{
+	    // Dont store 'previous user' info, so ignore.
 	}
 	else
 	{
