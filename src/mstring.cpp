@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/10/15 03:29:27  prez
+** Mods to the memory system, LOTS of printf's to try and figure out why
+** the damn thing coredumps on init.
+**
 ** Revision 1.73  2000/10/14 04:25:31  prez
 ** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
 ** TODO - make mstring use MemoryManager.
@@ -109,6 +113,11 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 #include "mstring.h"
 
+// This defaults to 8192 chunks.  Use init(size) before
+// any use of it, or pass size as a 2nd param to the first
+// use of it, or use blocksize(size) at any time to change.
+MemoryManager<ACE_Thread_Mutex> mstring::memory_area;
+
 #ifdef WIN32
 mstring const DirSlash="\\";
 #else
@@ -125,16 +134,17 @@ mstring const IRC_Off((char) 15);	// ^O
 void mstring::copy(const char *in, size_t length)
 {
     if (i_str != NULL)
-	delete [] i_str;
-    if (i_len)
+	memory_area.dealloc(i_str);
+    if (length && in)
     {
 	i_len = length;
 	i_res = 2;
 	while (i_res <= i_len)
 	    i_res *= 2;
-	i_str = new char[i_res];
+	i_str = (char *) memory_area.alloc(i_res);
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
+printf("Created String %s (%d, %d reserved)\n", i_str, i_len, i_res); fflush(stdout);
     }
     else
     {
@@ -157,7 +167,7 @@ void mstring::append(const char *in, size_t length)
 	i_res *= 2;
     if (oldres != i_res)
     {
-	tmp = new char[i_res];
+	tmp = (char *) memory_area.alloc(i_res);
 	memset(tmp, 0, i_res);
 	if (i_str != NULL)
 	    memcpy(tmp, i_str, i_len);
@@ -169,7 +179,7 @@ void mstring::append(const char *in, size_t length)
     if (tmp != i_str)
     {
 	if (i_str != NULL)
-	    delete [] i_str;
+	    memory_area.dealloc(i_str);
 	i_str = tmp;
     }
 
@@ -205,7 +215,7 @@ void mstring::erase(int begin, int end)
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
-	    tmp = new char[i_res];
+	    tmp = (char *) memory_area.alloc(i_res);
 	    memset(tmp, 0, i_res);
 	    if (begin > 0)
 	    {
@@ -229,7 +239,7 @@ void mstring::erase(int begin, int end)
     if (tmp != i_str)
     {
 	if (i_str != NULL)
-	    delete [] i_str;
+	    memory_area.dealloc(i_str);
 	i_str = tmp;
     }
     else if (tmp == NULL)
@@ -258,7 +268,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	i_res = 2;
     while (i_res <= i_len + length)
 	i_res *= 2;
-    tmp = new char[i_res];
+    tmp = (char *) memory_area.alloc(i_res);
     memset(tmp, 0, i_res);
 
     i=0;
@@ -272,7 +282,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     memcpy(&tmp[i], &i_str[i_len-pos], i_len-pos);
 
     if (i_str != NULL)
-	delete [] i_str;
+	memory_area.dealloc(i_str);
     i_str = tmp;
     i_len += length;
 }
@@ -394,7 +404,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
     if (i_str == NULL)
 	return -1;
 
-    char *tmp = new char[length+1];
+    char *tmp = (char *) memory_area.alloc(length+1);
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
@@ -403,7 +413,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 	if (index(tmp, i_str[i])==NULL)
 	    return i;
     }
-    delete [] tmp;
+    memory_area.dealloc(tmp);
     return -1;
 }
 
@@ -415,7 +425,7 @@ int mstring::find_last_not_of(const char *str, size_t length) const
     if (i_str == NULL)
 	return -1;
 
-    char *tmp = new char[length+1];
+    char *tmp = (char *) memory_area.alloc(length+1);
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
@@ -424,18 +434,19 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 	if (index(tmp, i_str[i-1])==NULL)
 	    return i-1;
     }
-    delete [] tmp;
+    memory_area.dealloc(tmp);
     return -1;
 }
 
 
 int mstring::occurances(const char *str) const
 {
-    int count = 0, length = strlen(str);
+    int count = 0, length;
     char *ptr;
 
-    if (i_str == NULL)
+    if (i_str == NULL || str == NULL)
 	return 0;
+    length = strlen(str);
 
     ptr = strstr(i_str, str);
     while (ptr != NULL)
@@ -449,11 +460,13 @@ int mstring::occurances(const char *str) const
 // Find occurance of full string
 int mstring::find(const char *str, int occurance) const
 {
-    int i, retval = -1, length=strlen(str);
+    int i, retval = -1, length;
     char *ptr;
 
-    if (i_str == NULL)
+    if (i_str == NULL || str == NULL)
 	return -1;
+
+    length = strlen(str);
 
     if (occurance < 1)
 	occurance = 1;
@@ -496,12 +509,15 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     vector<pair<char *, int> > ptrs;
     vector<pair<char *, int> >::iterator iter;
 
-    if (i_str == NULL)
+    if (i_str == NULL || i_find == NULL)
 	return;
 
     old_len = i_len;
     find_len = strlen(i_find);
-    replace_len = strlen(i_replace);
+    if (i_replace == NULL)
+	replace_len = 0;
+    else
+	replace_len = strlen(i_replace);
 
     start=i_str;
     end=strstr(i_str, i_find);
@@ -520,7 +536,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     i_len += (amt_replace * (replace_len - find_len));
     if (i_len == 0)
     {
-	delete [] i_str;
+	memory_area.dealloc(i_str);
 	return;
     }
 
@@ -530,7 +546,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	i_res *= 2;
     while (i_res / 2 > i_len);
 	i_res /= 2;
-    tmp = new char[i_res];
+    tmp = (char *) memory_area.alloc(i_res);
     memset(tmp, 0, i_res);
 
     i = j = 0;
@@ -540,8 +556,11 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	{
 	    memcpy(&tmp[j], iter->first, iter->second);
 	    j += iter->second;
-	    memcpy(&tmp[j], i_replace, replace_len);
-	    j += replace_len;
+	    if (replace_len)
+	    {
+		memcpy(&tmp[j], i_replace, replace_len);
+		j += replace_len;
+	    }
 	    i += iter->second + find_len;
 	}
 	else
@@ -549,7 +568,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	    memcpy(&tmp[j], iter->first, old_len - i);
 	}
     }
-    delete [] i_str;
+    memory_area.dealloc(i_str);
     i_str = tmp;
 }
 
@@ -749,25 +768,25 @@ int mstring::Format(const char *fmt, ...)
 int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int length, size = 1024;
-    char *buffer = new char[size];
+    char *buffer = (char *) memory_area.alloc(size);
     while (buffer != NULL)
     {
 	length = vsnprintf(buffer, size-1, fmt, argptr);
 	if (length < size)
 	    break;
-	delete [] buffer;
+	memory_area.dealloc(buffer);
 	size *= 2;
-	buffer = new char[size];
+	buffer = (char *) memory_area.alloc(size);
     }
     if (buffer && length < 1)
     {
-	delete [] buffer;
+	memory_area.dealloc(buffer);
 	buffer = NULL;
     }
     if (buffer)
     {
 	copy(buffer, length);
-	delete [] buffer;
+	memory_area.dealloc(buffer);
     }
     else
 	copy(NULL, 0);

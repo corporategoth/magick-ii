@@ -1,6 +1,3 @@
-#ifndef WIN32
-#pragma interface
-#endif
 /*  Magick IRC Services
 **
 ** (c) 1997-2000 Preston Elder <prez@magick.tm>
@@ -25,6 +22,10 @@ static const char *ident_mmemory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2000/10/15 03:29:27  prez
+** Mods to the memory system, LOTS of printf's to try and figure out why
+** the damn thing coredumps on init.
+**
 ** Revision 1.1  2000/10/14 04:25:31  prez
 ** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
 ** TODO - make mstring use MemoryManager.
@@ -130,19 +131,22 @@ class MemoryBlock
 public:
     MemoryBlock(size_t size)
     {
+printf("NEW MEM BLOCK (%d)\n", size); fflush(stdout);
 	i_avail = 0;
 	i_size = size;
 	i_memory = NULL;
     }
     void init()
     {
+printf("MEM BLOCK INIT (%d)\n", i_size); fflush(stdout);
 	i_avail = i_size;
 	i_memory = new char[i_size];
     }
     ~MemoryBlock()
     {
+printf("DELETE MEM BLOCK\n"); fflush(stdout);
 	if (i_memory != NULL)
-    	delete [] i_memory;
+	    delete [] i_memory;
     }
 
     void *alloc(size_t size)
@@ -256,6 +260,7 @@ public:
     }
     bool have(size_t size)
     {
+printf("CHECKING IF I HAVE %d (%d avail)\n", size, i_avail); fflush(stdout);
 	if (size <= i_avail)
 	    return true;
 
@@ -265,6 +270,7 @@ public:
 	    if (iter->avail() && size <= iter->size())
 		return true;
 	}
+printf("NO AVAIL MEMORY CHUNKS\n"); fflush(stdout);
 	return false;
     }
     bool ismine(void *loc)
@@ -285,35 +291,47 @@ template <class ACE_LOCK> class MemoryManager
 {
     list<MemoryBlock> i_blocks;
     size_t i_blocksize;
-    ACE_LOCK *lock;
+    char lockname[15];
 
 public:
-    MemoryManager(size_t blocksize = DEF_MEMSIZE)
+    MemoryManager()
     {
-	char lockname[15];
+	i_blocksize = 0;
+	memset(lockname, 0, 15);
+    }
+
+    void init(size_t blocksize = DEF_MEMSIZE)
+    {
 	sprintf(lockname, "MM_%p", this);
-	lock = new ACE_LOCK(lockname);
-
-	lock->acquire();
-	i_blocksize = blocksize;
-	i_blocks.push_back(MemoryBlock(i_blocksize));
-	i_blocks.begin()->init();
-	lock->release();
+	ACE_LOCK lock(lockname);
+	lock.acquire();
+	if (!i_blocksize)
+	{
+	    i_blocksize = blocksize;
+printf("CREATING INITIAL BLOCK (%d)\n", i_blocksize); fflush(stdout);
+	    i_blocks.push_back(MemoryBlock(i_blocksize));
+printf("DEBUG 1\n"); fflush(stdout);
+	    i_blocks.begin()->init();
+printf("DEBUG 2\n"); fflush(stdout);
+	}
+	lock.release();
     }
-    ~MemoryManager()
-    {
-	delete lock;
-    }
 
-    void *alloc(size_t size)
+    void *alloc(size_t size, size_t blocksize = DEF_MEMSIZE)
     {
 	void *retval = NULL;
-
 	list<MemoryBlock>::iterator iter;
 
-	lock->acquire();
+printf("BLOCKSIZE: %d\n", i_blocksize); fflush(stdout);
+	if (!i_blocksize)
+	    init(blocksize);
+
+	ACE_LOCK lock(lockname);
+	lock.acquire();
+printf("REQUEST TO ALLOCATE %d (%d)\n", size, i_blocksize); fflush(stdout);
 	if (size > i_blocksize)
 	{
+printf("EXPANDING MEMORY (SPECIAL SIZE)\n"); fflush(stdout);
 	    i_blocks.push_back(MemoryBlock(size));
 	    iter = i_blocks.end();
 	    iter--;
@@ -326,21 +344,27 @@ public:
 		    break;
 	    if (iter == i_blocks.end())
 	    {
+printf("EXPANDING MEMORY (NO SUITABLE MEMORY FOUND)\n"); fflush(stdout);
 		i_blocks.push_back(MemoryBlock(i_blocksize));
 		iter = i_blocks.end();
 		iter--;
 		iter->init();
 	    }
 	}
+printf("DOING ALLOC\n"); fflush(stdout);
 	retval = iter->alloc(size);
-	lock->release();
+	lock.release();
 	return retval;
     }
     void dealloc(void *loc)
     {
 	list<MemoryBlock>::iterator iter;
 
-	lock->acquire();
+	if (!i_blocksize)
+	    return;
+
+	ACE_LOCK lock(lockname);
+	lock.acquire();
 	for (iter=i_blocks.begin(); iter!=i_blocks.end(); iter++)
 	    if (iter->ismine(loc))
 		break;
@@ -351,7 +375,7 @@ public:
 	    if (i_blocks.size() > 1 && iter->avail() >= iter->size())
 		i_blocks.erase(iter);
 	}
-	lock->release();
+	lock.release();
     }
 
     size_t blocksize()

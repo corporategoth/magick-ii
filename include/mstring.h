@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/10/15 03:29:27  prez
+** Mods to the memory system, LOTS of printf's to try and figure out why
+** the damn thing coredumps on init.
+**
 ** Revision 1.52  2000/10/14 04:25:31  prez
 ** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
 ** TODO - make mstring use MemoryManager.
@@ -84,7 +88,7 @@ static const char *ident_mstring_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
+#include "mmemory.h"
 /* This would have to be the most interoperable class
  * in the existance of C++ ;P */
 
@@ -210,6 +214,7 @@ class mstring
 {
     char *i_str;
     size_t i_len, i_res;
+    static MemoryManager<ACE_Thread_Mutex> memory_area;
 
 public:
     mstring()
@@ -239,7 +244,7 @@ public:
     mstring(const double in)
 	{ i_str = NULL; copy(in); }
     ~mstring()
-	{ if (i_str != NULL) delete [] i_str; }
+	{ if (i_str != NULL) memory_area.dealloc(i_str); }
 
     void copy(const char *in, size_t length);
     void append(const char *in, size_t length);
