@@ -32,8 +32,8 @@ SUBS:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
+		$(MAKE) $(PASSTHRU); \
 		cd $${OLDPWD}; \
-		$(MAKE) -C $$x $(PASSTHRU); \
 	done
 
 RMLIB:
