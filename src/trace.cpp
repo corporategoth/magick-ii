@@ -73,7 +73,7 @@ Trace::~Trace()
 {
 }
 
-Trace::TraceTypes Trace::Resolve(Trace::level_enum level, ThreadID *tid)
+Trace::TraceTypes Trace::resolve(Trace::level_enum level, ThreadID *tid)
 { 
 	return tmap[levelpair(tid->type(),level)]; 
 }

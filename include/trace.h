@@ -83,7 +83,7 @@ private:
     bool IsOnBig(TraceTypes level)
 	{ return (level & TraceLevel!=0); }
 
-    TraceTypes Resolve(Trace::level_enum level, ThreadID *tid);
+    TraceTypes resolve(level_enum level, ThreadID *tid);
 
 public:
     Trace();
@@ -95,7 +95,7 @@ public:
     bool IsOn(ThreadID *tid)
 	{ return IsOnBig(resolve(SLevel, tid)); }
     bool IsOn(level_enum level, ThreadID *tid)
-	{ return IsOnBig(resolve(level, tid); }
+	{ return IsOnBig(resolve(level, tid)); }
 };
 
 // ===================================================
@@ -119,7 +119,7 @@ public:
     threadtype_enum type() { return internaltype; }
     void indentup() { indent++; }
     void indentdown() { indent--; }
-    void WriteOut (Trace::level_enum level, mstring &message);
+    void WriteOut (mstring &message);
 };
 
 // ===================================================

@@ -7,7 +7,7 @@
 LIBNAME=magick.a
 OBJS = bob.$(OBJ) confbase.$(OBJ) fileconf.$(OBJ) lockable.$(OBJ) log.$(OBJ) \
        magick.$(OBJ) main.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) textfile.$(OBJ) \
-       utils.$(OBJ)
+       trace.$(OBJ) utils.$(OBJ)
 
 CFLAGS=-O2 -I.././include -I../../support/bob -I../../support/ACE_wrappers/include
 
@@ -35,4 +35,5 @@ main.$(OBJ): main.cpp
 mstream.$(OBJ): mstream.cpp
 mstring.$(OBJ): mstring.cpp
 textfile.$(OBJ): textfile.cpp
+trace.$(OBJ): trace.cpp
 utils.$(OBJ): utils.cpp
