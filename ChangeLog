@@ -1,3 +1,13 @@
+* 2002-12-21 20:57  Preston A. Elder <prez@magick.tm>
+  src/memoserv.cpp (1.132):
+  
+  Added fix to allow compilation by <gcc 3.0
+
+* 2002-12-16 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.62):
+  
+  Created version 2.0s20021216
+
 * 2002-12-15 21:20  Preston A. Elder <prez@magick.tm>
   include/magick.h (1.193):
   
