@@ -2233,6 +2233,13 @@ void NickServ::do_access_Del(const mstring & mynick, const mstring & source, con
     mstring hostmask = params.ExtractWord(3, " ");
 
     map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(source);
+
+    if (!nstored->Access_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/ACCESS")));
+	return;
+    }
+
     if (hostmask.IsNumber())
     {
 	if (hostmask.Contains(".") || hostmask.Contains("-"))
@@ -2243,7 +2250,7 @@ void NickServ::do_access_Del(const mstring & mynick, const mstring & source, con
 
 	unsigned int num = atoi(hostmask.c_str());
 
-	if (num <= 0 || num > nstored->Access())
+	if (num < 1 || num > nstored->Access())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, nstored->Access()));
 	    return;
@@ -2406,6 +2413,13 @@ void NickServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
     mstring target = params.ExtractWord(3, " ");
 
     map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(source);
+
+    if (!nstored->Access_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/IGNORE")));
+	return;
+    }
+
     if (target.IsNumber())
     {
 	if (target.Contains(".") || target.Contains("-"))
@@ -2416,7 +2430,7 @@ void NickServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
 
 	unsigned int num = atoi(target.c_str());
 
-	if (num <= 0 || num > nstored->Ignore())
+	if (num < 1 || num > nstored->Ignore())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, nstored->Ignore()));
 	    return;

@@ -2537,12 +2537,6 @@ void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    if (!Magick::instance().operserv.Max_Clone())
-    {
-	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/CLONE")));
-	return;
-    }
-
     num = atoi(amount.c_str());
     if (num < 1 || num > Magick::instance().operserv.Max_Clone())
     {
