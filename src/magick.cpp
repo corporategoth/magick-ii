@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.246  2000/06/12 08:15:36  prez
+** Added 'minimum threads' option to config (set to 2)
+**
 ** Revision 1.245  2000/06/12 06:07:50  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -2287,8 +2290,11 @@ bool Magick::get_config_values()
 	value_uint = config.listsize;
     config.maxlist = value_uint;
 
-    in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);
-    in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 25);
+    in.Read(ts_Config+"MIN_THREADS",&config.min_threads, 2);
+    if (config.min_threads < 1)
+	config.min_threads = 1;
+    in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 10);
+    in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 15);
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
 

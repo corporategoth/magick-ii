@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.123  2000/06/12 08:15:36  prez
+** Added 'minimum threads' option to config (set to 2)
+**
 ** Revision 1.122  2000/06/12 06:07:50  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -233,6 +236,14 @@ void mBase::push_message(const mstring& message)
 	    CP(("Failed to create initial thread"));
 	    return;
 	}
+	while (BaseTask.thr_count() < Parent->config.Min_Threads())
+	{
+	    if(BaseTask.activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
+	    {
+		CP(("Failed to create additional (minimum) thread"));
+		return;
+	    }
+	}
     }
     CH(T_Chatter::From,message);
     BaseTask.message(message);
@@ -248,6 +259,14 @@ void mBase::init()
 	{
 	    CP(("Failed to create initial thread"));
 	    return;
+	}
+	while (BaseTask.thr_count() < Parent->config.Min_Threads())
+	{
+	    if(BaseTask.activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
+	    {
+		CP(("Failed to create additional (minimum) thread"));
+		return;
+	    }
 	}
     }
     BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (sizeof(ACE_Method_Object *) * 2));
@@ -723,12 +742,22 @@ int mBaseTask::message_i(const mstring& message)
 	Parent->server.execute(data);
 
     MLOCK(("MessageQueue"));
-    CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+    if (thr_count() > 1)
+    {
+	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
 		thr_count(), message_queue_.message_count(),
 		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thr_count()-2)),
-		Parent->config.Low_Water_Mark() * Parent->config.High_Water_Mark()));
-    if(thr_count() > 1 && message_queue_.message_count() < Parent->config.Low_Water_Mark() + 
-					(Parent->config.High_Water_Mark() * (thr_count()-2)))
+		thr_count() * Parent->config.High_Water_Mark()));
+    }
+    else
+    {
+	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+		thr_count(), message_queue_.message_count(), 0,
+		thr_count() * Parent->config.High_Water_Mark()));
+    }
+    if(thr_count() > Parent->config.Min_Threads() &&
+	message_queue_.message_count() < Parent->config.Low_Water_Mark() +
+			(Parent->config.High_Water_Mark() * (thr_count()-2)))
     {
 	COM(("Low water mark reached, killing thread."));
 	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()-1) * (sizeof(ACE_Method_Object *) * 2));

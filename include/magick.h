@@ -25,6 +25,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.133  2000/06/12 08:15:36  prez
+** Added 'minimum threads' option to config (set to 2)
+**
 ** Revision 1.132  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -314,6 +317,7 @@ public:
 		unsigned int starthresh;
 		unsigned int listsize;
 		unsigned int maxlist;
+		unsigned int min_threads;
 		unsigned int low_water_mark;
 		unsigned int high_water_mark;
 	public:
@@ -326,6 +330,7 @@ public:
 		unsigned int Starthresh()	{ return starthresh; }
 		unsigned int Listsize()		{ return listsize; }
 		unsigned int Maxlist()		{ return maxlist; }
+		unsigned int Min_Threads()	{ return min_threads; }
 		unsigned int Low_Water_Mark()	{ return low_water_mark; }
 		unsigned int High_Water_Mark()	{ return high_water_mark; }
 	} config;

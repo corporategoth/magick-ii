@@ -737,8 +737,7 @@ REPLY_ARG          =[REPLY(%s): "%s"] %s
 [MS_COMMAND]
 NEWS               =#%d %s dan %s a %s once gonderilmis.
 NEWS_LIST          =%c#%d %s dan %s a %s once - "%s"
-MEMO               =#%d %s dan %s once
-.
+MEMO               =#%d %s dan %s once.
 MEMO_LIST          =%c#%d %s dan %s once gonderildi - "%s"
 CS_UNREAD          =%s haberleri %s kanalinda okunmamis hale getirildi.
 CS_UNREAD_ALL      =%s kanalindaki tum haberler okunmamis hale getirildi.
