@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/05/22 13:25:12  ungod
+** making it compilable again after removal of log.cpp/.h
+**
 ** Revision 1.5  2000/05/22 13:00:09  prez
 ** Updated version.h and some other stuff
 **
@@ -106,9 +109,8 @@ bool mConfigEngine::LoadFile()
     if(mFile::Exists(i_FileName))
     {
         vector<mstring> initialload;
-        vector<mstring> decommented;
         initialload=mFile::UnDump(i_FileName);
-        decommented=DeComment(initialload);
+        return LoadFromArray(initialload);
     }
 }
 
@@ -197,10 +199,32 @@ bool mConfigEngine::DeleteKey(const mstring& KeyName)
 
 bool mConfigEngine::LoadFromString(const mstring& configstring)
 {
+    vector<mstring> tempstore;
+    for(unsigned int i=1;i<=configstring.WordCount("\n");i++)
+        tempstore.push_back(configstring.ExtractWord(i,"\n"));
+    return LoadFromArray(tempstore);
 }
 
 bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
 {
+    bool Result=false;
+    vector<mstring> decommented;
+    decommented=DeComment(configarray);
+    mstring currline;
+    mstring currpath;
+    for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
+    {
+        currline=i->Trim(true).Trim(false);
+        if(currline[0]=='['&&currline.Last()==']')
+        {
+            // new section
+        }
+        else if(currline.First('=')>0)
+        {
+            // new value
+        }
+    }
+    return Result;
 }
 
 bool mConfigEngine::NodeExists(const mstring &NodeName)

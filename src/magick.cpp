@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.237  2000/05/22 13:25:12  ungod
+** making it compilable again after removal of log.cpp/.h
+**
 ** Revision 1.236  2000/05/22 13:00:09  prez
 ** Updated version.h and some other stuff
 **
@@ -424,7 +427,7 @@ int Magick::Start()
 	RET(Result);
 
     // Re-direct log output to this file (log output is to STDERR)
-    stderr = ACE_OS::fopen((files.Logfile()).c_str(), "a");
+    freopen((files.Logfile()).c_str(), "a", stderr);
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)

@@ -17,11 +17,11 @@ PROJECT = magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
   Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
   Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
-  Debug\lockable.obj Debug\log.obj Debug\magick.obj Debug\main.obj \
-  Debug\memoserv.obj Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj \
-  Debug\operserv.obj Debug\server.obj Debug\servmsg.obj Debug\textfile.obj \
-  Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj \
-  Debug\filesys.obj Debug\mconfig.obj
+  Debug\lockable.obj Debug\magick.obj Debug\main.obj Debug\memoserv.obj \
+  Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj Debug\operserv.obj \
+  Debug\server.obj Debug\servmsg.obj Debug\textfile.obj Debug\trace.obj \
+  Debug\utils.obj Debug\variant.obj Debug\convert.obj Debug\filesys.obj \
+  Debug\mconfig.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES = ..\support\zlib\zlib.LIB \

@@ -24,6 +24,9 @@ static const char *ident_fileconf_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/05/22 13:25:12  ungod
+** making it compilable again after removal of log.cpp/.h
+**
 ** Revision 1.18  2000/05/22 13:00:55  ungod
 ** added wxOnAssert prototype so it will compile again.
 **
@@ -247,7 +250,8 @@ private:
 #ifdef  DEBUG
    #define   wxASSERT(cond)   if ( !(cond) ) wxOnAssert(__FILE__, __LINE__)
    #define   wxASSERT_MSG(x, m)  if ( !(x) ) wxOnAssert(__FILE__, __LINE__, m)
-void wxOnAssert(const char *szFile, int nLine, const char *szMsg);
+void wxOnAssert(const char *szFile, int nLine, const char *szMsg="");
+#define LOG_BUFFER_SIZE (4096)
  #else
    #define   wxASSERT(cond)   
    #define   wxASSERT_MSG(x, m)  
