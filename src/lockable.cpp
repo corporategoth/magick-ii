@@ -323,6 +323,7 @@ void Lock_Tokenizer::releaseLock(const mstring & lockname)
 		    break;
 		default:
 		    // WTF?
+		    break;
 		}
 	    }
 	    else
