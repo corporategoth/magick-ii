@@ -758,10 +758,10 @@ bool MemoServ::IsNickMemo(const mstring & in, const size_t num) const
     ETCB();
 }
 
-size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
+size_t MemoServ::NickMemoCount(const mstring & in, const bool unread) const
 {
     BTCB();
-    FT("MemoServ::NickMemoCount", (in, isread));
+    FT("MemoServ::NickMemoCount", (in, unread));
 
     size_t retval = 0;
 
@@ -770,14 +770,13 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
     if (iter != nick.end())
     {
 #ifdef HAVE_MEM_REF_CONST
-	if (isread)
-	    retval = count_if(iter->second.begin(), iter->second.end(), mem_fun_ref(&Memo_t::IsRead));
-	else
-	    retval = iter->second.size();
+	retval = iter->second.size();
+	if (unread)
+	    retval -= count_if(iter->second.begin(), iter->second.end(), mem_fun_ref(&Memo_t::IsRead));
 #else
 	MemoServ::nick_memo_t::const_iterator i;
 	for (i=iter->second.begin(); i!=iter->second.end(); i++)
-	    if (!isread || i->IsRead())
+	    if (!unread || !i->IsRead())
 		retval++;
 #endif
     }

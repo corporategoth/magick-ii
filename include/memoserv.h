@@ -366,7 +366,7 @@ public:
     {
 	return GetNick(in).size();
     }
-    size_t NickMemoCount(const mstring & in, const bool isread = false) const;
+    size_t NickMemoCount(const mstring & in, const bool unread = false) const;
     bool IsNick(const mstring & in) const;
     bool IsNickMemo(const mstring & in, const size_t num) const;
 

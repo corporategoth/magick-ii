@@ -2368,7 +2368,7 @@ void Nick_Stored_t::Signon(const mstring & realname, const mstring & mask)
 	who = i_Name;
     if (Magick::instance().memoserv.IsNick(who))
     {
-	unsigned int count = Magick::instance().memoserv.NickMemoCount(who);
+	unsigned int count = Magick::instance().memoserv.NickMemoCount(who, true);
 
 	if (count)
 	    SEND(Magick::instance().memoserv.FirstName(), i_Name, "MS_STATUS/NS_UNREAD",

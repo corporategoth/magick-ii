@@ -3103,7 +3103,7 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
 		    who = source;
 		if (Magick::instance().memoserv.IsNick(who))
 		{
-		    size_t count = Magick::instance().memoserv.NickMemoCount(who);
+		    size_t count = Magick::instance().memoserv.NickMemoCount(who, true);
 
 		    if (count)
 			SEND(Magick::instance().memoserv.FirstName(), source, "MS_STATUS/NS_UNREAD",
