@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/03/28 16:20:58  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.28  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -498,7 +502,8 @@ bool wxConfigBase::CreateOnDemand()
 bool wxConfigBase::Exists(const mstring& strName) const 
 {
     FT("wxConfigBase::Exists", (strName));
-    RET(HasGroup(strName) || HasEntry(strName)); 
+    bool retval = (HasGroup(strName) || HasEntry(strName)); 
+    RET(retval);
 }
 
 bool wxConfigBase::IsExpandingEnvVars() const 
@@ -564,7 +569,8 @@ long wxConfigBase::GetStyle() const
 bool wxConfigBase::IsImmutable(const mstring& key) 
 {
     FT("wxConfigBase::IsImmutable", (key));
-    RET(!key.IsEmpty() && key[0U] == wxCONFIG_IMMUTABLE_PREFIX); 
+    bool retval = (!key.IsEmpty() && key[0U] == wxCONFIG_IMMUTABLE_PREFIX); 
+    RET(retval);
 }
 
 const mstring& wxConfigPathChanger::Name() const 

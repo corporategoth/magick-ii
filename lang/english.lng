@@ -275,7 +275,7 @@ USE_TOTAL          =TOTAL               %5d (%dkb)
 ; This section contains ALL output from list modifying commands.
 ;
 [LIST]
-LASTMOD            =Last modified %s ago by %s.
+LASTMOD            =Last modified %s ago by %s
 MAXLIST            =You may only list up to %d entries at once.
 NICK_LIST          =Displaying nicknames matching %s:
 CHAN_LIST          =Displaying channels matching %s:
@@ -292,7 +292,7 @@ CHANGE_LEVEL       =Changed entry %s on %s list to %d.
 CHANGE_TIME        =Changed entry %s on %s list to %s.
 DEL                =Deleted entry %s from %s list.
 DEL_MATCH          =Deleted %d entries matching %s from %s list.
-DEL_NUMBER         =Deleted entry #%s from %s list.
+DEL_NUMBER         =Deleted entry #%d from %s list.
 EXISTS             =Entry %s already exists or is inclusive on %s list.
 NOTEXISTS          =No entries matching %s on %s list.
 NOTEXISTS_NUMBER   =No entry #%d exists on %s list.
@@ -308,7 +308,7 @@ CHANGE2_LEVEL      =Changed entry %s on %s %s list to level %d.
 CHANGE2_TIME       =Changed entry %s on %s %s list to %s.
 DEL2               =Deleted entry %s from %s %s list.
 DEL2_MATCH         =Deleted %d entries matching %s from %s %s list.
-DEL2_NUMBER        =Deleted entry #%s from %s %s list.
+DEL2_NUMBER        =Deleted entry #%d from %s %s list.
 EXISTS2            =Entry %s already exists or is inclusive on %s %s list.
 NOTEXISTS2         =No entries matching %s on %s %s list.
 NOTEXISTS2_NUMBER  =No entry #%d exists on %s %s list.

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.71  2000/03/27 21:26:12  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -704,7 +708,8 @@ void Nick_Live_t::Quit(mstring reason)
 bool Nick_Live_t::IsInChan(mstring chan)
 {
     FT("Nick_Live_t::IsInChan", (chan));
-    RET((joined_channels.find(chan.LowerCase()) != joined_channels.end()));
+    bool retval = (joined_channels.find(chan.LowerCase()) != joined_channels.end());
+    RET(retval);
 }
 
 
@@ -1090,13 +1095,14 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 {
     FT("Nick_Live_t::ChanIdentify", (channel, password));
+    mstring retval;
     if (Parent->chanserv.IsStored(channel))
     {
 	unsigned int failtimes = Parent->chanserv.stored[channel.LowerCase()].CheckPass(i_Name, password);
 	if (!failtimes)
 	{
 	    chans_founder_identd.insert(channel.LowerCase());
-	    RET(Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED"));
+	    retval = Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED");
 	}
 	else
 	{
@@ -1117,14 +1123,15 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	    }
 	    else
 	    {
-		RET(Parent->getMessage(i_Name, "ERR_SITUATION/CHAN_WRONG_PASS"));
+		retval = Parent->getMessage(i_Name, "ERR_SITUATION/CHAN_WRONG_PASS");
 	    }
 	}
     }
     else
     {
-	RET(Parent->getMessage(i_Name, "CS_STATUS/ISNOTSTORED"));
+	retval = Parent->getMessage(i_Name, "CS_STATUS/ISNOTSTORED");
     }
+    RET(retval);
 }
 
 
@@ -1141,18 +1148,20 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
 bool Nick_Live_t::IsChanIdentified(mstring channel)
 {
     FT("Nick_Live_t::IsChanIdentified", (channel));
-    RET((chans_founder_identd.find(channel.LowerCase())!=chans_founder_identd.end()));
+    bool retval = (chans_founder_identd.find(channel.LowerCase())!=chans_founder_identd.end());
+    RET(retval);
 }
 
 
 mstring Nick_Live_t::Identify(mstring password)
 {
     FT("Nick_Live_t::Identify", (password));
+    mstring retval;
     if (identified == true)
     {
-	RET(Parent->getMessage(i_Name, "NS_YOU_STATUS/IDENTIFIED"));
+	retval = Parent->getMessage(i_Name, "NS_YOU_STATUS/IDENTIFIED");
     }
-    if (Parent->nickserv.IsStored(i_Name))
+    else if (Parent->nickserv.IsStored(i_Name))
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].Password() == password)
 	{
@@ -1182,7 +1191,7 @@ mstring Nick_Live_t::Identify(mstring password)
 		    }
 		}
 	    }
-	    RET(Parent->getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED"));
+	    retval = Parent->getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
 	else
 	{
@@ -1197,14 +1206,15 @@ mstring Nick_Live_t::Identify(mstring password)
 	    }
 	    else
 	    {
-		RET(Parent->getMessage(i_Name, "ERR_SITUATION/NICK_WRONG_PASS"));
+		retval = Parent->getMessage(i_Name, "ERR_SITUATION/NICK_WRONG_PASS");
 	    }
 	}
     }
     else
     {
-	RET(Parent->getMessage(i_Name, "NS_YOU_STATUS/ISNOTSTORED"));
+	retval = Parent->getMessage(i_Name, "NS_YOU_STATUS/ISNOTSTORED");
     }
+    RET(retval);
 }
 
 void Nick_Live_t::UnIdentify()
@@ -1216,11 +1226,12 @@ void Nick_Live_t::UnIdentify()
 bool Nick_Live_t::IsRecognized()
 {
     NFT("Nick_Live_t::IsRecognised");
+    bool retval = false;
     if (Parent->nickserv.IsStored(i_Name))
     {
-	RET(Parent->nickserv.stored[i_Name.LowerCase()].IsAccess(Mask(U_P_H).After("!")));
+	retval = Parent->nickserv.stored[i_Name.LowerCase()].IsAccess(Mask(U_P_H).After("!"));
     }
-    RET(false);
+    RET(retval);
 }
 
 
@@ -1417,7 +1428,8 @@ mstring Nick_Stored_t::Email()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Email());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Email();
+	RET(retval);
     }
 }
 
@@ -1445,7 +1457,8 @@ mstring Nick_Stored_t::URL()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].URL());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].URL();
+	RET(retval);
     }
 }
 
@@ -1473,7 +1486,8 @@ mstring Nick_Stored_t::ICQ()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].ICQ());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].ICQ();
+	RET(retval);
     }
 }
 
@@ -1501,7 +1515,8 @@ mstring Nick_Stored_t::Description()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Description());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Description();
+	RET(retval);
     }
 }
 
@@ -1529,7 +1544,8 @@ mstring Nick_Stored_t::Comment()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Comment());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Comment();
+	RET(retval);
     }
 }
 
@@ -1597,7 +1613,8 @@ mstring Nick_Stored_t::Password()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Password());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Password();
+	RET(retval);
     }
 }
 
@@ -1640,7 +1657,8 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Slave(nick, password, regtime));
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].Slave(nick, password, regtime);
+	RET(retval);
     }
 }
 
@@ -1648,20 +1666,23 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 unsigned int Nick_Stored_t::Siblings()
 {
     NFT("Nick_Stored_t::Siblings");
+    unsigned int retval = 0;
     if (Host() == "")
     {
-	RET(i_slaves.size());
+	retval = i_slaves.size();
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Siblings());
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].Siblings();
     }
+    RET(retval);
 }
 
 
 mstring Nick_Stored_t::Sibling(unsigned int count)
 {
     FT("Nick_Stored_t::Siblings", (count));
+    mstring retval = "";
     if (Host() == "")
     {
 	set<mstring>::iterator iter;
@@ -1670,15 +1691,15 @@ mstring Nick_Stored_t::Sibling(unsigned int count)
 	{
 	    if (i==count)
 	    {
-		RET(iter->LowerCase());
+		retval = iter->LowerCase();
 	    }
 	}
-	RET("");
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(count));
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].Sibling(count);
     }
+    RET(retval);
 }
 
 
@@ -1691,11 +1712,13 @@ bool Nick_Stored_t::IsSibling(mstring nick)
     }
     else if (Host() == "")
     {
-	RET(i_slaves.find(nick.LowerCase()) != i_slaves.end());
+	bool retval = (i_slaves.find(nick.LowerCase()) != i_slaves.end());
+	RET(retval);
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsSibling(nick));
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].IsSibling(nick);
+	RET(retval);
     }
 }
 
@@ -1959,14 +1982,16 @@ bool Nick_Stored_t::Unlink()
 unsigned int Nick_Stored_t::Access()
 {
     NFT("Nick_Stored_t::Access");
+    unsigned int retval = 0;
     if (Host() == "")
     {
-	RET(i_access.size());
+	retval = i_access.size();
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Access());
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].Access();
     }
+    RET(retval);
 }
 
 
@@ -1986,7 +2011,8 @@ mstring Nick_Stored_t::Access(unsigned int count)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Access(count));
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Access(count);
+	RET(retval);
     }
 }
 
@@ -2026,7 +2052,8 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].AccessAdd(in));
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].AccessAdd(in);
+	RET(retval);
     }
 }
 
@@ -2034,6 +2061,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 unsigned int Nick_Stored_t::AccessDel(mstring in)
 {
     FT("Nick_Stored_t::AccessDel", (in));
+    unsigned int retval = 0;
     if (Host() == "")
     {
 	vector<mstring> chunked;
@@ -2046,12 +2074,13 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 
 	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_access.erase(chunked[i].LowerCase());
-	RET(chunked.size());
+	retval = chunked.size();
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].AccessDel(in));
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].AccessDel(in);
     }
+    RET(retval);
 }
 
 
@@ -2070,7 +2099,8 @@ bool Nick_Stored_t::IsAccess(mstring in)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsAccess(in));
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].IsAccess(in);
+	RET(retval);
     }
 }
 
@@ -2078,14 +2108,16 @@ bool Nick_Stored_t::IsAccess(mstring in)
 unsigned int Nick_Stored_t::Ignore()
 {
     NFT("Nick_Stored_t::Ignore");
+    unsigned int retval = 0;
     if (Host() == "")
     {
-	RET(i_ignore.size());
+	retval = i_ignore.size();
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Ignore());
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].Ignore();
     }
+    RET(retval);
 }
 
 
@@ -2105,7 +2137,8 @@ mstring Nick_Stored_t::Ignore(unsigned int count)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Ignore(count));
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Ignore(count);
+	RET(retval);
     }
 }
 
@@ -2131,7 +2164,8 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IgnoreAdd(in));
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].IgnoreAdd(in);
+	RET(retval);
     }
 }
 
@@ -2139,6 +2173,7 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
 unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 {
     FT("Nick_Stored_t::IgnoreDel", (in));
+    unsigned int retval = 0;
     if (Host() == "")
     {
 	vector<mstring> chunked;
@@ -2151,12 +2186,13 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 
 	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_ignore.erase(chunked[i].LowerCase());
-	RET(chunked.size());
+	retval = chunked.size();
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IgnoreDel(in));
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].IgnoreDel(in);
     }
+    RET(retval);
 }
 
 
@@ -2175,7 +2211,8 @@ bool Nick_Stored_t::IsIgnore(mstring in)
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsIgnore(in));
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].IsIgnore(in);
+	RET(retval);
     }
 }
 
@@ -2193,7 +2230,8 @@ bool Nick_Stored_t::Protect()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Protect());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].Protect();
+	RET(retval);
     }
 }
 
@@ -2226,7 +2264,8 @@ bool Nick_Stored_t::L_Protect()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Protect());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_Protect();
+	RET(retval);
     }
 }
 
@@ -2259,7 +2298,8 @@ bool Nick_Stored_t::Secure()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Secure());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].Secure();
+	RET(retval);
     }
 }
 
@@ -2292,7 +2332,8 @@ bool Nick_Stored_t::L_Secure()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Secure());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_Secure();
+	RET(retval);
     }
 }
 
@@ -2325,7 +2366,8 @@ bool Nick_Stored_t::NoExpire()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].NoExpire());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].NoExpire();
+	RET(retval);
     }
 }
 
@@ -2358,7 +2400,8 @@ bool Nick_Stored_t::L_NoExpire()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire();
+	RET(retval);
     }
 }
 
@@ -2391,7 +2434,8 @@ bool Nick_Stored_t::NoMemo()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].NoMemo());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].NoMemo();
+	RET(retval);
     }
 }
 
@@ -2424,7 +2468,8 @@ bool Nick_Stored_t::L_NoMemo()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo();
+	RET(retval);
     }
 }
 
@@ -2457,7 +2502,8 @@ bool Nick_Stored_t::Private()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Private());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].Private();
+	RET(retval);
     }
 }
 
@@ -2490,7 +2536,8 @@ bool Nick_Stored_t::L_Private()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Private());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_Private();
+	RET(retval);
     }
 }
 
@@ -2523,7 +2570,8 @@ bool Nick_Stored_t::PRIVMSG()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].PRIVMSG());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].PRIVMSG();
+	RET(retval);
     }
 }
 
@@ -2556,7 +2604,8 @@ bool Nick_Stored_t::L_PRIVMSG()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG();
+	RET(retval);
     }
 }
 
@@ -2589,7 +2638,8 @@ mstring Nick_Stored_t::Language()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Language());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Language();
+	RET(retval);
     }
 }
 
@@ -2622,7 +2672,8 @@ bool Nick_Stored_t::L_Language()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Language());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].L_Language();
+	RET(retval);
     }
 }
 
@@ -2651,7 +2702,8 @@ bool Nick_Stored_t::Suspended()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspended());
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].Suspended();
+	RET(retval);
     }
 }
 
@@ -2665,7 +2717,8 @@ mstring Nick_Stored_t::Suspend_By()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspend_By());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].Suspend_By();
+	RET(retval);
     }
 }
 
@@ -2679,7 +2732,8 @@ mDateTime Nick_Stored_t::Suspend_Time()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspend_Time());
+	mDateTime retval = Parent->nickserv.stored[i_Host.LowerCase()].Suspend_Time();
+	RET(retval);
     }
 }
 
@@ -2705,7 +2759,8 @@ unsigned long Nick_Stored_t::PicNum()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].PicNum())
+	unsigned long retval = Parent->nickserv.stored[i_Host.LowerCase()].PicNum();
+	RET(retval);
     }
 }
 
@@ -2765,7 +2820,8 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].LastAllSeenTime());
+	mDateTime retval = Parent->nickserv.stored[i_Host.LowerCase()].LastAllSeenTime();
+	RET(retval);
     }
 }
 
@@ -2789,7 +2845,8 @@ mstring Nick_Stored_t::LastRealName()
     NFT("Nick_Stored_t::LastRealName");
     if (IsOnline())
     {
-	RET(Parent->nickserv.live[i_Name.LowerCase()].RealName());
+	mstring retval = Parent->nickserv.live[i_Name.LowerCase()].RealName();
+	RET(retval);
     }
     else
     {
@@ -2829,7 +2886,8 @@ mstring Nick_Stored_t::LastAllMask()
     }
     else
     {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].LastAllMask());
+	mstring retval = Parent->nickserv.stored[i_Host.LowerCase()].LastAllMask();
+	RET(retval);
     }
 }
 
@@ -3127,13 +3185,15 @@ void NickServ::RemCommands()
 bool NickServ::IsLive(mstring in)
 {
     FT("NickServ::IsLive", (in));
-    RET(live.find(in.LowerCase())!=live.end());
+    bool retval = (live.find(in.LowerCase())!=live.end());
+    RET(retval);
 }
 
 bool NickServ::IsStored(mstring in)
 {
     FT("NickServ::IsStored", (in));
-    RET(stored.find(in.LowerCase())!=stored.end());
+    bool retval = (stored.find(in.LowerCase())!=stored.end());
+    RET(retval);
 }
 
 void NickServ::execute(const mstring & data)

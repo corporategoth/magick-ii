@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.156  2000/03/28 16:20:57  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.155  2000/03/28 09:42:10  prez
 ** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
 ** and NEW/KILL -> ADD/DEL and created a new LIST
@@ -147,7 +151,8 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	wxLogDebug(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
 	    "PART", nick.c_str(), i_Name.c_str());
 
-    RET(users.size() + squit.size());
+    unsigned int retval = users.size() + squit.size();
+    RET(retval);
 }
 
 void Chan_Live_t::Squit(mstring nick)
@@ -190,7 +195,8 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
 	    Parent->chanserv.stored[i_Name.LowerCase()].Kick(nick, kicker);
     }
 
-    RET(users.size());
+    unsigned int retval = users.size();
+    RET(retval);
 }
 
 void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
@@ -262,7 +268,8 @@ void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
 unsigned int Chan_Live_t::Squit()
 {
     NFT("Chan_Livt_t::Squit");
-    RET(squit.size());
+    unsigned int retval = squit.size();
+    RET(retval);
 }
 
 
@@ -284,7 +291,8 @@ mstring Chan_Live_t::Squit(unsigned int num)
 unsigned int Chan_Live_t::Users()
 {
     NFT("Chan_Livt_t::Users");
-    RET(users.size());
+    unsigned int retval = users.size();
+    RET(retval);
 }
 
 
@@ -306,7 +314,8 @@ mstring Chan_Live_t::User(unsigned int num)
 unsigned int Chan_Live_t::Ops()
 {
     NFT("Chan_Live_t::Ops");
-    RET(count_if(users.begin(),users.end(),checkops));
+    unsigned int retval = count_if(users.begin(),users.end(),checkops);
+    RET(retval);
 }
 
 
@@ -332,7 +341,8 @@ mstring Chan_Live_t::Op(unsigned int num)
 unsigned int Chan_Live_t::Voices()
 {
     NFT("Chan_Live_t::Voices");
-    RET(count_if(users.begin(),users.end(),checkvoices));
+    unsigned int retval = count_if(users.begin(),users.end(),checkvoices);
+    RET(retval);
 }
 
 
@@ -373,7 +383,8 @@ pair<bool,bool> Chan_Live_t::User(mstring name)
 unsigned int Chan_Live_t::Bans()
 {
     NFT("Chan_Live_t::Bans");
-    RET(bans.size());
+    unsigned int retval = bans.size();
+    RET(retval);
 }
 
 
@@ -395,28 +406,28 @@ mstring Chan_Live_t::Ban(unsigned int num)
 mDateTime Chan_Live_t::Ban(mstring mask)
 {
    FT("Chan_Live_t::Ban", (mask));
+   mDateTime retval(0.0);
    if (IsBan(mask))
    {
-	RET(bans[mask.LowerCase()]);
+	retval = bans[mask.LowerCase()];
    }
-   else
-   {
-	RET(mDateTime(0.0));
-   }
+   RET(retval);
 }
 
 
 bool Chan_Live_t::IsSquit(mstring nick)
 {
     FT("Chan_Live_t::IsSquit", (nick));
-    RET((squit.find(nick.LowerCase()) != squit.end()));
+    bool retval = (squit.find(nick.LowerCase()) != squit.end());
+    RET(retval)
 }
 
 
 bool Chan_Live_t::IsIn(mstring nick)
 {
     FT("Chan_Live_t::IsIn", (nick));
-    RET((users.find(nick.LowerCase()) != users.end()));
+    bool retval = (users.find(nick.LowerCase()) != users.end());
+    RET(retval);
 }
 
 
@@ -450,7 +461,8 @@ bool Chan_Live_t::IsVoice(mstring nick)
 bool Chan_Live_t::IsBan(mstring mask)
 {
     FT("Chan_Live_t::IsBan", (mask));
-    RET((bans.find(mask.LowerCase()) != bans.end()));
+    bool retval = (bans.find(mask.LowerCase()) != bans.end());
+    RET(retval);
 }
 
 void Chan_Live_t::LockDown()
@@ -955,11 +967,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 mDateTime Chan_Live_t::PartTime(mstring nick)
 {
     FT("Chan_Live_t::PartTime", (nick));
+    mDateTime retval(0.0);
     if (recent_parts.find(nick.LowerCase()) != recent_parts.end())
     {
-	RET(recent_parts[nick.LowerCase()]);
+	retval = recent_parts[nick.LowerCase()];
     }
-    RET(mDateTime(0.0));
+    RET(retval);
 }
 
 
@@ -1523,6 +1536,7 @@ bool Chan_Stored_t::DoRevenge(mstring type, mstring target, mstring source)
     FT("Chan_Stored_t::DoRevenge", (type, target, source));
 
     if (!(Parent->chanserv.IsLive(i_Name) &&
+	Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.IsLive(target)))
 	RET(false);
 
@@ -1543,7 +1557,7 @@ DoRevenge_DeOp:
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o " + target);
 	    send(Parent->chanserv.FirstName(), target,
 			Parent->getMessage(target, "MISC/REVENGE"),
-			type.c_str(), source.c_str());
+			type.c_str(), Parent->getLname(source).c_str());
 	}
 	else if (i_Revenge == "KICK")
 	{
@@ -1552,7 +1566,7 @@ DoRevenge_Kick:
 		type = "BAN";
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
-			type.c_str(), source.c_str());
+			type.c_str(), Parent->getLname(source).c_str());
 	    Parent->server.KICK(Parent->chanserv.FirstName(),
 			target, i_Name, reason);
 	}
@@ -1565,7 +1579,7 @@ DoRevenge_Ban1:
 		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::N));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
-			type.c_str(), source.c_str());
+			type.c_str(), Parent->getLname(source).c_str());
 	    Parent->server.KICK(Parent->chanserv.FirstName(),
 			target, i_Name, reason);
 	}
@@ -1578,7 +1592,7 @@ DoRevenge_Ban2:
 		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::U_H));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
-			type.c_str(), source.c_str());
+			type.c_str(), Parent->getLname(source).c_str());
 	    Parent->server.KICK(Parent->chanserv.FirstName(),
 			target, i_Name, reason);
 	}
@@ -1591,7 +1605,7 @@ DoRevenge_Ban3:
 		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::P_H));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
-			type.c_str(), source.c_str());
+			type.c_str(), Parent->getLname(source).c_str());
 	    Parent->server.KICK(Parent->chanserv.FirstName(),
 			target, i_Name, reason);
 	}
@@ -1604,7 +1618,7 @@ DoRevenge_Ban4:
 		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::H));
 	    mstring reason;
 	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
-			type.c_str(), source.c_str());
+			type.c_str(), Parent->getLname(source).c_str());
 	    Parent->server.KICK(Parent->chanserv.FirstName(),
 			target, i_Name, reason);
 	}
@@ -1790,8 +1804,8 @@ unsigned int Chan_Stored_t::CheckPass(mstring nick, mstring password)
     }
     else
     {
-	failed_passwds[nick.LowerCase()]++;
-	RET(failed_passwds[nick.LowerCase()]);
+	unsigned int retval = ++failed_passwds[nick.LowerCase()];
+	RET(retval);
     }
 }
 
@@ -2974,18 +2988,20 @@ long Chan_Stored_t::GetAccess(mstring entry)
 
     Nick_Live_t *nlive;
     mstring realentry;
+    long retval = 0;
     if (Parent->nickserv.IsLive(entry))
     {
 	nlive = &Parent->nickserv.live[entry.LowerCase()];
     }
     else
     {
-	RET(0);
+	RET(retval);
     }
 
     if (nlive->IsChanIdentified(i_Name) && !Suspended())
     {
-	RET(Parent->chanserv.Level_Max() + 1);
+	retval = Parent->chanserv.Level_Max() + 1;
+	RET(retval);
     }
 
     if (Parent->nickserv.IsStored(entry))
@@ -2996,7 +3012,7 @@ long Chan_Stored_t::GetAccess(mstring entry)
     }
     else
     {
-	RET(0);
+	RET(retval);
     }
 
     if (Suspended())
@@ -3004,38 +3020,39 @@ long Chan_Stored_t::GetAccess(mstring entry)
 	if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(realentry))
 	{
-	    RET(Parent->chanserv.Level_Max() + 1);
+	    retval = Parent->chanserv.Level_Max() + 1;
 	}
 	else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(realentry))
 	{
-	    RET(Level_value("AUTOOP"));
+	    retval = Level_value("AUTOOP");
 	}
 	else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(realentry))
 	{
-	    RET(Level_value("AUTOVOICE"));
+	    retval = Level_value("AUTOVOICE");
 	}
 
-	RET(0);
+	RET(retval);
     }
 
-    if (!Secure() || (Secure() && nlive->IsIdentified()))
+    if (Secure() ? nlive->IsIdentified() : 1)
     {
 	if (i_Founder.LowerCase() == realentry.LowerCase())
 	{
-	    RET(Parent->chanserv.Level_Max() + 1);
+	    retval = Parent->chanserv.Level_Max() + 1;
 	}
-	RET(Access_value(realentry));
+	long retval = Access_value(realentry);
     }
-    RET(0);
+    RET(retval);
 }
 
 bool Chan_Stored_t::GetAccess(mstring entry, mstring type)
 {
     FT("Chan_Stored_t::GetAccess", (entry, type));
 
-    RET(GetAccess(entry) >= Level_value(type));
+    bool retval = (GetAccess(entry) >= Level_value(type));
+    RET(retval);
 }
 
 
@@ -3093,7 +3110,8 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
 bool Chan_Stored_t::Akick_insert(mstring entry, mstring nick, mDateTime modtime)
 {
     FT("Chan_Stored_t::Akick_insert", (entry, nick, modtime));
-    RET(Akick_insert(entry, Parent->chanserv.DEF_Akick_Reason(), nick, modtime));
+    bool retval = Akick_insert(entry, Parent->chanserv.DEF_Akick_Reason(), nick, modtime);
+    RET(retval);
 }
 
 bool Chan_Stored_t::Akick_erase()
@@ -3697,13 +3715,15 @@ void ChanServ::RemCommands()
 bool ChanServ::IsLive(mstring in)
 {
     FT("ChanServ::IsLive", (in));
-    RET(live.find(in.LowerCase())!=live.end());
+    bool retval = live.find(in.LowerCase())!=live.end();
+    RET(retval);
 }
 
 bool ChanServ::IsStored(mstring in)
 {
     FT("ChanServ::IsStored", (in));
-    RET(stored.find(in.LowerCase())!=stored.end());
+    bool retval = stored.find(in.LowerCase())!=stored.end();
+    RET(retval);
 }
 
 void ChanServ::execute(const mstring & data)
@@ -9044,16 +9064,18 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
 long ChanServ::LVL(mstring level)
 {
     FT("ChanServ::LVL", (level));
+    long retval = 0;
     if (!IsLVL(level) ||
 	lvl[level.UpperCase()] > Level_Max() + 1 ||
 	lvl[level.UpperCase()] < Level_Min())
     {
-	RET(Level_Min()-1);
+	retval = Level_Min()-1;
     }
     else
     {
-	RET(lvl[level.UpperCase()]);
+	retval = lvl[level.UpperCase()];
     }
+    RET(retval);
 }
 
 
@@ -9074,7 +9096,8 @@ vector<mstring> ChanServ::LVL()
 bool ChanServ::IsLVL(mstring level)
 {
     FT("ChanServ::IsLVL", (level));
-    RET(lvl.find(level.UpperCase()) != lvl.end());
+    bool retval = lvl.find(level.UpperCase()) != lvl.end();
+    RET(retval);
 }
 
 

@@ -250,7 +250,7 @@ USE_TOTAL          =TOPLAM              %5d (%dkb)
 ; This section contains ALL output from list modifying commands.
 ;
 [LIST]
-LASTMOD            =Son degistirme %s once. Degistiren: %s.
+LASTMOD            =Son degistirme %s once. Degistiren: %s
 MAXLIST            =Bir kerede sadece %d girdi listeleyebilirsiniz.
 NICK_LIST          =%s ile ilintili nickler gosteriliyor:
 CHAN_LIST          =%s ile ilintili kanallar gosteriliyor:
@@ -266,7 +266,7 @@ CHANGE_LEVEL       =%s girdisi %s listesinde %d seviyesine cevrildi.
 CHANGE_TIME        =%s girdisi %s listesinde %s degerine cevrildi.
 DEL                =%s girdisi %s listesinden silindi.
 DEL_MATCH          =%d girdi %s ile ilintili %s listesinden silindi.
-DEL_NUMBER         =#%s girdi %s listesinden silindi.
+DEL_NUMBER         =#%d girdi %s listesinden silindi.
 EXISTS             =%s girdisi zaten var veya %s listesinde bulunuyor.
 NOTEXISTS          =%s ile ilintili %s listesinde girdi yok.
 NOTEXISTS_NUMBER   =#%d girdisi %s listesinde.
@@ -282,7 +282,7 @@ CHANGE2_LEVEL      =%s girdisi %s %s listesinde %d seviyesine cevrildi.
 CHANGE2_TIME       =%s girdisi %s %s listesinde %s degerine cevrildi.
 DEL2               =%s girdisi %s %s listesinden silindi.
 DEL2_MATCH         =%d girdi %s ile ilintili oldugundan %s %s listesinden silindi.
-DEL2_NUMBER        =#%s girdisi %s %s listesinden silindi.
+DEL2_NUMBER        =#%d girdisi %s %s listesinden silindi.
 EXISTS2            =%s girdisi zaten var veya %s %s listesinde bulunuyor.
 NOTEXISTS2         =%s ile ilintili %s %s listesinde girdi yok.
 NOTEXISTS2_NUMBER  =#%d girdisi %s %s listesinde girdi yok.

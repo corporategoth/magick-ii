@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.21  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -373,7 +377,8 @@ mstring& wxTextFile::GetPrevLine()  /* const */
 mstring& wxTextFile::GetLastLine() /* const */ 
 {
     NFT("wxTextFile::GetLastLine");
-    RET(m_aLines[m_nCurLine = m_aLines.size() - 1]);
+    m_nCurLine = m_aLines.size() - 1;
+    RET(m_aLines[m_nCurLine]);
 }
 
 wxTextFileType wxTextFile::GetLineType(size_t n) const 

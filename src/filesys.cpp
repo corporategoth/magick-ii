@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/03/28 16:20:58  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.10  2000/03/25 04:26:48  prez
 ** Added tracing into filesys for easier detection as to why it will not
 ** receive data.  Also put version number to a2 now, ready for release soon.
@@ -75,7 +79,8 @@ unsigned short FindAvailPort()
     ACE_INET_Addr local;
     ACE_SOCK_Acceptor accept(ACE_Addr::sap_any);
     accept.get_local_addr(local);
-    RET(local.get_port_number());
+    unsigned short retval = local.get_port_number();
+    RET(retval);
 }
 
 unsigned long FileMap::FindAvail(FileMap::FileType type)
@@ -578,7 +583,8 @@ void DccXfer::Action()
 int DccMap::open(void *in)
 {
     FT("DccMap::open", ("(void *) in"));
-    RET(activate());
+    int retval = activate();
+    RET(retval);
 }
 
 int DccMap::close(unsigned long in)

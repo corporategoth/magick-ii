@@ -2491,8 +2491,8 @@
 03 =OPER SOP::list facilitates this need.  All people who match the
 04 =OPER SOP::masks on this list will be automatically killed.
 05 =OPER SOP::
-06 =OPER SOP:You may mainatin the AutoKill list with:
-07 =OPER SOP:    ADD          DEL          LIST
+06 =OPER SOP::You may mainatin the AutoKill list with:
+07 =OPER SOP::    ADD          DEL          LIST
 
 [OPERSERV/AKILL/ADD]
 01 =OPER SOP::AKILL ADD <mask> [time] <reason>

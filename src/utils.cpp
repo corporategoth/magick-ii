@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.32  2000/03/19 08:50:57  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -402,7 +406,8 @@ mstring ToHumanTime(unsigned long in)
 	RET("unlimited");
     }
 
-    RET(DisectTime((long) in));
+    mstring retval = DisectTime((long) in);
+    RET(retval);
 }
 
 mstring ToHumanNumber(unsigned long in)

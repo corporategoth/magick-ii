@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/03/28 16:20:58  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.11  2000/03/19 08:50:54  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -1023,13 +1027,13 @@ CreateChanEntry(ChanInfo *ci)
 		out.i_Revenge = "KICK";
 		break;
 	    case CR_NICKBAN:
-		out.i_Revenge = "NICKBAN";
+		out.i_Revenge = "BAN1";
 		break;
 	    case CR_USERBAN:
-		out.i_Revenge = "USERBAN";
+		out.i_Revenge = "BAN2";
 		break;
 	    case CR_HOSTBAN:
-		out.i_Revenge = "HOSTBAN";
+		out.i_Revenge = "BAN3";
 		break;
 	    case CR_MIRROR:
 		out.i_Revenge = "MIRROR";

@@ -259,7 +259,7 @@ USE_TOTAL          =TOTAL                %5d (%dkb)
 ; Esta seção contem TODA A saída dos comandos modificando da lista
 ;
 [LIST]
-LASTMOD            =Ultimo Modificado %s atraz por %s.
+LASTMOD            =Ultimo Modificado %s atraz por %s
 MAXLIST            =Você pode somente alistar até entradas de %d em uma vez.
 NICK_LIST          =Indicando os nicknames que combinam %s:
 CHAN_LIST          =Indicando os canais que combinam %s:
@@ -275,7 +275,7 @@ CHANGE_LEVEL       =Entrada mudada %s na lista de %s a %d.
 CHANGE_TIME        =Entrada mudada %s na lista de %s a %s.
 DEL                =Mudada %s na lista de %s de Entrada um %s.
 DEL_MATCH          =Entradas suprimidas de %d que combinam %s da lista de %s.
-DEL_NUMBER         =Entrada suprimida #%s da lista de %s.
+DEL_NUMBER         =Entrada suprimida #%d da lista de %s.
 EXISTS             =A entrada %s já existe ou é inclusiva na lista de %s.
 NOTEXISTS          =Nenhumas entradas que combinam %s na lista de %s.
 NOTEXISTS_NUMBER   =Nenhuma entrada #%d existe na lista de %s.
@@ -291,7 +291,7 @@ CHANGE2_LEVEL      =Entrada mudada %s na lista de %s %s ao nível %d.
 CHANGE2_TIME       =Entrada mudada %s na lista de %s %s a %s.
 DEL2               =Entrada suprimida %s da lista de %s %s.
 DEL2_MATCH         =Entradas suprimidas de %d que combinam %s da lista de %s %s.
-DEL2_NUMBER        =Entrada suprimida #%s da lista de %s %s.
+DEL2_NUMBER        =Entrada suprimida #%d da lista de %s %s.
 EXISTS2            =A entrada %s já existe ou é inclusiva na lista de %s %s.
 NOTEXISTS2         =Nenhumas entradas que combinam %s na lista de %s %s.
 NOTEXISTS2_NUMBER  =Nenhuma entrada #%d existe na lista de %s %s.

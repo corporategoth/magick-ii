@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.210  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.209  2000/03/27 21:26:12  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -524,12 +528,14 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
 	nickserv.stored[nick.LowerCase()].IsOnline())
     {
 	CP(("Using USER-DEIFNED language."));
-	RET(getMessageL(nickserv.stored[nick.LowerCase()].Language(), name));
+	mstring retval = getMessageL(nickserv.stored[nick.LowerCase()].Language(), name);
+	RET(retval);
     }
     else
     {
 	CP(("Using DEFAULT language."));
-	RET(getMessageL(nickserv.DEF_Language(), name));
+	mstring retval = getMessageL(nickserv.DEF_Language(), name);
+	RET(retval);
     }
 }
 
@@ -537,6 +543,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 {
     FT("Magick::getMessageL", (lang, name));
 
+    mstring retval = "Could not find message token \"" + name.UpperCase() + "\", please report this to your Services Admins.";
     // Load requested language if its NOT loaded.
     // and then look for the message of THAT type.
     CP(("Trying SPECIFIED language ..."));
@@ -553,7 +560,8 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages[lang.UpperCase()].find(name.UpperCase()) !=
 		Messages[lang.UpperCase()].end())
     {
-	RET(Messages[lang.UpperCase()][name.UpperCase()]);
+	retval = Messages[lang.UpperCase()][name.UpperCase()];
+	RET(retval);
     }
 
     // Load nickserv default language if its NOT loaded.
@@ -576,7 +584,8 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
 	Messages[nickserv.DEF_Language().UpperCase()].end())
     {
-	RET(Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()]);
+	retval = Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()];
+	RET(retval);
     }
 
     // Otherwise just try and find it in the DEFAULTs.
@@ -584,9 +593,9 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     if (Messages["DEFAULT"].find(name.UpperCase()) !=
 		Messages["DEFAULT"].end())
     {
-	RET(Messages["DEFAULT"][name.UpperCase()]);
+	retval = Messages["DEFAULT"][name.UpperCase()];
     }
-    RET("Could not find message token \"" + name.UpperCase() + "\", please report this to your Services Admins.");
+    RET(retval);
 }
 
 mstring Magick::getLogMessage(const mstring & name)
@@ -597,14 +606,15 @@ mstring Magick::getLogMessage(const mstring & name)
     // and then look for the message of THAT type.
     // Otherwise just try and find it in the DEFAULTs.
 
+    mstring retval = "Could not find log message token \"" + name.UpperCase() +
+			    "\", please check your language file.";
     CP(("Trying to get log entry ..."));
     if (LogMessages.find(name.UpperCase()) !=
 		LogMessages.end())
     {
-	RET(LogMessages[name.UpperCase()]);
+	retval = LogMessages[name.UpperCase()];
     }
-    RET("Could not find log message token \"" + name.UpperCase() +
-			    "\", please check your language file.");
+    RET(retval);
 }
 
 vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.36  2000/03/28 15:07:40  ungod
 ** fix for mVariant(long)
 **
@@ -147,7 +151,7 @@ mVariant::mVariant(unsigned int in)
 mVariant::mVariant(unsigned long in)
 {
 	truevaluetype=valuetype="unsigned long";
-	UIntValue=in;
+	ULongValue=in;
 }
 
 mVariant::mVariant(void * in)
@@ -266,7 +270,7 @@ mVariant& mVariant::operator=(const mVariant& in)
     else if(valuetype=="unsigned int")
         UIntValue=in.UIntValue;
     else if(valuetype=="unsigned long")
-        ULongValue=in.UIntValue;
+        ULongValue=in.ULongValue;
     else if(valuetype=="unsigned short")
         UShortValue=in.UShortValue;
     return *this;

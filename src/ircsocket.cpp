@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2000/03/28 16:20:58  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.94  2000/03/27 21:26:12  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -155,7 +159,8 @@ int IrcSvcHandler::close(unsigned long in)
     FT("IrcSvcHandler::close",(in));
     // todo: shutdown the ping timer
     CP(("Socket closed"));
-    RET(handle_close());
+    int retval = handle_close();
+    RET(retval);
 }
 
 mstring Reconnect_Handler::FindNext(mstring server) {
@@ -386,13 +391,15 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 mstring EventTask::SyncTime()
 {
     NFT("EventTask::SyncTime");
-    RET(ToHumanTime(Parent->config.Cycletime() - (unsigned long)last_save.SecondsSince()));
+    mstring retval = ToHumanTime(Parent->config.Cycletime() - (unsigned long)last_save.SecondsSince());
+    RET(retval);
 }
 
 int EventTask::open(void *in)
 {
     FT("EventTask::open", ("(void *) in"));
-    RET(activate());
+    int retval = activate();
+    RET(retval);
 }
 
 int EventTask::close(unsigned long in)

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.69  2000/03/28 09:42:11  prez
 ** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
 ** and NEW/KILL -> ADD/DEL and created a new LIST
@@ -1948,36 +1952,44 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
     }
 
     if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_SAdmin())
+	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+	if (time > Parent->operserv.Expire_SAdmin())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
 		    ToHumanTime(Parent->operserv.Expire_SAdmin()).c_str());
-	return;
+	    return;
+	}
     }
     else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_Sop())
+	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+	if (time > Parent->operserv.Expire_Sop())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
 		    ToHumanTime(Parent->operserv.Expire_Sop()).c_str());
-	return;
+	    return;
+	}
     }
     else if (Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_Admin())
+	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+	if (time > Parent->operserv.Expire_Admin())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
 		    ToHumanTime(Parent->operserv.Expire_Admin()).c_str());
-	return;
+	    return;
+	}
     }
     else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_Oper())
+	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+	if (time > Parent->operserv.Expire_Oper())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
 		    ToHumanTime(Parent->operserv.Expire_Oper()).c_str());
-	return;
+	    return;
+	}
     }
 	
     if (host.Contains("!"))

@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.83  2000/03/27 21:26:13  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -610,14 +614,16 @@ void NetworkServ::FlushMsgs(mstring nick)
 bool NetworkServ::IsServer(mstring server)
 {
     FT("NetworkServ::IsServer", (server));
-    RET((ServerList.find(server.LowerCase()) != ServerList.end()));
+    bool retval = (ServerList.find(server.LowerCase()) != ServerList.end());
+    RET(retval);
 }
 
 
 bool NetworkServ::IsSquit(mstring server)
 {
     FT("NetworkServ::IsSquit", (server));
-    RET((ServerSquit.find(server.LowerCase()) != ServerSquit.end()));
+    bool retval = (ServerSquit.find(server.LowerCase()) != ServerSquit.end());
+    RET(retval);
 }
 
 void NetworkServ::Jupe(mstring server, mstring reason)

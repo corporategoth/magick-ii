@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/03/28 16:20:59  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.45  2000/03/26 14:59:37  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -120,7 +124,8 @@ void News_t::operator=(const News_t &in)
 bool News_t::IsRead(mstring name)
 {
     FT("News_t::IsRead", (name));
-    RET(i_Read.find(name.LowerCase())!=i_Read.end());
+    bool retval (i_Read.find(name.LowerCase())!=i_Read.end());
+    RET(retval);
 }
 
 
@@ -198,13 +203,15 @@ void MemoServ::RemCommands()
 bool MemoServ::IsNick(mstring in)
 {
     FT("MemoServ::IsNick", (in));
-    RET(nick.find(in.LowerCase())!=nick.end());
+    bool retval = (nick.find(in.LowerCase())!=nick.end());
+    RET(retval);
 }
 
 bool MemoServ::IsChannel(mstring in)
 {
     FT("MemoServ::IsChannel", (in));
-    RET(channel.find(in.LowerCase())!=channel.end());
+    bool retval = (channel.find(in.LowerCase())!=channel.end());
+    RET(retval);
 }
 
 void MemoServ::execute(const mstring & data)

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/03/28 16:20:58  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.47  2000/03/28 09:42:11  prez
 ** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
 ** and NEW/KILL -> ADD/DEL and created a new LIST
@@ -318,7 +322,8 @@ bool Committee::IsHead(mstring nick)
     }
     else if (i_Head == "" && i_HeadCom == "")
     {
-	RET(IsIn(nick));
+	bool retval = IsIn(nick);
+	RET(retval);
     }
     RET(false);
 }
@@ -506,7 +511,8 @@ CommServ::CommServ()
 bool CommServ::IsList(mstring in)
 {
     FT("CommServ::IsList", (in));
-    RET(list.find(in.UpperCase())!=list.end());
+    bool retval = (list.find(in.UpperCase())!=list.end());
+    RET(retval);
 }
 
 void CommServ::AddCommands()
@@ -525,7 +531,7 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LIST", Parent->commserv.ALL_Name(), CommServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"MEM*", Parent->commserv.REGD_Name(), CommServ::do_Memo);
+		"*MEMO*", Parent->commserv.REGD_Name(), CommServ::do_Memo);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"INFO", Parent->commserv.ALL_Name(), CommServ::do_Info);
 
@@ -1483,8 +1489,8 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     }
 
     if (!(Parent->commserv.list[committee].IsHead(source) ||
-	(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());

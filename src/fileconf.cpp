@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/03/28 16:20:58  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.38  2000/03/14 10:02:48  prez
 ** Added SJOIN and SNICK
 **
@@ -643,73 +647,85 @@ bool wxFileConfig::Read(const mstring& key,
 bool wxFileConfig::Read(const mstring& key, long *val) const
 {
   FT("wxFileConfig::Read", (key, val));
-  RET(wxConfigBase::Read(key, val));
+  bool retval = wxConfigBase::Read(key, val);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, long *val, const long& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
-  RET(wxConfigBase::Read(key, val, defVal));
+  bool retval = wxConfigBase::Read(key, val, defVal);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, unsigned long *val) const
 {
   FT("wxFileConfig::Read", (key, val));
-  RET(wxConfigBase::Read(key, val));
+  bool retval = wxConfigBase::Read(key, val);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, unsigned long *val, const unsigned long& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
-  RET(wxConfigBase::Read(key, val, defVal));
+  bool retval = wxConfigBase::Read(key, val, defVal);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, int *val) const
 {
   FT("wxFileConfig::Read", (key, val));
-  RET(wxConfigBase::Read(key, val));
+  bool retval = wxConfigBase::Read(key, val);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, int *val, const int& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
-  RET(wxConfigBase::Read(key, val, defVal));
+  bool retval = wxConfigBase::Read(key, val, defVal);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, unsigned int *val) const
 {
   FT("wxFileConfig::Read", (key, val));
-  RET(wxConfigBase::Read(key, val));
+  bool retval = wxConfigBase::Read(key, val);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, unsigned int *val, const unsigned int& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
-  RET(wxConfigBase::Read(key, val, defVal));
+  bool retval = wxConfigBase::Read(key, val, defVal);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, float *val) const
 {
   FT("wxFileConfig::Read", (key, val));
-  RET(wxConfigBase::Read(key, val));
+  bool retval = wxConfigBase::Read(key, val);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, float *val, const float& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
-  RET(wxConfigBase::Read(key, val, defVal));
+  bool retval = wxConfigBase::Read(key, val, defVal);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, bool *val) const
 {
   FT("wxFileConfig::Read", (key, val));
-  RET(wxConfigBase::Read(key, val));
+  bool retval = wxConfigBase::Read(key, val);
+  RET(retval);
 }
 
 bool wxFileConfig::Read(const mstring& key, bool *val, const bool& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
-  RET(wxConfigBase::Read(key, val, defVal));
+  bool retval = wxConfigBase::Read(key, val, defVal);
+  RET(retval);
 }
 
 bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
@@ -779,7 +795,9 @@ bool wxFileConfig::Flush(bool bCurrentOnly)
     }
   }
 
-  RET(file.Commit());
+  
+  bool retval = file.Commit();
+  RET(retval);
 }
 
 // ----------------------------------------------------------------------------
@@ -857,7 +875,8 @@ bool wxFileConfig::DeleteGroup(const mstring& key)
   FT("wxFileConfig::DeleteGroup", (key));
   wxConfigPathChanger path(this, key);
 
-  RET(m_pCurrentGroup->DeleteSubgroupByName(path.Name()));
+  bool retval = (m_pCurrentGroup->DeleteSubgroupByName(path.Name()));
+  RET(retval);
 }
 
 bool wxFileConfig::DeleteAll()
@@ -906,7 +925,10 @@ LineList *wxFileConfig::LineListInsert(const mstring& str,
 {
   FT("wxFileConfig::LineListInsert", (str, pLine));
   if ( pLine == m_linesTail )
-    RET(LineListAppend(str));
+  {
+    LineList *retval = LineListAppend(str);
+    RET(retval);
+  }
 
   LineList *pNewLine = new LineList(str);
   if ( pLine == NULL ) {
@@ -1080,7 +1102,8 @@ LineList *ConfigGroup::GetLastGroupLine()
   }
 
   // no subgroups, so the last line is the line of thelast entry (if any)
-  RET(GetLastEntryLine());
+  LineList *retval = GetLastEntryLine();
+  RET(retval);
 }
 
 // return the last line belonging to the entries of this group (after which
@@ -1097,7 +1120,8 @@ LineList *ConfigGroup::GetLastEntryLine()
   }
 
   // no entries: insert after the group header
-  RET(GetGroupLine());
+  LineList *retval = GetGroupLine();
+  RET(retval);
 }
 
 // ----------------------------------------------------------------------------
@@ -1122,7 +1146,8 @@ mstring ConfigGroup::GetFullName() const
   NFT("ConfigGroup::GetFullName");
   if ( this->Parent() )
   {
-    RET(this->Parent()->GetFullName() + wxCONFIG_PATH_SEPARATOR + Name());
+    mstring retval = this->Parent()->GetFullName() + wxCONFIG_PATH_SEPARATOR + Name();
+    RET(retval);
   }
   else
     RET("");
@@ -1237,7 +1262,8 @@ ConfigGroup::AddSubgroup(const mstring& strName)
 bool ConfigGroup::DeleteSubgroupByName(const char *szName)
 {
   FT("ConfigGroup::DeleteSubgroupByName", (szName));
-  RET(DeleteSubgroup(FindSubgroup(szName)));
+  bool retval = DeleteSubgroup(FindSubgroup(szName));
+  RET(retval);
 }
 
 // doesn't delete the subgroup itself, but does remove references to it from
@@ -1894,7 +1920,7 @@ long& wxBaseArray::Item(size_t uiIndex) const
 long& wxBaseArray::operator[](size_t uiIndex) const 
 {
     FT("wxBaseArray::operator[]", (uiIndex));
-    RET(Item(uiIndex)); 
+    RET(Item(uiIndex));
 }
 
 void LineList::SetNext(LineList *pNext)  
@@ -2027,7 +2053,8 @@ const wxFileConfig::ArrayGroups&  ConfigGroup::Groups()  const
 bool  ConfigGroup::IsEmpty() const 
 {
     NFT("ConfigGroup::IsEmpty");
-    RET(Entries().IsEmpty() && Groups().IsEmpty()); 
+    bool retval = (Entries().IsEmpty() && Groups().IsEmpty());
+    RET(retval);
 }
 
 void ConfigGroup::SetLastEntry(ConfigEntry *pEntry) 

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2000/03/28 16:20:57  prez
+** LOTS of RET() fixes, they should now be safe and not do double
+** calculations.  Also a few bug fixes from testing.
+**
 ** Revision 1.106  2000/03/27 10:40:11  prez
 ** Started implementing revenge
 **
@@ -94,7 +98,8 @@ mstring mUserDef::UserDef(mstring type)
     }
     else
     {
-	RET(i_UserDef[type.LowerCase()]);
+	mstring retval = i_UserDef[type.LowerCase()];
+	RET(retval);
     }
 }
 
@@ -520,7 +525,8 @@ int mBaseTask::open(void *in)
 {
     NFT("mBaseTask::open");
     mBase::TaskOpened=true;
-    RET(activate());
+    int retval = activate();
+    RET(retval);
 }
 
 int mBaseTask::svc(void)
