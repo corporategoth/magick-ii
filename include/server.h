@@ -49,7 +49,6 @@ class Protocol
     bool i_Helpops;		// HELPOPS supported
     bool i_Chatops;		// CHATOPS supported
     bool i_Tokens;		// Tokenized messages supported
-    bool i_P12;			// P12 (SNICK) support
     bool i_TSora;		// Extra timestamping (and SVINFO line)
     bool i_SJoin;		// Use SJOIN instead of JOIN
     bool i_BigTopic;		// Topic includes setter and timestamp
@@ -78,6 +77,7 @@ class Protocol
      *        NO UNKLINE
      */
     unsigned int i_Akill;
+    bool i_KillAfterAkill;
 
     /* Signon Types
      * 
@@ -288,10 +288,6 @@ public:
     {
 	i_SJoin = in;
     }
-    bool P12() const
-    {
-	return i_P12;
-    }
     bool TSora() const
     {
 	return i_TSora;
@@ -311,6 +307,10 @@ public:
     unsigned int Akill() const
     {
 	return i_Akill;
+    }
+    bool KillAfterAkill() const
+    {
+	return i_KillAfterAkill;
     }
     unsigned int Signon() const
     {
@@ -445,7 +445,7 @@ public:
     void DumpE() const;
 };
 
-class Server : public mBase
+class Server
 {
     friend class Magick;
     friend class Server_t;
@@ -551,7 +551,6 @@ public:
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.
-    bool IsSquit(const mstring & server) const;
     void Jupe(const mstring & server, const mstring & reason);
 
     void AKILL(const mstring & host, const mstring & reason = "", const unsigned long time = 0, const mstring & killer = "");
@@ -585,16 +584,7 @@ public:
     void UNSQLINE(const mstring & nick, const mstring & target);
     void WALLOPS(const mstring & nick, const mstring & message);
     void KillUnknownUser(const mstring & user) const;
-    unsigned int SeenMessage(const mstring & data);
 
-    threadtype_enum Get_TType() const
-    {
-	return tt_ServNet;
-    }
-    mstring GetInternalName() const
-    {
-	return "Server";
-    }
     void execute(mstring & source, const mstring & msgtype, const mstring & params);
     void parse_A(mstring & source, const mstring & msgtype, const mstring & params);
     void parse_B(mstring & source, const mstring & msgtype, const mstring & params);

@@ -211,7 +211,6 @@ bool Protocol::Set(const mstring & filename)
     cfg.Read(ts_Protocol + "HELPOPS", i_Helpops, false);
     cfg.Read(ts_Protocol + "CHATOPS", i_Chatops, false);
     cfg.Read(ts_Protocol + "TOKENS", i_Tokens, false);
-    cfg.Read(ts_Protocol + "P12", i_P12, false);
     cfg.Read(ts_Protocol + "TSORA", i_TSora, false);
     cfg.Read(ts_Protocol + "SJOIN", i_SJoin, false);
     cfg.Read(ts_Protocol + "BIGTOPIC", i_BigTopic, false);
@@ -225,6 +224,8 @@ bool Protocol::Set(const mstring & filename)
 	RET(false);
     }
     i_Akill = value_uint;
+
+    cfg.Read(ts_Protocol + "KILLAFTERAKILL", i_KillAfterAkill, false);
 
     cfg.Read(ts_Protocol + "SIGNON", value_uint, 0000);
     if (SignonTypes.find(value_uint) == SignonTypes.end())
@@ -333,8 +334,8 @@ void Protocol::DumpB() const
 {
     BTCB();
     MB(0,
-       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
-	i_Akill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
+       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
+	i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
     MB(16,
        (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
 	tokens.size()));
@@ -345,8 +346,8 @@ void Protocol::DumpE() const
 {
     BTCB();
     ME(0,
-       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
-	i_Akill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
+       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
+	i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
     ME(16,
        (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
 	tokens.size()));
@@ -1045,7 +1046,6 @@ Server::Server()
 {
     BTCB();
     NFT("Server::Server");
-    messages = true;
     WLOCK((lck_Server, "i_UserMax"));
     i_UserMax = 0;
     DumpE();
@@ -1371,17 +1371,6 @@ mstring Server::GetChannel(const mstring & channel) const
     ETCB();
 }
 
-bool Server::IsSquit(const mstring & server) const
-{
-    BTCB();
-    FT("Server::IsSquit", (server));
-    RLOCK((lck_Server, "ServerSquit"));
-    bool retval = (ServerSquit.find(server.LowerCase()) != ServerSquit.end());
-
-    RET(retval);
-    ETCB();
-}
-
 void Server::Jupe(const mstring & server, const mstring & reason)
 {
     BTCB();
@@ -1445,7 +1434,8 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
 	else
 	    line << "TKL";
 	line << " + G " << host.Before("@") << " " << host.After("@") <<
-		((!killer.empty()) ? killer : Magick::instance().operserv.FirstName()) << " " << exptime << " " <<
+		((!killer.empty()) ? killer : Magick::instance().operserv.FirstName()) << " " <<
+		static_cast < time_t > (mDateTime::CurrentDateTime()) + exptime << " " <<
 		static_cast < time_t > (mDateTime::CurrentDateTime()) << " :" << reason;
 	break;
     case 2000:
@@ -1526,7 +1516,7 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
 
     for (j = 0; j < killusers.size(); j++)
     {
-	if (proto.Akill() < 2000)
+	if (proto.KillAfterAkill())
 	    Magick::instance().server.KILL(Magick::instance().operserv.FirstName(), killusers[j].first, reason);
 	else
 	{
@@ -2006,6 +1996,8 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
     }
     else
     {
+	bool sendmode = true;
+	mstring outmodes = Magick::instance().startup.Setmode() + proto.ServicesModes();
 	mstring server = GetServer(i_server);
 
 	if (proto.Numeric.Server() && !server.empty())
@@ -2035,8 +2027,6 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 		mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
 	}
 	map_entry < Nick_Live_t > tmp(new Nick_Live_t(nick, user, host, name));
-	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 4000))
-	    tmp->Mode(Magick::instance().startup.Setmode() + proto.ServicesModes());
 	if (proto.Numeric.User())
 	    tmp->Numeric(proto.Numeric.FindUserNumeric());
 	Magick::instance().nickserv.AddLive(tmp);
@@ -2071,119 +2061,101 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    break;
 	case 1000:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
 		   server;
-	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 1001:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
 		   server << " 1";
-	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 1002:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
 		   server << " 1 " << host;
-	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 1003:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
 		   host << " " << server << " 1";
-	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 2000:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" <<
-		   Magick::instance().startup.Setmode() << proto.ServicesModes() << " " << user << " " << host << " " << server <<
-		   " :" << name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << outmodes << " " << user << " " <<
+		   host << " " << server << " :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
 	    break;
 	case 2001:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" <<
-		   Magick::instance().startup.Setmode() << proto.ServicesModes() << " " << user << " " << host << " " << server <<
-		   " 1 :" << name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << outmodes << " " << user << " " << 
+		   host << " " << server << " 1 :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
 	    break;
 	case 2002:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" <<
-		   Magick::instance().startup.Setmode() << proto.ServicesModes() << " " << user << " " << host << " " << host <<
-		   " " << server << " 1 :" << name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << outmodes << " " << user << " " <<
+		   host << " " << host << " " << server << " 1 :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
 	    break;
 	case 2003:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
-		   server << " 1 +" << Magick::instance().startup.Setmode() << proto.ServicesModes() << " " << host << " :" <<
-		   name;
+		   server << " 1 +" << outmodes << " " << host << " :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
 	    break;
 	case 3000:
 	    token = "NICK";
-	    if (proto.P12())
-		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " ";
-	    if (!Magick::instance().startup.Setmode().empty() || !proto.ServicesModes().empty())
-		out << "+" << Magick::instance().startup.Setmode() << proto.ServicesModes() << " ";
+	    if (!outmodes.empty())
+	    {
+		out << "+" << outmodes << " ";
+		tmp->Mode(outmodes);
+	    }
+	    sendmode = false;
 
 	    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
 
@@ -2198,6 +2170,9 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	mMessage::CheckDependancies(mMessage::NickExists, nick);
 	if (tmp->Numeric())
 	    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(tmp->Numeric()));
+
+	if (sendmode && !outmodes.empty())
+	    MODE(nick, "+" + Magick::instance().startup.Setmode() + proto.ServicesModes());
     }
     ETCB();
 }
@@ -3212,10 +3187,14 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 
     if (msgtype == "CAPAB")
     {
+	if (!source.Contains("."))
+	    return;
+
+	mstring tmp = (" " + params + " ");
 	// Bahamut version of the PROTOCTL line
-	if ((" " + params + " ").Contains(" TOKEN "))
+	if (tmp.Contains(" TOKEN "))
 	    proto.Tokens(true);
-	if ((" " + params + " ").Contains(" SSJOIN ") || (" " + params + " ").Contains(" SJOIN "))
+	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
 	    proto.SJoin(true);
     }
     else if (msgtype == "CHATOPS")
@@ -4293,10 +4272,11 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	if (!source.Contains("."))
 	    return;
 
-	// Turn on tokens dynamically ...
-	if ((" " + params + " ").Contains(" TOKEN "))
+	mstring tmp = (" " + params + " ");
+	// Bahamut version of the PROTOCTL line
+	if (tmp.Contains(" TOKEN "))
 	    proto.Tokens(true);
-	if ((" " + params + " ").Contains(" SSJOIN ") || (" " + params + " ").Contains(" SJOIN "))
+	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
 	    proto.SJoin(true);
     }
     else
@@ -6133,10 +6113,6 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 			    Magick::instance().server.MODE(*k, "+o");
 		    }
 
-		    if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 4000)) &&
-			Magick::instance().nickserv.IsLive(*k) && (!Magick::instance().startup.Setmode().empty() ||
-								   !proto.ServicesModes().empty()))
-			Magick::instance().server.MODE(*k, "+" + Magick::instance().startup.Setmode() + proto.ServicesModes());
 		    FlushMsgs(*k);
 		}
 	    }

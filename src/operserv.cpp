@@ -1846,7 +1846,6 @@ void OperServ::do_On(const mstring & mynick, const mstring & source, const mstri
     }
 
     mstring type = params.ExtractWord(2, " ");
-    mstring service;
 
     if (type.Matches("AUTO*", true))
     {
@@ -1888,39 +1887,23 @@ void OperServ::do_On(const mstring & mynick, const mstring & source, const mstri
 	}
 	else
 	{
-	    service = params.ExtractWord(3, " ");
-	    if (Magick::instance().operserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().operserv.MSG(true);
-	    else if (Magick::instance().nickserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().nickserv.MSG(true);
-	    else if (Magick::instance().chanserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().chanserv.MSG(true);
-	    else if (Magick::instance().memoserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().memoserv.MSG(true);
-	    else if (Magick::instance().commserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().commserv.MSG(true);
-	    else if (Magick::instance().servmsg.GetInternalName().IsSameAs(service, true))
-		Magick::instance().servmsg.MSG(true);
-	    //else
-	    //  scripted stuff ...
-	    else
+	    mstring service = params.ExtractWord(3, " ");
+	    mBase *serv = mBase::GetByInternalName(service);
+	    if (serv == NULL)
 	    {
 		SEND(mynick, source, "ERR_SITUATION/NOSERVICE", (service));
-		service.erase();
+		return;
 	    }
-	    if (!service.empty())
-	    {
-		Magick::instance().operserv.stats.i_OnOff++;
-		SEND(mynick, source, "OS_COMMAND/ONOFF_ONE",
-		     (Magick::instance().getMessage(source, "VALS/SVC_MSG"), service,
-		      Magick::instance().getMessage(source, "VALS/ON")));
-		ANNOUNCE(mynick, "MISC/ONOFF_ONE",
-			 (Magick::instance().getMessage("VALS/SVC_MSG"), service, Magick::instance().getMessage("VALS/ON"),
-			  source));
-		LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE",
-		    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		     Magick::instance().getMessage("VALS/ON"), Magick::instance().getMessage("VALS/SVC_MSG"), service));
-	    }
+
+	    serv->MSG(true);
+	    Magick::instance().operserv.stats.i_OnOff++;
+	    SEND(mynick, source, "OS_COMMAND/ONOFF_ONE", (Magick::instance().getMessage(source, "VALS/SVC_MSG"), service,
+							  Magick::instance().getMessage(source, "VALS/ON")));
+	    ANNOUNCE(mynick, "MISC/ONOFF_ONE", (Magick::instance().getMessage("VALS/SVC_MSG"), service,
+						Magick::instance().getMessage("VALS/ON"), source));
+	    LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+						  Magick::instance().getMessage("VALS/ON"),
+						  Magick::instance().getMessage("VALS/SVC_MSG"), service));
 	}
     }
     ETCB();
@@ -1943,7 +1926,6 @@ void OperServ::do_Off(const mstring & mynick, const mstring & source, const mstr
     }
 
     mstring type = params.ExtractWord(2, " ");
-    mstring service;
 
     if (type.Matches("AUTO*", true))
     {
@@ -1985,39 +1967,23 @@ void OperServ::do_Off(const mstring & mynick, const mstring & source, const mstr
 	}
 	else
 	{
-	    service = params.ExtractWord(3, " ");
-	    if (Magick::instance().operserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().operserv.MSG(false);
-	    else if (Magick::instance().nickserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().nickserv.MSG(false);
-	    else if (Magick::instance().chanserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().chanserv.MSG(false);
-	    else if (Magick::instance().memoserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().memoserv.MSG(false);
-	    else if (Magick::instance().commserv.GetInternalName().IsSameAs(service, true))
-		Magick::instance().commserv.MSG(false);
-	    else if (Magick::instance().servmsg.GetInternalName().IsSameAs(service, true))
-		Magick::instance().servmsg.MSG(false);
-	    //else
-	    //  scripted stuff ...
-	    else
+	    mstring service = params.ExtractWord(3, " ");
+	    mBase *serv = mBase::GetByInternalName(service);
+	    if (serv == NULL)
 	    {
 		SEND(mynick, source, "ERR_SITUATION/NOSERVICE", (service));
-		service.erase();
+		return;
 	    }
-	    if (!service.empty())
-	    {
-		Magick::instance().operserv.stats.i_OnOff++;
-		SEND(mynick, source, "OS_COMMAND/ONOFF_ONE",
-		     (Magick::instance().getMessage(source, "VALS/SVC_MSG"), service,
-		      Magick::instance().getMessage(source, "VALS/OFF")));
-		ANNOUNCE(mynick, "MISC/ONOFF_ONE",
-			 (Magick::instance().getMessage("VALS/SVC_MSG"), service, Magick::instance().getMessage("VALS/OFF"),
-			  source));
-		LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE",
-		    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		     Magick::instance().getMessage("VALS/OFF"), Magick::instance().getMessage("VALS/SVC_MSG"), service));
-	    }
+
+	    serv->MSG(false);
+	    Magick::instance().operserv.stats.i_OnOff++;
+	    SEND(mynick, source, "OS_COMMAND/ONOFF_ONE", (Magick::instance().getMessage(source, "VALS/SVC_MSG"), service,
+							  Magick::instance().getMessage(source, "VALS/OFF")));
+	    ANNOUNCE(mynick, "MISC/ONOFF_ONE", (Magick::instance().getMessage("VALS/SVC_MSG"), service,
+						Magick::instance().getMessage("VALS/OFF"), source));
+	    LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+						  Magick::instance().getMessage("VALS/OFF"),
+						  Magick::instance().getMessage("VALS/SVC_MSG"), service));
 	}
     }
     ETCB();

@@ -192,6 +192,12 @@ public:
     virtual threadtype_enum Get_TType() const = 0;
     virtual mstring GetInternalName() const = 0;
 
+    static mBase *GetByInternalName(const mstring & in);
+    static bool IsAnyInternalName(const mstring & in)
+    {
+	return (GetByInternalName(in) != NULL);
+    }
+
     virtual bool MSG() const
     {
 	return messages;
@@ -566,26 +572,78 @@ public:
 
 class CommandMap
 {
+public:
     typedef void (*functor) (const mstring &, const mstring &, const mstring &);
 
     // map<service, map<command, pair<committees, functor> > >
     typedef list < triplet < mstring, mstring, functor > > cmdtype;
     typedef map < mstring, cmdtype > cmdmap;
+
+private:
     cmdmap i_user;
     cmdmap i_system;
 
+    static void AddAnyCommand(const mstring & name, cmdmap & mymap, const mstring & service, const mstring & command,
+    		       const mstring & committees, functor function);
+    static void RemAnyCommand(const mstring & name, cmdmap & mymap, const mstring & service, const mstring & command,
+    		       const mstring & committees);
+    static pair < bool, functor > GetAnyCommand(const mstring &name, const cmdmap & mymap, const mstring & service,
+    					 const mstring & command, const mstring & user);
+    static bool DoAnyCommand(pair < bool, functor > & cmd, const mstring & mynick, const mstring & user, const mstring & command,
+			     const mstring & params);
 public:
-    void AddSystemCommand(const mstring & service, const mstring & command, const mstring & committees, functor function);
-    void RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees);
-    void AddCommand(const mstring & service, const mstring & command, const mstring & committees, functor function);
-    void RemCommand(const mstring & service, const mstring & command, const mstring & committees);
-    pair < bool, functor > GetSystemCommand(const mstring & service, const mstring & command, const mstring & user) const;
-    pair < bool, functor > GetUserCommand(const mstring & service, const mstring & command, const mstring & user) const;
+    void AddSystemCommand(const mstring & service, const mstring & command, const mstring & committees, functor function)
+    {
+	AddAnyCommand("System", i_system, service, command, committees, function);
+    }
+    void RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees)
+    {
+	RemAnyCommand("System", i_system, service, command, committees);
+    }
+    pair < bool, functor > GetSystemCommand(const mstring & service, const mstring & command, const mstring & user) const
+    {
+	return GetAnyCommand("System", i_system, service, command, user);
+    }
+    bool DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params)
+    {
+	pair < bool, functor > cmd = GetSystemCommand(mynick, command, user);
+	return DoAnyCommand(cmd, mynick, user, command, params);
+    }
+    void AddUserCommand(const mstring & service, const mstring & command, const mstring & committees, functor function)
+    {
+	AddAnyCommand("User", i_user, service, command, committees, function);
+    }
+    void RemUserCommand(const mstring & service, const mstring & command, const mstring & committees)
+    {
+	RemAnyCommand("User", i_user, service, command, committees);
+    }
+    pair < bool, functor > GetUserCommand(const mstring & service, const mstring & command, const mstring & user) const
+    {
+	return GetAnyCommand("User", i_user, service, command, user);
+    }
+    bool DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params)
+    {
+	pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
+	return DoAnyCommand(cmd, mynick, user, command, params);
+    }
 
-    bool DoCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const;
-    bool DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const;
-    bool DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const;
+    bool DoCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
+    {
+	pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
+	if (cmd.first)
+	    return DoAnyCommand(cmd, mynick, user, command, params);
+	else
+	{
+	    cmd = GetSystemCommand(mynick, command, user);
+	    return DoAnyCommand(cmd, mynick, user, command, params);
+	}
+    }
 };
+
+// Re-throws for the command map.
+// do_X_Yparam will go through the map again with parameters X and Y (and a space between).
+// do_X_Yparamswap will go through the map again with parameters Y and X (and a space between).
+// do_Xparam will go through the map again with only parameter X.
 void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params);
 void do_1_3param(const mstring & mynick, const mstring & source, const mstring & params);
 void do_1_4param(const mstring & mynick, const mstring & source, const mstring & params);

@@ -1028,7 +1028,8 @@ int mMessage::call()
 
 		mBase *serv = mBase::GetByName(target);
 
-		if (serv != NULL && serv->MSG())
+		// Add special case for OperServ, because MSG() is handled later.
+		if ((serv != NULL && serv->MSG()) || serv == &Magick::instance().operserv)
 		    serv->execute(src, msgtype_, params_);
 		else		// PRIVMSG or NOTICE to non-service
 		    Magick::instance().server.execute(src, msgtype_, params_);
@@ -1240,17 +1241,39 @@ mBase *mBase::GetByName(const mstring & in)
     mBase *serv = NULL;
 
     if (Magick::instance().operserv.IsName(in))
-	serv = & Magick::instance().operserv;
+	serv = &Magick::instance().operserv;
     else if (Magick::instance().nickserv.IsName(in))
-	serv = & Magick::instance().nickserv;
+	serv = &Magick::instance().nickserv;
     else if (Magick::instance().chanserv.IsName(in))
-	serv = & Magick::instance().chanserv;
+	serv = &Magick::instance().chanserv;
     else if (Magick::instance().memoserv.IsName(in))
-	serv = & Magick::instance().memoserv;
+	serv = &Magick::instance().memoserv;
     else if (Magick::instance().commserv.IsName(in))
-	serv = & Magick::instance().commserv;
+	serv = &Magick::instance().commserv;
     else if (Magick::instance().servmsg.IsName(in))
-	serv = & Magick::instance().servmsg;
+	serv = &Magick::instance().servmsg;
+
+    NRET(mBase *, serv);
+}
+
+mBase *mBase::GetByInternalName(const mstring & in)
+{
+    FT("mBase::GetByInternalName", (in));
+
+    mBase *serv = NULL;
+
+    if (Magick::instance().operserv.GetInternalName().IsSameAs(in, true))
+	serv = &Magick::instance().operserv;
+    else if (Magick::instance().nickserv.GetInternalName().IsSameAs(in, true))
+	serv = &Magick::instance().nickserv;
+    else if (Magick::instance().chanserv.GetInternalName().IsSameAs(in, true))
+	serv = &Magick::instance().chanserv;
+    else if (Magick::instance().memoserv.GetInternalName().IsSameAs(in, true))
+	serv = &Magick::instance().memoserv;
+    else if (Magick::instance().commserv.GetInternalName().IsSameAs(in, true))
+	serv = &Magick::instance().commserv;
+    else if (Magick::instance().servmsg.GetInternalName().IsSameAs(in, true))
+	serv = &Magick::instance().servmsg;
 
     NRET(mBase *, serv);
 }
@@ -1588,37 +1611,36 @@ void announce(const mstring & source, const mstring & message)
 
 // Command Map stuff ...
 
-void CommandMap::AddSystemCommand(const mstring & service, const mstring & command, const mstring & committees,
-				  functor function)
+void CommandMap::AddAnyCommand(const mstring & name, cmdmap & mymap, const mstring & service, const mstring & command,
+				  const mstring & committees, functor function)
 {
     BTCB();
-    FT("CommandMap::AddSystemCommand", (service, command, committees));
+    FT("CommandMap::AddAnyCommand", (name, "(CommandMap::cmdmap) &mymap", service, command, committees));
 
-    WLOCK(("CommandMap", "i_system"));
-    i_system[service.LowerCase()].push_back(triplet < mstring, mstring,
-					    functor > (command.UpperCase(),
-						       ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
-						       function));
+    WLOCK(("CommandMap", name));
+    mymap[service.LowerCase()].push_back(triplet < mstring, mstring, functor > (command.UpperCase(),
+					    ((!committees.empty()) ? committees.LowerCase() : mstring("all")), function));
     ETCB();
 }
 
-void CommandMap::RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees)
+void CommandMap::RemAnyCommand(const mstring & name, cmdmap & mymap, const mstring & service,
+				  const mstring & command, const mstring & committees)
 {
     BTCB();
-    FT("CommandMap::RemSystemCommand", (service, command, committees));
+    FT("CommandMap::RemAnyCommand", (name, "(CommandMap::cmdmap) &mymap", service, command, committees));
 
-    WLOCK(("CommandMap", "i_system"));
-    if (i_system.find(service.LowerCase()) != i_system.end())
+    WLOCK(("CommandMap", name));
+    if (mymap.find(service.LowerCase()) != mymap.end())
     {
 	cmdtype::iterator iter;
-	for (iter = i_system[service.LowerCase()].begin(); iter != i_system[service.LowerCase()].end(); iter++)
+	for (iter = mymap[service.LowerCase()].begin(); iter != mymap[service.LowerCase()].end(); iter++)
 	{
 	    if (iter->first == command.UpperCase() &&
 		mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
 	    {
-		i_system[service.LowerCase()].erase(iter);
-		if (!i_system[service.LowerCase()].size())
-		    i_system.erase(service.LowerCase());
+		mymap[service.LowerCase()].erase(iter);
+		if (!mymap[service.LowerCase()].size())
+		    mymap.erase(service.LowerCase());
 		return;
 	    }
 	}
@@ -1626,48 +1648,12 @@ void CommandMap::RemSystemCommand(const mstring & service, const mstring & comma
     ETCB();
 }
 
-void CommandMap::AddCommand(const mstring & service, const mstring & command, const mstring & committees, functor function)
+pair < bool, CommandMap::functor > CommandMap::GetAnyCommand(const mstring & name, const cmdmap & mymap,
+							     const mstring & service, const mstring & command,
+							     const mstring & user)
 {
     BTCB();
-    FT("CommandMap::AddCommand", (service, command, committees));
-
-    WLOCK(("CommandMap", "i_user"));
-    i_user[service.LowerCase()].push_back(triplet < mstring, mstring,
-					  functor > (command.UpperCase(),
-						     ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
-						     function));
-    ETCB();
-}
-
-void CommandMap::RemCommand(const mstring & service, const mstring & command, const mstring & committees)
-{
-    BTCB();
-    FT("CommandMap::RemCommand", (service, command, committees));
-
-    WLOCK(("CommandMap", "i_user"));
-    if (i_user.find(service.LowerCase()) != i_user.end())
-    {
-	cmdtype::iterator iter;
-	for (iter = i_user[service.LowerCase()].begin(); iter != i_user[service.LowerCase()].end(); iter++)
-	{
-	    if (iter->first == command.UpperCase() &&
-		mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
-	    {
-		i_user[service.LowerCase()].erase(iter);
-		if (!i_user[service.LowerCase()].size())
-		    i_user.erase(service.LowerCase());
-		return;
-	    }
-	}
-    }
-    ETCB();
-}
-
-pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & service, const mstring & command,
-							      const mstring & user) const
-{
-    BTCB();
-    FT("CommandMap::GetUserCommand", (service, command, user));
+    FT("CommandMap::GetAnyCommand", (name, "(CommandMap::cmdmap) & mymap", service, command, user));
     unsigned int i;
 
     pair < bool, functor > retval = pair < bool, functor > (false, NULL);
@@ -1675,7 +1661,7 @@ pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & se
     cmdtype::const_iterator iter;
     mstring type, list;
 
-    // IF i_system exists
+    // IF mymap exists
     //   IF command (pattern) exists
     //     IF (" " + cmd_committees + " ") contains ANY OF committees
     //       RETURN true
@@ -1692,9 +1678,9 @@ pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & se
     if (type.empty())
 	NRET(pair < bool_functor >, retval);
 
-    RLOCK(("CommandMap", "i_user"));
-    cmdmap::const_iterator mi = i_user.find(type);
-    if (mi != i_user.end())
+    RLOCK(("CommandMap", name));
+    cmdmap::const_iterator mi = mymap.find(type);
+    if (mi != mymap.end())
     {
 	for (iter = mi->second.begin(); iter != mi->second.end(); iter++)
 	{
@@ -1720,123 +1706,11 @@ pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & se
     ETCB();
 }
 
-pair < bool, CommandMap::functor > CommandMap::GetSystemCommand(const mstring & service, const mstring & command,
-								const mstring & user) const
+bool CommandMap::DoAnyCommand(pair < bool, functor > & cmd, const mstring & mynick, const mstring & user, const mstring & command,
+			      const mstring & params)
 {
     BTCB();
-    FT("CommandMap::GetSystemCommand", (service, command, user));
-    unsigned int i;
-
-    pair < bool, functor > retval = pair < bool, functor > (false, NULL);
-
-    cmdtype::const_iterator iter;
-    mstring type, list;
-
-    // IF i_system exists
-    //   IF command (pattern) exists
-    //     IF (" " + cmd_committees + " ") contains ANY OF committees
-    //       RETURN true
-    //     ENDIF
-    //   ENDIF
-    // ENDIF
-    // RETURN false;
-
-    mBase *serv = mBase::GetByName(service);
-
-    if (serv != NULL)
-	type = serv->GetInternalName().LowerCase();
-
-    if (type.empty())
-	NRET(pair < bool_functor >, retval);
-
-    RLOCK(("CommandMap", "i_system"));
-    cmdmap::const_iterator mi = i_system.find(type);
-    if (mi != i_system.end())
-    {
-	for (iter = mi->second.begin(); iter != mi->second.end(); iter++)
-	{
-	    if (command.Matches(iter->first, true))
-	    {
-		for (i = 1; i <= iter->second.WordCount(" "); i++)
-		{
-		    list = iter->second.ExtractWord(i, " ").UpperCase();
-		    retval.second = iter->third;
-		    // If its a command for "ALL" users, OR
-		    // its a valid committee AND a valid (reg'd + online) user
-		    //       AND that user is on the committee
-		    if (Magick::instance().commserv.IsList(list) && Magick::instance().commserv.GetList(list)->IsOn(user))
-		    {
-			retval.first = true;
-			NRET(pair < bool_functor >, retval);
-		    }
-		}
-	    }
-	}
-    }
-    NRET(pair < bool_functor >, retval);
-    ETCB();
-}
-
-bool CommandMap::DoCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
-{
-    BTCB();
-    FT("CommandMap::DoCommand", (mynick, user, command, params));
-
-    bool cmdfound = false;
-
-    pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
-
-    if (cmd.second != NULL)
-    {
-	if (cmd.first)
-	{
-	    (*cmd.second) (mynick, user, params);
-	    RET(true);
-	}
-	cmdfound = true;
-    }
-    else if (cmd.first)
-    {
-	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
-	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
-	RET(false);
-    }
-
-    cmd = GetSystemCommand(mynick, command, user);
-    if (cmd.second != NULL || cmdfound)
-    {
-	if (cmd.first)
-	{
-	    (*cmd.second) (mynick, user, params);
-	    RET(true);
-	}
-	else
-	{
-	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (command.UpperCase(), mynick));
-	    else
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
-	}
-    }
-    else
-    {
-	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
-	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
-    }
-    RET(false);
-    ETCB();
-}
-
-bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
-{
-    BTCB();
-    FT("CommandMap::DoUserCommand", (mynick, user, command, params));
-
-    pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
+    FT("CommandMap::DoAnyCommand", ("(const mstring &) cmd", mynick, user, command, params));
 
     if (cmd.second != NULL)
     {
@@ -1860,39 +1734,7 @@ bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, con
 	else
 	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
-    RET(false);
-    ETCB();
-}
 
-bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
-{
-    BTCB();
-    FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
-
-    pair < bool, functor > cmd = GetSystemCommand(mynick, command, user);
-
-    if (cmd.second != NULL)
-    {
-	if (cmd.first)
-	{
-	    (*cmd.second) (mynick, user, params);
-	    RET(true);
-	}
-	else
-	{
-	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (command.UpperCase(), mynick));
-	    else
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
-	}
-    }
-    else
-    {
-	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
-	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
-    }
     RET(false);
     ETCB();
 }
