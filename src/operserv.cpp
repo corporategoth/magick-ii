@@ -23,6 +23,8 @@ bool OperServ::AddHost(mstring host)
 {
     FT("OperServ::AddHost", (host));
 
+    if (CloneList[host.LowerCase()] < 1)
+	CloneList[host.LowerCase()] = 0;
     CloneList[host.LowerCase()]++;
 
     {
@@ -509,7 +511,7 @@ void OperServ::execute(const mstring & data)
 {
     mThread::ReAttach(tt_OperServ);
     FT("OperServ::execute", (data));
-    //okay this is the main nickserv command switcher
+    //okay this is the main operserv command switcher
 
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
@@ -520,11 +522,18 @@ void OperServ::execute(const mstring & data)
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
 
-    if (message.UpperCase()=="BREAKDOWN")
+    if (message[0U] == CTCP_DELIM_CHAR)
+    {
+	if (msgtype == "PRIVMSG")
+	    DccEngine::decodeRequest(mynick, source, message);
+	else
+	    DccEngine::decodeReply(mynick, source, message);
+    }
+    else if (message.UpperCase()=="BREAKDOWN")
     {
 
 	Parent->server.NOTICE(mynick, source,
-		"SERVER                                         LAG  USERS (OPS)");
+		"SERVER                                         LAG  USERS (OPS)");
 	mstring out;
  	unsigned int users = 0, opers = 0;
 	float lag;

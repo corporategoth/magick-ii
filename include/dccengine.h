@@ -14,19 +14,30 @@
 #define _DCCENGINE_H
 #include "mstring.h"
 
+const char CTCP_DELIM_CHAR='\001';
+const char CTCP_QUOTE_CHAR='\\';
+const char CTCP_MQUOTE_CHAR='\020';
+//#define CTCP_QUOTE_EM   "\r\n\001\\"
+
 class DccEngine
 {
 public:
-    void DoDccSend(ACE_INET_Addr addr, size_t size);
-    void DoDccChat(ACE_INET_Addr addr);
-    void GotDCC(const mstring& in);
-    mstring encode(mstring& in);
-    void decode(mstring& in);
-    mstring lowQuote(mstring& in);
-    mstring lowDequote(mstring& in);
-    mstring ctcpQuote(mstring& in);
-    mstring ctcpDequote(mstring& in);
-    vector<mstring> ctcpExtract(mstring& in);
+    static void DoDccSend(const mstring& mynick, const mstring& source,
+		   ACE_INET_Addr addr, mstring filename, size_t size);
+    static void DoDccChat(const mstring& mynick, const mstring& source,
+		   ACE_INET_Addr addr);
+    static void GotDCC(const mstring& mynick, const mstring& source,
+		mstring& in);
+    static mstring encode(const mstring type, mstring& in = (mstring)"");
+    static void decodeReply(const mstring& mynick, const mstring& source,
+		mstring& in);
+    static void decodeRequest(const mstring& mynick, const mstring& source,
+		mstring& in);
+    static mstring lowQuote(mstring& in);
+    static mstring lowDequote(mstring& in);
+    static mstring ctcpQuote(mstring& in);
+    static mstring ctcpDequote(mstring& in);
+    static vector<mstring> ctcpExtract(mstring& in);
 };
 
 #endif

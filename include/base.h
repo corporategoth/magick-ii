@@ -14,6 +14,7 @@
 #define _base_h
 #include "mstring.h"
 #include "trace.h"
+#include "dccengine.h"
 
 class mUserDef
 {

@@ -1979,6 +1979,13 @@ void ChanServ::execute(const mstring & data)
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
 
+    if (message[0U] == CTCP_DELIM_CHAR)
+    {
+	if (msgtype == "PRIVMSG")
+	    DccEngine::decodeRequest(mynick, source, message);
+	else
+	    DccEngine::decodeReply(mynick, source, message);
+    }
 
     mThread::ReAttach(tt_mBase);
 }
