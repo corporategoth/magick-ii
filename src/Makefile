@@ -6,7 +6,7 @@ include $(TOPDIR)/Makefile.inc
 LIBNAME=magick.a
 OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) base.$(OBJ) chanserv.$(OBJ) \
        commserv.$(OBJ) confbase.$(OBJ) convert.$(OBJ) cryptstream.$(OBJ) \
-       datetime.$(OBJ) dccengine.$(OBJ) fileconf.$(OBJ) filemap.$(OBJ) \
+       datetime.$(OBJ) dccengine.$(OBJ) fileconf.$(OBJ) filesys.$(OBJ) \
        ircsocket.$(OBJ) lockable.$(OBJ) log.$(OBJ) magick.$(OBJ) main.$(OBJ) \
        memoserv.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) nickserv.$(OBJ) \
        operserv.$(OBJ) server.$(OBJ) servmsg.$(OBJ) textfile.$(OBJ) \
@@ -62,6 +62,7 @@ cryptstream.$(OBJ): cryptstream.cpp
 datetime.$(OBJ): datetime.cpp
 dccengine.$(OBJ): dccengine.cpp
 fileconf.$(OBJ): fileconf.cpp
+filesys.$(OBJ): filesys.cpp
 ircsocket.$(OBJ): ircsocket.cpp
 lockable.$(OBJ): lockable.cpp
 log.$(OBJ): log.cpp

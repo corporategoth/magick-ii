@@ -1,6 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
+#else
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -14,9 +16,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#ifndef WIN32
-#pragma ident "$Id$"
-#endif
+static const char *ident = "@(#) $Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2000/02/23 20:56:38  prez
+** Fixed compilation of FileSystem (including ident tags)
+**
 ** Revision 1.1  2000/02/23 14:29:05  prez
 ** Added beginnings of a File Map for stored files.
 ** Also updated Help files (finished nickserv).
