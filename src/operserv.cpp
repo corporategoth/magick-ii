@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2000/12/22 03:30:26  prez
+** Fixed bug in nickserv ident.
+**
 ** Revision 1.107  2000/12/21 14:18:18  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -290,8 +293,7 @@ bool OperServ::AddHost(mstring host)
 		{ RLOCK(("NickServ", "live"));
 		for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
 		{
-		    if (nlive->second.Host().IsSameAs(host, true) &&
-			!nlive->second.HasMode("o"))
+		    if (nlive->second.Host().IsSameAs(host, true))
 			killusers.push_back(nlive->first);
 		}}
 
@@ -302,10 +304,6 @@ bool OperServ::AddHost(mstring host)
 			Parent->operserv.Clone_Akill(),
 			Parent->operserv.Clone_AkillTime(),
 			Parent->nickserv.FirstName());
-		unsigned int j;
-		for (j=0; j<killusers.size(); j++)
-		    Parent->server.KILL(Parent->nickserv.FirstName(),
-			killusers[j], Parent->operserv.Clone_Akill());
 
 		Akill_insert("*@" + host, Parent->operserv.Clone_AkillTime(),
 			Parent->operserv.Clone_Akill(), FirstName());
@@ -3057,9 +3055,6 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	{
 	    Parent->operserv.Akill_insert(host, time, reason, source);
 	    Parent->server.AKILL(host, reason, time, source);
-	    unsigned int j;
-	    for (j=0; j<killusers.size(); j++)
-		Parent->server.KILL(mynick, killusers[j], reason);
 	    Parent->operserv.stats.i_Akill++;
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD_TIME"),
 		    host.c_str(),

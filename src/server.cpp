@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.145  2000/12/22 03:30:26  prez
+** Fixed bug in nickserv ident.
+**
 ** Revision 1.144  2000/12/21 14:18:18  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -546,13 +549,13 @@ void Protocol::Set(unsigned int in)
     {
     case 0: /* RFC */
 	i_Signon = 0000;
-	i_Akill = 2;
+	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
     case 1: /* RFC with TS8 */
 	i_Signon = 0001;
-	i_Akill = 2;
+	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
@@ -560,7 +563,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1000;
 	i_Globops = true;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_Modes = 4;
 	SetTokens(0000);
 	break;
@@ -569,7 +572,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	i_SVSNICK = "SVSNICK";
@@ -585,7 +588,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2001;
 	i_Globops = true;
-	i_Akill = 5;
+	i_Akill = 1001;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
@@ -602,13 +605,13 @@ void Protocol::Set(unsigned int in)
 
     case 20: /* UnderNet < 2.10.x  */
 	i_Signon = 1000;
-	i_Akill = 2;
+	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
     case 21: /* UnderNet >= 2.10.x */
 	i_Signon = 1000;
-	i_Akill = 2;
+	i_Akill = 2000;
 	i_Server = "";
 	i_Server << "SERVER %s %d 0 0 P10 " << Parent->startup.Level() << " :%s";
 	i_Numeric = true;
@@ -628,7 +631,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -642,7 +645,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Signon = 1001;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_Modes = 6;
 	i_Server = "SERVER %s %d relic2.0 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
@@ -660,7 +663,7 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_P12 = true;
 	i_Signon = 1003;
-	i_Akill = 4;
+	i_Akill = 2002;
 	i_Modes = 6;
 	i_ChanModeArg = "ovbekl";
 	i_Server = "SERVER %s %d relic2.1 :%s";
@@ -678,7 +681,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
-	i_Akill = 4;
+	i_Akill = 2002;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
@@ -697,7 +700,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1002;
 	i_Globops = true;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	i_SVSNICK = "SVSNICK";
@@ -714,7 +717,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_ChanModeArg = "ovbehkl";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -729,7 +732,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_Akill = 1;
+	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	i_SVSNICK = "SVSNICK";
@@ -1441,9 +1444,9 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
     mstring line;
     switch (proto.Akill())
     {
-    case 0:
+    case 0000:
 	break;
-    case 1:
+    case 1000:
 	if (proto.Tokens() && proto.GetNonToken("AKILL") != "")
 	    line << proto.GetNonToken("AKILL");
 	else
@@ -1451,28 +1454,7 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	line << " " << host.After("@") << " " << host.Before("@") <<
 		" :" << reason;
 	break;
-    case 2:
-	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
-	    line << proto.GetNonToken("GLINE");
-	else
-	    line << "GLINE";
-	line << " * +" << time << " " << host << " :" << reason;
-	break;
-    case 3:
-	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
-	    line << proto.GetNonToken("GLINE");
-	else
-	    line << "GLINE";
-	line << " * +" << host << " " << time << " :" << reason;
-	break;
-    case 4:
-	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
-	    line << proto.GetNonToken("GLINE");
-	else
-	    line << "GLINE";
-	line << " +" << host << " " << time << " :" << reason;
-	break;
-    case 5:
+    case 1001:
 	if (proto.Tokens() && proto.GetNonToken("AKILL") != "")
 	    line << proto.GetNonToken("AKILL");
 	else
@@ -1482,7 +1464,46 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 		Parent->operserv.FirstName()) << " " <<
 		(time_t) Now() << " :" << reason;
 	break;
+    case 2000:
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " * +" << time << " " << host << " :" << reason;
+	break;
+    case 2001:
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " * +" << host << " " << time << " :" << reason;
+	break;
+    case 2002:
+	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	line << " +" << host << " " << time << " :" << reason;
+	break;
     }
+
+    // GLINING clients do this for us ...
+    if (proto.Akill() < 2000)
+    {
+	map<mstring,Nick_Live_t>::iterator nlive;
+	vector<mstring> killusers;
+	{ RLOCK(("NickServ", "live"));
+	for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+	{
+	    if (nlive->second.Mask(Nick_Live_t::U_P_H).After("!").Matches(host, true))
+		killusers.push_back(nlive->first);
+	}}
+
+	unsigned int j;
+	for (j=0; j<killusers.size(); j++)
+	    Parent->server.KILL(killer, killusers[j], reason);
+    }
+
     if (line != "")
 	sraw(line);
 }
@@ -2199,42 +2220,42 @@ void NetworkServ::RAKILL(mstring host)
     mstring line;
     switch (proto.Akill())
     {
-    case 0:
+    case 0000:
 	break;
-    case 1:
+    case 1000:
 	if (proto.Tokens() && proto.GetNonToken("RAKILL") != "")
 	    line << proto.GetNonToken("RAKILL");
 	else
 	    line << "RAKILL";
 	line << " " << host.After("@") << " " << host.Before("@");
 	break;
-    case 2:
+    case 1001:
+	if (proto.Tokens() && proto.GetNonToken("RAKILL") != "")
+	    line << proto.GetNonToken("RAKILL");
+	else
+	    line << "RAKILL";
+	line << " " << host.After("@") << " " << host.Before("@");
+	break;
+    case 2000:
 	if (proto.Tokens() && proto.GetNonToken("UNGLINE") != "")
 	    line << proto.GetNonToken("UNGLINE");
 	else
 	    line << "UNGLINE";
 	line << " * " << host;
 	break;
-    case 3:
+    case 2001:
 	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
 	line << " * -" << host;
 	break;
-    case 4:
+    case 2002:
 	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
 	line << " -" << host;
-	break;
-    case 5:
-	if (proto.Tokens() && proto.GetNonToken("RAKILL") != "")
-	    line << proto.GetNonToken("RAKILL");
-	else
-	    line << "RAKILL";
-	line << " " << host.After("@") << " " << host.Before("@");
 	break;
     }
     if (line != "")
@@ -3801,6 +3822,10 @@ void NetworkServ::execute(const mstring & data)
 				Parent->chanserv.FirstName(), "+v " + source);
 		}
 	    }
+	}
+	else if (msgtype=="SMO")
+	{
+	    // Thanks to unreal for ANOTHER chatter message ..
 	}
 	else if (msgtype=="SNICK")
 	{

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.144  2000/12/22 03:30:26  prez
+** Fixed bug in nickserv ident.
+**
 ** Revision 1.143  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -5430,6 +5433,13 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
 				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    if (!Parent->nickserv.IsStored(source))
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+						source.c_str());
 	return;
     }
 
