@@ -118,8 +118,92 @@ void MemoServ::execute(const mstring & data)
 
 void MemoServ::load_database(wxInputStream& in)
 {
+    map<mstring,list<Memo_t> >::size_type i,count, i2, count2;
+    in>>count;
+    nick.clear();
+    for(i=0;i<count;i++)
+    {
+	mstring temp;
+	Memo_t tmpmemo;
+	in>>temp>>count2;
+	for(i2=0;i2<count2;i2++)
+	{
+	    in>>tmpmemo;
+	    nick[temp].push_back(tmpmemo);
+	}
+    }
+    in>>count;
+    channel.clear();
+    for(i=0;i<count;count++)
+    {
+	mstring temp;
+	News_t tmpnews;
+	in>>temp>>count2;
+	for(i2=0;i2<count2;i2++)
+	{
+	    in>>tmpnews;
+	    channel[temp].push_back(tmpnews);
+	}
+    }
 }
 
 void MemoServ::save_database(wxOutputStream& out)
 {
+    out<<nick.size();
+    map<mstring,list<Memo_t> >::iterator i;
+    for(i=nick.begin();i!=nick.end();i++)
+    {
+	out<<i->first;
+	out<<i->second.size();
+	list<Memo_t>::iterator j;
+	for(j=i->second.begin();j!=i->second.end();j++)
+	    out<<(*j);
+    }
+    out<<channel.size();
+    map<mstring,list<News_t> >::iterator i2;
+    for(i2=channel.begin();i2!=channel.end();i2++)
+    {
+	out<<i2->first;
+	out<<i2->second.size();
+	list<News_t>::iterator j2;
+	for(j2=i2->second.begin();j2!=i2->second.end();j2++)
+	    out<<(*j2);
+    }
+}
+
+wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in)
+{
+    out<<in.i_Nick<<in.i_Sender<<in.i_Time<<in.i_Text<<in.i_Read<<in.i_File;
+    return out;
+}
+wxInputStream &operator>>(wxInputStream& in, Memo_t& out)
+{
+    in>>out.i_Nick>>out.i_Sender>>out.i_Time>>out.i_Text>>out.i_Read>>out.i_File;
+    return in;
+}
+wxOutputStream &operator<<(wxOutputStream& out,News_t& in)
+{
+    out<<in.i_Channel<<in.i_Sender<<in.i_Time<<in.i_Text;
+    out<<in.i_Read.size();
+    
+    set<mstring>::iterator i;
+    for(i=in.i_Read.begin();i!=in.i_Read.end();i++)
+	out<<(*i);
+
+    return out;
+}
+wxInputStream &operator>>(wxInputStream& in, News_t& out)
+{
+    in>>out.i_Channel>>out.i_Sender>>out.i_Time>>out.i_Text;
+    out.i_Read.clear();
+    set<mstring>::size_type i,j;
+    in>>i;
+    for(j=0;j<i;j++)
+    {
+	mstring temp;
+	in>>temp;
+	out.i_Read.insert(temp);
+    }
+
+    return in;
 }

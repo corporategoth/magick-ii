@@ -205,6 +205,14 @@ void CommServ::execute(const mstring & data)
 
 void CommServ::load_database(wxInputStream& in)
 {
+    int i;
+    in>>i;
+    Committee tmpcommitee;
+    for(int j=0;j<i;j++)
+    {
+	in>>tmpcommitee;
+	list[tmpcommitee.Name()]=tmpcommitee;
+    }
 }
 
 void CommServ::save_database(wxOutputStream& out)
@@ -238,7 +246,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
 }
 wxInputStream &operator>>(wxInputStream& in, Committee& out)
 {
-    int locsize,i;
+    set<entlist_t>::size_type locsize,i;
     entlist_t locent;
     // need to write lock out.
 
@@ -263,7 +271,6 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
 	in>>locent;
 	out.i_Messages.push_back(locent);
     }
-
 
     return in;
 }

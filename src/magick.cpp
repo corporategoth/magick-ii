@@ -1068,8 +1068,8 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGALRM:	// Ignore
 	break;
 #endif
-#ifdef SIGCHLD
-    case SIGHLD:	// Ignore
+#if defined(SIGCHLD) && (SIGCHLD != 0)
+    case SIGCHLD:	// Ignore
 	break;
 #endif
 #ifdef SIGWINCH

@@ -20,6 +20,9 @@
 
 class Memo_t : public mUserDef
 {
+    friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, Memo_t& out);
+
     mstring i_Nick;
     mstring i_Sender;
     mDateTime i_Time;
@@ -53,6 +56,9 @@ public:
 
 class News_t : public mUserDef
 {
+    friend wxOutputStream &operator<<(wxOutputStream& out,News_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, News_t& out);
+
     mstring i_Channel;
     mstring i_Sender;
     mDateTime i_Time;

@@ -1802,7 +1802,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 
 wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 {
-    unsigned int i,count;
+    set<entlist_val_t>::size_type i,count;
     mstring dummy,dummy2;
     entlist_t edummy;
     entlist_val_t evdummy;
@@ -1907,4 +1907,12 @@ void ChanServ::save_database(wxOutputStream& out)
 
 void ChanServ::load_database(wxInputStream& in)
 {
+    map<mstring,Chan_Stored_t>::size_type i,j;
+    in>>i;
+    Chan_Stored_t tmpstored;
+    for(j=0;j<i;j++)
+    {
+	in>>tmpstored;
+	stored[tmpstored.Name()]=tmpstored;
+    }
 }
