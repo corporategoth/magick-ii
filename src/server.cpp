@@ -1035,9 +1035,9 @@ void NetworkServ::execute(const mstring & data)
 
 	    // OK, 4 words (always for squit), and both words in reason
 	    // are SERVERS, and one of them is the uplink of the other.
-	    if (data.WordCount(": ")==4 && IsServer(data.ExtractWord(3, ": ")) && IsServer(data.ExtractWord(4, ": ")) &&
-		(ServerList[data.ExtractWord(3, ": ").LowerCase()].Uplink() == data.ExtractWord(4, ": ").LowerCase() ||
-		ServerList[data.ExtractWord(4, ": ").LowerCase()].Uplink() == data.ExtractWord(3, ": ").LowerCase()))
+	    if (data.WordCount(": ")==4 && IsServer(data.ExtractWord(3, ": ")) && IsServer(data.ExtractWord(4, ": ")))
+	    if (ServerList[data.ExtractWord(3, ": ").LowerCase()].Uplink() == data.ExtractWord(4, ": ").LowerCase() ||
+		ServerList[data.ExtractWord(4, ": ").LowerCase()].Uplink() == data.ExtractWord(3, ": ").LowerCase())
 	    {
 		/* Suspected SQUIT
 		 *
@@ -1056,12 +1056,11 @@ void NetworkServ::execute(const mstring & data)
 				new mstring(Parent->nickserv.live[sourceL].Server().LowerCase()),
 				ACE_Time_Value(10));
 		}
+		return; // Save else's, etc :)
 	    }
-	    else
-	    {
-		Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
-		Parent->nickserv.live.erase(sourceL);
-	    }
+
+	    Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
+	    Parent->nickserv.live.erase(sourceL);
 	}
 	else
 	{

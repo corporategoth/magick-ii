@@ -178,7 +178,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
-    FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     // Nick and Reason
     mstring *tmp = (mstring *) arg;
 
