@@ -27,6 +27,12 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2001/12/12 07:19:20  prez
+** Added check for snprintf, and changed *toa functions to use snprintf.  Also
+** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
+** for systems without the system calls.  Made them inline.  Finally, made
+** mstring's copy() commands for non-string types use *toa functions.
+**
 ** Revision 1.116  2001/12/12 03:31:15  prez
 ** Re-wrote the occurances/find/replace functions in mstring to actually work
 ** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
@@ -1427,7 +1433,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	    return -1;
 
 	memset(buffer, 0, sz);
-	len = mstring::vsnprintf(buffer, sz, fmt, argptr);
+	len = vsnprintf(buffer, sz, fmt, argptr);
 	if (buffer[sz-1] == 0 && len >= 0 && len < sz)
 	{
 	    if (len == 0)
@@ -1744,27 +1750,6 @@ void mstring::Assemble(const list<mstring> &text, const mstring &delim)
 }
 
 /********************************************************/
-
-int mstring::snprintf(char *buf, const size_t sz, const char *fmt, ...)
-{
-    va_list argptr;
-    va_start(argptr, fmt);
-
-    int iLen = mstring::vsnprintf(buf, sz, fmt, argptr);
-
-    va_end(argptr);
-    return iLen;
-}
-
-int mstring::vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
-{
-#ifndef HAVE_VSNPRINTF
-    int iLen = ACE_OS::vsprintf(buf, fmt, ap);
-#else
-    int iLen = ::vsnprintf(buf, sz, fmt, ap);
-#endif
-    return iLen;
-}
 
 /*  Direct from Magick I, credit to Andy Church for writing this.
  *

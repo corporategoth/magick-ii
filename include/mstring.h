@@ -25,6 +25,12 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2001/12/12 07:19:20  prez
+** Added check for snprintf, and changed *toa functions to use snprintf.  Also
+** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
+** for systems without the system calls.  Made them inline.  Finally, made
+** mstring's copy() commands for non-string types use *toa functions.
+**
 ** Revision 1.83  2001/12/12 03:51:00  prez
 ** Forgot to return SV in all the *toa functions
 **
@@ -311,6 +317,98 @@ bool match_wild (const char *pattern, const char *str, bool nocase);
  *  @return The fmt string with all formatting applied, as an mstring. */
 mstring fmstring (const char *fmt, ...);
 
+#ifndef HAVE_VSNPRINTF
+/** For systems that dont have vsnprintf
+ *  A simple wrapper to ACE_OS::vsprintf
+ */
+inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
+{
+    int iLen = ACE_OS::vsprintf(buf, fmt, ap);
+    return iLen;
+}
+#endif
+
+#ifndef HAVE_SNPRINTF
+/** For systems that dont have snprintf
+ *  A simple wrapper to vsnprintf.
+ *  @see vsnprintf
+ */
+inline int snprintf(char *buf, const size_t sz, const char *fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    int iLen = vsnprintf(buf, sz, fmt, argptr);
+    va_end(argptr);
+    return iLen;
+}
+#endif
+
+#ifndef HAVE_ITOA
+/** Reverse of atoi */
+inline const char *itoa(int i)
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    snprintf(sv, sizeof(sv), "%d", i);
+    return sv;
+}
+#endif
+
+#ifndef HAVE_LTOA
+/** Reverse of strtol */
+inline const char *ltoa(long l)
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    snprintf(sv, sizeof(sv), "%ld", l);
+    return sv;
+}
+#endif
+
+#ifndef HAVE_FTOA
+/** Reverse of atof */
+inline const char *ftoa(float f)
+{
+    static char sv[64];
+    memset(sv, 0, sizeof(sv));
+    snprintf(sv, sizeof(sv), "%f", f);
+    return sv;
+}
+#endif
+
+#ifndef HAVE_DTOA
+/** Reverse of strtod */
+inline const char *dtoa(double d)
+{
+    static char sv[512];
+    memset(sv, 0, sizeof(sv));
+    snprintf(sv, sizeof(sv), "%g", d);
+    return sv;
+}
+#endif
+
+#ifndef HAVE_ULTOA
+/** Reverse of strtoul */
+inline const char *ultoa(unsigned long ul)
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    snprintf(sv, sizeof(sv), "%lu", ul);
+    return sv;
+}
+#endif
+
+#ifndef HAVE_UITOA
+/** Reverse of strtoul, but for int */
+inline const char *uitoa(unsigned int ui)
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    snprintf(sv, sizeof(sv), "%u", ui);
+    return sv;
+}
+#endif
+
 /** Magick's string class
  *  This class is designed to emulate the standard STL string in many
  *  ways, however there are some notable differences in syntax.  It also
@@ -350,11 +448,6 @@ class mstring
     int occurances(const char *str, const size_t len) const;
 
 public:
-    /** Same as the system function of the same name - for systems without it. */
-    static int snprintf(char *buf, const size_t sz, const char *fmt, ...);
-    /** Same as the system function of the same name - for systems without it. */
-    static int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap);
-
     //@{
     /** 
      *  Constructors used to create a new mstring.  Everything will be
@@ -497,17 +590,17 @@ public:
     void copy(const unsigned char in)
 	{ copy(reinterpret_cast<const char *>(&in), 1); }
     void copy(const int in)
-	{ mstring out; out.Format("%d", in); copy(out); }
+	{ copy(itoa(in)); }
     void copy(const unsigned int in)
-	{ mstring out; out.Format("%u", in); copy(out); }
+	{ copy(uitoa(in)); }
     void copy(const long in)
-	{ mstring out; out.Format("%ld", in); copy(out); }
+	{ copy(ltoa(in)); }
     void copy(const unsigned long in)
-	{ mstring out; out.Format("%lu", in); copy(out); }
+	{ copy(ultoa(in)); }
     void copy(const float in)
-	{ mstring out; out.Format("%f", in); copy(out); }
+	{ copy(ftoa(in)); }
     void copy(const double in)
-	{ mstring out; out.Format("%g", in); copy(out); }
+	{ copy(dtoa(in)); }
     //@}
 
     /** Insert a string at the beginning of the current contents
@@ -1097,77 +1190,5 @@ OPERATOR_SET(float)
 OPERATOR_SET(double)
 OPERATOR_SET(vector<mstring> &)
 OPERATOR_SET(list<mstring> &)
-
-#ifndef HAVE_ITOA
-/** Reverse of atoi */
-inline const char *itoa(int i)
-{
-    static char sv[16];
-    memset(sv, 0, sizeof(sv));
-    mstring tmp(i);
-    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
-    return sv;
-}
-#endif
-
-#ifndef HAVE_LTOA
-/** Reverse of strtol */
-inline const char *ltoa(long l)
-{
-    static char sv[16];
-    memset(sv, 0, sizeof(sv));
-    mstring tmp(l);
-    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
-    return sv;
-}
-#endif
-
-#ifndef HAVE_FTOA
-/** Reverse of atof */
-inline const char *ftoa(float f)
-{
-    static char sv[64];
-    memset(sv, 0, sizeof(sv));
-    mstring tmp(f);
-    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
-    return sv;
-}
-#endif
-
-#ifndef HAVE_DTOA
-/** Reverse of strtod */
-inline const char *dtoa(double d)
-{
-    static char sv[512];
-    memset(sv, 0, sizeof(sv));
-    mstring tmp(d);
-    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
-    return sv;
-}
-#endif
-
-#ifndef HAVE_ULTOA
-/** Reverse of strtoul */
-inline const char *ultoa(unsigned long ul)
-{
-    static char sv[16];
-    memset(sv, 0, sizeof(sv));
-    mstring tmp(ul);
-    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
-    return sv;
-}
-#endif
-
-#ifndef HAVE_UITOA
-/** Reverse of strtoul, but for int */
-inline const char *uitoa(unsigned int ui)
-{
-    static char sv[16];
-    memset(sv, 0, sizeof(sv));
-    mstring tmp(ui);
-    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
-    return sv;
-}
-#endif
 
 #endif

@@ -29,6 +29,12 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.334  2001/12/12 07:19:20  prez
+** Added check for snprintf, and changed *toa functions to use snprintf.  Also
+** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
+** for systems without the system calls.  Made them inline.  Finally, made
+** mstring's copy() commands for non-string types use *toa functions.
+**
 ** Revision 1.333  2001/12/12 03:31:15  prez
 ** Re-wrote the occurances/find/replace functions in mstring to actually work
 ** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
@@ -3950,9 +3956,9 @@ pair<mstring,mstring> Magick::GetKeys()const
 	mCRYPT(instr, outstr, MD5_DIGEST_LENGTH, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	memset(verify, 0, VERIFY_SIZE);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
-	mstring::snprintf(verify, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
+	snprintf(verify, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
 #else
-	mstring::snprintf(verify, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
+	snprintf(verify, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
 	memset(instr, 0, MD5_DIGEST_LENGTH);
 	mHASH16(verify, VERIFY_SIZE, instr);

@@ -111,6 +111,9 @@
 /* Define if you have the <set> header file. */
 #undef HAVE_SET
 
+/* Define if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
 /* Define if you have the <stack> header file. */
 #undef HAVE_STACK
 

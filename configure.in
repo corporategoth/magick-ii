@@ -516,6 +516,7 @@ AC_CHECK_FUNCS(ftoa)
 AC_CHECK_FUNCS(dtoa)
 AC_CHECK_FUNCS(ultoa)
 AC_CHECK_FUNCS(uitoa)
+AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(vsnprintf)
 
 dnl ====================================================
