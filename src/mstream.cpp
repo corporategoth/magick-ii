@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "log.h"
 #include <math.h>
+#include <stdlib.h>
 
 #define BUF_TEMP_SIZE 10000
 void ConvertToIeeeExtended(double num, unsigned char *bytes);
