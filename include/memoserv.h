@@ -123,7 +123,8 @@ public:
     public:
 	stats_t() {
 	    i_Read = i_Unread = i_Send = i_Flush = i_Reply =
-		i_Cancel = i_Del = i_Continue = i_File = 0; }
+		i_Forward = i_Cancel = i_Del = i_Continue =
+		i_File = 0; }
 	unsigned long Read()	    { return i_Read; }
 	unsigned long Unread()	    { return i_Unread; }
 	unsigned long Send()	    { return i_Send; }
