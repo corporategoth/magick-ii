@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2000/05/25 08:16:38  prez
+** Most of the LOGGING for commands is complete, now have to do mainly
+** backend stuff ...
+**
 ** Revision 1.118  2000/05/21 04:49:39  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -658,7 +662,7 @@ int mBaseTask::message_i(const mstring& message)
 	    else if (Parent->operserv.Log_Ignore())
 	    {
 		// Check if we're to log ignore messages, and log them here.
-		Log(LM_INFO, Parent->getLogMessage("OPERSERV/IGNORED"),
+		Log(LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
 			source.c_str(), data.After(" ").c_str());
 	    }
 	}

@@ -85,13 +85,16 @@ RECOVER          =%s requested services to recover nickname %s.
 SUSPEND          =%s suspended nickname %s for %s.
 UNSUSPEND        =%s unsuspended nickname %s.
 FORBID           =%s forbade nickname %s from being registered.
-GETPASS          =%s retrieved the password for nickname %s.
+GETPASS          =%s retrieved the password for nickname %s (%s).
 ACCESS_ADD       =%s added hostmask %s to nickname %s.
 ACCESS_DEL       =%s removed hostmask %s from nickname %s.
 IGNORE_ADD       =%s added nickname %s to the ignore list for nickname %s.
 IGNORE_DEL       =%s removed nickname %s from the ignore list for nickname %s.
+PICTURE_ADD      =%s set a picture for nickname %s (%d - %s).
+PICTURE_DEL      =%s removed a picture from nickname %s.
 SET_PASSWORD     =%s changed the password for nickname %s.
 SET              =%s set the value of %s for nickname %s to %s.
+UNSET            =%s unset the value of %s for nickname %s.
 LOCK             =%s locked the value of %s for nickname %s to %s.
 UNLOCK           =%s unlocked the value of %s for nickname %s.
 
@@ -100,11 +103,12 @@ UNLOCK           =%s unlocked the value of %s for nickname %s.
 ;
 [CHANSERV]
 REGISTER         =%s registered channel %s.
-DROP             =%s dropped channel %s.
+DROP             =%s dropped channel %s (%s).
+IDENTIFY         =%s identified as founder for channel %s.
 SUSPEND          =%s suspended channel %s for %s.
 UNSUSPEND        =%s unsuspended channel %s.
 FORBID           =%s forbade channel %s from being registered.
-GETPASS          =%s retrieved the password for channel %s.
+GETPASS          =%s retrieved the password for channel %s (%s).
 MODE             =%s changed mode "%s" on channel %s with the MODE command.
 OP               =%s opped %s in channel %s with the OP command.
 DEOP             =%s deopped %s in channel %s with the DEOP command.
@@ -112,11 +116,11 @@ VOICE            =%s voiced %s in channel %s with the VOICE command.
 DEVOICE          =%s devoiced %s in channel %s with the DEVOICE command.
 TOPIC            =%s set the topic on %s with the TOPIC command.
 KICK             =%s kicked %s from channel %s with the KICK command.
-ANONKICK         =%s anonymously kicked %s from channel %s with the ANONKICK command.
+ANONKICK         =%s anonymously kicked %s from channel %s with the REMOVE command.
 INVITE           =%s invited %s to channel %s with the INVITE command.
 UNBAN            =%s unbanned %s from channel %s with the UNBAN command.
 COMMAND          =%s executed the %s command for channel %s.
-LEVEL            =%s set the level of %s to %s.
+LEVEL            =%s set the level of %s to %d for channel %s.
 ACCESS_ADD       =%s added %s to the access list for channel %s at level %s.
 ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %s.
 ACCESS_DEL       =%s removed %s from the access list for channel %s.
@@ -128,6 +132,7 @@ MESSAGE_ADD      =%s added a on-join message for channel %s.
 MESSAGE_DEL      =%s removed a on-join message from channel %s.
 SET_PASSWORD     =%s changed the password for channel %s.
 SET              =%s set the value of %s for channel %s to %s.
+UNSET            =%s unset the value of %s for channel %s.
 LOCK             =%s locked the value of %s for channel %s to %s.
 UNLOCK           =%s unlocked the value of %s for channel %s.
 
@@ -135,42 +140,50 @@ UNLOCK           =%s unlocked the value of %s for channel %s.
 ; These are used when a command is executed from MemoServ.
 ;
 [MEMOSERV]
-SEND             =%s sent a memo to %s.
-FILE             =%s sent a file attachment (%s / %d) to %s.
-DEL              =%s removed a memo from the %s list.
-PICTURE_ADD      =%s set a picture for nickname %s (%d).
-PICTURE_DEL      =%s removed a picture from nickname %s.
+SEND             =%s sent a news article to %s.
+DEL              =%s removed %d news article(s) from %s.
+DEL_ALL          =%s removed all news articles from %s.
+FILE             =%s sent a file attachment (%s / %d - %s) to %s.
+GET              =%s received a file attachment (%s / %d - %s) from %s.
 
 ;
 ; These are used when a command is executed from CommServ.
 ;
 [COMMSERV]
-NEW              =%s created a new committee called %s with %s as its head.
-KILL             =%s deleted committee %s.
-ADD              =%s added nickname %s to committee %s.
-DEL              =%s removed nickname %s from committee %s.
+ADD              =%s created a new committee called %s with %s as its head.
+DEL              =%s deleted committee %s.
 MEMO             =%s sent a memo to all members of committee %s.
+MEMBER_ADD       =%s added nickname %s to committee %s.
+MEMBER_DEL       =%s removed nickname %s from committee %s.
 LOGON_ADD        =%s added a new logon message to committee %s.
 LOGON_DEL        =%s removed a logon message from committee %s.
 SET              =%s set the value of %s for committee %s to %s.
+UNSET            =%s unset the value of %s for committee %s.
+LOCK             =%s locked the value of %s for committee %s to %s.
+UNLOCK           =%s unlocked the value of %s for committee %s.
 
 ;
 ; These are used when a command is executed from ServMsg.
 ;
 [SERVMSG]
 GLOBAL           =%s sent message "%s" to all users.
+FILE_ADD         =%s added file %s (%d - %s) at privilage %s to public filesystem.
+FILE_DEL         =%s has removed file %s (%d) from the public filesystem.
+FILE_RENAME      =%s has renamed file %s to %s in the public filesystem.
+FILE_PRIV        =%s has resecured file %s to %s in the public filesystem.
+FILE_SEND        =%s has downloaded the file %s from the public filesystem.
+FILE_LOOKUP      =%s looked up file %d of type %s.
 
 ;
 ; These are used when a command is executed from OperServ.
 ;
 [OPERSERV]
-TRACE            =%s set the trace level of %s to %s.
 MODE             =%s set mode "%s" for %s with the MODE command.
 QLINE            =%s quarentined nickname %s.
 UNQLINE          =%s unquarentined nickname %s.
-NOOP_ON          =%s quarentined all ircops on server %s.
-NOOP_OFF         =%s unquarentined all ircops on server %s.
+NOOP             =%s has turned quarentine all ircops on server %s %s.
 KILL             =%s silently killed nickname %s with "%s".
+HIDE             =%s has changed the hostname of nickname %s to %s.
 PING             =%s triggered server pings manually.
 UPDATE           =%s triggered database update manually.
 SHUTDOWN         =%s REQUESTED A SHUTDOWN OF SERVICES.
@@ -181,10 +194,10 @@ ONOFF            =%s TURNED SERVICES %s.
 ONOFF_SERVICE    =%s TURNED SERVICE %s %s.
 CLONE_ADD        =%s added host %s to the clone override list with %d clones.
 CLONE_DEL        =%s removed host %s from the clone override list.
-AKILL_ADD        =%s added mask %s to the autokill list for %s for "%s".
+AKILL_ADD        =%s added mask %s to the autokill list (%s) for "%s".
 AKILL_DEL        =%s removed mask %s from the autokill list.
 OPERDENY_ADD     =%s added mask %s to the operdeny list (%s).
-OPERDENY_DEL     =%s removed mask %s fro mthe operdeny list (%s).
+OPERDENY_DEL     =%s removed mask %s fro mthe operdeny list.
 IGNORE_ADD       =%s added mask %s to the services permanent ignore list.
 IGNORE_DEL       =%s removed mask %s from the services permanent ignore list.
 IGNORED          =Ignored message from %s: %s

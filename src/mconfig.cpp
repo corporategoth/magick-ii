@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2000/05/25 08:16:39  prez
+** Most of the LOGGING for commands is complete, now have to do mainly
+** backend stuff ...
+**
 ** Revision 1.6  2000/05/22 13:25:12  ungod
 ** making it compilable again after removal of log.cpp/.h
 **
@@ -214,7 +218,8 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
     mstring currpath;
     for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
     {
-        currline=i->Trim(true).Trim(false);
+        currline=*i;
+        currline.Trim(true).Trim(false);
         if(currline[0]=='['&&currline.Last()==']')
         {
             // new section

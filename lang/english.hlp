@@ -1655,6 +1655,7 @@
 06 =REGD::    HELP         LIST         READ         UNREAD
 07 =REGD::    SEND         REPLY        FORWARD      FLUSH
 08 =REGD::    CONTINUE     CANCEL       DEL          FILE
+08 =REGD::    GET
 09 =::
 10 =::You may request help on the syntax and functionalty
 11 =::of any and all of the above commands by specifying
@@ -2427,7 +2428,6 @@
 02 =SADMIN::
 03 =SADMIN::This will force a save of the databases immediately.
 04 =SADMIN::This is done automatically periodically.
-
 
 [OPERSERV/SHUTDOWN]
 01 =SADMIN::SHUTDOWN <reason>

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/05/25 08:16:39  prez
+** Most of the LOGGING for commands is complete, now have to do mainly
+** backend stuff ...
+**
 ** Revision 1.58  2000/05/18 11:41:46  prez
 ** Fixed minor front-end issues with the filesystem...
 **
@@ -1563,6 +1567,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    Parent->memoserv.channel.erase(who.LowerCase());
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL_ALL"),
 				    who.c_str());
+	    Log(LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL_ALL"),
+		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		who.c_str());
 	}
 	else
 	{
@@ -1634,6 +1641,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL"),
 			    output.c_str(), who.c_str());
 		output = "";
+		Log(LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL"),
+			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+			adjust, who.c_str());
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));

@@ -24,6 +24,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/05/25 08:16:38  prez
+** Most of the LOGGING for commands is complete, now have to do mainly
+** backend stuff ...
+**
 ** Revision 1.38  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -311,7 +315,7 @@ public:
     mstring Name() { return i_Name; }
     mDateTime RegTime() { return i_RegTime; }
 
-    void Drop();
+    unsigned long Drop();
     mstring Password();
     void Password(mstring in);
     mstring Email();

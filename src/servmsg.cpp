@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/05/25 08:16:39  prez
+** Most of the LOGGING for commands is complete, now have to do mainly
+** backend stuff ...
+**
 ** Revision 1.49  2000/05/19 10:48:15  prez
 ** Finalized the DCC Sending (now uses the Action map properly)
 **
@@ -954,6 +958,9 @@ void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		newfile.c_str());
+    Log(LM_INFO, Parent->getLogMessage("SERVMSG/FILE_RENAME"),
+	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	file.c_str(), newfile.c_str());
     Parent->filesys.Rename(FileMap::Public, num, newfile);
 }
 
@@ -988,6 +995,9 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		Parent->getMessage(source, "LIST/ACCESS").c_str(),
     		priv.c_str());
+    Log(LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
+	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	file.c_str(), priv.c_str());
     Parent->filesys.SetPriv(FileMap::Public, num, priv);
 }
 
@@ -1099,6 +1109,9 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
 				number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
 				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
+			Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
+				Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+				number, type.c_str());
 	  		return;
 	    	    }
 	    	}
@@ -1118,6 +1131,9 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	    	{
 		    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PICTURE"),
 	  			number, i->second.Name().c_str());
+		    Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
+			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+			number, type.c_str());
 	  	    return;
 	    	}
 	    }
@@ -1132,6 +1148,9 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PUBLIC"),
 	  		number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
 	  		Parent->filesys.GetPriv(FileMap::Public, number).c_str());
+	    Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
+		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		number, type.c_str());
 	    return;
     	}
 	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PUBLIC"),
@@ -1168,5 +1187,8 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
     Parent->servmsg.stats.i_Global++;
     announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
 				source.c_str());
+    Log(LM_NOTICE, Parent->getLogMessage("SERVMSG/GLOBAL"),
+	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	text.c_str());
 }
 
