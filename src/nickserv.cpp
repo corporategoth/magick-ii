@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.163  2001/03/27 19:16:03  prez
+** Fixed Chan_Stored_t::ChgNick (had problems coz nick isnt fully changed yet)
+**
 ** Revision 1.162  2001/03/27 16:09:43  prez
 ** Fixed chanserv internal maps problem (inserted with incorrect case)
 **
@@ -1488,7 +1491,6 @@ void Nick_Live_t::Name(const mstring& in)
 {
     FT("Nick_Live_t::Name", (in));
 
-    mstring oldnick = i_Name;
     InFlight.ChgNick(in);
 
     WLOCK(("NickServ", "live", i_Name.LowerCase()));
@@ -1554,6 +1556,7 @@ void Nick_Live_t::Name(const mstring& in)
     }
 
     // WooHoo, we have a new nick!
+    mstring oldnick(i_Name);
     i_Name = in;
     i_My_Signon_Time = mDateTime::CurrentDateTime();
 

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.234  2001/03/27 19:16:03  prez
+** Fixed Chan_Stored_t::ChgNick (had problems coz nick isnt fully changed yet)
+**
 ** Revision 1.233  2001/03/27 16:09:42  prez
 ** Fixed chanserv internal maps problem (inserted with incorrect case)
 **
@@ -2128,16 +2131,18 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
     Chan_Live_t &clive = Parent->chanserv.GetLive(i_Name);
     size_t users = clive.Users();
 
-    if (!Parent->nickserv.IsLiveAll(newnick))
+    if (!Parent->nickserv.IsLiveAll(nick))
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"NICK", i_Name.c_str(), newnick.c_str()));
+			"NICK", i_Name.c_str(), nick.c_str()));
 	return;
     }
 
     // Check we dont now trigger AKICK
+    // We supply the OLD nick to check the mask, and then the
+    // new nick to check nick only (livelook is off).
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    if (Akick_find(newnick))
+    if (Akick_find(nick) || Akick_find(newnick, false))
     {
 	// If this user is the only user in channel
 	if (users == 1)
@@ -2145,7 +2150,7 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 
 	if (Parent->nickserv.IsLive(Akick->Entry()))
 	    clive.SendMode("+b " +
-		Parent->nickserv.GetLive(newnick).AltMask(Parent->operserv.Ignore_Method()));
+		Parent->nickserv.GetLive(nick).AltMask(Parent->operserv.Ignore_Method()));
 	else
 	    clive.SendMode("+b " + Akick->Entry());
 
@@ -2160,7 +2165,10 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
     }}
 
     // Check we're still alowed in here!
-    if (Restricted() && !Suspended() && GetAccess(newnick) < 1)
+/* Taken out as I need to overcome the problem of us not being
+ * on the new nick yet (GetAccess requires a full changeover)
+
+    if (Restricted() && !Suspended() && GetAccess(nick) < 1)
     {
 	// If this user is the only user in channel
 	if (users == 1)
@@ -2168,7 +2176,7 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 
 	if (Parent->nickserv.IsLive(newnick))
 	    clive.SendMode("+b " +
-		Parent->nickserv.GetLive(newnick).AltMask(Parent->operserv.Ignore_Method()));
+		Parent->nickserv.GetLive(nick).AltMask(Parent->operserv.Ignore_Method()));
 	else
 	    clive.SendMode("+b " + newnick + "!*@*");
 
@@ -2181,6 +2189,7 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 
 	return;
     }
+*/
 }
 
 
@@ -4738,16 +4747,13 @@ bool Chan_Stored_t::Akick_find(const mstring& entry, const bool livelook)
 		    if (entry.Matches(iter->Entry(), true))
 			break;
 	    }
-	    else
+	    else if (livelook && Parent->nickserv.IsLive(entry))
 	    {
-		if (livelook && Parent->nickserv.IsLive(entry))
-		{
-		    mstring mask = Parent->nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H);
+		mstring mask(Parent->nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H));
 
-		    for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
-			if (mask.Matches(iter->Entry(), true))
-			    break;
-		}
+		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
+		    if (mask.Matches(iter->Entry(), true))
+			break;
 	    }
 	}
     }
