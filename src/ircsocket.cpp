@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.157  2001/05/03 22:34:35  prez
+** Fixed SQUIT protection ...
+**
 ** Revision 1.156  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -491,20 +494,71 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 {
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
-    CP(("IrcSvcHandler closed, scheduling reconnect, then closing down"));
+    CP(("IrcSvcHandler closed"));
+
+    LOG((LM_ERROR, Parent->getLogMessage("OTHER/CLOSED"),
+	Parent->CurrentServer().c_str()));
 
     // We DONT want any processing once we're gone ... nowhere to send
     // back the messages (duh!).
     mBase::shutdown();
 
     // Should I do this with SQUIT protection ...?
-    { WLOCK(("NickServ", "live"));
-    WLOCK2(("ChanServ", "live"));
-    WLOCK3(("Server", "list"));
-    Parent->nickserv.live.clear();
-    Parent->chanserv.live.clear();
+    { WLOCK(("NickServ", "recovered"));
+    Parent->nickserv.recovered.clear();
+    }
+
+    // Essentially here, we enact SQUIT protection ...
+    { WLOCK(("Server", "list"));
+    { WLOCK2(("Server", "ToBeSquit"));
+    WLOCK3(("Server", "ServerSquit"));
+    Parent->server.DumpB();
+    CB(0, Parent->server.ToBeSquit.size());
+    CB(1, Parent->server.ServerSquit.size());
+    Server::list_t::iterator si;
+    for (si=Parent->server.ListBegin(); si!=Parent->server.ListEnd(); si++)
+    {
+	if (Parent->server.ToBeSquit.find(si->first) != Parent->server.ToBeSquit.end())
+	    Parent->server.ToBeSquit.erase(si->first);
+	if (Parent->server.ServerSquit.find(si->first) != Parent->server.ServerSquit.end())
+	{
+	    mstring *arg = NULL;
+	    if (ACE_Reactor::instance()->cancel_timer(
+		Parent->server.ServerSquit[si->first], reinterpret_cast<const void **>(arg))
+		&& arg != NULL)
+		delete arg;
+	}
+	Parent->server.ServerSquit[si->first] =
+		ACE_Reactor::instance()->schedule_timer(&Parent->server.squit,
+		new mstring(si->first),
+		ACE_Time_Value(Parent->config.Squit_Protect()));
+    }
+    CE(1, Parent->server.ServerSquit.size());
+    CE(0, Parent->server.ToBeSquit.size());
+    Parent->server.DumpE();
+    }
+  
+    NickServ::live_t::iterator iter;
+    vector<mstring> chunked;
+    { RLOCK(("NickServ", "live"));
+    for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
+    {
+	if (iter->second.IsServices())
+	{
+	    chunked.push_back(iter->first);
+	}
+	else if (Parent->server.IsList(iter->second.Server()))
+	{
+	    iter->second.SetSquit();
+	}
+    }}
+    // Sign off services if we have NO uplink
+    unsigned int i;
+    for (i=0; i<chunked.size(); i++)
+	Parent->server.QUIT(chunked[i], "SQUIT - " + Parent->startup.Server_Name());
     Parent->server.i_list.clear();
     }
+    Parent->server.OurUplink("");
 
     { WLOCK(("IrcSvcHandler"));
     Parent->ircsvchandler = NULL;
@@ -513,6 +567,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown()) && Parent->Connected())
     {
+	CP(("Scheduling reconnect"));
 	Parent->Connected(false);
 	if(Parent->Reconnect() && !Parent->Shutdown())
 	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
@@ -1598,7 +1653,7 @@ int EventTask::svc(void)
 #endif
 		}
 	    }
-	    if (dead >= (thread_heartbeat.size() / 2))
+	    if (dead > (thread_heartbeat.size() / 2))
 	    {
 		announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/THREAD_DEAD_HALF"));
 		LOG((LM_EMERGENCY, Parent->getLogMessage("SYS_ERRORS/THREAD_DEAD_HALF")));

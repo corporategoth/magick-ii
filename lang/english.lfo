@@ -296,6 +296,7 @@ CONNECTED        =Connection established and authenticated to server %s.
 WRONGPASS        =Password mismatch connecting to server %s, skipping.
 WEAREBANNED      =We are k-lined from server %s, skipping.
 REFUSED          =Connection to server %s:%d refused.
+CLOSED           =Connection to server %s closed.
 SERVER_MSG       =SERVER MESSAGE (%s): %s
 LINK             =Server %s has linked to the network via. %s.
 INVALIDLINK      =Server %s has been SQUIT from %s as it is not allowed!

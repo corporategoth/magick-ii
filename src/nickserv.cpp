@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.166  2001/05/03 22:34:35  prez
+** Fixed SQUIT protection ...
+**
 ** Revision 1.165  2001/05/01 14:00:24  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -1949,7 +1952,7 @@ void Nick_Live_t::SetSquit()
 }
 
 
-void Nick_Live_t::ClearSquit()
+void Nick_Live_t::ClearSquit(const mstring& inmodes)
 {
     NFT("Nick_Live_t::ClearSquit");
 
@@ -1964,7 +1967,7 @@ void Nick_Live_t::ClearSquit()
     // These will all be set again
     { WLOCK2(("NickServ", "live", i_Name.LowerCase(), "modes"));
     CB(1, modes);
-    modes.erase();
+    modes = inmodes;
     CE(1, modes);
     }
 

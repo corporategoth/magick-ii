@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/05/03 22:34:35  prez
+** Fixed SQUIT protection ...
+**
 ** Revision 1.66  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -313,7 +316,7 @@ public:
     void AltHost(const mstring& in);
     mstring Server() const;
     void SetSquit();
-    void ClearSquit();
+    void ClearSquit(const mstring& inmodes = "");
     mstring Squit() const;
 
     enum styles {

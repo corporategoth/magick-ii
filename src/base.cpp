@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.159  2001/05/03 22:34:35  prez
+** Fixed SQUIT protection ...
+**
 ** Revision 1.158  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -1257,6 +1260,12 @@ void mBase::shutdown()
     NFT("mBase::shutdown");
 
     mMessage *msg = NULL;
+    int i, count=BaseTask.thr_count();
+
+    // This should release message queue mutex, and
+    // give us enough time to grab it and clear queue.
+    for(i=0;i<count;i++)
+	BaseTask.i_sleep();
     { MLOCK(("MessageQueue"));
     while (!BaseTask.message_queue_.is_empty())
     {
@@ -1264,8 +1273,7 @@ void mBase::shutdown()
 	if (msg != NULL)
 	    delete msg;
     }}
-    int j=BaseTask.thr_count();
-    for(int i=0;i<j;i++)
+    for(i=0;i<count;i++)
 	BaseTask.i_shutdown();
     mBase::TaskOpened=false;
 }

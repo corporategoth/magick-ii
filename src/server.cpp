@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.167  2001/05/03 22:34:36  prez
+** Fixed SQUIT protection ...
+**
 ** Revision 1.166  2001/05/03 04:40:18  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -3665,13 +3668,46 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			}
 		}}
 
+		mstring server;
+		mstring modes;
+		switch (proto.Signon())
+		{
+		case 0000:
+		case 0001:
+		    break;
+		case 1000: // NICK nick hops time user host server :realname
+		case 1001: // NICK nick hops time user host server 1 :realname
+		case 1002: // NICK nick hops time user host server 0 real-host :realname
+		    server = GetServer(params.ExtractWord(6, ": "));
+		    break;
+		case 1003: // NICK nick hops time user real-host host server 0 :realname
+		    server = GetServer(params.ExtractWord(7, ": "));
+		    break;
+		case 2000: // NICK nick hops time mode user host server :realname
+		case 2001: // NICK nick hops time mode user host server 0 :realname
+		    modes = params.ExtractWord(4, ": ");
+		    server = GetServer(params.ExtractWord(7, ": "));
+		    break;
+		case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
+		    modes = params.ExtractWord(4, ": ");
+		    server = GetServer(params.ExtractWord(8, ": "));
+		    break;
+		case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
+		    modes = params.ExtractWord(8, ": ");
+		    server = GetServer(params.ExtractWord(6, ": "));
+		    break;
+		}
 		if (Parent->nickserv.IsLiveAll(sourceL))
 		{
+		    COM(("Previous SQUIT checking if %s == %s and %s == %s",
+			Parent->nickserv.GetLive(sourceL).Squit().c_str(), server.c_str(),
+			Parent->nickserv.GetLive(sourceL).SignonTime().DateTimeString().c_str(),
+			mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
 		    // IF the squit server = us, and the signon time matches
-		    if (Parent->nickserv.GetLive(sourceL).Squit() == params.ExtractWord(6, ": ").LowerCase()
-			&& Parent->nickserv.GetLive(sourceL).SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
+		    if (Parent->nickserv.GetLive(sourceL).Squit().IsSameAs(server, true) &&
+			Parent->nickserv.GetLive(sourceL).SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
 		    {
-			Parent->nickserv.GetLive(sourceL).ClearSquit();
+			Parent->nickserv.GetLive(sourceL).ClearSquit(modes);
 			mMessage::CheckDependancies(mMessage::NickExists, sourceL);
 			return;    // nice way to avoid repeating ones self :)
 		    }
@@ -3693,7 +3729,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(2, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(6, ": ")),
+			    server,
 			    params.ExtractWord(4, ": "),
 			    params.ExtractWord(5, ": "),
 			    params.After(":")
@@ -3706,7 +3742,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(6, ": ")),
+			    server,
 			    params.ExtractWord(4, ": "),
 			    params.ExtractWord(5, ": "),
 			    params.After(":")
@@ -3719,7 +3755,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(6, ": ")),
+			    server,
 			    params.ExtractWord(4, ": "),
 			    params.ExtractWord(8, ": "),
 			    params.After(":")
@@ -3733,7 +3769,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(4, ": "))),
-			    GetServer(params.ExtractWord(7, ": ")),
+			    server,
 			    params.ExtractWord(4, ": "),
 			    params.ExtractWord(5, ": "),
 			    params.After(":")
@@ -3747,12 +3783,12 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(7, ": ")),
+			    server,
 			    params.ExtractWord(5, ": "),
 			    params.ExtractWord(6, ": "),
 			    params.After(":")
 			);
-			tmp.Mode(params.ExtractWord(4, ": "));
+			tmp.Mode(modes);
 			Parent->nickserv.AddLive(&tmp);
 		    }
 		    break;
@@ -3761,12 +3797,12 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(7, ": ")),
+			    server,
 			    params.ExtractWord(5, ": "),
 			    params.ExtractWord(6, ": "),
 			    params.After(":")
 			);
-			tmp.Mode(params.ExtractWord(4, ": "));
+			tmp.Mode(modes);
 			Parent->nickserv.AddLive(&tmp);
 		    }
 		    break;
@@ -3775,12 +3811,12 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(8, ": ")),
+			    server,
 			    params.ExtractWord(5, ": "),
 			    params.ExtractWord(6, ": "),
 			    params.After(":")
 			);
-			tmp.Mode(params.ExtractWord(4, ": "));
+			tmp.Mode(modes);
 			tmp.AltHost(params.ExtractWord(7, ": "));
 			Parent->nickserv.AddLive(&tmp);
 		    }
@@ -3790,12 +3826,12 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			Nick_Live_t tmp(
 			    params.ExtractWord(1, ": "),
 			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    GetServer(params.ExtractWord(6, ": ")),
+			    server,
 			    params.ExtractWord(4, ": "),
 			    params.ExtractWord(5, ": "),
 			    params.After(":")
 			);
-			tmp.Mode(params.ExtractWord(8, ": "));
+			tmp.Mode(modes);
 			tmp.AltHost(params.ExtractWord(9, ": "));
 			Parent->nickserv.AddLive(&tmp);
 		    }
@@ -4552,13 +4588,54 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    }
 	    }}
 
+	    mstring modes;
+	    mstring server;
+	    switch (proto.Signon())
+	    {
+	    case 0000:
+	    case 0001:
+		break;
+	    case 1000: // SNICK nick hops time user host server modes :realname
+		modes = params.ExtractWord(7, ": ");
+		server = GetServer(params.ExtractWord(6, ": "));
+		break;
+	    case 1001: // SNICK nick hops time user host server 1 modes :realname
+		modes = params.ExtractWord(8, ": ");
+		server = GetServer(params.ExtractWord(6, ": "));
+		break;
+	    case 1002: // SNICK nick hops time user host server 0 real-host modes :realname
+		modes = params.ExtractWord(9, ": ");
+		server = GetServer(params.ExtractWord(6, ": "));
+		break;
+	    case 1003: // SNICK nick hops time user real-host host server 0 modes :realname
+		modes = params.ExtractWord(9, ": ");
+		server = GetServer(params.ExtractWord(7, ": "));
+		break;
+	    case 2000: // SNICK nick hops time mode user host server :realname
+	    case 2001: // SNICK nick hops time mode user host server 0 :realname
+		modes = params.ExtractWord(4, ": ");
+		server = GetServer(params.ExtractWord(7, ": "));
+		break;
+	    case 2002: // SNICK nick hops time mode user host maskhost server 0 :realname
+		modes = params.ExtractWord(4, ": ");
+		server = GetServer(params.ExtractWord(8, ": "));
+		break;
+	    case 2003: // SNICK nick hops time user host server 0 mode maskhost :realname
+		modes = params.ExtractWord(8, ": ");
+		server = GetServer(params.ExtractWord(6, ": "));
+		break;
+	    }
 	    if (Parent->nickserv.IsLiveAll(sourceL))
 	    {
 		// IF the squit server = us, and the signon time matches
-		if (Parent->nickserv.GetLive(sourceL).Squit() == params.ExtractWord(6, ": ").LowerCase()
-		    && Parent->nickserv.GetLive(sourceL).SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
+		COM(("Previous SQUIT checking if %s == %s and %s == %s",
+			Parent->nickserv.GetLive(sourceL).Squit().c_str(), server.c_str(),
+			Parent->nickserv.GetLive(sourceL).SignonTime().DateTimeString().c_str(),
+			mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
+		if (Parent->nickserv.GetLive(sourceL).Squit().IsSameAs(server, true) &&
+		    Parent->nickserv.GetLive(sourceL).SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
 		{
-		    Parent->nickserv.GetLive(sourceL).ClearSquit();
+		    Parent->nickserv.GetLive(sourceL).ClearSquit(modes);
 		    mMessage::CheckDependancies(mMessage::NickExists, sourceL);
 		    return;    // nice way to avoid repeating ones self :)
 		}
@@ -4583,12 +4660,12 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(6, ": ")),
+			server,
 			params.ExtractWord(4, ": "),
 			params.ExtractWord(5, ": "),
 			params.After(":")
 			);
-		    tmp.Mode(params.ExtractWord(7, ": "));
+		    tmp.Mode(modes);
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
@@ -4597,12 +4674,12 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(6, ": ")),
+			server,
 			params.ExtractWord(4, ": "),
 			params.ExtractWord(5, ": "),
 			params.After(":")
 			);
-		    tmp.Mode(params.ExtractWord(8, ": "));
+		    tmp.Mode(modes);
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
@@ -4611,13 +4688,13 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(6, ": ")),
+			server,
 			params.ExtractWord(4, ": "),
 			params.ExtractWord(8, ": "),
 			params.After(":")
 			);
+		    tmp.Mode(modes);
 		    tmp.AltHost(params.ExtractWord(5, ": "));
-		    tmp.Mode(params.ExtractWord(9, ": "));
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
@@ -4626,36 +4703,36 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(7, ": ")),
+			server,
 			params.ExtractWord(4, ": "),
 			params.ExtractWord(5, ": "),
 			params.After(":")
 			);
+		    tmp.Mode(modes);
 		    tmp.AltHost(params.ExtractWord(6, ": "));
-		    tmp.Mode(params.ExtractWord(9, ": "));
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
-	    case 2000: // NICK nick hops time mode user host server :realname
+	    case 2000: // SNICK nick hops time mode user host server :realname
 		{
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(7, ": ")),
+			server,
 			params.ExtractWord(5, ": "),
 			params.ExtractWord(6, ": "),
 			params.After(":")
 			);
-		    tmp.Mode(params.ExtractWord(6, ": "));
+		    tmp.Mode(modes);
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
-	    case 2001: // NICK nick hops time mode user host server 0 :realname
+	    case 2001: // SNICK nick hops time mode user host server 0 :realname
 		{
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(7, ": ")),
+			server,
 			params.ExtractWord(5, ": "),
 			params.ExtractWord(6, ": "),
 			params.After(":")
@@ -4664,32 +4741,32 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
-	    case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
+	    case 2002: // SNICK nick hops time mode user host maskhost server 0 :realname
 		{
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(8, ": ")),
+			server,
 			params.ExtractWord(5, ": "),
 			params.ExtractWord(6, ": "),
 			params.After(":")
 		    );
-		    tmp.Mode(params.ExtractWord(4, ": "));
+		    tmp.Mode(modes);
 		    tmp.AltHost(params.ExtractWord(7, ": "));
 		    Parent->nickserv.AddLive(&tmp);
 		}
 		break;
-	    case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
+	    case 2003: // SNICK nick hops time user host server 0 mode maskhost :realname
 		{
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			GetServer(params.ExtractWord(6, ": ")),
+			server,
 			params.ExtractWord(4, ": "),
 			params.ExtractWord(5, ": "),
 			params.After(":")
 		    );
-		    tmp.Mode(params.ExtractWord(8, ": "));
+		    tmp.Mode(modes);
 		    tmp.AltHost(params.ExtractWord(9, ": "));
 		    Parent->nickserv.AddLive(&tmp);
 		}
@@ -4789,53 +4866,69 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	    // :PreZ SQUIT server :reason
 	    mstring target = params.ExtractWord(1, ": ").LowerCase();
 
-	    LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_SECOND"),
+	    if (IsList(target))
+	    {
+		unsigned int i;
+		vector<mstring> tlist = GetList(target).AllDownlinks();
+		tlist.push_back(target);
+		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_SECOND"),
 		    target.c_str(),
 		    GetList(target.LowerCase()).Uplink().c_str()));
 
-	    RemList(target);
-	    { WLOCK2(("Server", "ServerSquit"));
-	    MCB(ToBeSquit.size());
-	    CB(1, ServerSquit.size());
-	    if (ServerSquit.find(target) != ServerSquit.end())
-	    {
-		mstring *arg = NULL;
-		if (ACE_Reactor::instance()->cancel_timer(
-			ServerSquit[target], reinterpret_cast<const void **>(arg))
-		    && arg != NULL)
-		    delete arg;
-		ServerSquit[target] =
-		    ACE_Reactor::instance()->schedule_timer(&squit,
-			new mstring(target),
+		RemList(target);
+
+		{ WLOCK2(("Server", "ToBeSquit"));
+		WLOCK3(("Server", "ServerSquit"));
+		MCB(ToBeSquit.size());
+		CB(1, ServerSquit.size());
+		for (i=0; i<tlist.size(); i++)
+		{
+		    if (ToBeSquit.find(tlist[i]) != ToBeSquit.end())
+			ToBeSquit.erase(tlist[i]);
+		    if (ServerSquit.find(tlist[i]) != ServerSquit.end())
+		    {
+			mstring *arg = NULL;
+			if (ACE_Reactor::instance()->cancel_timer(
+				ServerSquit[tlist[i]], reinterpret_cast<const void **>(arg))
+				&& arg != NULL)
+			    delete arg;
+		    }
+		    ServerSquit[tlist[i]] =
+			ACE_Reactor::instance()->schedule_timer(&squit,
+			new mstring(tlist[i]),
 			ACE_Time_Value(Parent->config.Squit_Protect()));
-	    }
-	    { WLOCK3(("Server", "ToBeSquit"));
-	    ToBeSquit.erase(target);
-	    CE(1, ServerSquit.size());
-	    MCE(ToBeSquit.size());
-	    }}
-	    NickServ::live_t::iterator iter;
-	    vector<mstring> chunked;
-	    { RLOCK(("NickServ", "live"));
-	    for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
-	    {
-		if (iter->second.IsServices() && ListSize() == 0)
-		{
-		    chunked.push_back(iter->first);
 		}
-		else if (iter->second.Server() == target)
-		{
-		    iter->second.SetSquit();
-		    mMessage::CheckDependancies(mMessage::NickNoExists, iter->first);
+		CE(1, ServerSquit.size());
+		MCE(ToBeSquit.size());
 		}
-	    }}
-	    // Sign off services if we have NO uplink
-	    unsigned int i;
-	    for (i=0; i<chunked.size(); i++)
-	    {
-		QUIT(chunked[i], "SQUIT - " + target);
+		NickServ::live_t::iterator iter;
+		vector<mstring> chunked;
+		{ RLOCK(("NickServ", "live"));
+		for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
+		{
+		    if (iter->second.IsServices() && ListSize() == 0)
+		    {
+			chunked.push_back(iter->first);
+		    }
+		    else
+		    {
+			for (i=0; i<tlist.size(); i++)
+			{
+			    if (tlist[i] == iter->second.Server())
+			    {
+				iter->second.SetSquit();
+				mMessage::CheckDependancies(mMessage::NickNoExists, iter->first);
+				break;
+			    }
+			}
+		    }
+		}}
+	        // Sign off services if we have NO uplink
+		for (i=0; i<chunked.size(); i++)
+		    QUIT(chunked[i], "SQUIT - " + target);
+		for (i=0; i<tlist.size(); i++)
+		    mMessage::CheckDependancies(mMessage::ServerNoExists, tlist[i]);
 	    }
-	    mMessage::CheckDependancies(mMessage::ServerNoExists, target);
 	}
 	else if (msgtype=="STATS")
 	{
@@ -5135,11 +5228,34 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 		    }
 	    }}
 
+	    mstring server;
+	    switch (proto.Signon())
+	    {
+	    case 0000:
+		server = GetServer(params.ExtractWord(4, ": "));
+		break;
+	    case 0001:
+		server = GetServer(params.ExtractWord(5, ": "));
+		break;
+	    case 1000: // NICK nick hops time user host server :realname
+	    case 1001: // NICK nick hops time user host server 1 :realname
+	    case 1002: // NICK nick hops time user host server 0 real-host :realname
+	    case 1003: // NICK nick hops time user real-host host server 0 :realname
+	    case 2000: // NICK nick hops time mode user host server :realname
+	    case 2001: // NICK nick hops time mode user host server 0 :realname
+	    case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
+	    case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
+		break;
+	    }
 	    if (Parent->nickserv.IsLiveAll(sourceL))
 	    {
+		COM(("Previous SQUIT checking if %s == %s and %s == %s",
+			Parent->nickserv.GetLive(sourceL).Squit().c_str(), server.c_str(),
+			Parent->nickserv.GetLive(sourceL).SignonTime().DateTimeString().c_str(),
+			mDateTime(static_cast<time_t>(atoul(params.ExtractWord(2, ": ")))).DateTimeString().c_str()));
 	        // IF the squit server = us, and the signon time matches
-	        if (Parent->nickserv.GetLive(sourceL).Squit().IsSameAs(params.ExtractWord(6, ": "), true) &&
-	    	    Parent->nickserv.GetLive(sourceL).SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
+	        if (Parent->nickserv.GetLive(sourceL).Squit().IsSameAs(server, true) &&
+	    	    Parent->nickserv.GetLive(sourceL).SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(2, ": ")))))
 	        {
 	    	    Parent->nickserv.GetLive(sourceL).ClearSquit();
 		    mMessage::CheckDependancies(mMessage::NickExists, sourceL);
@@ -5159,7 +5275,7 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			time(NULL),
-			GetServer(params.ExtractWord(4, ": ")),
+			server,
 			params.ExtractWord(2, ": "),
 			params.ExtractWord(3, ": "),
 			params.After(":")
@@ -5172,7 +5288,7 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 		    Nick_Live_t tmp(
 			params.ExtractWord(1, ": "),
 			static_cast<time_t>(atoul(params.ExtractWord(2, ": "))),
-			GetServer(params.ExtractWord(5, ": ")),
+			server,
 			params.ExtractWord(3, ": "),
 			params.ExtractWord(4, ": "),
 			params.After(":")
