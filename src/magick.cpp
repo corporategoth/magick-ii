@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.331  2001/11/30 07:30:07  prez
+** Added some windows stuff ...
+**
 ** Revision 1.330  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -621,7 +624,6 @@ int Magick::Start(bool firstrun)
     if (!sysinfo_node().IsSameAs(BUILD_NODE) ||
 	!sysinfo_type().IsSameAs(BUILD_TYPE))
     {
-	mFile::Erase(argv[0]);
 	NLOG(LM_EMERGENCY, "SYS_ERRORS/LOCKED_BIN");
 	return MAGICK_RET_LOCKED;
     }
@@ -698,9 +700,6 @@ int Magick::Start(bool firstrun)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR",
 		("chdir", Services_Dir(), errno, strerror(errno)));
-#ifdef WIN32
-        WSACleanup ();
-#endif
         RET(MAGICK_RET_ERROR);
     }
 

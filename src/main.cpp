@@ -25,6 +25,9 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2001/11/30 07:30:07  prez
+** Added some windows stuff ...
+**
 ** Revision 1.50  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -94,6 +97,24 @@ RCSID(main_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
+#ifdef WIN32
+bool isWinNT()
+{
+#ifdef __BORLANDC__
+    return (Win32Platform == VER_PLATFORM_WIN32_NT)
+#elif _MSC_VER
+    OSVERSIONINFO osvi;
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (GetVersionEx(&osvi))
+	return (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+    else
+	return false;
+#else
+    return false;
+#endif
+}
+#endif
+
 int main(int argc, char **argv)
 {
 #ifdef MAGICK_TRACE_WORKS
@@ -147,6 +168,13 @@ int main(int argc, char **argv)
 	    firstrun = false;
 	}
 	mThread::Detach();
+
+	// Specicl case, the bin is locked, and we aint got a key.
+	if (Result == MAGICK_RET_LOCKED)
+	    mFile::Erase(argv[0]);
+#ifdef WIN32
+        WSACleanup ();
+#endif
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
@@ -174,6 +202,9 @@ int main(int argc, char **argv)
 	ACE_OS::fprintf(stderr,"(OTH) Unhandled exception.\n");
 	ACE_OS::fflush(stderr);
     }
+#endif
+#ifdef WIN32
+    WSACleanup ();
 #endif
     return MAGICK_RET_ERROR;
 }
