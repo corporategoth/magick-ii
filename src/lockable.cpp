@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/05/02 04:57:07  prez
+** Fixed up problems in failing to release locks
+**
 ** Revision 1.68  2001/05/02 02:35:27  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -276,7 +279,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 			"READ", lockname.c_str()));
 		return;
 	    }
-	    ReleaseMapLock();
 	}
 	else
 	{
@@ -293,8 +295,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    map<ACE_thread_t, locktype_enum> tmap;
 	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(rlock, tmap);
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
-	    ReleaseMapLock();
 	}
+	ReleaseMapLock();
 	if (rlock != NULL)
 	{
 	    if (rlock->acquire() < 0)
@@ -353,7 +355,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 			"READ", lockname.c_str()));
 		return;
 	    }
-	    ReleaseMapLock();
 	}
 	else
 	{
@@ -370,8 +371,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    map<ACE_thread_t, locktype_enum> tmap;
 	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(rlock, tmap);
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
-	    ReleaseMapLock();
 	}
+	ReleaseMapLock();
 	if (rlock != NULL)
 	{
 	    if (rlock->acquire() < 0)
@@ -434,7 +435,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		lockiter->second.second[ACE_Thread::self()] = L_Write;
 		wlock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
 	    }
-	    ReleaseMapLock();
 	}
 	else
 	{
@@ -451,7 +451,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    map<ACE_thread_t, locktype_enum> tmap;
 	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(wlock, tmap);
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Write;
-	    ReleaseMapLock();
 	}
 	if (rlock != NULL)
 	{
@@ -462,6 +461,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    }
 	    rlock = NULL;
 	}
+	ReleaseMapLock();
 	if (wlock != NULL)
 	{
 	    if (wlock->acquire() < 0)
@@ -518,7 +518,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		lockiter->second.second[ACE_Thread::self()] = L_Mutex;
 		mlock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
 	    }
-	    ReleaseMapLock();
 	}
 	else
 	{
@@ -535,8 +534,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    map<ACE_thread_t, locktype_enum> tmap;
 	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(mlock, tmap);
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Mutex;
-	    ReleaseMapLock();
 	}
+	ReleaseMapLock();
 	if (mlock != NULL)
 	{
 	    if (mlock->acquire() < 0)
@@ -622,7 +621,6 @@ mLOCK::~mLOCK()
 		    LockMap.erase(lockiter);
 		}
 	    }
-	    //ReleaseMapLock();
 
 	    if (rlock != NULL)
 	    {
@@ -657,8 +655,6 @@ mLOCK::~mLOCK()
 		    delete mlock;
 		mlock = NULL;
 	    }
-	    //if (!AcquireMapLock())
-		//return;
 	    if (((lockiter = LockMap.find(locks[i])) != LockMap.end()) &&
 		(iter = lockiter->second.second.find(ACE_Thread::self())) != lockiter->second.second.end())
 	    {
