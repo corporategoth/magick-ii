@@ -851,16 +851,10 @@ bool Magick::get_config_values()
     mstring ts_CommServ=mstring("CommServ/");
     mstring ts_ServMsg=mstring("ServMsg/");
 
-CP(("Before first read ..."));
-sleep(1);
     in->Read(ts_Startup+"SERVER_NAME",&value_mstring,"services.magick.tm");
-CP(("After first read ..."));
-sleep(1);
     if (value_mstring != startup.server_name)
 	reconnect = true;
     startup.server_name = value_mstring;
-CP(("Totally After first read ..."));
-sleep(1);
 
     in->Read(ts_Startup+"SERVER_DESC",&value_mstring,FULL_NAME);
     if (value_mstring != startup.server_desc)
@@ -1394,8 +1388,6 @@ sleep(1);
     commserv.oper_name.MakeUpper();
     AddCommands();
 
-CP(("After ALL reads ..."));
-sleep(1);
     if (Parent->commserv.IsList(commserv.all_name))
 	while (i<Parent->commserv.list[commserv.all_name].size())
 	{
@@ -1475,17 +1467,15 @@ sleep(1);
 	Parent->commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
     }
 
-CP(("Almost done ..."));
-sleep(1);
+/*
     if (reconnect && GotConnect)
     {
 	server.raw("ERROR :Closing Link: Configuration reload required restart!");
 	ircsvchandler->shutdown();
 	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value(1));
     }
+*/
 
-CP(("Clearing memory ..."));
-sleep(1);
     delete in;
     RET(true);
     CP(("%s read and loaded to live configuration.", config_file.c_str()));
