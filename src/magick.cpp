@@ -995,7 +995,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGSEGV:	// Segfault, validate all storage.
 	// IF LastSEGV is defined, and time between now and
 	// LastSEGV is < 5 seconds ...
-	if(LastSEGV != 0.0 && ((time_t) (Now() - LastSEGV) < 5))
+	if(((time_t) LastSEGV != 0) && ((time_t) (Now() - LastSEGV) < 5))
 	{
 	    CP(("Got second sigsegv call, giving magick the boot"));
 	    RET(-1);
