@@ -66,7 +66,8 @@ public class ServMsg extends TabbedPane
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());
-	p.add(gb, BorderLayout.NORTH);
+	// p.add(gb, BorderLayout.NORTH);
+	p.add(gb, BorderLayout.CENTER);
 	JScrollPane rv = new JScrollPane(p);
 	return rv;
     }	
@@ -80,7 +81,7 @@ public class ServMsg extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
     }
 }

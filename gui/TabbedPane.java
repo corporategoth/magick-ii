@@ -64,7 +64,7 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
     abstract public void actionPerformed(ActionEvent e);
     abstract public JComponent createPane();
     abstract public String createCfg();
-    abstract public void parseCfg(String data);
+    abstract public void parseCfg(IniParser data);
 
     protected boolean isNonZero(String in)
     {

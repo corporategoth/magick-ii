@@ -293,7 +293,43 @@ public class NickServ extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	int i;
+
+	if (IniParser.getBoolValue(data.getValue("NickServ/APPEND_RENAME")))
+	    append_rename.setSelectedIndex(0);
+	else
+	    append_rename.setSelectedIndex(1);
+	suffixes.setText(data.getValue("NickServ/SUFFIXES"));
+	expire.setText(data.getValue("NickServ/EXPIRE"));
+	delay.setText(data.getValue("NickServ/DELAY"));
+	ident.setText(data.getValue("NickServ/IDENT"));
+	release.setText(data.getValue("NickServ/RELEASE"));
+	passfail.setText(data.getValue("NickServ/PASSFAIL"));
+
+	for (i=0; i<optnames.length; i++)
+	{
+	    if (data.keyExists("NickServ/DEF_" + optnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("NickServ/DEF_" + optnames[i]))), i, 1);
+	    if (data.keyExists("NickServ/LCK_" + optnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("NickServ/LCK_" + optnames[i]))), i, 2);
+	}
+
+	String lang = data.getValue("NickServ/DEF_LANGUAGE");
+	for (i=0; i<def_language.getItemCount(); i++)
+	{
+	    if (((String) def_language.getItemAt(i)).equalsIgnoreCase(lang))
+	    {
+		def_language.setSelectedItem(def_language.getItemAt(i));
+		break;
+	    }
+	}	
+	if (i == def_language.getItemCount())
+	    def_language.setSelectedItem(lang);
+
+	lck_language.setSelected(IniParser.getBoolValue(data.getValue("NickServ/LCK_LANGUAGE")));
+	picsize.setText(data.getValue("NickServ/PICSIZE"));
+	picext.setText(data.getValue("NickServ/PICEXT"));
     }
 }

@@ -41,6 +41,7 @@ public class Files extends TabbedPane
 		database, keyfile, picture, memoattach, f_public, tempdir;
     private JCheckBox verbose, encryption;
     private JComboBox compression;
+    private int def_compression;
 
     public String name() { return "Files"; }
 
@@ -74,18 +75,18 @@ public class Files extends TabbedPane
 	sampletime = createFormattedTextField("SAMPLETIME", 4, new TimeFormat(), "30s", true);
 
 	compression = createComboBox("COMPRESSION", false, true);
-	String def = new String("6 - Default");
+	def_compression = 6;
 	compression.addItem(new String("0 - Disabled"));
 	compression.addItem(new String("1"));
 	compression.addItem(new String("2"));
 	compression.addItem(new String("3"));
 	compression.addItem(new String("4"));
 	compression.addItem(new String("5"));
-	compression.addItem(def);
+	compression.addItem(new String("6 - Default"));
 	compression.addItem(new String("7"));
 	compression.addItem(new String("8"));
 	compression.addItem(new String("9 - Maximum"));
-	compression.setSelectedItem(def);
+	compression.setSelectedIndex(def_compression);
     }
 
     public void documentChanged(DocumentEvent e)
@@ -187,7 +188,51 @@ public class Files extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	int i;
+
+	umask.setText(data.getValue("Files/UMASK"));
+	pidfile.setText(data.getValue("Files/PIDFILE"));
+	logfile.setText(data.getValue("Files/LOGFILE"));
+	verbose.setSelected(IniParser.getBoolValue(data.getValue("Files/VERBOSE")));
+	logchan.setText(data.getValue("Files/LOGCHAN"));
+	motdfile.setText(data.getValue("Files/MOTDFILE"));
+	langdir.setText(data.getValue("Files/LANGDIR"));
+	database.setText(data.getValue("Files/DATABASE"));
+
+	String sel_compression = data.getValue("Files/COMPRESSION");
+	for (i=0; i<compression.getItemCount(); i++)
+	{
+	    int idx = ((String) compression.getItemAt(i)).indexOf(" ");
+	    String ri;
+	    if (idx < 0)
+		ri = (String) compression.getItemAt(i);
+	    else
+		ri = ((String) compression.getItemAt(i)).substring(0, idx);
+	    if (ri.equalsIgnoreCase(sel_compression))
+	    {
+		compression.setSelectedItem(compression.getItemAt(i));
+		break;
+	    }
+	}	
+	if (i == compression.getItemCount())
+	    compression.setSelectedIndex(def_compression);
+
+	keyfile.setText(data.getValue("Files/KEYFILE"));
+	encryption.setSelected(IniParser.getBoolValue(data.getValue("Files/ENCRYPTION")));
+	picture.setText(data.getValue("Files/PICTURE"));
+	memoattach.setText(data.getValue("Files/MEMOATTACH"));
+	f_public.setText(data.getValue("Files/PUBLIC"));
+	tempdir.setText(data.getValue("Files/TEMPDIR"));
+	picture_size.setText(data.getValue("Files/PICTURE_SIZE"));
+	memoattach_size.setText(data.getValue("Files/MEMOATTACH_SIZE"));
+	public_size.setText(data.getValue("Files/PUBLIC_SIZE"));
+	tempdir_size.setText(data.getValue("Files/TMPDIR_SIZE"));
+	blocksize.setText(data.getValue("Files/BLOCKSIZE"));
+	timeout.setText(data.getValue("Files/TIMEOUT"));
+	min_speed.setText(data.getValue("Files/MIN_SPEED"));
+	max_speed.setText(data.getValue("Files/MAX_SPEED"));
+	sampletime.setText(data.getValue("Files/SAMPLETIME"));
     }
 }

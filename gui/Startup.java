@@ -231,7 +231,6 @@ public class Startup extends TabbedPane
 		addTableModelListener(tml);
 	    }
 
-
 	    public int getColumnCount() { return 2; }
 	    public int getRowCount()
 	    {
@@ -467,7 +466,80 @@ public class Startup extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	int i;
+
+	server_name.setText(data.getValue("Startup/SERVER_NAME"));
+	server_desc.setText(data.getValue("Startup/SERVER_DESC"));
+	services_user.setText(data.getValue("Startup/SERVICES_USER"));
+	services_host.setText(data.getValue("Startup/SERVICES_HOST"));
+	ownuser.setSelected(IniParser.getBoolValue(data.getValue("Startup/OWNUSER")));
+	setmode.setText(data.getValue("Startup/SETMODE"));
+	bind.setText(data.getValue("Startup/BIND"));
+
+	i=0;
+	InetAddress addr = null;
+	try
+	{
+	    addr = InetAddress.getByName("0.0.0.0");
+	}
+	catch (Exception ex)
+	{
+	}
+
+	while (remotes.getRowCount() > 1)
+	    remotes.setValueAt(addr, 0, 0);
+	for (i=0; data.keyExists("Startup/REMOTE_" + (i+1)); i++)
+	{
+	    String fullLine = data.getValue("Startup/REMOTE_" + (i+1));
+	    String[] fields = fullLine.split(":");
+	    if (fields.length == 5)
+	    {
+		try
+		{
+		    addr = InetAddress.getByName(fields[0]);
+		    remotes.setValueAt(addr, i, 0);
+		    remotes.setValueAt(new Integer(fields[1]), i, 1);
+		    remotes.setValueAt(fields[2], i, 2);
+		    remotes.setValueAt(new Integer(fields[3]), i, 3);
+		    remotes.setValueAt(new Integer(fields[4]), i, 4);
+		}
+		catch (Exception ex)
+		{
+		}
+	    }
+	}
+
+	while (allows.getRowCount() > 1)
+	    allows.setValueAt("", 0, 0);
+	for (i=0; data.keyExists("Startup/ALLOW_" + (i+1)); i++)
+	{
+	    String fullLine = data.getValue("Startup/ALLOW_" + (i+1));
+	    String[] fields = fullLine.split(":");
+	    if (fields.length == 2)
+	    {
+		allows.setValueAt(fields[0], i, 0);
+		allows.setValueAt(fields[1], i, 1);
+	    }
+	}
+
+	String sel_protocol = data.getValue("Startup/PROTOCOL");
+	for (i=0; i<protocol.getItemCount(); i++)
+	{
+	    String ri = ((String) protocol.getItemAt(i)).substring(0, 
+			((String) protocol.getItemAt(i)).indexOf(" "));
+	    if (ri.equalsIgnoreCase(sel_protocol))
+	    {
+		protocol.setSelectedItem(protocol.getItemAt(i));
+		break;
+	    }
+	}	
+	if (i == protocol.getItemCount())
+	    protocol.setSelectedIndex(0);
+
+	level.setText(data.getValue("Startup/LEVEL"));
+	lagtime.setText(data.getValue("Startup/LAGTIME"));
+	stop.setSelected(IniParser.getBoolValue(data.getValue("Startup/STOP")));
     }
 }

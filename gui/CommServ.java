@@ -482,7 +482,37 @@ public class CommServ extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	int i;
+	max_logon.setText(data.getValue("CommServ/MAX_LOGON"));
+
+	for (i=0; i<optnames.length; i++)
+	{
+	    if (data.keyExists("CommServ/DEF_" + optnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/DEF_" + optnames[i]))), i, 1);
+	    if (data.keyExists("CommServ/LCK_" + optnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/LCK_" + optnames[i]))), i, 2);
+	}
+
+	for (i=0; i<commnames.length; i++)
+	{
+	    if (data.keyExists("CommServ/" + commnames[i] + "_SECURE"))
+		committees.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/" + commnames[i] + "_SECURE"))), i, 1);
+	    if (data.keyExists("CommServ/" + commnames[i] + "_PRIVATE"))
+		committees.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/" + commnames[i] + "_PRIVATE"))), i, 2);
+	    if (data.keyExists("CommServ/" + commnames[i] + "_OPENMEMOS"))
+		committees.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/" + commnames[i] + "_OPENMEMOS"))), i, 3);
+	    if (data.keyExists("CommServ/" + commnames[i] + "_MODEO"))
+		committees.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/" + commnames[i] + "_MODEO"))), i, 4);
+	    if (data.keyExists("CommServ/" + commnames[i] + "_SETMODE"))
+		committees.setValueAt(data.getValue("CommServ/" + commnames[i] + "_SETMODE"), i, 5);
+	}
+
+	for (i=0; i<ovrnames.length; i++)
+	{
+	    if (data.keyExists("CommServ/" + ovrnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("CommServ/" + ovrnames[i]))), i, 1);
+	}
     }
 }

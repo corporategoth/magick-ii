@@ -163,7 +163,22 @@ public class Services extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	nickserv.setText(data.getValue("Services/NickServ"));
+	nickserv_name.setText(data.getValue("Services/NickServ_Name"));
+	enforcer_name.setText(data.getValue("Services/Enforcer_Name"));
+	chanserv.setText(data.getValue("Services/ChanServ"));
+	chanserv_name.setText(data.getValue("Services/ChanServ_Name"));
+	memoserv.setText(data.getValue("Services/MemoServ"));
+	memoserv_name.setText(data.getValue("Services/MemoServ_Name"));
+	operserv.setText(data.getValue("Services/OperServ"));
+	operserv_name.setText(data.getValue("Services/OperServ_Name"));
+	commserv.setText(data.getValue("Services/CommServ"));
+	commserv_name.setText(data.getValue("Services/CommServ_Name"));
+	servmsg.setText(data.getValue("Services/ServMsg"));
+	servmsg_name.setText(data.getValue("Services/ServMsg_Name"));
+	showsync.setSelected(IniParser.getBoolValue(data.getValue("Services/SHOWSYNC")));
+	quit_message.setText(data.getValue("Services/QUIT_MESSAGE"));
     }
 }

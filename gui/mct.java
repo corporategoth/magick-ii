@@ -81,20 +81,25 @@ public class mct extends JApplet implements ActionListener
 	return cfg;
     }
 
+    public void setConfigData(String s)
+    {
+	IniParser cfg = new IniParser(s);
+	startup.parseCfg(cfg);
+	services.parseCfg(cfg);
+	files.parseCfg(cfg);
+	config.parseCfg(cfg);
+	nickserv.parseCfg(cfg);
+	chanserv.parseCfg(cfg);
+	memoserv.parseCfg(cfg);
+	operserv.parseCfg(cfg);
+	commserv.parseCfg(cfg);
+	servmsg.parseCfg(cfg);
+    }
+
     public void actionPerformed(ActionEvent e)
     {
 	if (e.getSource() == open)
 	{
-	    if (true)
-	    {
-		JOptionPane.showMessageDialog(null,
-			"This feature is not yet implemented.\n",
-			"Error",
-			JOptionPane.ERROR_MESSAGE);
-	    }
-	    else
-	    {
-
 	    JFileChooser open_file = new JFileChooser();
 
 	    if (open_file.getAccessibleContext() == null)
@@ -111,6 +116,8 @@ public class mct extends JApplet implements ActionListener
 		{
 		    public boolean accept(File f)
 		    {
+			if (f.isDirectory())
+			    return true;
 			if (f.isFile() && f.getName().endsWith(".ini") && f.exists() && f.canRead())
 			    return true;
 			return false;
@@ -136,20 +143,15 @@ public class mct extends JApplet implements ActionListener
 		    }
 		    catch (Exception ex)
 		    {
+			JOptionPane.showMessageDialog(null,
+			    "Could not read configuration file:\n" +
+			    ex.getMessage() + "\n",
+			    "Error",
+			    JOptionPane.ERROR_MESSAGE);
+			return;
 		    }
-		    String cfg = new String(array);
-		    startup.parseCfg(cfg);
-		    services.parseCfg(cfg);
-		    files.parseCfg(cfg);
-		    config.parseCfg(cfg);
-		    nickserv.parseCfg(cfg);
-		    chanserv.parseCfg(cfg);
-		    memoserv.parseCfg(cfg);
-		    operserv.parseCfg(cfg);
-		    commserv.parseCfg(cfg);
-		    servmsg.parseCfg(cfg);
+		    setConfigData(new String(array));
 		}
-	    }
 	    }
 	}
 	else if (e.getSource() == save)
@@ -201,6 +203,7 @@ public class mct extends JApplet implements ActionListener
 			    ex.getMessage() + "\n",
 			    "Error",
 			    JOptionPane.ERROR_MESSAGE);
+			return;
 		    }
 		}
 	    }

@@ -15,7 +15,7 @@ mostlyclean-compile:
 		$(JAVAC) $(JFLAGS) $(patsubst %.class,%.java,$@); \
 	fi
 
-mct.jar: mct.class
+mct.jar: mct.class $(EXTRA_DIST)
 	@if test -n "$(JAVAC)"; then \
 		CLASSPATH="."; export CLASSPATH; \
 		echo "jar cfm $@ $(patsubst %.jar,%.mf,$@) *.class *.jpg"; \

@@ -162,7 +162,24 @@ public class Config extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	server_relink.setText(data.getValue("Config/SERVER_RELINK"));
+	squit_protect.setText(data.getValue("Config/SQUIT_PROTECT"));
+	squit_cancel.setText(data.getValue("Config/SQUIT_CANCEL"));
+	cycletime.setText(data.getValue("Config/CYCLETIME"));
+	savetime.setText(data.getValue("Config/SAVETIME"));
+	checktime.setText(data.getValue("Config/CHECKTIME"));
+	ping_frequency.setText(data.getValue("Config/PING_FREQUENCY"));
+	starthresh.setText(data.getValue("Config/STARTHRESH"));
+	listsize.setText(data.getValue("Config/LISTSIZE"));
+	maxlist.setText(data.getValue("Config/MAXLIST"));
+	min_threads.setText(data.getValue("Config/MIN_THREADS"));
+	max_threads.setText(data.getValue("Config/MAX_THREADS"));
+	low_water_mark.setText(data.getValue("Config/LOW_WATER_MARK"));
+	high_water_mark.setText(data.getValue("Config/HIGH_WATER_MARK"));
+	heartbeat_time.setText(data.getValue("Config/HEARTBEAT_TIME"));
+	msg_seen_time.setText(data.getValue("Config/MSG_SEEN_TIME"));
+	msg_check_time.setText(data.getValue("Config/MSG_CHECK_TIME"));
     }
 }

@@ -42,6 +42,7 @@ public class OperServ extends TabbedPane
     private JTextField services_admin, def_clone, clone_akill;
     private JCheckBox secure, secureoper, log_ignore;
     private JComboBox ignore_method;
+    private int def_ignore_method;
 
     public String name() { return "OperServ"; }
 
@@ -56,8 +57,8 @@ public class OperServ extends TabbedPane
 	expire_sop = createFormattedTextField("EXPIRE_SOP", 4, new TimeFormat(), "8w", true);
 	expire_sadmin = createFormattedTextField("EXPIRE_SADMIN", 4, new TimeFormat(), "1y", true);
 	akill_reject = createFormattedTextField("AKILL_REJECT", 5, new PercentageFormat(), "10.00", true);
-	max_clone = createFormattedTextField("MAX_CLONE", 3, new NumberRangeFormat(1, -1), "50", true);
-	clone_limit = createFormattedTextField("CLONE_LIMIT", 4, new NumberRangeFormat(1, -1), "2", true);
+	max_clone = createFormattedTextField("MAX_CLONE", 4, new NumberRangeFormat(1, -1), "50", true);
+	clone_limit = createFormattedTextField("CLONE_LIMIT", 3, new NumberRangeFormat(1, -1), "2", true);
 	def_clone = createTextField("DEF_CLONE", 30, "Maximum connections from one host exceeded", true);
 	clone_trigger = createFormattedTextField("CLONE_TRIGGER", 2, new NumberRangeFormat(1, -1), "10", true);
 	clone_time = createFormattedTextField("CLONE_TIME", 4, new TimeFormat(), "3h", true);
@@ -78,7 +79,7 @@ public class OperServ extends TabbedPane
 	log_ignore = createCheckBox("LOG_IGNORE", false, true);
 
 	ignore_method = createComboBox("IGNORE_METHOD", false, true);
-	String def = new String("8 - *!*@port.host");
+	def_ignore_method = 7;
 	ignore_method.addItem(new String("1 - nick!*@*"));
 	ignore_method.addItem(new String("2 - nick!user@port.host"));
 	ignore_method.addItem(new String("3 - nick!*user@*.host"));
@@ -86,9 +87,9 @@ public class OperServ extends TabbedPane
 	ignore_method.addItem(new String("5 - nick!*@*.host"));
 	ignore_method.addItem(new String("6 - *!user@port.host"));
 	ignore_method.addItem(new String("7 - *!*user@*.host"));
-	ignore_method.addItem(def);
+	ignore_method.addItem(new String("8 - *!*@port.host"));
 	ignore_method.addItem(new String("9 - *!*@*.host"));
-	ignore_method.setSelectedItem(def);
+	ignore_method.setSelectedIndex(def_ignore_method);
     }
 
     public void documentChanged(DocumentEvent e)
@@ -121,12 +122,12 @@ public class OperServ extends TabbedPane
 	addToGridBag(gb, gc, "Clone Protection", new JLabel(""));
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Default Expiry", def_expire);
-	addToGridBag(gb, gc, "Maximum Clones", max_clone);
+	addToGridBag(gb, gc, "Clone Limit", clone_limit);
 
 	addGridBagLine(gb, gc);
 
 	addToGridBag(gb, gc, "OPER Expire", expire_oper);
-	addToGridBag(gb, gc, "Maximum Override", clone_limit);
+	addToGridBag(gb, gc, "Maximum Override", max_clone);
 	addGridBagLine(gb, gc);
 
 	addToGridBag(gb, gc, "ADMIN Expire", expire_admin);
@@ -208,7 +209,50 @@ public class OperServ extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	int i;
+
+	services_admin.setText(data.getValue("OperServ/SERVICES_ADMIN"));
+	secure.setSelected(IniParser.getBoolValue(data.getValue("OperServ/SECURE")));
+	secureoper.setSelected(IniParser.getBoolValue(data.getValue("OperServ/SECUREOPER")));
+	def_expire.setText(data.getValue("OperServ/DEF_EXPIRE"));
+	expire_oper.setText(data.getValue("OperServ/EXPIRE_OPER"));
+	expire_admin.setText(data.getValue("OperServ/EXPIRE_ADMIN"));
+	expire_sop.setText(data.getValue("OperServ/EXPIRE_SOP"));
+	expire_sadmin.setText(data.getValue("OperServ/EXPIRE_SADMIN"));
+	akill_reject.setText(data.getValue("OperServ/AKILL_REJECT"));
+	max_clone.setText(data.getValue("OperServ/MAX_CLONE"));
+	clone_limit.setText(data.getValue("OperServ/CLONE_LIMIT"));
+	def_clone.setText(data.getValue("OperServ/DEF_CLONE"));
+	clone_trigger.setText(data.getValue("OperServ/CLONE_TRIGGER"));
+	clone_time.setText(data.getValue("OperServ/CLONE_TIME"));
+	clone_akill.setText(data.getValue("OperServ/CLONE_AKILL"));
+	clone_akilltime.setText(data.getValue("OperServ/CLONE_AKILLTIME"));
+	flood_time.setText(data.getValue("OperServ/FLOOD_TIME"));
+	flood_msgs.setText(data.getValue("OperServ/FLOOD_MSGS"));
+	ignore_time.setText(data.getValue("OperServ/IGNORE_TIME"));
+	ignore_limit.setText(data.getValue("OperServ/IGNORE_LIMIT"));
+	ignore_remove.setText(data.getValue("OperServ/IGNORE_REMOVE"));
+
+	String method = data.getValue("ChanServ/DEF_REVENGE");
+	for (i=0; i<ignore_method.getItemCount(); i++)
+	{
+	    String ri = ((String) ignore_method.getItemAt(i)).substring(0, 
+			((String) ignore_method.getItemAt(i)).indexOf(" "));
+	    if (ri.equalsIgnoreCase(method))
+	    {
+		ignore_method.setSelectedItem(ignore_method.getItemAt(i));
+		break;
+	    }
+	}	
+	if (i == ignore_method.getItemCount())
+	    ignore_method.setSelectedIndex(def_ignore_method);
+
+	log_ignore.setSelected(IniParser.getBoolValue(data.getValue("OperServ/LOG_IGNORE")));
+	init_htm_gap.setText(data.getValue("OperServ/INIT_HTM_GAP"));
+	init_htm_thresh.setText(data.getValue("OperServ/INIT_HTM_THRESH"));
+	max_htm_gap.setText(data.getValue("OperServ/MAX_HTM_GAP"));
+	htm_on_gap.setText(data.getValue("OperServ/HTM_ON_GAP"));
     }
 }

@@ -472,7 +472,55 @@ public class ChanServ extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	int i;
+
+	hide.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/HIDE")));
+	expire.setText(data.getValue("ChanServ/EXPIRE"));
+	delay.setText(data.getValue("ChanServ/DELAY"));
+	max_per_nick.setText(data.getValue("ChanServ/MAX_PER_NICK"));
+	max_messages.setText(data.getValue("ChanServ/MAX_MESSAGES"));
+	def_akick.setText(data.getValue("ChanServ/DEF_AKICK"));
+	passfail.setText(data.getValue("ChanServ/PASSFAIL"));
+	chankeep.setText(data.getValue("ChanServ/CHANKEEP"));
+	def_mlock.setText(data.getValue("ChanServ/DEF_MLOCK"));
+	lck_mlock.setText(data.getValue("ChanServ/LCK_MLOCK"));
+	def_bantime.setText(data.getValue("ChanServ/DEF_BANTIME"));
+	lck_bantime.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/LCK_BANTIME")));
+	def_parttime.setText(data.getValue("ChanServ/DEF_PARTTIME"));
+	lck_parttime.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/LCK_PARTTIME")));
+
+	for (i=0; i<optnames.length; i++)
+	{
+	    if (data.keyExists("ChanServ/DEF_" + optnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("ChanServ/DEF_" + optnames[i]))), i, 1);
+	    if (data.keyExists("ChanServ/LCK_" + optnames[i]))
+		options.setValueAt(new Boolean(IniParser.getBoolValue(data.getValue("ChanServ/LCK_" + optnames[i]))), i, 2);
+	}
+
+	String revenge = data.getValue("ChanServ/DEF_REVENGE");
+	for (i=0; i<def_revenge.getItemCount(); i++)
+	{
+	    String ri = ((String) def_revenge.getItemAt(i)).substring(0, 
+			((String) def_revenge.getItemAt(i)).indexOf(" "));
+	    if (ri.equalsIgnoreCase(revenge))
+	    {
+		def_revenge.setSelectedItem(def_revenge.getItemAt(i));
+		break;
+	    }
+	}	
+	if (i == def_revenge.getItemCount())
+	    def_revenge.setSelectedIndex(0);
+
+	lck_revenge.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/LCK_REVENGE")));
+	level_min.setText(data.getValue("ChanServ/LEVEL_MIN"));
+	level_max.setText(data.getValue("ChanServ/LEVEL_MAX"));
+
+	for (i=0; i<levelnames.length; i++)
+	{
+	    if (data.keyExists("ChanServ/LVL_" + levelnames[i]))
+		levels.setValueAt(new Integer(data.getValue("ChanServ/LVL_" + levelnames[i])), i, 1);
+	}
     }
 }

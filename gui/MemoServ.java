@@ -115,7 +115,12 @@ public class MemoServ extends TabbedPane
 	return rv;
     }
 
-    public void parseCfg(String data)
+    public void parseCfg(IniParser data)
     {
+	news_expire.setText(data.getValue("MemoServ/NEWS_EXPIRE"));
+	inflight.setText(data.getValue("MemoServ/INFLIGHT"));
+	delay.setText(data.getValue("MemoServ/DELAY"));
+	files.setText(data.getValue("MemoServ/FILES"));
+	filesize.setText(data.getValue("MemoServ/FILESIZE"));
     }
 }
