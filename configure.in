@@ -502,7 +502,10 @@ fi
 dnl ====================================================
 
 if test 0$libacehead -eq 0; then
+  O_CPPFLAGS="${CPPFLAGS}"
+  CPPFLAGS="${CPPFLAGS} ${CXXFLAGS}"
   AC_CHECK_HEADER(ace/OS.h, [libacehead=1])
+  CPPFLAGS="${O_CPPFLAGS}"
 fi
 
 if test 0$libacehead -eq 0; then
