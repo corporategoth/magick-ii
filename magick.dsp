@@ -235,6 +235,14 @@ SOURCE=.\include\fileconf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\helpserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\helpserv.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ircsocket.cpp
 # End Source File
 # Begin Source File
@@ -271,6 +279,14 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\memoserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\memoserv.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\mstream.cpp
 # End Source File
 # Begin Source File
@@ -292,6 +308,14 @@ SOURCE=.\src\nickserv.cpp
 # Begin Source File
 
 SOURCE=.\include\nickserv.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\operserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\operserv.h
 # End Source File
 # Begin Source File
 
