@@ -1,3 +1,29 @@
+* 2002-02-20 23:23  Preston A. Elder <prez@magick.tm>
+  KNOWN-BUGS (1.20), README (1.22), docs/en/index.sgml (1.34),
+  lang/english.lfo (1.50), src/ircsocket.cpp (1.211), src/magick.cpp
+  (1.354):
+  
+  Added work around for FreeBSD's database saving stuff.
+
+* 2002-02-20 22:59  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.353):
+  
+  Added service to help output.
+
+* 2002-02-20 22:55  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.97), include/lockable.h (1.73), include/pch.h (1.54),
+  lang/english.lfo (1.49), src/lockable.cpp (1.85), src/magick.cpp (1.352):
+  
+  Abstracted tokenizing/map for locks, and the lock classes themselves. 
+  You still have to ensure you use the lock map correctly, however now the
+  lock itself has no idea what the underlying locking mechanism is, or that
+  the name it gives to the lock is being changed.
+
+* 2002-02-18 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.23):
+  
+  Created version 2.0s20020218
+
 * 2002-02-15 03:21  Preston A. Elder <prez@magick.tm>
   include/base.h (1.111), include/chanserv.h (1.80), include/commserv.h
   (1.68), include/memoserv.h (1.62), include/mstring.h (1.97),
