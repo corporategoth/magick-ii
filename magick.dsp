@@ -249,6 +249,10 @@ SOURCE=.\src\antlr\ParserException.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\docs\policy
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\antlr\ScannerException.cpp
 # End Source File
 # Begin Source File
@@ -262,10 +266,6 @@ SOURCE=.\src\textfile.cpp
 # Begin Source File
 
 SOURCE=.\include\textfile.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\todo.txt
 # End Source File
 # Begin Source File
 
