@@ -44,6 +44,12 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name sxplib
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name xmlparselib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name xmltok
+    End Project Dependency
 }}}
 
 ###############################################################################
