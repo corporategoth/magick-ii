@@ -7,6 +7,24 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
+	size_t Replace(const mstring& szOld, const mstring& szNew, bool replaceAll=true);
+	mstring& RemoveLast();
+	mstring& Remove(size_t nStart, size_t nLen);
+	mstring& Remove(size_t pos);
+	void LowerCase();
+	bool IsWord();
+	bool IsNumber();
+	bool IsNull();
+	bool IsEmpty();
+	bool IsAscii();
+	size_t Index(const mstring& in, bool caseSensitive=true, bool fromEnd=false);
+	size_t Index(char ch, int startpos=0);
+	size_t First(const mstring& in);
+	size_t First(char c);
+	int Find(const mstring & in);
+	int Find(char ch, bool bFromEnd=false);
+	void Empty();
+	bool Contains(const mstring& in);
 	mstring& Prepend(char ch, int count=1);
 	mstring& Prepend(const mstring& in);
 	mstring& Append(char ch, int count=1);

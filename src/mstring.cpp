@@ -72,9 +72,9 @@ int mstring::CmpNoCase(const mstring & in)
 	return ACE_OS::strcasecmp(c_str(),in.c_str());
 }
 
-bool mstring::IsSameAs(const mstring & in, bool bCase)
+bool mstring::IsSameAs(const mstring & in, bool bCaseSensitive)
 {
-	if(bCase==true)
+	if(bCaseSensitive==true)
 		return Cmp(in)==0;
 	else
 		return CmpNoCase(in)==0;
@@ -107,21 +107,23 @@ mstring mstring::Right(size_t nCount)
 
 mstring mstring::Before(const mstring & in)
 {
-	return Mid(0,find(in)-1);
+	return Mid(0,First(in)-1);
 }
 
 mstring mstring::After(const mstring & in)
 {
-	return Mid(find(in)+1);
+	return Mid(First(in)+1);
 }
 
 mstring mstring::RevBefore(const mstring & in)
 {
+	// change find_last_of to Last(in)
 	return Mid(0,find_last_of(in)-1);
 }
 
 mstring mstring::RevAfter(const mstring & in)
 {
+	// change find_last_of to Last(in)
 	return Mid(find_last_of(in)+1);
 }
 
@@ -143,6 +145,7 @@ void mstring::MakeLower()
 
 mstring& mstring::Trim(bool bFromRight)
 {
+	// change find_last_of to Last(in)
 	if(bFromRight==true)
 		*this=Mid(0,find_last_not_of(" \t\n"));
 	else
@@ -279,4 +282,176 @@ mstring& mstring::Prepend(char ch, int count)
 {
 	*this=mstring(count,ch)+*this;
 	return *this;
+}
+
+bool mstring::Contains(const mstring & in)
+{
+	return Find(in)!=-1;
+}
+
+void mstring::Empty()
+{
+	*this=mstring("");
+}
+
+int mstring::Find(char ch, bool bFromEnd)
+{
+	const char *psz=bFromEnd?ACE_OS::strrchr(c_str(),ch) : ACE_OS::strchr(c_str(),ch);
+
+	return (psz==NULL)?-1:psz-c_str();
+}
+
+int mstring::Find(const mstring & in)
+{
+	const char *psz=ACE_OS::strstr(c_str(),in);
+
+	return (psz==NULL)?-1:psz-c_str();
+}
+
+size_t mstring::First(char c)
+{
+	return Find(c);
+}
+
+size_t mstring::First(const mstring & in)
+{
+	return Find(in);
+}
+
+size_t mstring::Index(char ch, int startpos)
+{
+	return find(ch,startpos);
+}
+
+size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd)
+{
+	size_t i;
+	
+	int start,end;
+	if(fromEnd==true)
+	{
+		start=length()-in.length()-1;
+		end=0;
+	}
+	else
+	{
+		start=0;
+		end=length()-in.length()-1;
+	}
+	i=start;
+	while(i!=end)
+	{
+		if(Mid(i,in.length()).IsSameAs(in,caseSensitive))
+			return i;
+		if(fromEnd==false)
+			i++;
+		else
+			i--;
+	}
+	return -1;
+}
+
+bool mstring::IsAscii()
+{
+	const char *s=c_str();
+	while(*s)
+	{
+		if(!isascii(*s))
+			return false;
+		s++;
+	}
+	return true;
+}
+
+bool mstring::IsEmpty()
+{
+	return *this==mstring("");
+}
+
+bool mstring::IsNull()
+{
+	return IsEmpty();
+}
+
+bool mstring::IsNumber()
+{
+	const char *s=c_str();
+	while(*s)
+	{
+		if(!isdigit(*s))
+			return false;
+		s++;
+	}
+	return true;
+}
+
+bool mstring::IsWord()
+{
+	const char *s=c_str();
+	while(*s)
+	{
+		if(!isalpha(*s))
+			return false;
+		s++;
+	}
+	return true;
+}
+
+void mstring::LowerCase()
+{
+	MakeLower();
+}
+
+mstring& mstring::Remove(size_t pos)
+{
+	return Truncate(pos);
+}
+
+mstring& mstring::Remove(size_t nStart, size_t nLen)
+{
+	erase(nStart,nLen);
+	return *this;
+}
+
+mstring& mstring::RemoveLast()
+{
+	Truncate(length()-1);
+	return *this;
+}
+
+size_t mstring::Replace(const mstring & szOld, const mstring & szNew, bool replaceAll)
+{
+	size_t uiCount=0;
+	size_t uiOldLen=szOld.length();
+
+	mstring strTemp;
+	const char *pCurrent=c_str();
+	const char *pSubstr;
+
+	while(*pCurrent!='\0')
+	{
+		pSubstr=ACE_OS::strstr(pCurrent,szOld.c_str());
+		if(pSubstr==NULL)
+		{
+			if(uiCount==0)
+				return 0;
+			strTemp<<pCurrent;
+			break;
+		}
+		else
+		{
+			strTemp<<mstring(pCurrent).Left(pSubstr-pCurrent);
+			strTemp<<szNew;
+			pCurrent=pSubstr+uiOldLen;
+			uiCount++;
+			if(!replaceAll)
+			{
+				strTemp<<pCurrent;
+				break;
+			}
+		}
+	}
+	*this=strTemp;
+
+	return uiCount;
 }
