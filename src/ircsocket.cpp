@@ -81,6 +81,8 @@ void *IrcSvcHandler::worker(void *in)
 		}
 		catch (E_Lock & e)
 		{
+		    static_cast < void > (e);
+
 		    // We got a locking exception, re-queue the message (at the top of the list).
 		    if (msg != NULL && msg->validated())
 		    {
@@ -2574,7 +2576,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
     vector < mMessage * >::iterator m;
     for (m = Msgs.begin(); m != Msgs.end(); m++)
     {
-	if (*m != NULL);
+	if (*m != NULL)
 	{
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)
