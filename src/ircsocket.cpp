@@ -23,7 +23,7 @@ int IrcSvcHandler::open(void *in)
     FT("IrcSvcHandler::open", (in));
     CP(("Socket opened"));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
-    activate();
+    //activate();
     // todo activate the task
     CP(("SvcHandler activated"));
     RET(0);
@@ -51,12 +51,12 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
-    if(data2.Contains("\n"))
+    if(data2.Contains("\n")||data2.Contains("\r"))
     {
 	int i;
-	for(i=0;i<data2.WordCount("\n");i++)
-	    if(data2.ExtractWord(i+1,"\n")!="")
-		mBase::push_message(data2.ExtractWord(i+1,"\n"));
+	for(i=0;i<data2.WordCount("\n\r");i++)
+	    if(data2.ExtractWord(i+1,"\n\r")!="")
+		mBase::push_message(data2.ExtractWord(i+1,"\n\r"));
     }
     else
         mBase::push_message (data);
@@ -69,10 +69,7 @@ int IrcSvcHandler::send(const mstring & data)
     FT("IrcSvcHandler::send",(data));
     //activation_queue_.enqueue(new send_MO(this,mstring(data)));
     int recvResult;
-    if(data.Last()!='\n')
-	recvResult=peer().send_n((data+"\n").c_str(),data.Len()+1);
-    else
-	recvResult=peer().send_n(data.c_str(),data.Len());
+    recvResult=peer().send(data.c_str(),data.Len());
     CH(T_Chatter::To,data);
     RET(recvResult);
 }

@@ -34,7 +34,7 @@ public:
 
 class mBase
 {
-    friend void *thread_handler(void *dummyvar);
+    friend mBaseTask;
 protected:
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
     static bool TaskOpened;

@@ -89,6 +89,7 @@ void mBase::shutdown()
 int mBaseTask::open(void *in)
 {
     NFT("mBaseTask::open");
+    mBase::TaskOpened=true;
     RET(activate());
 }
 
@@ -192,7 +193,7 @@ void mBaseTask::message_i(const mstring& message)
      */
     {
 	MLOCK("thread_handler", "LWM");
-	if(message_queue_.message_count()<
+	if(thr_count()>1&&message_queue_.message_count()<
 	    Parent->high_water_mark*(thr_count()-2)+Parent->low_water_mark)
 	{
 	    message_queue_.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
