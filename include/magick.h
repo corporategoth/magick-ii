@@ -30,6 +30,7 @@ class Magick
 public:
 	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);
+	void LoadInternalMessages();
 	void dump_help(mstring& progname);
 	mstring getMessage(const mstring& name);
 	mstring config_file;
