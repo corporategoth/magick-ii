@@ -189,18 +189,16 @@ short makehex (mstring SLevel)
 
 // ===================================================
 
-ThreadID::ThreadID(Magick *Parent)
+ThreadID::ThreadID()
 {
-    i_Parent=Parent;
     t_indent = 0;
     t_internaltype = tt_MAIN;
     t_number = 0;
     out=NULL;
 }
 
-ThreadID::ThreadID(Magick *Parent, threadtype_enum Type, int Number)
+ThreadID::ThreadID(threadtype_enum Type, int Number)
 {
-    i_Parent=Parent;
     t_indent = 0;
     t_internaltype = Type;
     t_number = Number;
@@ -243,8 +241,8 @@ void ThreadID::WriteOut(const mstring &message)
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;
-    if(t_internaltype!=tt_MAIN&&i_Parent!=NULL)
-	i_Parent->loggertask.logmessage(out,finalout);
+    if(t_internaltype!=tt_MAIN&&Parent!=NULL)
+	Parent->loggertask.logmessage(out,finalout);
     else
     {
 	*out << finalout << wxEndL;

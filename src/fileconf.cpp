@@ -947,7 +947,7 @@ LineList *ConfigGroup::GetGroupLine()
 {
   NFT("ConfigGroup::GetGroupLine");
   if ( m_pLine == NULL ) {
-    ConfigGroup *pParent = Parent();
+    ConfigGroup *pParent = this->Parent();
 
     // this group wasn't present in local config file, add it now
     if ( pParent != NULL ) {
@@ -1022,9 +1022,9 @@ void ConfigGroup::Rename(const mstring& newName)
 mstring ConfigGroup::GetFullName() const
 {
   NFT("ConfigGroup::GetFullName");
-  if ( Parent() )
+  if ( this->Parent() )
   {
-    RET(Parent()->GetFullName() + wxCONFIG_PATH_SEPARATOR + Name());
+    RET(this->Parent()->GetFullName() + wxCONFIG_PATH_SEPARATOR + Name());
   }
   else
     RET("");
@@ -1262,8 +1262,8 @@ void ConfigGroup::SetDirty()
 {
   NFT("ConfigGroup::SetDirty");
   m_bDirty = true;
-  if ( Parent() != NULL )             // propagate upwards
-    Parent()->SetDirty();
+  if ( this->Parent() != NULL )             // propagate upwards
+    this->Parent()->SetDirty();
 }
 
 // ============================================================================

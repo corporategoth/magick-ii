@@ -15,11 +15,6 @@
 #include "mstring.h"
 #include "trace.h"
 
-class Magick;
-
-// fucking hell, the parent causes major breakage, gotta turn this into
-// an ACE_Task active object.
-
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;
@@ -27,7 +22,6 @@ class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 protected:
     ACE_Activation_Queue activation_queue_;
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
-    Magick *Parent;
     void message_i(const mstring& message);
 public:
     mBaseTask() : activation_queue_(&message_queue_) {};
@@ -43,12 +37,11 @@ class mBase
     friend void *thread_handler(void *dummyvar);
 protected:
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
-    static Magick *Parent;
     static bool TaskOpened;
     static mBaseTask BaseTask;
 public:
 	void send_cmd(const mstring& source, const mstring& fmt, ...);
-    mBase(Magick *in_Parent);
+    mBase();
     static void push_message(const mstring& message);
     static void init(Magick *in);
 
@@ -88,7 +81,7 @@ public:
     bool AUTO() { return automation; }
     void AUTO(bool on) { automation = on; }
 
-    NetworkServ(Magick *in_Parent);
+    NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }
     void execute(const mstring & message);

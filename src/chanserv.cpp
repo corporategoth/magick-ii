@@ -19,7 +19,7 @@
 #include "lockable.h"
 #include "magick.h"
 
-ChanServ::ChanServ(Magick *in_Parent) : mBase(in_Parent)
+ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
     messages=true;
@@ -28,11 +28,10 @@ ChanServ::ChanServ(Magick *in_Parent) : mBase(in_Parent)
 
 void ChanServ::execute(const mstring & data)
 {
+    mThread::Detach(tt_mBase);
+    mThread::Attach(tt_ChanServ);
     FT("ChanServ::execute", (data));
     //okay this is the main chanserv command switcher
-
-    mThread::Detach(tt_mBase);
-    mThread::Attach(Parent, tt_ChanServ);
 
     mstring source, msgtype, mynick, message;
     source  = data.Before(" ");
@@ -42,7 +41,7 @@ void ChanServ::execute(const mstring & data)
 
 
     mThread::Detach(tt_ChanServ);
-    mThread::Attach(Parent,tt_mBase);
+    mThread::Attach(tt_mBase);
 }
 
 Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)

@@ -303,10 +303,10 @@ ThreadID* mThread::find(ACE_thread_t thread)
     return NULL;
 }
 
-void mThread::Attach(Magick *Parent,threadtype_enum ttype)
+void mThread::Attach(threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
-    ThreadID *tmpid=new ThreadID(Parent);
+    ThreadID *tmpid=new ThreadID();
     selftothreadidmap[ACE_Thread::self()]=tmpid;
     COM(("%s Thread ID %d has been attached.", threadname[ttype].c_str()));
 }

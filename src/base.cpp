@@ -20,14 +20,12 @@
 #include "log.h"
 
 
-Magick *mBase::Parent;
 bool mBase::TaskOpened;
 mBaseTask mBase::BaseTask;
 
-mBase::mBase(Magick* in_Parent)
+mBase::mBase()
 {
     NFT("mBase::mBase");
-    Parent=in_Parent;
     TaskOpened=false;
 }
 
@@ -89,13 +87,12 @@ void mBase::shutdown()
 
 int mBaseTask::open(void *in)
 {
-    Parent=(Magick *)in;
     return activate(/* todo enter the number of initial threads here*/);
 }
 
 int mBaseTask::svc(void)
 {
-    mThread::Attach(Parent,tt_mBase);
+    mThread::Attach(tt_mBase);
     while(Parent->shutdown()==false)
     {
 	auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue());
@@ -203,7 +200,7 @@ void mBaseTask::shutdown()
 {
     activation_queue_.enqueue(new shutdown_MO);
 }
-NetworkServ::NetworkServ(Magick *in_Parent) : mBase(in_Parent)
+NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
     messages=true;
@@ -212,10 +209,10 @@ NetworkServ::NetworkServ(Magick *in_Parent) : mBase(in_Parent)
 
 void NetworkServ::execute(const mstring & data)
 {
-    FT("NetworkServ::execute", (data));
     //okay this is the main networkserv command switcher
     mThread::Detach(tt_mBase);
-    mThread::Attach(Parent, tt_ServNet);
+    mThread::Attach(tt_ServNet);
+    FT("NetworkServ::execute", (data));
 
     mstring source, msgtype;
     if (data[0u]==':')
@@ -485,7 +482,7 @@ void NetworkServ::execute(const mstring & data)
     }
 
     mThread::Detach(tt_ServNet);
-    mThread::Attach(Parent, tt_mBase);
+    mThread::Attach(tt_mBase);
    
 }
 

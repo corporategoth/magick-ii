@@ -25,10 +25,12 @@
 //#define ACE_DEBUGGING
 
 wxLogStderr *logger;
-mDateTime StartTime, ResetTime;
+mDateTime StartTime;
+Magick *Parent;
 
-Magick::Magick(int inargc, char **inargv) : chanserv(this), nickserv(this), server(this)
+Magick::Magick(int inargc, char **inargv)
 {
+    Parent=this;
     FT("Magick::Magick", (inargc, "(char **) inargv"));
     i_shutdown = false;
     services_dir=wxGetCwd();
@@ -201,7 +203,7 @@ int Magick::Start()
 	log_perror ("Warning: cannot write to PID file %s", Files_PIDFILE);*/
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
-    signalhandler=new SignalHandler(this);
+    signalhandler=new SignalHandler;
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
@@ -278,17 +280,16 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     CP(("Magick II has been started ..."));
+    ResetTime=Now();
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives
     // incoming data and pushes it out to the appropriate service.
 
     ACE_INET_Addr addr(Startup_REMOTE_PORT,Startup_REMOTE_SERVER);
-    IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-    //IrcServer server(ACE_Reactor::instance());
+    //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
     ircsvchandler=new IrcSvcHandler;
-    ircsvchandler->Parent=this;
-    if(server.connect(ircsvchandler,addr)==-1)
+    if(ACO_server.connect(ircsvchandler,addr)==-1)
     {
 	//okay we got a connection problem here. log it and shutdown
 	RET(MAGICK_RET_TERMINATE);
@@ -297,6 +298,10 @@ int Magick::Start()
     /*
     ircsvchandler->send(mstring); // ie server line.
     */
+    mstring passcmd="PASS "+Startup_PASSWORD+"\n";
+    ircsvchandler->send(passcmd);
+    mstring servercmd="SERVER "+Startup_SERVER_NAME+" 1 :"+Startup_SERVER_DESC+"\n";
+    ircsvchandler->send(servercmd);
 
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
@@ -308,7 +313,7 @@ int Magick::Start()
     ACE_Reactor::instance()->run_event_loop();
 
     mBase::shutdown();
-    ircsvchandler->shutdown();
+    //ircsvchandler->shutdown();
     //trace::shutdown();
 
     //todo work out some way to "ignore" signals

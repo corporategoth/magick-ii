@@ -52,10 +52,7 @@ class Magick; // fwd reference, leave it here
 
 class SignalHandler : public ACE_Event_Handler
 {
-protected:
-    Magick *Parent;
 public:
-    SignalHandler(Magick* in_Parent) {Parent=in_Parent;}
     int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext);
 };
 
@@ -122,6 +119,7 @@ public:
 	NickServ nickserv;
 	NetworkServ server;
 	LoggerTask loggertask;
+        IrcServer ACO_server;
 
 //protected:
 	bool i_shutdown;
@@ -197,10 +195,10 @@ public:
 	int OperServ_IGNORE_METHOD;
 
 	bool CommServ_SECURE_OPER;
+	mDateTime ResetTime;
 };
 
-//extern Magick *MagickObject;
+extern Magick *Parent;
 extern mDateTime StartTime;
-extern mDateTime ResetTime;
 
 #endif

@@ -23,41 +23,45 @@ class handle_input_MO : public ACE_Method_Object
 public:
     handle_input_MO(IrcSvcHandler *parent, const mstring& data)
     {
+	FT("handle_input_MO::handle_input_MO",((void*)parent,data));
 	i_parent=parent;
 	i_data=data;
     }
     virtual int call()
     {
+	NFT("handle_input_MO::call()");
 	i_parent->handle_input_i(i_data);
-	return 0;
+	RET(0);
     }
 private:
     IrcSvcHandler *i_parent;
     mstring i_data;
 };
 
-class send_MO : public ACE_Method_Object
+/*class send_MO : public ACE_Method_Object
 {
 public:
     send_MO(IrcSvcHandler *parent, const mstring& data)
     {
+	FT("send_MO::send_MO",((void*)parent,data));
 	i_parent=parent;
 	i_data=data;
     }
     virtual int call()
     {
+	NFT("send_MO::call");
 	i_parent->send_i(i_data);
-	return 0;
+	RET(0);
     }
 private:
     IrcSvcHandler *i_parent;
     mstring i_data;
-};
+};*/
 
 int IrcSvcHandler::open(void *in)
 {
     FT("IrcSvcHandler::open", (in));
-    ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK|ACE_Event_Handler::WRITE_MASK);
+    ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     // todo activate the task
     CP(("Socket opened"));
     activate(THR_NEW_LWP | THR_JOINABLE,1);
@@ -71,7 +75,7 @@ int IrcSvcHandler::open(void *in)
 #endif
     RET(0);
 }
-
+/*
 int IrcSvcHandler::handle_output(ACE_HANDLE handle)
 {
     int Result=inherited::handle_output(handle);
@@ -81,7 +85,7 @@ int IrcSvcHandler::handle_output(ACE_HANDLE handle)
     peer().send(servercmd.c_str(),servercmd.Len());
     return Result;
 }
-
+*/
 int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 {
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
@@ -91,6 +95,13 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     int recvResult;
     memset(data,0,513);
     recvResult=peer().recv(data,512);
+    if(recvResult==0)
+    {
+	// sleep and then reconnect
+	
+	CP(("No data, closing down"));
+	return -1;
+    }
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
     int i;
@@ -120,6 +131,7 @@ int IrcSvcHandler::svc(void)
 
 int IrcSvcHandler::handle_input_i(const mstring& data)
 {
+    FT("IrcSvcHandler::handle_input_i",(data));
     // relevant code in mstring needs to be coded
     if(data.Contains("\n"))
     {
@@ -131,31 +143,38 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
     else
         mBase::push_message (data);
     mBase::push_message (data);
-    return 0;
+    RET(0);
 }
 
 int IrcSvcHandler::send(const mstring & data)
 {
-    activation_queue_.enqueue(new send_MO(this,mstring(data)));
-    return 0;
-}
-
-int IrcSvcHandler::send_i(const mstring & data)
-{
+    FT("IrcSvcHandler::send",(data));
+    //activation_queue_.enqueue(new send_MO(this,mstring(data)));
     int recvResult;
     recvResult=peer().send(data.c_str(),data.Len());
     CH(T_Chatter::To,data);
-    return 0;
+    RET(recvResult);
 }
-
+/*
+int IrcSvcHandler::send_i(const mstring & data)
+{
+    FT("IrcSvcHandler::send_i",(data));
+    int recvResult;
+    recvResult=peer().send(data.c_str(),data.Len());
+    CH(T_Chatter::To,data);
+    RET(0);
+}
+*/
 int IrcSvcHandler::shutdown()
 {
+    NFT("IrcSvcHandler::shutdown");
     activation_queue_.enqueue(new shutdown_MO);
-    return 0;
+    RET(0);
 }
 
 int IrcSvcHandler::close(unsigned long in)
 {
+    FT("IrcSvcHandler::close",(in));
     CP(("Socket closed"));
-    return 0;
+    RET(0);
 }

@@ -20,12 +20,11 @@ private:
     int handle_input_i(const mstring& data);
     int send_i(const mstring& data);
 public:
-    Magick *Parent;
     int close(unsigned long in);
     int send(const mstring& data);
     int open(void *);
     int handle_input(ACE_HANDLE handle);
-    int handle_output(ACE_HANDLE handle);
+//    int handle_output(ACE_HANDLE handle);
     int svc(void);
     int shutdown();
 };

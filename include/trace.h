@@ -165,11 +165,10 @@ private:
     wxFileOutputStream *out;
     
     mstring logname();
-    Magick *i_Parent;
 
 public:
-    ThreadID(Magick *Parent);
-    ThreadID(Magick *Parent, threadtype_enum Type, int Number);
+    ThreadID();
+    ThreadID(threadtype_enum Type, int Number);
     ~ThreadID() { if(out!=NULL) delete out;}
     ThreadID assign(threadtype_enum Type, int Number);
     threadtype_enum type() { return t_internaltype; }

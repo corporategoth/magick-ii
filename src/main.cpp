@@ -29,15 +29,13 @@ int main(int argc, char **argv)
     try
     {
 #endif
-	// todo make it insert itself into the ThreadID data structures.
 
 	int Result;
 	StartTime=Now();
 restart:
 	{
 	    Magick internalobject(argc, argv);
-	    mThread::Attach(&internalobject, tt_MAIN);
-	    ResetTime=Now();
+	    mThread::Attach(tt_MAIN);
 	    Result=internalobject.Start();
 	}
 	if(Result==MAGICK_RET_RESTART) {
