@@ -291,7 +291,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		// Already connected
 	    }
-	    else if (data.ExtractWord(3, ": ").LowerCase() == Parent->Setup_SERVER_NAME.LowerCase())
+	    else if (data.ExtractWord(3, ": ").LowerCase() == Parent->Startup_SERVER_NAME.LowerCase())
 	    {
 		// Look mom! its us!
 	    }
@@ -392,8 +392,8 @@ void NetworkServ::execute(const mstring & data)
 	    //:ChanServ LINKS :temple.magick.tm
 	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
 	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
-	    SendSVR("364 " + source + " " + Parent->Setup_SERVER_NAME + " " +
-		Parent->Setup_SERVER_NAME + " :0 " + Parent->Setup_SERVER_DESC);
+	    SendSVR("364 " + source + " " + Parent->Startup_SERVER_NAME + " " +
+		Parent->Startup_SERVER_NAME + " :0 " + Parent->Startup_SERVER_DESC);
 
 	    map<mstring,Server>::iterator serv;
 	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
@@ -402,7 +402,7 @@ void NetworkServ::execute(const mstring & data)
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
 	    }
 
-	    SendSVR("365 " + source + " " + Parent->Setup_SERVER_NAME + " :End of /LINKS list.");
+	    SendSVR("365 " + source + " " + Parent->Startup_SERVER_NAME + " :End of /LINKS list.");
 
 	}
 	else if (msgtype=="LIST")
