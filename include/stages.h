@@ -104,7 +104,7 @@ class FileStage : public Stage
     FileStage();
 public:
     FileStage(const mstring & name);
-    FileStage(Stage & PrevStage, const mstring & name, const mstring & mode = "w");
+    FileStage(Stage & PrevStage, const mstring & name, const mstring & mode = "wb");
 
     virtual ~ FileStage();
 

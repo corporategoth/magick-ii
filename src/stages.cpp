@@ -166,7 +166,7 @@ FileStage::FileStage(const mstring & name)
     input = NULL;
     tag = 0;
 
-    file.Open(name, "r");
+    file.Open(name, "rb");
     if (file.IsOpened())
 	file.Read(&tag, 1);
 }
@@ -492,6 +492,7 @@ long CompressStage::Read(char *buf, size_t size)
 	    {
 		RET(res);
 	    }
+
 	    strm.next_in = reinterpret_cast < Bytef * > (buffer);
 	    strm.avail_in = res;
 	    if (res == 0)

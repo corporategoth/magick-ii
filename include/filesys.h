@@ -51,8 +51,8 @@ public:
     {
 	*this = in;
     }
-    mFile(const mstring & name, FILE * in, const mstring & mode = "r");
-    mFile(const mstring & name, const mstring & mode = "r");
+    mFile(const mstring & name, FILE * in, const mstring & mode = "rb");
+    mFile(const mstring & name, const mstring & mode = "rb");
 
     ~mFile()
     {
@@ -67,8 +67,8 @@ public:
     {
 	return i_mode;
     }
-    bool Open(const mstring & name, const mstring & mode = "r");
-    void Attach(const mstring & name, FILE * in, const mstring & mode = "r");
+    bool Open(const mstring & name, const mstring & mode = "rb");
+    void Attach(const mstring & name, FILE * in, const mstring & mode = "rb");
     FILE *Detach();
     void Close();
     bool IsOpened() const;

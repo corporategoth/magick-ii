@@ -460,19 +460,20 @@ long mFile::Copy(const mstring & infile, const mstring & outfile, const bool app
     MLOCK(("mFile", infile));
     MLOCK2(("mFile", outfile));
     mFile in(infile.c_str());
-    mFile out(outfile.c_str(), append ? "a" : "w");
+    mFile out(outfile.c_str(), append ? "ab" : "wb");
 
     if (!(in.IsOpened() && out.IsOpened()))
 	RET(0);
 
     unsigned char c[65535];
-    size_t bytesread, total = 0;
+    size_t total = 0, length = in.Length();
 
     do
     {
-	bytesread = in.Read(c, 65535);
+	size_t bytesread = in.Read(c, 65535);
+
 	total += out.Write(c, bytesread);
-    } while (bytesread == 65535);
+    } while (total < length - 1);
     in.Close();
     out.Close();
     RET(total);
@@ -485,7 +486,7 @@ long mFile::Dump(const vector < mstring > & invector, const mstring & outfile, c
     if (!invector.size() || outfile.empty())
 	RET(0);
     MLOCK(("mFile", outfile));
-    mFile out(outfile.c_str(), append ? "a" : "w");
+    mFile out(outfile.c_str(), append ? "ab" : "wb");
 
     if (!out.IsOpened())
 	RET(0);
@@ -514,7 +515,7 @@ long mFile::Dump(const list < mstring > & inlist, const mstring & outfile, const
     if (!inlist.size() || outfile.empty())
 	RET(0);
     MLOCK(("mFile", outfile));
-    mFile out(outfile.c_str(), append ? "a" : "w");
+    mFile out(outfile.c_str(), append ? "ab" : "wb");
 
     if (!out.IsOpened())
 	RET(0);
@@ -1083,7 +1084,7 @@ i_Mynick(mynick), i_Filename(filename), i_Blocksize(Magick::instance().files.Blo
     // Set 'Ready to Transfer'
     if (mFile::Exists(i_Tempfile))
 	mFile::Erase(i_Tempfile);
-    i_File.Open(i_Tempfile.c_str(), "w");
+    i_File.Open(i_Tempfile.c_str(), "wb");
     i_Filesize = filesize;
 
     // Initialize Transfer
@@ -1199,7 +1200,7 @@ DccXfer &DccXfer::operator=(const DccXfer & in)
 	in.i_File.Close();
 	if (i_Type == Get)
 	{
-	    i_File.Open(i_Tempfile.c_str(), "a");
+	    i_File.Open(i_Tempfile.c_str(), "ab");
 	}
 	else if (i_Type == Send)
 	{
