@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.305  2001/05/08 06:29:55  prez
+** Made ALL have a head of ADMIN and REGD a head of SOP.
+**
 ** Revision 1.304  2001/05/07 03:14:20  prez
 ** Changes to fix bsd
 **
@@ -2950,44 +2953,6 @@ bool Magick::get_config_values()
     commserv.ovr_cs_clear.MakeUpper();
     AddCommands();
 
-    if (commserv.IsList(commserv.all_name))
-    {
-	MLOCK(("CommServ", "list", commserv.all_name, "member"));
-	while (commserv.GetList(commserv.all_name).size())
-	{
-	    commserv.GetList(commserv.all_name).member =
-			commserv.GetList(commserv.all_name).begin();
-	    commserv.GetList(commserv.all_name).erase();
-	}
-    }
-    else
-    {
-	Committee_t tmp(commserv.all_name, "All Users");
-	commserv.AddList(&tmp);
-    }
-    commserv.GetList(commserv.all_name).Secure(false);
-    commserv.GetList(commserv.all_name).Private(true);
-    commserv.GetList(commserv.all_name).OpenMemos(false);
-
-    if (commserv.IsList(commserv.regd_name))
-    {
-	MLOCK(("CommServ", "list", commserv.regd_name, "member"));
-	while (commserv.GetList(commserv.regd_name).size())
-	{
-	    commserv.GetList(commserv.regd_name).member =
-			commserv.GetList(commserv.regd_name).begin();
-	    commserv.GetList(commserv.regd_name).erase();
-	}
-    }
-    else
-    {
-	Committee_t tmp(commserv.regd_name, "Registered Users");
-	commserv.AddList(&tmp);
-    }
-    commserv.GetList(commserv.regd_name).Secure(false);
-    commserv.GetList(commserv.regd_name).Private(true);
-    commserv.GetList(commserv.regd_name).OpenMemos(false);
-
     if (commserv.IsList(commserv.sadmin_name))
     {
 	MLOCK(("CommServ", "list", commserv.sadmin_name, "member"));
@@ -3055,6 +3020,46 @@ bool Magick::get_config_values()
 	    ircsvchandler = NULL;
 	}}
     }
+
+    if (commserv.IsList(commserv.all_name))
+    {
+	MLOCK(("CommServ", "list", commserv.all_name, "member"));
+	while (commserv.GetList(commserv.all_name).size())
+	{
+	    commserv.GetList(commserv.all_name).member =
+			commserv.GetList(commserv.all_name).begin();
+	    commserv.GetList(commserv.all_name).erase();
+	}
+    }
+    else
+    {
+	Committee_t tmp(commserv.all_name, commserv.GetList(commserv.admin_name),
+				    "All Users");
+	commserv.AddList(&tmp);
+    }
+    commserv.GetList(commserv.all_name).Secure(false);
+    commserv.GetList(commserv.all_name).Private(true);
+    commserv.GetList(commserv.all_name).OpenMemos(false);
+
+    if (commserv.IsList(commserv.regd_name))
+    {
+	MLOCK(("CommServ", "list", commserv.regd_name, "member"));
+	while (commserv.GetList(commserv.regd_name).size())
+	{
+	    commserv.GetList(commserv.regd_name).member =
+			commserv.GetList(commserv.regd_name).begin();
+	    commserv.GetList(commserv.regd_name).erase();
+	}
+    }
+    else
+    {
+	Committee_t tmp(commserv.regd_name, commserv.GetList(commserv.sop_name),
+				    "Registered Users");
+	commserv.AddList(&tmp);
+    }
+    commserv.GetList(commserv.regd_name).Secure(false);
+    commserv.GetList(commserv.regd_name).Private(true);
+    commserv.GetList(commserv.regd_name).OpenMemos(false);
 
     DumpE();
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
