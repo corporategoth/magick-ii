@@ -1,0 +1,1672 @@
+* 2001-12-31 02:49  Preston A. Elder <prez@magick.tm>
+  configure.in (1.50), include/config.h.in (1.25), include/pch.h (1.47),
+  src/ircsocket.cpp (1.191):
+  
+  Found out stl_config.h didnt get included by default .. fixed that.
+
+* 2001-12-30 16:27  Preston A. Elder <prez@magick.tm>
+  include/trace.h (1.80), src/ircsocket.cpp (1.190):
+  
+  Some trace code beautification, and added ACE_Thread::exit() to worker
+  and save_databases threads ..
+
+* 2001-12-30 06:53  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.14), configure.in (1.49), include/config.h.in (1.24),
+  include/config.h.win (1.19), include/pch.h (1.46), src/xml/sxp.cpp
+  (1.31):
+  
+  Added thread safety for STL to pch.h, and started using ACE to do it.
+
+* 2001-12-26 23:54  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.90), include/xml/sxp.h (1.27),
+  include/xml/sxp_data.h (1.20), src/magick.cpp (1.339), src/xml/sxp.cpp
+  (1.30):
+  
+  Converted SXP to not use STL strings, use mstring instead.
+
+* 2001-12-26 20:02  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.89), src/mstring.cpp (1.122):
+  
+  Fixed up init, moved to header (for efficiancy)
+
+* 2001-12-26 19:40  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.88), src/filesys.cpp (1.88), src/mstring.cpp
+  (1.121):
+  
+  Some efficiancy changes to mstring
+
+* 2001-12-26 18:30  Preston A. Elder <prez@magick.tm>
+  include/ircsocket.h (1.62), include/xml/sxp.h (1.26), src/base.cpp
+  (1.179), src/ircsocket.cpp (1.189), src/mstring.cpp (1.120),
+  src/stages.cpp (1.14), src/xml/sxp.cpp (1.29):
+  
+  More fixes to see if I can fix the memory leak ...
+
+* 2001-12-25 06:15  Preston A. Elder <prez@magick.tm>
+  src/stages.cpp (1.13), src/xml/xmltok_impl.c (1.7):
+  
+  Fixed up my ASC hack in XML parsing
+
+* 2001-12-25 03:50  Preston A. Elder <prez@magick.tm>
+  include/xml/Makefile.am (1.3), src/xml/Makefile.am (1.9):
+  
+  Updated makefile.am for new XML
+
+* 2001-12-25 03:43  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.103), include/chanserv.h (1.72), include/commserv.h
+  (1.61), include/filesys.h (1.49), include/magick.h (1.174),
+  include/memoserv.h (1.55), include/nickserv.h (1.77), include/operserv.h
+  (1.62), include/xml/sxp.h (1.25), src/base.cpp (1.178), src/chanserv.cpp
+  (1.274), src/commserv.cpp (1.110), src/filesys.cpp (1.87), src/magick.cpp
+  (1.338), src/memoserv.cpp (1.108), src/nickserv.cpp (1.196),
+  src/operserv.cpp (1.139), src/stages.cpp (1.12):
+  
+  Fixed XML support properly ... it now works again with new version of
+  expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+
+* 2001-12-25 01:26  Preston A. Elder <prez@magick.tm>
+  include/filesys.h (1.48), include/magick.h (1.173), include/xml/sxp.h
+  (1.24):
+  
+  More new SXP fixes ...
+
+* 2001-12-25 00:57  Preston A. Elder <prez@magick.tm>
+  include/pch.h (1.45), include/stages.h (1.6), include/xml/ascii.h (1.1),
+  include/xml/asciitab.h (1.2), include/xml/codepage.h (1.2),
+  include/xml/expat.h (1.1), include/xml/filemap.h (1.2),
+  include/xml/hashtable.h (1.4), include/xml/iasciitab.h (1.2),
+  include/xml/latin1tab.h (1.2), include/xml/sxp.h (1.23),
+  include/xml/sxp_data.h (1.19), include/xml/utf8tab.h (1.2),
+  include/xml/xmlconfig.h (1.1), include/xml/xmlfile.h (1.2),
+  include/xml/xmlparse.h (1.4), include/xml/xmlrole.h (1.2),
+  include/xml/xmltchar.h (1.3), include/xml/xmltok.h (1.4),
+  include/xml/xmltok_impl.h (1.2), src/xml/dllmain.c (1.2),
+  src/xml/expat.html (1.2), src/xml/gennmtab.c (1.2), src/xml/hashtable.c
+  (1.3), src/xml/sxp.cpp (1.28), src/xml/sxp.html (1.1), src/xml/xmlparse.c
+  (1.10), src/xml/xmlrole.c (1.4), src/xml/xmltok.c (1.6),
+  src/xml/xmltok_impl.c (1.6), src/xml/xmltok_ns.c (1.3):
+  
+  Updated SXP and EXPAT -- untested, but should work.
+
+* 2001-12-24 23:06  Preston A. Elder <prez@magick.tm>
+  src/stages.cpp (1.11):
+  
+  Fixed up memory leak in stages
+
+* 2001-12-24 17:54  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.337):
+  
+  Removed error on systems where pthread_t is not an int
+
+* 2001-12-24 16:16  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.76), src/chanserv.cpp (1.273), src/server.cpp
+  (1.202):
+  
+  Fixed up aesthetic ACCESS/AKICK ADD/DEL outputs and updated for UNREAL
+  support
+
+* 2001-12-24 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.13):
+  
+  Created version 2.0s20011224
+
+* 2001-12-24 02:06  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.272):
+  
+  Made hostmasking more intelligent (ie. a narrower mask will take priority
+  over a broader one on the access/akick list), and if a user is on more
+  than one committee, the one with the highest level attached will be
+  returned.
+
+* 2001-12-23 15:46  Preston A. Elder <prez@magick.tm>
+  TODO (1.18), include/chanserv.h (1.71), include/commserv.h (1.60),
+  src/chanserv.cpp (1.271), src/commserv.cpp (1.109), src/nickserv.cpp
+  (1.195):
+  
+  Added cleanup code for committee entries in channel access list.
+
+* 2001-12-23 14:16  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.270):
+  
+  Fixed typos in chanserv.cpp
+
+* 2001-12-23 03:17  Preston A. Elder <prez@magick.tm>
+  docs/user.txt (1.3), include/chanserv.h (1.70), lang/english.hlp (1.44),
+  src/chanserv.cpp (1.269), src/nickserv.cpp (1.194):
+  
+  Added ability to add both hostmasks and committees to channel access
+  lists.  Priority of access search is nickname, committee, then mask.
+
+* 2001-12-21 00:03  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.8):
+  
+  Added Nathan West
+
+* 2001-12-21 00:02  Preston A. Elder <prez@magick.tm>
+  include/magick.h (1.172), src/chanserv.cpp (1.268), src/ircsocket.cpp
+  (1.188), src/magick.cpp (1.336), src/main.cpp (1.54), src/nickserv.cpp
+  (1.193), src/server.cpp (1.201):
+  
+  Changed over from using a global ACE_Reactor to using an instance inside
+  of the Magick instance.
+
+* 2001-12-20 03:02  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.102), include/filesys.h (1.47), include/ircsocket.h
+  (1.61), include/magick.h (1.171), include/mexceptions.h (1.7),
+  lang/english.lfo (1.45), src/base.cpp (1.177), src/chanserv.cpp (1.267),
+  src/commserv.cpp (1.108), src/convert_epona.cpp (1.7),
+  src/convert_esper.cpp (1.11), src/convert_magick.cpp (1.8),
+  src/datetime.cpp (1.73), src/dccengine.cpp (1.48), src/filesys.cpp
+  (1.86), src/ircsocket.cpp (1.187), src/lockable.cpp (1.77),
+  src/magick.cpp (1.335), src/main.cpp (1.53), src/memoserv.cpp (1.107),
+  src/nickserv.cpp (1.192), src/operserv.cpp (1.138), src/server.cpp
+  (1.200), src/servmsg.cpp (1.95), src/trace.cpp (1.114), src/utils.cpp
+  (1.75):
+  
+  Massive change -- 'Parent' has been changed to Magick::instance(), will
+  soon also move the ACE_Reactor over, and will be able to have multipal
+  instances of Magick in the same process if necessary.
+
+* 2001-12-19 10:53  Preston A. Elder <prez@magick.tm>
+  Magick.spec (1.9):
+  
+  More spec changes
+
+* 2001-12-19 10:52  Preston A. Elder <prez@magick.tm>
+  Magick.spec (1.8):
+  
+  Some changes to the SPEC file
+
+* 2001-12-18 23:50  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.24), docs/en/index.sgml (1.32):
+  
+  Changed installation docs to include ACE *.inl
+
+* 2001-12-18 23:49  Preston A. Elder <prez@magick.tm>
+  configure.in (1.48):
+  
+  Removed 2 more warnings, else gcc 2.95.x complains
+
+* 2001-12-18 17:46  Preston A. Elder <prez@magick.tm>
+  docs/en/Makefile.am (1.8):
+  
+  Streamlined makefile a little, added some new formats ...
+
+* 2001-12-18 10:54  Preston A. Elder <prez@magick.tm>
+  docs/oper.txt (1.2), docs/user.txt (1.2):
+  
+  Fixed some documentation indexing problems, thanks to Stibnite
+
+* 2001-12-17 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.12):
+  
+  Created version 2.0s20011217
+
+* 2001-12-15 21:21  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.199):
+  
+  Missed 1 unused param
+
+* 2001-12-15 21:20  Preston A. Elder <prez@magick.tm>
+  configure.in (1.47):
+  
+  More configure stuff.
+
+* 2001-12-15 20:56  Preston A. Elder <prez@magick.tm>
+  configure.in (1.46):
+  
+  Removed -Wredundant-decls and -Winline from warnings for gcc 2.95.x
+
+* 2001-12-15 20:48  Preston A. Elder <prez@magick.tm>
+  src/magick_stampkeys.c (1.7):
+  
+  Fixed RCSID
+
+* 2001-12-15 20:30  Preston A. Elder <prez@magick.tm>
+  configure.in (1.45), src/filesys.cpp (1.85), src/ircsocket.cpp (1.186),
+  src/lockable.cpp (1.76), src/mstring.cpp (1.119), src/server.cpp (1.198),
+  src/stages.cpp (1.10), src/trace.cpp (1.113):
+  
+  More changes to fix up warnings ... added some new warning flags too!
+
+* 2001-12-15 19:12  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.87):
+  
+  Some code in mstring to make its vsnprintf more safe, if possible.
+
+* 2001-12-15 19:07  Preston A. Elder <prez@magick.tm>
+  configure.in (1.44), docs/en/index.info (1.76), docs/en/index.info-1
+  (1.36), docs/en/index.info-2 (1.36), include/version.h (1.129):
+  
+  Updated configure.in to be more solaris friendly.
+
+* 2001-12-12 10:40  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.86):
+  
+  Made *toa functions guarentee the result is terminated.
+
+* 2001-12-12 10:36  Preston A. Elder <prez@magick.tm>
+  src/mstring.cpp (1.118):
+  
+  Moved around some strstr calls, to reduce calls, and clean code a little.
+
+* 2001-12-12 02:43  Preston A. Elder <prez@magick.tm>
+  configure.in (1.43), include/config.h.in (1.23), include/config.h.win
+  (1.18), include/mstring.h (1.85), include/pch.h (1.44),
+  src/convert_epona.cpp (1.6):
+  
+  Some more platform changes.  Made it look for _snprintf and _vsnprintf
+  aswell (is the case on windows).  Also updated windows config.h.win.
+
+* 2001-12-12 02:19  Preston A. Elder <prez@magick.tm>
+  configure.in (1.42), include/config.h.in (1.22), include/mstring.h
+  (1.84), src/magick.cpp (1.334), src/mstring.cpp (1.117):
+  
+  Added check for snprintf, and changed *toa functions to use snprintf. 
+  Also moved magick::snprintf and magick::vsnprintf to just snprintf and
+  vsnprintf for systems without the system calls.  Made them inline. 
+  Finally, made mstring's copy() commands for non-string types use *toa
+  functions.
+
+* 2001-12-11 22:51  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.83):
+  
+  Forgot to return SV in all the *toa functions
+
+* 2001-12-11 22:48  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.82):
+  
+  Fixed all the *toa functions, to NOT return c_str() of a temporary
+  veriable.
+
+* 2001-12-11 22:31  Preston A. Elder <prez@magick.tm>
+  include/mconfig.h (1.23), include/version.h (1.127), src/magick.cpp
+  (1.333), src/mconfig.cpp (1.37), src/mstring.cpp (1.116):
+  
+  Re-wrote the occurances/find/replace functions in mstring to actually
+  work with contents that includes a binary 0.	Also fixed PreParse in
+  mconfig.
+
+* 2001-12-10 04:43  Preston A. Elder <prez@magick.tm>
+  src/dccengine.cpp (1.47), src/server.cpp (1.197):
+  
+  Updated to remove '-' in front of release name in version tags.
+
+* 2001-12-10 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.11):
+  
+  Created version 2.0s20011210
+
+* 2001-12-09 06:25  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.74), magick_stampkeys.dsp (1.5), what.dsp (1.5),
+  src/magick_keygen.c (1.23), src/utils.cpp (1.74):
+  
+  Some windows compilation fixes ...
+
+* 2001-12-06 21:51  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.81), src/mstring.cpp (1.115):
+  
+  Added doxygen comments to mstring, and removed doxygen generated stuff
+  from CVS -- you can now just generate it yourself with the config file.
+
+* 2001-12-05 20:41  Preston A. Elder <prez@magick.tm>
+  src/mconfig.cpp (1.36):
+  
+  Some fixes to the config file parser -- slightly more flexable now.
+
+* 2001-12-04 20:53  Preston A. Elder <prez@magick.tm>
+  helper/cvs2cl.pl (1.2):
+  
+  Fixed up truncating log problem
+
+* 2001-12-04 20:42  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.5):
+  
+  Ditched .bak files
+
+* 2001-12-04 20:37  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.10):
+  
+  Updated ChangeLog
+
+* 2001-12-04 19:48  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.7), ChangeLog (1.9), ChangeLog.1999 (1.1), ChangeLog.2000
+  (1.1), ChangeLog.old (1.1), Magick.spec (1.7), Makefile.dist (1.4),
+  helper/cvs2cl.pl (1.1):
+  
+  Added some new change logs (now split out by year), and made changes in
+  AUTHORS to correctly work with cvs2cl.pl (which creates ChangeLog).  Also
+  made Makefile.dist create change log.
+
+* 2001-12-04 19:13  Preston A. Elder <prez@magick.tm>
+  src/magick_keygen.c (1.22):
+  
+  Got rid of a warning in magick_keygen
+
+* 2001-12-04 17:45  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.80):
+  
+  Re-vamped the operator overloads, making it even MORE portable, and using
+  up alot less room in the process.
+
+* 2001-12-03 15:02  Preston A. Elder <prez@magick.tm>
+  docs/man/magick.pod (1.12):
+  
+  Added umask parameter for man pages.
+
+* 2001-12-03 05:04  Preston A. Elder <prez@magick.tm>
+  docs/en/.cvsignore (1.2), docs/en/index-1.html (1.10),
+  docs/en/index-2.html (1.21), docs/en/index-3.html (1.15),
+  docs/en/index-4.html (1.9), docs/en/index-5.html (1.4),
+  docs/en/index-6.html (1.5), docs/en/index.html (1.11), docs/en/index.info
+  (1.75), docs/en/index.info-1 (1.35), docs/en/index.info-2 (1.35),
+  docs/en/index.txt (1.3):
+  
+  Removed the ever-changing result files from index, and left the SGML
+  file.
+
+* 2001-11-30 04:01  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.266), src/filesys.cpp (1.84), src/ircsocket.cpp
+  (1.185), src/magick.cpp (1.332), src/main.cpp (1.52), src/nickserv.cpp
+  (1.191), src/server.cpp (1.196), include/magick.h (1.170):
+  
+  Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+  Pause(bool) functions. This should help if/when we decide to implement
+  Magick running as an NT service.
+
+* 2001-11-30 02:30  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.331), src/main.cpp (1.51), src/crypt/crypto.mak (1.3):
+  
+  Added some windows stuff ...
+
+* 2001-11-28 08:40  Preston A. Elder <prez@magick.tm>
+  README (1.20), docs/magick.ini (1.94), docs/en/index-3.html (1.14),
+  docs/en/index.info (1.74), docs/en/index.info-1 (1.34),
+  docs/en/index.info-2 (1.34), docs/en/index.sgml (1.31), include/filesys.h
+  (1.46), include/ircsocket.h (1.60), include/lockable.h (1.66),
+  include/magick.h (1.169), lang/english.lfo (1.44), src/ircsocket.cpp
+  (1.184), src/lockable.cpp (1.75), src/magick.cpp (1.330):
+  
+  Added UMASK option to config.  Also made the 'dead thread' protection
+  send a SIGIOT signal to try and get the thread to die gracefully, else it
+  will do the cancel it used to do.
+
+* 2001-11-24 18:19  Preston A. Elder <prez@magick.tm>
+  lang/english.lng (1.85):
+  
+  Fixed typo
+
+* 2001-11-23 16:02  Preston A. Elder <prez@magick.tm>
+  src/mstring.cpp (1.114):
+  
+  Fixed problem in FormatV that caused corruptions in strings.
+
+* 2001-11-22 12:54  Preston A. Elder <prez@magick.tm>
+  src/mstring.cpp (1.113):
+  
+  Fixed potential fatal error in mstring insert
+
+* 2001-11-22 12:32  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.73), docs/en/index.info-1 (1.33),
+  docs/en/index.info-2 (1.33), include/lockable.h (1.65), include/version.h
+  (1.126), src/mstring.cpp (1.112):
+  
+  Some fixes to lockable for mpatrol, and mstring overwriting its own
+  memory.
+
+* 2001-11-20 11:34  Preston A. Elder <prez@magick.tm>
+  configure.in (1.41):
+  
+  Updated configure script to be a little cleaner ..
+
+* 2001-11-19 22:35  Preston A. Elder <prez@magick.tm>
+  helper/serviceschk (1.6):
+  
+  Changed SIGCHLD -> signal #0 (reserved for checking purposes ...)
+
+* 2001-11-17 22:26  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.72), docs/en/index.info-1 (1.32),
+  docs/en/index.info-2 (1.32), lang/english.lfo (1.43), lang/english.lng
+  (1.84), src/base.cpp (1.176), src/magick.cpp (1.329), src/operserv.cpp
+  (1.137), src/trace.cpp (1.112):
+  
+  More changes re: trace names, and made the command system know the
+  difference between 'insufficiant access' and 'unknown command'.
+
+* 2001-11-17 20:54  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.328), src/operserv.cpp (1.136), src/server.cpp (1.195):
+  
+  Fixed up trace levels (again)
+
+* 2001-11-17 20:44  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.135):
+  
+  Changed trace levels
+
+* 2001-11-17 20:03  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.183), src/trace.cpp (1.111):
+  
+  Fixed up the trace names.
+
+* 2001-11-17 02:18  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.265), src/convert_epona.cpp (1.5),
+  src/convert_esper.cpp (1.10):
+  
+  Fixed up unbanning, so it gets ALL bans ...
+
+* 2001-11-16 22:16  Preston A. Elder <prez@magick.tm>
+  include/utils.h (1.46):
+  
+  Added MakeDirectory
+
+* 2001-11-16 22:16  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.83), src/ircsocket.cpp (1.182), src/magick.cpp
+  (1.327), src/utils.cpp (1.73):
+  
+  Extra logging, actually made DCC identify as a DCC thread, and fixed some
+  mkdir failures ...
+
+* 2001-11-16 15:27  Preston A. Elder <prez@magick.tm>
+  TODO (1.17), docs/magick.ini (1.93), docs/man/magick.pod (1.11),
+  include/ircsocket.h (1.59), include/magick.h (1.168), include/trace.h
+  (1.79), lang/english.lfo (1.42), src/ircsocket.cpp (1.181),
+  src/magick.cpp (1.326):
+  
+  Added a MAX_THREADS option, and made the thread heartbeat a timer based
+  operation, instead of part of the threads.
+
+* 2001-11-16 15:24  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.82):
+  
+  Moved heartbeat to a timer based operation, NOT part of the events thread
+
+* 2001-11-11 20:05  Preston A. Elder <prez@magick.tm>
+  aclocal.m4 (1.5), configure.in (1.40), docs/en/Makefile.am (1.7),
+  docs/en/index.info (1.71), docs/en/index.info-1 (1.31),
+  docs/en/index.info-2 (1.31), docs/man/Makefile.am (1.8), helper/makelang
+  (1.10), helper/makelog (1.6), include/base.h (1.101), include/chanserv.h
+  (1.69), include/commserv.h (1.59), include/config.h.in (1.21),
+  include/convert_epona.h (1.3), include/convert_esper.h (1.5),
+  include/convert_magick.h (1.3), include/datetime.h (1.40),
+  include/dccengine.h (1.18), include/filesys.h (1.45), include/ircsocket.h
+  (1.58), include/language.h (1.33), include/lockable.h (1.64),
+  include/logfile.h (1.23), include/magick.h (1.167), include/mconfig.h
+  (1.22), include/memoserv.h (1.54), include/mexceptions.h (1.6),
+  include/mstring.h (1.79), include/nickserv.h (1.76), include/operserv.h
+  (1.61), include/pch.h (1.43), include/server.h (1.75), include/servmsg.h
+  (1.33), include/stages.h (1.5), include/trace.h (1.78), include/utils.h
+  (1.45), include/variant.h (1.40), include/version.h (1.125),
+  include/version.h-release (1.36), include/crypt/bf_locl.h (1.2),
+  include/crypt/blowfish.h (1.2), include/xml/sxp.h (1.22),
+  include/xml/xmltchar.h (1.2), src/Makefile.am (1.28), src/base.cpp
+  (1.175), src/chanserv.cpp (1.264), src/commserv.cpp (1.107),
+  src/convert_epona.cpp (1.4), src/convert_esper.cpp (1.9),
+  src/convert_magick.cpp (1.7), src/datetime.cpp (1.72), src/dccengine.cpp
+  (1.46), src/filesys.cpp (1.81), src/ircsocket.cpp (1.180),
+  src/lockable.cpp (1.74), src/magick.cpp (1.325), src/magick_stampkeys.c
+  (1.6), src/main.cpp (1.50), src/mconfig.cpp (1.35), src/memoserv.cpp
+  (1.106), src/mstring.cpp (1.111), src/nickserv.cpp (1.190),
+  src/operserv.cpp (1.134), src/server.cpp (1.194), src/servmsg.cpp (1.94),
+  src/stages.cpp (1.9), src/trace.cpp (1.110), src/utils.cpp (1.72),
+  src/variant.cpp (1.49), src/crypt/Makefile.am (1.2), src/crypt/bf_enc.c
+  (1.2), src/crypt/bf_skey.c (1.2), src/crypt/md5_dgst.c (1.2),
+  src/xml/Makefile.am (1.8), src/xml/sxp.cpp (1.27), src/xml/xml.cpp (1.4),
+  src/xml/xmlparse.c (1.9), src/xml/xmlrole.c (1.3), src/xml/xmltok.c
+  (1.5), src/xml/xmltok_impl.c (1.5), src/xml/xmltok_ns.c (1.2):
+  
+  Added new warning flags, and changed code to reduce watnings ...
+
+* 2001-11-07 23:47  Preston A. Elder <prez@magick.tm>
+  .cvsignore (1.13), dragonfly.ico (1.1), magick.dsp (1.73), magick.rc
+  (1.1), magick_keygen.dsp (1.4), magick_stampkeys.dsp (1.4), resource.h
+  (1.1):
+  
+  Added Magick ICON to magick builds ;)
+
+* 2001-11-07 01:30  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.263), src/ircsocket.cpp (1.179):
+  
+  Fixing some indenting and an unused veriable.
+
+* 2001-11-06 23:11  Preston A. Elder <prez@magick.tm>
+  src/commserv.cpp (1.106):
+  
+  Added in better message trying to delete a member who is a head.
+
+* 2001-11-06 22:09  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.80):
+  
+  Fixed coredump on windows on shutdown.
+
+* 2001-11-06 19:51  Preston A. Elder <prez@magick.tm>
+  helper/run_magick.bat (1.2), helper/run_magick_keygen.bat (1.2):
+  
+  Re-vamped batch files
+
+* 2001-11-06 19:21  Preston A. Elder <prez@magick.tm>
+  helper/run_magick.bat (1.1), helper/run_magick_keygen.bat (1.1):
+  
+  Added dos running batch files (to force the stamp ...)
+
+* 2001-11-06 04:31  Preston A. Elder <prez@magick.tm>
+  lang/english.lfo (1.41), src/magick.cpp (1.324):
+  
+  Changed to display a message on windows mode, informing of console state.
+
+* 2001-11-05 11:23  William King <ungod@magick.tm>
+  src/convert_epona.cpp (1.3), magickbcc.bpr (1.23), magickbcc.cpp (1.18),
+  magickbcc.mak (1.4):
+  
+  more borland goodness
+
+* 2001-11-05 08:38  William King <ungod@magick.tm>
+  magick_keygenbcc.mak (1.3), magickbcc.mak (1.3), whatbcc.mak (1.2),
+  src/xml/xml.mak (1.3):
+  
+  more borland goodness
+
+* 2001-11-05 00:14  Preston A. Elder <prez@magick.tm>
+  README (1.19), docs/en/index-3.html (1.13), docs/en/index.info (1.70),
+  docs/en/index.info-1 (1.30), docs/en/index.info-2 (1.30),
+  docs/en/index.sgml (1.30), docs/man/magick.pod (1.10):
+  
+  Updated documentation, etc
+
+* 2001-11-05 00:10  Preston A. Elder <prez@magick.tm>
+  src/xml/sxp.cpp (1.26):
+  
+  Removed winbase.h from sxp.h ;P
+
+* 2001-11-05 00:09  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.323):
+  
+  Windows updates, namely disabling fork() on windows.
+
+* 2001-11-04 23:19  Preston A. Elder <prez@magick.tm>
+  crypt.dsp (1.3), magick.dsp (1.72), magick_keygen.dsp (1.3),
+  magick_stampkeys.dsp (1.3), what.dsp (1.4), xml.dsp (1.3),
+  src/xml/sxp.cpp (1.25):
+  
+  more windows tuning, now it actually works without silly runtime
+  dependancies
+
+* 2001-11-04 19:34  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.71):
+  
+  Updated to use zlibd.dll on debug, and zlib.dll on release
+
+* 2001-11-04 18:43  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.70), include/chanserv.h (1.68), include/commserv.h (1.58),
+  include/convert_epona.h (1.2), include/convert_esper.h (1.4),
+  include/ircsocket.h (1.57), include/nickserv.h (1.75), src/base.cpp
+  (1.174), src/convert_esper.cpp (1.8), src/ircsocket.cpp (1.178):
+  
+  Updates for MS Visual C++ compilation (it works now!).
+
+* 2001-11-04 14:23  William King <ungod@magick.tm>
+  magick_keygenbcc.bpr (1.4), magickbcc.bpr (1.22), magickbcc.cpp (1.17),
+  whatbcc.bpr (1.3), src/chanserv.cpp (1.262), src/commserv.cpp (1.105),
+  src/convert_epona.cpp (1.2), src/magick_keygen.c (1.21), src/memoserv.cpp
+  (1.105), src/nickserv.cpp (1.189), src/operserv.cpp (1.133),
+  src/servmsg.cpp (1.93), src/crypt/crypto.bpr (1.3), src/xml/xml.bpr
+  (1.5):
+  
+  fixed up compilation for borland c++ builder
+
+* 2001-11-03 21:50  William King <ungod@magick.tm>
+  src/crypt/crypto.bpr (1.2):
+  
+  fixed up project for borland
+
+* 2001-11-03 16:03  Preston A. Elder <prez@magick.tm>
+  files/memo/.cvsignore (1.1), files/pic/.cvsignore (1.1),
+  files/public/.cvsignore (1.1), files/temp/.cvsignore (1.1):
+  
+  Added CVS ignore files for filesystem stuff ...
+
+* 2001-11-03 16:02  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.3), README (1.18), ace_uname.cpp (1.2), configure.in
+  (1.39), what.c (1.7), docs/magick.ini (1.92), docs/oper.txt (1.1),
+  docs/user.txt (1.1), docs/en/index-3.html (1.12), docs/en/index.info
+  (1.69), docs/en/index.info-1 (1.29), docs/en/index.info-2 (1.29),
+  docs/en/index.sgml (1.29), docs/man/magick.pod (1.9), helper/blank-patch
+  (1.4), helper/servicesbkup (1.1), helper/serviceschk (1.5),
+  helper/servicescycle (1.1), include/base.h (1.100), include/chanserv.h
+  (1.67), include/commserv.h (1.57), include/config.h.in (1.20),
+  include/config.h.top (1.4), include/config.h.win (1.17),
+  include/convert_epona.h (1.1), include/convert_esper.h (1.3),
+  include/filesys.h (1.44), include/ircsocket.h (1.56), include/language.h
+  (1.32), include/logfile.h (1.22), include/magick.h (1.166),
+  include/mconfig.h (1.21), include/memoserv.h (1.53), include/mstring.h
+  (1.78), include/nickserv.h (1.74), include/operserv.h (1.60),
+  include/server.h (1.74), include/stages.h (1.4), include/version.h
+  (1.124), include/version.h-release (1.35), include/xml/sxp_data.h (1.18),
+  lang/english.hlp (1.43), lang/english.lfo (1.40), lang/english.lng
+  (1.83), lang/example.lng (1.4), lang/french.lng (1.8),
+  lang/portuguese.lng (1.11), lang/turkish.lng (1.9), src/Makefile.am
+  (1.27), src/base.cpp (1.173), src/chanserv.cpp (1.261), src/commserv.cpp
+  (1.104), src/convert_epona.cpp (1.1), src/convert_esper.cpp (1.7),
+  src/convert_magick.cpp (1.6), src/filesys.cpp (1.79), src/ircsocket.cpp
+  (1.177), src/lockable.cpp (1.73), src/magick.cpp (1.322),
+  src/magick_keygen.c (1.20), src/magick_stampkeys.c (1.5), src/main.cpp
+  (1.49), src/mconfig.cpp (1.34), src/memoserv.cpp (1.104), src/mstring.cpp
+  (1.110), src/nickserv.cpp (1.188), src/operserv.cpp (1.132),
+  src/server.cpp (1.193), src/servmsg.cpp (1.92), src/stages.cpp (1.8):
+  
+  Mammoth change, including ALL changes for beta12, and all stuff done
+  during the time GOTH.NET was down ... approx. 3 months.  Includes EPONA
+  conv utils.
+
+* 2001-08-05 00:53  Preston A. Elder <prez@magick.tm>
+  FAQ (1.5), docs/en/index.info (1.68), docs/en/index.info-1 (1.28),
+  docs/en/index.info-2 (1.28), include/server.h (1.73), src/server.cpp
+  (1.192):
+  
+  Fixes for topic under hybrid
+
+* 2001-08-04 14:32  Preston A. Elder <prez@magick.tm>
+  FAQ (1.4), docs/magick.ini (1.91), docs/en/index-4.html (1.8),
+  docs/en/index.html (1.10), docs/en/index.info (1.67),
+  docs/en/index.info-1 (1.27), docs/en/index.info-2 (1.27),
+  docs/en/index.sgml (1.28), include/datetime.h (1.39), include/server.h
+  (1.72), include/xml/sxp_data.h (1.17), src/chanserv.cpp (1.260),
+  src/datetime.cpp (1.71), src/ircsocket.cpp (1.176), src/server.cpp
+  (1.191):
+  
+  Made some changes for Hybrid 6 -- we now work with it ... mostly.
+
+* 2001-07-29 17:22  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.321), src/operserv.cpp (1.131), src/server.cpp (1.190),
+  include/operserv.h (1.59):
+  
+  Delayed clone akills on sync until AFTER we're synced
+
+* 2001-07-28 23:12  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.90), docs/en/index.info (1.66), docs/en/index.info-1
+  (1.26), docs/en/index.info-2 (1.26), include/server.h (1.71),
+  src/magick.cpp (1.320), src/server.cpp (1.189):
+  
+  Fixed up stuff for the NEW rn4.0
+
+* 2001-07-28 17:50  Preston A. Elder <prez@magick.tm>
+  src/stages.cpp (1.7):
+  
+  Added trace codes ...
+
+* 2001-07-23 22:51  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.70), include/version.h (1.123),
+  include/version.h-release (1.34), src/dccengine.cpp (1.45),
+  src/server.cpp (1.188):
+  
+  Added ability to do JOIN or SJOIN
+
+* 2001-07-21 14:09  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.175), src/mstring.cpp (1.109), src/operserv.cpp
+  (1.130):
+  
+  Fixed IsBool in mstring and made SVINFO actually give a GMT timestamp.
+
+* 2001-07-15 23:36  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.69), src/mstring.cpp (1.108), src/nickserv.cpp
+  (1.187), src/server.cpp (1.187):
+  
+  Got rid of mstring's strcmp, now using memcmp.  Also did a little
+  tweaking with the protocol support.
+
+* 2001-07-15 03:35  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.319), src/mconfig.cpp (1.33), src/nickserv.cpp (1.186):
+  
+  Fixed problem of it removing access list entries on slave nickname drop. 
+  Also fixed it so it wouldnt ignore ini entries that were deliberately
+  blank.
+
+* 2001-07-12 02:17  Preston A. Elder <prez@magick.tm>
+  lang/english.hlp (1.41):
+  
+  Updated the help for ANARCHY
+
+* 2001-07-12 00:27  Preston A. Elder <prez@magick.tm>
+  src/stages.cpp (1.6):
+  
+  Fixed problem with it cutting encrypted db's just a bit too short.
+
+* 2001-07-11 20:28  Preston A. Elder <prez@magick.tm>
+  configure.in (1.38), docs/en/index.info (1.65), docs/en/index.info-1
+  (1.25), docs/en/index.info-2 (1.25), helper/serviceschk (1.4),
+  src/chanserv.cpp (1.259), src/magick_stampkeys.c (1.4), src/server.cpp
+  (1.186):
+  
+  Added propper support for Anarchy mode
+
+* 2001-07-07 21:37  Preston A. Elder <prez@magick.tm>
+  lang/english.hlp (1.40), lang/english.lng (1.82), src/chanserv.cpp
+  (1.258), src/magick.cpp (1.318), src/magick_keygen.c (1.19),
+  src/nickserv.cpp (1.185):
+  
+  Verified encryption works ...
+
+* 2001-07-06 05:15  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.174), src/nickserv.cpp (1.184):
+  
+  Fixed nickserv drop
+
+* 2001-07-05 11:23  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.257), src/ircsocket.cpp (1.173):
+  
+  Fixed the channel topic carryover
+
+* 2001-07-05 02:00  Preston A. Elder <prez@magick.tm>
+  include/version.h (1.122), include/version.h-release (1.33):
+  
+  Up'd version to b11
+
+* 2001-07-05 01:59  Preston A. Elder <prez@magick.tm>
+  magick.kdevprj (1.28), docs/en/index.info (1.64), docs/en/index.info-1
+  (1.24), docs/en/index.info-2 (1.24), include/chanserv.h (1.66),
+  include/language.h (1.31), include/logfile.h (1.21), include/nickserv.h
+  (1.73), lang/english.hlp (1.39), lang/english.lfo (1.39),
+  lang/english.lng (1.81), src/base.cpp (1.172), src/chanserv.cpp (1.256),
+  src/ircsocket.cpp (1.172), src/nickserv.cpp (1.183), src/server.cpp
+  (1.185):
+  
+  More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+
+* 2001-07-03 02:00  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.255), src/ircsocket.cpp (1.171), src/nickserv.cpp
+  (1.182), src/server.cpp (1.184), src/utils.cpp (1.71):
+  
+  More deadlock fixes ... also cleared up the Signal #6 problem.
+
+* 2001-07-01 23:39  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.99), src/base.cpp (1.171), src/chanserv.cpp (1.254),
+  src/filesys.cpp (1.78), src/operserv.cpp (1.129), src/server.cpp (1.183),
+  src/servmsg.cpp (1.91):
+  
+  Fixed bug with users sending printf strings (mainly in memos).
+
+* 2001-07-01 01:02  Preston A. Elder <prez@magick.tm>
+  configure.in (1.37), src/base.cpp (1.170), src/chanserv.cpp (1.253),
+  src/ircsocket.cpp (1.170), src/magick.cpp (1.317), src/magick_keygen.c
+  (1.18), src/server.cpp (1.182), include/base.h (1.98), include/lockable.h
+  (1.63), include/stages.h (1.3), include/utils.h (1.44), src/utils.cpp
+  (1.70):
+  
+  Added changes to dependancy system so it wouldnt just remove a dependancy
+  after the first one was satisfied.
+
+* 2001-06-20 02:07  Preston A. Elder <prez@magick.tm>
+  include/filesys.h (1.43), include/magick.h (1.165), include/mexceptions.h
+  (1.5), include/mstring.h (1.77), include/pch.h (1.42), include/trace.h
+  (1.77):
+  
+  ome GCC 3.0 and solaris fixes
+
+* 2001-06-17 15:29  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.63), docs/en/index.info-1 (1.23),
+  docs/en/index.info-2 (1.23), include/pch.h (1.41):
+  
+  Fixed pch again to support 5.1.0 aswell as 5.1.17 ACE
+
+* 2001-06-17 05:39  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.252), src/commserv.cpp (1.103), src/ircsocket.cpp
+  (1.169), src/memoserv.cpp (1.103), src/nickserv.cpp (1.181),
+  src/operserv.cpp (1.128), src/server.cpp (1.181), src/servmsg.cpp (1.90),
+  src/utils.cpp (1.69):
+  
+  Hopefully some more changes that ensure uptime (mainly to do with locking
+  entries in an iterated search, and using copies of data instead of
+  references where we can get away with it -- reducing the need to lock the
+  data).
+
+* 2001-06-17 01:22  Preston A. Elder <prez@magick.tm>
+  crypt.dsp (1.2), magick.dsp (1.69), magick.dsw (1.11), magick_keygen.dsp
+  (1.2), magick_stampkeys.dsp (1.2), what.dsp (1.3), xml.dsp (1.2),
+  include/pch.h (1.40), src/filesys.cpp (1.77), src/mstring.cpp (1.107),
+  src/utils.cpp (1.68):
+  
+  Resolved compatability issues with ACE 5.1.17
+
+* 2001-06-16 05:35  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.251), src/ircsocket.cpp (1.168), src/server.cpp
+  (1.180):
+  
+  More tiny bugs ...
+
+* 2001-06-15 03:20  Preston A. Elder <prez@magick.tm>
+  crypt.dsp (1.1), magick.dsp (1.68), magick.dsw (1.10), magick_keygen.dsp
+  (1.1), magick_stampkeys.dsp (1.1), what.dsp (1.2), xml.dsp (1.1),
+  include/base.h (1.97), include/chanserv.h (1.65), include/commserv.h
+  (1.56), include/config.h.win (1.16), include/convert_esper.h (1.2),
+  include/filesys.h (1.42), include/ircsocket.h (1.55), include/magick.h
+  (1.164), include/memoserv.h (1.52), include/mstring.h (1.76),
+  include/nickserv.h (1.72), include/operserv.h (1.58), include/xml/sxp.h
+  (1.21), include/xml/sxp_data.h (1.16), src/base.cpp (1.169),
+  src/chanserv.cpp (1.250), src/commserv.cpp (1.102), src/convert_esper.cpp
+  (1.6), src/filesys.cpp (1.76), src/ircsocket.cpp (1.167), src/magick.cpp
+  (1.316), src/magick_keygen.c (1.17), src/magick_stampkeys.c (1.3),
+  src/main.cpp (1.48), src/mconfig.cpp (1.32), src/memoserv.cpp (1.102),
+  src/mstring.cpp (1.106), src/nickserv.cpp (1.180), src/operserv.cpp
+  (1.127), src/server.cpp (1.179), src/servmsg.cpp (1.89), src/utils.cpp
+  (1.67), src/crypt/crypto.dsp (1.2), src/crypt/crypto.mak (1.2),
+  src/xml/sxp.cpp (1.24), src/xml/xml.dsp (1.3), src/xml/xml.mak (1.2):
+  
+  Fixed windows compiling -- now works with MS Visual Studio 6.0
+
+* 2001-06-11 02:47  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.168):
+  
+  Fixed an undefined symbol
+
+* 2001-06-10 23:44  Preston A. Elder <prez@magick.tm>
+  docs/en/index-2.html (1.20), docs/en/index.info (1.62),
+  docs/en/index.info-1 (1.22), docs/en/index.info-2 (1.22), include/base.h
+  (1.96), include/trace.h (1.76), include/version.h (1.121), src/base.cpp
+  (1.167), src/chanserv.cpp (1.249), src/ircsocket.cpp (1.166),
+  src/server.cpp (1.178):
+  
+  Re-wrote how burst works, and made the burst message a lower priority
+  than normal.	Also removed the chance of a stray pointer being picked up
+  in the dependancy system.
+
+* 2001-06-07 02:21  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.126), src/stages.cpp (1.5):
+  
+  Think I fixed staging encryption layer ... ugh.
+
+* 2001-06-06 23:58  Preston A. Elder <prez@magick.tm>
+  src/stages.cpp (1.4):
+  
+  Aparently we dont need or want a Feed call with 1
+
+* 2001-06-03 01:04  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.125), src/server.cpp (1.177):
+  
+  small fixes in operdeny and akill adding
+
+* 2001-06-02 22:12  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.75), src/magick.cpp (1.315), src/stages.cpp (1.3):
+  
+  Fixed problem with compress stage not recognizing its end ...
+
+* 2001-06-02 12:27  Preston A. Elder <prez@magick.tm>
+  include/Makefile.am (1.14), include/filesys.h (1.41), include/magick.h
+  (1.163), include/pch.h (1.39), include/stages.h (1.2), include/xml/sxp.h
+  (1.20), src/Makefile.am (1.26), src/filesys.cpp (1.74), src/magick.cpp
+  (1.314), src/stages.cpp (1.2), src/utils.cpp (1.66), src/xml/sxp.cpp
+  (1.23):
+  
+  Intergrated the staging system for dbase loading/saving.
+
+* 2001-06-02 07:04  Preston A. Elder <prez@magick.tm>
+  include/stages.h (1.1), src/stages.cpp (1.1):
+  
+  Initial checkin of stages
+
+* 2001-05-28 07:17  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.95), include/nickserv.h (1.71), include/pch.h (1.38),
+  include/version.h (1.120), include/version.h-release (1.32), src/base.cpp
+  (1.166), src/chanserv.cpp (1.248), src/convert_esper.cpp (1.5),
+  src/convert_magick.cpp (1.5), src/ircsocket.cpp (1.165), src/magick.cpp
+  (1.313), src/nickserv.cpp (1.179), lang/english.lfo (1.38),
+  src/server.cpp (1.176):
+  
+  Added some more anti-deadlock stuff, and fixed nick ident warnings
+
+* 2001-05-24 21:59  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.94), include/chanserv.h (1.64), include/ircsocket.h
+  (1.54), include/magick.h (1.162), include/nickserv.h (1.70),
+  include/trace.h (1.75), src/base.cpp (1.165), src/ircsocket.cpp (1.164):
+  
+  Changed messaging system ...
+
+* 2001-05-22 22:43  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.246), src/memoserv.cpp (1.101), src/nickserv.cpp
+  (1.178):
+  
+  Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv
+  failed passwords kill bug.
+
+* 2001-05-22 18:57  Preston A. Elder <prez@magick.tm>
+  src/commserv.cpp (1.101), src/magick.cpp (1.312), src/nickserv.cpp
+  (1.177):
+  
+  Fixed nick linking/idetify, and recognition of committee heads.
+
+* 2001-05-22 01:17  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.176):
+  
+  Fixed nickserv ident from slave nick bug.
+
+* 2001-05-17 15:18  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.23), acconfig.h (1.13), configure.in (1.36), docs/magick.ini
+  (1.89), docs/en/index.info (1.61), docs/en/index.info-1 (1.21),
+  docs/en/index.info-2 (1.21), docs/en/index.sgml (1.27), include/base.h
+  (1.93), include/chanserv.h (1.63), include/commserv.h (1.55),
+  include/config.h.in (1.19), include/filesys.h (1.40), include/magick.h
+  (1.161), include/memoserv.h (1.51), include/nickserv.h (1.69),
+  include/operserv.h (1.57), include/utils.h (1.43),
+  include/version.h-release (1.31), include/xml/sxp.h (1.19),
+  include/xml/sxp_data.h (1.15), lang/english.hlp (1.38), lang/english.lfo
+  (1.37), lang/english.lng (1.80), lang/example.lng (1.3), src/base.cpp
+  (1.164), src/chanserv.cpp (1.245), src/commserv.cpp (1.100),
+  src/filesys.cpp (1.73), src/lockable.cpp (1.72), src/magick.cpp (1.311),
+  src/memoserv.cpp (1.100), src/nickserv.cpp (1.175), src/operserv.cpp
+  (1.124), src/server.cpp (1.175), src/servmsg.cpp (1.88), src/utils.cpp
+  (1.65), src/xml/sxp.cpp (1.22):
+  
+  Added ability to chose GETPASS or SETPASS.
+
+* 2001-05-16 11:47  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.244):
+  
+  Added ability to have a CS level set to MAX_LEVEL+2 (for disabled).  Also
+  made it display 'disabled' and 'founder' nicer than just MAX_LEVEL+1/2.
+
+* 2001-05-14 10:48  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.310):
+  
+  Ugh, another error in encryption fixed ...
+
+* 2001-05-14 03:17  Preston A. Elder <prez@magick.tm>
+  src/magick_keygen.c (1.16), src/utils.cpp (1.64):
+  
+  Fixed encryption :)
+
+* 2001-05-14 00:46  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.22), acconfig.h (1.12), configure.in (1.35), magick.kdevprj
+  (1.27), magick_keygenbcc.bpr (1.3), magick_keygenbcc.cpp (1.2),
+  magick_keygenbcc.mak (1.2), magickbcc.bpg (1.11), magickbcc.bpr (1.21),
+  magickbcc.cpp (1.16), magickbcc.mak (1.2), docs/magick.ini (1.88),
+  docs/en/index-2.html (1.18), docs/en/index.info (1.59),
+  docs/en/index.info-1 (1.19), docs/en/index.info-2 (1.19),
+  docs/en/index.sgml (1.26), include/Makefile.am (1.13),
+  include/config.h.in (1.18), include/config.h.win (1.15), include/magick.h
+  (1.160), include/utils.h (1.42), include/crypt/.cvsignore (1.1),
+  include/crypt/Makefile.am (1.1), include/crypt/bf_locl.h (1.1),
+  include/crypt/bf_pi.h (1.1), include/crypt/blowfish.h (1.1),
+  include/crypt/md5.h (1.1), include/crypt/md5_locl.h (1.1),
+  include/xml/sxp.h (1.18), src/Makefile.am (1.25), src/magick.cpp (1.309),
+  src/magick_keygen.c (1.15), src/magick_stampkeys.c (1.2), src/mstring.cpp
+  (1.105), src/utils.cpp (1.63), src/crypt/.cvsignore (1.1),
+  src/crypt/COPYRIGHT (1.1), src/crypt/Makefile.am (1.1), src/crypt/README
+  (1.1), src/crypt/bf_enc.c (1.1), src/crypt/bf_skey.c (1.1),
+  src/crypt/crypto.bpr (1.1), src/crypt/crypto.cpp (1.1),
+  src/crypt/crypto.dsp (1.1), src/crypt/crypto.mak (1.1),
+  src/crypt/md5_dgst.c (1.1), src/xml/sxp.cpp (1.21):
+  
+  Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+
+* 2001-05-13 19:46  Preston A. Elder <prez@magick.tm>
+  src/xml/sxp.cpp (1.20):
+  
+  got rid of temp veriable, and revised decryption failure condition
+
+* 2001-05-13 18:01  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.243), src/nickserv.cpp (1.174):
+  
+  Should have fixed problems with linked nicknames
+
+* 2001-05-13 14:59  Preston A. Elder <prez@magick.tm>
+  src/magick_keygen.c (1.14):
+  
+  Fixed adding of 8 extra bytes when we align to 8 byte boundaries
+
+* 2001-05-13 14:45  Preston A. Elder <prez@magick.tm>
+  lang/english.lfo (1.36), lang/example.lfo (1.3), src/magick.cpp (1.308),
+  src/magick_keygen.c (1.13), src/xml/sxp.cpp (1.19), src/xml/xmlparse.c
+  (1.8):
+  
+  Fixed up the keyfile validation bug, and added more error reporting to
+  the db load (also made sure it did not hang on certain circumstances).
+
+* 2001-05-12 20:55  Preston A. Elder <prez@magick.tm>
+  include/lockable.h (1.62), include/mstring.h (1.75), include/nickserv.h
+  (1.68), lang/checklang.pl (1.5), lang/english.lfo (1.35),
+  lang/english.lng (1.79), lang/example.lfo (1.2), lang/example.lng (1.2),
+  src/base.cpp (1.163), src/chanserv.cpp (1.242), src/commserv.cpp (1.99),
+  src/ircsocket.cpp (1.163), src/magick.cpp (1.307), src/magick_keygen.c
+  (1.12), src/nickserv.cpp (1.173), src/operserv.cpp (1.123),
+  src/server.cpp (1.174):
+  
+  More patches to try and fix deadlocking ...
+
+* 2001-05-08 20:40  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.172):
+  
+  Fixed nicks expiring coz of crash before it saw them quit
+
+* 2001-05-08 11:51  Preston A. Elder <prez@magick.tm>
+  src/commserv.cpp (1.98), src/magick.cpp (1.306):
+  
+  Added some security stuff with committees, so certain things are
+  guarenteed on database load (ie. the magick.ini assertions).
+
+* 2001-05-08 02:29  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.305):
+  
+  Made ALL have a head of ADMIN and REGD a head of SOP.
+
+* 2001-05-08 02:28  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.173):
+  
+  Added convert to version info
+
+* 2001-05-08 02:02  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.171):
+  
+  Fixed bad KLLL_NICK_PASS and KLLL_CHAN_PASS
+
+* 2001-05-07 23:38  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.172):
+  
+  Fixed bahamut back to SVSNICK
+
+* 2001-05-07 23:22  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.58), docs/en/index.info-1 (1.18),
+  docs/en/index.info-2 (1.18), include/version.h (1.119), src/chanserv.cpp
+  (1.241), src/ircsocket.cpp (1.162):
+  
+  Removed one possible deadlock cause, and stopped events engine from doing
+  anything until synch is over.
+
+* 2001-05-06 23:14  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.72), src/magick.cpp (1.304):
+  
+  Changes to fix bsd
+
+* 2001-05-06 14:44  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.162):
+  
+  Fixed problem with kill/rejoin
+
+* 2001-05-05 23:46  Preston A. Elder <prez@magick.tm>
+  Makefile.am (1.11), Makefile.dist (1.2):
+  
+  Fixed makefile stuff for clean distribution building.
+
+* 2001-05-05 23:44  Preston A. Elder <prez@magick.tm>
+  lang/babel.pl (1.2):
+  
+  Removed babel
+
+* 2001-05-05 23:15  Preston A. Elder <prez@magick.tm>
+  configure.in (1.34):
+  
+  Ditched devel makefile
+
+* 2001-05-05 23:03  Preston A. Elder <prez@magick.tm>
+  TODO (1.16), include/base.h (1.92), include/language.h (1.30),
+  include/magick.h (1.159), include/version.h (1.118),
+  include/version.h-release (1.30), src/base.cpp (1.161), src/chanserv.cpp
+  (1.240), src/commserv.cpp (1.97), src/dccengine.cpp (1.44),
+  src/filesys.cpp (1.71), src/ircsocket.cpp (1.161), src/magick.cpp
+  (1.303), src/memoserv.cpp (1.99), src/nickserv.cpp (1.170),
+  src/operserv.cpp (1.122), src/server.cpp (1.171), lang/english.lfo
+  (1.34), lang/english.lng (1.78), lang/example.lfo (1.1), lang/example.lng
+  (1.1), lang/french.lfo (1.5), lang/french.lng (1.6), lang/portuguese.lng
+  (1.9), lang/turkish.lng (1.7), src/servmsg.cpp (1.87), src/utils.cpp
+  (1.62):
+  
+  Changed all language sends to use $ style tokens too (aswell as logs), so
+  we're now standard.  most ::send calls are now SEND and NSEND. 
+  ::announce has also been changed to ANNOUNCE and NANNOUNCE.  All language
+  files modified already.  Also added example lng and lfo file, so you can
+  see the context of each line.
+
+* 2001-05-05 13:33  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.87), docs/en/index.info (1.57), docs/en/index.info-1
+  (1.17), docs/en/index.info-2 (1.17), include/logfile.h (1.20),
+  include/magick.h (1.158), include/mstring.h (1.74), include/utils.h
+  (1.41), lang/english.lfo (1.33), lang/english.lng (1.77), src/base.cpp
+  (1.160), src/chanserv.cpp (1.239), src/commserv.cpp (1.96),
+  src/convert_esper.cpp (1.4), src/convert_magick.cpp (1.4),
+  src/datetime.cpp (1.70), src/filesys.cpp (1.70), src/ircsocket.cpp
+  (1.160), src/lockable.cpp (1.71), src/magick.cpp (1.302),
+  src/memoserv.cpp (1.98), src/mstring.cpp (1.104), src/nickserv.cpp
+  (1.169), src/operserv.cpp (1.121), src/server.cpp (1.170),
+  src/servmsg.cpp (1.86), src/utils.cpp (1.61):
+  
+  Changed log outputs from printf-style to tokenized style files.  Now use
+  LOG/NLOG/SLOG/SNLOG rather than just LOG for output.	All formatting must
+  be done BEFORE its sent to the logger (use fmstring).
+
+* 2001-05-05 02:04  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.168):
+  
+  Fixed nick join stuff ...
+
+* 2001-05-04 10:13  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.169):
+  
+  Removed the silly msgs going to 'AUTH' on startup with some ircd's.
+
+* 2001-05-04 00:47  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.168):
+  
+  Added SGLINE
+
+* 2001-05-03 23:43  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.159), src/mstring.cpp (1.103), src/nickserv.cpp
+  (1.167):
+  
+  Fixed UMODE problems (re-oper) and problems in mstring erase
+
+* 2001-05-03 21:11  Preston A. Elder <prez@magick.tm>
+  include/ircsocket.h (1.53), src/chanserv.cpp (1.238), src/ircsocket.cpp
+  (1.158):
+  
+  Made chanserv mode stuff more efficiant
+
+* 2001-05-03 18:34  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.56), docs/en/index.info-1 (1.16),
+  docs/en/index.info-2 (1.16), include/nickserv.h (1.67), lang/english.lfo
+  (1.32), src/base.cpp (1.159), src/ircsocket.cpp (1.157), src/nickserv.cpp
+  (1.166), src/server.cpp (1.167):
+  
+  Fixed SQUIT protection ...
+
+* 2001-05-03 00:40  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.86), docs/en/index-3.html (1.10), docs/en/index.info
+  (1.55), docs/en/index.info-1 (1.15), docs/en/index.info-2 (1.15),
+  include/base.h (1.91), include/ircsocket.h (1.52), include/lockable.h
+  (1.61), include/magick.h (1.157), include/mexceptions.h (1.4),
+  include/server.h (1.68), lang/english.lfo (1.31), lang/english.lng
+  (1.76), src/base.cpp (1.158), src/ircsocket.cpp (1.156), src/lockable.cpp
+  (1.70), src/magick.cpp (1.301), src/server.cpp (1.166), src/trace.cpp
+  (1.109):
+  
+  Fixed locking mechanism (now use recursive mutexes) ...  Also now have a
+  deadlock/nonprocessing detection mechanism.
+
+* 2001-05-02 00:57  Preston A. Elder <prez@magick.tm>
+  src/lockable.cpp (1.69):
+  
+  Fixed up problems in failing to release locks
+
+* 2001-05-01 22:35  Preston A. Elder <prez@magick.tm>
+  README (1.16), docs/en/index.info (1.54), docs/en/index.info-1 (1.14),
+  docs/en/index.info-2 (1.14), docs/en/index.sgml (1.25), include/base.h
+  (1.90), include/lockable.h (1.60), src/base.cpp (1.157),
+  src/ircsocket.cpp (1.155), src/lockable.cpp (1.68), src/magick.cpp
+  (1.300), src/server.cpp (1.165):
+  
+  Fixed dependancy system, and removed printf's - we no longer coredump on
+  a 1000 user network.	As a bonus, we actually synd perfectly ;P
+
+* 2001-05-01 10:00  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.85), docs/en/index.info (1.53), docs/en/index.info-1
+  (1.13), docs/en/index.info-2 (1.13), include/base.h (1.89),
+  include/chanserv.h (1.62), include/commserv.h (1.54), include/ircsocket.h
+  (1.51), include/lockable.h (1.59), include/magick.h (1.156),
+  include/memoserv.h (1.50), include/nickserv.h (1.66), include/operserv.h
+  (1.56), include/pch.h (1.37), include/server.h (1.67), include/servmsg.h
+  (1.32), include/trace.h (1.74), lang/english.lfo (1.30), src/base.cpp
+  (1.156), src/chanserv.cpp (1.237), src/commserv.cpp (1.95),
+  src/filesys.cpp (1.69), src/ircsocket.cpp (1.154), src/lockable.cpp
+  (1.67), src/magick.cpp (1.299), src/memoserv.cpp (1.97), src/nickserv.cpp
+  (1.165), src/operserv.cpp (1.120), src/server.cpp (1.164),
+  src/servmsg.cpp (1.85), src/trace.cpp (1.108):
+  
+  Re-vamped locking system, and entire dependancy system.  Will work again
+  (and actually block across threads), however still does not work on
+  larger networks (coredumps).	LOTS OF PRINTF's still int he code, so DO
+  NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+
+* 2001-04-22 17:45  Preston A. Elder <prez@magick.tm>
+  Magick.spec (1.6), docs/en/Makefile.am (1.6), docs/en/index.info (1.52),
+  docs/en/index.info-1 (1.12), docs/en/index.info-2 (1.12),
+  docs/man/Makefile.am (1.7), helper/serviceschk (1.3), include/version.h
+  (1.117), src/Makefile.am (1.24), src/magick.cpp (1.298):
+  
+  Fixed make / make install and RPM spec
+
+* 2001-04-15 22:40  Preston A. Elder <prez@magick.tm>
+  Magick.spec (1.5):
+  
+  Update RPM spec
+
+* 2001-04-15 22:28  Preston A. Elder <prez@magick.tm>
+  src/genrankeys.c (1.11):
+  
+  Removed genrankeys
+
+* 2001-04-14 23:10  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.21), Magick.spec (1.4), docs/magick.ini (1.84),
+  docs/en/index-2.html (1.17), docs/en/index.info (1.51),
+  docs/en/index.info-1 (1.11), docs/en/index.info-2 (1.11),
+  docs/en/index.sgml (1.24), docs/man/Makefile.am (1.6),
+  docs/man/magick_stampkeys.pod (1.1), docs/man/stampkeys.pod (1.2),
+  src/.cvsignore (1.10), src/Makefile.am (1.23), src/magick_stampkeys.c
+  (1.1), src/stampkeys.c (1.3):
+  
+  Changed stampkeys -> magick_stampkeys and updated the RPM spec
+
+* 2001-04-13 04:50  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.50), docs/en/index.info-1 (1.10),
+  docs/en/index.info-2 (1.10), include/memoserv.h (1.49), src/memoserv.cpp
+  (1.96):
+  
+  Fixed const for unix
+
+* 2001-04-13 03:42  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.49), docs/en/index.info-1 (1.9),
+  docs/en/index.info-2 (1.9), docs/man/magick_keygen.pod (1.8),
+  src/Makefile.am (1.22), src/stampkeys.c (1.2):
+  
+  Fixed the stampkeys program
+
+* 2001-04-13 03:13  Preston A. Elder <prez@magick.tm>
+  include/crypt.h.win (1.5):
+  
+  Removed crypt.h
+
+* 2001-04-13 03:12  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.20), acconfig.h (1.11), aclocal.m4 (1.4), configure.in (1.33),
+  docs/magick.ini (1.83), docs/en/index-2.html (1.16), docs/en/index.info
+  (1.48), docs/en/index.info-1 (1.8), docs/en/index.info-2 (1.8),
+  docs/en/index.sgml (1.23), docs/man/Makefile.am (1.5),
+  docs/man/magick.pod (1.7), docs/man/magick_keygen.pod (1.7),
+  docs/man/stampkeys.pod (1.1), include/config.h.in (1.17),
+  include/config.h.win (1.14), src/Makefile.am (1.21), src/Makefile.am.dist
+  (1.6), src/magick.cpp (1.297), src/magick_keygen.c (1.11),
+  src/stampkeys.c (1.1):
+  
+  Changed genrankeys style random key generation to binary stamping
+  (allowing people to stamp the binary AFTER it has been created, and thus,
+  allowing pre-compiled binaries to be stamped for security).
+
+* 2001-04-12 23:11  William King <ungod@magick.tm>
+  magick_keygenbcc.mak (1.1), magickbcc.mak (1.1), whatbcc.mak (1.1),
+  src/xml/xml.mak (1.1):
+  
+  more borlandish changes
+
+* 2001-04-12 23:10  William King <ungod@magick.tm>
+  magickbcc.cpp (1.15), include/chanserv.h (1.61), include/memoserv.h
+  (1.48), src/memoserv.cpp (1.95), src/xml/xml.cpp (1.3):
+  
+  more changes to make borland compilable (still not so in ide, but command
+  line compile works)
+
+* 2001-04-12 20:46  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.236), src/datetime.cpp (1.69), src/ircsocket.cpp
+  (1.153), src/server.cpp (1.163):
+  
+  Fixec channel registering
+
+* 2001-04-09 03:55  Preston A. Elder <prez@magick.tm>
+  include/variant.h (1.39):
+  
+  Fixed type of Empty
+
+* 2001-04-09 03:52  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.88), include/mstring.h (1.73), lang/english.lfo (1.29),
+  src/base.cpp (1.155), src/ircsocket.cpp (1.152), src/mstring.cpp (1.102):
+  
+  Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in
+  mstring.
+
+* 2001-04-08 14:53  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.19), configure.in (1.32), docs/en/index-2.html (1.15),
+  docs/en/index.info (1.47), docs/en/index.info-1 (1.7),
+  docs/en/index.info-2 (1.7), docs/en/index.sgml (1.22),
+  include/config.h.in (1.16), include/config.h.win (1.13), include/pch.h
+  (1.36), include/utils.h (1.40), include/xml/hashtable.h (1.3),
+  include/xml/sxp.h (1.17), include/xml/sxp_data.h (1.14),
+  include/xml/xmlparse.h (1.3), include/xml/xmltok.h (1.3),
+  src/lockable.cpp (1.66), src/magick.cpp (1.296), src/main.cpp (1.47),
+  src/mstring.cpp (1.101):
+  
+  It now all compiles and RUNS with -fno-default-inline OFF.
+
+* 2001-04-05 01:59  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.18), configure.in (1.31), include/base.h (1.87),
+  include/chanserv.h (1.60), include/commserv.h (1.53), include/datetime.h
+  (1.38), include/filesys.h (1.39), include/ircsocket.h (1.50),
+  include/lockable.h (1.58), include/magick.h (1.155), include/mconfig.h
+  (1.20), include/memoserv.h (1.47), include/mexceptions.h (1.3),
+  include/mstring.h (1.72), include/nickserv.h (1.65), include/operserv.h
+  (1.55), include/server.h (1.66), include/servmsg.h (1.31),
+  include/trace.h (1.73), include/variant.h (1.38), include/xml/sxp.h
+  (1.16), include/xml/sxp_data.h (1.13), src/server.cpp (1.162):
+  
+  Turned off -fno-default-inline, and split up server.cpp, it should
+  compile again with no special options, and have default inlines :)
+
+* 2001-04-01 22:13  Preston A. Elder <prez@magick.tm>
+  configure.in (1.30), include/base.h (1.86), include/chanserv.h (1.59),
+  include/commserv.h (1.52), include/datetime.h (1.37), include/filesys.h
+  (1.38), include/ircsocket.h (1.49), include/lockable.h (1.57),
+  include/magick.h (1.154), include/mconfig.h (1.19), include/memoserv.h
+  (1.46), include/mexceptions.h (1.2), include/mstring.h (1.71),
+  include/nickserv.h (1.64), include/operserv.h (1.54), include/server.h
+  (1.65), include/servmsg.h (1.30), include/trace.h (1.72), include/utils.h
+  (1.39), include/variant.h (1.37), include/xml/hashtable.h (1.2),
+  include/xml/xmlparse.h (1.2), include/xml/xmltok.h (1.2),
+  lang/english.lfo (1.28):
+  
+  Added inlines, fixed more of the exception code.
+
+* 2001-04-01 22:11  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.154), src/chanserv.cpp (1.235), src/commserv.cpp (1.94),
+  src/datetime.cpp (1.68), src/filesys.cpp (1.68), src/lockable.cpp (1.65),
+  src/magick.cpp (1.295), src/magick_keygen.c (1.10), src/mconfig.cpp
+  (1.31), src/memoserv.cpp (1.94), src/mstring.cpp (1.100),
+  src/nickserv.cpp (1.164), src/server.cpp (1.161), src/servmsg.cpp (1.84),
+  src/variant.cpp (1.48):
+  
+  Fixed up some inlining, and added better excption handling
+
+* 2001-03-27 14:16  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.234), src/nickserv.cpp (1.163):
+  
+  Fixed Chan_Stored_t::ChgNick (had problems coz nick isnt fully changed
+  yet)
+
+* 2001-03-27 11:09  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.233), src/magick.cpp (1.294), src/nickserv.cpp
+  (1.162), src/server.cpp (1.160):
+  
+  Fixed chanserv internal maps problem (inserted with incorrect case)
+
+* 2001-03-27 02:49  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.232):
+  
+  Fixed channels being added in case
+
+* 2001-03-27 02:12  Preston A. Elder <prez@magick.tm>
+  magick.kdevprj (1.26), include/Makefile.am (1.11), include/mexceptions.h
+  (1.1):
+  
+  Added exceptions
+
+* 2001-03-27 02:04  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.85), include/chanserv.h (1.58), include/commserv.h
+  (1.51), include/magick.h (1.153), include/mconfig.h (1.18),
+  include/memoserv.h (1.45), include/mstring.h (1.70), include/nickserv.h
+  (1.63), include/server.h (1.64), src/base.cpp (1.153), src/chanserv.cpp
+  (1.231), src/commserv.cpp (1.93), src/convert_esper.cpp (1.3),
+  src/convert_magick.cpp (1.3), src/dccengine.cpp (1.43), src/filesys.cpp
+  (1.67), src/ircsocket.cpp (1.151), src/magick.cpp (1.293),
+  src/memoserv.cpp (1.93), src/mstring.cpp (1.99), src/nickserv.cpp
+  (1.161), src/operserv.cpp (1.119), src/server.cpp (1.159),
+  src/servmsg.cpp (1.83):
+  
+  All maps have been hidden, and are now only accessable via. access
+  functions.
+
+* 2001-03-20 09:22  Preston A. Elder <prez@magick.tm>
+  configure.in (1.29), magick.kdevprj (1.25), docs/en/index.info (1.46),
+  docs/en/index.info-1 (1.6), docs/en/index.info-2 (1.6), include/base.h
+  (1.84), include/chanserv.h (1.57), include/commserv.h (1.50),
+  include/config.h.in (1.15), include/datetime.h (1.36),
+  include/dccengine.h (1.17), include/filesys.h (1.37), include/ircsocket.h
+  (1.48), include/lockable.h (1.56), include/magick.h (1.152),
+  include/mconfig.h (1.17), include/memoserv.h (1.44), include/mstring.h
+  (1.69), include/nickserv.h (1.62), include/operserv.h (1.53),
+  include/pch.h (1.35), include/server.h (1.63), include/servmsg.h (1.29),
+  include/trace.h (1.71), include/utils.h (1.38), src/base.cpp (1.152),
+  src/chanserv.cpp (1.230), src/commserv.cpp (1.92), src/datetime.cpp
+  (1.67), src/dccengine.cpp (1.42), src/filesys.cpp (1.66),
+  src/ircsocket.cpp (1.150), src/lockable.cpp (1.64), src/magick.cpp
+  (1.292), src/mconfig.cpp (1.30), src/memoserv.cpp (1.92), src/mstring.cpp
+  (1.98), src/nickserv.cpp (1.160), src/operserv.cpp (1.118),
+  src/server.cpp (1.158), src/servmsg.cpp (1.82), src/trace.cpp (1.107),
+  src/utils.cpp (1.60):
+  
+  Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+  by reference all over the place.  Next step is to stop using operator= to
+  initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+
+* 2001-03-08 09:34  Preston A. Elder <prez@magick.tm>
+  include/pch.h (1.34), src/variant.cpp (1.47):
+  
+  Fixed some OS incompatabilities
+
+* 2001-03-08 03:07  William King <ungod@magick.tm>
+  magick_keygenbcc.bpr (1.2), magickbcc.bpr (1.20), magickbcc.cpp (1.14),
+  whatbcc.bpr (1.2), docs/docs.bpr (1.2), include/base.h (1.83),
+  include/chanserv.h (1.56), include/magick.h (1.151), include/memoserv.h
+  (1.43), include/nickserv.h (1.61), include/pch.h (1.33),
+  include/variant.h (1.36), src/base.cpp (1.151), src/chanserv.cpp (1.229),
+  src/filesys.cpp (1.65), src/magick.cpp (1.291), src/memoserv.cpp (1.91),
+  src/mstring.cpp (1.97), src/nickserv.cpp (1.159), src/variant.cpp (1.46),
+  src/xml/xml.bpr (1.4):
+  
+  fixes for bcc 5.5
+
+* 2001-03-04 15:23  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.45), docs/en/index.info-1 (1.5),
+  docs/en/index.info-2 (1.5), src/ircsocket.cpp (1.149):
+  
+  Tweaked akill expiry to avoid iterator dependancies ... should work :P
+
+* 2001-03-03 21:08  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.68):
+  
+  Enhansed mstring
+
+* 2001-03-03 21:04  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.228), src/commserv.cpp (1.91), src/convert_esper.cpp
+  (1.2), src/convert_magick.cpp (1.2), src/filesys.cpp (1.64),
+  src/magick.cpp (1.290), src/mstring.cpp (1.96), src/nickserv.cpp (1.158),
+  src/operserv.cpp (1.117), src/xml/sxp.cpp (1.18):
+  
+  Made mstring a little more succinct ... and added vector/list operations
+
+* 2001-03-02 19:30  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.44), docs/en/index.info-1 (1.4),
+  docs/en/index.info-2 (1.4), src/server.cpp (1.157):
+  
+  Fixed compile error
+
+* 2001-03-02 00:24  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.17), Makefile.am (1.10), ace_uname.cpp (1.1), configure.in
+  (1.28), magick.kdevprj (1.24), docs/magick.ini (1.82),
+  docs/en/index-2.html (1.14), docs/en/index.sgml (1.21),
+  docs/man/magick.pod (1.6), docs/man/magick_keygen.pod (1.6),
+  helper/build-ver (1.7), helper/reset-ver (1.5), include/ace_memory.h
+  (1.8), include/base.h (1.82), include/commserv.h (1.49),
+  include/language.h (1.29), include/lockable.h (1.55), include/logfile.h
+  (1.19), include/magick.h (1.150), include/memoserv.h (1.42),
+  include/mstring.h (1.67), include/nickserv.h (1.60), include/operserv.h
+  (1.52), include/server.h (1.62), include/servmsg.h (1.28),
+  include/utils.h (1.37), include/version.h (1.116),
+  include/version.h-release (1.29), include/xml/sxp.h (1.15),
+  include/xml/sxp_data.h (1.12), lang/checklang.pl (1.4), lang/english.hlp
+  (1.37), lang/english.lfo (1.27), lang/english.lng (1.75), lang/french.lfo
+  (1.4), lang/french.lng (1.5), lang/portuguese.lng (1.8), lang/turkish.lng
+  (1.6), src/Makefile.am (1.20), src/Makefile.am.dist (1.5), src/base.cpp
+  (1.150), src/chanserv.cpp (1.227), src/commserv.cpp (1.90),
+  src/datetime.cpp (1.66), src/dccengine.cpp (1.41), src/filesys.cpp
+  (1.63), src/genrankeys.c (1.10), src/ircsocket.cpp (1.148),
+  src/lockable.cpp (1.63), src/magick.cpp (1.289), src/memoserv.cpp (1.90),
+  src/mstring.cpp (1.95), src/nickserv.cpp (1.157), src/operserv.cpp
+  (1.116), src/server.cpp (1.156), src/servmsg.cpp (1.81), src/trace.cpp
+  (1.106), src/utils.cpp (1.59), src/variant.cpp (1.45), src/xml/sxp.cpp
+  (1.17):
+  
+  HEAPS of modifications, including synching up my own archive.
+
+* 2001-02-11 02:41  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.43), docs/en/index.info-1 (1.3),
+  docs/en/index.info-2 (1.3), include/base.h (1.81), include/chanserv.h
+  (1.55), include/commserv.h (1.48), include/datetime.h (1.35),
+  include/filesys.h (1.36), include/language.h (1.28), include/lockable.h
+  (1.54), include/logfile.h (1.18), include/magick.h (1.149),
+  include/memoserv.h (1.41), include/mstring.h (1.66), include/nickserv.h
+  (1.59), include/operserv.h (1.51), include/server.h (1.61),
+  include/servmsg.h (1.27), include/utils.h (1.36), src/base.cpp (1.149),
+  src/chanserv.cpp (1.226), src/commserv.cpp (1.89), src/datetime.cpp
+  (1.65), src/dccengine.cpp (1.40), src/filesys.cpp (1.62),
+  src/ircsocket.cpp (1.147), src/lockable.cpp (1.62), src/magick.cpp
+  (1.288), src/memoserv.cpp (1.89), src/mstring.cpp (1.94),
+  src/nickserv.cpp (1.156), src/operserv.cpp (1.115), src/server.cpp
+  (1.155), src/servmsg.cpp (1.80), src/trace.cpp (1.105), src/utils.cpp
+  (1.58):
+  
+  Enhansed support for server numerics, specifically for Unreal.
+
+* 2001-02-06 09:50  Preston A. Elder <prez@magick.tm>
+  lang/french.lfo (1.3), lang/french.lng (1.4):
+  
+  Added french language back -- this time, translated by a frenchman
+
+* 2001-02-03 00:16  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.42), docs/en/index.info-1 (1.2),
+  docs/en/index.info-2 (1.2), include/base.h (1.80), include/chanserv.h
+  (1.54), include/commserv.h (1.47), include/datetime.h (1.34),
+  include/memoserv.h (1.40), include/nickserv.h (1.58), include/operserv.h
+  (1.50), include/server.h (1.60), include/servmsg.h (1.26),
+  src/datetime.cpp (1.64):
+  
+  Fixed up mdatetime
+
+* 2001-02-02 22:20  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.41), docs/en/index.info-1 (1.1),
+  docs/en/index.info-2 (1.1), include/ace_memory.h (1.7), include/base.h
+  (1.79), include/chanserv.h (1.53), include/commserv.h (1.46),
+  include/convert_esper.h (1.1), include/convert_magick.h (1.2),
+  include/datetime.h (1.33), include/dccengine.h (1.16), include/filesys.h
+  (1.35), include/ircsocket.h (1.47), include/language.h (1.27),
+  include/lockable.h (1.53), include/logfile.h (1.17), include/magick.h
+  (1.148), include/mconfig.h (1.16), include/memoserv.h (1.39),
+  include/mstring.h (1.65), include/nickserv.h (1.57), include/operserv.h
+  (1.49), include/pch.h (1.32), include/server.h (1.59), include/servmsg.h
+  (1.25), include/trace.h (1.70), include/utils.h (1.35), include/variant.h
+  (1.35), include/version.h (1.115), include/version.h-release (1.28),
+  lang/english.lng (1.74), src/Makefile.am (1.19), src/genrankeys.c (1.9):
+  
+  Fixed up some differences in previous committed versions ...
+
+* 2001-02-02 21:22  Preston A. Elder <prez@magick.tm>
+  include/convert.h (1.7), include/convert_magick.h (1.1), src/convert.cpp
+  (1.24), src/convert_esper.cpp (1.1), src/convert_magick.cpp (1.1):
+  
+  added conversion for ESPERNET
+
+* 2001-02-02 21:21  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.6), ChangeLog (1.8), FAQ (1.3), INSTALL (1.16), KNOWN-BUGS
+  (1.18), README (1.15), TODO (1.15), acconfig.h (1.10), configure.in
+  (1.27), magick.kdevprj (1.23), magick.lsm (1.3), rtfm (1.6), what.c
+  (1.6), docs/magick.ini (1.81), docs/en/index-1.html (1.9),
+  docs/en/index-2.html (1.13), docs/en/index-3.html (1.9),
+  docs/en/index-4.html (1.7), docs/en/index-6.html (1.4),
+  docs/en/index.html (1.9), docs/en/index.info (1.40), docs/en/index.sgml
+  (1.20), docs/en/index.txt (1.2), docs/man/magick.pod (1.5),
+  helper/add-patch (1.6), helper/blank-patch (1.3), helper/build-ver (1.6),
+  helper/makelang (1.9), helper/makelog (1.5), helper/rem-patch (1.6),
+  helper/reset-ver (1.4), helper/serviceschk (1.2), include/Makefile.am
+  (1.10), include/ace_memory.h (1.6), include/base.h (1.78),
+  include/chanserv.h (1.52), include/commserv.h (1.45), include/config.h.in
+  (1.14), include/config.h.top (1.3), include/config.h.win (1.12),
+  include/crypt.h.win (1.4), include/datetime.h (1.32), include/dccengine.h
+  (1.15), include/filesys.h (1.34), include/ircsocket.h (1.46),
+  include/language.h (1.26), include/lockable.h (1.52), include/logfile.h
+  (1.16), include/magick.h (1.147), include/mconfig.h (1.15),
+  include/memoserv.h (1.38), include/mstring.h (1.64), include/nickserv.h
+  (1.56), include/operserv.h (1.48), include/pch.h (1.31), include/server.h
+  (1.58), include/servmsg.h (1.24), include/trace.h (1.69), include/utils.h
+  (1.34), include/variant.h (1.34), include/version.h (1.114),
+  include/version.h-release (1.27), include/xml/sxp.h (1.14),
+  lang/english.lfo (1.26), lang/english.lng (1.73), src/Makefile.am (1.18),
+  src/Makefile.am.dist (1.4), src/base.cpp (1.148), src/chanserv.cpp
+  (1.225), src/commserv.cpp (1.88), src/datetime.cpp (1.63),
+  src/dccengine.cpp (1.39), src/filesys.cpp (1.61), src/ircsocket.cpp
+  (1.146), src/lockable.cpp (1.61), src/magick.cpp (1.287),
+  src/magick_keygen.c (1.9), src/main.cpp (1.46), src/mconfig.cpp (1.29),
+  src/memoserv.cpp (1.88), src/mstring.cpp (1.93), src/nickserv.cpp
+  (1.155), src/operserv.cpp (1.114), src/server.cpp (1.154),
+  src/servmsg.cpp (1.79), src/trace.cpp (1.104), src/utils.cpp (1.57),
+  src/variant.cpp (1.44), src/xml/sxp.cpp (1.16), src/xml/xmltok.c (1.4):
+  
+  Loads of changes, including adding ALLOW to ini file, cleaning up the
+  includes, RCSID, and much more.  Also cleaned up most warnings.
+
+* 2001-01-18 09:23  William King <ungod@magick.tm>
+  src/genrankeys.c (1.8):
+  
+  and hopefully for msvc too.
+
+* 2001-01-18 09:08  William King <ungod@magick.tm>
+  src/genrankeys.c (1.7):
+  
+  got it working for bcc :)
+
+* 2001-01-18 08:42  William King <ungod@magick.tm>
+  src/genrankeys.c (1.6):
+  
+  moved variables back to local scope because -fstack-check seems fuxed
+
+* 2001-01-18 07:48  William King <ungod@magick.tm>
+  src/genrankeys.c (1.5):
+  
+  moved variables to global scope so that it would run with -fstack-check
+  flag.
+
+* 2001-01-16 10:47  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.39), include/filesys.h (1.33), include/nickserv.h
+  (1.55), src/chanserv.cpp (1.224), src/filesys.cpp (1.60),
+  src/nickserv.cpp (1.154), src/server.cpp (1.153):
+  
+  Fixed filesys not generating first entry in maps, fixed chanserv level
+  changes (could confuse set) and fixed idle times on whois user user
+
+* 2001-01-16 07:47  Preston A. Elder <prez@magick.tm>
+  docs/en/index.info (1.38), src/chanserv.cpp (1.223), src/server.cpp
+  (1.152):
+  
+  Fixed mlock setting in live channels (also fixed helpop)
+
+* 2001-01-15 21:30  Preston A. Elder <prez@magick.tm>
+  src/mstring.cpp (1.92):
+  
+  Fixed the IsNumber so an IP address or +/- number matches
+
+* 2001-01-15 18:31  Preston A. Elder <prez@magick.tm>
+  TODO (1.14), docs/magick.ini (1.80), docs/en/index.info (1.37),
+  include/magick.h (1.146), include/server.h (1.57), include/servmsg.h
+  (1.23), lang/english.hlp (1.36), lang/english.lng (1.72), src/base.cpp
+  (1.147), src/chanserv.cpp (1.222), src/commserv.cpp (1.87),
+  src/datetime.cpp (1.62), src/dccengine.cpp (1.38), src/filesys.cpp
+  (1.59), src/ircsocket.cpp (1.145), src/lockable.cpp (1.60),
+  src/magick.cpp (1.286), src/mconfig.cpp (1.28), src/memoserv.cpp (1.87),
+  src/nickserv.cpp (1.153), src/operserv.cpp (1.113), src/server.cpp
+  (1.151), src/servmsg.cpp (1.78):
+  
+  Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
+  !string.empty() to save processing.
+
+* 2001-01-01 00:32  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.5), ChangeLog (1.7), FAQ (1.2), INSTALL (1.15), KNOWN-BUGS
+  (1.17), NEWS (1.5), README (1.14), TODO (1.13), configure.in (1.26), rtfm
+  (1.5), docs/magick.ini (1.79), docs/en/index-3.html (1.8),
+  docs/en/index.html (1.8), docs/en/index.info (1.36), docs/en/index.sgml
+  (1.19), docs/man/magick.pod (1.4), docs/man/magick_keygen.pod (1.5),
+  helper/blank-patch (1.2), helper/makelang (1.8), helper/makelog (1.4),
+  include/ace_memory.h (1.5), include/base.h (1.77), include/chanserv.h
+  (1.51), include/commserv.h (1.44), include/config.h.in (1.13),
+  include/config.h.top (1.2), include/config.h.win (1.11),
+  include/convert.h (1.6), include/crypt.h.win (1.3), include/datetime.h
+  (1.31), include/dccengine.h (1.14), include/filesys.h (1.32),
+  include/ircsocket.h (1.45), include/language.h (1.25), include/lockable.h
+  (1.51), include/logfile.h (1.15), include/magick.h (1.145),
+  include/mconfig.h (1.14), include/memoserv.h (1.37), include/mstring.h
+  (1.63), include/nickserv.h (1.54), include/operserv.h (1.47),
+  include/pch.h (1.30), include/server.h (1.56), include/servmsg.h (1.22),
+  include/utils.h (1.33), include/variant.h (1.33), include/version.h
+  (1.113), include/version.h-release (1.26), include/xml/sxp.h (1.13),
+  lang/english.hlp (1.35), lang/english.lfo (1.25), lang/english.lng
+  (1.71), lang/portuguese.lng (1.7), lang/turkish.lng (1.5), src/base.cpp
+  (1.146), src/chanserv.cpp (1.221), src/commserv.cpp (1.86),
+  src/convert.cpp (1.23), src/datetime.cpp (1.61), src/dccengine.cpp
+  (1.37), src/filesys.cpp (1.58), src/genrankeys.c (1.4), src/ircsocket.cpp
+  (1.144), src/lockable.cpp (1.59), src/magick.cpp (1.285),
+  src/magick_keygen.c (1.8), src/main.cpp (1.45), src/mconfig.cpp (1.27),
+  src/memoserv.cpp (1.86), src/mstring.cpp (1.91), src/nickserv.cpp
+  (1.152), src/operserv.cpp (1.112), src/server.cpp (1.150),
+  src/servmsg.cpp (1.77), src/trace.cpp (1.103), src/utils.cpp (1.56),
+  src/variant.cpp (1.43), src/xml/sxp.cpp (1.15):
+  
+  Updated copywrights.	Added 'reversed help' syntax (so ACCESS HELP ==
+  HELP ACCESS).

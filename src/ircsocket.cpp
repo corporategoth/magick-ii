@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.195  2002/01/03 15:49:11  prez
+** Removed the MessageQueue locks (its done by ACE), and created ChangeLog.2001
+**
 ** Revision 1.194  2002/01/02 08:30:09  prez
 ** Fixed the shutdown code.  Also added a thread manager as a magick member.
 **
@@ -486,7 +489,6 @@ void *IrcSvcHandler::worker(void *in)
 	    { RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)
 	    {
-		MLOCK(("MessageQueue"));
 	    	msg = dynamic_cast<mMessage *>(Magick::instance().ircsvchandler->message_queue.dequeue());
 	    }}
 	    while (Magick::instance().Pause())
@@ -717,14 +719,13 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
     // Dump the queue and kill all our threads nicely.
     for (i=0; i<static_cast<unsigned int>(tm.count_threads()); i++)
 	enqueue_sleep();
-    { MLOCK(("MessageQueue"));
     mMessage *msg;
     while (!message_queue.is_empty())
     {
 	msg = dynamic_cast<mMessage *>(message_queue.dequeue());
 	if (msg != NULL)
 	    delete msg;
-    }}
+    }
     for (i=0; i<static_cast<unsigned int>(tm.count_threads()); i++)
 	enqueue_shutdown();
 
