@@ -1281,10 +1281,6 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	if (Magick::instance().GotConnect())
 	{
 	    server = Magick::instance().startup.PriorityList(1) [0];
-	    while (!server.empty() && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
-	    {
-		server = FindNext(server);
-	    }
 	}
 	else
 	{
@@ -1292,20 +1288,10 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	    if (!server.empty())
 	    {
 		server = FindNext(server);
-		while (!server.empty() &&
-		       !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
-		{
-		    server = FindNext(server);
-		}
 	    }
 	    if (server.empty())
 	    {
 		server = Magick::instance().startup.PriorityList(1) [0];
-		while (!server.empty() &&
-		       !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
-		{
-		    server = FindNext(server);
-		}
 	    }
 	}
     }

@@ -2200,7 +2200,7 @@ bool Magick::get_config_values()
 	    i++;
 	} while (!value_mstring.empty());
     }
-    if (CurrentServer().empty() || !startup.IsAllowed(CurrentServer(), startup.Server_Name()))
+    if (CurrentServer().empty() || !startup.IsAllowed(server.OurUplink(), startup.Server_Name()))
 	reconnect = true;
 
     in.Read(ts_Startup + "LEVEL", value_uint, 1U);

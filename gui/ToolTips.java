@@ -53,13 +53,11 @@ public class ToolTips
 					"in this table will be able to connect to the IRC network.  If\n" +
 					"a server connects with a name not in this table, Magick will\n" +
 					"disconnect it from the network.  The servers in this list are\n" +
-					"case sensative.  If any entries are listed, you must add an\n" +
-					"entry for each entry in the REMOTE table, however you do not\n" +
-					"need to list the services server name.\n\n" +
+					"case sensative.  You do not need to list services as an allow.\n" +
 					"If the uplink field is used, the server specified may only\n" +
 					"connect to the server(s) listed.  You may specify multipal\n" +
 					"uplink servers by separating them with a comma (,).  You may\n" +
-					"also use wildcards in this field." },
+					"also use wildcards (* and ? signs) in this field." },
 	{ "Startup/LEVEL",		"As lag to the IRC network increases and decreases, the level\n" +
 					"services operate at will increase and decrease respectively,\n" +
 					"with this value as the minimum.  If a set of services with a\n" +
