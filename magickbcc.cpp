@@ -19,7 +19,6 @@ USEUNIT("src\trace.cpp");
 USEUNIT("src\utils.cpp");
 USEUNIT("src\variant.cpp");
 USELIB("..\support\zlib\zlib.LIB");
-USELIB("..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib");
 USEUNIT("src\filesys.cpp");
 USELIB("src\crypt\crypto.lib");
 USELIB("src\xml\xml.lib");
@@ -27,6 +26,8 @@ USEUNIT("src\mconfig.cpp");
 USEUNIT("src\convert_magick.cpp");
 USEUNIT("src\convert_esper.cpp");
 USEUNIT("src\convert_epona.cpp");
+USELIB("..\support\ACE_wrappers\bin\Dynamic\Debug\ace_bd.lib");
+USEUNIT("src\stages.cpp");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 

@@ -27,6 +27,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/11/05 16:23:02  ungod
+** more borland goodness
+**
 ** Revision 1.2  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -267,7 +270,8 @@ void EPO_load_old_ns_dbase(EPO_dbFILE *f, int ver)
     char *email, *greet, *url, *forbidby, *forbidreason;
     int32 icq;
 
-    if (!(f = EPO_open_db(EPO_s_NickServ, EPO_NickDBName, "r", EPO_NICK_VERSION)))
+	f = EPO_open_db(EPO_s_NickServ, EPO_NickDBName, "r", EPO_NICK_VERSION);
+	if (!f)
 	return;
 
     ver = EPO_get_file_version(f);
@@ -382,6 +386,7 @@ void EPO_load_old_ns_dbase(EPO_dbFILE *f, int ver)
 		nc->url = url;
 
 		SAFE(EPO_read_int32(&nc->flags, f));
+		// condition is flagged as "always true", check...
 		if (!EPO_NSAllowKillImmed)
 		    nc->flags &= ~EPO_NI_KILL_IMMED;
 
@@ -468,8 +473,9 @@ void EPO_load_ns_dbase(void)
     int32 tmp32;
     char *s;
 
-    if (!(f = EPO_open_db(EPO_s_NickServ, EPO_NickDBName, "r", EPO_NICK_VERSION)))
-	return;
+	f = EPO_open_db(EPO_s_NickServ, EPO_NickDBName, "r", EPO_NICK_VERSION);
+	if (!f)
+		return;
 
     ver = EPO_get_file_version(f);
     if (ver <= 11) {
@@ -503,6 +509,7 @@ void EPO_load_ns_dbase(void)
 	    SAFE(EPO_read_string(&nc->url, f));
 
 	    SAFE(EPO_read_int32(&nc->flags, f));
+		// condition is flagged as "always true", check...
 	    if (!EPO_NSAllowKillImmed)
 		nc->flags &= ~EPO_NI_KILL_IMMED;
 	    if (nc->flags & EPO_NI_ENCRYPTEDPW) {
@@ -753,8 +760,9 @@ void EPO_load_cs_dbase(void)
     EPO_ChannelInfo *ci;
     int failed = 0;
 
-    if (!(f = EPO_open_db(EPO_s_ChanServ, EPO_ChanDBName, "r", EPO_CHAN_VERSION)))
-	return;
+	f = EPO_open_db(EPO_s_ChanServ, EPO_ChanDBName, "r", EPO_CHAN_VERSION);
+	if (!f)
+		return;
 
     ver = EPO_get_file_version(f);
 
@@ -1110,8 +1118,9 @@ void EPO_load_news()
     int32 nnews;
     EPO_NewsItem *news;
 
-    if (!(f = EPO_open_db(EPO_s_OperServ, EPO_NewsDBName, "r", EPO_NEWS_VERSION)))
-	return;
+	f = EPO_open_db(EPO_s_OperServ, EPO_NewsDBName, "r", EPO_NEWS_VERSION);
+	if (!f)
+		return;
     switch (i = EPO_get_file_version(f)) {
       case 9:
       case 8:
@@ -1180,8 +1189,9 @@ static void EPO_load_old_akill(void)
     char buf[EPO_NICKMAX],  *mask;
     EPO_Akill *ak;
 
-    if (!(f = EPO_open_db(EPO_s_OperServ, EPO_AutokillDBName, "r", 9)))
-	return;
+	f = EPO_open_db(EPO_s_OperServ, EPO_AutokillDBName, "r", 9);
+	if (!f)
+		return;
 
     EPO_get_file_version(f);
 
@@ -1248,7 +1258,8 @@ void EPO_load_os_dbase(void)
     char *s;
     int failed = 0;
 
-    if (!(f = EPO_open_db(EPO_s_OperServ, EPO_OperDBName, "r", EPO_OPER_VERSION)))
+	f = EPO_open_db(EPO_s_OperServ, EPO_OperDBName, "r", EPO_OPER_VERSION);
+	if (!f)
 	return;
 
     ver = EPO_get_file_version(f);
@@ -1446,7 +1457,8 @@ void EPO_load_exceptions()
     EPO_Exception *exception;
     int16 nexceptions = 0;
 
-    if (!(f = EPO_open_db(EPO_s_OperServ, EPO_ExceptionDBName, "r", EPO_EXCEPTION_VERSION)))
+	f = EPO_open_db(EPO_s_OperServ, EPO_ExceptionDBName, "r", EPO_EXCEPTION_VERSION);
+	if (!f)
         return;
     switch (i = EPO_get_file_version(f)) {
       case 9:

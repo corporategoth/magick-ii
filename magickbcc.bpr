@@ -10,15 +10,14 @@
       Debug\mstring.obj Debug\nickserv.obj Debug\operserv.obj Debug\server.obj 
       Debug\servmsg.obj Debug\trace.obj Debug\utils.obj Debug\variant.obj 
       Debug\filesys.obj Debug\mconfig.obj Debug\convert_magick.obj 
-      Debug\convert_esper.obj Debug\convert_epona.obj"/>
+      Debug\convert_esper.obj Debug\convert_epona.obj Debug\stages.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="..\support\zlib\zlib.LIB 
-      ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib 
-      src\crypt\crypto.lib src\xml\xml.lib"/>
+    <LIBFILES value="..\support\zlib\zlib.LIB src\crypt\crypto.lib src\xml\xml.lib 
+      ..\support\ACE_wrappers\bin\Dynamic\Debug\ace_bd.lib"/>
     <LIBRARIES value="vcl50.lib"/>
     <SPARELIBS value="vcl50.lib"/>
     <PACKAGES value="vcl50.bpi vcljpg50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi 
@@ -46,8 +45,8 @@
       -I..\include\sxp -I..\include\expat -I$(BCB)\include -src_suffix cpp 
       -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 
       -DACE_USE_RCSID=0 -DHAVE_CONFIG_H -boa"/>
-    <CFLAG1 value="-Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -Vmp -Tkh30000 -X- 
-      -r- -a8 -5 -b -d -k -y -v -vi- -q -tWR -tWM -c"/>
+    <CFLAG1 value="-Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Vmp -Tkh30000 -X- -r- 
+      -a8 -5 -b -d -k -y -v -vi- -q -tWR -tWM -c"/>
     <PFLAGS value="-N2Debug -N0Debug -$YD -$W -$O-"/>
     <RFLAGS value="/l 0xc09 /d &quot;_DEBUG&quot; /i$(BCB)\include;$(BCB)\include\mfc"/>
     <AFLAGS value="/mx /w2 /zi"/>
