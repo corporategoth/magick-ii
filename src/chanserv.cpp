@@ -194,9 +194,13 @@ int Chan_Live_t::Users()
 mstring Chan_Live_t::User(int num)
 {
     FT("Chan_Live_t::Users", (num));
+    int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
-    for(int i=0, k=users.begin();k!=users.end();k++, i++)
-	if (i==num) RET(users->first);
+    for(i=0, k=users.begin();k!=users.end();k++, i++)
+	if (i==num)
+	{
+	    RET(k->first);
+	}
  
     RET("");
 }
@@ -212,11 +216,15 @@ int Chan_Live_t::Ops()
 mstring Chan_Live_t::Op(int num)
 {
     FT("Chan_Live_t::Op", (num));
+    int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
-    for(int i=0, k=users.begin();k!=users.end();k++)
-	if (IsOp(users->first))
+    for(i=0, k=users.begin();k!=users.end();k++)
+	if (IsOp(k->first))
 	{
-	    if (i==num) RET(users->first);
+	    if (i==num)
+	    {
+		RET(k->first);
+	    }
 	    i++;
 	}
  
@@ -234,11 +242,15 @@ int Chan_Live_t::Voices()
 mstring Chan_Live_t::Voice(int num)
 {
     FT("Chan_Live_t::Voice", (num));
+    int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
-    for(int i=0, k=users.begin();k!=users.end();k++)
-	if (IsVoice(users->first))
+    for(i=0, k=users.begin();k!=users.end();k++)
+	if (IsVoice(k->first))
 	{
-	    if (i==num) RET(users->first);
+	    if (i==num)
+	    {
+		RET(k->first);
+	    }
 	    i++;
 	}
     RET("");
@@ -505,7 +517,7 @@ entlist_t::entlist_t()
 
 entlist_t::entlist_t(mstring entry, mstring nick)
 {
-    FT("entlist_t::entlist_t", entry, nick);
+    FT("entlist_t::entlist_t", (entry, nick));
     i_Entry = entry;
     i_Last_Modify_Time = Now();
     i_Last_Modifier = nick;
@@ -532,13 +544,18 @@ void entlist_t::operator=(const entlist_t &in)
 bool entlist_t::operator==(const entlist_t &in) const
 {
     FT("entlist_t::operator==", ("(const entlist_t &) in"));
-    RET(i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
-	i_Last_Modifier==in.i_Last_Modifier&&i_UserDef==in.i_UserDef);
+    RET(i_Entry==in.i_Entry);
+}
+
+bool entlist_t::operator<(const entlist_t &in) const
+{
+    FT("entlist_t::operator<", ("(const entlist_t &) in"));
+    RET(i_Entry<in.i_Entry);
 }
 
 bool entlist_t::Change(mstring entry, mstring nick)
 {
-    FT("entlist_t::Change", (entry, nick);
+    FT("entlist_t::Change", (entry, nick));
     i_Entry = entry;
     i_Last_Modify_Time = Now();
     i_Last_Modifier = nick;
@@ -560,7 +577,7 @@ mDateTime entlist_t::Last_Modify_Time()
 mstring entlist_t::Last_Modifier()
 {
     NFT("entlist_t::Last_Modifier");
-    RET(i_Modifier);
+    RET(i_Last_Modifier);
 }
 
 mstring entlist_t::UserDef(mstring type)
@@ -573,6 +590,34 @@ mstring entlist_t::UserDef(mstring type, mstring val)
 {
     FT("entlist_t::UserDef", (type, val));
     RET("");
+}
+
+wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
+{
+    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
+
+    map<mstring,mstring>::iterator j;
+    out<<in.i_UserDef.size();
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	out<<(mstring)j->first<<(mstring)j->second;
+    return out;
+}
+
+wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
+{
+    unsigned int i,count;
+    mstring dummy,dummy2;
+
+    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
+
+    out.i_UserDef.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>dummy>>dummy2;
+	out.i_UserDef[dummy]=dummy2;
+    }
+    return in;
 }
 
 // --------- start of entlist_val_t -----------------------------------
@@ -624,8 +669,8 @@ bool entlist_val_t::operator<(const entlist_val_t &in) const
 
 bool entlist_val_t::Change(mstring entry, mstring nick)
 {
-    FT("entlist_val_t::Change", (newent, nick);
-    i_Entry = newent;
+    FT("entlist_val_t::Change", (entry, nick));
+    i_Entry = entry;
     i_Last_Modify_Time = Now();
     i_Last_Modifier = nick;
     RET(true);
@@ -633,7 +678,7 @@ bool entlist_val_t::Change(mstring entry, mstring nick)
 
 bool entlist_val_t::Change(long value, mstring nick)
 {
-    FT("entlist_val_t::Change", (value, nick);
+    FT("entlist_val_t::Change", (value, nick));
     i_Value = value;
     i_Last_Modify_Time = Now();
     i_Last_Modifier = nick;
@@ -642,7 +687,7 @@ bool entlist_val_t::Change(long value, mstring nick)
 
 bool entlist_val_t::Change(mstring entry, long value, mstring nick)
 {
-    FT("entlist_val_t::Change", (entry, value, nick);
+    FT("entlist_val_t::Change", (entry, value, nick));
     i_Entry = entry;
     i_Value = value;
     i_Last_Modify_Time = Now();
@@ -671,7 +716,7 @@ mDateTime entlist_val_t::Last_Modify_Time()
 mstring entlist_val_t::Last_Modifier()
 {
     NFT("entlist_val_t::Last_Modifier");
-    RET(i_Modifier);
+    RET(i_Last_Modifier);
 }
 
 mstring entlist_val_t::UserDef(mstring type)
@@ -684,6 +729,34 @@ mstring entlist_val_t::UserDef(mstring type, mstring val)
 {
     FT("entlist_val_t::UserDef", (type, val));
     RET("");
+}
+
+wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
+{
+    out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
+
+    map<mstring,mstring>::iterator j;
+    out<<in.i_UserDef.size();
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	out<<(mstring)j->first<<(mstring)j->second;
+    return out;
+}
+
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
+{
+    unsigned int i,count;
+    mstring dummy,dummy2;
+
+    in>>out.i_Entry>>out.i_Value>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
+
+    out.i_UserDef.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>dummy>>dummy2;
+	out.i_UserDef[dummy]=dummy2;
+    }
+    return in;
 }
 
 // --------- end of entlist_val_t -----------------------------------
@@ -809,7 +882,8 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 {
     unsigned int i,count;
     mstring dummy,dummy2;
-    entlist_t udummy;
+    entlist_t edummy;
+    entlist_val_t evdummy;
     in>>out.i_Name>>out.i_RegTime>>out.i_Description>>out.i_Password>>out.i_URL;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
 
@@ -817,86 +891,30 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>count;
     for(i=0;i<count;i++)
     {
-	in>>udummy;
-	out.i_Access_Level.push_back(udummy);
+	in>>evdummy;
+	out.i_Access_Level.push_back(evdummy);
     }
     out.i_Access.clear();
     in>>count;
     for(i=0;i<count;i++)
     {
-	in>>udummy;
-	out.i_Access.push_back(udummy);
+	in>>edummy;
+	out.i_Access.push_back(evdummy);
     }
     out.i_Akick.clear();
     in>>count;
     for(i=0;i<count;i++)
     {
-	in>>udummy;
-	out.i_Akick.push_back(udummy);
+	in>>edummy;
+	out.i_Akick.push_back(edummy);
     }
     out.i_Greet.clear();
     in>>count;
     for(i=0;i<count;i++)
     {
-	in>>udummy;
-	out.i_Greet.push_back(udummy);
+	in>>edummy;
+	out.i_Greet.push_back(edummy);
     }
-
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-    return in;
-}
-
-wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
-{
-    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
-
-    map<mstring,mstring>::iterator j;
-    out<<in.i_UserDef.size();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
-    return out;
-}
-
-wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
-{
-    unsigned int i,count;
-    mstring dummy,dummy2;
-
-    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
-
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-    return in;
-}
-
-wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
-{
-    out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
-
-    map<mstring,mstring>::iterator j;
-    out<<in.i_UserDef.size();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
-    return out;
-}
-
-wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
-{
-    unsigned int i,count;
-    mstring dummy,dummy2;
-
-    in>>out.i_Entry>>out.i_Value>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
 
     out.i_UserDef.clear();
     in>>count;
@@ -927,7 +945,7 @@ void ChanServ::save_database(void)
 	 
 	flagout<<FileVersionNumber;
 
-	if(Parent->Password!=""&&Parent->files.Compression()==true)
+	if(Parent->Password!="" && Parent->files.Compression()==true)
 	{
 	    outc=new mEncryptStream(outf,Parent->Password);
 	    outz=new wxZlibOutputStream(*outc);
@@ -962,34 +980,14 @@ void ChanServ::save_database(void)
 	    // todo call script saving hooks.
 	}
 	 
-	if(Parent->Password!=""&&Parent->files.Compression()==true)
-	{
-	    if(outd!=NULL)
+	if(Parent->Password!="" && outz != NULL)
+		delete outc;
+
+	if(Parent->files.Compression()==true && outz != NULL)
+		delete outz;
+
+	if(outd != NULL)
 		delete outd;
-	    if(outz!=NULL)
-		delete outd;
-	    if(outc!=NULL)
-		delete outd;
-	}
-	else if(Parent->files.Compression()==true)
-	{
-	    if(outd!=NULL)
-		delete outd;
-	    if(outz!=NULL)
-		delete outd;
-	}
-	else if(Parent->Password!="")
-	{
-	    if(outd!=NULL)
-		delete outd;
-	    if(outc!=NULL)
-		delete outd;
-	}
-	else
-	{
-	    if(outd!=NULL)
-		delete outd;
-	}
 
     }
     catch(...)
