@@ -280,7 +280,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source CONNECT some.server port :our.server
 	    Parent->ircsvchandler->send("NOTICE " + source +
-		" :Connect: Host " + data.ExtractWord(2, ": ") + " not listed in irc.conf");
+		" :Connect: Host " + data.ExtractWord(3, ": ") + " not listed in irc.conf");
 	}
 	break;
     case 'D':
