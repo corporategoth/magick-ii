@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.323  2001/11/05 05:09:39  prez
+** Windows updates, namely disabling fork() on windows.
+**
 ** Revision 1.322  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -543,7 +546,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 #include "convert_epona.h"
 #endif
 
+#ifndef WIN32
 static bool nofork = false;
+#endif
 
 //#define LOGGING
 
@@ -690,6 +695,7 @@ int Magick::Start(bool firstrun)
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
+#ifndef WIN32
     mFile pidfile;
     if (firstrun && mFile::Exists(files.Pidfile()))
     {
@@ -707,6 +713,7 @@ int Magick::Start(bool firstrun)
 	    mFile::Erase(files.Pidfile());
 	}
     }
+#endif
 
     if (!ActivateLogger())
     {
@@ -722,6 +729,7 @@ int Magick::Start(bool firstrun)
 
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
+#ifndef WIN32
     if (!nofork && firstrun)
     {
 	NLOG(LM_STARTUP, "COMMANDLINE/START_FORK");
@@ -729,13 +737,8 @@ int Magick::Start(bool firstrun)
 	Result = ACE::daemonize(Services_Dir(), 0, i_programname);
 	if (Result < 0 && errno)
 	{
-#ifdef WIN32
-	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR",
-		("fork", errno, strerror(errno)));
-#else
 	    LOG(LM_EMERGENCY, "SYS_ERRORS/OPERROR",
 		("fork", errno, strerror(errno)));
-#endif
 	}
 	else if (Result != 0)
 	{
@@ -759,6 +762,7 @@ int Magick::Start(bool firstrun)
 	    pidfile.Close();
 	}
     }
+#endif
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
@@ -955,8 +959,10 @@ int Magick::Start(bool firstrun)
 	dcc = NULL;
     }}
 
+#ifndef WIN32
     if (Result != MAGICK_RET_RESTART)
 	mFile::Erase(files.Pidfile());
+#endif
 
     LOG(LM_STARTUP, "COMMANDLINE/STOP_COMPLETE", (
 		PACKAGE, VERSION));
@@ -1180,7 +1186,9 @@ void Magick::dump_help() const
 	 << "--help             -?      Help output (summary of the below).\n"
 	 << "--dir X                    Set the initial services directory.\n"
 	 << "--config X                 Set the name of the config file.\n"
+#ifndef WIN32
 	 << "--nofork                   Do not become a daemon process.\n"
+#endif
 #ifdef CONVERT
 	 << "--convert X                Convert another version of services databases\n"
 	 << "                           to Magick II format, where X is the type of\n"
@@ -1573,10 +1581,12 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
     {
 	config.server_relink=0;
     }
+#ifndef WIN32
     else if(first=="--nofork")
     {
 	nofork=true;
     }
+#endif
     else if(first=="--cycle" || first=="--expire")
     {
 	if(second.empty() || second[0U]=='-')
