@@ -2845,7 +2845,8 @@ void EventTask::do_ping(mDateTime & synctime)
 
     Server::list_t::iterator si;
 
-    double min = -1, max = 0, sum = 0, avg = 0, count = 0;
+    float min = -1, max = 0, sum = 0, avg = 0;
+    size_t count = 0;
 
     {
 	RLOCK2((lck_Server, lck_list));
@@ -2861,18 +2862,28 @@ void EventTask::do_ping(mDateTime & synctime)
 	}
     }
     if (count >= 3)
-	avg = (sum - min - max) / (count - 2);
+	avg = (sum - min - max) / static_cast<float>(count - 2);
     else
-	avg = sum / count;
+	avg = sum / static_cast<float>(count);
 
-    if (avg > static_cast < double >
+    if (avg < 0.0)
+    {
+	LOG(LM_ERROR, "EVENT/LEVEL_BAD", (fmstring("%.3f", avg)));
+    }
+    else if (avg >= static_cast < float >
 	(Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level() + 1)))
     {
 	Magick::instance().LevelUp();
 	LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
+	if (Magick::instance().Level() > Magick::instance().startup.Max_Level())
+	{
+	    LOG(LM_ERROR, "EVENT/LEVEL_MAX", (Magick::instance().startup.Max_Level()));
+	    Magick::instance().Disconnect();
+	    return;
+	}
     }
     else if (Magick::instance().Level() > Magick::instance().startup.Level() &&
-	     avg <= static_cast < double >
+	     avg < static_cast < float >
 	     (Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level())))
     {
 	Magick::instance().LevelDown();

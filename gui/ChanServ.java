@@ -368,7 +368,8 @@ public class ChanServ extends TabbedPane
     public void documentChanged(DocumentEvent e)
     {
 	Document props = e.getDocument();
-        if (props.getProperty("name").equals("level_min") && level_min.getText().length() != 0)
+        if (props.getProperty("name").equals("level_min") && level_min.getText().length() != 0 &&
+	    level_max.getText().length() != 0)
 	{
 	    if (Integer.parseInt(level_max.getText()) < Integer.parseInt(level_min.getText()))
 		level_max.setText(level_min.getText());

@@ -221,6 +221,7 @@ public:
 	mstring setmode;
 	mstring bind;
 	unsigned int level;
+	unsigned int max_level;
 	unsigned long lagtime;
 
     public:
@@ -276,6 +277,10 @@ public:
 	unsigned int Level() const
 	{
 	    return level;
+	}
+	unsigned int Max_Level() const
+	{
+	    return max_level;
 	}
 	unsigned long Lagtime() const
 	{

@@ -67,6 +67,9 @@ public class ToolTips
 					"falls below the current primary set of services.  This value\n" +
 					"should be used to weight this calculation to ensure that some\n" +
 					"services will always become primary services again." },
+	{ "Startup/MAX_LEVEL",		"This defines the maximum live level we are allowed to be at\n" +
+					"before we will disconnect from our uplink.  Remember, each\n" +
+					"each level means you have LAGTIME more lag than the previous." },
 	{ "Startup/LAGTIME",		"This determines how much lag (PING response time) is required\n" +
 					"to increase the current level services operate at.  The lag\n" +
 					"time is determined by the formula of:\n" +

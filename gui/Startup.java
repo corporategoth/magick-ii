@@ -40,7 +40,7 @@ public class Startup extends TabbedPane
 {
 // private:
     private JTextField server_name, server_desc, services_user, services_host, setmode;
-    private JFormattedTextField bind, lagtime, level;
+    private JFormattedTextField bind, lagtime, level, max_level;
     private JCheckBox ownuser, stop;
 
     private class RemotesTableModel extends AbstractTableModel
@@ -335,6 +335,7 @@ public class Startup extends TabbedPane
 	setmode = createTextField("SETMODE", 5, "", true);
 	bind = createFormattedTextField("BIND", 10, new IpAddressFormat(), "", true);
 	level = createFormattedTextField("LEVEL", 2, new NumberRangeFormat(1, -1), "1", true);
+	max_level = createFormattedTextField("MAX_LEVEL", 2, new NumberRangeFormat(1, -1), "5", true);
 	lagtime = createFormattedTextField("LAGTIME", 4, new TimeFormat(), "15s", true);
 
 	RemotesTableModel remotesModel = new RemotesTableModel();
@@ -349,6 +350,13 @@ public class Startup extends TabbedPane
     public void documentChanged(DocumentEvent e)
     {
 	Document props = e.getDocument();
+        if (props.getProperty("name").equals("level") && level.getText().length() != 0 &&
+	    max_level.getText().length() != 0)
+	{
+	    if (Integer.parseInt(max_level.getText()) < Integer.parseInt(level.getText()))
+		max_level.setText(level.getText());
+	    ((NumberRangeFormat) max_level.getFormatter()).setLow(Integer.parseInt(level.getText()));
+	}
     }
 
     public void actionPerformed(ActionEvent e)
@@ -372,13 +380,16 @@ public class Startup extends TabbedPane
 	addToGridBag(gb, gc, "Bind", bind);
 	addToGridBag(gb, gc, "STOP", Color.red, stop);
 	addGridBagLine(gb, gc);
-	addToGridBagLine(gb, gc, "Services User", services_user);
-	addToGridBagLine(gb, gc, "Services Host", services_host);
-	addToGridBag(gb, gc, "Set Mode", setmode);
+	addToGridBag(gb, gc, "Services User", services_user);
 	addToGridBag(gb, gc, "Own User", ownuser);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Level", level);
+	addToGridBagLine(gb, gc, "Services Host", services_host);
+	addToGridBag(gb, gc, "Set Mode", setmode);
 	addToGridBag(gb, gc, "Lag Time", lagtime);
+	addGridBagLine(gb, gc);
+	addToGridBag(gb, gc, "Level", level);
+	addToGridBag(gb, gc, "Maximum Level", max_level);
+	addGridBagLine(gb, gc);
 	addGridBagLine(gb, gc);
 	addToGridBagTable(gb, gc, "Remote Connections", remotes);
 	addToGridBagTable(gb, gc, "Allowed Connections", allows);
@@ -432,6 +443,8 @@ public class Startup extends TabbedPane
 
 	if (!isEditValid(level)) throw new DataFormatException("Startup/LEVEL");
 	rv += "LEVEL = " + level.getText() + "\n";
+	if (!isEditValid(max_level)) throw new DataFormatException("Startup/MAX_LEVEL");
+	rv += "MAX_LEVEL = " + max_level.getText() + "\n";
 	if (!isEditValid(lagtime)) throw new DataFormatException("Startup/LAGTIME");
 	rv += "LAGTIME = " + lagtime.getText() + "\n";
 	rv += "STOP = " + (stop.isSelected() ? "TRUE" : "FALSE") + "\n";
@@ -490,6 +503,7 @@ public class Startup extends TabbedPane
 	}
 
 	setFmtField(level, data, "Startup/LEVEL");
+	setFmtField(max_level, data, "Startup/MAX_LEVEL");
 	setFmtField(lagtime, data, "Startup/LAGTIME");
 	stop.setSelected(IniParser.getBoolValue(data.getValue("Startup/STOP")));
     }

@@ -1075,6 +1075,7 @@ void Magick::dump_help() const
 	"--host X           -H      Override [STARTUP/SERVICES_HOST] to X.\n" <<
 	"--ownuser          -o      Override [STARTUP/OWNUSER] to true.\n" <<
 	"--level X          -l      Override [STARTUP/LEVEL] to X.\n" <<
+	"--maxlevel X       -g      Override [STARTUP/MAX_LEVEL] to X.\n" <<
 	"--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n" <<
 	"--umask            -u      Override [FILES/UMASK] to X.\n" <<
 	"--protocol X       -P      Override [FILES/PROTOCOL] to X.\n" <<
@@ -1360,6 +1361,19 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
 	startup.level = atoi(second.c_str());
+	RET(true);
+    }
+    else if (first == "--maxlevel")
+    {
+	if (second.empty() || second[0U] == '-')
+	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
+	}
+	if (atoi(second.c_str()) <= 0)
+	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
+	}
+	startup.max_level = atoi(second.c_str());
 	RET(true);
     }
     else if (first == "--lagtime")
@@ -1808,6 +1822,15 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	    else
 		ArgUsed = paramlong("--level", second);
 	}
+	else if (first[i] == 'G')
+	{
+	    if (ArgUsed)
+	    {
+		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
+	    }
+	    else
+		ArgUsed = paramlong("--maxlevel", second);
+	}
 	else if (first[i] == 'g')
 	{
 	    if (ArgUsed)
@@ -2222,6 +2245,12 @@ bool Magick::get_config_values()
     if (value_uint > i_level)
 	i_level = value_uint;
     startup.level = value_uint;
+
+    in.Read(ts_Startup + "MAX_LEVEL", value_uint, 1U);
+    if (value_uint < startup.level)
+	startup.max_level = startup.level;
+    else
+	startup.max_level = value_uint;
 
     in.Read(ts_Startup + "LAGTIME", value_mstring, "10s");
     if (FromHumanTime(value_mstring))

@@ -99,16 +99,27 @@ public class Files extends TabbedPane
 	if (mct.currentDirectory() != null)
 	{
 	    b_logfile = createButton("B_LOGFILE", "...", true);
+	    b_logfile.setToolTipText("Browse ...");
 	    b_database = createButton("B_DATABASE", "...", true);
+	    b_database.setToolTipText("Browse ...");
 	    b_keyfile = createButton("B_KEYFILE", "...", encryption.isSelected());
+	    b_keyfile.setToolTipText("Browse ...");
 	    b_motdfile = createButton("B_MOTDFILE", "...", true);
+	    b_motdfile.setToolTipText("Browse ...");
 	    b_protocol = createButton("B_PROTOCOL", "...", true);
+	    b_protocol.setToolTipText("Browse ...");
 	    b_pidfile = createButton("B_PIDFILE", "...", true);
+	    b_pidfile.setToolTipText("Browse ...");
 	    b_langdir = createButton("B_LANGDIR", "...", true);
+	    b_langdir.setToolTipText("Browse ...");
 	    b_picture = createButton("B_PICTURE", "...", true);
+	    b_picture.setToolTipText("Browse ...");
 	    b_memoattach = createButton("B_MEMOATTACH", "...", true);
+	    b_memoattach.setToolTipText("Browse ...");
 	    b_public = createButton("B_PUBLIC", "...", true);
+	    b_public.setToolTipText("Browse ...");
 	    b_tempdir = createButton("B_TEMPDIR", "...", true);
+	    b_tempdir.setToolTipText("Browse ...");
 	}
     }
 

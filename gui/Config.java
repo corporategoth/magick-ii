@@ -70,19 +70,22 @@ public class Config extends TabbedPane
     public void documentChanged(DocumentEvent e)
     {
 	Document props = e.getDocument();
-        if (props.getProperty("name").equals("listsize") && listsize.getText().length() != 0)
+        if (props.getProperty("name").equals("listsize") && listsize.getText().length() != 0 &&
+	    maxlist.getText().length() != 0)
 	{
 	    if (Integer.parseInt(maxlist.getText()) < Integer.parseInt(listsize.getText()))
 		maxlist.setText(listsize.getText());
 	    ((NumberRangeFormat) maxlist.getFormatter()).setLow(Integer.parseInt(listsize.getText()));
 	}
-        else if (props.getProperty("name").equals("min_threads") && min_threads.getText().length() != 0)
+        else if (props.getProperty("name").equals("min_threads") && min_threads.getText().length() != 0 &&
+		 max_threads.getText().length() != 0)
 	{
 	    if (Integer.parseInt(max_threads.getText()) < Integer.parseInt(min_threads.getText()))
 		max_threads.setText(min_threads.getText());
 	    ((NumberRangeFormat) max_threads.getFormatter()).setLow(Integer.parseInt(min_threads.getText()));
 	}
-        else if (props.getProperty("name").equals("low_water_mark") && low_water_mark.getText().length() != 0)
+        else if (props.getProperty("name").equals("low_water_mark") && low_water_mark.getText().length() != 0 &&
+		 high_water_mark.getText().length() != 0)
 	{
 	    if (Integer.parseInt(high_water_mark.getText()) < Integer.parseInt(low_water_mark.getText()))
 		high_water_mark.setText(low_water_mark.getText());

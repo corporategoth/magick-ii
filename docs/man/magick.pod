@@ -119,6 +119,12 @@ which is the lowest services level Magick may have while active
 (for services fail over purposes, higher level = less likely to
 be failed to).
 
+=item --maxlevel X, -G
+
+Override the B<STARTUP/MAX_LEVEL> value in the configuration file,
+which is the maximum live level Magick may have before it will
+disconnect from the server it is connected to.
+
 =item --lagtime X, -g
 
 Override the B<STARTUP/LAGTIME> value in the configuration file,
