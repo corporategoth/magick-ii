@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.205  2000/03/19 08:50:55  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.204  2000/03/15 14:42:58  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -188,7 +192,7 @@ int Magick::Start()
 	    else if(argv[i]=="--help" ||
 		(argv[i][1U]!='-' && argv[i].Contains("?")))
     	    {
-		dump_help(argv[0]);
+		dump_help();
 		return MAGICK_RET_NORMAL;
 	    }
 	}
@@ -587,7 +591,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 
 	bool bContEntries, oldCOD, sendline;
 	long dummy=0;
-	int i;
+	unsigned int i;
 	mstring entryname, tempstr;
 	mstring yescom, nocom, text;
 
@@ -646,7 +650,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+nickserv.DEF_Language().LowerCase()+".hlp");
 
 	bool bContEntries, oldCOD, sendline;
-	int i;
+	unsigned int i;
 	long dummy=0;
 	mstring entryname, tempstr;
 	mstring yescom, nocom, text;
@@ -708,23 +712,23 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
     NRET(vector<mstring>, helptext);
 }
 
-void Magick::dump_help(mstring & progname)
+void Magick::dump_help()
 {
     // This needs to be re-written.
     cout << "\n"
-         << FULL_NAME + " - " + FULL_URL + "\n"
-         << "    (c) 1996-2000 Preston A. Elder <prez@magick.tm>\n"
-         << "    (c) 1999-2000 William King <ungod@magick.tm>\n"
-         << "\n"
-         << "Syntax: " << i_programname << " [ops]\n"
-         << "\n"
-         << "    -n, --name servername          Override SERVER_NAME in the config file.\n"
-         << "    -d, --desc description         Override SERVER_DESC in the config file.\n"
-         << "    -u, --user user                Override SERVICES_USER in the config file.\n"
-         << "    -o, --ownuser                  Sets OWNUSER in the config file to TRUE.\n"
-         << "    -h, --host host                Override SERVICES_HOST in the config file.\n"
-         << "    -s, --save time                Override CYCLETIME in the config file.\n"
-         << "    -v, --verbose                  Logs EVERY command to services.\n"
+	 << FULL_NAME + " - " + FULL_URL + "\n"
+	 << "    (c) 1996-2000 Preston A. Elder <prez@magick.tm>\n"
+	 << "    (c) 1999-2000 William King <ungod@magick.tm>\n"
+	 << "\n"
+	 << "Syntax: " << i_programname << " [ops]\n"
+	 << "\n"
+	 << "    -n, --name servername          Override SERVER_NAME in the config file.\n"
+	 << "    -d, --desc description         Override SERVER_DESC in the config file.\n"
+	 << "    -u, --user user                Override SERVICES_USER in the config file.\n"
+	 << "    -o, --ownuser                  Sets OWNUSER in the config file to TRUE.\n"
+	 << "    -h, --host host                Override SERVICES_HOST in the config file.\n"
+	 << "    -s, --save time                Override CYCLETIME in the config file.\n"
+	 << "    -v, --verbose                  Logs EVERY command to services.\n"
          << "    -l, --level level              Override LEVEL in config file.\n"
          << "    -f, --fg                       Output logs to console, fork() on CTRL-C.\n"
          << "    -r, --relink time              Override SERVER_RELINK in config file.\n"
@@ -1653,9 +1657,9 @@ bool Magick::get_config_values()
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
     in.Read(ts_Config+"LISTSIZE",&config.listsize, 50);
     in.Read(ts_Config+"MAXLIST",&value_uint, 250);
-    if (value_int < config.listsize)
-	value_int = config.listsize;
-    config.maxlist = value_int;
+    if (value_uint < config.listsize)
+	value_uint = config.listsize;
+    config.maxlist = value_uint;
 
     in.Read(ts_Config+"STARTUP_THREADS",&config.startup_threads, 2);
     in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);

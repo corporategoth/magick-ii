@@ -24,6 +24,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/03/19 08:50:52  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.54  2000/03/14 13:37:35  prez
 ** *** empty log message ***
 **
@@ -113,10 +117,10 @@ template<class T>
 class entlist_val_t : public mUserDef
 {
 #ifdef WIN32
-    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
+    friend wxOutputStream &operator<<(wxOutputStream& out, const entlist_val_t<T>& in);
     friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
 #else
-    friend wxOutputStream &operator<<<T>(wxOutputStream& out,const entlist_val_t<T>& in);
+    friend wxOutputStream &operator<<<T>(wxOutputStream& out, const entlist_val_t<T>& in);
     friend wxInputStream &operator>><T>(wxInputStream& in, entlist_val_t<T>& out);
 #endif
     mstring i_Entry;
@@ -201,7 +205,7 @@ bool entlist_val_t<T>::Value(T value, mstring nick)
 }
 
 template<class T> inline
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in)
+wxOutputStream &operator<<(wxOutputStream& out, const entlist_val_t<T>& in)
 {
     out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 

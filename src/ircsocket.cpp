@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2000/03/19 08:50:55  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.91  2000/03/15 14:42:58  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -113,7 +117,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	if (!(data2.Last() == '\n' || data2.Last() == '\r'))
 	    flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
 
-	for(int i=1;i<data2.WordCount("\n\r");i++)
+	for(unsigned int i=1;i<data2.WordCount("\n\r");i++)
 	    if(data2.ExtractWord(i,"\n\r")!="")
 		mBase::push_message(data2.ExtractWord(i,"\n\r"));
 

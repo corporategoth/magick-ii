@@ -49,8 +49,9 @@ SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
 CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
-  -Od -wuse -wstv -wstu -wpin -wnod -wnak -wdef -wamb -Vmp -Tkh30000 -a8 -6 -d -k \
-  -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR -tWM -c
+  -O2 -H=$(BCB)\lib\vcl40.csm -wuse -wstv -wstu -wpin -wnod -wnak -wdef -wamb \
+  -Vmp -Tkh30000 -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR \
+  -tWM -c
 IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude -I..\support\ace_wrappers \
   -I..\support\zlib -I..\include\sxp -I..\include\expat -src_suffixcpp -D_DEBUG \
   -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1

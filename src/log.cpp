@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/03/19 08:50:55  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.30  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -299,7 +303,7 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
 
 void wxLog::DoLogString(const char *szString)
 {
-  wxFAIL_MSG("DoLogString must be overrided if it's called.");
+  wxFAIL_MSG("DoLogString must be overriden if it's called.");
 }
 
 void wxLog::Flush()

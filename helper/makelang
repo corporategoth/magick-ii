@@ -58,7 +58,7 @@ static const char *ident = "@(#) \$Id\$";
  */
 
 EOF
-	echo "int def_langent = `cat $LANG | wc -l`;" >>include/language.h
+	echo "unsigned int def_langent = `cat $LANG | wc -l`;" >>include/language.h
 	echo "char *def_lang[] = {" >>include/language.h
 	sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" \
 		-e "s/$/\",/g" $LANG >>include/language.h

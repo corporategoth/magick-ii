@@ -24,6 +24,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/03/19 08:50:53  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.29  2000/03/15 14:42:58  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -67,7 +71,7 @@ class Nick_Live_t : public mUserDef
     mstring i_away;
     mstring modes;
     set<mstring> joined_channels;
-    vector<time_t> last_msg_times;
+    vector<mDateTime> last_msg_times;
     unsigned int last_msg_entries;
     unsigned int flood_triggered_times;
     unsigned int failed_passwds;

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/03/19 08:50:57  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.31  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -271,7 +275,7 @@ vector<int> ParseNumbers(mstring what)
 {
     FT("ParseNumbers", (what));
     vector<int> numbers;
-    int i;
+    unsigned int i;
     mstring tmp;
 
     what.Replace(",", " ");
@@ -430,4 +434,5 @@ mstring ToHumanNumber(unsigned long in)
     }
     RET(retval);
 }
+
 

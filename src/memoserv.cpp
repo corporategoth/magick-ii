@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/03/19 08:50:55  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.42  2000/03/08 23:38:37  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -311,9 +315,9 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		::send(mynick, source, Parent->getMessage("MS_COMMAND/NEWS"),
 			i++, iter->Sender().c_str(), iter->Channel().c_str(),
 			iter->Time().Ago().c_str());
-		unsigned int sentsize = 0;
+		unsigned int sentsize;
 		mstring output;
-		for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+		for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
 		{
 		    if (sentsize + 450 < iter->Text().size())
 		    {
@@ -342,7 +346,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    unsigned int i;
 	    int j=1;
 	    mstring output;
-	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    bool triedabove = false, nonnumeric = false;
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    for (i=0; i<numbers.size(); i++)
 	    {
@@ -370,8 +374,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			::send(mynick, source, Parent->getMessage("MS_COMMAND/NEWS"),
 				i, iter->Sender().c_str(), iter->Sender().c_str(),
 				iter->Time().Ago().c_str());
-			unsigned int sentsize = 0;
-			for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+			unsigned int sentsize;
+			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
 			{
 			    if (sentsize + 450 < iter->Text().size())
 			    {
@@ -389,7 +393,6 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			    ::send(mynick, source, "    " + output);
 			    output = "";
 			}
-			displayed = true;
 		    }
 		}
 	    }
@@ -434,9 +437,9 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
 			i++, iter->Sender().c_str(),
 			iter->Time().Ago().c_str());
-		unsigned int sentsize = 0;
+		unsigned int sentsize;
 		mstring output;
-		for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+		for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
 		{
 		    if (sentsize + 450 < iter->Text().size())
 		    {
@@ -461,7 +464,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    vector<int> numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j=1;
-	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    bool triedabove = false, nonnumeric = false;
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
 	    for (i=0; i<numbers.size(); i++)
@@ -490,8 +493,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
 				i++, iter->Sender().c_str(),
 				iter->Time().Ago().c_str());
-			unsigned int sentsize = 0;
-			for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+			unsigned int sentsize;
+			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
 			{
 			    if (sentsize + 450 < iter->Text().size())
 			    {
@@ -509,7 +512,6 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			    ::send(mynick, source, "    " + output);
 			    output = "";
 			}
-			displayed = true;
 		    }
 		}
 	    }
@@ -577,7 +579,6 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	if (what.CmpNoCase("all")==0)
 	{
 	    list<News_t>::iterator iter;
-	    int i = 1;
 	    mstring output;
 	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
@@ -592,7 +593,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    vector<int> numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j=1;
-	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    bool triedabove = false, nonnumeric = false;
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    mstring output;
 	    for (i=0; i<numbers.size(); i++)
@@ -621,7 +622,6 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 			if (output != "")
 			    output << ", ";
 			output << j;
-			displayed = true;
 		    }
 		}
 	    }
@@ -659,7 +659,6 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
-	    int i = 1;
 	    mstring output;
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
@@ -673,7 +672,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    vector<int> numbers = ParseNumbers(what);
 	    unsigned int i;
 	    int j=1;
-	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    bool triedabove = false, nonnumeric = false;
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
 	    for (i=0; i<numbers.size(); i++)
@@ -702,7 +701,6 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 			if (output != "")
 			    output << ", ";
 			output << j;
-			displayed = true;
 		    }
 		}
 	    }
@@ -1323,7 +1321,6 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    }
 
 	    list<News_t>::iterator iter;
-	    int i = 1;
 	    mstring output;
 	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		    iter != Parent->memoserv.channel[who.LowerCase()].end();)
@@ -1338,6 +1335,14 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    unsigned int i;
+	    /* Adjust is to accomodate for memos that have
+	     * been deleted before the current one, ie. if
+	     * 1, 3, 5 and 7 are being deleted, once 1 has
+	     * been deleted, adjust becomes 1, meaning that
+	     * 3 has become 2, 5 has become 4, etc.  Once 3
+	     * has been deleted, adjust becomes 2, meaning
+	     * that 5 has become 3 and 7 has become 5.
+	     */
 	    int j=1, adjust=0;
 	    vector<int> numbers1 = ParseNumbers(what);
 	    set<int> numbers;
@@ -1345,7 +1350,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    for (i=0; i<numbers1.size(); i++)
 		numbers.insert(numbers1[i]);
 
-	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    bool triedabove = false, nonnumeric = false;
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    mstring output, denied;
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
@@ -1380,7 +1385,6 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 			    iter = Parent->memoserv.channel[who.LowerCase()].begin();
 			    j=1;
 			    adjust++;
-			    displayed = true;
 			}
 		    }
 		}
@@ -1441,13 +1445,21 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    unsigned int i;
+	    /* Adjust is to accomodate for memos that have
+	     * been deleted before the current one, ie. if
+	     * 1, 3, 5 and 7 are being deleted, once 1 has
+	     * been deleted, adjust becomes 1, meaning that
+	     * 3 has become 2, 5 has become 4, etc.  Once 3
+	     * has been deleted, adjust becomes 2, meaning
+	     * that 5 has become 3 and 7 has become 5.
+	     */
 	    int j=1, adjust = 0;
 	    vector<int> numbers1 = ParseNumbers(what);
 	    set<int> numbers;
 	    set<int>::iterator ni;
 	    for (i=0; i<numbers1.size(); i++)
 		numbers.insert(numbers1[i]);
-	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    bool triedabove = false, nonnumeric = false;
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
@@ -1473,7 +1485,6 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 			iter = Parent->memoserv.nick[who.LowerCase()].begin();
 			j=1;
 			adjust++;
-			displayed = true;
 		    }
 		}
 	    }

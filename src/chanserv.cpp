@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.150  2000/03/19 08:50:53  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.149  2000/03/14 15:10:15  prez
 ** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
 **
@@ -1679,7 +1683,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     vector<mstring> retval;
     mstring output, change = mode.ExtractWord(1, ": ");
     unsigned int i;
-    int fwdargs = 2;
+    unsigned int fwdargs = 2;
     bool add = true;
     bool ignorek = false;
     bool ignorel = false;
@@ -1927,7 +1931,7 @@ mstring Chan_Stored_t::L_Mlock()
     mstring locked = Parent->chanserv.LCK_MLock();
     bool add = true;
     unsigned int i;
-    for (i; i<locked.size(); i++)
+    for (i=0; i<locked.size(); i++)
     {
 	switch (locked[i])
 	{

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2000/03/19 08:50:53  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.103  2000/03/14 13:36:46  prez
 ** Finished P12 compliance (SJOIN, etc).
 **
@@ -990,3 +994,4 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
 //			command.Before(" ").c_str());
     }
 }
+

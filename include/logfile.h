@@ -24,6 +24,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/03/19 08:50:53  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.4  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -44,7 +48,7 @@ static const char *ident_logfile_h = "@(#) $Id$";
  * Created on Tuesday February 15 21:35:58 EST 2000
  */
 
-int def_logent =      281;
+unsigned int def_logent =      281;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",

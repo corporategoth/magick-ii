@@ -24,6 +24,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2000/03/19 08:50:53  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.111  2000/03/15 14:42:58  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -276,7 +280,7 @@ public:
 	operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
 	// Commandline, config, language PARSING.
-	void dump_help(mstring& progname);
+	void dump_help();
 	bool paramlong(mstring first, mstring second);
 	bool paramshort(mstring first, mstring second);
 	bool get_config_values();

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/03/19 08:50:56  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.87  2000/03/08 23:38:37  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -250,9 +254,8 @@ void ThreadID::WriteOut(const mstring &message)
 T_Functions::T_Functions(const mstring &name)
 {
     m_name=name;
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Functions);
     if (IsOn(tid)) {
@@ -266,9 +269,8 @@ T_Functions::T_Functions(const mstring &name)
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     m_name=name;
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Functions);
     if (IsOn(tid)) {
@@ -287,9 +289,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 //      /  (char) Y
 T_Functions::~T_Functions()
 { 
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     tid->indentdown(); 
     ShortLevel(Functions);
@@ -323,9 +324,8 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 
 void T_CheckPoint::common(const char *input)
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(CheckPoint);
     if (IsOn(tid)) {
@@ -355,9 +355,8 @@ T_Comments::T_Comments(const char *fmt, ...)
 
 void T_Comments::common(const char *input)
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Comments);
     if (IsOn(tid)) {
@@ -374,9 +373,8 @@ void T_Comments::common(const char *input)
 //      << DE3(srealm.net.au)
 T_Modify::T_Modify(const mVarArray &args)
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
@@ -393,9 +391,8 @@ T_Modify::T_Modify(const mVarArray &args)
 //      >> DE3(corewars.net)
 void T_Modify::End(const mVarArray &args)
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
@@ -414,9 +411,7 @@ void T_Modify::End(const mVarArray &args)
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Chatter);
     if (IsOn(tid)) {
@@ -449,9 +444,8 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 //      :+ M Magick::LoadMessages
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) 
@@ -475,9 +469,8 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking()
 {
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) {

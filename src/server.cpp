@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2000/03/19 08:50:56  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.79  2000/03/15 14:42:59  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -450,7 +454,7 @@ void NetworkServ::SignOnAll()
     NFT("NetworkServ::SignOnAll");
 
     mstring doison;
-    int i;
+    unsigned int i;
     for (i=1; i<=Parent->operserv.GetNames().WordCount(" "); i++)
     {
 	doison += " " + Parent->operserv.GetNames().ExtractWord(i, " ");
@@ -1503,7 +1507,7 @@ void NetworkServ::execute(const mstring & data)
 
 	    // repl: :our.server 303 source :local.nick
 	    mstring isonstr = "";
-	    for (int i=3; i<=data.WordCount(": "); i++)
+	    for (unsigned int i=3; i<=data.WordCount(": "); i++)
 	    {
 		if (isonstr.Len() > 450)
 		{
@@ -1529,7 +1533,7 @@ void NetworkServ::execute(const mstring & data)
 		return;
 
 	    // :source JOIN :#channel
-	    for (int i=3; i<=data.WordCount(":, "); i++)
+	    for (unsigned int i=3; i<=data.WordCount(":, "); i++)
 		Parent->nickserv.live[sourceL].Join(data.ExtractWord(i, ":, "));
 	}
 	else
@@ -2154,9 +2158,10 @@ void NetworkServ::execute(const mstring & data)
 	    ServerList.erase(target);
 	    if (ServerSquit.find(target) != ServerSquit.end())
 	    {
-		mstring *arg;
+		mstring *arg = NULL;
 		if (ACE_Reactor::instance()->cancel_timer(
-		    ServerSquit[target], (const void **) arg))
+		    ServerSquit[target], (const void **) arg)
+		    && arg != NULL)
 		    delete arg;
 		ServerSquit[target] =
 		    ACE_Reactor::instance()->schedule_timer(&squit,
@@ -2722,7 +2727,7 @@ void NetworkServ::execute(const mstring & data)
 void NetworkServ::numeric_execute(const mstring & data)
 {
     FT("NetworkServ::numeric_execute", (data));
-    int i;
+    unsigned int i;
 
     mstring source, sourceL;
     unsigned int msgtype;

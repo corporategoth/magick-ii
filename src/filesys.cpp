@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/03/19 08:50:55  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.5  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -65,7 +69,7 @@ unsigned long FileMap::FindAvail(FileMap::FileType type)
 	}
     }
 
-    RET(filenum);
+    RET(0);
 }
 
 
@@ -196,12 +200,19 @@ DccXfer::DccXfer(DccXfer::XferType type, ACE_INET_Addr addr, mstring source,
     i_filetype = filetype;
     tmpfile = Parent->files.TempDir() + DirSlash + source;
     blocksize = Parent->files.Blocksize();
+    total = 0;
+    fout = NULL;
+    fin = NULL;
     open();
 }
 
 DccXfer::~DccXfer()
 {
     NFT("DccXfer::~DccXfer");
+    if (fout != NULL)
+	delete fout;
+    if (fin != NULL)
+	delete fin;
     remove(tmpfile.c_str());
     close(0);
 }
@@ -218,10 +229,10 @@ int DccXfer::open(void *in)
     if (i_type == Get)
     {
 	// We let handle_input handle most of this...
+	fout = new wxFileOutputStream(tmpfile, true);
     }
-    else if (i_type = Send)
+    else if (i_type == Send)
     {
-	
     }
     else
     {
@@ -235,6 +246,64 @@ int DccXfer::open(void *in)
 int DccXfer::handle_input(ACE_HANDLE handle)
 {
     FT("DccXfer::handle_input", ("ACE_HANDLE handle"));
+
+    if (i_type == Send)
+    {
+	int recvResult;
+	char data[5];
+	recvResult=peer().recv(data,4);
+	if(recvResult<=0 || Parent->Shutdown())
+	{
+	    // Check if we got nuff yet?
+	    close(0);
+	    return -1;
+	}
+
+	// Kill timer to wait for more data or confirmation
+	confirmation = true;
+    }
+    else if (i_type == Get)
+    {
+	int recvResult, remaining = blocksize;
+	char data[1025];
+
+	while (remaining > 0)
+	{
+	    memset(data,0,1025);
+	    if (remaining > 1024)
+	    {
+		recvResult=peer().recv(data,1024);
+		remaining -= 1024;
+	    }
+	    else
+	    {
+		recvResult=peer().recv(data,remaining);
+		remaining = 0;
+	    }
+	    if(recvResult<=0 || Parent->Shutdown())
+	    {
+		// Check if we got nuff yet?
+		close(0);
+		return -1;
+	    }
+	    *fout << data;
+	}
+	// Kill timer to wait for more data or confirmation
+	confirmation = true;
+
+	total += blocksize;
+	recvResult = peer().send((char *) htonl(total), 4);
+	if(recvResult<=0 || Parent->Shutdown())
+	{
+	    // Check if we got nuff yet?
+	    close(0);
+	    return -1;
+	}
+
+	// Add timer to wait for more data or close
+	confirmation = false;
+    }
+
     RET(0);
 }
 

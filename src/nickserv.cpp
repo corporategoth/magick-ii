@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/03/19 08:50:55  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.65  2000/03/15 14:42:59  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -712,9 +716,9 @@ bool Nick_Live_t::FloodTrigger()
     }
 
     // Clean up previous entries and push current entry
-    while (last_msg_times.size() && last_msg_times[0u] < (time(NULL) - Parent->operserv.Flood_Time()))
+    while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Parent->operserv.Flood_Time())
 	last_msg_times.erase(last_msg_times.begin());
-    last_msg_times.push_back(time(NULL));
+    last_msg_times.push_back(Now());
 
     // Check if we just triggered ignore.
     if (last_msg_times.size() > Parent->operserv.Flood_Msgs())
@@ -4225,10 +4229,8 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    unsigned int count;
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (count = Parent->nickserv.stored[source.LowerCase()].AccessDel(hostmask))
+    unsigned int count = Parent->nickserv.stored[source.LowerCase()].AccessDel(hostmask);
+    if (count)
     {
 	Parent->nickserv.stats.i_Access++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
@@ -4360,11 +4362,9 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 
 	target = Parent->nickserv.stored[source.LowerCase()].Ignore(num-1);
     }
-    unsigned int count;
 
-    // Prez: should this be an assign or a compare? if it's an assign, assign it,
-    //   then compare it, not both at once, it's bad to read.
-    if (count = Parent->nickserv.stored[source.LowerCase()].IgnoreDel(target))
+    unsigned int count = Parent->nickserv.stored[source.LowerCase()].IgnoreDel(target);
+    if (count)
     {
 	Parent->nickserv.stats.i_Ignore++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),

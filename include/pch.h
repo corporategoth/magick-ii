@@ -11,7 +11,7 @@
 ** ========================================================== */
 #ifndef _PCH_H
 #define _PCH_H
-static const char *ident_pch_h = "@(#) $Id$";
+// static const char *ident_pch_h = "@(#) $Id$";
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -21,6 +21,10 @@ static const char *ident_pch_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/03/19 08:50:53  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.10  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's

@@ -24,6 +24,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/03/19 08:50:52  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.5  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -81,7 +85,9 @@ private:
     FileMap::FileType i_filetype;
     mstring tmpfile;
     mstring buffer;
-    unsigned long blocksize;
+    unsigned long blocksize, total;
+    wxFileOutputStream *fout;
+    wxFileInputStream *fin;
 
     // Timers to wait for confirmation and/or data,
     // and the connection to be established.

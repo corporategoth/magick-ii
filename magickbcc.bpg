@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = antlr.lib crypto.lib xmltoklib.lib xmlparselib.lib sxplib.lib \
-  magickbcc.exe
+  magickbcc.exe whatbcc.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -31,6 +31,9 @@ sxplib.lib: src\sxp\sxplib.bpr
   $(MAKE)
 
 xmltoklib.lib: src\expat\xmltok\xmltoklib.bpr
+  $(MAKE)
+
+whatbcc.exe: whatbcc.bpr
   $(MAKE)
 
 

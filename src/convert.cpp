@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/03/19 08:50:54  prez
+** More Borlandization -- Added WHAT project, and fixed a bunch
+** of minor warnings that appear in borland.
+**
 ** Revision 1.10  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -79,7 +83,7 @@ char *
 read_string (FILE * f, const char *filename)
 {
     char *s;
-    int len;
+    unsigned int len;
 
     len = fgetc (f) * 256 + fgetc (f);
     s = (char *) malloc (len);
@@ -1331,7 +1335,7 @@ load_sop ()
 {
     FILE *f = fopen (sop_db, "r");
     int i, j;
-    int nsop = 0;
+    unsigned int nsop = 0;
     int sop_size = 0;
     Sop *sops = NULL;
 
@@ -1382,7 +1386,7 @@ load_message ()
 {
     FILE *f = fopen (message_db, "r");
     int i, j;
-    int nmessage = 0;
+    unsigned int nmessage = 0;
     int message_size = 0;
     Message *messages = NULL;
 
@@ -1446,7 +1450,7 @@ load_akill ()
 {
     FILE *f = fopen (akill_db, "r");
     int i, j;
-    int nakill = 0;
+    unsigned int nakill = 0;
     int akill_size = 0;
     Akill *akills = NULL;
 
@@ -1574,7 +1578,7 @@ load_clone ()
 {
     FILE *f = fopen (clone_db, "r");
     int i, j;
-    int nclone = 0;
+    unsigned int nclone = 0;
     int clone_size = 0;
     Allow *clones = NULL;
 
