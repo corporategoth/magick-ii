@@ -24,6 +24,12 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/03/24 15:35:17  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.7  2000/03/23 10:22:24  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -80,7 +86,7 @@ private:
     // that we now have it.  This way we can just
     // concentrate on getting the job done.
     auto_ptr<ACE_SOCK_Stream> i_Socket;
-    auto_ptr<wxFile> i_File;
+    wxFile i_File;
     mstring i_Source;
     mstring i_Mynick;
     mstring i_Tempfile;
@@ -95,7 +101,7 @@ private:
     mDateTime i_LastData;
 
 public:
-    DccXfer() {}
+    DccXfer() { i_Transiant = NULL; }
     DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 	mstring mynick, mstring source,
 	FileMap::FileType filetype, unsigned long filenum);
@@ -108,7 +114,7 @@ public:
 
     ~DccXfer();
 
-    bool Ready()		{ return i_File->IsOpened(); }
+    bool Ready()		{ return i_File.IsOpened(); }
     unsigned long DccId()	{ return i_DccId; }
     XF_Type Type()		{ return i_Type; }
     mstring Source()		{ return i_Source; }
@@ -119,7 +125,7 @@ public:
 
     void ChgNick(mstring in)	{ i_Source = in; }
     void Cancel()		{ i_Total = 0;
-				  i_File->Close(); }
+				  i_File.Close(); }
     void Action();	// Do what we want!
 
 };

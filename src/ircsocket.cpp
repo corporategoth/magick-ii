@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.92  2000/03/19 08:50:55  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -127,7 +133,6 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     }
     else
         flack = data2;
-
 
     RET(0);
 }
@@ -405,7 +410,7 @@ int EventTask::svc(void)
 	if (!Parent->AUTO())
 	    continue;
 
-	// Main routine -- when we end this, we're done!!
+ 	// Main routine -- when we end this, we're done!!
 	map<mstring, Nick_Live_t>::iterator nli;
 	map<mstring, Nick_Stored_t>::iterator nsi;
 	map<mstring, Chan_Live_t>::iterator cli;
@@ -826,7 +831,6 @@ int EventTask::svc(void)
 	    last_ping = Now();
 	}
 	
-
 #ifdef WIN32
 	Sleep(1000);
 #else

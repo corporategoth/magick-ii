@@ -27,6 +27,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.80  2000/03/19 08:50:56  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -88,6 +94,7 @@ static const char *ident = "@(#)$Id$";
 
 Protocol::Protocol()
 {
+    NFT("Protocol::Protocol");
     i_Number = 0;
     i_Globops = false;
     i_Tokens = false;
@@ -183,6 +190,7 @@ Protocol::Protocol()
 
 void Protocol::Set(unsigned int in)
 {
+    FT("Protocol::Set", (in)); fflush(stdout);
     switch (in)
     {
     case 0: /* RFC */
@@ -271,9 +279,10 @@ void Protocol::Set(unsigned int in)
 
 mstring Protocol::GetToken(mstring in)
 {
+    FT("Protocol::GetToken", (in));
     if (tokens.find(in) == tokens.end())
 	return "";
-    return tokens[in];
+    RET(tokens[in]);
 }
 
 Server::Server(mstring name, mstring description)

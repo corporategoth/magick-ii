@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.54  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -1528,7 +1534,7 @@ bool wxFile::Open(const char *szFileName, OpenMode mode)
       break;
   }
 
-  FILE *fd = fopen(szFileName, flags);
+  FILE *fd = fopen(szFileName, flags.c_str());
 
   if ( fd == NULL ) {
     wxLogSysError("can't open file '%s'", szFileName);

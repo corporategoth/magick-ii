@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2000/03/24 15:35:17  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.104  2000/03/19 08:50:53  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -669,7 +675,7 @@ mstring mBaseTask::PreParse(const mstring& message)
 
 void mBaseTask::i_shutdown()
 {
-    NFT("mBaseTask::message_i");
+    NFT("mBaseTask::i_shutdown");
     activation_queue_.enqueue(new shutdown_MO);
 }
 

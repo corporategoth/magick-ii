@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.88  2000/03/19 08:50:56  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -411,6 +417,7 @@ void T_Modify::End(const mVarArray &args)
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
+    tid = mThread::find();
     if (!tid)
 	return; // should throw an exception later
     ShortLevel(Chatter);
@@ -501,7 +508,8 @@ T_Locking::~T_Locking()
 /*
 T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
 {
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Sockets);
     if (IsOn(tid)) 
@@ -514,7 +522,8 @@ T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
 
 T_Sockets::End(mstring reason)
 {
-    if (!(tid = mThread::find()))
+    tid = mThread::find();
+    if (!tid)
 	return; // should throw an exception later
     ShortLevel(Sockets);
     if (IsOn(tid)) 

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.8  2000/03/24 12:53:04  prez
 ** FileSystem Logging
 **
@@ -222,7 +228,7 @@ void FileMap::load_database(wxInputStream& in)
 DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 	mstring mynick, mstring source,
 	FileMap::FileType filetype, unsigned long filenum)
-	: i_Socket(socket), i_File(new wxFile)
+	: i_Socket(socket)
 {
     FT("DccXfer::DccXfer", (dccid, "(ACE_SOCK_Stream *) socket",
 			mynick, source, (int) filetype, filenum));
@@ -230,6 +236,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     // Setup Paramaters
     i_DccId = dccid;
     i_Transiant = NULL;
+    i_Mynick = mynick;
     i_Source = source;
     i_Type = Send;
     i_Blocksize = Parent->files.Blocksize();
@@ -267,8 +274,8 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     wxFileInputStream fin(tmp.c_str());
     wxFileOutputStream fout(i_Tempfile.c_str());
     fout << fin;
-    i_File->Open(i_Tempfile.c_str(), wxFile::read);
-    i_Filesize = i_File->Length();
+    i_File.Open(i_Tempfile.c_str(), wxFile::read);
+    i_Filesize = i_File.Length();
 
     // Initialize Transfer
     i_Transiant = (unsigned char *) malloc (sizeof(unsigned char) * (i_Blocksize + 1));
@@ -282,7 +289,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 	mstring mynick, mstring source, mstring filename,
 	size_t filesize, size_t blocksize)
-	: i_Socket(socket), i_File(new wxFile)
+	: i_Socket(socket)
 {
     FT("DccXfer::DccXfer", (dccid, "(ACE_SOCK_Stream *) socket",
 		mynick, source, filename, filesize, blocksize));
@@ -290,6 +297,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     // Setup Paramaters
     i_DccId = dccid;
     i_Transiant = NULL;
+    i_Mynick = mynick;
     i_Source = source;
     i_Type = Get;
     i_Blocksize = Parent->files.Blocksize();
@@ -299,23 +307,27 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 		 DirSlash.c_str(), i_DccId);
     i_Filename = filename;
 
+
     // Verify Paramaters
-    if (Parent->nickserv.IsLive(i_Source))
+    if (!Parent->nickserv.IsLive(i_Source))
 	return;
+
     if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.File() &&
 	!Parent->nickserv.live[i_Source.LowerCase()].InFlight.InProg())
+    {
 	Parent->nickserv.live[i_Source.LowerCase()].InFlight.SetInProg();
+    }
     else
     {
 	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
-					"GET");
+						"GET");
 	return;
     }
 
     // Set 'Ready to Transfer'
     if (wxFile::Exists(i_Tempfile.c_str()))
 	remove(i_Tempfile.c_str());
-    i_File->Open(i_Tempfile.c_str(), wxFile::write);
+    i_File.Open(i_Tempfile.c_str(), wxFile::write);
     i_Filesize = filesize;
 
     // Initialize Transfer
@@ -329,6 +341,16 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 DccXfer::~DccXfer()
 {
     NFT("DccXfer::~DccXfer");
+
+    if (i_Transiant != NULL)
+	free(i_Transiant);
+    i_Transiant = NULL;
+
+    if (i_File.IsOpened())
+	i_File.Close();
+
+    if (i_Socket.get() == NULL)
+	return;
 
     // If we know the size, verify it, else we take
     // what we get!
@@ -368,17 +390,16 @@ DccXfer::~DccXfer()
 	else
 	    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
     }
+
     if (wxFile::Exists(i_Tempfile.c_str()))
 	remove(i_Tempfile.c_str());
-    if (i_Transiant != NULL)
-	free(i_Transiant);
 }
 
 void DccXfer::operator=(const DccXfer &in)
 {
     FT("DccXfer::operator=", ("(const DccXfer &) in"));
     i_Socket=(auto_ptr<ACE_SOCK_Stream> &) in.i_Socket;
-    i_File=(auto_ptr<wxFile> &) in.i_File;
+    // i_File=in.i_File;
     i_Source=in.i_Source;
     i_Mynick=in.i_Mynick;
     i_Tempfile=in.i_Tempfile;
@@ -389,9 +410,31 @@ void DccXfer::operator=(const DccXfer &in)
     i_Filesize=in.i_Filesize;
     i_Type=in.i_Type;
     i_DccId=in.i_DccId;
-    i_Transiant=(unsigned char *) malloc(i_Blocksize);
-    memset(i_Transiant, 0, i_Blocksize);
-    strcpy(i_Transiant, in.i_Transiant);
+
+    if (in.i_File.IsOpened())
+    {
+	DccXfer *tmp = (DccXfer *) &in;
+	tmp->i_File.Close();
+	if (i_Type == Get)
+	{
+	    i_File.Open(i_Tempfile.c_str(), wxFile::write_append);
+	}
+	else if (i_Type == Send)
+	{
+	    i_File.Open(i_Tempfile.c_str(), wxFile::read);
+	    if (i_Total + i_Blocksize > i_Filesize)
+		i_File.SeekEnd();
+	    else
+		i_File.Seek(i_Total + i_Blocksize);
+	}
+    }
+    i_Transiant = NULL;
+    if (in.i_Transiant != NULL && strlen((const char *) in.i_Transiant))
+    {
+	i_Transiant=(unsigned char *) malloc(sizeof(unsigned char) * i_Blocksize + 1);
+	memset(i_Transiant, 0, i_Blocksize + 1);
+	strcpy((char *) i_Transiant, (char *) in.i_Transiant);
+    }
     i_LastData=in.i_LastData;
 }
 
@@ -401,11 +444,12 @@ void DccXfer::Action()
     NFT("DccXfer::Action");
     size_t XferAmt = 0;
     int merrno;
+    ACE_Time_Value onesec(1);
 
     if (i_Type == Get)
     {
 	XferAmt = i_Socket->recv_n((void *) &i_Transiant[i_XferTotal],
-			i_Blocksize - i_XferTotal);
+			i_Blocksize - i_XferTotal, &onesec);
 	merrno = errno;
 	if (XferAmt > 0)
 	{
@@ -416,33 +460,34 @@ void DccXfer::Action()
 		i_XferTotal == i_Blocksize)
 	    {
 		i_Total += i_XferTotal;
-		i_File->Write(i_Transiant, i_XferTotal);
+		i_File.Write(i_Transiant, i_XferTotal);
 		i_XferTotal = 0;
 		memset(i_Transiant, 0, i_Blocksize);
-		i_Socket->send_n((void *) htonl(i_Total), 4);
+		i_Socket->send_n((void *) htonl(i_Total), 4, &onesec);
 		merrno = errno;
 		if (i_Filesize == i_Total)
 		{
 		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
 					"GET", i_Total);
-		    i_File->Close();
+		    i_File.Close();
 		}
 	    }
 	}
-	else if (XferAmt < 0)
+	else
 	{
 	    switch (merrno)
 	    {
+	    case 0:
 	    case EINTR:		// Interrupted System Call
 	    case EAGAIN:	// Temporarily Unavailable
-	    case EWOULDBLOCK:	// Blocking Request Would Block
 	    case ENOMEM:	// Not Enough Memory
 	    case ETIME:		// Request Timed Out
+	    case EINPROGRESS:	// Operation In Progress
 		break;
 	    default:
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
 						"GET");
-		i_File->Close();
+		i_File.Close();
 	    }
 	}
     }
@@ -452,27 +497,24 @@ void DccXfer::Action()
 	    i_XferTotal == i_Blocksize)
 	{
 	    unsigned long verify;
-	    XferAmt = i_Socket->recv_n((void *) verify, 4);
+	    XferAmt = i_Socket->recv_n((void *) verify, 4, &onesec);
 	    merrno = errno;
-	    if (XferAmt < 0 || ntohl(verify) != i_Total)
+	    if (XferAmt <= 0 || ntohl(verify) != i_Total)
 	    {
 		switch (merrno)
 		{
+		case 0:
 		case EINTR:		// Interrupted System Call
 		case EAGAIN:		// Temporarily Unavailable
-		case EWOULDBLOCK:	// Blocking Request Would Block
 		case ENOMEM:		// Not Enough Memory
 		case ETIME:		// Request Timed Out
+		case EINPROGRESS:	// Operation In Progress
 		    break;
 		default:
 		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
 						"SEND");
-		    i_File->Close();
+		    i_File.Close();
 		}
-		return;
-	    }
-	    else if (XferAmt < 1)
-	    {
 		return;
 	    }
 	    memset(i_Transiant, 0, i_Blocksize);
@@ -482,39 +524,41 @@ void DccXfer::Action()
 	    {
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
 					"SEND", i_Total);
-		i_File->Close();
+		i_File.Close();
 		return;
 	    }
 	}
 	if (i_Transiant[0] == 0 && i_Total < i_Filesize)
 	{
 	    if (i_Total + i_Blocksize > i_Filesize)
-		i_File->Read(i_Transiant, i_Filesize - i_Total);
+		i_File.Read(i_Transiant, i_Filesize - i_Total);
 	    else
-		i_File->Read(i_Transiant, i_Blocksize);
+		i_File.Read(i_Transiant, i_Blocksize);
 	}
 	XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
-			strlen(i_Transiant) - i_XferTotal);
+			strlen((char *) i_Transiant) - i_XferTotal,
+			&onesec);
 	merrno = errno;
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
 	    i_LastData = Now();
 	}
-	else if (XferAmt < 0)
+	else
 	{
 	    switch (merrno)
 	    {
+	    case 0:
 	    case EINTR:		// Interrupted System Call
 	    case EAGAIN:	// Temporarily Unavailable
-	    case EWOULDBLOCK:	// Blocking Request Would Block
 	    case ENOMEM:	// Not Enough Memory
 	    case ETIME:		// Request Timed Out
+	    case EINPROGRESS:	// Operation In Progress
 		break;
 	    default:
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
 						"SEND");
-		i_File->Close();
+		i_File.Close();
 	    }
 	}
     }
@@ -538,10 +582,12 @@ int DccMap::close(unsigned long in)
 int DccMap::svc(void)
 {
     NFT("DccMap::svc");
+    mThread::Attach(tt_MAIN);
 
     unsigned long WorkId;
     while (!Parent->Shutdown())
     {
+	COM(("Active Size is %d", active.size()));
 	if (!active.size())
 	{
 #ifdef WIN32
@@ -572,6 +618,7 @@ int DccMap::svc(void)
 	}
 	active.push(WorkId);
     }
+    mThread::Detach(tt_MAIN);
 }
 
 vector<unsigned long> DccMap::GetList(mstring in)
@@ -595,8 +642,8 @@ unsigned long DccMap::Connect(ACE_INET_Addr address,
     FT("DccMap::Connect", ("(ACE_INET_Addr) address", mynick,
 			source, filename, filesize, blocksize));
     ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
-    ACE_SOCK_Connector tmp((ACE_SOCK_Stream &) *DCC_SOCK, (ACE_Addr &) address,
-			&ACE_Time_Value(Parent->files.Timeout()));
+    ACE_Time_Value tv(Parent->files.Timeout());
+    ACE_SOCK_Connector tmp((ACE_SOCK_Stream &) *DCC_SOCK, (ACE_Addr &) address, &tv);
     if (errno != ETIME)
     {
 	unsigned long WorkId;
@@ -604,8 +651,9 @@ unsigned long DccMap::Connect(ACE_INET_Addr address,
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, source,
-			mynick, filename, filesize, blocksize);
+		DccXfer xfer(WorkId, DCC_SOCK, mynick,
+			source, filename, filesize, blocksize);
+		xfers[WorkId] = xfer;
 		active.push(WorkId);
 		RET(WorkId);
 	    }
@@ -625,9 +673,9 @@ unsigned long DccMap::Accept(unsigned short port, mstring mynick,
     FT("DccMap::Accept", (port, mynick, source, (int) filetype, filenum));
     ACE_INET_Addr local(port, Parent->LocalHost());
     ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
+    ACE_Time_Value tv(Parent->files.Timeout());
     ACE_SOCK_Acceptor tmp(local);
-    tmp.accept((ACE_SOCK_Stream &) *DCC_SOCK,
-    	NULL, &ACE_Time_Value(Parent->files.Timeout()));
+    tmp.accept((ACE_SOCK_Stream &) *DCC_SOCK, NULL, &tv);
     if (errno != ETIME)
     {
 	unsigned long WorkId;
@@ -635,8 +683,8 @@ unsigned long DccMap::Accept(unsigned short port, mstring mynick,
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, source,
-			mynick, filetype, filenum);
+		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, mynick,
+			source, filetype, filenum);
 		active.push(WorkId);
 		RET(WorkId);
 	    }

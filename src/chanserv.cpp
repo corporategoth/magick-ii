@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.151  2000/03/24 15:35:17  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.150  2000/03/19 08:50:53  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -3916,7 +3922,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 	}
     }
 
-    ::send(mynick, source, Parent->getMessage(source, "LIST/NICK_LIST"),
+    ::send(mynick, source, Parent->getMessage(source, "LIST/CHAN_LIST"),
 					mask.c_str());
     map<mstring, Chan_Stored_t>::iterator iter;
 

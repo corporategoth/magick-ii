@@ -28,6 +28,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.207  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.206  2000/03/23 10:22:25  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -123,6 +129,15 @@ Magick::Magick(int inargc, char **inargv)
     i_auto = false;
     loggertask = new LoggerTask;
     loggertask->open();
+}
+
+Magick::~Magick()
+{
+    if (loggertask != NULL)
+    {
+	loggertask->close(0);
+	delete loggertask;
+    }
 }
 
 int Magick::Start()
@@ -255,6 +270,7 @@ int Magick::Start()
     // Can only open these after fork if we want then to live
     loggertask = new LoggerTask;
     loggertask->open();
+
     events = new EventTask;
     events->open();
     dcc = new DccMap;
@@ -375,13 +391,13 @@ int Magick::Start()
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
     i_localhost = localaddr.get_ip_address();
     if (server.proto.Protoctl() != "")
-	server.raw(Parent->server.proto.Protoctl());
+	server.raw(server.proto.Protoctl());
     server.raw("PASS " + startup.Server(tmp).second);
     tmp = "";
     tmp.Format(server.proto.Server().c_str(),
 	    startup.Server_Name().c_str(), 1,
 	    startup.Server_Desc().c_str());
-    Parent->server.raw(tmp);
+    server.raw(tmp);
     i_connected = true;
         
     AUTO(true); // Activate events from here.
@@ -2025,12 +2041,11 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case 0:		// this is here to show up clashes for badly defined signal constants
 	break;
     case SIGINT:	// CTRL-C, Background.
-	Parent->Shutdown(true);	// Temp, we just kill on CTRL-C
-	RET(-1);
+	//fork();
 	break;
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
-	Parent->Shutdown(true);	// Temp, we just kill on CTRL-C
+	Parent->save_databases();
 	break;
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
@@ -2039,6 +2054,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
     case SIGQUIT:	// Terminal dead, Background.
+	//fork();
 	break;
 #endif
     case SIGSEGV:	// Segfault, validate all storage.
@@ -2047,6 +2063,8 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	if(((time_t) LastSEGV != 0) && ((time_t) (Now() - LastSEGV) < 5))
 	{
 	    CP(("Got second sigsegv call, giving magick the boot"));
+	    Parent->Shutdown(true);
+	    Parent->Die();
 	    RET(-1);
 	}
 	else
@@ -2056,7 +2074,10 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	}
 	break;
 #ifdef SIGBUS
-    case SIGBUS:	// Ignore
+    case SIGBUS:	// BUS error (fatal)
+	Parent->Shutdown(true);
+	Parent->Die();
+	RET(-1);
 	break;
 #endif
 #if defined(SIGHUP) && (SIGHUP != 0)
@@ -2064,7 +2085,8 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
-	Parent->Shutdown(true);	// We've gotta kill her captain, she's breaking up.
+	Parent->Shutdown(true);
+	Parent->Die();
 	RET(-1);
 	break;
 #ifdef SIGTRAP
@@ -2073,6 +2095,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
 #ifdef SIGIOT
     case SIGIOT:	// abort(), exit immediately!
+	Parent->Shutdown(true);
+	Parent->Die();
+	RET(-1);
 	break;
 #endif
     case SIGFPE:	// Retry last call
@@ -2110,7 +2135,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     default:		// Everything else.
-	;//ignore (todo log that we got it and we're ignoring it)
+	break;//ignore (todo log that we got it and we're ignoring it)
     }
     RET(0);
 }
@@ -2148,15 +2173,6 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
     }
 }
 */
-
-Magick::~Magick()
-{
-    if (loggertask != NULL)
-    {
-	loggertask->close(0);
-	delete loggertask;
-    }
-}
 
 bool Magick::startup_t::IsServer(mstring server)
 {

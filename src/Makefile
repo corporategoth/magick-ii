@@ -12,7 +12,7 @@ OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) base.$(OBJ) chanserv.$(OBJ) \
        operserv.$(OBJ) server.$(OBJ) servmsg.$(OBJ) textfile.$(OBJ) \
        trace.$(OBJ) utils.$(OBJ) variant.$(OBJ)
 
-SUBDIRS=antlr des
+SUBDIRS=antlr des expat sxp
 
 OLDPWD=$(TOPDIR)/src
 all: SUBS RMLIB $(LIBNAME)

@@ -24,6 +24,12 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2000/03/24 15:35:17  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.113  2000/03/23 10:22:24  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -242,6 +248,7 @@ public:
 
 	// Current STATES, and switching between them.
 	Magick(int inargc, char **inargv);
+	~Magick();
 	int Start();
 	mDateTime ResetTime()	{ return i_ResetTime; }
 	unsigned int Level()	{ return i_level; }
@@ -268,7 +275,6 @@ public:
 	void Die()		{ ACE_Reactor::instance()->end_event_loop(); }
 	void Shutdown(bool in)	{ i_shutdown = in; }
 	bool Shutdown()		{ return i_shutdown; }
-	 ~Magick();
 
 	// Streams, etc
 	bool Reconnect()	    { return i_reconnect; }

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/03/24 15:35:18  prez
+** Fixed establishment of DCC transfers, and some other misc stuff
+** (eg. small bug in trace, etc).  Still will not send or receive
+** any data through DCC tho (will time out, but not receive data,
+** error 14 - "Bad Access" -- to be investigated).
+**
 ** Revision 1.68  2000/03/24 12:53:05  prez
 ** FileSystem Logging
 **
@@ -308,7 +314,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 	}
 */
     if (fileattach)
-	send(service, nick, Parent->getMessage(nick, "DCC/NOCONNEC"));
+	send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "SEND");
     else
 	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
     init();
@@ -4667,15 +4673,15 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_set_Picture", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
-    if (params.WordCount(" ") < 3)
+    if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
 				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
-    if (params.WordCount(" ") > 1 &&
-	params.ExtractWord(2, " ").CmpNoCase("NONE")==0)
+    if (params.WordCount(" ") > 2 &&
+	params.ExtractWord(3, " ").CmpNoCase("NONE")==0)
     {
 	Parent->nickserv.stored[source.LowerCase()].GotPic(0u);
     }
