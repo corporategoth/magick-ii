@@ -28,7 +28,6 @@ Magick::Magick(int inargc, char **inargv)
     FT("Magick::Magick", (inargc, "(char **) inargv"));
     services_dir=".";
     config_file="magick.ini";
-    lastmsgmax=256;
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
 
@@ -134,8 +133,6 @@ int Magick::Start()
     if(logfile!=NULL)
 	fclose(logfile);
 
-    if(outlet_on==true)
-	s_Outlet.Format("%s%d",services_prefix.c_str(),services_level);
     //open_log();
 
 #if 0
@@ -158,7 +155,7 @@ int Magick::Start()
 #endif
 #endif
     wxFile pidfile;
-    pidfile.Create(pid_filename,true);
+    pidfile.Create(Files_PIDFILE,true);
     if(pidfile.IsOpened())
     {
 	mstring dummystring;
@@ -167,9 +164,7 @@ int Magick::Start()
 	pidfile.Close();
     }
     /*else
-	log_perror ("Warning: cannot write to PID file %s", pid_filename);*/
-
-    //write_log ("All systems nominal");
+	log_perror ("Warning: cannot write to PID file %s", Files_PIDFILE);*/
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
@@ -233,9 +228,9 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
 #endif
 
-    if(nickserv.on==true)
+    if(strlen(Services_NickServ))
 	nickserv.init();
-    if(chanserv.on==true)
+    if(strlen(Services_ChanServ))
 	chanserv.init();
 
     // etc.
@@ -254,7 +249,7 @@ int Magick::Start()
     // to the irc server and sets up the socket handler that receives
     // incoming data and pushes it out to the appropriate service.
 
-    ACE_INET_Addr addr(remote_port,remote_server);
+    ACE_INET_Addr addr(Startup_REMOTE_PORT,Startup_REMOTE_SERVER);
     IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
     ircsvchandler=new IrcSvcHandler;
     if(server.connect(ircsvchandler,addr)==-1)
@@ -314,6 +309,8 @@ mstring Magick::getMessage(const mstring & name)
 void Magick::dump_help(mstring & progname)
 {
     FT("Magick::dump_help", (progname));
+
+    // This needs to be re-written.
     cout<<"Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King.\n"
 	<<"    E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet,Prez@Effnet,Prez@DarkerNet\n"
 	<<"    E-mail: <ungod@magick.tm>   IRC: Notagod@Effnet,Ungod@DarkerNet\n"
@@ -363,22 +360,6 @@ void Magick::LoadInternalMessages()
 #include "language.h"
     int i;
     remove("tmplang.lng");
-
-    /* Why not just:
-    {
-    	ofstream out("tmplang.lng");
-    	for (i=0;i<def_langent;i++, def_lang++)
-	    out << def_lang[i] << endl;
-    }
-    No memory allocation, and it closes itself :)
-    You need a wxFileOutputStream for a strait string -> file write?
-    Also -- why cant we go string away -> parser (no tmp file!) */
-
-    /* back to prez: we need a temp file because the parser uses a file
-    to read from, if you wanna rewrite it go ahead. wxFileOutputStream 
-    and not ofstream because ofstream will mean linking in more 
-    unnecessary code we have our streams code in the wxStream classes, 
-    why use unnecessary	extra overhead?*/
 
     wxFileOutputStream *fostream=new wxFileOutputStream("tmplang.lng");
     for(i=0;i<def_langent;i++)
@@ -469,9 +450,9 @@ int Magick::doparamparse()
 			if(atoi(argv[i].After(':').c_str())<0)
 			    cerr<<"port must be a positive number"<<endl;
 			else
-			    remote_port=atoi(argv[i].After(':').c_str());
+			    Startup_REMOTE_PORT=atoi(argv[i].After(':').c_str());
 		    }
-		    remote_server=argv[i].Before(':');
+		    Startup_REMOTE_SERVER=argv[i].Before(':');
 		}
 	    }
 	    else if(argv[i]=="-name")
@@ -483,7 +464,7 @@ int Magick::doparamparse()
 		    cerr<<temp<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		server_name=argv[i];
+		Startup_SERVER_NAME=argv[i];
 	    }
 	    else if(argv[i]=="-desc")
 	    {
@@ -494,7 +475,7 @@ int Magick::doparamparse()
 		    cerr<<temp<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		server_desc=argv[i];
+		Startup_SERVER_DESC=argv[i];
 	    }
 	    else if(argv[i]=="-user")
 	    {
@@ -505,7 +486,7 @@ int Magick::doparamparse()
 		    cerr<<temp<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		services_user=argv[i];
+		Startup_SERVICES_USER=argv[i];
 	    }
 	    else if(argv[i]=="-host")
 	    {
@@ -516,18 +497,7 @@ int Magick::doparamparse()
 		    cerr<<temp<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		services_host=argv[i];
-	    }
-	    else if(argv[i]=="-prefix")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-prefix");
-		    cerr<<temp<<endl;
-		    RET(MAGICK_RET_ERROR);
-		}
-		services_prefix=argv[i];
+		Startup_SERVICES_HOST=argv[i];
 	    }
 	    else if(argv[i]=="-dir")
 	    {
@@ -560,7 +530,7 @@ int Magick::doparamparse()
 		    cerr<<temp<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		log_filename=argv[i];
+		Files_LOGFILE=argv[i];
 	    }
 	    else if(argv[i]=="-debug")
 		debug=true;
@@ -580,8 +550,10 @@ int Magick::doparamparse()
 		    cerr<<"-relink"<<" parameter must be positive"<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		server_relink=atoi(argv[i].c_str());
+		Config_SERVER_RELINK=atoi(argv[i].c_str());
 	    }
+	    else if(argv[i]=="-norelink")
+		Config_SERVER_RELINK=-1;
 	    else if(argv[i]=="-level")
 	    {
 		i++;
@@ -596,26 +568,24 @@ int Magick::doparamparse()
 		    cerr<<"-level"<<" parameter must be positive"<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		services_level=atoi(argv[i].c_str());
+		Startup_LEVEL=atoi(argv[i].c_str());
 	    }
-	    else if(argv[i]=="-offset")
+	    else if(argv[i]=="-gmt")
 	    {
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-offset");
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-gmt");
 		    cerr<<temp<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		if(abs(atoi(argv[i].c_str()))>24)
+		if(abs(atoi(argv[i].c_str()))>12)
 		{
-		    cerr<<"-offset"<<" must be between -24 and 24"<<endl;
+		    cerr<<"-offset"<<" must be between -12 and 12"<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		tz_offset=atoi(argv[i].c_str());
+		Startup_GMT=atoi(argv[i].c_str());
 	    }
-	    else if(argv[i]=="-norelink")
-		server_relink=-1;
 	    else if(argv[i]=="-update")
 	    {
 		i++;
@@ -630,23 +600,7 @@ int Magick::doparamparse()
 		    cerr<<"-update"<<": number of seconds must be positive"<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
-		update_timeout=atoi(argv[i].c_str());
-	    }
-	    else if(argv[i]=="-ping")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    temp.Format(getMessage("ERR_REQ_PARAM"),"-ping");
-		    cerr<<temp<<endl;
-		    RET(MAGICK_RET_ERROR);
-		}
-		if(atoi(argv[i].c_str())<0)
-		{
-		    cerr<<"-ping"<<": number of seconds must be positive"<<endl;
-		    RET(MAGICK_RET_ERROR);
-		}
-		ping_frequency=atoi(argv[i].c_str());
+		Config_CYCLETIME=atoi(argv[i].c_str());
 	    }
 	    else
 	    {
@@ -668,51 +622,40 @@ bool Magick::check_config()
 {
     NFT("Magick::check_config");
     // change these later when the appropriate classes are set up
-    if(operserv_on==false)
+    if(!strlen(Services_OperServ))
     {
-	globalnoticer_on=false;
-	outlet_on=false;
-	akill_on=false;
-	clones_on=false;
+	Services_FLOOD=false;
+	Services_AKILL=false;
+	Services_OPERDENY=false;
     }
-    if(clones_allowed<1)
-	clones_on=false;
-    if (services_level < 1)
+    if (Startup_LEVEL < 1)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set SERVICES_LEVEL < 1"<<endl;
+        cerr<<"CONFIG: Cannot set [Startup] LEVEL < 1"<<endl;
         RET(false);
     }
-    if (tz_offset >= 24 || tz_offset <= -24)
+    if (Startup_GMT >= 12 || Startup_GMT <= -12)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: TZ_OFFSET must fall between -24 and 24."<<endl;
+        cerr<<"CONFIG: [Startup] GMT must fall between -12 and 12."<<endl;
         RET(false);
     }
-    if (update_timeout < 30)
+    if (Config_CYCLETIME < 30)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set UPDATE_TIMEOUT < 30."<<endl;
+        cerr<<"CONFIG: Cannot set [Config] CYCLETIME < 30."<<endl;
         RET(false);
     }
-    if (read_timeout < 1)
+    if (Startup_LAGTIME < 1)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set READ_TIMEOUT < 1."<<endl;
+        cerr<<"CONFIG: Cannot set Startup_LAGTIME < 1."<<endl;
         RET(false);
     }
-    if (passfail_max < 1)
+    if (NickServ_PASSFAIL < 1)
     {
 	// change this to the logging mechanism
-        cerr<<"CONFIG: Cannot set PASSFAIL_MAX < 1."<<endl;
-        RET(false);
-    }
-    if (flood_messages > lastmsgmax)
-    {
-	// change this to the logging mechanism
-	mstring temp;
-	temp.Format("CONFIG: Cannot set FLOOD_MESSAGES > %d.",lastmsgmax);
-        cerr<<temp<<endl;
+        cerr<<"CONFIG: Cannot set [NickServ] PASSFAIL < 1."<<endl;
         RET(false);
     }
     RET(true);
@@ -728,92 +671,142 @@ void Magick::get_config_values()
 	return;
     }
     wxFileConfig& in=*MagickIni;
+
+    // Groups ...
     mstring ts_Startup=mstring("Startup/");
     mstring ts_Services=mstring("Services/");
     mstring ts_Files=mstring("Files/");
     mstring ts_Config=mstring("Config/");
-    mstring ts_Chanserv=mstring("Chanserv/");
-    mstring ts_Nickserv=mstring("Nickserv/");
-    mstring ts_Memoserv=mstring("Memoserv/");
-    mstring ts_Operserv=mstring("Operserv/");
-    mstring ts_DevNull=mstring("DevNull/");
+    mstring ts_ChanServ=mstring("NickServ/");
+    mstring ts_NickServ=mstring("ChanServ/");
+    mstring ts_MemoServ=mstring("MemoServ/");
+    mstring ts_OperServ=mstring("OperServ/");
+    mstring ts_CommServ=mstring("CommServ/");
+    mstring ts_ServMsg=mstring("ServMsg/");
 
-    in.Read(ts_Startup+"Remote_Server",&remote_server,"127.0.0.1");
-    in.Read(ts_Startup+"Remote_Port",&remote_port,9666);
-    in.Read(ts_Startup+"Password",&password,"");
-    in.Read(ts_Startup+"Server_Name",&server_name,"hell.darker.net");
-    in.Read(ts_Startup+"Server_Desc",&server_desc,"DarkerNet's IRC Services");
-    in.Read(ts_Startup+"Services_User",&services_user,"reaper");
-    in.Read(ts_Startup+"Services_Host",&services_host,"darker.net");
-    in.Read(ts_Startup+"LEVEL",&services_level,1);
-    in.Read(ts_Startup+"TZ_Offset",&tz_offset,0);
-    in.Read(ts_Startup+"Stop",&i_shutdown);
+    in.Read(ts_Startup+"REMOTE_SERVER",&Startup_REMOTE_SERVER,"127.0.0.1");
+    in.Read(ts_Startup+"REMOTE_PORT",&Startup_REMOTE_PORT,"9666");
+    in.Read(ts_Startup+"PASSWORD",&Startup_PASSWORD,"");
+    in.Read(ts_Startup+"SERVER_NAME",&Startup_SERVER_NAME,"services.magick.tm");
+    in.Read(ts_Startup+"SERVER_DESC",&Startup_SERVER_DESC,"Magick IRC Services");
+    in.Read(ts_Startup+"SERVICES_USER",&Startup_SERVICES_USER,"services");
+    in.Read(ts_Startup+"SERVICES_HOST",&Startup_SERVICES_HOST,"magick.tm");
+    in.Read(ts_Startup+"LEVEL",&Startup_LEVEL,1);
+    in.Read(ts_Startup+"LAGTIME",&Startup_LAGTIME,10);
+    in.Read(ts_Startup+"DEADTIME",&Startup_DEADTIME,30);
+    in.Read(ts_Startup+"GMT",&Startup_GMT,+10.0);
+    in.Read(ts_Startup+"STOP",&Startup_STOP,true);
 
-    in.Read(ts_Services+"Nickserv",&nickserv.on,true);
-    in.Read(ts_Services+"Chanserv",&chanserv.on,true);
-    //in.Read(ts_Services+"Helpserv",&helpserv.on,true);
-    //in.Read(ts_Services+"IrcIIHelp",&helpserv.irciihelp_on,true);
-    //in.Read(ts_Services+"Memoserv",&memoserv.on,true);
-    //in.Read(ts_Services+"Memos",&memoserv.memos_on,true);
-    //in.Read(ts_Services+"News",&newsserv.news_on,true);
-    //in.Read(ts_Services+"DevNull",&devnull.on,true);
-    //in.Read(ts_Services+"Operserv",&operserv.on,true);
-    //in.Read(ts_Services+"Outlet",&devnull.outlet_on,true);
-    in.Read(ts_Services+"AKill",&nickserv.akill_on,true);
-    in.Read(ts_Services+"Clones",&nickserv.clones_on,true);
-    //in.Read(ts_Services+"GlobalNoticer",&operserv.global_noticer_on,true);
-    in.Read(ts_Services+"Show_Sync",&show_sync,false);
-    in.Read(ts_Services+"Nickserv_Name",&nickserv.name,"NickServ");
-    in.Read(ts_Services+"Chanserv_Name",&chanserv.name,"ChanServ");
-    //in.Read(ts_Services+"Operserv_Name",&operserv.name,"OperServ");
-    //in.Read(ts_Services+"Memoserv_Name",&memoserv.name,"MemoServ");
-    //in.Read(ts_Services+"Helpserv_Name",&helpserv.name,"HelpServ");
-    //in.Read(ts_Services+"GlobalNoticer_Name",&operserv.global_noticer_name,"Death");
-    //in.Read(ts_Services+"DevNull_Name",&devnull.name,"DevNull");
-    //in.Read(ts_Services+"IrcIIHelp_Name",&helpserv.irciihelp_name,"IrcIIHelp");
-    in.Read(ts_Services+"Services_Prefix",&services_prefix,"Magick-"); 
+    in.Read(ts_Services+"NickServ",&Services_NickServ,"NickServ");
+    in.Read(ts_Services+"NickServ_Name",&Services_NickServ_Name,"Nickname Service");
+    in.Read(ts_Services+"ChanServ",&Services_ChanServ,"ChanServ");
+    in.Read(ts_Services+"ChanServ_Name",&Services_ChanServ_Name,"Channel Service");
+    in.Read(ts_Services+"MemoServ",&Services_MemoServ,"MemoServ");
+    in.Read(ts_Services+"MemoServ_Name",&Services_MemoServ_Name,"Memo/News Service");
+    in.Read(ts_Services+"MEMO",&Services_MEMO,true);
+    in.Read(ts_Services+"NEWS",&Services_NEWS,true);
+    in.Read(ts_Services+"OperServ",&Services_OperServ,"OperServ");
+    in.Read(ts_Services+"OperServ_Name",&Services_OperServ_Name,"Operator Service");
+    in.Read(ts_Services+"FLOOD",&Services_FLOOD,true);
+    in.Read(ts_Services+"AKILL",&Services_AKILL,true);
+    in.Read(ts_Services+"OPERDENY",&Services_OPERDENY,true);
+    in.Read(ts_Services+"CommServ",&Services_CommServ,"CommServ");
+    in.Read(ts_Services+"CommServ_Name",&Services_CommServ_Name,"Committee Service");
+    in.Read(ts_Services+"ServMsg",&Services_ServMsg,"GlobalMsg DevNull");
+    in.Read(ts_Services+"ServMsg_Name",&Services_ServMsg_Name,"Magick <--> User");
+    in.Read(ts_Services+"SHOWSYNC",&Services_SHOWSYNC,true);
 
-    in.Read(ts_Files+"Log_Filename",&log_filename,"magick.log");
-    in.Read(ts_Files+"MOTD_Filename",&motd_filename,"magick.motd");
-    in.Read(ts_Files+"Nickserv_DB",&nickserv.db_filename,"nick.db");
-    in.Read(ts_Files+"Chanserv_DB",&chanserv.db_filename,"chan.db");
-    //in.Read(ts_Files+"Memoserv_DB",&memoserv.memodb_filename,"memo.db");
-    //in.Read(ts_Files+"Newsserv_DB",&memoserv.newsdb_filename,"news.db");
-    //in.Read(ts_Files+"AKill_DB",&nickserv.akilldb_filename,"akill.db");
-    //in.Read(ts_Files+"Clone_DB",&nickserv.clonedb_filename,"clone.db");
-    //in.Read(ts_Files+"SOP_DB",&operserv.db_filename,"sop.db");
-    //in.Read(ts_Files+"Message_DB",&memoserv.mesgdb_filename,"message.db");
-    in.Read(ts_Files+"Pid_File",&pid_filename,"magick.pid");
-    //in.Read(ts_Files+"Helpserv_File"+&helpserv.filename,"magick.help");.
+    in.Read(ts_Files+"PIDFILE",&Files_PIDFILE,"magick.pid");
+    in.Read(ts_Files+"LOGFILE",&Files_LOGFILE,"magick.log");
+    in.Read(ts_Files+"MOTDFILE",&Files_MOTDFILE,"magick.motd");
+    in.Read(ts_Files+"LANGUAGE",&Files_LANGUAGE,"english");
+    in.Read(ts_Files+"COMMANDS",&Files_COMMANDS,"default");
+    in.Read(ts_Files+"LINK_DB",&Files_LINK_DB,"link.db");
+    in.Read(ts_Files+"NICK_DB",&Files_NICK_DB,"nick.db");
+    in.Read(ts_Files+"CHAN_DB",&Files_CHAN_DB,"chan.db");
+    in.Read(ts_Files+"MEMO_DB",&Files_MEMO_DB,"memo.db");
+    in.Read(ts_Files+"NEWS_DB",&Files_NEWS_DB,"news.db");
+    in.Read(ts_Files+"AKILL_DB",&Files_AKILL_DB,"akill.db");
+    in.Read(ts_Files+"IGNORE_DB",&Files_IGNORE_DB,"ignore.db");
+    in.Read(ts_Files+"CLONE_DB",&Files_CLONE_DB,"clone.db");
+    in.Read(ts_Files+"COMM_DB",&Files_COMM_DB,"comm.db");
+    in.Read(ts_Files+"MSGS_DB",&Files_MSGS_DB,"msgs.db");
 
-    in.Read(ts_Config+"Override_Level",&override_level,2);
-    in.Read(ts_Config+"Server_Relink",&server_relink,5);
-    in.Read(ts_Config+"Update_Timeout",&update_timeout,300);
-    in.Read(ts_Config+"Ping_Frequency",&ping_frequency,30);
-    in.Read(ts_Config+"Read_Timeout",&read_timeout,10);
-    in.Read(ts_Config+"StarThresh",&StarThresh,4);
+    in.Read(ts_Config+"SERVER_RELINK",&Config_SERVER_RELINK,5);
+    in.Read(ts_Config+"CYCLETIME",&Config_CYCLETIME,300);
+    in.Read(ts_Config+"PING_FREQUENCY",&Config_PING_FREQUENCY,30);
+    in.Read(ts_Config+"STARTHRESH",&Config_STARTHRESH, 4);
 
-    in.Read(ts_Chanserv+"Channel_Expire",&chanserv.expire,4);
-    // do we need the below anymore?
-    in.Read(ts_Chanserv+"AKick_Max",&chanserv.akick_max,32);
-    in.Read(ts_Chanserv+"Def_AKick_Reason",&chanserv.def_akick_reason,"You have been banned from the channel");
+    in.Read(ts_NickServ+"EXPIRE",&NickServ_EXPIRE,28);
+    in.Read(ts_NickServ+"RELEASE",&NickServ_RELEASE,60);
+    in.Read(ts_NickServ+"PASSFAIL",&NickServ_PASSFAIL,5);
+    in.Read(ts_NickServ+"DEF_KILL",&NickServ_DEF_KILL,true);
+    in.Read(ts_NickServ+"LCK_KILL",&NickServ_LCK_KILL,false);
+    in.Read(ts_NickServ+"DEF_PRIVMSG",&NickServ_DEF_PRIVMSG,false);
+    in.Read(ts_NickServ+"LCK_PRIVMSG",&NickServ_LCK_PRIVMSG,false);
+    in.Read(ts_NickServ+"DEF_PRIVATE",&NickServ_DEF_PRIVATE,false);
+    in.Read(ts_NickServ+"LCK_PRIVATE",&NickServ_LCK_PRIVATE,false);
+    in.Read(ts_NickServ+"DEF_SECURE",&NickServ_DEF_SECURE,false);
+    in.Read(ts_NickServ+"LCK_SECURE",&NickServ_LCK_SECURE,false);
 
-    in.Read(ts_Nickserv+"Nick_Expire",&nickserv.nick_expire,28);
-    in.Read(ts_Nickserv+"Release_Timeout",&nickserv.release_timeout,60);
-    in.Read(ts_Nickserv+"Wait_Collide",&nickserv.wait_collide,0);
-    in.Read(ts_Nickserv+"Passfail_Max",&nickserv.passfail_max,5);
+    in.Read(ts_ChanServ+"EXPIRE",&ChanServ_EXPIRE,14);
+    in.Read(ts_ChanServ+"DEF_AKICK",&ChanServ_DEF_AKICK,"You have been banned from channel");
+    in.Read(ts_ChanServ+"CHANKEEP",&ChanServ_CHANKEEP,15);
+    in.Read(ts_ChanServ+"DEF_MLOCK",&ChanServ_DEF_MLOCK,"+nt");
+    in.Read(ts_ChanServ+"LCK_MLOCK",&ChanServ_LCK_MLOCK,"+");
+    in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&ChanServ_DEF_KEEPTOPIC,true);
+    in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&ChanServ_LCK_KEEPTOPIC,false);
+    in.Read(ts_ChanServ+"DEF_TOPICLOCK",&ChanServ_DEF_TOPICLOCK,false);
+    in.Read(ts_ChanServ+"LCK_TOPICLOCK",&ChanServ_LCK_TOPICLOCK,false);
+    in.Read(ts_ChanServ+"DEF_PRIVATE",&ChanServ_DEF_PRIVATE,false);
+    in.Read(ts_ChanServ+"LCK_PRIVATE",&ChanServ_LCK_PRIVATE,false);
+    in.Read(ts_ChanServ+"DEF_SECUREOPS",&ChanServ_DEF_SECUREOPS,false);
+    in.Read(ts_ChanServ+"LCK_SECUREOPS",&ChanServ_LCK_SECUREOPS,false);
+    in.Read(ts_ChanServ+"DEF_SECURE",&ChanServ_DEF_SECURE,false);
+    in.Read(ts_ChanServ+"LCK_SECURE",&ChanServ_LCK_SECURE,false);
+    in.Read(ts_ChanServ+"DEF_RESTRICTED",&ChanServ_DEF_RESTRICTED,false);
+    in.Read(ts_ChanServ+"LCK_RESTRICTED",&ChanServ_LCK_RESTRICTED,false);
+    in.Read(ts_ChanServ+"DEF_JOIN",&ChanServ_DEF_JOIN,false);
+    in.Read(ts_ChanServ+"LCK_JOIN",&ChanServ_LCK_JOIN,false);
+    in.Read(ts_ChanServ+"DEF_REVENGE",&ChanServ_DEF_REVENGE,"NONE");
+    in.Read(ts_ChanServ+"LCK_REVENGE",&ChanServ_LCK_REVENGE,false);
+    in.Read(ts_ChanServ+"LEVEL_MIN",&ChanServ_LEVEL_MIN,-1);
+    in.Read(ts_ChanServ+"LEVEL_MAX",&ChanServ_LEVEL_MAX,30);
+    in.Read(ts_ChanServ+"LVL_AUTODEOP",&ChanServ_LVL_AUTODEOP,-1);
+    in.Read(ts_ChanServ+"LVL_AUTOVOICE",&ChanServ_LVL_AUTOVOICE,5);
+    in.Read(ts_ChanServ+"LVL_AUTOOP",&ChanServ_LVL_AUTOOP,10);
+    in.Read(ts_ChanServ+"LVL_READMEMO",&ChanServ_LVL_READMEMO,0);
+    in.Read(ts_ChanServ+"LVL_WRITEMEMO",&ChanServ_LVL_WRITEMEMO,15);
+    in.Read(ts_ChanServ+"LVL_DELMEMO",&ChanServ_LVL_DELMEMO,25);
+    in.Read(ts_ChanServ+"LVL_AKICK",&ChanServ_LVL_AKICK,20);
+    in.Read(ts_ChanServ+"LVL_STARAKICK",&ChanServ_LVL_STARAKICK,25);
+    in.Read(ts_ChanServ+"LVL_UNBAN",&ChanServ_LVL_UNBAN,10);
+    in.Read(ts_ChanServ+"LVL_ACCESS",&ChanServ_LVL_ACCESS,5);
+    in.Read(ts_ChanServ+"LVL_SET",&ChanServ_LVL_SET,25);
+    in.Read(ts_ChanServ+"LVL_CMDINVITE",&ChanServ_LVL_CMDINVITE,5);
+    in.Read(ts_ChanServ+"LVL_CMDUNBAN",&ChanServ_LVL_CMDUNBAN,10);
+    in.Read(ts_ChanServ+"LVL_CMDVOICE",&ChanServ_LVL_CMDVOICE,5);
+    in.Read(ts_ChanServ+"LVL_CMDOP",&ChanServ_LVL_CMDOP,10);
+    in.Read(ts_ChanServ+"LVL_CMDCLEAR",&ChanServ_LVL_CMDCLEAR,20);
 
-    //in.Read(ts_Memoserv+"News_Expire",&memoserv.news_expire,21);
+    in.Read(ts_MemoServ+"NEWS_EXPIRE",&MemoServ_NEWS_EXPIRE,21);
 
-    //in.Read(ts_Operserv+"Services_Admin",&operserv.services_admin);
-    //in.Read(ts_Operserv+"AKill_Expire",&operserv.akill_expire,7);
-    //in.Read(ts_Operserv+"Clones_Allowed",&operserv,clones_allowed,2);
-    //in.Read(ts_Operserv+"Def_Clone_Reason",&operserv.def_clone_reason,"Exceeded maximum amount of connections from one host.");
+    in.Read(ts_OperServ+"SERVICES_ADMIN",&OperServ_SERVICES_ADMIN,"");
+    in.Read(ts_OperServ+"EXPIRE_OPER",&OperServ_EXPIRE_OPER,"1d");
+    in.Read(ts_OperServ+"EXPIRE_ADMIN",&OperServ_EXPIRE_ADMIN,"7d");
+    in.Read(ts_OperServ+"EXPIRE_SOP",&OperServ_EXPIRE_SOP,"1m");
+    in.Read(ts_OperServ+"EXPIRE_SADMIN",&OperServ_EXPIRE_SADMIN,"1y");
+    in.Read(ts_OperServ+"CLONE_LIMIT",&OperServ_CLONE_LIMIT,2);
+    in.Read(ts_OperServ+"DEF_CLONE",&OperServ_DEF_CLONE,"Maximum connections from one host exceeded");
+    in.Read(ts_OperServ+"FLOOD_TIME",&OperServ_FLOOD_TIME,10);
+    in.Read(ts_OperServ+"FLOOD_MSGS",&OperServ_FLOOD_MSGS,5);
+    in.Read(ts_OperServ+"IGNORE_TIME",&OperServ_IGNORE_TIME,20);
+    in.Read(ts_OperServ+"IGNORE_LIMIT",&OperServ_IGNORE_LIMIT,5);
+    in.Read(ts_OperServ+"IGNORE_REMOVE",&OperServ_IGNORE_REMOVE,300);
+    in.Read(ts_OperServ+"IGNORE_METHOD",&OperServ_IGNORE_METHOD,8);
 
-    //in.Read(ts_DevNull+"Flood_Messages",&devnull.flood_messages,5);
-    //in.Read(ts_DevNull+"Flood_Time",&devnull.flood_time,10);
-    //in.Read(ts_DevNull+"Ignore_Time",&devnull.ignore_time,20);
-    //in.Read(ts_DevNull+"Ignore_Offences",&devnull.ignore_offences,5);
+    in.Read(ts_CommServ+"SECURE_OPER",&CommServ_SECURE_OPER,true);
+
     CP(("%s read and loaded to live configuration.", config_file.c_str()));
 }
 

@@ -8,7 +8,7 @@ CXX=g++
 CFLAGS=-DDEBUG -O2 -pg -I/usr/local/include -I$(TOPDIR)/include
 
 # Linking flags to give the compiler
-LFLAGS=-L/usr/local/lib -lACE -lpthread -lgz
+LFLAGS=-L/usr/local/lib -lACE -lpthread -lgz -pg
 
 # What third-party libraries to include in link
 LIBS=./src/magick.a $(LIBACE) $(LIBCRYPT) $(LIBZ) ./src/bob/bob.a ./src/antlr/antlr.a ./src/des/des.a

@@ -77,6 +77,7 @@ private:
 public:
 	void shutdown(bool in);
 	bool shutdown();
+
 	// get bob to handle it.
 	void dobobhandle(const mstring& server, const mstring& command, const mstring& data);
 	// is there a bob handler there?
@@ -85,10 +86,17 @@ public:
 	void stophandling(const mstring& server, const mstring& command, const mstring& functionname);
 	// add a bob function to handle commands
 	void handle(const mstring& server, const mstring& command, const mstring& functionname);
+
 	wxFileConfig* MagickIni;
-	int runflags;
+	long runflags;
+	mstring services_dir;
+	mstring config_file;
 	int high_water_mark;
 	int low_water_mark;
+	mDateTime StartTime;
+	mstring ProgramName;
+	bool debug;
+	bool live;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
 	void get_config_values();
@@ -108,45 +116,132 @@ public:
 	Bob bob;
 	NickServ nickserv;
 
-	mDateTime StartTime;
-	// move these to the appropriate classes later
-	bool globalnoticer_on;
-	bool outlet_on;
-	bool akill_on;
-	bool clones_on;
-	bool operserv_on;
-	int clones_allowed;
-	mstring pid_filename;
-	mstring s_Outlet;
-	int lastmsgmax;
-	int flood_messages;
-	// this get's moved to nickserv
-	int passfail_max;
-	int read_timeout;
-	mstring config_file;
-	mstring services_dir;
-	mstring ProgramName;
-	int StarThresh;
-	int override_level;
-	mstring motd_filename;
-	bool show_sync;
-	mstring password;
-
-
 protected:
-	int tz_offset;
-	int services_level;
-	bool live;
-	bool debug;
-	mstring log_filename;
-	mstring services_prefix;
-	mstring services_host;
-	mstring services_user;
-	mstring server_desc;
-	mstring server_name;
-	int remote_port;
-	mstring remote_server;
 	bool i_shutdown;
+
+	// Config Values
+	mstring Startup_REMOTE_SERVER;
+	mstring Startup_REMOTE_PORT;
+	mstring Startup_PASSWORD;
+	mstring Startup_SERVER_NAME;
+	mstring Startup_SERVER_DESC;
+	mstring Startup_SERVICES_USER;
+	mstring Startup_SERVICES_HOST;
+	int Startup_LEVEL;
+	int Startup_LAGTIME;
+	int Startup_DEADTIME;
+	float Startup_GMT;
+	bool Startup_STOP;
+
+	mstring Services_NickServ;
+	mstring Services_NickServ_Name;
+	mstring Services_ChanServ;
+	mstring Services_ChanServ_Name;
+	mstring Services_MemoServ;
+	mstring Services_MemoServ_Name;
+	bool Services_MEMO;
+	bool Services_NEWS;
+	mstring Services_OperServ;
+	mstring Services_OperServ_Name;
+	bool Services_FLOOD;
+	bool Services_AKILL;
+	bool Services_OPERDENY;
+	mstring Services_CommServ;
+	mstring Services_CommServ_Name;
+	mstring Services_ServMsg;
+	mstring Services_ServMsg_Name;
+	bool Services_SHOWSYNC;
+
+	mstring Files_PIDFILE;
+	mstring Files_LOGFILE;
+	mstring Files_MOTDFILE;
+	mstring Files_LANGUAGE;
+	mstring Files_COMMANDS;
+	mstring Files_LINK_DB;
+	mstring Files_NICK_DB;
+	mstring Files_CHAN_DB;
+	mstring Files_MEMO_DB;
+	mstring Files_NEWS_DB;
+	mstring Files_AKILL_DB;
+	mstring Files_IGNORE_DB;
+	mstring Files_CLONE_DB;
+	mstring Files_COMM_DB;
+	mstring Files_MSGS_DB;
+
+	int Config_SERVER_RELINK;
+	int Config_CYCLETIME;
+	int Config_PING_FREQUENCY;
+	int Config_STARTHRESH;
+
+	int NickServ_EXPIRE;
+	int NickServ_RELEASE;
+	int NickServ_PASSFAIL;
+	bool NickServ_DEF_KILL;
+	bool NickServ_LCK_KILL;
+	bool NickServ_DEF_PRIVMSG;
+	bool NickServ_LCK_PRIVMSG;
+	bool NickServ_DEF_PRIVATE;
+	bool NickServ_LCK_PRIVATE;
+	bool NickServ_DEF_SECURE;
+	bool NickServ_LCK_SECURE;
+
+	int ChanServ_EXPIRE;
+	mstring ChanServ_DEF_AKICK;
+	int ChanServ_CHANKEEP;
+	mstring ChanServ_DEF_MLOCK;
+	mstring ChanServ_LCK_MLOCK;
+	bool ChanServ_DEF_KEEPTOPIC;
+	bool ChanServ_LCK_KEEPTOPIC;
+	bool ChanServ_DEF_TOPICLOCK;
+	bool ChanServ_LCK_TOPICLOCK;
+	bool ChanServ_DEF_PRIVATE;
+	bool ChanServ_LCK_PRIVATE;
+	bool ChanServ_DEF_SECUREOPS;
+	bool ChanServ_LCK_SECUREOPS;
+	bool ChanServ_DEF_SECURE;
+	bool ChanServ_LCK_SECURE;
+	bool ChanServ_DEF_RESTRICTED;
+	bool ChanServ_LCK_RESTRICTED;
+	bool ChanServ_DEF_JOIN;
+	bool ChanServ_LCK_JOIN;
+	bool ChanServ_DEF_REVENGE;
+	bool ChanServ_LCK_REVENGE;
+	int ChanServ_LEVEL_MIN;
+	int ChanServ_LEVEL_MAX;
+	int ChanServ_LVL_AUTODEOP;
+	int ChanServ_LVL_AUTOVOICE;
+	int ChanServ_LVL_AUTOOP;
+	int ChanServ_LVL_READMEMO;
+	int ChanServ_LVL_WRITEMEMO;
+	int ChanServ_LVL_DELMEMO;
+	int ChanServ_LVL_AKICK;
+	int ChanServ_LVL_STARAKICK;
+	int ChanServ_LVL_UNBAN;
+	int ChanServ_LVL_ACCESS;
+	int ChanServ_LVL_SET;
+	int ChanServ_LVL_CMDINVITE;
+	int ChanServ_LVL_CMDUNBAN;
+	int ChanServ_LVL_CMDVOICE;
+	int ChanServ_LVL_CMDOP;
+	int ChanServ_LVL_CMDCLEAR;
+
+	int MemoServ_NEWS_EXPIRE;
+
+	mstring OperServ_SERVICES_ADMIN;
+	mstring OperServ_EXPIRE_OPER;
+	mstring OperServ_EXPIRE_ADMIN;
+	mstring OperServ_EXPIRE_SOP;
+	mstring OperServ_EXPIRE_SADMIN;
+	int OperServ_CLONE_LIMIT;
+	mstring OperServ_DEF_CLONE;
+	int OperServ_FLOOD_TIME;
+	int OperServ_FLOOD_MSGS;
+	int OperServ_IGNORE_TIME;
+	int OperServ_IGNORE_LIMIT;
+	int OperServ_IGNORE_REMOVE;
+	int OperServ_IGNORE_METHOD;
+
+	bool CommServ_SECURE_OPER;
 };
 
 extern Magick *MagickObject;
