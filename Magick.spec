@@ -4,7 +4,7 @@ Version: 2.0
 Release: 1
 Copyright: GPL
 Group: Daemons
-Source: ftp.magick.tm/pub/Magick/beta/Magick-2.0b3.tar.gz
+Source: ftp.magick.tm/pub/Magick/beta/Magick-2.0.tar.gz
 %description
 Magick IRC Services are a program that is designed to interface
 with an Internet Relay Chat (IRC) network, and offer its users,
