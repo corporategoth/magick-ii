@@ -48,14 +48,6 @@ protected:
     static mBaseTask BaseTask;
 public:
 	void send_cmd(const mstring& source, const mstring& fmt, ...);
-#if 0
-    static map<unsigned long,mstring > Buffer_Tuple;
-    static ACE_Message_Queue<ACE_MT_SYNCH> Buffer_Queue;
-    //static ACE_Singleton<Buffer_Queue, ACE_Mutex> Request_Queue;
-    // todo, create a static map of message_id's and buffer_tuple's. message_id get's put on the message_queue, 
-    // which then is used to pull the message off the queue, this looks to be the easiest way to use
-    // message_queue'ing with variable sized messages.
-#endif
     mBase(Magick *in_Parent);
     static void push_message(const mstring& message);
     static void init(Magick *in);
@@ -71,10 +63,7 @@ public:
     virtual mstring GetInternalName() const=0;
     operator mVariant() const { mVariant locvar(GetInternalName()); locvar.truevaluetype=GetInternalName(); return locvar; };
     void shutdown();
-#if 0
-    static void *thread_handler(void *owner);
-#endif
-   
+  
 };
 
 class NetworkServ : public mBase

@@ -371,19 +371,17 @@ void mBaseTask::message_i(const mstring& message)
      * time and before the other had died.  Unlikely,
      * but it CAN happen.
      */
-#if 0
     {
 	MLOCK("thread_handler", "LWM");
-	if(mBase::Buffer_Queue.message_count()<
-	    Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+Parent->low_water_mark*sizeof(unsigned long))
+	if(message_queue_.message_count()<
+	    Parent->high_water_mark*(thr_count()-2)+Parent->low_water_mark)
 	{
-	    mBase::Buffer_Queue.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
-	    mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
+	    message_queue_.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
+	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    COM(("Low water mark reached, killing thread."));
 	    shutdown();
 	}
     }
-#endif
 }
 
 void mBaseTask::shutdown()
