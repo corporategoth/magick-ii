@@ -902,7 +902,7 @@ wxDataInputStream::~wxDataInputStream()
 
 unsigned long wxDataInputStream::Read32()
 {
-  char buf[4];
+  unsigned char buf[4];
 
   Read(&buf, 4);
 
@@ -914,7 +914,7 @@ unsigned long wxDataInputStream::Read32()
 
 unsigned short wxDataInputStream::Read16()
 {
-  char buf[2];
+  unsigned char buf[2];
 
   Read(&buf, 2);
 
@@ -924,7 +924,7 @@ unsigned short wxDataInputStream::Read16()
 
 unsigned char wxDataInputStream::Read8()
 {
-  char buf;
+  unsigned char buf;
 
   Read(&buf, 1);
   return (unsigned char)buf;
@@ -938,7 +938,7 @@ double wxDataInputStream::ReadDouble()
 
 #if 0
   // the below code dun seem to be working so the above is a temporary workaround
-  char buf[10];
+  unsigned char buf[10];
 
   Read(&buf, 10);
   return ConvertFromIeeeExtended((unsigned char *)buf);
@@ -988,7 +988,7 @@ wxDataOutputStream::~wxDataOutputStream()
 
 wxOutputStream&  wxDataOutputStream::Write32(unsigned long l)
 {
-  char buf[4];
+  unsigned char buf[4];
 
   buf[0] = l & 0xff;
   buf[1] = (l >> 8) & 0xff;
@@ -999,7 +999,7 @@ wxOutputStream&  wxDataOutputStream::Write32(unsigned long l)
 
 wxOutputStream&  wxDataOutputStream::Write16(unsigned short i)
 {
-  char buf[2];
+  unsigned char buf[2];
 
   buf[0] = i & 0xff;
   buf[1] = (i >> 8) & 0xff;
@@ -1029,7 +1029,7 @@ wxOutputStream&  wxDataOutputStream::WriteDouble(double d)
 	return WriteString(tmp);
 #if 0
   // this code dun seem to be working, so the above is a temporary workaround.
-  char buf[10];
+  unsigned char buf[10];
 
   ConvertToIeeeExtended(d, (unsigned char *)buf);
   return Write(buf, 10);

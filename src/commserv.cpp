@@ -1502,12 +1502,14 @@ void CommServ::load_database(wxInputStream& in)
     FT("CommServ::load_database", ("(wxInputStream &) in"));
     size_t i, j;
     in>>i;
+    CP(("Loading COMMITTEE entries (%d) ...", i));
     Committee tmpcommitee;
     for(j=0;j<i;j++)
     {
-	COM(("I am loading committee %d of %d", j, i));
+	COM(("Loading COMMITTEE entry %d ...", j));
 	in>>tmpcommitee;
 	list[tmpcommitee.Name().UpperCase()]=tmpcommitee;
+	COM(("Entry COMMITTEE %s loaded ...", tmpcommitee.Name().c_str()));
     }
 }
 
@@ -1520,12 +1522,13 @@ void CommServ::save_database(wxOutputStream& out)
     if (IsList(SADMIN_Name())) sz--;
 
     out<<sz;
+    CP(("Saving COMMITTEE entries (%d) ...", sz));
     for(map<mstring,Committee>::iterator i=list.begin();i!=list.end();i++)
     {
-	COM(("I'm on committee %s", i->first.c_str()));
 	if (!(i->first == ALL_Name() || i->first == REGD_Name() || i->first == SADMIN_Name()))
 	{
 	    out<<i->second;
+	    COM(("Entry COMMITTEE %s saved ...", i->second.Name().c_str()));
 	}
     }
 }

@@ -1511,55 +1511,80 @@ void MemoServ::load_database(wxInputStream& in)
     FT("MemoServ::load_database", ("(wxInputStream &) in"));
     map<mstring,list<Memo_t> >::size_type i,count, i2, count2;
     in>>count;
+    CP(("Loading MEMO LIST entries (%d) ...", count));
     nick.clear();
     for(i=0;i<count;i++)
     {
+	COM(("Loading MEMO LIST entry %d ...", i));
 	mstring temp;
 	Memo_t tmpmemo;
 	in>>temp>>count2;
+	CP(("Loading MEMO entries (%d) ...", count2));
 	for(i2=0;i2<count2;i2++)
 	{
+	    COM(("Loading MEMO entry %d ...", i2));
 	    in>>tmpmemo;
 	    nick[temp].push_back(tmpmemo);
+	    COM(("Entry MEMO %d loaded ...", i2));
 	}
+	COM(("Entry MEMO LIST %s loaded ...", temp.c_str()));
     }
     in>>count;
+    CP(("Loading NEWS LIST entries (%d) ...", count));
     channel.clear();
-    for(i=0;i<count;count++)
+    for(i=0;i<count;i++)
     {
+	COM(("Loading NEWS LIST entry %d ...", i));
 	mstring temp;
 	News_t tmpnews;
 	in>>temp>>count2;
+	CP(("Loading NEWS entries (%d) ...", count2));
 	for(i2=0;i2<count2;i2++)
 	{
+	    COM(("Loading NEWS entry %d ...", i2));
 	    in>>tmpnews;
 	    channel[temp].push_back(tmpnews);
+	    COM(("Entry NEWS %d loaded ...", i2));
 	}
+	COM(("Entry NEWS LIST %s loaded ...", temp.c_str()));
     }
 }
 
 void MemoServ::save_database(wxOutputStream& out)
 {
     FT("MemoServ::save_database", ("(wxOutputStream &) out"));
+    CP(("Saving MEMO LIST entries (%d) ...", nick.size()));
     out<<nick.size();
     map<mstring,list<Memo_t> >::iterator i;
+    int cntr;
     for(i=nick.begin();i!=nick.end();i++)
     {
 	out<<i->first;
+	CP(("Saving MEMO entries (%d) ...", i->second.size()));
 	out<<i->second.size();
 	list<Memo_t>::iterator j;
-	for(j=i->second.begin();j!=i->second.end();j++)
+	for(cntr=0, j=i->second.begin();j!=i->second.end();cntr++, j++)
+	{
 	    out<<(*j);
+	    COM(("Entry MEMO %d saved ...", cntr));
+	}
+	COM(("Entry MEMO LIST %s saved ...", i->first.c_str()));
     }
+    CP(("Saving NEWS LIST entries (%d) ...", channel.size()));
     out<<channel.size();
     map<mstring,list<News_t> >::iterator i2;
     for(i2=channel.begin();i2!=channel.end();i2++)
     {
 	out<<i2->first;
+	CP(("Saving NEWS entries (%d) ...", i2->second.size()));
 	out<<i2->second.size();
 	list<News_t>::iterator j2;
-	for(j2=i2->second.begin();j2!=i2->second.end();j2++)
+	for(cntr=0, j2=i2->second.begin();j2!=i2->second.end();cntr++, j2++)
+	{
 	    out<<(*j2);
+	    COM(("Entry NEWS %d saved ...", cntr));
+	}
+	COM(("Entry NEWS LIST %s saved ...", i2->first.c_str()));
     }
 }
 

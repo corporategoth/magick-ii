@@ -5718,12 +5718,14 @@ void NickServ::save_database(wxOutputStream& out)
     FT("NickServ::save_database", ("(wxOutputStream &) out"));
 	//
 	map<mstring,Nick_Stored_t>::iterator i;
+	CP(("Saving NICK entries (%d) ...", stored.size()));
 	out<<stored.size();
         // todo call script saving hooks.
 	for(i=stored.begin();i!=stored.end();i++)
 	{
 	    out<<i->second;
 	    // todo call script saving hooks.
+	    COM(("Entry NICK %s saved ...", i->second.Name().c_str()));
 	}
 }
 
@@ -5732,12 +5734,15 @@ void NickServ::load_database(wxInputStream& in)
     FT("NickServ::load_database", ("(wxInputStream &) in"));
     map<mstring,Nick_Stored_t>::size_type i,count;
     in>>count;
+    CP(("Loading NICK entries (%d) ...", count));
     stored.clear();
     Nick_Stored_t tmpstored;
     for(i=0;i<count;i++)
     {
+	COM(("Loading NICK entry %d ...", i));
 	in>>tmpstored;
 	stored[tmpstored.Name().LowerCase()]=tmpstored;
+	COM(("Entry NICK %s loaded ...", tmpstored.Name().c_str()));
     }
 
     // Go through the map and populate 'slaves',

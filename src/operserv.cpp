@@ -2292,31 +2292,43 @@ void OperServ::load_database(wxInputStream& in)
     set<entlist_val_t<bool> >::size_type ignore_c, l;
 
     in>>clone_c;
+    CP(("Loading CLONE entries (%d) ...", clone_c));
     for (i=0; i<clone_c; i++)
     {
+	COM(("Loading CLONE entry %d ...", i));
 	in>>clone;
 	i_Clone.insert(clone);
+	COM(("Entry CLONE %s loaded ...", clone.Entry().c_str()));
     }
 
     in>>akill_c;
+    CP(("Loading AKILL entries (%d) ...", akill_c));
     for (j=0; j<akill_c; j++)
     {
+	COM(("Loading AKILL entry %d ...", j));
 	in>>akill;
 	i_Akill.insert(akill);
+	COM(("Entry AKILL %s loaded ...", akill.Entry().c_str()));
     }
 
     in>>operdeny_c;
+    CP(("Loading OPERDENY entries (%d) ...", operdeny_c));
     for (k=0; k<operdeny_c; k++)
     {
+	COM(("Loading OPERDENY entry %d ...", k));
 	in>>operdeny;
 	i_OperDeny.insert(operdeny);
+	COM(("Entry OPERDENY %s loaded ...", operdeny.Entry().c_str()));
     }
 
     in>>ignore_c;
+    CP(("Loading IGNORE entries (%d) ...", ignore_c));
     for (l=0; l<ignore_c; l++)
     {
+	COM(("Loading IGNORE entry %d ...", l));
 	in>>ignore;
 	i_Ignore.insert(ignore);
+	COM(("Entry IGNORE %s loaded ...", ignore.Entry().c_str()));
     }
 }
 
@@ -2329,23 +2341,39 @@ void OperServ::save_database(wxOutputStream& out)
     set<entlist_val_t<bool> >::iterator ignore_i;
     set<entlist_val_t<bool> >::size_type ignore_c = 0;
 
+    CP(("Saving CLONE entries (%d) ...", i_Clone.size()));
     out<<i_Clone.size();
     for (clone_i=i_Clone.begin(); clone_i!=i_Clone.end(); clone_i++)
+    {
 	out<<*clone_i;
+	COM(("Entry CLONE %s saved ...", clone_i->Entry().c_str()));
+    }
 
+    CP(("Saving AKILL entries (%d) ...", i_Akill.size()));
     out<<i_Akill.size();
     for (akill_i=i_Akill.begin(); akill_i!=i_Akill.end(); akill_i++)
+    {
 	out<<*akill_i;
+	COM(("Entry AKILL %s saved ...", akill_i->Entry().c_str()));
+    }
 
+    CP(("Saving OPERDENY entries (%d) ...", i_OperDeny.size()));
     out<<i_OperDeny.size();
     for (operdeny_i=i_OperDeny.begin(); operdeny_i!=i_OperDeny.end(); operdeny_i++)
+    {
 	out<<*operdeny_i;
+	COM(("Entry OPERDENY %s saved ...", operdeny_i->Entry().c_str()));
+    }
 
     for (ignore_i=i_Ignore.begin(); ignore_i!=i_Ignore.end(); ignore_i++)
 	if (ignore_i->Value())
 	    ignore_c++;
+    CP(("Saving IGNORE entries (%d) ...", ignore_c));
     out<<ignore_c;
     for (ignore_i=i_Ignore.begin(); ignore_i!=i_Ignore.end(); ignore_i++)
 	if (ignore_i->Value())
+	{
 	    out<<*ignore_i;
+	    COM(("Entry IGNORE %s saved ...", ignore_i->Entry().c_str()));
+	}
 }

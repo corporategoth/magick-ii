@@ -8201,12 +8201,14 @@ void ChanServ::save_database(wxOutputStream& out)
 {
     FT("ChanServ::save_database", ("(wxOutputStream &) out"));
 	map<mstring,Chan_Stored_t>::iterator i;
+	CP(("Saving CHANNEL entries (%d) ...", stored.size()));
 	out<<stored.size();
         // todo call script saving hooks.
 	for(i=stored.begin();i!=stored.end();i++)
 	{
 	    out<<i->second;
 	    // todo call script saving hooks.
+	    COM(("Entry CHANNEL %s saved ...", i->second.Name().c_str()));
 	}
 }
 
@@ -8215,10 +8217,13 @@ void ChanServ::load_database(wxInputStream& in)
     FT("ChanServ::load_database", ("(wxInputStream &) in"));
     map<mstring,Chan_Stored_t>::size_type i,j;
     in>>i;
+    CP(("Loading CHANNEL entries (%d) ...", i));
     Chan_Stored_t tmpstored;
     for(j=0;j<i;j++)
     {
+	COM(("Loading CHANNEL entry %d ...", j));
 	in>>tmpstored;
 	stored[tmpstored.Name().LowerCase()]=tmpstored;
+	COM(("Entry CHANNEL %s loaded ...", tmpstored.Name().c_str()));
     }
 }
