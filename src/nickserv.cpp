@@ -1396,7 +1396,7 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 		continue;
 
 	    // AND committee is not ALL or REGD
-	    if (iter->first == Magick::instance().commserv.ALL_Name() &&
+	    if (iter->first == Magick::instance().commserv.ALL_Name() ||
 		iter->first == Magick::instance().commserv.REGD_Name())
 		continue;
 
