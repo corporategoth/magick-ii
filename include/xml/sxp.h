@@ -24,6 +24,9 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/05/20 00:08:01  ungod
+** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
+**
 ** Revision 1.3  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -120,9 +123,6 @@ static const char *ident_sxp_h = "@(#) $Id$";
 // strcmp :-/
 #include <string.h>
 
-// errrr.... I've had too much COM lately...
-#define interface struct
-
 SXP_NS_BEGIN
 
 	// a few shortcuts
@@ -136,17 +136,19 @@ SXP_NS_BEGIN
 
 	// Interface forwards
 
-	interface IPersistObj;
-	struct Tag;
+	class IPersistObj;
+	class Tag;
 
 	template<class T>
-	interface IFilePointer {
+	class IFilePointer {
+    public:
 		inline FILE *FP() { return ((T *)this)->FP(); }
 		inline void Indent()   { ((T *)this)->Indent(); }
 	};
 
 	template<class T>
-	interface IData {
+	class IData {
+    public:
 		inline const char *Data() { return ((T *)this)->Data(); }
 	};
 
@@ -156,8 +158,9 @@ SXP_NS_BEGIN
 	// how to begin the XML document, how to write object begin/end tags
 	// and simple data elements
 	template<class T>
-	interface IOutStreamT: 
+	class IOutStreamT:
 	public IDataOutput<T> {
+    public:
 		inline void BeginXML(void) { ((T *)this)->BeginXML(); }
 
 		inline void BeginObject(Tag& t, dict& attribs) { ((T *)this)->BeginObject(t, attribs); }
@@ -177,8 +180,9 @@ SXP_NS_BEGIN
 	// the methods to read from simple data elements (like <height>187.4</height>)
 	// are stuffed here
 	template<class T>
-	interface IElementT: 
-	IDataInput<T>{
+	class IElementT:
+	public IDataInput<T>{
+    public:
 		inline const char *Name() { return ((T *)this)->Name(); }
 		inline const char *Attrib(const char *attrName)
 			{ return ((T *)this)->Attrib(attrName); }
@@ -194,7 +198,8 @@ SXP_NS_BEGIN
 	// The user classes need only this much access to the parser:
 	// a way to redirect parsing events into child element handlers
 	// and a way to stop it on error or when it doesn't need more data
-	interface IParser {
+	class IParser {
+    public:
 		virtual void ReadTo( IPersistObj *pTarget ) = 0;
 		virtual void Shutdown( void ) = 0;
 	};
@@ -257,7 +262,8 @@ SXP_NS_BEGIN
 
 	// wraps the element names ("tags") in a dual string-hash key
 	// representation
-	struct Tag {
+	class Tag {
+    public:
 		const char *ch;
 		unsigned long dw;
 		Tag(const char *name);
@@ -573,7 +579,8 @@ SXP_NS_BEGIN
 
 	// IPersistObj is implemented by the user classes;
 	// it contains both reading and writing functionality
-	interface IPersistObj {
+	class IPersistObj {
+    public:
 		// this should return the identifier used for the elements
 		// describing objects of the user class; this should be a
 		// function used also by the IPersistObj::WriteElement implementation

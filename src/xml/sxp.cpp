@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/05/20 00:08:02  ungod
+** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
+**
 ** Revision 1.5  2000/05/03 14:12:23  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -82,6 +85,7 @@ static const char *ident = "@(#)$Id$";
 **
 **
 ** ========================================================== */
+#include "datetime.h"
 #include "xml/sxp.h"
 
 SXP_NS_BEGIN

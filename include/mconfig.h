@@ -24,6 +24,9 @@ static const char *ident_config_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2000/05/20 00:08:01  ungod
+** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
+**
 ** Revision 1.1  2000/05/19 13:11:34  ungod
 ** initial checkin of the new config engine, class structure is in, but no code in it.
 **
@@ -36,6 +39,8 @@ static const char *ident_config_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
+#include "mstring.h"
+
 class ceNode;
 
 class ceNode
@@ -43,17 +48,19 @@ class ceNode
 private:
     mstring i_Name;
     map<mstring,mstring> i_keys;
-    map<mstring,ceNode> i_children;
+    map<mstring,auto_ptr<ceNode> > i_children;
 public:
     ceNode();
     ceNode(ceNode &in);
+    ~ceNode();
     ceNode& operator=(const ceNode &in);
     bool operator==(const ceNode &in)const;
     bool operator<(const ceNode &in)const;
     void SetKey(const mstring &KeyName, const mstring &Value);
     void DeleteKey(const mstring &KeyName);
     void CreateNode(const mstring &NodeName);
-    void DeleteNode(const mstring *NodeName);
+    void DeleteNode(const mstring &NodeName);
+    bool NodeExists(const mstring &NodeName);
 };
 
 class mConfigEngine
@@ -65,6 +72,8 @@ public:
     mConfigEngine();
     mConfigEngine(const mstring& FileName);
     bool LoadFile();
+    bool LoadFromString(const mstring& configstring);
+    bool LoadFromArray(vector<mstring> configarray);
     bool SaveFile();
     void Empty();
 
@@ -87,7 +96,8 @@ public:
 
     ceNode &GetNode(const mstring& NodeName);
     bool DeleteNode(const mstring& NodeName);
-    bool DeleteKey(const nstring& KeyName);
+    bool DeleteKey(const mstring& KeyName);
+    bool NodeExists(const mstring &NodeName);
 };
 
 #endif

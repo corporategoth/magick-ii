@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/05/20 00:08:01  ungod
+** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
+**
 ** Revision 1.14  2000/05/19 10:48:14  prez
 ** Finalized the DCC Sending (now uses the Action map properly)
 **
@@ -77,6 +80,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 **
 **
 ** ========================================================== */
+
+#include "datetime.h"
+#include "xml/sxp.h"
 
 unsigned short FindAvailPort();
 

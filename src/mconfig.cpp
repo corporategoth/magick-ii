@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2000/05/20 00:08:02  ungod
+** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
+**
 ** Revision 1.1  2000/05/19 13:11:34  ungod
 ** initial checkin of the new config engine, class structure is in, but no code in it.
 **
@@ -66,6 +69,7 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 
 #include "mconfig.h"
+#include "filesys.h"
 
 ceNode::ceNode()
 {
@@ -75,15 +79,19 @@ ceNode::ceNode(ceNode &in)
 {
 }
 
+ceNode::~ceNode()
+{
+}
+
 ceNode& ceNode::operator=(const ceNode &in)
 {
 }
 
-bool ceNode::operator==(const ceNode &in)
+bool ceNode::operator==(const ceNode &in)const
 {
 }
 
-bool ceNode::operator<(const ceNode &in)
+bool ceNode::operator<(const ceNode &in)const
 {
 }
 
@@ -99,7 +107,11 @@ void ceNode::CreateNode(const mstring &NodeName)
 {
 }
 
-void ceNode::DeleteNode(const mstring *NodeName)
+void ceNode::DeleteNode(const mstring &NodeName)
+{
+}
+
+bool ceNode::NodeExists(const mstring &NodeName)
 {
 }
 
@@ -124,35 +136,35 @@ void mConfigEngine::Empty()
 }
 
 
-mstring &mConfigEngine::Read(const mstring &key, const mstring Defailt="")
+mstring &mConfigEngine::Read(const mstring &key, const mstring Defailt)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default="")
+bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default=true)
+bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, int &outvar, int Default=0)
+bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int Default=0)
+bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int Default)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, long &outvar, int Default=0)
+bool mConfigEngine::Read(const mstring &key, long &outvar, int Default)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned int Default=0)
+bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned int Default)
 {
 }
 
-bool mConfigEngine::Read(const mstring &key, double &outvar, double Default=0.0)
+bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
 {
 }
 
@@ -194,8 +206,19 @@ bool mConfigEngine::DeleteNode(const mstring& NodeName)
 {
 }
 
-bool mConfigEngine::DeleteKey(const nstring& KeyName)
+bool mConfigEngine::DeleteKey(const mstring& KeyName)
 {
 }
 
+bool mConfigEngine::LoadFromString(const mstring& configstring)
+{
+}
+
+bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
+{
+}
+
+bool mConfigEngine::NodeExists(const mstring &NodeName)
+{
+}
 
