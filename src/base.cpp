@@ -88,5 +88,5 @@ void *thread_handler(void *owner)
 	    mThread::suspend();
 	}
     }
-    return NULL;
+    RET((void *) NULL);
 }
