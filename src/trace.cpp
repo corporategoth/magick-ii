@@ -1185,7 +1185,11 @@ void LOG2(ACE_Log_Priority type, const mstring & msg)
     {
 	ACE_DEBUG((type, (const ACE_TCHAR *) msg));
 	if (ACE_LOG_MSG != NULL && ACE_LOG_MSG->flags() & ACE_Log_Msg::STDERR)
+	{
 	    fprintf(stderr, "\n");
+	    if (type == LM_EMERGENCY)
+		exit(MAGICK_RET_ERROR);
+	}
     }
     ETCB();
 }
