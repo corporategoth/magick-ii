@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.174  2001/05/13 22:01:36  prez
+** Should have fixed problems with linked nicknames
+**
 ** Revision 1.173  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -3594,20 +3597,23 @@ bool Nick_Stored_t::IgnoreAdd(const mstring& in)
     FT("Nick_Stored_t::IgnoreAdd", (in));
     if (Host().empty())
     {
+	mstring target(in.LowerCase());
 	// Not stored nick
-	if (!Parent->nickserv.IsStored(in))
+	if (!Parent->nickserv.IsStored(target))
 	{
 	    RET(false);
 	}
+
+	if (!Parent->nickserv.GetStored(target).Host().empty())
+	    target = Parent->nickserv.GetStored(target).Host();
 	
-	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ignore"));
-	if (i_ignore.find(in.LowerCase())!=i_ignore.end())
+	if (IsIgnore(target))
 	{
 	    RET(false);
 	}
 
 	MCB(i_ignore.size());
-	i_ignore.insert(in.LowerCase());
+	i_ignore.insert(target);
 	MCE(i_ignore.size());
 	RET(true);
     }
@@ -3625,6 +3631,7 @@ unsigned int Nick_Stored_t::IgnoreDel(const mstring& in)
     unsigned int retval = 0;
     if (Host().empty())
     {
+	mstring target(in.LowerCase());
 	vector<mstring> chunked;
 	set<mstring>::iterator iter;
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ignore"));
@@ -3634,6 +3641,18 @@ unsigned int Nick_Stored_t::IgnoreDel(const mstring& in)
 		chunked.push_back(*iter);
 	    }
 
+	if (Parent->nickserv.IsStored(in))
+	{
+	    target = Parent->nickserv.GetStored(in).Host();
+	    if (!target.empty())
+	    {
+		for (iter=i_ignore.begin(); iter!=i_ignore.end(); iter++)
+		    if (target.Matches(*iter, true))
+		    {
+			chunked.push_back(*iter);
+		    }
+	    }
+	}
 	MCB(i_ignore.size());
 	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_ignore.erase(chunked[i].LowerCase());
@@ -3653,13 +3672,26 @@ bool Nick_Stored_t::IsIgnore(const mstring& in)
     FT("Nick_Stored_t::IsIgnore", (in));
     if (Host().empty())
     {
+	mstring target(in.LowerCase());
 	set<mstring>::iterator iter;
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ignore"));
 	for (iter=i_ignore.begin(); iter!=i_ignore.end(); iter++)
-	    if (in.Matches(*iter, true))
+	    if (target.Matches(*iter, true))
 	    {
 		RET(true);
 	    }
+	if (Parent->nickserv.IsStored(target))
+	{
+	    target = Parent->nickserv.GetStored(target).Host();
+	    if (!target.empty())
+	    {
+		for (iter=i_ignore.begin(); iter!=i_ignore.end(); iter++)
+		    if (target.Matches(*iter, true))
+		    {
+			RET(true);
+		    }
+	    }
+	}
 	RET(false);
     }
     else

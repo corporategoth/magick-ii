@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.243  2001/05/13 22:01:36  prez
+** Should have fixed problems with linked nicknames
+**
 ** Revision 1.242  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -4511,7 +4514,7 @@ bool Chan_Stored_t::Access_insert(const mstring& i_entry, const long value,
     {
 	    RET(false);
     }
-    mstring entry(i_entry);
+    mstring entry(i_entry.LowerCase());
 
     // Ensure its a stored nick if no @
     // Add *! if its not *!*@*
@@ -4523,8 +4526,9 @@ bool Chan_Stored_t::Access_insert(const mstring& i_entry, const long value,
 	}
 	else
 	{
-	    if (!Parent->nickserv.GetStored(entry).Host().empty())
-		entry = Parent->nickserv.GetStored(entry).Host();
+	    entry = Parent->nickserv.GetStored(entry).Host();
+	    if (entry.empty())
+		entry = i_entry.LowerCase();
 	}
     }
     else
@@ -4587,10 +4591,20 @@ bool Chan_Stored_t::Access_find(const mstring& entry, const bool livelook)
     {
 	// FIND exact nickname
 	for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
-	    if (iter->Entry().LowerCase() == entry.LowerCase())
+	    if (iter->Entry().IsSameAs(entry, true))
 		break;
 
-	// Not exact, try either REGEX of entry, or
+	// FIND host nickname
+	if (iter == i_Access.end() && Parent->nickserv.IsStored(entry))
+	{
+	    mstring tmp = Parent->nickserv.GetStored(entry).Host();
+	    if (!tmp.empty())
+		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+		    if (iter->Entry().IsSameAs(tmp, true))
+			break;
+	}
+
+	// Not exact or host, try either match or live lookup
 	if (iter == i_Access.end())
 	{
 	    if (entry.Contains("@"))
@@ -4735,7 +4749,7 @@ bool Chan_Stored_t::Akick_insert(const mstring& i_entry, const mstring& value,
     {
 	    RET(false);
     }
-    mstring entry(i_entry);
+    mstring entry(i_entry.LowerCase());
 
     // Ensure its a stored nick if no @
     // Add *! if its not *!*@*
@@ -4744,6 +4758,12 @@ bool Chan_Stored_t::Akick_insert(const mstring& i_entry, const mstring& value,
 	if (!Parent->nickserv.IsStored(entry))
 	{
 	    RET(false);
+	}
+	else
+	{
+	    entry = Parent->nickserv.GetStored(entry).Host();
+	    if (entry.empty())
+		entry = i_entry.LowerCase();
 	}
     }
     else
@@ -4815,11 +4835,20 @@ bool Chan_Stored_t::Akick_find(const mstring& entry, const bool livelook)
     {
 	// FIND exact nickname
 	for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
-	    if (iter->Entry().LowerCase() == entry.LowerCase())
+	    if (iter->Entry().IsSameAs(entry, true))
 		break;
 
-	// Not exact, try either REGEX of entry, or
-	// REGEX of live nickname if !Contains(@)
+	// FIND host nickname
+	if (iter == i_Akick.end() && Parent->nickserv.IsStored(entry))
+	{
+	    mstring tmp = Parent->nickserv.GetStored(entry).Host();
+	    if (!tmp.empty())
+		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
+		    if (iter->Entry().IsSameAs(tmp, true))
+			break;
+	}
+
+	// Not exact or host, try either match or live lookup
 	if (iter == i_Akick.end())
 	{
 	    if (entry.Contains("@"))
@@ -6264,8 +6293,10 @@ void ChanServ::do_Register(const mstring &mynick, const mstring &source, const m
 
     if (Parent->chanserv.IsStored(channel))
     {
-	SEND(mynick, source, "CS_STATUS/ISSTORED", (
-		    channel));
+	if (Parent->chanserv.GetStored(channel).Forbidden())
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	else
+	    SEND(mynick, source, "CS_STATUS/ISSTORED", (channel));
  	return;
     }
 
@@ -6394,23 +6425,31 @@ void ChanServ::do_Identify(const mstring &mynick, const mstring &source, const m
     }
     channel = Parent->getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Suspended())
+    if (Parent->chanserv.GetStored(channel).Forbidden())
     {
-	SEND(mynick, source, "CS_STATUS/ISSUSPENDED", (
-		channel));
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    bool wasident = Parent->nickserv.GetLive(source).IsChanIdentified(channel);
-    mstring output = Parent->nickserv.GetLive(source).ChanIdentify(channel, pass);
+    if (Parent->chanserv.GetStored(channel).Suspended())
+    {
+	SEND(mynick, source, "CS_STATUS/ISSUSPENDED", (channel));
+	return;
+    }
+
+    mstring output;
+    { RLOCK(("NickServ", "live", source.LowerCase()));
+    Nick_Live_t &nlive = Parent->nickserv.GetLive(source);
+    bool wasident = nlive.IsChanIdentified(channel);
+    output = nlive.ChanIdentify(channel, pass);
     if (!wasident &&
-	Parent->nickserv.GetLive(source).IsChanIdentified(channel))
+	nlive.IsChanIdentified(channel))
     {
 	Parent->chanserv.stats.i_Identify++;
 	LOG(LM_INFO, "CHANSERV/IDENTIFY", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		nlive.Mask(Nick_Live_t::N_U_P_H),
 		channel));
-    }
+    }}
     if (!output.empty())
 	::send(mynick, source, output);
 }
@@ -6447,15 +6486,14 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    RLOCK(("ChanServ", "stored", channel.LowerCase()));
+    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+
+    if (chan.Forbidden())
     {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (
-		channel));
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
-
-    RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
 
     SEND(mynick, source, "CS_INFO/IS", (
 		chan.Name()));
@@ -6751,6 +6789,12 @@ void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
     }
     channel = Parent->getSname(channel);
 
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     Parent->chanserv.GetStored(channel).Suspend(source, reason);
     Parent->chanserv.stats.i_Suspend++;
     SEND(mynick, source, "CS_COMMAND/SUSPENDED", (
@@ -6816,6 +6860,12 @@ void ChanServ::do_UnSuspend(const mstring &mynick, const mstring &source, const 
 	return;
     }
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.IsLive(channel))
 	Parent->server.TOPIC(mynick, mynick, channel, "",
@@ -6903,6 +6953,13 @@ void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
     }
 
     Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    channel = chan.Name();
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (!Parent->nickserv.IsStored(chan.Founder()))
     {
 	LOG(LM_CRITICAL, "ERROR/FOUNDER_NOTREGD", (
@@ -6953,10 +7010,16 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 		channel));
 	return;
     }
+    channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-    channel = Parent->getSname(channel);
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -7027,6 +7090,12 @@ void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
+
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -7120,8 +7189,14 @@ void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstri
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
@@ -7203,6 +7278,12 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
+
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -7296,8 +7377,14 @@ void ChanServ::do_DeVoice(const mstring &mynick, const mstring &source, const ms
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
@@ -7377,8 +7464,14 @@ void ChanServ::do_Topic(const mstring &mynick, const mstring &source, const mstr
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
+
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (!chan.GetAccess(source, "CMDMODE"))
     {
@@ -7435,6 +7528,12 @@ void ChanServ::do_Kick(const mstring &mynick, const mstring &source, const mstri
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
+
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (!chan.GetAccess(source, "CMDKICK"))
     {
@@ -7505,6 +7604,12 @@ void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const m
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
+
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (!chan.GetAccess(source, "SUPER"))
     {
@@ -7577,9 +7682,15 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
 		channel));
 	return;
     }
+    channel = Parent->getSname(channel);
 
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source,
-								"VIEW"))
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW"))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -7655,8 +7766,14 @@ void ChanServ::do_Invite(const mstring &mynick, const mstring &source, const mst
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
@@ -7736,6 +7853,12 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(cstored.GetAccess(source, "SUPER") ||
@@ -7812,8 +7935,7 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
+	SEND(mynick, source, "MISC/HTM", (message));
 	return;
     }}
 
@@ -7840,8 +7962,7 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	}
     }
 
-    SEND(mynick, source, "LIST/CHAN_LIST", (
-					mask));
+    SEND(mynick, source, "LIST/CHAN_LIST", (mask));
     ChanServ::live_t::iterator iter;
 
     for (iter = Parent->chanserv.LiveBegin(), i=0, count = 0;
@@ -7909,8 +8030,14 @@ void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, cons
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
@@ -7981,8 +8108,14 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
@@ -8054,8 +8187,14 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
@@ -8139,8 +8278,14 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
@@ -8236,8 +8381,14 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
@@ -8316,8 +8467,14 @@ void ChanServ::do_clear_All(const mstring &mynick, const mstring &source, const 
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
@@ -8365,17 +8522,6 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
-    channel = cstored.Name();
-
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
-    {
-	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
-	return;
-    }
-
     if (!level.IsNumber() || level.Contains("."))
     {
         NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
@@ -8392,7 +8538,24 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Level"));
+    RLOCK(("ChanServ", "stored", channel.LowerCase()));
+    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	return;
+    }
+
+    MLOCK(("ChanServ", "stored", channel.LowerCase(), "Level"));
     if (cstored.Level_find(what))
     {
 	cstored.Level_change(cstored.Level->Entry(), num, source);
@@ -8442,6 +8605,12 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
     {
@@ -8449,7 +8618,7 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Level"));
+    MLOCK(("ChanServ", "stored", channel.LowerCase(), "Level"));
     if (cstored.Level_find(what) &&
 	Parent->chanserv.LVL(what) > Parent->chanserv.Level_Min())
     {
@@ -8511,6 +8680,13 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     long myaccess = cstored.GetAccess(source);
     bool haveset = cstored.GetAccess(source, "SET");
     if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
@@ -8570,6 +8746,13 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 	return;
     }
 
+    if (!Parent->nickserv.IsStored(who))
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+		who));
+	return;
+    }
+
     who = Parent->getSname(who);
     if (Parent->nickserv.GetStored(who).Forbidden())
     {
@@ -8591,30 +8774,29 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
-    channel = cstored.Name();
-
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored.GetAccess(source, "ACCESS"))
-    {
-	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
-	return;
-    }
-
-    if (!Parent->nickserv.IsStored(who))
-    {
-	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
-		who));
-	return;
-    }
-
     if (num < Parent->chanserv.Level_Min() ||
 	num > Parent->chanserv.Level_Max())
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
 		Parent->chanserv.Level_Min(),
 		Parent->chanserv.Level_Max()));
+	return;
+    }
+
+    RLOCK(("ChanServ", "stored", channel.LowerCase()));
+    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored.GetAccess(source, "ACCESS"))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
     }
 
@@ -8687,6 +8869,12 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "ACCESS"))
@@ -8805,6 +8993,12 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "VIEW") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
@@ -8872,6 +9066,12 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "AKICK"))
@@ -9053,6 +9253,12 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "AKICK"))
     {
@@ -9167,6 +9373,12 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "VIEW") &&
 	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
@@ -9231,6 +9443,12 @@ void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if ((option[0U] == '@' || option[0U] == '!') &&
@@ -9323,6 +9541,12 @@ void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 3 &&
@@ -9433,6 +9657,12 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 3 &&
 	(cstored.GetAccess(source, "OVERGREET") ||
@@ -9514,6 +9744,12 @@ void ChanServ::do_message_Add(const mstring &mynick, const mstring &source, cons
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "MESSAGE"))
     {
@@ -9571,6 +9807,12 @@ void ChanServ::do_message_Del(const mstring &mynick, const mstring &source, cons
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "MESSAGE"))
@@ -9650,6 +9892,12 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!(cstored.GetAccess(source, "MESSAGE") ||
@@ -9739,6 +9987,12 @@ void ChanServ::do_set_Founder(const mstring &mynick, const mstring &source, cons
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (!(cstored.GetAccess(source) > Parent->chanserv.Level_Max() ||
 	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
 	Parent->commserv.GetList(Parent->commserv.OVR_Owner()).IsOn(source))))
@@ -9817,6 +10071,12 @@ void ChanServ::do_set_CoFounder(const mstring &mynick, const mstring &source, co
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (cstored.Founder().IsSameAs(founder, true))
     {
 	NSEND(mynick, source, "ERR_SITUATION/COFOUNDER");
@@ -9884,6 +10144,12 @@ void ChanServ::do_set_Description(const mstring &mynick, const mstring &source, 
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -9937,6 +10203,12 @@ void ChanServ::do_set_Password(const mstring &mynick, const mstring &source, con
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
@@ -10067,6 +10339,12 @@ void ChanServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -10130,6 +10408,12 @@ void ChanServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     cstored.Comment(option);
     }
     Parent->chanserv.stats.i_Set++;
@@ -10189,6 +10473,12 @@ void ChanServ::do_set_Mlock(const mstring &mynick, const mstring &source, const 
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -10231,6 +10521,12 @@ void ChanServ::do_set_BanTime(const mstring &mynick, const mstring &source, cons
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -10287,6 +10583,12 @@ void ChanServ::do_set_PartTime(const mstring &mynick, const mstring &source, con
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -10356,6 +10658,12 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -10430,6 +10738,12 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -10502,6 +10816,12 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -10576,6 +10896,12 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -10648,6 +10974,12 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -10722,6 +11054,12 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (cstored.L_NoExpire())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -10787,6 +11125,12 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -10861,6 +11205,12 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -10933,6 +11283,12 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
@@ -11016,6 +11372,12 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -11097,6 +11459,13 @@ void ChanServ::do_set_Revenge(const mstring &mynick, const mstring &source, cons
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "SET"))
     {
@@ -11160,6 +11529,12 @@ void ChanServ::do_lock_Mlock(const mstring &mynick, const mstring &source, const
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     retval = cstored.L_Mlock(source, option);
     }
     Parent->chanserv.stats.i_Lock++;
@@ -11195,6 +11570,12 @@ void ChanServ::do_lock_BanTime(const mstring &mynick, const mstring &source, con
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.LCK_Bantime())
     {
@@ -11246,6 +11627,12 @@ void ChanServ::do_lock_PartTime(const mstring &mynick, const mstring &source, co
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.LCK_Parttime())
     {
@@ -11310,6 +11697,12 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.LCK_Keeptopic())
     {
@@ -11379,6 +11772,12 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Topiclock())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -11446,6 +11845,12 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.LCK_Private())
     {
@@ -11515,6 +11920,12 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Secureops())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -11582,6 +11993,12 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.LCK_Secure())
     {
@@ -11651,6 +12068,12 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Anarchy())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -11719,6 +12142,12 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_KickOnBan())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -11786,6 +12215,12 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
+
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
 
     if (Parent->chanserv.LCK_Restricted())
     {
@@ -11864,6 +12299,12 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Join())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -11941,6 +12382,12 @@ void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, con
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Revenge())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -11993,6 +12440,12 @@ void ChanServ::do_unlock_Mlock(const mstring &mynick, const mstring &source, con
     Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
+    if (cstored.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     retval = cstored.L_Mlock(source, "");
     }
     Parent->chanserv.stats.i_Unlock++;
@@ -12022,8 +12475,14 @@ void ChanServ::do_unlock_BanTime(const mstring &mynick, const mstring &source, c
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Bantime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12065,8 +12524,14 @@ void ChanServ::do_unlock_PartTime(const mstring &mynick, const mstring &source, 
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Parttime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12108,8 +12573,14 @@ void ChanServ::do_unlock_KeepTopic(const mstring &mynick, const mstring &source,
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Keeptopic())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12152,8 +12623,14 @@ void ChanServ::do_unlock_TopicLock(const mstring &mynick, const mstring &source,
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Topiclock())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12195,8 +12672,14 @@ void ChanServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Private())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12238,8 +12721,14 @@ void ChanServ::do_unlock_SecureOps(const mstring &mynick, const mstring &source,
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Secureops())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12281,8 +12770,14 @@ void ChanServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Secure())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12324,8 +12819,14 @@ void ChanServ::do_unlock_Anarchy(const mstring &mynick, const mstring &source, c
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Anarchy())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12367,8 +12868,14 @@ void ChanServ::do_unlock_KickOnBan(const mstring &mynick, const mstring &source,
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_KickOnBan())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12410,8 +12917,14 @@ void ChanServ::do_unlock_Restricted(const mstring &mynick, const mstring &source
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Restricted())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12453,8 +12966,14 @@ void ChanServ::do_unlock_Join(const mstring &mynick, const mstring &source, cons
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Join())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
@@ -12496,8 +13015,14 @@ void ChanServ::do_unlock_Revenge(const mstring &mynick, const mstring &source, c
 		channel));
 	return;
     }
-
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
     if (Parent->chanserv.LCK_Revenge())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
