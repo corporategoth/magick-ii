@@ -256,6 +256,7 @@ NEW_THREAD       =Starting new thread to handle excess load.
 KILL_THREAD      =Killing thread, not enough work to warrant it.
 NEW_THREAD_FAIL  =Failed to create new thread.
 MAX_THREADS      =Maximum number of threads reached, cannot start a new one.
+NETSYNCED        =Network synchronised in $1 seconds.
 
 ;
 ; These are errors that come from system based

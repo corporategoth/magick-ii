@@ -1030,16 +1030,11 @@ void Logger::log(ACE_Log_Record & log_record)
     }
 
     /* Pulled directly from ACE ... */
-    time_t sec = log_record.time_stamp().sec();
-    struct tm *tmval = localtime(&sec);
-    char ctp[21];		// 21 is a magic number...
-
-    if (ACE_OS::strftime(ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
-	return;
+    mDateTime ts(log_record.time_stamp().sec(), log_record.time_stamp().usec());
 
     mstring out;
 
-    out.Format("%s.%03ld | %-8s | ", ctp, log_record.time_stamp().usec() / 1000, text_priority.c_str());
+    out.Format("%s | %-8s | ", ts.FormatString("dd mmm yyyy hh:nn:ss.uuu").c_str(), text_priority.c_str());
     mstring tmp(log_record.msg_data());
 
     unsigned int i;

@@ -194,6 +194,7 @@ public:
     void HTM(const bool in);
     size_t Average(time_t secs = 0) const;
     bool Burst() const;
+    float BurstTime() const;
     mDateTime SyncTime() const;
     void EndBurst();
     int Threads()

@@ -34,7 +34,11 @@ RCSID(datetime_cpp, "@(#)$Id$");
 **
 ** ======================================================================= */
 
+#ifndef STANDALONE
 #include "magick.h"
+#else
+#include "datetime.h"
+#endif
 
 mstring mDateTime::DateSeparator = "/";
 mstring mDateTime::ShortDateFormat = "d/m/yyyy";
@@ -58,7 +62,7 @@ mstring mDateTime::LongDayNames[7] =
 "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
 static const int SecsPerDay = 24 * 60 * 60;
-static const int MSecsPerDay = SecsPerDay * 1000;
+static const double MSecsPerDay = static_cast < double > (SecsPerDay) * 1000000.0;
 
 typedef int mDayTable[12];
 static mDayTable DayTable1 =
@@ -75,7 +79,7 @@ mDateTime mDateTime::CurrentDate()
     mDateTime Result;
     int iDay, iMonth, iYear;
 
-    Result = mDateTime(time(NULL));
+    Result = CurrentDateTime();
     Result.DecodeDate(iYear, iMonth, iDay);
     Result = mDateTime(iYear, iMonth, iDay);
     return Result;
@@ -86,7 +90,7 @@ mDateTime mDateTime::CurrentTime()
     mDateTime Result;
     int iHour, iMin, iSec, iMSec;
 
-    Result = mDateTime(time(NULL));
+    Result = CurrentDateTime();
     Result.DecodeTime(iHour, iMin, iSec, iMSec);
     Result = mDateTime(iHour, iMin, iSec, iMSec);
     return Result;
@@ -94,7 +98,9 @@ mDateTime mDateTime::CurrentTime()
 
 mDateTime::mDateTime(const mstring & src, const mDateTimeFlag flag)
 {
+#ifndef STANDALONE
     LOG(LM_ERROR, "SYS_ERRORS/NOT_IMPLEMENTED", ("mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)"));
+#endif
 #if 0
     if (flag == Date)
 	*this = StringToDate(src);
@@ -131,7 +137,8 @@ bool DoEncodeDate(const int iYear, const int iMonth, const int iDay, mDateTime &
 	    tmpDay += DayTable[I - 1];
 	}
 	I = iYear;
-	tmpDay += ((I * 365) + (I / 4) - (I / 100) + (I / 400));
+	// Remember to +1, because year 0 (our first year) was a leap year.
+	tmpDay += ((I * 365) + (I / 4) - (I / 100) + (I / 400)) + 1;
 	Date.Val = static_cast < double > (tmpDay);
 
 	Result = true;
@@ -143,11 +150,14 @@ bool DoEncodeTime(const int iHour, const int iMin, const int iSec, const int iMS
 {
     bool Result = false;
 
-    if ((iHour < 24) && (iMin < 60) && (iSec < 60) && (iMSec < 1000))
+    if ((iHour < 24) && (iMin < 60) && (iSec < 60) && (iMSec < 1000000))
     {
 	Time.Val =
-	    (static_cast < double > (iHour) * 3600000.0 + static_cast < double > (iMin) * 60000.0 + static_cast < double >
-	     (iSec) * 1000.0 + static_cast < double > (iMSec)) /static_cast < double > (MSecsPerDay);
+	    ((static_cast < double > (iHour) * 3600000000.0) +(static_cast < double > (iMin) * 60000000.0) +(static_cast <
+													     double >
+													     (iSec) *
+													     1000000.0)
+	     +static_cast < double > (iMSec)) /MSecsPerDay;
 	Result = true;
     }
     return Result;
@@ -207,9 +217,11 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    case 6:
 		Result += FormatString(LongDateFormat);
 		break;
+#ifndef STANDALONE
 	    default:
 		LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (count, format[i], format));
-	    };
+#endif
+	    }
 	    break;
 	case 'm':
 	    count = 1;
@@ -234,8 +246,10 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    case 4:
 		Result += LongMonthNames[iMonth - 1];
 		break;
+#ifndef STANDALONE
 	    default:
 		LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (count, format[i], format));
+#endif
 	    }
 	    break;
 	case 'y':
@@ -253,8 +267,10 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    case 4:
 		Result += iYear;
 		break;
+#ifndef STANDALONE
 	    default:
 		LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (count, format[i], format));
+#endif
 	    }
 	    break;
 	case 'h':
@@ -305,17 +321,44 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    switch (count)
 	    {
 	    case 1:
+		{
+		    int usec = iMSec / 1000;
+
+		    Result += usec;
+		    break;
+		}
+	    case 2:
+		Result += iMSec;
 		break;
 	    case 3:
+		{
+		    int usec = iMSec / 1000;
+
+		    if (usec < 100)
+			Result += "0";
+		    if (usec < 10)
+			Result += "0";
+		    Result += usec;
+		    break;
+		}
+	    case 6:
+		if (iMSec < 100000)
+		    Result += "0";
+		if (iMSec < 10000)
+		    Result += "0";
+		if (iMSec < 1000)
+		    Result += "0";
 		if (iMSec < 100)
 		    Result += "0";
 		if (iMSec < 10)
 		    Result += "0";
+		Result += iMSec;
 		break;
+#ifndef STANDALONE
 	    default:
 		LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (count, format[i], format));
+#endif
 	    }
-	    Result += iMSec;
 	    break;
 	case 't':
 	    if (i + 1 < format.size() && tolower(format[i + 1]) == 't')
@@ -356,7 +399,9 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    }
 	    else
 	    {
+#ifndef STANDALONE
 		LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (1, format[i], format));
+#endif
 		Result += "a";
 	    }
 	    break;
@@ -382,9 +427,11 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    Result += format[i];
 	    break;
 	default:
+#ifndef STANDALONE
 	    LOG(LM_TRACE, "SYS_ERRORS/NOT_LITERAL", (format[i], format));
+#endif
 	    Result += format[i];
-	};
+	}
 	i++;
     }
     return Result;
@@ -409,7 +456,7 @@ mstring mDateTime::DateTimeString() const
     return Result;
 }
 
-mDateTime::operator             time_t() const
+mDateTime::operator              time_t() const
 {
     int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 
@@ -432,8 +479,9 @@ mDateTime::operator             time_t() const
 
 int mDateTime::DayOfWeek() const
 {
-    mDateTime knownmonday(1970, 1, 5);
-    int Result = static_cast < int > (Val - knownmonday.Val) % 7;
+    // The 3rd day of year 0 (ok, year 0 never existed) was a Monday.
+    // Rember, day 1 of year 0 is day 0 for our val ...
+    int Result = static_cast < int > (Val - 2.0) % 7;
 
     return Result;
 }
@@ -456,7 +504,8 @@ void mDateTime::DecodeDate(int &year, int &month, int &day) const
     Y100 = NumDays / D100;
     NumDays = LeftOver;
 
-    LeftOver = NumDays % D4;
+    // We take an extra day here, since year 0 was a leap year.
+    LeftOver = NumDays % D4 - 1;
     Y4 = NumDays / D4;
     NumDays = LeftOver;
 
@@ -477,27 +526,30 @@ void mDateTime::DecodeDate(int &year, int &month, int &day) const
 	NumDays -= DayTable[i];
 	i++;
     }
+
+    // We start at 0, accomodate for it.
     day = NumDays + 1;
     month = M;
 }
 
 void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec) const
 {
-    //(iHour * 3600000 + iMin * 60000 + iSec * 1000 + iMSec) / MSecsPerDay;
-    int CurrentVal = static_cast < int > (fmod(Val, 1.0) * static_cast < double > (MSecsPerDay));
-    int LeftOver;
+    //(iHour * 3600000000 + iMin * 60000000 + iSec * 1000000 + iMSec) / MSecsPerDay;
+    double CurrentVal = fmod(Val, 1.0) * MSecsPerDay;
 
-    LeftOver = CurrentVal % 3600000;
-    hour = CurrentVal / 3600000;
-    CurrentVal = LeftOver;
+    hour = static_cast < int > (CurrentVal / 3600000000.0);
 
-    LeftOver = CurrentVal % 60000;
-    min = CurrentVal / 60000;
-    CurrentVal = LeftOver;
+    CurrentVal -= (static_cast < double > (hour) * 3600000000.0);
 
-    LeftOver = CurrentVal % 1000;
-    sec = CurrentVal / 1000;
-    msec = LeftOver;
+    min = static_cast < int > (CurrentVal / 60000000.0);
+
+    CurrentVal -= (static_cast < double > (min) * 60000000.0);
+
+    sec = static_cast < int > (CurrentVal / 1000000.0);
+
+    CurrentVal -= (static_cast < double > (sec) * 1000000.0);
+
+    msec = static_cast < int > (CurrentVal);
 }
 
 mDateTime StringToDate(const mstring & in)
@@ -593,7 +645,7 @@ int mDateTime::MSecond() const
 {
     int iHour, iSecond, iMinute, iMSec;
 
-    DecodeTime(iHour, iSecond, iMinute, iMSec);
+    DecodeTime(iHour, iMinute, iSecond, iMSec);
     return iMSec;
 }
 
@@ -601,7 +653,7 @@ int mDateTime::Second() const
 {
     int iHour, iSecond, iMinute, iMSec;
 
-    DecodeTime(iHour, iSecond, iMinute, iMSec);
+    DecodeTime(iHour, iMinute, iSecond, iMSec);
     return iSecond;
 }
 
@@ -609,7 +661,7 @@ int mDateTime::Minute() const
 {
     int iHour, iSecond, iMinute, iMSec;
 
-    DecodeTime(iHour, iSecond, iMinute, iMSec);
+    DecodeTime(iHour, iMinute, iSecond, iMSec);
     return iMinute;
 }
 
@@ -617,7 +669,7 @@ int mDateTime::Hour() const
 {
     int iHour, iSecond, iMinute, iMSec;
 
-    DecodeTime(iHour, iSecond, iMinute, iMSec);
+    DecodeTime(iHour, iMinute, iSecond, iMSec);
     return iHour;
 }
 
@@ -645,24 +697,17 @@ int mDateTime::Year() const
     return iYear;
 }
 
-unsigned long mDateTime::MSecondsSince() const
+double mDateTime::MSecondsSince() const
 {
     mDateTime dummyvar = mDateTime::CurrentDateTime() - (*this);
-    unsigned long CurrentVal = static_cast < unsigned long > (dummyvar.Val * static_cast < double > (MSecsPerDay));
-
-    return CurrentVal;
-}
-
-unsigned long mDateTime::SecondsSince() const
-{
-    mDateTime dummyvar = mDateTime::CurrentDateTime() - (*this);
-    unsigned long CurrentVal = static_cast < unsigned long > (dummyvar.Val * static_cast < double > (SecsPerDay));
+    unsigned long CurrentVal = static_cast < unsigned long > (dummyvar.Val * MSecsPerDay);
 
     return CurrentVal;
 }
 
 mstring DisectTime(const long intime, const mstring & source)
 {
+#ifndef STANDALONE
     mstring Result = "";
     long Years = 0, Weeks = 0, Days = 0, Hours = 0, Minutes = 0, Seconds = 0, negamt = 0;
 
@@ -804,37 +849,36 @@ mstring DisectTime(const long intime, const mstring & source)
 	Result << Magick::instance().getMessage(source, "VALS/TIME_NOW");
     }
     return Result;
+#endif
 }
 
 mDateTime GMT(const mDateTime & in, const bool to)
 {
     ACE_OS::tzset();
-    long offset = ACE_OS::timezone() * (to ? 1 : -1);
+    double offset = ACE_OS::timezone() * (to ? 1 : -1) * 1000000;
     double val = in.Internal();
-    int days = 0, secs = 0;
-    days = static_cast < int > (val);
+    int days = static_cast < int > (val);
+    double msecs = fmod(val, 1.0) * MSecsPerDay;
 
-    val -= days;
-    secs = static_cast < int > (val * static_cast < double > (SecsPerDay));
-
-    if (secs + offset > SecsPerDay)
+    if (msecs + offset < 0 || msecs + offset >= MSecsPerDay)
     {
 	if (offset > 0)
 	{
 	    days++;
-	    secs += offset - SecsPerDay;
+	    msecs += offset - MSecsPerDay;
 	}
 	else if (offset < 0)
 	{
 	    days--;
-	    secs -= offset + SecsPerDay;
+	    msecs -= offset + MSecsPerDay;
 	}
     }
     else
     {
-	secs += offset;
+	msecs += offset;
     }
-    val = static_cast < double > (days) + (static_cast < double > (secs) * (1.0 / static_cast < double > (SecsPerDay)));
+
+    val = static_cast < double > (days) + (static_cast < double > (msecs) * (1.0 / MSecsPerDay));
 
     return mDateTime(val);
 }

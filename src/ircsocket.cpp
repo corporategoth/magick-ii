@@ -566,6 +566,16 @@ bool IrcSvcHandler::Burst() const
     RET(i_burst);
 }
 
+float IrcSvcHandler::BurstTime() const
+{
+    NFT("IrcSvcHandler::BurstTime");
+    RLOCK(("IrcSvcHandler", "connect_time"));
+    RLOCK2(("IrcSvcHandler", "i_synctime"));
+    float retval = static_cast < float > ((i_synctime - connect_time).MSecondsSince() / 1000000.0);
+
+    RET(retval);
+}
+
 mDateTime IrcSvcHandler::SyncTime() const
 {
     NFT("IrcSvcHandler::SyncTime");
@@ -1780,10 +1790,6 @@ int EventTask::svc(void)
 	    ACE_OS::sleep(1);
 	    continue;
 	}
-
-	COM(("TIMERS:  Current time: %ld,  Earliest Timer: %ld", ACE_OS::gettimeofday().sec(),
-	     Magick::instance().reactor().timer_queue()->is_empty() ? 0 : Magick::instance().reactor().timer_queue()->
-	     earliest_time().sec()));
 
 	try
 	{

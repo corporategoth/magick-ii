@@ -385,8 +385,8 @@ class Server_t : public mUserDef, public ref_class
     mstring i_Uplink;
     int i_Hops;
     mstring i_Description;
-    long i_Ping;
-    long i_Lag;
+    mDateTime i_Ping;
+    float i_Lag;
     bool i_Jupe;
 
     void defaults();

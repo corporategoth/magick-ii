@@ -332,7 +332,7 @@ void Server_t::defaults()
     NFT("Server_t::defaults");
     ref_class::lockData(mVarArray("Server", "list", i_Name.LowerCase()));
     i_Hops = 0;
-    i_Ping = 0;
+    i_Ping = 0.0;
     i_Lag = 0;
     i_Jupe = false;
 }
@@ -449,14 +449,14 @@ void Server_t::Ping()
     NFT("Server_t::Ping");
 
     WLOCK(("Server", "list", i_Name.LowerCase(), "i_Ping"));
-    if (!i_Ping)
+    if (i_Ping == mDateTime(0.0))
     {
 	Magick::instance().server.
 	    sraw(((Magick::instance().server.proto.Tokens() &&
 		   !Magick::instance().server.proto.GetNonToken("PING").empty()) ? Magick::instance().server.proto.
 		  GetNonToken("PING") : mstring("PING")) + " " + Magick::instance().startup.Server_Name() + " :" + i_Name);
 	MCB(i_Ping);
-	i_Ping = ACE_OS::gettimeofday().msec();
+	i_Ping = mDateTime::CurrentDateTime();
 	MCE(i_Ping);
     }
 }
@@ -465,14 +465,15 @@ void Server_t::Pong()
 {
     NFT("Server_t::Pong");
     WLOCK(("Server", "list", i_Name.LowerCase(), "i_Ping"));
-    if (i_Ping)
+    if (i_Ping != mDateTime(0.0))
     {
 	WLOCK2(("Server", "list", i_Name.LowerCase(), "i_Lag"));
 	MCB(i_Lag);
 	CB(1, i_Ping);
-	i_Lag = ACE_OS::gettimeofday().msec() - i_Ping;
-	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag / 1000.0));
-	i_Ping = 0;
+	i_Lag = static_cast < float > (i_Ping.MSecondsSince() / 1000000.0);
+
+	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag));
+	i_Ping = mDateTime(0.0);
 	CE(1, i_Ping);
 	MCE(i_Lag);
     }
@@ -482,9 +483,7 @@ float Server_t::Lag() const
 {
     NFT("Server_t::Lag");
     RLOCK(("Server", "list", i_Name.LowerCase(), "i_Lag"));
-    float retval = i_Lag / 1000.0;
-
-    RET(retval);
+    RET(i_Lag);
 }
 
 bool Server_t::Jupe() const
@@ -5319,8 +5318,8 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	    {
 		map_entry < Nick_Live_t >
 		    tmp(new
-			Nick_Live_t(params.ExtractWord(1, ": "), time(NULL), server, params.ExtractWord(2, ": "),
-				    params.ExtractWord(3, ": "), params.After(":")));
+			Nick_Live_t(params.ExtractWord(1, ": "), mDateTime::CurrentDateTime(), server,
+				    params.ExtractWord(2, ": "), params.ExtractWord(3, ": "), params.After(":")));
 		Magick::instance().nickserv.AddLive(tmp);
 	    }
 	    break;
@@ -5759,6 +5758,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 												  Burst()) : mstring(proto.
 														     Burst
 														     ())));
+		    LOG(LM_INFO, "EVENT/NETSYNCED", (fmstring("%.3f", Magick::instance().ircsvchandler->BurstTime())));
 		}
 	    }
 

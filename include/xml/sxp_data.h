@@ -58,7 +58,7 @@ public:
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%7.5f</%s>\n", t.ch, param.c_str(), val, t.ch);
+	Print("<%s%s>%7.60g</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const unsigned int val, dict & attribs = blank_dict)

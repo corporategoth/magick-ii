@@ -55,7 +55,9 @@ public:
     static mDateTime CurrentTime();
     static mDateTime CurrentDateTime()
     {
-	return mDateTime(time(NULL));
+	ACE_Time_Value tv = ACE_OS::gettimeofday();
+
+	return mDateTime(tv.sec(), tv.usec());
     }
     static mstring DateSeparator;
     static mstring ShortDateFormat;
@@ -82,13 +84,18 @@ public:
     {
 	Val = src;
     }
-    mDateTime(const time_t src)
-    {
-	*this = src;
-    }
     mDateTime(const struct tm src)
     {
 	*this = src;
+    }
+    mDateTime(const time_t src, const long msec = 0)
+    {
+	tm *tmst;
+
+	tmst = localtime(&src);
+	*this =
+	    mDateTime(tmst->tm_year + 1900, tmst->tm_mon + 1, tmst->tm_mday) + mDateTime(tmst->tm_hour, tmst->tm_min,
+											 tmst->tm_sec, msec);
     }
     mDateTime(const mstring & src, const mDateTimeFlag flag = DateTime);
     mDateTime(const unsigned int year, const unsigned int month, const unsigned int day)
@@ -255,12 +262,12 @@ public:
 	return (Val <= in.Val);
     }
 
-    operator      double () const
+    operator       double () const
     {
 	return Val;
     }
-    operator      time_t() const;
-    operator      mstring() const
+    operator       time_t() const;
+    operator       mstring() const
     {
 	return DateTimeString();
     }
@@ -328,6 +335,14 @@ public:
 
   tt      Displays the time using the format given by the LongTimeFormat
           global variable.
+
+  u       Display the milisecond without the leading zero (0-999).
+
+  uu      Display the microsecond without the leading zero (0-999999).
+
+  uuu     Display the milisecond with leading zeros (000-999).
+
+  uuuuuu  Display the microsecond with leading zeros (000000-999999).
 
   am/pm   Uses the 12-hour clock for the preceding h or hh specifier, and
           displays 'am' for any hour before noon, and 'pm' for any hour
@@ -399,8 +414,11 @@ public:
 	return Year() - Year2();
     }
 
-    unsigned long MSecondsSince() const;
-    unsigned long SecondsSince() const;
+    double MSecondsSince() const;
+    unsigned long SecondsSince() const
+    {
+	return static_cast < unsigned long > (MSecondsSince() / 1000000.0);
+    }
     unsigned long MinutesSince() const
     {
 	return (SecondsSince() / 60);
@@ -415,7 +433,7 @@ public:
     }
     unsigned long YearsSince() const
     {
-	return static_cast < int > (static_cast < double > (DaysSince()) / 365.25);
+	return static_cast < unsigned long > (static_cast < double > (DaysSince()) / 365.25);
     }
     mstring Ago(const mstring & source = "") const
     {
