@@ -128,7 +128,7 @@ class Chan_Stored_t : public mUserDef
     bool i_Restricted;
     bool l_Restricted;
     bool i_Join;
-    bool l_Join'
+    bool l_Join;
     bool i_Forbidden;
     mstring i_Revenge;
     bool l_Revenge;

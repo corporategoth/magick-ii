@@ -226,8 +226,8 @@ public:
     void L_Protect(bool in);
     bool Secure();
     void Secure(bool in);
-    bool L_Protect();
-    void L_Protect(bool in);
+    bool L_Secure();
+    void L_Secure(bool in);
     bool NoExpire();
     void NoExpire(bool in);
     bool L_NoExpire();
