@@ -27,6 +27,10 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2001/05/08 15:51:41  prez
+** Added some security stuff with committees, so certain things are guarenteed
+** on database load (ie. the magick.ini assertions).
+**
 ** Revision 1.97  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -3334,14 +3338,67 @@ void CommServ::PostLoad()
 		iter->second.message != iter->second.MSG_end();
 		iter->second.message++)
 	    iter->second.message->PostLoad();
-    }
 
-    if (IsList(Parent->commserv.SADMIN_Name()))
-    {
-	GetList(Parent->commserv.SADMIN_Name()).i_Members.clear();
-	for (unsigned int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
-	    GetList(Parent->commserv.SADMIN_Name()).i_Members.insert(entlist_t(
-		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
-		Parent->operserv.FirstName()));
+	// We must ensure certain settings in pre-defined committees ...
+	// So check what committee this is, and if its one of them, then
+	// ensure the values we need in place are what we have.  This
+	// saves us from data tampering, and also allows us to change
+	// committee names on the fly and have the correct knock-on effect.
+	// Also ensures magick.ini settings are correctly set.
+	if (iter->first == Parent->commserv.SADMIN_Name())
+	{
+	    iter->second.i_Head.erase();
+	    iter->second.i_HeadCom.erase();
+	    iter->second.i_Members.clear();
+	    for (unsigned int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
+		iter->second.i_Members.insert(entlist_t(
+			Parent->operserv.Services_Admin().ExtractWord(j, ", "),
+			Parent->operserv.FirstName()));
+	    iter->second.Secure(sadmin_secure);
+	    iter->second.Private(sadmin_private);
+	    iter->second.OpenMemos(sadmin_openmemos);
+	}
+	else if (iter->first == Parent->commserv.SOP_Name())
+	{
+	    iter->second.i_Head.erase();
+	    iter->second.i_HeadCom = Parent->commserv.SADMIN_Name();
+	    iter->second.Secure(sop_secure);
+	    iter->second.Private(sop_private);
+	    iter->second.OpenMemos(sop_openmemos);
+	}
+	else if (iter->first == Parent->commserv.ADMIN_Name())
+	{
+	    iter->second.i_Head.erase();
+	    iter->second.i_HeadCom = Parent->commserv.SADMIN_Name();
+	    iter->second.Secure(admin_secure);
+	    iter->second.Private(admin_private);
+	    iter->second.OpenMemos(admin_openmemos);
+	}
+	else if (iter->first == Parent->commserv.OPER_Name())
+	{
+	    iter->second.i_Head.erase();
+	    iter->second.i_HeadCom = Parent->commserv.ADMIN_Name();
+	    iter->second.Secure(oper_secure);
+	    iter->second.Private(oper_private);
+	    iter->second.OpenMemos(oper_openmemos);
+	}
+	else if (iter->first == Parent->commserv.ALL_Name())
+	{
+	    iter->second.i_Head.erase();
+	    iter->second.i_HeadCom = Parent->commserv.ADMIN_Name();
+	    iter->second.i_Members.clear();
+	    iter->second.Secure(false);
+	    iter->second.Private(true);
+	    iter->second.OpenMemos(false);
+	}
+	else if (iter->first == Parent->commserv.REGD_Name())
+	{
+	    iter->second.i_Head.erase();
+	    iter->second.i_HeadCom = Parent->commserv.SOP_Name();
+	    iter->second.i_Members.clear();
+	    iter->second.Secure(false);
+	    iter->second.Private(true);
+	    iter->second.OpenMemos(false);
+	}
     }
 }

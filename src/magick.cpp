@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.306  2001/05/08 15:51:41  prez
+** Added some security stuff with committees, so certain things are guarenteed
+** on database load (ie. the magick.ini assertions).
+**
 ** Revision 1.305  2001/05/08 06:29:55  prez
 ** Made ALL have a head of ADMIN and REGD a head of SOP.
 **
@@ -3008,19 +3012,6 @@ bool Magick::get_config_values()
     commserv.GetList(commserv.oper_name).Private(commserv.oper_private);
     commserv.GetList(commserv.oper_name).OpenMemos(commserv.oper_openmemos);
 
-    if (reconnect && Connected())
-    {
-	server.raw(((server.proto.Tokens() && !server.proto.GetNonToken("ERROR").empty()) ?
-		server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
-		" :Closing Link: Configuration reload required restart!");
-	{ WLOCK(("IrcSvcHandler"));
-	if (ircsvchandler != NULL)
-	{
-	    ircsvchandler->close();
-	    ircsvchandler = NULL;
-	}}
-    }
-
     if (commserv.IsList(commserv.all_name))
     {
 	MLOCK(("CommServ", "list", commserv.all_name, "member"));
@@ -3060,6 +3051,19 @@ bool Magick::get_config_values()
     commserv.GetList(commserv.regd_name).Secure(false);
     commserv.GetList(commserv.regd_name).Private(true);
     commserv.GetList(commserv.regd_name).OpenMemos(false);
+
+    if (reconnect && Connected())
+    {
+	server.raw(((server.proto.Tokens() && !server.proto.GetNonToken("ERROR").empty()) ?
+		server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
+		" :Closing Link: Configuration reload required restart!");
+	{ WLOCK(("IrcSvcHandler"));
+	if (ircsvchandler != NULL)
+	{
+	    ircsvchandler->close();
+	    ircsvchandler = NULL;
+	}}
+    }
 
     DumpE();
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
