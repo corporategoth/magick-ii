@@ -27,6 +27,10 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.186  2001/07/15 07:35:38  prez
+** Fixed problem of it removing access list entries on slave nickname drop.
+** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
+**
 ** Revision 1.185  2001/07/08 01:37:55  prez
 ** Verified encryption works ...
 **
@@ -2677,9 +2681,10 @@ unsigned long Nick_Stored_t::Drop()
 {
     NFT("Nick_Stored_t::Drop");
 
+    bool host = Host().empty();
     // When we go, we take all our slaves with us!
     unsigned long i, dropped = 1;
-    if (i_Host.empty())
+    if (host)
     {
 	while(Siblings())
 	{
@@ -2691,7 +2696,7 @@ unsigned long Nick_Stored_t::Drop()
 	    }
 	}
     }
-    else if (Parent->nickserv.IsStored(i_Host))
+    else
     {
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
 	Parent->nickserv.GetStored(i_Host).i_slaves.erase(i_Name.LowerCase());
@@ -2710,7 +2715,13 @@ unsigned long Nick_Stored_t::Drop()
 	RLOCK2(("ChanServ", "stored", iter->first));
 	if (iter->second.Founder().IsSameAs(i_Name, true))
 	{
-	    if (!iter->second.CoFounder().empty() &&
+	    // If we're not host, and own the channel, give it to our host
+	    // Otherwise it falls to the cofounder, or gets removed.
+	    if (!host)
+	    {
+		iter->second.Founder(i_Host);
+	    }
+	    else if (!iter->second.CoFounder().empty() &&
 		Parent->nickserv.IsStored(iter->second.CoFounder()))
 	    {
 		iter->second.Founder(iter->second.CoFounder());
@@ -2721,7 +2732,22 @@ unsigned long Nick_Stored_t::Drop()
 	MLOCK(("ChanServ", "stored", iter->first, "Access"));
 	if (iter->second.Access_find(i_Name))
 	{
-	    iter->second.Access_erase();
+	    // It must be specifically ours, not a sibling/hosts
+	    if (iter->second.Access->Entry().IsSameAs(i_Name, true))
+	    {
+		// If we're not a host, give access to the host,
+		// else just remove the access (ie. we are host).
+		if (!host)
+		{
+		    long value = iter->second.Access->Value();
+		    mstring modifier = iter->second.Access->Last_Modifier();
+		    mDateTime modtime = iter->second.Access->Last_Modify_Time();
+		    iter->second.Access_erase();
+		    iter->second.Access_insert(i_Host, value, modifier, modtime);
+		}
+		else
+		    iter->second.Access_erase();
+	    }
 	}
     }}
 

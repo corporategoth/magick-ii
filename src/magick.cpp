@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.319  2001/07/15 07:35:38  prez
+** Fixed problem of it removing access list entries on slave nickname drop.
+** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
+**
 ** Revision 1.318  2001/07/08 01:37:55  prez
 ** Verified encryption works ...
 **
@@ -2088,7 +2092,7 @@ bool Magick::get_config_values()
     mstring ts_ServMsg=mstring("ServMsg/");
     DumpB();
 
-    in.Read(ts_Startup+"SERVER_NAME",value_mstring,"services.magick.tm");
+    in.Read(ts_Startup+"SERVER_NAME",value_mstring,"");
     if (value_mstring != startup.server_name)
 	reconnect = true;
     startup.server_name = value_mstring;
@@ -2442,7 +2446,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    in.Read(ts_Services+"ServMsg",value_mstring,"GlobalMsg DevNull");
+    in.Read(ts_Services+"ServMsg",value_mstring,"HelpServ DevNull");
     for (i=0; i<servmsg.names.WordCount(" "); i++)
     {
 	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
@@ -2703,7 +2707,7 @@ bool Magick::get_config_values()
 	nickserv.picsize = FromHumanSpace(value_mstring);
     else
 	nickserv.picsize = FromHumanSpace("0");
-    in.Read(ts_NickServ+"PICEXT",nickserv.picext,"jpg gif bmp tif");
+    in.Read(ts_NickServ+"PICEXT",nickserv.picext,"");
 
     in.Read(ts_ChanServ+"HIDE",value_bool,false);
     if (!reconnect && Connected() && value_bool != chanserv.hide)
@@ -2740,8 +2744,8 @@ bool Magick::get_config_values()
     else
 	chanserv.chankeep = FromHumanTime("15s");
 
-    in.Read(ts_ChanServ+"DEF_MLOCK",chanserv.def_mlock,"+nt");
-    in.Read(ts_ChanServ+"LCK_MLOCK",chanserv.lck_mlock,"+");
+    in.Read(ts_ChanServ+"DEF_MLOCK",chanserv.def_mlock,"");
+    in.Read(ts_ChanServ+"LCK_MLOCK",chanserv.lck_mlock,"");
     in.Read(ts_ChanServ+"DEF_BANTIME",value_mstring, "0");
     if (FromHumanTime(value_mstring))
 	chanserv.def_bantime = FromHumanTime(value_mstring);

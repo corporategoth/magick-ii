@@ -27,6 +27,10 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2001/07/15 07:35:38  prez
+** Fixed problem of it removing access list entries on slave nickname drop.
+** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
+**
 ** Revision 1.32  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -394,7 +398,7 @@ bool ceNode::KeyExists(const mstring &KeyName) const
     {
         // end of the line
 	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
-	if(iter != i_keys.end() && !iter->second.empty())
+	if(iter != i_keys.end())
             Result=true;
     }
     else
@@ -425,7 +429,7 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue) const
     {
         // end of the line
 	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
-	if(iter != i_keys.end() && !iter->second.empty())
+	if(iter != i_keys.end())
             Result=iter->second;
     }
     else
