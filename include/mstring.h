@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2001/12/12 03:48:47  prez
+** Fixed all the *toa functions, to NOT return c_str() of a temporary veriable.
+**
 ** Revision 1.81  2001/12/07 02:51:39  prez
 ** Added doxygen comments to mstring, and removed doxygen generated stuff
 ** from CVS -- you can now just generate it yourself with the config file.
@@ -1095,37 +1098,67 @@ OPERATOR_SET(list<mstring> &)
 #ifndef HAVE_ITOA
 /** Reverse of atoi */
 inline const char *itoa(int i)
-{ return mstring(i).c_str(); }
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    mstring tmp(i);
+    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+}
 #endif
 
 #ifndef HAVE_LTOA
 /** Reverse of strtol */
 inline const char *ltoa(long l)
-{ return mstring(l).c_str(); }
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    mstring tmp(l);
+    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+}
 #endif
 
 #ifndef HAVE_FTOA
 /** Reverse of atof */
 inline const char *ftoa(float f)
-{ return mstring(f).c_str(); }
+{
+    static char sv[64];
+    memset(sv, 0, sizeof(sv));
+    mstring tmp(f);
+    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+}
 #endif
 
 #ifndef HAVE_DTOA
 /** Reverse of strtod */
 inline const char *dtoa(double d)
-{ return mstring(d).c_str(); }
+{
+    static char sv[512];
+    memset(sv, 0, sizeof(sv));
+    mstring tmp(d);
+    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+}
 #endif
 
 #ifndef HAVE_ULTOA
 /** Reverse of strtoul */
 inline const char *ultoa(unsigned long ul)
-{ return mstring(ul).c_str(); }
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    mstring tmp(ul);
+    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+}
 #endif
 
 #ifndef HAVE_UITOA
 /** Reverse of strtoul, but for int */
 inline const char *uitoa(unsigned int ui)
-{ return mstring(ui).c_str(); }
+{
+    static char sv[16];
+    memset(sv, 0, sizeof(sv));
+    mstring tmp(ui);
+    strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+}
 #endif
 
 
