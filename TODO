@@ -33,6 +33,9 @@ development team to be worked on, and are coming:
 - Performance tuning, as parts of the code work, but are
   horribly slow or convoluted (as with any big project!)
 
+- See where else I can use the MemCluster class to stop
+  rapid new/deletes (or mallocs/frees).
+
 - Support IRC3 (http://www.dragonfire.net/~achurch/irc3)
   protocol.  This will probably wait until there it is
   finalised, and there is actually a server using it.

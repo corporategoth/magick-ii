@@ -25,6 +25,11 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/10/04 07:39:45  prez
+** Added MemCluster to speed up lockable, but it cores when we start
+** getting real messages -- seemingly in an alloc in the events.
+** Lots of printf's left in for debugging (so run as ./magick >output)
+**
 ** Revision 1.31  2000/09/09 02:17:47  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -116,7 +121,7 @@ public:
     static void Expire();
 
 };
-    
+
 
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);

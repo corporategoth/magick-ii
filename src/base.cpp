@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.137  2000/10/04 07:39:45  prez
+** Added MemCluster to speed up lockable, but it cores when we start
+** getting real messages -- seemingly in an alloc in the events.
+** Lots of printf's left in for debugging (so run as ./magick >output)
+**
 ** Revision 1.136  2000/09/18 08:17:57  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -322,6 +327,7 @@ int mBaseTask::svc(void)
 		transit = mblock->base();
 		if (transit != NULL)
 		{
+printf("Going to process %s\n", transit); fflush(stdout);
 		    retval = message_i(mstring(transit));
 		    delete [] transit;
 		}
@@ -443,7 +449,10 @@ int mBaseTask::message_i(const mstring& message)
 	}
     }
     else
+    {
+printf("Executing SYSTEM message %s\n", data.c_str()); fflush(stdout);
 	Parent->server.execute(data);
+    }
 
     // Theoretically, under mutex lock, only ONE can access this
     // at once.  Under pressure tho, the thread system may need

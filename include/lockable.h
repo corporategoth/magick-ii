@@ -25,6 +25,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/10/04 07:39:45  prez
+** Added MemCluster to speed up lockable, but it cores when we start
+** getting real messages -- seemingly in an alloc in the events.
+** Lots of printf's left in for debugging (so run as ./magick >output)
+**
 ** Revision 1.42  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -100,12 +105,84 @@ static const char *ident_lockable_h = "@(#) $Id$";
 #include "mstring.h"
 #include "trace.h"
 
+template <class ACE_LOCK> class MemCluster
+{
+    ACE_Locked_Free_List<ACE_Cached_Mem_Pool_Node<void *>, ACE_LOCK> free_list;
+    vector<char *> pool;
+    size_t e_size;
+    size_t e_max;
+
+    // Disallow blank construction and copying
+    MemCluster();
+    MemCluster(const MemCluster<ACE_LOCK> &);
+    void operator=(const MemCluster<ACE_LOCK> &);
+public:
+    MemCluster(size_t size, size_t count) : free_list(ACE_PURE_FREE_LIST)
+    {
+	e_size = size;
+	e_max = count;
+	char *tmp = new char[e_size * e_max];
+	memset(tmp, 0, sizeof(char) * e_size * e_max);
+	pool.push_back(tmp);
+
+	for (unsigned int i=0; i < e_max; i++)
+	{
+	    void *ptr = (void *) &tmp[i * e_size];
+	    free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
+	}
+    }
+
+    ~MemCluster()
+    {
+	vector<char *>::iterator iter;
+	for (iter=pool.begin(); iter!=pool.end(); iter++)
+	    delete [] *iter;
+    }
+    
+    void * alloc()
+    {
+	// If we dont have any left, add a segment
+	if (!free_list.size())
+	{
+	    char *tmp = new char[e_size * e_max];
+	    memset(tmp, 0, sizeof(char) * e_size * e_max);
+	    pool.push_back(tmp);
+	    for (unsigned int i=0; i < e_max; i++)
+	    {
+		void *ptr = (void *) &tmp[i + e_size];
+		free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
+	    }
+	}
+	return free_list.remove ()->addr ();
+    }
+
+    void dealloc(void *ptr)
+    {
+	memset(ptr, 0, sizeof(char) * e_size);
+	free_list.add ((ACE_Cached_Mem_Pool_Node<void *> *) ptr) ;
+    }
+
+    size_t size()	{ return e_max * pool.size(); }
+    size_t segsize()	{ return e_max; }
+    size_t segments()	{ return pool.size(); }
+    size_t elesize()	{ return e_size; }
+    size_t count()	{ return (size() - free_list.size()); }
+};
+
+
 #ifdef MAGICK_LOCKS_WORK
 
+
+typedef ACE_RW_Thread_Mutex	mLock_Read;
+typedef ACE_RW_Thread_Mutex	mLock_Write;
+typedef ACE_Thread_Mutex	mLock_Mutex;
+
 #define MAX_LOCKS 16 /* Max variants */
+#define LOCK_SEGMENT 8 /* Amount of lock memory to alloc */
 class mLOCK
 {
     static map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > LockMap;
+    static MemCluster<mLock_Mutex> memory_area;
 
     vector<mstring> locks;
 #ifdef MAGICK_TRACE_WORKS

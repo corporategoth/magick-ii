@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/10/04 07:39:46  prez
+** Added MemCluster to speed up lockable, but it cores when we start
+** getting real messages -- seemingly in an alloc in the events.
+** Lots of printf's left in for debugging (so run as ./magick >output)
+**
 ** Revision 1.51  2000/09/30 10:48:09  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -220,6 +225,8 @@ void TxnIds::Expire()
     for (unsigned int i=0; i<kill.size(); i++)
 	i_Ids.erase(kill[i]);
 }
+
+
 
 vector<int> ParseNumbers(mstring what)
 {

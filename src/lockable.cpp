@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/10/04 07:39:46  prez
+** Added MemCluster to speed up lockable, but it cores when we start
+** getting real messages -- seemingly in an alloc in the events.
+** Lots of printf's left in for debugging (so run as ./magick >output)
+**
 ** Revision 1.50  2000/09/13 12:45:34  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -128,11 +133,14 @@ static const char *ident = "@(#)$Id$";
 #ifdef MAGICK_LOCKS_WORK
 
 map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > mLOCK::LockMap;
-map<unsigned long, mSocket *> mSocket::SockMap;
+MemCluster<mLock_Mutex> mLOCK::memory_area(
+	(sizeof(mLock_Read) > sizeof(mLock_Write) ?
+	    (sizeof(mLock_Read) > sizeof(mLock_Mutex) ?
+		sizeof(mLock_Read) : sizeof(mLock_Mutex)) :
+	    (sizeof(mLock_Write) > sizeof(mLock_Mutex) ?
+		sizeof(mLock_Write) : sizeof(mLock_Mutex))), LOCK_SEGMENT);
 
-typedef ACE_RW_Thread_Mutex	mLock_Read;
-typedef ACE_RW_Thread_Mutex	mLock_Write;
-typedef ACE_Thread_Mutex	mLock_Mutex;
+map<unsigned long, mSocket *> mSocket::SockMap;
 
 mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 {
@@ -156,8 +164,11 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     if (lockroot == NULL)
     {
 	if (maplock.release() < 0)
+	{
+printf("DEBUG 1\n"); fflush(stdout);
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
+	}
 	return;
     }
 
@@ -168,18 +179,22 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	lockname += args[i].AsString();
 	rlock = NULL;
 
+printf("(%d) -> %d. LOCK SIZE = %d / %d (%s)\n",
+		ACE_Thread::self(), i, memory_area.count(),
+		memory_area.size(), lockname.c_str()); fflush(stdout);
+
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    rlock = new mLock_Read((const char *) hash);
+	    rlock = new (memory_area.alloc()) mLock_Read((const char *) hash);
 	    if (rlock != NULL)
 	    {
 		if (rlock->acquire_read() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"READ", lockname.c_str());
-		    delete rlock;
+		    memory_area.dealloc(rlock);
 		    rlock = NULL;
 		}
 		else
@@ -204,20 +219,24 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     wlock = NULL;
     mlock = NULL;
 
+printf("(%d) -> %d. LOCK SIZE = %d / %d (%s)\n",
+		ACE_Thread::self(), i, memory_area.count(),
+		memory_area.size(), lockname.c_str()); fflush(stdout);
+
     if (type == L_Read)
     {
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    rlock = new mLock_Read((const char *) hash);
+	    rlock = new (memory_area.alloc()) mLock_Read((const char *) hash);
 	    if (rlock != NULL)
 	    {
 		if (rlock->acquire_read() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"READ", lockname.c_str());
-		    delete rlock;
+		    memory_area.dealloc(rlock);
 		    rlock = NULL;
 		}
 		else
@@ -243,9 +262,12 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    if (rlock != NULL)
 	    {
 		if (rlock->release() < 0)
+		{
+printf("DEBUG 2\n"); fflush(stdout);
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"READ", lockname.c_str());
-		delete rlock;
+		}
+		memory_area.dealloc(rlock);
 		rlock = NULL;
 	    }
 	    (*lockroot).erase(lockname);
@@ -254,14 +276,14 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    wlock = new mLock_Write((const char *) hash);
+	    wlock = new (memory_area.alloc()) mLock_Write((const char *) hash);
 	    if (wlock != NULL)
 	    {
 		if (wlock->acquire_write() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"WRITE", lockname.c_str());
-		    delete wlock;
+		    memory_area.dealloc(wlock);
 		    wlock = NULL;
 		}
 		else
@@ -287,9 +309,12 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    if (rlock != NULL)
 	    {
 		if (rlock->release() < 0)
+		{
+printf("DEBUG 3\n"); fflush(stdout);
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"READ", lockname.c_str());
-		delete rlock;
+		}
+		memory_area.dealloc(rlock);
 		rlock = NULL;
 	    }
 	    (*lockroot).erase(lockname);
@@ -298,14 +323,14 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    mlock = new mLock_Mutex((const char *) hash);
+	    mlock = new (memory_area.alloc()) mLock_Mutex((const char *) hash);
 	    if (mlock != NULL)
 	    {
 		if (mlock->acquire() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"MUTEX", lockname.c_str());
-		    delete mlock;
+		    memory_area.dealloc(mlock);
 		    mlock = NULL;
 		}
 		else
@@ -322,9 +347,17 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		    "MUTEX", lockname.c_str());
 	}
     }
+
+printf("(%d) -> *. LOCK SIZE = %d / %d (%s)\n",
+		ACE_Thread::self(), memory_area.count(),
+		memory_area.size(), lockname.c_str()); fflush(stdout);
+
     if (maplock.release() < 0)
+    {
+printf("DEBUG 4\n"); fflush(stdout);
 	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
+    }
     memset(hash, 0, sizeof(hash));
 }
 
@@ -348,8 +381,11 @@ mLOCK::~mLOCK()
     if (lockroot == NULL)
     {
 	if (maplock.release() < 0)
+	{
+printf("DEBUG 5\n"); fflush(stdout);
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
+	}
 	return;
     }
 
@@ -357,15 +393,23 @@ mLOCK::~mLOCK()
     {
 	if ((*lockroot).find(locks[i]) != (*lockroot).end())
 	{
+
+printf("(%d) <- %d. LOCK SIZE = %d / %d (%s)\n",
+		ACE_Thread::self(), i, memory_area.count(),
+		memory_area.size(), locks[i].c_str()); fflush(stdout);
+
 	    if ((*lockroot)[locks[i]].first == L_Read)
 	    {
 		rlock = (mLock_Read *) (*lockroot)[locks[i]].second;
 		if (rlock != NULL)
 		{
 		    if (rlock->release() < 0)
+		    {
+printf("DEBUG 6\n"); fflush(stdout);
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"READ", locks[i].c_str());
-		    delete rlock;
+		    }
+		    memory_area.dealloc(rlock);
 		    rlock = NULL;
 		}
 	    }
@@ -375,9 +419,12 @@ mLOCK::~mLOCK()
 		if (wlock != NULL)
 		{
 		    if (wlock->release() < 0)
+		    {
+printf("DEBUG 7\n"); fflush(stdout);
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"WRITE", locks[i].c_str());
-		    delete wlock;
+		    }
+		    memory_area.dealloc(wlock);
 		    wlock = NULL;
 		}
 	    }
@@ -387,16 +434,29 @@ mLOCK::~mLOCK()
 		if (mlock != NULL)
 		{
 		    if (mlock->release() < 0)
+		    {
+printf("DEBUG 8\n"); fflush(stdout);
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"MUTEX", locks[i].c_str());
-		    delete mlock;
+		    }
+		    memory_area.dealloc(mlock);
 		    mlock = NULL;
 		}
 	    }
 	    (*lockroot).erase(locks[i]);
 	}
     }
-    maplock.release();
+
+printf("(%d) <- *. LOCK SIZE = %d / %d\n",
+		ACE_Thread::self(), memory_area.count(),
+		memory_area.size()); fflush(stdout);
+
+    if (maplock.release() < 0)
+    {
+printf("DEBUG 9\n"); fflush(stdout);
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap");
+    }
 }
 
 bool mLOCK::Locked()
@@ -418,8 +478,11 @@ bool mLOCK::Locked()
 	if (lockroot == NULL)
 	{
 	    if (maplock.release() < 0)
+	    {
+printf("DEBUG 10\n"); fflush(stdout);
 		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"MUTEX", "LockMap");
+	    }
 	    return false;
 	}
 
@@ -427,7 +490,12 @@ bool mLOCK::Locked()
 		(*lockroot)[locks[locks.size()-1]].first != L_Invalid &&
 		(*lockroot)[locks[locks.size()-1]].second != NULL)
 	    retval = true;
-	maplock.release();
+	if (maplock.release() < 0)
+	{
+printf("DEBUG 11\n"); fflush(stdout);
+	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap");
+	}
     }
     return retval;
 }
@@ -450,7 +518,12 @@ size_t mLOCK::AllLocks()
 	count += iter->second.size();
     }
 
-    maplock.release();
+    if (maplock.release() < 0)
+    {
+printf("DEBUG 12\n"); fflush(stdout);
+	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap");
+    }
     return count;
 }
 
