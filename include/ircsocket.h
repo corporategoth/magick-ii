@@ -1,6 +1,10 @@
 #ifndef IRC_SOCKET_H
 #define IRC_SOCKET_H
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include <ace/Reactor.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Connector.h>

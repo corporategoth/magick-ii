@@ -13,6 +13,11 @@
 
 #ifndef _LOCKABLE_H
 #define _LOCKABLE_H
+
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include <ace/Local_Tokens.h>
 #include "mstring.h"
 #include "trace.h"

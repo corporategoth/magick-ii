@@ -26,6 +26,11 @@
 
 #ifndef _MSTRING_H
 #define _MSTRING_H
+
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include <string>
 using namespace std;
 

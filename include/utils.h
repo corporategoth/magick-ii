@@ -12,6 +12,11 @@
 // ===================================================
 #ifndef _UTILS_H
 #define _UTILS_H
+
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include "mstring.h"
 
 const char FILE_SEP_EXT = '.';
