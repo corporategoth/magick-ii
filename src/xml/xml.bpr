@@ -29,7 +29,7 @@ PATHCPP = .;
 PATHASM = .;
 PATHPAS = .;
 PATHRC = .;
-USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
+USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT
 SYSDEFINES =NO_STRICT
 # ---------------------------------------------------------------------------
 CFLAG1 = -I..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib \
@@ -37,15 +37,15 @@ CFLAG1 = -I..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\inc
   -c -b- -Vx -tWM -D$(SYSDEFINES);$(USERDEFINES)
 IDLCFLAGS = -I..\..\include -I..\..\..\support\ace_wrappers -I$(BCB)\include \
   -I$(BCB)\include\vcl -I..\..\..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
-  -DWIN32 -D_CONSOLE -D_MBCS -DACE_NTRACE=1 -DACE_USE_RCSID=0
+  -DWIN32 -D_CONSOLE -D_MBCS -DACE_NTRACE=1 -DACE_USE_RCSID=0 -DHASCRYPT
 PFLAGS = -U$(DEBUGLIBPATH) \
   -I..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib \
   -N2Debug -N0Debug \
-  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0 -$YD -$W -$O- \
-  -v -JPHN -M
+  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT -$YD \
+  -$W -$O- -v -JPHN -M
 AFLAGS = /i..\..\include /i..\..\..\support\ace_wrappers /i$(BCB)\include \
   /i$(BCB)\include\vcl /i..\..\..\support\zlib /d_DEBUG /dDEBUG /dWIN32 \
-  /d_CONSOLE /d_MBCS /dACE_NTRACE=1 /dACE_USE_RCSID=0 /mx /w2 /zd
+  /d_CONSOLE /d_MBCS /dACE_NTRACE=1 /dACE_USE_RCSID=0 /dHASCRYPT /mx /w2 /zd
 RFLAGS = -i..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib
 LFLAGS =
 # ---------------------------------------------------------------------------
@@ -94,8 +94,9 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
+Count=2
+Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT
+Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
 
 [HistoryLists\hlIntOutputDir]
 Count=1

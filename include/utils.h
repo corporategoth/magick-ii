@@ -25,6 +25,9 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/07/24 16:45:37  ungod
+** no message
+**
 ** Revision 1.27  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -125,8 +128,10 @@ mstring ToHumanTime(unsigned long in);
 mstring ToHumanNumber(unsigned long in);
 unsigned long FromHumanSpace(mstring in);
 mstring ToHumanSpace(unsigned long in);
+#ifdef HASCRYPT
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, int enc);
+#endif
 
 // extrapolated from the ms's pair<T1,T2> template code
 
