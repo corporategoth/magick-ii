@@ -40,8 +40,8 @@ INCLUDEPATH = $(BCB)\include
 LIBPATH = $(BCB)\lib
 WARNINGS= 
 # ---------------------------------------------------------------------------
-CFLAG1 = -vGc -vGt -vGd -O2 -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w \
-    -Tkh30000 -X- -a8 -6 -b -d -k -y -v -vi- -c -tWM -tWC
+CFLAG1 = -O2 -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w -Tkh30000 -X- -a8 \
+    -5 -b -d -k -y -v -vi- -c -tWM -tWC
 IDLCFLAGS = -I$(BCB)\include -src_suffix cpp -boa
 PFLAGS = -$YD -$W -$O- -v -JPHN -M
 RFLAGS = 
@@ -50,7 +50,7 @@ LFLAGS = -D"" -ap -Tpe -x -Gn -v
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj $(OBJFILES)
 ALLRES = $(RESFILES)
-ALLLIB = cg32.lib $(LIBFILES) import32.lib cw32mt.lib
+ALLLIB = $(LIBFILES) import32.lib cw32mt.lib
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 

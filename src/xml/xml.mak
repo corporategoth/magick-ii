@@ -13,45 +13,47 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.05.03
 # ---------------------------------------------------------------------------
-PROJECT = magick_keygenbcc.exe
-OBJFILES = magick_keygenbcc.obj src\magick_keygen.obj
+PROJECT = xml.lib
+OBJFILES = xml.obj sxp.obj hashtable.obj xmlparse.obj xmlrole.obj xmltok.obj
 RESFILES = 
-MAINSOURCE = magick_keygenbcc.cpp
+MAINSOURCE = xml.cpp
 RESDEPEN = $(RESFILES)
-LIBFILES = src\crypt\crypto.lib
+LIBFILES = 
 IDLFILES = 
 IDLGENFILES = 
 LIBRARIES = 
-PACKAGES = vcl50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi ibsmp50.bpi \
-    vcldbx50.bpi qrpt50.bpi teeui50.bpi teedb50.bpi tee50.bpi dss50.bpi \
-    vclmid50.bpi nmfast50.bpi inetdb50.bpi inet50.bpi dclocx50.bpi \
-    DCLUSR50.bpi Icsbcb40.bpi
+PACKAGES = 
 SPARELIBS = 
 DEFFILE = 
 # ---------------------------------------------------------------------------
-PATHCPP = .;src
+PATHCPP = .;
 PATHASM = .;
 PATHPAS = .;
 PATHRC = .;
-DEBUGLIBPATH = $(BCB)\lib\debug
-RELEASELIBPATH = $(BCB)\lib\release
-USERDEFINES = HASCRYPT
-SYSDEFINES = _NO_VCL;_VIS_NOLIB
-INCLUDEPATH = src;$(BCB)\include;include;..\support\zlib
-LIBPATH = src;$(BCB)\lib
-WARNINGS= 
+LINKER = TLib
+DEBUGLIBPATH = 
+RELEASELIBPATH = 
+USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT;STDC_HEADERS
+SYSDEFINES = NO_STRICT;_VIS_NOLIB
+INCLUDEPATH = ..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib
+LIBPATH = 
+WARNINGS = -w-rvl -w-par -w-8027 -w-8026
+LISTFILE = 
 # ---------------------------------------------------------------------------
-CFLAG1 = -Od -Q -w -Tkh30000 -X- -r- -a8 -5 -b -d -k -y -v -vi- -c -tWM -tWC
-IDLCFLAGS = -Isrc -I$(BCB)\include -Iinclude -I..\support\zlib -src_suffix cpp \
-    -DHASCRYPT -boa
+CFLAG1 = -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Hc -Q -Vx -Ve -X- -r- \
+    -a8 -5 -b -d -k -y -v -vi- -c -tWM
+IDLCFLAGS = -I..\..\include -I..\..\..\support\ace_wrappers -I$(BCB)\include \
+    -I$(BCB)\include\vcl -I..\..\..\support\zlib -src_suffix cpp -D_DEBUG \
+    -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DACE_NTRACE=1 -DACE_USE_RCSID=0 \
+    -DHASCRYPT -DSTDC_HEADERS -boa
 PFLAGS = -$YD -$W -$O- -v -JPHN -M
 RFLAGS = 
 AFLAGS = /mx /w2 /zd
-LFLAGS = -D"" -ap -Tpe -x -Gn -v
+LFLAGS = 
 # ---------------------------------------------------------------------------
-ALLOBJ = c0x32.obj $(OBJFILES)
-ALLRES = $(RESFILES)
-ALLLIB = $(LIBFILES) import32.lib cw32mt.lib
+ALLOBJ = $(OBJFILES)
+ALLRES = 
+ALLLIB = cg32.lib
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 
@@ -121,7 +123,7 @@ TASM32 = tasm32
 !endif
 
 !if !$d(LINKER)
-LINKER = ilink32
+LINKER = TLib
 !endif
 
 !if !$d(BRCC32)
@@ -147,14 +149,16 @@ BRCC32 = brcc32
 .PATH.RC  = $(PATHRC)
 !endif
 # ---------------------------------------------------------------------------
+!if "$(LISTFILE)" ==  ""
+COMMA =
+!else
+COMMA = ,
+!endif
+
 $(PROJECT): $(IDLGENFILES) $(OBJFILES) $(RESDEPEN) $(DEFFILE)
-    $(BCB)\BIN\$(LINKER) @&&!
-    $(LFLAGS) -L$(LIBPATH) +
-    $(ALLOBJ), +
-    $(PROJECT),, +
-    $(ALLLIB), +
-    $(DEFFILE), +
-    $(ALLRES)
+    $(BCB)\BIN\$(LINKER) /u $@ @&&!
+    $(LFLAGS) $? $(COMMA) $(LISTFILE)
+
 !
 # ---------------------------------------------------------------------------
 .pas.hpp:

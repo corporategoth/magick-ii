@@ -20,7 +20,7 @@ OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.
     Debug\mstring.obj Debug\nickserv.obj Debug\operserv.obj Debug\server.obj \
     Debug\servmsg.obj Debug\trace.obj Debug\utils.obj Debug\variant.obj \
     Debug\filesys.obj Debug\mconfig.obj Debug\convert_magick.obj \
-    Debug\convert_esper.obj
+    Debug\convert_esper.obj Debug\convert_epona.obj
 RESFILES = 
 MAINSOURCE = magickbcc.cpp
 RESDEPEN = $(RESFILES)
@@ -50,8 +50,8 @@ INCLUDEPATH = src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp
 LIBPATH = src;$(BCB)\lib
 WARNINGS= -wstv -wstu -w-rvl -wpin -w-par -wnod -wnak -wdef -wamb
 # ---------------------------------------------------------------------------
-CFLAG1 = -vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -Vmp \
-    -Tkh30000 -X- -r- -a8 -b -d -k -y -v -vi- -q -tWR -tWM -c
+CFLAG1 = -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -Vmp -Tkh30000 -X- \
+    -r- -a8 -5 -b -d -k -y -v -vi- -q -tWR -tWM -c
 IDLCFLAGS = -Isrc -Iinclude -I..\support\ace_wrappers -I..\support\zlib \
     -I..\include\sxp -I..\include\expat -I$(BCB)\include -src_suffix cpp \
     -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 \
@@ -63,7 +63,7 @@ LFLAGS = -IDebug -D"" -H:0x1000000 -S:0x1000000 -ap -Tpe -GD -s -v -q
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)
 ALLRES = $(RESFILES)
-ALLLIB = cg32.lib $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib
+ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 
