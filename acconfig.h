@@ -1,4 +1,3 @@
-
 /* Define if you have the type bool */
 #ifndef HAVE_BOOL
 #undef HAVE_BOOL
@@ -44,6 +43,11 @@
 #undef GETPASS
 #endif
 
+/* Do we need to use mem_fun1_ref when we want a binary_function */
+#ifndef HAVE_MEM_FUN1_REF
+#undef HAVE_MEM_FUN1_REF
+#endif
+
 /* Crypto key 1 placeholder */
 #ifndef CRYPTO_KEY1
 #define CRYPTO_KEY1 ""
@@ -53,3 +57,4 @@
 #ifndef CRYPTO_KEY2
 #define CRYPTO_KEY2 ""
 #endif
+

@@ -500,6 +500,10 @@ if test "$efence" = "true"; then
   LIBS="$LIBS -lefence"
 fi
 
+if false; then
+  AC_DEFINE(HAVE_MEM_FUN1_REF)
+fi
+
 dnl ====================================================
 
 if test 0$libacehead -eq 0; then

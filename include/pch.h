@@ -185,6 +185,10 @@ enum bool
 #  include <vector.h>
 #endif
 
+#ifndef HAVE_MEM_FUN1_REF
+#define mem_fun1_ref mem_fun_ref
+#endif
+
 /* ACE Extensions */
 #include <ace/Version.h>
 #include <ace/Reactor.h>

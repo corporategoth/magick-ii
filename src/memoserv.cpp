@@ -1050,7 +1050,7 @@ size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, cons
     RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
     MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
-	retval = count_if(iter->second.begin(), iter->second.end(), bind2nd(mem_fun_ref(&News_t::IsRead), user));
+	retval = count_if(iter->second.begin(), iter->second.end(), bind2nd(mem_fun1_ref(&News_t::IsRead), user));
     RET(retval);
     ETCB();
 }
