@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.100  2000/06/06 08:57:57  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -1172,9 +1176,14 @@ void Nick_Live_t::Mode(mstring in)
 	    {
 		Parent->operserv.RemHost(i_host);
 		MLOCK(("OperServ", "OperDeny"));
-		if (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
+		// IF we are SecureOper and NOT on oper list
+		// OR user is on OperDeny and NOT on sadmin list
+		if ((Parent->operserv.SecureOper() &&
+		    !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(i_Name))) ||
+		    (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
 		    !IsServices() && !(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(i_Name)))
+		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(i_Name))))
 		{
 		    if (Parent->server.proto.SVS())
 		    {
@@ -1438,8 +1447,6 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	{
 	    chans_founder_identd.insert(channel.LowerCase());
 	    retval = Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED");
-	    Log(LM_INFO, Parent->getLogMessage("CHANSERV/IDENTIFY"),
-		Mask(N_U_P_H).c_str(), channel.c_str());
 	}
 	else
 	{
@@ -1528,8 +1535,6 @@ mstring Nick_Live_t::Identify(mstring password)
 		    }
 		}
 	    }
-	    Log(LM_INFO, Parent->getLogMessage("NICKSERV/IDENTIFY"),
-		Mask(N_U_P_H).c_str(), i_Name.c_str());
 	    retval = Parent->getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
 	else

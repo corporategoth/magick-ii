@@ -25,6 +25,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/06/08 13:07:33  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.19  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -168,6 +172,7 @@ private:
 
 class DccXfer
 {
+public:
     enum XF_Type { Get, Send };
 
 private:
@@ -189,6 +194,7 @@ private:
     unsigned long i_DccId;
     unsigned char *i_Transiant;
     mDateTime i_LastData;
+    map<time_t, size_t> i_Traffic;
 
 public:
     DccXfer() { i_Transiant = NULL; }
@@ -216,7 +222,8 @@ public:
     void ChgNick(mstring in)	{ i_Source = in; }
     void Cancel();
     void Action();	// Do what we want!
-
+    size_t Average(time_t secs = 0);
+    size_t Traffic()		{ return i_Traffic.size(); }
 };
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>

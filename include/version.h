@@ -14,7 +14,6 @@
 ** ========================================================== */
 #ifndef _VERSION_H
 #define _VERSION_H
-#include "pch.h"
 static const char *ident_version_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -25,25 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.96  2000/06/06 08:57:54  prez
-** Finished off logging in backend processes except conver (which I will
-** leave for now).  Also fixed some minor bugs along the way.
-**
-** Revision 1.95  2000/05/28 05:20:46  prez
-** More stuff ..
-**
-** Revision 1.94  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.93  2000/05/28 02:37:15  prez
-** Minor bug fixes (help system and changing nicks)
-**
-** Revision 1.92  2000/05/27 15:10:10  prez
-** Misc changes, mainly re-did the makefile system, makes more sense.
-** Also added a config.h file.
+** Revision 1.97  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
 **
 ** Revision 1.13  2000/05/22 13:00:08  prez
 ** Updated version.h and some other stuff
@@ -81,7 +64,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 13;
+const int BUILD_NUMBER = 1;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 
@@ -94,11 +77,11 @@ const mstring BUILD_SYS = "haven";
  * helper directory.  PLEASE do not change these
  * because you think it'd be funky to have 'MyNet
  * Services', we DO diserve SOME creditation for what
- * we've done, dont you think?  The PRODUCT text may
+ * we've done, dont you think?  The PACKAGE text may
  * only be ONE word (else it stuffs up version replies).
  *
  * For a FULL release product (non-alpha/beta), the
- * RELEASE value will be blank (else it will contain
+ * VERSION value will be blank (else it will contain
  * either aN or bN (where n is the alpha or beta number
  * respectively).  It may also contain pre for pre-
  * release code.
@@ -115,9 +98,6 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring PRODUCT			= "Magick";
-const unsigned short Magick_Major_Ver	= 2;
-const unsigned short Magick_Minor_Ver	= 0;
 const mstring RELEASE			= "pre-a2";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
@@ -135,19 +115,19 @@ FULLNAME+" - "+SLOGAN,
 "  (c) 1997-2000 Preston Elder <prez@magick.tm>",
 "  (c) 1998-2000 William King <ungod@magick.tm>",
 "",
-PRODUCT+" is dedicated to the memory of PreZ's beloved",
+mstring(PACKAGE)+" is dedicated to the memory of PreZ's beloved",
 "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",
 "Ungod's brother Edward Kevin King (Aug 1982 - Nov 1997).",
 "",
-"The "+PRODUCT+" home page can be found at:",
+"The "+mstring(PACKAGE)+" home page can be found at:",
 "    "+HOMEPAGE+"",
 "",
-PRODUCT+" is freely downloadable from:",
+mstring(PACKAGE)+" is freely downloadable from:",
 "    "+DOWNLOAD+"",
 "",
-"The "+PRODUCT+" public mailing list is "+EMAIL+".",
+"The "+mstring(PACKAGE)+" public mailing list is "+EMAIL+".",
 "To subscribe, email majordomo@magick.tm with 'subscribe",
-PRODUCT+"' (no quotes) in the text of the message.",
+mstring(PACKAGE)+"' (no quotes) in the text of the message.",
 "",
 "Please type /MSG %s CONTRIB for full credits (flood).",
 "---EOM---"

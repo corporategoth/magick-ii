@@ -25,6 +25,10 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/06/08 13:07:33  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.15  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -113,6 +117,8 @@ public:
     static void do_file_Rename(mstring mynick, mstring source, mstring params);
     static void do_file_Priv(mstring mynick, mstring source, mstring params);
     static void do_file_Send(mstring mynick, mstring source, mstring params);
+    static void do_file_Dcc(mstring mynick, mstring source, mstring params);
+    static void do_file_Cancel(mstring mynick, mstring source, mstring params);
     static void do_file_Lookup(mstring mynick, mstring source, mstring params);
 };
 

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.107  2000/06/06 08:57:56  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -274,7 +278,7 @@ void IrcSvcHandler::HTM(bool in)
 
 size_t IrcSvcHandler::Average(time_t secs)
 {
-    NFT("IrcSvcHandler::Average");
+    FT("IrcSvcHandler::Average", (secs));
     time_t now = time(NULL);
     size_t total = 0;
     int i = 0;

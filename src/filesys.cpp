@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.31  2000/06/06 08:57:56  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -998,10 +1002,25 @@ void DccXfer::Action()
     if (i_Type == Get)
     {
 	COM(("Executing action for DCC %d GET", i_DccId));
-	XferAmt = i_Socket->recv_n((void *) &i_Transiant[i_XferTotal],
+	XferAmt = 0;
+	merrno = 0;
+	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
+		Average() <= Parent->files.Max_Speed()))
+	{
+	    XferAmt = i_Socket->recv_n((void *) &i_Transiant[i_XferTotal],
 			i_Blocksize - i_XferTotal, &onesec);
-	merrno = errno;
-	COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
+	    merrno = errno;
+	    COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
+	}
+	// Traffic Accounting ...
+	map<time_t, size_t>::iterator iter;
+	time_t now = time(NULL);
+	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
+		iter->first < now - (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
+	    i_Traffic.erase(iter->first);
+	if (i_Traffic.find(now) == i_Traffic.end())
+	    i_Traffic[now] = 0;
+	i_Traffic[now] += XferAmt;
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
@@ -1043,50 +1062,73 @@ void DccXfer::Action()
 		i_File.Close();
 	    }
 	}
+	if (i_File.IsOpened() &&
+		i_Traffic.size() > Parent->files.Sampletime() &&
+		Average() < Parent->files.Min_Speed())
+	{
+	    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/TOOSLOW"),
+						"GET");
+	    i_File.Close();
+	}
     }
     else if (i_Type == Send)
     {
 	COM(("Executing action for DCC %d SEND", i_DccId));
-	if (i_XferTotal == i_Blocksize)
+	XferAmt = 0;
+	merrno = 0;
+	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
+		Average() <= Parent->files.Max_Speed()))
 	{
-	    XferAmt = i_Socket->recv_n((void *) &verify, 4, &onesec);
-	    merrno = errno;
-	    COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
-	    if (XferAmt <= 0 || ntohl(verify) != i_Total)
+	    if (i_XferTotal == i_Blocksize)
 	    {
-		switch (merrno)
+		XferAmt = i_Socket->recv_n((void *) &verify, 4, &onesec);
+		merrno = errno;
+		COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
+		if (XferAmt <= 0 || ntohl(verify) != i_Total)
 		{
-		case 0:
-		case EINTR:		// Interrupted System Call
-		case EAGAIN:		// Temporarily Unavailable
-		case ENOMEM:		// Not Enough Memory
-		case ETIME:		// Request Timed Out
-		case EINPROGRESS:	// Operation In Progress
-		    break;
-		default:
-		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
+		    switch (merrno)
+		    {
+		    case 0:
+		    case EINTR:		// Interrupted System Call
+		    case EAGAIN:		// Temporarily Unavailable
+		    case ENOMEM:		// Not Enough Memory
+		    case ETIME:		// Request Timed Out
+		    case EINPROGRESS:	// Operation In Progress
+			break;
+		    default:
+			send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
 						"SEND", merrno);
-		    i_File.Close();
-		    return;
+			i_File.Close();
+			return;
+		    }
 		}
+		i_Total += i_XferTotal;
+		i_XferTotal = 0;
 	    }
-	    i_Total += i_XferTotal;
-	    i_XferTotal = 0;
-	}
-	if (!i_XferTotal && i_Total < i_Filesize)
-	{
-	    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
-	    if (i_Total + i_Blocksize > i_Filesize)
-		TranSz = i_File.Read(i_Transiant, i_Filesize - i_Total);
-	    else
+	    if (!i_XferTotal && i_Total < i_Filesize)
+	    {
+		ACE_OS::memset(i_Transiant, 0, i_Blocksize);
+		if (i_Total + i_Blocksize > i_Filesize)
+		    TranSz = i_File.Read(i_Transiant, i_Filesize - i_Total);
+		else
 		TranSz = i_File.Read(i_Transiant, i_Blocksize);
-	    i_XferTotal = 0;
-	}
-	CP(("Going to send %d bytes ...", TranSz));
-	XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
+		i_XferTotal = 0;
+	    }
+	    CP(("Going to send %d bytes ...", TranSz));
+	    XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
 			TranSz - i_XferTotal, &onesec);
-	merrno = errno;
-	COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
+	    merrno = errno;
+	    COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
+	}
+	// Traffic Accounting ...
+	map<time_t, size_t>::iterator iter;
+	time_t now = time(NULL);
+	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
+		iter->first < now - (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
+	    i_Traffic.erase(iter->first);
+	if (i_Traffic.find(now) == i_Traffic.end())
+	    i_Traffic[now] = 0;
+	i_Traffic[now] += XferAmt;
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
@@ -1116,8 +1158,40 @@ void DccXfer::Action()
 		i_File.Close();
 	    }
 	}
+	if (i_File.IsOpened() &&
+		i_Traffic.size() > Parent->files.Sampletime() &&
+		Average() < Parent->files.Min_Speed())
+	{
+	    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/TOOSLOW"),
+						"GET");
+	    i_File.Close();
+	}
     }
 }
+
+size_t DccXfer::Average(time_t secs)
+{
+    FT("DccXfer::Average", (secs));
+    time_t now = time(NULL);
+    size_t total = 0;
+    int i = 0;
+    map<time_t, size_t>::iterator iter;
+    if (secs > Parent->files.Sampletime())
+	secs = 0;
+    for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
+			iter->first < now; iter++)
+    {
+	if (secs ? iter->first >= (now-1) - secs : 1)
+	{
+	    total += iter->second;
+	    i++;
+	}
+    }
+    RET(total / (i ? i : 1));
+}
+
+
+
 int DccMap::open(void *in)
 {
     FT("DccMap::open", ("(void *) in"));
@@ -1163,7 +1237,9 @@ int DccMap::svc(void)
 	}
 
 	CP(("Executing ACTION for DCC #%d", WorkId));
+	// Only do an action IF they have not exceeded the max speed
 	xfers[WorkId]->Action();
+	// Below LOW SPEED threshold OR
 	// No data in X seconds...
 	if (xfers[WorkId]->LastData().SecondsSince() > Parent->files.Timeout())
 	{

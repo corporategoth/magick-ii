@@ -2192,6 +2192,20 @@
 06 =SOP::users.  Once set, only users of the listed committees
 07 =SOP::will be able to download the file specifed.
 
+[SERVMSG/FILE/DCC]
+01 =SOP::FILE DCC
+02 =SOP::
+03 =SOP::This will list current DCC transfers, and their progress
+04 =SOP::at the time of listing.  This will ONLY list active (non-
+05 =SOP::pending) transfers.
+
+[SERVMSG/FILE/CANCEL]
+01 =SOP::FILE CANCEL <dcc id>
+02 =SOP::
+03 =SOP::This will cancel a currently active DCC transfer (the
+04 =SOP::DCC ID is obtained with the FILE DCC command).  The user
+05 =SOP::will recieve an 'internal server error' abort message.
+
 [SERVMSG/FILE/LOOKUP]
 01 =SADMIN::FILE LIST <type> <hexfile>
 02 =SADMIN::
@@ -2199,7 +2213,7 @@
 04 =SADMIN::actual directories on Magick's host system) are stored
 05 =SADMIN::in the file system map.  There are three types of files,
 06 =SADMIN::this command recognizes:
-07 =SADMIN::    FileAttach - which will show you the filename, who
+07 =SADMIN::    MemoAttach - which will show you the filename, who
 08 =SADMIN::owns the memo the file is attached to, and what number.
 09 =SADMIN::    Picture - which will show you whose picture it is.
 10 =SADMIN::    Public - which will show you the filename, and who

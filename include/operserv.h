@@ -25,6 +25,10 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/06/08 13:07:33  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.36  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -76,6 +80,7 @@ class OperServ : public mBase, public SXP::IPersistObj
 private:
     mstring services_admin;
     bool secure;
+    bool secureoper;
     unsigned long def_expire;
     unsigned long expire_oper;
     unsigned long expire_admin;
@@ -166,6 +171,7 @@ public:
 
     mstring Services_Admin()	    { return services_admin; }
     bool Secure()		    { return secure; }
+    bool SecureOper()		    { return secureoper; }
     unsigned long Def_Expire()	    { return def_expire; }
     unsigned long Expire_Oper()	    { return expire_oper; }
     unsigned long Expire_Admin()	    { return expire_admin; }

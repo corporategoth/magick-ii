@@ -99,4 +99,11 @@
 /* Define if you have the <vector.h> header file.  */
 #undef HAVE_VECTOR_H
 
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+
 #endif

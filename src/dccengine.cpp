@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.30  2000/05/27 15:10:12  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -284,7 +288,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    */
 
 	    Parent->server.NOTICE(mynick, source, encode("FINGER",
-		PRODUCT + " Service - " + mynick));
+		mstring(PACKAGE) + " Service - " + mynick));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="VERSION")
 	{
@@ -299,8 +303,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    */
 
 	    mstring tmp;
-	    tmp << PRODUCT << ":";
-	    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
+	    tmp << PACKAGE << ":" << VERSION;
 	    if(RELEASE!="")
 		tmp+="-" + RELEASE;
 	    if(PATCH1!="")
@@ -339,13 +342,12 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    Using
 		X-N-SPC	::= '\000' .. '\037' | '\041' .. '\377' 
 	    */
-	    mstring tmp;
-	    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
+	    mstring tmp(VERSION);
 	    if(RELEASE!="")
 		tmp+="-" + RELEASE;
 
 	    Parent->server.NOTICE(mynick, source, encode("SOURCE",
-		    DOWNLOAD+":"+PRODUCT+tmp+".tar.gz"));
+		    DOWNLOAD+":"+PACKAGE+tmp+".tar.gz"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
 	{
@@ -548,10 +550,16 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     {
 	if (Parent->nickserv.PicExt() == "")
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
+	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
 	    return;
 	}
 
+	if (size && size > Parent->nickserv.PicSize())
+	{
+	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/TOOBIG"));
+	    return;
+	}
+	
 	mstring extension = filename.ExtractWord(filename.WordCount("."), ".").LowerCase();
 	if (!(filename.Contains(".") &&
 	    (" " + Parent->nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
@@ -565,7 +573,14 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	}
     }
 
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Picture() &&
+	size && size > Parent->memoserv.FileSize())
+    {
+	send(mynick, source, Parent->getMessage(source, "MS_COMMAND/TOOBIG"));
+	Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
+	return;
+    }
+
     // Spawn this in a new thread, and we're done, it takes over.
     Parent->dcc->Connect(addr, mynick, source, filename, size);
 }
-

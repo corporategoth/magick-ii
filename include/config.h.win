@@ -100,4 +100,11 @@
 /* Define if you have the <vector.h> header file.  */
 /* #undef HAVE_VECTOR_H */
 
+/* Name of package */
+#define PACKAGE "Magick"
+
+/* Version number of package */
+#define VERSION "2.0"
+
+
 #endif

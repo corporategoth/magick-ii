@@ -142,22 +142,30 @@ NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use
 COMPLETED          =DCC %s completed (%d bytes transferred).
 NOACCESS           =DCC %s refused (access denied).
 NOREQUEST          =DCC %s refused (no request active).
+TOOBIG             =DCC %s refused (file too big).
 NOFILE             =DCC %s failed (missing file).
 NOCONNECT          =DCC %s failed (no connection established).
 FAILED             =DCC %s failed (internal server error).
 TIMEOUT            =DCC %s aborted (timeout).
 SOCKERR            =DCC %s aborted (socket error %d).
+TOOSLOW            =DCC %s aborted (transfer too slow).
 ABORTED            =DCC %s aborted (internal server error).
 
 LOOKUP_MEMOATTACH  =Memo Attachment %08x is %s and belongs to %s, memo #%d (sent by %s, %s ago).
 LOOKUP_PICTURE     =Picture %08x belongs to %s.
 LOOKUP_PUBLIC      =Public file %08x is %s, available for %s.
-NLOOKUP_MEMOATTACH =Memo Attachment %80e does not exist.
+NLOOKUP_MEMOATTACH =Memo Attachment %08x does not exist.
 NLOOKUP_PICTURE    =Picture %08x does not exist.
 NLOOKUP_PUBLIC     =Public file %08x does not exist.
 NLOOKUP_OTHER      =Unknown file catagory %s.
 NOSPACE            =Not enough space for file, removed.
 NOSPACE2           =Not enough space for temporary file, please try again later.
+
+LIST_HEAD          =ID       D      Size   Prog Speed/s User (File Name)
+NOACTIVE           =No DCC file transfers active.
+NODCCID            =No DCC transfer with ID %08x active.
+CANCEL             =DCC ID %08x has been cancelled.
+
 
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.

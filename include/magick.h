@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2000/06/08 13:07:33  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.130  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -268,6 +272,7 @@ public:
 		unsigned long timeout;
 		unsigned long min_speed;
 		unsigned long max_speed;
+		unsigned long sampletime;
 	public:
 		mstring MakePath(mstring in);
 		mstring Pidfile()		    { return MakePath(pidfile); }
@@ -290,6 +295,7 @@ public:
 		unsigned long Timeout()const	    { return timeout; }
 		unsigned long Min_Speed()const	    { return min_speed; }
 		unsigned long Max_Speed()const	    { return max_speed; }
+		unsigned long Sampletime()const	    { return sampletime; }
 	} files;
 
 	class config_t {

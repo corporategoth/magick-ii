@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.242  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.241  2000/06/06 08:57:56  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -376,7 +380,7 @@ int Magick::Start()
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 #ifdef ACE_DEBUGGING
-    ACE_Log_Msg::instance()->open(PRODUCT);
+    ACE_Log_Msg::instance()->open(PACKAGE);
     ACE_Log_Msg::enable_debug_messages();
 #endif
 
@@ -603,7 +607,7 @@ int Magick::Start()
     // we wait for everything to shutdown cleanly.
     // All that will be left is US and the LOGGER.
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_COMPLETE"),
-		PRODUCT.c_str(), Magick_Major_Ver, Magick_Minor_Ver);
+		PACKAGE, VERSION);
     while(!Shutdown())
     {
 	ACE_Reactor::instance()->run_event_loop();
@@ -696,7 +700,7 @@ int Magick::Start()
     remove(files.Pidfile().Strip(mstring::stBoth));
 
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_COMPLETE"),
-		PRODUCT.c_str(), Magick_Major_Ver, Magick_Minor_Ver);
+		PACKAGE, VERSION);
     RET(MAGICK_RET_TERMINATE);
 }
 
@@ -999,7 +1003,7 @@ void Magick::dump_help()
 	 << "--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n"
 	 << "--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n"
 	 << "\n"
-	 << "For more help on the usage of " + PRODUCT + ", please browse the docs directory.\n"
+	 << "For more help on the usage of " + mstring(PACKAGE) + ", please browse the docs directory.\n"
 	 << "This released under the GNU General Public License.  Please see the\n"
 	 << "\"COPYING\" file for more details.\n\n";
 
@@ -2130,7 +2134,7 @@ bool Magick::get_config_values()
     }
     servmsg.names = value_mstring;
 
-    in.Read(ts_Services+"ServMsg_Name",&value_mstring,PRODUCT + " <--> User");
+    in.Read(ts_Services+"ServMsg_Name",&value_mstring,mstring(PACKAGE) + " <--> User");
     if (value_mstring != servmsg.realname)
     {
 	servmsg.realname = value_mstring;
@@ -2213,8 +2217,21 @@ bool Magick::get_config_values()
 	files.timeout = FromHumanTime(value_mstring);
     else
 	files.timeout = FromHumanTime("2m");
-    in.Read(ts_Files+"MIN_SPEED",&files.min_speed,0);
-    in.Read(ts_Files+"MAX_SPEED",&files.max_speed,0);
+    in.Read(ts_Files+"MIN_SPEED",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	files.min_speed = FromHumanSpace(value_mstring);
+    else
+	files.min_speed = FromHumanSpace("0");
+    in.Read(ts_Files+"MAX_SPEED",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	files.max_speed = FromHumanSpace(value_mstring);
+    else
+	files.max_speed = FromHumanSpace("0");
+    in.Read(ts_Files+"SAMPLETIME",&value_mstring,"30s");
+    if (FromHumanTime(value_mstring))
+	files.sampletime = FromHumanTime(value_mstring);
+    else
+	files.sampletime = FromHumanTime("30s");
 
     in.Read(ts_Config+"SERVER_RELINK",&value_mstring,"5s");
     if (FromHumanTime(value_mstring))
@@ -2421,6 +2438,7 @@ bool Magick::get_config_values()
 
     in.Read(ts_OperServ+"SERVICES_ADMIN",&operserv.services_admin,"");
     in.Read(ts_OperServ+"SECURE",&operserv.secure,false);
+    in.Read(ts_OperServ+"SECUREOPER",&operserv.secureoper,false);
     in.Read(ts_OperServ+"DEF_EXPIRE",&value_mstring,"3h");
     if (FromHumanTime(value_mstring))
 	operserv.def_expire = FromHumanTime(value_mstring);
@@ -3088,9 +3106,7 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    mstring tmp;
-    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
-    attribs["version"]= tmp;
+    attribs["version"]= VERSION;
     pOut->BeginObject(tag_Magick, attribs);
 
     SXP::dict attr;

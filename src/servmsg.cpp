@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/06/08 13:07:35  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.53  2000/06/06 08:57:58  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -42,7 +46,7 @@ static const char *ident = "@(#)$Id$";
 ** backend stuff ...
 **
 ** Revision 1.49  2000/05/19 10:48:15  prez
-** Finalized the DCC Sending (now uses the Action map properly)
+** Finalized the DCC Sending (now uses the Actions map properly)
 **
 ** Revision 1.48  2000/05/18 11:41:46  prez
 ** Fixed minor front-end issues with the filesystem...
@@ -194,6 +198,12 @@ void ServMsg::AddCommands()
 	    "FILE* SEC*", Parent->commserv.SOP_Name(), ServMsg::do_file_Priv);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE* SEND*", Parent->commserv.ALL_Name(), ServMsg::do_file_Send);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* DCC*", Parent->commserv.SOP_Name(), ServMsg::do_file_Dcc);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* KILL*", Parent->commserv.SOP_Name(), ServMsg::do_file_Cancel);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* CAN*", Parent->commserv.SOP_Name(), ServMsg::do_file_Cancel);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE* LOOK*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1180,6 +1190,119 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 		" " + mstring(ultoa(Parent->LocalHost())) + " " +
 		mstring(ultoa(port)) + " " + mstring(ultoa(filesize))));
     Parent->dcc->Accept(port, mynick, source, FileMap::Public, filenum);
+}
+
+
+void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Dcc", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+
+    // ID       D      Size   Prog Speed/s User (File Name)
+    // 00000001 S 000000000   0.0% xxxx.xX PreZ (blah.tgz)
+    // 000000b2 S 000000000  48.2%         PreZ
+    // 0000ac36 R 000000000 100.0%         PreZ
+
+    if (DccMap::xfers.size())
+    {
+	::send(mynick, source, Parent->getMessage(source, "DCC/LIST_HEAD"));
+	map<unsigned long, DccXfer *>::iterator iter;
+	for (iter = DccMap::xfers.begin(); iter != DccMap::xfers.end();
+ 						iter++)
+ 	{
+	    float speed = (float) iter->second->Average();
+	    char scale = 'b';
+	    while (speed >= 1024.0)
+	    {
+		speed /= 1024.0;
+		switch (scale)
+		{
+		case 'b':
+		    scale = 'k';
+		    break;
+		case 'k':
+		    scale = 'm';
+		    break;
+		case 'm':
+		    scale = 'g';
+		    break;
+		case 'g':
+		    scale = 't';
+		    break;
+		}
+	    }
+	    
+	    ::send("%08x %c %9d %3.1f %4.1f%c %s (%s)", iter->first,
+		((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'),			
+		iter->second->Filesize(),
+		((float) iter->second->Total() /
+			(float) iter->second->Filesize() * 100.0),
+		speed, scale, iter->second->Source().c_str(),
+		iter->second->Filename().c_str());
+ 	}
+    }
+    else
+    {
+	::send(mynick, source, Parent->getMessage(source, "DCC/NOACTIVE"));
+    }    
+}
+
+
+void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Cancel", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring hexstr = params.ExtractWord(3, " ").LowerCase();
+
+    if (hexstr.Len() != 8)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	return;
+    }
+    else
+    {
+	for (unsigned int i=0; i<hexstr.Len(); i++)
+	    if (!mstring("0123456789abcdef").Contains(hexstr[i]))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+		return;
+	    }
+    }
+
+    unsigned long number;
+    unsigned short high, low, k;
+    high = makehex("0x" + hexstr.SubString(0, 3));
+    low = makehex("0x" + hexstr.SubString(4, 7));
+    number = (high * 0x00010000) + low;
+    
+    if (number == 0)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	return;
+    }
+
+    if (DccMap::xfers.find(number) == DccMap::xfers.end())
+    {
+	::send(mynick, source, Parent->getMessage(source, "DCC/NODCCID"),
+		number);
+    }
+    else
+    {
+	DccMap::xfers[number]->Cancel();
+	delete DccMap::xfers[number];
+	DccMap::xfers.erase(number);
+	::send(mynick, source, Parent->getMessage(source, "DCC/CANCEL"),
+		number);
+    }
 }
 
 

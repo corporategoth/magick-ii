@@ -7,11 +7,6 @@ $Id$
 Feature requests that have been 'approved' by the
 development team to be worked on, and are coming:
 
-
-- SECUREOPER - ie. you cannot set mode +o unless you are on
-  this committee.  If the committee (or nickname) is secure,
-  then this will effectively make the user ident before /oper.
-
 - Expanded flood protection (eg. nick flood = kill, etc)
 
 - Auto-AKILL if clone protection is triggered > x times

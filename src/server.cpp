@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2000/06/08 13:07:34  prez
+** Added Secure Oper and flow control to DCC's.
+** Also added DCC list and cancel ability
+**
 ** Revision 1.100  2000/06/06 08:57:58  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -3061,10 +3065,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source VERSION :our.server
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
-	    mstring tmp;
-	    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
+	    mstring tmp(VERSION);
 	    if(RELEASE!="")
-		tmp+="-" + RELEASE;
+		tmp+="-"+RELEASE;
 	    if(PATCH1!="")
 		tmp+="+"+PATCH1;
 	    if(PATCH2!="")
@@ -3114,7 +3117,7 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="y";
 	    tmp << Parent->startup.Level() << "] Build #" << BUILD_NUMBER <<
 		" (" << BUILD_TIME << ") " << BUILD_SYS << "/" << BUILD_TYPE << ".";
-	    sraw("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() + " :" + tmp);
+	    sraw("351 " + source + " " + PACKAGE + " " + Parent->startup.Server_Name() + " :" + tmp);
 	}
 	else
 	{
