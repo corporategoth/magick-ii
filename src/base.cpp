@@ -227,8 +227,11 @@ void NetworkServ::execute(const mstring & data)
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
         msgtype=data.ExtractWord(2,": ").UpperCase();
-	if (!Parent->nickserv.IsLive(source))
+	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
+	{
 	    KillUnknownUser(source);
+	    return;
+	}
     }
     else
     {
@@ -424,9 +427,8 @@ void NetworkServ::execute(const mstring & data)
     case 'P':
 	if (msgtype=="PART")
 	{
-	    // :source PART #channel
-	    for (int i=1; i<=data.ExtractWord(3, ": ").WordCount(","); i++)
-		Parent->nickserv.live[sourceL].Part(data.ExtractWord(3, ": ").ExtractWord(i, ","));
+	    // :source PART #channel :reason
+	    Parent->nickserv.live[sourceL].Part(data.ExtractWord(3, ": "));
 	}
 	else if (msgtype=="PASS")
 	{

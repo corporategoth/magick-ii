@@ -42,7 +42,7 @@ void Chan_Live_t::Join(mstring nick)
 {
     FT("Chan_Live_t::Join", (nick));
     if (users.find(nick.LowerCase())!=users.end())
-	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick, i_Name);
+	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick.c_str(), i_Name.c_str());
     else
 	users[nick.LowerCase()] = pair<bool,bool>(false,false);
 }
@@ -51,7 +51,7 @@ int Chan_Live_t::Part(mstring nick)
 {
     FT("Chan_Live_t::Part", (nick));
     if (users.find(nick.LowerCase())==users.end())
-	wxLogWarning("PART received for %s who is not in %s.", nick, i_Name);
+	wxLogWarning("PART received for %s who is not in %s.", nick.c_str(), i_Name.c_str());
     else
 	users.erase(nick.LowerCase());
 
