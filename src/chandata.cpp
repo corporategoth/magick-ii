@@ -990,9 +990,14 @@ void Chan_Live_t::SendMode(const mstring & in)
 
     bool add = true;
     bool cstored = false;
-    mstring s_key, s_mlock_on, s_mlock_off;
+    mstring s_key, s_mlock_on, s_mlock_off, mymodes;
     int s_limit = 0;
 
+    {
+	RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
+	mymodes = modes;
+    }
+    
     if (Magick::instance().chanserv.IsStored(i_Name))
     {
 	cstored = true;
@@ -1146,29 +1151,31 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'b':
 		    if (in.WordCount(" ") >= param)
 		    {
+			mstring arg = in.ExtractWord(param, " ");
+
 			if (add)
 			{
-			    if (!IsBan(in.ExtractWord(param, " ")))
+			    if (!IsBan(arg))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
 				{
 				    p_modes_on += "b";
-				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_on_params.push_back(arg);
 				}
 			    }
 			}
 			else
 			{
-			    if (IsBan(in.ExtractWord(param, " ")))
+			    if (IsBan(arg))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
 				{
 				    p_modes_off += "b";
-				    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_off_params.push_back(arg);
 				}
 			    }
 			}
@@ -1179,16 +1186,18 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'e':
 		    if (in.WordCount(" ") >= param)
 		    {
+			mstring arg = in.ExtractWord(param, " ");
+
 			if (add)
 			{
-			    if (!IsExempt(in.ExtractWord(param, " ")))
+			    if (!IsExempt(arg))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'e', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, 'e', arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
 				{
 				    p_modes_on += "e";
-				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_on_params.push_back(arg);
 				}
 			    }
 			}
@@ -1196,12 +1205,12 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsExempt(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(param, " ")))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(param, " "));
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'e', in.ExtractWord(param, " ")))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, 'e', arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
 				{
 				    p_modes_off += "e";
-				    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+				    p_modes_off_params.push_back(arg);
 				}
 			    }
 			}
@@ -1212,23 +1221,27 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'l':
 		    if (add)
 		    {
-			if (!(cstored && s_mlock_off.Contains("l")))
+			if (!cstored || !s_mlock_off.Contains("l"))
 			{
 			    if (in.WordCount(" ") >= param)
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
-				p_modes_on += "l";
-				p_modes_on_params.push_back(in.ExtractWord(param, " "));
-				param++;
+				int new_limit = atoi(in.ExtractWord(param, " "));
+				if (new_limit > 0 && static_cast<unsigned int>(new_limit) != i_Limit)
+				{
+				    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
+					RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
+				    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
+					RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
+				    p_modes_on += "l";
+				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+				 }
+				 param++;
 			    }
 			}
 		    }
 		    else
 		    {
-			if (!(cstored && s_limit))
+			if (!cstored || !s_limit)
 			{
 			    if (i_Limit)
 			    {
@@ -1243,34 +1256,35 @@ void Chan_Live_t::SendMode(const mstring & in)
 		case 'k':
 		    if (in.WordCount(" ") >= param)
 		    {
+			mstring new_key = in.ExtractWord(param, " ");
 			if (add)
 			{
-			    // ONLY allow +k if we've turned it off before, or one isnt set
-			    if (i_Key.empty() || ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
+			    if (!cstored || s_key == new_key || !s_mlock_off.Contains("k"))
 			    {
-				if (!(cstored && s_mlock_off.Contains("k")))
+				// ONLY allow +k if we've turned it off before, or one isnt set
+				if (i_Key.empty() || ModeExists(p_modes_off, p_modes_off_params, false, 'k', i_Key))
 				{
 				    // DONT take off 'off' value, coz we can -k+k key1 key2
 				    if (!ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
 				    {
 					p_modes_on += "k";
-					p_modes_on_params.push_back(in.ExtractWord(param, " "));
+					p_modes_on_params.push_back(new_key);
 				    }
 				}
 			    }
 			}
 			else
 			{
-			    if (i_Key == in.ExtractWord(param, " "))
+			    if (i_Key == new_key)
 			    {
-				if (!(cstored && !s_key.empty()))
+				if (!cstored || s_key.empty())
 				{
 				    if (ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
 					RemoveMode(p_modes_on, p_modes_on_params, true, 'k');
 				    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 				    {
 					p_modes_off += "k";
-					p_modes_off_params.push_back(in.ExtractWord(param, " "));
+					p_modes_off_params.push_back(new_key);
 				    }
 				}
 			    }
@@ -1287,9 +1301,9 @@ void Chan_Live_t::SendMode(const mstring & in)
 	    {
 		if (add)
 		{
-		    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), !modes.Contains(mode[i]))
+		    if (!mymodes.Contains(mode[i]))
 		    {
-			if (!(cstored && s_mlock_off.Contains(mode[i])))
+			if (!cstored || !s_mlock_off.Contains(mode[i]))
 			{
 			    if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
 				RemoveMode(p_modes_off, p_modes_off_params, false, mode[i]);
@@ -1300,9 +1314,9 @@ void Chan_Live_t::SendMode(const mstring & in)
 		}
 		else
 		{
-		    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), modes.Contains(mode[i]))
+		    if (mymodes.Contains(mode[i]))
 		    {
-			if (!(cstored && s_mlock_on.Contains(mode[i])))
+			if (!cstored || !s_mlock_on.Contains(mode[i]))
 			{
 			    if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
 				RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
@@ -1330,9 +1344,14 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
     FT("Chan_Live_t::Mode", (source, in));
 
     mstring change(IrcParam(in, 1));
-    mstring newmode, newmode_param;
+    mstring mymodes, newmode, newmode_param;
     unsigned int fwdargs = 1, i, wc;
     bool add = true;
+
+    {
+	RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
+	mymodes = modes;
+    }
 
     wc = IrcParamCount(in);
     mstring mode_param;
@@ -1476,23 +1495,17 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    if (fwdargs <= wc)
 		    {
 			{
-			    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
+			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
 			    CB(5, bans.size());
 			    if (add)
 			    {
-				{
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
-				    bans[arg.LowerCase()] = mDateTime::CurrentDateTime();
-				}
+				bans[arg.LowerCase()] = mDateTime::CurrentDateTime();
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
 				    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', arg);
 			    }
 			    else
 			    {
-				{
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
-				    bans.erase(arg.LowerCase());
-				}
+				bans.erase(arg.LowerCase());
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
 				    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', arg);
 			    }
@@ -1508,23 +1521,17 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    if (fwdargs <= wc)
 		    {
 			{
-			    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
+			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
 			    CB(5, exempt.size());
 			    if (add)
 			    {
-				{
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
-				    exempt[arg.LowerCase()] = mDateTime::CurrentDateTime();
-				}
+				exempt[arg.LowerCase()] = mDateTime::CurrentDateTime();
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
 				    RemoveMode(p_modes_on, p_modes_on_params, true, 'e', arg);
 			    }
 			    else
 			    {
-				{
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
-				    exempt.erase(arg.LowerCase());
-				}
+				exempt.erase(arg.LowerCase());
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
 				    RemoveMode(p_modes_off, p_modes_off_params, false, 'e', arg);
 			    }
@@ -1540,27 +1547,19 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    if (fwdargs <= wc)
 		    {
 			{
-			    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
+			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
 			    CB(5, i_Key);
 			    if (add)
 			    {
-				{
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
-				    i_Key = arg;
-				}
+				i_Key = arg;
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', arg))
 				    RemoveMode(p_modes_on, p_modes_on_params, true, 'k', arg);
 			    }
 			    else
 			    {
 				if (i_Key != arg)
-				{
 				    LOG(LM_ERROR, "ERROR/KEYMISMATCH", (i_Key, arg, i_Name, source));
-				}
-				{
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
-				    i_Key.erase();
-				}
+				i_Key.erase();
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 				    RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
 			    }
@@ -1577,35 +1576,22 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    {
 			if (fwdargs <= wc)
 			{
-			    {
-				RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
-				CB(5, i_Limit);
-				if (!arg.IsNumber() || arg.Contains("."))
-				{
-				    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
-				    i_Limit = 0;
-				}
-				else
-				{
-				    {
-					WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
-					i_Limit = atoi(arg.c_str());
-				    }
-				    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l', arg))
-					RemoveMode(p_modes_on, p_modes_on_params, true, 'l', arg);
-				    newmode += change[i];
-				    newmode_param += " " + arg;
-				}
-				CE(5, i_Limit);
-			    }
-			    fwdargs++;
-			}
-			else
-			{
-			    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
 			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
-			    i_Limit = 0;
+			    CB(5, i_Limit);
+			    if (!arg.IsNumber() || arg.Contains("."))
+			    {
+				LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
+				i_Limit = 0;
+				newmode += "-" + mstring(change[i]) + "+";
+			    }
+			    else
+			    {
+				i_Limit = atoi(arg.c_str());
+				newmode += change[i];
+				newmode_param += " " + arg;
+			    }
+			    CE(5, i_Limit);
+			    fwdargs++;
 			}
 		    }
 		    else
@@ -1632,7 +1618,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 	    }
 	    else
 	    {
-		if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), add && !modes.Contains(change[i]))
+		if (add && !mymodes.Contains(change[i]))
 		{
 		    {
 			WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
@@ -1643,7 +1629,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		}
 		else
 		{
-		    if_RLOCK2 ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), !add && modes.Contains(change[i]))
+		    if (!add && mymodes.Contains(change[i]))
 		    {
 			{
 			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
