@@ -1,0 +1,9 @@
+This is a HEAVILY modified version of EXPAT and SXP
+for use with Magick IRC Services.  Please do NOT use
+this implementation in your own product.
+
+If you wish to use these in your own software, please
+download the original copies of them at:
+
+http://www.jclark.com/xml/expat.html
+http://www.sourceforge.net/project/?group_id=2280
