@@ -23,7 +23,7 @@ clean:
 		then	./configure; \
 		fi; \
 		$(MAKE) clean $(PASSTHRU); \
-		cd $${OLDPWD}; \
+		cd $(OLDPWD); \
 	done
 	rm -f *.$(OBJ) $(LIBNAME)
 
@@ -34,7 +34,7 @@ SUBS:
 		then	./configure; \
 		fi; \
 		$(MAKE) $(PASSTHRU); \
-		cd $${OLDPWD}; \
+		cd $(OLDPWD); \
 	done
 
 RMLIB:

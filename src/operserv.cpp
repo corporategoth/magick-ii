@@ -26,7 +26,7 @@ bool OperServ::AddHost(mstring host)
     CloneList[host.LowerCase()]++;
 
     {
-    MLOCK("OperServ","Clone");
+    //MLOCK("OperServ","Clone");
     if (Clone_find(host))
     {
 	if (CloneList[host.LowerCase()] > Clone->Value().first)
@@ -148,27 +148,45 @@ void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, m
     vector<mstring> downlinks = Parent->server.ServerList[server].Downlinks();
     mstring out;
     unsigned int users, opers;
+    float lag;
     for (int i=0; i<downlinks.size(); i++)
     {
 	if (Parent->server.IsServer(downlinks[i]))
 	{
 	    users = Parent->server.ServerList[downlinks[i]].Users();
 	    opers = Parent->server.ServerList[downlinks[i]].Opers();
+	    lag = Parent->server.ServerList[downlinks[i]].Lag();
 	    if (i<downlinks.size()-1)
 	    {
-		out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "|-" + downlinks[i]).c_str(),
-			Parent->server.ServerList[downlinks[i]].Lag(),
-			users, opers, ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+		if (lag < 10.0)
+		    out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
+			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+		else if (lag < 100.0)
+		    out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
+			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+		else
+		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
+			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 		Parent->server.NOTICE(mynick, source, out);
 		DoBreakdown(mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
 	    {
-		out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "`-" + downlinks[i]).c_str(),
-			Parent->server.ServerList[downlinks[i]].Lag(),
-			users, opers, ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+		if (lag < 10.0)
+		    out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
+			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+		else if (lag < 100.0)
+		    out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
+			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+		else
+		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
+			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 		Parent->server.NOTICE(mynick, source, out);
 		DoBreakdown(mynick, source, previndent + "  ", downlinks[i]);
 	    }
@@ -200,9 +218,10 @@ void OperServ::execute(const mstring & data)
     {
 
 	Parent->server.NOTICE(mynick, source,
-		"SERVER                                       LAG  USERS (OPS)");
+		"SERVER                                         LAG  USERS (OPS)");
 	mstring out;
  	unsigned int users = 0, opers = 0;
+	float lag;
 
 	map<mstring,Nick_Live_t>::iterator k;
 	for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
@@ -215,18 +234,27 @@ void OperServ::execute(const mstring & data)
 	    }
 	}
 
-	out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-		Parent->startup.Server_Name().LowerCase().c_str(),
-		0.0, users, opers, ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+	out.Format("%-40s    0.000s  %5d (%3d)  %3.2f%%",
+		Parent->startup.Server_Name().LowerCase().c_str(), users, opers,
+		((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 	Parent->server.NOTICE(mynick, source, out);
 	if (Parent->server.IsServer(Parent->server.OurUplink()))
 	{
 	    users = Parent->server.ServerList[Parent->server.OurUplink()].Users();
 	    opers = Parent->server.ServerList[Parent->server.OurUplink()].Opers();
-	    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-		("`-" + Parent->server.OurUplink()).c_str(),
-		Parent->server.ServerList[Parent->server.OurUplink()].Lag(),
-		users, opers, ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+	    lag = Parent->server.ServerList[Parent->server.OurUplink()].Lag();
+	    if (lag < 10.0)
+		out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
+			("`-" + Parent->server.OurUplink()).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+	    else if (lag < 100.0)
+		out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
+			("`-" + Parent->server.OurUplink()).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+	    else
+		out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
+			("`-" + Parent->server.OurUplink()).c_str(), lag, users, opers,
+			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 	    Parent->server.NOTICE(mynick, source, out);
 	    DoBreakdown(mynick, source, "  ", Parent->server.OurUplink());
 	}

@@ -37,8 +37,8 @@ Magick::Magick(int inargc, char **inargv)
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
 
-    low_water_mark=100;   // To be deciphered at runtime later
-    high_water_mark=200;
+    low_water_mark=20;   // To be deciphered at runtime later
+    high_water_mark=25;
     reconnect=true;
     loggertask.open();
 }

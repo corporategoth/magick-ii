@@ -46,7 +46,7 @@ magick:
 		then	./configure; \
 		fi; \
 		$(MAKE) TOPDIR=$(TOPDIR); \
-		cd $${OLDPWD}; \
+		cd $(OLDPWD); \
 	done
 	$(CC) $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
@@ -54,5 +54,7 @@ magick:
 
 clean:
 	@for x in $(SUBDIRS) ./src; \
-	do	$(MAKE) -C $$x clean TOPDIR=$(TOPDIR); \
+	do	cd $$x; \
+		$(MAKE) clean TOPDIR=$(TOPDIR); \
+		cd $(OLDPWD); \
 	done
