@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.172  2001/05/08 03:38:41  prez
+** Fixed bahamut back to SVSNICK
+**
 ** Revision 1.171  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -600,7 +603,7 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["Rz"] = "RW";
 	break;
 
-    case 0003: // Bahamut
+    case 0003: // Relic 4.0
 	SetTokens(0001);
 	tokens["e"] = "MODNICK";
 	break;
@@ -729,7 +732,7 @@ void Protocol::Set(const unsigned int in)
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
-	i_SVSNICK = "MODNICK";
+	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
 	i_SVSNOOP = "SVSNOOP";
@@ -737,7 +740,7 @@ void Protocol::Set(const unsigned int in)
 	i_UNSQLINE = "UNSQLINE";
 	i_Burst = "BURST";
 	i_EndBurst = "BURST END";
-	SetTokens(0003);
+	SetTokens(0001);
 	break;
 
     case 20: // UnderNet < 2.10.x
