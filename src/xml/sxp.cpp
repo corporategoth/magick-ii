@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2000/07/21 01:10:17  prez
+** Fixed the dbase corruption checking ...
+**
 ** Revision 1.8  2000/07/21 00:18:50  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -429,7 +432,10 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		if (buffer)
 		    free(buffer);
 		if (retval == 0)
+		{
 		   Shutdown();
+		   retval = 1;
+		}
 		if( m_bShuttingDown )
 		    DoShutdown();
 	    }
