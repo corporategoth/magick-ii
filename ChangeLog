@@ -1,3 +1,150 @@
+* 2002-07-22 02:52  Preston A. Elder <prez@magick.tm>
+  gui/IniParser.java (1.2), gui/mct.java (1.10):
+  
+  Fixed up the windows loading/saving of INI files.
+
+* 2002-07-21 23:57  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.101), ircd/ircd.aurora.ini (1.2),
+  ircd/ircd.bahamut.ini (1.2), ircd/ircd.dal.ini (1.2),
+  ircd/ircd.dal4.4.15.ini (1.2), ircd/ircd.hybrid5.ini (1.2),
+  ircd/ircd.hybrid7.ini (1.2), ircd/ircd.ircu.ini (1.2),
+  ircd/ircd.ircu2.10.ini (1.3), ircd/ircd.ircu2.10ext.ini (1.3),
+  ircd/ircd.rfc1459+ts8.ini (1.2), ircd/ircd.rfc1459.ini (1.2),
+  ircd/ircd.unreal.ini (1.2), src/magick.cpp (1.364), src/mconfig.cpp
+  (1.43):
+  
+  Made INI file reading case sensative again (to handle tokens)
+
+* 2002-07-21 23:20  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.363):
+  
+  Fixed default ircd config
+
+* 2002-07-21 23:20  Preston A. Elder <prez@magick.tm>
+  gui/mct.java (1.9):
+  
+  Fixed scenario where path not specified.
+
+* 2002-07-21 21:26  Preston A. Elder <prez@magick.tm>
+  helper/run_gui.bat (1.3):
+  
+  Take 2
+
+* 2002-07-21 21:25  Preston A. Elder <prez@magick.tm>
+  helper/run_gui.bat (1.2):
+  
+  Updated gui run script
+
+* 2002-07-21 21:20  Preston A. Elder <prez@magick.tm>
+  gui/Files.java (1.8), gui/mct.java (1.8):
+  
+  Some extra fixes to handle a default directory
+
+* 2002-07-21 20:48  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.ircu2.10.ini (1.2), ircd/ircd.ircu2.10ext.ini (1.2):
+  
+  Corrections in protocol defs.
+
+* 2002-07-21 20:39  Preston A. Elder <prez@magick.tm>
+  README (1.25), configure.in (1.63), docs/magick.ini (1.100),
+  docs/en/index.sgml (1.40), docs/man/magick.pod (1.14),
+  docs/man/magick_keygen.pod (1.11), docs/man/magick_stampkeys.pod (1.3),
+  gui/Files.java (1.7), gui/Makefile.am (1.4), gui/Startup.java (1.5),
+  gui/TabbedPane.java (1.5), gui/ToolTips.java (1.3), gui/mct.java (1.7),
+  include/magick.h (1.183), include/server.h (1.87), ircd/ircd.aurora.ini
+  (1.1), ircd/ircd.bahamut.ini (1.1), ircd/ircd.dal.ini (1.1),
+  ircd/ircd.dal4.4.15.ini (1.1), ircd/ircd.hybrid5.ini (1.1),
+  ircd/ircd.hybrid7.ini (1.1), ircd/ircd.ircu.ini (1.1),
+  ircd/ircd.ircu2.10.ini (1.1), ircd/ircd.ircu2.10ext.ini (1.1),
+  ircd/ircd.rfc1459+ts8.ini (1.1), ircd/ircd.rfc1459.ini (1.1),
+  ircd/ircd.unreal.ini (1.1), lang/english.lfo (1.52), src/magick.cpp
+  (1.362), src/mstring.cpp (1.134), src/server.cpp (1.220):
+  
+  All the relevant changes to convert from using hard-coded PROTOCOL
+  definitions, to using a .ini file.
+
+* 2002-07-20 17:43  Preston A. Elder <prez@magick.tm>
+  include/filesys.h (1.60), include/mconfig.h (1.28),
+  include/version.h-release (1.39), include/xml/sxp.h (1.35),
+  src/Makefile.am (1.30), src/base.cpp (1.191), src/filesys.cpp (1.99),
+  src/ircsocket.cpp (1.217), src/lockable.cpp (1.88), src/magick.cpp
+  (1.361), src/mstring.cpp (1.133), src/operserv.cpp (1.147),
+  src/server.cpp (1.219), src/servmsg.cpp (1.101):
+  
+  Removed a bunch of warnings *yawn*
+
+* 2002-07-18 20:35  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.11):
+  
+  Fixed typo
+
+* 2002-07-18 20:24  Preston A. Elder <prez@magick.tm>
+  FAQ (1.9), docs/en/index.sgml (1.39):
+  
+  Updated FAQ to take out unreal stuff
+
+* 2002-07-18 20:20  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.10):
+  
+  Forgot about .cvsignore
+
+* 2002-07-18 20:18  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.9):
+  
+  Made file a little more concise.
+
+* 2002-07-18 20:15  William King <ungod@magick.tm>
+  Makefile.dist (1.8):
+  
+  Fixed odd configure recursion problem on make -f Makefile.dist maint
+
+* 2002-07-18 19:29  William King <ungod@magick.tm>
+  Makefile.dist (1.7):
+  
+  made maint target work again
+
+* 2002-07-18 19:27  William King <ungod@magick.tm>
+  Makefile.dist (1.6):
+  
+  add a maint target for easy setup for maintainers
+
+* 2002-07-18 19:15  William King <ungod@magick.tm>
+  configure.in (1.62):
+  
+  Fixed spelling error.
+
+* 2002-07-18 19:10  Preston A. Elder <prez@magick.tm>
+  src/mstring.cpp (1.132):
+  
+  Replaced match_wild, this one doesnt have a particular bug that the one
+  from Andy Church had.
+
+* 2002-07-18 19:10  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.86), src/server.cpp (1.218):
+  
+  Changed checking of proto.Number() to proto.UnrealNumeric()
+
+* 2002-07-15 19:33  Preston A. Elder <prez@magick.tm>
+  helper/uninstall.bat (1.2):
+  
+  Added remove directory
+
+* 2002-07-15 18:46  Preston A. Elder <prez@magick.tm>
+  helper/uninstall.bat (1.1):
+  
+  Added uninstall batch file for better cleanup.
+
+* 2002-07-15 17:35  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.98), src/stages.cpp (1.20), include/filesys.h (1.59),
+  include/stages.h (1.11):
+  
+  Added 'b' as a default flag for file modes.
+
+* 2002-07-15 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.40):
+  
+  Created version 2.0s20020715
+
 * 2002-07-08 03:00  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.39):
   
