@@ -1417,16 +1417,16 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 		    ToHumanTime(Parent->operserv.Def_Expire()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL2"));
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
-		    Parent->commserv.SADMIN_Name(),
+		    Parent->commserv.SADMIN_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_SAdmin()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
-		    Parent->commserv.SOP_Name(),
+		    Parent->commserv.SOP_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Sop()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
-		    Parent->commserv.ADMIN_Name(),
+		    Parent->commserv.ADMIN_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Admin()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
-		    Parent->commserv.OPER_Name(),
+		    Parent->commserv.OPER_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Oper()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_CLONES"),
 		    Parent->operserv.Clone_Limit(),

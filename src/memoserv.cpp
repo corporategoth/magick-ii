@@ -237,7 +237,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	if (!Parent->memoserv.IsChannel(who))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase());
+				who.LowerCase().c_str());
 	    return;
 	}
 
@@ -280,7 +280,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    }
 	    if (i==1 && unread)
 		::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_NOUNREAD"),
-			    who.LowerCase());
+			    who.LowerCase().c_str());
 	}
 	else
 	{
@@ -510,7 +510,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	if (!Parent->memoserv.IsChannel(who))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase());
+				who.LowerCase().c_str());
 	    return;
 	}
 
@@ -525,7 +525,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 		iter->Unread(whoami);
 	    }
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/UNREAD_ALL"),
-				    who.LowerCase());
+				    who.LowerCase().c_str());
 	}
 	else
 	{
@@ -704,7 +704,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	if (!Parent->memoserv.IsChannel(who))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase());
+				who.LowerCase().c_str());
 	    return;
 	}
 
@@ -896,7 +896,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	if (!Parent->memoserv.IsChannel(who))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase());
+				who.LowerCase().c_str());
 	    return;
 	}
 
@@ -1070,7 +1070,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	if (!Parent->memoserv.IsChannel(who))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase());
+				who.LowerCase().c_str());
 	    return;
 	}
 
@@ -1240,7 +1240,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	if (!Parent->memoserv.IsChannel(who))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase());
+				who.LowerCase().c_str());
 	    return;
 	}
 
