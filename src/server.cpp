@@ -28,6 +28,11 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.181  2001/06/17 09:39:07  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.180  2001/06/16 09:35:24  prez
 ** More tiny bugs ...
 **
@@ -1123,10 +1128,13 @@ unsigned int Server_t::Users() const
 
     unsigned int count = 0;
     NickServ::live_t::iterator k;
-    RLOCK(("NickServ", "live"));
+    { RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
+    {
+	RLOCK2(("NickServ", "live", k->first));
 	if (k->second.Server() == i_Name)
 	    count++;
+    }}
     RET(count);
 }
 
@@ -1136,10 +1144,13 @@ unsigned int Server_t::Opers() const
 
     unsigned int count = 0;
     NickServ::live_t::iterator k;
-    RLOCK(("NickServ", "live"));
+    { RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
+    {
+	RLOCK2(("NickServ", "live", k->first));
 	if (k->second.Server() == i_Name && k->second.HasMode("o"))
 	    count++;
+    }}
     RET(count);
 }
 
@@ -1149,12 +1160,13 @@ vector<mstring> Server_t::Downlinks() const
     vector<mstring> downlinks;
     Server::list_t::iterator serv;
 
-    RLOCK(("Server", "list"));
+    { RLOCK(("Server", "list"));
     for(serv=Parent->server.ListBegin(); serv!=Parent->server.ListEnd(); serv++)
     {
+	RLOCK2(("Server", "list", serv->first));
 	if (serv->second.Uplink() == i_Name && !i_Name.empty())
 	    downlinks.push_back(serv->first);
-    }
+    }}
     NRET(vector<mstring>, downlinks);
 }
 
@@ -1165,24 +1177,27 @@ vector<mstring> Server_t::AllDownlinks() const
     Server::list_t::iterator serv;
     bool found = false;
 
-    RLOCK(("Server", "list"));
+    { RLOCK(("Server", "list"));
     for(serv=Parent->server.ListBegin(); serv!=Parent->server.ListEnd(); serv++)
     {
+	RLOCK2(("Server", "list", serv->first));
 	if (serv->second.Uplink() == i_Name)
 	{
 	    downlinks.push_back(serv->first);
 	    uplinks.push_back(serv->first);
 	    found = true;
 	}
-    }
+    }}
 
     while (found)
     {
 	found = false;
 	for (unsigned int i=0; i<uplinks.size(); i++) 
 	{
+	    RLOCK(("Server", "list"));
 	    for(serv=Parent->server.ListBegin(); serv!=Parent->server.ListEnd(); serv++)
 	    {
+		RLOCK2(("Server", "list", serv->first));
 		if (serv->second.Uplink() == uplinks[i])
 		{
 		    downlinks.push_back(serv->first);
@@ -1572,14 +1587,17 @@ mstring Server::ServerNumeric(const unsigned long num) const
 {
     FT("Server::ServerNumeric", (num));
     mstring retval;
-    RLOCK(("Server", "list"));
     Server::list_t::const_iterator iter;
+    { RLOCK(("Server", "list"));
     for (iter=ListBegin(); iter!=ListEnd(); iter++)
+    {
+	RLOCK2(("Server", "list", iter->first));
 	if (iter->second.Numeric() == num)
 	{
 	    retval = iter->second.Name();
 	    break;
 	}
+    }}
     RET(retval);
 }
 
@@ -1696,6 +1714,7 @@ void Server::AKILL(const mstring& host, const mstring& reason,
     { RLOCK(("NickServ", "live"));
     for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
     {
+	RLOCK2(("NickServ", "live", nlive->first));
 	if (nlive->second.Mask(Nick_Live_t::U_P_H).After("!").Matches(host, true))
 	    killusers.push_back(nlive->first);
     }}
@@ -3045,6 +3064,7 @@ void Server::parse_A(mstring &source, const mstring &msgtype, const mstring &par
 				    iter != Parent->commserv.ListEnd();
 				    iter++)
 		{
+		    RLOCK3(("CommServ", "list", iter->first));
 		    if (iter->second.IsOn(sourceL))
 		    {
 			MLOCK(("CommServ", "list", iter->first, "message"));
@@ -3517,6 +3537,7 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 		RLOCK(("Server", "list"));
 		for(serv=Parent->server.ListBegin(); serv!=Parent->server.ListEnd(); serv++)
 		{
+		    RLOCK2(("Server", "list", serv->first));
 		    sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
 		}
@@ -3543,14 +3564,15 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 	    else
 	    {
 		ChanServ::live_t::iterator chan;
-		RLOCK(("ChanServ", "live"));
+		{ RLOCK(("ChanServ", "live"));
 		for (chan=Parent->chanserv.LiveBegin(); chan!=Parent->chanserv.LiveEnd(); chan++)
 		{
+		    RLOCK2(("ChanServ", "live", chan->first));
 		    if (!(chan->second.HasMode("s") || chan->second.HasMode("p")))
 			sraw("322 " + source + " " + chan->first + " " +
 				mstring(chan->second.Users()) +  " :" +
 				chan->second.Topic());
-		}
+		}}
 	    }}
 
 	    sraw("323 " + source + " :End of /LIST");
@@ -3889,6 +3911,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 				    iter != Parent->commserv.ListEnd();
 				    iter++)
 		    {
+			RLOCK3(("CommServ", "list", iter->first));
 			if (iter->second.IsOn(sourceL))
 			{
 			    if (iter->first == Parent->commserv.ALL_Name())
@@ -3918,15 +3941,14 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 		    if (!setmode.empty())
 		    {
 			mstring setmode2;
-			{ RLOCK(("NickServ", "live", sourceL));
-			Nick_Live_t &nick = Parent->nickserv.GetLive(source);
+			Nick_Live_t nick = Parent->nickserv.GetLive(source);
 			for (unsigned int j=0; j<setmode.size(); j++)
 			{
 			    if (setmode[j] != '+' && setmode[j] != '-' &&
 				setmode[j] != ' ' &&
 				!nick.HasMode(setmode[j]))
 			        setmode2 += setmode[j];
-			}}
+			}
 			SVSMODE(Parent->nickserv.FirstName(), sourceL, "+" + setmode2);
 		    }
 		    if (Parent->nickserv.IsStored(sourceL))
@@ -3976,6 +3998,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 				    iter != Parent->commserv.ListEnd();
 				    iter++)
 			{
+			    RLOCK3(("CommServ", "list", iter->first));
 			    if (wason.find(iter->first) == wason.end() && iter->second.IsOn(newnick))
 			    {
 				if (iter->first == Parent->commserv.ALL_Name())
@@ -4005,15 +4028,14 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			if (!setmode.empty())
 			{
 			    mstring setmode2;
-			    { RLOCK(("NickServ", "live", newnick.LowerCase()));
-			    Nick_Live_t &nick = Parent->nickserv.GetLive(newnick);
+			    Nick_Live_t nick = Parent->nickserv.GetLive(newnick);
 			    for (unsigned int j=0; j<setmode.size(); j++)
 			    {
 				if (setmode[j] != '+' && setmode[j] != '-' &&
 					setmode[j] != ' ' &&
 					!nick.HasMode(setmode[j]))
 			        setmode2 += setmode[j];
-			    }}
+			    }
 			    SVSMODE(Parent->nickserv.FirstName(), newnick, "+" + setmode2);
 			}
 
@@ -4114,8 +4136,8 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	    if (!source.Contains("."))
 		return;
 
-	    /* TRACE ... (usually leave off)
-	    
+	    /* TRACE ... (usually leave off) */
+	    /*
 	    Trace::TurnSet(tt_MAIN, 0x20c0);
 	    for (int i=tt_MAIN+1; i<tt_MAX; i++)
 		Trace::TurnSet(static_cast<threadtype_enum>(i), 0x20c0);
@@ -4901,6 +4923,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 				    iter != Parent->commserv.ListEnd();
 				    iter++)
 		{
+		    RLOCK3(("CommServ", "list", iter->first));
 		    if (iter->second.IsOn(sourceL))
 		    {
 			if (iter->first == Parent->commserv.ALL_Name())
@@ -5006,6 +5029,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		{ RLOCK(("NickServ", "live"));
 		for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
 		{
+		    RLOCK2(("NickServ", "live", iter->first));
 		    if (iter->second.IsServices() && ListSize() == 0)
 		    {
 			chunked.push_back(iter->first);
@@ -5098,7 +5122,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else if (msgtype=="SZLINE")
 	{
-	    // Services ZLINE, ignore
+	    // Ignore ...
 	}
 	else
 	{
@@ -5195,8 +5219,7 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")) &&
 		Parent->nickserv.GetLive(params.ExtractWord(1, ": ")).IsServices())
 	    {
-		RLOCK2(("NickServ", "live", params.ExtractWord(1, ": ").LowerCase()));
-		Nick_Live_t &nlive = Parent->nickserv.GetLive(params.ExtractWord(1, ": "));
+		Nick_Live_t nlive = Parent->nickserv.GetLive(params.ExtractWord(1, ": "));
 		if (nlive.HasMode("o"))
 		    out << "204 " << source << " Operator 10 ";
 		else
@@ -5214,11 +5237,12 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 			Parent->startup.Server_Name() << " :0";
 		sraw(out);
 
-		RLOCK2(("NickServ", "live"));
 		NickServ::live_t::iterator iter;
+		{ RLOCK2(("NickServ", "live"));
 		for (iter=Parent->nickserv.LiveBegin();
 			iter!=Parent->nickserv.LiveEnd(); iter++)
 		{
+		    RLOCK3(("NickServ", "live", iter->first));
 		    if (iter->second.IsServices())
 		    {
 			out.erase();
@@ -5239,7 +5263,7 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 			sraw(out);
 			
 		    }
-		}
+		}}
 		out.erase();
 		out << "209 " << source << " Class 50 :1";
 		sraw(out);
@@ -5432,6 +5456,7 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 				    iter != Parent->commserv.ListEnd();
 				    iter++)
 		{
+		    RLOCK3(("CommServ", "list", iter->first));
 		    if (iter->second.IsOn(sourceL))
 		    {
 			if (iter->first == Parent->commserv.ALL_Name())
@@ -5953,10 +5978,12 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 			{ RLOCK(("ChanServ", "stored"));
 			for (iter=Parent->chanserv.StoredBegin(); iter!=Parent->chanserv.StoredEnd(); iter++)
 			{
+			    RLOCK2(("ChanServ", "live", iter->first));
 			    if (Parent->chanserv.IsLive(iter->first))
 				clive = &Parent->chanserv.GetLive(iter->first);
 			    else
 				clive = NULL;
+			    RLOCK3(("ChanServ", "stored", iter->first));
 			    // If its live and got JOIN on || not live and mlock +k or +i
 			    if ((clive != NULL && iter->second.Join()) ||
 				(clive == NULL && !iter->second.Forbidden() &&

@@ -27,6 +27,11 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/06/17 09:39:08  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.68  2001/06/17 05:22:12  prez
 ** Resolved compatability issues with ACE 5.1.17
 **
@@ -681,7 +686,7 @@ mstring base64_to_str(unsigned long in)
 mstring sysinfo_node()
 {
     mstring retval;
-    struct ACE_utsname *type = new struct ACE_utsname;
+    ACE_utsname *type = new ACE_utsname;
     ACE_OS::uname(type);
     retval = type->nodename;
     delete type;
@@ -691,7 +696,7 @@ mstring sysinfo_node()
 mstring sysinfo_type()
 {
     mstring retval;
-    struct ACE_utsname *type = new struct ACE_utsname;
+    ACE_utsname *type = new ACE_utsname;
     ACE_OS::uname(type);
     retval << type->sysname << "/" << type->machine;
     delete type;
@@ -701,7 +706,7 @@ mstring sysinfo_type()
 mstring sysinfo_rel()
 {
     mstring retval;
-    struct ACE_utsname *type = new struct ACE_utsname;
+    ACE_utsname *type = new ACE_utsname;
     ACE_OS::uname(type);
     retval = type->release;
     delete type;

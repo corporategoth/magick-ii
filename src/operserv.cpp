@@ -27,6 +27,11 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.128  2001/06/17 09:39:07  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.127  2001/06/15 07:20:41  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -364,6 +369,7 @@ bool OperServ::AddHost(const mstring& host)
 		{ RLOCK(("NickServ", "live"));
 		for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
 		{
+		    RLOCK2(("NickServ", "live", nlive->first));
 		    if (nlive->second.Host().IsSameAs(host, true))
 			killusers.push_back(nlive->first);
 		}}
@@ -3166,6 +3172,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	{ RLOCK(("NickServ", "live"));
 	for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
 	{
+	    RLOCK2(("NickServ", "live", nlive->first));
 	    if (nlive->second.Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
 		killusers.push_back(nlive->first);
 	}}
@@ -3421,8 +3428,10 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
 
     NickServ::live_t::iterator nlive;
     vector<mstring> killusers;
+    { RLOCK(("NickServ", "live"));
     for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
     {
+	RLOCK2(("NickServ", "live", nlive->first));
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host, true))
 	{
 	    // IF user is recognized and on sadmin, ignore.
@@ -3440,7 +3449,7 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
 		killusers.push_back(nlive->first);
 	    }
 	}
-    }
+    }}
     for (i=0; i<killusers.size(); i++)
 	Parent->server.KILL(Parent->operserv.FirstName(), killusers[i],
 		    Parent->getMessage("MISC/KILL_OPERDENY"));

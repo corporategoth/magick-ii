@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.252  2001/06/17 09:39:06  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.251  2001/06/16 09:35:24  prez
 ** More tiny bugs ...
 **
@@ -1223,8 +1228,7 @@ void Chan_Live_t::SendMode(const mstring& in)
     if (Parent->chanserv.IsStored(i_Name))
     {
 	cstored = true;
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase()));
-	Chan_Stored_t &cs = Parent->chanserv.GetStored(i_Name);
+	Chan_Stored_t cs = Parent->chanserv.GetStored(i_Name);
 	s_key = cs.Mlock_Key();
 	s_mlock_on = cs.Mlock_On();
 	s_mlock_off = cs.Mlock_Off();
@@ -2974,9 +2978,10 @@ mDateTime Chan_Stored_t::LastUsed()
 
     if (Parent->chanserv.IsLive(i_Name))
     {
-	for (unsigned int i=0; i<Parent->chanserv.GetLive(i_Name).Users(); i++)
+	Chan_Live_t clive = Parent->chanserv.GetLive(i_Name);
+	for (unsigned int i=0; i<clive.Users(); i++)
 	{
-	    if (GetAccess(Parent->chanserv.GetLive(i_Name).User(i)) > 0)
+	    if (GetAccess(clive.User(i)) > 0)
 	    {
 		RET(mDateTime::CurrentDateTime());
 	    }
@@ -6579,8 +6584,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
 
     if (chan.Forbidden())
     {
@@ -6609,8 +6613,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     {
 	if (Parent->chanserv.IsLive(channel))
 	{
-	    RLOCK2(("ChanServ", "live", channel.LowerCase()));
-	    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+	    Chan_Live_t clive = Parent->chanserv.GetLive(channel);
 	    output.erase();
 	    if (clive.Ops())
 	    {
@@ -6823,9 +6826,11 @@ void ChanServ::do_List(const mstring &mynick, const mstring &source, const mstri
 		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source));
     bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 		Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
+    { RLOCK(("ChanServ", "stored"));
     for (iter = Parent->chanserv.StoredBegin(), i=0, count = 0;
 			iter != Parent->chanserv.StoredEnd(); iter++)
     {
+	RLOCK2(("ChanServ", "stored", iter->first));
 	if (iter->second.Name().Matches(mask, true))
 	{
 	    if (i < listsize && (!iter->second.Private() || isoper))
@@ -6854,7 +6859,7 @@ void ChanServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	    }
 	    count++;
 	}
-    }
+    }}
     SEND(mynick, source, "LIST/DISPLAYED", (
 							i, count));
 }
@@ -6906,8 +6911,7 @@ void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
 
 	RLOCK(("ChanServ", "live", channel.LowerCase()));
 	Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-	RLOCK2(("ChanServ", "stored", channel.LowerCase()));
-	Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+	Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
 	clive.SendMode("-" + clive.Mode() + " " + clive.Key());
 	if (!cstored.Mlock().empty())
 	    clive.SendMode(cstored.Mlock() + " " + cstored.Mlock_Key() + " " +
@@ -6915,7 +6919,6 @@ void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
 
 	for (unsigned int i=0; i < clive.Users(); i++)
 	{
-	    
 	    if (clive.IsOp(clive.User(i)) &&
 		!(cstored.GetAccess(clive.User(i), "AUTOOP") ||
 		cstored.GetAccess(clive.User(i), "CMDOP")))
@@ -7006,12 +7009,12 @@ void ChanServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
 
     if (Parent->chanserv.IsLive(channel))
     {
-
 	unsigned int i;
 	vector<mstring> kickees;
-	for (i=0; i<Parent->chanserv.GetLive(channel).Users(); i++)
+	Chan_Live_t clive = Parent->chanserv.GetLive(channel);
+	for (i=0; i<clive.Users(); i++)
 	{
-		kickees.push_back(Parent->chanserv.GetLive(channel).User(i));
+		kickees.push_back(clive.User(i));
 	}
 	for (i=0; i<kickees.size(); i++)
 	{
@@ -7045,7 +7048,7 @@ void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
     if (chan.Forbidden())
     {
@@ -7245,8 +7248,7 @@ void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -7433,8 +7435,7 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -7683,8 +7684,7 @@ void ChanServ::do_Kick(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -7759,8 +7759,7 @@ void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -7854,8 +7853,7 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &chan = Parent->chanserv.GetLive(channel);
+    Chan_Live_t chan = Parent->chanserv.GetLive(channel);
     channel = chan.Name();
     unsigned int i;
     mstring user, output = channel + ": ";
@@ -8007,8 +8005,7 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -8043,8 +8040,7 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
     bool found = false;
     { RLOCK2(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-    RLOCK3(("ChanServ", "live", target.LowerCase()));
-    Nick_Live_t &nlive = Parent->nickserv.GetLive(target);
+    Nick_Live_t nlive = Parent->nickserv.GetLive(target);
     unsigned int i;
     for (i=0; i < clive.Bans(); i++)
     {
@@ -8123,9 +8119,11 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     SEND(mynick, source, "LIST/CHAN_LIST", (mask));
     ChanServ::live_t::iterator iter;
 
+    { RLOCK(("ChanServ", "live"));
     for (iter = Parent->chanserv.LiveBegin(), i=0, count = 0;
 			iter != Parent->chanserv.LiveEnd(); iter++)
     {
+	RLOCK2(("ChanServ", "live", iter->first));
 	if (iter->second.Name().Matches(mask, true))
 	{
 	    if (i < listsize)
@@ -8144,7 +8142,7 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	    }
 	    count++;
 	}
-    }
+    }}
     SEND(mynick, source, "LIST/DISPLAYED", (
 							i, count));
 }
@@ -8207,15 +8205,14 @@ void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, cons
 
     unsigned int i;
     vector<mstring> kickees;
-    { RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t clive = Parent->chanserv.GetLive(channel);
     for (i=0; i<clive.Users(); i++)
     {
 	mstring user = clive.User(i);
 	if (!user.IsSameAs(source) && Parent->nickserv.IsLive(user) &&
 		!Parent->nickserv.GetLive(user).IsServices())
-	    kickees.push_back(clive.User(i));
-    }}
+	    kickees.push_back(user);
+    }
     for (i=0; i<kickees.size(); i++)
     {
 	mstring output = parseMessage(Parent->getMessage(kickees[i], "CS_COMMAND/CLEAR"),
@@ -8472,8 +8469,7 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 	    ops.push_back(clive.Op(i));
 	}
     }}
-    { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     if (!cstored.Mlock_On().empty())
     {
 	mode = "+" + cstored.Mlock_On();
@@ -8487,7 +8483,7 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 	    mode << " " << cstored.Mlock_Key();
 	
 	Parent->chanserv.GetLive(channel).SendMode(mode);
-    }}
+    }
     if (!message.After(" ").Matches("*ALL*", true))
     {
 	for (i=0; i<ops.size(); i++)
@@ -8847,8 +8843,7 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9165,8 +9160,7 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9362,13 +9356,14 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 	    {
 		// Kick matching users ...
 		vector<mstring> kickees;
-		for (i=0; i<Parent->chanserv.GetLive(channel).Users(); i++)
+		Chan_Live_t chan = Parent->chanserv.GetLive(channel);
+		for (i=0; i<chan.Users(); i++)
 		{
 		    // MAN these commands can get REAL long .. ;)
-		    if (Parent->nickserv.IsLive(Parent->chanserv.GetLive(channel).User(i)) &&
-			Parent->nickserv.GetLive(Parent->chanserv.GetLive(channel).User(i)).Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
+		    if (Parent->nickserv.IsLive(chan.User(i)) &&
+			Parent->nickserv.GetLive(chan.User(i)).Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
 		    {
-			kickees.push_back(Parent->chanserv.GetLive(channel).User(i));
+			kickees.push_back(chan.User(i));
 		    }
 		}
 		for (i=0; i<kickees.size(); i++)
@@ -9388,11 +9383,12 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 		    Parent->server.KICK(mynick, realnick, channel,
 			((!reason.empty()) ? reason : Parent->chanserv.DEF_Akick_Reason()));
 		}
-		for (i=0; i<Parent->nickserv.GetStored(realnick).Siblings(); i++)
+		Nick_Stored_t nick = Parent->nickserv.GetStored(realnick);
+		for (i=0; i<nick.Siblings(); i++)
 		{
-		    if (Parent->chanserv.GetLive(channel).IsIn(Parent->nickserv.GetStored(realnick).Sibling(i)))
+		    if (Parent->chanserv.GetLive(channel).IsIn(nick.Sibling(i)))
 		    {
-			Parent->server.KICK(mynick, Parent->nickserv.GetStored(realnick).Sibling(i), channel,
+			Parent->server.KICK(mynick, nick.Sibling(i), channel,
 				((!reason.empty()) ? reason : Parent->chanserv.DEF_Akick_Reason()));
 		    }
 		}
@@ -9545,8 +9541,7 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9829,8 +9824,7 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10065,8 +10059,7 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -13293,8 +13286,10 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     ChanServ::stored_t::iterator iter;
     { RLOCK(("ChanServ", "stored"));
     for (iter = StoredBegin(); iter != StoredEnd(); iter++)
+    {
+	RLOCK2(("ChanServ", "stored", iter->first));
 	pOut->WriteSubElement(&iter->second);
-    }
+    }}
 
     pOut->EndObject(tag_ChanServ);
 }
@@ -13374,8 +13369,10 @@ void ChanServ::PostLoad()
     mstring locked = Parent->chanserv.LCK_MLock();
 
     ChanServ::stored_t::iterator iter;
+    RLOCK(("ChanServ", "stored"));
     for (iter=StoredBegin(); iter!=StoredEnd(); iter++)
     {
+	WLOCK(("ChanServ", "stored", iter->first));
 	for (iter->second.Level = iter->second.Level_begin();
 		iter->second.Level != iter->second.Level_end();
 		iter->second.Level++)

@@ -27,6 +27,11 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2001/06/17 09:39:07  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.89  2001/06/15 07:20:41  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -629,6 +634,7 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
     { RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
     {
+	RLOCK2(("NickServ", "live", k->first));
 	if (ServCounts.find(k->second.Server().LowerCase()) == ServCounts.end())
 	{
 	    ServCounts[k->second.Server()] =
@@ -666,6 +672,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	for (iter = Parent->server.ListBegin();
 		iter != Parent->server.ListEnd(); iter++)
 	{
+	    RLOCK2(("Server", "list", iter->first));
 	    if (!iter->second.Name().empty() &&
 		iter->second.Uplink() == Parent->startup.Server_Name().LowerCase())
 		downlinks.push_back(iter->first);
@@ -735,6 +742,7 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     for (i=Parent->nickserv.StoredBegin();
 		i!=Parent->nickserv.StoredEnd(); i++)
     {
+	RLOCK2(("NickServ", "stored", i->first));
 	if (i->second.Forbidden())
 	    forbidden++;
 	else
@@ -821,6 +829,7 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     for (i=Parent->chanserv.StoredBegin();
 		i!=Parent->chanserv.StoredEnd(); i++)
     {
+	RLOCK2(("ChanServ", "stored", i->first));
 	if (i->second.Forbidden())
 	    forbidden++;
 	else
@@ -1104,6 +1113,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("NickServ", "live"));
     for (i=Parent->nickserv.LiveBegin(); i!=Parent->nickserv.LiveEnd(); i++)
     {
+	RLOCK2(("NickServ", "live", i->first));
 	size += i->first.capacity();
 	size += i->second.Usage();
     }}
@@ -1114,6 +1124,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("ChanServ", "live"));
     for (j=Parent->chanserv.LiveBegin(); j!=Parent->chanserv.LiveEnd(); j++)
     {
+	RLOCK(("ChanServ", "live", j->first));
 	size += j->first.capacity();
 	size += j->second.Usage();
     }}
@@ -1124,6 +1135,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("NickServ", "stored"));
     for (k=Parent->nickserv.StoredBegin(); k!=Parent->nickserv.StoredEnd(); k++)
     {
+	RLOCK2(("NickServ", "stored", i->first));
 	size += k->first.capacity();
 	size += k->second.Usage();
     }}
@@ -1134,6 +1146,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("ChanServ", "stored"));
     for (l=Parent->chanserv.StoredBegin(); l!=Parent->chanserv.StoredEnd(); l++)
     {
+	RLOCK2(("chanServ", "stored", i->first));
 	size += l->first.capacity();
 	size += l->second.Usage();
     }}
@@ -1147,8 +1160,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     for (count = 0, m1=Parent->memoserv.NickBegin();
 			m1!=Parent->memoserv.NickEnd(); m1++)
     {
-	size += m1->first.capacity();
 	{ RLOCK2(("MemoServ", "nick", m1->first));
+	size += m1->first.capacity();
 	count += m1->second.size();
 	for (m2 = m1->second.begin(); m2 != m1->second.end(); m2++)
 	{
@@ -1181,6 +1194,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("CommServ", "list"));
     for (o=Parent->commserv.ListBegin(); o!=Parent->commserv.ListEnd(); o++)
     {
+	RLOCK2(("CommServ", "list", o->first));
 	size += o->first.capacity();
 	size += o->second.Usage();
     }}
@@ -1203,6 +1217,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("Server", "list"));
     for (p=Parent->server.ListBegin(); p!=Parent->server.ListEnd(); p++)
     {
+	RLOCK2(("Server", "list", p->first));
 	size += p->first.capacity();
 	size += p->second.Usage();
     }}
@@ -1288,11 +1303,13 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 		Parent->server.UserMax()));
     size_t opers = 0;
     NickServ::live_t::iterator k;
+    { RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
     {
+	RLOCK2(("NickServ", "live", k->first));
 	if (k->second.HasMode("o"))
 		opers++;
-    }
+    }}
     SEND(mynick, source, "STATS/GEN_USERS", (
 		Parent->nickserv.LiveSize(), opers));
 
@@ -1820,6 +1837,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    RLOCK(("NickServ", "stored"));
 	    for (i=Parent->nickserv.StoredBegin(); i!=Parent->nickserv.StoredEnd(); i++)
 	    {
+		RLOCK2(("NickServ", "stored", i->first));
 	    	if (i->second.PicNum() == number)
 	    	{
 		    SEND(mynick, source, "DCC/LOOKUP_PICTURE", (
@@ -1877,6 +1895,7 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     for (iter=Parent->server.ListBegin();
 			iter != Parent->server.ListEnd(); iter++)
     {
+	RLOCK2(("Server", "list", iter->first));
 	Parent->server.NOTICE(Parent->servmsg.FirstName(), "$" +
 						    iter->first, text);
     }

@@ -27,6 +27,11 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.181  2001/06/17 09:39:07  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.180  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -848,8 +853,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			News_t tmp(recipiant, sender, text);
 			Parent->memoserv.AddChannelNews(&tmp);
 
-			RLOCK2(("ChanServ", "stored", recipiant.LowerCase()));
-			Chan_Stored_t &cstored = Parent->chanserv.GetStored(recipiant);
+			Chan_Stored_t cstored = Parent->chanserv.GetStored(recipiant);
 			SEND(service, nick, "MS_COMMAND/SENT", (
 			    recipiant, cstored.Founder()));
 			LOG(LM_DEBUG, "MEMOSERV/SEND", (
@@ -860,8 +864,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(recipiant);
 			if (Parent->chanserv.IsLive(recipiant))
 			{
-			    RLOCK(("ChanServ", "live", recipiant.LowerCase()));
-			    Chan_Live_t &clive = Parent->chanserv.GetLive(recipiant);
+			    Chan_Live_t clive = Parent->chanserv.GetLive(recipiant);
 			    unsigned int i;
 			    for(i=0; i<clive.Users(); i++)
 			    {
@@ -919,7 +922,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			    RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
 			    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(realrecipiant);
 			    RLOCK3(("NickServ", "stored", realrecipiant.LowerCase()));
-			    Nick_Stored_t &nstored = Parent->nickserv.GetStored(realrecipiant);
+			    Nick_Stored_t nstored = Parent->nickserv.GetStored(realrecipiant);
 			    if (nstored.IsOnline())
 				SEND(service, realrecipiant, "MS_COMMAND/NS_NEW", (
 				    memolist.size(), service, memolist.size()));
@@ -1570,12 +1573,14 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     // This is needed to send logon notices ONLY for committees
     // we have joined by a nick change.
     CommServ::list_t::iterator iter2;
+    { RLOCK2(("CommServ", "list"));
     for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
 								iter2++)
     {
+	RLOCK3(("CommServ", "list", iter2->first));
 	if (iter2->second.IsOn(i_Name))
 	    wason.insert(iter2->first);
-    }
+    }}
 
     { RLOCK(("DCC"));
     if (Parent->dcc != NULL)
@@ -1714,12 +1719,14 @@ void Nick_Live_t::Mode(const mstring& in)
 		    // we have joined by a nick change.
 		    set<mstring> wason;
 		    CommServ::list_t::iterator iter2;
+		    { RLOCK(("CommServ", "list"));
 		    for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
 								iter2++)
 		    {
+			RLOCK2(("CommServ", "list", iter2->first));
 			if (iter2->second.IsOn(i_Name))
 			    wason.insert(iter2->first);
-		    }
+		    }}
 
 		    modes += in[i];
 		    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
@@ -1755,9 +1762,11 @@ void Nick_Live_t::Mode(const mstring& in)
 		    else
 		    {
 			mstring setmode;
+			{ RLOCK(("CommServ", "list"));
 			for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
 								iter2++)
 			{
+			    RLOCK2(("CommServ", "list", iter2->first));
 			    if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
 			    {
 				if (!Parent->server.proto.SVSMODE().empty())
@@ -1783,7 +1792,7 @@ void Nick_Live_t::Mode(const mstring& in)
 					    "] " + iter2->second.message->Entry());
 				}
 			    }
-			}
+			}}
 			if (!setmode.empty())
 			{
 			    mstring setmode2;
@@ -2282,11 +2291,15 @@ mstring Nick_Live_t::Identify(const mstring& password)
 	{
 	    set<mstring> wason;
 	    CommServ::list_t::iterator iter;
+	    { RLOCK(("CommServ", "list"));
 	    for (iter = Parent->commserv.ListBegin(); iter != Parent->commserv.ListEnd();
 									    iter++)
+	    {
+		RLOCK2(("CommServ", "list", iter->first));
 		if (iter->second.IsOn(i_Name))
 		    wason.insert(iter->first);
 
+	    }}
 	    { WLOCK(("NickServ", "live", i_Name.LowerCase(), "identified"));
 	    WLOCK2(("NickServ", "live", i_Name.LowerCase(), "failed_passwds"));
 	    MCB(identified);
@@ -2300,9 +2313,11 @@ mstring Nick_Live_t::Identify(const mstring& password)
 		Parent->nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
 
 	    // Send notices for committees we were NOT on
+	    { RLOCK(("CommServ", "list"));
 	    for (iter = Parent->commserv.ListBegin(); iter != Parent->commserv.ListEnd();
 									    iter++)
 	    {
+		RLOCK2(("CommServ", "list", iter->first));
 		if (iter->second.IsOn(i_Name) && wason.find(iter->first) == wason.end())
 		{
 		    for (iter->second.message = iter->second.MSG_begin();
@@ -2312,7 +2327,7 @@ mstring Nick_Live_t::Identify(const mstring& password)
 					IRC_Off + "] " + iter->second.message->Entry());
 		    }
 		}
-	    }
+	    }}
 	    retval = Parent->getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
 	else
@@ -2639,9 +2654,11 @@ unsigned long Nick_Stored_t::Drop()
     // Now we go for our channels ...
     vector<mstring> killchans;
     ChanServ::stored_t::iterator iter;
+    { RLOCK(("ChanServ", "stored"));
     for (iter = Parent->chanserv.StoredBegin();
 	    iter != Parent->chanserv.StoredEnd(); iter++)
     {
+	RLOCK2(("ChanServ", "stored", iter->first));
 	if (iter->second.Founder().IsSameAs(i_Name, true))
 	{
 	    if (!iter->second.CoFounder().empty() &&
@@ -2652,7 +2669,7 @@ unsigned long Nick_Stored_t::Drop()
 	    else
 		killchans.push_back(iter->first);
 	}
-    }
+    }}
 
     for (i=0; i<killchans.size(); i++)
     {
@@ -3146,6 +3163,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 			    citer != Parent->commserv.ListEnd(); citer++)
     {
 	found = false;
+	RLOCK2(("CommServ", "list", citer->first));
 	if (citer->second.Name() != Parent->commserv.ALL_Name() &&
 	    citer->second.Name() != Parent->commserv.REGD_Name() &&
 	    citer->second.Name() != Parent->commserv.SADMIN_Name())
@@ -3184,7 +3202,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
     for (csiter = Parent->chanserv.StoredBegin();
 			csiter != Parent->chanserv.StoredEnd(); csiter++)
     {
-	RLOCK(("ChanServ", "stored", csiter->first));
+	RLOCK2(("ChanServ", "stored", csiter->first));
 	if (csiter->second.CoFounder().LowerCase() == oldnick.LowerCase())
 	{
 	    csiter->second.CoFounder(i_Name);
@@ -3264,12 +3282,12 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 	} }
     }}
     
-    { RLOCK(("NickServ", "stored"));
     NickServ::stored_t::iterator niter;
+    { RLOCK(("NickServ", "stored"));
     for (niter = Parent->nickserv.StoredBegin();
 			niter != Parent->nickserv.StoredEnd(); niter++)
     {
-	RLOCK(("NickServ", "stored", niter->first));
+	RLOCK2(("NickServ", "stored", niter->first));
 	if (niter->first != i_Name.LowerCase() &&
 	    niter->second.Host().LowerCase() != i_Name.LowerCase() &&
 	    !IsSibling(niter->first) &&
@@ -3289,7 +3307,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
     for (cniter = Parent->memoserv.ChannelBegin();
 			cniter != Parent->memoserv.ChannelEnd(); cniter++)
     {
-	RLOCK(("MemoServ", "channel", cniter->first));
+	RLOCK2(("MemoServ", "channel", cniter->first));
 	for (cnliter = cniter->second.begin();
 			    cnliter != cniter->second.end(); cnliter++)
 	{
@@ -4527,6 +4545,7 @@ size_t Nick_Stored_t::MyChannels() const
     RLOCK(("ChanServ", "stored"));
     for (i=Parent->chanserv.StoredBegin(); i!=Parent->chanserv.StoredEnd(); i++)
     {
+	RLOCK2(("ChanServ", "stored", i->first));
 	if (i->second.Founder().IsSameAs(i_Name, true) ||
 	    i->second.CoFounder().IsSameAs(i_Name, true))
 	    count++;
@@ -5454,7 +5473,7 @@ const mDateTime &NickServ::GetRecovered(const mstring &in) const
 {
     FT("NickServ::GetRecovered", (in));
 
-    RLOCK(("NickServ", "recovered", in.LowerCase()));
+    RLOCK(("NickServ", "recovered"));
     map<mstring, mDateTime>::const_iterator iter = recovered.find(in.LowerCase());
     if (iter == recovered.end())
     {
@@ -5498,7 +5517,6 @@ void NickServ::RemRecovered(const mstring &in)
 	return;
 #endif
     }
-    WLOCK2(("NickServ", "recovered", iter->first));
     recovered.erase(iter);
 }
 
@@ -5942,20 +5960,20 @@ void NickServ::do_Slaves(const mstring &mynick, const mstring &source, const mst
     if (!Parent->nickserv.GetStored(target).Host().empty())
 	target = Parent->nickserv.GetStored(target).Host();
 
+    Nick_Stored_t nick = Parent->nickserv.GetStored(target);
     output << IRC_Bold << target << IRC_Off << " (" <<
-	Parent->nickserv.GetStored(target).Siblings() << "):";
+	nick.Siblings() << "):";
 
-    for (unsigned int i=0; i<Parent->nickserv.GetStored(target).Siblings(); i++)
+    for (unsigned int i=0; i<nick.Siblings(); i++)
     {
-	if (Parent->nickserv.GetStored(target).Sibling(i).length() +
-		output.length() > 510)
+	if (nick.Sibling(i).length() + output.length() > 510)
 	{
 	    ::send(mynick, source, output);
 	    output.erase();
 	    output << IRC_Bold << target << IRC_Off << " (" <<
-		Parent->nickserv.GetStored(target).Siblings() << "):";
+		nick.Siblings() << "):";
 	}
-	output << " " << Parent->nickserv.GetStored(target).Sibling(i);
+	output << " " << nick.Sibling(i);
     }
     ::send(mynick, source, output);
 }
@@ -6033,8 +6051,7 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    RLOCK(("NickServ", "stored", target.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(target);
+    Nick_Stored_t nick = Parent->nickserv.GetStored(target);
 
     if (nick.Forbidden())
     {
@@ -6134,9 +6151,11 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 
     output.erase();
     CommServ::list_t::iterator iter;
+    { RLOCK(("CommServ", "list"));
     for (iter=Parent->commserv.ListBegin();
 		iter!=Parent->commserv.ListEnd(); iter++)
     {
+	RLOCK2(("CommServ", "list", iter->first));
 	// IF committee is not ALL or REGD
 	// AND if it has a headcom, we're not in it
 	// AND the committee isnt private or the requesting user is in OPER
@@ -6162,7 +6181,7 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << iter->second.Name();
 	    if (iter->second.IsHead(target) && !iter->second.Head().empty())
 		output << IRC_Off;
-	}
+	}}
     }
     if (!output.empty())
 	SEND(mynick, source, "NS_INFO/COMMITTEES", (
@@ -6423,6 +6442,7 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
     for (iter = Parent->nickserv.StoredBegin(), i=0, count = 0;
 			iter != Parent->nickserv.StoredEnd(); iter++)
     {
+	RLOCK2(("NickServ", "stored", iter->first));
 	if (iter->second.Name().Matches(mask, true))
 	{
 	    if (!iter->second.Host().empty())
@@ -6721,13 +6741,11 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
     }
 
     mstring host, password;
-    { RLOCK(("NickServ", "stored", target.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(target);
+    Nick_Stored_t nick = Parent->nickserv.GetStored(target);
     host = nick.Host();
     if (host.empty())
 	host = nick.Name();
     password = nick.Password();
-    }
 
     Parent->nickserv.stats.i_Getpass++;
     SEND(mynick, source, "NS_OTH_COMMAND/GETPASS", (
@@ -6868,6 +6886,7 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     for (iter = Parent->nickserv.LiveBegin(), i=0, count = 0;
 			iter != Parent->nickserv.LiveEnd(); iter++)
     {
+	RLOCK2(("NickServ", "live", iter->first));
 	if (iter->second.Mask(Nick_Live_t::N_U_P_H).Matches(mask, true))
 	{
 	    if (i < listsize)
@@ -8725,8 +8744,10 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     NickServ::stored_t::iterator iter;
     { RLOCK(("NickServ", "stored"));
     for (iter = StoredBegin(); iter != StoredEnd(); iter++)
+    {
+	RLOCK2(("NickServ", "stored", iter->first));
 	pOut->WriteSubElement(&iter->second);
-    }
+    }}
 
     pOut->EndObject(tag_NickServ);
 }
@@ -8759,21 +8780,24 @@ void NickServ::PostLoad()
 
     NickServ::stored_t::iterator iter;
     CP(("Linking nickname entries ..."));
-    WLOCK(("NickServ", "stored"));
+    RLOCK(("NickServ", "stored"));
     for (iter=StoredBegin(); iter!=StoredEnd(); iter++)
     {
+	RLOCK2(("NickServ", "stored", iter->first));
 	if (!iter->second.i_Host.empty())
 	{
 	    if (IsStored(iter->second.i_Host))
 	    {
 		COM(("Nickname %s has been linked to %s ...",
 		    iter->first.c_str(), iter->second.i_Host.c_str()));
+		WLOCK(("NickServ", "stored", iter->second.i_Host));
 		GetStored(iter->second.i_Host).i_slaves.insert(iter->first);
 	    }
 	    else
 	    {
 		LOG(LM_WARNING, "ERROR/HOST_NOTREGD", (
 		    iter->second.i_Host, iter->first));
+		WLOCK(("NickServ", "stored", iter->first));
 		iter->second.i_Host.erase();
 	    }
 	}

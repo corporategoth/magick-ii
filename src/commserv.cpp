@@ -27,6 +27,11 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2001/06/17 09:39:07  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.102  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -540,12 +545,13 @@ bool Committee_t::IsIn(const mstring& nick) const
     // as a SLAVE since theres no way of online changing host.
     if (i_Name == Parent->commserv.SADMIN_Name())
     {
-	unsigned int i;
-	for (i=0; i<Parent->nickserv.GetStored(target).Siblings(); i++)
+	unsigned int i, j;
+	Nick_Stored_t nick = Parent->nickserv.GetStored(target);
+	for (i=0; i<nick.Siblings(); i++)
 	{
-	    for (i=0; i<members.size(); i++)
+	    for (j=0; j<members.size(); j++)
 	    {
-		if (Parent->nickserv.GetStored(target).Sibling(i).IsSameAs(members[i], true))
+		if (nick.Sibling(i).IsSameAs(members[j], true))
 		{
 		    RET(true);
 		}
@@ -1487,6 +1493,7 @@ void CommServ::do_List(const mstring &mynick, const mstring &source, const mstri
     for (iter = Parent->commserv.ListBegin(), i=0, count = 0;
 			iter != Parent->commserv.ListEnd(); iter++)
     {
+	RLOCK2(("CommServ", "list", iter->first));
 	if (iter->second.Name().Matches(mask, true))
 	{
 	    if (i < listsize && (!iter->second.Private() ||
@@ -1611,7 +1618,7 @@ void CommServ::do_Memo2(const mstring &source, const mstring &committee,
 		RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
 		MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(realrecipiant);
 		RLOCK3(("NickServ", "stored", realrecipiant.LowerCase()));
-		Nick_Stored_t &nick = Parent->nickserv.GetStored(realrecipiant);
+		Nick_Stored_t nick = Parent->nickserv.GetStored(realrecipiant);
 		if (nick.IsOnline())
 		    SEND(Parent->memoserv.FirstName(), nick.Name(), "MS_COMMAND/NS_NEW", (
 			memolist.size(), Parent->memoserv.FirstName(),
@@ -1647,7 +1654,7 @@ void CommServ::do_Memo2(const mstring &source, const mstring &committee,
 		RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
 		MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(realrecipiant);
 		RLOCK3(("NickServ", "stored", realrecipiant.LowerCase()));
-		Nick_Stored_t &nick = Parent->nickserv.GetStored(realrecipiant);
+		Nick_Stored_t nick = Parent->nickserv.GetStored(realrecipiant);
 		if (nick.IsOnline())
 		    SEND(Parent->memoserv.FirstName(), nick.Name(), "MS_COMMAND/NS_NEW", (
 			memolist.size(), Parent->memoserv.FirstName(),

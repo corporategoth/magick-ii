@@ -27,6 +27,11 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2001/06/17 09:39:07  prez
+** Hopefully some more changes that ensure uptime (mainly to do with locking
+** entries in an iterated search, and using copies of data instead of references
+** where we can get away with it -- reducing the need to lock the data).
+**
 ** Revision 1.102  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -3491,19 +3496,23 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
     { RLOCK(("MemoServ", "nick"));
     for (i1 = NickBegin(); i1 != NickEnd(); i1++)
+    {
+	RLOCK2(("MemoServ", "nick", i1->first));
 	for (i2=i1->second.begin(); i2!=i1->second.end(); i2++)
 	{
 	    pOut->WriteSubElement(&(*i2));
 	}
-    }
+    }}
 
     { RLOCK(("MemoServ", "channel"));
     for (j1 = ChannelBegin(); j1 != ChannelEnd(); j1++)
+    {
+	RLOCK2(("MemoServ", "channel", j1->first));
 	for (j2=j1->second.begin(); j2!=j1->second.end(); j2++)
 	{
 	    pOut->WriteSubElement(&(*j2));
 	}
-    }
+    }}
 
     pOut->EndObject(tag_MemoServ);
 }
