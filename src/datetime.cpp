@@ -224,47 +224,34 @@ mDateTime& mDateTime::operator-(time_t in)
 	return *this;
 }
 
-bool mDateTime::operator==(const mDateTime& in)
+bool mDateTime::operator==(const mDateTime& in)const
 {
-	if(Val==in.Val)
-		return true;
-	else
-		return false;
+	return Val==in.Val;
 }
-bool mDateTime::operator!=(const mDateTime& in)
+
+bool mDateTime::operator!=(const mDateTime& in)const
 {
-	if(Val!=in.Val)
-		return true;
-	else
-		return false;
+	return Val!=in.Val;
 }
-bool mDateTime::operator>(const mDateTime& in)
+
+bool mDateTime::operator>(const mDateTime& in)const
 {
-	if(Val>in.Val)
-		return true;
-	else
-		return false;
+	return Val>in.Val;
 }
-bool mDateTime::operator<(const mDateTime& in)
+
+bool mDateTime::operator<(const mDateTime& in)const
 {
-	if(Val<in.Val)
-		return true;
-	else
-		return false;
+	return Val<in.Val;
 }
-bool mDateTime::operator>=(const mDateTime& in)
+
+bool mDateTime::operator>=(const mDateTime& in)const
 {
-	if(Val>=in.Val)
-		return true;
-	else
-		return false;
+	return Val>=in.Val;
 }
-bool mDateTime::operator<=(const mDateTime& in)
+
+bool mDateTime::operator<=(const mDateTime& in)const
 {
-	if(Val<=in.Val)
-		return true;
-	else
-		return false;
+	return Val<=in.Val;
 }
 
 mstring mDateTime::FormatString(const mstring& format)

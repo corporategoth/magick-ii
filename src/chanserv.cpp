@@ -158,3 +158,25 @@ bool Chan_Stored_t::operator<(const Chan_Stored_t &in) const
 {
     return i_Name<in.i_Name;
 }
+
+userlist_t::userlist_t(const userlist_t& in)
+{
+    *this=in;
+}
+
+void userlist_t::operator=(const userlist_t &in)
+{
+    i_Entry=in.i_Entry;
+    i_Last_Modify_Time=in.i_Last_Modify_Time;
+    i_Last_Modifier=in.i_Last_Modifier;
+    map<mstring,mstring>::iterator i;
+    i_UserDef.clear();
+    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	i_UserDef.insert(*i);
+}
+
+bool userlist_t::operator==(const userlist_t &in) const
+{
+    return (i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
+	i_Last_Modifier==in.i_Last_Modifier&&i_UserDef==in.i_UserDef);
+}

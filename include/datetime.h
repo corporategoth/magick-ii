@@ -55,12 +55,12 @@ public:
     mDateTime& operator-(double in);
     mDateTime& operator-(time_t in);
 
-    bool operator==(const mDateTime& in);
-    bool operator!=(const mDateTime& in);
-    bool operator>(const mDateTime& in);
-    bool operator<(const mDateTime& in);
-    bool operator>=(const mDateTime& in);
-    bool operator<=(const mDateTime& in);
+    bool operator==(const mDateTime& in)const;
+    bool operator!=(const mDateTime& in)const;
+    bool operator>(const mDateTime& in)const;
+    bool operator<(const mDateTime& in)const;
+    bool operator>=(const mDateTime& in)const;
+    bool operator<=(const mDateTime& in)const;
 
 /* FormatString formats the date-and-time using the format given by 
    format. The following format specifiers are supported:
