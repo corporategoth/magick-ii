@@ -28,11 +28,11 @@ class OperServ : public mBase
 private:
     mstring services_admin;
     bool secure;
-    mstring def_expire;
-    mstring expire_oper;
-    mstring expire_admin;
-    mstring expire_sop;
-    mstring expire_sadmin;
+    unsigned long def_expire;
+    unsigned long expire_oper;
+    unsigned long expire_admin;
+    unsigned long expire_sop;
+    unsigned long expire_sadmin;
     unsigned int max_clone;
     unsigned int clone_limit;
     mstring def_clone;

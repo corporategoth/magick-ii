@@ -1011,7 +1011,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 
     mstring host   = params.ExtractWord(3, " ").LowerCase();
     mstring reason = params.After(" ", 3);
-    long time = FromHumanTime(Parent->operserv.Def_Expire());
+    long time = Parent->operserv.Def_Expire();
 
     if (FromHumanTime(reason.Before(" ")))
     {
@@ -1027,20 +1027,16 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 
     if ((Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source) &&
-	FromHumanTime(Parent->operserv.Expire_SAdmin()) &&
-	time > FromHumanTime(Parent->operserv.Expire_SAdmin())) ||
+	time > Parent->operserv.Expire_SAdmin()) ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source) &&
-	FromHumanTime(Parent->operserv.Expire_Sop()) &&
-	time > FromHumanTime(Parent->operserv.Expire_Sop())) ||
+	time > Parent->operserv.Expire_Sop()) ||
 	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
 	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source) &&
-	FromHumanTime(Parent->operserv.Expire_Admin()) &&
-	time > FromHumanTime(Parent->operserv.Expire_Admin())) ||
+	time > Parent->operserv.Expire_Admin()) ||
 	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source) &&
-	FromHumanTime(Parent->operserv.Expire_Oper()) &&
-	time > FromHumanTime(Parent->operserv.Expire_Oper())))
+	time > Parent->operserv.Expire_Oper()))
     {
 	::send(mynick, source, "Akill time limit specified is too great for your privilage level.");
 	return;
