@@ -21,6 +21,9 @@ static const char *ident_ace_memory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2000/10/26 07:59:52  prez
+** The goddamn memory system and mstring WORK!  Well, so far ;)
+**
 ** Revision 1.1  2000/10/18 18:46:33  prez
 ** Well, mstring still coredumps, but it gets past the initial loading of
 ** all the STATIC (or const) strings, etc -- now its coring on loading a
@@ -59,6 +62,9 @@ public:
 
   void free (void *);
   // return a chunk of memory back to free store.
+
+  size_t chunks() { return pool_.size(); }
+  size_t used() { return (pool_.size() * n_chunks_) - free_list_.size(); }
 
 private:
   ACE_Array_Base<char *> pool_;

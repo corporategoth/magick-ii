@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/10/26 07:59:52  prez
+** The goddamn memory system and mstring WORK!  Well, so far ;)
+**
 ** Revision 1.75  2000/10/18 18:46:33  prez
 ** Well, mstring still coredumps, but it gets past the initial loading of
 ** all the STATIC (or const) strings, etc -- now its coring on loading a
@@ -135,6 +138,13 @@ mstring const IRC_Reverse((char) 21);	// ^V
 mstring const IRC_Color((char) 3);	// ^C
 mstring const IRC_Off((char) 15);	// ^O
 
+#define NOMEM { \
+	fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
+	return; }
+#define NOMEMR(X) { \
+	fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
+	return X; }
+	
 
 void mstring::copy(const char *in, size_t length)
 {
@@ -147,6 +157,8 @@ void mstring::copy(const char *in, size_t length)
 	while (i_res <= i_len)
 	    i_res *= 2;
 	i_str = (char *) memory_area.alloc(i_res);
+	if (i_str == NULL)
+	    NOMEM;
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
     }
@@ -172,6 +184,8 @@ void mstring::append(const char *in, size_t length)
     if (oldres != i_res)
     {
 	tmp = (char *) memory_area.alloc(i_res);
+	if (tmp == NULL)
+	    NOMEM;
 	memset(tmp, 0, i_res);
 	if (i_str != NULL)
 	    memcpy(tmp, i_str, i_len);
@@ -215,11 +229,13 @@ void mstring::erase(int begin, int end)
 	i=0;
 	if (i_res==0)
 	    i_res = 2;
-	while (i_res / 2 > i_len - (end-begin));
+	while (i_res / 2 > i_len - (end-begin))
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
 	    tmp = (char *) memory_area.alloc(i_res);
+	    if (tmp == NULL)
+		NOMEM;
 	    memset(tmp, 0, i_res);
 	    if (begin > 0)
 	    {
@@ -273,6 +289,8 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     while (i_res <= i_len + length)
 	i_res *= 2;
     tmp = (char *) memory_area.alloc(i_res);
+    if(tmp == NULL)
+	NOMEM;
     memset(tmp, 0, i_res);
 
     i=0;
@@ -409,6 +427,8 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 	return -1;
 
     char *tmp = (char *) memory_area.alloc(length+1);
+    if (tmp == NULL)
+	NOMEMR(-1);
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
@@ -430,6 +450,8 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 	return -1;
 
     char *tmp = (char *) memory_area.alloc(length+1);
+    if (tmp == NULL)
+	NOMEMR(-1);
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
@@ -548,9 +570,11 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	i_res = 2;
     while (i_res <= i_len)
 	i_res *= 2;
-    while (i_res / 2 > i_len);
+    while (i_res / 2 > i_len)
 	i_res /= 2;
     tmp = (char *) memory_area.alloc(i_res);
+    if (tmp == NULL)
+	NOMEM;
     memset(tmp, 0, i_res);
 
     i = j = 0;
@@ -773,6 +797,8 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int length, size = 1024;
     char *buffer = (char *) memory_area.alloc(size);
+    if (buffer == NULL)
+	NOMEMR(-1);
     while (buffer != NULL)
     {
 	length = vsnprintf(buffer, size-1, fmt, argptr);
@@ -781,6 +807,8 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	memory_area.dealloc(buffer);
 	size *= 2;
 	buffer = (char *) memory_area.alloc(size);
+	if (buffer == NULL)
+	    NOMEMR(-1);
     }
     if (buffer && length < 1)
     {

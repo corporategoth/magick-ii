@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.275  2000/10/26 07:59:52  prez
+** The goddamn memory system and mstring WORK!  Well, so far ;)
+**
 ** Revision 1.274  2000/10/10 11:47:51  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -1213,11 +1216,14 @@ bool Magick::LoadLogMessages(mstring language)
 	for (i=0; i<def_logent; i++)
 	log.push_back(def_log[i]);
 
+printf("log.size() = %d\n", log.size());
 	mConfigEngine fconf;
 	fconf.LoadFromArray(log);
 
 	map<mstring,mstring> tmp = fconf.GetMap();
+printf("tmp.size() = %d\n", tmp.size());
 	LogMessages.insert(tmp.begin(), tmp.end());
+printf("LogMessages.size() = %d\n", LogMessages.size());
     }
     if (language != "DEFAULT" &&
 	mFile::Exists(files.Langdir()+DirSlash+language.LowerCase()+".lfo"))

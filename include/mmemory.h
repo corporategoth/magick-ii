@@ -22,6 +22,9 @@ static const char *ident_mmemory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/10/26 07:59:52  prez
+** The goddamn memory system and mstring WORK!  Well, so far ;)
+**
 ** Revision 1.3  2000/10/18 18:46:33  prez
 ** Well, mstring still coredumps, but it gets past the initial loading of
 ** all the STATIC (or const) strings, etc -- now its coring on loading a
@@ -50,8 +53,16 @@ class MemoryNode
     MemoryNode *prev, *next;
 
 public:
+    MemoryNode()
+    {
+	prev = next = NULL;
+	i_loc = NULL;
+	i_size = 0;
+	i_avail = false;
+    }
     MemoryNode(void *loc, size_t size)
     {
+	prev = next = NULL;
 	init(loc, size);
     }
     void init(void *loc, size_t size)
@@ -59,7 +70,44 @@ public:
 	i_loc = loc;
 	i_size = size;
 	i_avail = true;
-	prev = next = NULL;
+    }
+
+    // TRUE if END OF LIST
+    bool LinkNext(MemoryNode *iter)
+    {
+	bool retval = false;
+	iter->prev = this;
+	iter->next = next;
+	if (next != NULL)
+	    next->prev = iter;
+	else
+	    retval = true;
+	next = iter;
+	return retval;
+    }
+    // TRUE if BEGIN OF LIST
+    bool LinkPrev(MemoryNode *iter)
+    {
+	bool retval = false;
+	iter->next = this;
+	iter->prev = prev;
+	if (prev != NULL)
+	    prev->next = iter;
+	else
+	    retval = true;
+	prev = iter;
+	return retval;
+    }
+    // TRUE if BEGIN OF LIST
+    bool Remove()
+    {
+	if (next != NULL)
+	    next->prev = prev;
+	if (prev != NULL)
+	    prev->next = next;
+	else
+	    return true;
+	return false;
     }
 
     bool avail() { return i_avail; }
@@ -107,7 +155,8 @@ public:
     {
 	void *retval = NULL;
 	MemoryNode *iter = NULL, *useiter = NULL;
-	size_t diff = 0;
+	size_t diff = 0, count = 0;
+
 	for (iter=i_nodes; iter != NULL; iter = iter->next)
 	{
 	    // Find smallest segment we have that fits ...
@@ -116,12 +165,13 @@ public:
 	    {
 		diff = iter->i_size - size;
 		useiter = iter;
+		if (diff == 0)
+		    break;
 	    }
 	}
 	iter = useiter;
 	if (diff != 0)
 	{
-	    useiter->i_size = size;
 	    // Add a new memory block if the next is 
 	    iter = iter->next;
 	    if (iter != NULL)
@@ -130,14 +180,9 @@ public:
 		if (tmp == NULL)
 		    return NULL;
 		tmp->init((void *) (((char *) iter->i_loc) - diff), diff);
-		if (iter->prev != NULL)
-		{
-		    iter->prev->next = tmp;
-		}
-		tmp->prev = iter->prev;
-		tmp->next = iter;
-		iter->prev = tmp;
+		iter->LinkPrev(tmp);
 	    }
+	    useiter->i_size = size;
 	}
 	else if (useiter == NULL && size <= i_avail)
 	{
@@ -148,15 +193,16 @@ public:
 	    {
 		for (iter=i_nodes; iter->next != NULL; iter = iter->next) ;
 		tmp->init((void *) (((char *) iter->i_loc) + iter->i_size), size);
-		iter->next = tmp;
-		iter->next->prev = iter;
+		iter->LinkNext(tmp);
 	    }
 	    else
 	    {
 		tmp->init((void *) i_memory, size);
 		i_nodes = tmp;
+		i_nodes->prev = NULL;
 	    }
 	    useiter = tmp;
+	    useiter->next = NULL;
 	    i_avail -= size;
 	}
 	if (useiter != NULL)
@@ -169,6 +215,7 @@ public:
     void dealloc(void *loc)
     {
 	MemoryNode *iter = NULL, *iternext = NULL;
+
 	for (iter=i_nodes; iter!=NULL; iter = iter->next)
 	{
 	    if (iter->i_loc == loc)
@@ -188,18 +235,7 @@ public:
 		if (iternext->avail())
 		{
 		    iter->i_size += iternext->i_size;
-		    if (iternext->prev != NULL)
-		    {
-			iternext->prev->next = iternext->next;
-		    }
-		    else
-		    {
-			i_nodes = iternext->next;
-		    }
-		    if (iternext->next != NULL)
-		    {
-			iternext->next->prev = iternext->prev;
-		    }
+		    iternext->Remove();
 		    i_cluster.free(iternext);
 		}
 	    }
@@ -209,19 +245,11 @@ public:
 		if (iter->prev->avail())
 		{
 		    iter->prev->i_size += iter->i_size;
-		    iter->prev->next = iter->next;
-		    if (iter->next != NULL)
-		    {
-			iter->next->prev = iter->prev;
-		    }
 		    iternext = iter;
 		    iter = iter->prev;
+		    iternext->Remove();
 		    i_cluster.free(iternext);
 		}
-	    }
-	    else
-	    {
-		i_nodes = iter;
 	    }
 
 	    // If we are now the LAST node, we're free, so
@@ -230,11 +258,7 @@ public:
 	    if (iter->next == NULL)
 	    {
 		i_avail += iter->i_size;
-		if (iter->prev)
-		{
-		    iter->prev->next = NULL;
-		}
-		else
+		if (iter->Remove())
 		{
 		    i_nodes = NULL;
 		}
@@ -299,16 +323,17 @@ public:
 
     void init(size_t blocksize = DEF_MEMSIZE)
     {
-	sprintf(lockname, "MM_%p", this);
+	if (lockname[0]==0)
+	    sprintf(lockname, "MM_%p", this);
 	ACE_LOCK lock(lockname);
-	lock.acquire();
+	ACE_GUARD(ACE_LOCK, lock_mon, lock);
 	if (i_blocks == NULL)
 	{
 	    i_blocksize = blocksize;
-	    i_blocks = new MemoryBlock(i_blocksize);
+	    
+	    ACE_NEW(i_blocks, MemoryBlock(i_blocksize));
 	    i_blocks->init();
 	}
-	lock.release();
     }
 
     void *alloc(size_t size, size_t blocksize = DEF_MEMSIZE)
@@ -318,13 +343,17 @@ public:
 
 	if (i_blocks == NULL)
 	    init(blocksize);
+	if (i_blocks == NULL)
+	    return NULL;
 
 	ACE_LOCK lock(lockname);
-	lock.acquire();
+	ACE_GUARD_RETURN(ACE_LOCK, lock_mon, lock, 0);
 	if (size > i_blocksize)
 	{
+	    MemoryBlock *tmp;
+	    ACE_NEW_RETURN(tmp, MemoryBlock(size), 0);
 	    for (iter=i_blocks; iter->next != NULL; iter = iter->next) ;
-	    iter->next = new MemoryBlock(size);
+	    iter->next = tmp;
 	    iter->next->prev = iter;
 	    iter = iter->next;
 	    iter->init();
@@ -338,15 +367,16 @@ public:
 	    }
 	    if (iter == NULL)
 	    {
+		MemoryBlock *tmp;
+		ACE_NEW_RETURN(tmp, MemoryBlock(i_blocksize), 0);
 		for (iter=i_blocks; iter->next != NULL; iter = iter->next) ;
-		iter->next = new MemoryBlock(i_blocksize);
+		iter->next = tmp;
 		iter->next->prev = iter;
 		iter = iter->next;
 		iter->init();
 	    }
 	}
 	retval = iter->alloc(size);
-	lock.release();
 	return retval;
     }
     void dealloc(void *loc)
@@ -357,7 +387,7 @@ public:
 	    return;
 
 	ACE_LOCK lock(lockname);
-	lock.acquire();
+	ACE_GUARD(ACE_LOCK, lock_mon, lock);
 	for (iter=i_blocks; iter != NULL; iter = iter->next)
 	{
 	    if (iter->ismine(loc))
@@ -381,8 +411,6 @@ public:
 		}
 	    }
 	}
-
-	lock.release();
     }
 
     size_t blocksize()
