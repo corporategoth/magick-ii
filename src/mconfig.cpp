@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/12/23 23:18:36  prez
+** Fixed problem with it using default value always
+**
 ** Revision 1.23  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -347,7 +350,7 @@ bool ceNode::NodeExists(const mstring &NodeName) const
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(next);
 	if (iter != i_children.end() && iter->second != NULL)
         {
             Result=iter->second->NodeExists(rest);
@@ -378,7 +381,7 @@ bool ceNode::KeyExists(const mstring &KeyName) const
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(next);
 	if (iter != i_children.end() && iter->second != NULL)
         {
             Result=iter->second->KeyExists(rest);
@@ -403,15 +406,13 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue) const
 	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
 	if(iter != i_keys.end() && iter->second != "")
             Result=iter->second;
-	else
-	    Result=DefValue;
     }
     else
     {
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(next);
 	if (iter != i_children.end() && iter->second != NULL)
         {
             Result=iter->second->GetKey(rest,DefValue);
@@ -444,7 +445,7 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
 	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-	map<mstring,ceNode * >::iterator iter = i_children.find(temppath);
+	map<mstring,ceNode * >::iterator iter = i_children.find(next);
 	if (iter == i_children.end() || iter->second != NULL)
         {
             i_children[next]=new ceNode;
@@ -478,7 +479,7 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
 	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-	map<mstring,ceNode * >::iterator iter = i_children.find(temppath);
+	map<mstring,ceNode * >::iterator iter = i_children.find(next);
 	if (iter == i_children.end() || iter->second != NULL)
         {
             i_children[next]=new ceNode;
