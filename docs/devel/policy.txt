@@ -1,10 +1,13 @@
 // $Id$
-Magick Development Team Policy
 
-Written as of Magick II.
+**************************************
+*** Magick Development Team Policy ***
+**************************************
+
+
 
 * ALL full releases should compile with NO errors or and minimal
- (unavoidable) warnings on ANY supported platform.
+  (unavoidable) warnings on ANY supported platform.
 
 * Alpha releases are to be released in the design phase of
   any release, for the alpha team to supply feedback of how
@@ -47,3 +50,147 @@ Written as of Magick II.
   in the normal case of things, but code which has not even had an
   attempt to compile at will be frowned upon if not thrown right
   back out.
+
+* All code must be easily readable -- meaning indents and comments
+  used properly.  Essentially any anonymous developer should be
+  able to look at your code and understand what its doing, either
+  by a good and well-illustrated code flow, or comments about it.
+
+* Pointers are evil and the work of the devil, avoid them if you
+  can use a string that represents a unique 'key' and then create
+  a lookup function that returns the data your after.  Error
+  checking is ESSENTIAL for both pointer and lookup approaches.
+
+* Magick II has trace code for a reason -- it should be 'live
+  debugable' without a debugger, simply by following the output
+  of trace code.  Magick trace mechanisms are also designed so
+  that you shouldnt need a full trace to see what the cod is
+  doing.  USE the trace code where appropriate, we do NOT want
+  any trace 'blackholes' where we have to use printf's etc to
+  find out whats going on.  See below for more on trace code.
+
+* Magick is designed to be multi-lingual, which means any text
+  that goes either to a client or a log file should be kept in
+  some kind of language file that is loaded into memory at
+  runtime.  The appropriate functions should be used to retrieve
+  the actual text (with formatting), so you should only have
+  language 'tokens' in your code.
+
+
+RULE OF THUMB
+-------------
+
+Always code as if the guy who ends up maintaining, or testing
+your code will be a violent psychopath who knows where you live.
+ -- Dave Carhart
+
+Omnipotence has it's benefits, like knowing where you live.
+ -- Ungod
+
+People never know where you live when your dead.
+ -- PreZ
+
+
+Tracing
+-------
+
+Magick II developers MUST add trace code to any non-inline
+functions they create.  The types of tracing are listed
+below, and how/where/when to use them:
+
+Stats		0x0001
+    <TBA> should be used to print out vital statistics before
+	and after a process.
+Source		0x0002
+    CSRC(sect, opt, val) should be used when loading INI
+	style source files, and passed 3 options, first
+	the section name, second the option being set, and
+	third the value of that option.
+	This tracing is automatic when you use mConfigEngine.
+    SRC(text) should be used when loading a generic source
+	file of some kind (non-ini style), and simply dumps
+	the text out.
+Bind		0x0004
+    <TBA> should be used when a scripted command is BOUND
+    <TBA> should be used when a scripted command is UNBOUND
+
+CheckPoint	0x0010
+    CP((str, arg...)) should be used at major points in a
+	function that indicate what it is doing at the time.
+	This can also be used to indicate the return value
+	of a function that returns a non-standard type, or
+	an inline function that does not have trace code.
+Comments	0x0020
+    COM((str, arg...)) should be used in for() and while()
+	loops to show up the values being worked on, or
+	looked at (useful for debugging infinate loops!).
+Locking		0x0040
+    This tracing is automatic when you use [RWM]LOCK(())
+Functions	0x0080
+    FT(name, (args)) or NFT(name) at the beginnging of EVERY
+	non-inline function.
+    RET(val) or NRET(type, val) at the END of every function
+	that does not return VOID.  NRET is used when the
+	return type is NOT a standard data type (see variant.h).
+    DRET(val) or NDRET(type, val) is the same as the above,
+	but will detach the thread (call mThread::Detach)
+	before exiting -- also causing a flush.
+
+Changing	0x0100
+    CB(uniq, arg) should be used BEFORE changing a value of
+	some kind.  The name passed, and the value of this
+	name is dumped in the trace.  uniq should be an
+	individual non-zero posetive number (to be able to
+	use them in a row).
+    CE(uniq, arg) should be used AFTER changing a vaule, with
+	the same uniq as the CB, and will actually do the
+	dump to the trace file.
+Modify		0x0200
+    MB(offset, (args)) should be used BEFORE any data modification
+	(formatting is automatic).  This will essentially dump all
+	the arguments as data elements starting at 1 + offset.
+    ME(offset, (args)) should be called with the same args as MB,
+	and used at the END of any data modification.
+
+    MCB(arg) will call the DumpB() function (which you must
+	write to use this), which is expected to have any MB()
+	calls in it to dump your current object, it will then
+	call CB() with your argument as the second paramater.
+    MCE(arg) does the same as MCB, but calling DumpE, and CE().
+	The argument should be the same, and this should be
+	called after the data has been modified.  These two
+	options essentially implement Modify + Changing.
+
+Sockets		0x1000
+    This tracing is automatic when you use the mSocket class.
+Chatter 	0x2000
+    CH(direction, str) should be used when receiving OR sending
+	data to or from clients.
+External	0x8000
+    <TBA> should be used with the external CALL being made
+    <TBA> should be used to capture the data RETURNED externally.
+
+NOTE: Tracing may be activated at commandline with:
+    magick --trace ALL:0xffff
+or at run-time with
+    /MSG OperServ TRACE SET ALL 0xffff
+
+You must specify your own trace level.
+
+
+Locking
+-------
+
+Magick has LOCKING code with RLOCK(()), WLOCK(()) and MLOCK(()).
+These are Read, Write and Mutex locks respectively.  You MUST
+use these locking mechanisms before EVERY read or write of a
+veriable in an object.  This will ensure data integrity across
+threads (and ensure one thread blocks if another is using the
+data).  The locks will automatically expire, and if you need
+more than one of any type, you can put a number from 2-8 after
+the LOCK, eg. RLOCK2(()), etc.  The argument inside the (()) is
+a vararray, so you may specify up to 16 'known' types (see
+variant.h for a list of known types).
+
+90% of all bugs in thread-based programs is because some data
+was accessed by 2 threads at once without propper locking.

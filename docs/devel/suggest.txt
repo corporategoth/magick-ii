@@ -22,10 +22,14 @@ x Done
   that if we get a fucked up database, all aint lost. (credit skold).
   > I'd say this should be a shell script (Multipal versions of magick
     will also accomodate this).
+  > Currently we create a 'old' file while saving a 'new' file, only when
+    the save is done, do we move the 'new' file to the correct filename
+    and THEN delete the old file, so essentially if an 'old' file exists
+    and a new file exists, remove the new file and copy the old file as
+    the databses.  If an old file exists and no new file does, remove it.
 = Ability to have logs go to a specified channel on the server
   eg (#services) (credit skold).
   > Scripted hook into 'LogOutput'?
-- Memo recall, ie, being able to delete unread memos you've sent to people.
 * If a misconfigured server fights with services (ie a missing uline) have
   services go into a sort of standby mode, requiring any ircop to re enable
   them once the server has been fixed or removed (and leave certain commands
