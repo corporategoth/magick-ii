@@ -2550,16 +2550,15 @@
 03 =OPER SOP::
 04 =OPER SOP::This service allows you to use the following commands:
 05 =OPER SOP::    HELP         CLONE        AKILL        IGNORE
-06A=OPER:SOP:    MODE         PING         SETTINGS
-06B=SOP::    OPERDENY     MODE         PING         SETTINGS
-06C=SOP::    HTM
-07 =ADMIN::And as a Server Admin, the following commands:
-08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
-09 =ADMIN::    KILL         HIDE
-10 =SADMIN::And as a Services Admin, the following commands:
-11 =SADMIN::    TRACE        UNLOAD       RELOAD       RESTART
-12 =SADMIN::    UPDATE       SHUTDOWN     ON           OFF
-13 =SADMIN::    IDENTIFY
+06 =OPER SOP::    MODE         PING         SETTINGS     REGISTER
+07A=OPER:SOP:    IDENTIFY
+07B=SOP::    IDENTIFY     OPERDENY     HTM
+08 =ADMIN::And as a Server Admin, the following commands:
+09 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
+10 =ADMIN::    KILL         HIDE
+11 =SADMIN::And as a Services Admin, the following commands:
+12 =SADMIN::    TRACE        UNLOAD       RELOAD       RESTART
+13 =SADMIN::    UPDATE       SHUTDOWN     ON           OFF
 14 =OPER SOP::
 15 =OPER SOP::You may request help on the syntax and functionality
 16 =OPER SOP::of any and all of the above commands by specifying
@@ -2807,11 +2806,18 @@
 14 =SOP::Standard Space Format.
 
 [OPERSERV/IDENTIFY]
-01 =SADMIN::IDENTIFY <password>
-02 =SADMIN::
-03 =SADMIN::This is an alias for the NickServ IDENTIFY command, and
-04 =SADMIN::has the same syntax.  This alias is available even when
-05 =SADMIN::all services (including OperServ) are OFF.
+01 =OPER SOP::IDENTIFY <password>
+02 =OPER SOP::
+03 =OPER SOP::This is an alias for the NickServ IDENTIFY command, and
+04 =OPER SOP::has the same syntax.  This alias is available even when
+05 =OPER SOP::all services (including OperServ) are OFF.
+
+[OPERSERV/REGISTER]
+01 =OPER SOP::REGISTER <password> [email]
+02 =OPER SOP::
+03 =OPER SOP::This is an alias for the NickServ REGISTER command, and
+04 =OPER SOP::has the same syntax.  This alias is available so that
+05 =OPER SOP::services can run in OperServ+CommServ only mode.
 
 [OPERSERV/SETTINGS]
 01 =OPER SOP::Services has many settings set with its configuration
