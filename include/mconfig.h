@@ -25,6 +25,11 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.16  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -90,8 +95,8 @@ private:
     map<mstring,mstring> i_keys;
     map<mstring,ceNode * > i_children;
 public:
-    ceNode();
-    ceNode(ceNode &in);
+    ceNode() {}
+    ceNode(ceNode &in) { *this=in; }
     ~ceNode();
     ceNode& operator=(const ceNode &in);
     bool operator==(const ceNode &in)const;
@@ -113,34 +118,34 @@ class mConfigEngine
 private:
     ceNode RootNode;
     mstring i_FileName;
-    vector<mstring> DeComment(const vector<mstring> in);
+    vector<mstring> DeComment(const vector<mstring>& in);
 public:
     mConfigEngine();
     mConfigEngine(const mstring& FileName);
     bool LoadFile();
     bool LoadFromString(const mstring& configstring);
-    bool LoadFromArray(vector<mstring> configarray);
+    bool LoadFromArray(const vector<mstring> &configarray);
     bool SaveFile();
     void Empty();
 
     map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
-    mstring Read(const mstring &key, const mstring Defailt="") const;
-    bool Read(const mstring &key, mstring &outvar, mstring Default="") const;
-    bool Read(const mstring &key, bool &outvar, bool Default=false) const;
-    bool Read(const mstring &key, int &outvar, int Default=0) const;
-    bool Read(const mstring &key, unsigned int &outvar, unsigned int Default=0) const;
-    bool Read(const mstring &key, long &outvar, long Default=0) const;
-    bool Read(const mstring &key, unsigned long &outvar, unsigned long Default=0) const;
-    bool Read(const mstring &key, float &outvar, float Default=0.0) const;
-    bool Read(const mstring &key, double &outvar, double Default=0.0) const;
+    mstring Read(const mstring &key, const mstring& Defailt="") const;
+    bool Read(const mstring &key, mstring &outvar, const mstring& Default="") const;
+    bool Read(const mstring &key, bool &outvar, const bool Default=false) const;
+    bool Read(const mstring &key, int &outvar, const int Default=0) const;
+    bool Read(const mstring &key, unsigned int &outvar, const unsigned int Default=0) const;
+    bool Read(const mstring &key, long &outvar, const long Default=0) const;
+    bool Read(const mstring &key, unsigned long &outvar, const unsigned long Default=0) const;
+    bool Read(const mstring &key, float &outvar, const float Default=0.0) const;
+    bool Read(const mstring &key, double &outvar, const double Default=0.0) const;
 
     mstring Write(const mstring &key,const mstring &value);
-    bool Write(const mstring &key,bool value);
-    int Write(const mstring &key,int value);
-    unsigned int Write(const mstring &key,unsigned int value);
-    long Write(const mstring &key,long value);
-    unsigned long Write(const mstring &key,unsigned long value);
-    double Write(const mstring &key,double value);
+    bool Write(const mstring &key,const bool value);
+    int Write(const mstring &key,const int value);
+    unsigned int Write(const mstring &key,const unsigned int value);
+    long Write(const mstring &key,const long value);
+    unsigned long Write(const mstring &key,const unsigned long value);
+    double Write(const mstring &key,const double value);
 
     ceNode *GetNode(const mstring& NodeName);
     bool DeleteNode(const mstring& NodeName);

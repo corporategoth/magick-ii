@@ -25,6 +25,11 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.43  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -142,7 +147,8 @@ class Memo_t : public mUserDef, public SXP::IPersistObj
 public:
     Memo_t() {}
     Memo_t(const Memo_t &in) { *this = in; }
-    Memo_t(mstring nick, mstring sender, mstring text, unsigned long file = 0);
+    Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
+		const unsigned long file = 0);
     ~Memo_t() {}
     void operator=(const Memo_t &in);
     bool operator==(const Memo_t &in) const
@@ -152,7 +158,7 @@ public:
     bool operator<(const Memo_t &in) const
     	{ return (i_Time < in.i_Time); }
 
-    void ChgNick(mstring in);
+    void ChgNick(const mstring& in);
     mstring Nick()const	    { return i_Nick; }
     mstring Sender() const;
     mDateTime Time() const;
@@ -192,7 +198,8 @@ class News_t : public mUserDef, public SXP::IPersistObj
 public:
     News_t() {}
     News_t(const News_t &in) { *this = in; }
-    News_t(mstring channel, mstring sender, mstring text, bool noexpire = false);
+    News_t(const mstring& channel, const mstring& sender, const mstring& text,
+	const bool noexpire = false);
     ~News_t() {}
     void operator=(const News_t &in);
     bool operator==(const News_t &in) const
@@ -208,10 +215,10 @@ public:
     mstring Text() const;
 
     bool NoExpire() const;
-    void NoExpire(bool in);
-    bool IsRead(mstring name);
-    void Read(mstring name);
-    void Unread(mstring name);
+    void NoExpire(const bool in);
+    bool IsRead(const mstring& name);
+    void Read(const mstring& name);
+    void Unread(const mstring& name);
 
     SXP::Tag& GetClassTag() const { return tag_News_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
@@ -282,8 +289,8 @@ public:
 	unsigned long Get()	    { return i_Get; }
     } stats;
 
-    bool IsNick(mstring nick) const;
-    bool IsChannel(mstring channel) const;
+    bool IsNick(const mstring& nick) const;
+    bool IsChannel(const mstring& channel) const;
     map<mstring,list<Memo_t> > nick;
     map<mstring,list<News_t> > channel;
 
@@ -298,23 +305,23 @@ public:
     virtual mstring GetInternalName() const { return "MemoServ"; }
     virtual void execute(const mstring & message);
 
-    static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_Read(mstring mynick, mstring source, mstring params);
-    static void do_UnRead(mstring mynick, mstring source, mstring params);
-    static void do_Get(mstring nick, mstring source, mstring params);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static void do_Send(mstring mynick, mstring source, mstring params);
-    static void do_Flush(mstring mynick, mstring source, mstring params);
-    static void do_Reply(mstring mynick, mstring source, mstring params);
-    static void do_Forward(mstring mynick, mstring source, mstring params);
-    static void do_Forward2(mstring mynick, mstring source, mstring dest, mstring text);
-    static void do_Cancel(mstring mynick, mstring source, mstring params);
-    static void do_Del(mstring mynick, mstring source, mstring params);
-    static void do_Continue(mstring mynick, mstring source, mstring params);
-    static void do_Preview(mstring mynick, mstring source, mstring params);
-    static void do_File(mstring mynick, mstring source, mstring params);
+    static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Read(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_UnRead(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Get(const mstring &nick, const mstring &source, const mstring &params);
+    static void do_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Send(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Flush(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Reply(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Forward(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Forward2(const mstring &mynick, const mstring &source, mstring dest, const mstring &text);
+    static void do_Cancel(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Continue(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Preview(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_File(const mstring &mynick, const mstring &source, const mstring &params);
 
-    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params);
 
     virtual SXP::Tag& GetClassTag() const { return tag_MemoServ; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

@@ -27,6 +27,11 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.91  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -255,56 +260,42 @@ RCSID(commserv_cpp, "@(#)$Id$");
 #include "magick.h"
 #include "dccengine.h"
 
-Committee::Committee(mstring name, mstring head, mstring description)
+Committee::Committee(const mstring& name, const mstring& head, const mstring& description)
+	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
+	  i_Head(head.LowerCase()), i_Description(description),
+	  i_Private(Parent->commserv.DEF_Private()), l_Private(false),
+	  i_OpenMemos(Parent->commserv.DEF_OpenMemos()), l_OpenMemos(false),
+	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
 {
     FT("Committee::Committee", (name, head, description));
 
-    i_Name = name.UpperCase();
-    WLOCK(("CommServ", "list", i_Name.UpperCase()));
-    i_RegTime = mDateTime::CurrentDateTime();
-    i_Head = head.LowerCase();
-    i_Description = description;
-    i_OpenMemos = Parent->commserv.DEF_OpenMemos();
-    l_OpenMemos = false;
-    i_Secure = Parent->commserv.DEF_Secure();
-    l_Secure = false;
-    i_Private = Parent->commserv.DEF_Private();
-    l_Private = false;
+    WLOCK(("CommServ", "list", i_Name));
     DumpE();
 }
 
 
-Committee::Committee(mstring name, Committee *head, mstring description)
+Committee::Committee(const mstring& name, const Committee& head, const mstring& description)
+	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
+	  i_HeadCom(head.Name()), i_Description(description),
+	  i_Private(Parent->commserv.DEF_Private()), l_Private(false),
+	  i_OpenMemos(Parent->commserv.DEF_OpenMemos()), l_OpenMemos(false),
+	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
 {
     FT("Committee::Committee", (name, "(Committee *) head", description));
-    i_Name = name.UpperCase();
-    WLOCK(("CommServ", "list", i_Name.UpperCase()));
-    i_RegTime = mDateTime::CurrentDateTime();
-    i_HeadCom = head->Name();
-    i_Description = description;
-    i_OpenMemos = Parent->commserv.DEF_OpenMemos();
-    l_OpenMemos = false;
-    i_Secure = Parent->commserv.DEF_Secure();
-    l_Secure = false;
-    i_Private = Parent->commserv.DEF_Private();
-    l_Private = false;
+    WLOCK(("CommServ", "list", i_Name));
     DumpE();
 }
 
 
-Committee::Committee(mstring name, mstring description)
+Committee::Committee(const mstring& name, const mstring& description)
+	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
+	  i_Description(description),
+	  i_Private(Parent->commserv.DEF_Private()), l_Private(false),
+	  i_OpenMemos(Parent->commserv.DEF_OpenMemos()), l_OpenMemos(false),
+	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
 {
     FT("Committee::Committee", (name, description));
-    i_Name = name.UpperCase();
-    WLOCK(("CommServ", "list", i_Name.UpperCase()));
-    i_RegTime = mDateTime::CurrentDateTime();
-    i_Description = description;
-    i_OpenMemos = Parent->commserv.DEF_OpenMemos();
-    l_OpenMemos = false;
-    i_Secure = Parent->commserv.DEF_Secure();
-    l_Secure = false;
-    i_Private = Parent->commserv.DEF_Private();
-    l_Private = false;
+    WLOCK(("CommServ", "list", i_Name));
     DumpE();
 }
 
@@ -357,7 +348,7 @@ mstring Committee::Head() const
     RET(i_Head);
 }
 
-void Committee::Head(mstring newhead)
+void Committee::Head(const mstring& newhead)
 {
     FT("Committee::Head", (newhead));
 
@@ -375,7 +366,8 @@ void Committee::Head(mstring newhead)
     MCE(i_Head);
 }
 
-bool Committee::insert(mstring entry, mstring nick, mDateTime modtime)
+bool Committee::insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime)
 {
     FT("Committee::insert", (entry, nick, modtime));
 
@@ -423,7 +415,7 @@ bool Committee::erase()
     }
 }
 
-bool Committee::find(mstring entry)
+bool Committee::find(const mstring& entry)
 {
     FT("Committee::find", (entry));
 
@@ -450,7 +442,7 @@ bool Committee::find(mstring entry)
 }
 
 
-bool Committee::IsIn(mstring nick) const
+bool Committee::IsIn(const mstring& nick) const
 {
     FT("Committee::IsIn", (nick));
 
@@ -520,7 +512,7 @@ bool Committee::IsIn(mstring nick) const
 }
 
 
-bool Committee::IsOn(mstring nick) const
+bool Committee::IsOn(const mstring& nick) const
 {
     FT("Committee::IsOn", (nick));
 
@@ -564,7 +556,7 @@ bool Committee::IsOn(mstring nick) const
 }
 
 
-bool Committee::IsHead(mstring nick) const
+bool Committee::IsHead(const mstring& nick) const
 {
     FT("Committee::IsHead", (nick));
 
@@ -587,7 +579,7 @@ bool Committee::IsHead(mstring nick) const
     RET(false);
 }
 
-void Committee::Description(mstring in)
+void Committee::Description(const mstring& in)
 {
     FT("Committee::Description", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
@@ -603,7 +595,7 @@ mstring Committee::Description() const
     RET(i_Description);
 }
 
-void Committee::Email(mstring in)
+void Committee::Email(const mstring& in)
 {
     FT("Committee::Email", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
@@ -619,7 +611,7 @@ mstring Committee::Email() const
     RET(i_Email);
 }
 
-void Committee::URL(mstring in)
+void Committee::URL(const mstring& in)
 {
     FT("Committee::URL", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
@@ -635,7 +627,7 @@ mstring Committee::URL() const
     RET(i_URL);
 }
 
-void Committee::Private(bool in)
+void Committee::Private(const bool in)
 {
     FT("Committee::Private", (in));
     if (!L_Private())
@@ -659,7 +651,7 @@ bool Committee::Private() const
 }
 
 
-void Committee::L_Private(bool in)
+void Committee::L_Private(const bool in)
 {
     FT("Committee::L_Private", (in));
     if (!Parent->commserv.LCK_Private())
@@ -684,7 +676,7 @@ bool Committee::L_Private() const
 }
 
 
-void Committee::Secure(bool in)
+void Committee::Secure(const bool in)
 {
     FT("Committee::Secure", (in));
     if (!L_Secure())
@@ -709,7 +701,7 @@ bool Committee::Secure() const
 }
 
 
-void Committee::L_Secure(bool in)
+void Committee::L_Secure(const bool in)
 {
     FT("Committee::L_Secure", (in));
     if (!Parent->commserv.LCK_Secure())
@@ -734,7 +726,7 @@ bool Committee::L_Secure() const
 }
 
 
-void Committee::OpenMemos(bool in)
+void Committee::OpenMemos(const bool in)
 {
     FT("Committee::OpenMemos", (in));
     if (!L_OpenMemos())
@@ -759,7 +751,7 @@ bool Committee::OpenMemos() const
 }
 
 
-void Committee::L_OpenMemos(bool in)
+void Committee::L_OpenMemos(const bool in)
 {
     FT("Committee::L_OpenMemos", (in));
     if (!Parent->commserv.LCK_OpenMemos())
@@ -784,7 +776,8 @@ bool Committee::L_OpenMemos() const
 }
 
 
-bool Committee::MSG_insert(mstring entry, mstring nick, mDateTime time)
+bool Committee::MSG_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& time)
 {
     FT("Committee::MSG_insert", (entry, nick, time));
 
@@ -825,7 +818,7 @@ bool Committee::MSG_erase()
 }
 
 
-bool Committee::MSG_find(int number)
+bool Committee::MSG_find(const int number)
 {
     FT("Committee::MSG_find", (number));
 
@@ -913,7 +906,7 @@ CommServ::CommServ()
     messages = true;
 }
 
-bool CommServ::IsList(mstring in)const
+bool CommServ::IsList(const mstring& in)const
 {
     FT("CommServ::IsList", (in));
     RLOCK(("CommServ", "list", in.LowerCase()));
@@ -1163,7 +1156,7 @@ void CommServ::execute(const mstring & data)
 
 }
 
-void CommServ::do_Help(mstring mynick, mstring source, mstring params)
+void CommServ::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_Help", (mynick, source, params));
 
@@ -1189,7 +1182,7 @@ void CommServ::do_Help(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, help[i]);
 }
 
-void CommServ::do_Add(mstring mynick, mstring source, mstring params)
+void CommServ::do_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_Add", (mynick, source, params));
 
@@ -1249,7 +1242,7 @@ void CommServ::do_Add(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_Del(mstring mynick, mstring source, mstring params)
+void CommServ::do_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_Del", (mynick, source, params));
 
@@ -1293,7 +1286,7 @@ void CommServ::do_Del(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_List(mstring mynick, mstring source, mstring params)
+void CommServ::do_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_List", (mynick, source, params));
 
@@ -1360,7 +1353,7 @@ void CommServ::do_List(mstring mynick, mstring source, mstring params)
 							i, count);
 }
 
-void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
+void CommServ::do_Memo(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_Memo", (mynick, source, params));
 
@@ -1426,7 +1419,8 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
+void CommServ::do_Memo2(const mstring &source, const mstring &committee,
+	const mstring &text)
 {
     FT("CommServ::do_Memo2", (source, committee, text));
 
@@ -1526,7 +1520,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
     }
 }
 
-void CommServ::do_Info(mstring mynick, mstring source, mstring params)
+void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_Info", (mynick, source, params));
 
@@ -1652,7 +1646,7 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     }
 }
 
-void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
+void CommServ::do_member_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_member_Add", (mynick, source, params));
 
@@ -1727,7 +1721,7 @@ void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_member_Del(mstring mynick, mstring source, mstring params)
+void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_member_Del", (mynick, source, params));
 
@@ -1795,7 +1789,7 @@ void CommServ::do_member_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
+void CommServ::do_member_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_member_List", (mynick, source, params));
 
@@ -1851,7 +1845,8 @@ void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
 }
 
 
-int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee, bool first, int number)
+int CommServ::do_member_List2(const mstring &mynick, const mstring &source,
+	const mstring &committee, const bool first, const int number)
 {
     FT("CommServ::do_member_List2", (mynick, source, committee, first, number));
 
@@ -1906,7 +1901,7 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
     RET(nextnum-number);
 }
 
-void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
+void CommServ::do_logon_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_logon_Add", (mynick, source, params));
 
@@ -1956,7 +1951,7 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
+void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_logon_Del", (mynick, source, params));
 
@@ -2021,7 +2016,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
+void CommServ::do_logon_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_logon_List", (mynick, source, params));
 
@@ -2088,7 +2083,7 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_Head(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_Head", (mynick, source, params));
 
@@ -2173,7 +2168,7 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_set_Description(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_Description(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_Description", (mynick, source, params));
 
@@ -2227,7 +2222,7 @@ void CommServ::do_set_Description(mstring mynick, mstring source, mstring params
 }
 
 
-void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_Email", (mynick, source, params));
 
@@ -2309,7 +2304,7 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_URL", (mynick, source, params));
 
@@ -2384,7 +2379,7 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_Secure", (mynick, source, params));
 
@@ -2464,7 +2459,7 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_Private", (mynick, source, params));
 
@@ -2544,7 +2539,7 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
+void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_set_OpenMemos", (mynick, source, params));
 
@@ -2624,7 +2619,7 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
+void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_lock_Secure", (mynick, source, params));
 
@@ -2699,7 +2694,7 @@ void CommServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_lock_Private(mstring mynick, mstring source, mstring params)
+void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_lock_Private", (mynick, source, params));
 
@@ -2774,7 +2769,7 @@ void CommServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_lock_OpenMemos(mstring mynick, mstring source, mstring params)
+void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_lock_OpenMemos", (mynick, source, params));
 
@@ -2849,7 +2844,7 @@ void CommServ::do_lock_OpenMemos(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
+void CommServ::do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_unlock_Secure", (mynick, source, params));
 
@@ -2902,7 +2897,7 @@ void CommServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
+void CommServ::do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_unlock_Private", (mynick, source, params));
 
@@ -2955,7 +2950,7 @@ void CommServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_unlock_OpenMemos(mstring mynick, mstring source, mstring params)
+void CommServ::do_unlock_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("CommServ::do_unlock_OpenMemos", (mynick, source, params));
 

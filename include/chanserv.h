@@ -25,6 +25,11 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2001/03/20 14:22:13  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.56  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -164,21 +169,21 @@ class Chan_Live_t : public mUserDef
     long ph_timer;
     map<mstring, mDateTime> recent_parts;
 
-    static bool ModeExists(mstring mode, vector<mstring> mode_params,
-			bool change, char reqmode, mstring reqparam = "");
-    static void RemoveMode(mstring mode, vector<mstring> mode_params,
-			bool change, char reqmode, mstring reqparam = "");
+    static bool ModeExists(const mstring& mode, const vector<mstring>& mode_params,
+	const bool change, const char reqmode, const mstring& reqparam = "");
+    static void RemoveMode(mstring& mode, vector<mstring>& mode_params,
+	const bool change, const char reqmode, const mstring& reqparam = "");
 
-    bool Join(mstring nick); // Called by Nick_Live_t
-    unsigned int Part(mstring nick); // Called by Nick_Live_t
-    void SquitUser(mstring nick); // Called by Nick_Live_t
-    void UnSquitUser(mstring nick); // Called by Nick_Live_t
-    unsigned int Kick(mstring nick, mstring kicker); // Called by Nick_Live_t
-    void ChgNick(mstring nick, mstring newnick); // Called by Nick_Live_t
+    bool Join(const mstring& nick); // Called by Nick_Live_t
+    unsigned int Part(const mstring& nick); // Called by Nick_Live_t
+    void SquitUser(const mstring& nick); // Called by Nick_Live_t
+    void UnSquitUser(const mstring& nick); // Called by Nick_Live_t
+    unsigned int Kick(const mstring& nick, const mstring& kicker); // Called by Nick_Live_t
+    void ChgNick(const mstring& nick, const mstring& newnick); // Called by Nick_Live_t
 public:
     Chan_Live_t() {}
     Chan_Live_t(const Chan_Live_t& in) { *this = in; }
-    Chan_Live_t(mstring name, mstring first_user);
+    Chan_Live_t(const mstring& name, const mstring& first_user);
     ~Chan_Live_t() {}
     void operator=(const Chan_Live_t &in);
     bool operator==(const Chan_Live_t &in) const
@@ -191,44 +196,44 @@ public:
     mstring Name() const	{ return i_Name; }
     mDateTime Creation_Time() const;
 
-    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = mDateTime::CurrentDateTime());
+    void Topic(const mstring& source, const mstring& topic, const mstring& setter, const mDateTime& time = mDateTime::CurrentDateTime());
     mstring Topic() const;
     mstring Topic_Setter() const;
     mDateTime Topic_Set_Time() const;
 
     unsigned int Squit() const;
-    mstring Squit(unsigned int num) const;
+    mstring Squit(const unsigned int num) const;
     unsigned int Users() const;
-    mstring User(unsigned int num) const;
+    mstring User(const unsigned int num) const;
     unsigned int Ops() const;
-    mstring Op(unsigned int num) const;
+    mstring Op(const unsigned int num) const;
     unsigned int Voices() const;
-    mstring Voice(unsigned int num) const;
-    pair<bool, bool> User(mstring name) const;
+    mstring Voice(const unsigned int num) const;
+    pair<bool, bool> User(const mstring& name) const;
     unsigned int Bans() const;
-    mstring Ban(unsigned int num) const;
-    mDateTime Ban(mstring mask) const;
+    mstring Ban(const unsigned int num) const;
+    mDateTime Ban(const mstring& mask) const;
     unsigned int Exempts() const;
-    mstring Exempt(unsigned int num) const;
-    mDateTime Exempt(mstring mask) const;
-    bool IsSquit(mstring nick) const;
-    bool IsIn(mstring nick) const;
-    bool IsOp(mstring nick) const;
-    bool IsVoice(mstring nick) const;
-    bool IsBan(mstring mask) const;
-    bool MatchBan(mstring mask) const;
-    bool IsExempt(mstring mask) const;
-    bool MatchExempt(mstring mask) const;
+    mstring Exempt(const unsigned int num) const;
+    mDateTime Exempt(const mstring& mask) const;
+    bool IsSquit(const mstring& nick) const;
+    bool IsIn(const mstring& nick) const;
+    bool IsOp(const mstring& nick) const;
+    bool IsVoice(const mstring& nick) const;
+    bool IsBan(const mstring& mask) const;
+    bool MatchBan(const mstring& mask) const;
+    bool IsExempt(const mstring& mask) const;
+    bool MatchExempt(const mstring& mask) const;
 
     void LockDown();
     void UnLock();
-    void SendMode(mstring in);			// out
-    void Mode(mstring source, mstring in);	// in
-    bool HasMode(mstring in) const;
+    void SendMode(const mstring& in);			// out
+    void Mode(const mstring& source, const mstring& in);	// in
+    bool HasMode(const mstring& in) const;
     mstring Mode() const;
     mstring Key() const;
     unsigned int Limit() const;
-    mDateTime PartTime(mstring nick) const;
+    mDateTime PartTime(const mstring& nick) const;
 
     size_t Usage() const;
     void DumpB() const;
@@ -325,20 +330,22 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 	tag_lock_Revenge, tag_Suspend_By, tag_Suspend_Time, tag_Level, tag_Access,
 	tag_Akick, tag_Greet, tag_Message, tag_UserDef;
 
-    void ChgAttempt(mstring nick, mstring newnick);
-    bool Join(mstring nick);
-    void Part(mstring nick);
-    void Kick(mstring nick, mstring kicker);
-    void ChgNick(mstring nick, mstring newnick);
-    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = mDateTime::CurrentDateTime());
-    void Mode(mstring setter, mstring mode);
+    void ChgAttempt(const mstring& nick, const mstring& newnick);
+    bool Join(const mstring& nick);
+    void Part(const mstring& nick);
+    void Kick(const mstring& nick, const mstring& kicker);
+    void ChgNick(const mstring& nick, const mstring& newnick);
+    void Topic(const mstring& source, const mstring& topic, const mstring& setter,
+	const mDateTime& time = mDateTime::CurrentDateTime());
+    void Mode(const mstring& setter, const mstring& mode);
     void defaults();
-    bool DoRevenge(mstring type, mstring target, mstring source);
+    bool DoRevenge(const mstring& type, const mstring& target, const mstring& source);
 public:
     Chan_Stored_t() {}
     Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
-    Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc);
-    Chan_Stored_t(mstring name); // Forbidden
+    Chan_Stored_t(const mstring& name, const mstring& founder,
+	const mstring& password, const mstring& desc);
+    Chan_Stored_t(const mstring& name); // Forbidden
     ~Chan_Stored_t() {}
     void operator=(const Chan_Stored_t &in);
     bool operator==(const Chan_Stored_t &in) const
@@ -351,34 +358,34 @@ public:
     mstring Name() const		{ return i_Name; }
     mDateTime RegTime() const;
     mDateTime LastUsed();
-    void SetTopic(mstring mynick, mstring topic, mstring setter);
-    void Founder(mstring in);
+    void SetTopic(const mstring& mynick, const mstring& topic, const mstring& setter);
+    void Founder(const mstring& in);
     mstring Founder() const;
-    void CoFounder(mstring in);
+    void CoFounder(const mstring& in);
     mstring CoFounder() const;
-    void Description(mstring in);
+    void Description(const mstring& in);
     mstring Description() const;
-    void Password(mstring in);
+    void Password(const mstring& in);
     mstring Password() const;
-    unsigned int CheckPass(mstring nick, mstring pass);
-    void Email(mstring in);
+    unsigned int CheckPass(const mstring& nick, const mstring& pass);
+    void Email(const mstring& in);
     mstring Email() const;
-    void URL(mstring in);
+    void URL(const mstring& in);
     mstring URL() const;
-    void Comment(mstring in);
+    void Comment(const mstring& in);
     mstring Comment() const;
 
-    void Suspend(mstring name, mstring reason)
+    void Suspend(const mstring& name, const mstring& reason)
 	{ Comment(reason); Suspend(name); }
-    void Suspend(mstring name);
+    void Suspend(const mstring& name);
     void UnSuspend();
 
     mstring Mlock_Off() const;
     mstring Mlock_On() const;
     mstring Mlock() const;
-    vector<mstring> Mlock(mstring source, mstring mode);
+    vector<mstring> Mlock(const mstring& source, const mstring& mode);
     mstring L_Mlock() const;
-    vector<mstring> L_Mlock(mstring source, mstring mode);
+    vector<mstring> L_Mlock(const mstring& source, const mstring& mode);
     mstring Mlock_Key()	const;
     unsigned int Mlock_Limit() const;
     mstring Last_Topic() const;
@@ -386,57 +393,57 @@ public:
     mDateTime Last_Topic_Set_Time() const;
 
     unsigned long Bantime() const;
-    void Bantime(unsigned long in);
+    void Bantime(const unsigned long in);
     bool L_Bantime() const;
-    void L_Bantime(bool in);
+    void L_Bantime(const bool in);
     unsigned long Parttime() const;
-    void Parttime(unsigned long in);
+    void Parttime(const unsigned long in);
     bool L_Parttime() const;
-    void L_Parttime(bool in);
+    void L_Parttime(const bool in);
     bool Keeptopic() const;
-    void Keeptopic(bool in);
+    void Keeptopic(const bool in);
     bool L_Keeptopic() const;
-    void L_Keeptopic(bool in);
+    void L_Keeptopic(const bool in);
     bool Topiclock() const;
-    void Topiclock(bool in);
+    void Topiclock(const bool in);
     bool L_Topiclock() const;
-    void L_Topiclock(bool in);
+    void L_Topiclock(const bool in);
     bool Private() const;
-    void Private(bool in);
+    void Private(const bool in);
     bool L_Private() const;
-    void L_Private(bool in);
+    void L_Private(const bool in);
     bool Secureops() const;
-    void Secureops(bool in);
+    void Secureops(const bool in);
     bool L_Secureops() const;
-    void L_Secureops(bool in);
+    void L_Secureops(const bool in);
     bool Secure() const;
-    void Secure(bool in);
+    void Secure(const bool in);
     bool L_Secure() const;
-    void L_Secure(bool in);
+    void L_Secure(const bool in);
     bool NoExpire() const;
-    void NoExpire(bool in);
+    void NoExpire(const bool in);
     bool L_NoExpire() const;
-    void L_NoExpire(bool in);
+    void L_NoExpire(const bool in);
     bool Anarchy() const;
-    void Anarchy(bool in);
+    void Anarchy(const bool in);
     bool L_Anarchy() const;
-    void L_Anarchy(bool in);
+    void L_Anarchy(const bool in);
     bool KickOnBan() const;
-    void KickOnBan(bool in);
+    void KickOnBan(const bool in);
     bool L_KickOnBan() const;
-    void L_KickOnBan(bool in);
+    void L_KickOnBan(const bool in);
     bool Restricted() const;
-    void Restricted(bool in);
+    void Restricted(const bool in);
     bool L_Restricted() const;
-    void L_Restricted(bool in);
+    void L_Restricted(const bool in);
     bool Join() const;
-    void Join(bool in);
+    void Join(const bool in);
     bool L_Join() const;
-    void L_Join(bool in);
+    void L_Join(const bool in);
     mstring Revenge() const;
-    bool Revenge(mstring in);
+    bool Revenge(const mstring& in);
     bool L_Revenge() const;
-    void L_Revenge(bool in);
+    void L_Revenge(const bool in);
 
     bool Suspended() const;
     mstring Suspend_By() const;
@@ -444,16 +451,16 @@ public:
     bool Forbidden() const;
 
     // FIND: Looks for EXACT MATCH of passed entry.
-//  bool Level_insert(mstring entry, long value, mstring nick);
+//  bool Level_insert(const mstring& entry, const long value, const mstring& nick);
 //  bool Level_erase();
-    bool Level_change(mstring entry, long value, mstring nick);
+    bool Level_change(const mstring& entry, const long value, const mstring& nick);
     set<entlist_val_t<long> >::iterator Level_begin()
 	{ return i_Level.begin(); }
     set<entlist_val_t<long> >::iterator Level_end()
 	{ return i_Level.end(); }
     size_t Level_size() const		{ return i_Level.size(); }
-    bool Level_find(mstring entry);
-    long Level_value(mstring entry);
+    bool Level_find(const mstring& entry);
+    long Level_value(const mstring& entry);
     set<entlist_val_t<long> >::iterator Level;
 
     // FIND: Looks for EXACT MATCH of passed entry, if !found,
@@ -463,18 +470,19 @@ public:
     //     1) Entry !has @ and is reg'd nick.
     //     2) Entry has (* or ?) and @.
     //     3) Entry has @ and no (* or ?).
-    bool Access_insert(mstring entry, long value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
+    bool Access_insert(const mstring& entry, const long value, const mstring& nick,
+	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool Access_erase();
     set<entlist_val_t<long> >::iterator Access_begin()
 	{ return i_Access.begin(); }
     set<entlist_val_t<long> >::iterator Access_end()
 	{ return i_Access.end(); }
     size_t Access_size() const			{ return i_Access.size(); }
-    bool Access_find(mstring entry, bool looklive = true);
-    long Access_value(mstring entry, bool looklive = true);
+    bool Access_find(const mstring& entry, const bool looklive = true);
+    long Access_value(const mstring& entry, const bool looklive = true);
     set<entlist_val_t<long> >::iterator Access;
-    long GetAccess(mstring entry);
-    bool GetAccess(mstring entry, mstring type);
+    long GetAccess(const mstring& entry);
+    bool GetAccess(const mstring& entry, const mstring& type);
 
     // FIND: Looks for EXACT MATCH of passed entry, if !found,
     //       then if entry contains "@", REGEX match on entry,
@@ -483,36 +491,39 @@ public:
     //     1) Entry !has @ and is reg'd nick.
     //     2) Entry has (* or ?) and @.
     //     3) Entry has @ and no (* or ?).
-    bool Akick_insert(mstring entry, mstring value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
-    bool Akick_insert(mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
+    bool Akick_insert(const mstring& entry, const mstring& value,
+	const mstring& nick, const mDateTime& modtime = mDateTime::CurrentDateTime());
+    bool Akick_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool Akick_erase();
     set<entlist_val_t<mstring> >::iterator Akick_begin()
 	{ return i_Akick.begin(); }
     set<entlist_val_t<mstring> >::iterator Akick_end()
 	{ return i_Akick.end(); }
     size_t Akick_size() const			{ return i_Akick.size(); }
-    bool Akick_find(mstring entry, bool looklive = true);
-    mstring Akick_string(mstring entry, bool looklive = true);
+    bool Akick_find(const mstring& entry, const bool looklive = true);
+    mstring Akick_string(const mstring& entry, const bool looklive = true);
     set<entlist_val_t<mstring> >::iterator Akick;
 
     // FIND: Looks for EXACT MATCH of nick entry.
     // INSERT: Adds if not found.
-    bool Greet_insert(mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
+    bool Greet_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool Greet_erase();
     entlist_i Greet_begin()			{ return i_Greet.begin(); }
     entlist_i Greet_end()			{ return i_Greet.end(); }
     size_t Greet_size() const			{ return i_Greet.size(); }
-    bool Greet_find(mstring nick);
+    bool Greet_find(const mstring& nick);
     entlist_i Greet;
 
     // FIND: Looks for NUMBER of entry.
     // INSERT: Adds if not found.
-    bool Message_insert(mstring entry, mstring nick);
+    bool Message_insert(const mstring& entry, const mstring& nick);
     bool Message_erase();
     entlist_i Message_begin()			{ return i_Message.begin(); }
     entlist_i Message_end()			{ return i_Message.end(); }
     size_t Message_size() const			{ return i_Message.size(); }
-    bool Message_find(unsigned int num);
+    bool Message_find(const unsigned int num);
     entlist_i Message;
 
     SXP::Tag& GetClassTag() const { return tag_Chan_Stored_t; }
@@ -655,7 +666,7 @@ public:
 	unsigned long Unlock()const	    { return i_Unlock; }
     } stats;
 
-    bool IsRevengeLevel(mstring level)
+    bool IsRevengeLevel(const mstring& level)
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }
     bool Hide()const			{ return hide; }
@@ -696,12 +707,12 @@ public:
     bool LCK_Revenge()const		{ return lck_revenge; }
     long Level_Min()const		{ return level_min; }
     long Level_Max()const		{ return level_max; }
-    long LVL(mstring level) const;
-    bool IsLVL(mstring level)const;
+    long LVL(const mstring& level) const;
+    bool IsLVL(const mstring& level)const;
     vector<mstring> LVL()const;
 
-    bool IsStored(mstring in)const;
-    bool IsLive(mstring in)const;
+    bool IsStored(const mstring& in)const;
+    bool IsLive(const mstring& in)const;
     map<mstring,Chan_Stored_t> stored;
     map<mstring,Chan_Live_t> live;
     Part_Handler ph;
@@ -711,98 +722,98 @@ public:
     virtual mstring GetInternalName() const { return "ChanServ"; }
     virtual void execute(const mstring & message);
 
-    static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_Register(mstring mynick, mstring source, mstring params);
-    static void do_Drop(mstring mynick, mstring source, mstring params);
-    static void do_Identify(mstring mynick, mstring source, mstring params);
-    static void do_Info(mstring mynick, mstring source, mstring params);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static void do_Suspend(mstring mynick, mstring source, mstring params);
-    static void do_UnSuspend(mstring mynick, mstring source, mstring params);
-    static void do_Forbid(mstring mynick, mstring source, mstring params);
-    static void do_Getpass(mstring mynick, mstring source, mstring params);
+    static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Register(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Drop(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Identify(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Info(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Suspend(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_UnSuspend(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Forbid(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Getpass(const mstring &mynick, const mstring &source, const mstring &params);
 
-    static void do_Mode(mstring mynick, mstring source, mstring params);
-    static void do_Op(mstring mynick, mstring source, mstring params);
-    static void do_DeOp(mstring mynick, mstring source, mstring params);
-    static void do_Voice(mstring mynick, mstring source, mstring params);
-    static void do_DeVoice(mstring mynick, mstring source, mstring params);
-    static void do_Topic(mstring mynick, mstring source, mstring params);
-    static void do_Kick(mstring mynick, mstring source, mstring params);
-    static void do_AnonKick(mstring mynick, mstring source, mstring params);
-    static void do_Users(mstring mynick, mstring source, mstring params);
-    static void do_Invite(mstring mynick, mstring source, mstring params);
-    static void do_Unban(mstring mynick, mstring source, mstring params);
-    static void do_Live(mstring mynick, mstring source, mstring params);
+    static void do_Mode(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Op(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_DeOp(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Voice(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_DeVoice(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Topic(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Kick(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_AnonKick(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Users(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Invite(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Unban(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Live(const mstring &mynick, const mstring &source, const mstring &params);
 
-    static void do_clear_Users(mstring mynick, mstring source, mstring params);
-    static void do_clear_Modes(mstring mynick, mstring source, mstring params);
-    static void do_clear_Ops(mstring mynick, mstring source, mstring params);
-    static void do_clear_Voices(mstring mynick, mstring source, mstring params);
-    static void do_clear_Bans(mstring mynick, mstring source, mstring params);
-    static void do_clear_All(mstring mynick, mstring source, mstring params);
-    static void do_level_Set(mstring mynick, mstring source, mstring params);
-    static void do_level_Reset(mstring mynick, mstring source, mstring params);
-    static void do_level_List(mstring mynick, mstring source, mstring params);
-    static void do_access_Add(mstring mynick, mstring source, mstring params);
-    static void do_access_Del(mstring mynick, mstring source, mstring params);
-    static void do_access_List(mstring mynick, mstring source, mstring params);
-    static void do_akick_Add(mstring mynick, mstring source, mstring params);
-    static void do_akick_Del(mstring mynick, mstring source, mstring params);
-    static void do_akick_List(mstring mynick, mstring source, mstring params);
-    static void do_greet_Add(mstring mynick, mstring source, mstring params);
-    static void do_greet_Del(mstring mynick, mstring source, mstring params);
-    static void do_greet_List(mstring mynick, mstring source, mstring params);
-    static void do_message_Add(mstring mynick, mstring source, mstring params);
-    static void do_message_Del(mstring mynick, mstring source, mstring params);
-    static void do_message_List(mstring mynick, mstring source, mstring params);
-    static void do_set_Founder(mstring mynick, mstring source, mstring params);
-    static void do_set_CoFounder(mstring mynick, mstring source, mstring params);
-    static void do_set_Description(mstring mynick, mstring source, mstring params);
-    static void do_set_Password(mstring mynick, mstring source, mstring params);
-    static void do_set_Email(mstring mynick, mstring source, mstring params);
-    static void do_set_URL(mstring mynick, mstring source, mstring params);
-    static void do_set_Comment(mstring mynick, mstring source, mstring params);
-    static void do_set_Mlock(mstring mynick, mstring source, mstring params);
-    static void do_set_BanTime(mstring mynick, mstring source, mstring params);
-    static void do_set_PartTime(mstring mynick, mstring source, mstring params);
-    static void do_set_KeepTopic(mstring mynick, mstring source, mstring params);
-    static void do_set_TopicLock(mstring mynick, mstring source, mstring params);
-    static void do_set_Private(mstring mynick, mstring source, mstring params);
-    static void do_set_SecureOps(mstring mynick, mstring source, mstring params);
-    static void do_set_Secure(mstring mynick, mstring source, mstring params);
-    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
-    static void do_set_Anarchy(mstring mynick, mstring source, mstring params);
-    static void do_set_KickOnBan(mstring mynick, mstring source, mstring params);
-    static void do_set_Restricted(mstring mynick, mstring source, mstring params);
-    static void do_set_Join(mstring mynick, mstring source, mstring params);
-    static void do_set_Revenge(mstring mynick, mstring source, mstring params);
-    static void do_lock_Mlock(mstring mynick, mstring source, mstring params);
-    static void do_lock_BanTime(mstring mynick, mstring source, mstring params);
-    static void do_lock_PartTime(mstring mynick, mstring source, mstring params);
-    static void do_lock_KeepTopic(mstring mynick, mstring source, mstring params);
-    static void do_lock_TopicLock(mstring mynick, mstring source, mstring params);
-    static void do_lock_Private(mstring mynick, mstring source, mstring params);
-    static void do_lock_SecureOps(mstring mynick, mstring source, mstring params);
-    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_Anarchy(mstring mynick, mstring source, mstring params);
-    static void do_lock_KickOnBan(mstring mynick, mstring source, mstring params);
-    static void do_lock_Restricted(mstring mynick, mstring source, mstring params);
-    static void do_lock_Join(mstring mynick, mstring source, mstring params);
-    static void do_lock_Revenge(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Mlock(mstring mynick, mstring source, mstring params);
-    static void do_unlock_BanTime(mstring mynick, mstring source, mstring params);
-    static void do_unlock_PartTime(mstring mynick, mstring source, mstring params);
-    static void do_unlock_KeepTopic(mstring mynick, mstring source, mstring params);
-    static void do_unlock_TopicLock(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
-    static void do_unlock_SecureOps(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Anarchy(mstring mynick, mstring source, mstring params);
-    static void do_unlock_KickOnBan(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Restricted(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Join(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Revenge(mstring mynick, mstring source, mstring params);
+    static void do_clear_Users(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clear_Modes(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clear_Ops(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clear_Voices(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clear_Bans(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clear_All(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_level_Set(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_level_Reset(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_level_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_access_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_access_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_access_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_akick_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_akick_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_akick_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_greet_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_greet_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_greet_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_message_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_message_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_message_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Founder(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_CoFounder(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Description(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Password(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Email(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_URL(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Comment(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Mlock(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_BanTime(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_PartTime(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_KeepTopic(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_TopicLock(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_SecureOps(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Anarchy(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Restricted(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Join(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Revenge(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Mlock(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_BanTime(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_PartTime(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_KeepTopic(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_TopicLock(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_SecureOps(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Anarchy(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Restricted(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Join(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Revenge(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Mlock(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_BanTime(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_PartTime(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_KeepTopic(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_TopicLock(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_SecureOps(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Anarchy(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Restricted(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Join(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Revenge(const mstring &mynick, const mstring &source, const mstring &params);
 
     virtual SXP::Tag& GetClassTag() const { return tag_ChanServ; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

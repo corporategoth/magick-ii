@@ -27,6 +27,11 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.160  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.159  2001/03/08 08:07:41  ungod
 ** fixes for bcc 5.5
 **
@@ -433,7 +438,7 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 #include "magick.h"
 #include "dccengine.h"
 
-void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
+void Nick_Live_t::InFlight_t::ChgNick(const mstring& newnick)
 {
     FT("Nick_Live_t::InFlight_t::ChgNick", (newnick));
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
@@ -516,7 +521,7 @@ void Nick_Live_t::InFlight_t::init()
 
 // We have completed a file transfer, or errored out.
 // 0 if we errored, else its a file number.
-void Nick_Live_t::InFlight_t::File(unsigned long filenum)
+void Nick_Live_t::InFlight_t::File(const unsigned long filenum)
 {
     FT("Nick_Live_t::InFlight_t::File", (filenum));
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "fileinprog"));
@@ -558,8 +563,8 @@ void Nick_Live_t::InFlight_t::SetInProg()
 
 // New memo, send an old one if it isnt in-progress, and
 // cancel it if it was never started.
-void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
-			mstring who, mstring message, bool silent)
+void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
+	const mstring& who, const mstring& message, const bool silent)
 {
     FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message, silent));
     if (!Parent->nickserv.IsStored(nick))
@@ -658,7 +663,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 
 
 // Add text to a memo, and re-start the timer.
-void Nick_Live_t::InFlight_t::Continue(mstring message)
+void Nick_Live_t::InFlight_t::Continue(const mstring& message)
 {
     FT("Nick_Live_t::InFlight_t::Continue", (message));
     if (!Memo())
@@ -723,7 +728,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 // will call Cancel() if no file was started, but requested.
 // It accepts an argument of 'file number'.  Ignored if
 // no file attachment was requested, but set if 
-void Nick_Live_t::InFlight_t::End(unsigned long filenum)
+void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 {
     NFT("Nick_Live_t::InFlight_t::End");
     if (File() && InProg())
@@ -926,7 +931,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 }
 
 
-void Nick_Live_t::InFlight_t::Picture(mstring mynick)
+void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
 {
     FT("Nick_Live_t::InFlight_t::Picture", (mynick));
     if (!Parent->nickserv.IsStored(nick))
@@ -982,7 +987,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 }
 
 
-void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
+void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& committees)
 {
     FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
     if (!Parent->nickserv.IsStored(nick))
@@ -1121,40 +1126,38 @@ void Nick_Live_t::InFlight_t::DumpE() const
 
 
 Nick_Live_t::Nick_Live_t()
+	: last_msg_entries(0), flood_triggered_times(0), failed_passwds(0),
+	  identified(false), services(true)
 {
     NFT("Nick_Live_t::Nick_Live_t");
     // Dont call anything that locks, no names!
-    identified = false;
-    services = true;
-    last_msg_entries = flood_triggered_times = failed_passwds = 0;
 }
 
 
-Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
-	    mstring username, mstring hostname, mstring realname)
+Nick_Live_t::Nick_Live_t(const mstring& name, const mDateTime& signon,
+	const mstring& server, const mstring& username,
+	const mstring& hostname, const mstring& realname)
+	: i_Name(name), i_Signon_Time(signon),
+	  i_My_Signon_Time(mDateTime::CurrentDateTime()),
+	  i_Last_Action(mDateTime::CurrentDateTime()),
+	  i_realname(realname), i_user(username), i_host(hostname),
+	  i_alt_host(hostname), i_server(server), last_msg_entries(0),
+	  flood_triggered_times(0), failed_passwds(0), identified(false),
+	  services(false), InFlight(name)
 {
     FT("Nick_Live_t::Nick_Live_t",(name, signon, server, username, hostname, realname));
 
-    i_Name = name;
     WLOCK(("NickServ", "live", name.LowerCase()));
-    i_Signon_Time = signon;
-    i_My_Signon_Time = i_Last_Action = mDateTime::CurrentDateTime();
-    i_server = server;
-    i_user = username;
-    i_host = hostname;
-    i_alt_host = hostname;
-    i_realname = realname;
-    identified = false;
-    services = false;
-    InFlight.nick=i_Name;
     InFlight.init();
-    last_msg_entries = flood_triggered_times = failed_passwds = 0;
 
     // User is on AKILL, add the mask, and No server will kill
     { MLOCK(("OperServ", "Akill"));
     if (Parent->operserv.Akill_find(i_user + "@" + i_host))
     {
-	mstring reason = Parent->operserv.Akill->Value().second;
+	mstring reason(Parent->operserv.Akill->Value().second);
+	// Do this cos it will be removed when we KILL,
+	// and we dont wanna get out of touch.
+	Parent->operserv.AddHost(i_host);
 	LOG((LM_INFO, Parent->getLogMessage("OTHER/KILL_AKILL"),
 		Mask(N_U_P_H).c_str(), Parent->operserv.Akill->Entry().c_str(),
 		reason.c_str()));
@@ -1162,9 +1165,6 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 			Parent->operserv.Akill->Value().first -
 				Parent->operserv.Akill->Last_Modify_Time().SecondsSince(),
 			Parent->operserv.Akill->Last_Modifier());
-	// Do this cos it will be removed when we KILL,
-	// and we dont wanna get out of touch.
-	Parent->operserv.AddHost(i_host);
 	i_server.erase();
 	i_realname = reason;
 	return;
@@ -1189,23 +1189,18 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 }
 
 
-Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
-	    mstring realname)
+Nick_Live_t::Nick_Live_t(const mstring& name, const mstring& username,
+	const mstring& hostname, const mstring& realname)
+	: i_Name(name), i_Signon_Time(mDateTime::CurrentDateTime()),
+	  i_My_Signon_Time(mDateTime::CurrentDateTime()),
+	  i_Last_Action(mDateTime::CurrentDateTime()),
+	  i_realname(realname), i_user(username), i_host(hostname),
+	  i_alt_host(hostname), last_msg_entries(0), flood_triggered_times(0),
+	  failed_passwds(0), identified(true), services(true), InFlight(name)
 {
     FT("Nick_Live_t::Nick_Live_t",(name, username, hostname, realname));
-    i_Name = name;
     WLOCK(("NickServ", "live", name.LowerCase()));
-    i_Signon_Time = i_My_Signon_Time = mDateTime::CurrentDateTime();
-    i_Last_Action = time(NULL);
-    i_user = username;
-    i_host = hostname;
-    i_alt_host = hostname;
-    i_realname = realname;
-    identified = true;
-    services = true;
-    InFlight.nick = i_Name;
     InFlight.init();
-    last_msg_entries = flood_triggered_times = failed_passwds = 0;
     DumpE();
 }
 
@@ -1248,12 +1243,12 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
     i_UserDef.clear();
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	i_UserDef.insert(*j);
-    InFlight.nick = i_Name;
-    InFlight.init();
     InFlight=in.InFlight;
+    if (!InFlight.nick.IsSameAs(i_Name))
+	InFlight.nick = i_Name;
 }
 
-void Nick_Live_t::Join(mstring chan)
+void Nick_Live_t::Join(const mstring& chan)
 {
     FT("Nick_Live_t::Join", (chan));
     bool joined = true;
@@ -1280,7 +1275,7 @@ void Nick_Live_t::Join(mstring chan)
 }
 
 
-void Nick_Live_t::Part(mstring chan)
+void Nick_Live_t::Part(const mstring& chan)
 {
     FT("Nick_Live_t::Part", (chan));
     if (Parent->chanserv.IsLive(chan))
@@ -1306,7 +1301,7 @@ void Nick_Live_t::Part(mstring chan)
     //Parent->server.FlushUser(i_Name, chan);
 }
 
-void Nick_Live_t::Kick(mstring kicker, mstring chan)
+void Nick_Live_t::Kick(const mstring& kicker, const mstring& chan)
 {
     FT("Nick_Live_t::Kick", (kicker, chan));
     if (Parent->chanserv.IsLive(chan))
@@ -1331,7 +1326,7 @@ void Nick_Live_t::Kick(mstring kicker, mstring chan)
 }
 
 
-void Nick_Live_t::Quit(mstring reason)
+void Nick_Live_t::Quit(const mstring& reason)
 {
     FT("Nick_Live_t::Quit", (reason));
 
@@ -1382,7 +1377,7 @@ void Nick_Live_t::Quit(mstring reason)
 }
 
 
-bool Nick_Live_t::IsInChan(mstring chan)
+bool Nick_Live_t::IsInChan(const mstring& chan)
 {
     FT("Nick_Live_t::IsInChan", (chan));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
@@ -1476,7 +1471,7 @@ bool Nick_Live_t::FloodTrigger()
 }
 
 
-void Nick_Live_t::Name(mstring in)
+void Nick_Live_t::Name(const mstring& in)
 {
     FT("Nick_Live_t::Name", (in));
 
@@ -1631,7 +1626,7 @@ void Nick_Live_t::Name(mstring in)
 }
 
 
-void Nick_Live_t::SendMode(mstring in)
+void Nick_Live_t::SendMode(const mstring& in)
 {
     FT("Nick_Live_t::SendMode", (in));
 
@@ -1646,7 +1641,7 @@ void Nick_Live_t::SendMode(mstring in)
 }
 
 
-void Nick_Live_t::Mode(mstring in)
+void Nick_Live_t::Mode(const mstring& in)
 {
     FT("Nick_Live_t::Mode", (in));
 
@@ -1796,14 +1791,14 @@ mstring Nick_Live_t::Mode() const
     RET(modes);
 }
 
-bool Nick_Live_t::HasMode(mstring in) const
+bool Nick_Live_t::HasMode(const mstring& in) const
 {
     FT("Nick_Live_t::HasMode", (in));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes.Contains(in));
 }
 
-void Nick_Live_t::Away(mstring in)
+void Nick_Live_t::Away(const mstring& in)
 {
     FT("Nick_Live_t::Away", (in));
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_away"));
@@ -1886,7 +1881,7 @@ mstring Nick_Live_t::AltHost() const
     RET(i_alt_host);
 }
 
-void Nick_Live_t::AltHost(mstring in)
+void Nick_Live_t::AltHost(const mstring& in)
 {
     FT("Nick_Live_t::AltHost", (in));
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_alt_host"));
@@ -1985,7 +1980,7 @@ void Nick_Live_t::ClearSquit()
 }
 
 
-mstring Nick_Live_t::Mask(Nick_Live_t::styles type) const
+mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
 {
     FT("Nick_Live_t::Mask", (static_cast<int>(type)));
 
@@ -2064,7 +2059,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type) const
 }
 
 
-mstring Nick_Live_t::AltMask(Nick_Live_t::styles type) const
+mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
 {
     FT("Nick_Live_t::AltMask", (static_cast<int>(type)));
 
@@ -2143,7 +2138,7 @@ mstring Nick_Live_t::AltMask(Nick_Live_t::styles type) const
 }
 
 
-mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
+mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& password)
 {
     FT("Nick_Live_t::ChanIdentify", (channel, password));
     mstring retval;
@@ -2196,7 +2191,7 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 }
 
 
-void Nick_Live_t::UnChanIdentify(mstring channel)
+void Nick_Live_t::UnChanIdentify(const mstring& channel)
 {
     FT("Nick_Live_t::UnChanIdentify", (channel));
 
@@ -2209,7 +2204,7 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
     }
 }
 
-bool Nick_Live_t::IsChanIdentified(mstring channel)
+bool Nick_Live_t::IsChanIdentified(const mstring& channel)
 {
     FT("Nick_Live_t::IsChanIdentified", (channel));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
@@ -2218,7 +2213,7 @@ bool Nick_Live_t::IsChanIdentified(mstring channel)
 }
 
 
-mstring Nick_Live_t::Identify(mstring password)
+mstring Nick_Live_t::Identify(const mstring& password)
 {
     FT("Nick_Live_t::Identify", (password));
     mstring retval;
@@ -2452,7 +2447,7 @@ void Nick_Live_t::DumpE() const
 // =======================================================================
 
 
-void Nick_Stored_t::Signon(mstring realname, mstring mask)
+void Nick_Stored_t::Signon(const mstring& realname, const mstring& mask)
 {
     FT("Nick_Stored_t::Signon", (realname, mask));
     { WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastRealName"));
@@ -2488,7 +2483,7 @@ void Nick_Stored_t::Signon(mstring realname, mstring mask)
 }
 
 
-void Nick_Stored_t::ChgNick(mstring nick)
+void Nick_Stored_t::ChgNick(const mstring& nick)
 {
     FT("Nick_Stored_t::ChgNick", (nick));
     WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastQuit"));
@@ -2508,29 +2503,19 @@ Nick_Stored_t::Nick_Stored_t()
 }
 
 
-Nick_Stored_t::Nick_Stored_t(mstring nick, mstring password)
+Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mstring& password)
+	: i_Name(nick), i_RegTime(mDateTime::CurrentDateTime()), i_Password(password),
+	  i_Protect(Parent->nickserv.DEF_Protect()), l_Protect(false),
+	  i_Secure(Parent->nickserv.DEF_Secure()), l_Secure(false),
+	  i_NoExpire(Parent->nickserv.DEF_NoExpire()), l_NoExpire(false),
+	  i_NoMemo(Parent->nickserv.DEF_NoMemo()), l_NoMemo(false),
+	  i_Private(Parent->nickserv.DEF_Private()), l_Private(false),
+	  i_PRIVMSG(Parent->nickserv.DEF_PRIVMSG()), l_PRIVMSG(false),
+	  i_Language(Parent->nickserv.DEF_Language().UpperCase()), l_Language(false),
+	  i_Forbidden(false), i_Picture(0)
 {
     FT("Nick_Stored_t::Nick_Stored_t", (nick, password));
-    i_Name = nick;
-    WLOCK(("NickServ", "stored", i_Name.LowerCase()));
-    i_Password = password;
-    i_RegTime = mDateTime::CurrentDateTime();
-    i_Protect = Parent->nickserv.DEF_Protect();
-    l_Protect = false;
-    i_Secure = Parent->nickserv.DEF_Secure();
-    l_Secure = false;
-    i_NoExpire = Parent->nickserv.DEF_NoExpire();
-    l_NoExpire = false;
-    i_NoMemo = Parent->nickserv.DEF_NoMemo();
-    l_NoMemo = false;
-    i_Private = Parent->nickserv.DEF_Private();
-    l_Private = false;
-    i_PRIVMSG = Parent->nickserv.DEF_PRIVMSG();
-    l_PRIVMSG = false;
-    i_Language = Parent->nickserv.DEF_Language().UpperCase();
-    l_Language = false;
-    i_Forbidden = false;
-    i_Picture = 0;
+    WLOCK(("NickServ", "stored", nick.LowerCase()));
 
     if (Parent->nickserv.IsLive(i_Name))
     {
@@ -2542,27 +2527,23 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mstring password)
 }
 
 
-Nick_Stored_t::Nick_Stored_t(mstring nick)
+Nick_Stored_t::Nick_Stored_t(const mstring& nick)
+	: i_Name(nick), i_RegTime(mDateTime::CurrentDateTime()),
+	  i_Forbidden(true), i_Picture(0)
 {
-    FT("Nick_Stored_t::Nick_Stored_t", (nick));
-    i_Name = nick;
+    FT("Nick_Stored_t::Nick_Stored_t", (nick.LowerCase()));
     WLOCK(("NickServ", "stored", i_Name.LowerCase()));
-    i_Forbidden = true;
-    i_Picture = 0;
-    i_RegTime = mDateTime::CurrentDateTime();
     DumpE();
 } 
 
 
-Nick_Stored_t::Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_t &in)
+Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
+	const Nick_Stored_t &in)
+	: i_Name(nick), i_RegTime(regtime), i_Host(in.i_Name.LowerCase()),
+	  i_Forbidden(false), i_Picture(false)
 {
     FT("Nick_Stored_t::Nick_Stored_t", (nick, "(const Nick_Stored_t &) in"));
-    i_Name = nick;
-    WLOCK(("NickServ", "stored", i_Name.LowerCase()));
-    i_RegTime = regtime;
-    i_Forbidden = false;
-    i_Picture = 0;
-    i_Host = in.i_Name.LowerCase();
+    WLOCK(("NickServ", "stored", nick.LowerCase()));
 
     if (Parent->nickserv.IsLive(i_Name))
     {
@@ -2705,7 +2686,7 @@ mstring Nick_Stored_t::Email()
 }
 
 
-void Nick_Stored_t::Email(mstring in)
+void Nick_Stored_t::Email(const mstring& in)
 {
     FT("Nick_Stored_t::Email", (in));
     if (Host().empty())
@@ -2738,7 +2719,7 @@ mstring Nick_Stored_t::URL()
 }
 
 
-void Nick_Stored_t::URL(mstring in)
+void Nick_Stored_t::URL(const mstring& in)
 {
     FT("Nick_Stored_t::URL", (in));
     if (Host().empty())
@@ -2771,7 +2752,7 @@ mstring Nick_Stored_t::ICQ()
 }
 
 
-void Nick_Stored_t::ICQ(mstring in)
+void Nick_Stored_t::ICQ(const mstring& in)
 {
     FT("Nick_Stored_t::ICQ", (in));
     if (Host().empty())
@@ -2804,7 +2785,7 @@ mstring Nick_Stored_t::Description()
 }
 
 
-void Nick_Stored_t::Description(mstring in)
+void Nick_Stored_t::Description(const mstring& in)
 {
     FT("Nick_Stored_t::Description", (in));
     if (Host().empty())
@@ -2837,7 +2818,7 @@ mstring Nick_Stored_t::Comment()
 }
 
 
-void Nick_Stored_t::Comment(mstring in)
+void Nick_Stored_t::Comment(const mstring& in)
 {
     FT("Nick_Stored_t::Comment", (in));
     if (Host().empty())
@@ -2854,7 +2835,7 @@ void Nick_Stored_t::Comment(mstring in)
 }
 
 
-void Nick_Stored_t::Suspend(mstring name)
+void Nick_Stored_t::Suspend(const mstring& name)
 {
     FT("Nick_Stored_t::Suspend", (name));
     if (Host().empty())
@@ -2927,7 +2908,7 @@ mstring Nick_Stored_t::Password()
 }
 
 
-void Nick_Stored_t::Password(mstring in)
+void Nick_Stored_t::Password(const mstring& in)
 {
     FT("Nick_Stored_t::Password", (in));
     if (Host().empty())
@@ -2944,7 +2925,8 @@ void Nick_Stored_t::Password(mstring in)
 }
 
 
-bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
+bool Nick_Stored_t::Slave(const mstring& nick, const mstring& password,
+	const mDateTime& regtime)
 {
     FT("Nick_Stored_t::Slave", (nick, password, regtime));
 
@@ -2996,7 +2978,7 @@ unsigned int Nick_Stored_t::Siblings()
 }
 
 
-mstring Nick_Stored_t::Sibling(unsigned int count)
+mstring Nick_Stored_t::Sibling(const unsigned int count)
 {
     FT("Nick_Stored_t::Siblings", (count));
     mstring retval;
@@ -3041,7 +3023,7 @@ mstring Nick_Stored_t::Sibling(unsigned int count)
 }
 
 
-bool Nick_Stored_t::IsSibling(mstring nick)
+bool Nick_Stored_t::IsSibling(const mstring& nick)
 {
     FT("Nick_Stored_t::IsSibling", (nick));
     if (i_Name.LowerCase() == nick.LowerCase())
@@ -3071,7 +3053,7 @@ bool Nick_Stored_t::IsSibling(mstring nick)
     }
 }
 
-void Nick_Stored_t::ChangeOver(mstring oldnick)
+void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 {
     FT("Nick_Stored_t::ChangeOver", (oldnick)); 
 
@@ -3378,7 +3360,7 @@ unsigned int Nick_Stored_t::Access()
 }
 
 
-mstring Nick_Stored_t::Access(unsigned int count)
+mstring Nick_Stored_t::Access(const unsigned int count)
 {
     FT("Nick_Stored_t::Access", (count));
     if (Host().empty())
@@ -3445,7 +3427,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 }
 
 
-unsigned int Nick_Stored_t::AccessDel(mstring in)
+unsigned int Nick_Stored_t::AccessDel(const mstring& in)
 {
     FT("Nick_Stored_t::AccessDel", (in));
     unsigned int retval = 0;
@@ -3474,7 +3456,7 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 }
 
 
-bool Nick_Stored_t::IsAccess(mstring in)
+bool Nick_Stored_t::IsAccess(const mstring& in)
 {
     FT("Nick_Stored_t::IsAccess", (in));
     if (Host().empty())
@@ -3512,7 +3494,7 @@ unsigned int Nick_Stored_t::Ignore()
 }
 
 
-mstring Nick_Stored_t::Ignore(unsigned int count)
+mstring Nick_Stored_t::Ignore(const unsigned int count)
 {
     FT("Nick_Stored_t::Ignore", (count));
     if (Host().empty())
@@ -3535,7 +3517,7 @@ mstring Nick_Stored_t::Ignore(unsigned int count)
 }
 
 
-bool Nick_Stored_t::IgnoreAdd(mstring in)
+bool Nick_Stored_t::IgnoreAdd(const mstring& in)
 {
     FT("Nick_Stored_t::IgnoreAdd", (in));
     if (Host().empty())
@@ -3565,7 +3547,7 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
 }
 
 
-unsigned int Nick_Stored_t::IgnoreDel(mstring in)
+unsigned int Nick_Stored_t::IgnoreDel(const mstring& in)
 {
     FT("Nick_Stored_t::IgnoreDel", (in));
     unsigned int retval = 0;
@@ -3594,7 +3576,7 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 }
 
 
-bool Nick_Stored_t::IsIgnore(mstring in)
+bool Nick_Stored_t::IsIgnore(const mstring& in)
 {
     FT("Nick_Stored_t::IsIgnore", (in));
     if (Host().empty())
@@ -3636,7 +3618,7 @@ bool Nick_Stored_t::Protect()
 }
 
 
-void Nick_Stored_t::Protect(bool in)
+void Nick_Stored_t::Protect(const bool in)
 {
     FT("Nick_Stored_t::Protect", (in));
     if (Host().empty())
@@ -3676,7 +3658,7 @@ bool Nick_Stored_t::L_Protect()
 }
 
 
-void Nick_Stored_t::L_Protect(bool in)
+void Nick_Stored_t::L_Protect(const bool in)
 {
     FT("Nick_Stored_t::L_Protect", (in));
     if (Host().empty())
@@ -3716,7 +3698,7 @@ bool Nick_Stored_t::Secure()
 }
 
 
-void Nick_Stored_t::Secure(bool in)
+void Nick_Stored_t::Secure(const bool in)
 {
     FT("Nick_Stored_t::Secure", (in));
     if (Host().empty())
@@ -3756,7 +3738,7 @@ bool Nick_Stored_t::L_Secure()
 }
 
 
-void Nick_Stored_t::L_Secure(bool in)
+void Nick_Stored_t::L_Secure(const bool in)
 {
     FT("Nick_Stored_t::L_Secure", (in));
     if (Host().empty())
@@ -3796,7 +3778,7 @@ bool Nick_Stored_t::NoExpire()
 }
 
 
-void Nick_Stored_t::NoExpire(bool in)
+void Nick_Stored_t::NoExpire(const bool in)
 {
     FT("Nick_Stored_t::NoExpire", (in));
     if (Host().empty())
@@ -3836,7 +3818,7 @@ bool Nick_Stored_t::L_NoExpire()
 }
 
 
-void Nick_Stored_t::L_NoExpire(bool in)
+void Nick_Stored_t::L_NoExpire(const bool in)
 {
     FT("Nick_Stored_t::L_NoExpire", (in));
     if (Host().empty())
@@ -3876,7 +3858,7 @@ bool Nick_Stored_t::NoMemo()
 }
 
 
-void Nick_Stored_t::NoMemo(bool in)
+void Nick_Stored_t::NoMemo(const bool in)
 {
     FT("Nick_Stored_t::NoMemo", (in));
     if (Host().empty())
@@ -3916,7 +3898,7 @@ bool Nick_Stored_t::L_NoMemo()
 }
 
 
-void Nick_Stored_t::L_NoMemo(bool in)
+void Nick_Stored_t::L_NoMemo(const bool in)
 {
     FT("Nick_Stored_t::L_NoMemo", (in));
     if (Host().empty())
@@ -3956,7 +3938,7 @@ bool Nick_Stored_t::Private()
 }
 
 
-void Nick_Stored_t::Private(bool in)
+void Nick_Stored_t::Private(const bool in)
 {
     FT("Nick_Stored_t::Private", (in));
     if (Host().empty())
@@ -3996,7 +3978,7 @@ bool Nick_Stored_t::L_Private()
 }
 
 
-void Nick_Stored_t::L_Private(bool in)
+void Nick_Stored_t::L_Private(const bool in)
 {
     FT("Nick_Stored_t::L_Private", (in));
     if (Host().empty())
@@ -4036,7 +4018,7 @@ bool Nick_Stored_t::PRIVMSG()
 }
 
 
-void Nick_Stored_t::PRIVMSG(bool in)
+void Nick_Stored_t::PRIVMSG(const bool in)
 {
     FT("Nick_Stored_t::PRIVMSG", (in));
     if (Host().empty())
@@ -4076,7 +4058,7 @@ bool Nick_Stored_t::L_PRIVMSG()
 }
 
 
-void Nick_Stored_t::L_PRIVMSG(bool in)
+void Nick_Stored_t::L_PRIVMSG(const bool in)
 {
     FT("Nick_Stored_t::L_PRIVMSG", (in));
     if (Host().empty())
@@ -4116,7 +4098,7 @@ mstring Nick_Stored_t::Language()
 }
 
 
-void Nick_Stored_t::Language(mstring in)
+void Nick_Stored_t::Language(const mstring& in)
 {
     FT("Nick_Stored_t::Language", (in));
     if (Host().empty())
@@ -4156,7 +4138,7 @@ bool Nick_Stored_t::L_Language()
 }
 
 
-void Nick_Stored_t::L_Language(bool in)
+void Nick_Stored_t::L_Language(const bool in)
 {
     FT("Nick_Stored_t::L_Language", (in));
     if (Host().empty())
@@ -4231,7 +4213,7 @@ bool Nick_Stored_t::Forbidden() const
     RET(i_Forbidden);
 }
 
-void Nick_Stored_t::SendPic(mstring nick)
+void Nick_Stored_t::SendPic(const mstring& nick)
 {
     FT("Nick_Stored_t::SendPic", (nick));
 
@@ -4259,7 +4241,7 @@ unsigned long Nick_Stored_t::PicNum()
 }
 
 
-void Nick_Stored_t::GotPic(unsigned long picnum)
+void Nick_Stored_t::GotPic(const unsigned long picnum)
 {
     FT("Nick_Stored_t::GotPic", (picnum));
     if (Host().empty())
@@ -4421,7 +4403,7 @@ mstring Nick_Stored_t::LastQuit()
 }
 
 
-void Nick_Stored_t::Quit(mstring message)
+void Nick_Stored_t::Quit(const mstring& message)
 {
     FT("Nick_Stored_t::Quit", (message));
     
@@ -4707,10 +4689,10 @@ NickServ::NickServ()
     messages=true;
 }
 
-mstring NickServ::findnextnick(mstring in)
+mstring NickServ::findnextnick(const mstring& in)
 {
     FT("NickServ::findnextnick", (in));
-    mstring retval = in;
+    mstring retval(in);
     // Amountof nicknames it will try, only
     // for the guest????? method.
     unsigned int i, attempts = 64;
@@ -5073,7 +5055,7 @@ void NickServ::RemCommands()
 }
 
 
-bool NickServ::IsLive(mstring in)const
+bool NickServ::IsLive(const mstring& in)const
 {
     FT("NickServ::IsLive", (in));
     bool retval = false;
@@ -5087,7 +5069,7 @@ bool NickServ::IsLive(mstring in)const
     RET(retval);
 }
 
-bool NickServ::IsLiveAll(mstring in)const
+bool NickServ::IsLiveAll(const mstring& in)const
 {
     FT("NickServ::IsLiveAll", (in));
     RLOCK(("NickServ", "live", in.LowerCase()));
@@ -5095,7 +5077,7 @@ bool NickServ::IsLiveAll(mstring in)const
     RET(retval);
 }
 
-bool NickServ::IsStored(mstring in)const
+bool NickServ::IsStored(const mstring& in)const
 {
     FT("NickServ::IsStored", (in));
     RLOCK(("NickServ", "stored", in.LowerCase()));
@@ -5134,7 +5116,7 @@ void NickServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
-void NickServ::do_Help(mstring mynick, mstring source, mstring params)
+void NickServ::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Help", (mynick, source, params));
 
@@ -5160,7 +5142,7 @@ void NickServ::do_Help(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, help[i]);
 }
 
-void NickServ::do_Register(mstring mynick, mstring source, mstring params)
+void NickServ::do_Register(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Register", (mynick, source, params));
 
@@ -5228,7 +5210,7 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
+void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Drop", (mynick, source, params));
 
@@ -5292,7 +5274,7 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_Link(mstring mynick, mstring source, mstring params)
+void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Link", (mynick, source, params));
 
@@ -5361,7 +5343,7 @@ void NickServ::do_Link(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
+void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_UnLink", (mynick, source, params));
 
@@ -5437,7 +5419,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_Host(mstring mynick, mstring source, mstring params)
+void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Host", (mynick, source, params));
 
@@ -5500,7 +5482,7 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
+void NickServ::do_Slaves(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Slaves", (mynick, source, params));
 
@@ -5558,7 +5540,7 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 }
 
 
-void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
+void NickServ::do_Identify(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Identify", (mynick, source, params));
 
@@ -5598,7 +5580,7 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, output);
 }
 
-void NickServ::do_Info(mstring mynick, mstring source, mstring params)
+void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Info", (mynick, source, params));
 
@@ -5839,7 +5821,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
+void NickServ::do_Ghost(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Ghost", (mynick, source, params));
 
@@ -5905,7 +5887,7 @@ void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
 	nick.c_str()));
 }
 
-void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
+void NickServ::do_Recover(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Recover", (mynick, source, params));
 
@@ -5970,7 +5952,7 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
 	nick.c_str()));
 }
 
-void NickServ::do_List(mstring mynick, mstring source, mstring params)
+void NickServ::do_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_List", (mynick, source, params));
 
@@ -6061,7 +6043,7 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 							i, count);
 }
 
-void NickServ::do_Send(mstring mynick, mstring source, mstring params)
+void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Send", (mynick, source, params));
 
@@ -6146,7 +6128,7 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
     }}
 }
 
-void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
+void NickServ::do_Suspend(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Suspend", (mynick, source, params));
 
@@ -6200,7 +6182,7 @@ void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
 	target.c_str(), reason.c_str()));
 }
 
-void NickServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
+void NickServ::do_UnSuspend(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_UnSuspend", (mynick, source, params));
 
@@ -6245,7 +6227,7 @@ void NickServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
 	target.c_str()));
 }
 
-void NickServ::do_Forbid(mstring mynick, mstring source, mstring params)
+void NickServ::do_Forbid(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Forbid", (mynick, source, params));
 
@@ -6275,7 +6257,7 @@ void NickServ::do_Forbid(mstring mynick, mstring source, mstring params)
 }
 
 
-void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
+void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Getpass", (mynick, source, params));
 
@@ -6336,7 +6318,7 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
 }
 
 
-void NickServ::do_Live(mstring mynick, mstring source, mstring params)
+void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_Live", (mynick, source, params));
 
@@ -6419,7 +6401,7 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
 }
 
 
-void NickServ::do_access_Current(mstring mynick, mstring source, mstring params)
+void NickServ::do_access_Current(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_access_Current", (mynick, source, params));
 
@@ -6452,7 +6434,7 @@ void NickServ::do_access_Current(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_access_Add(mstring mynick, mstring source, mstring params)
+void NickServ::do_access_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_access_Add", (mynick, source, params));
 
@@ -6496,7 +6478,7 @@ void NickServ::do_access_Add(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
+void NickServ::do_access_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_access_Del", (mynick, source, params));
 
@@ -6561,7 +6543,7 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
+void NickServ::do_access_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_access_List", (mynick, source, params));
 
@@ -6628,7 +6610,7 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
+void NickServ::do_ignore_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_ignore_Add", (mynick, source, params));
 
@@ -6673,7 +6655,7 @@ void NickServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
+void NickServ::do_ignore_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_ignore_Del", (mynick, source, params));
 
@@ -6725,7 +6707,7 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 
 }
 
-void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
+void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_ignore_List", (mynick, source, params));
 
@@ -6792,7 +6774,7 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_set_Password(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Password(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Password", (mynick, source, params));
 
@@ -6830,7 +6812,7 @@ void NickServ::do_set_Password(mstring mynick, mstring source, mstring params)
 		source.c_str()));
 }
 
-void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Email(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Email", (mynick, source, params));
 
@@ -6881,7 +6863,7 @@ void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_URL(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_URL", (mynick, source, params));
 
@@ -6926,7 +6908,7 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_ICQ(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_ICQ", (mynick, source, params));
 
@@ -6977,7 +6959,7 @@ void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_set_Description(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Description(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Description", (mynick, source, params));
 
@@ -7016,7 +6998,7 @@ void NickServ::do_set_Description(mstring mynick, mstring source, mstring params
     }
 }
 
-void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Comment", (mynick, source, params));
 
@@ -7073,7 +7055,7 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Picture(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Picture", (mynick, source, params));
 
@@ -7114,7 +7096,7 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
     }
 }
 
-void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Protect", (mynick, source, params));
 
@@ -7164,7 +7146,7 @@ void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Secure", (mynick, source, params));
 
@@ -7214,7 +7196,7 @@ void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_NoExpire", (mynick, source, params));
 
@@ -7281,7 +7263,7 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 }
 
 
-void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_NoMemo", (mynick, source, params));
 
@@ -7331,7 +7313,7 @@ void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Private", (mynick, source, params));
 
@@ -7381,7 +7363,7 @@ void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_PRIVMSG", (mynick, source, params));
 
@@ -7431,7 +7413,7 @@ void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
+void NickServ::do_set_Language(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_set_Language", (mynick, source, params));
 
@@ -7489,7 +7471,7 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
 	source.c_str(), lang.c_str()));
 }
 
-void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
+void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_lock_Protect", (mynick, source, params));
 
@@ -7558,7 +7540,7 @@ void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
+void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_lock_Secure", (mynick, source, params));
 
@@ -7627,7 +7609,7 @@ void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
+void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_lock_NoMemo", (mynick, source, params));
 
@@ -7696,7 +7678,7 @@ void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
+void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_lock_Private", (mynick, source, params));
 
@@ -7765,7 +7747,7 @@ void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
+void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_lock_PRIVMSG", (mynick, source, params));
 
@@ -7834,7 +7816,7 @@ void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
 		Parent->getMessage("VALS/OFF").c_str()));
 }
 
-void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
+void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_lock_Language", (mynick, source, params));
 
@@ -7907,7 +7889,7 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
 	nickname.c_str(), lang.c_str()));
 }
 
-void NickServ::do_unlock_Protect(mstring mynick, mstring source, mstring params)
+void NickServ::do_unlock_Protect(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_unlock_Protect", (mynick, source, params));
 
@@ -7955,7 +7937,7 @@ void NickServ::do_unlock_Protect(mstring mynick, mstring source, mstring params)
 	nickname.c_str()));
 }
 
-void NickServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
+void NickServ::do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_unlock_Secure", (mynick, source, params));
 
@@ -8003,7 +7985,7 @@ void NickServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
 	nickname.c_str()));
 }
 
-void NickServ::do_unlock_NoMemo(mstring mynick, mstring source, mstring params)
+void NickServ::do_unlock_NoMemo(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_unlock_NoMemo", (mynick, source, params));
 
@@ -8051,7 +8033,7 @@ void NickServ::do_unlock_NoMemo(mstring mynick, mstring source, mstring params)
 	nickname.c_str()));
 }
 
-void NickServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
+void NickServ::do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_unlock_Private", (mynick, source, params));
 
@@ -8099,7 +8081,7 @@ void NickServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
 	nickname.c_str()));
 }
 
-void NickServ::do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params)
+void NickServ::do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_unlock_PRIVMSG", (mynick, source, params));
 
@@ -8147,7 +8129,7 @@ void NickServ::do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params)
 	nickname.c_str()));
 }
 
-void NickServ::do_unlock_Language(mstring mynick, mstring source, mstring params)
+void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("NickServ::do_unlock_Language", (mynick, source, params));
 

@@ -27,6 +27,11 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.150  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.149  2001/03/04 20:23:18  prez
 ** Tweaked akill expiry to avoid iterator dependancies ... should work :P
 **
@@ -519,7 +524,7 @@ size_t IrcSvcHandler::HTM_Threshold() const
     RET(htm_threshold);
 }
 
-void IrcSvcHandler::HTM_Threshold(size_t in)
+void IrcSvcHandler::HTM_Threshold(const size_t in)
 {
     FT("IrcSvcHandler::HTM_Threshold", (in));
     WLOCK(("IrcSvcHandler", "htm_threshold"));
@@ -529,7 +534,7 @@ void IrcSvcHandler::HTM_Threshold(size_t in)
 }
 
 
-void IrcSvcHandler::HTM(bool in)
+void IrcSvcHandler::HTM(const bool in)
 {
     FT("IrcSvcHandler::HTM", (in));
     WLOCK(("IrcSvcHandler", "last_htm_check"));
@@ -627,10 +632,9 @@ void IrcSvcHandler::DumpE() const
 	i_synctime));
 }
 
-mstring Reconnect_Handler::FindNext(mstring server) {
-    FT("Reconnect_Handler::FindNext", (server));
-    server.MakeLower();
-    mstring result;
+mstring Reconnect_Handler::FindNext(const mstring& i_server) {
+    FT("Reconnect_Handler::FindNext", (i_server));
+    mstring result, server(i_server.LowerCase());
 
     // IF current server is found
     //     IF last server of this priority
@@ -975,7 +979,7 @@ void EventTask::ForcePing()
     MCE(last_ping);
 }
 
-mstring EventTask::SyncTime(mstring source) const
+mstring EventTask::SyncTime(const mstring& source) const
 {
     FT("EventTask::SyncTime", (source));
     RLOCK(("Events", "last_save"));

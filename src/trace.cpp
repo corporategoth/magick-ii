@@ -27,6 +27,11 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2001/03/20 14:22:15  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.106  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -139,7 +144,7 @@ RCSID(trace_cpp, "@(#)$Id$");
 
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE", "LOST" };
 
-unsigned short makehex (mstring SLevel)
+unsigned short makehex (const mstring &SLevel)
 {
     if (SLevel.length() != 6 || SLevel[0u]!='0' ||
 		    (SLevel[1u]!='x' && SLevel[1u]!='X'))
@@ -271,17 +276,13 @@ unsigned short makehex (mstring SLevel)
 // ===================================================
 
 ThreadID::ThreadID()
+	: t_internaltype(tt_LOST), t_indent(0), t_intrace(false)
 {
-    t_indent = 0;
-    t_internaltype = tt_LOST;
-    t_intrace = false;
 }
 
-ThreadID::ThreadID(threadtype_enum Type)
+ThreadID::ThreadID(const threadtype_enum Type)
+	: t_internaltype(Type), t_indent(0), t_intrace(false)
 {
-    t_indent = 0;
-    t_internaltype = Type;
-    t_intrace = false;
 }
 
 ThreadID::~ThreadID()
@@ -289,7 +290,7 @@ ThreadID::~ThreadID()
     Flush();
 }
 
-void ThreadID::assign(threadtype_enum Type)
+void ThreadID::assign(const threadtype_enum Type)
 {
     Flush();
     t_internaltype = Type;
@@ -309,8 +310,7 @@ void ThreadID::WriteOut(const mstring &message)
 
 mstring ThreadID::logname() const
 {
-    mstring name;
-    name << "trace";
+    mstring name("trace");
     if (t_internaltype!=tt_MAIN)
 	name << "_" << threadname[t_internaltype];
     name << ".log";
@@ -375,9 +375,9 @@ int levelname_count()
 
 //      \  function()
 T_Functions::T_Functions(const mstring &name)
+	: m_name(name)
 {
-    m_name=name;
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     i_prevfunc = tid->LastFunc();
@@ -391,9 +391,9 @@ T_Functions::T_Functions(const mstring &name)
 
 //      \  function( (char) T, (int) 5 )
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
+	: m_name(name)
 {
-    m_name=name;
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     i_prevfunc = tid->LastFunc();
@@ -414,7 +414,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 //      /  (char) Y
 T_Functions::~T_Functions()
 { 
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     tid->indentdown(); 
@@ -444,18 +444,16 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
     va_start (args, fmt);
     output.FormatV(fmt, args);
     va_end (args);
-    common(output.c_str());
+    common(output);
 }
 
-void T_CheckPoint::common(const char *input)
+void T_CheckPoint::common(const mstring &input)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, CheckPoint)) {
-	mstring message;
-	message << "** " << input;
-	tid->WriteOut(message);
+	tid->WriteOut("** " + input);
     }
 }
 
@@ -474,18 +472,16 @@ T_Comments::T_Comments(const char *fmt, ...)
     va_start (args, fmt);
     output.FormatV(fmt, args);
     va_end (args);
-    common(output.c_str());
+    common(output);
 }
 
-void T_Comments::common(const char *input)
+void T_Comments::common(const mstring &input)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Comments)) {
-	mstring message;
-	message << "## " << input;
-	tid->WriteOut(message);
+	tid->WriteOut("## " + input);
     }
 }
 
@@ -495,14 +491,13 @@ void T_Comments::common(const char *input)
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
 T_Modify::T_Modify(const mVarArray &args, unsigned int offset)
+	: i_args(args), i_offset(offset)
 {
-    i_args = args;
-    i_offset = offset;
 }
 
 void T_Modify::Begin()
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Modify)) {
@@ -519,7 +514,7 @@ void T_Modify::Begin()
 //      >> DE3(corewars.net)
 void T_Modify::End()
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Modify)) {
@@ -537,9 +532,8 @@ void T_Modify::End()
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
 T_Changing::T_Changing(const mstring &name, const mVariant &arg)
+	: i_name(name), i_arg(arg)
 {
-    i_name = name;
-    i_arg = arg;
 }
 
 //      >> DE1(PreZ)
@@ -549,7 +543,7 @@ void T_Changing::End(const mVariant &arg)
 {
     if (i_name.empty())
 	return;
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Changing)) {
@@ -565,9 +559,9 @@ void T_Changing::End(const mVariant &arg)
 //      <- PreZ :PRIVMSG ChanServ :help blah
 //      -> ChanServ :PRIVMSG PreZ :Unknown command 'blah'
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
-T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
+T_Chatter::T_Chatter(const dir_enum direction, const mstring &input)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Chatter)) {
@@ -598,9 +592,9 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 //      :+ R ChanInfo::#Magick
 //      :+ W NickInfo::PreZ::Flags
 //      :+ M Magick::LoadMessages
-void T_Locking::open(locktype_enum ltype, mstring lockname) 
+void T_Locking::open(const locktype_enum ltype, const mstring &lockname) 
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Locking))
@@ -626,7 +620,7 @@ void T_Locking::open(locktype_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking()
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Locking)) {
@@ -648,21 +642,19 @@ T_Locking::~T_Locking()
 
 // ===================================================
 
-T_Source::T_Source(mstring text)
+T_Source::T_Source(const mstring &text)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Source)) {
-	mstring message;
-	message << "$$ " << text;
-	tid->WriteOut(message);
+	tid->WriteOut("$$ " + text);
     }
 }
 
-T_Source::T_Source(mstring section, mstring key, mstring value)
+T_Source::T_Source(const mstring &section, const mstring &key, const mstring &value)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Source)) {
@@ -685,11 +677,11 @@ T_Source::T_Source(mstring section, mstring key, mstring value)
 
 // T_Sockets::T_Sockets() {}
 
-void T_Sockets::Begin(unsigned long id, unsigned short local,
-	unsigned short remote, mstring host, dir_enum direction)
+void T_Sockets::Begin(const unsigned long id, const unsigned short local,
+	const unsigned short remote, const mstring &host, const dir_enum direction)
 {
     s_id = id;
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Sockets))
@@ -707,12 +699,12 @@ void T_Sockets::Begin(unsigned long id, unsigned short local,
     }
 }
 
-void T_Sockets::Failed(unsigned long id, unsigned short local,
-	unsigned short remote, mstring host, mstring reason,
-	dir_enum direction)
+void T_Sockets::Failed(const unsigned long id, const unsigned short local,
+	const unsigned short remote, const mstring &host, const mstring &reason,
+	const dir_enum direction)
 {
     s_id = id;
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Sockets))
@@ -731,9 +723,9 @@ void T_Sockets::Failed(unsigned long id, unsigned short local,
 }
 
 
-void T_Sockets::Resolve(socktype_enum type, mstring info)
+void T_Sockets::Resolve(const socktype_enum type, const mstring &info)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Sockets))
@@ -767,9 +759,9 @@ void T_Sockets::Resolve(socktype_enum type, mstring info)
     }
 }
 
-void T_Sockets::End(mstring reason)
+void T_Sockets::End(const mstring &reason)
 {
-    tid = mThread::find();
+    ThreadID *tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     if (IsOn(tid, Sockets))

@@ -27,6 +27,11 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.29  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -134,16 +139,6 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 
 #include "mconfig.h"
 #include "filesys.h"
-
-ceNode::ceNode()
-{
-    NFT("ceNode::ceNode");
-}
-
-ceNode::ceNode(ceNode &in)
-{
-    FT("ceNode::ceNode", ("(ceNode &) in"));
-}
 
 ceNode::~ceNode()
 {
@@ -601,7 +596,7 @@ void mConfigEngine::Empty()
 }
 
 
-mstring mConfigEngine::Read(const mstring &key, const mstring Default) const
+mstring mConfigEngine::Read(const mstring &key, const mstring &Default) const
 {
     FT("mConfigEngine::Read", (key, Default));
     mstring Result;
@@ -609,7 +604,7 @@ mstring mConfigEngine::Read(const mstring &key, const mstring Default) const
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default) const
+bool mConfigEngine::Read(const mstring &key, mstring &outvar, const mstring& Default) const
 {
     FT("mConfigEngine::Read", (key, "(mstring &) outvar", Default));
     bool Result=true;
@@ -617,7 +612,7 @@ bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default) c
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default) const
+bool mConfigEngine::Read(const mstring &key, bool &outvar, const bool Default) const
 {
     FT("mConfigEngine::Read", (key, "(bool &) outvar", Default));
     mstring tmp;
@@ -633,7 +628,7 @@ bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default) const
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, int &outvar, int Default) const
+bool mConfigEngine::Read(const mstring &key, int &outvar, const int Default) const
 {
     FT("mConfigEngine::Read", (key, "(int &) outvar", Default));
     mstring tmpvar;
@@ -649,7 +644,7 @@ bool mConfigEngine::Read(const mstring &key, int &outvar, int Default) const
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int Default) const
+bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, const unsigned int Default) const
 {
     FT("mConfigEngine::Read", (key, "(unsigned int &) outvar", Default));
     mstring tmpvar;
@@ -665,7 +660,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int 
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, long &outvar, long Default) const
+bool mConfigEngine::Read(const mstring &key, long &outvar, const long Default) const
 {
     FT("mConfigEngine::Read", (key, "(long &) outvar", Default));
     mstring tmpvar;
@@ -681,7 +676,7 @@ bool mConfigEngine::Read(const mstring &key, long &outvar, long Default) const
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned long Default) const
+bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, const unsigned long Default) const
 {
     FT("mConfigEngine::Read", (key, "(unsigned long &) outvar", Default));
     mstring tmpvar;
@@ -699,7 +694,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned lon
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, double &outvar, double Default) const
+bool mConfigEngine::Read(const mstring &key, double &outvar, const double Default) const
 {
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
@@ -715,7 +710,7 @@ bool mConfigEngine::Read(const mstring &key, double &outvar, double Default) con
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, float &outvar, float Default) const
+bool mConfigEngine::Read(const mstring &key, float &outvar, const float Default) const
 {
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
@@ -738,7 +733,7 @@ mstring mConfigEngine::Write(const mstring &key,const mstring &value)
     RET(Result);
 }
 
-bool mConfigEngine::Write(const mstring &key,bool value)
+bool mConfigEngine::Write(const mstring &key,const bool value)
 {
     FT("mConfigEngine::Write", (key, value));
     bool Result;
@@ -750,7 +745,7 @@ bool mConfigEngine::Write(const mstring &key,bool value)
     RET(Result);
 }
 
-int mConfigEngine::Write(const mstring &key,int value)
+int mConfigEngine::Write(const mstring &key,const int value)
 {
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
@@ -761,7 +756,7 @@ int mConfigEngine::Write(const mstring &key,int value)
     RET(Result);
 }
 
-unsigned int mConfigEngine::Write(const mstring &key,unsigned int value)
+unsigned int mConfigEngine::Write(const mstring &key,const unsigned int value)
 {
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
@@ -772,7 +767,7 @@ unsigned int mConfigEngine::Write(const mstring &key,unsigned int value)
     RET(Result);
 }
 
-long mConfigEngine::Write(const mstring &key,long value)
+long mConfigEngine::Write(const mstring &key,const long value)
 {
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
@@ -783,7 +778,7 @@ long mConfigEngine::Write(const mstring &key,long value)
     RET(Result);
 }
 
-unsigned long mConfigEngine::Write(const mstring &key,unsigned long value)
+unsigned long mConfigEngine::Write(const mstring &key,const unsigned long value)
 {
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
@@ -794,7 +789,7 @@ unsigned long mConfigEngine::Write(const mstring &key,unsigned long value)
     RET(Result);
 }
 
-double mConfigEngine::Write(const mstring &key,double value)
+double mConfigEngine::Write(const mstring &key,const double value)
 {
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
@@ -840,7 +835,7 @@ bool mConfigEngine::LoadFromString(const mstring& configstring)
     RET(Result);
 }
 
-bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
+bool mConfigEngine::LoadFromArray(const vector<mstring> &configarray)
 {
     FT("mConfigEngine::LoadFromArray", ("(vector<mstring>) configarray"));
     bool Result=false;
@@ -880,7 +875,7 @@ bool mConfigEngine::NodeExists(const mstring &NodeName) const
     RET(Result);
 }
 
-vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
+vector<mstring> mConfigEngine::DeComment(const vector<mstring> &in)
 {
     FT("mConfigEngine::NodeExists", ("(const vector<mstrign>) in"));
     vector<mstring> Result;

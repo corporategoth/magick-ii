@@ -25,6 +25,11 @@ RCSID(dccengine_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.16  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -59,21 +64,22 @@ class DccEngine
 {
 public:
     static void DoDccSend(const mstring& mynick, const mstring& source,
-		   ACE_INET_Addr addr, mstring filename, size_t size);
+		   const ACE_INET_Addr &addr, mstring &filename,
+		   const size_t size);
     static void DoDccChat(const mstring& mynick, const mstring& source,
-		   ACE_INET_Addr addr);
+		   const ACE_INET_Addr &addr);
     static void GotDCC(const mstring& mynick, const mstring& source,
-		mstring in);
-    static mstring encode(const mstring type, const mstring& in = "");
+		const mstring& in);
+    static mstring encode(const mstring &type, const mstring& in = "");
     static void decodeReply(const mstring& mynick, const mstring& source,
-		mstring& in);
+		const mstring& in);
     static void decodeRequest(const mstring& mynick, const mstring& source,
-		mstring& in);
-    static mstring lowQuote(mstring& in);
-    static mstring lowDequote(mstring& in);
-    static mstring ctcpQuote(mstring& in);
-    static mstring ctcpDequote(mstring& in);
-    static vector<mstring> ctcpExtract(mstring& in);
+		const mstring& in);
+    static mstring lowQuote(const mstring& in);
+    static mstring lowDequote(const mstring& in);
+    static mstring ctcpQuote(const mstring& in);
+    static mstring ctcpDequote(const mstring& in);
+    static vector<mstring> ctcpExtract(const mstring& in);
 };
 
 #endif

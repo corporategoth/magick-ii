@@ -25,6 +25,11 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.61  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -190,7 +195,6 @@ class Nick_Live_t : public mUserDef
     mDateTime last_nick_reg, last_chan_reg, last_memo;
 
 public:
-    ~Nick_Live_t() {}
     class InFlight_t {
 	friend class Nick_Live_t;
 	friend class DccXfer;
@@ -206,24 +210,27 @@ public:
 	mstring recipiant;
 	mstring text;
 
-	InFlight_t() {}
+	InFlight_t(const mstring &name) : nick(name) { init(); }
+	InFlight_t() { init(); }
 	~InFlight_t();
 
-	void ChgNick(mstring newnick);
+	void ChgNick(const mstring& newnick);
 	void operator=(const InFlight_t &in);
 	void init();
 	// Called upon completion
 	// 0 means it failed
-	void File(unsigned long filenum);
+	void File(const unsigned long filenum);
 	// Called upon start
 	void SetInProg();
     public:
-	void Memo (bool file, mstring mynick, mstring recipiant, mstring message, bool silent = false);
-	void Continue(mstring message);
+	void Memo (const bool file, const mstring& mynick,
+		const mstring& recipiant, const mstring& message,
+		const bool silent = false);
+	void Continue(const mstring& message);
 	void Cancel();
-	void End(unsigned long filenum);
-	void Picture (mstring mynick);
-	void Public (mstring mynick, mstring committees = "");
+	void End(const unsigned long filenum);
+	void Picture (const mstring& mynick);
+	void Public (const mstring& mynick, const mstring& committees = "");
 	mstring Text();
 	mstring Recipiant();
 	bool Memo() const;
@@ -240,10 +247,12 @@ public:
     Nick_Live_t();
     Nick_Live_t(const Nick_Live_t &in)
 	{ *this = in; }
-    Nick_Live_t(mstring name, mDateTime signon, mstring server,
-	    mstring username, mstring hostname, mstring realname);
-    Nick_Live_t(mstring name, mstring username, mstring hostname,
-	    mstring realname); // Services ONLY
+    Nick_Live_t(const mstring& name, const mDateTime& signon,
+	const mstring& server, const mstring& username,
+	const mstring& hostname, const mstring& realname);
+    Nick_Live_t(const mstring& name, const mstring& username,
+	const mstring& hostname, const mstring& realname); // Services ONLY
+    ~Nick_Live_t() {}
     void operator=(const Nick_Live_t &in);
     bool operator==(const Nick_Live_t &in) const
     	{ return (i_Name == in.i_Name); }
@@ -253,26 +262,26 @@ public:
     	{ return (i_Name < in.i_Name); }
 
     // channel maintinance
-    void Join(mstring channel);
-    void Part(mstring channel);
-    void Kick(mstring kicker, mstring channel);
-    void Quit(mstring reason);
-    bool IsInChan(mstring channel);
+    void Join(const mstring& channel);
+    void Part(const mstring& channel);
+    void Kick(const mstring& kicker, const mstring& channel);
+    void Quit(const mstring& reason);
+    bool IsInChan(const mstring& channel);
     set<mstring> Channels() const;
 
     // true if user ignored
     bool FloodTrigger();
 
     // Data maintinance
-    void Name(mstring in);
+    void Name(const mstring& in);
     mstring Name() const	{ return i_Name; }
 
-    void SendMode(mstring in);
-    void Mode(mstring in);
+    void SendMode(const mstring& in);
+    void Mode(const mstring& in);
     mstring Mode() const;
-    bool HasMode(mstring in) const;
+    bool HasMode(const mstring& in) const;
 
-    void Away(mstring in);
+    void Away(const mstring& in);
     mstring Away() const;
 
     mDateTime LastAction() const;
@@ -284,7 +293,7 @@ public:
     mstring User() const;
     mstring Host() const;
     mstring AltHost() const;
-    void AltHost(mstring in);
+    void AltHost(const mstring& in);
     mstring Server() const;
     void SetSquit();
     void ClearSquit();
@@ -302,14 +311,14 @@ public:
     	H		// *!*@*.host
     	};
 
-    mstring Mask(styles type) const;
-    mstring AltMask(styles type) const;
+    mstring Mask(const styles type) const;
+    mstring AltMask(const styles type) const;
 
     // Will KILL user if >PassFailMax
-    mstring ChanIdentify(mstring channel, mstring password);
-    void UnChanIdentify(mstring channel);
-    bool IsChanIdentified(mstring channel);
-    mstring Identify(mstring password);
+    mstring ChanIdentify(const mstring& channel, const mstring& password);
+    void UnChanIdentify(const mstring& channel);
+    bool IsChanIdentified(const mstring& channel);
+    mstring Identify(const mstring& password);
     void UnIdentify();
     bool IsIdentified() const;
     bool IsRecognized() const;
@@ -375,10 +384,11 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
     mstring i_LastMask;
     mstring i_LastQuit;
 
-    Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_t &host); // Slave
-    void Signon(mstring realname, mstring mask);
-    void ChgNick(mstring nick);
-    void ChangeOver(mstring oldnick);
+    Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
+	const Nick_Stored_t &host); // Slave
+    void Signon(const mstring& realname, const mstring& mask);
+    void ChgNick(const mstring& nick);
+    void ChangeOver(const mstring& oldnick);
 
     static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime,
 	tag_Password, tag_Email, tag_URL, tag_ICQ, tag_Description,
@@ -393,8 +403,8 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 public:
     Nick_Stored_t();
     Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
-    Nick_Stored_t(mstring nick, mstring password);
-    Nick_Stored_t(mstring nick); // Services Only (forbidden)
+    Nick_Stored_t(const mstring& nick, const mstring& password);
+    Nick_Stored_t(const mstring& nick); // Services Only (forbidden)
     ~Nick_Stored_t() {}
     void operator=(const Nick_Stored_t &in);
     bool operator==(const Nick_Stored_t &in) const
@@ -409,83 +419,83 @@ public:
 
     unsigned long Drop();
     mstring Password();
-    void Password(mstring in);
+    void Password(const mstring& in);
     mstring Email();
-    void Email(mstring in);
+    void Email(const mstring& in);
     mstring URL();
-    void URL(mstring in);
+    void URL(const mstring& in);
     mstring ICQ();
-    void ICQ(mstring in);
+    void ICQ(const mstring& in);
     mstring Description();
-    void Description(mstring in);
+    void Description(const mstring& in);
     mstring Comment();
-    void Comment(mstring in);
+    void Comment(const mstring& in);
 
-    void Suspend(mstring name, mstring reason)
+    void Suspend(const mstring& name, const mstring& reason)
 	{ Comment(reason); Suspend(name); }
-    void Suspend(mstring name);
+    void Suspend(const mstring& name);
     void UnSuspend();
 
     mstring Host();
     unsigned int Siblings();
-    mstring Sibling(unsigned int count);
-    bool IsSibling(mstring nick);
-    bool Slave(mstring nick, mstring password, mDateTime regtime = mDateTime::CurrentDateTime());
+    mstring Sibling(const unsigned int count);
+    bool IsSibling(const mstring& nick);
+    bool Slave(const mstring& nick, const mstring& password, const mDateTime& regtime = mDateTime::CurrentDateTime());
     bool MakeHost();
     bool Unlink();
 
     unsigned int Access();
-    mstring Access(unsigned int count);
+    mstring Access(const unsigned int count);
     bool AccessAdd(const mstring& in);
-    unsigned int AccessDel(mstring in);
-    unsigned int AccessDel(unsigned int in)
+    unsigned int AccessDel(const mstring& in);
+    unsigned int AccessDel(const unsigned int in)
 	{ return AccessDel(Access(in)); }
-    bool IsAccess(mstring in);
+    bool IsAccess(const mstring& in);
 
     unsigned int Ignore();
-    mstring Ignore(unsigned int count);
-    bool IgnoreAdd(mstring in);
-    unsigned int IgnoreDel(mstring in);
-    unsigned int IgnoreDel(unsigned int in)
+    mstring Ignore(const unsigned int count);
+    bool IgnoreAdd(const mstring& in);
+    unsigned int IgnoreDel(const mstring& in);
+    unsigned int IgnoreDel(const unsigned int in)
 	{ return IgnoreDel(Ignore(in)); }
-    bool IsIgnore(mstring in);
+    bool IsIgnore(const mstring& in);
 
     // flags
     bool Protect();
-    void Protect(bool in);
+    void Protect(const bool in);
     bool L_Protect();
-    void L_Protect(bool in);
+    void L_Protect(const bool in);
     bool Secure();
-    void Secure(bool in);
+    void Secure(const bool in);
     bool L_Secure();
-    void L_Secure(bool in);
+    void L_Secure(const bool in);
     bool NoExpire();
-    void NoExpire(bool in);
+    void NoExpire(const bool in);
     bool L_NoExpire();
-    void L_NoExpire(bool in);
+    void L_NoExpire(const bool in);
     bool NoMemo();
-    void NoMemo(bool in);
+    void NoMemo(const bool in);
     bool L_NoMemo();
-    void L_NoMemo(bool in);
+    void L_NoMemo(const bool in);
     bool Private();
-    void Private(bool in);
+    void Private(const bool in);
     bool L_Private();
-    void L_Private(bool in);
+    void L_Private(const bool in);
     bool PRIVMSG();
-    void PRIVMSG(bool in);
+    void PRIVMSG(const bool in);
     bool L_PRIVMSG();
-    void L_PRIVMSG(bool in);
+    void L_PRIVMSG(const bool in);
     mstring Language();
-    void Language(mstring in);
+    void Language(const mstring& in);
     bool L_Language();
-    void L_Language(bool in);
+    void L_Language(const bool in);
     bool Suspended();
     mstring Suspend_By();
     mDateTime Suspend_Time();
     bool Forbidden() const;
-    void SendPic(mstring nick);
+    void SendPic(const mstring& nick);
     unsigned long PicNum();
-    void GotPic(unsigned long picnum);
+    void GotPic(const unsigned long picnum);
 
     // IF Online, returns live realname and ONLINE.
     // IF non-slave and Offline, returns local data.
@@ -497,7 +507,7 @@ public:
     mstring LastAllMask();
     mstring LastMask();
     mstring LastQuit();
-    void Quit(mstring message);
+    void Quit(const mstring& message);
 
     size_t MyChannels() const;
 
@@ -633,75 +643,75 @@ public:
     unsigned long PicSize()const	{ return picsize; }
     mstring PicExt()const		{ return picext; }
 
-    bool IsStored(mstring in)const;
-    bool IsLive(mstring in)const;
-    bool IsLiveAll(mstring in)const;
+    bool IsStored(const mstring& in)const;
+    bool IsLive(const mstring& in)const;
+    bool IsLiveAll(const mstring& in)const;
     map<mstring,Nick_Stored_t> stored;
     map<mstring,Nick_Live_t> live;
     map<mstring,mDateTime> recovered;
     InFlight_Handler ifh;
 
-    static mstring findnextnick(mstring in);
+    static mstring findnextnick(const mstring& in);
 
     NickServ();
     virtual threadtype_enum Get_TType() const { return tt_NickServ; }
     virtual mstring GetInternalName() const { return "NickServ"; }
     virtual void execute(const mstring & message);
 
-    static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_Register(mstring mynick, mstring source, mstring params);
-    static void do_Drop(mstring mynick, mstring source, mstring params);
-    static void do_Link(mstring mynick, mstring source, mstring params);
-    static void do_UnLink(mstring mynick, mstring source, mstring params);
-    static void do_Host(mstring mynick, mstring source, mstring params);
-    static void do_Slaves(mstring mynick, mstring source, mstring params);
-    static void do_Identify(mstring mynick, mstring source, mstring params);
-    static void do_Info(mstring mynick, mstring source, mstring params);
-    static void do_Ghost(mstring mynick, mstring source, mstring params);
-    static void do_Recover(mstring mynick, mstring source, mstring params);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static void do_ListNoExp(mstring mynick, mstring source, mstring params);
-    static void do_Send(mstring mynick, mstring source, mstring params);
-    static void do_Suspend(mstring mynick, mstring source, mstring params);
-    static void do_UnSuspend(mstring mynick, mstring source, mstring params);
-    static void do_Forbid(mstring mynick, mstring source, mstring params);
-    static void do_Getpass(mstring mynick, mstring source, mstring params);
-    static void do_Live(mstring mynick, mstring source, mstring params);
-    static void do_LiveOper(mstring mynick, mstring source, mstring params);
+    static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Register(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Drop(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Link(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_UnLink(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Host(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Slaves(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Identify(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Info(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Ghost(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Recover(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ListNoExp(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Send(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Suspend(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_UnSuspend(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Forbid(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Getpass(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Live(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_LiveOper(const mstring &mynick, const mstring &source, const mstring &params);
 
-    static void do_access_Current(mstring mynick, mstring source, mstring params);
-    static void do_access_Add(mstring mynick, mstring source, mstring params);
-    static void do_access_Del(mstring mynick, mstring source, mstring params);
-    static void do_access_List(mstring mynick, mstring source, mstring params);
-    static void do_ignore_Add(mstring mynick, mstring source, mstring params);
-    static void do_ignore_Del(mstring mynick, mstring source, mstring params);
-    static void do_ignore_List(mstring mynick, mstring source, mstring params);
-    static void do_set_Password(mstring mynick, mstring source, mstring params);
-    static void do_set_Email(mstring mynick, mstring source, mstring params);
-    static void do_set_URL(mstring mynick, mstring source, mstring params);
-    static void do_set_ICQ(mstring mynick, mstring source, mstring params);
-    static void do_set_Description(mstring mynick, mstring source, mstring params);
-    static void do_set_Comment(mstring mynick, mstring source, mstring params);
-    static void do_set_Picture(mstring mynick, mstring source, mstring params);
-    static void do_set_Protect(mstring mynick, mstring source, mstring params);
-    static void do_set_Secure(mstring mynick, mstring source, mstring params);
-    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
-    static void do_set_NoMemo(mstring mynick, mstring source, mstring params);
-    static void do_set_Private(mstring mynick, mstring source, mstring params);
-    static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params);
-    static void do_set_Language(mstring mynick, mstring source, mstring params);
-    static void do_lock_Protect(mstring mynick, mstring source, mstring params);
-    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_NoMemo(mstring mynick, mstring source, mstring params);
-    static void do_lock_Private(mstring mynick, mstring source, mstring params);
-    static void do_lock_PRIVMSG(mstring mynick, mstring source, mstring params);
-    static void do_lock_Language(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Protect(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_unlock_NoMemo(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
-    static void do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Language(mstring mynick, mstring source, mstring params);
+    static void do_access_Current(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_access_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_access_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_access_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ignore_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ignore_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ignore_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Password(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Email(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_URL(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_ICQ(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Description(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Comment(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Picture(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Protect(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_NoMemo(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Language(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Protect(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_NoMemo(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Language(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Protect(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_NoMemo(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Language(const mstring &mynick, const mstring &source, const mstring &params);
 
     virtual SXP::Tag& GetClassTag() const { return tag_NickServ; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

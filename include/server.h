@@ -25,6 +25,11 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.62  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -250,9 +255,9 @@ class Protocol
 public:
     Protocol();
     ~Protocol() {}
-    void Set(unsigned int in);
-    mstring GetToken(mstring in) const;
-    mstring GetNonToken(mstring in) const;
+    void Set(const unsigned int in);
+    mstring GetToken(const mstring& in) const;
+    mstring GetNonToken(const mstring& in) const;
 
     unsigned int Number() const   { return i_Number; }
     unsigned int NickLen() const  { return i_NickLen; }
@@ -260,7 +265,7 @@ public:
     bool Globops() const	  { return i_Globops; }
     bool Helpops() const	  { return i_Helpops; }
     bool Tokens() const		  { return i_Tokens; }
-    void Tokens(bool in)	  { i_Tokens = in; }
+    void Tokens(const bool in)	  { i_Tokens = in; }
     bool P12() const		  { return i_P12; }
     bool TSora() const		  { return i_TSora; }
     unsigned int Akill() const    { return i_Akill; }
@@ -298,12 +303,12 @@ class Server
 public:
     Server() {}
     Server(const Server &in) { *this = in; }
-    Server(mstring name, mstring description,
-    				unsigned long numeric = 0);
-    Server(mstring name, int hops, mstring description,
-				unsigned long numeric = 0);
-    Server(mstring name, mstring uplink, int hops, mstring description,
-				unsigned long numeric = 0);
+    Server(const mstring& name, const mstring& description,
+    				const unsigned long numeric = 0);
+    Server(const mstring& name, const int hops, const mstring& description,
+				const unsigned long numeric = 0);
+    Server(const mstring& name, const mstring& uplink, const int hops,
+		const mstring& description, const unsigned long numeric = 0);
     void operator=(const Server &in);
     bool operator==(const Server &in) const
 	{ return (i_Name == in.i_Name); }
@@ -314,9 +319,9 @@ public:
 
     mstring Name() const	{ return i_Name; }
     mstring AltName() const;
-    void AltName(mstring in);
+    void AltName(const mstring& in);
     unsigned long Numeric() const;
-    void Numeric(unsigned long num);
+    void Numeric(const unsigned long num);
     mstring Uplink() const;
     int Hops() const;
     mstring Description() const;
@@ -345,8 +350,8 @@ class NetworkServ : public mBase
     friend class ToBeSquit_Handler;
     friend class Squit_Handler;
 
-    void raw(mstring send) const;
-    void sraw(mstring send) const;
+    void raw(const mstring& send) const;
+    void sraw(const mstring& send) const;
     set<mstring> WaitIsOn;
     map<mstring, pair<unsigned int, mDateTime> > ReDoMessages;
 
@@ -363,60 +368,67 @@ class NetworkServ : public mBase
 	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
 	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
-    void FlushMsgs(mstring nick);
+    void FlushMsgs(const mstring& nick);
     map<mstring, list<triplet<mDateTime, mstring, mstring> > > ToBeDone;
 
-    void OurUplink(mstring server);
+    void OurUplink(const mstring& server);
 public:
     ~NetworkServ() {}
-    void FlushUser(mstring nick, mstring channel = "");
-    void PushUser(mstring nick, mstring message, mstring channel = "");
-    void PopUser(mstring nick, mstring channel = "");
+    void FlushUser(const mstring& nick, const mstring& channel = "");
+    void PushUser(const mstring& nick, const mstring& message,
+		const mstring& channel = "");
+    void PopUser(const mstring& nick, const mstring& channel = "");
     void SignOnAll();
     Protocol proto;
     size_t UserMax() const;
     map<mstring,Server> ServerList;
     mstring OurUplink() const;
-    bool IsServer(mstring server) const;
-    mstring ServerNumeric(unsigned long num) const;
-    mstring GetServer(mstring server) const;
+    bool IsServer(const mstring& server) const;
+    mstring ServerNumeric(const unsigned long num) const;
+    mstring GetServer(const mstring& server) const;
     unsigned long GetOurNumeric() const;
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.
-    bool IsSquit(mstring server) const;
-    void Jupe(mstring server, mstring reason);
+    bool IsSquit(const mstring& server) const;
+    void Jupe(const mstring& server, const mstring& reason);
 
-    void AKILL(mstring host, mstring reason = "", unsigned long time = 0, mstring killer = "");
-    void ANONKILL(mstring nick, mstring dest, mstring reason);
-    void AWAY(mstring nick, mstring reason = "");
-    void GLOBOPS(mstring nick, mstring message);
-    void HELPOPS(mstring nick, mstring message);
-    void INVITE(mstring nick, mstring dest, mstring channel);
-    void JOIN(mstring nick, mstring channel);
-    void KICK(mstring nick, mstring dest, mstring channel, mstring reason = "");
-    void KILL(mstring nick, mstring dest, mstring reason);
-    void MODE(mstring nick, mstring mode);
-    void MODE(mstring nick, mstring channel, mstring mode);
-    void NICK(mstring nick, mstring user, mstring host,
-    	mstring server, mstring realname);
-    void NICK(mstring oldnick, mstring newnick);
-    void NOTICE(mstring nick, mstring dest, mstring text);
-    void PART(mstring nick, mstring channel, mstring reason = "");
-    void PRIVMSG(mstring nick, mstring dest, mstring text);
-    void QUIT(mstring nick, mstring reason = "");
-    void SQLINE(mstring nick, mstring target, mstring reason = "");
-    void RAKILL(mstring host);
-    void SVSMODE(mstring mynick, mstring nick, mstring mode);
-    void SVSNICK(mstring mynick, mstring nick, mstring newnick);
-    void SVSNOOP(mstring nick, mstring server, bool onoff);
-    void SVSKILL(mstring mynick, mstring nick, mstring reason);
-    void SVSHOST(mstring mynick, mstring nick, mstring newhost);
-    void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = mDateTime::CurrentDateTime());
-    void UNSQLINE(mstring nick, mstring target);
-    void WALLOPS(mstring nick, mstring message);
-    void KillUnknownUser(mstring user) const;
-    unsigned int SeenMessage(mstring data);
+    void AKILL(const mstring& host, const mstring& reason = "",
+	const unsigned long time = 0, const mstring& killer = "");
+    void ANONKILL(const mstring& nick, const mstring& dest, const mstring& reason);
+    void AWAY(const mstring& nick, const mstring& reason = "");
+    void GLOBOPS(const mstring& nick, const mstring& message);
+    void HELPOPS(const mstring& nick, const mstring& message);
+    void INVITE(const mstring& nick, const mstring& dest, const mstring& channel);
+    void JOIN(const mstring& nick, const mstring& channel);
+    void KICK(const mstring& nick, const mstring& dest,
+	const mstring& channel, const mstring& reason = "");
+    void KILL(const mstring& nick, const mstring& dest, const mstring& reason);
+    void MODE(const mstring& nick, const mstring& mode);
+    void MODE(const mstring& nick, const mstring& channel, const mstring& mode);
+    void NICK(const mstring& nick, const mstring& user, const mstring& host,
+    	const mstring& server, const mstring& realname);
+    void NICK(const mstring& oldnick, const mstring& newnick);
+    void NOTICE(const mstring& nick, const mstring& dest, const mstring& text);
+    void PART(const mstring& nick, const mstring& channel,
+	const mstring& reason = "");
+    void PRIVMSG(const mstring& nick, const mstring& dest, const mstring& text);
+    void QUIT(const mstring& nick, const mstring& reason = "");
+    void SQLINE(const mstring& nick, const mstring& target,
+	const mstring& reason = "");
+    void RAKILL(const mstring& host);
+    void SVSMODE(const mstring& mynick, const mstring& nick, const mstring& mode);
+    void SVSNICK(const mstring& mynick, const mstring& nick, const mstring& newnick);
+    void SVSNOOP(const mstring& nick, const mstring& server, const bool onoff);
+    void SVSKILL(const mstring& mynick, const mstring& nick, const mstring& reason);
+    void SVSHOST(const mstring& mynick, const mstring& nick, const mstring& newhost);
+    void TOPIC(const mstring& nick, const mstring& setter,
+	const mstring& channel, const mstring& topic = "",
+	const mDateTime& time = mDateTime::CurrentDateTime());
+    void UNSQLINE(const mstring& nick, const mstring& target);
+    void WALLOPS(const mstring& nick, const mstring& message);
+    void KillUnknownUser(const mstring& user) const;
+    unsigned int SeenMessage(const mstring& data);
 
     NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }

@@ -28,6 +28,11 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.158  2001/03/20 14:22:15  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.157  2001/03/03 00:30:34  prez
 ** Fixed compile error
 **
@@ -372,7 +377,7 @@ RCSID(server_cpp, "@(#)$Id$");
 #include "magick.h"
 #include "dccengine.h"
 
-void Protocol::SetTokens(unsigned int type)
+void Protocol::SetTokens(const unsigned int type)
 {
     FT("Protocol::SetTokens", (type));
 
@@ -605,27 +610,16 @@ void Protocol::SetTokens(unsigned int type)
 }
 
 Protocol::Protocol()
+    : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false),
+      i_Helpops(false), i_Tokens(false), i_P12(false), i_TSora(false),
+      i_Akill(0), i_Signon(0), i_Modes(3), i_ChanModeArg("ovbkl"),
+      i_Server("SERVER %s %d :%s"), i_Numeric(0)
 {
     NFT("Protocol::Protocol");
-    i_Number = 0;
-    i_NickLen = 9;
-    i_MaxLine = 450;
-    i_Globops = false;
-    i_Helpops = false;
-    i_Tokens = false;
-    i_P12 = false;
-    i_TSora = false;
-    i_Akill = 0;
-    i_Signon = 0000;
-    i_Modes = 3;
-    i_ChanModeArg = "ovbkl";
-    i_Server = "SERVER %s %d :%s";
-    i_Numeric = 0;
-
     DumpB();
 }
 
-void Protocol::Set(unsigned int in)
+void Protocol::Set(const unsigned int in)
 {
     FT("Protocol::Set", (in));
 
@@ -851,7 +845,7 @@ void Protocol::Set(unsigned int in)
     DumpE();
 }
 
-mstring Protocol::GetToken(mstring in) const
+mstring Protocol::GetToken(const mstring& in) const
 {
     FT("Protocol::GetToken", (in));
     map<mstring,mstring>::const_iterator iter = tokens.find(in);
@@ -860,7 +854,7 @@ mstring Protocol::GetToken(mstring in) const
     RET(iter->second);
 }
 
-mstring Protocol::GetNonToken(mstring in) const
+mstring Protocol::GetNonToken(const mstring& in) const
 {
     FT("Protocol::GetNonToken", (in));
     mstring retval;
@@ -894,49 +888,37 @@ void Protocol::DumpE() const
 	i_SQLINE, i_UNSQLINE, i_SVSHOST, tokens.size()));
 }
 
-Server::Server(mstring name, mstring description, unsigned long numeric)
+Server::Server(const mstring& name, const mstring& description,
+	const unsigned long numeric)
+    : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), 
+      i_Numeric(numeric), i_Uplink(Parent->startup.Server_Name().LowerCase()),
+      i_Hops(0), i_Description(description), i_Ping(0), i_Lag(0), i_Jupe(true)
 {
     FT("Server::Server", (name, description, numeric));
     MLOCK(("Server", "ServerList", name.LowerCase()));
-    i_Name = name.LowerCase();
-    i_AltName = name.LowerCase();
-    i_Numeric = numeric;
-    i_Uplink = Parent->startup.Server_Name().LowerCase();
-    i_Hops = 0;
-    i_Description = description;
-    i_Ping = i_Lag = 0;
-    i_Jupe = true;
     DumpE();
 }
 
-Server::Server(mstring name, int hops, mstring description, unsigned long numeric)
+Server::Server(const mstring& name, const int hops, const mstring& description,
+	const unsigned long numeric)
+    : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), 
+      i_Numeric(numeric), i_Uplink(Parent->startup.Server_Name().LowerCase()),
+      i_Hops(hops), i_Description(description), i_Ping(0), i_Lag(0), i_Jupe(false)
 {
     FT("Server::Server", (name, hops, description, numeric));
     MLOCK(("Server", "ServerList", name.LowerCase()));
-    i_Name = name.LowerCase();
-    i_AltName = name.LowerCase();
-    i_Numeric = numeric;
-    i_Uplink = Parent->startup.Server_Name().LowerCase();
-    i_Hops = hops;
-    i_Description = description;
-    i_Ping = i_Lag = 0;
-    i_Jupe = false;
     Parent->server.OurUplink(i_Name);
     DumpE();
 }
 
-Server::Server(mstring name, mstring uplink, int hops, mstring description, unsigned long numeric)
+Server::Server(const mstring& name, const mstring& uplink, const int hops,
+	const mstring& description, const unsigned long numeric)
+    : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), 
+      i_Numeric(numeric), i_Uplink(uplink.LowerCase()), i_Hops(hops),
+      i_Description(description), i_Ping(0), i_Lag(0), i_Jupe(false)
 {
     FT("Server::Server", (name, uplink, hops, description, numeric));
     MLOCK(("Server", "ServerList", name.LowerCase()));
-    i_Name = name.LowerCase();
-    i_AltName = name.LowerCase();
-    i_Numeric = numeric;
-    i_Uplink = uplink.LowerCase();
-    i_Hops = hops;
-    i_Description = description;
-    i_Ping = i_Lag = 0;
-    i_Jupe = false;
     DumpE();
 }
 
@@ -962,7 +944,7 @@ mstring Server::AltName() const
     RET(i_AltName);
 }
 
-void Server::AltName(mstring in)
+void Server::AltName(const mstring& in)
 {
     FT("Server::AltName", (in));
     WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_AltName"));
@@ -978,7 +960,7 @@ unsigned long Server::Numeric() const
     RET(i_Numeric);
 }
 
-void Server::Numeric(unsigned long in)
+void Server::Numeric(const unsigned long in)
 {
     FT("Server::Numeric", (in));
     WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Numeric"));
@@ -1185,13 +1167,13 @@ void Server::DumpE() const
 	i_Ping, i_Lag, i_Jupe));
 }
 
-void NetworkServ::raw(mstring text) const
+void NetworkServ::raw(const mstring& text) const
 {
     FT("NetworkServ::raw", (text));
     Parent->send(text);
 }
 
-void NetworkServ::sraw(mstring text) const
+void NetworkServ::sraw(const mstring& text) const
 {
     mstring out;
 /*    if (proto.Numeric())
@@ -1283,7 +1265,7 @@ size_t NetworkServ::UserMax() const
     RET(i_UserMax);
 }
 
-void NetworkServ::OurUplink(mstring server)
+void NetworkServ::OurUplink(const mstring& server)
 {
     FT("NetworkServ::OurUplink", (server));
     WLOCK(("Server", "i_OurUplink"));
@@ -1299,7 +1281,7 @@ mstring NetworkServ::OurUplink() const
     RET(i_OurUplink);
 }
 
-void NetworkServ::FlushMsgs(mstring nick)
+void NetworkServ::FlushMsgs(const mstring& nick)
 {
     FT("NetworkServ::FlushMsgs", (nick));
 
@@ -1380,7 +1362,7 @@ void NetworkServ::FlushMsgs(mstring nick)
     MCE(ToBeSent.size());
 }
 
-void NetworkServ::FlushUser(mstring nick, mstring channel)
+void NetworkServ::FlushUser(const mstring& nick, const mstring& channel)
 {
     FT("NetworkServ::FlushUser", (nick, channel));
 
@@ -1447,7 +1429,8 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
 
 }
 
-void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
+void NetworkServ::PushUser(const mstring& nick, const mstring& message,
+	const mstring& channel)
 {
     FT("NetworkServ::PushUser", (nick, message, channel));
     // If the nick is reg'd and either a channel is not specified
@@ -1471,10 +1454,9 @@ void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
     }
 }
 
-void NetworkServ::PopUser(mstring nick, mstring channel)
+void NetworkServ::PopUser(const mstring& nick, const mstring& channel)
 {
     FT("NetworkServ::PopUser", (nick, channel));
-
 
     map<mstring, list<triplet<mDateTime, mstring, mstring> > >::iterator i;
 
@@ -1504,7 +1486,7 @@ void NetworkServ::PopUser(mstring nick, mstring channel)
 }
 
 
-bool NetworkServ::IsServer(mstring server) const
+bool NetworkServ::IsServer(const mstring& server) const
 {
     FT("NetworkServ::IsServer", (server));
     RLOCK(("Server", "ServerList"));
@@ -1513,7 +1495,7 @@ bool NetworkServ::IsServer(mstring server) const
 }
 
 
-mstring NetworkServ::ServerNumeric(unsigned long num) const
+mstring NetworkServ::ServerNumeric(const unsigned long num) const
 {
     FT("NetworkServ::ServerNumeric", (num));
     mstring retval;
@@ -1529,7 +1511,7 @@ mstring NetworkServ::ServerNumeric(unsigned long num) const
 }
 
 
-mstring NetworkServ::GetServer(mstring server) const
+mstring NetworkServ::GetServer(const mstring& server) const
 {
     FT("NetworkServ::GetServer", (server));
     mstring retval;
@@ -1554,7 +1536,7 @@ unsigned long NetworkServ::GetOurNumeric() const
 }
 
 
-bool NetworkServ::IsSquit(mstring server) const
+bool NetworkServ::IsSquit(const mstring& server) const
 {
     FT("NetworkServ::IsSquit", (server));
     RLOCK(("Server", "ServerSquit"));
@@ -1562,7 +1544,7 @@ bool NetworkServ::IsSquit(mstring server) const
     RET(retval);
 }
 
-void NetworkServ::Jupe(mstring server, mstring reason)
+void NetworkServ::Jupe(const mstring& server, const mstring& reason)
 {
     FT("NetworkServ::Jupe", (server, reason));
     if (IsServer(server))
@@ -1581,7 +1563,8 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 		    Server(server.LowerCase(), "JUPED (" + reason + ")");
 }
 
-void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstring killer)
+void NetworkServ::AKILL(const mstring& host, const mstring& reason,
+	const unsigned long time, const mstring& killer)
 {
     FT("NetworkServ::AKILL", (host, reason, time, killer));
 
@@ -1656,7 +1639,8 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	sraw(line);
 }
 
-void NetworkServ::ANONKILL(mstring nick, mstring dest, mstring reason)
+void NetworkServ::ANONKILL(const mstring& nick, const mstring& dest,
+	const mstring& reason)
 {
     FT("NetworkServ::ANONKILL", (nick, dest, reason));
 
@@ -1695,7 +1679,7 @@ void NetworkServ::ANONKILL(mstring nick, mstring dest, mstring reason)
 }
 
 
-void NetworkServ::AWAY(mstring nick, mstring reason)
+void NetworkServ::AWAY(const mstring& nick, const mstring& reason)
 {
     FT("NetworkServ::AWAY", (nick, reason));
 
@@ -1724,7 +1708,7 @@ void NetworkServ::AWAY(mstring nick, mstring reason)
 }
 
 
-void NetworkServ::GLOBOPS(mstring nick, mstring message)
+void NetworkServ::GLOBOPS(const mstring& nick, const mstring& message)
 {
     FT("NetworkServ::GLOBOPS", (nick, message));
 
@@ -1761,7 +1745,7 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
 }
 
 
-void NetworkServ::HELPOPS(mstring nick, mstring message)
+void NetworkServ::HELPOPS(const mstring& nick, const mstring& message)
 {
     FT("NetworkServ::HELPOPS", (nick, message));
 
@@ -1793,7 +1777,8 @@ void NetworkServ::HELPOPS(mstring nick, mstring message)
 }
 
 
-void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
+void NetworkServ::INVITE(const mstring& nick, const mstring& dest,
+	const mstring& channel)
 {
     FT("NetworkServ::INVITE", (nick, dest, channel));
 
@@ -1833,7 +1818,7 @@ void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
 }
 
 
-void NetworkServ::JOIN(mstring nick, mstring channel)
+void NetworkServ::JOIN(const mstring& nick, const mstring& channel)
 {
     FT("NetworkServ::JOIN", (nick, channel));
 
@@ -1859,7 +1844,8 @@ void NetworkServ::JOIN(mstring nick, mstring channel)
 }
 
 
-void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reason)
+void NetworkServ::KICK(const mstring& nick, const mstring& dest,
+	const mstring& channel, const mstring& reason)
 {
     FT("NetworkServ::KICK", (nick, dest, channel, reason));
 
@@ -1905,7 +1891,8 @@ void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reas
 }
 
 
-void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
+void NetworkServ::KILL(const mstring& nick, const mstring& dest,
+	const mstring& reason)
 {
     FT("NetworkServ::KILL", (nick, dest, reason));
 
@@ -1945,7 +1932,7 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
 }
 
 
-void NetworkServ::MODE(mstring nick, mstring mode)
+void NetworkServ::MODE(const mstring& nick, const mstring& mode)
 {
     FT("NetworkServ::MODE", (nick, mode));
 
@@ -1970,7 +1957,8 @@ void NetworkServ::MODE(mstring nick, mstring mode)
 }
 
 
-void NetworkServ::MODE(mstring nick, mstring channel, mstring mode) 
+void NetworkServ::MODE(const mstring& nick, const mstring& channel,
+	const mstring& mode) 
 {
     FT("NetworkServ::MODE", (nick, channel, mode));
 
@@ -2001,8 +1989,8 @@ void NetworkServ::MODE(mstring nick, mstring channel, mstring mode)
 }
 
 
-void NetworkServ::NICK(mstring nick, mstring user, mstring host,
-    	mstring server, mstring realname)
+void NetworkServ::NICK(const mstring& nick, const mstring& user,
+	const mstring& host, const mstring& server, const mstring& realname)
 {
     FT("NetworkServ::NICK", (nick, user, host, server, realname));
 
@@ -2169,7 +2157,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 }
 
 
-void NetworkServ::NICK(mstring oldnick, mstring newnick)
+void NetworkServ::NICK(const mstring& oldnick, const mstring& newnick)
 {
     FT("NetworkServ::NICK", (oldnick, newnick));
 
@@ -2206,7 +2194,8 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 }
 
 
-void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
+void NetworkServ::NOTICE(const mstring& nick, const mstring& dest,
+	const mstring& text)
 {
     FT("NetworkServ::NOTICE", (nick, dest, text));
 
@@ -2252,7 +2241,8 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
 }
 
 
-void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
+void NetworkServ::PART(const mstring& nick, const mstring& channel,
+	const mstring& reason)
 {
     FT("NetworkServ::PART", (nick, channel, reason));
 
@@ -2292,7 +2282,8 @@ void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
 }
 
 
-void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
+void NetworkServ::PRIVMSG(const mstring& nick, const mstring& dest,
+	const mstring& text)
 {
     FT("NetworkServ::PRIVMSG", (nick, dest, text));
 
@@ -2338,7 +2329,8 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
 }
 
 
-void NetworkServ::SQLINE(mstring nick, mstring target, mstring reason)
+void NetworkServ::SQLINE(const mstring& nick, const mstring& target,
+	const mstring& reason)
 {
     FT("NetworkServ::SQLINE", (nick, target,reason));
 
@@ -2375,7 +2367,7 @@ void NetworkServ::SQLINE(mstring nick, mstring target, mstring reason)
 }
 
 
-void NetworkServ::QUIT(mstring nick, mstring reason)
+void NetworkServ::QUIT(const mstring& nick, const mstring& reason)
 {
     FT("NetworkServ::QUIT", (nick, reason));
 
@@ -2402,7 +2394,7 @@ void NetworkServ::QUIT(mstring nick, mstring reason)
 }
 
 
-void NetworkServ::RAKILL(mstring host)
+void NetworkServ::RAKILL(const mstring& host)
 {
     FT("NetworkServ::RAKILL", (host));
 
@@ -2454,7 +2446,8 @@ void NetworkServ::RAKILL(mstring host)
 	sraw(line);
 }
 
-void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
+void NetworkServ::SVSHOST(const mstring& mynick, const mstring& nick,
+	const mstring& newhost)
 {
     FT("NetworkServ::SVSHOST", (mynick, nick, newhost));
 
@@ -2497,7 +2490,8 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 }
 
 
-void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
+void NetworkServ::SVSKILL(const mstring& mynick, const mstring& nick,
+	const mstring& reason)
 {
     FT("NetworkServ::SVSKILL", (mynick, nick, reason));
 
@@ -2542,7 +2536,8 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
 }
 
 
-void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
+void NetworkServ::SVSNICK(const mstring& mynick, const mstring& nick,
+	const mstring& newnick)
 {
     FT("NetworkServ::SVSNICK", (mynick, nick, newnick));
 
@@ -2590,7 +2585,8 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 }
 
 
-void NetworkServ::SVSNOOP(mstring nick, mstring server, bool onoff)
+void NetworkServ::SVSNOOP(const mstring& nick, const mstring& server,
+	const bool onoff)
 {
     FT("NetworkServ::SVSNOOP", (nick, server, onoff));
 
@@ -2626,7 +2622,8 @@ void NetworkServ::SVSNOOP(mstring nick, mstring server, bool onoff)
 }
 
 
-void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
+void NetworkServ::SVSMODE(const mstring& mynick, const mstring& nick,
+	const mstring& mode)
 {
     FT("NetworkServ::SVSMODE", (mynick, nick, mode));
 
@@ -2669,7 +2666,8 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
 }
 
 
-void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring topic, mDateTime time)
+void NetworkServ::TOPIC(const mstring& nick, const mstring& setter,
+	const mstring& channel, const mstring& topic, const mDateTime& time)
 {
     FT("NetworkServ::TOPIC", (nick, setter, channel, topic, time));
 
@@ -2717,7 +2715,7 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 }
 
 
-void NetworkServ::UNSQLINE(mstring nick, mstring target)
+void NetworkServ::UNSQLINE(const mstring& nick, const mstring& target)
 {
     FT("NetworkServ::UNSQLINE", (nick, target));
 
@@ -2754,7 +2752,7 @@ void NetworkServ::UNSQLINE(mstring nick, mstring target)
 }
 
 
-void NetworkServ::WALLOPS(mstring nick, mstring message)
+void NetworkServ::WALLOPS(const mstring& nick, const mstring& message)
 {
     FT("NetworkServ::WALLOPS", (nick, message));
 
@@ -2785,7 +2783,7 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
 }
 
 
-void NetworkServ::KillUnknownUser(mstring user) const
+void NetworkServ::KillUnknownUser(const mstring& user) const
 {
     FT("NetworkServ::KillUnknownUser", (user));
     sraw(((proto.Tokens() && !proto.GetNonToken("KILL").empty()) ?
@@ -2797,7 +2795,7 @@ void NetworkServ::KillUnknownUser(mstring user) const
 }
 
 
-unsigned int NetworkServ::SeenMessage(mstring data)
+unsigned int NetworkServ::SeenMessage(const mstring& data)
 {
     FT("NetworkServ::SeenMessage", (data));
 

@@ -25,6 +25,11 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.55  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -156,7 +161,7 @@ class mLOCK
 #endif
 
 public:
-    mLOCK(locktype_enum type, const mVarArray &args);
+    mLOCK(const locktype_enum type, const mVarArray &args);
     ~mLOCK();
     bool Locked() const;
     size_t Locks() const { return locks.size(); }
@@ -299,20 +304,20 @@ public:
     static unsigned short FindAvailPort();
 
     mSocket();
-    mSocket(ACE_INET_Addr addr, unsigned long timeout = 0);
-    mSocket(unsigned long host, unsigned short port, unsigned long timeout = 0);
-    mSocket(mstring host, unsigned short port, unsigned long timeout = 0);
-    mSocket(unsigned short port, unsigned long timeout = 0);
-    mSocket(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown, bool alloc = true);
+    mSocket(const ACE_INET_Addr &addr, const unsigned long timeout = 0);
+    mSocket(const unsigned long host, const unsigned short port, const unsigned long timeout = 0);
+    mSocket(const mstring &host, const unsigned short port, const unsigned long timeout = 0);
+    mSocket(const unsigned short port, const unsigned long timeout = 0);
+    mSocket(ACE_SOCK_Stream *in, const dir_enum direction = D_Unknown, const bool alloc = true);
     mSocket(const mSocket &in) { *this = in; }
     ~mSocket();
     void operator=(const mSocket &in);
 
-    bool Connect(ACE_INET_Addr addr, unsigned long timeout = 0);
-    bool Connect(unsigned long host, unsigned short port, unsigned long timeout = 0);
-    bool Connect(mstring host, unsigned short port, unsigned long timeout = 0);
-    bool Accept(unsigned short port, unsigned long timeout = 0);
-    bool Bind(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown, bool alloc = true);
+    bool Connect(const ACE_INET_Addr &addr, const unsigned long timeout = 0);
+    bool Connect(const unsigned long host, const unsigned short port, const unsigned long timeout = 0);
+    bool Connect(const mstring &host, const unsigned short port, const unsigned long timeout = 0);
+    bool Accept(const unsigned short port, const unsigned long timeout = 0);
+    bool Bind(ACE_SOCK_Stream *in, const dir_enum direction = D_Unknown, const bool alloc = true);
     ACE_SOCK_Stream *Unbind();
 
     mstring Local_Host() const;
@@ -323,12 +328,12 @@ public:
     unsigned short Remote_Port() const;
 
     bool IsConnected() const;
-    void Resolve(socktype_enum type, mstring info);
+    void Resolve(const socktype_enum type, const mstring &info);
     int Last_Error() const;
     mstring Last_Error_String() const;
 
-    ssize_t send(void *buf, size_t len, unsigned long timeout = 0);
-    ssize_t recv(void *buf, size_t len, unsigned long timeout = 0);
+    ssize_t send(void *buf, const size_t len, const unsigned long timeout = 0);
+    ssize_t recv(void *buf, const size_t len, const unsigned long timeout = 0);
     int close();
 };
 
@@ -349,12 +354,12 @@ private:
     typedef map<ACE_thread_t,ThreadID*> selftothreadidmap_t;
     static selftothreadidmap_t selftothreadidmap;
 public:
-    static ThreadID* find(ACE_thread_t thread=ACE_Thread::self());
+    static ThreadID* find(const ACE_thread_t thread=ACE_Thread::self());
     static vector<ThreadID*> findall();
     static size_t size() { return selftothreadidmap.size(); }
-    static void Attach(threadtype_enum ttype);
+    static void Attach(const threadtype_enum ttype);
     static void Detach();
-    static void ReAttach(threadtype_enum ttype);
+    static void ReAttach(const threadtype_enum ttype);
 };
 
 #endif

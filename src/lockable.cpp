@@ -27,6 +27,11 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.63  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -187,7 +192,7 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> mLOCK::memory_area(
 
 map<unsigned long, mSocket *> mSocket::SockMap;
 
-mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
+mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 {
     int i;
 #ifdef MAGICK_TRACE_WORKS
@@ -596,28 +601,28 @@ mSocket::mSocket()
     init();
 }
 
-mSocket::mSocket(ACE_INET_Addr addr, unsigned long timeout)
+mSocket::mSocket(const ACE_INET_Addr &addr, const unsigned long timeout)
 {
     FT("mSocket::mSocket", ("(ACE_INET_Addr) addr", timeout));
     init();
     Connect(addr, timeout);
 }
 
-mSocket::mSocket(mstring host, unsigned short port, unsigned long timeout)
+mSocket::mSocket(const mstring& host, const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::mSocket", (host, port, timeout));
     init();
     Connect(host, port, timeout);
 }
 
-mSocket::mSocket(unsigned short port, unsigned long timeout)
+mSocket::mSocket(const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::mSocket", (port, timeout));
     init();
     Accept(port, timeout);
 }
 
-mSocket::mSocket(ACE_SOCK_Stream *in, dir_enum direction, bool alloc)
+mSocket::mSocket(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
 {
     FT("mSocket::mSocket", ("(ACE_SOCK_Stream *) in"));
     init();
@@ -656,7 +661,7 @@ void mSocket::operator=(const mSocket &in)
 }
 
 
-bool mSocket::Connect(ACE_INET_Addr addr, unsigned long timeout)
+bool mSocket::Connect(const ACE_INET_Addr &addr, const unsigned long timeout)
 {
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
 
@@ -696,7 +701,7 @@ bool mSocket::Connect(ACE_INET_Addr addr, unsigned long timeout)
     RET(true);
 }
 
-bool mSocket::Connect(unsigned long host, unsigned short port, unsigned long timeout)
+bool mSocket::Connect(const unsigned long host, const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::Connect", (host, port, timeout));
     ACE_INET_Addr tmp(port, host);
@@ -704,7 +709,7 @@ bool mSocket::Connect(unsigned long host, unsigned short port, unsigned long tim
     RET(retval);
 }
 
-bool mSocket::Connect(mstring host, unsigned short port, unsigned long timeout)
+bool mSocket::Connect(const mstring &host, const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::Connect", (host, port, timeout));
     ACE_INET_Addr tmp(port, host);
@@ -712,7 +717,7 @@ bool mSocket::Connect(mstring host, unsigned short port, unsigned long timeout)
     RET(retval);
 }
 
-bool mSocket::Accept(unsigned short port, unsigned long timeout)
+bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::Accept", (port, timeout));
     ACE_INET_Addr addr(port, Parent->LocalHost());
@@ -752,7 +757,7 @@ bool mSocket::Accept(unsigned short port, unsigned long timeout)
     RET(true);
 }
 
-bool mSocket::Bind(ACE_SOCK_Stream *in, dir_enum direction, bool alloc)
+bool mSocket::Bind(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
 {
     FT("mSocket::Bind", ("(ACE_SOCK_Stream *) in"));
     if (in == NULL)
@@ -794,7 +799,7 @@ mstring mSocket::Local_Host() const
 {
     NFT("mSocket::Local_Host");
     MLOCK(("mSocket", sockid));
-    mstring retval = local.get_host_addr();
+    mstring retval(local.get_host_addr());
     RET(retval);
 }
 
@@ -845,7 +850,7 @@ bool mSocket::IsConnected() const
     RET(sock != NULL);
 }
 
-void mSocket::Resolve(socktype_enum type, mstring info)
+void mSocket::Resolve(const socktype_enum type, const mstring &info)
 {
     FT("mSocket::Resolve", (static_cast<int>(type), info));
     MLOCK(("mSocket", sockid));
@@ -869,7 +874,7 @@ mstring mSocket::Last_Error_String() const
     RET(retval);
 }
 
-ssize_t mSocket::send(void *buf, size_t len, unsigned long timeout)
+ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
 {
     FT("mSocket::send", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
@@ -887,7 +892,7 @@ ssize_t mSocket::send(void *buf, size_t len, unsigned long timeout)
     RET(retval);
 }
 
-ssize_t mSocket::recv(void *buf, size_t len, unsigned long timeout)
+ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
 {
     FT("mSocket::recv", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
@@ -929,7 +934,7 @@ int mSocket::close()
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
 
-ThreadID* mThread::find(ACE_thread_t thread)
+ThreadID* mThread::find(const ACE_thread_t thread)
 {
     ThreadID *tid = NULL;
     mLock_Mutex lock("SelfToThreadMap");
@@ -965,7 +970,7 @@ vector<ThreadID*> mThread::findall()
     return threadlist;
 }
 
-void mThread::Attach(threadtype_enum ttype)
+void mThread::Attach(const threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=new ThreadID(ttype);
@@ -1004,13 +1009,10 @@ void mThread::Detach()
     COM(("Thread ID has been detached."));
 }
 
-void mThread::ReAttach(threadtype_enum ttype)
+void mThread::ReAttach(const threadtype_enum ttype)
 {
     FT("mThread::ReAttach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=find();
-#ifdef MAGICK_TRACE_WORKS	// Get rid of 'unused veriable' warning
-    threadtype_enum oldtype = tmpid->type();
-#endif
     if(tmpid==NULL)
     {
 	// ReAttach does an attach if it wasnt there
@@ -1026,6 +1028,9 @@ void mThread::ReAttach(threadtype_enum ttype)
 	selftothreadidmap[ACE_Thread::self()]=tmpid;
 	lock.release();
     }
+#ifdef MAGICK_TRACE_WORKS	// Get rid of 'unused veriable' warning
+    threadtype_enum oldtype = tmpid->type();
+#endif
     COM(("Thread ID has been re-attached to %s.", threadname[ttype].c_str()));
     tmpid->assign(ttype);
     COM(("Thread ID has been re-attached from %s.", threadname[oldtype].c_str()));

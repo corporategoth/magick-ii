@@ -27,6 +27,11 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.152  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.151  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -266,7 +271,7 @@ RCSID(base_cpp, "@(#)$Id$");
 bool mBase::TaskOpened;
 mBaseTask mBase::BaseTask;
 
-mstring mUserDef::UserDef(mstring type) const
+mstring mUserDef::UserDef(const mstring &type) const
 {
     FT("mUserDef::UserDef", (type));
     map<mstring,mstring>::const_iterator iter = i_UserDef.find(type.LowerCase());
@@ -277,13 +282,13 @@ mstring mUserDef::UserDef(mstring type) const
     else
     {
 	
-	mstring retval = iter->second;
+	mstring retval(iter->second);
 	RET(retval);
     }
 }
 
 
-void mUserDef::UserDef(mstring type, mstring val)
+void mUserDef::UserDef(const mstring &type, const mstring &val)
 {
     FT("mUserDef::UserDef", (type, val));
     if (val.IsSameAs("NONE", true))
@@ -299,12 +304,10 @@ void mUserDef::UserDef(mstring type, mstring val)
 // --------- end of mUserDef -----------------------------------
 
 
-entlist_t::entlist_t(mstring entry, mstring nick, mDateTime modtime)
+entlist_t::entlist_t(const mstring &entry, const mstring &nick, const mDateTime &modtime)
+    : i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
 {
-    FT("entlist_t::entlist_t", (entry, nick));
-    i_Entry = entry;
-    i_Last_Modify_Time = modtime;
-    i_Last_Modifier = nick;
+    FT("entlist_t::entlist_t", (entry, nick, modtime));
 }
 
 
@@ -320,6 +323,75 @@ void entlist_t::operator=(const entlist_t &in)
 	i_UserDef[i->first]=i->second;
 }
 
+
+SXP::Tag tag_entlist_t("entlist_t");
+SXP::Tag tag_entlist_val_t("entlist_val_t");
+SXP::Tag tag_Entry("Entry");
+SXP::Tag tag_Value("Value");
+SXP::Tag tag_ValueFirst("ValueFirst");
+SXP::Tag tag_ValueSecond("ValueSecond");
+SXP::Tag tag_Last_Modify_Time("Last_Modify_Time");
+SXP::Tag tag_Last_Modifier("Last_Modifier");
+SXP::Tag tag_UserDef("UserDef");
+SXP::Tag tag_Stupid("Stupid");
+
+void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+
+    if( pElement->IsA(tag_UserDef) )
+    {
+	mstring *tmp = new mstring;
+	ud_array.push_back(tmp);
+	pElement->Retrieve(*tmp);
+    }
+}
+
+void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+    //TODO: Add your source code here
+	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
+	if( pElement->IsA(tag_Last_Modify_Time) )   pElement->Retrieve(i_Last_Modify_Time);
+	if( pElement->IsA(tag_Last_Modifier) )   pElement->Retrieve(i_Last_Modifier);
+}
+
+void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_entlist_t, attribs);
+
+	pOut->WriteElement(tag_Entry, i_Entry);
+	pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
+	pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
+
+    map<mstring,mstring>::const_iterator iter;
+    for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+    {
+        pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+    }
+
+	pOut->EndObject(tag_entlist_t);
+}
+
+void entlist_t::PostLoad() const
+{
+    NFT("entlist_t::PostLoad");
+
+    unsigned int j;
+    for (j=0; j<ud_array.size(); j++)
+    {
+	if (ud_array[j] != NULL)
+	{
+	    if (ud_array[j]->Contains("\n"))
+		i_UserDef[ud_array[j]->Before("\n")] =
+			ud_array[j]->After("\n");
+	    delete ud_array[j];
+	}
+    }
+    ud_array.clear();
+}
 
 size_t entlist_t::Usage() const
 {
@@ -453,7 +525,7 @@ int mBaseTask::message_i(const mstring& message)
     // anything that is not a user PRIVMSG/NOTICE goes directly
     // to the server routine anyway.
 
-    mstring data = PreParse(message);
+    mstring data(PreParse(message));
 
     mstring source, type, target;
     if (data.empty())
@@ -556,7 +628,7 @@ int mBaseTask::message_i(const mstring& message)
 mstring mBaseTask::PreParse(const mstring& message) const
 {
     FT("mBaseTask::PreParse", (message));
-    mstring data = message;
+    mstring data(message);
 
     if (Parent->server.proto.Tokens())
     {
@@ -932,8 +1004,8 @@ void announce(const mstring& source, const char *pszFormat, ...)
 
 // Command Map stuff ...
 
-void CommandMap::AddSystemCommand(mstring service, mstring command,
-	    mstring committees, functor function)
+void CommandMap::AddSystemCommand(const mstring &service, const mstring &command,
+	    const mstring &committees, functor function)
 {
     FT("CommandMap::AddSystemCommand", (service, command, committees));
 
@@ -945,8 +1017,8 @@ void CommandMap::AddSystemCommand(mstring service, mstring command,
 }
 
 
-void CommandMap::RemSystemCommand(mstring service, mstring command,
-	    mstring committees)
+void CommandMap::RemSystemCommand(const mstring &service, const mstring &command,
+	    const mstring &committees)
 {
     FT("CommandMap::RemSystemCommand", (service, command, committees));
 
@@ -971,8 +1043,8 @@ void CommandMap::RemSystemCommand(mstring service, mstring command,
 }
 
 
-void CommandMap::AddCommand(mstring service, mstring command,
-	    mstring committees, functor function)
+void CommandMap::AddCommand(const mstring &service, const mstring &command,
+	    const mstring &committees, functor function)
 {
     FT("CommandMap::AddCommand", (service, command, committees));
 
@@ -984,8 +1056,8 @@ void CommandMap::AddCommand(mstring service, mstring command,
 }
 
 
-void CommandMap::RemCommand(mstring service, mstring command,
-	    mstring committees)
+void CommandMap::RemCommand(const mstring &service, const mstring &command,
+	    const mstring &committees)
 {
     FT("CommandMap::RemCommand", (service, command, committees));
 
@@ -1010,8 +1082,8 @@ void CommandMap::RemCommand(mstring service, mstring command,
 }
 
 
-pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstring command,
-	    mstring user) const
+pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &service,
+	    const mstring &command, const mstring &user) const
 {
     FT("CommandMap::GetUserCommand", (service, command, user));
     unsigned int i;
@@ -1074,8 +1146,8 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
     NRET(pair<bool_functor>,retval);
 }
 
-pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, mstring command,
-	    mstring user) const
+pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &service,
+	    const mstring &command, const mstring &user) const
 {
     FT("CommandMap::GetSystemCommand", (service, command, user));
     unsigned int i;
@@ -1138,8 +1210,8 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
     NRET(pair<bool_functor>,retval);
 }
 
-bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
-	    mstring params) const
+bool CommandMap::DoCommand(const mstring &mynick, const mstring &user,
+	    const mstring &command, const mstring &params) const
 {
     FT("CommandMap::DoCommand", (mynick, user, command, params));
 
@@ -1159,8 +1231,8 @@ bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
 }
 
 
-bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
-	    mstring params) const
+bool CommandMap::DoUserCommand(const mstring &mynick, const mstring &user,
+	    const mstring &command, const mstring &params) const
 {
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
 
@@ -1183,8 +1255,8 @@ bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
 }
 
 
-bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
-	    mstring params) const
+bool CommandMap::DoSystemCommand(const mstring &mynick, const mstring &user,
+	    const mstring &command, const mstring &params) const
 {
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
 
@@ -1207,7 +1279,7 @@ bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
 }
 
 
-void do_1_2param(mstring mynick, mstring source, mstring params)
+void do_1_2param(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_1_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
@@ -1217,7 +1289,7 @@ void do_1_2param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.Before(" ", 2);
+    mstring command(params.Before(" ", 2));
     command.MakeUpper();
 
     if (!Parent->commands.DoCommand(mynick, source, command, params))
@@ -1230,7 +1302,7 @@ void do_1_2param(mstring mynick, mstring source, mstring params)
 
 }
 
-void do_1_3param(mstring mynick, mstring source, mstring params)
+void do_1_3param(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_1_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
@@ -1240,7 +1312,7 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.Before(" ") + " " + params.ExtractWord(3, " ");
+    mstring command(params.Before(" ") + " " + params.ExtractWord(3, " "));
     command.MakeUpper();
 
     if (!Parent->commands.DoCommand(mynick, source, command, params))
@@ -1252,7 +1324,7 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
     }
 }
 
-void do_1_4param(mstring mynick, mstring source, mstring params)
+void do_1_4param(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_1_4param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
@@ -1262,7 +1334,7 @@ void do_1_4param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.Before(" ") + " " + params.ExtractWord(4, " ");
+    mstring command(params.Before(" ") + " " + params.ExtractWord(4, " "));
     command.MakeUpper();
 
     if (!Parent->commands.DoCommand(mynick, source, command, params))
@@ -1274,7 +1346,7 @@ void do_1_4param(mstring mynick, mstring source, mstring params)
     }
 }
 
-void do_1_2paramswap(mstring mynick, mstring source, mstring params)
+void do_1_2paramswap(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_1_2paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 2)
@@ -1284,10 +1356,10 @@ void do_1_2paramswap(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.ExtractWord(2, " ") + " " + params.Before(" ");
+    mstring command(params.ExtractWord(2, " ") + " " + params.Before(" "));
     command.MakeUpper();
 
-    mstring data = command;
+    mstring data(command);
     if (params.WordCount(" ") > 2)
 	data += " " + params.After(" ", 2);
 
@@ -1301,7 +1373,7 @@ void do_1_2paramswap(mstring mynick, mstring source, mstring params)
 
 }
 
-void do_1_3paramswap(mstring mynick, mstring source, mstring params)
+void do_1_3paramswap(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 3)
@@ -1311,11 +1383,11 @@ void do_1_3paramswap(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.ExtractWord(3, " ") + " " + params.Before(" ");
+    mstring command(params.ExtractWord(3, " ") + " " + params.Before(" "));
     command.MakeUpper();
 
-    mstring data = params.ExtractWord(3, " ") + " " +
-	params.ExtractWord(2, " ") + " " + params.Before(" ");
+    mstring data(params.ExtractWord(3, " ") + " " +
+	params.ExtractWord(2, " ") + " " + params.Before(" "));
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
 
@@ -1328,7 +1400,7 @@ void do_1_3paramswap(mstring mynick, mstring source, mstring params)
     }
 }
 
-void do_1_4paramswap(mstring mynick, mstring source, mstring params)
+void do_1_4paramswap(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 4)
@@ -1338,12 +1410,12 @@ void do_1_4paramswap(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.ExtractWord(4, " ") + " " + params.Before(" ");
+    mstring command(params.ExtractWord(4, " ") + " " + params.Before(" "));
     command.MakeUpper();
 
-    mstring data = params.ExtractWord(4, " ") + " " +
+    mstring data(params.ExtractWord(4, " ") + " " +
 	params.ExtractWord(2, " ") + params.ExtractWord(3, " ") +
-	" " + params.Before(" ");
+	" " + params.Before(" "));
     if (params.WordCount(" ") > 4)
 	data += " " + params.After(" ", 4);
 
@@ -1356,7 +1428,7 @@ void do_1_4paramswap(mstring mynick, mstring source, mstring params)
     }
 }
 
-void do_2param(mstring mynick, mstring source, mstring params)
+void do_2param(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
@@ -1366,10 +1438,10 @@ void do_2param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.ExtractWord(2, " ");
+    mstring command(params.ExtractWord(2, " "));
     command.MakeUpper();
 
-    mstring data = command + " " + params.Before(" ");
+    mstring data(command + " " + params.Before(" "));
     if (params.WordCount(" ") > 2)
 	data += " " + params.After(" ", 2);
 
@@ -1383,7 +1455,7 @@ void do_2param(mstring mynick, mstring source, mstring params)
 
 }
 
-void do_3param(mstring mynick, mstring source, mstring params)
+void do_3param(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
@@ -1393,11 +1465,11 @@ void do_3param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.ExtractWord(3, " ");
+    mstring command(params.ExtractWord(3, " "));
     command.MakeUpper();
 
-    mstring data = params.ExtractWord(3, " ") + " " +
-	params.ExtractWord(2, " ") + " " + params.Before(" ");
+    mstring data(params.ExtractWord(3, " ") + " " +
+	params.ExtractWord(2, " ") + " " + params.Before(" "));
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
 
@@ -1410,7 +1482,7 @@ void do_3param(mstring mynick, mstring source, mstring params)
     }
 }
 
-void do_4param(mstring mynick, mstring source, mstring params)
+void do_4param(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
@@ -1420,12 +1492,12 @@ void do_4param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.ExtractWord(4, " ");
+    mstring command(params.ExtractWord(4, " "));
     command.MakeUpper();
 
-    mstring data = params.ExtractWord(4, " ") + " " +
+    mstring data(params.ExtractWord(4, " ") + " " +
 	params.ExtractWord(2, " ") + " " + params.ExtractWord(3, " ") +
-	" " + params.Before(" ");
+	" " + params.Before(" "));
     if (params.WordCount(" ") > 4)
 	data += " " + params.After(" ", 4);
 
@@ -1437,73 +1509,4 @@ void do_4param(mstring mynick, mstring source, mstring params)
 //			command.Before(" ").c_str());
     }
 }
-
-void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
-{
-    FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-
-    if( pElement->IsA(tag_UserDef) )
-    {
-	mstring *tmp = new mstring;
-	ud_array.push_back(tmp);
-	pElement->Retrieve(*tmp);
-    }
-}
-
-void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
-{
-    FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    //TODO: Add your source code here
-	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
-	if( pElement->IsA(tag_Last_Modify_Time) )   pElement->Retrieve(i_Last_Modify_Time);
-	if( pElement->IsA(tag_Last_Modifier) )   pElement->Retrieve(i_Last_Modifier);
-}
-
-void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
-{
-    FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
-    //TODO: Add your source code here
-	pOut->BeginObject(tag_entlist_t, attribs);
-
-	pOut->WriteElement(tag_Entry, i_Entry);
-	pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
-	pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
-
-    map<mstring,mstring>::const_iterator iter;
-    for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
-    {
-        pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
-    }
-
-	pOut->EndObject(tag_entlist_t);
-}
-
-void entlist_t::PostLoad() const
-{
-    NFT("entlist_t::PostLoad");
-
-    unsigned int j;
-    for (j=0; j<ud_array.size(); j++)
-    {
-	if (ud_array[j] != NULL)
-	{
-	    if (ud_array[j]->Contains("\n"))
-		i_UserDef[ud_array[j]->Before("\n")] =
-			ud_array[j]->After("\n");
-	    delete ud_array[j];
-	}
-    }
-    ud_array.clear();
-}
-
-SXP::Tag tag_entlist_t("entlist_t");
-SXP::Tag tag_entlist_val_t("entlist_val_t");
-SXP::Tag tag_Entry("Entry");
-SXP::Tag tag_Value("Value");
-SXP::Tag tag_ValueFirst("ValueFirst");
-SXP::Tag tag_ValueSecond("ValueSecond");
-SXP::Tag tag_Last_Modify_Time("Last_Modify_Time");
-SXP::Tag tag_Last_Modifier("Last_Modifier");
-SXP::Tag tag_UserDef("UserDef");
-SXP::Tag tag_Stupid("Stupid");
 

@@ -399,7 +399,7 @@ dist=true
 install=false
 type=HEADER
 [General]
-make_options= -k -w -j1
+make_options=-k -w -j1
 makefiles=Makefile.am,src/Makefile.am,docs/Makefile.am,docs/en/Makefile.am,src/des/Makefile.am,src/xml/Makefile.am,include/Makefile.am,include/des/Makefile.am,include/xml/Makefile.am,docs/man/Makefile.am,docs/devel/Makefile.am,
 version_control=CVS
 project_type=normal_cpp

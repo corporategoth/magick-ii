@@ -25,6 +25,11 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.37  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -107,15 +112,15 @@ RCSID(utils_h, "@(#) $Id$");
 #endif
 
 vector<int> ParseNumbers(mstring what);
-unsigned long FromHumanTime(mstring in);
-mstring ToHumanTime(unsigned long in, mstring source = "");
-mstring ToHumanNumber(unsigned long in);
-unsigned long FromHumanSpace(mstring in);
-mstring ToHumanSpace(unsigned long in);
+unsigned long FromHumanTime(const mstring &in);
+mstring ToHumanTime(const unsigned long in, const mstring &source = "");
+mstring ToHumanNumber(const unsigned long in);
+unsigned long FromHumanSpace(const mstring &in);
+mstring ToHumanSpace(const unsigned long in);
 void mDES(unsigned char *in, unsigned char *out, size_t size,
-	des_key_schedule key1, des_key_schedule key2, int enc);
-void mHASH(unsigned char *in, size_t size, unsigned char *out);
-unsigned long str_to_base64(mstring in);
+	des_key_schedule key1, des_key_schedule key2, const int enc);
+void mHASH(unsigned char *in, const size_t size, unsigned char *out);
+unsigned long str_to_base64(const mstring &in);
 mstring base64_to_str(unsigned long in);
 mstring sysinfo_node();
 mstring sysinfo_type();

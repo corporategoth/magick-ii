@@ -25,6 +25,11 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.70  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -102,7 +107,7 @@ RCSID(trace_h, "@(#) $Id$");
 
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
-unsigned short makehex(mstring SLevel);
+unsigned short makehex(const mstring &SLevel);
 enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_Mutex };
 enum socktype_enum { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
 			S_Client, S_Services, S_Telnet };
@@ -118,12 +123,12 @@ private:
     
 public:
     ThreadID();
-    ThreadID(threadtype_enum Type);
+    ThreadID(const threadtype_enum Type);
     ~ThreadID();
     bool InTrace() const { return t_intrace; }
     mstring LastFunc() const { return t_lastfunc; }
     void LastFunc(const mstring &in) { t_lastfunc = in; }
-    void assign(threadtype_enum Type);
+    void assign(const threadtype_enum Type);
     threadtype_enum type() const { return t_internaltype; }
     void indentup() { t_indent++; }
     void indentdown() { if (t_indent>0) t_indent--; }
@@ -299,22 +304,22 @@ public:
     Trace() {};
     ~Trace() {};
     
-    static unsigned short TraceLevel(threadtype_enum type)
+    static unsigned short TraceLevel(const threadtype_enum type)
 	{ return traces[type]; }
-    static bool IsOn(threadtype_enum type, level_enum level)
+    static bool IsOn(const threadtype_enum type, const level_enum level)
 	{ return (traces[type] & level) ? true : false; }
-    static void TurnUp(threadtype_enum type, level_enum param)
+    static void TurnUp(const threadtype_enum type, const level_enum param)
 	{ traces[type] |= param; }
-    static void TurnDown(threadtype_enum type, level_enum param)
+    static void TurnDown(const threadtype_enum type, const level_enum param)
 	{ traces[type] &= ~param; }
-    static void TurnSet(threadtype_enum type, unsigned short param)
+    static void TurnSet(const threadtype_enum type, const unsigned short param)
 	{ traces[type] = param; }
 
-    static bool IsOn(ThreadID *tid, level_enum level)
+    static bool IsOn(ThreadID *tid, const level_enum level)
 	{ return IsOn(tid->type(), level); }
-    static void TurnUp(ThreadID *tid, level_enum level)
+    static void TurnUp(ThreadID *tid, const level_enum level)
 	{ TurnUp(tid->type(), level); }
-    static void TurnDown(ThreadID *tid, level_enum level)
+    static void TurnDown(ThreadID *tid, const level_enum level)
 	{ TurnDown(tid->type(), level); }
 };
 
@@ -324,7 +329,6 @@ extern Trace *TraceObject;
 
 class T_Functions : public Trace
 {
-    ThreadID *tid;
     mstring m_name;
     mstring i_prevfunc;
 
@@ -341,8 +345,7 @@ public:
 
 class T_CheckPoint : public Trace
 {
-    ThreadID *tid;
-    void common(const char *input);
+    void common(const mstring &input);
 
 public:
     T_CheckPoint();
@@ -354,8 +357,7 @@ public:
 
 class T_Comments : public Trace
 {
-    ThreadID *tid;
-    void common(const char *input);
+    void common(const mstring &input);
     T_Comments();
 
 public:
@@ -367,7 +369,6 @@ public:
 
 class T_Modify : public Trace
 {
-    ThreadID *tid;
     mVarArray i_args;
     unsigned int i_offset;
     T_Modify() {}
@@ -383,7 +384,6 @@ public:
 
 class T_Changing : public Trace
 {
-    ThreadID *tid;
     mstring i_name;
     mVariant i_arg;
     T_Changing() {}
@@ -398,24 +398,22 @@ public:
 
 class T_Chatter : public Trace
 {
-    ThreadID *tid;
     T_Chatter() {} 
 
 public:
-    T_Chatter(dir_enum direction, const mstring &input);
+    T_Chatter(const dir_enum direction, const mstring &input);
     ~T_Chatter() {}
 };
 
 // ===================================================
 
 class T_Locking : public Trace {
-    ThreadID *tid;
     locktype_enum locktype;
     mstring name;
 
 public:
     T_Locking() {}
-    void open(locktype_enum ltype, mstring lockname);
+    void open(const locktype_enum ltype, const mstring &lockname);
     ~T_Locking();
 
 };
@@ -424,10 +422,9 @@ public:
 
 class T_Source : public Trace
 {
-    ThreadID *tid;
 public:
-    T_Source(mstring text);
-    T_Source(mstring section, mstring key, mstring value);
+    T_Source(const mstring &text);
+    T_Source(const mstring &section, const mstring &key, const mstring &value);
 };
 
 // ===================================================
@@ -438,16 +435,17 @@ public:
 
 class T_Sockets : public Trace
 {
-    ThreadID *tid;
     unsigned long s_id;
 
 public:
-    void Begin(unsigned long id, unsigned short local, unsigned short remote,
-	mstring host, dir_enum direction = D_Unknown);
-    void Failed(unsigned long id, unsigned short local, unsigned short remote,
-	mstring host, mstring reason, dir_enum direction = D_Unknown);
-    void Resolve(socktype_enum type, mstring info);
-    void End(mstring reason);
+    void Begin(const unsigned long id, const unsigned short local,
+	const unsigned short remote, const mstring &host,
+	const dir_enum direction = D_Unknown);
+    void Failed(const unsigned long id, const unsigned short local,
+	const unsigned short remote, const mstring &host,
+	const mstring &reason, const dir_enum direction = D_Unknown);
+    void Resolve(const socktype_enum type, const mstring &info);
+    void End(const mstring &reason);
 };
 
 // ===================================================

@@ -25,6 +25,11 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.68  2001/03/04 02:08:27  prez
 ** Enhansed mstring
 **
@@ -235,12 +240,6 @@ const char *ultoa(unsigned long ul);
 #ifndef HAVE_UITOA
 const char *uitoa(unsigned int ui);
 #endif
-#ifndef HAVE_SNPRINTF
-int snprintf(char *buf, size_t size, const char *fmt, ...);
-#endif
-#ifndef HAVE_VSNPRINTF
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap);
-#endif
 
 extern const mstring DirSlash;
 extern const mstring Blank;
@@ -347,17 +346,19 @@ class mstring
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static char *alloc(size_t size) throw(mstring_noalloc);
+    static char *alloc(const size_t size) throw(mstring_noalloc);
     static void dealloc(char * & in) throw(mstring_nodealloc);
 #else
-    static char *alloc(size_t size);
+    static char *alloc(const size_t size);
     static void dealloc(char * & in);
 #endif
     void lock_read() const;
     void lock_write() const;
     void lock_rel() const;
     void init();
-    int occurances(const char *str, size_t length) const;
+    int occurances(const char *str, const size_t length) const;
+    static int snprintf(char *buf, const size_t size, const char *fmt, ...);
+    static int vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
 
 public:
     mstring()
@@ -366,7 +367,7 @@ public:
 	{ init(); copy(in); }
     mstring(const string &in)
 	{ init(); copy(in); }
-    mstring(const char *in, size_t length)
+    mstring(const char *in, const size_t length)
 	{ init(); copy(in, length); }
     mstring(const char *in)
 	{ init(); copy(in); }
@@ -392,11 +393,11 @@ public:
 	{ init(); Assemble(in); }
     ~mstring();
 
-    void copy(const char *in, size_t length);
-    void append(const char *in, size_t length);
+    void copy(const char *in, const size_t length);
+    void append(const char *in, const size_t length);
     void erase(int begin = 0, int end = -1);
-    void insert(size_t pos, const char *in, size_t length);
-    int compare(const char *in, size_t length) const;
+    void insert(const size_t pos, const char *in, const size_t length);
+    int compare(const char *in, const size_t length) const;
     void swap(mstring &in);
     const char *c_str() const;
     const unsigned char *uc_str() const;
@@ -435,12 +436,12 @@ public:
 	{ insert(0, in.i_str, in.i_len); }
     void append(const mstring &in)
 	{ append(in.i_str, in.i_len); }
-    void insert(size_t pos, const mstring &in)
+    void insert(const size_t pos, const mstring &in)
 	{ insert(pos, in.i_str, in.i_len); }
     int compare(const mstring &in) const
 	{ return compare(in.i_str, in.i_len); }
 
-    const char operator[] (size_t off) const;
+    const char operator[] (const size_t off) const;
     operator const char *() const
 	{ return c_str(); }
     operator const string () const
@@ -457,10 +458,10 @@ public:
     // of the requested char/string.
 
     // str here is a list of delimiters
-    int find_first_of(const char *str, size_t length) const;
-    int find_last_of(const char *str, size_t length) const;
-    int find_first_not_of(const char *str, size_t length) const;
-    int find_last_not_of(const char *str, size_t length) const;
+    int find_first_of(const char *str, const size_t length) const;
+    int find_last_of(const char *str, const size_t length) const;
+    int find_first_not_of(const char *str, const size_t length) const;
+    int find_last_not_of(const char *str, const size_t length) const;
 
     int find_first_of(const mstring &in) const
 	{ return find_first_of(in.i_str, in.i_len); }
@@ -474,11 +475,11 @@ public:
     // str here is used completely
     int find(const mstring &str, int occurance = 1) const;
     int rfind(const mstring &str, int occurance = 1) const;
-    void replace(const mstring &i_find, const mstring &i_replace, bool all = true);
-    void replace(int begin, int end, const char *i_replace, size_t length);
-    void replace(int begin, int end, const mstring &i_replace)
+    void replace(const mstring &i_find, const mstring &i_replace, const bool all = true);
+    void replace(const int begin, const int end, const char *i_replace, const size_t length);
+    void replace(const int begin, const int end, const mstring &i_replace)
 	{ replace(begin, end, i_replace.i_str, i_replace.i_len); }
-    bool replace(size_t offs, char c);
+    bool replace(const size_t offs, const char c);
 
     mstring substr(int nFirst, int nCount) const;
 
@@ -497,42 +498,42 @@ public:
     void MakeUpper();
     void MakeLower();
 
-    int Occurances(const mstring &in, bool NoCase = false) const;
-    int Find(const mstring &in, bool NoCase = false, int occurance = 1) const;
-    int RevFind(const mstring &in, bool NoCase = false, int occurance = 1) const;
-    int Cmp(const mstring &in, bool NoCase = false) const;
-    bool IsSameAs(const mstring &in, bool NoCase = false) const
+    int Occurances(const mstring &in, const bool NoCase = false) const;
+    int Find(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
+    int RevFind(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
+    int Cmp(const mstring &in, const bool NoCase = false) const;
+    bool IsSameAs(const mstring &in, const bool NoCase = false) const
 	{ return (Cmp(in, NoCase)==0); }
-    bool Matches(const mstring &in, bool NoCase = false) const;
+    bool Matches(const mstring &in, const bool NoCase = false) const;
 
-    void Remove(const mstring &in, bool All = true)
+    void Remove(const mstring &in, const bool All = true)
 	{ replace(in, "", All); }
-    void Truncate(size_t pos, bool right = true);
-    void Trim(bool right=true, const mstring &delims = " \n\r\t");
-    mstring Strip(bool right=true, const mstring &delims = " \n\r\t") const;
+    void Truncate(const size_t pos, const bool right = true);
+    void Trim(const bool right=true, const mstring &delims = " \n\r\t");
+    mstring Strip(const bool right=true, const mstring &delims = " \n\r\t") const;
 
     int Format(const char *fmt, ...);
     int FormatV(const char *fmt, va_list argptr);
 
-    mstring Before(const mstring &in, int occurance = 1) const;
-    mstring After(const mstring &in, int occurance = 1) const;
-    mstring RevBefore(const mstring &in, int occurance = 1) const;
-    mstring RevAfter(const mstring &in, int occurance = 1) const;
+    mstring Before(const mstring &in, const int occurance = 1) const;
+    mstring After(const mstring &in, const int occurance = 1) const;
+    mstring RevBefore(const mstring &in, const int occurance = 1) const;
+    mstring RevAfter(const mstring &in, const int occurance = 1) const;
     mstring SubString(int from = 0, int to = -1) const;
-    mstring Left(int pos) const
+    mstring Left(const int pos) const
 	{ return SubString(0, pos-1); }
-    mstring Right(int pos) const
+    mstring Right(const int pos) const
 	{ return SubString(pos); }
-    unsigned int WordCount(const mstring &delim, bool assemble = true) const;
-    mstring ExtractWord(unsigned int count, const mstring &delim,
-						bool assemble = true) const;
-    int WordPosition(unsigned int count, const mstring &delim,
-						bool assemble = true) const;
+    unsigned int WordCount(const mstring &delim, const bool assemble = true) const;
+    mstring ExtractWord(const unsigned int count, const mstring &delim,
+					const bool assemble = true) const;
+    int WordPosition(const unsigned int count, const mstring &delim,
+					const bool assemble = true) const;
 
-    vector<mstring> Vector(const mstring &delim, bool assemble = true) const;
-    list<mstring> List(const mstring &delim, bool assemble = true) const;
-    void Assemble(const vector<mstring> text, const mstring &delim = " ");
-    void Assemble(const list<mstring> text, const mstring &delim = " ");
+    vector<mstring> Vector(const mstring &delim, const bool assemble = true) const;
+    list<mstring> List(const mstring &delim, const bool assemble = true) const;
+    void Assemble(const vector<mstring> &text, const mstring &delim = " ");
+    void Assemble(const list<mstring> &text, const mstring &delim = " ");
 };
 
 #endif

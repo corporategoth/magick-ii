@@ -27,6 +27,11 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/03/20 14:22:15  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.59  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -216,7 +221,7 @@ vector<int> ParseNumbers(mstring what)
     NRET(vector<int>, numbers);
 }
 
-unsigned long FromHumanTime(mstring in)
+unsigned long FromHumanTime(const mstring &in)
 {
     FT("FromHumanTime", (in));
 
@@ -300,7 +305,7 @@ unsigned long FromHumanTime(mstring in)
     RET(total);
 }
 
-mstring ToHumanTime(unsigned long in, mstring source)
+mstring ToHumanTime(const unsigned long in, const mstring &source)
 {
     FT("ToHumanTime", (in, source));
 
@@ -317,7 +322,7 @@ mstring ToHumanTime(unsigned long in, mstring source)
     RET(retval);
 }
 
-mstring ToHumanNumber(unsigned long in)
+mstring ToHumanNumber(const unsigned long in)
 {
     FT("ToHumanNumber", (in));
 
@@ -348,7 +353,7 @@ mstring ToHumanNumber(unsigned long in)
 }
 
 
-mstring ToHumanSpace(unsigned long in)
+mstring ToHumanSpace(const unsigned long in)
 {
     FT("ToHumanSpace", (in));
     mstring retval;
@@ -382,7 +387,7 @@ mstring ToHumanSpace(unsigned long in)
     RET(retval);
 }
 
-unsigned long FromHumanSpace(mstring in)
+unsigned long FromHumanSpace(const mstring &in)
 {
     FT("FromHumanTime", (in));
 
@@ -459,7 +464,7 @@ unsigned long FromHumanSpace(mstring in)
 }
 
 void mDES(unsigned char *in, unsigned char *out, size_t size,
-	des_key_schedule key1, des_key_schedule key2, int enc)
+	des_key_schedule key1, des_key_schedule key2, const int enc)
 {
     FT("mDES", ("(unsigned char *) in", "(unsigned char *) out", size,
 	"(des_key_schedule) key1", "(des_key_schedule) key2", enc));
@@ -500,7 +505,7 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 #endif
 }
 
-void mHASH(unsigned char *in, size_t size, unsigned char *out)
+void mHASH(unsigned char *in, const size_t size, unsigned char *out)
 {
     unsigned char md[MD5_DIGEST_LENGTH];
     MD5_CTX c;
@@ -549,7 +554,7 @@ static const char base64_to_char[] = {
 	'u', 'v', 'w', 'x', 'y', 'z', '{', '}' };
 
 
-unsigned long str_to_base64(mstring in)
+unsigned long str_to_base64(const mstring &in)
 {
 	if (!in.length())
 	    return 0;

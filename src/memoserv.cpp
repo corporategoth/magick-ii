@@ -27,6 +27,11 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.91  2001/03/08 08:07:41  ungod
 ** fixes for bcc 5.5
 **
@@ -258,16 +263,13 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 #include "magick.h"
 #include "dccengine.h"
 
-Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
+Memo_t::Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
+	const unsigned long file)
+	: i_Nick(nick), i_Sender(sender), i_Time(mDateTime::CurrentDateTime()),
+	  i_Text(text), i_Read(false), i_File(file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
-    i_Nick = nick;
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
-    i_Time = mDateTime::CurrentDateTime();
-    i_Sender = sender;
-    i_Text = text;
-    i_File = file;
-    i_Read = false;
     DumpE();
 }
 
@@ -284,7 +286,7 @@ void Memo_t::operator=(const Memo_t &in)
     i_Read = in.i_Read;
 }
 
-void Memo_t::ChgNick(mstring in)
+void Memo_t::ChgNick(const mstring& in)
 {
     FT("Memo_t::ChgNick", (in));
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Nick"));
@@ -376,15 +378,13 @@ void Memo_t::DumpE() const
 }
 
 
-News_t::News_t(mstring channel, mstring sender, mstring text, bool noexpire)
+News_t::News_t(const mstring& channel, const mstring& sender, const mstring& text,
+	const bool noexpire)
+	: i_Channel(channel), i_Sender(sender), i_Time(mDateTime::CurrentDateTime()),
+	  i_Text(text), i_NoExpire(noexpire)
 {
     FT("News_t::News_t", (channel, sender, text));
-    i_Channel = channel;
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
-    i_Time = mDateTime::CurrentDateTime();
-    i_Sender = sender;
-    i_Text = text;
-    i_NoExpire = noexpire;
     DumpE();
 }
 
@@ -431,7 +431,7 @@ bool News_t::NoExpire() const
     RET(i_NoExpire);
 }
 
-void News_t::NoExpire(bool in)
+void News_t::NoExpire(const bool in)
 {
     NFT("News_t::NoExpire");
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_NoExpire"));
@@ -440,7 +440,7 @@ void News_t::NoExpire(bool in)
     MCE(i_NoExpire);
 }
 
-bool News_t::IsRead(mstring name)
+bool News_t::IsRead(const mstring& name)
 {
     FT("News_t::IsRead", (name));
     mstring target = name;
@@ -454,7 +454,7 @@ bool News_t::IsRead(mstring name)
 }
 
 
-void News_t::Read(mstring name)
+void News_t::Read(const mstring& name)
 {
     FT("News_t::Read", (name));
     mstring target = name;
@@ -469,7 +469,7 @@ void News_t::Read(mstring name)
 }
 
 
-void News_t::Unread(mstring name)
+void News_t::Unread(const mstring& name)
 {
     FT("News_t::Unread", (name));
     mstring target = name;
@@ -658,7 +658,7 @@ void MemoServ::RemCommands()
 	    "UNLOCK", Parent->commserv.REGD_Name());
 }
 
-bool MemoServ::IsNick(mstring in) const
+bool MemoServ::IsNick(const mstring& in) const
 {
     FT("MemoServ::IsNick", (in));
     RLOCK(("MemoServ", "nick"));
@@ -666,7 +666,7 @@ bool MemoServ::IsNick(mstring in) const
     RET(retval);
 }
 
-bool MemoServ::IsChannel(mstring in) const
+bool MemoServ::IsChannel(const mstring& in) const
 {
     FT("MemoServ::IsChannel", (in));
     RLOCK(("MemoServ", "channel"));
@@ -708,7 +708,7 @@ void MemoServ::execute(const mstring & data)
 
 }
 
-void MemoServ::do_Help(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Help", (mynick, source, params));
 
@@ -734,7 +734,7 @@ void MemoServ::do_Help(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, help[i]);
 }
 
-void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Read", (mynick, source, params));
 
@@ -1049,7 +1049,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
+void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_UnRead", (mynick, source, params));
 
@@ -1252,7 +1252,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Get", (mynick, source, params));
 
@@ -1362,7 +1362,7 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
  }
 
 
-void MemoServ::do_List(mstring mynick, mstring source, mstring params)
+void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_List", (mynick, source, params));
 
@@ -1376,13 +1376,6 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 							message.c_str());
 	return;
     }}
-
-    if (params.WordCount(" ") < 1)
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
-	return;
-    }
 
     if (IsChan(params.ExtractWord(2, " ")))
     {
@@ -1483,7 +1476,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Send", (mynick, source, params));
 
@@ -1576,7 +1569,7 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Flush(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Flush(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Flush", (mynick, source, params));
 
@@ -1598,7 +1591,7 @@ void MemoServ::do_Flush(mstring mynick, mstring source, mstring params)
     }
 }
 
-void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Forward", (mynick, source, params));
 
@@ -1753,8 +1746,8 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
-						mstring text)
+void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
+		mstring dest, const mstring &text)
 {
     FT("MemoServ::do_Forward2", (mynick, source, dest, text));
 
@@ -1808,7 +1801,7 @@ void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 }
 
 
-void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Reply", (mynick, source, params));
 
@@ -1999,7 +1992,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Cancel(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Cancel", (mynick, source, params));
 
@@ -2020,7 +2013,7 @@ void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Del", (mynick, source, params));
 
@@ -2286,7 +2279,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Continue(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Continue", (mynick, source, params));
 
@@ -2320,7 +2313,7 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_Preview(mstring mynick, mstring source, mstring params)
+void MemoServ::do_Preview(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_Continue", (mynick, source, params));
 
@@ -2357,7 +2350,7 @@ void MemoServ::do_Preview(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_File(mstring mynick, mstring source, mstring params)
+void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_File", (mynick, source, params));
 
@@ -2469,7 +2462,7 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 }
 
 
-void MemoServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
+void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("MemoServ::do_set_NoExpire", (mynick, source, params));
 

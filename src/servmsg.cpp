@@ -27,6 +27,11 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2001/03/20 14:22:15  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.81  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -459,7 +464,7 @@ void ServMsg::execute(const mstring & data)
 
 }
 
-void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Help", (mynick, source, params));
 
@@ -486,7 +491,7 @@ void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Credits(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Credits", (mynick, source, params));
 
@@ -509,7 +514,7 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Contrib(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Contrib", (mynick, source, params));
 
@@ -532,7 +537,7 @@ void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Languages", (mynick, source, params));
 
@@ -579,7 +584,7 @@ void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
+void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_BreakDown", (mynick, source, params));
 
@@ -623,7 +628,8 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 }
 
 void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCounts,
-	mstring mynick, mstring source, mstring previndent, mstring server)
+	const mstring &mynick, const mstring &source,
+	const mstring &previndent, const mstring &server)
 {
     FT("ServMsg::do_BreakDown2", (mynick, source, previndent, server));
     vector<mstring> downlinks;
@@ -678,7 +684,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 }
 
 
-void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
+void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
 
@@ -758,7 +764,7 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
+void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
 
@@ -847,7 +853,7 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
+void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_stats_Other", (mynick, source, params));
 
@@ -941,7 +947,7 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
+void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_stats_Oper", (mynick, source, params));
 
@@ -1015,7 +1021,7 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
+void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_stats_Usage", (mynick, source, params));
     int count;
@@ -1188,7 +1194,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
     Parent->servmsg.stats.i_Stats++;
 }
 
-void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
+void ServMsg::do_stats_All(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_stats_All", (mynick, source, params));
 
@@ -1211,7 +1217,7 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
     do_stats_Usage(mynick, source, params);
 }
 
-void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Stats", (mynick, source, params));
 
@@ -1262,7 +1268,7 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_List", (mynick, source, params));
 
@@ -1362,7 +1368,7 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Add", (mynick, source, params));
 
@@ -1393,7 +1399,7 @@ void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Del(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Del", (mynick, source, params));
 
@@ -1423,7 +1429,7 @@ void ServMsg::do_file_Del(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Rename", (mynick, source, params));
 
@@ -1458,7 +1464,7 @@ void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Priv", (mynick, source, params));
 
@@ -1496,7 +1502,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Send", (mynick, source, params));
 
@@ -1573,7 +1579,7 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Dcc(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Dcc", (mynick, source, params));
 
@@ -1629,7 +1635,7 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Cancel", (mynick, source, params));
 
@@ -1690,7 +1696,7 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
+void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_file_Lookup", (mynick, source, params));
 
@@ -1805,7 +1811,7 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 }
 
 
-void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Global", (mynick, source, params));
 
@@ -1834,7 +1840,7 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 	text.c_str()));
 }
 
-void ServMsg::do_Ask(mstring mynick, mstring source, mstring params)
+void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ServMsg::do_Ask", (mynick, source, params));
 

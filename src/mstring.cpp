@@ -27,6 +27,11 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.97  2001/03/08 08:07:41  ungod
 ** fixes for bcc 5.5
 **
@@ -227,9 +232,9 @@ mstring const IRC_Color(static_cast<char>(3));		// ^C
 mstring const IRC_Off(static_cast<char>(15));		// ^O
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-char *mstring::alloc(size_t size) throw(mstring_noalloc)
+char *mstring::alloc(const size_t size) throw(mstring_noalloc)
 #else
-char *mstring::alloc(size_t size)
+char *mstring::alloc(const size_t size)
 #endif
 {
     char *out = NULL;
@@ -392,7 +397,7 @@ mstring::~mstring()
 #endif
 }
 
-void mstring::copy(const char *in, size_t length)
+void mstring::copy(const char *in, const size_t length)
 {
     lock_write();
 
@@ -423,7 +428,7 @@ void mstring::copy(const char *in, size_t length)
     lock_rel();
 }
 
-void mstring::append(const char *in, size_t length)
+void mstring::append(const char *in, const size_t length)
 {
     if (length == 0 || in == NULL)
 	return;
@@ -552,7 +557,7 @@ void mstring::erase(int begin, int end)
     lock_rel();
 }
 
-void mstring::insert(size_t pos, const char *in, size_t length)
+void mstring::insert(const size_t pos, const char *in, const size_t length)
 {
     size_t i;
     char *tmp = NULL;
@@ -603,7 +608,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 // the same, then return (-1 * i_len) if i_str is bigger,
 // or length if in is bigger.  0 means strings are the
 // same length and have the same text.
-int mstring::compare (const char *in, size_t length) const
+int mstring::compare (const char *in, const size_t length) const
 {
     lock_read();
 
@@ -692,7 +697,7 @@ const unsigned char *mstring::uc_str() const
     return static_cast<const unsigned char *>(retval);
 }
 
-const char mstring::operator[] (size_t offs) const
+const char mstring::operator[] (const size_t offs) const
 {
     char retval = 0;
 
@@ -762,7 +767,7 @@ bool mstring::empty() const
 
 
 // Index value of any of these chars
-int mstring::find_first_of(const char *str, size_t length) const
+int mstring::find_first_of(const char *str, const size_t length) const
 {
     lock_read();
 
@@ -789,7 +794,7 @@ int mstring::find_first_of(const char *str, size_t length) const
 }
 
 // Reverse Index value of any of these chars
-int mstring::find_last_of(const char *str, size_t length) const
+int mstring::find_last_of(const char *str, const size_t length) const
 {
     unsigned int i;
     int retval = -1;
@@ -813,7 +818,7 @@ int mstring::find_last_of(const char *str, size_t length) const
 }
 
 // Opposite to index for any of these chars
-int mstring::find_first_not_of(const char *str, size_t length) const
+int mstring::find_first_not_of(const char *str, const size_t length) const
 {
     unsigned int i;
     int retval = -1;
@@ -850,7 +855,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 }
 
 // Opposite to rindex for any of these chars
-int mstring::find_last_not_of(const char *str, size_t length) const
+int mstring::find_last_not_of(const char *str, const size_t length) const
 {
     int i, retval = -1;
 
@@ -887,7 +892,7 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 
 
 /* PRIVATE METHOD - NO LOCKING! */
-int mstring::occurances(const char *str, size_t length) const
+int mstring::occurances(const char *str, const size_t length) const
 {
     int count = 0;
     char *ptr;
@@ -963,7 +968,7 @@ int mstring::rfind(const mstring &str, int occurance) const
 
 
 // Replace find string with replace string (optionally for all)
-void mstring::replace(const mstring &i_find, const mstring &i_replace, bool all)
+void mstring::replace(const mstring &i_find, const mstring &i_replace, const bool all)
 {
     int i, j, old_len, amt_replace = 0;
     char *tmp, *start, *end;
@@ -1042,13 +1047,13 @@ void mstring::replace(const mstring &i_find, const mstring &i_replace, bool all)
     lock_rel();
 }
 
-void mstring::replace(int begin, int end, const char *i_replace, size_t length)
+void mstring::replace(const int begin, const int end, const char *i_replace, const size_t length)
 {
     erase(begin, end);
     insert(begin, i_replace, length);
 }
 
-bool mstring::replace(size_t offs, char c)
+bool mstring::replace(const size_t offs, const char c)
 {
     bool retval = false;
 
@@ -1230,7 +1235,7 @@ void mstring::MakeLower()
 }
 
 
-int mstring::Occurances(const mstring &in, bool NoCase) const
+int mstring::Occurances(const mstring &in, const bool NoCase) const
 {
     int retval = 0;
     if (NoCase)
@@ -1251,7 +1256,7 @@ int mstring::Occurances(const mstring &in, bool NoCase) const
     return retval;
 }
 
-int mstring::Find(const mstring &in, bool NoCase, int occurance) const
+int mstring::Find(const mstring &in, const bool NoCase, const int occurance) const
 {
     if (NoCase)
     {
@@ -1262,7 +1267,7 @@ int mstring::Find(const mstring &in, bool NoCase, int occurance) const
 	return find(in.c_str(), occurance);
 }
 
-int mstring::RevFind(const mstring &in, bool NoCase, int occurance) const
+int mstring::RevFind(const mstring &in, const bool NoCase, const int occurance) const
 {
     if (NoCase)
     {
@@ -1273,7 +1278,7 @@ int mstring::RevFind(const mstring &in, bool NoCase, int occurance) const
 	return rfind(in.c_str(), occurance);
 }
 
-int mstring::Cmp(const mstring &in, bool NoCase) const
+int mstring::Cmp(const mstring &in, const bool NoCase) const
 {
     int retval = 0;
     if (NoCase)
@@ -1286,12 +1291,12 @@ int mstring::Cmp(const mstring &in, bool NoCase) const
     return retval;
 }
 
-bool mstring::Matches(const mstring &in, bool NoCase) const
+bool mstring::Matches(const mstring &in, const bool NoCase) const
 {
     return match_wild(in.c_str(), c_str(), NoCase);
 }
 
-void mstring::Truncate(size_t pos, bool right)
+void mstring::Truncate(const size_t pos, const bool right)
 {
     if (right)
 	erase(right);
@@ -1299,7 +1304,7 @@ void mstring::Truncate(size_t pos, bool right)
 	erase(0, pos);
 }
 
-void mstring::Trim(bool right, const mstring &delims)
+void mstring::Trim(const bool right, const mstring &delims)
 {
     int pos = 0;
     if (right)
@@ -1316,7 +1321,7 @@ void mstring::Trim(bool right, const mstring &delims)
     }
 }
 
-mstring mstring::Strip(bool right, const mstring &deilms) const
+mstring mstring::Strip(const bool right, const mstring &deilms) const
 {
     mstring tmp(*this);
     tmp.Trim(right, deilms);
@@ -1346,7 +1351,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
     }
     while (buffer != NULL)
     {
-	length = ::vsnprintf(buffer, size-1, fmt, argptr);
+	length = mstring::vsnprintf(buffer, size-1, fmt, argptr);
 	if (length < size)
 	    break;
 	dealloc(buffer);
@@ -1373,7 +1378,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 }
 
 
-mstring mstring::Before(const mstring &in, int occurance) const
+mstring mstring::Before(const mstring &in, const int occurance) const
 {
     int m_pos = Find(in,false,occurance);
     if (m_pos >= 0)
@@ -1387,7 +1392,7 @@ mstring mstring::Before(const mstring &in, int occurance) const
     }
 }
 
-mstring mstring::After(const mstring &in, int occurance) const
+mstring mstring::After(const mstring &in, const int occurance) const
 {
     int m_pos = Find(in,false,occurance);
     if (m_pos >= 0)
@@ -1401,7 +1406,7 @@ mstring mstring::After(const mstring &in, int occurance) const
     }
 }
 
-mstring mstring::RevBefore(const mstring &in, int occurance) const
+mstring mstring::RevBefore(const mstring &in, const int occurance) const
 {
     int m_pos = RevFind(in,false,occurance);
     if (m_pos >= 0)
@@ -1415,7 +1420,7 @@ mstring mstring::RevBefore(const mstring &in, int occurance) const
     }
 }
 
-mstring mstring::RevAfter(const mstring &in, int occurance) const
+mstring mstring::RevAfter(const mstring &in, const int occurance) const
 {
     int m_pos = RevFind(in,false,occurance);
     if (m_pos >= 0)
@@ -1453,7 +1458,7 @@ mstring mstring::SubString(int from, int to) const
 }
 
 
-unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
+unsigned int mstring::WordCount(const mstring &delim, const bool assemble) const
 {
     int Result=0;
     size_t i=0;
@@ -1471,8 +1476,8 @@ unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
     return Result;
 }
 
-mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
-						bool assemble) const
+mstring mstring::ExtractWord(const unsigned int count, const mstring &delim,
+						const bool assemble) const
 {
     int i, begin;
     begin=WordPosition(count, delim, assemble);
@@ -1493,8 +1498,8 @@ mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
     return "";
 }
 
-int mstring::WordPosition(unsigned int count, const mstring &delim,
-						bool assemble) const
+int mstring::WordPosition(const unsigned int count, const mstring &delim,
+						const bool assemble) const
 {
     unsigned int i=0,cnt=0;
     int Result=-1;
@@ -1519,7 +1524,7 @@ int mstring::WordPosition(unsigned int count, const mstring &delim,
     return Result;
 }
 
-vector<mstring> mstring::Vector(const mstring &delim, bool assemble) const
+vector<mstring> mstring::Vector(const mstring &delim, const bool assemble) const
 {
     vector<mstring> Result;
     size_t begin = 0, i=0;
@@ -1539,7 +1544,7 @@ vector<mstring> mstring::Vector(const mstring &delim, bool assemble) const
     return Result;
 }
 
-list<mstring> mstring::List(const mstring &delim, bool assemble) const
+list<mstring> mstring::List(const mstring &delim, bool const assemble) const
 {
     list<mstring> Result;
     size_t begin = 0, i=0;
@@ -1559,7 +1564,7 @@ list<mstring> mstring::List(const mstring &delim, bool assemble) const
     return Result;
 }
 
-void mstring::Assemble(const vector<mstring> text, const mstring &delim)
+void mstring::Assemble(const vector<mstring> &text, const mstring &delim)
 {
     size_t offs = 0;
     vector<mstring>::const_iterator iter;
@@ -1610,7 +1615,7 @@ void mstring::Assemble(const vector<mstring> text, const mstring &delim)
     lock_rel();
 }
 
-void mstring::Assemble(const list<mstring> text, const mstring &delim)
+void mstring::Assemble(const list<mstring> &text, const mstring &delim)
 {
     size_t offs = 0;
     list<mstring>::const_iterator iter;
@@ -1711,26 +1716,26 @@ const char *uitoa(unsigned int ui)
 }
 #endif
 
-#ifndef HAVE_SNPRINTF
-int snprintf(char *buf, size_t size, const char *fmt, ...)
+int mstring::snprintf(char *buf, const size_t size, const char *fmt, ...)
 {
     va_list argptr;
     va_start(argptr, fmt);
 
-    int iLen = ACE_OS::sprintf(buf, fmt, argptr);
+    int iLen = mstring::vsnprintf(buf, size, fmt, argptr);
 
     va_end(argptr);
     return iLen;
 }
-#endif
 
-#ifndef HAVE_VSNPRINTF
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
+int mstring::vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap)
 {
+#ifndef HAVE_VSNPRINTF
     int iLen = ACE_OS::vsprintf(buf, fmt, ap);
+#else
+    int iLen = ::vsnprintf(buf, size, fmt, ap);
+#endif
     return iLen;
 }
-#endif
 
 /*  Direct from Magick I, credit to Andy Church for writing this.
  *

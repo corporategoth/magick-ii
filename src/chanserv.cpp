@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.230  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.229  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -394,7 +399,7 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 
 // Private functions
 
-bool Chan_Live_t::Join(mstring nick)
+bool Chan_Live_t::Join(const mstring& nick)
 {
     FT("Chan_Live_t::Join", (nick));
 
@@ -414,7 +419,7 @@ bool Chan_Live_t::Join(mstring nick)
     }
 }
 
-unsigned int Chan_Live_t::Part(mstring nick)
+unsigned int Chan_Live_t::Part(const mstring& nick)
 {
     FT("Chan_Live_t::Part", (nick));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -465,7 +470,7 @@ unsigned int Chan_Live_t::Part(mstring nick)
     RET(retval);
 }
 
-void Chan_Live_t::SquitUser(mstring nick)
+void Chan_Live_t::SquitUser(const mstring& nick)
 {
     FT("Chan_Live_t::SquitUser", (nick));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -481,7 +486,7 @@ void Chan_Live_t::SquitUser(mstring nick)
     }
 }
 
-void Chan_Live_t::UnSquitUser(mstring nick)
+void Chan_Live_t::UnSquitUser(const mstring& nick)
 {
     FT("Chan_Live_t::UnSquitUser", (nick));
 
@@ -504,7 +509,7 @@ void Chan_Live_t::UnSquitUser(mstring nick)
 	Part(nick);
 }
 
-unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
+unsigned int Chan_Live_t::Kick(const mstring& nick, const mstring& kicker)
 {
     FT("Chan_Live_t::Kick", (nick, kicker));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -535,7 +540,7 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
     RET(retval);
 }
 
-void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
+void Chan_Live_t::ChgNick(const mstring& nick, const mstring& newnick)
 {
     FT("Chan_Live_t::ChgNick", (nick, newnick));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -564,13 +569,11 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
 }
 
 
-Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
+Chan_Live_t::Chan_Live_t(const mstring& name, const mstring& first_user)
+	: i_Name(name), i_Limit(0), ph_timer(0)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
-    i_Name = name;
-    i_Limit = 0;
-    ph_timer = 0;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
     DumpB();
 }
@@ -626,7 +629,7 @@ mDateTime Chan_Live_t::Creation_Time() const
 }
 
 
-void Chan_Live_t::Topic(mstring source, mstring topic, mstring setter, mDateTime time)
+void Chan_Live_t::Topic(const mstring& source, const mstring& topic, const mstring& setter, const mDateTime& time)
 {
     FT("Chan_Live_t::Topic", (source, topic, setter, time));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
@@ -676,7 +679,7 @@ unsigned int Chan_Live_t::Squit() const
 }
 
 
-mstring Chan_Live_t::Squit(unsigned int num) const
+mstring Chan_Live_t::Squit(const unsigned int num) const
 {
     FT("Chan_Live_t::Squit", (num));
     unsigned int i;
@@ -700,7 +703,7 @@ unsigned int Chan_Live_t::Users() const
 }
 
 
-mstring Chan_Live_t::User(unsigned int num) const
+mstring Chan_Live_t::User(const unsigned int num) const
 {
     FT("Chan_Live_t::User", (num));
     unsigned int i;
@@ -729,7 +732,7 @@ unsigned int Chan_Live_t::Ops() const
 }
 
 
-mstring Chan_Live_t::Op(unsigned int num) const
+mstring Chan_Live_t::Op(const unsigned int num) const
 {
     FT("Chan_Live_t::Op", (num));
     unsigned int i;
@@ -762,7 +765,7 @@ unsigned int Chan_Live_t::Voices() const
 }
 
 
-mstring Chan_Live_t::Voice(unsigned int num) const
+mstring Chan_Live_t::Voice(const unsigned int num) const
 {
     FT("Chan_Live_t::Voice", (num));
     unsigned int i;
@@ -782,7 +785,7 @@ mstring Chan_Live_t::Voice(unsigned int num) const
 
 
 
-pair<bool,bool> Chan_Live_t::User(mstring name) const
+pair<bool,bool> Chan_Live_t::User(const mstring& name) const
 {
     FT("Chan_Live_t::User", (name));
     if (IsIn(name))
@@ -807,7 +810,7 @@ unsigned int Chan_Live_t::Bans() const
 }
 
 
-mstring Chan_Live_t::Ban(unsigned int num) const
+mstring Chan_Live_t::Ban(const unsigned int num) const
 {
     FT("Chan_Live_t::Ban", (num));
     unsigned int i;
@@ -823,7 +826,7 @@ mstring Chan_Live_t::Ban(unsigned int num) const
 }
 
 
-mDateTime Chan_Live_t::Ban(mstring mask) const
+mDateTime Chan_Live_t::Ban(const mstring& mask) const
 {
     FT("Chan_Live_t::Ban", (mask));
     mDateTime retval(0.0);
@@ -845,7 +848,7 @@ unsigned int Chan_Live_t::Exempts() const
 }
 
 
-mstring Chan_Live_t::Exempt(unsigned int num) const 
+mstring Chan_Live_t::Exempt(const unsigned int num) const 
 {
     FT("Chan_Live_t::Exempt", (num));
     unsigned int i;
@@ -861,7 +864,7 @@ mstring Chan_Live_t::Exempt(unsigned int num) const
 }
 
 
-mDateTime Chan_Live_t::Exempt(mstring mask) const
+mDateTime Chan_Live_t::Exempt(const mstring& mask) const
 {
     FT("Chan_Live_t::Exempt", (mask));
     mDateTime retval(0.0);
@@ -875,7 +878,7 @@ mDateTime Chan_Live_t::Exempt(mstring mask) const
 }
 
 
-bool Chan_Live_t::IsSquit(mstring nick)const 
+bool Chan_Live_t::IsSquit(const mstring& nick)const 
 {
     FT("Chan_Live_t::IsSquit", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
@@ -884,7 +887,7 @@ bool Chan_Live_t::IsSquit(mstring nick)const
 }
 
 
-bool Chan_Live_t::IsIn(mstring nick) const
+bool Chan_Live_t::IsIn(const mstring& nick) const
 {
     FT("Chan_Live_t::IsIn", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -893,7 +896,7 @@ bool Chan_Live_t::IsIn(mstring nick) const
 }
 
 
-bool Chan_Live_t::IsOp(mstring nick) const
+bool Chan_Live_t::IsOp(const mstring& nick) const
 {
     FT("Chan_Live_t::IsOp", (nick));
 
@@ -907,7 +910,7 @@ bool Chan_Live_t::IsOp(mstring nick) const
 }
 
 
-bool Chan_Live_t::IsVoice(mstring nick) const
+bool Chan_Live_t::IsVoice(const mstring& nick) const
 {
     FT("Chan_Live_t::IsVoice", (nick));
 
@@ -922,7 +925,7 @@ bool Chan_Live_t::IsVoice(mstring nick) const
 }
 
 
-bool Chan_Live_t::IsBan(mstring mask) const
+bool Chan_Live_t::IsBan(const mstring& mask) const
 {
     FT("Chan_Live_t::IsBan", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
@@ -930,7 +933,7 @@ bool Chan_Live_t::IsBan(mstring mask) const
     RET(retval);
 }
 
-bool Chan_Live_t::MatchBan(mstring mask) const
+bool Chan_Live_t::MatchBan(const mstring& mask) const
 {
     FT("Chan_Live_t::MatchBan", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
@@ -945,7 +948,7 @@ bool Chan_Live_t::MatchBan(mstring mask) const
     RET(false);
 }
 
-bool Chan_Live_t::IsExempt(mstring mask) const
+bool Chan_Live_t::IsExempt(const mstring& mask) const
 {
     FT("Chan_Live_t::IsExempt", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
@@ -953,7 +956,7 @@ bool Chan_Live_t::IsExempt(mstring mask) const
     RET(retval);
 }
 
-bool Chan_Live_t::MatchExempt(mstring mask) const 
+bool Chan_Live_t::MatchExempt(const mstring& mask) const 
 {
     FT("Chan_Live_t::MatchExempt", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
@@ -1008,8 +1011,8 @@ void Chan_Live_t::UnLock()
     MCE(ph_timer);
 }
 
-bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
-			bool change, char reqmode, mstring reqparam)
+bool Chan_Live_t::ModeExists(const mstring& mode, const vector<mstring>& mode_params,
+	const bool change, const char reqmode, const mstring& reqparam)
 {
     FT("Chan_Live_t::ModeExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
@@ -1048,8 +1051,8 @@ bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
 }
 
 
-void Chan_Live_t::RemoveMode(mstring mode, vector<mstring> mode_params,
-			bool change, char reqmode, mstring reqparam)
+void Chan_Live_t::RemoveMode(mstring& mode, vector<mstring>& mode_params,
+	const bool change, const char reqmode, const mstring& reqparam)
 {
     FT("Chan_Live_t::RemoveMode", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
@@ -1089,14 +1092,16 @@ void Chan_Live_t::RemoveMode(mstring mode, vector<mstring> mode_params,
 	    }
 	}
     }
+    mode = new_mode;
+    mode_params = new_params;
 }
 
 
-void Chan_Live_t::SendMode(mstring in)
+void Chan_Live_t::SendMode(const mstring& in)
 {
     FT("Chan_Live_t::SendMode", (in));
     unsigned int i, param = 2;
-    mstring mode = in.Before(" ");
+    mstring mode(in.Before(" "));
 
     bool add = true;
 
@@ -1372,11 +1377,11 @@ void Chan_Live_t::SendMode(mstring in)
 }
 
 
-void Chan_Live_t::Mode(mstring source, mstring in)
+void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 {
     FT("Chan_Live_t::Mode", (source, in));
 
-    mstring change = in.ExtractWord(1, ": ");
+    mstring change(in.ExtractWord(1, ": "));
     mstring newmode, newmode_param, requeue, requeue_param;
     unsigned int fwdargs = 2, i, wc;
     bool add = true;
@@ -1674,7 +1679,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     }
 }
 
-bool Chan_Live_t::HasMode(mstring in) const
+bool Chan_Live_t::HasMode(const mstring& in) const
 {
     FT("Chan_Live_t::HasMode", (in));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
@@ -1702,7 +1707,7 @@ unsigned int Chan_Live_t::Limit() const
     RET(i_Limit);
 }
 
-mDateTime Chan_Live_t::PartTime(mstring nick) const
+mDateTime Chan_Live_t::PartTime(const mstring& nick) const
 {
     FT("Chan_Live_t::PartTime", (nick));
     mDateTime retval(0.0);
@@ -1797,7 +1802,7 @@ void Chan_Live_t::DumpE() const
 // --------- end of Chan_Live_t -----------------------------------
 
 
-void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
+void Chan_Stored_t::ChgAttempt(const mstring& nick, const mstring& newnick)
 {
     FT("Chan_Stored_t::ChgAttempt", (nick, newnick));
 
@@ -1817,7 +1822,7 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
 }
 
 
-bool Chan_Stored_t::Join(mstring nick)
+bool Chan_Stored_t::Join(const mstring& nick)
 {
     FT("Chan_Stored_t::Join", (nick));
 
@@ -2048,7 +2053,7 @@ bool Chan_Stored_t::Join(mstring nick)
 }
 
 
-void Chan_Stored_t::Part(mstring nick)
+void Chan_Stored_t::Part(const mstring& nick)
 {
     FT("Chan_Stored_t::Part", (nick));
 
@@ -2092,7 +2097,7 @@ void Chan_Stored_t::Part(mstring nick)
 }
 
 
-void Chan_Stored_t::Kick(mstring nick, mstring kicker)
+void Chan_Stored_t::Kick(const mstring& nick, const mstring& kicker)
 {
     FT("Chan_Stored_t::Kick", (nick, kicker));
 
@@ -2110,7 +2115,7 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
 		nick, i_Name);
 }
 
-void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
+void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 {
     FT("Chan_Stored_t::ChgNick", (nick, newnick));
 
@@ -2185,7 +2190,8 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 }
 
 
-void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTime time)
+void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
+	const mstring& setter, const mDateTime& time)
 {
     FT("Chan_Stored_t::Topic", (source, topic, setter, time));
 
@@ -2244,7 +2250,8 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 }
 
 
-void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
+void Chan_Stored_t::SetTopic(const mstring& source, const mstring& setter,
+	const mstring& topic)
 {
     FT("Chan_Stored_t::SetTopic", (source, setter, topic));
 
@@ -2281,7 +2288,7 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
 }
 
 
-void Chan_Stored_t::Mode(mstring setter, mstring mode)
+void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 {
     FT("Chan_Stored_t::Mode", (setter, mode));
     // ENFORCE mlock
@@ -2298,10 +2305,9 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	Parent->nickserv.live[setter.LowerCase()].IsServices())
 	    return;
 
-    mstring change = mode.Before(" ");
-    unsigned int fwdargs = 2, i, wc;
+    mstring change(mode.Before(" "));
+    unsigned int fwdargs = 2, i, wc = mode.WordCount(": ");
     bool add = true;
-    wc = mode.WordCount(": ");
     for (i=0; i<change.size(); i++)
     {
 	if (change[i] == '+')
@@ -2605,15 +2611,17 @@ void Chan_Stored_t::defaults()
     }    
 }
 
-bool Chan_Stored_t::DoRevenge(mstring type, mstring target, mstring source)
+bool Chan_Stored_t::DoRevenge(const mstring& i_type, const mstring& target,
+	const mstring& source)
 {
-    FT("Chan_Stored_t::DoRevenge", (type, target, source));
+    FT("Chan_Stored_t::DoRevenge", (i_type, target, source));
 
     if (!(Parent->chanserv.IsLive(i_Name) &&
 	Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.IsLive(target)))
 	RET(false);
 
+    mstring type(i_type);
     if (GetAccess(source) > GetAccess(target))
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Revenge"));
@@ -2722,30 +2730,29 @@ DoRevenge_Ban4:
     RET(false);
 }
 
-Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc)
+Chan_Stored_t::Chan_Stored_t(const mstring& name, const mstring& founder,
+	const mstring& password, const mstring& desc)
+	: i_Name(name), i_RegTime(mDateTime::CurrentDateTime()),
+	  i_LastUsed(mDateTime::CurrentDateTime()), i_Founder(founder),
+	  i_Description(desc), i_Password(password)
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name, founder, password, desc));
 
-    i_Name = name;
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
+    WLOCK(("ChanServ", "stored", i_Name));
     defaults();
-    i_RegTime = i_LastUsed = mDateTime::CurrentDateTime();
-    i_Founder = founder;
-    i_Password = password;
-    i_Description = desc;
     DumpE();
 }
 
 
-Chan_Stored_t::Chan_Stored_t(mstring name)
+Chan_Stored_t::Chan_Stored_t(const mstring& name)
+	: i_Name(name), i_RegTime(mDateTime::CurrentDateTime()),
+	  i_LastUsed(mDateTime::CurrentDateTime())
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name));
 
-    i_Name = name;
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
+    WLOCK(("ChanServ", "stored", i_Name));
     defaults();
     i_Mlock_On = "nits";
-    i_RegTime = i_LastUsed = mDateTime::CurrentDateTime();
     i_Forbidden = true;
     DumpE();
 }
@@ -2858,7 +2865,7 @@ mDateTime Chan_Stored_t::RegTime() const
     RET(i_RegTime);
 }
 
-void Chan_Stored_t::Founder(mstring in)
+void Chan_Stored_t::Founder(const mstring& in)
 {
     FT("Chan_Stored_t::Founder", (in));
 
@@ -2891,7 +2898,7 @@ mstring Chan_Stored_t::Founder() const
     RET(i_Founder);
 }
 
-void Chan_Stored_t::CoFounder(mstring in)
+void Chan_Stored_t::CoFounder(const mstring& in)
 {
     FT("Chan_Stored_t::CoFounder", (in));
 
@@ -2919,7 +2926,7 @@ mstring Chan_Stored_t::CoFounder() const
     RET(i_CoFounder);
 }
 
-void Chan_Stored_t::Description(mstring in)
+void Chan_Stored_t::Description(const mstring& in)
 {
     FT("Chan_Stored_t::Description", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
@@ -2935,7 +2942,7 @@ mstring Chan_Stored_t::Description() const
     RET(i_Description);
 }
 
-void Chan_Stored_t::Password(mstring in)
+void Chan_Stored_t::Password(const mstring& in)
 {
     FT("Chan_Stored_t::Password", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
@@ -2951,7 +2958,7 @@ mstring Chan_Stored_t::Password() const
     RET(i_Password);
 }
 
-void Chan_Stored_t::Email(mstring in)
+void Chan_Stored_t::Email(const mstring& in)
 {
     FT("Chan_Stored_t::Email", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
@@ -2967,7 +2974,7 @@ mstring Chan_Stored_t::Email() const
     RET(i_Email);
 }
 
-void Chan_Stored_t::URL(mstring in)
+void Chan_Stored_t::URL(const mstring& in)
 {
     FT("Chan_Stored_t::URL", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
@@ -2983,7 +2990,7 @@ mstring Chan_Stored_t::URL() const
     RET(i_URL);
 }
 
-void Chan_Stored_t::Comment(mstring in)
+void Chan_Stored_t::Comment(const mstring& in)
 {
     FT("Chan_Stored_t::Comment", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
@@ -3000,7 +3007,7 @@ mstring Chan_Stored_t::Comment() const
 }
 
 
-unsigned int Chan_Stored_t::CheckPass(mstring nick, mstring password)
+unsigned int Chan_Stored_t::CheckPass(const mstring& nick, const mstring& password)
 {
     FT("Chan_Stored_t::CheckPass", (nick, password));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
@@ -3019,7 +3026,7 @@ unsigned int Chan_Stored_t::CheckPass(mstring nick, mstring password)
 }
 
 
-void Chan_Stored_t::Suspend(mstring name)
+void Chan_Stored_t::Suspend(const mstring& name)
 {
     FT("Chan_Stored_t::Suspend", (name));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
@@ -3077,7 +3084,7 @@ mstring Chan_Stored_t::Mlock() const
 }
 
 
-vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
+vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 {
     FT("Chan_Stored_t::Mlock", (source, mode));
 
@@ -3094,7 +3101,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     i_Mlock_Key.erase();
     i_Mlock_Limit = 0;
     vector<mstring> retval;
-    mstring output, change = mode.ExtractWord(1, ": ");
+    mstring output, change(mode.ExtractWord(1, ": "));
     unsigned int i;
     unsigned int fwdargs = 2;
     bool add = true;
@@ -3227,8 +3234,8 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_Off"));
     RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
-    mstring locked = Parent->chanserv.LCK_MLock() +
-	"+" + l_Mlock_On + "-" + l_Mlock_Off;
+    mstring locked(Parent->chanserv.LCK_MLock() +
+	"+" + l_Mlock_On + "-" + l_Mlock_Off);
     mstring override_on;
     mstring override_off;
     mstring forced_on;
@@ -3400,9 +3407,9 @@ mstring Chan_Stored_t::L_Mlock() const
     mstring Result;
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_Off"));
     RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
-    mstring mode_on = l_Mlock_On;
-    mstring mode_off = l_Mlock_Off;
-    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring mode_on(l_Mlock_On);
+    mstring mode_off(l_Mlock_Off);
+    mstring locked(Parent->chanserv.LCK_MLock());
     bool add = true;
     unsigned int i;
     for (i=0; i<locked.size(); i++)
@@ -3449,7 +3456,7 @@ mstring Chan_Stored_t::L_Mlock() const
 }
 
 
-vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
+vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mode)
 {
     FT("Chan_Stored_t::L_Mlock", (source, mode));
 
@@ -3460,7 +3467,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     l_Mlock_On.erase();
     l_Mlock_Off.erase();
     vector<mstring> retval;
-    mstring output, change = mode.ExtractWord(1, ": ");
+    mstring output, change(mode.ExtractWord(1, ": "));
     bool add = true;
     unsigned int i;
 
@@ -3501,7 +3508,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	}
     }
 
-    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring locked(Parent->chanserv.LCK_MLock());
     mstring override_on;
     mstring override_off;
     add = true;
@@ -3661,7 +3668,7 @@ mDateTime Chan_Stored_t::Last_Topic_Set_Time() const
     RET(i_Topic_Set_Time);
 }
 
-void Chan_Stored_t::Bantime(unsigned long in)
+void Chan_Stored_t::Bantime(const unsigned long in)
 {
     FT("Chan_Stored_t::Bantime", (in));
     if (!L_Bantime())
@@ -3686,7 +3693,7 @@ unsigned long Chan_Stored_t::Bantime() const
 }
 
 
-void Chan_Stored_t::L_Bantime(bool in)
+void Chan_Stored_t::L_Bantime(const bool in)
 {
     FT("Chan_Stored_t::L_Bantime", (in));
     if (!Parent->chanserv.LCK_Bantime())
@@ -3711,7 +3718,7 @@ bool Chan_Stored_t::L_Bantime() const
 }
 
 
-void Chan_Stored_t::Parttime(unsigned long in)
+void Chan_Stored_t::Parttime(const unsigned long in)
 {
     FT("Chan_Stored_t::Parttime", (in));
     if (!L_Parttime())
@@ -3736,7 +3743,7 @@ unsigned long Chan_Stored_t::Parttime() const
 }
 
 
-void Chan_Stored_t::L_Parttime(bool in)
+void Chan_Stored_t::L_Parttime(const bool in)
 {
     FT("Chan_Stored_t::L_Parttime", (in));
     if (!Parent->chanserv.LCK_Parttime())
@@ -3761,7 +3768,7 @@ bool Chan_Stored_t::L_Parttime() const
 }
 
 
-void Chan_Stored_t::Keeptopic(bool in)
+void Chan_Stored_t::Keeptopic(const bool in)
 {
     FT("Chan_Stored_t::Keeptopic", (in));
     if (!L_Keeptopic())
@@ -3786,7 +3793,7 @@ bool Chan_Stored_t::Keeptopic() const
 }
 
 
-void Chan_Stored_t::L_Keeptopic(bool in)
+void Chan_Stored_t::L_Keeptopic(const bool in)
 {
     FT("Chan_Stored_t::L_Keeptopic", (in));
     if (!Parent->chanserv.LCK_Keeptopic())
@@ -3811,7 +3818,7 @@ bool Chan_Stored_t::L_Keeptopic() const
 }
 
 
-void Chan_Stored_t::Topiclock(bool in)
+void Chan_Stored_t::Topiclock(const bool in)
 {
     FT("Chan_Stored_t::Topiclock", (in));
     if (!L_Topiclock())
@@ -3836,7 +3843,7 @@ bool Chan_Stored_t::Topiclock() const
 }
 
 
-void Chan_Stored_t::L_Topiclock(bool in)
+void Chan_Stored_t::L_Topiclock(const bool in)
 {
     FT("Chan_Stored_t::L_Topiclock", (in));
     if (!Parent->chanserv.LCK_Topiclock())
@@ -3861,7 +3868,7 @@ bool Chan_Stored_t::L_Topiclock() const
 }
 
 
-void Chan_Stored_t::Private(bool in)
+void Chan_Stored_t::Private(const bool in)
 {
     FT("Chan_Stored_t::Private", (in));
     if (!L_Private())
@@ -3886,7 +3893,7 @@ bool Chan_Stored_t::Private() const
 }
 
 
-void Chan_Stored_t::L_Private(bool in)
+void Chan_Stored_t::L_Private(const bool in)
 {
     FT("Chan_Stored_t::L_Private", (in));
     if (!Parent->chanserv.LCK_Private())
@@ -3911,7 +3918,7 @@ bool Chan_Stored_t::L_Private() const
 }
 
 
-void Chan_Stored_t::Secureops(bool in)
+void Chan_Stored_t::Secureops(const bool in)
 {
     FT("Chan_Stored_t::Secureops", (in));
     if (!L_Secureops())
@@ -3936,7 +3943,7 @@ bool Chan_Stored_t::Secureops() const
 }
 
 
-void Chan_Stored_t::L_Secureops(bool in)
+void Chan_Stored_t::L_Secureops(const bool in)
 {
     FT("Chan_Stored_t::L_Secureops", (in));
     if (!Parent->chanserv.LCK_Secureops())
@@ -3961,7 +3968,7 @@ bool Chan_Stored_t::L_Secureops() const
 }
 
 
-void Chan_Stored_t::Secure(bool in)
+void Chan_Stored_t::Secure(const bool in)
 {
     FT("Chan_Stored_t::Secure", (in));
     if (!L_Secure())
@@ -3986,7 +3993,7 @@ bool Chan_Stored_t::Secure() const
 }
 
 
-void Chan_Stored_t::L_Secure(bool in)
+void Chan_Stored_t::L_Secure(const bool in)
 {
     FT("Chan_Stored_t::L_Secure", (in));
     if (!Parent->chanserv.LCK_Secure())
@@ -4011,7 +4018,7 @@ bool Chan_Stored_t::L_Secure() const
 }
 
 
-void Chan_Stored_t::NoExpire(bool in)
+void Chan_Stored_t::NoExpire(const bool in)
 {
     FT("Chan_Stored_t::NoExpire", (in));
     if (!L_NoExpire())
@@ -4036,7 +4043,7 @@ bool Chan_Stored_t::NoExpire() const
 }
 
 
-void Chan_Stored_t::L_NoExpire(bool in)
+void Chan_Stored_t::L_NoExpire(const bool in)
 {
     FT("Chan_Stored_t::L_NoExpire", (in));
     if (!Parent->chanserv.LCK_NoExpire())
@@ -4061,7 +4068,7 @@ bool Chan_Stored_t::L_NoExpire() const
 }
 
 
-void Chan_Stored_t::Anarchy(bool in)
+void Chan_Stored_t::Anarchy(const bool in)
 {
     FT("Chan_Stored_t::Anarchy", (in));
     if (!L_Anarchy())
@@ -4086,7 +4093,7 @@ bool Chan_Stored_t::Anarchy() const
 }
 
 
-void Chan_Stored_t::L_Anarchy(bool in)
+void Chan_Stored_t::L_Anarchy(const bool in)
 {
     FT("Chan_Stored_t::L_Anarchy", (in));
     if (!Parent->chanserv.LCK_Anarchy())
@@ -4111,7 +4118,7 @@ bool Chan_Stored_t::L_Anarchy() const
 }
 
 
-void Chan_Stored_t::KickOnBan(bool in)
+void Chan_Stored_t::KickOnBan(const bool in)
 {
     FT("Chan_Stored_t::KickOnBan", (in));
     if (!L_KickOnBan())
@@ -4136,7 +4143,7 @@ bool Chan_Stored_t::KickOnBan() const
 }
 
 
-void Chan_Stored_t::L_KickOnBan(bool in)
+void Chan_Stored_t::L_KickOnBan(const bool in)
 {
     FT("Chan_Stored_t::L_KickOnBan", (in));
     if (!Parent->chanserv.LCK_KickOnBan())
@@ -4161,7 +4168,7 @@ bool Chan_Stored_t::L_KickOnBan() const
 }
 
 
-void Chan_Stored_t::Restricted(bool in)
+void Chan_Stored_t::Restricted(const bool in)
 {
     FT("Chan_Stored_t::Restricted", (in));
     if (!L_Restricted())
@@ -4186,7 +4193,7 @@ bool Chan_Stored_t::Restricted() const
 }
 
 
-void Chan_Stored_t::L_Restricted(bool in)
+void Chan_Stored_t::L_Restricted(const bool in)
 {
     FT("Chan_Stored_t::L_Restricted", (in));
     if (!Parent->chanserv.LCK_Restricted())
@@ -4211,7 +4218,7 @@ bool Chan_Stored_t::L_Restricted() const
 }
 
 
-void Chan_Stored_t::Join(bool in)
+void Chan_Stored_t::Join(const bool in)
 {
     FT("Chan_Stored_t::Join", (in));
     if (!L_Join())
@@ -4236,7 +4243,7 @@ bool Chan_Stored_t::Join() const
 }
 
 
-void Chan_Stored_t::L_Join(bool in)
+void Chan_Stored_t::L_Join(const bool in)
 {
     FT("Chan_Stored_t::L_Join", (in));
     if (!Parent->chanserv.LCK_Join())
@@ -4261,7 +4268,7 @@ bool Chan_Stored_t::L_Join() const
 }
 
 
-bool Chan_Stored_t::Revenge(mstring in)
+bool Chan_Stored_t::Revenge(const mstring& in)
 {
     FT("Chan_Stored_t::Revenge", (in));
     if (!L_Revenge())
@@ -4288,7 +4295,7 @@ mstring Chan_Stored_t::Revenge() const
 }
 
 
-void Chan_Stored_t::L_Revenge(bool in)
+void Chan_Stored_t::L_Revenge(const bool in)
 {
     FT("Chan_Stored_t::L_Revenge", (in));
     if (!Parent->chanserv.LCK_Revenge())
@@ -4341,7 +4348,8 @@ bool Chan_Stored_t::Forbidden() const
 }
 
 
-bool Chan_Stored_t::Level_change(mstring entry, long value, mstring nick)
+bool Chan_Stored_t::Level_change(const mstring& entry, const long value,
+	const mstring& nick)
 {
     FT("Chan_Stored_t::Level_change", (entry, value, nick));
 
@@ -4358,7 +4366,7 @@ bool Chan_Stored_t::Level_change(mstring entry, long value, mstring nick)
     }
 }
 
-bool Chan_Stored_t::Level_find(mstring entry)
+bool Chan_Stored_t::Level_find(const mstring& entry)
 {
     FT("Chan_Stored_t::Level_find", (entry));
 
@@ -4383,7 +4391,7 @@ bool Chan_Stored_t::Level_find(mstring entry)
 }
 
 
-long Chan_Stored_t::Level_value(mstring entry)
+long Chan_Stored_t::Level_value(const mstring& entry)
 {
     FT("Chan_Stored_t::Level_value", (entry));
 
@@ -4399,22 +4407,24 @@ long Chan_Stored_t::Level_value(mstring entry)
 }
 
 
-bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDateTime modtime)
+bool Chan_Stored_t::Access_insert(const mstring& i_entry, const long value,
+	const mstring& nick, const mDateTime& modtime)
 {
-    FT("Chan_Stored_t::Access_insert", (entry, value, nick, modtime));
+    FT("Chan_Stored_t::Access_insert", (i_entry, value, nick, modtime));
 
     // Wildcards but no @
-    if ((entry.Contains("*") || entry.Contains("?")) &&
-	!entry.Contains("@"))
+    if ((i_entry.Contains("*") || i_entry.Contains("?")) &&
+	!i_entry.Contains("@"))
     {
 	    RET(false);
     }
 
     // ! without @
-    if (entry.Contains("!") && !entry.Contains("@"))
+    if (i_entry.Contains("!") && !i_entry.Contains("@"))
     {
 	    RET(false);
     }
+    mstring entry(i_entry);
 
     // Ensure its a stored nick if no @
     // Add *! if its not *!*@*
@@ -4479,7 +4489,7 @@ bool Chan_Stored_t::Access_erase()
 }
 
 
-bool Chan_Stored_t::Access_find(mstring entry, bool livelook)
+bool Chan_Stored_t::Access_find(const mstring& entry, const bool livelook)
 {
     FT("Chan_Stored_t::Access_find", (entry, livelook));
 
@@ -4530,7 +4540,7 @@ bool Chan_Stored_t::Access_find(mstring entry, bool livelook)
 }
 
 
-long Chan_Stored_t::Access_value(mstring entry, bool looklive)
+long Chan_Stored_t::Access_value(const mstring& entry, const bool looklive)
 {
     FT("Chan_Stored_t::Access_value", (entry));
 
@@ -4546,7 +4556,7 @@ long Chan_Stored_t::Access_value(mstring entry, bool looklive)
 }
 
 
-long Chan_Stored_t::GetAccess(mstring entry)
+long Chan_Stored_t::GetAccess(const mstring& entry)
 {
     FT("Chan_Stored_t::GetAccess", (entry));
 
@@ -4617,7 +4627,7 @@ long Chan_Stored_t::GetAccess(mstring entry)
     RET(retval);
 }
 
-bool Chan_Stored_t::GetAccess(mstring entry, mstring type)
+bool Chan_Stored_t::GetAccess(const mstring& entry, const mstring& type)
 {
     FT("Chan_Stored_t::GetAccess", (entry, type));
 
@@ -4626,22 +4636,24 @@ bool Chan_Stored_t::GetAccess(mstring entry, mstring type)
 }
 
 
-bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDateTime modtime)
+bool Chan_Stored_t::Akick_insert(const mstring& i_entry, const mstring& value,
+	const mstring& nick, const mDateTime& modtime)
 {
-    FT("Chan_Stored_t::Akick_insert", (entry, value, nick, modtime));
+    FT("Chan_Stored_t::Akick_insert", (i_entry, value, nick, modtime));
 
     // Wildcards but no @
-    if ((entry.Contains("*") || entry.Contains("?")) &&
-	!entry.Contains("@"))
+    if ((i_entry.Contains("*") || i_entry.Contains("?")) &&
+	!i_entry.Contains("@"))
     {
 	    RET(false);
     }
 
     // ! without @
-    if (entry.Contains("!") && !entry.Contains("@"))
+    if (i_entry.Contains("!") && !i_entry.Contains("@"))
     {
 	    RET(false);
     }
+    mstring entry(i_entry);
 
     // Ensure its a stored nick if no @
     // Add *! if its not *!*@*
@@ -4679,7 +4691,8 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
     }
 }
 
-bool Chan_Stored_t::Akick_insert(mstring entry, mstring nick, mDateTime modtime)
+bool Chan_Stored_t::Akick_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime)
 {
     FT("Chan_Stored_t::Akick_insert", (entry, nick, modtime));
     MCB(i_Akick.size());
@@ -4709,7 +4722,7 @@ bool Chan_Stored_t::Akick_erase()
 }
 
 
-bool Chan_Stored_t::Akick_find(mstring entry, bool livelook)
+bool Chan_Stored_t::Akick_find(const mstring& entry, const bool livelook)
 {
     FT("Chan_Stored_t::Akick_find", (entry, livelook));
 
@@ -4760,7 +4773,7 @@ bool Chan_Stored_t::Akick_find(mstring entry, bool livelook)
 }
 
 
-mstring Chan_Stored_t::Akick_string(mstring entry, bool looklive)
+mstring Chan_Stored_t::Akick_string(const mstring& entry, const bool looklive)
 {
     FT("Chan_Stored_t::Akick_string", (entry));
 
@@ -4776,7 +4789,8 @@ mstring Chan_Stored_t::Akick_string(mstring entry, bool looklive)
 }
 
 
-bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick, mDateTime modtime)
+bool Chan_Stored_t::Greet_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime)
 {
     FT("Chan_Stored_t::Greet_insert", (entry, nick, modtime));
 
@@ -4819,7 +4833,7 @@ bool Chan_Stored_t::Greet_erase()
 }
 
 
-bool Chan_Stored_t::Greet_find(mstring nick)
+bool Chan_Stored_t::Greet_find(const mstring& nick)
 {
     FT("Chan_Stored_t::Greet_find", (nick));
 
@@ -4843,7 +4857,7 @@ bool Chan_Stored_t::Greet_find(mstring nick)
 }
 
 
-bool Chan_Stored_t::Message_insert(mstring entry, mstring nick)
+bool Chan_Stored_t::Message_insert(const mstring& entry, const mstring& nick)
 {
     FT("Chan_Stored_t::Message_insert", (entry, nick));
 
@@ -4877,7 +4891,7 @@ bool Chan_Stored_t::Message_erase()
 }
 
 
-bool Chan_Stored_t::Message_find(unsigned int num)
+bool Chan_Stored_t::Message_find(const unsigned int num)
 {
     FT("Chan_Stored_t::Message_find", (num));
 
@@ -5872,7 +5886,7 @@ void ChanServ::RemCommands()
 	    "UNLOCK", Parent->commserv.SOP_Name());
 }
 
-bool ChanServ::IsLive(mstring in)const
+bool ChanServ::IsLive(const mstring& in)const
 {
     FT("ChanServ::IsLive", (in));
     RLOCK(("ChanServ", "live", in.LowerCase()));
@@ -5880,7 +5894,7 @@ bool ChanServ::IsLive(mstring in)const
     RET(retval);
 }
 
-bool ChanServ::IsStored(mstring in)const
+bool ChanServ::IsStored(const mstring& in)const
 {
     FT("ChanServ::IsStored", (in));
     RLOCK(("ChanServ", "stored", in.LowerCase()));
@@ -5918,7 +5932,7 @@ void ChanServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
-void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Help", (mynick, source, params));
 
@@ -5944,7 +5958,7 @@ void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, help[i]);
 }
 
-void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Register(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Register", (mynick, source, params));
 
@@ -6028,7 +6042,7 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Drop(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Drop", (mynick, source, params));
 
@@ -6072,7 +6086,7 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
 	channel.c_str(), founder.c_str()));
 }
 
-void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Identify(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Identify", (mynick, source, params));
 
@@ -6116,7 +6130,7 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, output, channel.c_str());
 }
 
-void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Info", (mynick, source, params));
 
@@ -6352,7 +6366,7 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_List(mstring mynick, mstring source, mstring params)
+void ChanServ::do_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_List", (mynick, source, params));
 
@@ -6427,7 +6441,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 							i, count);
 }
 
-void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Suspend", (mynick, source, params));
 
@@ -6492,7 +6506,7 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
+void ChanServ::do_UnSuspend(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_UnSuspend", (mynick, source, params));
 
@@ -6528,7 +6542,7 @@ void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Forbid(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Forbid", (mynick, source, params));
 
@@ -6578,7 +6592,7 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
 }
 
 
-void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Getpass", (mynick, source, params));
 
@@ -6623,7 +6637,7 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
 	chan->Name().c_str(), Parent->getSname(chan->Founder()).c_str()));
 }
 
-void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Mode", (mynick, source, params));
 
@@ -6692,7 +6706,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 }
 
-void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Op", (mynick, source, params));
 
@@ -6786,7 +6800,7 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
+void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_DeOp", (mynick, source, params));
 
@@ -6867,7 +6881,7 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Voice", (mynick, source, params));
 
@@ -6961,7 +6975,7 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
+void ChanServ::do_DeVoice(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_DeVoice", (mynick, source, params));
 
@@ -7042,7 +7056,7 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Topic(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Topic", (mynick, source, params));
 
@@ -7092,7 +7106,7 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Kick(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Kick", (mynick, source, params));
 
@@ -7166,7 +7180,7 @@ void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
+void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_AnonKick", (mynick, source, params));
 
@@ -7233,7 +7247,7 @@ void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Users", (mynick, source, params));
 
@@ -7319,7 +7333,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, output);
 }
 
-void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Invite(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Invite", (mynick, source, params));
 
@@ -7397,7 +7411,7 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Unban", (mynick, source, params));
 
@@ -7490,7 +7504,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
+void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Live", (mynick, source, params));
 
@@ -7562,7 +7576,7 @@ void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
 }
 
 
-void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
+void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_clear_Users", (mynick, source, params));
 
@@ -7636,7 +7650,7 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 	message.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
+void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_clear_Ops", (mynick, source, params));
 
@@ -7705,7 +7719,7 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
+void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_clear_Voices", (mynick, source, params));
 
@@ -7780,7 +7794,7 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
+void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_clear_Modes", (mynick, source, params));
 
@@ -7869,7 +7883,7 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
+void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_clear_Bans", (mynick, source, params));
 
@@ -7941,7 +7955,7 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
+void ChanServ::do_clear_All(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_clear_All", (mynick, source, params));
 
@@ -8005,7 +8019,7 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
 	message.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
+void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_level_Set", (mynick, source, params));
 
@@ -8078,7 +8092,7 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
+void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_level_Reset", (mynick, source, params));
 
@@ -8136,7 +8150,7 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
+void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_level_List", (mynick, source, params));
 
@@ -8207,7 +8221,7 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
+void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_access_Add", (mynick, source, params));
 
@@ -8321,7 +8335,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
+void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_access_Del", (mynick, source, params));
 
@@ -8429,7 +8443,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
+void ChanServ::do_access_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_access_List", (mynick, source, params));
 
@@ -8502,7 +8516,7 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
+void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_akick_Add", (mynick, source, params));
 
@@ -8684,7 +8698,7 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
+void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_akick_Del", (mynick, source, params));
 
@@ -8790,7 +8804,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
+void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_akick_List", (mynick, source, params));
 
@@ -8862,7 +8876,7 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
+void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_greet_Add", (mynick, source, params));
 
@@ -8954,7 +8968,7 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	target.c_str(), channel.c_str()));
 }
 
-void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
+void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_greet_Del", (mynick, source, params));
 
@@ -9052,7 +9066,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
+void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_greet_List", (mynick, source, params));
 
@@ -9142,7 +9156,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
+void ChanServ::do_message_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_message_Add", (mynick, source, params));
 
@@ -9193,7 +9207,7 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
+void ChanServ::do_message_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_message_Del", (mynick, source, params));
 
@@ -9269,7 +9283,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
     }}
 }
 
-void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
+void ChanServ::do_message_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_message_List", (mynick, source, params));
 
@@ -9334,7 +9348,7 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
     }}
 }
 
-void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Founder(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Founder", (mynick, source, params));
 
@@ -9410,7 +9424,7 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
 	channel.c_str(), founder.c_str()));
 }
 
-void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_CoFounder(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_CoFounder", (mynick, source, params));
 
@@ -9505,7 +9519,7 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Description(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Description", (mynick, source, params));
 
@@ -9550,7 +9564,7 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
 	channel.c_str(), option.c_str()));
 }
 
-void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Password(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Password", (mynick, source, params));
 
@@ -9601,7 +9615,7 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Email(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Email", (mynick, source, params));
 
@@ -9674,7 +9688,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_URL(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_URL", (mynick, source, params));
 
@@ -9740,7 +9754,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Comment(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Comment", (mynick, source, params));
 
@@ -9793,7 +9807,7 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Mlock(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Mlock", (mynick, source, params));
 
@@ -9838,7 +9852,7 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, retval[i]);
 }
 
-void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_BanTime(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_BanTime", (mynick, source, params));
 
@@ -9892,7 +9906,7 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 	channel.c_str(), ToHumanTime(num, source).c_str()));
 }
 
-void ChanServ::do_set_PartTime(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_PartTime(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_PartTime", (mynick, source, params));
 
@@ -9946,7 +9960,7 @@ void ChanServ::do_set_PartTime(mstring mynick, mstring source, mstring params)
 	channel.c_str(), ToHumanTime(num, source).c_str()));
 }
 
-void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_KeepTopic", (mynick, source, params));
 
@@ -10017,7 +10031,7 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_TopicLock", (mynick, source, params));
 
@@ -10088,7 +10102,7 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Private", (mynick, source, params));
 
@@ -10159,7 +10173,7 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_SecureOps", (mynick, source, params));
 
@@ -10230,7 +10244,7 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Secure", (mynick, source, params));
 
@@ -10301,7 +10315,7 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_NoExpire", (mynick, source, params));
 
@@ -10365,7 +10379,7 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Anarchy", (mynick, source, params));
 
@@ -10436,7 +10450,7 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_KickOnBan(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_KickOnBan", (mynick, source, params));
 
@@ -10507,7 +10521,7 @@ void ChanServ::do_set_KickOnBan(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Restricted", (mynick, source, params));
 
@@ -10578,7 +10592,7 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Join", (mynick, source, params));
 
@@ -10670,7 +10684,7 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
+void ChanServ::do_set_Revenge(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_set_Revenge", (mynick, source, params));
 
@@ -10735,7 +10749,7 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 	Parent->getMessage("CS_SET/REV_" + option.UpperCase()).c_str()));
 }
 
-void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Mlock(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Mlock", (mynick, source, params));
 
@@ -10773,7 +10787,7 @@ void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, retval[i]);
 }
 
-void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_BanTime(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_BanTime", (mynick, source, params));
 
@@ -10822,7 +10836,7 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
 	channel.c_str(), ToHumanTime(num).c_str()));
 }
 
-void ChanServ::do_lock_PartTime(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_PartTime(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_PartTime", (mynick, source, params));
 
@@ -10871,7 +10885,7 @@ void ChanServ::do_lock_PartTime(mstring mynick, mstring source, mstring params)
 	channel.c_str(), ToHumanTime(num, source).c_str()));
 }
 
-void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_KeepTopic", (mynick, source, params));
 
@@ -10937,7 +10951,7 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_TopicLock", (mynick, source, params));
 
@@ -11003,7 +11017,7 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Private", (mynick, source, params));
 
@@ -11069,7 +11083,7 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_SecureOps", (mynick, source, params));
 
@@ -11135,7 +11149,7 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Secure", (mynick, source, params));
 
@@ -11201,7 +11215,7 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Anarchy", (mynick, source, params));
 
@@ -11267,7 +11281,7 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_KickOnBan(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_KickOnBan", (mynick, source, params));
 
@@ -11333,7 +11347,7 @@ void ChanServ::do_lock_KickOnBan(mstring mynick, mstring source, mstring params)
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Restricted", (mynick, source, params));
 
@@ -11399,7 +11413,7 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
-void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Join", (mynick, source, params));
 
@@ -11486,7 +11500,7 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
     }
 }
 
-void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
+void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_lock_Revenge", (mynick, source, params));
 
@@ -11547,7 +11561,7 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 	Parent->getMessage("CS_SET/REV_" + option.UpperCase()).c_str()));
 }
 
-void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Mlock(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Mlock", (mynick, source, params));
 
@@ -11579,7 +11593,7 @@ void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, retval[i]);
 }
 
-void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_BanTime(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_BanTime", (mynick, source, params));
 
@@ -11624,7 +11638,7 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_PartTime(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_PartTime(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_PartTime", (mynick, source, params));
 
@@ -11669,7 +11683,7 @@ void ChanServ::do_unlock_PartTime(mstring mynick, mstring source, mstring params
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_KeepTopic(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_KeepTopic", (mynick, source, params));
 
@@ -11714,7 +11728,7 @@ void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring param
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_TopicLock", (mynick, source, params));
 
@@ -11760,7 +11774,7 @@ void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring param
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Private", (mynick, source, params));
 
@@ -11805,7 +11819,7 @@ void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_SecureOps", (mynick, source, params));
 
@@ -11850,7 +11864,7 @@ void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring param
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Secure", (mynick, source, params));
 
@@ -11895,7 +11909,7 @@ void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Anarchy", (mynick, source, params));
 
@@ -11940,7 +11954,7 @@ void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_KickOnBan(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_KickOnBan", (mynick, source, params));
 
@@ -11985,7 +11999,7 @@ void ChanServ::do_unlock_KickOnBan(mstring mynick, mstring source, mstring param
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Restricted", (mynick, source, params));
 
@@ -12030,7 +12044,7 @@ void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring para
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Join(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Join", (mynick, source, params));
 
@@ -12075,7 +12089,7 @@ void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
 	channel.c_str()));
 }
 
-void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
+void ChanServ::do_unlock_Revenge(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_unlock_Revenge", (mynick, source, params));
 
@@ -12121,7 +12135,7 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
 }
 
 
-long ChanServ::LVL(mstring level) const
+long ChanServ::LVL(const mstring& level) const
 {
     FT("ChanServ::LVL", (level));
     long retval = 0;
@@ -12154,7 +12168,7 @@ vector<mstring> ChanServ::LVL()const
 }
 
 
-bool ChanServ::IsLVL(mstring level)const
+bool ChanServ::IsLVL(const mstring& level)const
 {
     FT("ChanServ::IsLVL", (level));
     bool retval = lvl.find(level.UpperCase()) != lvl.end();

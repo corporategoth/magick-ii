@@ -29,6 +29,11 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.292  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.291  2001/03/08 08:07:41  ungod
 ** fixes for bcc 5.5
 **
@@ -435,7 +440,7 @@ RCSID(magick_cpp, "@(#)$Id$");
 mDateTime StartTime;
 Magick *Parent;
 
-mstring Magick::files_t::MakePath(mstring in)const
+mstring Magick::files_t::MakePath(const mstring& in)const
 {
 #ifdef WIN32
 	if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
@@ -451,6 +456,9 @@ mstring Magick::files_t::MakePath(mstring in)const
 }
 
 Magick::Magick(int inargc, char **inargv)
+    : i_verbose(false), i_level(0), i_auto(false), i_shutdown(false),
+      i_reconnect(true), i_localhost(0), i_gotconnect(false),
+      i_connected(false), i_saving(false)
 {
     char buf[1024], *c;
     i_config_file="magick.ini";
@@ -463,16 +471,6 @@ Magick::Magick(int inargc, char **inargv)
     signalhandler = NULL;
     events = NULL;
     dcc = NULL;
-
-    i_level = 0;
-    i_localhost = 0;
-    i_verbose = false;
-    i_auto = false;
-    i_shutdown = false;
-    i_reconnect = true;
-    i_gotconnect = false;
-    i_connected = false;
-    i_saving = false;
 
     LoadLogMessages("DEFAULT");
     c = ACE_OS::getcwd(buf, 1024);
@@ -668,6 +666,7 @@ int Magick::Start()
 
     load_databases();
 
+    FLUSH();
     // Can only open these after fork if we want then to live
     LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS")));
     { WLOCK(("Events"));
@@ -1172,7 +1171,7 @@ void Magick::LoadInternalMessages()
     }
 }
 
-bool Magick::LoadExternalMessages(mstring language)
+bool Magick::LoadExternalMessages(const mstring& language)
 {
     FT("Magick::LoadExternalMessages", (language));
     // use the previously created name array to get the names to load
@@ -1200,7 +1199,7 @@ bool Magick::LoadExternalMessages(mstring language)
     RET(false);
 }
 
-bool Magick::LoadLogMessages(mstring language)
+bool Magick::LoadLogMessages(const mstring& language)
 {
     FT("Magick::LoadLogMessages", (language));
     // use the previously created name array to get the names to load
@@ -1237,7 +1236,7 @@ bool Magick::LoadLogMessages(mstring language)
     RET(false);
 }
 
-bool Magick::UnloadExternalMessages(mstring language)
+bool Magick::UnloadExternalMessages(const mstring& language)
 {
     FT("Magick::UnloadExternalMessages", (language));
 
@@ -1253,7 +1252,7 @@ bool Magick::UnloadExternalMessages(mstring language)
     RET(false);
 }
 
-bool Magick::UnloadHelp(mstring language)
+bool Magick::UnloadHelp(const mstring& language)
 {
     FT("Magick::UnloadHelp", (language));
 
@@ -1296,7 +1295,7 @@ int Magick::doparamparse()
 }
 
 
-bool Magick::paramlong(mstring first, mstring second)
+bool Magick::paramlong(const mstring& first, const mstring& second)
 {
     FT("Magick::paramlong", (first, second));
     if(first=="--dir" || first=="--config" || first=="--trace")
@@ -1691,7 +1690,7 @@ bool Magick::paramlong(mstring first, mstring second)
     RET(false);
 }
 
-bool Magick::paramshort(mstring first, mstring second)
+bool Magick::paramshort(const mstring& first, const mstring& second)
 {
     FT("Magick::paramshort", (first, second));
     bool ArgUsed = false;
@@ -2976,7 +2975,7 @@ bool Magick::get_config_values()
     {
 	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.sop_name] = Committee(commserv.sop_name,
-				    &commserv.list[commserv.sadmin_name],
+				    commserv.list[commserv.sadmin_name],
 				    "Services Operators");
     }
     commserv.list[commserv.sop_name].Secure(commserv.sop_secure);
@@ -2987,7 +2986,7 @@ bool Magick::get_config_values()
     {
 	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.admin_name] = Committee(commserv.admin_name, 
-				    &commserv.list[commserv.sadmin_name],
+				    commserv.list[commserv.sadmin_name],
 				    "Server Administrators");
     }
     commserv.list[commserv.admin_name].Secure(commserv.admin_secure);
@@ -2998,7 +2997,7 @@ bool Magick::get_config_values()
     {
 	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.oper_name] = Committee(commserv.oper_name, 
-				    &commserv.list[commserv.admin_name],
+				    commserv.list[commserv.admin_name],
 				    "Server Operators");
     }
     commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
@@ -3338,7 +3337,7 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
 }
 */
 
-bool Magick::startup_t::IsServer(mstring server)const
+bool Magick::startup_t::IsServer(const mstring& server)const
 {
     FT("Magick::startup_t::IsServer", (server));
 
@@ -3349,7 +3348,7 @@ bool Magick::startup_t::IsServer(mstring server)const
     RET(false);
 }
 
-pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup_t::Server(mstring server)const
+pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup_t::Server(const mstring& server)const
 {
     FT("Magick::startup_t::Server", (server));
     pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > value(0, triplet<unsigned int,mstring,unsigned long>(0, "", 0));
@@ -3361,7 +3360,7 @@ pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup
     NRET(pair<unsigned int. triplet<unsigned int. mstring. unsigned long> >, value);
 }
 
-vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
+vector<mstring> Magick::startup_t::PriorityList(const unsigned int pri) const
 {
     FT("Magick::startup_t::PriorityList", (pri));
     vector<mstring> list;
@@ -3376,7 +3375,7 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
     NRET(vector<mstring>, list);
 }
 
-bool Magick::startup_t::IsAllowed(mstring server, mstring uplink)const
+bool Magick::startup_t::IsAllowed(const mstring& server, const mstring& uplink)const
 {
     FT("Magick::startup_t::IsAllowed", (server, uplink));
 
@@ -3414,7 +3413,7 @@ bool Magick::startup_t::IsAllowed(mstring server, mstring uplink)const
     RET(false);
 }
 
-vector<mstring> Magick::startup_t::Allow(mstring server)const
+vector<mstring> Magick::startup_t::Allow(const mstring& server)const
 {
     FT("Magick::startup_t::Allow", (server));
 
@@ -3481,7 +3480,7 @@ mstring Magick::GetKey()const
 }
 
 
-void Magick::Disconnect(bool reconnect)
+void Magick::Disconnect(const bool reconnect)
 {
     FT("Magick::Disconnect", (reconnect));
     MCB(i_connected);
@@ -3498,7 +3497,7 @@ void Magick::Disconnect(bool reconnect)
     }}
 }
 
-void Magick::send(mstring in) const
+void Magick::send(const mstring& in) const
 {
     RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
@@ -3640,7 +3639,7 @@ set<mstring> Magick::LNG_Loaded() const
     return retval;
 }
 
-size_t Magick::LNG_Usage(mstring lang) const
+size_t Magick::LNG_Usage(const mstring& lang) const
 {
     size_t retval = 0;
 
@@ -3674,7 +3673,7 @@ set<mstring> Magick::HLP_Loaded() const
     return retval;
 }
 
-size_t Magick::HLP_Usage(mstring lang) const
+size_t Magick::HLP_Usage(const mstring& lang) const
 {
     size_t retval = 0;
 

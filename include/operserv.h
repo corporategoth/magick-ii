@@ -25,6 +25,11 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.52  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -183,8 +188,8 @@ private:
     void AddCommands();
     void RemCommands();
     // Returns TRUE if KILL
-    bool AddHost(mstring host);
-    void RemHost(mstring host);
+    bool AddHost(const mstring &host);
+    void RemHost(const mstring &host);
 
     static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny,
 	tag_Ignore;
@@ -272,10 +277,10 @@ public:
 
     size_t CloneList_size()const { return CloneList.size(); }
     size_t CloneList_sum()const;
-    size_t CloneList_size(unsigned int amt)const;
+    size_t CloneList_size(const unsigned int amt)const;
     size_t CloneList_Usage()const;
 
-    bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = mDateTime::CurrentDateTime());
+    bool Clone_insert(const mstring& entry, const unsigned int value, const mstring& reason, const mstring& nick, const mDateTime& added = mDateTime::CurrentDateTime());
     bool Clone_erase();
     set<Clone_Type>::iterator Clone_begin()
 	{ return i_Clone.begin(); }
@@ -283,11 +288,11 @@ public:
 	{ return i_Clone.end(); }
     size_t Clone_size() const			{ return i_Clone.size(); }
     size_t Clone_Usage() const;
-    bool Clone_find(mstring entry);
-    pair<unsigned int, mstring> Clone_value(mstring entry);
+    bool Clone_find(const mstring& entry);
+    pair<unsigned int, mstring> Clone_value(const mstring& entry);
     set<Clone_Type>::iterator Clone;
 
-    bool Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added = mDateTime::CurrentDateTime());
+    bool Akill_insert(const mstring& entry, const unsigned long value, const mstring& reason, const mstring& nick, const mDateTime& added = mDateTime::CurrentDateTime());
     bool Akill_erase();
     set<Akill_Type>::iterator Akill_begin()
 	{ return i_Akill.begin(); }
@@ -295,11 +300,11 @@ public:
 	{ return i_Akill.end(); }
     size_t Akill_size()	const			{ return i_Akill.size(); }
     size_t Akill_Usage() const;
-    bool Akill_find(mstring entry);
-    pair<unsigned long, mstring> Akill_value(mstring entry);
+    bool Akill_find(const mstring& entry);
+    pair<unsigned long, mstring> Akill_value(const mstring& entry);
     set<Akill_Type>::iterator Akill;
 
-    bool OperDeny_insert(mstring entry, mstring value, mstring nick);
+    bool OperDeny_insert(const mstring& entry, const mstring& value, const mstring& nick);
     bool OperDeny_erase();
     set<OperDeny_Type>::iterator OperDeny_begin()
 	{ return i_OperDeny.begin(); }
@@ -307,11 +312,11 @@ public:
 	{ return i_OperDeny.end(); }
     size_t OperDeny_size() const		{ return i_OperDeny.size(); }
     size_t OperDeny_Usage() const;
-    bool OperDeny_find(mstring entry);
-    mstring OperDeny_value(mstring entry);
+    bool OperDeny_find(const mstring& entry);
+    mstring OperDeny_value(const mstring& entry);
     set<OperDeny_Type>::iterator OperDeny;
 
-    bool Ignore_insert(mstring entry, bool perm, mstring nick);
+    bool Ignore_insert(const mstring& entry, const bool perm, const mstring& nick);
     bool Ignore_erase();
     set<Ignore_Type>::iterator Ignore_begin()
 	{ return i_Ignore.begin(); }
@@ -319,8 +324,8 @@ public:
 	{ return i_Ignore.end(); }
     size_t Ignore_size() const				{ return i_Ignore.size(); }
     size_t Ignore_Usage() const;
-    bool Ignore_find(mstring entry);
-    bool Ignore_value(mstring entry);
+    bool Ignore_find(const mstring& entry);
+    bool Ignore_value(const mstring& entry);
     set<Ignore_Type>::iterator Ignore;
 
 
@@ -329,43 +334,43 @@ public:
     virtual mstring GetInternalName() const { return "OperServ"; }
     virtual void execute(const mstring & message);
 
-    static void do_Help(mstring mynick, mstring source, mstring params);
+    static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
 #ifdef MAGICK_TRACE_WORKS
-    static void do_Trace(mstring mynick, mstring source, mstring params);
+    static void do_Trace(const mstring &mynick, const mstring &source, const mstring &params);
 #endif
-    static void do_Mode(mstring mynick, mstring source, mstring params);
-    static void do_Qline(mstring mynick, mstring source, mstring params);
-    static void do_UnQline(mstring mynick, mstring source, mstring params);
-    static void do_NOOP(mstring mynick, mstring source, mstring params);
-    static void do_Kill(mstring mynick, mstring source, mstring params);
-    static void do_Hide(mstring mynick, mstring source, mstring params);
-    static void do_Ping(mstring mynick, mstring source, mstring params);
-    static void do_Update(mstring mynick, mstring source, mstring params);
-    static void do_Shutdown(mstring mynick, mstring source, mstring params);
-    static void do_Reload(mstring mynick, mstring source, mstring params);
-    static void do_Signon(mstring mynick, mstring source, mstring params);
-    static void do_Unload(mstring mynick, mstring source, mstring params);
-    static void do_Jupe(mstring mynick, mstring source, mstring params);
-    static void do_On(mstring mynick, mstring source, mstring params);
-    static void do_Off(mstring mynick, mstring source, mstring params);
-    static void do_HTM(mstring mynick, mstring source, mstring params);
-    static void do_settings_Config(mstring mynick, mstring source, mstring params);
-    static void do_settings_Nick(mstring mynick, mstring source, mstring params);
-    static void do_settings_Channel(mstring mynick, mstring source, mstring params);
-    static void do_settings_Other(mstring mynick, mstring source, mstring params);
-    static void do_settings_All(mstring mynick, mstring source, mstring params);
-    static void do_clone_Add(mstring mynick, mstring source, mstring params);
-    static void do_clone_Del(mstring mynick, mstring source, mstring params);
-    static void do_clone_List(mstring mynick, mstring source, mstring params);
-    static void do_akill_Add(mstring mynick, mstring source, mstring params);
-    static void do_akill_Del(mstring mynick, mstring source, mstring params);
-    static void do_akill_List(mstring mynick, mstring source, mstring params);
-    static void do_operdeny_Add(mstring mynick, mstring source, mstring params);
-    static void do_operdeny_Del(mstring mynick, mstring source, mstring params);
-    static void do_operdeny_List(mstring mynick, mstring source, mstring params);
-    static void do_ignore_Add(mstring mynick, mstring source, mstring params);
-    static void do_ignore_Del(mstring mynick, mstring source, mstring params);
-    static void do_ignore_List(mstring mynick, mstring source, mstring params);
+    static void do_Mode(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Qline(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_UnQline(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_NOOP(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Kill(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Hide(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Ping(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Update(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Shutdown(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Reload(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Signon(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Unload(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Jupe(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_On(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Off(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_HTM(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_settings_Config(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_settings_Nick(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_settings_Channel(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_settings_Other(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_settings_All(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clone_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clone_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clone_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_akill_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_akill_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_akill_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_operdeny_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_operdeny_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_operdeny_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ignore_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ignore_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_ignore_List(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_OperServ; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

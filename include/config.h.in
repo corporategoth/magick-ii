@@ -79,9 +79,6 @@
 /* Define if you have the ltoa function.  */
 #undef HAVE_LTOA
 
-/* Define if you have the snprintf function.  */
-#undef HAVE_SNPRINTF
-
 /* Define if you have the uitoa function.  */
 #undef HAVE_UITOA
 

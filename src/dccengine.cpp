@@ -27,6 +27,11 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.41  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -127,9 +132,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 #include "magick.h"
 #include "dccengine.h"
 
-mstring DccEngine::lowQuote(mstring& in)
+mstring DccEngine::lowQuote(const mstring& in)
 {
-    FT("DccEngine::lowQuote",((in)));
+    FT("DccEngine::lowQuote",(in));
     mstring Result;
     for(unsigned int i=0;i<in.length();i++)
     {
@@ -147,9 +152,9 @@ mstring DccEngine::lowQuote(mstring& in)
     RET(Result);
 }
 
-mstring DccEngine::lowDequote(mstring& in)
+mstring DccEngine::lowDequote(const mstring& in)
 {
-    FT("DccEngine::lowDequote",((in)));
+    FT("DccEngine::lowDequote",(in));
     mstring Result;
     for(unsigned int i=0;i<in.length();i++)
     {
@@ -173,9 +178,9 @@ mstring DccEngine::lowDequote(mstring& in)
     RET(Result);
 }
 
-mstring DccEngine::ctcpQuote(mstring& in)
+mstring DccEngine::ctcpQuote(const mstring& in)
 {
-    FT("DccEngine::ctcpQuote",((in)));
+    FT("DccEngine::ctcpQuote",(in));
     mstring Result;
     for(unsigned int i=0; i<in.length(); i++)
     {
@@ -189,9 +194,9 @@ mstring DccEngine::ctcpQuote(mstring& in)
     RET(Result);
 }
 
-mstring DccEngine::ctcpDequote(mstring& in)
+mstring DccEngine::ctcpDequote(const mstring& in)
 {
-    FT("DccEngine::ctcpDequote",((in)));
+    FT("DccEngine::ctcpDequote",(in));
     mstring Result;
     for(unsigned int i=0; i<in.length(); i++)
     {
@@ -211,9 +216,9 @@ mstring DccEngine::ctcpDequote(mstring& in)
     RET(Result);
 }
 
-vector<mstring> DccEngine::ctcpExtract(mstring& in)
+vector<mstring> DccEngine::ctcpExtract(const mstring& in)
 {
-    FT("DccEngine::ctcpExtract",((in)));
+    FT("DccEngine::ctcpExtract",(in));
     // pull out /001...../001 pairs
     vector<mstring> Result;
     int Start,End,occ=1;
@@ -235,9 +240,9 @@ vector<mstring> DccEngine::ctcpExtract(mstring& in)
 }
 
 void DccEngine::decodeReply(const mstring& mynick, const mstring& source,
-		       mstring& in)
+		       const mstring& in)
 {
-    FT("DccEngine::decodeReply",((in)));
+    FT("DccEngine::decodeReply", (in));
     vector<mstring> ResVector;
     mstring ResMid=lowDequote(in);
     if(in.Occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
@@ -257,7 +262,7 @@ void DccEngine::decodeReply(const mstring& mynick, const mstring& source,
 }
 
 void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
-			      mstring& in)
+			      const mstring& in)
 {
     FT("DccEngine::decodeRequest",((in)));
     vector<mstring> ResVector;
@@ -450,7 +455,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 
 }
 
-mstring DccEngine::encode(const mstring type, const mstring & in)
+mstring DccEngine::encode(const mstring &type, const mstring & in)
 {
     FT("DccEngine::encode",((in)));
     mstring Result;
@@ -465,7 +470,7 @@ mstring DccEngine::encode(const mstring type, const mstring & in)
 }
 
 void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
-		       mstring in)
+		       const mstring& in)
 {
     FT("DccEngine::GotDCC", (mynick, source, in));
     mstring type,argument,straddress,strport,strsize;
@@ -502,7 +507,7 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
 }   
 
 void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
-			  ACE_INET_Addr addr)
+			  const ACE_INET_Addr &addr)
 {
     FT("DccEngine::DoDccChat", (mynick, source, "(ACE_INET_Addr) addr"));
     // todo: check if we should accept this dcc (ie is it an oper?)
@@ -524,8 +529,8 @@ void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
 
 // INBOUND DCC!!
 void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
-			  ACE_INET_Addr addr, mstring filename,
-			  size_t size)
+			  const ACE_INET_Addr& addr, mstring& filename,
+			  const size_t size)
 {
     FT("DccEngine::DoDccSend", (mynick, source, "(ACE_INET_Addr) addr",
     			  filename, size));

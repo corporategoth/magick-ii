@@ -27,6 +27,11 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.66  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -179,12 +184,12 @@ mDateTime mDateTime::CurrentDateTime()
 	return mDateTime(time(NULL));
 }
 
-mDateTime::mDateTime(time_t src)
+mDateTime::mDateTime(const time_t src)
 {
 	*this=src;
 }
 
-mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
+mDateTime::mDateTime(const mstring& src, const mDateTimeFlag flag)
 {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
 		"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)"));
@@ -206,7 +211,7 @@ static mDayTable &GetDayTable(int Year)
 	  return DayTable1;
 }
 
-bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
+bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Date)
 {
   int I;
   bool Result = false;
@@ -225,7 +230,7 @@ bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
   return Result;
 }
 
-mDateTime::mDateTime(unsigned int year, unsigned int month, unsigned int day)
+mDateTime::mDateTime(const unsigned int year, const unsigned int month, const unsigned int day)
 {
 	mDateTime tmp;
 	if(!DoEncodeDate(year,month,day,tmp))
@@ -233,7 +238,7 @@ mDateTime::mDateTime(unsigned int year, unsigned int month, unsigned int day)
 	*this=tmp;
 }
 
-bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
+bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime& Time)
 {
   bool Result = false;
   if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
@@ -247,7 +252,7 @@ bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
   return Result;
 }
 
-mDateTime::mDateTime(unsigned int hour, unsigned int min, unsigned int sec, unsigned int msec)
+mDateTime::mDateTime(const unsigned int hour, const unsigned int min, const unsigned int sec, const unsigned int msec)
 {
 	mDateTime tmp;
 	if(!DoEncodeTime(hour,min,sec,msec,tmp))
@@ -259,12 +264,12 @@ mDateTime& mDateTime::operator=(const mDateTime& in)
 	Val=in.Val;
 	return *this;
 }
-mDateTime& mDateTime::operator=(double in)
+mDateTime& mDateTime::operator=(const double in)
 {
 	Val=in;
 	return *this;
 }
-mDateTime& mDateTime::operator=(time_t in)
+mDateTime& mDateTime::operator=(const time_t in)
 {
 	tm *tmst;
 	tmst=localtime(&in);
@@ -276,12 +281,12 @@ mDateTime& mDateTime::operator+=(const mDateTime& in)
 	Val+=in.Val;
 	return *this;
 }
-mDateTime& mDateTime::operator+=(double in)
+mDateTime& mDateTime::operator+=(const double in)
 {
 	Val+=in;
 	return *this;
 }
-mDateTime& mDateTime::operator+=(time_t in)
+mDateTime& mDateTime::operator+=(const time_t in)
 {
 	*this+=mDateTime(in);
 	return *this;
@@ -291,12 +296,12 @@ mDateTime& mDateTime::operator-=(const mDateTime& in)
 	Val-=in.Val;
 	return *this;
 }
-mDateTime& mDateTime::operator-=(double in)
+mDateTime& mDateTime::operator-=(const double in)
 {
 	Val-=in;
 	return *this;
 }
-mDateTime& mDateTime::operator-=(time_t in)
+mDateTime& mDateTime::operator-=(const time_t in)
 {
 	*this-=mDateTime(in);
 	return *this;
@@ -307,13 +312,13 @@ mDateTime mDateTime::operator+(const mDateTime& in) const
 	retval += in;
 	return retval;
 }
-mDateTime mDateTime::operator+(double in) const
+mDateTime mDateTime::operator+(const double in) const
 {
 	mDateTime retval(Val);
 	retval += in;
 	return retval;
 }
-mDateTime mDateTime::operator+(time_t in) const
+mDateTime mDateTime::operator+(const time_t in) const
 {
 	mDateTime retval(Val);
 	retval += in;
@@ -325,13 +330,13 @@ mDateTime mDateTime::operator-(const mDateTime& in) const
 	retval -= in;
 	return retval;
 }
-mDateTime mDateTime::operator-(double in) const
+mDateTime mDateTime::operator-(const double in) const
 {
 	mDateTime retval(Val);
 	retval -= in;
 	return retval;
 }
-mDateTime mDateTime::operator-(time_t in) const
+mDateTime mDateTime::operator-(const time_t in) const
 {
 	mDateTime retval(Val);
 	retval -= in;
@@ -869,7 +874,7 @@ unsigned long mDateTime::MSecondsSince() const
     return CurrentVal;
 }
 
-mstring mDateTime::Ago(bool gmt, mstring source) const
+mstring mDateTime::Ago(const bool gmt, const mstring &source) const
 {
     // Later we find out if this is a GMT time.
     return(DisectTime(SecondsSince(), source));
@@ -902,7 +907,7 @@ unsigned long mDateTime::YearsSince() const
     return static_cast<int>(static_cast<double>(DaysSince()) / 365.25);
 }
 
-mstring DisectTime(long intime, mstring source)
+mstring DisectTime(const long intime, const mstring &source)
 {
     mstring Result="";
     long Years=0, Weeks=0, Days=0, Hours=0, Minutes=0, Seconds=0, negamt=0;
@@ -1031,7 +1036,7 @@ mstring DisectTime(long intime, mstring source)
     return Result;
 }
 
-mDateTime GMT(mDateTime in, bool to)
+mDateTime GMT(const mDateTime &in, const bool to)
 {
     ACE_OS::tzset();
     long offset = ACE_OS::timezone() * (to ? 1 : -1);

@@ -25,6 +25,11 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2001/03/20 14:22:13  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.83  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -160,8 +165,8 @@ protected:
     mutable map<mstring,mstring> i_UserDef;
 public:
     virtual ~mUserDef() {}
-    virtual mstring UserDef(mstring type) const;
-    virtual void UserDef(mstring type, mstring val);
+    virtual mstring UserDef(const mstring &type) const;
+    virtual void UserDef(const mstring &type, const mstring &val);
 };
 
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
@@ -212,15 +217,15 @@ public:
     virtual mstring GetNames() const { return names; }
     virtual bool IsName(mstring in) const
     {
-	mstring tmp = " "+names.UpperCase()+" ";
+	mstring tmp(" "+names.UpperCase()+" ");
 	return tmp.Contains(" "+in.UpperCase()+" ");
     };
 
     virtual threadtype_enum Get_TType() const =0;
     virtual mstring GetInternalName() const =0;
 
-    virtual bool MSG() const	{ return messages; }
-    virtual void MSG(bool on)	{ messages=on; } 
+    virtual bool MSG() const		{ return messages; }
+    virtual void MSG(const bool on)	{ messages=on; } 
 
     bool signon(const mstring& nickname) const;
     bool signoff(const mstring& nickname) const;
@@ -263,7 +268,7 @@ protected:
 public:
     entlist_t () {}
     entlist_t (const entlist_t& in) { *this = in; }
-    entlist_t (mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
+    entlist_t (const mstring &entry, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime());
     virtual ~entlist_t () {}
     void operator=(const entlist_t &in);
     bool operator==(const entlist_t &in) const
@@ -304,13 +309,11 @@ public:
     entlist_val_t () {}
     virtual ~entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, T value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime(), bool stupid = false)
-	: entlist_t(entry,nick,modtime)
+    entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
 							modtime, stupid));
-	i_Value = value;
-	i_Stupid = stupid;
     }
     void operator=(const entlist_val_t &in)
     {
@@ -326,7 +329,7 @@ public:
 	    i_UserDef[i->first]=i->second;
     }
 
-    virtual bool Value(T value, mstring nick)
+    virtual bool Value(const T &value, const mstring& nick)
     {
 	FT("entlist_val_t<T>::Change", ("(T) value", nick));
 	if (i_Stupid)
@@ -346,16 +349,19 @@ public:
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; };
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	FT("entlist_val_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
     }
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	FT("entlist_val_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn,pElement);
 	if( pElement->IsA(tag_Value) )    pElement->Retrieve(i_Value);
 	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     {
+	FT("entlist_val_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t, attribs);
 	entlist_t::WriteElement(pOut,attribs);
 
@@ -407,13 +413,11 @@ public:
     entlist_val_t () {}
     virtual ~entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime(), bool stupid = false)
-	: entlist_t(entry,nick,modtime)
+    entlist_val_t (const mstring &entry, const pair<T1,T2> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
+	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
 	FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
 							modtime, stupid));
-	i_Value = value;
-	i_Stupid = stupid;
     }
     void operator=(const entlist_val_t &in)
     {
@@ -429,7 +433,7 @@ public:
 	    i_UserDef[i->first]=i->second;
     }
 
-    virtual bool Value(pair<T1,T2> value, mstring nick)
+    virtual bool Value(pair<T1,T2> &value, const mstring &nick)
     {
 	FT("entlist_val_t< pair<T1,T2> >::Change", ("(pair<T1,T2>) value", nick));
 	if (i_Stupid)
@@ -447,9 +451,14 @@ public:
     pair<T1,T2> Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+    {
+	FT("entlist_val_t< pair<T1,T2> >::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+	entlist_t::BeginElement(pIn, pElement);
+    }
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	FT("entlist_val_t< pair<T1,T2> >::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn,pElement);
 	if( pElement->IsA(tag_ValueFirst) )   pElement->Retrieve(i_Value.first);
 	    if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
@@ -457,6 +466,7 @@ public:
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     {
+	FT("entlist_val_t< pair<T1,T2> >::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t, attribs);
 	entlist_t::WriteElement(pOut,attribs);
 
@@ -499,43 +509,43 @@ class CommandMap
     friend class ServMsg;
     // friend class scripted;
 
-    typedef void (*functor)(mstring, mstring, mstring);
+    typedef void (*functor)(const mstring&, const mstring&, const mstring&);
     // map<service, map<command, pair<committees, functor> > >
 	typedef list<triplet<mstring, mstring, functor> > cmdtype;
 	typedef map<mstring, cmdtype> cmdmap;
 	cmdmap i_user;
     cmdmap i_system;
 
-    void AddSystemCommand(mstring service, mstring command,
-	    mstring committees, functor function);
-    void RemSystemCommand(mstring service, mstring command,
-	    mstring committees);
+    void AddSystemCommand(const mstring &service, const mstring &command,
+	    const mstring &committees, functor function);
+    void RemSystemCommand(const mstring &service, const mstring &command,
+	    const mstring &committees);
 public:
-    void AddCommand(mstring service, mstring command,
-	    mstring committees, functor function);
-    void RemCommand(mstring service, mstring command,
-	    mstring committees);
-    pair<bool, functor> GetSystemCommand(mstring service, mstring command,
-	    mstring user) const;
-    pair<bool, functor> GetUserCommand(mstring service, mstring command,
-	    mstring user) const;
+    void AddCommand(const mstring &service, const mstring &command,
+	    const mstring &committees, functor function);
+    void RemCommand(const mstring &service, const mstring &command,
+	    const mstring &committees);
+    pair<bool, functor> GetSystemCommand(const mstring &service,
+    	    const mstring &command, const mstring &user) const;
+    pair<bool, functor> GetUserCommand(const mstring &service,
+	    const mstring &command, const mstring &user) const;
 
-    bool DoCommand(mstring mynick, mstring user, mstring command,
-	    mstring params) const;
-    bool DoUserCommand(mstring mynick, mstring user, mstring command,
-	    mstring params) const;
-    bool DoSystemCommand(mstring mynick, mstring user, mstring command,
-	    mstring params) const;
+    bool DoCommand(const mstring &mynick, const mstring &user,
+	    const mstring &command, const mstring &params) const;
+    bool DoUserCommand(const mstring &mynick, const mstring &user,
+	    const mstring &command, const mstring &params) const;
+    bool DoSystemCommand(const mstring &mynick, const mstring &user,
+	    const mstring &command, const mstring &params) const;
 };
-void do_1_2param(mstring mynick, mstring source, mstring params);
-void do_1_3param(mstring mynick, mstring source, mstring params);
-void do_1_4param(mstring mynick, mstring source, mstring params);
-void do_1_2paramswap(mstring mynick, mstring source, mstring params);
-void do_1_3paramswap(mstring mynick, mstring source, mstring params);
-void do_1_4paramswap(mstring mynick, mstring source, mstring params);
-void do_2param(mstring mynick, mstring source, mstring params);
-void do_3param(mstring mynick, mstring source, mstring params);
-void do_4param(mstring mynick, mstring source, mstring params);
+void do_1_2param(const mstring &mynick, const mstring &source, const mstring &params);
+void do_1_3param(const mstring &mynick, const mstring &source, const mstring &params);
+void do_1_4param(const mstring &mynick, const mstring &source, const mstring &params);
+void do_1_2paramswap(const mstring &mynick, const mstring &source, const mstring &params);
+void do_1_3paramswap(const mstring &mynick, const mstring &source, const mstring &params);
+void do_1_4paramswap(const mstring &mynick, const mstring &source, const mstring &params);
+void do_2param(const mstring &mynick, const mstring &source, const mstring &params);
+void do_3param(const mstring &mynick, const mstring &source, const mstring &params);
+void do_4param(const mstring &mynick, const mstring &source, const mstring &params);
 
 #endif
 

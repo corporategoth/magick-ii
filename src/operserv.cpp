@@ -27,6 +27,11 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2001/03/20 14:22:15  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.117  2001/03/04 02:04:15  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -283,7 +288,7 @@ RCSID(operserv_cpp, "@(#)$Id$");
 #include "magick.h"
 #include "dccengine.h"
 
-bool OperServ::AddHost(mstring host)
+bool OperServ::AddHost(const mstring& host)
 {
     FT("OperServ::AddHost", (host));
     bool retval = false;
@@ -356,7 +361,7 @@ bool OperServ::AddHost(mstring host)
     RET(retval);
 }
 
-void OperServ::RemHost(mstring host)
+void OperServ::RemHost(const mstring& host)
 {
     FT("OperServ::RemHost", (host));
 
@@ -387,7 +392,7 @@ size_t OperServ::CloneList_sum()const
     RET(value);
 }
 
-size_t OperServ::CloneList_size(unsigned int amt)const
+size_t OperServ::CloneList_size(const unsigned int amt)const
 {
     FT("OperServ::CloneList_size", (amt));
 
@@ -420,7 +425,7 @@ size_t OperServ::CloneList_Usage() const
 }
 
 
-bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added)
+bool OperServ::Clone_insert(const mstring& entry, const unsigned int value, const mstring& reason, const mstring& nick, const mDateTime& added)
 {
     FT("OperServ::Clone_insert", (entry, value, reason, nick, added));
 
@@ -484,7 +489,7 @@ size_t OperServ::Clone_Usage() const
 }
 
 
-bool OperServ::Clone_find(mstring entry)
+bool OperServ::Clone_find(const mstring& entry)
 {
     FT("OperServ::Clone_find", (entry));
 
@@ -509,7 +514,7 @@ bool OperServ::Clone_find(mstring entry)
 }
 
 
-pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
+pair<unsigned int,mstring> OperServ::Clone_value(const mstring& entry)
 {
     FT("OperServ::Clone_value", (entry));
 
@@ -525,7 +530,7 @@ pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
 }
 
 
-bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added)
+bool OperServ::Akill_insert(const mstring& entry, const unsigned long value, const mstring& reason, const mstring& nick, const mDateTime& added)
 {
     FT("OperServ::Akill_insert", (entry, value, reason, nick, added));
 
@@ -591,7 +596,7 @@ size_t OperServ::Akill_Usage() const
 }
 
 
-bool OperServ::Akill_find(mstring entry)
+bool OperServ::Akill_find(const mstring& entry)
 {
     FT("OperServ::Akill_find", (entry));
 
@@ -626,7 +631,7 @@ bool OperServ::Akill_find(mstring entry)
 }
 
 
-pair<unsigned long,mstring> OperServ::Akill_value(mstring entry)
+pair<unsigned long,mstring> OperServ::Akill_value(const mstring& entry)
 {
     FT("OperServ::Akill_value", (entry));
 
@@ -642,15 +647,16 @@ pair<unsigned long,mstring> OperServ::Akill_value(mstring entry)
 }
 
 
-bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
+bool OperServ::OperDeny_insert(const mstring& i_entry, const mstring& value, const mstring& nick)
 {
-    FT("OperServ::OperDeny_insert", (entry, value, nick));
+    FT("OperServ::OperDeny_insert", (i_entry, value, nick));
 
     // no @
-    if (!entry.Contains("@"))
+    if (!i_entry.Contains("@"))
     {
 	    RET(false);
     }
+    mstring entry(i_entry);
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
@@ -711,15 +717,16 @@ size_t OperServ::OperDeny_Usage() const
 }
 
 
-bool OperServ::OperDeny_find(mstring entry)
+bool OperServ::OperDeny_find(const mstring& i_entry)
 {
-    FT("OperServ::OperDeny_find", (entry));
+    FT("OperServ::OperDeny_find", (i_entry));
 
     // no @
-    if (!entry.Contains("@"))
+    if (!i_entry.Contains("@"))
     {
 	    RET(false);
     }
+    mstring entry(i_entry);
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
@@ -746,7 +753,7 @@ bool OperServ::OperDeny_find(mstring entry)
 }
 
 
-mstring OperServ::OperDeny_value(mstring entry)
+mstring OperServ::OperDeny_value(const mstring& entry)
 {
     FT("OperServ::OperDeny_value", (entry));
 
@@ -763,15 +770,16 @@ mstring OperServ::OperDeny_value(mstring entry)
 
 
 
-bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
+bool OperServ::Ignore_insert(const mstring& i_entry, const bool perm, const mstring& nick)
 {
-    FT("OperServ::Ignore_insert", (entry, perm, nick));
+    FT("OperServ::Ignore_insert", (i_entry, perm, nick));
 
     // no @
-    if (!entry.Contains("@"))
+    if (!i_entry.Contains("@"))
     {
 	    RET(false);
     }
+    mstring entry(i_entry);
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
@@ -832,15 +840,16 @@ size_t OperServ::Ignore_Usage() const
 }
 
 
-bool OperServ::Ignore_find(mstring entry)
+bool OperServ::Ignore_find(const mstring& i_entry)
 {
-    FT("OperServ::Ignore_find", (entry));
+    FT("OperServ::Ignore_find", (i_entry));
 
     // no @
-    if (!entry.Contains("@"))
+    if (!i_entry.Contains("@"))
     {
 	    RET(false);
     }
+    mstring entry(i_entry);
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
@@ -870,7 +879,7 @@ bool OperServ::Ignore_find(mstring entry)
 }
 
 
-bool OperServ::Ignore_value(mstring entry)
+bool OperServ::Ignore_value(const mstring& entry)
 {
     FT("OperServ::Ignore_value", (entry));
 
@@ -1251,7 +1260,7 @@ void OperServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
-void OperServ::do_Help(mstring mynick, mstring source, mstring params)
+void OperServ::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Help", (mynick, source, params));
 
@@ -1279,7 +1288,7 @@ void OperServ::do_Help(mstring mynick, mstring source, mstring params)
 
 
 #ifdef MAGICK_TRACE_WORKS
-void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
+void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Trace", (mynick, source, params));
 
@@ -1516,7 +1525,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 #endif
 
 
-void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
+void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Mode", (mynick, source, params));
 
@@ -1590,7 +1599,7 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
+void OperServ::do_Qline(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Qline", (mynick, source, params));
 
@@ -1625,7 +1634,7 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
+void OperServ::do_UnQline(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_UnQline", (mynick, source, params));
 
@@ -1657,7 +1666,7 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
+void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_NOOP", (mynick, source, params));
 
@@ -1711,7 +1720,7 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
+void OperServ::do_Kill(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Kill", (mynick, source, params));
 
@@ -1752,7 +1761,7 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Hide(mstring mynick, mstring source, mstring params)
+void OperServ::do_Hide(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Hide", (mynick, source, params));
 
@@ -1793,7 +1802,7 @@ void OperServ::do_Hide(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
+void OperServ::do_Ping(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Ping", (mynick, source, params));
 
@@ -1819,7 +1828,7 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Update(mstring mynick, mstring source, mstring params)
+void OperServ::do_Update(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Update", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
@@ -1836,7 +1845,7 @@ void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
+void OperServ::do_Shutdown(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
@@ -1850,7 +1859,7 @@ void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
+void OperServ::do_Reload(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Reload", (mynick, source, params));
 
@@ -1881,7 +1890,7 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Signon(mstring mynick, mstring source, mstring params)
+void OperServ::do_Signon(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Reload", (mynick, source, params));
 
@@ -1900,7 +1909,7 @@ void OperServ::do_Signon(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
+void OperServ::do_Unload(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Unload", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
@@ -1943,7 +1952,7 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
+void OperServ::do_Jupe(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Jupe", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
@@ -1970,7 +1979,7 @@ void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_On(mstring mynick, mstring source, mstring params)
+void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_On", (mynick, source, params));
 
@@ -2080,7 +2089,7 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_Off(mstring mynick, mstring source, mstring params)
+void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_Off", (mynick, source, params));
 
@@ -2190,7 +2199,7 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
+void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_HTM", (mynick, source, params));
 
@@ -2268,7 +2277,7 @@ void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params)
+void OperServ::do_settings_Config(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_settings_Config", (mynick, source, params));
 
@@ -2319,7 +2328,7 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 		    ToHumanTime(Parent->files.Sampletime(), source).c_str());
 }
     
-void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
+void OperServ::do_settings_Nick(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_settings_Nick", (mynick, source, params));
 
@@ -2432,7 +2441,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring params)
+void OperServ::do_settings_Channel(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_settings_Channel", (mynick, source, params));
 
@@ -2605,7 +2614,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 }
 
 
-void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
+void OperServ::do_settings_Other(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
@@ -2687,7 +2696,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_settings_All(mstring mynick, mstring source, mstring params)
+void OperServ::do_settings_All(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_settings_All", (mynick, source, params));
 
@@ -2708,7 +2717,7 @@ void OperServ::do_settings_All(mstring mynick, mstring source, mstring params)
 }
 
 
-void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
+void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_clone_Add", (mynick, source, params));
 
@@ -2816,7 +2825,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
+void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_clone_Del", (mynick, source, params));
 
@@ -2902,7 +2911,7 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
+void OperServ::do_clone_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_clone_List", (mynick, source, params));
 
@@ -2974,7 +2983,7 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
+void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_akill_Add", (mynick, source, params));
 
@@ -3149,7 +3158,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
     }}
 }
 
-void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
+void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_akill_Del", (mynick, source, params));
 
@@ -3231,7 +3240,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
+void OperServ::do_akill_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_akill_List", (mynick, source, params));
 
@@ -3297,7 +3306,7 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
+void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_operdeny_Add", (mynick, source, params));
 
@@ -3397,7 +3406,7 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 
 }
 
-void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
+void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_operdeny_Del", (mynick, source, params));
 
@@ -3485,7 +3494,7 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
+void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_operdeny_List", (mynick, source, params));
 
@@ -3558,7 +3567,7 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
+void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_ignore_Add", (mynick, source, params));
 
@@ -3634,7 +3643,7 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
 	host.c_str()));
 }
 
-void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
+void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_ignore_Del", (mynick, source, params));
 
@@ -3722,7 +3731,7 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     }
 }
 
-void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
+void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("OperServ::do_ignore_List", (mynick, source, params));
 

@@ -25,6 +25,11 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.152  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.151  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -320,13 +325,13 @@ public:
 		unsigned int level;
 		unsigned long lagtime;
 	public:
-		bool IsServer(mstring server)const;
-		pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Server(mstring server)const;
-		vector<mstring> PriorityList(unsigned int pri)const;
+		bool IsServer(const mstring& server)const;
+		pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Server(const mstring& server)const;
+		vector<mstring> PriorityList(const unsigned int pri)const;
 		size_t Server_size()const { return servers.size(); }
 
-		bool IsAllowed(mstring server, mstring uplink)const;
-		vector<mstring> Allow(mstring server)const;
+		bool IsAllowed(const mstring& server, const mstring& uplink)const;
+		vector<mstring> Allow(const mstring& server)const;
 		vector<mstring> AllowList()const;
 		size_t Allow_size()const { return allows.size(); }
 
@@ -367,7 +372,7 @@ public:
 		unsigned long max_speed;
 		unsigned long sampletime;
 	public:
-		mstring MakePath(mstring in)const;
+		mstring MakePath(const mstring& in)const;
 		mstring Pidfile()const		    { return MakePath(pidfile); }
 		mstring Logfile()const		    { return MakePath(logfile); }
 		mstring Logchan()const		    { return logchan; }
@@ -451,9 +456,9 @@ public:
 	    if (i_level > startup.Level())
 		i_level--;
 	}
-	void AUTO(bool on)	{ i_auto = on; }
-	bool AUTO()const	{ return i_auto; }
-	void MSG(bool on)
+	void AUTO(const bool on)	{ i_auto = on; }
+	bool AUTO()const		{ return i_auto; }
+	void MSG(const bool on)
 	{
 	//  operserv.MSG(on);
 	    nickserv.MSG(on);
@@ -463,7 +468,7 @@ public:
 	    commserv.MSG(on);
 	}
 	void Die()			{ ACE_Reactor::instance()->end_event_loop(); }
-	void Shutdown(bool in)		{ i_shutdown = in; }
+	void Shutdown(const bool in)	{ i_shutdown = in; }
 	bool Shutdown()const		{ return i_shutdown; }
 
 	// Streams, etc
@@ -475,8 +480,8 @@ public:
 	bool Connected()const		{ return i_connected; }
 	void Connected(bool in)		{ i_connected = in; }
 	bool Saving()const		{ return i_saving; }
-	void Disconnect(bool reconnect=true);
-	void send(mstring text)const;
+	void Disconnect(const bool reconnect=true);
+	void send(const mstring& text)const;
 	mstring GetKey()const;
 	void save_databases();
 	void load_databases();
@@ -485,14 +490,14 @@ public:
 
 	// Commandline, config, language PARSING.
 	void dump_help() const;
-	bool paramlong(mstring first, mstring second);
-	bool paramshort(mstring first, mstring second);
+	bool paramlong(const mstring& first, const mstring& second);
+	bool paramshort(const mstring& first, const mstring& second);
 	bool get_config_values();
 	void LoadInternalMessages();
-	bool LoadExternalMessages(mstring language);
-	bool LoadLogMessages(mstring language);
-	bool UnloadExternalMessages(mstring language);
-	bool UnloadHelp(mstring language);
+	bool LoadExternalMessages(const mstring& language);
+	bool LoadLogMessages(const mstring& language);
+	bool UnloadExternalMessages(const mstring& language);
+	bool UnloadHelp(const mstring& language);
 	mstring getMessage(const mstring& nick, const mstring& name);
 	mstring getMessage(const mstring& name)
 	    { return getMessageL(nickserv.DEF_Language(), name); }
@@ -521,7 +526,7 @@ public:
 	    commserv.RemCommands();
 	}
 
-	mstring getLname(const mstring in)
+	mstring getLname(const mstring& in)
 	{
 	    if (IsChan(in))
 	    {
@@ -536,7 +541,7 @@ public:
 	    return "";
 	}
 
-	mstring getSname(const mstring in)
+	mstring getSname(const mstring& in)
 	{
 	    if (IsChan(in))
 	    {
@@ -556,9 +561,9 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     set<mstring> LNG_Loaded() const;
-    size_t LNG_Usage(mstring lang) const;
+    size_t LNG_Usage(const mstring& lang) const;
     set<mstring> HLP_Loaded() const;
-    size_t HLP_Usage(mstring lang) const;
+    size_t HLP_Usage(const mstring& lang) const;
     size_t LFO_Usage() const;
     void DumpB() const;
     void DumpE() const;

@@ -25,6 +25,11 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.35  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -106,28 +111,28 @@ public:
 
     mDateTime() {Val=0.0;}
     mDateTime(const mDateTime& src) {Val=src.Val;}
-    mDateTime(double src) {Val=src;}
-    mDateTime(time_t src);
-    mDateTime(const mstring& src, mDateTimeFlag flag=DateTime);
-    mDateTime(unsigned int year, unsigned int month, unsigned int day);
-    mDateTime(unsigned int hour, unsigned int min, unsigned int sec, unsigned int msec);
+    mDateTime(const double src) {Val=src;}
+    mDateTime(const time_t src);
+    mDateTime(const mstring& src, const mDateTimeFlag flag=DateTime);
+    mDateTime(const unsigned int year, const unsigned int month, const unsigned int day);
+    mDateTime(const unsigned int hour, const unsigned int min, const unsigned int sec, const unsigned int msec);
 
     mDateTime& operator=(const mDateTime& in);
-    mDateTime& operator=(double in);
-    mDateTime& operator=(time_t in);
+    mDateTime& operator=(const double in);
+    mDateTime& operator=(const time_t in);
     mDateTime& operator+=(const mDateTime& in);
-    mDateTime& operator+=(double in);
-    mDateTime& operator+=(time_t in);
+    mDateTime& operator+=(const double in);
+    mDateTime& operator+=(const time_t in);
     mDateTime& operator-=(const mDateTime& in);
-    mDateTime& operator-=(double in);
-    mDateTime& operator-=(time_t in);
+    mDateTime& operator-=(const double in);
+    mDateTime& operator-=(const time_t in);
 
     mDateTime operator+(const mDateTime& in) const;
-    mDateTime operator+(double in) const;
-    mDateTime operator+(time_t in) const;
+    mDateTime operator+(const double in) const;
+    mDateTime operator+(const time_t in) const;
     mDateTime operator-(const mDateTime& in) const;
-    mDateTime operator-(double in) const;
-    mDateTime operator-(time_t in) const;
+    mDateTime operator-(const double in) const;
+    mDateTime operator-(const time_t in) const;
     bool operator==(const mDateTime& in)const;
     bool operator!=(const mDateTime& in)const;
     bool operator>(const mDateTime& in)const;
@@ -257,7 +262,7 @@ public:
     int Year() const;
     int Year2() const;
     int Century() const;
-    mstring Ago(bool call = false, mstring source = "") const;
+    mstring Ago(const bool call = false, const mstring &source = "") const;
     unsigned long MSecondsSince() const;
     unsigned long SecondsSince() const;
     unsigned long MinutesSince() const;
@@ -265,12 +270,12 @@ public:
     unsigned long DaysSince() const;
     unsigned long YearsSince() const;
 
-    friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
-    friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);
+    friend bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Date);
+    friend bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime& Time);
 };
 
-extern mstring DisectTime(long intime, mstring source = "");
-extern mDateTime GMT(mDateTime in, bool to);
+extern mstring DisectTime(const long intime, const mstring &source = "");
+extern mDateTime GMT(const mDateTime &in, const bool to);
 extern mDateTime StringToDate(const mstring& in);
 extern mDateTime StringToTime(const mstring& in);
 extern mDateTime StringToDateTime(const mstring& in);

@@ -25,6 +25,11 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.47  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -108,7 +113,7 @@ class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
     virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
-    mstring Reconnect_Handler::FindNext(mstring server);
+    mstring Reconnect_Handler::FindNext(const mstring& i_server);
 };
 
 class ToBeSquit_Handler : public ACE_Event_Handler
@@ -166,8 +171,8 @@ public:
     time_t HTM_Gap() const;
     unsigned short HTM_Level() const;
     size_t HTM_Threshold() const;
-    void HTM_Threshold(size_t in);
-    void HTM(bool in);
+    void HTM_Threshold(const size_t in);
+    void HTM(const bool in);
     size_t Average(time_t secs = 0) const;
     bool Burst() const;
     mDateTime SyncTime() const;
@@ -188,9 +193,9 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
 public:
     void ForceSave();
     void ForcePing();
-    mstring SyncTime(mstring source = "") const;
+    mstring SyncTime(const mstring& source = "") const;
     virtual int open(void *in=0);
-    virtual int close(unsigned long in);
+    virtual int close(const unsigned long in);
     virtual int svc(void);
     void DumpB() const;
     void DumpE() const;

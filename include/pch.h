@@ -21,6 +21,11 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.34  2001/03/08 14:34:29  prez
 ** Fixed some OS incompatabilities
 **
@@ -139,26 +144,20 @@
 #include <sys/stat.h>
 
 #if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
 #  include <sys/time.h>
-# else
 #  include <time.h>
-# endif
+#else
+#  if HAVE_SYS_TIME_H
+#    include <sys/time.h>
+#  else
+#    include <time.h>
+#  endif
 #endif
 
-
 #ifdef WIN32
-# define WIN32_LEAN_AND_MEAN
-# define STRICT
-# include <windows.h>
-# ifdef STDC_HEADERS
-#  include <cstdlib>
-#  include <cstdarg>
-#  include <cstring>
-# endif
+#  define WIN32_LEAN_AND_MEAN
+#  define STRICT
+#  include <windows.h>
 #endif
 
 /* Standard C++ Extensions ... */
@@ -166,6 +165,12 @@
  * unix machines tend to use .h files
  */
 #ifdef __cplusplus
+#  ifdef STDC_HEADERS
+#    include <cstdlib>
+#    include <cstdarg>
+#    include <cstring>
+#  endif
+
 /* Used with SGI's STL
 #define _STL_NO_CONCEPT_CHECKS
 */

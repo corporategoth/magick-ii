@@ -25,6 +25,11 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2001/03/20 14:22:13  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.49  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -159,9 +164,9 @@ class Committee : public mUserDef, public SXP::IPersistObj
 public:
     Committee() {}
     Committee(const Committee &in) { *this = in; }
-    Committee(mstring name, mstring head, mstring description);
-    Committee(mstring name, Committee *head, mstring description);
-    Committee(mstring name, mstring description);
+    Committee(const mstring& name, const mstring& head, const mstring& description);
+    Committee(const mstring& name, const Committee& head, const mstring& description);
+    Committee(const mstring& name, const mstring& description);
     ~Committee() {}
     void operator=(const Committee &in);
     bool operator==(const Committee &in) const
@@ -175,45 +180,47 @@ public:
     mDateTime RegTime() const;
     mstring HeadCom() const;
     mstring Head() const;
-    void Head(mstring newhead);
+    void Head(const mstring& newhead);
 
-    bool insert(mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
+    bool insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime = mDateTime::CurrentDateTime());
     bool erase();
     entlist_ui begin()		{ return i_Members.begin(); }
     entlist_ui end()		{ return i_Members.end(); }
     size_t size()const		{ return i_Members.size(); }
-    bool find(mstring entry);
+    bool find(const mstring& entry);
     entlist_ui member;
 
-    bool IsIn(mstring nick) const;
-    bool IsHead(mstring nick) const;
-    bool IsOn(mstring nick) const;
+    bool IsIn(const mstring& nick) const;
+    bool IsHead(const mstring& nick) const;
+    bool IsOn(const mstring& nick) const;
 
-    void Description(mstring in);
+    void Description(const mstring& in);
     mstring Description() const;
-    void Email(mstring in);
+    void Email(const mstring& in);
     mstring Email() const;
-    void URL(mstring in);
+    void URL(const mstring& in);
     mstring URL() const;
-    void Private(bool in);
+    void Private(const bool in);
     bool Private() const;
-    void L_Private(bool in);
+    void L_Private(const bool in);
     bool L_Private() const;
-    void OpenMemos(bool in);
+    void OpenMemos(const bool in);
     bool OpenMemos() const;
-    void L_OpenMemos(bool in);
+    void L_OpenMemos(const bool in);
     bool L_OpenMemos() const;
-    void Secure(bool in);
+    void Secure(const bool in);
     bool Secure() const;
-    void L_Secure(bool in);
+    void L_Secure(const bool in);
     bool L_Secure() const;
 
-    bool MSG_insert(mstring entry, mstring nick, mDateTime time = mDateTime::CurrentDateTime());
+    bool MSG_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& time = mDateTime::CurrentDateTime());
     bool MSG_erase();
     entlist_i MSG_begin()	{ return i_Messages.begin(); }
     entlist_i MSG_end()		{ return i_Messages.end(); }
     size_t MSG_size()const	{ return i_Messages.size(); }
-    bool MSG_find(int num);
+    bool MSG_find(const int num);
     entlist_i message;
 
     SXP::Tag& GetClassTag() const { return tag_Committee; }
@@ -356,40 +363,40 @@ public:
     mstring OVR_CS_Clear()const		{ return ovr_cs_clear; }
 
     map<mstring,Committee> list;
-    bool IsList(mstring in)const;
+    bool IsList(const mstring& in)const;
 
     CommServ();
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; };
     virtual mstring GetInternalName() const { return "CommServ"; };
     virtual void execute(const mstring & message);
 
-    static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_Add(mstring mynick, mstring source, mstring params);
-    static void do_Del(mstring mynick, mstring source, mstring params);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static void do_Memo(mstring mynick, mstring source, mstring params);
-    static void do_Memo2(mstring source, mstring committee, mstring text);
-    static void do_Info(mstring mynick, mstring source, mstring params);
-    static void do_member_Add(mstring mynick, mstring source, mstring params);
-    static void do_member_Del(mstring mynick, mstring source, mstring params);
-    static void do_member_List(mstring mynick, mstring source, mstring params);
-    static int do_member_List2(mstring mynick, mstring source, mstring committee, bool first, int number);
-    static void do_logon_Add(mstring mynick, mstring source, mstring params);
-    static void do_logon_Del(mstring mynick, mstring source, mstring params);
-    static void do_logon_List(mstring mynick, mstring source, mstring params);
-    static void do_set_Head(mstring mynick, mstring source, mstring params);
-    static void do_set_Description(mstring mynick, mstring source, mstring params);
-    static void do_set_Email(mstring mynick, mstring source, mstring params);
-    static void do_set_URL(mstring mynick, mstring source, mstring params);
-    static void do_set_Secure(mstring mynick, mstring source, mstring params);
-    static void do_set_Private(mstring mynick, mstring source, mstring params);
-    static void do_set_OpenMemos(mstring mynick, mstring source, mstring params);
-    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_Private(mstring mynick, mstring source, mstring params);
-    static void do_lock_OpenMemos(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
-    static void do_unlock_OpenMemos(mstring mynick, mstring source, mstring params);
+    static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Memo(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Memo2(const mstring &source, const mstring &committee, const mstring &text);
+    static void do_Info(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_member_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_member_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_member_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static int do_member_List2(const mstring &mynick, const mstring &source, const mstring &committee, const bool first, const int number);
+    static void do_logon_Add(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_logon_Del(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_logon_List(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Head(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Description(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Email(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_URL(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_lock_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_unlock_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params);
 
     virtual SXP::Tag& GetClassTag() const { return tag_CommServ; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

@@ -25,6 +25,11 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2001/03/20 14:22:14  prez
+** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
+** by reference all over the place.  Next step is to stop using operator=
+** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
+**
 ** Revision 1.36  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -161,35 +166,38 @@ class mFile
     mstring i_name;
 public:
     mFile() { fd = NULL; }
-    mFile(mstring name, FILE *in);
-    mFile(mstring name, mstring mode = "r");
+    mFile(const mstring& name, FILE *in);
+    mFile(const mstring& name, const mstring& mode = "r");
     ~mFile() { Close(); }
     mstring Name() const	{ return i_name; }
-    bool Open(mstring name, mstring mode = "r");
+    bool Open(const mstring& name, const mstring& mode = "r");
     void Close();
     bool IsOpened() const;
-    long Seek(long offset, int whence = SEEK_SET);
-    size_t Write(mstring buf, bool endline = true);
-    size_t Write(const void *buf, size_t size);
-    size_t Read(void *buf, size_t size);
+    long Seek(const long offset, const int whence = SEEK_SET);
+    size_t Write(const mstring& buf, const bool endline = true);
+    size_t Write(const void *buf, const size_t size);
+    size_t Read(void *buf, const size_t size);
     mstring ReadLine();
     long Length() const;
     mDateTime LastMod() const;
     bool Eof() const;
-    void Attach(mstring name, FILE *in);
+    void Attach(const mstring& name, FILE *in);
     FILE *Detach();
     void Flush();
     
-    static bool Exists(mstring name);
-    static bool Erase(mstring name);
-    static long Length(mstring name);
-    static mDateTime LastMod(mstring name);
-    static long Copy(mstring sin, mstring sout, bool append = false);
-    static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
-    static long Dump(list<mstring> sin, mstring sout, bool append = false, bool endline = true);
-    static vector<mstring> UnDump( const mstring &sin);
-    static size_t DirUsage(mstring directory);
-    static set<mstring> DirList(mstring directory, mstring filemask);
+    static bool Exists(const mstring& name);
+    static bool Erase(const mstring& name);
+    static long Length(const mstring& name);
+    static mDateTime LastMod(const mstring& name);
+    static long Copy(const mstring& sin, const mstring& sout,
+		const bool append = false);
+    static long Dump(const vector<mstring>& sin, const mstring& sout,
+		const bool append = false, const bool endline = true);
+    static long Dump(const list<mstring>& sin, const mstring& sout,
+		const bool append = false, const bool endline = true);
+    static vector<mstring> UnDump(const mstring &sin);
+    static size_t DirUsage(const mstring& directory);
+    static set<mstring> DirList(const mstring& directory, const mstring& filemask);
 };
 
 #ifndef JUST_MFILE
@@ -205,19 +213,20 @@ public:
     enum FileType { MemoAttach, Picture, Public, Unknown };
     typedef map<FileType, map<unsigned long, pair<mstring, mstring> > > filemap_t;
 
-    unsigned long FindAvail(FileType type);
-    bool Exists(FileType type, unsigned long num);
-    mstring GetName(FileType type, unsigned long num);
-    mstring GetRealName(FileType type, unsigned long num);
-    mstring GetPriv(FileType type, unsigned long num);
-    bool SetPriv(FileType type, unsigned long num, mstring priv);
-    bool Rename(FileType type, unsigned long num, mstring newname);
-    size_t GetSize(FileType type, unsigned long num);
-    unsigned long NewFile(FileType type, mstring filename, mstring priv = "");
-    void EraseFile(FileType type, unsigned long num);
-    vector<unsigned long> GetList(FileType type, mstring source);
-    unsigned long GetNum(FileType type, mstring name);
-    size_t FileSysSize(FileType type) const;
+    unsigned long FindAvail(const FileType type);
+    bool Exists(const FileType type, const unsigned long num);
+    mstring GetName(const FileType type, const unsigned long num);
+    mstring GetRealName(const FileType type, const unsigned long num);
+    mstring GetPriv(const FileType type, const unsigned long num);
+    bool SetPriv(const FileType type, const unsigned long num, const mstring& priv);
+    bool Rename(const FileType type, const unsigned long num, const mstring& newname);
+    size_t GetSize(const FileType type, const unsigned long num);
+    unsigned long NewFile(const FileType type, const mstring& filename,
+	const mstring& priv = "");
+    void EraseFile(const FileType type, const unsigned long num);
+    vector<unsigned long> GetList(const FileType type, const mstring& source);
+    unsigned long GetNum(const FileType type, const mstring& name);
+    size_t FileSysSize(const FileType type) const;
 
     virtual SXP::Tag& GetClassTag() const { return tag_FileMap; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
@@ -258,12 +267,12 @@ private:
 
 public:
     DccXfer() { i_Transiant = NULL; }
-    DccXfer(unsigned long dccid, mSocket socket,
-	mstring mynick, mstring source,
-	FileMap::FileType filetype, unsigned long filenum);
-    DccXfer(unsigned long dccid, mSocket socket,
-	mstring mynick, mstring source, mstring filename,
-	size_t filesize, size_t blocksize);
+    DccXfer(const unsigned long dccid, const mSocket& socket,
+	const mstring& mynick, const mstring& source,
+	const FileMap::FileType filetype, const unsigned long filenum);
+    DccXfer(const unsigned long dccid, const mSocket& socket,
+	const mstring& mynick, const mstring& source, const mstring& filename,
+	const size_t filesize, const size_t blocksize);
     DccXfer(const DccXfer &in)
 	{ *this = in; }
     void operator=(const DccXfer &in);
@@ -280,7 +289,7 @@ public:
     size_t Total() const;
     mDateTime LastData() const;
 
-    void ChgNick(mstring in);
+    void ChgNick(const mstring& in);
     void Cancel();
     void Action();	// Do what we want!
     size_t Average(time_t secs = 0) const;
@@ -317,20 +326,20 @@ class DccMap : public ACE_Task<ACE_MT_SYNCH>
 
 public:
     virtual int open(void *in=0);
-    virtual int close(unsigned long in);
+    virtual int close(const unsigned long in);
     virtual int svc(void);
 
     static map<unsigned long, DccXfer *> xfers;
-    vector<unsigned long> GetList(mstring in) const;
+    vector<unsigned long> GetList(const mstring& in) const;
 
     // These start in their own threads.
-    void Connect(ACE_INET_Addr address,
-	mstring mynick, mstring source, mstring filename,
-	size_t filesize = 0, size_t blocksize = 0);
-    void Accept(unsigned short port, mstring mynick,
-	mstring source, FileMap::FileType filetype,
-	unsigned long filenum);
-    void Cancel(unsigned long DccId, bool silent = false);
+    void Connect(const ACE_INET_Addr& address, const mstring& mynick,
+	const mstring& source, const mstring& filename,
+	const size_t filesize = 0, const size_t blocksize = 0);
+    void Accept(const unsigned short port, const mstring& mynick,
+	const mstring& source, const FileMap::FileType filetype,
+	const unsigned long filenum);
+    void Cancel(const unsigned long DccId, const bool silent = false);
 };
 
 #endif /* JUST_MFILE */
