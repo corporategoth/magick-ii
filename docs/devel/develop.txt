@@ -22,7 +22,7 @@ Guidelines
 
 Before checking ANY code into CVS, it MUST compile on both
 Windows (current standard being MS Visual C++ 5.0) and UNIX
-(current standard being gcc 2.95).  AND Magick as a whole
+(current standard being gcc 2.95.2).  AND Magick as a whole
 should still be runable (and not segfault if your code is
 accessed) when run.  This is because at ANY time, an alpha
 distribution could be released, or we could start releasing
@@ -136,7 +136,7 @@ People never know where you live when your dead.
 CORE
 ----
 
-+ All threads mentioned need 2 values ... a Threshold, and Max.
+x All threads mentioned need 2 values ... a Threshold, and Max.
 	Threshold being amount of messages in queue before it will
 	re-spawn a new thread.  Max being maximum number of threads.
 	Minimum is always 1, and once the thread is flushed (and the
@@ -259,7 +259,7 @@ x Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mD
 	scenario on gcc, msvc and bcb . Note Function macros only, so that we don't get
 	that damn triplet argument fubar again.
 
-+ Add 'paranoid' locking to all code, so on ANY read request, we lock the
+x Add 'paranoid' locking to all code, so on ANY read request, we lock the
 	veriable for that user READ, for any WRITE request, we do the same
 	WRITE.  MUTEX locks also supported, but NOT to be used in conjunction
 	with READ and WRITE.
@@ -405,7 +405,7 @@ x Add ability for channel memo's to know who has read them, so that they
 	dont get constantly reminded that there are news articles for the
 	channel if they have already read them.
 
-+ Add ability to set timeout of read memos (and ability to set as unread)
+x Add ability to set timeout of read memos (and ability to set as unread)
 	(only notified on signon/unaway of unread memos).
 
 - Add ability to e-mail memos to a user if required (say a command to do
@@ -450,14 +450,14 @@ LOGGING
 
 x Implement an OpenArray and a TVarRec style class and an ARRAYOFCONST style macro
 
-* implement a logging guard of the type LogFunc::LogFunc(mstring& name, OpenArray& args);
+x implement a logging guard of the type LogFunc::LogFunc(mstring& name, OpenArray& args);
 	this has a static boolean of Logging (To Log or not to log that is the question)
 	also a static map<threadid,level> so that it logs out level:threadid:
 
 x global map <theadid,servername> - in the magick object see log.cpp/log.h for how to use it.
     being moved to static object mThread, as with all other threadtype stuff
 
-* finish revamping wxLog system.
+x finish revamping wxLog system.
 
 GENERAL CODING CONSTRUCTS
 -------------------------

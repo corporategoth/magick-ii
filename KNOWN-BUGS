@@ -6,9 +6,5 @@ $Id$
 
 Known problems that exist in magick that should be fixed.
 
-* No real locking, need to start locking everything
-  - MLOCK and RLOCK/WLOCK are incompatable.  Use one or
-    the other.  Mainly coz these are implemeted differently
-    depending on thread library used, and revision of it.
-  - Probably should lock when doing list searches (iterator
-    baed operations).
+- Probably should lock when doing list searches (iterator
+  based operations).  Doesnt seem a problem right now.

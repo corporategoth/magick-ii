@@ -24,8 +24,8 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.7  2000/06/10 07:01:02  prez
-** Fixed a bunch of little bugs ...
+** Revision 1.8  2000/06/19 13:15:34  prez
+** Documentation, what a novel concept.
 **
 **
 ** ========================================================== */
@@ -33,10 +33,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Sat Jun 10 15:31:36 EST 2000
+ * Created on Mon Jun 19 09:24:14 EST 2000
  */
 
-unsigned int def_logent =     338;
+unsigned int def_logent =     340;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -98,6 +98,7 @@ char *def_log[] = {
 "VALUETOOHIGH	 =Value specified for %s must be below or equal to %d.",
 "NO_CFG_FILE      =Could not read config file %s, aborting.",
 "STOP             =CONFIG: [Startup] STOP code received.",
+"ACTIVE           =%s is already active or stale PID file exists, please kill (or remove) it before restarting.",
 "RECONNECT        =Reconnecting to server due to configuration change.",
 "CANNOT_CONVERT   =Database type %s invalid (aborting).",
 "NO_KEYFILE       =Keyfile %s does not exist.",
@@ -166,8 +167,8 @@ char *def_log[] = {
 "UNBAN            =%s unbanned %s from channel %s with the UNBAN command.",
 "COMMAND          =%s executed the %s command for channel %s.",
 "LEVEL            =%s set the level of %s to %d for channel %s.",
-"ACCESS_ADD       =%s added %s to the access list for channel %s at level %s.",
-"ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %s.",
+"ACCESS_ADD       =%s added %s to the access list for channel %s at level %d.",
+"ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %d.",
 "ACCESS_DEL       =%s removed %s from the access list for channel %s.",
 "AKICK_ADD        =%s added %s to the autokick list for channel %s.",
 "AKICK_DEL        =%s removed %s from the autokick list for channel %s.",
@@ -360,6 +361,7 @@ char *def_log[] = {
 "REC_FORNONCHAN   =Received %s from %s for non-existant channel %s.",
 "REC_NOTINCHAN    =Received %s from %s for %s who is not in channel %s.",
 "REC_FORNOTINCHAN =Received %s for %s who is not in channel %s.",
+"REC_FORNONSERVER =Received %s from %s for non-existant server %s.",
 "DUP_CHAN         =Duplicate %s received from %s for channel %s.",
 "MODE_INEFFECT    =MODE change %c%c received from %s for %s that is already in effect.",
 "MODE_NOTINCHAN   =MODE change %c%c received from %s for %s who is not in channel %s.",

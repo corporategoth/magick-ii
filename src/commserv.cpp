@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/06/19 13:15:34  prez
+** Documentation, what a novel concept.
+**
 ** Revision 1.63  2000/06/18 13:31:48  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -197,7 +200,7 @@ void Committee::operator=(const Committee &in)
 {
     FT("Committee::operator=", ("(const Committee &) in"));
 
-    WLOCK(("CommServ", "list", in.i_Name.UpperCas()));
+    WLOCK(("CommServ", "list", in.i_Name.UpperCase()));
     i_Name = in.i_Name;
     i_RegTime = in.i_RegTime;
     i_Head = in.i_Head;

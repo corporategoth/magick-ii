@@ -24,8 +24,8 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.16  2000/06/10 07:01:02  prez
-** Fixed a bunch of little bugs ...
+** Revision 1.17  2000/06/19 13:15:34  prez
+** Documentation, what a novel concept.
 **
 **
 ** ========================================================== */
@@ -33,10 +33,10 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Sat Jun 10 15:20:52 EST 2000
+ * Created on Mon Jun 19 09:24:10 EST 2000
  */
 
-unsigned int def_langent =     851;
+unsigned int def_langent =     855;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -131,7 +131,7 @@ char *def_lang[] = {
 "MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.",
 "STARTHRESH         =Specified %s entry must have more than %d non-wildcard characters.",
 "MUSTBENUMBER       =You must specify a number between %d and %d.",
-"POSWHOLENUMBER     =You may only specify a positive whole number.",
+"WHOLENUMBER        =You may only specify a whole number.",
 "MUSTBEONOFF        =You may only specify \"ON\" or \"OFF\".",
 "NONNUMERIC         =Non-numeric arguments specified (ignored).",
 "ABOVELIMIT         =All entries above %d have been ignored.",
@@ -669,7 +669,8 @@ char *def_lang[] = {
 "ISNOTINUSE         =Channel %s is not currently in use.",
 "RESTRICT           =Channel %s is registered and has %s set.  Access restrictions apply.",
 "HIGHERACCESS       =Nickname %s is higher than you are on the %s access list.",
-"ONLYBELOW          =You may only add people to the access at a lower level than yourself.",
+"NOTZERO            =You may not add someone to the the access list at level zero.",
+"ONLYBELOW          =You may only add someone to the access list at a lower level than yourself.",
 "LOCKGREET          =Your greeting for channel %s is locked.",
 "NOTLOCKGREET       =Your greeting for channel %s is not locked.",
 "ISLOCKED           =%s for channel %s is locked.",
@@ -783,6 +784,8 @@ char *def_lang[] = {
 "CFG_SQUIT2         =Users have %s to reconnect before SQUIT protection activates.",
 "CFG_SYNC           =Databases save every %s, and sync in %s.",
 "CFG_CYCLE          =Hyperactive cycle is %s, and lag check is %s.",
+"CFG_DCC1           =DCC block size is %s and will time out in %s.",
+"CFG_DCC2           =Minimum DCC speed is %s and maximum is %s over %s.",
 "",
 "NICK_EXPIRE        =Nicknames will expire after %s.",
 "NICK_IDENT         =Users have %s to identify.",
@@ -790,9 +793,9 @@ char *def_lang[] = {
 "NICK_PASS          =Users will be killed if they fail to identify %d time(s).",
 "NICK_OPTIONS       =Default nickname options are: %s",
 "NICK_LANG          =Default language is %s.",
-"NICK_PICSIZE       =Maximum picture size is %d bytes.",
+"NICK_PICSIZE       =Maximum picture size is %s.",
 "NICK_PICEXT        =Valid picture extensions are: %s",
-"NICK_FILES         =Users may have up to %d file(s) of up to %d bytes each.",
+"NICK_FILES         =Users may have up to %d file(s) of up to %s each.",
 "",
 "CHAN_EXPIRE        =Channels will expire after %s.",
 "CHAN_IDENT         =Users will be killed if they fail to identify %d time(s).",
@@ -814,6 +817,7 @@ char *def_lang[] = {
 "MISC_FLOOD2        =Services remember old flood triggers for %s.",
 "MISC_IGNORE        =Ignore lasts for %s, and is made permanent if triggered %d time(s).",
 "MISC_COMM_OPT      =Default committee options are: %s",
+"",
 "",
 ";",
 "; This section contains the output used at the end of SUCCESSFULL",
