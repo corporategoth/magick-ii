@@ -65,6 +65,7 @@ public:
 	mVariant();
 	// Magick Only stuff
 	mVariant(const mstring& in);
+	mVariant(mDateTime in);
 	mVariant(wxTextFileType in);
 	mVariant(LineList *in);
 	mVariant(ConfigEntry *in);

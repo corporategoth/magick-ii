@@ -333,7 +333,7 @@ void NetworkServ::execute(const mstring & data)
     case 'J':
 	if (msgtype=="JOIN")
 	{
-	    // :source JIN :#channel
+	    // :source JOIN :#channel
 	    mstring chan;
 	    for (int i=1; (chan=data.After(":", 2).ExtractWord(i, ",")) != ""; i++)
 		Parent->nickserv.live[sourceL].Join(chan);
@@ -465,6 +465,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="SQUIT")
 	{
+	    // 
 	}
 	else if (msgtype=="STATS")
 	{
@@ -500,6 +501,16 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="TOPIC")
 	{
 	    // :server/user TOPIC #channel setter time :topic
+	    // TIME is not standard (time is optional);
+	    if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
+	    {
+		Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
+		        data.After(":", 2),
+		        data.ExtractWord(4, ": "),
+		        (time_t) atol(data.ExtractWord(5, ": "))
+		    );
+
+	    }
 	}
 	else if (msgtype=="TRACE")
 	{

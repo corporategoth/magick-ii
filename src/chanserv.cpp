@@ -55,7 +55,7 @@ int Chan_Live_t::Part(mstring nick)
     else
 	users.erase(nick.LowerCase());
 
-    return users.size();
+    RET(users.size());
 }
 
 
@@ -132,6 +132,40 @@ int Chan_Live_t::Voices()
 {
     NFT("Chan_Live_t::Voices");
     RET(count_if(users.begin(),users.end(),checkvoices));
+}
+
+void Chan_Live_t::Topic(mstring topic, mstring setter)
+{
+    FT("Chan_Live_t::Topic", (topic, setter));
+    i_Topic = topic;
+    i_Topic_Setter = setter;
+    i_Topic_Set_Time = Now();
+}
+
+void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
+{
+    FT("Chan_Live_t::Topic", (topic, setter, time));
+    i_Topic = topic;
+    i_Topic_Setter = setter;
+    i_Topic_Set_Time = time;
+}
+
+mstring Chan_Live_t::Topic()
+{
+    NFT("Chan_Live_t::Topic");
+    RET(i_Topic);
+}
+
+mstring Chan_Live_t::Topic_Setter()
+{
+    NFT("Chan_Live_t::Topic_Setter");
+    RET(i_Topic_Setter);
+}
+
+mDateTime Chan_Live_t::Topic_Set_Time()
+{
+    NFT("Chan_Live_t::Topic_Set_Time");
+    RET(i_Topic_Set_Time);
 }
 
 userlist_t::userlist_t(const userlist_t& in)

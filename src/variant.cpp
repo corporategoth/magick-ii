@@ -83,6 +83,13 @@ mVariant::mVariant(const mstring& in)
 	value.StringValue=in.c_str();
 }
 
+mVariant::mVariant(mDateTime in)
+{
+	truevaluetype="mDateTime";
+	valuetype="char *";
+	value.StringValue=in.DateTimeString().c_str();
+}
+
 mVariant::mVariant(bool in)
 {
 	truevaluetype=valuetype="bool";
