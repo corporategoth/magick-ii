@@ -1,3 +1,4 @@
+// RCS-ID:      $Id$
 #ifndef _LOCKABLE_H
 #define _LOCKABLE_H
 #include <ace/OS.h>

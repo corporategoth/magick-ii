@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "..\bob" /I "..\cryptlib21" /I "include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -88,6 +88,18 @@ SOURCE=.\src\lockable.cpp
 # Begin Source File
 
 SOURCE=.\include\lockable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\magick.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\magick.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 

@@ -1,3 +1,4 @@
+// RCS-ID:      $Id$
 #ifndef _MAGICK_H
 #define _MAGICK_H
 
@@ -8,12 +9,21 @@
 #include <vector>
 #include <string>
 using namespace std;
+extern "C" {
+#include "bob.h"
+};
 
 class Magick
 {
 	vector<string> argv;
+	ObjectPtr bobval;
+	UnwindTarget bobut;
+	InterpreterContextPtr bobic;
+	CompilerContext *bobcc;
+	bool bobavail;
 public:
-	Magick(int inargc, char **inargv);
+	Magick(int inargc, const char **inargv);
 	void Start();
+	bool StartBob(const string& scriptname="");
 };
 #endif
