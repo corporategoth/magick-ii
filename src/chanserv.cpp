@@ -919,12 +919,7 @@ void ChanServ::do_Drop(const mstring & mynick, const mstring & source, const mst
     }
 
     mstring founder = cstored->Founder();
-
-    if (cstored->Join() && Magick::instance().chanserv.IsLive(channel) &&
-	Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
-    {
-	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
-    }
+    cstored->Drop();
     Magick::instance().chanserv.RemStored(channel);
     nlive->UnChanIdentify(channel);
     Magick::instance().chanserv.stats.i_Drop++;

@@ -79,6 +79,7 @@ unsigned int Chan_Live_t::Part(const mstring & nick)
 {
     BTCB();
     FT("Chan_Live_t::Part", (nick));
+
     if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
 	MCB(users.size());
@@ -2037,6 +2038,9 @@ void Chan_Stored_t::Part(const mstring & nick)
     BTCB();
     FT("Chan_Stored_t::Part", (nick));
 
+    if (Forbidden())
+	return;
+
     if (Magick::instance().nickserv.IsLive(nick) && Magick::instance().nickserv.GetLive(nick)->IsServices())
 	return;
 
@@ -2927,6 +2931,23 @@ mDateTime Chan_Stored_t::RegTime() const
     RET(i_RegTime);
     ETCB();
 }
+
+unsigned long Chan_Stored_t::Drop()
+{
+    BTCB();
+    NFT("Chan_Stored_t::Drop");
+
+    // If I'm in there, get out!
+    if (Magick::instance().chanserv.IsLive(channel) &&
+	Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    {
+	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
+    }
+
+    RET(0u);
+    ETCB();
+}
+
 
 void Chan_Stored_t::Founder(const mstring & in)
 {
