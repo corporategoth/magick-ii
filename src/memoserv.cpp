@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/02/17 12:55:05  ungod
+** still working on borlandization
+**
 ** Revision 1.38  2000/02/16 12:59:39  ungod
 ** fixing for borland compilability
 **
@@ -312,7 +315,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    vector<int> numbers = ParseNumbers(what);
-	    int i, j=1;
+	    unsigned int i;
+	    int j=1;
 	    mstring output;
 	    bool displayed = false, triedabove = false, nonnumeric = false;
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
@@ -431,7 +435,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    vector<int> numbers = ParseNumbers(what);
-	    int i, j=1;
+	    unsigned int i;
+	    int j=1;
 	    bool displayed = false, triedabove = false, nonnumeric = false;
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
@@ -561,7 +566,8 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    vector<int> numbers = ParseNumbers(what);
-	    int i, j=1;
+	    unsigned int i;
+	    int j=1;
 	    bool displayed = false, triedabove = false, nonnumeric = false;
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    mstring output;
@@ -641,7 +647,8 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    vector<int> numbers = ParseNumbers(what);
-	    int i, j=1;
+	    unsigned int i;
+	    int j=1;
 	    bool displayed = false, triedabove = false, nonnumeric = false;
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
@@ -948,7 +955,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	int i;
+	unsigned int i;
 	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
 	mstring output = "";
@@ -990,7 +997,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	int i;
+	unsigned int i;
 	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
 
@@ -1123,7 +1130,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	int i;
+	unsigned int i;
 	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
 	mstring output = "";
@@ -1171,7 +1178,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	int i;
+	unsigned int i;
 	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
 
@@ -1306,7 +1313,8 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	}
 	else
 	{
-	    int i, j=1, adjust=0;
+	    unsigned int i;
+	    int j=1, adjust=0;
 	    vector<int> numbers1 = ParseNumbers(what);
 	    set<int> numbers;
 	    set<int>::iterator ni;
@@ -1408,7 +1416,8 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	}
 	else
 	{
-	    int i, j=1, adjust = 0;
+	    unsigned int i;
+	    int j=1, adjust = 0;
 	    vector<int> numbers1 = ParseNumbers(what);
 	    set<int> numbers;
 	    set<int>::iterator ni;

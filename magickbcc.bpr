@@ -13,7 +13,7 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = src\Debug\magickbcc.exe
+PROJECT = include\Debug\magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
   Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
   Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
@@ -47,11 +47,12 @@ SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
 CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
-  -Od -Tkh30000 -a8 -5 -d -k -v -vi -D$(SYSDEFINES);$(USERDEFINES) -q -tWR -tWM -c
+  -Od -Vmp -Tkh30000 -a8 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR \
+  -tWM -c
 IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude\bob -Iinclude \
   -I..\support\ace_wrappers -I..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
   -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
-PFLAGS = -Usrc;$(BCB)\lib;$(DEBUGLIBPATH) \
+PFLAGS = -Usrc;$(BCB)\lib;$(RELEASELIBPATH) \
   -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
   -N2Debug -N0Debug -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1 \
   -$YD
@@ -61,13 +62,12 @@ RFLAGS = -isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\
 AFLAGS = /isrc /i$(BCB)\include /i$(BCB)\include\ATL /iinclude\bob /iinclude \
   /i..\support\ace_wrappers /i..\support\zlib /d_DEBUG /dDEBUG /dWIN32 /d_CONSOLE \
   /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /mx /w2 /zd
-LFLAGS = -Lsrc;$(BCB)\lib;$(DEBUGLIBPATH) -ap -Tpe -x -v -q
+LFLAGS = -Lsrc;$(BCB)\lib;$(RELEASELIBPATH) -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj $(OBJFILES)
 ALLRES = $(RESFILES)
-ALLLIB = $(LIBFILES) $(LIBRARIES) ZLIB.LIB ACED.LIB ODBCCP32.LIB UUID.LIB import32.lib \
-  cw32mti.lib
+ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 
@@ -121,10 +121,11 @@ Count=1
 Item0=Debug
 
 [HistoryLists\hlFinalOutputDir]
-Count=3
-Item0=Debug\
-Item1=DebugItem1=Debug
+Count=4
+Item0=Debug
+Item1=DebugItem1=DebugItem1=Debug
 Item2=
+Item3=
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/02/17 12:55:07  ungod
+** still working on borlandization
+**
 ** Revision 1.83  2000/02/16 12:59:41  ungod
 ** fixing for borland compilability
 **
@@ -234,6 +237,8 @@ void ThreadID::WriteOut(const mstring &message)
 T_Functions::T_Functions(const mstring &name)
 {
     m_name=name;
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Functions);
@@ -248,6 +253,8 @@ T_Functions::T_Functions(const mstring &name)
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     m_name=name;
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Functions);
@@ -267,6 +274,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 //      /  (char) Y
 T_Functions::~T_Functions()
 { 
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     tid->indentdown(); 
@@ -301,6 +310,8 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 
 void T_CheckPoint::common(const char *input)
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(CheckPoint);
@@ -331,6 +342,8 @@ T_Comments::T_Comments(const char *fmt, ...)
 
 void T_Comments::common(const char *input)
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Comments);
@@ -348,6 +361,8 @@ void T_Comments::common(const char *input)
 //      << DE3(srealm.net.au)
 T_Modify::T_Modify(const mVarArray &args)
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Modify);
@@ -365,6 +380,8 @@ T_Modify::T_Modify(const mVarArray &args)
 //      >> DE3(corewars.net)
 void T_Modify::End(const mVarArray &args)
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Modify);
@@ -384,6 +401,8 @@ void T_Modify::End(const mVarArray &args)
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Chatter);
@@ -417,6 +436,8 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 //      :+ M Magick::LoadMessages
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Locking);
@@ -441,6 +462,8 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking()
 {
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Locking);

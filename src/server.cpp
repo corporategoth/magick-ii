@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/02/17 12:55:07  ungod
+** still working on borlandization
+**
 ** Revision 1.68  2000/02/16 12:59:40  ungod
 ** fixing for borland compilability
 **
@@ -170,7 +173,7 @@ vector<mstring> Server::AllDownlinks()
     while (found == true)
     {
 	found = false;
-	for (int i=0; i<uplinks.size(); i++) 
+	for (unsigned int i=0; i<uplinks.size(); i++) 
 	{
 	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
 	    {
@@ -200,7 +203,7 @@ Server::~Server()
     // Take my sublinks with me (who will take theirs ...)
     vector<mstring> Kill = Downlinks();
     COM(("Destroying %d more servers", Kill.size()));
-    for (int i=0; i<Kill.size(); i++)
+    for (unsigned int i=0; i<Kill.size(); i++)
 	Parent->server.ServerList.erase(Kill[i]);
     if (Kill.size() && Parent->server.OurUplink() == i_Name)
 	Parent->server.OurUplink("");
@@ -1674,7 +1677,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="SQUIT")
 	{
 	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
-	    // SQUIT lifestone.darker.net :Ping timeout\
+	    // SQUIT lifestone.darker.net :Ping timeout
 	    // :PreZ SQUIT server :reason
 	    mstring target;
 	    if (source == "")

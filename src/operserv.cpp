@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/02/17 12:55:07  ungod
+** still working on borlandization
+**
 ** Revision 1.55  2000/02/16 12:59:40  ungod
 ** fixing for borland compilability
 **
@@ -691,7 +694,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    unsigned short i, j, k;
+    unsigned int i, j, k;
     mstring output;
     mstring action  = params.ExtractWord(2, " ").UpperCase();
     mstring ttype   = params.ExtractWord(3, " ").UpperCase();

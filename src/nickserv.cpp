@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/02/17 12:55:06  ungod
+** still working on borlandization
+**
 ** Revision 1.57  2000/02/16 12:59:40  ungod
 ** fixing for borland compilability
 **
@@ -4096,6 +4099,8 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
     }
 
     unsigned int count;
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (count = Parent->nickserv.stored[source.LowerCase()].AccessDel(hostmask))
     {
 	Parent->nickserv.stats.i_Access++;
@@ -4230,6 +4235,8 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     }
     unsigned int count;
 
+    // Prez: should this be an assign or a compare? if it's an assign, assign it,
+    //   then compare it, not both at once, it's bad to read.
     if (count = Parent->nickserv.stored[source.LowerCase()].IgnoreDel(target))
     {
 	Parent->nickserv.stats.i_Ignore++;

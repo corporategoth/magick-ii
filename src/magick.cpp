@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.194  2000/02/17 12:55:05  ungod
+** still working on borlandization
+**
 ** Revision 1.193  2000/02/16 12:59:39  ungod
 ** fixing for borland compilability
 **
@@ -686,7 +689,7 @@ void Magick::LoadInternalMessages()
 
     WLOCK(("Magick","LoadMessages"));
     // so that the language file strings are only loaded in memory while this function is in effect.
-    int i;
+    unsigned int i;
     {
 #include "language.h"
 	remove((wxGetCwd()+DirSlash+"default.lng").c_str());
@@ -767,7 +770,6 @@ bool Magick::LoadExternalMessages(mstring language)
 
 	bool bContGroup, bContEntries;
 	long dummy1=0,dummy2=0;
-	int i;
 	mstring groupname,entryname,combined;
 	vector<mstring> entries;
 	bContGroup=fconf.GetFirstGroup(groupname,dummy1);
@@ -787,7 +789,7 @@ bool Magick::LoadExternalMessages(mstring language)
 	    fconf.SetPath("..");
 	    bContGroup=fconf.GetNextGroup(groupname,dummy1);
 	}
-	for (i=0; i<entries.size(); i++)
+	for (unsigned int i=0; i<entries.size(); i++)
 	    fconf.Read(entries[i], &Messages[language.UpperCase()][entries[i]], mstring(""));
 	if (Messages.find(language.UpperCase()) != Messages.end())
 	{
@@ -803,7 +805,7 @@ bool Magick::LoadLogMessages(mstring language)
     // use the previously created name array to get the names to load
     WLOCK(("Magick","LoadLogMessages"));
 
-    int i;
+    unsigned int i;
     {
 #include "logfile.h"
 	remove((wxGetCwd()+DirSlash+"default.lfo").c_str());
@@ -1521,9 +1523,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
     in.Read(ts_Files+"COMPRESSION",&files.compression,6);
-    if (files.compression < 0)
-	files.compression = 0;
-    else if (files.compression > 9)
+    if (files.compression > 9)
 	files.compression = 9;
     in.Read(ts_Files+"KEYFILE",&files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
@@ -1954,9 +1954,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGHUP:	// Reload CFG/DB's
 	break;
 #endif
-    case SIGILL:	// illegal opcode, this suckers gone awry..
+    case SIGILL:	// illegal opcode, this suckers gone walkabouts..
 	Parent->Shutdown(true);	// We've gotta kill her captain, she's breaking up.
-	return -1;
+	RET(-1);
 	break;
 #ifdef SIGTRAP
     case SIGTRAP:	// Throw exception

@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.142  2000/02/17 12:55:04  ungod
+** still working on borlandization
+**
 ** Revision 1.141  2000/02/16 12:59:38  ungod
 ** fixing for borland compilability
 **
@@ -45,6 +48,10 @@
 #include "lockable.h"
 #include "magick.h"
 #include "cryptstream.h"
+
+#ifdef __BORLAND__
+#pragma codeseg CODE2
+#endif
 
 // Private functions
 
@@ -544,7 +551,7 @@ void Chan_Live_t::SendMode(mstring in)
     FT("Chan_Live_t::SendMode", (in));
     unsigned int i, param = 2;
     mstring mode = in.Before(" ");
-    
+
     bool add = true;
 
     for (i=0; i<mode.size(); i++)
@@ -738,9 +745,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     FT("Chan_Live_t::Mode", (source, in));
 
     mstring change = in.ExtractWord(1, ": ");
-    int fwdargs = 2;
+    unsigned int fwdargs = 2, i;
     bool add = true;
-    unsigned int i;
     for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
@@ -1008,7 +1014,7 @@ void Chan_Stored_t::Join(mstring nick)
 	users--;
     }
 
-    if (users == (Join() ? 2 : 1))
+    if (users == (Join() ? 2U : 1U))
     {
 	if (i_Mlock_On.Contains("k") && i_Mlock_On.Contains("l"))
 	{
@@ -1530,8 +1536,7 @@ mDateTime Chan_Stored_t::LastUsed()
 
     if (Parent->chanserv.IsLive(i_Name))
     {
-	int i;
-	for (i=0; i<Parent->chanserv.live[i_Name.LowerCase()].Users(); i++)
+	for (unsigned int i=0; i<Parent->chanserv.live[i_Name.LowerCase()].Users(); i++)
 	{
 	    if (GetAccess(Parent->chanserv.live[i_Name.LowerCase()].User(i)) > 0)
 	    {
@@ -1621,7 +1626,8 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
     i_Mlock_Limit = 0;
     vector<mstring> retval;
     mstring output, change = mode.ExtractWord(1, ": ");
-    unsigned int i, fwdargs = 2;
+    unsigned int i;
+    int fwdargs = 2;
     bool add = true;
     bool ignorek = false;
     bool ignorel = false;
@@ -2951,7 +2957,7 @@ bool Chan_Stored_t::Message_erase()
 }
 
 
-bool Chan_Stored_t::Message_find(int num)
+bool Chan_Stored_t::Message_find(unsigned int num)
 {
     FT("Chan_Stored_t::Message_find", (num));
 
@@ -2960,7 +2966,7 @@ bool Chan_Stored_t::Message_find(int num)
 	RET(false);
     }
 
-    int i;
+    unsigned int i;
     entlist_i iter = i_Message.end();
     for (iter=i_Message.begin(), i=1; iter!=i_Message.end() && i<num;
 							    iter++, i++) ;
@@ -3745,7 +3751,8 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_List", (mynick, source, params));
 
-    int listsize, i, count;
+    unsigned int listsize, i;
+    int count;
     mstring mask;
 
     mstring message = params.Before(" ").UpperCase();
@@ -4549,7 +4556,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
 
     Chan_Live_t *chan = &Parent->chanserv.live[channel.LowerCase()];
     channel = chan->Name();
-    int i;
+    unsigned int i;
     mstring user, output = channel + ": ";
 
     for (i=0; i<chan->Users(); i++)
@@ -4720,7 +4727,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
 
     Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
     Nick_Live_t *nlive = &Parent->nickserv.live[target.LowerCase()];
-    int i;
+    unsigned int i;
     bool found = false;
     for (i=0; i < clive->Bans(); i++)
     {
@@ -5546,7 +5553,8 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 
 	unsigned int i, num;
 	bool super = cstored->GetAccess(source, "SUPER");
-	for (i=who.size()-1, num=0; i>=0; i--)
+	// i+1 below because unsigned i will always be >= 0
+	for (i=who.size()-1, num=0; i+1>0; i--)
 	{
 	    switch (who[i])
 	    {
@@ -8377,3 +8385,5 @@ void ChanServ::load_database(wxInputStream& in)
 	COM(("Entry CHANNEL %s loaded ...", tmpstored.Name().c_str()));
     }
 }
+
+

@@ -19,6 +19,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/02/17 12:55:03  ungod
+** still working on borlandization
+**
 ** Revision 1.39  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -154,9 +157,9 @@ public:
 	bool IsSameAs(const mstring& in, bool bCase=true);
 	int CmpNoCase(const mstring& in);
 	int Cmp(const mstring& in);
-	int WordCount(const mstring &separators)const;
+	unsigned int WordCount(const mstring &separators)const;
 	mstring ExtractWord(int count,const mstring& separators)const;
-	int WordPosition(int count,const mstring& separators)const;
+	unsigned int WordPosition(unsigned int count,const mstring& separators)const;
 	pair<int,int> RegFind(const mstring& pattern)const;
 };
 

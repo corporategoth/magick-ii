@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/02/17 12:55:06  ungod
+** still working on borlandization
+**
 ** Revision 1.51  2000/02/16 12:59:40  ungod
 ** fixing for borland compilability
 **
@@ -1410,10 +1413,10 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
   return size;
 }
 
-#ifdef __BORLANDC__
+/*#ifdef __BORLANDC__
   #define   W_OK        2
   #define   R_OK        4
-#endif
+#endif*/
 
 // there is no distinction between text and binary files under Unix
 #if !defined(WIN32) && !defined(O_BINARY)
@@ -1881,7 +1884,7 @@ wxMemoryStream::wxMemoryStream(wxInputStream& in)
 :wxInputStream(),wxOutputStream()
 {
     unsigned char c;
-    int i;
+    unsigned int i;
     for(i=0;i<in.StreamSize()/5;i++)
     {
 	in>>c;
@@ -1917,7 +1920,7 @@ size_t wxMemoryStream::Dump(wxOutputStream& out)
 }
 size_t wxMemoryStream::CopyTo(unsigned char *buffer, size_t len)
 {
-    int i=0;
+    unsigned int i=0;
     for(streamptr=storage.begin();streamptr!=storage.end(),i<len;streamptr++)
     {
 	buffer[i]=(*streamptr);
@@ -1928,7 +1931,7 @@ size_t wxMemoryStream::CopyTo(unsigned char *buffer, size_t len)
 size_t wxMemoryStream::OnSysRead(void *buffer, size_t size)
 {
     unsigned char *ucbuffer=(unsigned char *)buffer;
-    int i;
+    unsigned int i;
     for(i=0;i<size,streamptr!=storage.end();i++,streamptr++)
     {
 	ucbuffer[i]=(*streamptr);
@@ -1940,7 +1943,7 @@ size_t wxMemoryStream::OnSysWrite(const void *buffer, size_t size)
     //hmm, dunno what happens if you assign to an end() streamptr, 
     // does it just append to the end of the set?
     unsigned char *ucbuffer=(unsigned char *)buffer;
-    int i;
+    unsigned int i;
     for(i=0;i<size,streamptr!=storage.end();i++,streamptr++)
     {
 	if(streamptr==storage.end())
@@ -1970,7 +1973,7 @@ off_t wxMemoryStream::OnSysTell() const
 void wxMemoryStream::Read(wxInputStream& stream_in,int count)
 {
     unsigned char c;
-    int i;
+    unsigned int i;
     for(i=0;i<max(count/5,stream_in.StreamSize()/5);i++)
     {
 	stream_in>>c;

@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/02/17 12:55:08  ungod
+** still working on borlandization
+**
 ** Revision 1.28  2000/02/16 12:59:41  ungod
 ** fixing for borland compilability
 **
@@ -230,7 +233,7 @@ void TxnIds::Expire()
 	if (iter->second.SecondsSince() > keeptime)
 	    kill.push_back(iter->first);
     }
-    for (int i=0; i<kill.size(); i++)
+    for (unsigned int i=0; i<kill.size(); i++)
 	i_Ids.erase(kill[i]);
 }
 

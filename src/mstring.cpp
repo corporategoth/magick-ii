@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/02/17 12:55:06  ungod
+** still working on borlandization
+**
 ** Revision 1.55  2000/02/16 12:59:40  ungod
 ** fixing for borland compilability
 **
@@ -404,7 +407,7 @@ size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) cons
 {
 	size_t i;
 	
-	int start,end;
+	unsigned int start,end;
 	if(fromEnd==true)
 	{
 		start=length()-in.length()-1;
@@ -788,7 +791,7 @@ mstring operator+(unsigned int i, const mstring& string)
 	return Result;
 }
 
-int mstring::WordCount(const mstring &separators)const
+unsigned int mstring::WordCount(const mstring &separators)const
 {
     //
     int Result=0;
@@ -821,7 +824,7 @@ mstring mstring::ExtractWord(int count,const mstring& separators)const
     }
     return Result;
 }
-int mstring::WordPosition(int N,const mstring& separators)const
+unsigned int mstring::WordPosition(unsigned int N,const mstring& separators)const
 {
     unsigned int i=0,count=0;
     mstring S=*this;

@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/02/17 12:55:05  ungod
+** still working on borlandization
+**
 ** Revision 1.10  2000/02/16 12:59:39  ungod
 ** fixing for borland compilability
 **
@@ -100,7 +103,6 @@ size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 	    delete [] buff2;
 	throw;
 	// below is just to make sure, not sure it's ever used
-	return size;
     }
     if(buff!=NULL)
         delete [] buff;
@@ -134,7 +136,6 @@ size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 	    delete [] buff2;
 	throw;
 	// below is just to make sure, not sure it's ever used
-	return size;
     }
     if(buff!=NULL)
 	delete [] buff;

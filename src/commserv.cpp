@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/02/17 12:55:05  ungod
+** still working on borlandization
+**
 ** Revision 1.38  2000/02/16 12:59:38  ungod
 ** fixing for borland compilability
 **
@@ -1076,7 +1079,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
     
-    int num = atoi(msgnum.c_str());
+    unsigned int num = atoi(msgnum.c_str());
     if (num <= 0 || num > Parent->commserv.list[committee].MSG_size())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),

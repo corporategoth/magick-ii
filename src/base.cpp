@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2000/02/17 12:55:04  ungod
+** still working on borlandization
+**
 ** Revision 1.96  2000/02/16 12:59:38  ungod
 ** fixing for borland compilability
 **
@@ -674,7 +677,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 	    mstring user)
 {
     FT("CommandMap::GetUserCommand", (service, command, user));
-    int i;
+    unsigned int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
     clist_iter iter;
     mstring type, list;
@@ -737,7 +740,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
 	    mstring user)
 {
     FT("CommandMap::GetSystemCommand", (service, command, user));
-    int i;
+    unsigned int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
     clist_iter iter;
     mstring type, list;

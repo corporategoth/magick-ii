@@ -19,6 +19,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/02/17 12:55:03  ungod
+** still working on borlandization
+**
 ** Revision 1.28  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -360,7 +363,7 @@ public:
     entlist_i Message_begin()			{ return i_Message.begin(); }
     entlist_i Message_end()			{ return i_Message.end(); }
     size_t Message_size()			{ return i_Message.size(); }
-    bool Message_find(int num);
+    bool Message_find(unsigned int num);
     entlist_i Message;
 };
 

@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/02/17 12:55:07  ungod
+** still working on borlandization
+**
 ** Revision 1.28  2000/02/16 12:59:41  ungod
 ** fixing for borland compilability
 **
@@ -206,7 +209,7 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 	    downlinks = Parent->server.ServerList[server].Downlinks();
     }
 
-    for (int i=0; i<downlinks.size(); i++)
+    for (unsigned int i=0; i<downlinks.size(); i++)
     {
 	if (Parent->server.IsServer(downlinks[i]))
 	{
