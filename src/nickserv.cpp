@@ -242,8 +242,8 @@ void NickServ::AddCommands()
 #endif
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "SETPASS*", Magick::instance().commserv.SOP_Name(),
 						 NickServ::do_Setpass);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.SOP_Name(),
-						 NickServ::do_Live);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), NickServ::do_Live);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -344,7 +344,8 @@ void NickServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNSUS*", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "FORB*", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "GET*PASS*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in

@@ -293,8 +293,8 @@ void ChanServ::AddCommands()
 						 ChanServ::do_Invite);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNBAN*", Magick::instance().commserv.REGD_Name(),
 						 ChanServ::do_Unban);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.SOP_Name(),
-						 ChanServ::do_Live);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), ChanServ::do_Live);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "DETAIL*", Magick::instance().commserv.SOP_Name(),
 						 ChanServ::do_Detail);
 
@@ -455,7 +455,8 @@ void ChanServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "USER*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "INV*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNBAN*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LIVE*", Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "DETAIL*", Magick::instance().commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
