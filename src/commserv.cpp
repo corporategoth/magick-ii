@@ -27,6 +27,10 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2001/11/03 21:02:52  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.103  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -308,40 +312,44 @@ RCSID(commserv_cpp, "@(#)$Id$");
 static Committee_t GLOB_Committee_t;
 #endif
 
+void Committee_t::defaults()
+{
+    NFT("Committee_t::defaults");
+
+    setting.Private = Parent->commserv.DEF_Private();
+    lock.Private = false;
+    setting.OpenMemos = Parent->commserv.DEF_OpenMemos();
+    lock.OpenMemos = false;
+    setting.Secure = Parent->commserv.DEF_Secure();
+    lock.Secure = false;
+}
 
 Committee_t::Committee_t(const mstring& name, const mstring& head, const mstring& description)
 	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
-	  i_Head(head.LowerCase()), i_Description(description),
-	  i_Private(Parent->commserv.DEF_Private()), l_Private(false),
-	  i_OpenMemos(Parent->commserv.DEF_OpenMemos()), l_OpenMemos(false),
-	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
+	  i_Head(head.LowerCase()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, head, description));
-
+    defaults();
     DumpE();
 }
 
 
 Committee_t::Committee_t(const mstring& name, const Committee_t& head, const mstring& description)
 	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
-	  i_HeadCom(head.Name()), i_Description(description),
-	  i_Private(Parent->commserv.DEF_Private()), l_Private(false),
-	  i_OpenMemos(Parent->commserv.DEF_OpenMemos()), l_OpenMemos(false),
-	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
+	  i_HeadCom(head.Name()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, "(Committee_t *) head", description));
+    defaults();
     DumpE();
 }
 
 
 Committee_t::Committee_t(const mstring& name, const mstring& description)
 	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
-	  i_Description(description),
-	  i_Private(Parent->commserv.DEF_Private()), l_Private(false),
-	  i_OpenMemos(Parent->commserv.DEF_OpenMemos()), l_OpenMemos(false),
-	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
+	  i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, description));
+    defaults();
     DumpE();
 }
 
@@ -357,12 +365,12 @@ void Committee_t::operator=(const Committee_t &in)
     i_Description = in.i_Description;
     i_Email = in.i_Email;
     i_URL = in.i_URL;
-    i_OpenMemos = in.i_OpenMemos;
-    l_OpenMemos = in.l_OpenMemos;
-    i_Secure = in.i_Secure;
-    l_Secure = in.l_Secure;
-    i_Private = in.i_Private;
-    l_Private = in.l_Private;
+    setting.OpenMemos = in.setting.OpenMemos;
+    lock.OpenMemos = in.lock.OpenMemos;
+    setting.Secure = in.setting.Secure;
+    lock.Secure = in.lock.Secure;
+    setting.Private = in.setting.Private;
+    lock.Private = in.lock.Private;
     i_Members = in.i_Members;
     i_Messages = in.i_Messages;
 
@@ -599,8 +607,8 @@ bool Committee_t::IsOn(const mstring& nick) const
     if (IsIn(nick) && Parent->nickserv.IsStored(nick) &&
 	Parent->nickserv.GetStored(nick).IsOnline())
     {
-	RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "i_Secure"),
-		!i_Secure || Parent->nickserv.GetLive(nick).IsIdentified())
+	RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "setting.Secure"),
+		!setting.Secure || Parent->nickserv.GetLive(nick).IsIdentified())
 	{
 	    RET(true);
 	}
@@ -690,10 +698,10 @@ void Committee_t::Private(const bool in)
     FT("Committee_t::Private", (in));
     if (!L_Private())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Private"));
-	MCB(i_Private);
-	i_Private = in;
-	MCE(i_Private);
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Private"));
+	MCB(setting.Private);
+	setting.Private = in;
+	MCE(setting.Private);
     }
 }
 
@@ -702,8 +710,8 @@ bool Committee_t::Private() const
     NFT("Committee_t::Private");
     if (!Parent->commserv.LCK_Private())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Private"));
-	RET(i_Private);
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Private"));
+	RET(setting.Private);
     }
     RET(Parent->commserv.DEF_Private());
 }
@@ -714,10 +722,10 @@ void Committee_t::L_Private(const bool in)
     FT("Committee_t::L_Private", (in));
     if (!Parent->commserv.LCK_Private())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Private"));
-	MCB(l_Private);
-	l_Private = in;
-	MCE(l_Private);
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Private"));
+	MCB(lock.Private);
+	lock.Private = in;
+	MCE(lock.Private);
     }
 }
 
@@ -727,8 +735,8 @@ bool Committee_t::L_Private() const
     NFT("Committee_t::L_Private");
     if (!Parent->commserv.LCK_Private())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Private"));
-	RET(l_Private);
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Private"));
+	RET(lock.Private);
     }
     RET(true);
 }
@@ -739,10 +747,10 @@ void Committee_t::Secure(const bool in)
     FT("Committee_t::Secure", (in));
     if (!L_Secure())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
-	MCB(i_Secure);
-	i_Secure = in;
-	MCE(i_Secure);
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Secure"));
+	MCB(setting.Secure);
+	setting.Secure = in;
+	MCE(setting.Secure);
     }
 }
 
@@ -752,8 +760,8 @@ bool Committee_t::Secure() const
     NFT("Committee_t::Secure");
     if (!Parent->commserv.LCK_Secure())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
-	RET(i_Secure);
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Secure"));
+	RET(setting.Secure);
     }
     RET(Parent->commserv.DEF_Secure());
 }
@@ -764,10 +772,10 @@ void Committee_t::L_Secure(const bool in)
     FT("Committee_t::L_Secure", (in));
     if (!Parent->commserv.LCK_Secure())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
-	MCB(l_Secure);
-	l_Secure = in;
-	MCE(l_Secure);
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Secure"));
+	MCB(lock.Secure);
+	lock.Secure = in;
+	MCE(lock.Secure);
     }
 }
 
@@ -777,8 +785,8 @@ bool Committee_t::L_Secure() const
     NFT("Committee_t::L_Secure");
     if (!Parent->commserv.LCK_Secure())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
-	RET(l_Secure);
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Secure"));
+	RET(lock.Secure);
     }
     RET(true);
 }
@@ -789,10 +797,10 @@ void Committee_t::OpenMemos(const bool in)
     FT("Committee_t::OpenMemos", (in));
     if (!L_OpenMemos())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_OpenMemos"));
-	MCB(i_OpenMemos);
-	i_OpenMemos = in;
-	MCE(i_OpenMemos);
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.OpenMemos"));
+	MCB(setting.OpenMemos);
+	setting.OpenMemos = in;
+	MCE(setting.OpenMemos);
     }
 }
 
@@ -802,8 +810,8 @@ bool Committee_t::OpenMemos() const
     NFT("Committee_t::OpenMemos");
     if (!Parent->commserv.LCK_OpenMemos())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_OpenMemos"));
-	RET(i_OpenMemos);
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.OpenMemos"));
+	RET(setting.OpenMemos);
     }
     RET(Parent->commserv.DEF_OpenMemos());
 }
@@ -814,10 +822,10 @@ void Committee_t::L_OpenMemos(const bool in)
     FT("Committee_t::L_OpenMemos", (in));
     if (!Parent->commserv.LCK_OpenMemos())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_OpenMemos"));
-	MCB(l_OpenMemos);
-	l_OpenMemos = in;
-	MCE(l_OpenMemos);
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.OpenMemos"));
+	MCB(lock.OpenMemos);
+	lock.OpenMemos = in;
+	MCE(lock.OpenMemos);
     }
 }
 
@@ -827,8 +835,8 @@ bool Committee_t::L_OpenMemos() const
     NFT("Committee_t::L_OpenMemos");
     if (!Parent->commserv.LCK_OpenMemos())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_OpenMemos"));
-	RET(l_OpenMemos);
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.OpenMemos"));
+	RET(lock.OpenMemos);
     }
     RET(true);
 }
@@ -921,12 +929,8 @@ size_t Committee_t::Usage() const
 	retval += i->Usage();
     }
 
-    retval += sizeof(i_Private);
-    retval += sizeof(l_Private);
-    retval += sizeof(i_OpenMemos);
-    retval += sizeof(l_OpenMemos);
-    retval += sizeof(i_Secure);
-    retval += sizeof(l_Secure);
+    retval += sizeof(setting);
+    retval += sizeof(lock);
 
     entlist_ci j;
     for (j=i_Messages.begin(); j!=i_Messages.end(); j++)
@@ -947,15 +951,15 @@ size_t Committee_t::Usage() const
 void Committee_t::DumpB() const
 {
     MB(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
-	i_URL, i_Members.size(), i_Private, l_Private, i_OpenMemos,
-	l_OpenMemos, i_Secure, l_Secure, i_Messages.size(), i_UserDef.size()));
+	i_URL, i_Members.size(), setting.Private, lock.Private, setting.OpenMemos,
+	lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
 }
 
 void Committee_t::DumpE() const
 {
     ME(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
-	i_URL, i_Members.size(), i_Private, l_Private, i_OpenMemos,
-	l_OpenMemos, i_Secure, l_Secure, i_Messages.size(), i_UserDef.size()));
+	i_URL, i_Members.size(), setting.Private, lock.Private, setting.OpenMemos,
+	lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
 }
 
 CommServ::CommServ()
@@ -1114,7 +1118,11 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* E*MAIL*", Parent->commserv.REGD_Name(), CommServ::do_set_Email);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* U*R*L*", Parent->commserv.REGD_Name(), CommServ::do_set_URL);
+		"SET* URL", Parent->commserv.REGD_Name(), CommServ::do_set_URL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* WWW*", Parent->commserv.REGD_Name(), CommServ::do_set_URL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* WEB*", Parent->commserv.REGD_Name(), CommServ::do_set_URL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* SEC*", Parent->commserv.REGD_Name(), CommServ::do_set_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1218,7 +1226,11 @@ void CommServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* E*MAIL*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* U*R*L*", Parent->commserv.REGD_Name());
+		"SET* URL", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* WWW*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* WEB*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* SEC*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -3267,12 +3279,42 @@ void Committee_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pEl
 	if( pElement->IsA(tag_Description) )	pElement->Retrieve(i_Description);
 	if( pElement->IsA(tag_Email) )		pElement->Retrieve(i_Email);
 	if( pElement->IsA(tag_URL) )		pElement->Retrieve(i_URL);
-	if( pElement->IsA(tag_set_OpenMemos) )	pElement->Retrieve(i_OpenMemos);
-	if( pElement->IsA(tag_set_Private) )	pElement->Retrieve(i_Private);
-	if( pElement->IsA(tag_set_Secure) )	pElement->Retrieve(i_Secure);
-	if( pElement->IsA(tag_lock_OpenMemos) )	pElement->Retrieve(l_OpenMemos);
-	if( pElement->IsA(tag_lock_Private) )	pElement->Retrieve(l_Private);
-	if( pElement->IsA(tag_lock_Secure) )	pElement->Retrieve(l_Secure);
+	if( pElement->IsA(tag_set_OpenMemos) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.OpenMemos = tmp;
+	}
+	if( pElement->IsA(tag_set_Private) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Private = tmp;
+	}
+	if( pElement->IsA(tag_set_Secure) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Secure = tmp;
+	}
+	if( pElement->IsA(tag_lock_OpenMemos) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.OpenMemos = tmp;
+	}
+ 	if( pElement->IsA(tag_lock_Private) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Private = tmp;
+	}
+	if( pElement->IsA(tag_lock_Secure) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Secure = tmp;
+	}
 }
 
 void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -3289,12 +3331,12 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_Description, i_Description);
 	pOut->WriteElement(tag_Email, i_Email);
 	pOut->WriteElement(tag_URL, i_URL);
-	pOut->WriteElement(tag_set_OpenMemos, i_OpenMemos);
-	pOut->WriteElement(tag_set_Private, i_Private);
-	pOut->WriteElement(tag_set_Secure, i_Secure);
-	pOut->WriteElement(tag_lock_OpenMemos, l_OpenMemos);
-	pOut->WriteElement(tag_lock_Private, l_Private);
-	pOut->WriteElement(tag_lock_Secure, l_Secure);
+	pOut->WriteElement(tag_set_OpenMemos, setting.OpenMemos);
+	pOut->WriteElement(tag_set_Private, setting.Private);
+	pOut->WriteElement(tag_set_Secure, setting.Secure);
+	pOut->WriteElement(tag_lock_OpenMemos, lock.OpenMemos);
+	pOut->WriteElement(tag_lock_Private, lock.Private);
+	pOut->WriteElement(tag_lock_Secure, lock.Secure);
 
 	if (!(i_Name == Parent->commserv.ALL_Name() ||
 	      i_Name == Parent->commserv.REGD_Name() ||
@@ -3434,33 +3476,33 @@ void CommServ::PostLoad()
 		iter->second.i_Members.insert(entlist_t(
 			Parent->operserv.Services_Admin().ExtractWord(j, ", "),
 			Parent->operserv.FirstName()));
-	    iter->second.Secure(sadmin_secure);
-	    iter->second.Private(sadmin_private);
-	    iter->second.OpenMemos(sadmin_openmemos);
+	    iter->second.Secure(SADMIN_Secure());
+	    iter->second.Private(SADMIN_Private());
+	    iter->second.OpenMemos(SADMIN_OpenMemos());
 	}
 	else if (iter->first == Parent->commserv.SOP_Name())
 	{
 	    iter->second.i_Head.erase();
 	    iter->second.i_HeadCom = Parent->commserv.SADMIN_Name();
-	    iter->second.Secure(sop_secure);
-	    iter->second.Private(sop_private);
-	    iter->second.OpenMemos(sop_openmemos);
+	    iter->second.Secure(SOP_Secure());
+	    iter->second.Private(SOP_Private());
+	    iter->second.OpenMemos(SOP_OpenMemos());
 	}
 	else if (iter->first == Parent->commserv.ADMIN_Name())
 	{
 	    iter->second.i_Head.erase();
 	    iter->second.i_HeadCom = Parent->commserv.SADMIN_Name();
-	    iter->second.Secure(admin_secure);
-	    iter->second.Private(admin_private);
-	    iter->second.OpenMemos(admin_openmemos);
+	    iter->second.Secure(ADMIN_Secure());
+	    iter->second.Private(ADMIN_Private());
+	    iter->second.OpenMemos(ADMIN_OpenMemos());
 	}
 	else if (iter->first == Parent->commserv.OPER_Name())
 	{
 	    iter->second.i_Head.erase();
 	    iter->second.i_HeadCom = Parent->commserv.ADMIN_Name();
-	    iter->second.Secure(oper_secure);
-	    iter->second.Private(oper_private);
-	    iter->second.OpenMemos(oper_openmemos);
+	    iter->second.Secure(OPER_Secure());
+	    iter->second.Private(OPER_Private());
+	    iter->second.OpenMemos(OPER_OpenMemos());
 	}
 	else if (iter->first == Parent->commserv.ALL_Name())
 	{

@@ -25,6 +25,10 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.73  2001/07/05 05:59:05  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -376,6 +380,8 @@ public:
 
 struct NickInfo_CUR;
 struct ESP_NickInfo;
+struct EPO_NickAlias;
+struct EPO_NickCore;
 
 class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 {
@@ -383,6 +389,7 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
     friend class NickServ;
     friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
     friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
+    friend Nick_Stored_t EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -390,28 +397,40 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
     mstring i_Email;
     mstring i_URL;
     mstring i_ICQ;
+    mstring i_AIM;
     mstring i_Description;
     mstring i_Comment;
     mstring i_Host;
     set<mstring> i_slaves; // HOST only
     set<mstring> i_access;
     set<mstring> i_ignore;
-    bool i_Protect;
-    bool l_Protect;
-    bool i_Secure;
-    bool l_Secure;
-    bool i_NoExpire;
-    bool l_NoExpire;
-    bool i_NoMemo;
-    bool l_NoMemo;
-    bool i_Private;
-    bool l_Private;
-    bool i_PRIVMSG;
-    bool l_PRIVMSG;
-    mstring i_Language;
-    bool l_Language;
-    bool i_Forbidden;
-    unsigned long i_Picture;
+
+    class {
+	friend class Nick_Stored_t;
+	friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
+	friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
+	friend Nick_Stored_t EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
+
+	mstring Language;
+	bool Protect:1;
+	bool Secure:1;
+	bool NoMemo:1;
+	bool Private:1;
+	bool PRIVMSG:1;
+	bool NoExpire:1;
+	bool Forbidden:1;
+	unsigned long Picture;
+    } setting;
+
+    class {
+	friend class Nick_Stored_t;
+	bool Protect:1;
+	bool Secure:1;
+	bool NoMemo:1;
+	bool Private:1;
+	bool PRIVMSG:1;
+	bool Language:1;
+    } lock;
 
     mstring i_Suspend_By;
     mDateTime i_Suspend_Time;
@@ -427,9 +446,10 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
     void Signon(const mstring& realname, const mstring& mask);
     void ChgNick(const mstring& nick);
     void ChangeOver(const mstring& oldnick);
+    void defaults();
 
     static SXP::Tag tag_Nick_Stored_t, tag_Name, tag_RegTime,
-	tag_Password, tag_Email, tag_URL, tag_ICQ, tag_Description,
+	tag_Password, tag_Email, tag_URL, tag_ICQ, tag_AIM, tag_Description,
 	tag_Comment, tag_Host, tag_set_Protect, tag_set_Secure,
 	tag_set_NoExpire, tag_set_NoMemo, tag_set_Private,
 	tag_set_PRIVMSG, tag_set_Language, tag_Forbidden,
@@ -465,6 +485,8 @@ public:
     void URL(const mstring& in);
     mstring ICQ();
     void ICQ(const mstring& in);
+    mstring AIM();
+    void AIM(const mstring& in);
     mstring Description();
     void Description(const mstring& in);
     mstring Comment();
@@ -508,10 +530,6 @@ public:
     void Secure(const bool in);
     bool L_Secure();
     void L_Secure(const bool in);
-    bool NoExpire();
-    void NoExpire(const bool in);
-    bool L_NoExpire();
-    void L_NoExpire(const bool in);
     bool NoMemo();
     void NoMemo(const bool in);
     bool L_NoMemo();
@@ -532,6 +550,8 @@ public:
     mstring Suspend_By();
     mDateTime Suspend_Time();
     bool Forbidden() const;
+    bool NoExpire();
+    void NoExpire(const bool in);
     unsigned long PicNum();
     void GotPic(const unsigned long picnum);
 
@@ -567,7 +587,7 @@ class NickServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend int EventTask::svc(void);
-    friend int IrcSvcHandler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
+    friend int IrcSvcHandler::handle_close (ACE_HANDLE, ACE_Reactor_Mask);
 
 private:
     // Config Entries ...
@@ -579,22 +599,33 @@ private:
     unsigned long ident;	// How long to wait for IDENT
     unsigned long release;	// How long to keep after failed ident
     unsigned int passfail;	// Number of password fails before kill
-    bool def_protect;		// Default val of PROTECT
-    bool lck_protect;		// PROTECT is locked?
-    bool def_secure;		// Default val of SECURE
-    bool lck_secure;		// SECURE is locked?
-    bool def_noexpire;		// Default val of NOEXPIRE
-    bool lck_noexpire;		// NOEXPIRE is locked?
-    bool def_nomemo;		// Default val of NOMEMO
-    bool lck_nomemo;		// NOMEMO is locked?
-    bool def_private;		// Default val of PRIVATE
-    bool lck_private;		// PRIVATE is locked?
-    bool def_privmsg;		// Default val of PRIVMSG
-    bool lck_privmsg;		// PRIVMSG is locked?
-    mstring def_language;	// Default val of Language
-    bool lck_language;		// Language is locked?
-    unsigned long picsize;	// MAX size of a personal pic
+    unsigned long picsize;	// Maximum picture size
     mstring picext;		// Valid PIC extensions
+
+    class {
+	friend class NickServ;
+	friend class Magick;
+	bool Protect:1;
+	bool Secure:1;
+	bool NoMemo:1;
+	bool Private:1;
+	bool PRIVMSG:1;
+	bool NoExpire:1;
+	mstring Language;
+    } def;
+
+    class {
+	friend class NickServ;
+	friend class Magick;
+	bool Protect:1;
+	bool Secure:1;
+	bool NoMemo:1;
+	bool Private:1;
+	bool PRIVMSG:1;
+	bool NoExpire:1;
+	bool Language:1;
+    } lock;
+
     static SXP::Tag tag_NickServ;
 
     vector<Nick_Stored_t *> ns_array;
@@ -679,20 +710,20 @@ public:
     unsigned long Ident()const		{ return ident; }
     unsigned long Release()const	{ return release; }
     unsigned int Passfail()const	{ return passfail; }
-    bool DEF_Protect()const		{ return def_protect; }
-    bool LCK_Protect()const		{ return lck_protect; }
-    bool DEF_Secure()const		{ return def_secure; }
-    bool LCK_Secure()const		{ return lck_secure; }
-    bool DEF_NoExpire()const		{ return def_noexpire; }
-    bool LCK_NoExpire()const		{ return lck_noexpire; }
-    bool DEF_NoMemo()const		{ return def_nomemo; }
-    bool LCK_NoMemo()const		{ return lck_nomemo; }
-    bool DEF_Private()const		{ return def_private; }
-    bool LCK_Private()const		{ return lck_private; }
-    bool DEF_PRIVMSG()const		{ return def_privmsg; }
-    bool LCK_PRIVMSG()const		{ return lck_privmsg; }
-    mstring DEF_Language()const		{ return def_language; }
-    bool LCK_Language()const		{ return lck_language; }
+    bool DEF_Protect()const		{ return def.Protect; }
+    bool LCK_Protect()const		{ return lock.Protect; }
+    bool DEF_Secure()const		{ return def.Secure; }
+    bool LCK_Secure()const		{ return lock.Secure; }
+    bool DEF_NoExpire()const		{ return def.NoExpire; }
+    bool LCK_NoExpire()const		{ return lock.NoExpire; }
+    bool DEF_NoMemo()const		{ return def.NoMemo; }
+    bool LCK_NoMemo()const		{ return lock.NoMemo; }
+    bool DEF_Private()const		{ return def.Private; }
+    bool LCK_Private()const		{ return lock.Private; }
+    bool DEF_PRIVMSG()const		{ return def.PRIVMSG; }
+    bool LCK_PRIVMSG()const		{ return lock.PRIVMSG; }
+    mstring DEF_Language()const		{ return def.Language; }
+    bool LCK_Language()const		{ return lock.Language; }
     unsigned long PicSize()const	{ return picsize; }
     mstring PicExt()const		{ return picext; }
 
@@ -788,6 +819,7 @@ public:
     static void do_set_Email(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_set_URL(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_set_ICQ(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_set_AIM(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_set_Description(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_set_Comment(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_set_Picture(const mstring &mynick, const mstring &source, const mstring &params);

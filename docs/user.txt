@@ -1,0 +1,2257 @@
+==========================================================================
+  Magick USER Documentation
+==========================================================================
+
+Revision History
+================
+
+v0.1	Sep 03, 2001	Initial draft.
+
+
+Contents
+========
+
+1	Introduction
+1.1	Author Information
+1.2	Obtaining Magick
+1.3	License
+1.4	IRC in General
+1.3.1	Wildcards
+1.3.2	Hostmasks
+1.3.3	Time Formats
+1.3.4	Space Formats
+1.4	Documentation Key
+
+2	NickServ
+2.1	Nickname Ownership
+2.1.1	REGISTER
+2.1.2	DROP
+2.1.3	LINK
+2.1.4	UNLINK
+2.1.5	HOST
+2.1.6	IDENTIFY
+2.1.7	ACCESS
+2.1.8	GHOST
+2.1.9	RECOVER
+2.2	Settings
+2.2.1	PASSWORD
+2.2.2	EMAIL
+2.2.3	URL
+2.2.4	ICQ
+2.2.5	AIM
+2.2.6	DESCRIPTION
+2.2.7	PICTURE
+2.2.8	PROTECT
+2.2.9	SECURE
+2.2.10	NOMEMO
+2.2.11	PRIVATE
+2.2.12	PRIVMSG
+2.2.13	LANGUAGE
+2.3	Other Commands
+2.3.1	HELP
+2.3.2	LIST
+2.3.3	INFO
+2.3.4	SLAVES
+2.3.5	SEND
+2.3.6	IGNORE
+2.4	IRC Operators
+
+3	ChanServ
+3.1	Channel Ownership
+3.1.1	REGISTER
+3.1.2	DROP
+3.1.3	IDENTIFY
+3.1.4	ACCESS
+3.1.5	LEVEL
+3.1.6	AKICK
+3.2	Settings
+3.2.1	FOUNDER
+3.2.2	COFOUNDER
+3.2.3	PASSWORD
+3.2.4	DESCRIPTION
+3.2.5	EMAIL
+3.2.6	URL
+3.2.7	MLOCK
+3.2.8	KEEPTOPIC
+3.2.9	TOPICLOCK
+3.2.10	BANTIME
+3.2.11	PARTTIME
+3.2.12	PRIVATE
+3.2.13	SECURE
+3.2.14	SECUREOPS
+3.2.15	ANARCHY
+3.2.16	KICKONBAN
+3.2.17	RESTRICTED
+3.2.18	REVENGE
+3.2.19	JOIN
+3.3	Other Commands
+3.3.1	HELP
+3.3.2	LIST
+3.3.3	INFO
+3.3.4	USERS
+3.3.5	MODE
+3.3.6	TOPIC
+3.3.7	INVITE
+3.3.8	UNBAN
+3.3.9	OP / DEOP
+3.3.10	HALFOP / DEHALFOP
+3.3.11	VOICE / DEVOICE
+3.3.12	KICK
+3.3.13	REMOVE
+3.3.14	CLEAR
+3.3.15	GREET
+3.3.16	MESSAGE
+3.4	IRC Operators
+
+4	MemoServ
+4.1	Normal Usage
+4.1.1	HELP
+4.1.2	LIST
+4.1.3	READ
+4.1.4	UNREAD
+4.1.5	SEND
+4.1.6	CONTINUE
+4.1.7	PREVIEW
+4.1.8	FLUSH
+4.1.9	CANCEL
+4.1.10	REPLY
+4.1.11	FORWARD
+4.1.12	DEL
+4.1.13	FILE
+4.1.14	GET
+4.2	Settings
+4.2.1	NOEXPIRE
+4.3	IRC Operators
+
+5	CommServ
+5.1	Normal Usage
+5.1.1	HELP
+5.1.2	LIST
+5.1.3	INFO
+5.1.4	MEMO
+5.1.5	MEMBER
+5.1.6	LOGON
+5.2	Settings
+5.2.1	HEAD
+5.2.2	DESCRIPTION
+5.2.3	EMAIL
+5.2.4	URL
+5.2.5	SECURE
+5.2.6	PRIVATE
+5.2.7	OPENMEMOS
+5.3	IRC Operators
+
+6	HelpServ
+6.1	Normal Usage
+6.1.1	HELP
+6.1.2	CREDITS
+6.1.3	CONTRIB
+6.1.4	BREAKDOWN
+6.1.5	STATS
+6.1.6	LANGUAGES
+6.1.7	FILE
+6.1.8	ASK
+6.2	IRC Operators
+
+7	Frequently Asked Questions
+
+
+==========================================================================
+  Section 1 - Introduction
+==========================================================================
+
+Magick is a program that supplies IRC Services to an IRC Network.  They
+connect to the network as if they were a server, and provide 'clients'
+that users may interact with to achieve a variety of functions.
+
+These functions include nickname registration, channel registration,
+sending memos between users, and functions that allow IRC Operators to
+maintain the control and direction of the IRC Network.
+
+Magick is dedicated to the memory of PreZ's loving sister, Stacey Louise
+Elder (1st Jan, 1975 - 25th Feb, 1998). She has been there for me more
+than anyone over the years, and I was distraught when she died, may her
+Lord love her as much as I did, and keep her safe like I could not.
+Merry Parting, Dear Sister.
+
+Magick is also dedicated to the memory of Ungod's brother, Edward Kevin
+King (28th Aug, 1982 - 21st Nov, 1997), His life was short, but his memory
+is great, never will those who knew him forget him.
+
+
+1.1	Author Information
+==========================
+
+Magick is designed and developed by the Magick Development Team.  This
+team is headed up by Preston A. Elder, with William King as his 'second
+in command' if you will.
+
+Although the product is created by the dev team, many other people put
+in their time and effort to make it what it is.  These people are the
+alpha and beta testers, translators, and supporters of the developers.
+
+Listed below are the EMAIL contacts for the various teams, as well
+as the snail mail address if you wish to send us a token of appreciation.
+
+Preston A. Elder	- prez@magick.tm
+William King		- ungod@magick.tm
+
+Magick Development Team	- devel@magick.tm
+Magick Beta Testers	- beta@magick.tm
+Magick Alpha Testers	- alpha@magick.tm
+Magick Translators	- translators@magick.tm
+
+Magick User List	- general@magick.tm
+
+Snail Mail:		Magick Team
+			PO Box 893
+			SUTHERLAND,
+			NSW, 2232
+			AUSTRALIA
+
+
+1.2	Obtaining Magick
+========================
+
+The main Magick web site is at:
+	http://www.magick.tm
+
+Mirrors are:
+	http://magick.sourceforge.net
+
+The Magick project site is at:
+	http://www.sourceforge.net/projects/magick
+
+Magick can be downloaded from the main FTP site:
+	ftp://ftp.magick.tm/pub/magick.tm
+
+Mirrors are:
+	ftp://magick.sourceforge.net/pub/magick
+
+
+1.3	License
+===============
+
+Magick itself is distrubuted under the GNU General Public License.
+A full copy of the license comes with every copy of Magick.
+
+The crux of the GNU GPL however is that no one may charge for Magick,
+and anything derived from Magick must also be free, and if it is
+distributed at all, the source code must also be available.
+
+As a user of the product (ie. not the person installing it), you
+are under no license or obligations.
+
+
+1.4	IRC in General
+======================
+
+Internet Relay Chat (RFC1459) is a very simple protocol designed for user
+to user communications.  There are many different types of clients,
+servers and services out there for IRC.  Many different chat networks
+exist, but the basic methods of joining channels, messaging users, etc is
+the same on all of them.
+
+Most IRC server software tends to be unmoderated -- this means that no
+filtering is done by any human or mechanical means that will limit what
+you can and cannot say.  This is both a blessing and a curse.  Legally
+it means that nothing said or done on IRC is admissible in court, or
+can be used as evidence.  However morally, it means that no protections
+for children or easily offended people are enforced except voluntarily.
+
+A very good site dedicated to help on the usage of IRC, how to get on it,
+what networks exist, etc is available at http://www.irchelp.org.
+
+
+1.3.1	Wildcards
+-----------------
+
+IRC in general uses two kinds of wildcards throughout its command and
+general usage.  These are the * (asterisk) and ? (question mark).  The
+* is used to denote 0 or more characters, the characters do not matter.
+The ? is used to denote exactly 1 character, again the exact character
+does not matter, as long as there's only 1.
+
+So for example, the host castle.srealm.net.au would match all of these
+wildcards:	*.srealm.net.au
+		*.srealm.???.au
+		*.srealm.*.au
+		??????.??????.???.??
+
+
+1.3.2	Hostmasks
+-----------------
+
+A hostmask is used to depict 2 forms of user identifying information.
+These are nickname!user@host or simply user@host, depending on the the
+situation where it is used.  The correct format will usually be
+specified.
+
+Each hostmask has at least 2 parts, being the user and host.  These
+may be seen when typing /whois nickname.  The user portion is also
+known as an 'ident', and is supposed to be the login name the user
+is using on the computer they are connecting from, but often it is
+meaningless.  The host is the direct address of the computer that
+the user is logged onto the internet from.
+
+Sometimes the nickname may be prepended to the user@host form of
+hostmask by putting a '!' after the nickname, ie. nickname!user@host.
+
+All hostmasks may have wildcards to 'match' more than one variant on
+a specific host.  This is mainly used in things such as your access
+list, where you may put youruser@*.yourisp.com to match any dialup
+line coming from your own ISP.
+
+
+1.3.3	Time Formats
+--------------------
+
+The time formats used throughout this manual are specific to Magick. When
+specifying a time, you must use a series of numbers and units, the
+default unit being seconds.  The valid time units are:
+	s = seconds	m = minutes	h = hours
+	d = days	w = weeks	y = years
+
+Any number immediately preceeding a unit listed above will be considered
+to by of that unit type.  ie. 21s will be considered as 21 seconds, and
+21m as 21 minutes.  You may string multiple time units together, ie.
+3h15m means 3 hours and 15 minutes.
+
+You may specify numbers higher than 'natural' unit boundaries (ie. 100s
+is valid), and you may specify units in any order.  Any numbers without
+unit types following them will be assumed to be seconds.
+
+Only positive time values are allowed, and it may not contain spaces.
+
+
+1.3.4	Space Formats
+---------------------
+
+As with time formats, all space formats are specific to Magick.
+When specifying a space (or size), you must use a series of numbers
+and units, the default unit being bytes.  The valid space units are:
+	b = bytes	k = kilobytes	m = megabytes
+	g = gigabytes	t = terrabytes
+
+Any number immediately preceeding a unit listed above will be considered
+to by of that unit type.  ie. 21b will be considered as 21 bytes, and
+21k as 21 kilobytes.  You may string multiple time units together, ie.
+3k80b means 3 kilobytes and 15 bytes.
+
+You may specify numbers higher than 'natural' unit boundaries (ie. 2000b
+is valid), and you may specify units in any order.  Any numbers without
+unit types following them will be assumed to be bytes.
+
+Only positive space values are allowed, and it may not contain spaces.
+
+
+1.4	Documentation Key
+=========================
+
+Any parameter in <> braces are required.
+Any parameter in [] braces are optional.
+
+A pipe (|) in the parameter indicates that you may use any one of the
+listed options, but only one.
+
+
+==========================================================================
+  Section 2 - NickServ
+==========================================================================
+
+NickServ is a service that allows you to register and maintain your
+nickname.  It has functions that allow you to do anything from control
+how and where your nickname may be used, to the purely informational.
+Nicknames will expire after a period of non-use, talk to your IRC
+operators to find out what this period is.
+
+NickServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are NickServ, NickS and NickOP.  All
+commands to NickServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+2.1	Nickname Ownership
+==========================
+
+Owning a nickname means that you and only you can use it.  If someone
+else tries to use your nickname, services will take action to prevent
+it.  You may own more than one nickname, and even link them together
+so all settings, channel/committee accesses and memos are linked.
+
+
+2.1.1	REGISTER
+----------------
+
+SYNTAX: REGISTER <password> [email]
+
+This will register your nickname in services.  The password you specify
+may be used by the IDENTIFY (2.1.6) command to enable extra functions
+that require identification.  A default hostmask of *user@*.yourisp.com
+will be added to your ACCESS (2.1.7) list.
+
+The optional email will be set as your email address (2.2.2).  This is
+an informational only field, however later may be used for things like
+password retrieval, etc.  The password specified must be at least 5
+characters long, and may not match your nickname.
+
+Many functions are only available to registered nicknames.  Such as you
+may not register a channel or be added to a channel's access list until
+you are registered.
+
+
+2.1.2	DROP
+------------
+
+SYNTAX: DROP [nickname]
+
+This will unregister a nickname in services.  If no nickname is specified
+then your current nickname is assumed.  You must be identified (2.1.6) to
+use this command, and you may only specify a nickname that is linked to
+your current nickname as a parameter.
+
+Once the drop is completed, the nickname specified (or your nickname) may
+be registered by anyone on the network, you relinquish all rights to it.
+This action is final, so be sure you want to do this.
+
+
+2.1.3	LINK
+------------
+
+SYNTAX: LINK <nickname> <password>
+
+This will register your current nickname and link it to the nickname
+specified.  The password specified must be the password of the nickname
+you are linking to, AKA. the 'host' nickname.  Once linked the nicknames
+become equivalent.  This means any access either your nick or the linked
+nick has, both will have.  You will access the same memo list using either
+nickname and you will not need to identify (2.1.6) again when changing
+from one nickname to a linked nickname.
+
+You may link any amount of nicknames.  Each linked nickname will expire
+on its own time.  The host nickname will not expire until all its slave
+nicknames are expired as well.  If your nickname is already registered
+when you execute this command, all accesses you have will be transferred
+to the host, and then your nickname will be linked.
+
+
+2.1.4	UNLINK
+--------------
+
+SYNTAX: UNLINK [nickname]
+
+This will reverse the effects of the LINK (2.1.3) command.  This will
+not drop your nickname, merely make a copy of all the settings the host
+nickname has (including access list, etc) and then stop acknowledging
+the host as equivalent.
+
+If a nickname is specified, it will unlink that nickname rather than your
+current nickname.  This nickname of course must be linked to your current
+one (ie. either a slave or sibling of your nick).  An unlinked nickname
+will not be on any access lists, even if it was on them before the link.
+
+
+2.1.5	HOST
+------------
+
+SYNTAX: HOST [nickname]
+
+This will change your host nickname.  Each set of linked nicknames has
+only 1 host.  If the host nickname is dropped, all slaves drop.  The
+host nickname is also the keeper of all the settings and the memo list
+for all linked nicknames.  It should be considered the primary nickname.
+If a nickname is specified, it will be set as the host (as long as it is
+linked to your current nickname).  Otherwise your current nickname will
+be set as the host.
+
+
+2.1.6	IDENTIFY
+----------------
+
+SYNTAX: IDENTIFY <password>
+
+This will identify you to your current nickname.  If you are coming from
+a host not on your access list (2.1.7) and kill protection (2.2.8) is on
+this is required else services will take action against you.  The password
+specified is the password either set with the REGISTER (2.1.1) command or
+changed with the PASSWORD (2.2.1) setting.
+
+If secure (2.2.9) is on, you must identify even if your current hostmask
+(1.3.2) is on your access list.  Identification enables many commands that
+are not available if just recognized (ie. your hostmask (1.3.2) matches
+one on the access list, but your not identified).  The main ones are the
+ability to change your password, or drop the nickname.
+
+
+2.1.7	ACCESS
+--------------
+
+SYNTAX: ACCESS ADD <hostmask>
+        ACCESS DEL <hostmask|number>
+        ACCESS LIST
+        ACCESS CURRENT
+
+This maintains your access list.  Your access list is simply a list of
+hostmasks (1.3.2) that you will be recognized from without using the
+IDENTIFY (2.1.6) command.  When on the access list, unless SECURE (2.2.9)
+is set on, you do not need to identify to do most commands.  Note that
+channels and committees may also individually set SECURE (3.2.13/5.2.5)
+on, in which case you will still need to identify to gain the relevant
+privileges for that channel.
+
+ADD will add a new host to your access list, using user@host hostmasks.
+DEL will remove either a hostmask or the numbered entry from your
+	access list.  The entry numbers are shown on a LIST.
+LIST will list out all current entries on your access list.
+CURRENT will add your current hostmask as *user@*.myisp.com to your
+	access list.
+
+
+2.1.8	GHOST
+-------------
+
+SYNTAX: GHOST <nickname> <password>
+
+This will remove the nickname specified from the network.  The password
+supplied must be the password for the nickname you wish to remove from
+the network.  Only registered nicknames may be removed from the network.
+
+This feature is designed to remove either clients that have not yet
+timed out, but are no longer active, or services who are still holding
+your nickname after kill protection (2.2.8) has activated.
+
+
+2.1.9	RECOVER
+---------------
+
+SYNTAX: RECOVER <nickname> <password>
+
+This will cause services to take the nickname specified.  This is mainly
+used when someone else keeps trying to use your nickname, and although
+you can ghost them, they sign on before you can regain your nickname.
+The password must be the correct password for the nickname supplied.
+
+
+2.2	Settings
+================
+
+Each nickname has many settings.  These settings can do anything from
+changing what authentication is required to use it, the language that
+services should use, all the way up to purely informational settings.
+All settings are changed using the SET prefix to the command names.
+
+
+2.2.1	PASSWORD
+----------------
+
+SYNTAX: SET PASSWORD <password>
+
+This will change your nickname password to whatever you set it to.  The
+password specified must be at least 5 characters long, and may not match
+your nickname.
+
+Once the password is set, you will need to use it from that point on when
+executing LINK (2.1.3), IDENTIFY (2.1.6), GHOST (2.1.8) and RECOVER (2.1.9)
+commands.
+
+You must be identified to your nickname to use this command.
+
+
+2.2.2	EMAIL
+-------------
+
+SYNTAX: SET EMAIL <email>
+
+This will set your email in services.  This is a purely informational
+field, and will show up in your INFO (2.3.3) display.  The email address
+itself will not be validated, but it must be an email address.
+
+Although you can put a fake email address in, it is recommended you put
+your real one in, as some networks use this address to email you a new
+password when your old one is lost.
+
+Setting this to NONE will clear this field.
+
+
+2.2.3	URL
+-----------
+
+SYNTAX: SET URL <url>
+
+This will set your web page address in services.  This is a purely
+informational field, and will show up in your INFO (2.3.3) display.
+You do not need to put the http:// in the address as it is supplied
+for you if you left it out.
+
+Setting this to NONE will clear this field.
+
+
+2.2.4	ICQ
+-----------
+
+SYNTAX: SET ICQ <uin>
+
+This will set your ICQ UIN in services.  This is a purely informational
+field, and will show up in your INFO (2.3.3) display.  Right now nothing
+is done with this information, but it is possible that a method may be
+put into services that allow them to also show your status in your info.
+
+Setting this to NONE will clear this field.
+
+
+2.2.5	AIM
+-----------
+
+SYNTAX: SET AIM <screen name>
+
+This will set your AIM ID (AKA. screen name) in services.  This is a
+purely informational field, and will show up in your INFO (2.3.3) display.
+Right now nothing is done with this information, but it is possible that
+a method may be put into services that allow them to also show your status
+in your info.
+
+Setting this to NONE will clear this field.
+
+
+2.2.6	DESCRIPTION
+-------------------
+
+SYNTAX: SET DESCRIPTION <description>
+
+This will set your description of yourself in services.  This is a
+purely informational field, and will show up in your INFO (2.3.3) display.
+I doubt anyone expects this to be accurate, so be as vain as you want.
+
+Setting this to NONE will clear this field.
+
+
+2.2.7	PICTURE
+---------------
+
+SYNTAX: SET PICTURE [NONE]
+
+This will set your picture in services.  Upon executing this command,
+services will ask you to begin a DCC file transfer session with them to
+send them a picture of yourself.  The file extensions allowed and image
+size are limited, you may ask your IRC operators what these limits are.
+These limits may include this feature being disabled all together.
+
+Including the optional parameter of NONE will remove a picture if you
+have one already stored in your nickname record.
+
+
+2.2.8	PROTECT
+---------------
+
+SYNTAX: SET PROTECT <ON|OFF|RESET>
+
+This will turn on or off Kill Protection on your nickname.  With kill
+protection set on your nickname, if you sign on from a host not on your
+access list, your will be required to IDENTIFY (2.1.6) to your nickname.
+If you fail to identify within a specific time period, you will be either
+renamed to another nickname if the IRC server supports it, or killed.
+
+If SECURE (2.2.9) is also set on your nickname, then you will be required
+to IDENTIFY (2.1.6) whether you are on your access list or not.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+
+
+2.2.9	SECURE
+--------------
+
+SYNTAX: SET SECURE <ON|OFF|RESET>
+
+This will turn on or off Secure on your nickname.  With secure on, you
+must IDENTIFY (2.1.6) to be able to do anything as your nickname.  This
+option essentially renders your access list useless.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+
+
+2.2.10	NOMEMO
+--------------
+
+SYNTAX: SET NOMEMO <ON|OFF|RESET>
+
+This will turn on or off No Memo on your nickname.  When no memo is off,
+you will accept memos from all users except those on your IGNORE (2.3.6)
+list.  When no memo is on, this behavior is reversed, and you will only
+accepts memos from those on your IGNORE (2.3.6) list.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+
+
+2.2.11	PRIVATE
+---------------
+
+SYNTAX: SET PRIVATE <ON|OFF|RESET>
+
+This will turn on or off Private on your nickname.  When private is on,
+you will not show up in the LIST (2.3.2) of registered nicknames.  Also
+the INFO (2.3.3) command will not show the hostmask (1.3.2) you were last
+online from after you sign off.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+
+
+2.2.12	PRIVMSG
+---------------
+
+SYNTAX: SET PRIVMSG <ON|OFF|RESET>
+
+This will turn on or off PRIVMSG on your nickname.  When PRIVMSG is on,
+then services will communicate to you in a private messages (AKA. query)
+window.  Otherwise services will communicate to you with NOTICE messages.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+
+
+2.2.13	LANGUAGE
+----------------
+
+SYNTAX: SET LANGUAGE <language|RESET>
+
+This will change the language that services will talk to you in.  This
+changes not just the text receive back from your commands, but the entire
+HELP (2.3.1) output if it is available in your chosen language.
+
+A list of available languages is available with the LANGUAGE (6.1.6)
+command.  Please note, that while most of the translations into other
+languages are done by the Magick Translation Team <translators@magick.tm>,
+some are done by third parties, so no guarantee of correctness is made.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+
+
+2.3	Other Commands
+======================
+
+There are many other functions offered by NickServ that do not
+specifically pertain to either owning a nickname or a setting of a
+nickname.  Most of these are purely informational commands, however
+some actually change the data stored in your nickname record.
+
+
+2.3.1	HELP
+------------
+
+SYNTAX: HELP [command]
+
+This will give you detailed help on the syntax of a command, and describe
+what it does.  For subcommands, just separate the command and subcommand
+with a space.
+
+
+2.3.2	LIST
+------------
+
+SYNTAX: LIST [nickmask [maximum]]
+
+This will list out all registered nicknames that match the nickmask
+specified up to the maximum number of nicknames specified.  If neither is
+specified, the default nickmask is *, and the default maximum is set
+by the IRC network staff, so you may ask an IRC operators what it is.
+There is also an absolute maximum above which you may not set your
+maximum to, once again, you may ask your IRC operators what this is.
+
+Any nickname set PRIVATE (2.2.11) will not show up in this list.
+
+
+2.3.3	INFO
+------------
+
+SYNTAX: INFO <nickname>
+
+This will give you detailed information on a nickname entry.  This
+information includes things such as when the nickname was registered,
+if it is a slave, who its host is, the last time the user was online,
+or what they are online as if they are online.  It will also give
+you all the informational fields (email, url, description, etc) that
+the user has set themselves.  Finally, it will tell you what committees
+if any the user belongs to, and what settings the user has on their
+nickname.
+
+
+2.3.4	SLAVES
+--------------
+
+SYNTAX: SLAVES
+
+This will give you a list of all nicknames linked to your current host
+nickname with the LINK (2.1.3) command.
+
+
+2.3.5	SEND
+------------
+
+SYNTAX: SEND <nickname>
+
+If a nickname has set a PICTURE (2.2.7) in services, this will allow you
+to download that picture.  Once this command is executed, services will
+initiate a DCC file transfer with you.  The file name is not the original
+filename that the user uploaded, it is instead renamed to their nickname
+with the appropriate file extension.
+
+
+2.3.6	IGNORE
+--------------
+
+SYNTAX: IGNORE ADD <nickname>
+        IGNORE DEL <nickname|number>
+        IGNORE LIST
+
+This maintains your ignore list.  Your ignore list is a list of nicknames
+that you will not accept memos from.  When the NOMEMO (2.2.10) option is
+set, the purpose of this list is reversed, and it becomes a list of
+nicknames that you will accept memos from (meaning you will deny anyone
+not on this list).
+
+ADD will add a new nickname to your ignore list.
+DEL will remove either a nickname or the numbered entry from your
+	ignore list.  The entry numbers are shown on a LIST.
+LIST will list out all current entries on your ignore list.
+
+
+2.4	IRC Operators
+=====================
+
+IRC Operators, as you probably already know, have certain controls over
+your nickname, up to and including killing you off the network.  However
+some IRC Operators may also become Services Operators on your network.
+
+Services operators have special access on services that allow them to do
+a wide variety of things.  They can reset your password to a new password
+for you, they can view your access list, and they may also suspend your
+nickname if you do something against the network rules.
+
+
+==========================================================================
+  Section 3 - ChanServ
+==========================================================================
+
+ChanServ is a service that allows you to register and maintain your
+channels.  It has functions that allow you to do anything from control
+who may enter your channel and who will be kicked out, to the purely
+informational.  Channels will expire after a period of non-use, talk to
+your IRC operators to find out what this period is.
+
+NickServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are ChanServ, ChanS and ChanOP.  All
+commands to ChanServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+3.1	Channel Ownership
+=========================
+
+Owning a channel means that you may specify who can join and who cannot.
+It means you can specify what access people who join the channel get, and
+you can establish your own power hirachy for your channel.  You may own
+more than one channel, however there is a limit per user.
+
+
+3.1.1	REGISTER
+----------------
+
+SYNTAX: REGISTER <channel> <password> <description>
+
+This will register a channel in services.  The password you specify
+may be used by the IDENTIFY (3.1.3) command to enable extra functions
+that require identification.  You will automatically be set as the
+founder of the specified channel.  You must have a registered nickname
+and be oped (mode +o) in the channel to register it.
+
+The description specified is purely informational, and should be a brief
+message saying what the channel is all about (for example it may just
+be a "Chat Channel" or whatever).  The password specified must be at
+least 5 characters long, and may not match your nickname or the channel
+name.
+
+
+3.1.2	DROP
+------------
+
+SYNTAX: DROP <channel>
+
+This will unregister a channel in services.  You must be identified
+(3.1.3) to the channel use this command.
+
+Once the drop is completed, the channel specified may be registered by
+anyone on the network, you relinquish all rights to it.  This action is
+final, so be sure you want to do this.
+
+
+3.1.3	IDENTIFY
+----------------
+
+SYNTAX: IDENTIFY <channel> <password>
+
+This will make services recognize you as the founder of a channel.  As
+founder you have access to do anything to a channel, including change the
+password (3.2.3) or transfer ownership (3.2.1) .  Just being the founder
+in the channel record is not enough to enable you to do these commands.
+
+As founder, you also have complete control over the ACCESS (3.1.4) list,
+regardless of weather you are on it or not, or what level you have on it.
+
+
+3.1.4	ACCESS
+--------------
+
+SYNTAX: ACCESS <channel> ADD <nickname> <level>
+        ACCESS <channel> DEL <nickname|number>
+        ACCESS <channel> LIST
+
+This maintains a channels access list.   An access list is simply a list
+of nicknames, and what access they have in the channel, which is a
+number.  This number may be anything except 0 (which means 'not on the
+access list at all'), and has upper and lower limits specified by the
+IRC Operators.
+
+Most ChanServ commands require a certain level of access to be used.
+The actual levels required to execute each command is set with the LEVEL
+(3.1.5) command.  When the SECURE (3.2.13) option is on, you will still
+be required to IDENTIFY (2.1.6) to your nickname to have your access
+rights acknowledged.
+
+ADD will add a new nickname to the access list, it must be registered.
+DEL will remove either a nickname or the numbered entry from the
+	access list.  The entry numbers are shown on a LIST.
+ADD and DEL require ACCESS privileges.
+LIST will list out all current entries on the access list.  This command
+	requires VIEW privileges.
+
+
+3.1.5	LEVEL
+-------------
+
+SYNTAX: LEVEL <channel> SET <type> <level>
+        LEVEL <channel> RESET <type>
+        LEVEL <channel> LIST
+
+This maintains a channels level list.  A level list is simply a list of
+access types and what level is needed on the access list to execute a
+command of that type.  This list and the ACCESS (3.1.4) list are very
+closely correlated, as any ChanServ checks first what level is required
+to execute that command from this list, then if the user has that access.
+
+The available level types you may set values for are:
+AUTODEOP	Automatically remove voice (+v) and ops (+o) from user.
+AUTOVOICE	Automatically give voice (+v) to user upon joining.
+AUTOOP		Automatically give ops (+o) to user upon joining.
+READMEMO	User is allowed to read channel news articles.
+WRITEMEMO	User is allowed to post channel news articles.
+DELMEMO		User is allowed to delete news articles not their own.
+GREET		User may have an on-join greeting from ChanServ.
+OVERGREET	User may set or lock greetings for other users.
+MESSAGE		User may set an on-join message (seen by all who join).
+AKICK		User may add and remove automatic kick entries.
+SUPER		Mostly just enhanced privileges on other options.
+UNBAN		User will automatically be unbanned if banned by server.
+ACCESS		User may add and remove access list entries.
+SET		User may use the SET command to modify channel settings.
+VIEW		User may view things like channel modes, etc.
+CMDINVITE	User may use the INVITE command.
+CMDUNBAN	User may use the UNBAN command.
+CMDVOICE	User may use the VOICE and DEVOICE command.
+CMDOP		User may use the OP and DEOP command.
+CMDKICK		User may use the KICK command.
+CMDMODE		User may use the MODE command to set modes.
+CMDCLEAR	User may use the CLEAR command.
+
+If any type is set to 0, then any users joining channel may access it
+without being on the access list, unless they are on the access list
+at a level below 0.  All of the above levels are checked as 'If the user
+is on the access list at or above this level, allow this privilege'
+except the AUTODEOP level, which is checked as 'If the user is on the
+access list at or below this level, this condition applies'.
+
+SET will set the type specified to the level specified.
+RESET will reset the type specified to the default value that all newly
+	registered channels are set to (ie. the default value).
+SET and RESET require you to IDENTIFY (3.1.3) as founder.
+If you have SET privileges or above, LIST will list out all levels and
+what they are currently set to.  Otherwise LIST will list out all levels
+you have access to.
+
+
+3.1.6	AKICK
+-------------
+
+SYNTAX: AKICK <channel> ADD <nickname|hostmask> [reason]
+        AKICK <channel> DEL <nickname|hostmask|number>
+        AKICK <channel> LIST
+
+This maintains a channels auto kick list.   An auto kick list is simply
+a list of nicknames or hostmasks that are not allowed to enter the
+channel, and the reason for which they have been exiled.
+
+ADD will add a new registered nickname or hostmask to the auto kick list.
+DEL will remove either a nickname, hostmask or the numbered entry from
+	the auto kick list.  The entry numbers are shown on a LIST.
+ADD and DEL require AKICK privileges.
+LIST will list out all current entries on the auto kick list.  This
+	command requires VIEW privileges.
+
+
+3.2	Settings
+================
+
+Each channel has many settings.  These settings can do anything from
+changing how vindictive services will act, the op / deop behavior,
+channel timings, all the way up to purely informational settings.
+All settings are changed using the SET prefix to the command names.
+
+
+3.2.1	FOUNDER
+---------------
+
+SYNTAX: SET <channel> FOUNDER <nickname>
+
+This will transfer ownership of the channel to another user.  On many
+networks, whoever is listed as the owner, is the final authority of any
+channel, regardless of how many people have the password.  No other
+changes are made except who services see as the founder.  The nickname
+specified must be a registered nickname.  If the nickname is already
+the COFOUNDER (3.2.2), then the co-founder field will be cleared.
+
+You must IDENTIFY (3.1.3) as founder to use this command.
+
+
+3.2.2	COFOUNDER
+-----------------
+
+SYNTAX: SET <channel> COFOUNDER <nickname>
+
+This will set the co-founder field to the nickname specified.  This
+nickname must be registered.  You may not specify the same nickname
+as the current FOUNDER (3.2.1).
+
+This field offers no actual additional access to the channel, so even if
+a user is listed as the co-founder, they must still be on the ACCESS
+(3.1.4) list to gain any actual access in channel.  However if the
+current founders nickname should expire, the channel will automatically
+be transferred to the co-founder.  If there is no co-founder specified,
+then the channel will be removed along with the nicknames expiry.
+
+Setting this to NONE will clear this field.
+You must IDENTIFY (3.1.3) as founder to use this command.
+
+
+3.2.3	PASSWORD
+----------------
+
+SYNTAX: SET <channel> PASSWORD <password>
+
+This will change the channel password to whatever you set it to.  The
+password specified must be at least 5 characters long, and may not match
+your nickname or the channel name.
+
+Once the password is set, you will need to use it from that point on when
+executing IDENTIFY (3.1.3) command.
+
+You must IDENTIFY (3.1.3) as founder to use this command.
+
+
+3.2.4	DESCRIPTION
+-------------------
+
+SYNTAX: SET <channel> DESCRIPTION <description>
+
+This will set the description of what the channel's main purpose is to
+whatever you specify.  This should be a concise description of the main
+purpose of the channel.
+
+You must have SET privileges to use this command.
+
+
+3.2.5	EMAIL
+-------------
+
+SYNTAX: SET <channel> EMAIL <email>
+
+This will set the channel's email in services.  This is a purely
+informational field, and will show up in the INFO (3.3.3) display.
+The email address itself will not be validated, but it must be an email
+address.
+
+Although you can put a fake email address in, it is recommended you put
+a real one in, as some networks use this address to email a new password
+when the old one is lost.
+
+Setting this to NONE will clear this field.
+You must have SET privileges to use this command.
+
+
+3.2.6	URL
+-----------
+
+SYNTAX: SET <channel> URL <url>
+
+This will set the channel's web page address in services.  This is a
+purely informational field, and will show up in the INFO (3.3.3)
+display.  You do not need to put the http:// in the address as it is
+supplied for you if you left it out.
+
+Setting this to NONE will clear this field.
+You must have SET privileges to use this command.
+
+
+3.2.7	MLOCK
+-------------
+
+SYNTAX: SET <channel> MLOCK <modes> [arguments]
+
+This will set the channel's mode lock in services.  All modes in the
+mode lock will be enforced at all times.  You may force modes on or off
+by using the + or - sign.  You may include +l and +k in the mode lock,
+and their values will be read in the order they're used.  You may not
+specify any other mode that accepts arguments (EG. +o).  No other
+checking is done on the modes specified, if the IRC server supports it,
+it will be set and enforced.
+
+Setting this to NONE will clear this field.
+You must have SET privileges to use this command.
+
+
+3.2.8	KEEPTOPIC
+-----------------
+
+SYNTAX: SET <channel> KEEPTOPIC <ON|OFF|RESET>
+
+This will turn on or off Keep Topic on the channel.  When keep topic is
+on, ChanServ will set the topic when the first user joins the channel to
+whatever it was when it was last in use.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.9	TOPICLOCK
+-----------------
+
+SYNTAX: SET <channel> TOPICLOCK <ON|OFF|RESET>
+
+This will turn on or off Topic Lock on the channel.  When topic lock is
+on, ChanServ will only allow the channel topic to be set with the TOPIC
+(3.3.6) command, all topic directly will be reset to the last topic set
+by the TOPIC command.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.10	BANTIME
+---------------
+
+SYNTAX: SET <channel> BANTIME <time|RESET>
+
+This will set the value of Ban Time on the channel.  When the ban time
+is set to a non-zero amount, then any ban set in channel will expire and
+automatically be removed after the time specified has elapsed.  The time
+should be specified in Magick's own Time Format (1.3.3).  Note that even
+bans set by AKICK (3.1.6) will expire, but be reset the next time the
+user who triggered AKICK joins again.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.11	PARTTIME
+----------------
+
+SYNTAX: SET <channel> PARTTIME <time|RESET>
+
+This will set the value of Part Time on the channel.  When the part time
+is set to a non-zero amount, then users will have to remain out of the
+channel for the specified amount of time before their GREET (3.3.15)
+will be said again upon their entry.  This is designed to stop users
+causing services to flood a channel by setting a greeting and cycling.
+The time should be specified in Magick's own Time Format (1.3.3).
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.12	PRIVATE
+---------------
+
+SYNTAX: SET <channel> PRIVATE <ON|OFF|RESET>
+
+This will turn on or off Private on the channel.  When private is on,
+the channel will not show up in the LIST (3.3.2) of registered channels.
+Also the INFO (3.3.3) command will not show the amount of users, ops
+and voices in channel.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.13	SECURE
+--------------
+
+SYNTAX: SET <channel> SECURE <ON|OFF|RESET>
+
+This will turn on or off Secure on the channel.  When secure is on,
+you will have to IDENTIFY (2.1.6) to your nickname before your access
+in the channel will be acknowledged.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.14	SECUREOPS
+-----------------
+
+SYNTAX: SET <channel> SECUREOPS <ON|OFF|RESET>
+
+This will turn on or off Secure Ops on the channel.  When secure ops is
+on, only people who have at least AUTOOP or CMDOP access on the ACCESS
+(3.1.4) list will be able to be oped (+o) in channel.  Similarly only
+people with AUTOVOICE or CMDVOICE access on the ACCESS (3.1.4) list will
+be able to be voiced (+v) in channel.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.15	ANARCHY
+---------------
+
+SYNTAX: SET <channel> ANARCHY <ON|OFF|RESET>
+
+This will turn on or off Anarchy on the channel.  When anarchy is on, 
+any ops (+o) and voices (+v) set by an IRC server itself will be left
+alone, even if the channel is secure.  This is designed to reduce the
+mode flood caused by two split servers rejoining, and services startup.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.16	KICKONBAN
+-----------------
+
+SYNTAX: SET <channel> KICKONBAN <ON|OFF|RESET>
+
+This will turn on or off Kick On Ban on the channel.  When anarchy is on,
+services will automatically kick a user with a standard reason (usually
+something like 'you are banned') whenever they match a ban (+b) that has
+been placed in channel - assuming the ban was not reversed by REVENGE
+(3.2.18).
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.17	RESTRICTED
+------------------
+
+SYNTAX: SET <channel> RESTRICTED <ON|OFF|RESET>
+
+This will turn on or off Restricted on the channel.  When restricted is
+on, only people >= 1 on the access list may join the channel, all others
+will be automatically kicked out, as if everyone but those on the access
+list were on the AKICK (3.1.6) list.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.18	REVENGE
+---------------
+
+SYNTAX: SET <channel> REVENGE <type|RESET>
+
+This will set the value of Revenge on the channel.  When the revenge type
+is not NONE, then any time a deop, kick or ban is performed against
+someone who is higher on the access list, the action is reversed.  When
+the revenge type is anything but REVERSE, the specified action is taken
+against the user who triggered revenge.
+
+The available revenge types you may set are:
+NONE		Disable revenge totally.
+REVERSE		Reverse the offending action only.
+DEOP		Deop the user who triggered revenge.
+KICK		Kick the user who triggered revenge from channel.
+BAN1		Ban (nick!*@*) the user who triggered revenge.
+BAN2		Ban (*!*user@*.host) the user who triggered revenge.
+BAN3		Ban (*!*@port.host) the user who triggered revenge.
+BAN4		Ban (*!*@*.host) the user who triggered revenge.
+MIRROR		Do whatever the user did to trigger revenge back to them.
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.2.19	JOIN
+------------
+
+SYNTAX: SET <channel> JOIN <ON|OFF|RESET>
+
+This will turn on or off Join on the channel.  When join is on, the main
+ChanServ nickname will join the channel, and maintain ops (+o) itself.
+When the channel is not in use, ChanServ will not remain in channel. This
+function has no real purpose except esthetics (some people like it).
+
+Setting this to RESET will set the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must have SET privileges to use this command.
+
+
+3.3	Other Commands
+======================
+
+There are many other functions offered by ChanServ that do not
+specifically pertain to either owning a channel or a setting of a
+channel.  Most of these are either purely informational commands, or
+commands that affect the 'current' channel (as opposed to the stored
+record), however some do actually change the data stored.
+
+
+3.3.1	HELP
+------------
+
+SYNTAX: HELP [command]
+
+This will give you detailed help on the syntax of a command, and describe
+what it does.  For subcommands, just separate the command and subcommand
+with a space.
+
+
+3.3.2	LIST
+------------
+
+SYNTAX: LIST [channelmask [maximum]]
+
+This will list out all registered channels that match the channelmask
+specified up to the maximum number of channels specified.  If neither is
+specified, the default channel is *, and the default maximum is set by 
+the IRC network staff, so you may ask an IRC operators what it is.  There
+is also an absolute maximum above which you may not set your maximum to,
+once again, you may ask your IRC operators what this is.
+
+Any channel set PRIVATE (3.2.12) will not show up in this list.
+
+
+3.3.3	INFO
+------------
+
+SYNTAX: INFO <channel>
+
+This will give you detailed information on a channel entry.  This
+information includes things such as when the channel was registered,
+who owns it, who is in it, the last time it was used, channel topic,
+revenge level, ban removal and greet times.  It will also give you
+all the informational fields (email, url, description, etc) that have
+been set by the channel maintainers.  Finally, it will tell you what 
+settings the channel has set on.
+
+
+3.3.4	USERS
+-------------
+
+SYNTAX: USERS <channel>
+
+This will show you a listing of who is in the given channel name, in
+alphabetical order.  Ops will be prefixed with '@' and voices with '+'.
+
+You must have VIEW privileges to use this command.
+
+
+3.3.5	MODE
+------------
+
+SYNTAX: MODE <channel> [modes [parameters]
+
+With no mode or parameters specified, this will return a list of modes
+currently active in channel (including key and limit if set).  You must
+have VIEW privileges to use this command with no modes.
+
+When the mode is specified, services will attempt to set the mode
+you specify in channel.  The parameters are read in the order they're
+specified in the mode string.  You may not set a mode that goes against
+the channel's MLOCK (3.2.7).  You must have CMDMODE privileges to use
+this command with modes.
+
+
+3.3.6	TOPIC
+-------------
+
+SYNTAX: TOPIC <channel> <topic>
+
+This will set the channel's current topic to whatever you set.  It is
+essentially the same as getting services to do the /topic #channel for
+you.  This is the only way to set a channel topic if TOPICLOCK (3.2.9)
+is set on the channel.
+
+You must have CMDMODE privileges to use this command.
+
+
+3.3.7	INVITE
+--------------
+
+SYNTAX: INVITE <channel> [nickname]
+
+This will invite the given nickname to the channel if it is supplied, or
+your own nickname if it is not.  This enables you to enter invite only
+(+i) channels without having to find out who is in it, and request an
+invite -- especially since ChanServ will keep an invite channel active
+even when no one is in it.
+
+You must have CMDINVITE privileges to use this command.
+You must have SUPER privileges to specify a nickname with this command.
+
+
+3.3.8	UNBAN
+-------------
+
+SYNTAX: UNBAN <channel> [nickname]
+
+This will unban the given nickname to the channel if it is supplied, or
+your own nickname if it is not.  This enables you to re-enter a channel
+after you have been banned, without having to find out who is in it, and
+ask someone to unban you.
+
+You must have CMDUNBAN privileges to use this command.
+You must have SUPER privileges to specify a nickname with this command.
+
+
+3.3.9	OP / DEOP
+-----------------
+
+SYNTAX: OP <channel> [nickname]
+        DEOP <channel> [nickname]
+
+This will give ops to (+o) or take ops from (-o) the given nickname in
+the channel if it is supplied, or yourself if it is not.  This allows
+you to gain ops in a channel even when there are no ops or none of the
+existing ops are awake.
+
+You must have CMDOP privileges to use these commands.
+You must have SUPER privileges to specify a nickname with these commands.
+
+
+3.3.10	HALFOP / DEHALFOP
+-------------------------
+
+SYNTAX: HALFOP <channel> [nickname]
+        DEHALFOP <channel> [nickname]
+
+This will give half ops to (+h) or take half ops from (-h) the given
+nickname in the channel if it is supplied, or yourself if it is not.
+This allows you to gain half ops in a channel even when there are no
+ops or none of the existing ops are awake.  This feature must be
+supported by the IRC software used on the network to work, most IRC
+software does not support this feature.
+
+You must have CMDHALFOP privileges to use these commands.
+You must have SUPER privileges to specify a nickname with these commands.
+
+
+3.3.11	VOICE / DEVOICE
+-----------------------
+
+SYNTAX: VOICE <channel> [nickname]
+        DEVOICE <channel> [nickname]
+
+This will give a voice to (+v) or take a voice from (-v) from the given
+nickname in the channel if it is supplied, or yourself if it is not.
+This allows you to gain a voice in a moderated channel, even when there
+are no ops, or none of them are awake.  This feature must be supported
+by the IRC software used on the network to work, most IRC software does
+not support this feature.
+
+You must have CMDVOICE privileges to use these commands.
+You must have SUPER privileges to specify a nickname with these commands.
+
+
+3.3.12	KICK
+------------
+
+SYNTAX: KICK <channel> <nickname> [reason]
+
+This will kick the given nickname from the channel.  This is available
+even when you do not have ops in channel.  The default AKICK (3.1.6)
+reason will be used if none is specified.  The actual kick reason will
+indicate that you initiated the kick.
+
+You must have CMDKICK privileges to use this command.
+
+
+3.3.13	REMOVE
+--------------
+
+SYNTAX: REMOVE <channel> <nickname> [reason]
+
+This will kick the given nickname from the channel.  This is available
+even when you do not have ops in channel.  The default AKICK (3.1.6)
+reason will be used if none is specified.  The actual kick reason will
+not indicate that you initiated the kick.
+
+You must have CMDKICK and SUPER privileges to use this command.
+
+
+3.3.14	CLEAR
+-------------
+
+SYNTAX: CLEAR <channel> MODES
+        CLEAR <channel> BANS
+        CLEAR <channel> OPS
+        CLEAR <channel> VOICES
+        CLEAR <channel> USERS
+        CLEAR <channel> ALL
+
+This command is used to do things 'en mass'.  The clear command should
+not be used lightly, but it is sometimes useful to do these kinds of
+actions on a large scale.
+
+MODES will remove all modes excluding +b (bans), +o (ops) and +v (voices).
+BANS will remove all bans (+b) from channel.
+OPS will remove all ops (+o) from channel.
+VOICES will remove all voices (+v) from channel.
+USERS will kick all users except services and yourself from channel.
+ALL is the same as using MODES, OPS, VOICES and BANS in sequence.
+
+You must have CMDCLEAR privileges to use this command.
+
+
+3.3.15	GREET
+-------------
+
+SYNTAX: GREET <channel> ADD [@nickname] [!]<greeting>
+        GREET <channel> DEL [[@]nickname]
+        GREET <channel> LIST [[@]nickname|ALL]
+
+This maintains a channels greeting list.   A greeting list is simply a
+list of nicknames, and what ChanServ should say when they join.  This
+is purely a vanity feature.
+
+ADD will add a new greeting to the greeting list.  If a nickname is
+	specified (by putting an @ in front of it), it will be set
+	for that user, otherwise it will be set for your own nickname.
+	If the first character of a greeting is '!', it denotes the
+	greeting is locked, and only someone with OVERGREET may remove
+	it.  You must have GREET privileges to set a a greeting for
+	yourself, and OVERGREET to set it for another user, or lock
+	a greeting.
+DEL will remove a greeting from the greeting list.  If a nickname is
+	specified (the @ is optional), it will be removed for that
+	user, otherwise your own greeting will be removed.  You must
+	have GREET privileges to remove your own greeting, or OVERGREET
+	to remove another user's.
+LIST will display a greeting from the greeting list.  If a nickname is
+	specified (the @ is optional), it will display that user's
+	greeting, otherwise it will display your own.  If ALL is
+	specified, all greetings currently active are displayed.
+	You must have GREET privileges to see your own greeting, or
+	OVERGREET to see another user's, or ALL.
+
+
+3.3.16	MESSAGE
+---------------
+
+SYNTAX: MESSAGE <channel> ADD <message>
+        MESSAGE <channel> DEL <number>
+        MESSAGE <channel> LIST
+
+This maintains a channels on-join message list.   An on-join message list
+is simply a list of messages that will be sent to users when they join
+the channel.  This usually contains things like brief overviews of the
+channel rules, etc.
+
+ADD will add a new message to the on-join message list.
+DEL will remove the numbered entry from the on-join message list.  The
+	entry numbers are shown on a LIST.
+LIST will list out all current entries on the on-join message list.
+
+You must have MESSAGE privileges to use this command.
+
+
+3.4	IRC Operators
+=====================
+
+IRC Operators, as you probably already know, have certain controls over
+a channel.  Some IRC Operators may also become Services Operators on your
+network.
+
+Services operators have special access on services that allow them to do
+a wide variety of things.  They can reset the channel password to a new
+password for you, they can view the access list, AKICK list, greetings
+list, on-join messages list, they can use the INVITE, UNBAN, OP, DEOP,
+VOICE and DEVOICE commands, and they may also suspend the channel if
+something is done against the network rules.
+
+
+==========================================================================
+  Section 4 - MemoServ
+==========================================================================
+
+MemoServ is a service that allows you to leave a message for another
+user to retrieve at a later time (presumably because they are idle
+or offline).  It also allows you to post news articles for a channel.
+News articles are identical to user memos except that they expire.
+
+MemoServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are MemoServ, MemoS and MemoOP.  All
+commands to MemoServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+4.1	Normal Usage
+====================
+
+The command set for MemoServ is relatively small, so all commands that
+available for MemoServ have been condensed into one section.  MemoServ
+stores a memo list for every nickname that is not a slave, and a news
+list for every channel.
+
+
+4.1.1	HELP
+------------
+
+SYNTAX: HELP [command]
+
+This will give you detailed help on the syntax of a command, and describe
+what it does.  For subcommands, just separate the command and subcommand
+with a space.
+
+
+4.1.2	LIST
+------------
+
+SYNTAX: LIST [channel]
+
+This will list all news articles for the specified channel, or all memos
+you have in your personal memo list if no channel is specified.  The time
+the memo or news article was sent, who sent it, and the first 20
+characters of the message will be displayed.  All memos or news articles
+that you have not yet read, or have been marked UNREAD (4.1.4) will have
+a * before the entry number.
+
+You must have READMEMO privileges if a channel is specified.
+
+
+4.1.3	READ
+------------
+
+SYNTAX: READ [channel] <numbers|ALL|UNREAD>
+
+This will display the full text of one or more memos or news articles,
+marking them as read in the process.  Numbers may be specified as a
+series (EG. 1,3,5) or range (EG. 1-5) or any combination of these as
+long as there are no spaced involved.  If ALL is specified, all memos or
+news articles will be displayed, if UNREAD is specified, all memos or
+news articles which you have not yet read, or have been marked as UNREAD
+(4.1.4) will be displayed.
+
+You must have READMEMO privileges if a channel is specified.
+
+
+4.1.4	UNREAD
+--------------
+
+SYNTAX: UNREAD [channel] <numbers|ALL>
+
+This will mark one or more memos or news articles as unread.  This will
+force services to notify you of an unread memo upon signon, or news
+article when you join the channel.  Numbers may be specified as a
+series (EG. 1,3,5) or range (EG. 1-5) or any combination of these as
+long as there are no spaced involved.  If ALL is specified, all memos or
+news articles will be marked unread.
+
+You must have READMEMO privileges if a channel is specified.
+
+
+4.1.5	SEND
+------------
+
+SYNTAX: SEND <nickname|channel> <message>
+
+This will send a memo or news article to another nickname or channel
+respectively.  Once you initiate the send, you will have up to a certain
+time limit defined by the network administrators to either CONTINUE
+(4.1.6) the message, or CANCEL (4.1.9) it.  After that time expires,
+it will automatically be sent to the recipient.
+
+If a memo or news article is pending when this command is executed,
+it will automatically be sent.
+
+You must have WRITEMEMO privileges if a channel is specified.
+
+
+4.1.6	CONTINUE
+----------------
+
+SYNTAX: CONTINUE <message>
+
+This will continue a pending memo or news article.  Usually this is
+needed when the message you are sending was truncated in the initial
+SEND (4.1.5), and you had not finished what you had to say.  The
+theoretical maximum size of a memo or news article is unlimited.
+This command will also reset the time you have to either continue
+the message even more, or CANCEL (4.1.9) it.
+
+
+4.1.7	PREVIEW
+---------------
+
+SYNTAX: PREVIEW
+
+This will display back what the currently pending memo or news article
+says.  In essence, it offers you a chance to proof read what you have
+written before sending it.  This will NOT affect the time remaining
+before a FLUSH (4.1.8) is automatically done and the message is sent.
+
+
+4.1.8	FLUSH
+-------------
+
+SYNTAX: FLUSH
+
+This will send the pending memo or news article immediately, without
+waiting for the time since the last SEND (4.1.5) or CONTINUE (4.1.6)
+to expire.
+
+
+4.1.9	CANCEL
+--------------
+
+SYNTAX: CANCEL
+
+This will abort a pending memo or news article.  It will never be sent.
+Once the memo or news article has been sent, it cannot be canceled.
+
+
+4.1.10	REPLY
+-------------
+
+SYNTAX: REPLY [channel] <number> <message>
+
+This will send a memo back to the originator of the memo or news article
+you specify by number.  You may only specify one number.  The first 20
+characters of the original message along with an indication that the
+message is a reply (and where it was from if it is a news article) are
+automatically prefixed to the specified message.
+
+You must have READMEMO privileges if a channel is specified.
+
+
+4.1.11	FORWARD
+---------------
+
+SYNTAX: FORWARD [channel] <number> <nickname|channel>
+
+This will forward the memo or news article you specify by number directly
+to another nickname or channel.  You may only specify one number.  The
+originator of the memo or news article, along with the channel it is from
+for news articles will be automatically prefixed to the original message,
+along with an indication that it is a forwarded message.
+
+If you are forwarding from a channel, you must have READMEMO privileges.
+If you are forwarding to a channel, you must have WRITEMEMO privileges.
+
+
+4.1.12	DEL
+-----------
+
+SYNTAX: DEL [channel] <numbers|ALL|READ>
+
+This will delete one or more memos or news articles.  This action is
+permanent, and cannot be reversed.  Numbers may be specified as a
+series (EG. 1,3,5) or range (EG. 1-5) or any combination of these as
+long as there are no spaced involved.  If ALL is specified, all memos or
+news articles will deleted, if READ is specified, only those which you
+have READ (4.1.3) will be removed.
+
+You must have WRITEMEMO privileges to delete any news article you have
+posted yourself, or DELMEMO privileges to delete someone else's.
+
+
+4.1.13	FILE
+------------
+
+SYNTAX: FILE <nickname> [message]
+
+This command acts the same as the SEND (4.1.5) command, except that you
+must initiate a DCC file transfer to services before the time limit
+expires.  As with SEND, you may use the CONTINUE (4.1.6) command to
+extend the time limit, and CANCEL (4.1.9) to abort the memo.  Once the
+file transfer has started, the time limit is removed, and the memo is
+sent as soon as the file transfer completes.  You may not specify a
+channel as the recipient, as only memos may have file attachments.
+
+
+4.1.14	GET
+-----------
+
+SYNTAX: GET <numbers>
+
+This will send the file attachments for one or more memos.  Numbers
+may be specified as a series (EG. 1,3,5) or range (EG. 1-5) or any
+combination of these as long as there are no spaced involved.  For each
+memo specified that has a file attachment, services will initiate a DCC
+file transfer to you with the file attachment.
+
+
+4.2	Settings
+================
+
+MemoServ settings only really make sense on news articles, and even
+then there is only a small amount of settings that are reasonable.
+All settings are changed using the SET prefix to the command names.
+
+
+4.2.1	NOEXPIRE
+----------------
+
+SYNTAX: SET <channel> NOEXPIRE <ON|OFF|RESET> <numbers|ALL>
+
+This will turn on or off No Expire on the news articles(s) specified.
+When no expire is on, a news article will never expire, it must be
+deleted (4.1.12) explicitely.  Numbers may be specified as a series
+(EG. 1,3,5) or range (EG. 1-5) or any combination of these as long as
+there are no spaced involved.  If ALL is specified, all news articles
+will have no expire set on or off.
+
+Setting this to RESET will set the value to whatever new news articles
+	are set to (ie. the default value).
+You must have DELMEMO privileges to use this command.
+
+
+4.3	IRC Operators
+=====================
+
+IRC Operators, as you probably already know, have certain controls over
+the network.  Some IRC Operators may also become Services Operators on
+your network.
+
+Services operators have no special powers over memos or news articles.
+
+
+==========================================================================
+  Section 5 - CommServ
+==========================================================================
+
+CommServ is a service that allows you to create groups of users for
+various purposes - mainly contactability purposes.  Committees control
+everything from what commands you may use in services, to what messages
+you see when you sign online.
+
+CommServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Since CommServ is unique to Magick, there are no other
+commonly known names for CommServ.  All commands to CommServ are done
+through private messages, or queries.  This document will assume you
+know how to send a private message.
+
+
+5.1	Normal Usage
+====================
+
+The command set for CommServ is relatively small, so all commands that
+available for CommServ have been condensed into one section.  Apart from
+committees created by the network administrators, there are 6 default
+committees - commonly known as ALL, REGD, OPER, ADMIN, SOP and SADMIN.
+ALL represents all users currently online, REGD represents all registered
+users - they have no MEMBER (5.1.5) list to be maintained.  All members
+of SADMIN are considered the head of the SOP and ADMIN committees, and
+all members of the ADMIN committee are considered the head of the OPER
+committee.  The settings for these 6 committees may not be changed.
+
+
+5.1.1	HELP
+------------
+
+SYNTAX: HELP [command]
+
+This will give you detailed help on the syntax of a command, and describe
+what it does.  For subcommands, just separate the command and subcommand
+with a space.
+
+
+5.1.2	LIST
+------------
+
+SYNTAX: LIST [committeemask [maximum]]
+
+This will list out all committees that match the committeemask specified
+up to the maximum number of committees specified.  If neither is
+specified, the default committeemask is *, and the default maximum is set
+by the IRC network staff, so you may ask an IRC operators what it is.
+There is also an absolute maximum above which you may not set your
+maximum to, once again, you may ask your IRC operators what this is.
+
+Any committee set PRIVATE (5.2.6) will not show up in this list.
+
+
+5.1.3	INFO
+------------
+
+SYNTAX: INFO <committee>
+
+This will give you detailed information on a committee entry.  This
+information includes things such as when the committee was registered,
+who is in charge, and how many members it has.  It will also give
+you all the informational fields (email, url, description, etc) that
+the committee head has set themselves.  Finally, it will tell you what
+settings the committee has on set.
+
+
+5.1.4	MEMO
+------------
+
+SYNTAX: MEMO <message>
+
+This will send a memo to all committee members.  This works as if you
+had used a MemoServ SEND (4.1.5) to all members of the committee.  If
+OPENMEMOS (5.2.7) is on, then any member of the committee may use this,
+otherwise only the committee head(s) may use this feature.  There is
+no memo timeout for committee based memos, they are flushed immediately.
+
+
+5.1.5	MEMBER
+--------------
+
+SYNTAX: MEMBER <committee> ADD <nickname>
+        MEMBER <committee> DEL <nickname|number>
+        MEMBER <committee> LIST
+
+This maintains the member list.  The member list is simply a list of
+nicknames that are on the committee.  When on the member list, unless
+SECURE (5.2.5) is set on, you do not need to IDENTIFY (2.1.6) to do most
+commands.
+
+ADD will add a new nickname to the member list.
+DEL will remove either a nickname or the numbered entry from the
+	member list.  The entry numbers are shown on a LIST.
+LIST will list out all current entries on the member list.  Anyone may
+	use this command unless PRIVATE (5.2.6) is set on.
+
+
+5.1.6	LOGON
+-------------
+
+SYNTAX: LOGON <committee> ADD <message>
+        LOGON <committee> DEL <number>
+        LOGON <committee> LIST
+
+This maintains the signon message list.  The signon message list is
+simply a list of messages that will be sent to a user when they are
+recognized as being on the committee (usually signing online).  These
+messages will also be sent if the user comes back from being away.
+
+ADD will add a new message to the signon message list.
+DEL will remove the numbered entry from the signon message list.
+	The entry numbers are shown on a LIST.
+LIST will list out all current entries on the signon message list.
+
+
+5.2	Settings
+================
+
+Each committee has many settings.  These settings can do anything from
+transferring ownership of the committee, change who can do various
+commands,  all the way up to purely informational settings.
+All settings are changed using the SET prefix to the command names.
+
+
+5.2.1	HEAD
+------------
+
+SYNTAX: SET <committee> HEAD <nickname>
+
+This will transfer ownership of the committee to another user.  On many
+networks, whoever is listed as the owner, is the final authority of any
+committee.  No other changes are made except who services see as the
+head.  The nickname specified must be a registered nickname.
+
+
+5.2.2	DESCRIPTION
+-------------------
+
+SYNTAX: SET <committee> DESCRIPTION <description>
+
+This will set the description of what the committee is for.  This should
+be the full committee name, and a concise description of what it is for.
+
+
+5.2.3	EMAIL
+-------------
+
+SYNTAX: SET <committee> EMAIL <email>
+
+This will set the committee's email in services.  This is a purely
+informational field, and will show up in the INFO (5.1.3) display.
+The email address itself will not be validated, but it must be an email
+address.
+
+Although you can put a fake email address in, it is recommended you put
+a real one in.
+
+Setting this to NONE will clear this field.
+
+
+5.2.4	URL
+-----------
+
+SYNTAX: SET <committee> URL <url>
+
+This will set the committee's web page address in services.  This is a
+purely informational field, and will show up in the INFO (5.1.3)
+display.  You do not need to put the http:// in the address as it is
+supplied for you if you left it out.
+
+Setting this to NONE will clear this field.
+
+
+5.2.5	SECURE
+--------------
+
+SYNTAX: SET <committee> SECURE <ON|OFF|RESET>
+
+This will turn on or off Secure on the committee.  When secure is on,
+you will have to IDENTIFY (2.1.6) to your nickname before your membership
+to the committee will be acknowledged.
+
+Setting this to RESET will set the value to whatever newly registered
+	committees are set to (ie. the default value).
+
+
+5.2.6	PRIVATE
+---------------
+
+SYNTAX: SET <committee> PRIVATE <ON|OFF|RESET>
+
+This will turn on or off Private on the committee.  When private is on,
+the committee will not show up in the LIST (5.1.2) of committees.  Also
+only members of the committee may use the MEMBER (5.1.5) LIST command.
+
+Setting this to RESET will set the value to whatever newly registered
+	committees are set to (ie. the default value).
+
+
+5.2.7	OPENMEMOS
+-----------------
+
+SYNTAX: SET <committee> OPENMEMOS <ON|OFF|RESET>
+
+This will turn on or off Open Memos on the committee.  When open memos
+is on, any member of the committee may use the MEMO (5.1.4) command,
+otherwise only committee heads may use it.
+
+Setting this to RESET will set the value to whatever newly registered
+	committees are set to (ie. the default value).
+
+
+5.3	IRC Operators
+=====================
+
+IRC Operators, as you probably already know, have certain controls over
+a committee.  Some IRC Operators may also become Services Operators on
+your network.
+
+Services operators have special access on services that allow them to do
+a wide variety of things.  They can view the member list (even when
+PRIVATE is on), and the list of signon messages.  They may also create
+new committees or remove defunct ones.
+
+
+==========================================================================
+  Section 6 - HelpServ
+==========================================================================
+
+HelpServ is a service that fulfills an entirely informational purpose.
+This service is also the global noticer (the service used for sending
+out messages to all users when necessary).
+
+HelpServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are ChanServ, ChanS and ChanOP.  All
+commands to ChanServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+6.1	Normal Usage
+====================
+
+The command set for HelpServ is relatively small, so all commands that
+available for HelpServ have been condensed into one section.  All
+commands except those that deal with the public file system are purely
+informational.
+
+
+6.1.1	HELP
+------------
+
+SYNTAX: HELP [command]
+
+This will give you detailed help on the syntax of a command, and describe
+what it does.  For subcommands, just separate the command and subcommand
+with a space.
+
+
+6.1.2	CREDITS
+---------------
+
+SYNTAX: CREDITS
+
+This will give you brief information about Magick itself, including where
+to get it, the main web site for Magick, the copyright notice, and
+dedication of Magick.
+
+
+6.1.3	CONTRIB
+---------------
+
+SYNTAX: CONTRIB
+
+This will give you more detailed information about the contributors of
+Magick, the authors, etc.  This will tell you about who contributed to
+Magick becoming what it is today.
+
+
+6.1.4	BREAKDOWN
+-----------------
+
+SYNTAX: BREAKDOWN
+
+This will show you a map of all servers currently linked (including who
+links to who), how many users and opers are on each, how much lag each
+of them have to services, and how much (percentage wise) of the network
+they hold.
+
+
+6.1.5	STATS
+-------------
+
+SYNTAX: STATS
+
+This will give you brief statistics about services, including how long
+they have been online, the current user load (and maximum user load
+since services have been up) and how many clones are online.
+
+
+6.1.6	LANGUAGES
+-----------------
+
+SYNTAX: LANGUAGES
+
+This will tell you what languages are available as settings for the
+LANGUAGE (2.2.13) nickname setting.  If you set your language to one
+of these languages, services will reply to all commands in that language.
+If there is help available in that language, it will also be used.
+
+
+6.1.7	FILE
+------------
+
+SYNTAX: FILE SEND <filename>
+        FILE LIST [filemask [maximum]]
+
+This is an interface into the public file system.  Services Operators may
+upload files that are available for users to download at will.  You may
+not upload files into the public file system.
+
+SEND will cause services to initiate a DCC file transfer to you with the
+	file name specified.
+LIST will display a listing of all available file names that match the
+	filemask specified up to the maximum number of files specified.
+	If neither is specified, the default filemask is *, and the
+	default maximum is set by the IRC network staff, so you may ask
+	an IRC operators what it is.  There is also an absolute maximum
+	above which you may not set your maximum to, once again, you may
+	ask your IRC operators what this is.
+
+
+6.1.8	ASK
+-----------
+
+SYNTAX: ASK <question>
+
+This will forward your question onto all IRC operators, along with your
+nickname.  This should let them know you have a query about something,
+and wish for someone to help you.  You will probably be contacted by an
+IRC operator shortly after executing this command.
+
+
+6.2	IRC Operators
+=====================
+
+IRC Operators, as you probably already know, have certain controls over
+the network.  Some IRC Operators may also become Services Operators on
+your network.
+
+The only thing services operators can really do with HelpServ is send a
+global message (ie. a message to all users on the network), and upload
+files to the public file system.
+
+
+==========================================================================
+  Section 7 - Frequently Asked Questions
+==========================================================================
+
+Below is listed a series of questions that both the Magick Development
+Team and users of Magick are asked.  The answers are in the section
+numbers listed after the question.
+
+What is Magick? 1
+
+Where can I get Magick? 1.2
+
+How do I register my nickname? 2.1.1
+
+How do I register my channel? 3.1.1
+
+How do I stop NickServ renaming or killing me? 2.1.6
+
+Why does NickServ keep telling me to identify every time I log on? 2.1.7
+
+I have more than one nickname, can I duplicate all my settings? 2.1.3
+
+I registered my channel, why cant I do anything with it? 3.1.4
+
+I forgot my nickname password, how do I get it reset? 2.4
+
+I forgot my channel password, how do I get it reset? 3.4
+
+How can I get my nickname back when I have not pinged out yet? 2.1.8
+
+Someone stole my nickname, what can I do about it? 2.1.9
+
+How do I make ChanServ join my channel? 3.2.19
+
+How can I make it so only people I want can join my channel? 3.2.17
+
+Someone is flooding me with memos, how can I stop them? 2.3.6
+
+How do I get into an invite only channel? 3.3.7
+
+How do I get into a channel after I've been banned? 3.3.8
+
+How do I find out what the key is for a channel? 3.3.5
+
+How do I change my nickname password? 2.2.1
+
+How do I change my channel's password? 3.2.3

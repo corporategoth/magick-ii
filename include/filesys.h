@@ -25,6 +25,10 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.43  2001/06/20 06:07:01  prez
 ** ome GCC 3.0 and solaris fixes
 **
@@ -361,8 +365,8 @@ private:
     static xfers_t xfers;
 
 public:
-    int open(void *in=0);
-    int close(const unsigned long in);
+    int open(void *in = 0);
+    int close(u_long flags = 0);
     int svc(void);
 
 #ifdef MAGICK_HAS_EXCEPTIONS

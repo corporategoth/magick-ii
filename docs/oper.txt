@@ -1,0 +1,2165 @@
+==========================================================================
+  Magick OPER Documentation
+==========================================================================
+
+Revision History
+================
+
+v0.1	Sep 03, 2001	Initial draft.
+
+
+Contents
+========
+
+1	Introduction
+1.1	Author Information
+1.2	Obtaining Magick
+1.3	License
+1.4	IRC in General
+1.3.1	Wildcards
+1.3.2	Hostmasks
+1.3.3	Time Formats
+1.3.4	Space Formats
+1.4	Documentation Key
+1.4.1	Committee Membership
+
+2	NickServ
+2.1	Extended Commands
+2.1.1	DROP
+2.1.2	SLAVES
+2.1.3	LIST
+2.1.4	ACCESS
+2.1.5	IGNORE
+2.2	Added Commands
+2.2.1	LIVE
+2.2.2	SETPASS
+2.2.3	GETPASS
+2.2.4	SUSPEND
+2.2.5	UNSUSPEND
+2.2.6	FORBID
+2.2.7	SET COMMENT
+2.2.8	SET NOEXPIRE
+2.3	Locking and Unlocking
+2.3.1	PROTECT
+2.3.2	SECURE
+2.3.3	NOMEMO
+2.3.4	PRIVATE
+2.3.5	PRIVMSG
+2.3.6	LANGUAGE
+
+3	ChanServ
+3.1	Extended Commands
+3.1.1	DROP
+3.1.2	LIST
+3.1.3	ACCESS
+3.1.4	AKICK
+3.1.5	GREET
+3.1.6	MESSAGE
+3.1.7	MODE
+3.1.8	INVITE
+3.1.9	UNBAN
+3.1.10	OP / DEOP
+3.1.11	HALFOP / DEHALFOP
+3.1.12	VOICE / DEVOICE
+3.1.13	CLEAR
+3.1.14	SET FOUNDER
+3.1.15	SET COFOUNDER
+3.2	Added Commands
+3.2.1	LIVE
+3.2.2	SETPASS
+3.2.3	GETPASS
+3.2.4	SUSPEND
+3.2.5	UNSUSPEND
+3.2.6	FORBID
+3.2.7	SET COMMENT
+3.2.8	SET NOEXPIRE
+3.3	Locking and Unlocking
+3.3.1	MLOCK
+3.3.2	KEEPTOPIC
+3.3.3	TOPICLOCK
+3.3.4	BANTIME
+3.3.5	PARTTIME
+3.3.6	PRIVATE
+3.3.7	SECURE
+3.3.8	SECUREOPS
+3.3.9	ANARCHY
+3.3.10	KICKONBAN
+3.3.11	RESTRICTED
+3.3.12	REVENGE
+3.3.13	JOIN
+
+4	CommServ
+4.1	Extended Commands
+4.1.1	LIST
+4.1.2	MEMBER
+4.1.3	LOGON
+4.1.4	SET HEAD
+4.2	Added Commands
+4.2.1	ADD
+4.2.2	DEL
+4.3	Locking and Unlocking
+4.3.1	SECURE
+4.3.2	PRIVATE
+4.3.3	OPENMEMOS
+
+5	HelpServ
+5.1	Extended Commands
+5.1.1	FILE
+5.1.2	STATS
+5.2	Added Commands
+5.2.1	GLOBAL
+
+6	OperServ
+6.1	IRC Operators
+6.1.1	HELP
+6.1.2	CLONE
+6.1.3	AKILL
+6.1.4	IGNORE
+6.1.5	MODE
+6.1.6	PING
+6.1.7	SETTINGS
+6.2	Services Operators
+6.2.1	OPERDENY
+6.2.2	HTM
+6.3	IRC Administrators
+6.3.1	QLINE / UNQLINE
+6.3.2	NOOP
+6.3.3	JUPE
+6.3.4	KILL
+6.3.5	HIDE
+6.4	Services Administrators
+6.4.1	TRACE
+6.4.2	UNLOAD
+6.4.3	RELOAD
+6.4.4	IDENTIFY
+6.4.5	UPDATE
+6.4.6	ON / OFF
+6.4.7	SHUTDOWN
+
+7	Frequently Asked Questions
+
+
+==========================================================================
+  Section 1 - Introduction
+==========================================================================
+
+Magick is a program that supplies IRC Services to an IRC Network.  They
+connect to the network as if they were a server, and provide 'clients'
+that users may interact with to achieve a variety of functions.
+
+These functions include nickname registration, channel registration,
+sending memos between users, and functions that allow IRC Operators to
+maintain the control and direction of the IRC Network.
+
+Magick is dedicated to the memory of PreZ's loving sister, Stacey Louise
+Elder (1st Jan, 1975 - 25th Feb, 1998). She has been there for me more
+than anyone over the years, and I was distraught when she died, may her
+Lord love her as much as I did, and keep her safe like I could not.
+Merry Parting, Dear Sister.
+
+Magick is also dedicated to the memory of Ungod's brother, Edward Kevin
+King (28th Aug, 1982 - 21st Nov, 1997), His life was short, but his memory
+is great, never will those who knew him forget him.
+
+
+1.1	Author Information
+==========================
+
+Magick is designed and developed by the Magick Development Team.  This
+team is headed up by Preston A. Elder, with William King as his 'second
+in command' if you will.
+
+Although the product is created by the dev team, many other people put
+in their time and effort to make it what it is.  These people are the
+alpha and beta testers, translators, and supporters of the developers.
+
+Listed below are the EMAIL contacts for the various teams, as well
+as the snail mail address if you wish to send us a token of appreciation.
+
+Preston A. Elder	- prez@magick.tm
+William King		- ungod@magick.tm
+
+Magick Development Team	- devel@magick.tm
+Magick Beta Testers	- beta@magick.tm
+Magick Alpha Testers	- alpha@magick.tm
+Magick Translators	- translators@magick.tm
+
+Magick User List	- general@magick.tm
+
+Snail Mail:		Magick Team
+			PO Box 893
+			SUTHERLAND,
+			NSW, 2232
+			AUSTRALIA
+
+
+1.2	Obtaining Magick
+========================
+
+The main Magick web site is at:
+	http://www.magick.tm
+
+Mirrors are:
+	http://magick.sourceforge.net
+
+The Magick project site is at:
+	http://www.sourceforge.net/projects/magick
+
+Magick can be downloaded from the main FTP site:
+	ftp://ftp.magick.tm/pub/magick.tm
+
+Mirrors are:
+	ftp://magick.sourceforge.net/pub/magick
+
+
+1.3	License
+===============
+
+Magick itself is distrubuted under the GNU General Public License.
+A full copy of the license comes with every copy of Magick.
+
+The crux of the GNU GPL however is that no one may charge for Magick,
+and anything derived from Magick must also be free, and if it is
+distributed at all, the source code must also be available.
+
+As a user of the product (ie. not the person installing it), you
+are under no license or obligations.
+
+
+1.4	IRC in General
+======================
+
+Internet Relay Chat (RFC1459) is a very simple protocol designed for user
+to user communications.  There are many different types of clients,
+servers and services out there for IRC.  Many different chat networks
+exist, but the basic methods of joining channels, messaging users, etc is
+the same on all of them.
+
+Most IRC server software tends to be unmoderated -- this means that no
+filtering is done by any human or mechanical means that will limit what
+you can and cannot say.  This is both a blessing and a curse.  Legally
+it means that nothing said or done on IRC is admissible in court, or
+can be used as evidence.  However morally, it means that no protections
+for children or easily offended people are enforced except voluntarily.
+
+A very good site dedicated to help on the usage of IRC, how to get on it,
+what networks exist, etc is available at http://www.irchelp.org.
+
+
+1.3.1	Wildcards
+-----------------
+
+IRC in general uses two kinds of wildcards throughout its command and
+general usage.  These are the * (asterisk) and ? (question mark).  The
+* is used to denote 0 or more characters, the characters do not matter.
+The ? is used to denote exactly 1 character, again the exact character
+does not matter, as long as there's only 1.
+
+So for example, the host castle.srealm.net.au would match all of these
+wildcards:	*.srealm.net.au
+		*.srealm.???.au
+		*.srealm.*.au
+		??????.??????.???.??
+
+
+1.3.2	Hostmasks
+-----------------
+
+A hostmask is used to depict 2 forms of user identifying information.
+These are nickname!user@host or simply user@host, depending on the the
+situation where it is used.  The correct format will usually be
+specified.
+
+Each hostmask has at least 2 parts, being the user and host.  These
+may be seen when typing /whois nickname.  The user portion is also
+known as an 'ident', and is supposed to be the login name the user
+is using on the computer they are connecting from, but often it is
+meaningless.  The host is the direct address of the computer that
+the user is logged onto the internet from.
+
+Sometimes the nickname may be prepended to the user@host form of
+hostmask by putting a '!' after the nickname, ie. nickname!user@host.
+
+All hostmasks may have wildcards to 'match' more than one variant on
+a specific host.  This is mainly used in things such as your access
+list, where you may put youruser@*.yourisp.com to match any dialup
+line coming from your own ISP.
+
+
+1.3.3	Time Formats
+--------------------
+
+The time formats used throughout this manual are specific to Magick. When
+specifying a time, you must use a series of numbers and units, the
+default unit being seconds.  The valid time units are:
+	s = seconds	m = minutes	h = hours
+	d = days	w = weeks	y = years
+
+Any number immediately preceeding a unit listed above will be considered
+to by of that unit type.  ie. 21s will be considered as 21 seconds, and
+21m as 21 minutes.  You may string multiple time units together, ie.
+3h15m means 3 hours and 15 minutes.
+
+You may specify numbers higher than 'natural' unit boundaries (ie. 100s
+is valid), and you may specify units in any order.  Any numbers without
+unit types following them will be assumed to be seconds.
+
+Only positive time values are allowed, and it may not contain spaces.
+
+
+1.3.4	Space Formats
+---------------------
+
+As with time formats, all space formats are specific to Magick.
+When specifying a space (or size), you must use a series of numbers
+and units, the default unit being bytes.  The valid space units are:
+	b = bytes	k = kilobytes	m = megabytes
+	g = gigabytes	t = terrabytes
+
+Any number immediately preceeding a unit listed above will be considered
+to by of that unit type.  ie. 21b will be considered as 21 bytes, and
+21k as 21 kilobytes.  You may string multiple time units together, ie.
+3k80b means 3 kilobytes and 15 bytes.
+
+You may specify numbers higher than 'natural' unit boundaries (ie. 2000b
+is valid), and you may specify units in any order.  Any numbers without
+unit types following them will be assumed to be bytes.
+
+Only positive space values are allowed, and it may not contain spaces.
+
+
+1.4	Documentation Key
+=========================
+
+Any parameter in <> braces are required.
+Any parameter in [] braces are optional.
+
+A pipe (|) in the parameter indicates that you may use any one of the
+listed options, but only one.
+
+
+1.4.1	Committee Membership
+----------------------------
+
+Magick as of version 2.0 is committee based.  All commands and extra
+features of commands are bound to committees memberships.  By default,
+there are 6 committees that are used to determine who can use any
+command in services, they are:
+
+ALL	All currently online users (dynamic membership).
+REGD	All users with registered nicknames (dynamic membership).
+OPER	IRC Operators (added by the ADMIN committee).
+ADMIN	Server Administrators (added by the SADMIN committee).
+SOP	Services Operators (added by the SADMIN committee).
+SADMIN	Services Admins (listed in the configuration file).
+
+The actual names of the above committees may be anything, but these are
+the default names, and what is used throughout this document.  Through
+either code changes, or usage of the scripting language however, the
+access required for each command may be changed to any committee desired,
+even non-default committees.
+
+There are also many commands that have extended features for members of
+privileged committees throughout services.  The actual committee that
+is required to use these extended commands is defined in the Magick
+configuration file.  The override types available are:
+
+OVR_VIEW	The ability to view private lists (eg. an access list).
+OVR_OWNER	The ability to change who owns something.
+OVR_CS_MODE	The ability to use the MODE (3.1.7) command to set a mode.
+OVR_CS_OP	The ability to OP / DEOP (3.1.10) someone.
+OVR_CS_HALFOP	The ability to HALFOP / DEHALFOP (3.1.11) someone.
+OVR_CS_VOICE	The ability to VOICE / DEVOICE (3.1.12) someone.
+OVR_CS_INVITE	The ability to INVITE (3.1.8) someone to a channel.
+OVR_CS_UNBAN	The ability to UNBAN (3.1.9) someone from a channel.
+OVR_CS_CLEAR	The ability to use the CLEAR (3.1.13) command.
+
+Throughout this document, we will mention a requirement to be in either
+one of the 6 default committees, or one of the 8 override 'committees'.
+Remember that the override committees are not actual committees, but
+just names used to represent an actual committee, due to the fact that
+the actual committee name may be changed in the configuration file.
+
+
+==========================================================================
+  Section 2 - NickServ
+==========================================================================
+
+NickServ is a service that allows people to register and maintain their
+nicknames.  Most commands that NickServ offers may only performed on
+registered nicknames.
+
+NickServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are NickServ, NickS and NickOP.  All
+commands to NickServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+2.1	Extended Commands
+=========================
+
+Many of the commands that are available to users (see user.txt) have some
+extra features available to members of the privileged committees only.
+Some of these extra features may just be the ability to execute a command
+on another user's nickname that normally only they could execute on
+themselves, however some commands add entirely new functionality.
+
+
+2.1.1	DROP
+------------
+
+SYNTAX: DROP <nickname>
+
+This will drop the nickname specified.  This works just as if the nickname
+themselves had identified and executed the DROP command.  Normal users
+may also specify a nickname as a parameter to the DROP command, however
+they are restricted to only dropping linked nicknames.  You may not drop
+the nickname of any member of the OPER or SOP committees, they must be
+removed from these committees first.
+
+NOTE: that if you forget the nickname parameter, then you will end up
+dropping your own nickname, so be careful!
+
+You must be on the SOP committee to use this command syntax.
+
+
+2.1.2	SLAVES
+--------------
+
+SYNTAX: SLAVES <nickname>
+
+This will give you a list of all linked nicknames that are associated
+with the specified nickname (whether it is the host or not).  It works
+exactly like the normal SLAVES command, however normal users may not
+see the slaves of another user.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+2.1.3	LIST
+------------
+
+SYNTAX: LIST [nickmask [maximum]]
+        LISTNOEXP [nickmask [maximum]]
+        LISTFORBID [nickmask [maximum]]
+        LISTSUSP [nickmask [maximum]]
+
+In all cases, the LIST commands works exactly as it does for normal users.
+However for members of the OPER committee, even nicknames with PRIVATE
+set on will be displayed in the list.
+
+For members of the SOP committee, 3 new subcommands are made available.
+LISTNOEXP will only display nicknames with the NOEXPIRE flag set.
+LISTFORBID will only display forbidden nicknames.
+LISTSUSP will only display suspended nicknames.
+
+
+2.1.4	ACCESS
+--------------
+
+SYNTAX: ACCESS LIST <nickname>
+
+This works just like the normal ACCESS LIST command, however you may view
+the access list of ANY user, not just yourself.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+2.1.5	IGNORE
+--------------
+
+SYNTAX: IGNORE LIST <nickname>
+
+This works just like the normal IGNORE LIST command, however you may view
+the ignore list of ANY user, not just yourself.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+2.2	Added Commands
+======================
+
+These commands are not available to normal users.  All these commands
+require special privileges.
+
+
+2.2.1	LIVE
+------------
+
+SYNTAX: LIVE [hostmask [maximum]]
+        LIVEOPER [hostmask [maximum]]
+
+LIVE will list out all nicknames currently online that match the
+hostmask specified up to the maximum number of nicknames specified.
+If neither is specified, the default hostmask is *!*@*, and the default
+maximum is set in the Magick configuration people.  There is also an
+absolute maximum above which you may not set your maximum to, which is
+also set in the Magick configuration file.
+LIVEOPER will do the same as LIST, however only users with mode +o
+(IRC operators) will be displayed.
+
+You must be on the SOP committee to use this command.
+
+
+2.2.2	SETPASS
+---------------
+
+SYNTAX: SETPASS <nickname> <password>
+
+This will change the password of the nickname specified to the password
+you specify.  A global notice will be sent out to warn people that you
+have done this.
+
+You must be on the SOP committee to use this command.
+
+
+2.2.3	GETPASS
+---------------
+
+SYNTAX: GETPASS <nickname> <password>
+
+This will retrieve and display the password of the nickname specified.
+A global notice will be sent out to warn people that you have done this.
+NOTE: This may not be available - this feature must be specifically
+compiled into magick, so if this has not been done, this will not work.
+
+You must be on the SADMIN committee to use this command.
+
+
+2.2.4	SUSPEND
+---------------
+
+SYNTAX: SUSPEND <nickname> <reason>
+
+This will suspend a nickname with the reason specified.  When suspended,
+the user will not be able to identify, and therefore will not be able to
+do many things that require identification (including dropping the nick).
+Because of the fact the user cannot identify, the nickname will also be
+exempt from expiry.  The user's INFO display will indicate that the
+user is suspended.  The suspension reason is stored in the user's comment.
+
+This feature is meant as a short-term judicial action, and prolonged
+nickname suspension is not recommended, use FORBID (2.2.6) for this.
+
+You must be on the SOP committee to use this command.
+
+
+2.2.5	UNSUSPEND
+-----------------
+
+SYNTAX: UNSUSPEND <nickname>
+
+This will reverse the effect of the SUSPEND (2.2.4) command.  The user
+will once again be subject to nickname expiry, and will be able to
+identify to their nickname again.  The comment field however will keep
+the suspension reason in it for future reference.
+
+You must be on the SOP committee to use this command.
+
+
+2.2.6	FORBID
+--------------
+
+SYNTAX: FORBID <nickname>
+
+This will forbid a nickname from being used at all.  If a user who does
+not have mode +o on attempts to use a forbidden nickname, they will be
+warned that they must chose another nickname, or be killed or renamed.
+
+If the nickname specified is already registered, it will be dropped first,
+therefore you may not forbid a nickname currently in use by a member of
+the OPER or SOP committees.
+
+You must be on the SOP committee to use this command.
+
+
+2.2.7	SET COMMENT
+-------------------
+
+SYNTAX: SET COMMENT <nickname> <comment>
+
+This will set the comment field of a user's record.  The comment field
+may be seen by members of the OPER or SOP committees in an INFO display
+of the user (all other users cannot).  The comment field doubles as the
+suspend reason field when the user is suspended.
+
+Setting this to NONE will clear this field.
+You must be on the SOP committee to use this command.
+
+
+2.2.8	SET NOEXPIRE
+--------------------
+
+SYNTAX: SET NOEXPIRE <nickname> <ON|OFF|RESET>
+
+This will turn on or off No Expire on the specified nickname.  When
+no expire is on, the user will be exempt from their nickname expiring
+due to it not being used in a pre-defined period of time.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.3	Locking and Unlocking
+=============================
+
+Sometimes it is necessary to stop a user from being able to change a
+particular option, and force them to have it on or off.  This is achieved
+with the LOCK and UNLOCK command.  Every LOCK has a reciprocal UNLOCK
+command.
+
+
+2.3.1	PROTECT
+---------------
+
+SYNTAX: LOCK PROTECT <nickname> <ON|OFF|RESET>
+        UNLOCK PROTECT <nickname>
+
+This will lock or unlock the value of Protect on or off for the specified
+nickname.  While locked, the user will not be able to change this value.
+When the value is unlocked, it will keep the value it was locked at,
+however the user may once again change it as required.  You may not
+override or unlock a global lock (ie. a value set as locked in the
+Magick configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.3.2	SECURE
+--------------
+
+SYNTAX: LOCK SECURE <nickname> <ON|OFF|RESET>
+        UNLOCK SECURE <nickname>
+
+This will lock or unlock the value of Secure on or off for the specified
+nickname.  While locked, the user will not be able to change this value.
+When the value is unlocked, it will keep the value it was locked at,
+however the user may once again change it as required.  You may not
+override or unlock a global lock (ie. a value set as locked in the
+Magick configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.3.3	NOMEMO
+--------------
+
+SYNTAX: LOCK NOMEMO <nickname> <ON|OFF|RESET>
+        UNLOCK NOMEMO <nickname>
+
+This will lock or unlock the value of No Memo on or off for the specified
+nickname.  While locked, the user will not be able to change this value.
+When the value is unlocked, it will keep the value it was locked at,
+however the user may once again change it as required.  You may not
+override or unlock a global lock (ie. a value set as locked in the
+Magick configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.3.4	PRIVATE
+---------------
+
+SYNTAX: LOCK PRIVATE <nickname> <ON|OFF|RESET>
+        UNLOCK PRIVATE <nickname>
+
+This will lock or unlock the value of Private on or off for the specified
+nickname.  While locked, the user will not be able to change this value.
+When the value is unlocked, it will keep the value it was locked at,
+however the user may once again change it as required.  You may not
+override or unlock a global lock (ie. a value set as locked in the
+Magick configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.3.5	PRIVMSG
+---------------
+
+SYNTAX: LOCK PRIVMSG <nickname> <ON|OFF|RESET>
+        UNLOCK PRIVMSG <nickname>
+
+This will lock or unlock the value of PRIVMSG on or off for the specified
+nickname.  While locked, the user will not be able to change this value.
+When the value is unlocked, it will keep the value it was locked at,
+however the user may once again change it as required.  You may not
+override or unlock a global lock (ie. a value set as locked in the
+Magick configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.3.6	LANGUAGE
+----------------
+
+SYNTAX: LOCK LANGUAGE <nickname> <language|RESET>
+        UNLOCK LANGUAGE <nickname>
+
+This will lock or unlock the value of Language to the specified value
+for the specified nickname.  While locked, the user will not be able to
+change this value.  When the value is unlocked, it will keep the value it
+was locked at, however the user may once again change it as required.
+You may not override or unlock a global lock (ie. a value set as locked
+in the Magick configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+==========================================================================
+  Section 3 - ChanServ
+==========================================================================
+
+ChanServ is a service that allows people to register and maintain their
+channels.  Most commands that ChanServ offers may only performed on
+registered channels, by registered nicknames.
+
+ChanServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are ChanServ, ChanS and ChanOP.  All
+commands to ChanServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+3.1	Extended Commands
+=========================
+
+Many of the commands that are available to users (see user.txt) have some
+extra features available to members of the privileged committees only.
+Some of these extra features may just be the ability to execute a command
+on another user's nickname that normally only they could execute on
+themselves, however some commands add entirely new functionality.
+
+
+3.1.1	DROP
+------------
+
+SYNTAX: DROP <channel>
+
+This will drop the channel specified.  This works just as if the founder
+themselves had identified and executed the DROP command.  Normal users
+may also specify a channel as a parameter to the DROP command, however
+they are restricted to only dropping channels they know the password
+for (ie. can identify to).
+
+You must be on the SOP committee to use this command syntax.
+
+
+3.1.2	LIST
+------------
+
+SYNTAX: LIST [channelmask [maximum]]
+        LISTNOEXP [channelmask [maximum]]
+        LISTFORBID [channelmask [maximum]]
+        LISTSUSP [channelmask [maximum]]
+
+In all cases, the LIST commands works exactly as it does for normal users.
+However for members of the OPER committee, even channels with PRIVATE set
+on will be displayed in the list.
+
+For members of the SOP committee, 3 new subcommands are made available.
+LISTNOEXP will only display channels with the NOEXPIRE flag set.
+LISTFORBID will only display forbidden channels.
+LISTSUSP will only display suspended channels.
+
+
+3.1.3	ACCESS
+--------------
+
+SYNTAX: ACCESS <channel> LIST
+
+This works just like the normal ACCESS LIST command, however you may view
+the access list of ANY channel, not just ones you have ACCESS privileges
+on.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+3.1.4	AKICK
+-------------
+
+SYNTAX: AKICK <channel> LIST
+
+This works just like the normal AKICK LIST command, however you may view
+the auto kick list of ANY channel, not just ones you have AKICK
+privileges on.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+3.1.5	GREET
+-------------
+
+SYNTAX: GREET <channel> LIST <nickname|ALL>
+
+This works just like the normal GREET LIST command, however you may view
+any or all nicknames on the greet list of any channel, not just ones you
+have OVERGREET privileges on.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+3.1.6	MESSAGE
+---------------
+
+SYNTAX: MESSAGE <channel> LIST
+
+This works just like the normal MESSAGE LIST command, however you may view
+the on-join message list of ANY channel, not just ones you have MESSAGE
+privileges on.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+3.1.7	MODE
+------------
+
+SYNTAX: MODE <channel> [mode [parameters]]
+
+When no mode or parameters is specified, this will display the modes
+currently active for the channel specified.  You must have OVR_VIEW
+privileges to use this command with no mode.
+
+When the mode and/or parameters are specified, this will set the
+specified modes in the channel specified.  You must have OVR_CS_MODE
+privileges to use this command with a mode.
+
+
+3.1.8	INVITE
+--------------
+
+SYNTAX: INVITE <channel> <nickname>
+
+This will have ChanServ invite the given nickname to the specified
+channel.  You may specify your own nickname.
+
+NOTE: If you do not specify the nickname, then your own nickname will
+be assumed, and you must have CMDINVITE privileges for that channel.
+
+You must be on the OVR_CS_INVITE committee to use this command syntax.
+
+
+3.1.9	UNBAN
+-------------
+
+SYNTAX: UNBAN <channel> <nickname>
+
+This will have ChanServ unban the given nickname from the specified
+channel.  You may specify your own nickname.
+
+NOTE: If you do not specify the nickname, then your own nickname will
+be assumed, and you must have CMDUNBAN privileges for that channel.
+
+You must be on the OVR_CS_UNBAN committee to use this command syntax.
+
+
+3.1.10	OP / DEOP
+-----------------
+
+SYNTAX: OP <channel> <nickname>
+        DEOP <channel> <nickname>
+
+This will give ops to (+o) or take ops from (-o) the given nickname.
+You may specify your own nickname.
+
+NOTE: If you do not specify the nickname, then your own nickname will
+be assumed, and you must have CMDOP privileges for that channel.
+
+You must be on the OVR_CS_OP committee to use this command syntax.
+
+
+3.1.11	HALFOP / DEHALFOP
+-------------------------
+
+SYNTAX: HALFOP <channel> <nickname>
+        DEHALFOP <channel> <nickname>
+
+This will give half ops to (+h) or take half ops from (-h) the given
+nickname.  You may specify your own nickname.
+
+NOTE: If you do not specify the nickname, then your own nickname will
+be assumed, and you must have CMDHALFOP privileges for that channel.
+
+You must be on the OVR_CS_HALFOP committee to use this command syntax.
+
+
+3.1.12	VOICE / DEVOICE
+-----------------------
+
+SYNTAX: VOICE <channel> <nickname>
+        DEVOICE <channel> <nickname>
+
+This will give a voice to (+v) or take a voice from (-v) the given
+nickname.  You may specify your own nickname.
+
+NOTE: If you do not specify the nickname, then your own nickname will
+be assumed, and you must have CMDVOICE privileges for that channel.
+
+You must be on the OVR_CS_VOICE committee to use this command syntax.
+
+
+3.1.13	CLEAR
+-------------
+
+SYNTAX: CLEAR <channel> MODES
+        CLEAR <channel> BANS
+        CLEAR <channel> OPS
+        CLEAR <channel> VOICES
+        CLEAR <channel> USERS
+        CLEAR <channel> ALL
+
+This command is used to do things 'en mass'.  The clear command should
+not be used lightly, but it is sometimes useful to do these kinds of
+actions on a large scale.
+
+MODES will remove all modes excluding +b (bans), +o (ops) and +v (voices).
+BANS will remove all bans (+b) from channel.
+OPS will remove all ops (+o) from channel.
+VOICES will remove all voices (+v) from channel.
+USERS will kick all users except services and yourself from channel.
+ALL is the same as using MODES, OPS, VOICES and BANS in sequence.
+
+You must be on the OVR_CS_CLEAR committee to use this command syntax.
+
+
+3.1.14	SET FOUNDER
+-------------------
+
+SYNTAX: SET <channel> FOUNDER <nickname>
+
+This will transfer ownership of a channel to another user.  No other
+changes are made except who services see as the founder.  The nickname
+specified must be a registered nickname.  If the nickname is already
+the COFOUNDER (3.1.15), then the co-founder field will be cleared.
+
+You do not need to identify to the channel to execute this command.
+You must be on the OVR_OWNER committee to use this command syntax.
+
+
+3.1.15	SET COFOUNDER
+---------------------
+
+SYNTAX: SET <channel> COFOUNDER <nickname>
+
+This will set the co-founder field to the nickname specified.  This
+nickname must be registered.  You may not specify the same nickname
+as the current FOUNDER (3.1.14).
+
+Setting this to NONE will clear this field.
+You do not need to identify to the channel to execute this command.
+You must be on the OVR_OWNER committee to use this command syntax.
+
+
+3.2	Added Commands
+======================
+
+These commands are not available to normal users.  All these commands
+require special privileges.
+
+
+3.2.1	LIVE
+------------
+
+SYNTAX: LIVE [channelmask [maximum]]
+
+This will list out all channels currently in use that match the
+channelmask specified up to the maximum number of nicknames specified.
+If neither is specified, the default channelmask is *, and the default
+maximum is set in the Magick configuration people.  There is also an
+absolute maximum above which you may not set your maximum to, which is
+also set in the Magick configuration file.
+
+You must be on the SOP committee to use this command.
+
+
+3.2.2	SETPASS
+---------------
+
+SYNTAX: SETPASS <channel> <password>
+
+This will change the password of the channel specified to the password
+you specify.  A global notice will be sent out to warn people that you
+have done this.
+
+You must be on the SOP committee to use this command.
+
+
+3.2.3	GETPASS
+---------------
+
+SYNTAX: GETPASS <channel> <password>
+
+This will retrieve and display the password of the channel specified.
+A global notice will be sent out to warn people that you have done this.
+NOTE: This may not be available - this feature must be specifically
+compiled into magick, so if this has not been done, this will not work.
+
+You must be on the SADMIN committee to use this command.
+
+
+3.2.4	SUSPEND
+---------------
+
+SYNTAX: SUSPEND <channel> <reason>
+
+This will suspend a channel with the reason specified.  When suspended,
+the access list of the channel becomes useless, and the topic of the
+channel is locked to display the channel is suspended, and why.  While
+suspended, members of the SADMIN committee have founder access, members
+of the SOP committee have whatever SUPER is set to, members of the ADMIN
+committee have whatever AUTOOP is set to, and members of the OPER
+committee have whatever AUTOVOICE is set to, all other user have nothing.
+The user's INFO display will indicate that the channel is suspended.
+The suspension reason is stored in the channel's comment.  The channel
+will not be subject to expiry while it is suspended.
+
+This feature is meant as a short-term judicial action, and prolonged
+channel suspension is not recommended, use FORBID (3.2.6) for this.
+
+You must be on the SOP committee to use this command.
+
+
+3.2.5	UNSUSPEND
+-----------------
+
+SYNTAX: UNSUSPEND <channel>
+
+This will reverse the effect of the SUSPEND (3.2.4) command.  The channel
+will once again be subject to channel expiry, and the access is once
+again used to determine channel privileges.  The comment field however
+will keep the suspension reason in it for future reference.
+
+You must be on the SOP committee to use this command.
+
+
+3.2.6	FORBID
+--------------
+
+SYNTAX: FORBID <channel>
+
+This will forbid a channel from being used at all.  If a user who does
+not have mode +o on attempts to join a forbidden channel, they will be
+kicked out and banned.
+
+If the channel specified is already registered, it will be dropped first.
+
+You must be on the SOP committee to use this command.
+
+
+3.2.7	SET COMMENT
+-------------------
+
+SYNTAX: SET <channel> COMMENT <comment>
+
+This will set the comment field of a channel's record.  The comment field
+may be seen by members of the OPER or SOP committees in an INFO display
+of the user (all other users cannot).  The comment field doubles as the
+suspend reason field when the channel is suspended.
+
+Setting this to NONE will clear this field.
+You must be on the SOP committee to use this command.
+
+
+3.2.8	SET NOEXPIRE
+--------------------
+
+SYNTAX: SET <channel> NOEXPIRE <ON|OFF|RESET>
+
+This will turn on or off No Expire on the specified channel.  When
+no expire is on, the channel will be exempt from their channel expiring
+due to it not being used in a pre-defined period of time.
+
+Setting this to RESET will set the value to whatever newly registered
+	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3	Locking and Unlocking
+=============================
+
+Sometimes it is necessary to stop a channel from being able to change a
+particular option, and force them to have it on or off.  This is achieved
+with the LOCK and UNLOCK command.  Every LOCK has a reciprocal UNLOCK
+command.
+
+
+3.3.1	MLOCK
+-------------
+
+SYNTAX: LOCK <channel> MLOCK <modes|RESET>
+        UNLOCK <channel> MLOCK
+
+This will lock or unlock the given modes in the mode lock for the
+specified channel.  While locked, these modes may not be reversed or
+mode locked inversely (ie. if +s is locked, then -s may not be set in
+the normal mode lock, nor can the +s be removed from the channel modes).
+When the value is unlocked, the mode lock will still contain the modes
+that were locked on, however the channel users with SET privileges and
+founder may once again change it as required.  You may not override or
+unlock a global lock (ie. a value set as locked in the Magick
+configuration file, that is active for all users).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.2	KEEPTOPIC
+-----------------
+
+SYNTAX: LOCK <channel> KEEPTOPIC <ON|OFF|RESET>
+        UNLOCK <channel> KEEPTOPIC
+
+This will lock or unlock the value of Keep Topic on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.3	TOPICLOCK
+-----------------
+
+SYNTAX: LOCK <channel> TOPICLOCK <ON|OFF|RESET>
+        UNLOCK <channel> TOPICLOCK
+
+This will lock or unlock the value of Topic Lock on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.4	BANTIME
+---------------
+
+SYNTAX: LOCK <channel> BANTIME <time|RESET>
+        UNLOCK <channel> BANTIME
+
+This will lock or unlock the value of Ban Time for the specified channel.
+While locked, the channel users with SET privileges and founder will not
+be able to change this value.  When the value is unlocked, it will keep
+the value it was locked at,  however the channel users with SET privileges
+and founder may once again change it as required.  You may not override
+or unlock a global lock (ie. a value set as locked in the Magick
+configuration file, that is active for all channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.5	PARTTIME
+----------------
+
+SYNTAX: LOCK <channel> PARTTIME <time|RESET>
+        UNLOCK <channel> PARTTIME
+
+This will lock or unlock the value of Part Time for the specified channel.
+While locked, the channel users with SET privileges and founder will not
+be able to change this value.  When the value is unlocked, it will keep
+the value it was locked at,  however the channel users with SET privileges
+and founder may once again change it as required.  You may not override
+or unlock a global lock (ie. a value set as locked in the Magick
+configuration file, that is active for all channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.6	PRIVATE
+---------------
+
+SYNTAX: LOCK <channel> PRIVATE <ON|OFF|RESET>
+        UNLOCK <channel> PRIVATE
+
+This will lock or unlock the value of Private on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.7	SECURE
+--------------
+
+SYNTAX: LOCK <channel> SECURE <ON|OFF|RESET>
+        UNLOCK <channel> SECURE
+
+This will lock or unlock the value of Secure on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.8	SECUREOPS
+-----------------
+
+SYNTAX: LOCK <channel> SECUREOPS <ON|OFF|RESET>
+        UNLOCK <channel> SECUREOPS
+
+This will lock or unlock the value of Secure Ops on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.9	ANARCHY
+---------------
+
+SYNTAX: LOCK <channel> ANARCHY <ON|OFF|RESET>
+        UNLOCK <channel> ANARCHY
+
+This will lock or unlock the value of Anarchy on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.10	KICKONBAN
+-----------------
+
+SYNTAX: LOCK <channel> KICKONBAN <ON|OFF|RESET>
+        UNLOCK <channel> KICKONBAN
+
+This will lock or unlock the value of Kick On Ban on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.11	RESTRICTED
+------------------
+
+SYNTAX: LOCK <channel> RESTRICTED <ON|OFF|RESET>
+        UNLOCK <channel> RESTRICTED
+
+This will lock or unlock the value of Restricted on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+
+3.3.12	REVENGE
+---------------
+
+SYNTAX: LOCK <channel> REVENGE <type|RESET>
+        UNLOCK <channel> REVENGE
+
+This will lock or unlock the value of Revenge for the specified channel.
+While locked, the channel users with SET privileges and founder will not
+be able to change this value.  When the value is unlocked, it will keep
+the value it was locked at,  however the channel users with SET privileges
+and founder may once again change it as required.  You may not override
+or unlock a global lock (ie. a value set as locked in the Magick
+configuration file, that is active for all channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+3.3.13	JOIN
+------------
+
+SYNTAX: LOCK <channel> JOIN <ON|OFF|RESET>
+        UNLOCK <channel> JOIN
+
+This will lock or unlock the value of ChanServ Join on or off for the
+specified channel.  While locked, the channel users with SET privileges
+and founder will not be able to change this value.  When the value is
+unlocked, it will keep the value it was locked at,  however the channel
+users with SET privileges and founder may once again change it as
+required.  You may not override or unlock a global lock (ie. a value set
+as locked in the Magick configuration file, that is active for all
+channels).
+
+Setting this to RESET will lock the value to whatever newly registered
+	channels are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+==========================================================================
+  Section 4 - CommServ
+==========================================================================
+
+CommServ is a service that allows you to create groups of users for
+various purposes - mainly contactability purposes.  Committees control
+everything from what commands may be used in services, to what messages
+are seen when people sign online.
+
+CommServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Since CommServ is unique to Magick, there are no other
+commonly known names for CommServ.  All commands to MemoServ are done
+through private messages, or queries.  This document will assume you
+know how to send a private message.
+
+
+4.1	Extended Commands
+=========================
+
+Many of the commands that are available to users (see user.txt) have some
+extra features available to members of the privileged committees only.
+Some of these extra features may just be the ability to execute a command
+on another user's nickname that normally only they could execute on
+themselves, however some commands add entirely new functionality.
+
+
+4.1.1	LIST
+------------
+
+SYNTAX: LIST [committeemask [maximum]]
+
+The LIST command works exactly as it does for normal users, however for
+members of the OPER committee, even committees with PRIVATE set on will
+be displayed in the list.
+
+
+4.1.2	MEMBER
+--------------
+
+SYNTAX: MEMBER <committee> LIST
+
+This works just like the normal MEMBER LIST command, however you may view
+the member list of ANY committee, not just ones you are on.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+4.1.3	LOGON
+-------------
+
+SYNTAX: LOGON <committee> LIST
+
+This works just like the normal LOGON LIST command, however you may view
+the logon message list of ANY committee, not just ones you are head of.
+
+You must be on the OVR_VIEW committee to use this command syntax.
+
+
+4.1.4	SET HEAD
+----------------
+
+SYNTAX: SET <committee> HEAD <nickname>
+
+This will transfer ownership of a committee to another user.  No other
+changes are made except who services see as the head.  The nickname
+specified must be a registered nickname.
+
+You must be on the OVR_OWNER committee to use this command syntax.
+
+
+4.2	Added Commands
+======================
+
+These commands are not available to normal users.  All these commands
+require special privileges.
+
+
+4.2.1	ADD
+-----------
+
+SYNTAX: ADD <committee> <nickname> <description>
+
+This will register a committee in services.  The nickname you specify
+will become the head of the committee.
+
+The description specified is purely informational, and should be a brief
+message saying what the committee is all about.
+
+You must be on the SOP committee to use this command.
+
+
+4.2.2	DEL
+-----------
+
+SYNTAX: DEL <committee>
+
+This will unregister a committee in services.  This action is final, so
+be sure you want to do this.
+
+You must be on the SOP committee to use this command.
+
+
+4.3	Locking and Unlocking
+=============================
+
+Sometimes it is necessary to stop a committee from being able to change a
+particular option, and force them to have it on or off.  This is achieved
+with the LOCK and UNLOCK command.  Every LOCK has a reciprocal UNLOCK
+command.
+
+
+4.3.1	SECURE
+--------------
+
+SYNTAX: LOCK <committee> SECURE <ON|OFF|RESET>
+        UNLOCK <committee> SECURE
+
+This will lock or unlock the value of Secure on or off for the
+specified committee.  While locked, the committee head(s) will not be
+able to change this value.  When the value is unlocked, it will keep
+the value it was locked at,  however the committee head(s) may once
+gain change it as required.  You may not override or unlock a global
+lock (ie. a value set as locked in the Magick configuration file, that
+is active for all committees).
+
+Setting this to RESET will lock the value to whatever newly registered
+	committees are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+4.3.2	PRIVATE
+---------------
+
+SYNTAX: LOCK <committee> PRIVATE <ON|OFF|RESET>
+        UNLOCK <committee> PRIVATE
+
+This will lock or unlock the value of Private on or off for the
+specified committee.  While locked, the committee head(s) will not be
+able to change this value.  When the value is unlocked, it will keep
+the value it was locked at,  however the committee head(s) may once
+gain change it as required.  You may not override or unlock a global
+lock (ie. a value set as locked in the Magick configuration file, that
+is active for all committees).
+
+Setting this to RESET will lock the value to whatever newly registered
+	committees are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+4.3.3	OPENMEMOS
+-----------------
+
+SYNTAX: LOCK <committee> OPENMEMOS <ON|OFF|RESET>
+        UNLOCK <committee> OPENMEMOS
+
+This will lock or unlock the value of Open Memos on or off for the
+specified committee.  While locked, the committee head(s) will not be
+able to change this value.  When the value is unlocked, it will keep
+the value it was locked at,  however the committee head(s) may once
+gain change it as required.  You may not override or unlock a global
+lock (ie. a value set as locked in the Magick configuration file, that
+is active for all committees).
+
+Setting this to RESET will lock the value to whatever newly registered
+	committees are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+==========================================================================
+  Section 5 - HelpServ
+==========================================================================
+
+HelpServ is a service that fulfills an entirely informational purpose.
+This service is also the global noticer (the service used for sending
+out messages to all users when necessary).
+
+HelpServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are HelpServ, HepS and HelpOP.  All
+commands to HelpServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+5.1	Extended Commands
+=========================
+
+Many of the commands that are available to users (see user.txt) have some
+extra features available to members of the privileged committees only.
+Some of these extra features may just be the ability to execute a command
+on another user's nickname that normally only they could execute on
+themselves, however some commands add entirely new functionality.
+
+
+5.1.1	FILE
+------------
+
+SYNTAX: FILE LIST [filemask [maximum]]
+        FILE ADD [committees]
+        FILE DEL <filename>
+        FILE RENAME <filename> <newname>
+        FILE SECURE <filename> [committees]
+        FILE DCC
+        FILE CANCEL <dcc>
+        FILE LOOKUP <type> <hexfile>
+
+This command is used to do all maintenence functions on the Public File
+System in Magick, and all DCC's in progress.
+
+LIST works the same way as with users, however SOP's will also be able
+	to see ALL files (not just what they have access to), and what
+	committees may download each file.
+ADD will add a new file to the Public File System.  Services will ask
+	you to initiate a DCC session with the file you wish to upload
+	into the public file system.  The file name will be the same as
+	the file uploaded.  If no committees are specified with this
+	command, a committee of ALL is assumed.  You must be on the SOP
+	committee to use this command.
+DEL will remove a file from the Public File System.  This file can not
+	be restored once removed.  You must be on the SOP committee to
+	use this command.
+RENAME will rename a file from one name to another.  No other change
+	will take place except what the file name presented to those who
+	have access to download it is (the file name on disk will remain
+	the same).  You must be on the SOP committee to use this command.
+SECURE will change who has access to download the file specified.  If no
+	committees are specified, then the file will be changed so that
+	ALL users may download it.  You must be on the SOP committee to
+	use this command.  You must be on the SOP committee to use this
+	command.
+DCC will list all currently active DCC transfers with services.  This
+	includes such information as the DCC ID, the user, the file name
+	being downloaded, the speed of the transfer, the direction, etc.
+	You must be on the SOP committee to use this command.
+CANCEL will abort a DCC currently active (you must use the DCC ID
+	obtained with the DCC command).  The user will receive an
+	internal systems error.  You must be on the SOP committee to use
+	this command.
+LOOKUP will look up the information in the file storage database about
+	any given file on the hard disk.  You must specify the type of
+	file you wish to look up (either MemoAttach, Picture or Public),
+	and the file name in question.  The information supplied includes
+	who 'owns' the file, etc.  eg. a lookup on Picture file 00000001
+	would tell you that it is User's picture.
+	You must be on the SADMIN committee to use this command.
+
+
+5.1.2	STATS
+-------------
+
+SYNTAX: STATS NICK [CLEAR]
+        STATS CHANNEL [CLEAR]
+        STATS OTHER [CLEAR]
+        STATS OPER [CLEAR]
+        STATS USAGE
+        STATS ALL [CLEAR]
+
+This command will give you various statistics on services.  Mostly these
+consist only of command usage.  A user may not use any subcommands with
+the STATS command.  You must be on the SOP committee to use this command,
+and on the SADMIN committee to use the CLEAR parameter where available.
+
+NICK will tell you how many registered, linked, suspended and forbidden
+	nicknames there are, as well as command usage for most non-
+	informational NickServ commands.
+CHANNEL will tell you how many registered, suspended and forbidden
+	channels there are, as well as command usage for most non-
+	informational ChanServ commands.
+OTHER will tell you how many memos, news articles, and committees there
+	are, as well as command usage for most non-informational
+	MemoServ, CommServ and HelpServ commands.
+OPER will tell you how many clone overrides, auto kills, services
+	ignores and IRC operator denys there are, as well as command
+	usage for most non-informational OperServ commands.
+USAGE will tell you how much CPU time services has used, and how much
+	traffic has been through sent and received by services.  It
+	will also list how many live nicknames, stored nicknames, live
+	channels, stored channels, memos, news articles, committees,
+	OperServ list (clone override, auto kill, services ignore and
+	IRC operator deny combined) entries, and some other small list
+	entries exist, and how much memory they consume.  Finally this
+	will tell you which language (LNG) and help (HLP) files are
+	loaded, and how much memory they consume.
+ALL will execute ALL of the above commands.
+
+
+5.2	Added Commands
+======================
+
+These commands are not available to normal users.  All these commands
+require special privileges.
+
+
+5.2.1	GLOBAL
+--------------
+
+SYNTAX: GLOBAL <message>
+
+This will send the message specified to all users currently online.  A
+global notice will be sent out to warn people that you have done this.
+
+You must be on the SOP committee to use this command.
+
+
+==========================================================================
+  Section 6 - OperServ
+==========================================================================
+
+OperServ is a service that allows IRC operators and services staff to
+maintain control over the entire IRC network, from things as simple as
+removing users from the network, to disabling parts of services.
+
+OperServ is usually the name used for this service, however it may
+be called anything the network administrators of your network decide
+to call it.  Common names are OperServ, OperS and OperOP.  All
+commands to OperServ are done through private messages, or queries.
+This document will assume you know how to send a private message.
+
+
+6.1	IRC Operators
+=====================
+
+Although an IRC operator is technically anyone who can set mode +o on the
+network, for the purposes of services, IRC operators are anyone who is
+a member of the OPER committee.  Members of the OPER committee are added
+by members of the ADMIN committee.  Services may or may not require you
+to actually have mode +o set to be recognized as being on the OPER
+committee (so not all members of the OPER committee must be IRC
+operators).  You may or may not also have to identify to your nickname to
+identify to be recognized as being on the OPER committee.
+
+Not all parts of every command listed in this section are available to
+members of the OPER committee, however all commands in this section may
+be used by members of the OPER committee in some fashion.
+
+
+6.1.1	HELP
+------------
+
+SYNTAX: HELP [command]
+
+This will give you detailed help on the syntax of a command, and describe
+what it does.  For subcommands, just separate the command and subcommand
+with a space.
+
+You must be on the OPER or SOP committee to use this command.
+
+
+6.1.2	CLONE
+-------------
+
+SYNTAX: CLONE ADD <host> <amount> <reason>
+        CLONE DEL <host|number>
+        CLONE LIST [mask]
+
+This maintains the clone override list.  The clone override list is
+simply a list of hosts (no nicknames or idents, however wildcards are
+allowed), the amount of clones allowed to log on from that host, and why
+the override is in place.  The amount of clones allowed must at least be
+between 1 and the maximum allowable override amount set in the Magick
+configuration file.
+
+ADD will add a new host to the clone override list.
+DEL will remove either a host or the numbered entry from the clone
+	override list.  The entry numbers are shown on a LIST.
+You must be on the SOP committee to use the ADD and DEL commands.
+LIST will list out all current entries on the clone override list.
+	If mask is specified, only entries matching it will be
+	listed, wildcards allowed.  You must be on the OPER or SOP
+	committee to use this command.
+
+
+6.1.3	AKILL
+-------------
+
+SYNTAX: AKILL ADD <hostmask> [[+]time] <reason>
+        AKILL DEL <hostmask|number>
+        AKILL LIST [mask]
+
+This maintains the auto kill list.  The auto kill list is simply a list
+of hostmasks (no nicknames, however wildcards are allowed), the time they
+should remain killed (from the time of last modification), and why they
+have been killed.  The maximum time allowable is different for each
+committee, and set in the Magick configuration file.
+
+ADD will add a new hostmask to the auto kill list.
+DEL will remove either a hostmask or the numbered entry from the
+	auto kill list.  The entry numbers are shown on a LIST.
+LIST will list out all current entries on the auto kill list.
+	If mask is specified, only entries matching it will be
+	listed, wildcards allowed.
+
+You must be on the OPER or SOP committees to use this command.
+
+
+6.1.4	IGNORE
+--------------
+
+SYNTAX: IGNORE ADD <hostmask|nickname>
+        IGNORE DEL <hostmask|number>
+        IGNORE LIST [mask]
+
+This maintains the services ignore list.  The services ignore list is
+simply a list of hostmasks (wildcards allowed) that services will not
+respond to under any circumstances.  Users who trip flood protection
+can be temporarily added to the services ignore list, however only
+after tripping the services flood protection several times in a specific
+time limit (the amount and time limit are in the Magick configuration
+file) will they be added to this permanently.  LIST will not display
+temporary ignores, nor can you add or delete them.
+
+ADD will add a new hostmask to the services ignore list.  If a nickname
+	is specified and that nickname is online, the default ignore
+	hostmask based on that user will be used.
+DEL will remove either a hostmask or the numbered entry from the
+	services ignore list.  The entry numbers are shown on a LIST.
+You must be on the SOP committee to use the ADD and DEL commands.
+LIST will list out all current entries on the services ignore list.
+	If mask is specified, only entries matching it will be
+	listed, wildcards allowed.  You must be on the OPER or SOP
+	committee to use this command.
+
+
+6.1.5	MODE
+------------
+
+SYNTAX: MODE <nickname|channel> [modes]
+
+This will view the current modes of, or set a mode on a currently active
+nickname or channel.  If no modes are specified, then the currently
+active modes for the nickname or channel are returned, otherwise the
+specified modes will be set for the nickname or channel.  Setting modes
+on a nickname may or may not be supported by the IRC server software in
+use on the network.
+
+You must be on the OPER committee to use this command except for setting
+a mode on a nickname (if supported), which requires the SOP committee.
+
+
+6.1.6	PING
+------------
+
+SYNTAX: PING
+
+This will force services to send a PING message to all servers currently
+linked to the network.  This has no real effect except updating the lag
+times listed in the HelpServ BREAKDOWN command.
+
+You must be on the OPER or SOP committees to use this command.
+
+
+6.1.7	SETTINGS
+----------------
+
+SYNTAX: SETTINGS CONFIG
+        SETTINGS NICK
+        SETTINGS CHANNEL
+        SETTINGS OTHER
+        SETTINGS ALL
+
+This will show you what the current settings are of most items in the
+Magick configuration file.  This is where you will find out most limits,
+maximums, etc.
+
+CONFIG will show general configuration information relating to the level
+	services operates at, how many places it will link, how often
+	it will perform its tasks, and DCC thresholds.
+NICK will show all information regarding nicknames, including how long
+	until they expire, time limits and thresholds for identification,
+	default options, and file storage information.
+CHANNEL will show all information regarding channels, including how long
+	until they expire, time limits, default options, minimum and
+	maximum access levels, and how long news articles last.
+OTHER will show all information that doesn't quite fit elsewhere,
+	including the AKILL maximum time limits, the memo in-flight time,
+	maximum clone limits, flood protection and ignore thresholds,
+	and the default committee options.
+ALL will execute ALL of the above commands.
+
+You must be on the OPER or SOP committees to use this command.
+
+
+6.2	Services Operators
+==========================
+
+A Services Operator is anyone who is a member of the SOP committee.
+Members of the SOP committee are added by members of the SADMIN committee.
+Services may or may not require you to actually have mode +o set to be
+recognized as being on the SOP committee (so not all members of the SOP
+committee must be IRC operators).  You may or may not also have to
+identify to your nickname to identify be recognized as being on the SOP
+committee.
+
+Not all parts of every command listed in this section are available to
+members of the SOP committee, however all commands in this section may
+be used by members of the SOP committee in some fashion.
+
+
+6.2.1	OPERDENY
+----------------
+
+SYNTAX: OPERDENY ADD <hostmask|nickname> <reason>
+        OPERDENY DEL <hostmask|number>
+        OPERDENY LIST [hostmask]
+
+This maintains the IRC operator deny list.  The IRC operator deny list
+is simply a list of hostmasks (wildcards allowed) that services will not
+allow user to set mode +o (ie. become an IRC operator) from.  If any
+user attempts to become an IRC operator from a mask on this list, the
+IRC operator status will be stripped by services if the IRC server
+supports it, or the user will be killed if it doesn't.
+
+ADD will add a new hostmask to the IRC operator deny list.  If a
+	nickname is specified and that nickname is online, the
+	default ignore hostmask based on that user will be used.
+DEL will remove either a hostmask or the numbered entry from the IRC
+	operator deny list.  The entry numbers are shown on a LIST.
+You must be on the SADMIN committee to use the ADD and DEL commands.
+LIST will list out all current entries on the IRC operator deny list.
+	If mask is specified, only entries matching it will be listed,
+	wildcards allowed.  You must be on the SOP committee to use
+	this command.
+
+
+6.2.2	HTM
+-----------
+
+SYNTAX: HTM ON
+        HTM OFF
+        HTM SET <size>
+
+This will manage services High Traffic Mode.  While in High Traffic Mode
+various commands will be disabled, mainly ones that incur a large amount
+of response messages from services.  The aim of High Traffic Mode is to
+temporarily retard services in an effort to reduce bandwidth usage to
+until the higher bandwidth usage subsides.  High Traffic Mode will
+activate on its own when the average traffic over 5 seconds goes above the
+HTM threshold.  Once this happens, the sampling window will increase by
+2 seconds (ie. become 7 seconds) at the end of which the average traffic
+is measured again.  If the traffic has not subsided by the time the
+sampling window has exceeded 60 seconds, services will disconnect.
+
+ON will force High Traffic Mode on, and set the sampling window to 30
+	seconds.  This works exactly the same as if the sampling window
+	had gradually risen to 30 seconds.  A global message will be
+	sent announcing that High Traffic Mode was forced on.
+OFF will force High Traffic Mode off, and the sampling window will be
+	set back to 5 seconds.  A global message will be sent announcing
+	that High Traffic Mode was forced off.
+SET will change the traffic threshold at which High Traffic Mode will
+	activate.  This value should be in Magick's own Space Format
+	(1.3.4).  A global message will be sent announcing that the
+	High Traffic Mode threshold was changed, and its new value.
+
+You must be on the SOP committees to use this command.
+
+
+6.3	IRC Administrators
+==========================
+
+Although an IRC administrator is technically anyone who runs an IRC
+server on the network, for the purposes of services, IRC administrators
+are anyone who is a member of the ADMIN committee.  Members of the ADMIN
+committee are added by members of the SADMIN committee.  Services may or
+may not require you to actually have mode +o set to be recognized as
+being on the ADMIN committee (so not all members of the OPER committee
+must be IRC operators).  You may or may not also have to identify to your
+nickname be recognized as being on the ADMIN committee.
+
+Not all parts of every command listed in this section are available to
+members of the ADMIN committee, however all commands in this section may
+be used by members of the ADMIN committee in some fashion.
+
+
+6.3.1	QLINE / UNQLINE
+-----------------------
+
+SYNTAX: QLINE <nickmask> [reason]
+        UNQLINE <nickmask>
+
+This will forbid or re-allow any nickname matching the specified nickmask
+(wildcards allowed) from signing onto the network.  Forbidding a nickname
+on all servers may or may not be supported by the IRC server software in
+use on the network.
+
+You must be on the ADMIN committees to use this command.
+
+
+6.3.2	NOOP
+------------
+
+SYNTAX: NOOP <server> <ON|OFF>
+
+This will restrict all IRC operators on the specified server to local
+IRC operator powers only.  The server specified must currently be
+linked to the network.  Restricting IRC operators on a server to local
+IRC operator powers may or may not be supported by the IRC server
+software in use on the network.
+
+You must be on the ADMIN committees to use this command.
+
+
+6.3.3	JUPE
+------------
+
+SYNTAX: JUPE <server> <reason>
+
+This will make a server appear to be linked to the network via. services,
+forcing any server trying to link with that name to receive an "Already
+Linked" message.  This is most often used to stop a misconfigured server
+from continually linking and dropping out.  The reason specified will
+appear as part of the server 'description' along with an indication that
+it is a juped server.
+
+You must be on the ADMIN committees to use this command.
+
+
+6.3.4	KILL
+------------
+
+SYNTAX: KILL <nickname> <reason>
+
+This will kill a user with no trace that an IRC operator was responsible,
+aka. a 'silent' kill.  A global notice will be sent to indicate this
+command has been used.  Killing a user with no indication of any
+IRC operator interaction may or may not be supported by the IRC server
+software in use on the network.
+
+You must be on the ADMIN committees to use this command.
+
+
+6.3.5	HIDE
+------------
+
+SYNTAX: HIDE <nickname> <host>
+
+This will alter the host of the specified nickname to be the specified
+host.  This should be used with caution, as changing a hostmask may
+affect such operations as DCC.  Altering a user's host may or may not
+not be supported by the IRC server software in use on the network.
+
+You must be on the ADMIN committees to use this command.
+
+
+6.4	Services Administrators
+===============================
+
+A Services Administrator is anyone who is a member of the SADMIN
+committee.  Members of the SADMIN committee are listed in the Magick
+configuration file.  Services may or may not require you to actually
+have mode +o set to be recognized as being on the SOP committee (so not
+all members of the SADMIN committee must be IRC operators).  You may or
+may not also have to identify to your nickname to identify be recognized
+as being on the SADMIN committee.
+
+
+6.4.1	TRACE
+-------------
+
+SYNTAX: TRACE UP <type> <level|names...>
+        TRACE DOWN <type> <level|names...>
+        TRACE SET <type> <level|names...>
+
+Tracing is an advanced feature of services that allows almost everything
+services does to be tracked.  Magick is coded with special trace coding
+inside it that allows files to be created with everything from code check
+points, comments, data modifications, all the way up to all traffic to
+and from services, what functions are being executed, and what locks
+services are setting and removing throughout its execution.  If you don't
+know what it does, you probably don't need it, as it is more of a tool to
+debug services than for general usage.
+
+The valid types for this command are:
+MAIN	Events, incoming (unclassified) data, etc.
+NS	NickServ processing (/MSG NickServ)
+CS	ChanServ processing (/MSG ChanServ)
+MS	MemoServ processing (/MSG MemoServ)
+OS	OperServ processing (/MSG OperServ)
+XS	All other services processing
+NET	Inter-Magick data, processing, etc.
+SCRIPT	Script (and scripted services) processing
+MBASE	Server data (ie. IRCD interface)
+LOST	Anything not in the above
+ALL	All of the above
+
+The valid trace levels and names for this command are:
+0x0000	Off		No tracing.
+0x0001	Stats		Statistical displays only
+0x0002	Source		Reading source files (cfg, scripts)
+0x0004	Bind		Binding and Unbinding of commands
+0x0008			Unused
+0x0010	CheckPoint	Pre-defined Checkpoints
+0x0020	Comments	More verbose checkpoints
+0x0040	Locking		Acquiring and releasing locks
+0x0080	Functions	In and out of functions (and params)
+0x0100	Changing	What data is changing
+0x0200	Modify		An in/out difference of the record
+0x0400			Unused
+0x0800			Unused
+0x1000	Sockets		Socket establishes and disconnects
+0x2000	Chatter		Data in and out of a socket
+0x4000			Unused
+0x8000	External	All output from external calls
+0xffff	All		All of the above
+
+UP will add the specified level or names to the current trace level for
+	the type specified.
+DOWN will remove the specified level or names from the current trace
+	level for the type specified.
+SET will set the current trace level to the level or names specified.
+
+You must be on the SADMIN committees to use this command.
+
+
+6.4.2	UNLOAD
+--------------
+
+SYNTAX: UNLOAD <language>
+
+This will unload a language file from memory.  It will be automatically
+loaded again the first time it is used (so if it is your own language it
+will be reloaded immediately).  This is mainly used to effect a change in
+the language file.  Both help and language text will be unloaded.
+
+You must be on the SADMIN committees to use this command.
+
+
+6.4.3	RELOAD
+--------------
+
+SYNTAX: RELOAD
+
+This will reload the Magick configuration file.  Services will
+automatically will reconnect or sign on and/or off services clients if
+changes in the configuration file dictate it is required.
+
+You must be on the SADMIN committees to use this command.
+
+
+6.4.4	IDENTIFY
+----------------
+
+SYNTAX: IDENTIFY <password>
+
+This is exactly the same as the NickServ IDENTIFY command, however it is
+available in OperServ also for when messages processing has been turned
+OFF (6.4.6), and being recognized as a SADMIN requires identification.
+
+You must be on the SADMIN committees to use this command.
+
+
+6.4.5	UPDATE
+--------------
+
+SYNTAX: UPDATE
+
+This will trigger a database save immediately.  The database is saved
+automatically periodically.
+
+You must be on the SADMIN committees to use this command.
+
+
+6.4.6	ON / OFF
+----------------
+
+SYNTAX: ON <AUTO|LOG|MSG [service]>
+        OFF <AUTO|LOG|MSG [service]>
+
+This will turn on or off a part of services.  Specifying AUTO will turn
+on or off automatic events processing.  This includes nickname, channel,
+AKILL and news expiry, all setting of channel modes, server lag checking,
+and many other background tasks.  Specifying LOG will turn on or off all
+output going to the log file.  Specifying MSG will turn on or off all
+interactive message processing by services.  If a service is specified
+(ie. OperServ, NickServ, ChanServ, MemoServ, CommServ, ServMsg, or the
+primary name of any scripted service), then only all interactive message
+processing for that service will be affected.  Even when OperServ message
+processing has been turned off, it will still accept the ON, OFF and
+IDENTIFY (6.4.4) commands.
+
+You must be on the SADMIN committees to use this command.
+
+
+6.4.7	SHUTDOWN
+----------------
+
+SYNTAX: SHUTDOWN
+
+This will terminate services.  No database save will be done beforehand,
+so ensure that databases have been saved using the UPDATE (6.4.5) command
+or that you are willing to lose all changes to the data since the last
+save.
+
+You must be on the SADMIN committees to use this command.
+
+
+==========================================================================
+  Section 7 - Frequently Asked Questions
+==========================================================================
+
+Below is listed a series of questions that both the Magick Development
+Team and users of Magick are asked.  The answers are in the section
+numbers listed after the question.
+
+What is Magick? 1
+
+Where can I get Magick? 1.2
+

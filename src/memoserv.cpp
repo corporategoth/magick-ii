@@ -27,6 +27,10 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.103  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -2434,6 +2438,7 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
+    mstring output, recipiant;
     if (IsChan(params.ExtractWord(2, " ")))
     {
 	if (params.WordCount(" ") < 4)
@@ -2457,7 +2462,7 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	}
 	who = Parent->getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
+	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
@@ -2495,22 +2500,19 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	    return;
 	}
 
-	mstring output;
 	unsigned int i;
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	MemoServ::channel_news_t::iterator iter = Parent->memoserv.ChannelNewsBegin(who);
 	for (i=1; i < num; iter++, i++) ;
+
+	recipiant = iter->Sender();
 	output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
-		mVarArray(iter->Sender(),
+		mVarArray(who,
 		(iter->Text().size() > 20) ?
 		    (iter->Text().SubString(0, 19) + "...") :
 		    iter->Text(),
 		text));
 	}
-
-	Parent->memoserv.stats.i_Reply++;
-	Parent->nickserv.GetLive(source).InFlight.Memo(
-					    false, mynick, who, output);
     }
     else
     {
@@ -2554,33 +2556,9 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	}
 
 	unsigned int i;
-	mstring output;
 	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
 	MemoServ::nick_memo_t::iterator iter = Parent->memoserv.NickMemoBegin(who);
 	for (i=1; i < num; iter++, i++) ;
-
-	if (!Parent->nickserv.IsStored(iter->Sender()))
-	{
-	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
-		    Parent->getSname(iter->Sender())));
-	    return;
-	}
-	if (Parent->nickserv.GetStored(iter->Sender()).Forbidden())
-	{
-	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-			iter->Sender()));
-	    return;
-	}
-
-	if (Parent->nickserv.GetStored(iter->Sender()).IsIgnore(source) ?
-		!Parent->nickserv.GetStored(iter->Sender()).NoMemo() :
-		Parent->nickserv.GetStored(iter->Sender()).NoMemo())
-	{
-	    SEND(mynick, source, "MS_STATUS/IGNORE", (
-			    iter->Sender()));
-	    return;
-	}
-
 	if (iter->File())
 	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
 		mVarArray(Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
@@ -2595,11 +2573,32 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 		    iter->Text(),
 		text));
 
-	Parent->memoserv.stats.i_Reply++;
-	Parent->nickserv.GetLive(source).InFlight.Memo(
-				false, mynick, iter->Sender(), output);
 	}
     }
+
+    if (!Parent->nickserv.IsStored(recipiant))
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+		    Parent->getSname(recipiant)));
+	return;
+    }
+    if (Parent->nickserv.GetStored(recipiant).Forbidden())
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+			recipiant));
+	return;
+    }
+    if (Parent->nickserv.GetStored(recipiant).IsIgnore(source) ?
+		!Parent->nickserv.GetStored(recipiant).NoMemo() :
+		Parent->nickserv.GetStored(recipiant).NoMemo())
+    {
+	SEND(mynick, source, "MS_STATUS/IGNORE", (recipiant));
+	return;
+    }
+    Parent->memoserv.stats.i_Reply++;
+    Parent->nickserv.GetLive(source).InFlight.Memo(
+				false, mynick, recipiant, output);
+
 }
 
 
@@ -2972,7 +2971,7 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 	return;
     }}
 
-    if (params.WordCount(" ") < 3)
+    if (params.WordCount(" ") < 2)
     {
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
 				message, mynick, message));
@@ -2980,7 +2979,9 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
     }
 
     mstring name = params.ExtractWord(2, " ");
-    mstring text = params.After(" ", 2);
+    mstring text;
+    if (params.WordCount(" ") > 2)
+	text = params.After(" ", 2);
 
     if (IsChan(name))
     {

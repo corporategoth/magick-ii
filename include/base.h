@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.99  2001/07/02 03:39:28  prez
 ** Fixed bug with users sending printf strings (mainly in memos).
 **
@@ -321,7 +325,7 @@ public:
     virtual void MSG(const bool on)	{ messages=on; } 
 
     virtual bool signon(const mstring& nickname) const;
-    virtual bool signoff(const mstring& nickname) const;
+    virtual bool signoff(const mstring& nickname, const mstring &msg = "") const;
     virtual void privmsgV(const mstring &dest, const char *pszFormat, ...) const;
     virtual void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
     virtual void privmsg(const mstring &dest, const mstring &message) const;

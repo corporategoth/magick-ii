@@ -16,10 +16,24 @@
 ; name of the service in front (NOT the nickname, but the
 ; GetInternalName() value).
 ;
+; All lines starting with the '#' (hash) are considered comments.
+; All text after a ';' (semi-colon) character on a line is also
+; considered a comment (unless preceeded by a '\' (backslash)
+; character, when it is taken as literal).
+; All entries (ie. text after the = (equals) sign) are trimmed of
+; spaces (and tabs) before and after it.  Using '\ ' (backslash
+; space) will preserve spaces from the text to that point (ie.
+; if before the text, from the '\ ' to the text, if after, from
+; the end of the text to the '\ ').
+; A '\' (backslash) at the end of a line will continue to the
+; next line and treated as one line, however lines that are blank
+; or only contain a comment will be skipped.
+; You may use '\n' and '\r' to split one entry of into two lines,
+; and '\t' to insert a tab into the output.
+;
 ; Each entry in a section will be sorted by the tag, so please
 ; ensure that ALL tags are in order -- the actual name of the
-; tags does not matter, however PLEASE ENSURE THE TAG IS IN
-; UPPER CASE!  The detection engine is CASE SENSITIVE.
+; tags does not matter.
 ;
 ; Each entry has 3 fields, separated by a colon (':'):
 ;    1. Committees to display for.
@@ -42,6 +56,39 @@
 ; should be descriptive about what the command does, and how
 ; to use it.
 ;
+; The IRC beautifying codes are generally accepted codes that
+; have certain functions on ALL IRC clients.  The codes listed
+; are all 'control' codes, meaning you hold control then push
+; the key listed to insert the code.
+;
+; The mIRC colour codes are here for convenience, but it is NOT
+; recommended you use them, as there are a lot of IRC clients
+; (especially UNIX based) that will not be able to understand
+; them and make the output unreadable.  When using these codes,
+; to change just the foreground you use ^C# where # is the colour
+; code.  For foreground and background, you use ^C#,#.  To reset
+; the text back to 'no colour' you just use ^C.
+;
+; --------------------------------------------------------------
+;
+; IRC beautifying codes:
+;   ^B (\b) = BOLD       - Make text between look brighter
+;   ^_ (\_) = UNDERLINE  - Underline text between
+;   ^V (\v) = REVERSE    - Switch foreground and background
+;   ^O (\o) = CANCEL     - Back to non-bold/underline/reverse
+;   ^C (\c) = COLOUR     - See below
+;
+; mIRC colour codes:
+;   0 = White           8  = Yellow
+;   1 = Black           9  = Bright Green
+;   2 = Blue            10 = Cyan
+;   3 = Green           11 = Bright Cyan
+;   4 = Red             12 = Bright Blue
+;   5 = Orange          13 = Bright Magenta
+;   6 = Magenta         14 = Grey
+;   7 = Bright Red      15 = Bright Grey
+; 
+
 
 [TRANSLATED]
 01 =Preston A. Elder <prez@magick.tm>
@@ -63,7 +110,7 @@
 13 =::You may request help on the syntax and functionality
 14 =::of any and all of the above commands by specifying
 15 =::the command name after the HELP request.
-16 =::NOTE: Only commands you currently may use are listed
+16 =::\bNOTE\b: Only commands you currently may use are listed
 17 =::      above, and things such as nickname registration
 18 =::      may change what is displayed above.
 
@@ -396,10 +443,11 @@
 07 =REGD::
 08 =REGD::You may alter your settings with these commands:
 09 =REGD::    PASSWORD     EMAIL        URL          ICQ
-10 =REGD::    DESCRIPTION  PICTURE      PROTECT      SECURE
-11 =REGD::    NOMEMO       PRIVATE      PRIVMSG      LANGUAGE
-12 =SOP::As a SOP you may also use the following commands:
-13 =SOP::    COMMENT      NOEXPIRE
+10 =REGD::    AIM          DESCRIPTION  PICTURE      LANGUAGE
+11 =REGD::    PROTECT      SECURE       PRIVATE      PRIVMSG
+12 =REGD::    NOMEMO
+13 =SOP::As a SOP you may also use the following commands:
+14 =SOP::    COMMENT      NOEXPIRE
 
 [NICKSERV/SET/PASSWORD]
 01 =REGD::SET PASSWORD <password>
@@ -456,6 +504,18 @@
 09 =REGD::This value will display as-is in your INFO display.
 10 =REGD::Setting this value to "NONE" will clear it.
 
+[NICKSERV/SET/AIM]
+01 =REGD::SET AIM <screen name>
+02 =REGD::
+03 =REGD::This is a field provided to represent your AIM Screen
+04 =REGD::Name.  Right now, it is a free-text field, however it
+05 =REGD::is recommended you ensure the data you put in this is
+06 =REGD::a valid screen name, as it may be used later for such
+07 =REGD::things as current users status, etc.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
+
 [NICKSERV/SET/DESCRIPTION]
 01 =REGD::SET DESCRIPTION <description>
 02 =REGD::
@@ -496,16 +556,17 @@
 13 =REGD::your picture will be removed from your record.
 
 [NICKSERV/SET/PROTECT]
-01 =REGD::SET PROTECT <ON|OFF>
+01 =REGD::SET PROTECT <ON|OFF|RESET>
 02 =REGD::
 03 =REGD::This will turn on or off Kill Protection.
 04 =REGD::When this option is on, if anyone attempts to use
 05 =REGD::your nickname from a hostmask not in your access
 06 =REGD::list, they will be asked to identify, or be renamed
 07 =REGD::or killed.
+08 =REGD::Setting this to RESET will restore the default value.
 
 [NICKSERV/SET/SECURE]
-01 =REGD::SET SECURE <ON|OFF>
+01 =REGD::SET SECURE <ON|OFF|RESET>
 02 =REGD::
 03 =REGD::This will turn on or off Secure.
 04 =REGD::When this option is on, you must use the identify
@@ -513,36 +574,40 @@
 06 =REGD::paranoia mode, disregarding your access list).  It
 07 =REGD::will also mean you need to ident to get any access
 08 =REGD::on any channel you join, to read your memos, etc.
+09 =REGD::Setting this to RESET will restore the default value.
 
 [NICKSERV/SET/NOEXPIRE]
-01 =SOP::SET NOEXPIRE <nickname> <ON|OFF>
+01 =SOP::SET NOEXPIRE <nickname> <ON|OFF|RESET>
 02 =SOP::
 03 =SOP::When you set this on a nickname, that nickname will
 04 =SOP::not be subject to nickname expiration if it is not
 05 =SOP::used after a period of time.  Please use this very
 06 =SOP::cautiously, as nickname expiration guarantees that
 07 =SOP::nicknames don't get held up if they're not being used.
+08 =SOP::Setting this to RESET will restore the default value.
 
 [NICKSERV/SET/NOMEMO]
-01 =REGD::SET NOMEMO <ON|OFF>
+01 =REGD::SET NOMEMO <ON|OFF|RESET>
 02 =REGD::
 03 =REGD::This will turn on or off No Memos.
 04 =REGD::When this option is on, you will automatically
 05 =REGD::ignore all memos to your nickname, however your
 06 =REGD::ignore list will turn into an allow list, and you
 07 =REGD::will still accept memos from people on that list.
+08 =REGD::Setting this to RESET will restore the default value.
 
 [NICKSERV/SET/PRIVATE]
-01 =REGD::SET PRIVATE <ON|OFF>
+01 =REGD::SET PRIVATE <ON|OFF|RESET>
 02 =REGD::
 03 =REGD::This will turn on or off Private.
 04 =REGD::When this option is on, your last hostmask and
 05 =REGD::online times will not be displayed on your info
 06 =REGD::display, and you will not show up when someone
 07 =REGD::does a list of all nicknames.
+08 =REGD::Setting this to RESET will restore the default value.
 
 [NICKSERV/SET/PRIVMSG]
-01 =REGD::SET PRIVMSG <ON|OFF>
+01 =REGD::SET PRIVMSG <ON|OFF|RESET>
 02 =REGD::
 03 =REGD::This will turn on or off PRIVMSG.
 04 =REGD::When this option is on, services will use PRIVMSG
@@ -550,13 +615,15 @@
 06 =REGD::send you, rather than using NOTICE.  You WILL still
 07 =REGD::get notices if you are not recognised, or for any
 08 =REGD::kind of global notice.
+09 =REGD::Setting this to RESET will restore the default value.
 
 [NICKSERV/SET/LANGUAGE]
-01 =REGD::SET LANGUAGE <language>
+01 =REGD::SET LANGUAGE <language|RESET>
 02 =REGD::
 03 =REGD::This setting defines what language services talk
 04 =REGD::to you in.  If another language is available, you
 05 =REGD::can get services to talk to you in that language.
+06 =REGD::Setting this to RESET will restore the default value.
 
 [NICKSERV/LOCK]
 01 =SOP::Services allows you to lock a value for a nickname,
@@ -569,52 +636,57 @@
 08 =SOP::    PRIVMSG      LANGUAGE
 
 [NICKSERV/LOCK/PROTECT]
-01 =SOP::LOCK PROTECT <nickname> <ON|OFF>
+01 =SOP::LOCK PROTECT <nickname> <ON|OFF|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of Kill Protect for a
 04 =SOP::user to whatever you set it to.  Doing this, will
 05 =SOP::prevent the user from being able to override this
 06 =SOP::setting, so please use with caution, as you are
 07 =SOP::removing a users right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [NICKSERV/LOCK/SECURE]
-01 =SOP::LOCK SECURE <nickname> <ON|OFF>
+01 =SOP::LOCK SECURE <nickname> <ON|OFF|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of Secure for a user to
 04 =SOP::whatever you set it to.  Doing this, will prevent
 05 =SOP::the user from being able to override this setting,
 06 =SOP::so please use with caution, as you are removing
 07 =SOP::a users right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [NICKSERV/LOCK/NOMEMO]
-01 =SOP::LOCK NOMEMO <nickname> <ON|OFF>
+01 =SOP::LOCK NOMEMO <nickname> <ON|OFF|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of No Memos for a user to
 04 =SOP::whatever you set it to.  Doing this, will prevent
 05 =SOP::the user from being able to override this setting,
 06 =SOP::so please use with caution, as you are removing
 07 =SOP::a users right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [NICKSERV/LOCK/PRIVATE]
-01 =SOP::LOCK PRIVATE <nickname> <ON|OFF>
+01 =SOP::LOCK PRIVATE <nickname> <ON|OFF|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of Private for a user to
 04 =SOP::whatever you set it to.  Doing this, will prevent
 05 =SOP::the user from being able to override this setting,
 06 =SOP::so please use with caution, as you are removing
 07 =SOP::a users right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [NICKSERV/LOCK/PRIVMSG]
-01 =SOP::LOCK PRIVMSG <nickname> <ON|OFF>
+01 =SOP::LOCK PRIVMSG <nickname> <ON|OFF|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of PRIVMSG for a user to
 04 =SOP::whatever you set it to.  Doing this, will prevent
 05 =SOP::the user from being able to override this setting,
 06 =SOP::so please use with caution, as you are removing
 07 =SOP::a users right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [NICKSERV/LOCK/LANGUAGE]
-01 =SOP::LOCK LANGUAGE <nickname> <language>
+01 =SOP::LOCK LANGUAGE <nickname> <language|RESET>
 02 =SOP::
 03 =SOP::This will lock the language services respond to
 04 =SOP::a user in to whatever you set it to.  Doing this,
@@ -622,6 +694,7 @@
 06 =SOP::this setting, so please use with caution, as you
 07 =SOP::are removing a users right to change their own
 08 =SOP::record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [NICKSERV/UNLOCK]
 01 =SOP::Services allows you to lock a value for a nickname,
@@ -679,21 +752,22 @@
 05 =:REGD:    HELP         INFO         LIST
 05 =REGD::    HELP         INFO         LIST         IDENTIFY
 06 =REGD::    REGISTER     DROP         USERS        INVITE
-07 =REGD::    OP           DEOP         VOICE        DEVOICE
-08 =REGD::    MODE         TOPIC        UNBAN        KICK
-09 =REGD::    REMOVE       SET          CLEAR        LEVEL
+07 =REGD::    OP           DEOP         HALFOP       DEHALFOP
+08 =REGD::    VOICE        DEVOICE      MODE         TOPIC
+09 =REGD::    UNBAN        KICK         REMOVE       CLEAR
 10 =REGD::    ACCESS       AKICK        GREET        MESSAGE
-11 =SOP::And as a Services Operator, the following commands:
-12 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
-13 =SOP:SADMIN:    SUSPEND      UNSUSPEND    LIVE
-13 =SADMIN::    GETPASS      SUSPEND      UNSUSPEND    LIVE
-14 =::
-15 =::You may request help on the syntax and functionality
-16 =::of any and all of the above commands by specifying
-17 =::the command name after the HELP request.
-19 =::NOTE: Only commands you currently may use are listed
-20 =::      above, and things such as nickname registration
-21 =::      may change what is displayed above.
+11 =REGD::    SET          LEVEL
+12 =SOP::And as a Services Operator, the following commands:
+13 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
+14 =SOP:SADMIN:    SUSPEND      UNSUSPEND    LIVE
+15 =SADMIN::    GETPASS      SUSPEND      UNSUSPEND    LIVE
+16 =::
+17 =::You may request help on the syntax and functionality
+18 =::of any and all of the above commands by specifying
+19 =::the command name after the HELP request.
+20 =::\bNOTE\b: Only commands you currently may use are listed
+21 =::      above, and things such as nickname registration
+22 =::      may change what is displayed above.
 
 [CHANSERV/REGISTER]
 01 =REGD::REGISTER <channel> <password> <description>
@@ -856,6 +930,32 @@
 07A=REGD:SOP:that user instead.
 06B=SOP::mode -o will be set on that user instead.
 
+[CHANSERV/HALFOP]
+01 =REGD::HALFOP <channel> [nickname]
+02 =REGD::
+03 =REGD::This will attempt to set mode +h on your nickname
+04 =REGD::in the specified channel, if you have CMDHALFOP
+05 =REGD::access.  If you specify another nickname after the
+06A=REGD:SOP:channel and you have SUPER access, mode +h will be
+07A=REGD:SOP:set on that user instead (if the channel is either
+08A=REGD:SOP:not secure, or they have either CMDHALFOP or
+09A=REGD:SOP:AUTOHALFOP access).
+06B=SOP::channel mode +h will be set on that user instead (if
+07B=SOP::the channel is either not secure, or they have either
+08B=SOP::CMDHALF or AUTOHALF access).
+10 =REGD::This may or may not be supported by the IRC server.
+
+[CHANSERV/DEHALFOP]
+01 =REGD::DEHALFOP <channel> [nickname]
+02 =REGD::
+03 =REGD::This will attempt to set mode -h on your nickname
+04 =REGD::in the specified channel, if you have CMDHALFOP
+05 =REGD::access.  If you specify another nickname after the
+06A=REGD:SOP:channel and you have SUPER access, mode -o will be
+07A=REGD:SOP:set on that user instead.
+06B=SOP::channel mode -h will be set on that user instead.
+08 =REGD::This may or may not be supported by the IRC server.
+
 [CHANSERV/VOICE]
 01 =REGD::VOICE <channel> [nickname]
 02 =REGD::
@@ -866,7 +966,7 @@
 07A=REGD:SOP:set on that user instead (if the channel is either
 08A=REGD:SOP:not secure, or they have either CMDVOICE or
 09A=REGD:SOP:AUTOVOICE access).
-06B=SOP::mode +o will be set on that user instead (if the
+06B=SOP::mode +v will be set on that user instead (if the
 07B=SOP::channel is either not secure, or they have either
 08B=SOP::CMDVOICE or AUTOVOICE access).
 
@@ -876,9 +976,9 @@
 03 =REGD::This will attempt to set mode -o on your nickname
 04 =REGD::in the specified channel, if you have CMDVOICE
 05 =REGD::access. If you specify another nickname after the
-06A=REGD:SOP:channel and you have SUPER access, mode -o will be
+06A=REGD:SOP:channel and you have SUPER access, mode -v will be
 07A=REGD:SOP:set on that user instead.
-06B=SOP::channel mode -o will be set on that user instead.
+06B=SOP::channel mode -v will be set on that user instead.
 
 [CHANSERV/TOPIC]
 01 =REGD::TOPIC <channel> [topic]
@@ -1326,15 +1426,16 @@
 10 =SOP::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/MLOCK]
-01 =REGD::SET <channel> MLOCK <modes|NONE>
+01 =REGD::SET <channel> MLOCK <modes|NONE|RESET>
 02 =REGD::
 03 =REGD::This is a list of modes that will be enforced (+ or
 04 =REGD::-) by services.  If a user tries to contravene these
 05 =REGD::modes, services will reset them automatically.  This
 06 =REGD::includes channel keys and limits.
 07 =REGD::
-08 =REGD::You must have SET privileges to use this command.
-09 =REGD::Setting this value to "NONE" will clear it.
+08 =REGD::Setting this value to "NONE" will clear it.
+09 =REGD::Setting this to "RESET" will restore the default value.
+10 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/BANTIME]
 01 =REGD::SET <channel> BANTIME <bantime|RESET>
@@ -1344,8 +1445,9 @@
 05 =REGD::This value is in Standard Time Format (see the global
 06 =REGD::noticer's help on TIME).
 07 =REGD::
-08 =REGD::You must have SET privileges to use this command.
-09 =REGD::Setting this value to 0 will disable unbanning.
+08 =REGD::Setting this value to 0 will disable unbanning.
+09 =REGD::Setting this to RESET will restore the default value.
+10 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/PARTTIME]
 01 =REGD::SET <channel> PARTTIME <parttime|RESET>
@@ -1356,8 +1458,9 @@
 06 =REGD::Standard Time Format (see the global noticer's help
 07 =REGD::on TIME).
 08 =REGD::
-09 =REGD::You must have SET privileges to use this command.
-10 =REGD::Setting this value to 0 will display EACH join.
+09 =REGD::Setting this value to 0 will display EACH join.
+10 =REGD::Setting this to RESET will restore the default value.
+11 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/KEEPTOPIC]
 01 =REGD::SET <channel> KEEPTOPIC <ON|OFF|RESET>
@@ -1366,7 +1469,8 @@
 04 =REGD::When this option is on, services will remember the
 05 =REGD::channel topic after all users have left channel,
 06 =REGD::and will re-set it when someone joins it again.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/TOPICLOCK]
 01 =REGD::SET <channel> TOPICLOCK <ON|OFF|RESET>
@@ -1375,7 +1479,8 @@
 04 =REGD::When this option is on, services will not allow
 05 =REGD::anyone to set the channel topic except by use of
 06 =REGD::the TOPIC command.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/PRIVATE]
 01 =REGD::SET <channel> PRIVATE <ON|OFF|RESET>
@@ -1384,7 +1489,8 @@
 04 =REGD::When this option is on, the info display for this
 05 =REGD::channel will not display stats about who is in it,
 06 =REGD::and it will not show up in the channel list.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/SECUREOPS]
 01 =REGD::SET <channel> SECUREOPS <ON|OFF|RESET>
@@ -1393,7 +1499,8 @@
 04 =REGD::When this option is on, only people on the access
 05 =REGD::list will be allowed to have mode +o (ops) or mode
 06 =REGD::+v (voices) set on them.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/SECURE]
 01 =REGD::SET <channel> SECURE <ON|OFF|RESET>
@@ -1402,7 +1509,8 @@
 04 =REGD::When this option is on, users will have to identify
 05 =REGD::to their nicknames to be recognised as themselves
 06 =REGD::as far as the channel access list goes.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/NOEXPIRE]
 01 =SOP::SET <channel> NOEXPIRE <ON|OFF|RESET>
@@ -1412,6 +1520,7 @@
 05 =SOP::used after a period of time.  Please use this very
 06 =SOP::cautiously, as channel expiration guarantees that
 07 =SOP::channels don't get held up if they're not being used.
+08 =SOP::Setting this to RESET will restore the default value.
 
 [CHANSERV/SET/ANARCHY]
 01 =REGD::SET <channel> ANARCHY <ON|OFF|RESET>
@@ -1420,7 +1529,8 @@
 04 =REGD::When this option is on, services not reverse any
 05 =REGD::modes set by a server (this includes the initial
 06 =REGD::user's +o, and mode hacks from a split server).
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/KICKONBAN]
 01 =REGD::SET <channel> KICKONBAN <ON|OFF|RESET>
@@ -1429,7 +1539,8 @@
 04 =REGD::When this option is on, services will kick a user
 05 =REGD::who is banned from channel out automatically (if
 06 =REGD::it does not violate a revenge constraint).
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/RESTRICTED]
 01 =REGD::SET <channel> RESTRICTED <ON|OFF|RESET>
@@ -1438,7 +1549,8 @@
 04 =REGD::When this option is on, only people on the access
 05 =REGD::list will be able to join the channel.  If secure
 06 =REGD::is set on, remember to identify before joining.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/JOIN]
 01 =REGD::SET <channel> JOIN <ON|OFF|RESET>
@@ -1447,7 +1559,8 @@
 04 =REGD::When this option is on, services will join the
 05 =REGD::channel, and remain oped.  You may not deop or
 06 =REGD::kick services, they'll rejoin and reop.
-07 =REGD::You must have SET privileges to use this command.
+07 =REGD::Setting this to RESET will restore the default value.
+08 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/REVENGE]
 01 =REGD::SET <channel> REVENGE <level|RESET>
@@ -1459,7 +1572,8 @@
 07 =REGD::them on the access list.  See help on SET REVENGE
 08 =REGD::LEVELS for a list of available revenge levels and
 09 =REGD::the action they will take.
-10 =REGD::You must have SET privileges to use this command.
+10 =REGD::Setting this to RESET will restore the default value.
+11 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/REVENGE/LEVELS]
 01 =::Available Channel Revenge Levels
@@ -1487,7 +1601,7 @@
 10 =SOP::    REVENGE
 
 [CHANSERV/LOCK/MLOCK]
-01 =SOP::LOCK <channel> MLOCK <modes>
+01 =SOP::LOCK <channel> MLOCK <modes|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of Mode Lock for a channel,
 04 =SOP::enforcing whatever you set over whatever the channel
@@ -1495,24 +1609,27 @@
 06 =SOP::founder and people with SET privileges from being able
 07 =SOP::to override this setting, so please use with caution,
 08 =SOP::as you are removing the right to change their own record.
+09 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/BANTIME]
-01 =SOP::LOCK <channel> BANTIME <bantime>
+01 =SOP::LOCK <channel> BANTIME <bantime|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of Ban Time for a channel to
 04 =SOP::whatever you set it to.  Doing this, will prevent the
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/PARTTIME]
-01 =SOP::LOCK <channel> PARTTIME <parttime>
+01 =SOP::LOCK <channel> PARTTIME <parttime|RESET>
 02 =SOP::
 03 =SOP::This will lock the value of Part Time for a channel to
 04 =SOP::whatever you set it to.  Doing this, will prevent the
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/KEEPTOPIC]
 01 =SOP::LOCK <channel> KEEPTOPIC <ON|OFF|RESET>
@@ -1522,6 +1639,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/TOPICLOCK]
 01 =SOP::LOCK <channel> TOPICLOCK <ON|OFF|RESET>
@@ -1531,6 +1649,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/PRIVATE]
 01 =SOP::LOCK <channel> PRIVATE <ON|OFF|RESET>
@@ -1540,6 +1659,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/SECUREOPS]
 01 =SOP::LOCK <channel> SECUREOPS <ON|OFF|RESET>
@@ -1549,6 +1669,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/SECURE]
 01 =SOP::LOCK <channel> SECURE <ON|OFF|RESET>
@@ -1558,6 +1679,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/ANARCHY]
 01 =SOP::LOCK <channel> ANARCHY <ON|OFF|RESET>
@@ -1567,6 +1689,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/KICKONBAN]
 01 =SOP::LOCK <channel> KICKONBAN <ON|OFF|RESET>
@@ -1576,6 +1699,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/RESTRICTED]
 01 =SOP::LOCK <channel> RESTRICTED <ON|OFF|RESET>
@@ -1585,6 +1709,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/JOIN]
 01 =SOP::LOCK <channel> JOIN <ON|OFF|RESET>
@@ -1594,6 +1719,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/LOCK/REVENGE]
 01 =SOP::LOCK <channel> REVENGE <level>
@@ -1603,6 +1729,7 @@
 05 =SOP::the founder and people with SET privileges from being
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [CHANSERV/UNLOCK]
 01 =SOP::Services allows you to lock a value for a channel,
@@ -1708,7 +1835,7 @@
 11 =::You may request help on the syntax and functionality
 12 =::of any and all of the above commands by specifying
 13 =::the command name after the HELP request.
-14 =::NOTE: Only commands you currently may use are listed
+14 =::\bNOTE\b: Only commands you currently may use are listed
 15 =::      above, and things such as nickname registration
 16 =::      may change what is displayed above.
 
@@ -1773,15 +1900,14 @@
 02 =REGD::
 03 =REGD::This will reply to the sender of the memo or channel news
 04 =REGD::article you specify, where NUM is a number obtained with
-05 =REGD::the LIST command.  For news articles, it will show who
-06 =REGD::the original sender was, and the first 20 chars (preview)
+05 =REGD::the LIST command.  For news articles, it will show where
+06 =REGD::the original article was, and the first 20 chars (preview)
 07 =REGD::of the original news article.  For memos, it will display
 08 =REGD::the name of the original file attachment if any, and the
 09 =REGD::first 20 chars (preview) of the original memo.  In both
 10 =REGD::cases it will indicate that this is a reply to another
 11 =REGD::memo or news article.  The text is your reply, verbatim.
-12 =REGD::You must have MEMOREAD and MEMOWRITE privileges to reply
-13 =REGD::to a channel news article.
+12 =REGD::You must have MEMOREAD privileges to reply to a news article.
 
 [MEMOSERV/FORWARD]
 01 =REGD::FORWARD [channel] <NUM> <nickname|channel>
@@ -1835,16 +1961,16 @@
 08 =REGD::command.
 
 [MEMOSERV/FILE]
-01 =REGD::FILE <nickname> <filename> [message]
+01 =REGD::FILE <nickname> [message]
 02 =REGD::
 03 =REGD::This will send a file attachment to a user.  You may
 04 =REGD::specify an optional message, which will be displayed
 05 =REGD::with the notification of a file attachment.  This
-06 =REGD::command will expect a DCC SEND from you with a file
-07 =REGD::name matching the one specified.  If it does not
-08 =REGD::receive one before the pending timer times out, it
-09 =REGD::will cancel this file attachment.  Once the DCC is
-10 =REGD::received, the memo will be sent upon its completion.
+06 =REGD::command will expect a DCC SEND from you with a file.
+07 =REGD::If it does not receive one before the pending timer
+08 =REGD::times out, it will cancel this file attachment.  Once
+09 =REGD::the DCC is received, the memo will be sent upon its
+10 =REGD::completion.
 
 [MEMOSERV/PREVIEW]
 01 =REGD::PREVIEW
@@ -1862,7 +1988,7 @@
 06 =REGD::    NOEXPIRE
 
 [MEMOSERV/SET/NOEXPIRE]
-01 =REGD::SET channel NOEXPIRE <ON|OFF> <NUM|ALL>
+01 =REGD::SET channel NOEXPIRE <ON|OFF|RESET> <NUM|ALL>
 02 =REGD::
 03 =REGD::This will set the No Expire flag on a news article.  If
 04 =REGD::the option has been on, and is turned off, and is past
@@ -1886,7 +2012,7 @@
 11 =::You may request help on the syntax and functionality
 12 =::of any and all of the above commands by specifying
 13 =::the command name after the HELP request.
-14 =::NOTE: Only commands you currently may use are listed
+14 =::\bNOTE\b: Only commands you currently may use are listed
 15 =::      above, and things such as nickname registration
 16 =::      may change what is displayed above.
 
@@ -2040,6 +2166,7 @@
 04 =REGD::When this option is on, users will have to identify
 05 =REGD::to their nicknames to be recognised as themselves
 06 =REGD::as far as committee membership goes.
+07 =REGD::Setting this to RESET will restore the default value.
 
 [COMMSERV/SET/PRIVATE]
 01 =REGD::SET <committee> PRIVATE <ON|OFF|RESET>
@@ -2049,6 +2176,7 @@
 05 =REGD::will not be able to find out who is on it with the
 06 =REGD::LIST command, and it will not show up on members
 07 =REGD::INFO displays.
+08 =REGD::Setting this to RESET will restore the default value.
 
 [COMMSERV/SET/OPENMEMOS]
 01 =REGD::SET <committee> OPENMEMOS <ON|OFF|RESET>
@@ -2058,6 +2186,7 @@
 05 =REGD::all other members (and the head) of a committee,
 06 =REGD::turning it into a community announcement system of
 07 =REGD::sorts.  Otherwise only the head can send memos.
+08 =REGD::Setting this to RESET will restore the default value.
 
 [COMMSERV/LOCK]
 01 =SOP::Services allows you to lock a value for a committee,
@@ -2076,6 +2205,7 @@
 05 =SOP::committee head from being able to override this setting.
 06 =SOP::Please use with caution, as you are removing head's
 07 =SOP::right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [COMMSERV/LOCK/PRIVATE]
 01 =SOP::LOCK <committee> PRIVATE <ON|OFF|RESET>
@@ -2085,6 +2215,7 @@
 05 =SOP::committee head from being able to override this setting.
 06 =SOP::Please use with caution, as you are removing the head's
 07 =SOP::right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [COMMSERV/LOCK/OPENMEMOS]
 01 =SOP::LOCK <channel> OPENMEMOS <ON|OFF|RESET>
@@ -2094,6 +2225,7 @@
 05 =SOP::the committee head from being able to override this
 06 =SOP::setting.  Please use with caution, as you are removing
 07 =SOP::the head's right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
 
 [COMMSERV/UNLOCK]
 01 =SOP::Services allows you to lock a value for a committee,
@@ -2139,7 +2271,7 @@
 12 =::You may request help on the syntax and functionality
 13 =::of any and all of the above commands by specifying
 14 =::the command name after the HELP request.
-15 =::NOTE: Only commands you currently may use are listed
+15 =::\bNOTE\b: Only commands you currently may use are listed
 16 =::      above, and things such as nickname registration
 17 =::      may change what is displayed above.
 
@@ -2414,15 +2546,16 @@
 08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
 09 =ADMIN::    KILL         HIDE
 10 =SADMIN::And as a Services Admin, the following commands:
-11 =SADMIN::    TRACE        UNLOAD       RELOAD       IDENTIFY
+11 =SADMIN::    TRACE        UNLOAD       RELOAD       RESTART
 12 =SADMIN::    UPDATE       SHUTDOWN     ON           OFF
-13 =OPER SOP::
-14 =OPER SOP::You may request help on the syntax and functionality
-15 =OPER SOP::of any and all of the above commands by specifying
-16 =OPER SOP::the command name after the HELP request.
-17 =OPER SOP::NOTE: Only commands you currently may use are listed
-18 =OPER SOP::      above, and things such as nickname registration
-19 =OPER SOP::      may change what is displayed above.
+13 =SADMIN::    IDENTIFY
+14 =OPER SOP::
+15 =OPER SOP::You may request help on the syntax and functionality
+16 =OPER SOP::of any and all of the above commands by specifying
+17 =OPER SOP::the command name after the HELP request.
+18 =OPER SOP::\bNOTE\b: Only commands you currently may use are listed
+19 =OPER SOP::      above, and things such as nickname registration
+20 =OPER SOP::      may change what is displayed above.
 
 [OPERSERV/TRACE]
 01 =SADMIN::Services support 'Tracing', ie. a method of finding
@@ -2588,6 +2721,13 @@
 04 =SADMIN::restart unless you restart them manually.
 05 =SADMIN::THIS SHOULD BE USED WITH EXTREME CAUTION!
 
+[OPERSERV/RESTART]
+01 =SADMIN::RESTART <reason>
+02 =SADMIN::
+03 =SADMIN::This will basically cause services to act as if they
+04 =SADMIN::shut down, and restarted immediately.  This means the
+05 =SADMIN::the entire shutdown, and startup procedures will occur.
+
 [OPERSERV/RELOAD]
 01 =SADMIN::RELOAD
 02 =SADMIN::
@@ -2607,7 +2747,7 @@
 07 =SADMIN::changes to a language file.
 
 [OPERSERV/JUPE]
-01 =ADMIN::JUPE <server> [reason]
+01 =ADMIN::JUPE <server> <reason>
 02 =ADMIN::
 03 =ADMIN::This will create a phantom server connected to
 04 =ADMIN::services, usually to stop the real server of the
@@ -2616,7 +2756,7 @@
 07 =ADMIN::get rid of this phantom server by SQUITing it.
 
 [OPERSERV/ON]
-01 =SADMIN::ON <AUTO|LOG|MSG> [service]
+01 =SADMIN::ON <AUTO|LOG|MSG [service]>
 02 =SADMIN::
 03 =SADMIN::This turns processing back on again for the type
 04 =SADMIN::specified.  AUTO will turn on events processing,
@@ -2628,14 +2768,14 @@
 10 =SADMIN::ignored for anything but MSG.
 
 [OPERSERV/OFF]
-01 =SADMIN::OFF <AUTO|LOG|MSG> [service]
+01 =SADMIN::OFF <AUTO|LOG|MSG [service]>
 02 =SADMIN::
 03 =SADMIN::This will turn off processing for the type specified.
 04 =SADMIN::AUTO will turn off the events processing, LOG will
 05 =SADMIN::stop the output log, and MSG will stop clients from
 06 =SADMIN::being able to message servics.  If a service is
 07 =SADMIN::specified, it will turn off messages for that service
-08 =SADMIN::only.  The service is ignored for anythinb but MSG.
+08 =SADMIN::only.  The service is ignored for anything but MSG.
 09 =SADMIN::Under any circumstance, IDENTIFY and ON will be
 10 =SADMIN::available through this service.
 
@@ -2738,12 +2878,14 @@
 07 =SOP::LIST command.
 
 [OPERSERV/CLONE/LIST]
-01 =OPER SOP::CLONE LIST
+01 =OPER SOP::CLONE LIST [mask]
 02 =OPER SOP::
 03 =OPER SOP::This will display the clone override list, including
 04 =OPER SOP::who added them to it, how long they have been on the
 05 =OPER SOP::list, the amount of clones they are allowed, and a
-06 =OPER SOP::number that may be used to delete the entry.
+06 =OPER SOP::number that may be used to delete the entry.  If a
+07 =OPER SOP::mask is specified, only entries matching that mask
+08 =OPER SOP::will be listed, wildcards may be specified.
 
 [OPERSERV/AKILL]
 01 =OPER SOP::Sometimes a user becomes so abusive, that it is better
@@ -2778,13 +2920,15 @@
 07 =OPER SOP::number obtained from the AKILL LIST command.
 
 [OPERSERV/AKILL/LIST]
-01 =OPER SOP::AKILL LIST
+01 =OPER SOP::AKILL LIST [mask]
 02 =OPER SOP::
 03 =OPER SOP::This will display the Auto Kill list, including the mask
 04 =OPER SOP::banned, how long they have been banned for, how long
 05 =OPER SOP::they were killed for, the reason they were Auto Killed,
 06 =OPER SOP::who added them, and numbers that may be used to delete
-07 =OPER SOP::them from the Auto Kill list.
+07 =OPER SOP::them from the Auto Kill list.  If a mask is specified,
+08 =OPER SOP::only entries matching that mask will be displayed,
+09 =OPER SOP::wildcards may be specified.
 
 [OPERSERV/OPERDENY]
 01 =SOP::From time to time, an oper will breech the network
@@ -2798,12 +2942,14 @@
 07B=SADMIN::    ADD          DEL          LIST
 
 [OPERSERV/OPERDENY/ADD]
-01 =SADMIN::OPERDENY ADD <mask> <reason>
+01 =SADMIN::OPERDENY ADD <mask|nickname> <reason>
 02 =SADMIN::
 03 =SADMIN::This will add the specified mask to the Oper Deny list
 04 =SADMIN::effectively stopping them from setting mode +o (opering
 05 =SADMIN::up).  You may use wildcards in this mask.  You must
 06 =SADMIN::specify a full nick!user@host mask (*! will be assumed).
+07 =SOP::If a nickname is specified instead of a mask and the
+08 =SOP::user is online, a mask based on that user will be used.
 
 [OPERSERV/OPERDENY/DEL]
 01 =SADMIN::OPERDENY DEL <mask|NUM>
@@ -2814,11 +2960,13 @@
 06 =SADMIN::with the OPERDENY LIST command.
 
 [OPERSERV/OPERDENY/LIST]
-01 =SOP::OPERDENY LIST
+01 =SOP::OPERDENY LIST [mask]
 02 =SOP::
 03 =SOP::This will list all entries on the Oper Deny list,
 04 =SOP::including who added them, how long the mask has been
 05 =SOP::denied for, and a number that can be used to delete it.
+06 =SOP::If a mask is specified, only entries matching that mask
+07 =SOP::will be displayed, wildcards may be specified.
 
 [OPERSERV/IGNORE]
 01 =OPER SOP::Services has 2 ignore lists, one temporary, and one
@@ -2832,13 +2980,15 @@
 07B=SOP::    ADD          DEL          LIST
 
 [OPERSERV/IGNORE/ADD]
-01 =SOP::IGNORE ADD <mask>
+01 =SOP::IGNORE ADD <mask|nickname>
 02 =SOP::
 03 =SOP::This will add a mask to the permanent ignore list.  Any
 04 =SOP::user matching this mask will not get a response from
 05 =SOP::services, even on pings, etc.  This also means they WILL
 06 =SOP::NOT BE ABLE TO IDENT.  You may use wildcards in this
 07 =SOP::mask, and you must specify a full nick!user@host mask.
+08 =SOP::If a nickname is specified instead of a mask and the
+09 =SOP::user is online, a mask based on that user will be used.
 
 [OPERSERV/IGNORE/DEL]
 01 =SOP::IGNORE DEL <mask|NUM>
@@ -2849,10 +2999,12 @@
 06 =SOP::the IGNORE LIST command.
 
 [OPERSERV/IGNORE/LIST]
-01 =OPER SOP::IGNORE LIST
+01 =OPER SOP::IGNORE LIST [mask]
 02 =OPER SOP::
 03 =OPER SOP::This will display all entries on the permanent ignore
 04 =OPER SOP::list.  It will also show who added them, how long they
 05 =OPER SOP::have been on ignore for, and a number that may be used
-06 =OPER SOP::to delete them from the list.
+06 =OPER SOP::to delete them from the list.  If a mask is specified
+07 =OPER SOP::only entries mathcing that mask will be displayed,
+08 =OPER SOP::wildcards may be specified.
 

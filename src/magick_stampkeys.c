@@ -20,6 +20,10 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.4  2001/07/12 00:28:42  prez
 ** Added propper support for Anarchy mode
 **
@@ -120,32 +124,73 @@ int main(int argc, char **argv)
 	while (!feof(fout))
 	{
 	    c = fgetc(fout);
+	    if (feof(fout))
+		break;
 	    if (c == '|')
 	    {
-		int read;
+		int rc;
 		char buf[MAX_KEYLEN+1];
 		memset(buf, 0, MAX_KEYLEN+1);
 		buf[0] = '|';
-		read = fread(&buf[1], 1, MAX_KEYLEN-1, fout);
-		if (read < MAX_KEYLEN-1)
+		rc = fread(&buf[1], 1, MAX_KEYLEN-1, fout);
+		if (rc < MAX_KEYLEN-1)
+		{
+		    fprintf(stderr, "%s: fread failed trying to get buffer ...\n", argv[i]);
 		    break;
+		}
 
 		if (memcmp(buf, CRYPTO_KEY1, MAX_KEYLEN) == 0)
 		{
 		    // Matched the first 
-		    fseek(fout, -1 * MAX_KEYLEN, SEEK_CUR);
-		    fwrite(k1, MAX_KEYLEN, 1, fout);
+		    rc = fseek(fout, -1 * MAX_KEYLEN, SEEK_CUR);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fseek (rewind) failed trying to substitute key 1 ...\n", argv[i]);
+			break;
+		    }
+		    rc = fwrite(k1, MAX_KEYLEN, 1, fout);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fwrite failed trying to substitute key 1 ...\n", argv[i]);
+			break;
+		    }
+		    rc = fseek(fout, 0, SEEK_CUR);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fseek (tell) failed trying to substitute key 1 ...\n", argv[i]);
+			break;
+		    }
 		}
 		else if (memcmp(buf, CRYPTO_KEY2, MAX_KEYLEN) == 0)
 		{
 		    // Matched the second
-		    fseek(fout, -1 * MAX_KEYLEN, SEEK_CUR);
-		    fwrite(k2, MAX_KEYLEN, 1, fout);
-		    fseek(fout, -1, SEEK_CUR);
+		    rc = fseek(fout, -1 * MAX_KEYLEN, SEEK_CUR);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fseek failed trying to substitute key 2 ...\n", argv[i]);
+			break;
+		    }
+		    rc = fwrite(k2, MAX_KEYLEN, 1, fout);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fwrite failed trying to substitute key 2 ...\n", argv[i]);
+			break;
+		    }
+		    rc = fseek(fout, 0, SEEK_CUR);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fseek (tell) failed trying to substitute key 2 ...\n", argv[i]);
+			break;
+		    }
 		}
 		else
 		{
-		    fseek(fout, -1 * (MAX_KEYLEN-1), SEEK_CUR);
+		    rc = fseek(fout, -1 * (MAX_KEYLEN-1), SEEK_CUR);
+		    if (rc < 0)
+		    {
+			fprintf(stderr, "%s: fseek failed trying to skip non-substitution ...\n", argv[i]);
+			break;
+		    }
 		}
 	    }
 	}

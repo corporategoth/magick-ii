@@ -27,6 +27,10 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2001/11/03 21:02:54  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.91  2001/07/02 03:39:30  prez
 ** Fixed bug with users sending printf strings (mainly in memos).
 **
@@ -872,27 +876,30 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
 		fmstring("%10d", Parent->chanserv.stats.Op()),
 		fmstring("%10d", Parent->chanserv.stats.Deop())));
     SEND(mynick, source, "STATS/CHAN_CMD7", (
+		fmstring("%10d", Parent->chanserv.stats.Halfop()),
+		fmstring("%10d", Parent->chanserv.stats.Dehalfop())));
+    SEND(mynick, source, "STATS/CHAN_CMD8", (
 		fmstring("%10d", Parent->chanserv.stats.Voice()),
 		fmstring("%10d", Parent->chanserv.stats.Devoice())));
-    SEND(mynick, source, "STATS/CHAN_CMD8", (
+    SEND(mynick, source, "STATS/CHAN_CMD9", (
 		fmstring("%10d", Parent->chanserv.stats.Kick()),
 		fmstring("%10d", Parent->chanserv.stats.Anonkick())));
-    SEND(mynick, source, "STATS/CHAN_CMD9", (
+    SEND(mynick, source, "STATS/CHAN_CMD10", (
 		fmstring("%10d", Parent->chanserv.stats.Invite()),
 		fmstring("%10d", Parent->chanserv.stats.Unban())));
-    SEND(mynick, source, "STATS/CHAN_CMD10", (
+    SEND(mynick, source, "STATS/CHAN_CMD11", (
 		fmstring("%10d", Parent->chanserv.stats.Clear()),
 		fmstring("%10d", Parent->chanserv.stats.Akick())));
-    SEND(mynick, source, "STATS/CHAN_CMD11", (
+    SEND(mynick, source, "STATS/CHAN_CMD12", (
 		fmstring("%10d", Parent->chanserv.stats.Level()),
 		fmstring("%10d", Parent->chanserv.stats.Access())));
-    SEND(mynick, source, "STATS/CHAN_CMD12", (
+    SEND(mynick, source, "STATS/CHAN_CMD13", (
 		fmstring("%10d", Parent->chanserv.stats.Greet()),
 		fmstring("%10d", Parent->chanserv.stats.Message())));
-    SEND(mynick, source, "STATS/CHAN_CMD13", (
+    SEND(mynick, source, "STATS/CHAN_CMD14", (
 		fmstring("%10d", Parent->chanserv.stats.Set()),
 		fmstring("%10d", Parent->chanserv.stats.NoExpire())));
-    SEND(mynick, source, "STATS/CHAN_CMD14", (
+    SEND(mynick, source, "STATS/CHAN_CMD15", (
 		fmstring("%10d", Parent->chanserv.stats.Lock()),
 		fmstring("%10d", Parent->chanserv.stats.Unlock())));
     Parent->servmsg.stats.i_Stats++;
@@ -1296,10 +1303,9 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 	return;
     }}
 
-    mDateTime tmp = StartTime;
     SEND(mynick, source, "STATS/GEN_UPTIME", (
 		StartTime.Ago()));
-    if ((tmp - Parent->ResetTime()).Minute() >= 1)
+    if (StartTime != Parent->ResetTime())
 	SEND(mynick, source, "STATS/GEN_RESET", (
 		Parent->ResetTime().Ago()));
     SEND(mynick, source, "STATS/GEN_MAXUSERS", (

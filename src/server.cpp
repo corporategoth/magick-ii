@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.193  2001/11/03 21:02:54  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.192  2001/08/05 04:53:25  prez
 ** Fixes for topic under hybrid
 **
@@ -732,9 +736,10 @@ void Protocol::SetTokens(const unsigned int type)
 
 Protocol::Protocol()
     : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false),
-      i_Helpops(false), i_Tokens(false), i_P12(false), i_TSora(false),
-      i_SJoin(false), i_BigTopic(false), i_Akill(0), i_Signon(0), i_Modes(3),
-      i_ChanModeArg("ovbkl"), i_Server("SERVER %s %d :%s"), i_Numeric(0)
+      i_Helpops(false), i_Chatops(false), i_Tokens(false), i_P12(false),
+      i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false),
+      i_Akill(0), i_Signon(0), i_Modes(3), i_ChanModeArg("ovbkl"),
+      i_Server("SERVER %s %d :%s"), i_Numeric(0)
 {
     NFT("Protocol::Protocol");
     DumpB();
@@ -793,7 +798,7 @@ void Protocol::Set(const unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2001;
 	i_Globops = true;
-	i_Helpops = true;
+	i_Chatops = true;
 	i_BigTopic = true;
 	i_Akill = 1001;
 	i_Modes = 6;
@@ -807,7 +812,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	i_Burst = "BURST";
-	i_EndBurst = "BURST END";
+	i_EndBurst = "BURST 0";
 	SetTokens(0001);
 	break;
 
@@ -827,11 +832,23 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(1000);
 	break;
 
-    case 30: // Hybrid
+    case 30: // Hybrid 5/6
 	i_NickLen = 9;
 	i_Signon = 2000;
-	i_Akill = 2003;
+	i_TopicJoin = true;
+	i_Akill = 3000;
 	i_ChanModeArg = "ovbekld";
+	SetTokens(0000);
+	i_TSora = true;
+	i_Protoctl = "CAPAB QS EX";
+	break;
+
+    case 31: // Hybrid 7
+	i_NickLen = 9;
+	i_Signon = 2000;
+	i_TopicJoin = true;
+	i_Akill = 3001;
+	i_ChanModeArg = "ovbeklIh";
 	SetTokens(0000);
 	i_TSora = true;
 	i_Protoctl = "CAPAB QS EX";
@@ -1019,19 +1036,21 @@ mstring Protocol::GetNonToken(const mstring& in) const
 void Protocol::DumpB() const
 {
     MB(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops,
-	i_Tokens, i_P12, i_TSora, i_Akill, i_Signon, i_Modes,
-	i_ChanModeArg, i_Server, i_Numeric, i_Burst, i_EndBurst));
-    MB(16, (i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP,
-	i_SQLINE, i_UNSQLINE, i_SVSHOST, tokens.size()));
+	i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
+	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
+    MB(16, (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl,
+	i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE,
+	i_UNSQLINE, i_SVSHOST, tokens.size()));
 }
 
 void Protocol::DumpE() const
 {
     ME(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops,
-	i_Tokens, i_P12, i_TSora, i_Akill, i_Signon, i_Modes,
-	i_ChanModeArg, i_Server, i_Numeric, i_Burst, i_EndBurst));
-    ME(16, (i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP,
-	i_SQLINE, i_UNSQLINE, i_SVSHOST, tokens.size()));
+	i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
+	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
+    ME(16, (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl,
+	i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE,
+	i_UNSQLINE, i_SVSHOST, tokens.size()));
 }
 
 Server_t::Server_t(const mstring& name, const mstring& description,
@@ -1384,6 +1403,44 @@ void Server::SignOnAll()
 }
 
 
+void Server::SignOffAll(const mstring& reason)
+{
+    FT("Server::SignOffAll", (reason));
+
+    unsigned int i;
+    for (i=1; i<=Parent->operserv.GetNames().WordCount(" "); i++)
+    {
+	if (Parent->nickserv.IsLive(Parent->operserv.GetNames().ExtractWord(i, " ")))
+	    Parent->operserv.signoff(Parent->operserv.GetNames().ExtractWord(i, " "), reason);
+    }
+    for (i=1; i<=Parent->nickserv.GetNames().WordCount(" "); i++)
+    {
+	if (Parent->nickserv.IsLive(Parent->nickserv.GetNames().ExtractWord(i, " ")))
+	    Parent->nickserv.signoff(Parent->nickserv.GetNames().ExtractWord(i, " "), reason);
+    }
+    for (i=1; i<=Parent->chanserv.GetNames().WordCount(" "); i++)
+    {
+	if (Parent->nickserv.IsLive(Parent->chanserv.GetNames().ExtractWord(i, " ")))
+	    Parent->chanserv.signoff(Parent->chanserv.GetNames().ExtractWord(i, " "), reason);
+    }
+    for (i=1; i<=Parent->memoserv.GetNames().WordCount(" "); i++)
+    {
+	if (Parent->nickserv.IsLive(Parent->memoserv.GetNames().ExtractWord(i, " ")))
+	    Parent->memoserv.signoff(Parent->memoserv.GetNames().ExtractWord(i, " "), reason);
+    }
+    for (i=1; i<=Parent->commserv.GetNames().WordCount(" "); i++)
+    {
+	if (Parent->nickserv.IsLive(Parent->commserv.GetNames().ExtractWord(i, " ")))
+	    Parent->commserv.signoff(Parent->commserv.GetNames().ExtractWord(i, " "), reason);
+    }
+    for (i=1; i<=Parent->servmsg.GetNames().WordCount(" "); i++)
+    {
+	if (Parent->nickserv.IsLive(Parent->servmsg.GetNames().ExtractWord(i, " ")))
+	    Parent->servmsg.signoff(Parent->servmsg.GetNames().ExtractWord(i, " "), reason);
+    }
+}
+
+
 Server::Server()
 {
     NFT("Server::Server");
@@ -1444,6 +1501,9 @@ void Server::FlushMsgs(const mstring& nick)
 		break;
 	    case t_HELPOPS:
 		HELPOPS(nick, j->third.first);
+		break;
+	    case t_CHATOPS:
+		CHATOPS(nick, j->third.first);
 		break;
 	    case t_INVITE:
 		INVITE(nick, j->third.first, j->third.second);
@@ -1764,16 +1824,41 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	    line << "GLINE";
 	line << " +" << host << " " << exptime << " :" << reason;
 	break;
-    case 2003:
+    case 3000:
+	// Hybrid 5/6 is EXTREMELY ugly with its gline -- it seems
+	// to require 3 different opers, on 3 different hosts, from
+	// 3 different servers to set the gline.  Luckily it doesnt
+	// actually check that, so we just fudge it.
+
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
+
+	sraw(line + "VOnick1 VOuser1 VOhost1 VOserver1 " +
+		host.Before("@") + " " + host.After("@") + " :" +
+		reason);
+
+	sraw(line + "VOnick2 VOuser2 VOhost2 VOserver2 " +
+		host.Before("@") + " " + host.After("@") + " :" +
+		reason);
+
+	{
 	Nick_Live_t os;
 	if (Parent->nickserv.IsLive(Parent->operserv.FirstName()))
 	    os = Parent->nickserv.GetLive(Parent->operserv.FirstName());
-	line << os.Name() << " " << os.User() << " " << os.Host()
+	line << " " << os.Name() << " " << os.User() << " " << os.Host()
 		<< " " << Parent->startup.Server_Name() << " "
+		<< host.Before("@") << " " << host.After("@")
+		<< " :" << reason;
+	}
+	break;
+    case 3001:
+	if (proto.Tokens() && !proto.GetNonToken("KLINE").empty())
+	    line << proto.GetNonToken("KLINE");
+	else
+	    line << "KLINE";
+	line << " " << killer << " * " << exptime << " "
 		<< host.Before("@") << " " << host.After("@")
 		<< " :" << reason;
 	break;
@@ -1791,7 +1876,11 @@ void Server::AKILL(const mstring& host, const mstring& reason,
     }}
 
     if (!line.empty())
+    {
+	line.replace("\n", "");
+	line.replace("\r", "");
 	sraw(line);
+    }
 
     unsigned int j;
     for (j=0; j<killusers.size(); j++)
@@ -1895,16 +1984,16 @@ void Server::GLOBOPS(const mstring& nick, const mstring& message)
     else
     {
 	Parent->nickserv.GetLive(nick).Action();
+	mstring line = ":" + nick + " ";
 	if (proto.Globops())
-	    raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
-			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) +
-		" :" + message);
+	    line += ((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
+			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
 	else
-	    raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
-			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) +
-		" :" + message);
+	    line += ((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
+			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
@@ -1932,11 +2021,61 @@ void Server::HELPOPS(const mstring& nick, const mstring& message)
     else
     {
 	Parent->nickserv.GetLive(nick).Action();
+
+	mstring line = ":" + nick + " ";
 	if (proto.Helpops())
-	    raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("HELPOP").empty()) ?
-			proto.GetNonToken("HELPOP") : mstring("HELPOP")) +
-		" :" + message);
+	    line += ((proto.Tokens() && !proto.GetNonToken("HELPOPS").empty()) ?
+			proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) + " :";
+	else if (proto.Globops())
+	    line += ((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
+			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+	else
+	    line += ((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
+			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	    raw(line + message.ExtractWord(i, "\n\r"));
+    }
+}
+
+
+void Server::CHATOPS(const mstring& nick, const mstring& message)
+{
+    FT("Server::CHATOPS", (nick, message));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	MCB(ToBeSent.size());
+	ToBeSent[nick.LowerCase()].push_back(
+		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
+		t_CHATOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
+		message, "", "")));
+	MCE(ToBeSent.size());
+	return;
+    }
+    else if (!Parent->nickserv.GetLive(nick).IsServices())
+    {
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"CHATOPS", nick));
+    }
+    else
+    {
+	Parent->nickserv.GetLive(nick).Action();
+
+	mstring line = ":" + nick + " ";
+	if (proto.Chatops())
+	    line += ((proto.Tokens() && !proto.GetNonToken("CHATOPS").empty()) ?
+			proto.GetNonToken("CHATOPS") : mstring("CHATOPS")) + " :";
+	else if (proto.Globops())
+	    line += ((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
+			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+	else
+	    line += ((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
+			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
@@ -1998,44 +2137,57 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
     }
     else
     {
-	// If we have SJOIN ability, then we need to add a timestamp
-	// and seperate the channels by ' ', else we do a standard
-	// JOIN with channels seperated by ','.
+	// Make sure we split the channels here, so that we can
+	// do the Join's AFTER the command it sent to the network,
+	// else we'll end up senind modes before joins.
+	vector<mstring> channels;
+	vector<mstring>::iterator ci;
+	for (unsigned int i=1; i<=channel.WordCount(", "); i++)
+	    channels.push_back(channel.ExtractWord(i, ", "));
 
 	mstring send;
-	send << ":" << nick << " ";
+
+	// If we have SJOIN ability, then we need to join each
+	// channel individually, else we do a standard JOIN.
 	if (proto.SJoin())
 	{
-	    send << ((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ?
+	    send << ":" << nick << " " <<
+		((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ?
 			proto.GetNonToken("SJOIN") : mstring("SJOIN"))
-		<< " " << mDateTime::CurrentDateTime().timetstring() << " :";
-	    bool firstchan = true;
-	    for (unsigned int i=1; i<=channel.WordCount(", "); i++)
-	    {
-		if (firstchan)
-		    firstchan = false;
-		else
-		    send << " ";
-		send << channel.ExtractWord(i, ", ");
-		Parent->nickserv.GetLive(nick).Join(channel.ExtractWord(i, ", "));
-	    }
+		<< " " << mDateTime::CurrentDateTime().timetstring() << " ";
+
+	    for (ci=channels.begin(); ci!=channels.end(); ci++)
+		raw(send + *ci);
 	}
-	else
-	{
-	    send << ((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
+        else
+        {
+	    send << ":" << nick << " " <<
+		((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
 			proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
+
 	    bool firstchan = true;
-	    for (unsigned int i=1; i<=channel.WordCount(", "); i++)
+	    for (ci=channels.begin(); ci!=channels.end(); ci++)
 	    {
+		if (send.length() + ci->length() + 1 > proto.MaxLine())
+		{
+		    raw(send);
+		    send.erase();
+		    send << ":" << nick << " " <<
+			((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
+				proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
+		    firstchan = true;
+		}
 		if (firstchan)
 		    firstchan = false;
 		else
-		    send << ",";
-		send << channel.ExtractWord(i, ", ");
-		Parent->nickserv.GetLive(nick).Join(channel.ExtractWord(i, ", "));
+		    send << ',';
+		send << *ci;
 	    }
+	    raw(send);
 	}
-	raw(send);
+
+	for (ci=channels.begin(); ci!=channels.end(); ci++)
+	    Parent->nickserv.GetLive(nick).Join(*ci);
     }
 }
 
@@ -2435,10 +2587,13 @@ void Server::NOTICE(const mstring& nick, const mstring& dest,
     else
     {
 	Parent->nickserv.GetLive(nick).Action();
-	raw(":" + nick + " " +
+
+	mstring line = ":" + nick + " " +
 		((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-		" " + dest + " :" + text);
+		" " + dest + " :";
+	for (unsigned int i=1; i<=text.WordCount("\n\r"); i++)
+	    raw(line + text.ExtractWord(i, "\n\r"));
     }
 }
 
@@ -2529,10 +2684,13 @@ void Server::PRIVMSG(const mstring& nick, const mstring& dest,
     else
     {
 	Parent->nickserv.GetLive(nick).Action();
-	raw(":" + nick + " " +
+
+	mstring line = ":" + nick + " " +
 		((proto.Tokens() && !proto.GetNonToken("PRIVMSG").empty()) ?
 			proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) +
-		" " + dest + " :" + text);
+		" " + dest + " :";
+	for (unsigned int i=1; i<=text.WordCount("\n\r"); i++)
+	    raw(line + text.ExtractWord(i, "\n\r"));
     }
 }
 
@@ -2649,7 +2807,10 @@ void Server::RAKILL(const mstring& host)
 	    line << "GLINE";
 	line << " -" << host;
 	break;
-    case 2003:
+    case 3000:
+	// Complete no-op.
+	break;
+    case 3001:
 	// Complete no-op.
 	break;
     }
@@ -2925,8 +3086,19 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
 	    send << " :" << topic;
 	}
 
-	Parent->chanserv.GetLive(channel).Topic(nick, topic, setter, time);
+	bool dojoin = false;
+	{ 
+	Chan_Live_t &chan = Parent->chanserv.GetLive(channel);
+	chan.Topic(nick, topic, setter, time);
+	if (proto.TopicJoin() && !chan.IsIn(Parent->chanserv.FirstName()))
+	    dojoin = true;
+	}
+
+	if (dojoin)
+	    JOIN(Parent->chanserv.FirstName(), channel);
 	raw(send);
+	if (dojoin)
+	    PART(Parent->chanserv.FirstName(), channel);
     }
 }
 
@@ -2991,10 +3163,13 @@ void Server::WALLOPS(const mstring& nick, const mstring& message)
     else
     {
 	Parent->nickserv.GetLive(nick).Action();
-	raw(":" + nick + " " +
+
+	mstring line = ":" + nick + " " + 
 		((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
-			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) +
-		" :" + message);
+			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
@@ -4180,7 +4355,22 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 	    if (!Parent->GotConnect())
 		return;
 
-	    if (!IsChan(params.ExtractWord(1, ": ")))
+	    mstring dest = params.ExtractWord(1, ": ");
+	    char c = 0;
+	    while (c != dest.first())
+	    {
+		c = dest.first();
+		switch (c)
+		{
+		case '@': // Op Msg
+		case '%': // HalfOp Msg
+		case '+': // Voice Msg
+		    dest.erase(0, 0);
+		    break;
+		}
+	    }
+
+	    if (!IsChan(dest))
 	    {
 		{ RLOCK(("IrcSvcHandler"));
 		if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
@@ -4294,7 +4484,22 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	    if (!Parent->GotConnect())
 		return;
 
-	    if (!IsChan(params.ExtractWord(1, ": ")))
+	    mstring dest = params.ExtractWord(1, ": ");
+	    char c = 0;
+	    while (c != dest.first())
+	    {
+		c = dest.first();
+		switch (c)
+		{
+		case '@': // Op Msg
+		case '%': // HalfOp Msg
+		case '+': // Voice Msg
+		    dest.erase(0, 0);
+		    break;
+		}
+	    }
+
+	    if (!IsChan(dest))
 	    {
 		{ RLOCK(("IrcSvcHandler"));
 		if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
@@ -4740,10 +4945,10 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 
 		if (Parent->nickserv.IsLive(source))
 		{
-		    for (i=2; i<=params.WordCount(": "); i++)
+		    for (i=2; i<=params.WordCount(":, "); i++)
 		    {
 			char c = 0;
-			chan = params.ExtractWord(i, ": ");
+			chan = params.ExtractWord(i, ":, ");
 			oped = halfoped = voiced = owner = prot = false;
 			while (c != chan[0u])
 			{
@@ -5104,6 +5309,11 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 
 	    if (IsList(target))
 	    {
+		if (GetList(target).Jupe())
+		    raw(((proto.Tokens() && !proto.GetNonToken("SQUIT").empty()) ?
+			  proto.GetNonToken("SQUIT") : mstring("SQUIT")) +
+			  " " + target + " :" + params.After(": ", 2));
+
 		unsigned int i;
 		vector<mstring> tlist = GetList(target).AllDownlinks();
 		tlist.push_back(target);
@@ -5927,6 +6137,8 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 
 			if (Parent->chanserv.GetLive(*iter).IsOp(target))
 			    outline += "@" + *iter + " ";
+			else if (Parent->chanserv.GetLive(*iter).IsHalfOp(target))
+			    outline += "%" + *iter + " ";
 			else if (Parent->chanserv.GetLive(*iter).IsVoice(target))
 			    outline += "+" + *iter + " ";
 			else

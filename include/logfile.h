@@ -25,8 +25,9 @@ RCSID(logfile_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.21  2001/07/05 05:59:05  prez
-** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+** Revision 1.22  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
 **
 **
 ** ========================================================== */
@@ -34,10 +35,10 @@ RCSID(logfile_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Wed Jul  4 18:27:19 EDT 2001
+ * Created on Mon Oct  8 14:57:32 EDT 2001
  */
 
-unsigned int def_logent =     343;
+unsigned int def_logent =     347;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -153,6 +154,8 @@ char *def_log[] = {
 "MODE             =$1 changed mode \"$2\" on channel $3 with the MODE command.",
 "OP               =$1 oped $2 in channel $3 with the OP command.",
 "DEOP             =$1 deoped $2 in channel $3 with the DEOP command.",
+"HALFOP           =$1 half oped $2 in channel $3 with the HALFOP command.",
+"DEHALFOP         =$1 de-half oped $2 in channel $3 with the DEHALFOP command.",
 "VOICE            =$1 voiced $2 in channel $3 with the VOICE command.",
 "DEVOICE          =$1 devoiced $2 in channel $3 with the DEVOICE command.",
 "TOPIC            =$1 set the topic on $2 with the TOPIC command.",
@@ -297,6 +300,8 @@ char *def_log[] = {
 "LOCK_ACQUIRE     =Failed to acquire $1 lock for $2.",
 "LOCK_RELEASE     =Failed to release $1 lock for $2.",
 "LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!",
+"STAGE_FAIL       =Could not create/validate a stage in load or save process, skipping.",
+"STAGE_FAIL_ABORT =Could not create/validate a stage in load or save process, aborting.",
 "THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!",
 "THREAD_DEAD_HALF =Over half of threads not processing, shutting down!",
 "LOCKED_BIN       =System lock values do not match!  Binary recompile required!",

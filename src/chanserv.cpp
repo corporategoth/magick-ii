@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.261  2001/11/03 21:02:51  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.260  2001/08/04 18:32:02  prez
 ** Made some changes for Hybrid 6 -- we now work with it ... mostly.
 **
@@ -529,7 +533,7 @@ bool Chan_Live_t::Join(const mstring& nick)
 	    squit.erase(nick.LowerCase());
 	}
 	{ WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-	users[nick.LowerCase()] = pair<bool,bool>(false,false);
+	users[nick.LowerCase()] = triplet<bool,bool,bool>(false,false,false);
 	}
 	MCE(users.size());
 	RET(true);
@@ -721,7 +725,7 @@ Chan_Live_t::Chan_Live_t(const mstring& name, const mstring& first_user)
 	: i_Name(name), i_Limit(0), ph_timer(0)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
-    users[first_user.LowerCase()] = pair<bool,bool>(false,false);
+    users[first_user.LowerCase()] = triplet<bool,bool,bool>(false,false,false);
     DumpB();
 }
 
@@ -733,7 +737,7 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
     i_Name=in.i_Name;
     i_Creation_Time=in.i_Creation_Time;
     users.clear();
-    map<mstring, pair<bool, bool> >::const_iterator k;
+    map<mstring, triplet<bool, bool, bool> >::const_iterator k;
     for(k=in.users.begin();k!=in.users.end();k++)
 	users.insert(*k);
     for(k=in.squit.begin();k!=in.squit.end();k++)
@@ -830,7 +834,7 @@ mstring Chan_Live_t::Squit(const unsigned int num) const
 {
     FT("Chan_Live_t::Squit", (num));
     unsigned int i;
-    map<mstring, pair<bool, bool> >::const_iterator k;
+    map<mstring, triplet<bool, bool, bool> >::const_iterator k;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     for(i=0, k=squit.begin();k!=squit.end();k++, i++)
 	if (i==num)
@@ -854,7 +858,7 @@ mstring Chan_Live_t::User(const unsigned int num) const
 {
     FT("Chan_Live_t::User", (num));
     unsigned int i;
-    map<mstring, pair<bool, bool> >::const_iterator k;
+    map<mstring, triplet<bool, bool, bool> >::const_iterator k;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
     for(i=0, k=users.begin();k!=users.end();k++, i++)
 	if (i==num)
@@ -871,7 +875,7 @@ unsigned int Chan_Live_t::Ops() const
     NFT("Chan_Live_t::Ops");
     unsigned int count = 0;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-    map<mstring,pair<bool,bool> >::const_iterator i;
+    map<mstring,triplet<bool,bool,bool> >::const_iterator i;
     for (i=users.begin(); i!=users.end(); i++)
 	if (i->second.first)
 	    count++;
@@ -883,10 +887,43 @@ mstring Chan_Live_t::Op(const unsigned int num) const
 {
     FT("Chan_Live_t::Op", (num));
     unsigned int i;
-    map<mstring, pair<bool, bool> >::const_iterator k;
+    map<mstring, triplet<bool, bool, bool> >::const_iterator k;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
     for(i=0, k=users.begin();k!=users.end();k++)
-	if (IsOp(k->first))
+	if (k->second.first)
+	{
+	    if (i==num)
+	    {
+		RET(k->first);
+	    }
+	    i++;
+	}
+
+    RET("");
+}
+
+
+unsigned int Chan_Live_t::HalfOps() const
+{
+    NFT("Chan_Live_t::HalfOps");
+    unsigned int count = 0;
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    map<mstring,triplet<bool,bool,bool> >::const_iterator i;
+    for (i=users.begin(); i!=users.end(); i++)
+	if (i->second.second)
+	    count++;
+    RET(count);
+}
+
+
+mstring Chan_Live_t::HalfOp(const unsigned int num) const
+{
+    FT("Chan_Live_t::HalfOp", (num));
+    unsigned int i;
+    map<mstring, triplet<bool, bool, bool> >::const_iterator k;
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    for(i=0, k=users.begin();k!=users.end();k++)
+	if (k->second.second)
 	{
 	    if (i==num)
 	    {
@@ -904,9 +941,9 @@ unsigned int Chan_Live_t::Voices() const
     NFT("Chan_Live_t::Voices");
     unsigned int count = 0;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-    map<mstring,pair<bool,bool> >::const_iterator i;
+    map<mstring,triplet<bool,bool,bool> >::const_iterator i;
     for (i=users.begin(); i!=users.end(); i++)
-	if (i->second.second)
+	if (i->second.third)
 	    count++;
     RET(count);
 }
@@ -916,10 +953,10 @@ mstring Chan_Live_t::Voice(const unsigned int num) const
 {
     FT("Chan_Live_t::Voice", (num));
     unsigned int i;
-    map<mstring, pair<bool, bool> >::const_iterator k;
+    map<mstring, triplet<bool, bool, bool> >::const_iterator k;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
     for(i=0, k=users.begin();k!=users.end();k++)
-	if (IsVoice(k->first))
+	if (k->second.third)
 	{
 	    if (i==num)
 	    {
@@ -932,19 +969,19 @@ mstring Chan_Live_t::Voice(const unsigned int num) const
 
 
 
-pair<bool,bool> Chan_Live_t::User(const mstring& name) const
+triplet<bool,bool,bool> Chan_Live_t::User(const mstring& name) const
 {
     FT("Chan_Live_t::User", (name));
     if (IsIn(name))
     {
 	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-	map<mstring, pair<bool,bool> >::const_iterator i = users.find(name.LowerCase());
-	NRET(pair<bool.bool>, i->second);
+	map<mstring, triplet<bool,bool,bool> >::const_iterator i = users.find(name.LowerCase());
+	NRET(triplet<bool.bool.bool>, i->second);
     }
     else
     {
-	pair<bool,bool> tmp(false,false);
-	NRET(pair<bool.bool>, tmp);
+	triplet<bool,bool,bool> tmp(false,false,false);
+	NRET(triplet<bool.bool.bool>, tmp);
     }
 }
 
@@ -1048,8 +1085,22 @@ bool Chan_Live_t::IsOp(const mstring& nick) const
     FT("Chan_Live_t::IsOp", (nick));
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-    map<mstring, pair<bool,bool> >::const_iterator i = users.find(nick.LowerCase());
+    map<mstring, triplet<bool,bool,bool> >::const_iterator i = users.find(nick.LowerCase());
     if (i != users.end() && i->second.first)
+    {
+	RET(true);
+    }
+    RET(false);
+}
+
+
+bool Chan_Live_t::IsHalfOp(const mstring& nick) const
+{
+    FT("Chan_Live_t::IsHalfOp", (nick));
+
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    map<mstring, triplet<bool,bool,bool> >::const_iterator i = users.find(nick.LowerCase());
+    if (i != users.end() && i->second.second)
     {
 	RET(true);
     }
@@ -1062,12 +1113,11 @@ bool Chan_Live_t::IsVoice(const mstring& nick) const
     FT("Chan_Live_t::IsVoice", (nick));
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-    map<mstring, pair<bool,bool> >::const_iterator i = users.find(nick.LowerCase());
-    if (i != users.end() && i->second.second)
+    map<mstring, triplet<bool,bool,bool> >::const_iterator i = users.find(nick.LowerCase());
+    if (i != users.end() && i->second.third)
     {
 	RET(true);
     }
-    RET(false);
     RET(false);
 }
 
@@ -1311,6 +1361,39 @@ void Chan_Live_t::SendMode(const mstring& in)
 			    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
 			    {
 				p_modes_off += "o";
+				p_modes_off_params.push_back(in.ExtractWord(param, " "));
+			    }
+			}
+		    }
+		    param++;
+		}
+		break;
+
+	    case 'h':
+		if (in.WordCount(" ") >= param)
+		{
+		    if (add)
+		    {
+			if (!IsHalfOp(in.ExtractWord(param, " ")))
+			{
+			    if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', in.ExtractWord(param, " ")))
+				RemoveMode(p_modes_off, p_modes_off_params, false, 'h', in.ExtractWord(param, " "));
+			    if (!ModeExists(p_modes_on, p_modes_on_params, true, 'h', in.ExtractWord(param, " ")))
+			    {
+				p_modes_on += "h";
+				p_modes_on_params.push_back(in.ExtractWord(param, " "));
+			    }
+			}
+		    }
+		    else
+		    {
+			if (IsHalfOp(in.ExtractWord(param, " ")))
+			{
+			    if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', in.ExtractWord(param, " ")))
+				RemoveMode(p_modes_on, p_modes_on_params, true, 'h', in.ExtractWord(param, " "));
+			    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'h', in.ExtractWord(param, " ")))
+			    {
+				p_modes_off += "h";
 				p_modes_off_params.push_back(in.ExtractWord(param, " "));
 			    }
 			}
@@ -1606,7 +1689,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		}
 		break;
 
-	    case 'v':
+	    case 'h':
 		if (fwdargs <= wc)
 		{
 		if (IsIn(arg))
@@ -1616,13 +1699,47 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
 			users[arg.LowerCase()].second = true;
 			}
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'h', arg);
+		    }
+		    else
+		    {
+			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+			users[arg.LowerCase()].second = false;
+			}
+			if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, 'h', arg);
+		    }
+		    newmode += change[i];
+		    newmode_param += " " + arg;
+		}
+		else
+		{
+		    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
+			add ? '+' : '-', change[i], source,
+			arg, i_Name));
+		}
+		fwdargs++;
+		}
+	        break;
+
+	    case 'v':
+		if (fwdargs <= wc)
+		{
+		if (IsIn(arg))
+		{
+		    if (add)
+		    {
+			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+			users[arg.LowerCase()].third = true;
+			}
 			if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', arg);
 		    }
 		    else
 		    {
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
-			users[arg.LowerCase()].second = false;
+			users[arg.LowerCase()].third = false;
 			}
 			if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
 			    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', arg);
@@ -1880,7 +1997,7 @@ size_t Chan_Live_t::Usage() const
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
     retval += i_Name.capacity();
     retval += sizeof(i_Creation_Time.Internal());
-    map<mstring, pair<bool,bool> >::const_iterator i;
+    map<mstring, triplet<bool,bool,bool> >::const_iterator i;
     for (i=squit.begin(); i!=squit.end(); i++)
     {
 	retval += i->first.capacity();
@@ -2022,8 +2139,8 @@ bool Chan_Stored_t::Join(const mstring& nick)
 		if (users == 1)
 		    cptr.LockDown();
 
-		RLOCK2(("ChanServ", "stored", i_Name, "i_Mlock_On"));
-		cptr.SendMode("+" + i_Mlock_On +
+		RLOCK2(("ChanServ", "stored", i_Name, "setting.Mlock_On"));
+		cptr.SendMode("+" + setting.Mlock_On +
 			"b " + nlive.AltMask(Parent->operserv.Ignore_Method()));
 	    }
 
@@ -2104,24 +2221,24 @@ bool Chan_Stored_t::Join(const mstring& nick)
     if (users == 1)
     {
 	mstring modes;
-	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
-	RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
-	modes = i_Mlock_On;
-	if (!i_Mlock_Key.empty())
+	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+	RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+	modes = setting.Mlock_On;
+	if (!setting.Mlock_Key.empty())
 	    modes << "k";
-	if (i_Mlock_Limit)
+	if (setting.Mlock_Limit)
 	    modes << "l";
-	if (!i_Mlock_Key.empty())
-	    modes << " " << i_Mlock_Key;
-	if (i_Mlock_Limit)
-	    modes << " " << i_Mlock_Limit;
+	if (!setting.Mlock_Key.empty())
+	    modes << " " << setting.Mlock_Key;
+	if (setting.Mlock_Limit)
+	    modes << " " << setting.Mlock_Limit;
 	}
 
 	if (!modes.empty() && Parent->chanserv.IsLive(i_Name))
 	{
-	    Parent->chanserv.GetLive(i_Name).SendMode("+" + modes + " " + i_Mlock_Key + " " +
-			(i_Mlock_Limit ? mstring(i_Mlock_Limit) : mstring("")));
+	    Parent->chanserv.GetLive(i_Name).SendMode("+" + modes + " " + setting.Mlock_Key + " " +
+			(setting.Mlock_Limit ? mstring(setting.Mlock_Limit) : mstring("")));
 	}
 
 	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
@@ -2153,6 +2270,9 @@ bool Chan_Stored_t::Join(const mstring& nick)
     {
 	if (GetAccess(nick, "AUTOOP"))
 	    Parent->chanserv.GetLive(i_Name).SendMode("+o " + nick);
+	else if (Parent->server.proto.ChanModeArg().Contains('h') &&
+		GetAccess(nick, "AUTOHALFOP"))
+	    Parent->chanserv.GetLive(i_Name).SendMode("+h " + nick);
 	else if (GetAccess(nick, "AUTOVOICE"))
 	    Parent->chanserv.GetLive(i_Name).SendMode("+v " + nick);
     }
@@ -2545,6 +2665,31 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		}
 		break;
 
+	    case 'h':
+		if (fwdargs <= wc)
+		{
+		if (add)
+		{
+		    // IF not (a server set the mode and we've got anarchy set) and
+		    // not (services user set mode), AND (user is AUTODEOP OR
+		    // (channel is secure ops AND (user is not AUTOHALFOP or CMDHALFOP)))
+		    if (!(setter.Contains(".") && Anarchy()) &&
+			!(Parent->nickserv.IsLive(arg) &&
+			  Parent->nickserv.GetLive(arg).IsServices()) &&
+			(Access_value(arg) <= Level_value("AUTODEOP") ||
+			(!(GetAccess(arg, "CMDHALFOP") ||
+			  GetAccess(arg, "AUTOHALFOP")) &&
+			Secureops())))
+		    {
+			out_mode += "-h";
+			out_param += " " + arg;
+		    }
+		}
+
+		fwdargs++;
+		}
+		break;
+
 	    case 'v':
 		if (fwdargs <= wc)
 		{
@@ -2648,17 +2793,17 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 	    case 'k':
 		if (fwdargs <= wc)
 		{
-		{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-		if (add && i_Mlock_Off.Contains("k"))
+		{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+		if (add && setting.Mlock_Off.Contains("k"))
 		{
 		    out_mode += "-k";
 		    out_param += " " + arg;
 		}
-		else if (!add && !i_Mlock_Key.empty())
+		else if (!add && !setting.Mlock_Key.empty())
 		{
 		    out_mode += "+k";
-		    out_param += " " + i_Mlock_Key;
+		    out_param += " " + setting.Mlock_Key;
 		}}
 
 		fwdargs++;
@@ -2666,9 +2811,9 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		break;
 
 	    case 'l':
-		{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
-		if (add ? i_Mlock_Off.Contains("l") : i_Mlock_Limit)
+		{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+		if (add ? setting.Mlock_Off.Contains("l") : setting.Mlock_Limit)
 		{
 		    if (add)
 		    {
@@ -2677,7 +2822,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    else
 		    {
 			out_mode += "+l";
-			out_param += " " + i_Mlock_Limit;
+			out_param += " " + setting.Mlock_Limit;
 		    }
 		}}
 
@@ -2694,11 +2839,11 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 	}
 	else
 	{
-	    { RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-	    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
-	    if (add && i_Mlock_Off.Contains(change[i]))
+	    { RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+	    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+	    if (add && setting.Mlock_Off.Contains(change[i]))
 		out_mode += "-" + mstring(change[i]);
-	    else if (!add && i_Mlock_On.Contains(change[i]))
+	    else if (!add && setting.Mlock_On.Contains(change[i]))
 		out_mode += "+" + mstring(change[i]);
 	    }
 	}
@@ -2713,40 +2858,39 @@ void Chan_Stored_t::defaults()
     NFT("Chan_Stored_t::defaults");
 
     // Dont lock in here, we locked outside ...
-    i_Mlock_On.erase();
-    i_Mlock_Off.erase();
-    i_Mlock_Key.erase();
-    l_Mlock_On.erase();
-    l_Mlock_Off.erase();
-    i_Mlock_Limit = 0;
+    setting.Mlock_On.erase();
+    setting.Mlock_Off.erase();
+    setting.Mlock_Key.erase();
+    lock.Mlock_On.erase();
+    lock.Mlock_Off.erase();
+    setting.Mlock_Limit = 0;
     
-    i_Bantime = Parent->chanserv.DEF_Bantime();
-    l_Bantime = false;
-    i_Parttime = Parent->chanserv.DEF_Parttime();
-    l_Parttime = false;
-    i_Keeptopic = Parent->chanserv.DEF_Keeptopic();
-    l_Keeptopic = false;
-    i_Topiclock = Parent->chanserv.DEF_Topiclock();
-    l_Topiclock = false;
-    i_Private = Parent->chanserv.DEF_Private();
-    l_Private = false;
-    i_Secureops = Parent->chanserv.DEF_Secureops();
-    l_Secureops = false;
-    i_Secure = Parent->chanserv.DEF_Secure();
-    l_Secure = false;
-    i_NoExpire = Parent->chanserv.DEF_NoExpire();
-    l_NoExpire = false;
-    i_Anarchy = Parent->chanserv.DEF_Anarchy();
-    l_Anarchy = false;
-    i_KickOnBan = Parent->chanserv.DEF_KickOnBan();
-    l_KickOnBan = false;
-    i_Restricted = Parent->chanserv.DEF_Restricted();
-    l_Restricted = false;
-    i_Join = Parent->chanserv.DEF_Join();
-    l_Join = false;
-    i_Revenge = Parent->chanserv.DEF_Revenge();
-    l_Revenge = false;
-    i_Forbidden = false;
+    setting.Bantime = Parent->chanserv.DEF_Bantime();
+    lock.Bantime = false;
+    setting.Parttime = Parent->chanserv.DEF_Parttime();
+    lock.Parttime = false;
+    setting.Keeptopic = Parent->chanserv.DEF_Keeptopic();
+    lock.Keeptopic = false;
+    setting.Topiclock = Parent->chanserv.DEF_Topiclock();
+    lock.Topiclock = false;
+    setting.Private = Parent->chanserv.DEF_Private();
+    lock.Private = false;
+    setting.Secureops = Parent->chanserv.DEF_Secureops();
+    lock.Secureops = false;
+    setting.Secure = Parent->chanserv.DEF_Secure();
+    lock.Secure = false;
+    setting.Anarchy = Parent->chanserv.DEF_Anarchy();
+    lock.Anarchy = false;
+    setting.KickOnBan = Parent->chanserv.DEF_KickOnBan();
+    lock.KickOnBan = false;
+    setting.Restricted = Parent->chanserv.DEF_Restricted();
+    lock.Restricted = false;
+    setting.Join = Parent->chanserv.DEF_Join();
+    lock.Join = false;
+    setting.Revenge = Parent->chanserv.DEF_Revenge();
+    lock.Revenge = false;
+    setting.Forbidden = false;
+    setting.NoExpire = Parent->chanserv.DEF_NoExpire();
 
     mstring defaulted = Parent->chanserv.DEF_MLock();
     mstring locked = Parent->chanserv.LCK_MLock();
@@ -2767,17 +2911,17 @@ void Chan_Stored_t::defaults()
 	{
 	    if (add)
 	    {
-		if (!i_Mlock_On.Contains(defaulted[i]))
-		    i_Mlock_On += defaulted[i];
-		if (i_Mlock_Off.Contains(defaulted[i]))
-		    i_Mlock_Off.Remove(defaulted[i]);
+		if (!setting.Mlock_On.Contains(defaulted[i]))
+		    setting.Mlock_On += defaulted[i];
+		if (setting.Mlock_Off.Contains(defaulted[i]))
+		    setting.Mlock_Off.Remove(defaulted[i]);
 	    }
 	    else
 	    {
-		if (!i_Mlock_Off.Contains(defaulted[i]))
-		    i_Mlock_Off += defaulted[i];
-		if (i_Mlock_On.Contains(defaulted[i]))
-		    i_Mlock_On.Remove(defaulted[i]);
+		if (!setting.Mlock_Off.Contains(defaulted[i]))
+		    setting.Mlock_Off += defaulted[i];
+		if (setting.Mlock_On.Contains(defaulted[i]))
+		    setting.Mlock_On.Remove(defaulted[i]);
 	    }
 	}
     }
@@ -2797,17 +2941,17 @@ void Chan_Stored_t::defaults()
 	{
 	    if (add)
 	    {
-		if (!i_Mlock_On.Contains(locked[i]))
-		    i_Mlock_On += locked[i];
-		if (i_Mlock_Off.Contains(locked[i]))
-		    i_Mlock_Off.Remove(locked[i]);
+		if (!setting.Mlock_On.Contains(locked[i]))
+		    setting.Mlock_On += locked[i];
+		if (setting.Mlock_Off.Contains(locked[i]))
+		    setting.Mlock_Off.Remove(locked[i]);
 	    }
 	    else
 	    {
-		if (!i_Mlock_Off.Contains(locked[i]))
-		    i_Mlock_Off += locked[i];
-		if (i_Mlock_On.Contains(locked[i]))
-		    i_Mlock_On.Remove(locked[i]);
+		if (!setting.Mlock_Off.Contains(locked[i]))
+		    setting.Mlock_Off += locked[i];
+		if (setting.Mlock_On.Contains(locked[i]))
+		    setting.Mlock_On.Remove(locked[i]);
 	    }
 	}
     }
@@ -2836,8 +2980,8 @@ bool Chan_Stored_t::DoRevenge(const mstring& i_type, const mstring& target,
     if (GetAccess(source) > GetAccess(target))
     {
 	mstring tmp;
-	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Revenge"));
-	tmp = i_Revenge;
+	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
+	tmp = setting.Revenge;
 	}
 	if (tmp == "REVERSE")
 	{
@@ -2959,8 +3103,8 @@ Chan_Stored_t::Chan_Stored_t(const mstring& name)
     FT("Chan_Stored_t::Chan_Stored_t", (name));
 
     defaults();
-    i_Mlock_On = "nits";
-    i_Forbidden = true;
+    setting.Mlock_On = "nits";
+    setting.Forbidden = true;
     DumpE();
 }
 
@@ -2978,45 +3122,44 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_URL=in.i_URL;
     i_Comment=in.i_Comment;
 
-    i_Mlock_On=in.i_Mlock_On;
-    l_Mlock_On=in.l_Mlock_On;
-    i_Mlock_Off=in.i_Mlock_Off;
-    l_Mlock_Off=in.l_Mlock_Off;
-    i_Mlock_Key=in.i_Mlock_Key;
-    i_Mlock_Limit=in.i_Mlock_Limit;
+    setting.Mlock_On=in.setting.Mlock_On;
+    lock.Mlock_On=in.lock.Mlock_On;
+    setting.Mlock_Off=in.setting.Mlock_Off;
+    lock.Mlock_Off=in.lock.Mlock_Off;
+    setting.Mlock_Key=in.setting.Mlock_Key;
+    setting.Mlock_Limit=in.setting.Mlock_Limit;
     i_Topic=in.i_Topic;
     i_Topic_Setter=in.i_Topic_Setter;
     i_Topic_Set_Time=in.i_Topic_Set_Time;
 
-    i_Bantime=in.i_Bantime;
-    l_Bantime=in.l_Bantime;
-    i_Parttime=in.i_Parttime;
-    l_Parttime=in.l_Parttime;
-    i_Keeptopic=in.i_Keeptopic;
-    l_Keeptopic=in.l_Keeptopic;
-    i_Topiclock=in.i_Topiclock;
-    l_Topiclock=in.l_Topiclock;
-    i_Private=in.i_Private;
-    l_Private=in.l_Private;
-    i_Secureops=in.i_Secureops;
-    l_Secureops=in.l_Secureops;
-    i_Secure=in.i_Secure;
-    l_Secure=in.l_Secure;
-    i_NoExpire=in.i_NoExpire;
-    l_NoExpire=in.l_NoExpire;
-    i_Anarchy=in.i_Anarchy;
-    l_Anarchy=in.l_Anarchy;
-    i_KickOnBan=in.i_KickOnBan;
-    l_KickOnBan=in.l_KickOnBan;
-    i_Restricted=in.i_Restricted;
-    l_Restricted=in.l_Restricted;
-    i_Join=in.i_Join;
-    l_Join=in.l_Join;
-    i_Revenge=in.i_Revenge;
-    l_Revenge=in.l_Revenge;
+    setting.Bantime=in.setting.Bantime;
+    lock.Bantime=in.lock.Bantime;
+    setting.Parttime=in.setting.Parttime;
+    lock.Parttime=in.lock.Parttime;
+    setting.Keeptopic=in.setting.Keeptopic;
+    lock.Keeptopic=in.lock.Keeptopic;
+    setting.Topiclock=in.setting.Topiclock;
+    lock.Topiclock=in.lock.Topiclock;
+    setting.Private=in.setting.Private;
+    lock.Private=in.lock.Private;
+    setting.Secureops=in.setting.Secureops;
+    lock.Secureops=in.lock.Secureops;
+    setting.Secure=in.setting.Secure;
+    lock.Secure=in.lock.Secure;
+    setting.NoExpire=in.setting.NoExpire;
+    setting.Anarchy=in.setting.Anarchy;
+    lock.Anarchy=in.lock.Anarchy;
+    setting.KickOnBan=in.setting.KickOnBan;
+    lock.KickOnBan=in.lock.KickOnBan;
+    setting.Restricted=in.setting.Restricted;
+    lock.Restricted=in.lock.Restricted;
+    setting.Join=in.setting.Join;
+    lock.Join=in.lock.Join;
+    setting.Revenge=in.setting.Revenge;
+    lock.Revenge=in.lock.Revenge;
     i_Suspend_By=in.i_Suspend_By;
     i_Suspend_Time=in.i_Suspend_Time;
-    i_Forbidden=in.i_Forbidden;
+    setting.Forbidden=in.setting.Forbidden;
 
 //  entlist_val_cui<long> j;
     set<entlist_val_t<long> >::const_iterator j;
@@ -3112,7 +3255,7 @@ void Chan_Stored_t::CoFounder(const mstring& in)
 {
     FT("Chan_Stored_t::CoFounder", (in));
 
-    if (!Parent->nickserv.IsStored(in))
+    if (in.length() && !Parent->nickserv.IsStored(in))
     {
 	LOG(LM_WARNING, "ERROR/BADSET", (
 		in, "COFOUNDER", i_Name));
@@ -3278,33 +3421,33 @@ void Chan_Stored_t::UnSuspend()
 mstring Chan_Stored_t::Mlock_Off() const
 {
     NFT("Chan_Stored_t::Mlock_Off");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-    RET(i_Mlock_Off);
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+    RET(setting.Mlock_Off);
 }
 
 mstring Chan_Stored_t::Mlock_On() const
 {
     NFT("Chan_Stored_t::Mlock_On");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
-    RET(i_Mlock_On);
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+    RET(setting.Mlock_On);
 }
 
 mstring Chan_Stored_t::Mlock() const
 {
     NFT("Chan_Stored_t::Mlock");
     mstring Result;
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
-    RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-    RLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
-    if(!i_Mlock_On.empty() || !i_Mlock_Key.empty() || i_Mlock_Limit)
-	Result << "+" << i_Mlock_On;
-    if(!i_Mlock_Key.empty())
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+    RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+    RLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+    if(!setting.Mlock_On.empty() || !setting.Mlock_Key.empty() || setting.Mlock_Limit)
+	Result << "+" << setting.Mlock_On;
+    if(!setting.Mlock_Key.empty())
 	Result << "k";
-    if(i_Mlock_Limit)
+    if(setting.Mlock_Limit)
 	Result << "l";
-    if(!i_Mlock_Off.empty())
-	Result << "-" << i_Mlock_Off;
+    if(!setting.Mlock_Off.empty())
+	Result << "-" << setting.Mlock_Off;
     RET(Result);
 }
 
@@ -3313,18 +3456,18 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 {
     FT("Chan_Stored_t::Mlock", (source, mode));
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
-    WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-    WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
-    MCB(i_Mlock_On);
-    CB(1, i_Mlock_Off);
-    CB(2, i_Mlock_Key);
-    CB(3, i_Mlock_Limit);
-    i_Mlock_On.erase();
-    i_Mlock_Off.erase();
-    i_Mlock_Key.erase();
-    i_Mlock_Limit = 0;
+    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+    WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+    WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+    MCB(setting.Mlock_On);
+    CB(1, setting.Mlock_Off);
+    CB(2, setting.Mlock_Key);
+    CB(3, setting.Mlock_Limit);
+    setting.Mlock_On.erase();
+    setting.Mlock_Off.erase();
+    setting.Mlock_Key.erase();
+    setting.Mlock_Limit = 0;
     vector<mstring> retval;
     mstring output, change(mode.ExtractWord(1, ": "));
     unsigned int i;
@@ -3376,7 +3519,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		    }
 		    else
 		    {
-			i_Mlock_Key = mode.ExtractWord(fwdargs, ": ");
+			setting.Mlock_Key = mode.ExtractWord(fwdargs, ": ");
 		    }
 		    fwdargs++;
 		}
@@ -3408,7 +3551,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		    }
 		    else
 		    {
-			i_Mlock_Limit = atol(mode.ExtractWord(fwdargs, ": ").c_str());
+			setting.Mlock_Limit = atol(mode.ExtractWord(fwdargs, ": ").c_str());
 		    }
 		    fwdargs++;
 		}
@@ -3436,10 +3579,10 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	    {
 		if (!Parent->server.proto.ChanModeArg().Contains(change[i]))
 		{
-		    if (!i_Mlock_On.Contains(change[i]))
-			i_Mlock_On += change[i];
-		    if (i_Mlock_Off.Contains(change[i]))
-			i_Mlock_Off.Remove(change[i]);
+		    if (!setting.Mlock_On.Contains(change[i]))
+			setting.Mlock_On += change[i];
+		    if (setting.Mlock_Off.Contains(change[i]))
+			setting.Mlock_Off.Remove(change[i]);
 		}
 	    }
 	    else
@@ -3448,19 +3591,19 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		if (!Parent->server.proto.ChanModeArg().Contains(change[i]) ||
 		    ((change[i]=='k' && !ignorek) || (change[i]=='l' && !ignorel)))
 		{
-		    if (!i_Mlock_Off.Contains(change[i]))
-			i_Mlock_Off += change[i];
-		    if (i_Mlock_On.Contains(change[i]))
-			i_Mlock_On.Remove(change[i]);
+		    if (!setting.Mlock_Off.Contains(change[i]))
+			setting.Mlock_Off += change[i];
+		    if (setting.Mlock_On.Contains(change[i]))
+			setting.Mlock_On.Remove(change[i]);
 		}
 	    }
 	}
     }
 
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_Off"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
+    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
     mstring locked(Parent->chanserv.LCK_MLock() +
-	"+" + l_Mlock_On + "-" + l_Mlock_Off);
+	"+" + lock.Mlock_On + "-" + lock.Mlock_Off);
     mstring override_on;
     mstring override_off;
     mstring forced_on;
@@ -3482,37 +3625,37 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	    {
 		if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
 		{
-		    if (!i_Mlock_On.Contains(locked[i]))
+		    if (!setting.Mlock_On.Contains(locked[i]))
 		    {
 			forced_on += locked[i];
-			i_Mlock_On += locked[i];
+			setting.Mlock_On += locked[i];
 		    }
-		    if (i_Mlock_Off.Contains(locked[i]))
+		    if (setting.Mlock_Off.Contains(locked[i]))
 		    {
 			override_off += locked[i];
-			i_Mlock_Off.Remove(locked[i]);
+			setting.Mlock_Off.Remove(locked[i]);
 		    }
 		}
 	    }
 	    else
 	    {
 		if (locked[i] == 'k')
-		    i_Mlock_Key.erase();
+		    setting.Mlock_Key.erase();
 		else if (locked[i] == 'l')
-		    i_Mlock_Limit = 0;
+		    setting.Mlock_Limit = 0;
 
 		if (locked[i] == 'k' || locked[i] == 'l' ||
 		    !Parent->server.proto.ChanModeArg().Contains(locked[i]))
 		{
-		    if (!i_Mlock_Off.Contains(locked[i]))
+		    if (!setting.Mlock_Off.Contains(locked[i]))
 		    {
 			forced_off += locked[i];
-			i_Mlock_Off += locked[i];
+			setting.Mlock_Off += locked[i];
 		    }
-		    if (i_Mlock_On.Contains(locked[i]))
+		    if (setting.Mlock_On.Contains(locked[i]))
 		    {
 			override_on += locked[i];
-			i_Mlock_On.Remove(locked[i]);
+			setting.Mlock_On.Remove(locked[i]);
 		    }
 		}
 	    }
@@ -3542,17 +3685,17 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
     }
     if (!output2.empty())
 	retval.push_back(output2);
-    if (!i_Mlock_On.empty() || !i_Mlock_Key.empty() || i_Mlock_Limit || !i_Mlock_Off.empty())
+    if (!setting.Mlock_On.empty() || !setting.Mlock_Key.empty() || setting.Mlock_Limit || !setting.Mlock_Off.empty())
     {
 	mstring modes;
-	if (!i_Mlock_On.empty() || !i_Mlock_Key.empty() || i_Mlock_Limit)
-	    modes << "+" << i_Mlock_On;
-	if (!i_Mlock_Key.empty())
+	if (!setting.Mlock_On.empty() || !setting.Mlock_Key.empty() || setting.Mlock_Limit)
+	    modes << "+" << setting.Mlock_On;
+	if (!setting.Mlock_Key.empty())
 	    modes << "k";
-	if (i_Mlock_Limit)
+	if (setting.Mlock_Limit)
 	    modes << "l";
-	if (!i_Mlock_Off.empty())
-	    modes << "-" << i_Mlock_Off;
+	if (!setting.Mlock_Off.empty())
+	    modes << "-" << setting.Mlock_Off;
 
 	if (Parent->nickserv.IsLive(source))
 	{
@@ -3561,10 +3704,10 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		Parent->getMessage("CS_SET/MLOCK"), i_Name, modes));
 	}
 
-	if (!i_Mlock_Key.empty())
-	    modes << " " << i_Mlock_Key;
-	if (i_Mlock_Limit)
-	    modes << " " << i_Mlock_Limit;
+	if (!setting.Mlock_Key.empty())
+	    modes << " " << setting.Mlock_Key;
+	if (setting.Mlock_Limit)
+	    modes << " " << setting.Mlock_Limit;
 
 	output.erase();
 	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_SET"),
@@ -3576,35 +3719,35 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	    Chan_Live_t clive = Parent->chanserv.GetLive(i_Name);
 	    mstring modes_param;
 	    modes = "+";
-	    for (i=0; i<i_Mlock_On.size(); i++)
+	    for (i=0; i<setting.Mlock_On.size(); i++)
 	    {
-		if (!clive.HasMode(i_Mlock_On[i]))
+		if (!clive.HasMode(setting.Mlock_On[i]))
 		{
-		    modes << i_Mlock_On[i];
+		    modes << setting.Mlock_On[i];
 		}
 	    }
 	    modes << "-";
-	    for (i=0; i<i_Mlock_Off.size(); i++)
+	    for (i=0; i<setting.Mlock_Off.size(); i++)
 	    {
-		if (i_Mlock_Off[i] == 'k' && !clive.Key().empty())
+		if (setting.Mlock_Off[i] == 'k' && !clive.Key().empty())
 		{
 		    modes << "k";
 		    modes_param << " " << clive.Key();
 		}
-		else if (clive.HasMode(i_Mlock_Off[i]))
+		else if (clive.HasMode(setting.Mlock_Off[i]))
 		{
-		    modes << i_Mlock_Off[i];
+		    modes << setting.Mlock_Off[i];
 		}
 	    }
-	    if (!i_Mlock_Key.empty())
+	    if (!setting.Mlock_Key.empty())
 	    {
 		modes << "+k";
-		modes_param << " " << i_Mlock_Key;
+		modes_param << " " << setting.Mlock_Key;
 	    }
-	    if (i_Mlock_Limit)
+	    if (setting.Mlock_Limit)
 	    {
 		modes << "+l";
-		modes_param << " " << i_Mlock_Limit;
+		modes_param << " " << setting.Mlock_Limit;
 	    }
 	    if (modes.length() > 2 && Parent->chanserv.IsLive(i_Name))
 		Parent->chanserv.GetLive(i_Name).SendMode(modes + modes_param);
@@ -3624,10 +3767,10 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		Parent->getMessage("CS_SET/MLOCK"), i_Name));
 	}
     }
-    CE(1, i_Mlock_Off);
-    CE(2, i_Mlock_Key);
-    CE(3, i_Mlock_Limit);
-    MCE(i_Mlock_On);
+    CE(1, setting.Mlock_Off);
+    CE(2, setting.Mlock_Key);
+    CE(3, setting.Mlock_Limit);
+    MCE(setting.Mlock_On);
     NRET(vector<mstring>, retval);
 }
 
@@ -3636,10 +3779,10 @@ mstring Chan_Stored_t::L_Mlock() const
 {
     NFT("Chan_Stored_t::L_Mlock");
     mstring Result;
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_Off"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
-    mstring mode_on(l_Mlock_On);
-    mstring mode_off(l_Mlock_Off);
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
+    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
+    mstring mode_on(lock.Mlock_On);
+    mstring mode_off(lock.Mlock_Off);
     mstring locked(Parent->chanserv.LCK_MLock());
     bool add = true;
     unsigned int i;
@@ -3691,12 +3834,12 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 {
     FT("Chan_Stored_t::L_Mlock", (source, mode));
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_Off"));
-    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "l_Mlock_On"));
-    MCB(l_Mlock_Off);
-    CB(1, l_Mlock_On);
-    l_Mlock_On.erase();
-    l_Mlock_Off.erase();
+    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
+    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
+    MCB(lock.Mlock_Off);
+    CB(1, lock.Mlock_On);
+    lock.Mlock_On.erase();
+    lock.Mlock_Off.erase();
     vector<mstring> retval;
     mstring output, change(mode.ExtractWord(1, ": "));
     bool add = true;
@@ -3719,10 +3862,10 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	    {
 		if (!Parent->server.proto.ChanModeArg().Contains(change[i]))
 		{
-		    if (!l_Mlock_On.Contains(change[i]))
-			l_Mlock_On += change[i];
-		    if (l_Mlock_Off.Contains(change[i]))
-			l_Mlock_Off.Remove(change[i]);
+		    if (!lock.Mlock_On.Contains(change[i]))
+			lock.Mlock_On += change[i];
+		    if (lock.Mlock_Off.Contains(change[i]))
+			lock.Mlock_Off.Remove(change[i]);
 		}
 	    }
 	    else
@@ -3730,10 +3873,10 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 		if (change[i] == 'l' || change[i] == 'k' ||
 		    !Parent->server.proto.ChanModeArg().Contains(change[i]))
 		{
-		    if (!l_Mlock_Off.Contains(change[i]))
-			l_Mlock_Off += change[i];
-		    if (l_Mlock_On.Contains(change[i]))
-			l_Mlock_On.Remove(change[i]);
+		    if (!lock.Mlock_Off.Contains(change[i]))
+			lock.Mlock_Off += change[i];
+		    if (lock.Mlock_On.Contains(change[i]))
+			lock.Mlock_On.Remove(change[i]);
 		}
 	    }
 	}
@@ -3759,10 +3902,10 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	    {
 		if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
 		{
-		    if (l_Mlock_Off.Contains(locked[i]))
+		    if (lock.Mlock_Off.Contains(locked[i]))
 		    {
 			override_off += locked[i];
-			l_Mlock_Off.Remove(locked[i]);
+			lock.Mlock_Off.Remove(locked[i]);
 		    }
 		}
 	    }
@@ -3771,56 +3914,56 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 		if (locked[i] == 'l' || locked[i] == 'k' ||
 		    !Parent->server.proto.ChanModeArg().Contains(locked[i]))
 		{
-		    if (l_Mlock_On.Contains(locked[i]))
+		    if (lock.Mlock_On.Contains(locked[i]))
 		    {
 			override_on += locked[i];
-			l_Mlock_On.Remove(locked[i]);
+			lock.Mlock_On.Remove(locked[i]);
 		    }
 		}
 	    }
 	}
     }
 
-    { WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
-    WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
-    CB(2, i_Mlock_Off);
-    CB(3, i_Mlock_On);
+    { WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+    WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+    CB(2, setting.Mlock_Off);
+    CB(3, setting.Mlock_On);
     // Have to change the REAL mlock
-    for (i=0; i<l_Mlock_On.size(); i++)
+    for (i=0; i<lock.Mlock_On.size(); i++)
     {
-	if (!i_Mlock_On.Contains(l_Mlock_On[i]))
+	if (!setting.Mlock_On.Contains(lock.Mlock_On[i]))
 	{
-	    i_Mlock_On += l_Mlock_On[i];
+	    setting.Mlock_On += lock.Mlock_On[i];
 	}
-	if (i_Mlock_Off.Contains(l_Mlock_On[i]))
+	if (setting.Mlock_Off.Contains(lock.Mlock_On[i]))
 	{
-	    i_Mlock_Off.Remove(l_Mlock_On[i]);
+	    setting.Mlock_Off.Remove(lock.Mlock_On[i]);
 	}
     }
 
-    for (i=0; i<l_Mlock_Off.size(); i++)
+    for (i=0; i<lock.Mlock_Off.size(); i++)
     {
-	if (l_Mlock_Off[i] == 'k')
+	if (lock.Mlock_Off[i] == 'k')
 	{
-	    WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-	    i_Mlock_Key.erase();
+	    WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+	    setting.Mlock_Key.erase();
 	}
-	else if (l_Mlock_Off[i] == 'l')
+	else if (lock.Mlock_Off[i] == 'l')
 	{
-	    WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
-	    i_Mlock_Limit = 0;
+	    WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+	    setting.Mlock_Limit = 0;
 	}
-	if (!i_Mlock_Off.Contains(l_Mlock_Off[i]))
+	if (!setting.Mlock_Off.Contains(lock.Mlock_Off[i]))
 	{
-	    i_Mlock_Off += l_Mlock_Off[i];
+	    setting.Mlock_Off += lock.Mlock_Off[i];
 	}
-	if (i_Mlock_On.Contains(l_Mlock_Off[i]))
+	if (setting.Mlock_On.Contains(lock.Mlock_Off[i]))
 	{
-	    i_Mlock_On.Remove(l_Mlock_Off[i]);
+	    setting.Mlock_On.Remove(lock.Mlock_Off[i]);
 	}
     }
-    CE(2, i_Mlock_Off);
-    CE(3, i_Mlock_Off);
+    CE(2, setting.Mlock_Off);
+    CE(3, setting.Mlock_Off);
     }
 
     if (!override_on.empty() || !override_off.empty())
@@ -3831,23 +3974,23 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	     (!override_off.empty() ? ("-" + override_off) : mstring(""))));
 	retval.push_back(output);
     }
-    if (!l_Mlock_On.empty() || !l_Mlock_Off.empty())
+    if (!lock.Mlock_On.empty() || !lock.Mlock_Off.empty())
     {
 	output.erase();
 	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_LOCK"),
 	    mVarArray(i_Name.c_str(),
-	    ((!l_Mlock_On.empty() ? ("+" + l_Mlock_On )  : mstring("")) +
-	     (!l_Mlock_Off.empty() ? ("-" + l_Mlock_Off)  : mstring("")))));
+	    ((!lock.Mlock_On.empty() ? ("+" + lock.Mlock_On )  : mstring("")) +
+	     (!lock.Mlock_Off.empty() ? ("-" + lock.Mlock_Off)  : mstring("")))));
 	retval.push_back(output);
 	if (Parent->chanserv.IsLive(i_Name))
 	    Parent->chanserv.GetLive(i_Name).SendMode(
-		"+" + i_Mlock_On + "-" + i_Mlock_Off);
+		"+" + setting.Mlock_On + "-" + setting.Mlock_Off);
 
 	LOG(LM_DEBUG, "CHANSERV/LOCK", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("CS_SET/MLOCK"), i_Name,
-		((!l_Mlock_On.empty() ? ("+" + l_Mlock_On )  : mstring("")) +
-		(!l_Mlock_Off.empty() ? ("-" + l_Mlock_Off)  : mstring("")))));
+		((!lock.Mlock_On.empty() ? ("+" + lock.Mlock_On )  : mstring("")) +
+		(!lock.Mlock_Off.empty() ? ("-" + lock.Mlock_Off)  : mstring("")))));
     }
     else
     {
@@ -3859,23 +4002,23 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("CS_SET/MLOCK"), i_Name));
     }
-    CE(1, l_Mlock_On);
-    MCE(l_Mlock_Off);
+    CE(1, lock.Mlock_On);
+    MCE(lock.Mlock_Off);
     NRET(vector<mstring>, retval);
 }
 
 mstring Chan_Stored_t::Mlock_Key() const
 {
     NFT("Chan_Stored_t::Mlock_Key");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
-    RET(i_Mlock_Key);
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+    RET(setting.Mlock_Key);
 }
 
 unsigned int Chan_Stored_t::Mlock_Limit() const
 {
     NFT("Chan_Stored_t::Mlock_Limit");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
-    RET(i_Mlock_Limit);
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+    RET(setting.Mlock_Limit);
 }
 
 mstring Chan_Stored_t::Last_Topic() const
@@ -3904,10 +4047,10 @@ void Chan_Stored_t::Bantime(const unsigned long in)
     FT("Chan_Stored_t::Bantime", (in));
     if (!L_Bantime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Bantime"));
-	MCB(i_Bantime);
-	i_Bantime = in;
-	MCE(i_Bantime);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Bantime"));
+	MCB(setting.Bantime);
+	setting.Bantime = in;
+	MCE(setting.Bantime);
     }
 }
 
@@ -3917,8 +4060,8 @@ unsigned long Chan_Stored_t::Bantime() const
     NFT("Chan_Stored_t::Bantime");
     if (!Parent->chanserv.LCK_Bantime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Bantime"));
-	RET(i_Bantime);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Bantime"));
+	RET(setting.Bantime);
     }
     RET(Parent->chanserv.DEF_Bantime());
 }
@@ -3929,10 +4072,10 @@ void Chan_Stored_t::L_Bantime(const bool in)
     FT("Chan_Stored_t::L_Bantime", (in));
     if (!Parent->chanserv.LCK_Bantime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Bantime"));
-	MCB(l_Bantime);
-	l_Bantime = in;
-	MCE(l_Bantime);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Bantime"));
+	MCB(lock.Bantime);
+	lock.Bantime = in;
+	MCE(lock.Bantime);
     }
 }
 
@@ -3942,8 +4085,8 @@ bool Chan_Stored_t::L_Bantime() const
     NFT("Chan_Stored_t::L_Bantime");
     if (!Parent->chanserv.LCK_Bantime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Bantime"));
-	RET(l_Bantime);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Bantime"));
+	RET(lock.Bantime);
     }
     RET(true);
 }
@@ -3954,10 +4097,10 @@ void Chan_Stored_t::Parttime(const unsigned long in)
     FT("Chan_Stored_t::Parttime", (in));
     if (!L_Parttime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Parttime"));
-	MCB(i_Parttime);
-	i_Parttime = in;
-	MCE(i_Parttime);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Parttime"));
+	MCB(setting.Parttime);
+	setting.Parttime = in;
+	MCE(setting.Parttime);
     }
 }
 
@@ -3967,8 +4110,8 @@ unsigned long Chan_Stored_t::Parttime() const
     NFT("Chan_Stored_t::Parttime");
     if (!Parent->chanserv.LCK_Parttime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Parttime"));
-	RET(i_Parttime);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Parttime"));
+	RET(setting.Parttime);
     }
     RET(Parent->chanserv.DEF_Parttime());
 }
@@ -3979,10 +4122,10 @@ void Chan_Stored_t::L_Parttime(const bool in)
     FT("Chan_Stored_t::L_Parttime", (in));
     if (!Parent->chanserv.LCK_Parttime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Parttime"));
-	MCB(l_Parttime);
-	l_Parttime = in;
-	MCE(l_Parttime);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Parttime"));
+	MCB(lock.Parttime);
+	lock.Parttime = in;
+	MCE(lock.Parttime);
     }
 }
 
@@ -3992,8 +4135,8 @@ bool Chan_Stored_t::L_Parttime() const
     NFT("Chan_Stored_t::L_Parttime");
     if (!Parent->chanserv.LCK_Parttime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Parttime"));
-	RET(l_Parttime);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Parttime"));
+	RET(lock.Parttime);
     }
     RET(true);
 }
@@ -4004,10 +4147,10 @@ void Chan_Stored_t::Keeptopic(const bool in)
     FT("Chan_Stored_t::Keeptopic", (in));
     if (!L_Keeptopic())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Keeptopic"));
-	MCB(i_Keeptopic);
-	i_Keeptopic = in;
-	MCE(i_Keeptopic);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Keeptopic"));
+	MCB(setting.Keeptopic);
+	setting.Keeptopic = in;
+	MCE(setting.Keeptopic);
     }
 }
 
@@ -4017,8 +4160,8 @@ bool Chan_Stored_t::Keeptopic() const
     NFT("Chan_Stored_t::Keeptopic");
     if (!Parent->chanserv.LCK_Keeptopic())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Keeptopic"));
-	RET(i_Keeptopic);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Keeptopic"));
+	RET(setting.Keeptopic);
     }
     RET(Parent->chanserv.DEF_Keeptopic());
 }
@@ -4029,10 +4172,10 @@ void Chan_Stored_t::L_Keeptopic(const bool in)
     FT("Chan_Stored_t::L_Keeptopic", (in));
     if (!Parent->chanserv.LCK_Keeptopic())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Keeptopic"));
-	MCB(l_Keeptopic);
-	l_Keeptopic = in;
-	MCE(l_Keeptopic);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Keeptopic"));
+	MCB(lock.Keeptopic);
+	lock.Keeptopic = in;
+	MCE(lock.Keeptopic);
     }
 }
 
@@ -4042,8 +4185,8 @@ bool Chan_Stored_t::L_Keeptopic() const
     NFT("Chan_Stored_t::L_Keeptopic");
     if (!Parent->chanserv.LCK_Keeptopic())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Keeptopic"));
-	RET(l_Keeptopic);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Keeptopic"));
+	RET(lock.Keeptopic);
     }
     RET(true);
 }
@@ -4054,10 +4197,10 @@ void Chan_Stored_t::Topiclock(const bool in)
     FT("Chan_Stored_t::Topiclock", (in));
     if (!L_Topiclock())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topiclock"));
-	MCB(i_Topiclock);
-	i_Topiclock = in;
-	MCE(i_Topiclock);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Topiclock"));
+	MCB(setting.Topiclock);
+	setting.Topiclock = in;
+	MCE(setting.Topiclock);
     }
 }
 
@@ -4067,8 +4210,8 @@ bool Chan_Stored_t::Topiclock() const
     NFT("Chan_Stored_t::Topiclock");
     if (!Parent->chanserv.LCK_Topiclock())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topiclock"));
-	RET(i_Topiclock);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Topiclock"));
+	RET(setting.Topiclock);
     }
     RET(Parent->chanserv.DEF_Topiclock());
 }
@@ -4079,10 +4222,10 @@ void Chan_Stored_t::L_Topiclock(const bool in)
     FT("Chan_Stored_t::L_Topiclock", (in));
     if (!Parent->chanserv.LCK_Topiclock())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Topiclock"));
-	MCB(l_Topiclock);
-	l_Topiclock = in;
-	MCE(l_Topiclock);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Topiclock"));
+	MCB(lock.Topiclock);
+	lock.Topiclock = in;
+	MCE(lock.Topiclock);
     }
 }
 
@@ -4092,8 +4235,8 @@ bool Chan_Stored_t::L_Topiclock() const
     NFT("Chan_Stored_t::L_Topiclock");
     if (!Parent->chanserv.LCK_Topiclock())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Topiclock"));
-	RET(l_Topiclock);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Topiclock"));
+	RET(lock.Topiclock);
     }
     RET(true);
 }
@@ -4104,10 +4247,10 @@ void Chan_Stored_t::Private(const bool in)
     FT("Chan_Stored_t::Private", (in));
     if (!L_Private())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Private"));
-	MCB(i_Private);
-	i_Private = in;
-	MCE(i_Private);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Private"));
+	MCB(setting.Private);
+	setting.Private = in;
+	MCE(setting.Private);
     }
 }
 
@@ -4117,8 +4260,8 @@ bool Chan_Stored_t::Private() const
     NFT("Chan_Stored_t::Private");
     if (!Parent->chanserv.LCK_Private())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Private"));
-	RET(i_Private);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Private"));
+	RET(setting.Private);
     }
     RET(Parent->chanserv.DEF_Private());
 }
@@ -4129,10 +4272,10 @@ void Chan_Stored_t::L_Private(const bool in)
     FT("Chan_Stored_t::L_Private", (in));
     if (!Parent->chanserv.LCK_Private())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Private"));
-	MCB(l_Private);
-	l_Private = in;
-	MCE(l_Private);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Private"));
+	MCB(lock.Private);
+	lock.Private = in;
+	MCE(lock.Private);
     }
 }
 
@@ -4142,8 +4285,8 @@ bool Chan_Stored_t::L_Private() const
     NFT("Chan_Stored_t::L_Private");
     if (!Parent->chanserv.LCK_Private())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Private"));
-	RET(l_Private);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Private"));
+	RET(lock.Private);
     }
     RET(true);
 }
@@ -4154,10 +4297,10 @@ void Chan_Stored_t::Secureops(const bool in)
     FT("Chan_Stored_t::Secureops", (in));
     if (!L_Secureops())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Secureops"));
-	MCB(i_Secureops);
-	i_Secureops = in;
-	MCE(i_Secureops);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secureops"));
+	MCB(setting.Secureops);
+	setting.Secureops = in;
+	MCE(setting.Secureops);
     }
 }
 
@@ -4167,8 +4310,8 @@ bool Chan_Stored_t::Secureops() const
     NFT("Chan_Stored_t::Secureops");
     if (!Parent->chanserv.LCK_Secureops())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Secureops"));
-	RET(i_Secureops);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secureops"));
+	RET(setting.Secureops);
     }
     RET(Parent->chanserv.DEF_Secureops());
 }
@@ -4179,10 +4322,10 @@ void Chan_Stored_t::L_Secureops(const bool in)
     FT("Chan_Stored_t::L_Secureops", (in));
     if (!Parent->chanserv.LCK_Secureops())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Secureops"));
-	MCB(l_Secureops);
-	l_Secureops = in;
-	MCE(l_Secureops);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secureops"));
+	MCB(lock.Secureops);
+	lock.Secureops = in;
+	MCE(lock.Secureops);
     }
 }
 
@@ -4192,8 +4335,8 @@ bool Chan_Stored_t::L_Secureops() const
     NFT("Chan_Stored_t::L_Secureops");
     if (!Parent->chanserv.LCK_Secureops())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Secureops"));
-	RET(l_Secureops);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secureops"));
+	RET(lock.Secureops);
     }
     RET(true);
 }
@@ -4204,10 +4347,10 @@ void Chan_Stored_t::Secure(const bool in)
     FT("Chan_Stored_t::Secure", (in));
     if (!L_Secure())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Secure"));
-	MCB(i_Secure);
-	i_Secure = in;
-	MCE(i_Secure);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secure"));
+	MCB(setting.Secure);
+	setting.Secure = in;
+	MCE(setting.Secure);
     }
 }
 
@@ -4217,8 +4360,8 @@ bool Chan_Stored_t::Secure() const
     NFT("Chan_Stored_t::Secure");
     if (!Parent->chanserv.LCK_Secure())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Secure"));
-	RET(i_Secure);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secure"));
+	RET(setting.Secure);
     }
     RET(Parent->chanserv.DEF_Secure());
 }
@@ -4229,10 +4372,10 @@ void Chan_Stored_t::L_Secure(const bool in)
     FT("Chan_Stored_t::L_Secure", (in));
     if (!Parent->chanserv.LCK_Secure())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Secure"));
-	MCB(l_Secure);
-	l_Secure = in;
-	MCE(l_Secure);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secure"));
+	MCB(lock.Secure);
+	lock.Secure = in;
+	MCE(lock.Secure);
     }
 }
 
@@ -4242,8 +4385,8 @@ bool Chan_Stored_t::L_Secure() const
     NFT("Chan_Stored_t::L_Secure");
     if (!Parent->chanserv.LCK_Secure())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Secure"));
-	RET(l_Secure);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secure"));
+	RET(lock.Secure);
     }
     RET(true);
 }
@@ -4252,12 +4395,12 @@ bool Chan_Stored_t::L_Secure() const
 void Chan_Stored_t::NoExpire(const bool in)
 {
     FT("Chan_Stored_t::NoExpire", (in));
-    if (!L_NoExpire())
+    if (!Parent->chanserv.LCK_NoExpire())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_NoExpire"));
-	MCB(i_NoExpire);
-	i_NoExpire = in;
-	MCE(i_NoExpire);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
+	MCB(setting.NoExpire);
+	setting.NoExpire = in;
+	MCE(setting.NoExpire);
     }
 }
 
@@ -4267,35 +4410,10 @@ bool Chan_Stored_t::NoExpire() const
     NFT("Chan_Stored_t::NoExpire");
     if (!Parent->chanserv.LCK_NoExpire())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_NoExpire"));
-	RET(i_NoExpire);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
+	RET(setting.NoExpire);
     }
     RET(Parent->chanserv.DEF_NoExpire());
-}
-
-
-void Chan_Stored_t::L_NoExpire(const bool in)
-{
-    FT("Chan_Stored_t::L_NoExpire", (in));
-    if (!Parent->chanserv.LCK_NoExpire())
-    {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_NoExpire"));
-	MCB(l_NoExpire);
-	l_NoExpire = in;
-	MCE(l_NoExpire);
-    }
-}
-
-
-bool Chan_Stored_t::L_NoExpire() const
-{
-    NFT("Chan_Stored_t::L_NoExpire");
-    if (!Parent->chanserv.LCK_NoExpire())
-    {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_NoExpire"));
-	RET(l_NoExpire);
-    }
-    RET(true);
 }
 
 
@@ -4304,10 +4422,10 @@ void Chan_Stored_t::Anarchy(const bool in)
     FT("Chan_Stored_t::Anarchy", (in));
     if (!L_Anarchy())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Anarchy"));
-	MCB(i_Anarchy);
-	i_Anarchy = in;
-	MCE(i_Anarchy);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Anarchy"));
+	MCB(setting.Anarchy);
+	setting.Anarchy = in;
+	MCE(setting.Anarchy);
     }
 }
 
@@ -4317,8 +4435,8 @@ bool Chan_Stored_t::Anarchy() const
     NFT("Chan_Stored_t::Anarchy");
     if (!Parent->chanserv.LCK_Anarchy())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Anarchy"));
-	RET(i_Anarchy);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Anarchy"));
+	RET(setting.Anarchy);
     }
     RET(Parent->chanserv.DEF_Anarchy());
 }
@@ -4329,10 +4447,10 @@ void Chan_Stored_t::L_Anarchy(const bool in)
     FT("Chan_Stored_t::L_Anarchy", (in));
     if (!Parent->chanserv.LCK_Anarchy())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Anarchy"));
-	MCB(l_Anarchy);
-	l_Anarchy = in;
-	MCE(l_Anarchy);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Anarchy"));
+	MCB(lock.Anarchy);
+	lock.Anarchy = in;
+	MCE(lock.Anarchy);
     }
 }
 
@@ -4342,8 +4460,8 @@ bool Chan_Stored_t::L_Anarchy() const
     NFT("Chan_Stored_t::L_Anarchy");
     if (!Parent->chanserv.LCK_Anarchy())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Anarchy"));
-	RET(l_Anarchy);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Anarchy"));
+	RET(lock.Anarchy);
     }
     RET(true);
 }
@@ -4354,10 +4472,10 @@ void Chan_Stored_t::KickOnBan(const bool in)
     FT("Chan_Stored_t::KickOnBan", (in));
     if (!L_KickOnBan())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_KickOnBan"));
-	MCB(i_KickOnBan);
-	i_KickOnBan = in;
-	MCE(i_KickOnBan);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.KickOnBan"));
+	MCB(setting.KickOnBan);
+	setting.KickOnBan = in;
+	MCE(setting.KickOnBan);
     }
 }
 
@@ -4367,8 +4485,8 @@ bool Chan_Stored_t::KickOnBan() const
     NFT("Chan_Stored_t::KickOnBan");
     if (!Parent->chanserv.LCK_KickOnBan())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_KickOnBan"));
-	RET(i_KickOnBan);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.KickOnBan"));
+	RET(setting.KickOnBan);
     }
     RET(Parent->chanserv.DEF_KickOnBan());
 }
@@ -4379,10 +4497,10 @@ void Chan_Stored_t::L_KickOnBan(const bool in)
     FT("Chan_Stored_t::L_KickOnBan", (in));
     if (!Parent->chanserv.LCK_KickOnBan())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_KickOnBan"));
-	MCB(l_KickOnBan);
-	l_KickOnBan = in;
-	MCE(l_KickOnBan);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.KickOnBan"));
+	MCB(lock.KickOnBan);
+	lock.KickOnBan = in;
+	MCE(lock.KickOnBan);
     }
 }
 
@@ -4392,8 +4510,8 @@ bool Chan_Stored_t::L_KickOnBan() const
     NFT("Chan_Stored_t::L_KickOnBan");
     if (!Parent->chanserv.LCK_KickOnBan())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_KickOnBan"));
-	RET(l_KickOnBan);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.KickOnBan"));
+	RET(lock.KickOnBan);
     }
     RET(true);
 }
@@ -4404,10 +4522,10 @@ void Chan_Stored_t::Restricted(const bool in)
     FT("Chan_Stored_t::Restricted", (in));
     if (!L_Restricted())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Restricted"));
-	MCB(i_Restricted);
-	i_Restricted = in;
-	MCE(i_Restricted);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Restricted"));
+	MCB(setting.Restricted);
+	setting.Restricted = in;
+	MCE(setting.Restricted);
     }
 }
 
@@ -4417,8 +4535,8 @@ bool Chan_Stored_t::Restricted() const
     NFT("Chan_Stored_t::Restricted");
     if (!Parent->chanserv.LCK_Restricted())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Restricted"));
-	RET(i_Restricted);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Restricted"));
+	RET(setting.Restricted);
     }
     RET(Parent->chanserv.DEF_Restricted());
 }
@@ -4429,10 +4547,10 @@ void Chan_Stored_t::L_Restricted(const bool in)
     FT("Chan_Stored_t::L_Restricted", (in));
     if (!Parent->chanserv.LCK_Restricted())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Restricted"));
-	MCB(l_Restricted);
-	l_Restricted = in;
-	MCE(l_Restricted);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Restricted"));
+	MCB(lock.Restricted);
+	lock.Restricted = in;
+	MCE(lock.Restricted);
     }
 }
 
@@ -4442,8 +4560,8 @@ bool Chan_Stored_t::L_Restricted() const
     NFT("Chan_Stored_t::L_Restricted");
     if (!Parent->chanserv.LCK_Restricted())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Restricted"));
-	RET(l_Restricted);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Restricted"));
+	RET(lock.Restricted);
     }
     RET(true);
 }
@@ -4454,10 +4572,10 @@ void Chan_Stored_t::Join(const bool in)
     FT("Chan_Stored_t::Join", (in));
     if (!L_Join())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Join"));
-	MCB(i_Join);
-	i_Join = in;
-	MCE(i_Join);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Join"));
+	MCB(setting.Join);
+	setting.Join = in;
+	MCE(setting.Join);
     }
 }
 
@@ -4467,8 +4585,8 @@ bool Chan_Stored_t::Join() const
     NFT("Chan_Stored_t::Join");
     if (!Parent->chanserv.LCK_Join())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Join"));
-	RET(i_Join);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Join"));
+	RET(setting.Join);
     }
     RET(Parent->chanserv.DEF_Join());
 }
@@ -4479,10 +4597,10 @@ void Chan_Stored_t::L_Join(const bool in)
     FT("Chan_Stored_t::L_Join", (in));
     if (!Parent->chanserv.LCK_Join())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Join"));
-	MCB(l_Join);
-	l_Join = in;
-	MCE(l_Join);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Join"));
+	MCB(lock.Join);
+	lock.Join = in;
+	MCE(lock.Join);
     }
 }
 
@@ -4492,8 +4610,8 @@ bool Chan_Stored_t::L_Join() const
     NFT("Chan_Stored_t::L_Join");
     if (!Parent->chanserv.LCK_Join())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Join"));
-	RET(l_Join);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Join"));
+	RET(lock.Join);
     }
     RET(true);
 }
@@ -4504,10 +4622,10 @@ bool Chan_Stored_t::Revenge(const mstring& in)
     FT("Chan_Stored_t::Revenge", (in));
     if (!L_Revenge())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Revenge"));
-	MCB(i_Revenge);
-	i_Revenge = in;
-	MCE(i_Revenge);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
+	MCB(setting.Revenge);
+	setting.Revenge = in;
+	MCE(setting.Revenge);
 	RET(true);
     }
     RET(false);
@@ -4519,8 +4637,8 @@ mstring Chan_Stored_t::Revenge() const
     NFT("Chan_Stored_t::Revenge");
     if (!Parent->chanserv.LCK_Revenge())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Revenge"));
-	RET(i_Revenge);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
+	RET(setting.Revenge);
     }
     RET(Parent->chanserv.DEF_Revenge());
 }
@@ -4531,10 +4649,10 @@ void Chan_Stored_t::L_Revenge(const bool in)
     FT("Chan_Stored_t::L_Revenge", (in));
     if (!Parent->chanserv.LCK_Revenge())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Revenge"));
-	MCB(l_Revenge);
-	l_Revenge = in;
-	MCE(l_Revenge);
+	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Revenge"));
+	MCB(lock.Revenge);
+	lock.Revenge = in;
+	MCE(lock.Revenge);
     }
 }
 
@@ -4544,8 +4662,8 @@ bool Chan_Stored_t::L_Revenge() const
     NFT("Chan_Stored_t::L_Revenge");
     if (!Parent->chanserv.LCK_Revenge())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "l_Revenge"));
-	RET(l_Revenge);
+	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Revenge"));
+	RET(lock.Revenge);
     }
     RET(true);
 }
@@ -4574,8 +4692,8 @@ mDateTime Chan_Stored_t::Suspend_Time() const
 bool Chan_Stored_t::Forbidden() const
 {
     NFT("Chan_Stored_t::Forbidden");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Forbidden"));
-    RET(i_Forbidden);
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Forbidden"));
+    RET(setting.Forbidden);
 }
 
 
@@ -5307,39 +5425,153 @@ void Chan_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * p
 	if( pElement->IsA(tag_Topic) )			pElement->Retrieve(i_Topic);
 	if( pElement->IsA(tag_Topic_Setter) )		pElement->Retrieve(i_Topic_Setter);
 	if( pElement->IsA(tag_Topic_Set_Time) )		pElement->Retrieve(i_Topic_Set_Time);
-	if( pElement->IsA(tag_set_Mlock_On) )		pElement->Retrieve(i_Mlock_On);
-	if( pElement->IsA(tag_set_Mlock_Off) )		pElement->Retrieve(i_Mlock_Off);
-	if( pElement->IsA(tag_set_Mlock_Key) )		pElement->Retrieve(i_Mlock_Key);
-	if( pElement->IsA(tag_set_Mlock_Limit) )	pElement->Retrieve(i_Mlock_Limit);
-	if( pElement->IsA(tag_set_Bantime) )		pElement->Retrieve(i_Bantime);
-	if( pElement->IsA(tag_set_Parttime) )		pElement->Retrieve(i_Parttime);
-	if( pElement->IsA(tag_set_KeepTopic) )		pElement->Retrieve(i_Keeptopic);
-	if( pElement->IsA(tag_set_TopicLock) )		pElement->Retrieve(i_Topiclock);
-	if( pElement->IsA(tag_set_Private) )		pElement->Retrieve(i_Private);
-	if( pElement->IsA(tag_set_SecureOps) )		pElement->Retrieve(i_Secureops);
-	if( pElement->IsA(tag_set_Secure) )		pElement->Retrieve(i_Secure);
-	if( pElement->IsA(tag_set_NoExpire) )		pElement->Retrieve(i_NoExpire);
-	if( pElement->IsA(tag_set_Anarchy) )		pElement->Retrieve(i_Anarchy);
-	if( pElement->IsA(tag_set_KickOnBan) )		pElement->Retrieve(i_KickOnBan);
-	if( pElement->IsA(tag_set_Restricted) )		pElement->Retrieve(i_Restricted);
-	if( pElement->IsA(tag_set_Join) )		pElement->Retrieve(i_Join);
-	if( pElement->IsA(tag_set_Revenge) )		pElement->Retrieve(i_Revenge);
-	if( pElement->IsA(tag_Forbidden) )		pElement->Retrieve(i_Forbidden);
-	if( pElement->IsA(tag_lock_Mlock_On) )		pElement->Retrieve(l_Mlock_On);
-	if( pElement->IsA(tag_lock_Mlock_Off) )		pElement->Retrieve(l_Mlock_Off);
-	if( pElement->IsA(tag_lock_Bantime) )		pElement->Retrieve(l_Bantime);
-	if( pElement->IsA(tag_lock_Parttime) )		pElement->Retrieve(l_Parttime);
-	if( pElement->IsA(tag_lock_KeepTopic) )		pElement->Retrieve(l_Keeptopic);
-	if( pElement->IsA(tag_lock_TopicLock) )		pElement->Retrieve(l_Topiclock);
-	if( pElement->IsA(tag_lock_Private) )		pElement->Retrieve(l_Private);
-	if( pElement->IsA(tag_lock_SecureOps) )		pElement->Retrieve(l_Secureops);
-	if( pElement->IsA(tag_lock_Secure) )		pElement->Retrieve(l_Secure);
-	if( pElement->IsA(tag_lock_NoExpire) )		pElement->Retrieve(l_NoExpire);
-	if( pElement->IsA(tag_lock_Anarchy) )		pElement->Retrieve(l_Anarchy);
-	if( pElement->IsA(tag_lock_KickOnBan) )		pElement->Retrieve(l_KickOnBan);
-	if( pElement->IsA(tag_lock_Restricted) )	pElement->Retrieve(l_Restricted);
-	if( pElement->IsA(tag_lock_Join) )		pElement->Retrieve(l_Join);
-	if( pElement->IsA(tag_lock_Revenge) )		pElement->Retrieve(l_Revenge);
+	if( pElement->IsA(tag_set_Mlock_On) )		pElement->Retrieve(setting.Mlock_On);
+	if( pElement->IsA(tag_set_Mlock_Off) )		pElement->Retrieve(setting.Mlock_Off);
+	if( pElement->IsA(tag_set_Mlock_Key) )		pElement->Retrieve(setting.Mlock_Key);
+	if( pElement->IsA(tag_set_Mlock_Limit) )	pElement->Retrieve(setting.Mlock_Limit);
+	if( pElement->IsA(tag_set_Bantime) )		pElement->Retrieve(setting.Bantime);
+	if( pElement->IsA(tag_set_Parttime) )		pElement->Retrieve(setting.Parttime);
+	if( pElement->IsA(tag_set_KeepTopic) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Keeptopic = tmp;
+	}
+	if( pElement->IsA(tag_set_TopicLock) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Topiclock = tmp;
+	}
+	if( pElement->IsA(tag_set_Private) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Private = tmp;
+	}
+	if( pElement->IsA(tag_set_SecureOps) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Secureops = tmp;
+	}
+	if( pElement->IsA(tag_set_Secure) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Secure = tmp;
+	}
+	if( pElement->IsA(tag_set_NoExpire) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.NoExpire = tmp;
+	}
+	if( pElement->IsA(tag_set_Anarchy) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Anarchy = tmp;
+	}
+	if( pElement->IsA(tag_set_KickOnBan) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.KickOnBan = tmp;
+	}
+	if( pElement->IsA(tag_set_Restricted) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Restricted = tmp;
+	}
+	if( pElement->IsA(tag_set_Join) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Join = tmp;
+	}
+	if( pElement->IsA(tag_set_Revenge) )		pElement->Retrieve(setting.Revenge);
+	if( pElement->IsA(tag_Forbidden) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    setting.Forbidden = tmp;
+	}
+	if( pElement->IsA(tag_lock_Mlock_On) )		pElement->Retrieve(lock.Mlock_On);
+	if( pElement->IsA(tag_lock_Mlock_Off) )		pElement->Retrieve(lock.Mlock_Off);
+	if( pElement->IsA(tag_lock_Bantime) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Bantime = tmp;
+	}
+	if( pElement->IsA(tag_lock_Parttime) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Parttime = tmp;
+	}
+	if( pElement->IsA(tag_lock_KeepTopic) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Keeptopic = tmp;
+	}
+	if( pElement->IsA(tag_lock_TopicLock) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Topiclock = tmp;
+	}
+	if( pElement->IsA(tag_lock_Private) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Private = tmp;
+	}
+	if( pElement->IsA(tag_lock_SecureOps) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Secureops = tmp;
+	}
+	if( pElement->IsA(tag_lock_Secure) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Secure = tmp;
+	}
+	if( pElement->IsA(tag_lock_Anarchy) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Anarchy = tmp;
+	}
+	if( pElement->IsA(tag_lock_KickOnBan) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.KickOnBan = tmp;
+	}
+	if( pElement->IsA(tag_lock_Restricted) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Restricted = tmp;
+	}
+	if( pElement->IsA(tag_lock_Join) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Join = tmp;
+	}
+	if( pElement->IsA(tag_lock_Revenge) )
+	{
+	    bool tmp;
+	    pElement->Retrieve(tmp);
+	    lock.Revenge = tmp;
+	}
 	if( pElement->IsA(tag_Suspend_By) )		pElement->Retrieve(i_Suspend_By);
 	if( pElement->IsA(tag_Suspend_Time) )		pElement->Retrieve(i_Suspend_Time);
 }
@@ -5375,39 +5607,38 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_Topic, i_Topic);
 	pOut->WriteElement(tag_Topic_Setter, i_Topic_Setter);
 	pOut->WriteElement(tag_Topic_Set_Time, i_Topic_Set_Time);
-	pOut->WriteElement(tag_set_Mlock_On, i_Mlock_On);
-	pOut->WriteElement(tag_set_Mlock_Off, i_Mlock_Off);
-	pOut->WriteElement(tag_set_Mlock_Key, i_Mlock_Key);
-	pOut->WriteElement(tag_set_Mlock_Limit, i_Mlock_Limit);
-	pOut->WriteElement(tag_set_Bantime, i_Bantime);
-	pOut->WriteElement(tag_set_Parttime, i_Parttime);
-	pOut->WriteElement(tag_set_KeepTopic, i_Keeptopic);
-	pOut->WriteElement(tag_set_TopicLock, i_Topiclock);
-	pOut->WriteElement(tag_set_Private, i_Private);
-	pOut->WriteElement(tag_set_SecureOps, i_Secureops);
-	pOut->WriteElement(tag_set_Secure, i_Secure);
-	pOut->WriteElement(tag_set_NoExpire, i_NoExpire);
-	pOut->WriteElement(tag_set_Anarchy, i_Anarchy);
-	pOut->WriteElement(tag_set_KickOnBan, i_KickOnBan);
-	pOut->WriteElement(tag_set_Restricted, i_Restricted);
-	pOut->WriteElement(tag_set_Join, i_Join);
-	pOut->WriteElement(tag_set_Revenge, i_Revenge);
-	pOut->WriteElement(tag_Forbidden, i_Forbidden);
-	pOut->WriteElement(tag_lock_Mlock_On, l_Mlock_On);
-	pOut->WriteElement(tag_lock_Mlock_Off, l_Mlock_Off);
-	pOut->WriteElement(tag_lock_Bantime, l_Bantime);
-	pOut->WriteElement(tag_lock_Parttime, l_Parttime);
-	pOut->WriteElement(tag_lock_KeepTopic, l_Keeptopic);
-	pOut->WriteElement(tag_lock_TopicLock, l_Topiclock);
-	pOut->WriteElement(tag_lock_Private, l_Private);
-	pOut->WriteElement(tag_lock_SecureOps, l_Secureops);
-	pOut->WriteElement(tag_lock_Secure, l_Secure);
-	pOut->WriteElement(tag_lock_NoExpire, l_NoExpire);
-	pOut->WriteElement(tag_lock_Anarchy, l_Anarchy);
-	pOut->WriteElement(tag_lock_KickOnBan, l_KickOnBan);
-	pOut->WriteElement(tag_lock_Restricted, l_Restricted);
-	pOut->WriteElement(tag_lock_Join, l_Join);
-	pOut->WriteElement(tag_lock_Revenge, l_Revenge);
+	pOut->WriteElement(tag_set_Mlock_On, setting.Mlock_On);
+	pOut->WriteElement(tag_set_Mlock_Off, setting.Mlock_Off);
+	pOut->WriteElement(tag_set_Mlock_Key, setting.Mlock_Key);
+	pOut->WriteElement(tag_set_Mlock_Limit, setting.Mlock_Limit);
+	pOut->WriteElement(tag_set_Bantime, setting.Bantime);
+	pOut->WriteElement(tag_set_Parttime, setting.Parttime);
+	pOut->WriteElement(tag_set_KeepTopic, setting.Keeptopic);
+	pOut->WriteElement(tag_set_TopicLock, setting.Topiclock);
+	pOut->WriteElement(tag_set_Private, setting.Private);
+	pOut->WriteElement(tag_set_SecureOps, setting.Secureops);
+	pOut->WriteElement(tag_set_Secure, setting.Secure);
+	pOut->WriteElement(tag_set_NoExpire, setting.NoExpire);
+	pOut->WriteElement(tag_set_Anarchy, setting.Anarchy);
+	pOut->WriteElement(tag_set_KickOnBan, setting.KickOnBan);
+	pOut->WriteElement(tag_set_Restricted, setting.Restricted);
+	pOut->WriteElement(tag_set_Join, setting.Join);
+	pOut->WriteElement(tag_set_Revenge, setting.Revenge);
+	pOut->WriteElement(tag_Forbidden, setting.Forbidden);
+	pOut->WriteElement(tag_lock_Mlock_On, lock.Mlock_On);
+	pOut->WriteElement(tag_lock_Mlock_Off, lock.Mlock_Off);
+	pOut->WriteElement(tag_lock_Bantime, lock.Bantime);
+	pOut->WriteElement(tag_lock_Parttime, lock.Parttime);
+	pOut->WriteElement(tag_lock_KeepTopic, lock.Keeptopic);
+	pOut->WriteElement(tag_lock_TopicLock, lock.Topiclock);
+	pOut->WriteElement(tag_lock_Private, lock.Private);
+	pOut->WriteElement(tag_lock_SecureOps, lock.Secureops);
+	pOut->WriteElement(tag_lock_Secure, lock.Secure);
+	pOut->WriteElement(tag_lock_Anarchy, lock.Anarchy);
+	pOut->WriteElement(tag_lock_KickOnBan, lock.KickOnBan);
+	pOut->WriteElement(tag_lock_Restricted, lock.Restricted);
+	pOut->WriteElement(tag_lock_Join, lock.Join);
+	pOut->WriteElement(tag_lock_Revenge, lock.Revenge);
 	pOut->WriteElement(tag_Suspend_By, i_Suspend_By);
 	pOut->WriteElement(tag_Suspend_Time, i_Suspend_Time);
 
@@ -5483,44 +5714,18 @@ size_t Chan_Stored_t::Usage() const
 	retval += sizeof(i->second);
     }
 
-    retval += i_Mlock_On.capacity();
-    retval += l_Mlock_On.capacity();
-    retval += i_Mlock_Off.capacity();
-    retval += l_Mlock_Off.capacity();
-    retval += i_Mlock_Key.capacity();
-    retval += sizeof(i_Mlock_Limit);
+    retval += sizeof(setting);
+    retval += sizeof(lock);
+    retval += setting.Mlock_On.capacity();
+    retval += lock.Mlock_On.capacity();
+    retval += setting.Mlock_Off.capacity();
+    retval += lock.Mlock_Off.capacity();
+    retval += setting.Mlock_Key.capacity();
+    retval += setting.Revenge.capacity();
+
     retval += i_Topic.capacity();
     retval += i_Topic_Setter.capacity();
     retval += sizeof(i_Topic_Set_Time.Internal());
-    
-    retval += sizeof(i_Bantime);
-    retval += sizeof(l_Bantime);
-    retval += sizeof(i_Parttime);
-    retval += sizeof(l_Parttime);
-    retval += sizeof(i_Keeptopic);
-    retval += sizeof(l_Keeptopic);
-    retval += sizeof(i_Topiclock);
-    retval += sizeof(l_Topiclock);
-    retval += sizeof(i_Private);
-    retval += sizeof(l_Private);
-    retval += sizeof(i_Secureops);
-    retval += sizeof(l_Secureops);
-    retval += sizeof(i_Secure);
-    retval += sizeof(l_Secure);
-    retval += sizeof(i_NoExpire);
-    retval += sizeof(l_NoExpire);
-    retval += sizeof(i_Anarchy);
-    retval += sizeof(l_Anarchy);
-    retval += sizeof(i_KickOnBan);
-    retval += sizeof(l_KickOnBan);
-    retval += sizeof(i_Restricted);
-    retval += sizeof(l_Restricted);
-    retval += sizeof(i_Join);
-    retval += sizeof(l_Join);
-    retval += sizeof(i_Forbidden);
-    retval += i_Revenge.capacity();
-    retval += sizeof(l_Revenge);
-
     retval += i_Suspend_By.capacity();
     retval += sizeof(i_Suspend_Time.Internal());
 
@@ -5569,16 +5774,17 @@ void Chan_Stored_t::DumpB() const
 {
     MB(0, (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder,
 	i_Description, i_Password, i_Email, i_URL, i_Comment,
-	failed_passwds.size(), i_Mlock_On, l_Mlock_On, i_Mlock_Off,
-	l_Mlock_Off, i_Mlock_Key));
-    MB(16, (i_Mlock_Limit, i_Topic, i_Topic_Setter, i_Topic_Set_Time,
-	i_Bantime, l_Bantime, i_Parttime, l_Parttime, i_Keeptopic,
-	l_Keeptopic, i_Topiclock, l_Topiclock, i_Private, l_Private,
-	i_Secureops, l_Secureops));
-    MB(32, (i_Secure, l_Secure, i_NoExpire, l_NoExpire, i_Anarchy,
-	l_Anarchy, i_KickOnBan, l_KickOnBan, i_Restricted, l_Restricted,
-	i_Join, l_Join, i_Forbidden, i_Revenge, l_Revenge, i_Suspend_By));
-    MB(48, (i_Suspend_Time, i_Level.size(), i_Access.size(),
+	failed_passwds.size(), setting.Mlock_On, lock.Mlock_On, setting.Mlock_Off,
+	lock.Mlock_Off, setting.Mlock_Key));
+    MB(16, (setting.Mlock_Limit, i_Topic, i_Topic_Setter, i_Topic_Set_Time,
+	setting.Bantime, lock.Bantime, setting.Parttime, lock.Parttime, setting.Keeptopic,
+	lock.Keeptopic, setting.Topiclock, lock.Topiclock, setting.Private, lock.Private,
+	setting.Secureops, lock.Secureops));
+    MB(32, (setting.Secure, lock.Secure, setting.NoExpire, setting.Anarchy,
+	lock.Anarchy, setting.KickOnBan, lock.KickOnBan, setting.Restricted,
+	lock.Restricted, setting.Join, lock.Join, setting.Forbidden,
+	setting.Revenge, lock.Revenge, i_Suspend_By, i_Suspend_Time));
+    MB(48, (i_Level.size(), i_Access.size(),
 	i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
 }
 
@@ -5587,16 +5793,17 @@ void Chan_Stored_t::DumpE()const
 {
     ME(0, (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder,
 	i_Description, i_Password, i_Email, i_URL, i_Comment,
-	failed_passwds.size(), i_Mlock_On, l_Mlock_On, i_Mlock_Off,
-	l_Mlock_Off, i_Mlock_Key));
-    ME(16, (i_Mlock_Limit, i_Topic, i_Topic_Setter, i_Topic_Set_Time,
-	i_Bantime, l_Bantime, i_Parttime, l_Parttime, i_Keeptopic,
-	l_Keeptopic, i_Topiclock, l_Topiclock, i_Private, l_Private,
-	i_Secureops, l_Secureops));
-    ME(32, (i_Secure, l_Secure, i_NoExpire, l_NoExpire, i_Anarchy,
-	l_Anarchy, i_KickOnBan, l_KickOnBan, i_Restricted, l_Restricted,
-	i_Join, l_Join, i_Forbidden, i_Revenge, l_Revenge, i_Suspend_By));
-    ME(48, (i_Suspend_Time, i_Level.size(), i_Access.size(),
+	failed_passwds.size(), setting.Mlock_On, lock.Mlock_On, setting.Mlock_Off,
+	lock.Mlock_Off, setting.Mlock_Key));
+    ME(16, (setting.Mlock_Limit, i_Topic, i_Topic_Setter, i_Topic_Set_Time,
+	setting.Bantime, lock.Bantime, setting.Parttime, lock.Parttime, setting.Keeptopic,
+	lock.Keeptopic, setting.Topiclock, lock.Topiclock, setting.Private, lock.Private,
+	setting.Secureops, lock.Secureops));
+    ME(32, (setting.Secure, lock.Secure, setting.NoExpire, setting.Anarchy,
+	lock.Anarchy, setting.KickOnBan, lock.KickOnBan, setting.Restricted,
+	lock.Restricted, setting.Join, lock.Join, setting.Forbidden,
+	setting.Revenge, lock.Revenge, i_Suspend_By, i_Suspend_Time));
+    ME(48, (i_Level.size(), i_Access.size(),
 	i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
 }
 
@@ -5624,17 +5831,19 @@ void ChanServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *USER*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Users);
+	    "CLEAR* USER*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Users);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *OP*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Ops);
+	    "CLEAR* OP*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Ops);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *VOICE*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Voices);
+	    "CLEAR* H*OP*", Parent->commserv.REGD_Name(), ChanServ::do_clear_HalfOps);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *MODE*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Modes);
+	    "CLEAR* VOICE*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Voices);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *BAN*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Bans);
+	    "CLEAR* MODE*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Modes);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *ALL*", Parent->commserv.REGD_Name(), ChanServ::do_clear_All);
+	    "CLEAR* BAN*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Bans);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* ALL", Parent->commserv.REGD_Name(), ChanServ::do_clear_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* H*LP", Parent->commserv.REGD_Name(), do_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5704,7 +5913,7 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* PASS*", Parent->commserv.REGD_Name(), ChanServ::do_set_Password);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* EMAIL", Parent->commserv.REGD_Name(), ChanServ::do_set_Email);
+	    "SET* E*MAIL*", Parent->commserv.REGD_Name(), ChanServ::do_set_Email);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* URL", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5831,6 +6040,10 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "D*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeOp);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "H*OP*", Parent->commserv.REGD_Name(), ChanServ::do_HalfOp);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "D*H*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeHalfOp);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_Voice);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "D*VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_DeVoice);
@@ -5900,17 +6113,19 @@ void ChanServ::RemCommands()
 
 
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *USER*", Parent->commserv.REGD_Name());
+	    "CLEAR* USER*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *OP*", Parent->commserv.REGD_Name());
+	    "CLEAR* OP*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *VOICE*", Parent->commserv.REGD_Name());
+	    "CLEAR* H*OP*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *MODE*", Parent->commserv.REGD_Name());
+	    "CLEAR* VOICE*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *BAN*", Parent->commserv.REGD_Name());
+	    "CLEAR* MODE*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *ALL*", Parent->commserv.REGD_Name());
+	    "CLEAR* BAN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* ALL", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CLEAR* H*LP", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -5980,7 +6195,7 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* PASS*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* EMAIL", Parent->commserv.REGD_Name());
+	    "SET* E*MAIL*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* URL", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -6103,6 +6318,10 @@ void ChanServ::RemCommands()
 	    "OP*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "D*OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "H*OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "D*H*OP*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "VOIC*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -6702,6 +6921,12 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    {
 		output << clive.Ops() << " " << Parent->getMessage(source, "CS_INFO/OPS");
 	    }
+	    if (clive.HalfOps())
+	    {
+		if (!output.empty())
+		    output << ", ";
+		output << clive.HalfOps() << " " << Parent->getMessage(source, "CS_INFO/HALFOPS");
+	    }
 	    if (clive.Voices())
 	    {
 		if (!output.empty())
@@ -6729,12 +6954,6 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 		chan.LastUsed().Ago()));
 	}
     }
-    if (!chan.Email().empty())
-	SEND(mynick, source, "CS_INFO/EMAIL", (
-		chan.Email()));
-    if (!chan.URL().empty())
-	SEND(mynick, source, "CS_INFO/URL", (
-		chan.URL()));
     if (chan.Suspended())
     {
 	SEND(mynick, source, "CS_INFO/SUSPEND", (
@@ -6744,11 +6963,21 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    SEND(mynick, source, "CS_INFO/SUSPENDFOR", (
 		chan.Comment()));
     }
-    else if (!chan.Comment().empty() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
+    else
     {
-	SEND(mynick, source, "CS_INFO/COMMENT", (
-	    chan.Comment()));
+	if (!chan.Email().empty())
+	    SEND(mynick, source, "CS_INFO/EMAIL", (
+		chan.Email()));
+	if (!chan.URL().empty())
+	    SEND(mynick, source, "CS_INFO/URL", (
+		chan.URL()));
+	 if (!chan.Comment().empty() &&
+	    ((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)) ||
+	    (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	    Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))))
+	    SEND(mynick, source, "CS_INFO/COMMENT", (
+		chan.Comment()));
     }
     if (!chan.Last_Topic().empty())
     {
@@ -7008,6 +7237,12 @@ void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
 	    {
 		clive.SendMode("-o " + clive.User(i));
 	    }
+	    if (clive.IsHalfOp(clive.User(i)) &&
+		!(cstored.GetAccess(clive.User(i), "AUTOHALFOP") ||
+		cstored.GetAccess(clive.User(i), "CMDHALFOP")))
+	    {
+		clive.SendMode("-h " + clive.User(i));
+	    }
 	    if (clive.IsVoice(clive.User(i)) &&
 		!(cstored.GetAccess(clive.User(i), "AUTOVOICE") ||
 		cstored.GetAccess(clive.User(i), "CMDVOICE")))
@@ -7247,25 +7482,52 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    bool change = false;
+    if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	 Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
     {
-	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
-		channel));
-	return;
-    }
-    channel = Parent->getSname(channel);
+	if (Parent->chanserv.IsStored(channel))
+	    channel = Parent->getSname(channel);
+	else
+	    channel = Parent->getLname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+	// If we have 2 params, and we have SUPER access, or are a SOP
+	if (params.WordCount(" ") > 2 && 
+	    Parent->commserv.IsList(Parent->commserv.OVR_CS_Mode()) &&
+	    Parent->commserv.GetList(Parent->commserv.OVR_CS_Mode()).IsOn(source))
+	    change = true;
+    }
+    else
     {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
-	return;
+	if (!Parent->chanserv.IsStored(channel))
+	{
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		channel));
+	    return;
+	}
+	channel = Parent->getSname(channel);
+
+	if (Parent->chanserv.GetStored(channel).Forbidden())
+	{
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	    return;
+	}
+
+	if (!Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW"))
+	{
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	    return;
+	}
+
+	// If we have 2 params, and we have SUPER access, or are a SOP
+	if (params.WordCount(" ") > 2 && 
+	    Parent->chanserv.GetStored(channel).GetAccess(source, "CMDMODE"))
+	    change = true;
+
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2 && 
-	(Parent->chanserv.GetStored(channel).GetAccess(source, "CMDMODE") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Mode()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Mode()).IsOn(source))))
+    if (change)
     {
 	mstring modes = params.After(" ", 2);
 	Parent->chanserv.GetLive(channel).SendMode(modes);
@@ -7273,11 +7535,8 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 	LOG(LM_DEBUG, "CHANSERV/MODE", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		modes, channel));
-	return;
     }
-    else if (Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source)))
+    else
     {
 	mstring output;
 	{ RLOCK(("ChanServ", "live", channel.LowerCase()));
@@ -7295,10 +7554,7 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 
 	Parent->chanserv.stats.i_Mode++;
 	::send(mynick, source, output);
-	return;
     }
-
-    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 }
 
 void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring &params)
@@ -7488,6 +7744,205 @@ void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstri
 	target, channel));
 }
 
+void ChanServ::do_HalfOp(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("ChanServ::do_HalfOp", (mynick, source, params));
+
+    if (!Parent->server.proto.ChanModeArg().Contains('h'))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
+	return;
+    }
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring target    = source;
+
+    if (!Parent->chanserv.IsLive(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
+		channel));
+	return;
+    }
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		channel));
+	return;
+    }
+
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    channel = chan.Name();
+
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (params.WordCount(" ") > 2 && 
+	(chan.GetAccess(source, "SUPER") ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_HalfOp()) &&
+	 Parent->commserv.GetList(Parent->commserv.OVR_CS_HalfOp()).IsOn(source))))
+    {
+	target = params.ExtractWord(3, " ");
+	if (!Parent->nickserv.IsLive(target))
+	{
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+		    target));
+	    return;
+	}
+	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
+		    target, channel));
+	    return;
+	}
+	else if (Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_HALFOPPED", (
+		    target, channel));
+	    return;
+	}
+	else if (chan.Secureops() &&
+		!(chan.GetAccess(target, "CMDHALFOP") ||
+		 chan.GetAccess(target, "AUTOHALFOP")) &&
+		!(Parent->commserv.IsList(Parent->commserv.OVR_CS_HalfOp()) &&
+		 Parent->commserv.GetList(Parent->commserv.OVR_CS_HalfOp()).IsOn(source)))
+	{
+	    SEND(mynick, source, "CS_STATUS/RESTRICT", (
+		channel, Parent->getMessage(source, "CS_SET/SECUREOPS")));
+	    return;
+	}
+    }
+    else
+    {
+	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
+		    target, channel));
+	    return;
+	}
+	else if (Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/HALFOPPED", (
+		    channel));
+	    return;
+	}
+	else if (!chan.GetAccess(target, "CMDHALFOP"))
+	{
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	    return;
+	}
+    }
+
+    Parent->chanserv.stats.i_Halfop++;
+    Parent->chanserv.GetLive(channel).SendMode("+h " + target);
+    LOG(LM_DEBUG, "CHANSERV/HALFOP", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	target, channel));
+}
+
+void ChanServ::do_DeHalfOp(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("ChanServ::do_DeHalfOp", (mynick, source, params));
+
+    if (!Parent->server.proto.ChanModeArg().Contains('h'))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
+	return;
+    }
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring target    = source;
+
+    if (!Parent->chanserv.IsLive(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
+		channel));
+	return;
+    }
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		channel));
+	return;
+    }
+    channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (params.WordCount(" ") > 2 && 
+	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_HalfOp()) &&
+	 Parent->commserv.GetList(Parent->commserv.OVR_CS_HalfOp()).IsOn(source))))
+    {
+	target = params.ExtractWord(3, " ");
+	if (!Parent->nickserv.IsLive(target))
+	{
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+		    target));
+	    return;
+	}
+	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
+		    target, channel));
+	    return;
+	}
+	else if (!Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_NOTHALFOPPED", (
+		    target, channel));
+	    return;
+	}
+    }
+    else
+    {
+	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
+		    target, channel));
+	    return;
+	}
+	else if (!Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	{
+	    SEND(mynick, source, "CS_STATUS/NOTHALFOPPED", (
+		    channel));
+	    return;
+	}
+    }
+
+    Parent->chanserv.stats.i_Dehalfop++;
+    Parent->chanserv.GetLive(channel).SendMode("-h " + target);
+    LOG(LM_DEBUG, "CHANSERV/DEHALFOP", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	target, channel));
+}
+
 void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Voice", (mynick, source, params));
@@ -7554,8 +8009,8 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
 	else if (chan.Secureops() &&
 		!(chan.GetAccess(target, "CMDVOICE") ||
 		 chan.GetAccess(target, "AUTOVOICE")) &&
-		!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Op()) &&
-		 Parent->commserv.GetList(Parent->commserv.OVR_CS_Op()).IsOn(source)))
+		!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Voice()) &&
+		 Parent->commserv.GetList(Parent->commserv.OVR_CS_Voice()).IsOn(source)))
 	{
 	    SEND(mynick, source, "CS_STATUS/RESTRICT", (
 		    channel, Parent->getMessage(source, "CS_SET/SECUREOPS")));
@@ -7850,7 +8305,7 @@ void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    if (!chan.GetAccess(source, "SUPER"))
+    if (!(chan.GetAccess(source, "CMDKICK") && chan.GetAccess(source, "SUPER")))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -7915,24 +8370,35 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	 Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
     {
-	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+	if (Parent->chanserv.IsStored(channel))
+	    channel = Parent->getSname(channel);
+	else
+	    channel = Parent->getLname(channel);
+    }
+    else
+    {
+	if (!Parent->chanserv.IsStored(channel))
+	{
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
-	return;
-    }
-    channel = Parent->getSname(channel);
+	    return;
+	}
+	channel = Parent->getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
-    {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
-	return;
-    }
+	if (Parent->chanserv.GetStored(channel).Forbidden())
+	{
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	    return;
+	}
 
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW"))
-    {
-	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
-	return;
+	if (!Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW"))
+	{
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	    return;
+	}
     }
 
     Chan_Live_t chan = Parent->chanserv.GetLive(channel);
@@ -7951,6 +8417,10 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
 	if (chan.IsOp(user))
 	{
 	    output << "@";
+	}
+	if (chan.IsHalfOp(user))
+	{
+	    output << "%";
 	}
 	else if (chan.IsVoice(user))
 	{
@@ -8210,16 +8680,23 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	{
 	    if (i < listsize)
 	    {
-		::sendV(mynick, source, "%s (%du %do %dv %ds %db): +%s %s %d",
+		mstring mode = iter->second.Mode();
+		if (iter->second.Key().length())
+		    mode << "k";
+		if (iter->second.Limit())
+		    mode << "l";
+		if (iter->second.Key().length())
+		    mode << " " << iter->second.Key();
+		if (iter->second.Limit())
+		    mode << " " << iter->second.Limit();
+		::sendV(mynick, source, "%s (%du %do %dh %dv %ds %db): +%s",
 					iter->second.Name().c_str(),
 					iter->second.Users(),
 					iter->second.Ops(),
+					iter->second.HalfOps(),
 					iter->second.Voices(),
 					iter->second.Squit(),
-					iter->second.Bans(),
-					iter->second.Mode().c_str(),
-					iter->second.Key().c_str(),
-					iter->second.Limit());
+					iter->second.Bans(), mode.c_str());
 		i++;
 	    }
 	    count++;
@@ -8363,7 +8840,7 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
     }
 
     bool allmode = false;
-    if (message.After(" ").Matches("*ALL*", true))
+    if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
     Chan_Live_t clt = Parent->chanserv.GetLive(channel);
@@ -8386,6 +8863,107 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
     {
 	clive.SendMode("-o " + deop[i]);
     }}
+    if (!allmode)
+    {
+	Parent->chanserv.stats.i_Clear++;
+	LOG(LM_INFO, "CHANSERV/COMMAND", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		message, channel));
+    }
+}
+
+void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("ChanServ::do_clear_HalfOps", (mynick, source, params));
+
+    if (!Parent->server.proto.ChanModeArg().Contains('h'))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
+	return;
+    }
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	SEND(mynick, source, "MISC/HTM", (
+							message));
+	return;
+    }}
+
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsLive(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
+		channel));
+	return;
+    }
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		channel));
+	return;
+    }
+    channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.GetStored(channel).Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	return;
+    }
+
+    bool allmode = false;
+    if (message.After(" ").Matches("ALL", true))
+	allmode = true;
+
+    Chan_Live_t clt = Parent->chanserv.GetLive(channel);
+    vector<mstring> dehalfop, ops;
+    unsigned int i;
+    for (i=0; i<clt.HalfOps(); i++)
+    {
+	if (!Parent->nickserv.IsLive(clt.HalfOp(i)) ||
+		Parent->nickserv.GetLive(clt.HalfOp(i)).IsServices())
+	    continue;
+	dehalfop.push_back(clt.HalfOp(i));
+	if (!allmode)
+	    SEND(mynick, clt.HalfOp(i), "CS_COMMAND/CLEAR", (
+		    message, source, channel));
+    }
+    for (i=0; i<clt.Ops(); i++)
+    {
+	if (!allmode)
+	    SEND(mynick, clt.Op(i), "CS_COMMAND/CLEAR", (
+		    message, source, channel));
+    }
+
+    { RLOCK(("ChanServ", "live", channel.LowerCase()));
+    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    for (i=0; i<dehalfop.size(); i++)
+    {
+	clive.SendMode("-h " + dehalfop[i]);
+    }}
+
     if (!allmode)
     {
 	Parent->chanserv.stats.i_Clear++;
@@ -8451,7 +9029,7 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
     }
 
     bool allmode = false;
-    if (message.After(" ").Matches("*ALL*", true))
+    if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
     Chan_Live_t clt = Parent->chanserv.GetLive(channel);
@@ -8546,7 +9124,7 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
     }
 
     bool allmode = false;
-    if (message.After(" ").Matches("*ALL*", true))
+    if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
     vector<mstring> ops;
@@ -8656,7 +9234,7 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
     }
 
     bool allmode = false;
-    if (message.After(" ").Matches("*ALL*", true))
+    if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
     vector<mstring> ops;
@@ -8750,6 +9328,7 @@ void ChanServ::do_clear_All(const mstring &mynick, const mstring &source, const 
 
     ChanServ::do_clear_Modes(mynick, source, params);
     ChanServ::do_clear_Ops(mynick, source, params);
+    ChanServ::do_clear_HalfOps(mynick, source, params);
     ChanServ::do_clear_Voices(mynick, source, params);
     ChanServ::do_clear_Bans(mynick, source, params);
 
@@ -11360,7 +11939,7 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (cstored.L_NoExpire())
+    if (Parent->chanserv.LCK_NoExpire())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
 		Parent->getMessage(source, "CS_SET/NOEXPIRE"),
@@ -13549,26 +14128,26 @@ void ChanServ::PostLoad()
 		{
 		    if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
 		    {
-			if (!iter->second.i_Mlock_On.Contains(locked[i]))
-			    iter->second.i_Mlock_On += locked[i];
-			if (iter->second.i_Mlock_Off.Contains(locked[i]))
-			    iter->second.i_Mlock_Off.Remove(locked[i]);
+			if (!iter->second.setting.Mlock_On.Contains(locked[i]))
+			    iter->second.setting.Mlock_On += locked[i];
+			if (iter->second.setting.Mlock_Off.Contains(locked[i]))
+			    iter->second.setting.Mlock_Off.Remove(locked[i]);
 		    }
 		}
 		else
 		{
 		    if (locked[i] == 'k')
-			iter->second.i_Mlock_Key.erase();
+			iter->second.setting.Mlock_Key.erase();
 		    else if (locked[i] == 'l')
-			iter->second.i_Mlock_Limit = 0;
+			iter->second.setting.Mlock_Limit = 0;
 
 		    if (locked[i] == 'k' || locked[i] == 'l' ||
 			!Parent->server.proto.ChanModeArg().Contains(locked[i]))
 		    {
-			if (!iter->second.i_Mlock_Off.Contains(locked[i]))
-			    iter->second.i_Mlock_Off += locked[i];
-			if (iter->second.i_Mlock_On.Contains(locked[i]))
-			    iter->second.i_Mlock_On.Remove(locked[i]);
+			if (!iter->second.setting.Mlock_Off.Contains(locked[i]))
+			    iter->second.setting.Mlock_Off += locked[i];
+			if (iter->second.setting.Mlock_On.Contains(locked[i]))
+			    iter->second.setting.Mlock_On.Remove(locked[i]);
 		    }
 		}
 	    }

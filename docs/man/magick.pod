@@ -61,6 +61,14 @@ magick (1.4)
 
 esper (4.4.8)
 
+=item *
+
+epone (1.4.7)
+
+=item *
+
+sirc (N/A)
+
 =back
 
 =item --trace X:Y

@@ -25,6 +25,10 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.77  2001/06/20 06:07:01  prez
 ** ome GCC 3.0 and solaris fixes
 **
@@ -251,10 +255,11 @@ class mstring;
 
 extern const mstring DirSlash;
 extern const mstring Blank;
+extern const mstring IRC_CTCP;
 extern const mstring IRC_Bold;
 extern const mstring IRC_Underline;
 extern const mstring IRC_Reverse;
-extern const mstring IRC_Colour;
+extern const mstring IRC_Color;
 extern const mstring IRC_Off;
 
 bool match_wild (const char *pattern, const char *str, bool nocase);
@@ -329,8 +334,8 @@ public:
     void swap(mstring &in);
     const char *c_str() const;
     const unsigned char *uc_str() const;
-    const char first() const;
-    const char last() const;
+    const char first(size_t off = 1) const;
+    const char last(size_t off = 1) const;
     size_t length() const;
     size_t size() const;
     size_t capacity() const;

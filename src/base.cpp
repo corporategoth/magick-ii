@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.173  2001/11/03 21:02:51  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.172  2001/07/05 05:59:05  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -1059,6 +1063,7 @@ void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
 	{
 	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
 	    iter->third = true;
+	    break;
 	}
     }
 }
@@ -1349,13 +1354,13 @@ bool mBase::signon(const mstring &nickname) const
     }
 }
 
-bool mBase::signoff(const mstring &nickname) const
+bool mBase::signoff(const mstring &nickname, const mstring &msg) const
 {
     FT("mBase::signoff", (nickname));
 
     if (Parent->nickserv.IsLive(nickname))
     {
-	Parent->server.QUIT(nickname);
+	Parent->server.QUIT(nickname, msg);
 	RET(true);
     }
     else
@@ -1645,11 +1650,7 @@ void announceV(const mstring& source, const char *pszFormat, ...)
 void announce(const mstring& source, const mstring& message)
 {
     FT("announce", (source, message));
-
-    if (Parent->server.proto.Globops())
-	Parent->server.GLOBOPS(source, message);
-    else
-	Parent->server.WALLOPS(source, message);
+    Parent->server.GLOBOPS(source, message);
 }
 
 // Command Map stuff ...

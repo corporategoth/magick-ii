@@ -62,11 +62,11 @@
 ; it specifies how many digits appear AFTER the DP.
 ;
 ; IRC beautifying codes:
-;   ^B () = BOLD       - Make text between look brighter
-;   ^_ () = UNDERLINE  - Underline text between
-;   ^V () = REVERSE    - Switch foreground and background
-;   ^O () = CANCEL     - Back to non-bold/underline/reverse
-;   ^C () = COLOUR     - See below
+;   ^B (\b) = BOLD       - Make text between look brighter
+;   ^_ (\_) = UNDERLINE  - Underline text between
+;   ^V (\v) = REVERSE    - Switch foreground and background
+;   ^O (\o) = CANCEL     - Back to non-bold/underline/reverse
+;   ^C (\c) = COLOUR     - See below
 ;
 ; mIRC colour codes:
 ;   0 = White           8  = Yellow
@@ -85,9 +85,9 @@
 ;
 [ERR_SYNTAX]
 TRANSLATED         =Okan Erdem <okaner@iname.com>
-UNKNOWN_COMMAND    =Bilinmeyen komut $1.  Yardim icin /MSG $2 HELP yazin.
-UNKNOWN_OPTION     =Bilinmeyen secenek $1.  Yardim icin /MSG $2 HELP yazin.
-NEED_PARAMS        =$1 icin yetersiz parametre.  Yardim icin /MSG $2 HELP yazin.
+UNKNOWN_COMMAND    =Bilinmeyen komut \b$1\b.  Yardim icin \b/MSG $2 HELP\b yazin.
+UNKNOWN_OPTION     =Bilinmeyen secenek \b$1\b.  Yardim icin \b/MSG $2 HELP\b yazin.
+NEED_PARAMS        =\b$1\b icin yetersiz parametre.  Yardim icin \b/MSG $2 HELP\b yazin.
 MUSTCONTAIN        =$1 girisi bir '$2' karakterine sahip olmali.
 MAYNOTCONTAIN      =$1 girisi bir '$2' karakterine sahip olmayabilir.
 STARTHRESH         =$1 girisi $2 den daha fazla wildcard (? *) olmayan girise sahip olmalidir.
@@ -106,16 +106,16 @@ NOLIMIT            =Gerekli limit belirlenmedi (goz ardi edildi).
 ; not fulfilled all the correct criteria to continue.
 ;
 [ERR_SITUATION]
-ONYOURSELF         =Kendi uzerinizde sadece $1 uygulayabilirsiniz.
-NOTONYOURSELF      =Kendi uzerinizde $1 uygulayamazsiniz.
-ONCOMMITTEE        =$1 i sadece bir $2 komitesi uyesi uzerinde uygulayabilirsiniz.
-NOTONCOMMITTEE     =$1 i bir $2 komitesi uyesi uzerinde uygulayamazsiniz.
-ONPRIVCOMMITTEE    =$1 i sadece bir oncelikli komite uyesi uzerinde uygulayabilirsiniz.
-NOTONPRIVCOMMITTEE =$1 i bir oncelikli komite uyesinde uygulamazsiniz.
-ONDYNAMIC          =Sadece bir dinamik komite uzerinde $1 uygulayabilirsiniz.
-NOTONDYNAMIC       =Bir dinamik komite uzerinde $1 uygulayamazsiniz.
-NEED_NICK_IDENT    =$1 icin tanimlanmalisiniz.  /MSG $2 IDENTIFY <password> yazin ve yeniden deneyin.
-NEED_CHAN_IDENT    =$1 icin tanimlanmalisiniz.  /MSG $2 IDENTIFY <password> yazin ve yeniden deneyin.
+ONYOURSELF         =Kendi uzerinizde sadece \b$1\b uygulayabilirsiniz.
+NOTONYOURSELF      =Kendi uzerinizde \b$1\b uygulayamazsiniz.
+ONCOMMITTEE        =\b$1\b i sadece bir $2 komitesi uyesi uzerinde uygulayabilirsiniz.
+NOTONCOMMITTEE     =\b$1\b i bir $2 komitesi uyesi uzerinde uygulayamazsiniz.
+ONPRIVCOMMITTEE    =\b$1\b i sadece bir oncelikli komite uyesi uzerinde uygulayabilirsiniz.
+NOTONPRIVCOMMITTEE =\b$1\b i bir oncelikli komite uyesinde uygulamazsiniz.
+ONDYNAMIC          =Sadece bir dinamik komite uzerinde \b$1\b uygulayabilirsiniz.
+NOTONDYNAMIC       =Bir dinamik komite uzerinde \b$1\b uygulayamazsiniz.
+NEED_NICK_IDENT    =\b$1\b icin tanimlanmalisiniz.  \b/MSG $2 IDENTIFY <password>\b yazin ve yeniden deneyin.
+NEED_CHAN_IDENT    =\b$1\b icin tanimlanmalisiniz.  \b/MSG $2 IDENTIFY <password>\b yazin ve yeniden deneyin.
 COMPLEX_PASS       =Lutfen daha karmasik bir password seciniz.
 NICK_WRONG_PASS    =Password yanlis. Denemeniz kaydedildi.
 CHAN_WRONG_PASS    =Password kanal $1 icin yanlis.  Denemeniz kaydedildi.
@@ -142,21 +142,21 @@ KILL_RECOVER       =RECOVER komutu kullanildi
 KILL_OPERDENY      =Reddedilmisken /OPER kullanildi.
 KICK_RESTRICTED    =Kanal yasaklanmistir.
 
-NICK_GETPASS       =$1 nick $2 ($3) uzerinde GETPASS uyguladi.
-CHAN_GETPASS       =$1 kanal $2 ($3) uzerinde GETPASS uyguladi.
+NICK_GETPASS       =$1 nick \b$2\b ($3) uzerinde GETPASS uyguladi.
+CHAN_GETPASS       =$1 kanal \b$2\b ($3) uzerinde GETPASS uyguladi.
 GLOBAL_MSG         =$1 tum kullanicilara mesaj gonderdi.
 FLOOD_TEMP         =$1 servisleri FLOODliyor.  Gecici olarak reddediliyor.
 FLOOD_PERM         =$1 servisleri FLOODliyor.  Suresiz olarak reddediliyor.
 CHAN_MODE          =$1 mode degistirmesi ($2) uyguladi. Kanal: $3.
 NICK_MODE          =$1 mode degistirmesi ($2) uyguladi. Nick: $3.
-QLINE              =$1 $2 ile ilintili nicklere karantina baslatti.
-NOOP               =$1 $2 IRC Operator karantinasini server $3 icin baslatti.
+QLINE              =$1 \b$2\b ile ilintili nicklere karantina baslatti.
+NOOP               =$1 $2 IRC Operator karantinasini server \b$3\b icin baslatti.
 KILL               =$1 gizlice kullanici $2 oldurdu.
-SHUTDOWN           =SHUTDOWN komutu $1 tarafindan kullanildi.
-RELOAD             =$1 server konfigurasyonunu yeniden yukledi.
-JUPE               =$1 JUPED server $2.
-ONOFF              =Servisler $1. Degistiren: $2.
-ONOFF_ONE          =Servis $1 $2. Degistiren: $3.
+SHUTDOWN           =SHUTDOWN komutu \b$1\b tarafindan kullanildi.
+RELOAD             =\b$1\b server konfigurasyonunu yeniden yukledi.
+JUPE               =$1 JUPED server \b$2\b.
+ONOFF              =Servisler $1. Degistiren: \b$2\b.
+ONOFF_ONE          =Servis $1 $2. Degistiren: \b$3\b.
 
 BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
 ON                 =ON
@@ -252,40 +252,40 @@ USE_TOTAL          =TOPLAM              $1 ($2kb)
 [LIST]
 LASTMOD            =Son degistirme $1 once. Degistiren: $2
 MAXLIST            =Bir kerede sadece $1 girdi listeleyebilirsiniz.
-NICK_LIST          =$1 ile ilintili nickler gosteriliyor:
-CHAN_LIST          =$1 ile ilintili kanallar gosteriliyor:
+NICK_LIST          =\b$1\b ile ilintili nickler gosteriliyor:
+CHAN_LIST          =\b$1\b ile ilintili kanallar gosteriliyor:
 DISPLAYED          =$1 girdi (toplam:$2) gosteriliyor.
 
 DISPLAY            =$1 listesindeki tum nickler gosteriliyor:
-DISPLAY_MATCH      =$1 ile ilintili $2 listesindeki tum girdiler gosteriliyor:
-ADD                =$1 girdisi $2 listesine eklendi.
-ADD_NUMBER         =#$1 girdisi $2 listesine eklendi.
-ADD_LEVEL          =$1 girdisi $2 listesine $3 seviyesinde eklendi.
-ADD_TIME           =$1 girdisi $2 listesine $3 icin eklendi.
-CHANGE_LEVEL       =$1 girdisi $2 listesinde $3 seviyesine cevrildi.
-CHANGE_TIME        =$1 girdisi $2 listesinde $3 degerine cevrildi.
-DEL                =$1 girdisi $2 listesinden silindi.
-DEL_MATCH          =$1 girdi $2 ile ilintili $3 listesinden silindi.
-DEL_NUMBER         =#$1 girdi $2 listesinden silindi.
-EXISTS             =$1 girdisi zaten var veya $2 listesinde bulunuyor.
-NOTEXISTS          =$1 ile ilintili $2 listesinde girdi yok.
-NOTEXISTS_NUMBER   =#$1 girdisi $2 listesinde.
+DISPLAY_MATCH      =\b$1\b ile ilintili $2 listesindeki tum girdiler gosteriliyor:
+ADD                =\b$1\b girdisi $2 listesine eklendi.
+ADD_NUMBER         =\b#$1\b girdisi $2 listesine eklendi.
+ADD_LEVEL          =\b$1\b girdisi $2 listesine $3 seviyesinde eklendi.
+ADD_TIME           =\b$1\b girdisi $2 listesine $3 icin eklendi.
+CHANGE_LEVEL       =\b$1\b girdisi $2 listesinde $3 seviyesine cevrildi.
+CHANGE_TIME        =\b$1\b girdisi $2 listesinde $3 degerine cevrildi.
+DEL                =\b$1\b girdisi $2 listesinden silindi.
+DEL_MATCH          =$1 girdi \b$2\b ile ilintili $3 listesinden silindi.
+DEL_NUMBER         =\b#$1\b girdi $2 listesinden silindi.
+EXISTS             =\b$1\b girdisi zaten var veya $2 listesinde bulunuyor.
+NOTEXISTS          =\b$1\b ile ilintili $2 listesinde girdi yok.
+NOTEXISTS_NUMBER   =\b#$1\b girdisi $2 listesinde.
 EMPTY              =$1 listesinde girdi yok.
 
 DISPLAY2           =$1 $2 listesindeki tum girdiler gosteriliyor:
-DISPLAY2_MATCH     =$1 ile ilintili $2 $3 listesindeki girdiler gosteriliyor:
-ADD2               =$1 girdisi $2 $3 listesine eklendi.
-ADD2_NUMBER        =#$1 girdisi $2 $3 listesine eklendi.
-ADD2_LEVEL         =$1 girdisi $2 $3 listesine $4 seviyesinde eklendi.
-ADD2_TIME          =$1 girdisi $2 $3 listesine $4 icin eklendi.
-CHANGE2_LEVEL      =$1 girdisi $2 $3 listesinde $4 seviyesine cevrildi.
-CHANGE2_TIME       =$1 girdisi $2 $3 listesinde $4 degerine cevrildi.
-DEL2               =$1 girdisi $2 $3 listesinden silindi.
-DEL2_MATCH         =$1 girdi $2 ile ilintili oldugundan $3 $4 listesinden silindi.
-DEL2_NUMBER        =#$1 girdisi $2 $3 listesinden silindi.
-EXISTS2            =$1 girdisi zaten var veya $2 $3 listesinde bulunuyor.
-NOTEXISTS2         =$1 ile ilintili $2 $3 listesinde girdi yok.
-NOTEXISTS2_NUMBER  =#$1 girdisi $2 $3 listesinde girdi yok.
+DISPLAY2_MATCH     =\b$1\b ile ilintili $2 $3 listesindeki girdiler gosteriliyor:
+ADD2               =\b$1\b girdisi $2 $3 listesine eklendi.
+ADD2_NUMBER        =\b#$1\b girdisi $2 $3 listesine eklendi.
+ADD2_LEVEL         =\b$1\b girdisi $2 $3 listesine $4 seviyesinde eklendi.
+ADD2_TIME          =\b$1\b girdisi $2 $3 listesine $4 icin eklendi.
+CHANGE2_LEVEL      =\b$1\b girdisi $2 $3 listesinde $4 seviyesine cevrildi.
+CHANGE2_TIME       =\b$1\b girdisi $2 $3 listesinde $4 degerine cevrildi.
+DEL2               =\b$1\b girdisi $2 $3 listesinden silindi.
+DEL2_MATCH         =$1 girdi \b$2\b ile ilintili oldugundan $3 $4 listesinden silindi.
+DEL2_NUMBER        =\b#$1\b girdisi $2 $3 listesinden silindi.
+EXISTS2            =\b$1\b girdisi zaten var veya $2 $3 listesinde bulunuyor.
+NOTEXISTS2         =\b$1\b ile ilintili $2 $3 listesinde girdi yok.
+NOTEXISTS2_NUMBER  =\b#$1\b girdisi $2 $3 listesinde girdi yok.
 EMPTY2             =$1 $2 listesinde girdi yok.
 
 ACCESS             =giris
@@ -350,7 +350,7 @@ PICDISABLED        =Resim saklama KAPALI.
 ;
 [NS_INFO]
 REALNAME           =$1 aslinda $2.
-HOST               =\    Host Nicki: $1
+HOST               =\    Host Nicki: \b$1\b
 REGISTERED         =\       Kayitli: $1$2
 ONLINEAS           =\        Online: $1
 LASTALLMASK        =\ En Son T.Mask: $1
@@ -362,13 +362,14 @@ SUSPEND            =\        Askida: $1 once $2 tarafindan
 SUSPENDFOR         =\          Ýcin: $1
 EMAIL              =\        E-Mail: $1
 URL                =\   WWW Sayfasi: http://$1
-ICQ                =\         ICQ #: $1
+ICQ                =\       ICQ UIN: $1
+AIM                =\        AIM ID: $1
 DESCRIPTION        =\      Aciklama: $1
 COMMENT            =\         Yorum: $1
 COMMITTEES         =\     Komiteler: $1
 OPTIONS            =\    Secenekler: $1
-HASPIC             =Bu kullanicinin bir resmi var. /MSG $1 SEND $2 yazarak bu resmi alabilirsiniz.
-ISONLINE           =Bu kullanici su an online.  Type /whois $1 yazarak kullanici hakkinda daha detayli bilgi alabilirsiniz.
+HASPIC             =Bu kullanicinin bir resmi var. \b/MSG $1 SEND $2\b yazarak bu resmi alabilirsiniz.
+ISONLINE           =Bu kullanici su an online.  Type \b/whois $1\b yazarak kullanici hakkinda daha detayli bilgi alabilirsiniz.
 NOEXPIRE           =bitmeyen
 
 ;
@@ -378,7 +379,8 @@ NOEXPIRE           =bitmeyen
 PASSWORD           =Password
 EMAIL              =E-Mail adresi
 URL                =WWW Sayfasi
-ICQ                =ICQ numarasi
+ICQ                =ICQ UIN
+AIM                =AIM ID
 DESCRIPTION        =Fiziksel Tanimi
 COMMENT            =Yorum
 PROTECT            =Kill Korumasi
@@ -394,25 +396,25 @@ LANGUAGE           =Dil
 ; NickServ command performed on OTHER nicknames.
 ;
 [NS_OTH_COMMAND]
-REGISTERED         =Nick $1 su an host $2 altinda kayitli.
-LINKED             =Nick $1 su an $2 ile baglantili.
+REGISTERED         =Nick $1 su an host \b$2\b altinda kayitli.
+LINKED             =Nick $1 su an \b$2\b ile baglantili.
 DROPPED            =Nick $1 birikildi.
 UNLINKED           =Nick $1 baglantisi koparildi.
 NEWHOST            =Nick $1 artik host.
 IDENTIFIED         =Password dogru- artik nick $1 icin tanimlisiniz.
-SET_TO             =$1 nick $2 icin $3 olarak ayarli.
+SET_TO             =$1 nick $2 icin \b$3\b olarak ayarli.
 UNSET              =$1 nick $2 icin ayarsiz.
-OPT_SET_TO         =$1 secenegi nickname $2 icin $3 olarak ayarli.
+OPT_SET_TO         =$1 secenegi nickname $2 icin \b$3\b olarak ayarli.
 
-RELEASED           =$1 nickine sahip araci su an hattan koparildi.
+RELEASED           =\b$1\b nickine sahip araci su an hattan koparildi.
 HELD               =$1 nicki servisler tarafindan tutuluyor.
 SUSPENDED          =$1 nicki askida.
 UNSUSPENDED        =$1 nicki serbest birakildi.
 FORBIDDEN          =$1 nicki yasaklandi.
-GETPASS            =$1 ($2) nickinin passwordu $3. 
-LOCKED             =$1 $2 nicki icin $3 olarak KILITLENDI.
+GETPASS            =$1 ($2) nickinin passwordu \b$3\b. 
+LOCKED             =$1 $2 nicki icin \b$3\b olarak KILITLENDI.
 UNLOCKED           =$1 $2 nicki icin ACILDI.
-OPT_LOCKED         =$1 secenegi $2 nicki icin $3 olarak KILITLENDI.
+OPT_LOCKED         =$1 secenegi $2 nicki icin \b$3\b olarak KILITLENDI.
 OPT_UNLOCKED       =$1 secenegi $2 nicki icin ACILDI.
 
 ;
@@ -420,15 +422,15 @@ OPT_UNLOCKED       =$1 secenegi $2 nicki icin ACILDI.
 ; NickServ command performed on YOUR nicknames.
 ;
 [NS_YOU_COMMAND]
-REGISTERED         =Nickiniz $1 hostu altinda kaydedildi.
-LINKED             =Nickiniz $1 ile baglandi.
+REGISTERED         =Nickiniz \b$1\b hostu altinda kaydedildi.
+LINKED             =Nickiniz \b$1\b ile baglandi.
 DROPPED            =Nickiniz birakildi.
 UNLINKED           =Nickinizin baglantisi koparildi.
 NEWHOST            =Nickiniz artik host.
 IDENTIFIED         =Password dogru- artik tanimlisiniz.
-SET_TO             =$1 iniz $2 olarak ayarli.
+SET_TO             =$1 iniz \b$2\b olarak ayarli.
 UNSET              =$1 iniz ayarsiz.
-OPT_SET_TO         =$1 secenegi $2 olarak ayarlandi.
+OPT_SET_TO         =$1 secenegi \b$2\b olarak ayarlandi.
 
 PENDING            =Lutfen simdi resminizi yollayiniz.
 CANCEL             =Bekleyen dosya transferi iptal edildi.
@@ -564,23 +566,23 @@ NOREVENGE          =$1 intikam seviyesi gecersiz.
 ; ChanServ commands.
 ;
 [CS_COMMAND]
-REGISTERED         =Kanal $1 founder $2 ile kaydedildi.
+REGISTERED         =Kanal $1 founder \b$2\b ile kaydedildi.
 DROPPED            =Kanal $1 birakildi.
 IDENTIFIED         =Password dogru - kanal $1 founderi olarak tanimlandiniz.
-SET_TO             =$1 kanal $2 icin $3 olarak ayarlandi.
+SET_TO             =$1 kanal $2 icin \b$3\b olarak ayarlandi.
 UNSET              =$1 kanal $2 icin ayarsiz.
-LOCKED             =$1 kanal $2 icin $3 olarak KILITLENDI.
+LOCKED             =$1 kanal $2 icin \b$3\b olarak KILITLENDI.
 UNLOCKED           =$1 kanal $2 icin ACIK.
-MLOCK_REVERSED     =Mode kiliti cevrildi $1.
-MLOCK_FORCED       =Mode kiliti zorladi $1.
-MLOCK_SET          =Mode kiliti $1 kanali icin $2 olarak ayarlandi.
+MLOCK_REVERSED     =Mode kiliti cevrildi \b$1\b.
+MLOCK_FORCED       =Mode kiliti zorladi \b$1\b.
+MLOCK_SET          =Mode kiliti $1 kanali icin \b$2\b olarak ayarlandi.
 MLOCK_UNSET        =Mode kiliti $1 kanali icin kaldirildi.
-MLOCK_LOCK         =Mode kiliti $1 kanali icin $2 olarak KILITLENDI.
+MLOCK_LOCK         =Mode kiliti $1 kanali icin \b$2\b olarak KILITLENDI.
 MLOCK_UNLOCK       =Mode kiliti $1 kanali icin acildi.
 SUSPENDED          =$1 kanali askiya alindi.
 UNSUSPENDED        =$1 kanali serbest birakildi.
 FORBIDDEN          =$1 kanali yasakli.
-GETPASS            =$1 ($2) kanali icin password $3.
+GETPASS            =$1 ($2) kanali icin password \b$3\b.
 KICK               =$1 ($2) istegi.
 INVITE             =$1 kanalina davet edildiniz.
 OTH_INVITE         =$1 kanalina $2 tarafindan davet edildiniz.
@@ -588,7 +590,7 @@ UNBANNED           =$1 kanalinda BANiniz kaldirildi.
 OTH_UNBANNED       =$1 nickinin $2 kanalinda BANi kaldirildi.
 CLEAR              =$1 komutu $2 tarafindan $3 kanali icin uygulandi.
 LEVEL_HEAD         =Level  TAG        Title ($1)
-LEVEL_HAVE         =$1 giris seviyeniz $2 kanali icin bulunmakta.
+LEVEL_HAVE         =\b$1\b giris seviyeniz $2 kanali icin bulunmakta.
 
 ;
 ; This section contains the output used at the end of SUCCESSFULL
@@ -607,10 +609,10 @@ OTH_MEMBER         =$1 $2 komitesinde.
 OTH_NOTMEMBER      =$1 $2 komiteside degil.
 OTH_HEAD           =$1 $2 komitesinin baskani.
 OTH_NOTHEAD        =$1 $2 komitesinin baskani degil.
-NEW                =$1 komitesi $2 baskanliginda yaratildi.
+NEW                =$1 komitesi \b$2\b baskanliginda yaratildi.
 KILL               =$1 komitesi silindi.
 MEMO               =$1 komitesinin tum uyelerine not gonderildi.
-SET_TO             =$1 $2 komitesi icin $3 olarak ayarlandi.
+SET_TO             =$1 $2 komitesi icin \b$3\b olarak ayarlandi.
 UNSET              =$1 $2 komitesi icin ayarlanmadi.
 DEFUNCT            =DEFUNCT
 
@@ -619,7 +621,7 @@ DEFUNCT            =DEFUNCT
 ;
 [COMMSERV_INFO]
 DESCRIPTION        =$1 is $2
-HEADCOM            =\  Baskan: $1
+HEADCOM            =\  Baskan: \b$1\b
 HEAD               =\  Baskan: $1
 EMAIL              =\  E-Mail: $1
 URL                =WWW Sayfasi: http://$1
@@ -638,8 +640,8 @@ SET_OPENMEMOS      =Acik Notlar
 ; These are status output lines for OperServ
 ;
 [OS_STATUS]
-INVALID_THREAD     =$1 thread tipi gecersiz.
-INVALID_LEVEL      =$1 izleme seviyesi gecersiz.
+INVALID_THREAD     =\b$1\b thread tipi gecersiz.
+INVALID_LEVEL      =\b$1\b izleme seviyesi gecersiz.
 ISLINKED           =Server $1 zaten bagli.
 ISNOTLINKED        =Server $1 bagli degil.
 ISLANG             =$1 dili zaten yuklu.
@@ -695,8 +697,8 @@ MISC_COMM_OPT      =Ayarli komite secenekleri: $1
 [OS_COMMAND]
 CHAN_MODE          =$1 mode degisimi $2 kanali icin gonderildi.
 NICK_MODE          =$1 mode degisimi $2 nicki icin gonderildi.
-QLINE              =$1 ile ilintili nickler icin karantina $2.
-NOOP               =IRC Operator karantinasi $1 ,server $2.
+QLINE              =$1 ile ilintili nickler icin karantina \b$2\b.
+NOOP               =IRC Operator karantinasi \b$1\b ,server $2.
 KILL               =$1 kullanicisi sessizce atildi.
 PING               =PING mesaji tum serverlara gonderildi.
 UPDATE             =Bilgi bankalari kaydedildi.
@@ -705,28 +707,28 @@ RELOAD             =Konfigurasyon dosyasi yeniden yuklendi.
 RELOAD_FAIL        =UYARI: Konfigurasyon dosyasi okunamadi.
 UNLOAD             =$1 dili geri yuklendi.
 JUPE               =Server $1 juplandi.
-ONOFF              =Servisler $1.
-ONOFF_ONE          =Servis $1 $2.
+ONOFF              =Servisler \b$1\b.
+ONOFF_ONE          =Servis $1 \b$2\b.
 
 ;
 ; These are MemoServ status responses.
 ;
 [MS_STATUS]
 CS_EMPTY           =$1 kanalinda haber yok.
-CS_UNREAD          =$1 kanalinda yeni $2 haber var.  Gormek icin /MSG $3 LIST $4 yaziniz.
+CS_UNREAD          =$1 kanalinda yeni $2 haber var.  Gormek icin \b/MSG $3 LIST $4\b yaziniz.
 CS_NOUNREAD        =$1 kanalinda okunmamis haber yok.
 NS_EMPTY           =Notunuz yok.
-NS_UNREAD          =$1 yeni notunuz var.  Gormek icin /MSG $2 LIST yaziniz.
+NS_UNREAD          =$1 yeni notunuz var.  Gormek icin \b/MSG $2 LIST\b yaziniz.
 NS_NOUNREAD        =Yeni haber notunuz yok.
 IGNORE             =$1 nicki notlarinizi reddediyor.
-TRUNCATE           =Mesaj "...$1" noktasinda kesildi.  Devami icin /MSG $2 CONTINUE <text> yaziniz.
+TRUNCATE           =Mesaj "...$1" noktasinda kesildi.  Devami icin \b/MSG $2 CONTINUE <text>\b yaziniz.
 PENDING            =Gonderilmeyi bekleyen notlariniz var.
 NOPENDING          =Gonderilmeyi bekleyen notunuz yok.
 FILEDISABLED       =Notlari dosya eklentisi yapilmasi KAPALI.
-FORWARD            =[FORWARD: $1] $2
-FORWARD_ARG        =[FORWARD($1): $2] $3
-REPLY              =[REPLY: "$1"] $2
-REPLY_ARG          =[REPLY($1): "$2"] $3
+FORWARD            =[\bFORWARD\b: $1] $2
+FORWARD_ARG        =[\bFORWARD\b($1): $2] $3
+REPLY              =[\bREPLY\b: "$1"] $2
+REPLY_ARG          =[\bREPLY\b($1): "$2"] $3
 
 ;
 ; This section contains the output used at the end of SUCCESSFULL
@@ -751,6 +753,6 @@ PENDING            =Not bekliyor.  Devam etmek icin $1 e basin yada iptal edin.
 PENDING_FILE       =Not su an bekliyor.  Dosya transferine baslamak icin $1 suresiniz var, devam edin yada iptal edin.
 CONTINUE           =Bekleyen notun suresi resetlendi.  Devam etmek icin $1 e basin yada iptal edin.
 SENT               =Not gonderildi. Alici: $1 ($2) .
-CS_NEW             =Yeni bir haber var (#$1) Kanal: $2 Gonderen: $3.  Okumak icin /MSG $4 READ $5 $6 yaziniz.
-NS_NEW             =Yani bir notunuz var (#$1).  Okumak icin /MSG $2 READ $3 yaziniz.
+CS_NEW             =Yeni bir haber var (#$1) Kanal: $2 Gonderen: $3.  Okumak icin \b/MSG $4 READ $5 $6\b yaziniz.
+NS_NEW             =Yani bir notunuz var (#$1).  Okumak icin \b/MSG $2 READ $3\b yaziniz.
 

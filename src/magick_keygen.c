@@ -20,6 +20,10 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.19  2001/07/08 01:37:55  prez
 ** Verified encryption works ...
 **
@@ -107,6 +111,7 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "config.h"
 #ifdef HASCRYPT
 #include <stdarg.h>
@@ -128,9 +133,20 @@ void mHASH16(const char *in, const size_t size, char *out);
 void mHASH(const char *in, const size_t size, char *out);
 int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...);
 int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
+void signal_catcher(int signum);
 
 #if MAX_KEYLEN < MAX_REAL_KEYLEN
 #define MAX_KEYLEN	MAX_REAL_KEYLEN
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX	512
+#endif
+
+FILE *outfile = NULL, *tty = NULL;
+char filename[PATH_MAX] = {0};
+#ifdef HAVE_TERMIO_H
+struct termio tty_new, tty_orig;
 #endif
 
 #endif /* HASCRYPT */
@@ -146,18 +162,23 @@ int main(int argc, char **argv)
 
 #else /* !HASCRYPT */
     size_t i, key_size, mr_keylen, mr_count;
-    char key1[MAX_KEYLEN+1], key2[MAX_KEYLEN+1], verify[MAX_KEYLEN+1], filename[512];
+    char key1[MAX_KEYLEN+1], key2[MAX_KEYLEN+1], verify[MAX_KEYLEN+1];
     char instr[VERIFY_SIZE], outstr[MD5_DIGEST_LENGTH];
-    FILE *outfile, *tty;
-#ifdef HAVE_TERMIO_H
-    struct termio tty_new, tty_orig;
+
+    signal(SIGINT, signal_catcher);
+#ifdef SIGHUP
+    signal(SIGHUP, signal_catcher);
+#endif
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    signal(SIGQUIT, signal_catcher);
+#endif
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    signal(SIGPIPE, signal_catcher);
 #endif
 
     printf("Magick IRC Services - http://www.magick.tm\n");
     printf("    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n");
     printf("    (c) 1998-2001 William King <ungod@magick.tm>\n\n");
-
-    memset(filename, 0, 512);
 
     if (argc>1)
     {
@@ -180,17 +201,42 @@ int main(int argc, char **argv)
 		    filename[i]=0;
 	}
     }
+
+    if (access(filename, W_OK) >= 0)
+    {
+	i=1;
+	while(i)
+	{
+	    printf("Key file already exists, are you sure you wish to overwrite it [y/N]? ");
+	    memset(verify, 0, MAX_KEYLEN+1);
+	    fgets(verify, MAX_KEYLEN, stdin);
+	    switch(verify[0])
+	    {
+	    case 'Y':
+	    case 'y':
+		i=0;
+		break;
+	    case 'N':
+	    case 'n':
+	    case '\n':
+	    case '\r':
+	    case 0:
+		return 1;
+	    }
+	}
+    }
+
     if ((outfile = fopen(filename, "w")) == NULL)
     {
 	fprintf(stderr, "Could not open output file.\n");
-	return 1;
+	return 2;
     }
 
     /* This crap is needed to turn of echoing password */
 #ifdef HAVE_TERMIO_H
     if ((tty = fopen("/dev/tty", "r")) == NULL)
 	tty = stdin;
-    ioctl(fileno(tty), TCGETA,&tty_orig);
+    ioctl(fileno(tty), TCGETA, &tty_orig);
     memcpy(&tty_new, &tty_orig, sizeof(tty_orig));
     tty_new.c_lflag &= ~ECHO;
     ioctl(fileno(tty), TCSETA, &tty_new);
@@ -210,6 +256,8 @@ int main(int argc, char **argv)
 #ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
+	fclose(outfile);
+	remove(filename);
 	return 3;
     }
 
@@ -223,6 +271,8 @@ int main(int argc, char **argv)
 #ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
+	fclose(outfile);
+	remove(filename);
 	return 4;
     }
 
@@ -237,6 +287,8 @@ int main(int argc, char **argv)
 #ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
+	fclose(outfile);
+	remove(filename);
 	return 3;
     }
 
@@ -250,6 +302,8 @@ int main(int argc, char **argv)
 #ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
+	fclose(outfile);
+	remove(filename);
 	return 4;
     }
 
@@ -260,6 +314,8 @@ int main(int argc, char **argv)
     if (memcmp(key1, key2, MAX_KEYLEN)==0)
     {
 	fprintf(stderr, "Key 1 and key 2 must be different!\n");
+	fclose(outfile);
+	remove(filename);
 	return 5;
     }
 
@@ -385,6 +441,21 @@ int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap)
     iLen = vsnprintf(buf, size, fmt, ap);
 #endif
     return iLen;
+}
+
+void signal_catcher(int signum)
+{
+    if (outfile != NULL)
+    {
+	fclose(outfile);
+	remove(filename);
+    }
+#ifdef HAVE_TERMIO_H
+    if (tty != NULL)
+	ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+    printf("\n");
+    exit(-1);
 }
 
 #endif /* HASCRYPT */

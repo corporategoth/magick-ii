@@ -19,7 +19,7 @@ public IFilePrint<T> {
 public:
 	// add more simple type writers here
 
-	inline void WriteElement(Tag& t, const bool& val, dict& attribs = blank_dict) {
+	inline void WriteElement(Tag& t, const bool val, dict& attribs = blank_dict) {
 		Indent();
 		mstring param;
 		dict::iterator iter;
@@ -28,7 +28,7 @@ public:
 		Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, const int& val, dict& attribs = blank_dict) {
+	inline void WriteElement(Tag& t, const int val, dict& attribs = blank_dict) {
 		Indent();
 		mstring param;
 		dict::iterator iter;
@@ -37,7 +37,7 @@ public:
 		Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, const long& val, dict& attribs = blank_dict) {
+	inline void WriteElement(Tag& t, const long val, dict& attribs = blank_dict) {
 		Indent();
 		mstring param;
 		dict::iterator iter;
@@ -55,7 +55,7 @@ public:
 		Print("<%s%s>%7.5f</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, const unsigned int& val, dict& attribs = blank_dict) {
+	inline void WriteElement(Tag& t, const unsigned int val, dict& attribs = blank_dict) {
 		Indent();
 		mstring param;
 		dict::iterator iter;
@@ -64,7 +64,7 @@ public:
 		Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, const unsigned long& val, dict& attribs = blank_dict) {
+	inline void WriteElement(Tag& t, const unsigned long val, dict& attribs = blank_dict) {
 		Indent();
 		mstring param;
 		dict::iterator iter;

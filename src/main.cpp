@@ -25,6 +25,10 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.48  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -122,43 +126,51 @@ int main(int argc, char **argv)
 
 	int Result = MAGICK_RET_RESTART;
 	mThread::Attach(tt_MAIN);
+	bool firstrun = true;
 	while (Result == MAGICK_RET_RESTART)
 	{
+	    Parent = new Magick(argc, argv);
+	    if (Parent == NULL)
+	    {
+		ACE_OS::fprintf(stderr, "Failed to allocate memory to start ...\n");
+		ACE_OS::fflush(stderr);
+		Result = MAGICK_RET_ERROR;
+		break;
+	    }
+	    ACE_Reactor::close_singleton();
+	    Result = Parent->Start(firstrun);
+	    delete Parent;
 	    Parent = NULL;
-	    Magick internalobject(argc, argv);
-	    Parent = &internalobject;
-	    Result = internalobject.Start();
+	    firstrun = false;
 	}
-	Parent = NULL;
 	mThread::Detach();
-	if (Result != MAGICK_RET_NORMAL)
-	{
-	    ACE_OS::fprintf(stderr, "\n");
-	}
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
     catch(exception &e)
     {
 	// new style STL exceptions
-	ACE_OS::fprintf(stderr,"(EXC) Unhandled exception: %s\n",e.what()); ACE_OS::fflush(stderr);
+	ACE_OS::fprintf(stderr,"(EXC) Unhandled exception: %s\n",e.what());
+	ACE_OS::fflush(stderr);
     }
     catch(char *str)
     {
 	// exceptions from memory management
-	ACE_OS::fprintf(stderr,"(STR) Unhandled exception: %s\n",str); ACE_OS::fflush(stderr);
+	ACE_OS::fprintf(stderr,"(STR) Unhandled exception: %s\n",str);
+	ACE_OS::fflush(stderr);
     }
     catch(int i)
     {
 	// old style c exceptions
-	ACE_OS::fprintf(stderr,"(INT) Unhandled exception: %d\n",i); ACE_OS::fflush(stderr);
+	ACE_OS::fprintf(stderr,"(INT) Unhandled exception: %d\n",i);
+	ACE_OS::fflush(stderr);
     }
     catch(...)
     {
 	// even older style exceptions like SIGSEGV
-	ACE_OS::fprintf(stderr,"(OTH) Unhandled exception.\n"); ACE_OS::fflush(stderr);
-	return -1;
+	ACE_OS::fprintf(stderr,"(OTH) Unhandled exception.\n");
+	ACE_OS::fflush(stderr);
     }
 #endif
-    return 0;
+    return MAGICK_RET_ERROR;
 }

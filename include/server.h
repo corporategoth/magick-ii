@@ -25,6 +25,10 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2001/11/03 21:02:51  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.73  2001/08/05 04:53:25  prez
 ** Fixes for topic under hybrid
 **
@@ -209,11 +213,13 @@ class Protocol
 
     bool i_Globops;
     bool i_Helpops;
+    bool i_Chatops;
     bool i_Tokens;
     bool i_P12;
     bool i_TSora;
     bool i_SJoin;
     bool i_BigTopic;
+    bool i_TopicJoin;
 
     /* AKILL types
      *
@@ -228,8 +234,11 @@ class Protocol
      *        GLINE * -user@host
      * 2002 = GLINE +user@host time :reason
      *        GLINE -user@host
-     * 2003 = GLINE opernick operuser operhost operserver user host :reason
+     * 3000 = GLINE oper operuser operhost operserver user host :reason
+     *            (above repeated 3 times, for 3 different opers/servers)
      *        NO UNGLINE
+     * 3001 = KLINE killer * time user host :reason
+     *        NO UNKLINE
      */
     unsigned int i_Akill;
 
@@ -312,6 +321,7 @@ public:
     unsigned int MaxLine() const  { return i_MaxLine; }
     bool Globops() const	  { return i_Globops; }
     bool Helpops() const	  { return i_Helpops; }
+    bool Chatops() const	  { return i_Helpops; }
     bool Tokens() const		  { return i_Tokens; }
     void Tokens(const bool in)	  { i_Tokens = in; }
     bool SJoin() const		  { return i_SJoin; }
@@ -319,6 +329,7 @@ public:
     bool P12() const		  { return i_P12; }
     bool TSora() const		  { return i_TSora; }
     bool BigTopic() const	  { return i_BigTopic; }
+    bool TopicJoin() const	  { return i_TopicJoin; }
     unsigned int Akill() const    { return i_Akill; }
     unsigned int Signon() const   { return i_Signon; }
     unsigned int Modes() const    { return i_Modes; }
@@ -401,7 +412,7 @@ class Server : public mBase
     friend class Reconnect_Handler;
     friend class ToBeSquit_Handler;
     friend class Squit_Handler;
-    friend int IrcSvcHandler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
+    friend int IrcSvcHandler::handle_close (ACE_HANDLE, ACE_Reactor_Mask);
 
     void raw(const mstring& send) const;
     void sraw(const mstring& send) const;
@@ -415,8 +426,8 @@ class Server : public mBase
     mstring i_OurUplink;
     
     enum send_type {
-	t_GLOBOPS, t_HELPOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
-	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
+	t_GLOBOPS, t_HELPOPS, t_CHATOPS, t_INVITE, t_KICK, t_KILL,
+	t_NOTICE, t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
 	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(const mstring& nick);
@@ -433,6 +444,7 @@ public:
     Server();
     ~Server() {}
     void SignOnAll();
+    void SignOffAll(const mstring& reason = "");
     Protocol proto;
     size_t UserMax() const;
 
@@ -468,6 +480,7 @@ public:
     void AWAY(const mstring& nick, const mstring& reason = "");
     void GLOBOPS(const mstring& nick, const mstring& message);
     void HELPOPS(const mstring& nick, const mstring& message);
+    void CHATOPS(const mstring& nick, const mstring& message);
     void INVITE(const mstring& nick, const mstring& dest, const mstring& channel);
     void JOIN(const mstring& nick, const mstring& channel);
     void KICK(const mstring& nick, const mstring& dest,

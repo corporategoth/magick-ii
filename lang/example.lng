@@ -50,11 +50,11 @@
 ; --------------------------------------------------------------
 ;
 ; IRC beautifying codes:
-;   ^B () = BOLD       - Make text between look brighter
-;   ^_ () = UNDERLINE  - Underline text between
-;   ^V () = REVERSE    - Switch foreground and background
-;   ^O () = CANCEL     - Back to non-bold/underline/reverse
-;   ^C () = COLOUR     - See below
+;   ^B (\b) = BOLD       - Make text between look brighter
+;   ^_ (\_) = UNDERLINE  - Underline text between
+;   ^V (\v) = REVERSE    - Switch foreground and background
+;   ^O (\o) = CANCEL     - Back to non-bold/underline/reverse
+;   ^C (\c) = COLOUR     - See below
 ;
 ; mIRC colour codes:
 ;   0 = White           8  = Yellow
@@ -73,9 +73,9 @@
 ;
 [ERR_SYNTAX]
 TRANSLATED         =Preston Elder <prez@magick.tm>
-UNKNOWN_COMMAND    =Unrecognised command SOMECOMMAND.  Type /MSG NickServ HELP for help.
-UNKNOWN_OPTION     =Unrecognised option SOMEOPTION.  Type /MSG NickServ HELP SET for hezlp.
-NEED_PARAMS        =Insufficient parameters specified for REGISTER.  Type /MSG NickServ HELP REGISTER for help.
+UNKNOWN_COMMAND    =Unrecognised command \bSOMECOMMAND\b.  Type \b/MSG NickServ HELP\b for help.
+UNKNOWN_OPTION     =Unrecognised option \bSOMEOPTION\b.  Type \b/MSG NickServ HELP SET\b for hezlp.
+NEED_PARAMS        =Insufficient parameters specified for \bREGISTER\b.  Type \b/MSG NickServ HELP REGISTER\b for help.
 MUSTCONTAIN        =Specified AKILL entry must contain a '@' character.
 MAYNOTCONTAIN      =Specified AKILL entry may not contain a '!' character.
 MUSTCONTAINONE     =Specified AKILL entry must only contain one '@' character with text each side.
@@ -99,22 +99,22 @@ MUSTBESIZE         =You must specify a size 1Kb or above.
 [ERR_SITUATION]
 NOHELP             =Sorry, there is no help available for $1.
 NOSERVICE          =Service $1 does not exist.
-ONYOURSELF         =You may only perform IDENTIFY on yourself.
-NOTONYOURSELF      =You may not perform GHOST on yourself.
-ONANICK            =You may only perform GHOST a nickname.
-NOTONANICK         =You may not perform TOPIC a nickname.
-ONACHAN            =You may only perform TOPIC a channel.
-NOTONACHAN         =You may not perform GHOST a channel.
-ONCOMMITTEE        =You may only perform INFO on a member of the REGD committee.
-NOTONCOMMITTEE     =You may not perform GETPASS on a member of the OPER committee.
-ONPRIVCOMMITTEE    =You may only perform SOMECMD on a member of the privileged committees.
-NOTONPRIVCOMMITTEE =You may not perform GETPASS on a member of the privileged committees.
-ONDYNAMIC          =You may only perform SOMECMD on a dynamic committee.
-NOTONDYNAMIC       =You may not perform HEAD on a dynamic committee.
-NEED_NICK_IDENT    =You must identify for DROP.  Type /MSG NickServ IDENTIFY <password> then try again.
-NEED_CHAN_IDENT    =You must identify for DROP.  Type /MSG ChanServ IDENTIFY #magick <password> then try again.
+ONYOURSELF         =You may only perform \bIDENTIFY\b on yourself.
+NOTONYOURSELF      =You may not perform \bGHOST\b on yourself.
+ONANICK            =You may only perform \bGHOST\b a nickname.
+NOTONANICK         =You may not perform \bTOPIC\b a nickname.
+ONACHAN            =You may only perform \bTOPIC\b a channel.
+NOTONACHAN         =You may not perform \bGHOST\b a channel.
+ONCOMMITTEE        =You may only perform \bINFO\b on a member of the REGD committee.
+NOTONCOMMITTEE     =You may not perform \bGETPASS\b on a member of the OPER committee.
+ONPRIVCOMMITTEE    =You may only perform \bSOMECMD\b on a member of the privileged committees.
+NOTONPRIVCOMMITTEE =You may not perform \bGETPASS\b on a member of the privileged committees.
+ONDYNAMIC          =You may only perform \bSOMECMD\b on a dynamic committee.
+NOTONDYNAMIC       =You may not perform \bHEAD\b on a dynamic committee.
+NEED_NICK_IDENT    =You must identify for \bDROP\b.  Type \b/MSG NickServ IDENTIFY <password>\b then try again.
+NEED_CHAN_IDENT    =You must identify for \bDROP\b.  Type \b/MSG ChanServ IDENTIFY #magick <password>\b then try again.
 COMPLEX_PASS       =Please choose a more complex password.
-NOTYET             =You may not perform REGISTER for another 30 seconds.
+NOTYET             =You may not perform \bREGISTER\b for another 30 seconds.
 NICK_WRONG_PASS    =Password incorrect.  Your attempt has been logged.
 CHAN_WRONG_PASS    =Password incorrect for channel #magick.  Your attempt has been logged.
 IGNORE_TRIGGER     =You have triggered services IGNORE (5 message(s) in 10 seconds).
@@ -207,25 +207,25 @@ RENAMED_FORBID     =You have been renamed as your nickname was forbidden.
 MAYNOTLINK         =You may not link to this IRC Network.
 
 EXPIRE_AKILL       =Expiring akill for *badguy@bad.isp.com (being bad) set by PreZ for 3 hours.
-NICK_GETPASS       =PreZ just performed a GETPASS on nickname SomeUser (HostUser).
-CHAN_GETPASS       =PreZ just performed a GETPASS on channel #somechan (SomeFounder).
+NICK_GETPASS       =PreZ just performed a GETPASS on nickname \bSomeUser\b (HostUser).
+CHAN_GETPASS       =PreZ just performed a GETPASS on channel \b#somechan\b (SomeFounder).
 GLOBAL_MSG         =PreZ just sent a message to ALL users.
 FLOOD_TEMP         =BadGuy is FLOODING services.  Placed on temporary ignore.
 FLOOD_PERM         =BadGuy is FLOODING services.  Placed on permanent ignore.
 CHAN_MODE          =PreZ just performed a mode change (+s) on channel #somechan.
 NICK_MODE          =PreZ just performed a mode change (+i) on nickname SomeUser.
-AKILL_ADD          =PreZ just added AKILL on host *badguy@bad.isp.com for 3 hours (being bad) - 2 clients killed (3.45%).
-AKILL_EXTEND       =PreZ just extended the AKILL on host *badguy@bad.isp.com by 5 hours.
-OPERDENY_ADD       =PreZ just added Oper Deny on host *!*badoper@bad.isp.com.
-QLINE              =PreZ just turned ON a quarantine on nicknames matching *Bad*.
-NOOP               =PreZ just turned ON IRC Operator quarantine on server bad.server.com.
+AKILL_ADD          =PreZ just added AKILL on host \b*badguy@bad.isp.com\b for 3 hours (being bad) - 2 clients killed (3.45%).
+AKILL_EXTEND       =PreZ just extended the AKILL on host \b*badguy@bad.isp.com\b by 5 hours.
+OPERDENY_ADD       =PreZ just added Oper Deny on host \b*!*badoper@bad.isp.com\b.
+QLINE              =PreZ just turned ON a quarantine on nicknames matching \b*Bad*\b.
+NOOP               =PreZ just turned ON IRC Operator quarantine on server \bbad.server.com\b.
 KILL               =PreZ just silently killed user BadGuy.
 HIDE               =PreZ just changed the host of PreZ to hidden.isp.com.
-SHUTDOWN           =SHUTDOWN command received from PreZ.
-RELOAD             =PreZ just reloaded the server configuration file.
-JUPE               =PreZ just JUPED server bad.server.com.
-ONOFF              =Message services have been turned OFF by PreZ.
-ONOFF_ONE          =Message services for ChanServ have been turned OFF by PreZ.
+SHUTDOWN           =SHUTDOWN command received from \bPreZ\b.
+RELOAD             =\bPreZ\b just reloaded the server configuration file.
+JUPE               =PreZ just JUPED server \bbad.server.com\b.
+ONOFF              =Message services have been turned OFF by \bPreZ\b.
+ONOFF_ONE          =Message services for ChanServ have been turned OFF by \bPreZ\b.
 INVALIDLINK        =Server server.network.com has been SQUIT from hub.network.com as it is not allowed!
 HTM_ON             =Entering high-traffic mode - (20.3Kb/s > 16.0Kb/s)
 HTM_STILL          =Still high-traffic mode 2 (7 delay): 24.2Kb/s
@@ -235,7 +235,7 @@ HTM_DIE            =Cannot recover from high-traffic mode, terminating connectio
 HTM_OFF            =Resuming standard operation...
 HTM_OFF_FORCE      =Resuming standard operation forced by PreZ...
 HTM_SET            =HTM threshold has been set to 16Kb/s by PreZ.
-HTM                =Cannot execute command LIST, currently in high-traffic mode - Please try again later.
+HTM                =Cannot execute command \bLIST\b, currently in high-traffic mode - Please try again later.
 SIGNAL_LOAD        =Received signal #1, server configuration file reloaded.
 SIGNAL_SAVE        =Received signal #15, database save triggered.
 SIGNAL_KILL        =PANIC!  Received signal #11, Last function was BadFunction, shutting down!
@@ -350,41 +350,41 @@ USE_LANGHEAD       =Language                 LNG      HLP
 [LIST]
 LASTMOD            =Last modified 3 minutes ago by PreZ
 MAXLIST            =You may only list up to 50 entries at once.
-NICK_LIST          =Displaying nicknames matching *:
-CHAN_LIST          =Displaying channels matching *:
-COMM_LIST          =Displaying committees matching *:
+NICK_LIST          =Displaying nicknames matching \b*\b:
+CHAN_LIST          =Displaying channels matching \b*\b:
+COMM_LIST          =Displaying committees matching \b*\b:
 DISPLAYED          =50 of 647 entries displayed.
 
 DISPLAY            =Displaying all entries on access list:
-DISPLAY_MATCH      =Displaying entries matching * on access list:
-ADD                =Added entry *prez@new.isp.com to access list.
-ADD_NUMBER         =Added entry #3 to memo list.
-ADD_LEVEL          =Added entry some.isp.com to clone list at 20.
-ADD_TIME           =Added entry *badguy@bad.isp.com to akill list for 3 hours.
-CHANGE_LEVEL       =Changed entry AUTOOP on level list to level 10.
-CHANGE_TIME        =Changed entry *badguy@bad.isp.com on akill list to 4 hours.
-DEL                =Deleted entry *prez@new.isp.com from access list.
-DEL_MATCH          =Deleted 3 entries matching *@*.isp.com from akill list.
-DEL_NUMBER         =Deleted entry #4 from access list.
-EXISTS             =Entry *@bad.isp.com already exists or is inclusive on akill list.
-NOTEXISTS          =No entries matching *@nonext.isp.com on akill list.
-NOTEXISTS_NUMBER   =No entry #50 exists on akill list.
+DISPLAY_MATCH      =Displaying entries matching \b*\b on access list:
+ADD                =Added entry \b*prez@new.isp.com\b to access list.
+ADD_NUMBER         =Added entry \b#3\b to memo list.
+ADD_LEVEL          =Added entry \bsome.isp.com\b to clone list at 20.
+ADD_TIME           =Added entry \b*badguy@bad.isp.com\b to akill list for 3 hours.
+CHANGE_LEVEL       =Changed entry \bAUTOOP\b on level list to level 10.
+CHANGE_TIME        =Changed entry \b*badguy@bad.isp.com\b on akill list to 4 hours.
+DEL                =Deleted entry \b*prez@new.isp.com\b from access list.
+DEL_MATCH          =Deleted 3 entries matching \b*@*.isp.com\b from akill list.
+DEL_NUMBER         =Deleted entry \b#4\b from access list.
+EXISTS             =Entry \b*@bad.isp.com\b already exists or is inclusive on akill list.
+NOTEXISTS          =No entries matching \b*@nonext.isp.com\b on akill list.
+NOTEXISTS_NUMBER   =No entry \b#50\b exists on akill list.
 EMPTY              =No entries in akill list.
 
 DISPLAY2           =Displaying all entries on #magick access list:
-DISPLAY2_MATCH     =Displaying entries matching * on access list list:
-ADD2               =Added entry PreZ to #magick greet list.
-ADD2_NUMBER        =Added entry #3 to OPER signon messages list.
-ADD2_LEVEL         =Added entry SomeUser to #magick access list at level 10.
-ADD2_TIME          =Added entry *!*badguy@bad.isp.com to #magick akick list for 3 hours.
-CHANGE2_LEVEL      =Changed entry SomeUser on #magick access list to level 5.
-CHANGE2_TIME       =Changed entry *!*badguy@bad.isp.com on #magick akick list to 5 hours.
-DEL2               =Deleted entry SomeUser from #magick access list.
-DEL2_MATCH         =Deleted 3 entries matching *!*@*.isp.com from #magick akick list.
-DEL2_NUMBER        =Deleted entry #4 from #magick access list.
-EXISTS2            =Entry *@bad.isp.com already exists or is inclusive on #magick akick list.
-NOTEXISTS2         =No entries matching *@bad.isp.com on #magick akick list.
-NOTEXISTS2_NUMBER  =No entry #5 exists on #magick akick list.
+DISPLAY2_MATCH     =Displaying entries matching \b*\b on access list list:
+ADD2               =Added entry \bPreZ\b to #magick greet list.
+ADD2_NUMBER        =Added entry \b#3\b to OPER signon messages list.
+ADD2_LEVEL         =Added entry \bSomeUser\b to #magick access list at level 10.
+ADD2_TIME          =Added entry \b*!*badguy@bad.isp.com\b to #magick akick list for 3 hours.
+CHANGE2_LEVEL      =Changed entry \bSomeUser\b on #magick access list to level 5.
+CHANGE2_TIME       =Changed entry \b*!*badguy@bad.isp.com\b on #magick akick list to 5 hours.
+DEL2               =Deleted entry \bSomeUser\b from #magick access list.
+DEL2_MATCH         =Deleted 3 entries matching \b*!*@*.isp.com\b from #magick akick list.
+DEL2_NUMBER        =Deleted entry \b#4\b from #magick access list.
+EXISTS2            =Entry \b*@bad.isp.com\b already exists or is inclusive on #magick akick list.
+NOTEXISTS2         =No entries matching \b*@bad.isp.com\b on #magick akick list.
+NOTEXISTS2_NUMBER  =No entry \b#5\b exists on #magick akick list.
 EMPTY2             =No entries in #magick akick list.
 
 ACCESS             =access
@@ -454,7 +454,7 @@ INVALIDEXT         =The extension of the file you attempted to send is not a kno
 ;
 [NS_INFO]
 REALNAME           =Saidin is Preston A. Elder
-HOST               =\     Host Nick: PreZ
+HOST               =\     Host Nick: \bPreZ\b
 REGISTERED         =\    Registered: 1 year (non-expiring)
 ONLINEAS           =\     Online As: PreZ
 LASTALLMASK        =Last Online As: PreZ!prez@some.isp.com
@@ -466,13 +466,14 @@ SUSPEND            =\     Suspended: 2 days ago by PreZ
 SUSPENDFOR         =\           For: being a bad programmer
 EMAIL              =\        E-Mail: prez@magick.tm
 URL                =\      WWW Page: http://www.magick.tm
-ICQ                =\         ICQ #: 000001
+ICQ                =\       ICQ UIN: 1234567
+AIM                =\        AIM ID: SomeAIMperson
 DESCRIPTION        =\   Description: A chick magnet ...
 COMMENT            =\       Comment: Description is a lie ;P
 COMMITTEES         =\    Committees: SADMIN
 OPTIONS            =\       Options: Kill Protection, Secure
-HASPIC             =This user has a picture available (25Kb).  Type /MSG NickServ SEND PreZ to download it.
-ISONLINE           =This user is currently online.  Type /whois PreZ for more information.
+HASPIC             =This user has a picture available (25Kb).  Type \b/MSG NickServ SEND PreZ\b to download it.
+ISONLINE           =This user is currently online.  Type \b/whois PreZ\b for more information.
 NOEXPIRE           =non-expiring
 
 ;
@@ -482,7 +483,8 @@ NOEXPIRE           =non-expiring
 PASSWORD           =Password
 EMAIL              =E-Mail Address
 URL                =WWW Page
-ICQ                =ICQ Number
+ICQ                =ICQ UIN
+AIM                =AIM ID
 DESCRIPTION        =Physical Description
 COMMENT            =Comment
 PROTECT            =Kill Protection
@@ -498,25 +500,25 @@ LANGUAGE           =Language
 ; NickServ command performed on OTHER nicknames.
 ;
 [NS_OTH_COMMAND]
-REGISTERED         =Nickname PreZ is now registered under host *prez@some.isp.com.
-LINKED             =Nickname Saidin is now linked to PreZ.
+REGISTERED         =Nickname PreZ is now registered under host \b*prez@some.isp.com\b.
+LINKED             =Nickname Saidin is now linked to \bPreZ\b.
 DROPPED            =Nickname BadGuy has been dropped.
 UNLINKED           =Nickname PreZ has been unlinked.
 NEWHOST            =Nickname Saidin is now the host.
 IDENTIFIED         =Password accepted - you are now identified for nickname PreZ.
-SET_TO             =EMAIL for nickname PreZ has been set to prez@magick.tm.
+SET_TO             =EMAIL for nickname PreZ has been set to \bprez@magick.tm\b.
 UNSET              =EMAIL for nickname PreZ has been unset.
-OPT_SET_TO         =Private option for nickname PreZ has been set to ON.
+OPT_SET_TO         =Private option for nickname PreZ has been set to \bON\b.
 
-RELEASED           =Client using nickname PreZ has been killed.
+RELEASED           =Client using nickname \bPreZ\b has been killed.
 HELD               =Nickname PreZ is now held by services.
 SUSPENDED          =Nickname BadGuy has been suspended.
 UNSUSPENDED        =Nickname BadGuy has been unsuspended.
 FORBIDDEN          =Nickname BadGuy has been forbidden.
-GETPASS            =Password for nickname SomeUser (SomeHost) is SomePass.
-LOCKED             =Language for nickname PreZ has been LOCKED to ENGLISH.
+GETPASS            =Password for nickname SomeUser (SomeHost) is \bSomePass\b.
+LOCKED             =Language for nickname PreZ has been LOCKED to \bENGLISH\b.
 UNLOCKED           =Language for nickname PreZ has been UNLOCKED.
-OPT_LOCKED         =Private option for nickname $2 has been LOCKED to ON.
+OPT_LOCKED         =Private option for nickname $2 has been LOCKED to \bON\b.
 OPT_UNLOCKED       =Private option for nickname $2 has been UNLOCKED.
 
 ;
@@ -524,15 +526,15 @@ OPT_UNLOCKED       =Private option for nickname $2 has been UNLOCKED.
 ; NickServ command performed on YOUR nicknames.
 ;
 [NS_YOU_COMMAND]
-REGISTERED         =Your nickname is now registered under host *prez@some.isp.com.
-LINKED             =Your nickname is now linked to PreZ.
+REGISTERED         =Your nickname is now registered under host \b*prez@some.isp.com\b.
+LINKED             =Your nickname is now linked to \bPreZ\b.
 DROPPED            =Your nickname has been dropped.
 UNLINKED           =Your nickname has been unlinked.
 NEWHOST            =Your nickname is now the host.
 IDENTIFIED         =Password accepted - you are now identified.
-SET_TO             =Your email has been set to prez@magick.tm.
+SET_TO             =Your email has been set to \bprez@magick.tm\b.
 UNSET              =Your email has been unset.
-OPT_SET_TO         =Private option has been set to ON.
+OPT_SET_TO         =Private option has been set to \bON\b.
 
 PENDING            =Please begin sending your picture now.
 PUB_PENDING        =Please begin sending your file now.
@@ -680,23 +682,23 @@ NOREVENGE          =Revenge level INSANE is not valid.
 ; ChanServ commands.
 ;
 [CS_COMMAND]
-REGISTERED         =Channel #magick has been registered with founder PreZ.
+REGISTERED         =Channel #magick has been registered with founder \bPreZ\b.
 DROPPED            =Channel #magick has been dropped.
 IDENTIFIED         =Password accepted - you are now identified as founder of #magick.
-SET_TO             =EMAIL for channel #magick has been set to magick@magick.tm.
+SET_TO             =EMAIL for channel #magick has been set to \bmagick@magick.tm\b.
 UNSET              =EMAIL for channel #magick has been unset.
-LOCKED             =Private for channel #magick has been LOCKED to ON.
+LOCKED             =Private for channel #magick has been LOCKED to \bON\b.
 UNLOCKED           =Private for channel #magick has been UNLOCKED.
-MLOCK_REVERSED     =Mode lock has reversed -r.
-MLOCK_FORCED       =Mode lock has forced +r.
-MLOCK_SET          =Mode lock for channel #magick has been set to +ntr.
+MLOCK_REVERSED     =Mode lock has reversed \b-r\b.
+MLOCK_FORCED       =Mode lock has forced \b+r\b.
+MLOCK_SET          =Mode lock for channel #magick has been set to \b+ntr\b.
 MLOCK_UNSET        =Mode lock for channel #magick has been removed.
-MLOCK_LOCK         =Mode lock for channel #magick has been locked to +r.
+MLOCK_LOCK         =Mode lock for channel #magick has been locked to \b+r\b.
 MLOCK_UNLOCK       =Mode lock for channel #magick has been unlocked.
 SUSPENDED          =Channel #badchan has been suspended.
 UNSUSPENDED        =Channel #badchan has been unsuspended.
 FORBIDDEN          =Channel #badchan has been forbidden.
-GETPASS            =Password for channel #somechan (SomeFounder) is SomePass.
+GETPASS            =Password for channel #somechan (SomeFounder) is \bSomePass\b.
 KICK               =Requested by PreZ (get out)
 INVITE             =You have been invited to channel #magick.
 OTH_INVITE         =You have been invited to channel #magick by PreZ.
@@ -704,7 +706,7 @@ UNBANNED           =You have been unbanned from channel #magick.
 OTH_UNBANNED       =Nickname PreZ has been unbanned from channel #magick.
 CLEAR              =CLEAR ALL command has been used by PreZ for channel #magick.
 LEVEL_HEAD         =Level  TAG        Title (#magick)
-LEVEL_HAVE         =You have Automatic Op access on channel #magick.
+LEVEL_HAVE         =You have \bAutomatic Op\b access on channel #magick.
 
 ;
 ; This section contains the output used at the end of SUCCESSFUL
@@ -724,14 +726,14 @@ OTH_MEMBER         =PreZ is on the MAGICK-BETA committee.
 OTH_NOTMEMBER      =PreZ is not on the MAGICK-BETA committee.
 OTH_HEAD           =PreZ is head of the MAGICK-BETA committee.
 OTH_NOTHEAD        =PreZ is not head of the MAGICK-BETA committee.
-ADD                =Committee MAGICK-BETA has been created with head PreZ.
+ADD                =Committee MAGICK-BETA has been created with head \bPreZ\b.
 DEL                =Committee MAGICK-BETA has been deleted.
 MEMO               =Memo sent to all members of the MAGICK-BETA committee.
 ISLOCKED           =Private for committee MAGICK-BETA is locked.
 ISNOTLOCKED        =Private for committee MAGICK-BETA is not locked.
-SET_TO             =EMAIL for committee MAGICK-BETA has been set to beta@magick.tm.
+SET_TO             =EMAIL for committee MAGICK-BETA has been set to \bbeta@magick.tm\b.
 UNSET              =EMAIL for committee MAGICK-BETA has been unset.
-LOCKED             =Private for committee MAGICK-BETA has been locked to ON.
+LOCKED             =Private for committee MAGICK-BETA has been locked to \bON\b.
 UNLOCKED           =Private for committee MAGICK-BETA has been unlocked.
 DEFUNCT            =DEFUNCT
 
@@ -741,7 +743,7 @@ DEFUNCT            =DEFUNCT
 [COMMSERV_INFO]
 DESCRIPTION        =MAGICK-BETA is Magick BETA Team
 REGISTERED         =Registered: 4 days
-HEADCOM            =\      Head: MAGICK-DEVEL
+HEADCOM            =\      Head: \bMAGICK-DEVEL\b
 HEAD               =\      Head: PreZ
 EMAIL              =\    E-Mail: beta@magick.tm
 URL                =\  WWW Page: http://www.magick.tm
@@ -761,8 +763,8 @@ SET_OPENMEMOS      =Open Memos
 ; These are status output lines for OperServ
 ;
 [OS_STATUS]
-INVALID_THREAD     =Thread type COMMSERV is not valid.
-INVALID_LEVEL      =Trace level EVERYTHING is not valid (ignored).
+INVALID_THREAD     =Thread type \bCOMMSERV\b is not valid.
+INVALID_LEVEL      =Trace level \bEVERYTHING\b is not valid (ignored).
 ISLINKED           =Server server.network.com is already linked.
 ISNOTLINKED        =Server server.network.com is not linked.
 ISLANG             =Language ENGLISH is already loaded.
@@ -825,8 +827,8 @@ MISC_COMM_OPT      =Default committee options are: Open Memos
 [OS_COMMAND]
 CHAN_MODE          =Mode change +s has been sent for channel #magick.
 NICK_MODE          =Mode change +i has been sent for nickname PreZ.
-QLINE              =Quarantine for nicknames matching Bad* has been turned ON.
-NOOP               =IRC Operator quarantine has been turned ON for server bad.server.com.
+QLINE              =Quarantine for nicknames matching Bad* has been turned \bON\b.
+NOOP               =IRC Operator quarantine has been turned \bON\b for server bad.server.com.
 KILL               =User BadGuy has been killed (silently).
 HIDE               =Changed host of nickname PreZ to silent.isp.com.
 PING               =PING message being sent to all servers.
@@ -837,9 +839,9 @@ RELOAD_FAIL        =WARNING: Could not read configuration file.
 SIGNON             =Signed on all non-active services clients.
 UNLOAD             =Language ENGLISH has been unloaded.
 JUPE               =Server bad.server.com has been juped.
-ONOFF              =Message services have been turned OFF.
-ONOFF_ONE          =Message services for ChanServ have been turned OFF.
-HTM                =High Traffic Mode has been turned ON.
+ONOFF              =Message services have been turned \bOFF\b.
+ONOFF_ONE          =Message services for ChanServ have been turned \bOFF\b.
+HTM                =High Traffic Mode has been turned \bON\b.
 HTM_SET            =HTM Threshold has been reset to 16Kb.
 
 ;
@@ -847,21 +849,21 @@ HTM_SET            =HTM Threshold has been reset to 16Kb.
 ;
 [MS_STATUS]
 CS_EMPTY           =Channel #magick has no news articles.
-CS_UNREAD          =Channel #magick has 2 new news article(s).  Type /MSG MemoServ LIST #magick to list them.
+CS_UNREAD          =Channel #magick has 2 new news article(s).  Type \b/MSG MemoServ LIST #magick\b to list them.
 CS_NOUNREAD        =Channel #magick has no unread news articles.
 NS_EMPTY           =You have no memos.
-NS_UNREAD          =You have 3 new memo(s).  Type /MSG MemoServ LIST to list them.
+NS_UNREAD          =You have 3 new memo(s).  Type \b/MSG MemoServ LIST\b to list them.
 NS_NOUNREAD        =You have no new memos.
 IGNORE             =Nickname PreZ is ignoring your memos.
-TRUNCATE           =Message truncated at "...and I believe we sho".  Type /MSG MemoServ CONTINUE <text> to continue message.
+TRUNCATE           =Message truncated at "...and I believe we sho".  Type \b/MSG MemoServ CONTINUE <text>\b to continue message.
 PENDING            =You have memos pending to be sent.
 NOPENDING          =You have no memos pending to be sent.
 FILEDISABLED       =File attachments in memos have been DISABLED.
 ATTACHLIMIT        =Nickname SomeUser has reached their limit of file attachments.
-FORWARD            =[FORWARD: PreZ] This is a test memo
-FORWARD_ARG        =[FORWARD(#magick): PreZ] This is a test memo
-REPLY              =[REPLY: "Just a note to tell..."] You may be right.
-REPLY_ARG          =[REPLY(#magick): "Just a note to tell..."] You may be right.
+FORWARD            =[\bFORWARD\b: PreZ] This is a test memo
+FORWARD_ARG        =[\bFORWARD\b(#magick): PreZ] This is a test memo
+REPLY              =[\bREPLY\b: "Just a note to tell..."] You may be right.
+REPLY_ARG          =[\bREPLY\b(#magick): "Just a note to tell..."] You may be right.
 
 SET_NOEXPIRE       =No Expire
 
@@ -885,10 +887,10 @@ CS_DEL             =News article(s) 1,3,5 for channel #magick have been deleted.
 CS_DEL_ALL         =All news articles for channel #magick have been deleted.
 NS_DEL             =Your memo(s) 2,4,6 have been deleted.
 NS_DEL_ALL         =All your memos have been deleted.
-CS_SET             =No Expire for news article(s) 1,3,5 of channel #magick has been set to ON.
-CS_SET_ALL         =No Expire for all news articles of channel #magick has been set to ON.
-NS_SET             =No Expire for your memo(s) 2,4,6 has been set to ON
-NS_SET_ALL         =No Expire for all your memos has been set to ON
+CS_SET             =No Expire for news article(s) 1,3,5 of channel #magick has been set to \bON\b.
+CS_SET_ALL         =No Expire for all news articles of channel #magick has been set to \bON\b.
+NS_SET             =No Expire for your memo(s) 2,4,6 has been set to \bON\b
+NS_SET_ALL         =No Expire for all your memos has been set to \bON\b
 CANCEL             =Pending memo has been cancelled.
 PREVIEW            =Pending memo to PreZ is currently:
 PENDING            =Memo is now pending.  You have 2 minutes to continue or cancel it.
@@ -897,5 +899,5 @@ TOOBIG             =Your memo attachment is too big, pending memo has been cance
 NOSPACE            =Not enough space to store your memo attachment, pending memo has been cancelled.
 CONTINUE           =Pending memo timer reset.  You have 2 minutes to continue or cancel it.
 SENT               =Memo has been sent to SomeUser (HostUser).
-CS_NEW             =There is a new news article (#4) for channel #magick from PreZ.  Type /MSG MemoServ READ #magick 4 to read it.
-NS_NEW             =You have a new memo (#3).  Type /MSG MemoServ READ 3 to read it.
+CS_NEW             =There is a new news article (#4) for channel #magick from PreZ.  Type \b/MSG MemoServ READ #magick 4\b to read it.
+NS_NEW             =You have a new memo (#3).  Type \b/MSG MemoServ READ 3\b to read it.

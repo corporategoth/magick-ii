@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copyright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,6 +25,10 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2001/11/03 21:02:51  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.123  2001/07/24 02:51:13  prez
 ** Added ability to do JOIN or SJOIN
 **
@@ -160,7 +164,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "general@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
-const mstring RELEASE			= "b11";
+const mstring RELEASE			= "b12";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
@@ -174,8 +178,8 @@ const mstring PATCH9			= "";
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
 FULLNAME+" - "+SLOGAN,
-"  (c) 1997-2000 Preston Elder <prez@magick.tm>",
-"  (c) 1998-2000 William King <ungod@magick.tm>",
+"  (c) 1997-2001 Preston Elder <prez@magick.tm>",
+"  (c) 1998-2001 William King <ungod@magick.tm>",
 "",
 mstring(PACKAGE)+" is dedicated to the memory of PreZ's beloved",
 "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",

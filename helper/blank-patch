@@ -22,6 +22,14 @@
 # be run as:
 #    blank-patch [-h] [-r] <directory to magick src>
 #
+# The text that goes between the END_OF_PATCH
+# tokens should be generated using the command:
+#    diff -urN original-dir patched-dir
+# Where original-dir is the directory where a
+# default magick distribution is located, and
+# patched-dir where the same distribution with
+# your patch applied is located.
+#
 # The addition to and removal from version.h is
 # automated with this script.
 
@@ -82,7 +90,7 @@ cp include/version.h include/version.h~
 # PUT YOUR DIFF IN BETWEEN THE END_OF_PATCH TOKENS HERE!
 # ENSURE TO LEAVE END_OF_PATCH ON A BLANK LINE ON ITS OWN!
 #
-patch $REVERSE -p0 >$0.log <<END_OF_PATCH
+patch $REVERSE -p1 >$0.log <<END_OF_PATCH
 END_OF_PATCH
 # ==========================================================
 RETVAL=$?

@@ -27,6 +27,10 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2001/11/03 21:02:55  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.7  2001/07/28 21:50:57  prez
 ** Added trace codes ...
 **
@@ -100,6 +104,15 @@ StringStage::StringStage(Stage &PrevStage)
 StringStage::~StringStage()
 {
     NFT("StringStage::~StringStage");
+}
+
+bool StringStage::Validate()
+{
+    NFT("StringStage::Validate");
+    if (!(input != NULL || i_str.length()))
+	RET(false);
+
+    RET(true);
 }
 
 long StringStage::Consume()
@@ -182,6 +195,18 @@ FileStage::~FileStage()
 {
     NFT("FileStage::~FileStage");
     file.Close();
+}
+
+bool FileStage::Validate()
+{
+    NFT("FileStage::Validate");
+    if (!file.IsOpened())
+	RET(false);
+
+    if (input != NULL && !file.IsWritable())
+	RET(false);
+
+    RET(true);
 }
 
 long FileStage::Consume()
@@ -285,6 +310,18 @@ CryptStage::~CryptStage()
 #endif
 }
 
+bool CryptStage::Validate()
+{
+    NFT("CryptStage::Validate");
+    if (input == NULL)
+	RET(false);
+
+    if (!gotkeys)
+	RET(false);
+
+    RET(true);
+}
+
 long CryptStage::Read(char *buf, size_t size)
 {
     FT("CryptStage::Read", ("(char *) buf", size));
@@ -367,8 +404,9 @@ long CryptStage::Read(char *buf, size_t size)
 	    outbufsize = 8-(size-i);
 	}
     }
-    // Ignore trailing null's ...
-    while (buf[i-2]==0) i--;
+    // Ignore trailing null's when decrypting (for what we added ...)
+    if (!encrypt)
+	while (buf[i-2]==0) i--;
     RET(i);
 }
 
@@ -413,6 +451,15 @@ CompressStage::~CompressStage()
 	deflateEnd(&strm);
     else
 	inflateEnd(&strm);
+}
+
+bool CompressStage::Validate()
+{
+    NFT("CompressStage::Validate");
+    if (input == NULL)
+	RET(false);
+
+    RET(true);
 }
 
 long CompressStage::Read(char *buf, size_t size)
@@ -513,6 +560,15 @@ XMLStage::~XMLStage()
 	delete generator;
 }
 
+bool XMLStage::Validate()
+{
+    NFT("XMLStage::Validate");
+    if (input == NULL ? generator == NULL : parser == NULL)
+	RET(false);
+
+    RET(true);
+}
+
 long XMLStage::Consume()
 {
     NFT("XMLStage::Consume");
@@ -610,6 +666,18 @@ VerifyStage::~VerifyStage()
     NFT("VerifyStage::~VerifyStage");
     if (text != NULL)
 	delete text;
+}
+
+bool VerifyStage::Validate()
+{
+    NFT("VerifyStage::Validate");
+    if (input == NULL)
+	RET(false);
+
+    if (text == NULL || vsize <= 0)
+	RET(false);
+
+    RET(true);
 }
 
 long VerifyStage::Read(char *buf, size_t size)

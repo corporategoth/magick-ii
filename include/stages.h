@@ -25,6 +25,10 @@ RCSID(stages_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2001/11/03 21:02:51  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.3  2001/07/01 05:02:46  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -70,6 +74,8 @@ protected:
 
 public:
     virtual ~Stage() {}
+
+    virtual bool Validate() = 0;
     virtual unsigned char GetTag() { return tag; }
     virtual long Consume();
     virtual long Read(char *buf, size_t size) = 0;
@@ -85,6 +91,7 @@ public:
     StringStage(Stage &PrevStage);
     virtual ~StringStage();
 
+    virtual bool Validate();
     mstring Result();
     virtual long Consume();
     virtual long Read(char *buf, size_t size);
@@ -100,6 +107,7 @@ public:
     FileStage(Stage &PrevStage, const mstring &name, const mstring &mode = "w");
     virtual ~FileStage();
 
+    virtual bool Validate();
     virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
@@ -120,6 +128,7 @@ public:
     CryptStage(Stage &PrevStage, const mstring& key1, const mstring& key2);
     virtual ~CryptStage();
 
+    virtual bool Validate();
     virtual long Read(char *buf, size_t size);
 };
 
@@ -134,6 +143,7 @@ public:
     CompressStage(Stage &PrevStage, int level = 0);
     virtual ~CompressStage();
 
+    virtual bool Validate();
     virtual long Read(char *buf, size_t size);
 };
 
@@ -148,6 +158,7 @@ public:
     XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot);
     virtual ~XMLStage();
 
+    virtual bool Validate();
     virtual long Consume();
     virtual long Read(char *buf, size_t size);
 };
@@ -163,6 +174,7 @@ public:
     VerifyStage(Stage &PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize);
     virtual ~VerifyStage();
 
+    virtual bool Validate();
     virtual long Read(char *buf, size_t size);
 };
 

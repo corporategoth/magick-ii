@@ -25,6 +25,10 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.55  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -186,7 +190,7 @@ public:
     void ForcePing();
     mstring SyncTime(const mstring& source = "") const;
     int open(void *in=0);
-    int close(const unsigned long in);
+    int close(u_long in = 0);
     int svc(void);
     void DumpB() const;
     void DumpE() const;
@@ -218,10 +222,11 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     static void *worker(void *);
 public:
     int send(const mstring& data);
-    int open(void *);
+    int open(void * = 0);
     int handle_input(ACE_HANDLE handle);
-    int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
-		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
+    int handle_close (ACE_HANDLE = ACE_INVALID_HANDLE,
+		ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
+    int fini();
 
     unsigned long Local_IP() const { return sock.Local_IP(); }
     size_t In_Traffic() const { return in_traffic; }

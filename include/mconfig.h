@@ -25,6 +25,10 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.20  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -127,7 +131,7 @@ class mConfigEngine
 private:
     ceNode RootNode;
     mstring i_FileName;
-    vector<mstring> DeComment(const vector<mstring>& in);
+    vector<mstring> PreParse(const vector<mstring>& in);
 public:
     mConfigEngine() {}
     mConfigEngine(const mstring& FileName)

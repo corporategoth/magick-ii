@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.177  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.176  2001/08/04 18:32:02  prez
 ** Made some changes for Hybrid 6 -- we now work with it ... mostly.
 **
@@ -422,8 +426,10 @@ void *IrcSvcHandler::worker(void *in)
 	    }}
 	    if (msg != NULL)
 	    {
-		msg->call();
+		int rv = msg->call();
 		delete msg;
+		if (rv < 0)
+		    break;
 	    }
 
 	    size_t msgcnt = 0, thrcnt = 0;
@@ -621,7 +627,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     DRET(0);
 }
 
-int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
+int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 {
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
@@ -682,10 +688,13 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 		delete arg;
 	}
 	if (!Parent->Shutdown())
+	{
+	    CP(("Scheduling SQUIT protect timer..."));
 	    Parent->server.ServerSquit[si->first] =
 		ACE_Reactor::instance()->schedule_timer(&Parent->server.squit,
 		new mstring(si->first),
 		ACE_Time_Value(Parent->config.Squit_Protect()));
+	}
     }}
     CE(1, Parent->server.ServerSquit.size());
     CE(0, Parent->server.ToBeSquit.size());
@@ -722,29 +731,42 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     // Let other threads process shutdown instruction
     // Otherwise cancel them.
 
-    ACE_Time_Value tv(time(NULL)+10);
-    tm.wait(&tv);
     if (tm.count_threads())
     {
-	tm.cancel_all();
-	tv.set(time(NULL)+10);
+	ACE_Time_Value tv(time(NULL)+10);
 	tm.wait(&tv);
-    }
-    /* ACE_Thread::yield();
-    if (tm.count_threads())
-	tm.cancel_all(); */
-    if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
-	    Parent->Shutdown()) && Parent->Connected())
-    {
-	CP(("Scheduling reconnect"));
-	Parent->Connected(false);
-	if(Parent->Reconnect() && !Parent->Shutdown())
-	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
+	if (tm.count_threads())
+	{
+#if defined(SIGIOT) && (SIGIOT != 0)
+	    tm.kill_all(SIGIOT);
+	    tv.set(time(NULL)+10);
+	    tm.wait(&tv);
+	    if (tm.count_threads())
+#endif
+		tm.cancel_all();
+	}
     }
 
-    //sock.Unbind();
-    destroy(); // Destroy us from ACE...
+    // This sets fini() == 1
+    if (sock.IsConnected())
+	sock.close();
+    Parent->Connected(false);
+
+    if (!Parent->Shutdown() && Parent->Reconnect() &&
+	Parent->config.Server_Relink() >= 1)
+    {
+	CP(("Scheduling reconnect"));
+	ACE_Reactor::instance()->schedule_timer(&(Parent->rh), NULL, 
+		ACE_Time_Value(Parent->config.Server_Relink()));
+    }
+
+//  this->destroy();
     DRET(0);
+}
+
+int IrcSvcHandler::fini()
+{
+    return sock.IsConnected() ? 0 : 1;
 }
 
 time_t IrcSvcHandler::HTM_Gap() const
@@ -856,15 +878,22 @@ int IrcSvcHandler::send(const mstring & data)
 {
     FT("IrcSvcHandler::send",(data));
     int recvResult;
-    out_traffic += data.length();
-    recvResult=sock.send(const_cast<char *>((data + "\r\n").c_str()),data.length()+2);
-    CH(D_To,data);
+    mstring tmp(data);
+    tmp.replace("\n", "");
+    tmp.replace("\r", "");
+    out_traffic += tmp.length() + 2;
+    recvResult=sock.send(const_cast<char *>((tmp + "\n\r").c_str()),
+							tmp.length() + 2);
+    CH(D_To,tmp);
     RET(recvResult);
 }
 
 void IrcSvcHandler::enqueue(mMessage *mm)
 {
     FT("IrcSvcHandler::enqueue", (mm));
+
+    if (mm == NULL)
+	return;
 
     while (static_cast<unsigned int>(tm.count_threads()) < Parent->config.Min_Threads())
     {
@@ -1124,13 +1153,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->GotConnect(false);
     Parent->i_currentserver = server;
     Parent->server.proto.Tokens(false);
-    WLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL)
-    {
-	Parent->ircsvchandler->close();
-	Parent->ircsvchandler = NULL;
-    }
-    Parent->Connected(false);
+    if (Parent->Connected())
+	Parent->Disconnect();
     LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
 
     IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
@@ -1150,10 +1174,14 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	laddr.set(port, Parent->startup.Bind().c_str());
     else
 	laddr.set(port);
-    if(C_server.connect(Parent->ircsvchandler,addr,
-    		ACE_Synch_Options::defaults, laddr)==-1)
+
+    int res = 0;
+    { WLOCK(("IrcSvcHandler"));
+    res = C_server.connect(Parent->ircsvchandler, addr,
+    		ACE_Synch_Options::defaults, laddr);
+    }
+    if (res == -1)
     {
-	Parent->ircsvchandler = NULL;
 	LOG(LM_ERROR, "OTHER/REFUSED", (server, details.second.first));
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
@@ -1161,12 +1189,13 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
     else
     {
+	{ RLOCK(("IrcSvcHandler"));
 	if (Parent->ircsvchandler != NULL)
 	{
 	    CB(2, Parent->i_localhost);
 	    Parent->i_localhost = Parent->ircsvchandler->Local_IP();
 	    CE(2, Parent->i_localhost);
-	}
+	}}
 	if (!Parent->server.proto.Protoctl().empty())
 	    Parent->server.raw(Parent->server.proto.Protoctl());
 	if (Parent->server.proto.TSora())
@@ -1511,7 +1540,7 @@ void *EventTask::save_databases(void *in)
 void EventTask::RemoveThread(ACE_thread_t thr)
 {
     NFT("EventTask::RemoveThread");
-    WLOCK(("Events", "thread_heartbead"));
+    WLOCK(("Events", "thread_heartbeat"));
     MCB(thread_heartbeat.size());
     thread_heartbeat.erase(thr);
     MCE(thread_heartbeat.size());
@@ -1520,7 +1549,7 @@ void EventTask::RemoveThread(ACE_thread_t thr)
 void EventTask::Heartbeat(ACE_thread_t thr)
 {
     NFT("EventTask::Heartbeat");
-    WLOCK(("Events", "thread_heartbead"));
+    WLOCK(("Events", "thread_heartbeat"));
     MCB(thread_heartbeat.size());
     thread_heartbeat[thr] = mDateTime::CurrentDateTime();
     MCE(thread_heartbeat.size());
@@ -1598,6 +1627,11 @@ int EventTask::svc(void)
     mDateTime synctime;
     while(!Parent->Shutdown())
     {
+	CP(("TIMERS:  Current time: %ld,  Earliest Timer: %ld",
+		ACE_OS::gettimeofday().sec(),
+		ACE_Reactor::instance()->timer_queue()->is_empty() ? 0 :
+		ACE_Reactor::instance()->timer_queue()->earliest_time().sec()));
+
 	proc = true;
 	// Make sure we're turned on ...
 	if (!Parent->AUTO())
@@ -2157,7 +2191,8 @@ int EventTask::svc(void)
 				m->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
 			    {
 				Ids.insert(m->first);
-				Msgs.push_back(m->second);
+				if (m->second != NULL)
+				    Msgs.push_back(m->second);
 				mMessage::MsgIdMap.erase(m);
 			    }
 			}}

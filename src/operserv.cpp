@@ -27,6 +27,10 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.132  2001/11/03 21:02:54  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.131  2001/07/29 21:22:26  prez
 ** Delayed clone akills on sync until AFTER we're synced
 **
@@ -1113,7 +1117,13 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UPD*", Parent->commserv.SADMIN_Name(), OperServ::do_Update);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SAVE*", Parent->commserv.SADMIN_Name(), OperServ::do_Update);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "DIE*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "RESTART*", Parent->commserv.SADMIN_Name(), OperServ::do_Restart);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "RELOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Reload);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1270,7 +1280,13 @@ void OperServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "UPD*", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SAVE*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "DIE*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "RESTART*", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "RELOAD*", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -1948,12 +1964,43 @@ void OperServ::do_Shutdown(const mstring &mynick, const mstring &source, const m
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring reason = params.After(" ");
+
     NSEND(mynick, source, "OS_COMMAND/SHUTDOWN");
-    ANNOUNCE(mynick, "MISC/SHUTDOWN", ( source));
+    ANNOUNCE(mynick, "MISC/SHUTDOWN", (source, reason));
     LOG(LM_CRITICAL, "OPERSERV/SHUTDOWN", (
-	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
-    ACE_OS::sleep(1);
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	reason));
     Parent->Shutdown(true);
+    Parent->Die();
+}
+
+
+void OperServ::do_Restart(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("OperServ::do_Restart", (mynick, source, params));
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring reason = params.After(" ");
+
+    NSEND(mynick, source, "OS_COMMAND/RESTART");
+    ANNOUNCE(mynick, "MISC/RESTART", (source, reason));
+    LOG(LM_CRITICAL, "OPERSERV/RESTART", (
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	reason));
     Parent->Die();
 }
 

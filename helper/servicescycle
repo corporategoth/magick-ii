@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+#  Magick IRC Services
+#
+# $Id$
+# (c) 1997-2001 Preston Elder <prez@magick.tm>
+# (c) 1998-2001 William King <ungod@magick.tm>
+#
+# The above copywright may not be removed under any
+# circumstances, however it may be added to if any
+# modifications are made to this file.  All modified
+# code must be clearly documented and labelled.
+#
+# ==========================================================
+#
+# This is a script suitable for use in a crontab.  It makes a copy of your
+# log file, then truncates it.  It will then compress the timestamped copy
+# of the log, and if you have specified remote locations, send it there.
+#
+# You'll need to edit this script for your services.
+#
+# To cycle your log files every week, put the following line in your
+# crontab:
+#    0 0 * * 0   /home/mydir/servicescycle
+# And if you don't want to get email from crontab when it cycles your logs,
+# put the following in your crontab:
+#    0 0 * * 0   /home/mydir/servicescycle >/dev/null 2>&1
+#
+
+# Terminate Check (uncomment to terminate the auto-start).
+exit 0
+
+# change this to the directory your log file is located.
+servicesdir="/usr/local/ircd/services"
+
+# change this to whatever your log file is called.
+logfile="magick.log"
+
+# change this to wherever you want the timestamped logs to go.
+logdir="$servicesdir/logs"
+
+# This is the command used to compress the log file, and the resulting
+# extension files that are compressed with this command receive.
+# ie. for gzip, it will be ".gz", for compress it will be ".Z"
+compress="gzip -9"
+compress_ext=".gz"
+
+# This requires SCP (Secure Copy, part of SSH).
+# The remote user@host:filename's to put the compressed log file for
+# offsite log file storage, each entry must be seperated by a space.
+# NOTE: The remote host must not require password (ie. your public
+#	key must be in their authorized keys list).
+# NOTE: The timestamp and compression extension is appended to the
+#	filename specified.
+offsite=""
+
+########## you probably don't need to change anything below here ##########
+
+# Just a precaution.
+PATH="$PATH:/usr/local/bin"
+umask 027
+
+# Get the timestamp ...
+cd $servicesdir
+TS=`date +%Y%m%d%H%M%S`
+
+# Copy the log, null the original, compress the new one
+cp $logfile $logdir/$logfile.$TS
+> $logfile
+$compress $logdir/$logfile.$TS
+
+# Send it offsite if needs be
+for hst in $offsite; do
+  scp -B -q $logdir/$logfile.$TS$compress_ext $hst.$TS$compress_ext
+done
+
+exit 0

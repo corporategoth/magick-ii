@@ -25,6 +25,10 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.66  2001/07/05 05:59:05  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -184,9 +188,9 @@ class Chan_Live_t : public mUserDef
 
     mstring i_Name;
     mDateTime i_Creation_Time;
-    // below: .first == op .second==voice
-    map<mstring, pair<bool, bool> > squit;
-    map<mstring, pair<bool, bool> > users;
+    // below: .first == op .second == halfop .third == voice
+    map<mstring, triplet<bool, bool, bool> > squit;
+    map<mstring, triplet<bool, bool, bool> > users;
     map<mstring, mDateTime> bans;
     map<mstring, mDateTime> exempt;
     mstring i_Topic;
@@ -240,9 +244,11 @@ public:
     mstring User(const unsigned int num) const;
     unsigned int Ops() const;
     mstring Op(const unsigned int num) const;
+    unsigned int HalfOps() const;
+    mstring HalfOp(const unsigned int num) const;
     unsigned int Voices() const;
     mstring Voice(const unsigned int num) const;
-    pair<bool, bool> User(const mstring& name) const;
+    triplet<bool, bool, bool> User(const mstring& name) const;
     unsigned int Bans() const;
     mstring Ban(const unsigned int num) const;
     mDateTime Ban(const mstring& mask) const;
@@ -252,6 +258,7 @@ public:
     bool IsSquit(const mstring& nick) const;
     bool IsIn(const mstring& nick) const;
     bool IsOp(const mstring& nick) const;
+    bool IsHalfOp(const mstring& nick) const;
     bool IsVoice(const mstring& nick) const;
     bool IsBan(const mstring& mask) const;
     bool MatchBan(const mstring& mask) const;
@@ -275,6 +282,7 @@ public:
 
 struct ChanInfo_CUR;
 struct ESP_ChannelInfo;
+struct EPO_ChannelInfo;
 
 class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 {
@@ -285,6 +293,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     friend class ChanServ;
     friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
     friend Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci);
+    friend Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -298,43 +307,54 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     mstring i_Comment;
     map<mstring, unsigned int> failed_passwds;
 
-    mstring i_Mlock_On;
-    mstring l_Mlock_On;
-    mstring i_Mlock_Off;
-    mstring l_Mlock_Off;
-    mstring i_Mlock_Key;
-    unsigned int i_Mlock_Limit;
     mstring i_Topic;
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
     
-    unsigned long i_Bantime;
-    bool l_Bantime;
-    unsigned long i_Parttime;
-    bool l_Parttime;
-    bool i_Keeptopic;
-    bool l_Keeptopic;
-    bool i_Topiclock;
-    bool l_Topiclock;
-    bool i_Private;
-    bool l_Private;
-    bool i_Secureops;
-    bool l_Secureops;
-    bool i_Secure;
-    bool l_Secure;
-    bool i_NoExpire;
-    bool l_NoExpire;
-    bool i_Anarchy;
-    bool l_Anarchy;
-    bool i_KickOnBan;
-    bool l_KickOnBan;
-    bool i_Restricted;
-    bool l_Restricted;
-    bool i_Join;
-    bool l_Join;
-    bool i_Forbidden;
-    mstring i_Revenge;
-    bool l_Revenge;
+    class {
+	friend class Chan_Stored_t;
+	friend class ChanServ;
+	friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
+	friend Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci);
+	friend Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci);
+
+	bool Keeptopic:1;
+	bool Topiclock:1;
+	bool Private:1;
+	bool Secureops:1;
+	bool Secure:1;
+	bool Anarchy:1;
+	bool KickOnBan:1;
+	bool Restricted:1;
+	bool Join:1;
+	bool Forbidden:1;
+	bool NoExpire:1;
+	unsigned long Bantime;
+	unsigned long Parttime;
+	mstring Revenge;
+	mstring Mlock_On;
+	mstring Mlock_Off;
+	mstring Mlock_Key;
+	unsigned int Mlock_Limit;
+    } setting;
+
+    class {
+	friend class Chan_Stored_t;
+	bool Keeptopic:1;
+	bool Topiclock:1;
+	bool Private:1;
+	bool Secureops:1;
+	bool Secure:1;
+	bool Anarchy:1;
+	bool KickOnBan:1;
+	bool Restricted:1;
+	bool Join:1;
+	bool Bantime:1;
+	bool Parttime:1;
+	bool Revenge:1;
+	mstring Mlock_On;
+	mstring Mlock_Off;
+    } lock;
 
     mstring i_Suspend_By;
     mDateTime i_Suspend_Time;
@@ -458,8 +478,6 @@ public:
     void L_Secure(const bool in);
     bool NoExpire() const;
     void NoExpire(const bool in);
-    bool L_NoExpire() const;
-    void L_NoExpire(const bool in);
     bool Anarchy() const;
     void Anarchy(const bool in);
     bool L_Anarchy() const;
@@ -576,7 +594,7 @@ class ChanServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend int EventTask::svc();
-    friend int IrcSvcHandler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
+    friend int IrcSvcHandler::handle_close (ACE_HANDLE, ACE_Reactor_Mask);
 private:
 
     set<mstring> Revenge_Levels;
@@ -590,37 +608,48 @@ private:
     mstring def_akick_reason;	// Default AKICK reason
     unsigned int passfail;	// How many times they can fail ident
     unsigned long chankeep;	// Time to keep channel after AKICK
-    mstring def_mlock;		// Default MLOCK string
-    mstring lck_mlock;		// Locked MLOCK modes
-    unsigned long def_bantime;	// Default time to keep bans (minutes)
-    bool lck_bantime;		// BANTIME is locked?
-    unsigned long def_parttime;	// Default time to not greet
-    bool lck_parttime;		// PARTTIME is locked?
-    bool def_keeptopic;		// Default val of KEEPTOPIC
-    bool lck_keeptopic;		// KEEPTOPIC is locked?
-    bool def_topiclock;		// Default val of TOPICLOCK
-    bool lck_topiclock;		// TOPICLOCK is locked?
-    bool def_private;		// Default value of PRIVATE
-    bool lck_private;		// PRIVATE is locked?
-    bool def_secureops;		// Default value of SECUREOPS
-    bool lck_secureops;		// SECUREOPS is locked?
-    bool def_secure;		// Default value of SECURE
-    bool lck_secure;		// SECURE is locked?
-    bool def_noexpire;		// Default value of NOEXPIRE
-    bool lck_noexpire;		// NOEXPIRE is locked?
-    bool def_anarchy;		// Default value of ANARCHY
-    bool lck_anarchy;		// ANARCHY is locked?
-    bool def_kickonban;		// Default value of KICKONBAN
-    bool lck_kickonban;		// KICKONBAN is locked?
-    bool def_restricted;	// Default value of RESTRICTED
-    bool lck_restricted;	// RESTRICTED is locked?
-    bool def_join;		// Default value of JOIN
-    bool lck_join;		// JOIN is locked?
-    mstring def_revenge;	// Default REVENGE level
-    bool lck_revenge;		// REVENGE is locked?
     long level_min;		// Minimum access level
     long level_max;		// Maximum access level
     map<mstring, long> lvl;
+
+    class {
+	friend class ChanServ;
+	friend class Magick;
+	bool Keeptopic:1;
+	bool Topiclock:1;
+	bool Private:1;
+	bool Secureops:1;
+	bool Secure:1;
+	bool NoExpire:1;
+	bool Anarchy:1;
+	bool KickOnBan:1;
+	bool Restricted:1;
+	bool Join:1;
+	unsigned long Bantime;
+	unsigned long Parttime;
+	mstring Revenge;
+	mstring Mlock;
+    } def;
+
+    class {
+	friend class ChanServ;
+	friend class Magick;
+	bool Keeptopic:1;
+	bool Topiclock:1;
+	bool Private:1;
+	bool Secureops:1;
+	bool Secure:1;
+	bool NoExpire:1;
+	bool Anarchy:1;
+	bool KickOnBan:1;
+	bool Restricted:1;
+	bool Join:1;
+	bool Bantime:1;
+	bool Parttime:1;
+	bool Revenge:1;
+	mstring Mlock;
+    } lock;
+
     static SXP::Tag tag_ChanServ;
 
 public:
@@ -655,6 +684,8 @@ public:
 	unsigned long i_Topic;
 	unsigned long i_Op;
 	unsigned long i_Deop;
+	unsigned long i_Halfop;
+	unsigned long i_Dehalfop;
 	unsigned long i_Voice;
 	unsigned long i_Devoice;
 	unsigned long i_Kick;
@@ -678,11 +709,11 @@ public:
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Identify = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Mode =
-		i_Topic = i_Op = i_Deop = i_Voice = i_Devoice =
-		i_Kick = i_Anonkick = i_Invite = i_Unban =
-		i_Clear = i_Akick = i_Level = i_Access =
-		i_Greet = i_Message = i_Set = i_NoExpire =
-		i_Lock = i_Unlock = 0; }
+		i_Topic = i_Op = i_Deop = i_Halfop = i_Dehalfop =
+		i_Voice = i_Devoice = i_Kick = i_Anonkick =
+		i_Invite = i_Unban = i_Clear = i_Akick = i_Level =
+		i_Access = i_Greet = i_Message = i_Set =
+		i_NoExpire = i_Lock = i_Unlock = 0; }
 	mDateTime ClearTime()const	    { return i_ClearTime; }
 	unsigned long Register()const    { return i_Register; }
 	unsigned long Drop()const	    { return i_Drop; }
@@ -695,6 +726,8 @@ public:
 	unsigned long Topic()const	    { return i_Topic; }
 	unsigned long Op()const	    { return i_Op; }
 	unsigned long Deop()const	    { return i_Deop; }
+	unsigned long Halfop()const	    { return i_Halfop; }
+	unsigned long Dehalfop()const	    { return i_Dehalfop; }
 	unsigned long Voice()const	    { return i_Voice; }
 	unsigned long Devoice()const	    { return i_Devoice; }
 	unsigned long Kick()const	    { return i_Kick; }
@@ -724,36 +757,36 @@ public:
     mstring DEF_Akick_Reason()const	{ return def_akick_reason; }
     unsigned int Passfail()const	{ return passfail; }
     unsigned long ChanKeep()const	{ return chankeep; }
-    mstring DEF_MLock()const		{ return def_mlock; }
-    mstring LCK_MLock()const		{ return lck_mlock; }
-    unsigned long DEF_Bantime()const	{ return def_bantime; }
-    bool LCK_Bantime()const	        { return lck_bantime; }
-    unsigned long DEF_Parttime()const{ return def_bantime; }
-    bool LCK_Parttime()const	        { return lck_bantime; }
-    bool DEF_Keeptopic()const	{ return def_keeptopic; }
-    bool LCK_Keeptopic()const	{ return lck_keeptopic; }
-    bool DEF_Topiclock()const	{ return def_topiclock; }
-    bool LCK_Topiclock()const	{ return lck_topiclock; }
-    bool DEF_Private()const		{ return def_private; }
-    bool LCK_Private()const		{ return lck_private; }
-    bool DEF_Secureops()const	{ return def_secureops; }
-    bool LCK_Secureops()const	{ return lck_secureops; }
-    bool DEF_Secure()const		{ return def_secure; }
-    bool LCK_Secure()const		{ return lck_secure; }
-    bool DEF_NoExpire()const		{ return def_noexpire; }
-    bool LCK_NoExpire()const		{ return lck_noexpire; }
-    bool DEF_Anarchy()const		{ return def_anarchy; }
-    bool LCK_Anarchy()const		{ return lck_anarchy; }
-    bool DEF_KickOnBan()const	{ return def_kickonban; }
-    bool LCK_KickOnBan()const	{ return lck_kickonban; }
-    bool DEF_Restricted()const	{ return def_restricted; }
-    bool LCK_Restricted()const	{ return lck_restricted; }
-    bool DEF_Join()const		{ return def_join; }
-    bool LCK_Join()const		{ return lck_join; }
-    mstring DEF_Revenge()const	{ return def_revenge; }
-    bool LCK_Revenge()const		{ return lck_revenge; }
     long Level_Min()const		{ return level_min; }
     long Level_Max()const		{ return level_max; }
+    mstring DEF_MLock()const		{ return def.Mlock; }
+    mstring LCK_MLock()const		{ return lock.Mlock; }
+    unsigned long DEF_Bantime()const	{ return def.Bantime; }
+    bool LCK_Bantime()const	        { return lock.Bantime; }
+    unsigned long DEF_Parttime()const	{ return def.Parttime; }
+    bool LCK_Parttime()const	        { return lock.Parttime; }
+    bool DEF_Keeptopic()const		{ return def.Keeptopic; }
+    bool LCK_Keeptopic()const		{ return lock.Keeptopic; }
+    bool DEF_Topiclock()const		{ return def.Topiclock; }
+    bool LCK_Topiclock()const		{ return lock.Topiclock; }
+    bool DEF_Private()const		{ return def.Private; }
+    bool LCK_Private()const		{ return lock.Private; }
+    bool DEF_Secureops()const		{ return def.Secureops; }
+    bool LCK_Secureops()const		{ return lock.Secureops; }
+    bool DEF_Secure()const		{ return def.Secure; }
+    bool LCK_Secure()const		{ return lock.Secure; }
+    bool DEF_NoExpire()const		{ return def.NoExpire; }
+    bool LCK_NoExpire()const		{ return lock.NoExpire; }
+    bool DEF_Anarchy()const		{ return def.Anarchy; }
+    bool LCK_Anarchy()const		{ return lock.Anarchy; }
+    bool DEF_KickOnBan()const		{ return def.KickOnBan; }
+    bool LCK_KickOnBan()const		{ return lock.KickOnBan; }
+    bool DEF_Restricted()const		{ return def.Restricted; }
+    bool LCK_Restricted()const		{ return lock.Restricted; }
+    bool DEF_Join()const		{ return def.Join; }
+    bool LCK_Join()const		{ return lock.Join; }
+    mstring DEF_Revenge()const		{ return def.Revenge; }
+    bool LCK_Revenge()const		{ return lock.Revenge; }
     long LVL(const mstring& level) const;
     bool IsLVL(const mstring& level)const;
     vector<mstring> LVL()const;
@@ -813,6 +846,8 @@ public:
     static void do_Mode(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Op(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_DeOp(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_HalfOp(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_DeHalfOp(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Voice(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_DeVoice(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Topic(const mstring &mynick, const mstring &source, const mstring &params);
@@ -826,6 +861,7 @@ public:
     static void do_clear_Users(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_clear_Modes(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_clear_Ops(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_clear_HalfOps(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_clear_Voices(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_clear_Bans(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_clear_All(const mstring &mynick, const mstring &source, const mstring &params);

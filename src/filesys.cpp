@@ -27,6 +27,10 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.78  2001/07/02 03:39:29  prez
 ** Fixed bug with users sending printf strings (mainly in memos).
 **
@@ -337,7 +341,7 @@ RCSID(filesys_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-queue<unsigned long> DccMap::active;
+std::queue<unsigned long> DccMap::active;
 DccMap::xfers_t DccMap::xfers;
 static DccXfer GLOB_DccXfer;
 

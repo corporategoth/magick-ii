@@ -27,6 +27,10 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.109  2001/07/21 18:09:44  prez
 ** Fixed IsBool in mstring and made SVINFO actually give a GMT timestamp.
 **
@@ -263,7 +267,7 @@ const mstring Blank;
 const mstring IRC_CTCP(static_cast<char>(1));		// ^A
 const mstring IRC_Bold(static_cast<char>(2));		// ^B
 const mstring IRC_Underline(static_cast<char>(31));	// ^_
-const mstring IRC_Reverse(static_cast<char>(21));	// ^V
+const mstring IRC_Reverse(static_cast<char>(22));	// ^V
 const mstring IRC_Color(static_cast<char>(3));		// ^C
 const mstring IRC_Off(static_cast<char>(15));		// ^O
 
@@ -726,25 +730,25 @@ const char mstring::operator[] (const size_t offs) const
     return static_cast<const char>(retval);
 }
 
-const char mstring::first() const
+const char mstring::first(size_t off) const
 {
     char retval = 0;
 
     lock_read();
-    if (i_str != NULL)
-	retval = i_str[0];
+    if (i_str != NULL && off > 0 && off <= i_len)
+	retval = i_str[off - 1];
     lock_rel();
 
     return static_cast<const char>(retval);
 }
 
-const char mstring::last() const
+const char mstring::last(size_t off) const
 {
     char retval = 0;
 
     lock_read();
-    if (i_str != NULL)
-	retval = i_str[i_len-1];
+    if (i_str != NULL && off > 0 && off <= i_len)
+	retval = i_str[i_len - off];
     lock_rel();
 
     return static_cast<const char>(retval);

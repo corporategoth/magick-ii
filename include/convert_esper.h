@@ -25,6 +25,10 @@ RCSID(convert_esper_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.2  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -428,4 +432,4 @@ list<Memo_t> ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick);
 list<News_t> ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan);
 
 #endif  /* CONVERT */
-#endif	/* _ESPER_H */
+#endif	/* _CONVERT_ESPER_H */

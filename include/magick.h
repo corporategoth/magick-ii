@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.166  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.165  2001/06/20 06:07:01  prez
 ** ome GCC 3.0 and solaris fixes
 **
@@ -266,10 +270,8 @@ RCSID(magick_h, "@(#) $Id$");
 
 const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;
-const int MAGICK_RET_TERMINATE		    = 2;
 const int MAGICK_RET_ERROR		    = -1;
 const int MAGICK_RET_LOCKED		    = -2;
-const int MAGICK_RET_INVALID_SERVICES_DIR   = -20;
 
 class Magick; // fwd reference, leave it here
 const mstring ChanSpec = "#&+!";
@@ -288,8 +290,8 @@ public:
 
 
 #define LOG2(X)	\
-	if (Parent != NULL && Parent->ValidateLogger(ACE_LOG_MSG)) \
-		ACE_DEBUG(X)
+	if (Parent != NULL && Parent->ValidateLogger(ACE_LOG_MSG)) { \
+		ACE_DEBUG(X); Parent->EndLogMessage(ACE_LOG_MSG); }
 #define LOG(X, Y, Z) \
 	{ LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z))); }
 #define NLOG(X, Y) \
@@ -382,6 +384,7 @@ public:
 	mstring server_desc;
 	mstring services_user;
 	mstring services_host;
+	mstring services_quitmsg;
 	bool ownuser;
 	mstring setmode;
 	mstring bind;
@@ -402,6 +405,7 @@ public:
 	mstring Server_Desc()const    { return server_desc; }
 	mstring Services_User()const    { return services_user; }
 	mstring Services_Host()const    { return services_host; }
+	mstring Services_Quitmsg()const    { return services_quitmsg; }
 	bool Ownuser()const	{ return ownuser; }
 	mstring Setmode()const	{ return setmode; }
 	mstring Bind()const	{ return bind; }
@@ -514,6 +518,7 @@ public:
     bool ActivateLogger();
     void DeactivateLogger();
     bool ValidateLogger(ACE_Log_Msg *instance) const;
+    void EndLogMessage(ACE_Log_Msg *instance) const;
     bool Verbose()const	{ return i_verbose; }
     mstring Services_Dir()const    { return i_services_dir; }
     mstring Config_File()const    { return files.MakePath(i_config_file); }
@@ -523,7 +528,7 @@ public:
     Magick(int inargc, char **inargv);
     ~Magick() {}
 
-    int Start();
+    int Start(bool firstrun = true);
     mDateTime ResetTime()const    { return i_ResetTime; }
     unsigned int Level()const    { return i_level; }
     void LevelUp()
@@ -539,7 +544,7 @@ public:
     bool AUTO()const	{ return i_auto; }
     void MSG(const bool on)
     {
-    //  operserv.MSG(on);
+        operserv.MSG(on);
 	nickserv.MSG(on);
 	chanserv.MSG(on);
 	memoserv.MSG(on);

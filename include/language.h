@@ -25,8 +25,9 @@ RCSID(language_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.31  2001/07/05 05:59:05  prez
-** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+** Revision 1.32  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
 **
 **
 ** ========================================================== */
@@ -34,10 +35,10 @@ RCSID(language_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Wed Jul  4 18:27:19 EDT 2001
+ * Created on Mon Oct  8 14:57:39 EDT 2001
  */
 
-unsigned int def_langent =     909;
+unsigned int def_langent =     919;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -257,7 +258,7 @@ char *def_lang[] = {
 "FLOOD_PERM         =$1 is FLOODING services.  Placed on permanent ignore.",
 "CHAN_MODE          =$1 just performed a mode change ($2) on channel $3.",
 "NICK_MODE          =$1 just performed a mode change ($2) on nickname $3.",
-"AKILL_ADD          =$1 just added AKILL on host $2 for $3 ($4) - $5 clients killed ($6%).",
+"AKILL_ADD          =$1 just added AKILL on host $2 for $3 ($4) - $5 client(s) killed ($6%).",
 "AKILL_EXTEND       =$1 just extended the AKILL on host $2 by $3.",
 "OPERDENY_ADD       =$1 just added Oper Deny on host $2.",
 "QLINE              =$1 just turned $2 a quarantine on nicknames matching $3.",
@@ -327,14 +328,15 @@ char *def_lang[] = {
 "CHAN_CMD4B         =FORBID        $1 / SETPASS       $2",
 "CHAN_CMD5          =MODE          $1 / TOPIC         $2",
 "CHAN_CMD6          =OP            $1 / DEOP          $2",
-"CHAN_CMD7          =VOICE         $1 / DEVOICE       $2",
-"CHAN_CMD8          =KICK          $1 / ANONKICK      $2",
-"CHAN_CMD9          =INVITE        $1 / UNBAN         $2",
-"CHAN_CMD10         =CLEAR         $1 / AKICK         $2",
-"CHAN_CMD11         =LEVEL         $1 / ACCESS        $2",
-"CHAN_CMD12         =GREET         $1 / MESSAGE       $2",
-"CHAN_CMD13         =SET           $1 / NOEXPIRE      $2",
-"CHAN_CMD14         =LOCK          $1 / UNLOCK        $2",
+"CHAN_CMD7          =HALFOP        $1 / DEHALFOP      $2",
+"CHAN_CMD8          =VOICE         $1 / DEVOICE       $2",
+"CHAN_CMD9          =KICK          $1 / ANONKICK      $2",
+"CHAN_CMD10         =INVITE        $1 / UNBAN         $2",
+"CHAN_CMD11         =CLEAR         $1 / AKICK         $2",
+"CHAN_CMD12         =LEVEL         $1 / ACCESS        $2",
+"CHAN_CMD13         =GREET         $1 / MESSAGE       $2",
+"CHAN_CMD14         =SET           $1 / NOEXPIRE      $2",
+"CHAN_CMD15         =LOCK          $1 / UNLOCK        $2",
 "",
 "OPER_CLONE         =Clone Override entries     : $1",
 "OPER_AKILL         =Auto Kill entries          : $1",
@@ -408,7 +410,7 @@ char *def_lang[] = {
 "ADD_TIME           =Added entry $1 to $2 list for $3.",
 "CHANGE_LEVEL       =Changed entry $1 on $2 list to level $3.",
 "CHANGE_TIME        =Changed entry $1 on $2 list to $3.",
-"CHANGE_ALL         =Changed ALL entries on $2.",
+"CHANGE_ALL         =Changed ALL entries on $1.",
 "DEL                =Deleted entry $1 from $2 list.",
 "DEL_MATCH          =Deleted $1 entries matching $2 from $3 list.",
 "DEL_NUMBER         =Deleted entry #$1 from $2 list.",
@@ -425,7 +427,7 @@ char *def_lang[] = {
 "ADD2_TIME          =Added entry $1 to $2 $3 list for $4.",
 "CHANGE2_LEVEL      =Changed entry $1 on $2 $3 list to level $4.",
 "CHANGE2_TIME       =Changed entry $1 on $2 $3 list to $4.",
-"CHANGE2_ALL        =Changed ALL entries on $2 $3.",
+"CHANGE2_ALL        =Changed ALL entries on $1 $2.",
 "DEL2               =Deleted entry $1 from $2 $3 list.",
 "DEL2_MATCH         =Deleted $1 entries matching $2 from $3 $4 list.",
 "DEL2_NUMBER        =Deleted entry #$1 from $2 $3 list.",
@@ -513,7 +515,8 @@ char *def_lang[] = {
 "SUSPENDFOR         =\\           For: $1",
 "EMAIL              =\\        E-Mail: $1",
 "URL                =\\      WWW Page: http://$1",
-"ICQ                =\\         ICQ #: $1",
+"ICQ                =\\       ICQ UIN: $1",
+"AIM                =\\      AIM Name: $1",
 "DESCRIPTION        =\\   Description: $1",
 "COMMENT            =\\       Comment: $1",
 "COMMITTEES         =\\    Committees: $1",
@@ -529,7 +532,8 @@ char *def_lang[] = {
 "PASSWORD           =Password",
 "EMAIL              =E-Mail Address",
 "URL                =WWW Page",
-"ICQ                =ICQ Number",
+"ICQ                =ICQ UIN",
+"AIM                =AIM Name",
 "DESCRIPTION        =Physical Description",
 "COMMENT            =Comment",
 "PROTECT            =Kill Protection",
@@ -616,6 +620,7 @@ char *def_lang[] = {
 "",
 "NOEXPIRE           =non-expiring",
 "OPS                =op(s)",
+"HALFOPS            =half op(s)",
 "VOICES             =voice(s)",
 "USERS              =user(s)",
 "SPLIT_USERS        =split user(s)",
@@ -650,6 +655,7 @@ char *def_lang[] = {
 "",
 "LVL_AUTODEOP       =Automatic Deop/Devoice",
 "LVL_AUTOVOICE      =Automatic Voice",
+"LVL_AUTOHALFOP     =Automatic Half Op",
 "LVL_AUTOOP         =Automatic Op",
 "LVL_READMEMO       =Read News",
 "LVL_WRITEMEMO      =Write News",
@@ -666,6 +672,7 @@ char *def_lang[] = {
 "LVL_CMDINVITE      =INVITE Command",
 "LVL_CMDUNBAN       =UNBAN Command",
 "LVL_CMDVOICE       =VOICE Command",
+"LVL_CMDHALFOP      =HALFOP Command",
 "LVL_CMDOP          =OP Command",
 "LVL_CMDKICK        =KICK Command",
 "LVL_CMDMODE        =MODE Command",
@@ -695,6 +702,10 @@ char *def_lang[] = {
 "NOTOPPED           =You are not oped in channel $1.",
 "OTH_OPPED          =Nickname $1 is already oped in channel $2.",
 "OTH_NOTOPPED       =Nickname $1 is not oped in channel $2.",
+"HALFOPPED          =You are already half oped in channel $1.",
+"NOTHALFOPPED       =You are not half oped in channel $1.",
+"OTH_HALFOPPED      =Nickname $1 is already half oped in channel $2.",
+"OTH_NOTHALFOPPED   =Nickname $1 is not half oped in channel $2.",
 "VOICED             =You are already voiced in channel $1.",
 "NOTVOICED          =You are not voiced in channel $1.",
 "OTH_VOICED         =Nickname $1 is already voiced in channel $2.",
@@ -883,7 +894,7 @@ char *def_lang[] = {
 "SHUTDOWN           =Shutting down ...",
 "RELOAD             =Configuration file reloaded.",
 "RELOAD_FAIL        =WARNING: Could not read configuration file.",
-"SIGNON             =Signed on all non-active services clients.",
+"SIGNON             =Signed on all non-active services client(s).",
 "UNLOAD             =Language $1 has been unloaded.",
 "JUPE               =Server $1 has been juped.",
 "ONOFF              =$1 services have been turned $2.",

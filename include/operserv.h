@@ -25,6 +25,10 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/11/03 21:02:51  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.59  2001/07/29 21:22:27  prez
 ** Delayed clone akills on sync until AFTER we're synced
 **
@@ -370,6 +374,7 @@ public:
     static void do_Ping(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Update(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Shutdown(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Restart(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Reload(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Signon(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Unload(const mstring &mynick, const mstring &source, const mstring &params);

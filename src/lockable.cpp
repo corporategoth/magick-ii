@@ -27,6 +27,10 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.72  2001/05/17 19:18:54  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -229,10 +233,16 @@ bool mLOCK::AcquireMapLock()
 {
     if (maplock == NULL)
 	maplock = new mLock_Mutex("LockMap");
+    if (maplock == NULL)
+    {
+/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
+		"MUTEX", "LockMap")); */
+	return false;
+    }
     if (maplock->acquire() < 0)
     {
-	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		"MUTEX", "LockMap"));
+/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+		"MUTEX", "LockMap")); */
 	return false;
     }
     return true;
@@ -244,8 +254,8 @@ bool mLOCK::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-		"MUTEX", "LockMap"));
+/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
+		"MUTEX", "LockMap")); */
 	return false;
     }
     return true;
@@ -462,6 +472,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(wlock, tmap);
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Write;
 	}
+	ReleaseMapLock();
 	if (rlock != NULL)
 	{
 	    if (rlock->release() < 0)
@@ -471,7 +482,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    }
 	    rlock = NULL;
 	}
-	ReleaseMapLock();
 	if (wlock != NULL)
 	{
 	    if (wlock->acquire() < 0)
@@ -589,9 +599,9 @@ mLOCK::~mLOCK()
 
     int i;
     map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator lockiter;
-    mLock_Mutex *mlock = NULL;
-    mLock_Write *wlock = NULL;
-    mLock_Read *rlock = NULL;
+    mLock_Mutex *mlock;
+    mLock_Write *wlock;
+    mLock_Read *rlock;
 
     for (i=locks.size()-1; i>=0; i--)
     {
@@ -599,6 +609,9 @@ mLOCK::~mLOCK()
 	    return;
 	if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
 	{
+	    rlock = NULL;
+	    wlock = NULL;
+	    mlock = NULL;
 	    bool killit = false;
 	    map<ACE_thread_t, locktype_enum>::iterator iter = lockiter->second.second.find(ACE_Thread::self());
 	    if (iter != lockiter->second.second.end())
@@ -630,6 +643,7 @@ mLOCK::~mLOCK()
 		    LockMap.erase(lockiter);
 		}
 	    }
+	    ReleaseMapLock();
 
 	    if (rlock != NULL)
 	    {
@@ -664,52 +678,54 @@ mLOCK::~mLOCK()
 		    delete mlock;
 		mlock = NULL;
 	    }
-	    if (((lockiter = LockMap.find(locks[i])) != LockMap.end()) &&
-		(iter = lockiter->second.second.find(ACE_Thread::self())) != lockiter->second.second.end())
+
+	    if (!AcquireMapLock())
+		return;
+	    if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
 	    {
-		// We're still here, must have been an upgraded lock,
-		// time to downgrade it ...
-		if (iter->second == L_Read)
+		if ((iter = lockiter->second.second.find(ACE_Thread::self())) !=
+			lockiter->second.second.end())
 		{
-		    rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
-		    ReleaseMapLock();
-		    if (rlock->acquire() < 0)
+		    // We're still here, must have been an upgraded lock,
+		    // time to downgrade it ...
+		    if (iter->second == L_Read)
 		    {
-			LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-			    "READ", locks[i]));
-			rlock = NULL;
-			if (!AcquireMapLock())
-			    return;
-			if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
-			{
-			    lockiter->second.second.erase(ACE_Thread::self());
-			    if (!lockiter->second.second.size())
-			    {
-				rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
-				if (rlock != NULL)
-				    delete rlock;
-				rlock = NULL;
-				LockMap.erase(lockiter);
-			    }
-			}
+			rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
 			ReleaseMapLock();
+			if (rlock->acquire() < 0)
+			{
+			    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+				"READ", locks[i]));
+			    rlock = NULL;
+			    if (!AcquireMapLock())
+				return;
+			    if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
+			    {
+				lockiter->second.second.erase(ACE_Thread::self());
+				if (!lockiter->second.second.size())
+				{
+				    rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+				    if (rlock != NULL)
+					delete rlock;
+				    rlock = NULL;
+				    LockMap.erase(lockiter);
+				}
+			    }
+			    ReleaseMapLock();
+			}
+			rlock = NULL;
 		    }
-		    rlock = NULL;
+		    else /* Its not a read lock */
+			ReleaseMapLock();
 		}
-		else
-		{
+		else /* Our thread isnt listed in the threads with this lock */
 		    ReleaseMapLock();
-		}
 	    }
-	    else
-	    {
+	    else /* This lock doesnt exist */
 		ReleaseMapLock();
-	    }
 	}
-	else
-	{
+	else /* This lock NEVER existed */
 	    ReleaseMapLock();
-	}
     }
 }
 
@@ -1056,10 +1072,16 @@ bool mThread::AcquireMapLock()
 {
     if (maplock == NULL)
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
+    if (maplock == NULL)
+    {
+/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
+		"MUTEX", "SelfToThreadIdMap")); */
+	return false;
+    }
     if (maplock->acquire() < 0)
     {
-	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		"MUTEX", "SelfToThreadIdMap"));
+/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+		"MUTEX", "SelfToThreadIdMap")); */
 	return false;
     }
     return true;
@@ -1071,8 +1093,8 @@ bool mThread::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-		"MUTEX", "SelfToThreadIdMap"));
+/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
+		"MUTEX", "SelfToThreadIdMap")); */
 	return false;
     }
     return true;

@@ -313,8 +313,8 @@ AC_ARG_ENABLE(quick, [  --enable-quick          Do not increment build number
   esac], [quick=false])
 AM_CONDITIONAL(INCREMENT, test x$quick = xfalse)
 
-AC_ARG_ENABLE(crypt, [  --enable-crypt            Add encryption to Magick (default)
-  --disable-crypt           Remove encryption from Magick],
+AC_ARG_ENABLE(crypt, [  --enable-crypt          Add encryption to Magick (default)
+  --disable-crypt         Remove encryption from Magick],
   [case "${enableval}" in
     yes) crypt=true;;
     no) crypt=false;;

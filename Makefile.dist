@@ -12,8 +12,8 @@ dist:
 	touch stamp-h.in
 	LIST=`find ./po -name "*.po"`; \
 	for i in $$LIST; do \
-	 file2=`echo $$i | sed -e "s#\.po#\.gmo#"`; \
-	 msgfmt -o $$file2 $$i; \
+	  file2=`echo $$i | sed -e "s#\.po#\.gmo#"`; \
+	  msgfmt -o $$file2 $$i; \
 	done 
 	cp config.sub config1.sub
 	cp config.guess config1.guess
@@ -21,10 +21,20 @@ dist:
 	rm -f `find . -type f -name "*~"`
 	rm -f `find . -type f -name ".#*"`
 	rm -f `find . -type f -name .cvsignore`
+	rm -f `find . -type f -name DEADJOE`
 	rm -rf `find . -type d -name CVS`
 	rm -f Makefile.dist
 	mv config1.sub config.sub
-	mv config1.guess config.guess
+	grep -v SuSE config1.guess >config.guess
+	rm -f config1.guess
+	chmod u+x config.guess
+	chmod -Rf go=u,go-w *
+	for i in files files/memo files/pic files/public files/temp; do \
+	  if [ ! -d files ]; then \
+	    mkdir files; \
+	  fi; \
+	done
+	rm -f files/*/*
 
 all:
 	rm -f Makefile

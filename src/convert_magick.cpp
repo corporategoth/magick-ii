@@ -27,6 +27,10 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.5  2001/05/28 11:17:34  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -143,11 +147,11 @@ get_file_version (FILE * f, const char *filename)
     int version = fgetc (f) << 24 | fgetc (f) << 16 | fgetc (f) << 8 | fgetc (f);
     if (ferror (f) || feof (f))
     {
-	SLOG(LM_EMERGENCY, "Error reading version number on %s", ( filename));
+	SLOG(LM_EMERGENCY, "Error reading version number on $1", ( filename));
     }
     else if (version > file_version || version < 1)
     {
-	SLOG(LM_EMERGENCY, "Invalid version number (%d) on %s", ( version, filename));
+	SLOG(LM_EMERGENCY, "Invalid version number ($1) on $2", ( version, filename));
     }
     return version;
 }
@@ -162,7 +166,7 @@ read_string (FILE * f, const char *filename)
     s = (char *) malloc (len);
     if (len != ACE_OS::fread (s, 1, len, f))
     {
-	SLOG(LM_EMERGENCY, "Read error on %s", ( filename));
+	SLOG(LM_EMERGENCY, "Read error on $1", ( filename));
     }
     return s;
 }
@@ -178,7 +182,7 @@ load_ns_dbase (void)
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read NickServ database %s", ( nickserv_db));
+	SLOG(LM_ERROR, "Can't read NickServ database $1", ( nickserv_db));
 	return;
     }
     switch (i = get_file_version (f, nickserv_db))
@@ -192,7 +196,7 @@ load_ns_dbase (void)
 	    memset(ni, 0, sizeof(NickInfo));
 	    if (1 != ACE_OS::fread (ni, sizeof (NickInfo), 1, f))
 	    {
-		SLOG(LM_EMERGENCY, "Read error on %s", ( nickserv_db));
+		SLOG(LM_EMERGENCY, "Read error on $1", ( nickserv_db));
 	    }
 	    ni->flags &= ~(NI_IDENTIFIED | NI_RECOGNIZED);
 	    if (ni->email) {
@@ -248,7 +252,7 @@ load_ns_dbase (void)
 		memset(old_ni, 0, sizeof(NickInfo_V3));
 		if (1 != ACE_OS::fread (old_ni, sizeof (NickInfo_V3), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( nickserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( nickserv_db));
 		}
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
 		ACE_OS::strcpy(ni->pass, old_ni->pass);
@@ -315,7 +319,7 @@ load_ns_dbase (void)
 		memset(old_ni, 0, sizeof(NickInfo_V1));
 		if (1 != ACE_OS::fread (ni, sizeof (NickInfo_V1), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( nickserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( nickserv_db));
 		}
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
 		ACE_OS::strcpy(ni->pass, old_ni->pass);
@@ -348,7 +352,7 @@ load_ns_dbase (void)
 	break;
 	}
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on %s", ( i, nickserv_db));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", ( i, nickserv_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -429,13 +433,13 @@ CreateNickEntry(NickInfo_CUR *ni)
 	}
 
 	if (ni->flags & NI_KILLPROTECT && !out.L_Protect())
-	    out.i_Protect = true;
+	    out.setting.Protect = true;
 	if (ni->flags & NI_SECURE && !out.L_Secure())
-	    out.i_Secure = true;
+	    out.setting.Secure = true;
 	if (ni->flags & NI_PRIVATE && !out.L_Private())
-	    out.i_Private = true;
+	    out.setting.Private = true;
 	if (ni->flags & NI_PRIVMSG && !out.L_PRIVMSG())
-	    out.i_PRIVMSG = true;
+	    out.setting.PRIVMSG = true;
 
 	if (ni->flags & NI_SUSPENDED)
 	{
@@ -452,7 +456,7 @@ CreateNickEntry(NickInfo_CUR *ni)
 
 	if (ni->flags & NI_IRCOP)
 	{
-	    out.i_NoExpire = true;
+	    out.setting.NoExpire = true;
 	    // NOT a SADMIN, and OPER does exist.
 	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		  Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(out.i_Name)) &&
@@ -475,7 +479,7 @@ load_cs_dbase (void)
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read ChanServ database %s", ( chanserv_db));
+	SLOG(LM_ERROR, "Can't read ChanServ database $1", ( chanserv_db));
 	return;
     }
 
@@ -489,7 +493,7 @@ load_cs_dbase (void)
 		memset(ci, 0, sizeof(ChanInfo));
 		if (1 != ACE_OS::fread (ci, sizeof (ChanInfo), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		}
 		ci->desc = read_string (f, chanserv_db);
 		if (ci->url)
@@ -507,7 +511,7 @@ load_cs_dbase (void)
 		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
 			access->name = read_string (f, chanserv_db);
@@ -548,7 +552,7 @@ load_cs_dbase (void)
 		    if (ci->akickcount != (long)
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
 		    {
@@ -595,7 +599,7 @@ load_cs_dbase (void)
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    if (n_entries <= CA_SIZE)
 		    {
@@ -629,7 +633,7 @@ load_cs_dbase (void)
 		memset(old_ci, 0, sizeof(ChanInfo_V3));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V3), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		}
 		/* Convert old dbase! */
 		ACE_OS::strcpy(ci->mlock_on, oldmodeconv(old_ci->mlock_on));
@@ -687,7 +691,7 @@ load_cs_dbase (void)
 		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
 			access->name = read_string (f, chanserv_db);
@@ -728,7 +732,7 @@ load_cs_dbase (void)
 		    if (ci->akickcount != (long)
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
 		    {
@@ -775,7 +779,7 @@ load_cs_dbase (void)
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    if (n_entries <= CA_SIZE)
 		    {
@@ -810,7 +814,7 @@ load_cs_dbase (void)
 		memset(old_ci, 0, sizeof(ChanInfo_V1));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V1), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		}
 		/* Convert old dbase! */
 		ACE_OS::strcpy(ci->mlock_on, oldmodeconv(old_ci->mlock_on));
@@ -855,7 +859,7 @@ load_cs_dbase (void)
 		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
 			access->name = read_string (f, chanserv_db);
@@ -896,7 +900,7 @@ load_cs_dbase (void)
 		    if (ci->akickcount != (long)
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
 		    {
@@ -943,7 +947,7 @@ load_cs_dbase (void)
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
 		    {
-			SLOG(LM_EMERGENCY, "Read error on %s", ( chanserv_db));
+			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
 		    if (n_entries <= CA_SIZE)
 		    {
@@ -966,7 +970,7 @@ load_cs_dbase (void)
 	break;			/* case 1, etc. */
 	}
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on %s", ( i, chanserv_db));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", ( i, chanserv_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -1095,21 +1099,21 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	}
 
 	if (ci->flags & CI_KEEPTOPIC && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
+	    out.setting.Keeptopic = true;
 	if (ci->flags & CI_SECUREOPS && !out.L_Secureops())
-	    out.i_Secureops = true;
+	    out.setting.Secureops = true;
 	if (ci->flags & CI_PRIVATE && !out.L_Private())
-	    out.i_Private = true;
+	    out.setting.Private = true;
 	if (ci->flags & CI_TOPICLOCK && !out.L_Topiclock())
-	    out.i_Topiclock = true;
+	    out.setting.Topiclock = true;
 	if (ci->flags & CI_RESTRICTED && !out.L_Restricted())
-	    out.i_Restricted = true;
+	    out.setting.Restricted = true;
 	if (ci->flags & CI_LEAVEOPS && !out.L_Anarchy())
-	    out.i_Anarchy = true;
+	    out.setting.Anarchy = true;
 	if (ci->flags & CI_SECURE && !out.L_Secure())
-	    out.i_Secure = true;
+	    out.setting.Secure = true;
 	if (ci->flags & CI_JOIN && !out.L_Join())
-	    out.i_Join = true;
+	    out.setting.Join = true;
 	if (!out.L_Revenge())
 	{
 	    char revlevel = ((ci->flags & CI_REV3) << 2) |
@@ -1118,28 +1122,28 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    switch (revlevel)
 	    {
 	    case CR_REVERSE:
-		out.i_Revenge = "REVERSE";
+		out.setting.Revenge = "REVERSE";
 		break;
 	    case CR_DEOP:
-		out.i_Revenge = "DEOP";
+		out.setting.Revenge = "DEOP";
 		break;
 	    case CR_KICK:
-		out.i_Revenge = "KICK";
+		out.setting.Revenge = "KICK";
 		break;
 	    case CR_NICKBAN:
-		out.i_Revenge = "BAN1";
+		out.setting.Revenge = "BAN1";
 		break;
 	    case CR_USERBAN:
-		out.i_Revenge = "BAN2";
+		out.setting.Revenge = "BAN2";
 		break;
 	    case CR_HOSTBAN:
-		out.i_Revenge = "BAN3";
+		out.setting.Revenge = "BAN3";
 		break;
 	    case CR_MIRROR:
-		out.i_Revenge = "MIRROR";
+		out.setting.Revenge = "MIRROR";
 		break;
 	    default:
-		out.i_Revenge = "NONE";
+		out.setting.Revenge = "NONE";
 	    }
 	}
 
@@ -1159,7 +1163,7 @@ CreateChanEntry(ChanInfo_CUR *ci)
 		out.i_Topic_Setter = mstring(ci->last_topic_setter);
 	    out.i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 	}
-/*
+
 	if (ci->cmd_access != NULL)
 	{
 	    for (i=0; i<CA_SIZE; ++i)
@@ -1235,7 +1239,6 @@ CreateChanEntry(ChanInfo_CUR *ci)
 		}
 	    }
 	}
-*/
 	return out;
     }
 }
@@ -1251,7 +1254,7 @@ load_ms_dbase (void)
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read MemoServ database %s", ( memoserv_db));
+	SLOG(LM_ERROR, "Can't read MemoServ database $1", ( memoserv_db));
 	return;
     }
     switch (i = get_file_version (f, memoserv_db))
@@ -1268,7 +1271,7 @@ load_ms_dbase (void)
 		memset(ml, 0, sizeof(MemoList));
 		if (1 != ACE_OS::fread (ml, sizeof (MemoList), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( memoserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( memoserv_db));
 		}
 		ml->memos = memos = (Memo *) malloc (sizeof (Memo) * ml->n_memos);
 		memset(ml->memos, 0, sizeof(Memo) * ml->n_memos);
@@ -1283,7 +1286,7 @@ load_ms_dbase (void)
 	    }
 	break;
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on %s", ( i, memoserv_db));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", ( i, memoserv_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -1301,7 +1304,7 @@ load_news_dbase (void)
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read NewsServ database %s", ( newsserv_db));
+	SLOG(LM_ERROR, "Can't read NewsServ database $1", ( newsserv_db));
 	return;
     }
     switch (i = get_file_version (f, newsserv_db))
@@ -1319,7 +1322,7 @@ load_news_dbase (void)
 		memset(nl, 0, sizeof(NewsList));
 		if (1 != ACE_OS::fread (nl, sizeof (NewsList), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( newsserv_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( newsserv_db));
 		}
 		nl->newss = newss = (Memo *) malloc (sizeof (Memo) * nl->n_newss);
 		memset(nl->newss, 0, sizeof(Memo) * nl->n_newss);
@@ -1335,7 +1338,7 @@ load_news_dbase (void)
 	}
 	break;
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on %s", ( i, newsserv_db));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", ( i, newsserv_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -1432,7 +1435,7 @@ load_sop ()
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read SOP database %s", ( sop_db));
+	SLOG(LM_ERROR, "Can't read SOP database $1", ( sop_db));
 	return;
     }
     switch (i = get_file_version (f, sop_db))
@@ -1456,7 +1459,7 @@ load_sop ()
 	}
 	if (nsop != (int) ACE_OS::fread (sops, sizeof (Sop), nsop, f))
 	{
-	    SLOG(LM_EMERGENCY, "Read error on %s", ( sop_db));
+	    SLOG(LM_EMERGENCY, "Read error on $1", ( sop_db));
 	}
 
 	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
@@ -1472,7 +1475,7 @@ load_sop ()
 	free(sops);
 	break;
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( i, sop_db));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( i, sop_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -1486,7 +1489,7 @@ load_message ()
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read MESSAGE database %s", ( message_db));
+	SLOG(LM_ERROR, "Can't read MESSAGE database $1", ( message_db));
 	return;
     }
     switch (i = get_file_version (f, message_db))
@@ -1510,7 +1513,7 @@ load_message ()
 	}
 	if (nmessage != (int) ACE_OS::fread (messages, sizeof (*messages), nmessage, f))
 	{
-	    SLOG(LM_EMERGENCY, "Read error on %s", ( message_db));
+	    SLOG(LM_EMERGENCY, "Read error on $1", ( message_db));
 	}
 	for (j = 0; j < nmessage; ++j)
 	    messages[j].text = read_string (f, message_db);
@@ -1540,7 +1543,7 @@ load_message ()
 	break;
 
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( i, message_db));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( i, message_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -1554,7 +1557,7 @@ load_akill ()
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read AKILL database %s", ( akill_db));
+	SLOG(LM_ERROR, "Can't read AKILL database $1", ( akill_db));
 	return;
     }
     switch (i = get_file_version (f, akill_db))
@@ -1577,7 +1580,7 @@ load_akill ()
 	}
 	if (nakill != (int) ACE_OS::fread (akills, sizeof (*akills), nakill, f))
 	{
-	    SLOG(LM_EMERGENCY, "Read error on %s", ( akill_db));
+	    SLOG(LM_EMERGENCY, "Read error on $1", ( akill_db));
 	}
 	for (j = 0; j < nakill; ++j)
 	{
@@ -1631,7 +1634,7 @@ load_akill ()
 	    {
 		if (1 != ACE_OS::fread (&old_akill, sizeof (old_akill), 1, f))
 		{
-		    SLOG(LM_EMERGENCY, "Read error on %s", ( akill_db));
+		    SLOG(LM_EMERGENCY, "Read error on $1", ( akill_db));
 		}
 		akills[j].time = old_akill.time;
 		akills[j].who[0] = 0;
@@ -1672,7 +1675,7 @@ load_akill ()
 	break;
 
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( i, akill_db));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( i, akill_db));
     }				/* switch (version) */
     fclose (f);
 }
@@ -1686,7 +1689,7 @@ load_clone ()
 
     if (!f)
     {
-	SLOG(LM_ERROR, "Can't read CLONE database %s", ( clone_db));
+	SLOG(LM_ERROR, "Can't read CLONE database $1", ( clone_db));
 	return;
     }
     switch (i = get_file_version (f, clone_db))
@@ -1710,7 +1713,7 @@ load_clone ()
 	}
 	if (nclone != (int) ACE_OS::fread (clones, sizeof (*clones), nclone, f))
 	{
-	    SLOG(LM_EMERGENCY, "Read error on %s", ( clone_db));
+	    SLOG(LM_EMERGENCY, "Read error on $1", ( clone_db));
 	}
 	for (j = 0; j < nclone; ++j)
 	{
@@ -1734,7 +1737,7 @@ load_clone ()
 	free(clones);
 	break;
     default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( i, clone_db));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( i, clone_db));
     }				/* switch (version) */
     fclose (f);
 }

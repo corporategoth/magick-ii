@@ -22,8 +22,8 @@
 # To check for your services every 10 minutes, put the following line in your
 # crontab:
 #    0,10,20,30,40,50 * * * *   /home/mydir/serviceschk
-# And if you don't want to get email from crontab when it checks you services,
-# put the following in your crontab:
+# And if you don't want to get email from crontab when it checks your
+# services, put the following in your crontab:
 #    0,10,20,30,40,50 * * * *   /home/mydir/serviceschk >/dev/null 2>&1
 #
 
@@ -56,6 +56,14 @@ savetime=0
 # allow a core file of any size, or the maximum core file size.
 coresize=unlimited
 
+# Name of the coredump file magick will dump, on freebsd, this is
+# the name of the process executed with a '.core' extension, on all
+# other platforms, its just 'core'
+corename="core"
+
+# Maximum number of coredump files to keep
+maxcores=7
+
 ########## you probably don't need to change anything below here ##########
 
 cd $servicesdir
@@ -65,12 +73,12 @@ if test -r ${pidfile}; then
   if `kill -CHLD $servicespid >/dev/null 2>&1`; then
     if test 0$savetime -gt 0; then
       # it's still going
-      if test -n "`find . -name $dbfile -mmin -$savetime 2>/dev/null`"; then
-        # backout quietly
-        exit 0
-      else
+      if test -n "`find . -name $dbfile -mmin +$savetime 2>/dev/null`"; then
         echo "Killing non-responding services ..."
         kill -9 $servicespid
+      else
+        # backout quietly
+        exit 0
       fi
     else
       # it's still going
@@ -87,18 +95,34 @@ echo "Couldn't find the services running.  Starting them ..."
 echo ""
 
 # If a new file exists, we died while saving ...
-if [ -s $dbfile.new ]; then
+if test -s $dbfile.new; then
   # If an old file exists, the new was finished
-  if [ -s $dbfile.old ]; then
+  if test -s $dbfile.old; then
     cp $dbfile.old $dbfile
   fi
   rm -f $dbfile.old $dbfile.new
-elif [ -s $dbfile.old ]; then
+elif test -s $dbfile.old; then
   rm -f $dbfile.old
 fi
 
+# Keep old cores ...
+if test 0$maxcores -gt 0; then
+  if test -f $corename; then
+    i=`expr 0$maxcores - 1`
+    while test 0$i -gt 0; do
+      if test -f $corename.$i; then
+        mv $corename.$i $corename.`expr 0$i + 1`
+      fi
+      i=`expr 0$i - 1`
+    done
+    mv $corename $corename.1
+  fi
+fi
+
+# Finally, start up services ...
 ulimit -c $coresize 2>/dev/null
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$acelibdir"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$acelibdir"
+export LD_LIBRARY_PATH
 touch $dbfile
 $startcommand
 

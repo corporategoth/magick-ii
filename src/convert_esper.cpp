@@ -27,6 +27,10 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.6  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -164,12 +168,6 @@ ESP_dbFILE *ESP_open_db(const char *service, const char *filename, const char *m
 
 void ESP_close_db(ESP_dbFILE *f)
 {
-    if (f->mode == 'w' && *f->backupname
-			&& strcmp(f->backupname, f->filename) != 0) {
-	if (f->backupfp)
-	    fclose(f->backupfp);
-	unlink(f->backupname);
-    }
     fclose(f->fp);
     free(f);
 }
@@ -243,7 +241,7 @@ int ESP_read_string(char **ret, ESP_dbFILE *f)
 
 #define SAFE(x) do {					\
     if (!(x)) {					\
-	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_NickDBName));	\
+	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_NickDBName));	\
 	failed = 1;					\
 	break;						\
     }							\
@@ -277,10 +275,10 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
     for (i = 33; i < 256 && !failed; i++) {
 	while ((c = ESP_getc_db(f)) != 0) {
 	    if (c != 1)
-		SLOG(LM_EMERGENCY, "Invalid format in %s", ( ESP_NickDBName));
+		SLOG(LM_EMERGENCY, "Invalid format in $1", ( ESP_NickDBName));
 	    SAFE(ESP_read_variable(old_nickinfo, f));
 	    if (ESP_debug >= 3)
-		SLOG(LM_DEBUG, "ESP_load_old_ns_dbase read nick %s", ( old_nickinfo.nick));
+		SLOG(LM_DEBUG, "ESP_load_old_ns_dbase read nick $1", ( old_nickinfo.nick));
 	    ni = (ESP_NickInfo *) calloc(1, sizeof(ESP_NickInfo));
 	    strncpy(ni->nick, old_nickinfo.nick, ESP_NICKMAX);
 	    strncpy(ni->pass, old_nickinfo.pass, ESP_PASSMAX);
@@ -308,7 +306,7 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
 	    if (ni->status & ESP_NS_ENCRYPTEDPW) {
 		/* Bail: it makes no sense to continue with encrypted
 		 * passwords, since we won't be able to verify them */
-		SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
 		          "but encryption disabled, aborting", (
 		          ESP_s_NickServ, ni->nick));
 	    }
@@ -379,7 +377,7 @@ void ESP_load_ns_dbase(void)
 	    int32 tmp32;
 	    while ((c = ESP_getc_db(f)) == 1) {
 		if (c != 1)
-		    SLOG(LM_EMERGENCY, "Invalid format in %s", ( ESP_NickDBName));
+		    SLOG(LM_EMERGENCY, "Invalid format in $1", ( ESP_NickDBName));
 		ni = (ESP_NickInfo *) calloc(sizeof(ESP_NickInfo), 1);
 		SAFE(ESP_read_buffer(ni->nick, f));
 		SAFE(ESP_read_buffer(ni->pass, f));
@@ -401,7 +399,7 @@ void ESP_load_ns_dbase(void)
 		if (ni->status & ESP_NS_ENCRYPTEDPW) {
 		    /* Bail: it makes no sense to continue with encrypted
 		     * passwords, since we won't be able to verify them */
-		    SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
 		          "but encryption disabled, aborting",
 		          (ESP_s_NickServ, ni->nick));
 		}
@@ -492,7 +490,7 @@ void ESP_load_ns_dbase(void)
 	break;
 
       default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on %s", ( ver, ESP_NickDBName));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", ( ver, ESP_NickDBName));
 
     } /* switch (version) */
 
@@ -540,7 +538,7 @@ int ESP_delnick(ESP_NickInfo *ni)
 
 #define SAFE(x) do {					\
     if (!(x)) {					\
-	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_ChanDBName));	\
+	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_ChanDBName));	\
 	failed = 1;					\
 	break;						\
     }							\
@@ -563,7 +561,7 @@ static int def_levels[][2] = {
     { -1 }
 };
 
-void reset_levels(ESP_ChannelInfo *ci)
+void ESP_reset_levels(ESP_ChannelInfo *ci)
 {
     int i;
 
@@ -627,10 +625,10 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
     for (i = 33; i < 256 && !failed; i++) {
 	while ((c = ESP_getc_db(f)) != 0) {
 	    if (c != 1)
-		SLOG(LM_EMERGENCY, "Invalid format in %s", ( ESP_ChanDBName));
+		SLOG(LM_EMERGENCY, "Invalid format in $1", ( ESP_ChanDBName));
 	    SAFE(ESP_read_variable(old_channelinfo, f));
 	    if (ESP_debug >= 3)
-		SLOG(LM_DEBUG, "ESP_load_old_cs_dbase: read channel %s", (
+		SLOG(LM_DEBUG, "ESP_load_old_cs_dbase: read channel $1", (
 			old_channelinfo.name));
 	    ci = (ESP_ChannelInfo *) calloc(1, sizeof(ESP_ChannelInfo));
 	    strncpy(ci->name, old_channelinfo.name, ESP_CHANMAX);
@@ -651,7 +649,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 	    if (ci->flags & ESP_CI_ENCRYPTEDPW) {
 		/* Bail: it makes no sense to continue with encrypted
 		 * passwords, since we won't be able to verify them */
-		SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
 		          "but encryption disabled, aborting",
 		          (ESP_s_ChanServ, ci->name));
 	    }
@@ -743,7 +741,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 	    if (old_channelinfo.levels) {
 		int16 n_entries;
 		ci->levels = NULL;
-		reset_levels(ci);
+		ESP_reset_levels(ci);
 		SAFE(ESP_read_int16(&n_entries, f));
 #ifdef COMPATIBILITY_V2
 		/* Ignore earlier, incompatible levels list */
@@ -758,7 +756,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 			ci->levels[j] = lev;
 		}
 	    } else {
-		reset_levels(ci);
+		ESP_reset_levels(ci);
 	    }
 
 	    ci->memos.memomax = ESP_MSMaxMemos;
@@ -800,7 +798,7 @@ void ESP_load_cs_dbase(void)
 
 	    while ((c = ESP_getc_db(f)) != 0) {
 		if (c != 1)
-		    SLOG(LM_EMERGENCY, "Invalid format in %s", ( ESP_ChanDBName));
+		    SLOG(LM_EMERGENCY, "Invalid format in $1", ( ESP_ChanDBName));
 		ci = (ESP_ChannelInfo *) malloc(sizeof(ESP_ChannelInfo));
 		SAFE(ESP_read_buffer(ci->name, f));
 		SAFE(ESP_read_string(&ci->founder, f));
@@ -828,14 +826,14 @@ void ESP_load_cs_dbase(void)
 		if (ci->flags & ESP_CI_ENCRYPTEDPW) {
 		    /* Bail: it makes no sense to continue with encrypted
 		     * passwords, since we won't be able to verify them */
-		    SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
 		          "but encryption disabled, aborting",
 		          (ESP_s_ChanServ, ci->name));
 		}
 		SAFE(ESP_read_int16(&tmp16, f));
 		n_levels = tmp16;
 		ci->levels = (int16 *) malloc(2*ESP_CA_SIZE);
-		reset_levels(ci);
+		ESP_reset_levels(ci);
 		for (j = 0; j < n_levels; j++) {
 		    if (j < ESP_CA_SIZE)
 			SAFE(ESP_read_int16(&ci->levels[j], f));
@@ -936,7 +934,7 @@ void ESP_load_cs_dbase(void)
 	break;
 
       default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on %s", ( ver, ESP_ChanDBName));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on $2", ( ver, ESP_ChanDBName));
 
     } /* switch (version) */
 
@@ -948,7 +946,7 @@ void ESP_load_cs_dbase(void)
 	for (ci = chanlists[i]; ci; ci = next) {
 	    next = ci->next;
 	    if (!(ci->flags & ESP_CI_VERBOTEN) && !ci->founder) {
-		SLOG(LM_INFO, "%s: database load: Deleting founderless channel %s", (
+		SLOG(LM_INFO, "$1: database load: Deleting founderless channel $2", (
 			ESP_s_ChanServ, ci->name));
 		ESP_delchan(ci);
 	    }
@@ -1063,7 +1061,7 @@ void ESP_load_old_ms_dbase(void)
 		    NSLOG(LM_EMERGENCY, "Invalid format in memo.db");
 		SAFE(ESP_read_variable(old_memolist, f));
 		if (ESP_debug >= 3)
-		    SLOG(LM_DEBUG, "ESP_load_old_ms_dbase: got memolist for %s", (
+		    SLOG(LM_DEBUG, "ESP_load_old_ms_dbase: got memolist for $1", (
 				old_memolist.nick));
 		old_memolist.memos = mi.memos = memos =
 				(ESP_Memo *) malloc(sizeof(ESP_Memo) * old_memolist.n_memos);
@@ -1096,7 +1094,7 @@ void ESP_load_old_ms_dbase(void)
 	}
 	break;
       default:
-	SLOG(LM_EMERGENCY, "Unsupported version number (%d) on memo.db", ( ver));
+	SLOG(LM_EMERGENCY, "Unsupported version number ($1) on memo.db", ( ver));
     } /* switch (version) */
     ESP_close_db(f);
 }
@@ -1107,7 +1105,7 @@ void ESP_load_old_ms_dbase(void)
 
 #define SAFE(x) do {					\
     if (!(x)) {					\
-	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_NewsDBName));	\
+	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_NewsDBName));	\
 	ESP_nnews = i;					\
 	break;						\
     }							\
@@ -1178,7 +1176,7 @@ void ESP_load_news()
 	break;
 
       default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( i, ESP_NewsDBName));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( i, ESP_NewsDBName));
     } /* switch (ver) */
 
     ESP_close_db(f);
@@ -1192,7 +1190,7 @@ void ESP_load_news()
 
 #define SAFE(x) do {					\
     if (!(x)) {					\
-	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_OperDBName));	\
+	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_OperDBName));	\
 	failed = 1;					\
 	break;						\
     }							\
@@ -1295,7 +1293,7 @@ void ESP_load_os_dbase(void)
 	break;
 
       default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( ver, ESP_OperDBName));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( ver, ESP_OperDBName));
     } /* switch (version) */
     ESP_close_db(f);
 }
@@ -1306,7 +1304,7 @@ void ESP_load_os_dbase(void)
 
 #define SAFE(x) do {					\
     if (!(x)) {					\
-	SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_AutokillDBName));	\
+	SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_AutokillDBName));	\
 	ESP_nakill = i;					\
 	break;						\
     }							\
@@ -1356,7 +1354,7 @@ void ESP_load_akill(void)
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
 		Parent->operserv.Akill_insert(mstring(akills[i].mask),
-		    time(NULL)-akills[i].expires,
+		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
 	    }
@@ -1396,7 +1394,7 @@ void ESP_load_akill(void)
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
 		Parent->operserv.Akill_insert(mstring(akills[i].mask),
-		    time(NULL)-akills[i].expires,
+		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
 	    }
@@ -1433,7 +1431,7 @@ void ESP_load_akill(void)
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
 		Parent->operserv.Akill_insert(mstring(akills[i].mask),
-		    time(NULL)-akills[i].expires,
+		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
 	    }
@@ -1469,7 +1467,7 @@ void ESP_load_akill(void)
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
 		Parent->operserv.Akill_insert(mstring(akills[i].mask),
-		    time(NULL)-akills[i].expires,
+		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
 	    }
@@ -1483,7 +1481,7 @@ void ESP_load_akill(void)
       } /* case 1 */
 
       default:
-	SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( ver, ESP_AutokillDBName));
+	SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( ver, ESP_AutokillDBName));
     } /* switch (version) */
 
     ESP_close_db(f);
@@ -1495,7 +1493,7 @@ void ESP_load_akill(void)
 
 #define SAFE(x) do {                                    \
     if (!(x)) {                                      \
-        SLOG(LM_EMERGENCY, "Read error on %s", ( ESP_ExceptionDBName)); \
+        SLOG(LM_EMERGENCY, "Read error on $1", ( ESP_ExceptionDBName)); \
         ESP_nexceptions = i;                                \
         break;                                          \
     }                                                   \
@@ -1552,7 +1550,7 @@ void ESP_load_exceptions()
         break;
 
       default:
-        SLOG(LM_EMERGENCY, "Unsupported version (%d) on %s", ( i, ESP_ExceptionDBName));
+        SLOG(LM_EMERGENCY, "Unsupported version ($1) on $2", ( i, ESP_ExceptionDBName));
     } /* switch (ver) */
 
     ESP_close_db(f);
@@ -1573,22 +1571,20 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
     {
 	Nick_Stored_t tmp(ni->link);
 	Nick_Stored_t out(ni->nick, mDateTime(ni->time_registered), tmp);
+	if (ni->last_realname != NULL && strlen(ni->last_realname))
+	    out.i_LastRealName = mstring(ni->last_realname);
+	if (ni->last_usermask != NULL && strlen(ni->last_usermask))
+	    out.i_LastMask = mstring(ni->last_usermask);
+	if (ni->last_quit != NULL && strlen(ni->last_quit))
+	    out.i_LastQuit = mstring(ni->last_quit);
 	out.i_LastSeenTime = mDateTime(ni->last_seen);
 	return out;
     }
     else
     {
 	int i;
-	char **string;
+	char **str;
 	Nick_Stored_t out(ni->nick, ni->pass);
-	if (ni->email != NULL && strlen(ni->email))
-	    out.i_Email = mstring(ni->email);
-	if (ni->url != NULL && strlen(ni->url))
-	    out.i_URL = mstring(ni->url);
-	if (out.i_URL.Contains("http://"))
-	    out.i_URL.Remove("http://", false);
-	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.Remove("HTTP://", false);
 	if (ni->last_realname != NULL && strlen(ni->last_realname))
 	    out.i_LastRealName = mstring(ni->last_realname);
 	if (ni->last_usermask != NULL && strlen(ni->last_usermask))
@@ -1597,18 +1593,26 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
 	    out.i_LastQuit = mstring(ni->last_quit);
 	out.i_RegTime = mDateTime(ni->time_registered);
 	out.i_LastSeenTime = mDateTime(ni->last_seen);
-	for (i=0, string = ni->access; i<ni->accesscount; ++i, ++string)
+	if (ni->email != NULL && strlen(ni->email))
+	    out.i_Email = mstring(ni->email);
+	if (ni->url != NULL && strlen(ni->url))
+	    out.i_URL = mstring(ni->url);
+	if (out.i_URL.Contains("http://"))
+	    out.i_URL.Remove("http://", false);
+	if (out.i_URL.Contains("HTTP://"))
+	    out.i_URL.Remove("HTTP://", false);
+	for (i=0, str = ni->access; i<ni->accesscount; ++i, ++str)
 	{
-	    out.i_access.insert(mstring(*string));
+	    out.i_access.insert(mstring(*str));
 	}
 	if (ni->flags & ESP_NI_KILLPROTECT && !out.L_Protect())
-	    out.i_Protect = true;
+	    out.setting.Protect = true;
 	if (ni->flags & ESP_NI_SECURE && !out.L_Secure())
-	    out.i_Secure = true;
+	    out.setting.Secure = true;
 	if (ni->flags & ESP_NI_PRIVATE && !out.L_Private())
-	    out.i_Private = true;
-	if (ni->status & ESP_NS_NO_EXPIRE && !out.L_NoExpire())
-	    out.i_NoExpire = true;
+	    out.setting.Private = true;
+	if (ni->status & ESP_NS_NO_EXPIRE && !Parent->nickserv.LCK_NoExpire())
+	    out.setting.NoExpire = true;
 
 	if (ni->flags & ESP_NI_SUSPENDED)
 	{
@@ -1621,30 +1625,30 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
 	switch (ni->language)
 	{
 	case ESP_LANG_EN_US:
-	    out.i_Language = "ENGLISH";
+	    out.setting.Language = "ENGLISH";
 	    break;
 	case ESP_LANG_JA_JIS:
 	case ESP_LANG_JA_EUC:
 	case ESP_LANG_JA_SJIS:
-	    out.i_Language = "JAPANESE";
+	    out.setting.Language = "JAPANESE";
 	    break;
 	case ESP_LANG_ES:
-	    out.i_Language = "SPANISH";
+	    out.setting.Language = "SPANISH";
 	    break;
 	case ESP_LANG_PT:
-	    out.i_Language = "PORTUGUESE";
+	    out.setting.Language = "PORTUGUESE";
 	    break;
 	case ESP_LANG_FR:
-	    out.i_Language = "FRENCH";
+	    out.setting.Language = "FRENCH";
 	    break;
 	case ESP_LANG_TR:
-	    out.i_Language = "TURKISH";
+	    out.setting.Language = "TURKISH";
 	    break;
 	case ESP_LANG_IT:
-	    out.i_Language = "ITALIAN";
+	    out.setting.Language = "ITALIAN";
 	    break;
 	default:
-	    out.i_Language = "ENGLISH";
+	    out.setting.Language = "ENGLISH";
 	}
 
 	return out;
@@ -1769,21 +1773,21 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	    out.Message_insert(ci->entry_message, Parent->chanserv.FirstName());
 
 	if (ci->flags & ESP_CI_KEEPTOPIC && !out.L_Keeptopic())
-	    out.i_Keeptopic = true;
+	    out.setting.Keeptopic = true;
 	if (ci->flags & ESP_CI_SECUREOPS && !out.L_Secureops())
-	    out.i_Secureops = true;
+	    out.setting.Secureops = true;
 	if (ci->flags & ESP_CI_PRIVATE && !out.L_Private())
-	    out.i_Private = true;
+	    out.setting.Private = true;
 	if (ci->flags & ESP_CI_TOPICLOCK && !out.L_Topiclock())
-	    out.i_Topiclock = true;
+	    out.setting.Topiclock = true;
 	if (ci->flags & ESP_CI_RESTRICTED && !out.L_Restricted())
-	    out.i_Restricted = true;
+	    out.setting.Restricted = true;
 	if (ci->flags & ESP_CI_LEAVEOPS && !out.L_Anarchy())
-	    out.i_Anarchy = true;
+	    out.setting.Anarchy = true;
 	if (ci->flags & ESP_CI_SECURE && !out.L_Secure())
-	    out.i_Secure = true;
-	if (ci->flags & ESP_CI_NO_EXPIRE && !out.L_NoExpire())
-	    out.i_NoExpire = true;
+	    out.setting.Secure = true;
+	if (ci->flags & ESP_CI_NO_EXPIRE && !Parent->chanserv.LCK_NoExpire())
+	    out.setting.NoExpire = true;
 
 	mstring modelock;
 	if (ci->mlock_on || ci->mlock_key != NULL || ci->mlock_limit)
@@ -1814,7 +1818,15 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	{
 	    for (i=0; i<ESP_CA_SIZE; ++i)
 	    {
-		newlevel = (long) ((float) ci->levels[i] * mod);
+		if (ci->levels[i] == ESP_ACCESS_INVALID)
+		    newlevel = Parent->chanserv.Level_Max() + 2;
+		else if (ci->levels[i] == ESP_ACCESS_FOUNDER)
+		    newlevel = Parent->chanserv.Level_Max() + 1;
+		else if (ci->levels[i] < 0)
+		    newlevel = -1;
+		else
+		    newlevel = (long) ((float) ci->levels[i] * mod);
+
 		switch (i)
 		{
 		case ESP_CA_INVITE:

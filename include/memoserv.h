@@ -25,6 +25,10 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.52  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -156,11 +160,13 @@ RCSID(memoserv_h, "@(#) $Id$");
 struct MemoList_CUR;
 struct NewsList_CUR;
 struct ESP_MemoInfo;
+struct EPO_MemoInfo;
 
 class Memo_t : public mUserDef, public SXP::IPersistObj
 {
     friend list<Memo_t> CreateMemoEntry(MemoList_CUR *ml);
     friend list<Memo_t> ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick);
+    friend list<Memo_t> EPO_CreateMemoEntry(EPO_MemoInfo *ml, char *nick);
     friend class MemoServ;
 
     mstring i_Nick;
@@ -212,6 +218,7 @@ class News_t : public mUserDef, public SXP::IPersistObj
 {
     friend list<News_t> CreateNewsEntry(NewsList_CUR *nl);
     friend list<News_t> ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan);
+    friend list<News_t> EPO_CreateNewsEntry(EPO_MemoInfo *nl, char *chan);
     friend class MemoServ;
 
     mstring i_Channel;

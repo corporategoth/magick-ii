@@ -16,6 +16,21 @@
 ; developer and adding new sections, please note that they may
 ; NOT have a '/' (forward-slash) or space in their name.
 ;
+; All lines starting with the '#' (hash) are considered comments.
+; All text after a ';' (semi-colon) character on a line is also
+; considered a comment (unless preceeded by a '\' (backslash)
+; character, when it is taken as literal).
+; All entries (ie. text after the = (equals) sign) are trimmed of
+; spaces (and tabs) before and after it.  Using '\ ' (backslash
+; space) will preserve spaces from the text to that point (ie.
+; if before the text, from the '\ ' to the text, if after, from
+; the end of the text to the '\ ').
+; A '\' (backslash) at the end of a line will continue to the
+; next line and treated as one line, however lines that are blank
+; or only contain a comment will be skipped.
+; You may use '\n' and '\r' to split one entry of into two lines,
+; and '\t' to insert a tab into the output.
+; 
 ; Throughout this file there are various codes that are replaced
 ; with a value direct from Magick.  See below for a table that
 ; outlines the codes and their meanings.  All lines in this file
@@ -112,6 +127,8 @@ SETPASS          =$1 reset the password for channel $2 ($3).
 MODE             =$1 changed mode "$2" on channel $3 with the MODE command.
 OP               =$1 oped $2 in channel $3 with the OP command.
 DEOP             =$1 deoped $2 in channel $3 with the DEOP command.
+HALFOP           =$1 half oped $2 in channel $3 with the HALFOP command.
+DEHALFOP         =$1 de-half oped $2 in channel $3 with the DEHALFOP command.
 VOICE            =$1 voiced $2 in channel $3 with the VOICE command.
 DEVOICE          =$1 devoiced $2 in channel $3 with the DEVOICE command.
 TOPIC            =$1 set the topic on $2 with the TOPIC command.
@@ -189,7 +206,8 @@ KILL             =$1 silently killed nickname $2 with "$3".
 HIDE             =$1 has changed the hostname of nickname $2 to $3.
 PING             =$1 triggered server pings manually.
 UPDATE           =$1 triggered database update manually.
-SHUTDOWN         =$1 REQUESTED A SHUTDOWN OF SERVICES.
+SHUTDOWN         =$1 REQUESTED A SHUTDOWN OF SERVICES ($2)
+RESTART          =$1 REQUESTED A RESTART OF SERVICES ($2).
 RELOAD           =$1 reloaded the services configuration file.
 UNLOAD           =$1 unloaded language $2.
 JUPE             =$1 juped server $2 ($3).
@@ -256,6 +274,8 @@ LOCK_OPEN        =Failed to open $1 lock for $2.
 LOCK_ACQUIRE     =Failed to acquire $1 lock for $2.
 LOCK_RELEASE     =Failed to release $1 lock for $2.
 LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!
+STAGE_FAIL       =Could not create/validate a stage in load or save process, skipping.
+STAGE_FAIL_ABORT =Could not create/validate a stage in load or save process, aborting.
 THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
 THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!

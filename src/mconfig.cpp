@@ -27,6 +27,10 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2001/11/03 21:02:53  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.33  2001/07/15 07:35:38  prez
 ** Fixed problem of it removing access list entries on slave nickname drop.
 ** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
@@ -834,28 +838,33 @@ bool mConfigEngine::LoadFromArray(const vector<mstring> &configarray)
     FT("mConfigEngine::LoadFromArray", ("(vector<mstring>) configarray"));
     bool Result=false;
     vector<mstring> decommented;
-    decommented=DeComment(configarray);
+    decommented=PreParse(configarray);
     ceNode *currNode=&RootNode;
     mstring currline, currpath;
     for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
     {
-        currline=i->Strip(true).Strip(false);
+        currline=*i;
         if(currline.first()=='[' && currline.last()==']')
         {
             // new section
-            Result=RootNode.CreateNode(currline.After("[").Before("]"));
-            currNode=RootNode.GetNode(currline.After("[").Before("]"));
-            currpath = currline.After("[").Before("]");
+	    currpath = currline.SubString(1, currline.length()-2);
+	    currpath.Trim(true);
+	    currpath.Trim(false);
+	    currpath.replace("\255", "");
+            Result=RootNode.CreateNode(currpath);
+            currNode=RootNode.GetNode(currpath);
         }
         else if(currline.find_first_of('=')>0)
         {
             // new value
             if(currNode!=NULL)
             {
+		mstring key = currline.Before("=").Strip(true);
 		mstring data = currline.After("=").Strip(false);
-		data.replace("\\ ", " ");
-                Result=currNode->SetKey(currline.Before("=").Strip(true), data);
-                CSRC(currpath,currline.Before("=").Strip(true), data);
+		key.replace("\255", "");
+		data.replace("\255", "");
+                Result=currNode->SetKey(key, data);
+                CSRC(currpath, key, data);
 	    }
         }
     }
@@ -869,27 +878,129 @@ bool mConfigEngine::NodeExists(const mstring &NodeName) const
     RET(Result);
 }
 
-vector<mstring> mConfigEngine::DeComment(const vector<mstring> &in)
+vector<mstring> mConfigEngine::PreParse(const vector<mstring> &in)
 {
-    FT("mConfigEngine::NodeExists", ("(const vector<mstrign>) in"));
+    FT("mConfigEngine::PreParse", ("(const vector<mstrign>) in"));
     vector<mstring> Result;
+    mstring line;
     for(vector<mstring>::const_iterator i=in.begin();i!=in.end();i++)
     {
-	mstring tmp = *i;
+	// Trim our left, thats safe ...
+	mstring tmp = i->Strip(false);
+
+	// If we're non blank, and non-comment ...
         if(tmp.length() && tmp.first() != '#' && tmp.first() != ';')
         {
-            // if we find ; then it's a comment to end of line, but /; is not a comment.
-            bool founddelim=false;
-            unsigned int j=1;
-            for (; founddelim == false && j < tmp.length(); j++)
-            {
-                if(tmp[j] == ';' && tmp[j-1] != '\\')
-                {
-		    j-=2;
-                    founddelim=true;
+	    unsigned int j, lnsp = 0; // lnsp = last non space
+	    bool cont = false;
+	    for (j=0; j<tmp.length(); j++)
+	    {
+		switch (tmp[j])
+		{
+		case '\\':	// Special backspace handling ...
+
+		    // Leave trailing backslash ...
+		    if (j+1 >= tmp.length())
+		    {
+			cont = true;
+			break;
+		    }
+
+		    switch (tmp[j+1])
+		    {
+		    case ' ':
+		    case '\n':
+		    case '\r':
+		    case '\t':
+			tmp.replace(j, '\255');
+			lnsp = ++j;
+			break;
+		    case ';':	// Leave these characters alone ...
+		    case '\\':	// (ie. skip them)
+			tmp.erase(j, j);
+			lnsp = j;
+			break;
+		    case 'n':	// Insert newline ...
+		    case 'N':
+			tmp.erase(j, j);
+			tmp.replace(j, '\n');
+			lnsp = j;
+			break;
+		    case 'r':	// Insert return ...
+		    case 'R':
+			tmp.erase(j, j);
+			tmp.replace(j, '\r');
+			lnsp = j;
+			break;
+		    case 't':	// Insert tab ...
+		    case 'T':
+			tmp.erase(j, j);
+			tmp.replace(j, '\t');
+			lnsp = j;
+			break;
+		    case 'a':	// Insert CTCP code ...
+		    case 'A':
+			tmp.erase(j, j);
+			tmp.replace(j, IRC_CTCP.first());
+			lnsp = j;
+			break;
+		    case 'b':	// Insert bold ...
+		    case 'B':
+			tmp.erase(j, j);
+			tmp.replace(j, IRC_Bold.first());
+			lnsp = j;
+			break;
+		    case 'c':	// Insert colour ...
+		    case 'C':
+			tmp.erase(j, j);
+			tmp.replace(j, IRC_Color.first());
+			lnsp = j;
+			break;
+		    case 'o':	// Insert off ...
+		    case 'O':
+			tmp.erase(j, j);
+			tmp.replace(j, IRC_Off.first());
+			lnsp = j;
+			break;
+		    case 'v':	// Insert reverse ...
+		    case 'V':
+			tmp.erase(j, j);
+			tmp.replace(j, IRC_Reverse.first());
+			lnsp = j;
+			break;
+		    case '_':	// Insert underline ...
+			tmp.erase(j, j);
+			tmp.replace(j, IRC_Underline.first());
+			lnsp = j;
+			break;
+		    default:
+			tmp.erase(j, j);
+			j--;
+		    }
+		    break;
+		case ';':	// Non-backspaced comment
+		    lnsp = j-1;
+		    tmp.Truncate(j);
+		    break;
+		case ' ':	// Space characters
+		case '\n':
+		case '\r':
+		case '\t':
+		    break;
+		default:
+		    lnsp = j;
 		}
-            }
-            Result.push_back(tmp.SubString(0, j-1));
+	    }
+	    if (lnsp + 1 < tmp.length())
+		tmp.Truncate(lnsp + 1);
+
+	    line += tmp;
+
+	    if (!cont)
+	    {
+		Result.push_back(line);
+		line.erase();
+	    }
         }
     }
     NRET(vector<mstring>, Result);

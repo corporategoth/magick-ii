@@ -25,6 +25,10 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2001/11/03 21:02:50  prez
+** Mammoth change, including ALL changes for beta12, and all stuff done during
+** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+**
 ** Revision 1.56  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -167,17 +171,20 @@ class Committee_t : public mUserDef, public SXP::IPersistObj
     mstring i_URL;
 
     set<entlist_t> i_Members;
-    bool i_Private;
-    bool l_Private;
-    bool i_OpenMemos;
-    bool l_OpenMemos;
-    bool i_Secure;
-    bool l_Secure;
+
+    class {
+	friend class Committee_t;
+	bool Private:1;
+	bool OpenMemos:1;
+	bool Secure:1;
+    } setting, lock;
+
     list<entlist_t> i_Messages;
 
     vector<entlist_t *> members_array;
     vector<entlist_t *> messages_array;
 
+    void defaults();
     static SXP::Tag tag_Committee_t, tag_Name, tag_HeadCom, tag_Head,
 	tag_Description, tag_Email, tag_URL, tag_set_Private,
 	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private,
@@ -261,44 +268,31 @@ class CommServ : public mBase, public SXP::IPersistObj
     friend class Magick;
 private:
     unsigned int max_logon;
-    bool    def_openmemos;
-    bool    lck_openmemos;
-    bool    def_private;
-    bool    lck_private;
-    bool    def_secure;
-    bool    lck_secure;
-    mstring all_name;
-    mstring all_setmode;
-    mstring regd_name;
-    mstring regd_setmode;
-    mstring sadmin_name;
-    bool    sadmin_secure;
-    bool    sadmin_private;
-    bool    sadmin_openmemos;
-    bool    sadmin_modeo;
-    mstring sadmin_setmode;
-    mstring sop_name;
-    bool    sop_secure;
-    bool    sop_private;
-    bool    sop_openmemos;
-    bool    sop_modeo;
-    mstring sop_setmode;
-    mstring admin_name;
-    bool    admin_secure;
-    bool    admin_private;
-    bool    admin_openmemos;
-    bool    admin_modeo;
-    mstring admin_setmode;
-    mstring oper_name;
-    bool    oper_secure;
-    bool    oper_private;
-    bool    oper_openmemos;
-    bool    oper_modeo;
-    mstring oper_setmode;
+
+    class {
+	friend class CommServ;
+	friend class Magick;
+	bool Private:1;
+	bool OpenMemos:1;
+	bool Secure:1;
+    } def, lock;
+
+    class {
+	friend class CommServ;
+	friend class Magick;
+	mstring Name;
+	mstring SetMode;
+	bool Private:1;
+	bool OpenMemos:1;
+	bool Secure:1;
+	bool ModeO:1;
+    } sadmin, sop, admin, oper, regd, all;
+
     mstring ovr_view;
     mstring ovr_owner;
     mstring ovr_cs_mode;
     mstring ovr_cs_op;
+    mstring ovr_cs_halfop;
     mstring ovr_cs_voice;
     mstring ovr_cs_invite;
     mstring ovr_cs_unban;
@@ -349,44 +343,45 @@ public:
     } stats;
 
     unsigned int Max_Logon()const	{ return max_logon; }
-    bool    DEF_OpenMemos()const	{ return def_openmemos; }
-    bool    LCK_OpenMemos()const	{ return lck_openmemos; }
-    bool    DEF_Private()const		{ return def_private; }
-    bool    LCK_Private()const		{ return lck_private; }
-    bool    DEF_Secure()const		{ return def_secure; }
-    bool    LCK_Secure()const		{ return lck_secure; }
-    mstring ALL_Name()const		{ return all_name; }
-    mstring ALL_SetMode()const		{ return all_setmode; }
-    mstring REGD_Name()const		{ return regd_name; }
-    mstring REGD_SetMode()const		{ return regd_setmode; }
-    mstring SADMIN_Name()const		{ return sadmin_name; }
-    bool    SADMIN_Secure()const	{ return sadmin_secure; }
-    bool    SADMIN_Private()const	{ return sadmin_private; }
-    bool    SADMIN_OpenMemos()const	{ return sadmin_openmemos; }
-    bool    SADMIN_ModeO()const		{ return sadmin_modeo; }
-    mstring SADMIN_SetMode()const	{ return sadmin_setmode; }
-    mstring SOP_Name()const		{ return sop_name; }
-    bool    SOP_Secure()const		{ return sop_secure; }
-    bool    SOP_Private()const		{ return sop_private; }
-    bool    SOP_OpenMemos()const	{ return sop_openmemos; }
-    bool    SOP_ModeO()const		{ return sop_modeo; }
-    mstring SOP_SetMode()const		{ return sop_setmode; }
-    mstring ADMIN_Name()const		{ return admin_name; }
-    bool    ADMIN_Secure()const		{ return admin_secure; }
-    bool    ADMIN_Private()const	{ return admin_private; }
-    bool    ADMIN_OpenMemos()const	{ return admin_openmemos; }
-    bool    ADMIN_ModeO()const		{ return admin_modeo; }
-    mstring ADMIN_SetMode()const	{ return admin_setmode; }
-    mstring OPER_Name()const		{ return oper_name; }
-    bool    OPER_Secure()const		{ return oper_secure; }
-    bool    OPER_Private()const		{ return oper_private; }
-    bool    OPER_OpenMemos()const	{ return oper_openmemos; }
-    bool    OPER_ModeO()const		{ return oper_modeo; }
-    mstring OPER_SetMode()const		{ return oper_setmode; }
+    bool    DEF_Private()const		{ return def.Private; }
+    bool    LCK_Private()const		{ return lock.Private; }
+    bool    DEF_OpenMemos()const	{ return def.OpenMemos; }
+    bool    LCK_OpenMemos()const	{ return lock.OpenMemos; }
+    bool    DEF_Secure()const		{ return def.Secure; }
+    bool    LCK_Secure()const		{ return lock.Secure; }
+    mstring ALL_Name()const		{ return all.Name; }
+    mstring ALL_SetMode()const		{ return all.SetMode; }
+    mstring REGD_Name()const		{ return regd.Name; }
+    mstring REGD_SetMode()const		{ return regd.SetMode; }
+    mstring SADMIN_Name()const		{ return sadmin.Name; }
+    mstring SADMIN_SetMode()const	{ return sadmin.SetMode; }
+    bool    SADMIN_Private()const	{ return sadmin.Private; }
+    bool    SADMIN_OpenMemos()const	{ return sadmin.OpenMemos; }
+    bool    SADMIN_Secure()const	{ return sadmin.Secure; }
+    bool    SADMIN_ModeO()const		{ return sadmin.ModeO; }
+    mstring SOP_Name()const		{ return sop.Name; }
+    mstring SOP_SetMode()const		{ return sop.SetMode; }
+    bool    SOP_Private()const		{ return sop.Private; }
+    bool    SOP_OpenMemos()const	{ return sop.OpenMemos; }
+    bool    SOP_Secure()const		{ return sop.Secure; }
+    bool    SOP_ModeO()const		{ return sop.ModeO; }
+    mstring ADMIN_Name()const		{ return admin.Name; }
+    mstring ADMIN_SetMode()const	{ return admin.SetMode; }
+    bool    ADMIN_Private()const	{ return admin.Private; }
+    bool    ADMIN_OpenMemos()const	{ return admin.OpenMemos; }
+    bool    ADMIN_Secure()const		{ return admin.Secure; }
+    bool    ADMIN_ModeO()const		{ return admin.ModeO; }
+    mstring OPER_Name()const		{ return oper.Name; }
+    mstring OPER_SetMode()const		{ return oper.SetMode; }
+    bool    OPER_Private()const		{ return oper.Private; }
+    bool    OPER_OpenMemos()const	{ return oper.OpenMemos; }
+    bool    OPER_Secure()const		{ return oper.Secure; }
+    bool    OPER_ModeO()const		{ return oper.ModeO; }
     mstring OVR_View()const		{ return ovr_view; }
     mstring OVR_Owner()const		{ return ovr_owner; }
     mstring OVR_CS_Mode()const		{ return ovr_cs_mode; }
     mstring OVR_CS_Op()const		{ return ovr_cs_op; }
+    mstring OVR_CS_HalfOp()const	{ return ovr_cs_halfop; }
     mstring OVR_CS_Voice()const		{ return ovr_cs_voice; }
     mstring OVR_CS_Invite()const	{ return ovr_cs_invite; }
     mstring OVR_CS_Unban()const		{ return ovr_cs_unban; }
