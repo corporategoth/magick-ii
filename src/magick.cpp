@@ -152,8 +152,6 @@ int Magick::Start()
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
-    LoadExternalMessages();
-
 
 #if 0
 #ifndef WIN32
@@ -386,10 +384,59 @@ int Magick::Start()
     RET(MAGICK_RET_TERMINATE);
 }
 
-mstring Magick::getMessage(const mstring & name)
+const char *Magick::getMessage(const mstring & nick, const mstring & name)
 {
-    FT("Magick::getMessage", (name));
-    // to be filled in this get's the message from our previously loaded internal message database.
+    FT("Magick::getMessage", (nick, name));
+
+    bool deflang = (Messages.find(nickserv.DEF_Language().UpperCase()) !=
+							Messages.end());
+    if (nickserv.IsStored(nick) &&
+	nickserv.stored[nick.LowerCase()].IsOnline())
+    {
+	RET(getMessageL(nickserv.stored[nick.LowerCase()].Language(), name));
+    }
+    else
+    {
+	RET(getMessageL(nickserv.DEF_Language(), name));
+    }
+}
+
+const char *Magick::getMessageL(const mstring & lang, const mstring & name)
+{
+    FT("Magick::getMessageL", (lang, name));
+
+    // Load requested language if its NOT loaded.
+    // and then look for the message of THAT type.
+    if (Messages.find(lang.UpperCase()) == Messages.end())
+	LoadExternalMessages(lang);
+    if (Messages.find(lang.UpperCase()) != Messages.end() &&
+	Messages[lang.UpperCase()].find(name.UpperCase()) !=
+		Messages[lang.UpperCase()].end())
+    {
+	RET(Messages[lang.UpperCase()][name.UpperCase()].c_str());
+    }
+
+    // Load nickserv default language if its NOT loaded.
+    // and then look for the message of THAT type.
+    if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
+	Messages.find(nickserv.DEF_Language().UpperCase()) ==
+	Messages.end())
+	LoadExternalMessages(nickserv.DEF_Language());
+    if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
+	Messages.find(nickserv.DEF_Language().UpperCase()) !=
+	Messages.end() &&
+	Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
+	Messages[nickserv.DEF_Language().UpperCase()].end())
+    {
+	RET(Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()].c_str());
+    }
+
+    // Otherwise just try and find it in the DEFAULTs.
+    if (Messages["DEFAULT"].find(name.UpperCase()) !=
+		Messages["DEFAULT"].end())
+    {
+	RET(Messages["DEFAULT"][name.UpperCase()].c_str());
+    }
     RET("");
 }
 
@@ -429,19 +476,6 @@ void Magick::dump_help(mstring & progname)
 void Magick::LoadInternalMessages()
 {
     NFT("Magick::LoadInternalMessages");
-    /* This is to be replaced with language files.
-       blah.lng (and magick.ini has DEF_LANGUAGE=blah
-       Another file should be created for LOGMSG=blahlog
-       for log messages (user display and log messages
-       should be seperated */
-    /*todo: okay, store the string from language.h into a temp file
-	parse it in using getfirstgroup/getnextgroup/getfirstvalue/getnextvalue
-	to get both the names and the values and store them into two arrays
-	one our name array, the other  our value array*/
-
-
-    /* note left side of message can have spaces before '=' that will be trimmed
-	right side will *not* be trimmed*/
 
     WLOCK(("Magick","LoadMessages"));
     // so that the language file strings are only loaded in memory while this function is in effect.
@@ -454,6 +488,7 @@ void Magick::LoadInternalMessages()
 	*fostream<<def_lang[i]<<"\n";
     fostream->Sync();
     delete fostream;
+
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
     wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"tmplang.lng");
     bool bContGroup, bContEntries;
@@ -468,11 +503,9 @@ void Magick::LoadInternalMessages()
 	bContEntries=fconf.GetFirstEntry(entryname,dummy2);
 	while(bContEntries)
 	{
-    	    MessageNamesLong.push_back(groupname+"/"+entryname);
-	    MessageNamesShort.push_back(entryname);
 	    bContEntries=fconf.GetNextEntry(entryname,dummy2);
 	    combined = groupname+"/"+entryname;
-	    Messages[entryname]=fconf.Read(combined,(mstring *) "");
+	    fconf.Read(combined, &Messages["DEFAULT"][combined.UpperCase()], mstring(""));
 	}
 	bContGroup=fconf.GetNextGroup(groupname,dummy1);
     }
@@ -503,18 +536,46 @@ mstring Magick::parseEscapes(const mstring & in)
     RET(lexer.retstring);
 }
 
-void Magick::LoadExternalMessages()
+bool Magick::LoadExternalMessages(mstring language)
 {
-    NFT("Magick::LoadExternalMessages");
+    FT("Magick::LoadExternalMessages", (language));
     // use the previously created name array to get the names to load
     WLOCK(("Magick","LoadMessages"));
-    // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
-    wxFileConfig fconf("magick","",i_services_dir+DirSlash+"lang"+DirSlash+nickserv.DEF_Language()+".lng");
-    int i;
-    // change this to not just update the internal defaults but also to
-    // add new one's like loadinternal does.
-    for(i=0;i<MessageNamesLong.size();i++)
-    	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],&Messages[MessageNamesShort[i]]);
+
+    if (language.UpperCase() == "DEFAULT")
+    {
+	LoadInternalMessages();
+	RET(true);
+    }
+    else
+    {
+	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lng");
+
+	bool bContGroup, bContEntries, found;
+	long dummy1,dummy2;
+	mstring groupname,entryname,combined;
+	bContGroup=fconf.GetFirstGroup(groupname,dummy1);
+	// this code is fucked up and won't work. debug to find why it's not
+	// finding the entries when it is actually loading them.
+	// *sigh* spent an hour so far with no luck.
+	while(bContGroup)
+	{
+	    bContEntries=fconf.GetFirstEntry(entryname,dummy2);
+	    while(bContEntries)
+	    {
+		bContEntries=fconf.GetNextEntry(entryname,dummy2);
+		combined = groupname+"/"+entryname;
+		fconf.Read(combined, &Messages[language.UpperCase()][combined.UpperCase()], mstring(""));
+		found = true;
+	    }
+	    bContGroup=fconf.GetNextGroup(groupname,dummy1);
+	}
+	if (found)
+	{
+	    RET(true);
+	}
+    }
+    RET(false);
 }
 
 int Magick::doparamparse()
@@ -576,7 +637,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--name");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--name");
 	}
 	startup.server_name=second;
 	RET(true);
@@ -585,7 +646,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--desc");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--desc");
 	}
 	startup.server_name=second;
 	RET(true);
@@ -594,7 +655,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--user");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--user");
 	}
 	startup.services_user=second;
 	RET(true);
@@ -607,7 +668,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--host");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--host");
 	}
 	startup.services_host=second;
     }
@@ -615,7 +676,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--log");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--log");
 	}
 	files.logfile=second;
 	RET(true);
@@ -626,7 +687,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--relink");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--relink");
 	}
 	if(atoi(second.c_str())<0)
 	{
@@ -641,7 +702,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--level");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--level");
 	}
 	if(atoi(second.c_str())<=0)
 	{
@@ -654,7 +715,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--save");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--save");
 	}
 	if(atoi(second.c_str())<=0)
 	{
@@ -667,7 +728,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--keyfile");
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--keyfile");
 	}
 	if(!wxFile::Exists(second.c_str()))
 	{

@@ -47,16 +47,13 @@ public:
     int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext);
 };
 
-typedef map<mstring,mstring> mapstringstring;
-
 class Magick
 {
     friend class Reconnect_Handler;
 private:
 	vector<mstring> argv;
-	mapstringstring Messages;
-	vector<mstring> MessageNamesLong;
-	vector<mstring> MessageNamesShort;
+	// Language, longname, string
+	map<mstring, map<mstring, mstring> > Messages;
 	int doparamparse();
 	SignalHandler *signalhandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
@@ -73,9 +70,6 @@ private:
         wxZlibOutputStream *ozstrm;
 	mDecryptStream *cstrm;
 	mEncryptStream *ocstrm;
-
-//	bool Files_COMPRESS_STREAMS;
-//	mstring Password;
 
 	mstring i_services_dir;
 	mstring i_config_file;
@@ -225,10 +219,10 @@ public:
 	// Streams, etc
 	bool Reconnect()	    { return i_reconnect; }
 	bool GotConnect()	    { return i_gotconnect; }
-	bool GotConnect(bool in)    { i_gotconnect = in; }
+	void GotConnect(bool in)    { i_gotconnect = in; }
 	mstring Server()	    { return i_server; }
 	bool Connected()	    { return i_connected; }
-	bool Connected(bool in)	    { i_connected = in; }
+	void Connected(bool in)	    { i_connected = in; }
 	void Disconnect();
 	void send(mstring text);
 	void save_databases();
@@ -242,8 +236,11 @@ public:
 	bool paramshort(mstring first, mstring second);
 	bool get_config_values();
 	void LoadInternalMessages();
-	void LoadExternalMessages();
-	mstring getMessage(const mstring& name);
+	bool LoadExternalMessages(mstring language);
+	const char *getMessage(const mstring& nick, const mstring& name);
+	const char *getMessage(const mstring& name)
+	    { return getMessageL("DEFAULT", name); }
+	const char *getMessageL(const mstring& language, const mstring& name);
 	mstring parseEscapes(const mstring& in);
 	void AddCommands(void)
 	{
