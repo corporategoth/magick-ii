@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.172  2001/05/09 00:40:55  prez
+** Fixed nicks expiring coz of crash before it saw them quit
+**
 ** Revision 1.171  2001/05/08 06:02:28  prez
 ** Fixed bad KLLL_NICK_PASS and KLLL_CHAN_PASS
 **
@@ -2508,11 +2511,15 @@ void Nick_Stored_t::Signon(const mstring& realname, const mstring& mask)
     FT("Nick_Stored_t::Signon", (realname, mask));
     { WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastRealName"));
     WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_LastMask"));
+    WLOCK3(("NickServ", "stored", i_Name.LowerCase(), "i_LastSeenTime"));
     MCB(i_LastRealName);
     CB(1, i_LastMask);
+    CB(2, i_LastSeenTime);
     i_LastRealName = realname;
     i_LastMask = mask;
+	i_LastSeenTime = mDateTime::CurrentDateTime();
     CE(1, i_LastMask);
+    CE(2, i_LastSeenTime);
     MCE(i_LastRealName);
     }
 
@@ -2567,6 +2574,7 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mstring& password)
 	i_LastRealName = Parent->nickserv.GetLive(i_Name).RealName();
 	i_LastMask = Parent->nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
         Parent->nickserv.GetLive(i_Name).Identify(Password());
+	i_LastSeenTime = mDateTime::CurrentDateTime();
     }
     DumpE();
 }
