@@ -301,9 +301,10 @@ Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
     ref_class::lockData(mVarArray(lck_ChanServ, lck_live, i_Name.LowerCase()));
     i_Numeric = in.i_Numeric;
     i_Creation_Time = in.i_Creation_Time;
-    users.clear();
-    map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
+    users.clear();
+    squit.clear();
+    map < mstring, triplet < bool, bool, bool > >::const_iterator k;
     for (k = in.users.begin(); k != in.users.end(); k++)
 	users.insert(*k);
     for (k = in.squit.begin(); k != in.squit.end(); k++)
@@ -2718,6 +2719,7 @@ void Chan_Stored_t::defaults()
     }
 
     vector < mstring > levels = Magick::instance().chanserv.LVL();
+    i_Level.clear();
     for (i = 0; i < levels.size(); i++)
     {
 	if (Magick::instance().chanserv.LVL(levels[i]) >= Magick::instance().chanserv.Level_Min())
@@ -4736,7 +4738,9 @@ bool Chan_Stored_t::Access_insert(const mstring & i_entry, const long value, con
 	pair < set < entlist_val_t < long > >::iterator, bool > tmp;
 
 	MCB(i_Access.size());
-	tmp = i_Access.insert(entlist_val_t < long > (entry, value, nick, modtime));
+	entlist_val_t < long > ent(entry, value, nick, modtime);
+	i_Access.erase(ent);
+	tmp = i_Access.insert(ent);
 
 	MCE(i_Access.size());
 	if (tmp.second)
@@ -5031,7 +5035,9 @@ bool Chan_Stored_t::Akick_insert(const mstring & i_entry, const mstring & value,
 	pair < set < entlist_val_t < mstring > >::iterator, bool > tmp;
 
 	MCB(i_Akick.size());
-	tmp = i_Akick.insert(entlist_val_t < mstring > (entry, value, nick, modtime));
+	entlist_val_t < mstring > ent(entry, value, nick, modtime);
+	i_Akick.erase(ent);
+	tmp = i_Akick.insert(ent);
 	MCE(i_Akick.size());
 	if (tmp.second)
 	    Akick = tmp.first;

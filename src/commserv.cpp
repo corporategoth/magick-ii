@@ -252,7 +252,9 @@ bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDat
 	pair < entlist_ui, bool > tmp;
 
 	MCB(i_Members.size());
-	tmp = i_Members.insert(entlist_t(entry, nick, modtime));
+	entlist_t ent(entry, nick, modtime);
+	i_Members.erase(ent);
+	tmp = i_Members.insert(ent);
 	MCE(i_Members.size());
 	if (tmp.second)
 	    member = tmp.first;

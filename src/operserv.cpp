@@ -267,7 +267,9 @@ bool OperServ::Clone_insert(const mstring & entry, const unsigned int value, con
 	pair < set < Clone_Type >::iterator, bool > tmp;
 
 	MCB(i_Clone.size());
-	tmp = i_Clone.insert(Clone_Type(entry, pair < unsigned int, mstring > (value, reason), nick, added));
+	Clone_Type ent(entry, pair < unsigned int, mstring > (value, reason), nick, added);
+	i_Clone.erase(ent);
+	tmp = i_Clone.insert(ent);
 
 	MCE(i_Clone.size());
 	if (tmp.second)
@@ -382,7 +384,9 @@ bool OperServ::Akill_insert(const mstring & entry, const unsigned long value, co
 	pair < set < Akill_Type >::iterator, bool > tmp;
 
 	MCB(i_Akill.size());
-	tmp = i_Akill.insert(Akill_Type(entry, pair < unsigned long, mstring > (value, reason), nick, added));
+	Akill_Type ent(entry, pair < unsigned long, mstring > (value, reason), nick, added);
+	i_Akill.erase(ent);
+	tmp = i_Akill.insert(ent);
 
 	MCE(i_Akill.size());
 	if (tmp.second)
@@ -512,7 +516,9 @@ bool OperServ::OperDeny_insert(const mstring & i_entry, const mstring & value, c
 	pair < set < OperDeny_Type >::iterator, bool > tmp;
 
 	MCB(i_OperDeny.size());
-	tmp = i_OperDeny.insert(OperDeny_Type(entry, value, nick));
+	OperDeny_Type ent(entry, value, nick);
+	i_OperDeny.erase(ent);
+	tmp = i_OperDeny.insert(ent);
 	MCE(i_OperDeny.size());
 	if (tmp.second)
 	    OperDeny = tmp.first;
@@ -642,7 +648,9 @@ bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mst
 	pair < set < Ignore_Type >::iterator, bool > tmp;
 
 	MCB(i_Ignore.size());
-	tmp = i_Ignore.insert(Ignore_Type(entry, perm, nick));
+	Ignore_Type ent(entry, perm, nick);
+	i_Ignore.erase(ent);
+	tmp = i_Ignore.insert(ent);
 	MCE(i_Ignore.size());
 	if (tmp.second)
 	    Ignore = tmp.first;
