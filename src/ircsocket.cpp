@@ -50,14 +50,13 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
     mstring data2 = flack + data;
+    flack = "";
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
     if(data2.Contains("\n")||data2.Contains("\r"))
     {
-	if (data2.Last() == '\n' || data2.Last() == '\r')
-	    flack = "";
-	else
+	if (!(data2.Last() == '\n' || data2.Last() == '\r'))
 	    flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
 
 	for(int i=1;i<data2.WordCount("\n\r");i++)
@@ -68,7 +67,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
     }
     else
-        flack += data2;
+        flack = data2;
 
     RET(0);
 }
