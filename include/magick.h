@@ -212,6 +212,7 @@ public:
 	    servmsg.MSG(on);
 	    commserv.MSG(on);
 	}
+	void Die()		{ ACE_Reactor::instance()->end_event_loop(); }
 	void Shutdown(bool in)	{ i_shutdown = in; }
 	bool Shutdown()		{ return i_shutdown; }
 	 ~Magick();

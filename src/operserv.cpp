@@ -633,7 +633,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -835,7 +836,8 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -889,7 +891,8 @@ void OperServ::do_Kick(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -930,7 +933,8 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -947,7 +951,8 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -963,7 +968,8 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -993,7 +999,8 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1034,7 +1041,14 @@ void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
     ::send(mynick, source, "Shutting down ...");
+    announce(mynick, "SHUTDOWN command received by " + source + ".");
+#ifdef WIN32
+    Sleep(1000);
+#else
+    sleep(1);
+#endif
     Parent->Shutdown(true);
+    Parent->Die();
 }
 
 
@@ -1060,7 +1074,8 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1084,7 +1099,8 @@ void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1492,7 +1508,8 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 5)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1534,7 +1551,8 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1591,7 +1609,8 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1647,7 +1666,8 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1659,7 +1679,8 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 5)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 
@@ -1719,7 +1740,8 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1781,7 +1803,8 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1837,7 +1860,8 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1874,7 +1898,8 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1939,7 +1964,8 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -2002,7 +2028,8 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -2038,7 +2065,8 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -2103,7 +2131,8 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 

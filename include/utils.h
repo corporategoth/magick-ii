@@ -14,6 +14,8 @@
 #define _UTILS_H
 
 #include "mstring.h"
+#include "datetime.h"
+#include "lockable.h"
 
 const char FILE_SEP_EXT = '.';
 const char FILE_SEP_DSK = ':';
@@ -29,9 +31,26 @@ extern mstring &wxGetHomeDir(mstring &pstr);
 
 extern bool wxIsAbsolutePath (const mstring& filename);
 
-// Generate a unique ID
-extern long wxNewId(void);
-#define NewId wxNewId
+// These are TRANSACTION ID's used for guarenteeing no
+// duplicate messages between Magick instances.  They are
+// always 10 digits, and with a 4-byte unsigned long,
+// you have 3294967295 possible TxnIds.
+class TxnIds
+{
+    static const unsigned long min = 1000000000;
+    static const unsigned long keeptime = 60 * 60 * 24;
+
+    static map<unsigned long, mDateTime> i_Ids;
+    static unsigned long i_Current;
+
+public:
+    static unsigned long Create();
+    static unsigned long Current();
+    static bool Register(unsigned long id);
+    static void Expire();
+
+};
+    
 
 // Ensure subsequent IDs don't clash with this one
 extern void wxRegisterId(long id);
@@ -53,6 +72,7 @@ mstring wxGetCwd();
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);
 mstring ToHumanTime(unsigned long in);
+mstring ToHumanNumber(unsigned long in);
 
 // extrapolated from the ms's pair<T1,T2> template code
 

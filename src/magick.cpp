@@ -153,25 +153,21 @@ int Magick::Start()
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
 
-#if 0
 #ifndef WIN32
-    if(live==false)
+    if ((i = fork ()) < 0)
     {
-	if ((i = fork ()) < 0)
-	{
-	    //log_perror ("fork()");
-            RET(1);
-        }
-        else if (i != 0)
-            RET(0);
-        if (setpgid (0, 0) < 0)
-        {
-            //log_perror ("setpgid()");
-            RET(1);
-        }
+	//log_perror ("fork()");
+	RET(1);
+    }
+    else if (i != 0)
+	RET(0);
+    if (setpgid (0, 0) < 0)
+    {
+	//log_perror ("setpgid()");
+	RET(1);
     }
 #endif
-#endif
+
     wxFile pidfile;
     pidfile.Create(files.Pidfile().Strip(mstring::stBoth),true);
     if(pidfile.IsOpened())
@@ -290,11 +286,6 @@ int Magick::Start()
 
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
-
-
-    // not so temporary event handling mechanism
-    //todo: while( below!=-1(TimeValue) { do cleanup's } that way every
-    // say 5 mins or so it breaks from the event loop to cleanup
 
     // This is the main loop.  When we get a Shutdown(),
     // we wait for everything to shutdown cleanly.
@@ -506,7 +497,7 @@ void Magick::LoadInternalMessages()
     wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"tmplang.lng");
     remove("tmplang.lng");
     bool bContGroup, bContEntries;
-    long dummy1,dummy2;
+    long dummy1=0,dummy2=0;
     mstring groupname,entryname,combined;
     vector<mstring> entries;
 
@@ -520,9 +511,10 @@ void Magick::LoadInternalMessages()
 	bContEntries=fconf.GetFirstEntry(entryname,dummy2);
 	while(bContEntries)
 	{
-	    bContEntries=fconf.GetNextEntry(entryname,dummy2);
 	    entries.push_back(groupname.UpperCase()+"/"+entryname.UpperCase());
+	    bContEntries=fconf.GetNextEntry(entryname,dummy2);
 	}
+	dummy2=0;
 	fconf.SetPath("..");
 	bContGroup=fconf.GetNextGroup(groupname,dummy1);
     }
@@ -570,7 +562,7 @@ bool Magick::LoadExternalMessages(mstring language)
 	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lng");
 
 	bool bContGroup, bContEntries;
-	long dummy1,dummy2;
+	long dummy1=0,dummy2=0;
 	int i;
 	mstring groupname,entryname,combined;
 	vector<mstring> entries;
@@ -584,9 +576,10 @@ bool Magick::LoadExternalMessages(mstring language)
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy2);
 	    while(bContEntries)
 	    {
-		bContEntries=fconf.GetNextEntry(entryname,dummy2);
 		entries.push_back(groupname.UpperCase()+"/"+entryname.UpperCase());
+		bContEntries=fconf.GetNextEntry(entryname,dummy2);
 	    }
+	    dummy2=0;
 	    fconf.SetPath("..");
 	    bContGroup=fconf.GetNextGroup(groupname,dummy1);
 	}

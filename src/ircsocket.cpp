@@ -456,6 +456,10 @@ int EventTask::svc(void)
 		    }
 		}
 	    }
+
+	    // transaction ID's
+	    TxnIds::Expire();
+
 	    last_expire = Now();
 	}
 

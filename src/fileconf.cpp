@@ -441,7 +441,8 @@ bool wxFileConfig::GetFirstGroup(mstring& str, long& lIndex) const
 {
   FT("wxFileConfig::GetFirstGroup", (str, lIndex));
   lIndex = 0;
-  RET(GetNextGroup(str, lIndex));
+  bool retval = GetNextGroup(str, lIndex);
+  RET(retval);
 }
 
 bool wxFileConfig::GetNextGroup (mstring& str, long& lIndex) const
@@ -459,12 +460,13 @@ bool wxFileConfig::GetFirstEntry(mstring& str, long& lIndex) const
 {
   FT("wxFileConfig::GetFirstEntry", (str, lIndex));
   lIndex = 0;
-  RET(GetNextEntry(str, lIndex));
+  bool retval = GetNextEntry(str, lIndex);
+  RET(retval);
 }
 
 bool wxFileConfig::GetNextEntry (mstring& str, long& lIndex) const
 {
-  FT("wxFileConfig::GetFirstEntry", (str, lIndex));
+  FT("wxFileConfig::GetNextEntry", (str, lIndex));
   if ( size_t(lIndex) < m_pCurrentGroup->Entries().Count() ) {
     str = m_pCurrentGroup->Entries()[lIndex++]->Name();
     RET(true);

@@ -34,9 +34,21 @@ public:
     ~mLOCK();
 };
 
-#define RLOCK(y)  mVarArray __lock_VarArray y; mLOCK __lock(T_Locking::Read, __lock_VarArray)
-#define WLOCK(y)  mVarArray __lock_VarArray y; mLOCK __lock(T_Locking::Write, __lock_VarArray)
-#define MLOCK(y)  mVarArray __lock_VarArray y; mLOCK __lock(T_Locking::Mutex, __lock_VarArray)
+#define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(T_Locking::Read,  __lockR1_VarArray)
+#define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(T_Locking::Read,  __lockR2_VarArray)
+#define RLOCK3(y)  mVarArray __lockR3_VarArray y; mLOCK __lockR3(T_Locking::Read,  __lockR3_VarArray)
+#define RLOCK4(y)  mVarArray __lockR4_VarArray y; mLOCK __lockR4(T_Locking::Read,  __lockR4_VarArray)
+#define RLOCK5(y)  mVarArray __lockR5_VarArray y; mLOCK __lockR5(T_Locking::Read,  __lockR5_VarArray)
+#define WLOCK(y)   mVarArray __lockW1_VarArray y; mLOCK __lockW1(T_Locking::Write, __lockW1_VarArray)
+#define WLOCK2(y)  mVarArray __lockW2_VarArray y; mLOCK __lockW2(T_Locking::Write, __lockW2_VarArray)
+#define WLOCK3(y)  mVarArray __lockW3_VarArray y; mLOCK __lockW3(T_Locking::Write, __lockW3_VarArray)
+#define WLOCK4(y)  mVarArray __lockW4_VarArray y; mLOCK __lockW4(T_Locking::Write, __lockW4_VarArray)
+#define WLOCK5(y)  mVarArray __lockW5_VarArray y; mLOCK __lockW5(T_Locking::Write, __lockW5_VarArray)
+#define MLOCK(y)   mVarArray __lockM1_VarArray y; mLOCK __lockM1(T_Locking::Mutex, __lockM1_VarArray)
+#define MLOCK2(y)  mVarArray __lockM2_VarArray y; mLOCK __lockM2(T_Locking::Mutex, __lockM2_VarArray)
+#define MLOCK3(y)  mVarArray __lockM3_VarArray y; mLOCK __lockM3(T_Locking::Mutex, __lockM3_VarArray)
+#define MLOCK4(y)  mVarArray __lockM4_VarArray y; mLOCK __lockM4(T_Locking::Mutex, __lockM4_VarArray)
+#define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(T_Locking::Mutex, __lockM5_VarArray)
 
 class mThread
 {

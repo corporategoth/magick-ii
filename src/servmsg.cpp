@@ -191,7 +191,8 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
     mstring text = params.After(" ");

@@ -64,7 +64,8 @@ bool wxTextFile::Open(const mstring& strFile)
 {
   FT("wxTextFile::Open", (strFile));
   m_strFile = strFile;
-  RET(Open());
+  bool retval = Open();
+  RET(retval);
 }
 
 bool wxTextFile::Open()
@@ -138,18 +139,22 @@ wxTextFileType wxTextFile::GuessType() const
 #if defined(__WATCOMC__)
     RET(typeDefault);
 #else
+    wxTextFileType retval;
     if ( nDos > nUnix )
     {
-      RET(GREATER_OF(Dos, Mac));
+      retval = GREATER_OF(Dos, Mac);
+      RET(retval);
     }
     else if ( nDos < nUnix )
     {
-      RET(GREATER_OF(Unix, Mac));
+      retval = GREATER_OF(Unix, Mac);
+      RET(retval);
     }
     else 
     {
       // nDos == nUnix
-      RET((nMac > nDos ? wxTextFileType_Mac : typeDefault));
+      retval = (nMac > nDos ? wxTextFileType_Mac : typeDefault);
+      RET(retval);
     }
 #endif
 
@@ -242,7 +247,8 @@ bool wxTextFile::Write(wxTextFileType typeNew)
   }
 
   // replace the old file with this one
-  RET(fileTmp.Commit());
+  bool retval = fileTmp.Commit();
+  RET(retval);
 }
 
 const char *wxTextFile::GetEOL(wxTextFileType type)
@@ -263,13 +269,15 @@ const char *wxTextFile::GetEOL(wxTextFileType type)
 bool wxTextFile::IsOpened() const
 {
     NFT("wxTextFile::IsOpened");
-    RET(m_file.IsOpened()); 
+    bool retval = m_file.IsOpened();
+    RET(retval);
 }
 
 size_t wxTextFile::GetLineCount() const 
 {
     NFT("wxTextFile::GetLineCount");
-    RET(m_aLines.size()); 
+    size_t retval = m_aLines.size();
+    RET(retval);
 }
 
 mstring& wxTextFile::GetLine(size_t n)    const 
@@ -299,7 +307,8 @@ void wxTextFile::GoToLine(size_t n)
 bool wxTextFile::Eof() const 
 {
     NFT("wxTextFile::Eof");
-    RET(m_nCurLine == m_aLines.size()); 
+    bool retval = (m_nCurLine == m_aLines.size());
+    RET(retval);
 }
 
 mstring& wxTextFile::GetFirstLine() /* const */ 
@@ -311,20 +320,22 @@ mstring& wxTextFile::GetFirstLine() /* const */
 mstring& wxTextFile::GetNextLine()  /* const */ 
 {
     NFT("wxTextFile::GetNextLine");
-    RET(m_aLines[++m_nCurLine]);   
+    m_nCurLine++;
+    RET(m_aLines[m_nCurLine]);
 }
 
 mstring& wxTextFile::GetPrevLine()  /* const */ 
 {
     NFT("wxTextFile::GetPrevLine");
     wxASSERT(m_nCurLine > 0);
-    RET(m_aLines[--m_nCurLine]);   
+    m_nCurLine--;
+    RET(m_aLines[m_nCurLine]);
 }
 
 mstring& wxTextFile::GetLastLine() /* const */ 
 {
     NFT("wxTextFile::GetLastLine");
-    RET(m_aLines[m_nCurLine = m_aLines.size() - 1]); 
+    RET(m_aLines[m_nCurLine = m_aLines.size() - 1]);
 }
 
 wxTextFileType wxTextFile::GetLineType(size_t n) const 

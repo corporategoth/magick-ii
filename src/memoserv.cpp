@@ -198,7 +198,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -206,7 +207,8 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 3)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -463,7 +465,8 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -471,7 +474,8 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 3)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -660,7 +664,8 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 1)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -668,7 +673,8 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 2)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -763,7 +769,8 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -844,7 +851,8 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -852,7 +860,8 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 4)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -1004,7 +1013,8 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1012,7 +1022,8 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 4)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -1163,7 +1174,8 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1171,7 +1183,8 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
     {
 	if (params.WordCount(" ") < 3)
 	{
-	    ::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -1395,7 +1408,8 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1428,7 +1442,8 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 

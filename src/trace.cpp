@@ -517,6 +517,9 @@ int LoggerTask::svc(void)
 	{
 	    auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue ());
 	    // Call it.
+	    if (Parent->Shutdown())
+		return -1;
+
 	    if (mo->call () == -1)
 		break;
 	}

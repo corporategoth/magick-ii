@@ -22,7 +22,6 @@
 #include "log.h"
 #include "trace.h"
 
-
 void wxSplitPath(const char *pszFileName,
                              mstring *pstrPath,
                              mstring *pstrName,
@@ -133,29 +132,77 @@ wxIsAbsolutePath (const mstring& filename)
   RET(false);
 }
 
-// Id generation
-static long wxCurrentId = 100;
+map<unsigned long, mDateTime> TxnIds::i_Ids;
+unsigned long TxnIds::i_Current = TxnIds::min;
 
-long
-wxNewId (void)
+unsigned long TxnIds::Create()
 {
-  NFT("wxNewId");
-  RET(wxCurrentId++);
+    NFT("TxnIds::Create");
+
+    WLOCK(("TxnIds"));
+    i_Current++;
+    while (i_Current >= min && i_Ids.find(i_Current) != i_Ids.end())
+	i_Current++;
+
+    if (i_Current >= min)
+    {
+	i_Ids[i_Current] = Now();
+	RET(i_Current);
+    }
+    else
+    {
+	i_Current = min;
+	while (i_Current >= min && i_Ids.find(i_Current) != i_Ids.end())
+	    i_Current++;
+    }
+
+    if (i_Current >= min)
+    {
+	i_Ids[i_Current] = Now();
+	RET(i_Current);
+    }
+    else
+    {
+	wxLogError("Cannot generate new TxnIds!");
+	RET(0);
+    }
 }
 
-long
-wxGetCurrentId(void)
+unsigned long TxnIds::Current()
 {
-  NFT("wxGetCurrentId");
-  RET(wxCurrentId);
+    NFT("TxnIds::Current");
+    RET(i_Current);
 }
 
-void
-wxRegisterId (long id)
+bool TxnIds::Register(unsigned long id)
 {
-  FT("wxRegisterId", (id));
-  if (id >= wxCurrentId)
-    wxCurrentId = id + 1;
+    FT("TxnIds::Register", (id));
+
+    WLOCK(("TxnIds"));
+    if (i_Ids.find(id) != i_Ids.end())
+	RET(false);
+
+    i_Ids[id] = Now();
+    if (i_Current < id)
+	i_Current = id;
+
+    RET(true);
+}
+
+void TxnIds::Expire()
+{
+    NFT("TxnIds::Expire");
+
+    WLOCK(("TxnIds"));
+    map<unsigned long, mDateTime>::iterator iter;
+    vector<unsigned long> kill;
+    for (iter=i_Ids.begin(); iter != i_Ids.end(); iter++)
+    {
+	if (iter->second.SecondsSince() > keeptime)
+	    kill.push_back(iter->first);
+    }
+    for (int i=0; i<kill.size(); i++)
+	i_Ids.erase(kill[i]);
 }
 
 // Get current working directory.
@@ -313,3 +360,34 @@ mstring ToHumanTime(unsigned long in)
 
     RET(DisectTime((long) in));
 }
+
+mstring ToHumanNumber(unsigned long in)
+{
+    FT("ToHumanNumber", (in));
+
+    mstring retval = ltoa(in);
+
+    if (in >= 11 && in <= 13)
+    {
+	retval += "th";
+	RET(retval);
+    }
+
+    switch (retval[retval.Len()-1])
+    {
+    case '3':
+	retval += "rd";
+	break;
+    case '2':
+	retval += "nd";
+	break;
+    case '1':
+	retval += "st";
+	break;
+    default:
+	retval += "th";
+	break;
+    }
+    RET(retval);
+}
+

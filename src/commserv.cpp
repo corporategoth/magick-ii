@@ -456,7 +456,8 @@ void CommServ::do_AddComm(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -499,7 +500,8 @@ void CommServ::do_DelComm(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -534,7 +536,8 @@ void CommServ::do_Add(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -589,7 +592,8 @@ void CommServ::do_Del(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -650,7 +654,8 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -759,7 +764,8 @@ void CommServ::do_List(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -846,7 +852,8 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -935,7 +942,8 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -972,7 +980,8 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1021,7 +1030,8 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1070,7 +1080,8 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1132,7 +1143,8 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1176,7 +1188,8 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1220,7 +1233,8 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1279,7 +1293,8 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1338,7 +1353,8 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, "Not enough paramaters.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 

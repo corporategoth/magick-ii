@@ -168,6 +168,9 @@ Server::~Server()
 {
     NFT("Server::~Server");
 
+    if (Parent->Shutdown())
+	return;
+
     // Take my sublinks with me (who will take theirs ...)
     vector<mstring> Kill = Downlinks();
     COM(("Destroying %d more servers", Kill.size()));
