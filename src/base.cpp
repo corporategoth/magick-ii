@@ -176,6 +176,8 @@ params_(p_params), creation_(mDateTime::CurrentDateTime())
 
     if (msgtype_.empty())
 	msgtype_ = p_msgtype;
+
+    msgtype_.MakeUpper();
 }
 
 void mMessage::AddDependancies()
@@ -188,9 +190,11 @@ void mMessage::AddDependancies()
     {
 	if (source_[0u] == '@')
 	{
-	    mstring svr(Magick::instance().server.proto.Numeric.str_to_base64(source_.After("@")));
-
-	    AddDepend(ServerExists, svr);
+	    AddDepend(ServerExists, source_.After("@"));
+	}
+	else if (source_[0u] == ':')
+	{
+	    AddDepend(NickExists, source_.After(":"));
 	}
 	else if (source_.Contains("."))
 	{
@@ -206,7 +210,7 @@ void mMessage::AddDependancies()
     {
 	// User is NOT in channel
 	for (unsigned int i = 1; i <= params_.WordCount(":, "); i++)
-	    AddDepend(UserNoInChan, params_.ExtractWord(i, ":, ").LowerCase() + ":" + source_.LowerCase());
+	    AddDepend(UserNoInChan, params_.ExtractWord(i, ":, ").LowerCase() + ":" + source_.After(":"));
     }
     else if (msgtype_ == "KICK")
     {
@@ -233,7 +237,7 @@ void mMessage::AddDependancies()
 	// Server exists OR
 	// Target nick does NOT exist
 	AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
-	if (source_.empty())
+	if (source_.empty() || source_[0u] == '@')
 	{
 	    switch (Magick::instance().server.proto.Signon())
 	    {
@@ -259,6 +263,9 @@ void mMessage::AddDependancies()
 	    case 2003:
 		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
 		break;
+	    case 3000:
+		AddDepend(ServerExists, source_.After("@"));
+		break;
 	    }
 	}
     }
@@ -267,7 +274,7 @@ void mMessage::AddDependancies()
 	// Channel exists
 	// User in channel
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
-	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + source_.LowerCase());
+	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + source_.After(":"));
     }
     else if (msgtype_ == "SERVER")
     {
@@ -335,7 +342,7 @@ void mMessage::AddDependancies()
 			break;
 		    }
 		}
-		AddDepend(UserNoInChan, chan + ":" + source_.LowerCase());
+		AddDepend(UserNoInChan, chan + ":" + source_.After(":"));
 	    }
 	}
     }

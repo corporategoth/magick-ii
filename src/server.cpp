@@ -460,12 +460,11 @@ void Protocol::Set(const unsigned int in)
 	Numeric.SetBase64(0000);
 	break;
 
-    case 21:			// UnderNet >= 2.10.00 && <= 2.10.04
+    case 21:			// UnderNet >= 2.10.00
 	i_Signon = 3000;
 	i_Akill = 2001;
-	i_Server = "SERVER $1 $2 0 0 P10 $4 :$3";
 	Numeric.i_Server = true;
-	Numeric.i_Nick = true;
+	Numeric.i_User = true;
 	Numeric.i_Combine = true;
 	Numeric.i_Field = 6;
 	i_Burst = "BURST";
@@ -473,21 +472,23 @@ void Protocol::Set(const unsigned int in)
 	i_Tokens = true;	// Nothing tells us to turn it on ...
 	SetTokens(1000);
 	Numeric.SetBase64(0001);
+	i_Server = "SERVER $1 $2 $6 $5 J10 $4" + Numeric.base64_to_str(255).Right(2) + " :$3";
 	break;
 
-    case 22:			// UnderNet >= 2.10.05
+    case 22:			// UnderNet >= 2.10.00 w/Extended
 	i_Signon = 3000;
 	i_Akill = 2001;
-	i_Server = "SERVER $1 $2 0 0 P10 $4 0 :$3";
 	Numeric.i_Server = true;
-	Numeric.i_Nick = true;
+	Numeric.i_User = true;
 	Numeric.i_Combine = true;
 	Numeric.i_Field = 6;
+	Numeric.i_Extended = true;
 	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
 	i_Tokens = true;	// Nothing tells us to turn it on ...
 	SetTokens(1000);
 	Numeric.SetBase64(0001);
+	i_Server = "SERVER $1 $2 $6 $5 J10 $4" + Numeric.base64_to_str(255).Right(3) + " 0 :$3";
 	break;
 
     case 30:			// Hybrid 5/6
@@ -1191,15 +1192,78 @@ mstring Protocol::Numeric_t::NumericToChannel2(unsigned long n) const
     RET(retval);
 }
 
+unsigned long Protocol::Numeric_t::FindServerNumeric() const
+{
+    NFT("Protocol::Numeric_t::FindServerNumeric");
+
+    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+
+    for (unsigned long i = 1; i > 0; i++)
+    {
+	if (i == ournumeric)
+	    continue;
+	if (NumericToServer2(i).empty())
+	    RET(i);
+    }
+
+    RET(0);
+}
+
+unsigned long Protocol::Numeric_t::FindUserNumeric() const
+{
+    NFT("Protocol::Numeric_t::FindUserNumeric");
+
+    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+    unsigned long i = ournumeric * 64 * 64;
+
+    if (Extended())
+	i *= 64;
+    unsigned long max = ournumeric + 1 * 64 * 64;
+
+    if (Extended())
+	max *= 64;
+
+    for (; i < max; i++)
+    {
+	if (NumericToUser2(i).empty())
+	    RET(i);
+    }
+
+    RET(0);
+}
+
+unsigned long Protocol::Numeric_t::FindChannelNumeric() const
+{
+    NFT("Protocol::Numeric_t::FindChannelNumeric");
+
+    for (unsigned long i = 1; i > 0; i++)
+    {
+	if (NumericToChannel2(i).empty())
+	    RET(i);
+    }
+
+    RET(0);
+}
+
 mstring Protocol::Numeric_t::ServerLineNumeric(unsigned long n) const
 {
     FT("Protocol::Numeric_t::ServerLineNumeric", (n));
     mstring retval;
 
     if (ServerNumber())
-	retval = base64_to_str(n);
-    else
 	retval = n;
+    else
+    {
+	if (Combine())
+	{
+	    if (Extended())
+		retval = (base64_to_str(n) + base64_to_str(255).Right(3)).Right(5);
+	    else
+		retval = (base64_to_str(n) + base64_to_str(255).Right(2)).Right(3);
+	}
+	else
+	    retval = base64_to_str(n);
+    }
 
     RET(retval);
 }
@@ -1210,9 +1274,19 @@ unsigned long Protocol::Numeric_t::ServerLineNumeric(const mstring & n) const
     unsigned long retval;
 
     if (ServerNumber())
-	retval = str_to_base64(n);
-    else
 	retval = atoi(n.c_str());
+    else
+    {
+	if (Combine())
+	{
+	    if (n.length() > 3)
+		retval = str_to_base64(n.Left(n.length() - 3));
+	    else
+		retval = str_to_base64(n.Left(n.length() - 2));
+	}
+	else
+	    retval = str_to_base64(n);
+    }
 
     RET(retval);
 }
@@ -1239,6 +1313,15 @@ void Server::sraw(const mstring & text) const
 
     if (!proto.Numeric.Server())
 	out << ":" << Magick::instance().startup.Server_Name() << " ";
+    else if (proto.Number() >= 21 && proto.Number() < 30 && proto.Numeric.Server())
+    {
+	unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+
+	if (proto.Numeric.Extended())
+	    out << proto.Numeric.base64_to_str(ournumeric).Right(2) + " ";
+	else
+	    out << proto.Numeric.base64_to_str(ournumeric).Right(1) + " ";
+    }
     out << text;
     raw(out);
 }
@@ -1618,7 +1701,6 @@ mstring Server::GetServer(const mstring & server) const
     FT("Server::GetServer", (server));
     mstring retval;
 
-    RLOCK(("Server", "list"));
     if (proto.Numeric.Server())
     {
 	retval = proto.Numeric.NumericToServer(server);
@@ -1627,6 +1709,38 @@ mstring Server::GetServer(const mstring & server) const
     }
     else if (IsList(server))
 	retval = server;
+    RET(retval);
+}
+
+mstring Server::GetUser(const mstring & user) const
+{
+    FT("Server::GetUser", (user));
+    mstring retval;
+
+    if (proto.Numeric.User())
+    {
+	retval = proto.Numeric.NumericToUser(user);
+	if (retval.empty() && Magick::instance().nickserv.IsLive(user))
+	    retval = user;
+    }
+    else if (Magick::instance().nickserv.IsLive(user))
+	retval = user;
+    RET(retval);
+}
+
+mstring Server::GetChannel(const mstring & channel) const
+{
+    FT("Server::GetChannel", (channel));
+    mstring retval;
+
+    if (proto.Numeric.Channel())
+    {
+	retval = proto.Numeric.NumericToChannel(channel);
+	if (retval.empty() && Magick::instance().chanserv.IsLive(channel))
+	    retval = channel;
+    }
+    else if (Magick::instance().chanserv.IsLive(channel))
+	retval = channel;
     RET(retval);
 }
 
@@ -1654,34 +1768,13 @@ void Server::Jupe(const mstring & server, const mstring & reason)
     unsigned long numeric = 0;
 
     if (proto.Numeric.Server())
-    {
-	unsigned long ournumeric = Magick::instance().startup.Server(OurUplink()).second.third;
-
-	for (unsigned long i = 1; i > 0; i++)
-	{
-	    if (i == ournumeric)
-		continue;
-
-	    Server::list_t::iterator iter;
-	    RLOCK(("Server", "list"));
-	    for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
-	    {
-		map_entry < Server_t > server(iter->second);
-		if (server->Numeric() == i)
-		    break;
-	    }
-	    if (iter == Magick::instance().server.ListEnd())
-	    {
-		numeric = i;
-		break;
-	    }
-	}
-    }
+	numeric = proto.Numeric.FindServerNumeric();
 
     Magick::instance().server.
 	raw(parseMessage
 	    (Magick::instance().server.proto.Server(),
-	     mVarArray(server.LowerCase(), 2, "JUPED (" + reason + ")", proto.Numeric.ServerLineNumeric(numeric))));
+	     mVarArray(server.LowerCase(), 2, "JUPED (" + reason + ")", proto.Numeric.ServerLineNumeric(numeric), time(NULL),
+		       Magick::instance().StartTime().timetstring())));
 
     map_entry < Server_t > jupe(new Server_t(server.LowerCase(), "JUPED (" + reason + ")", numeric));
     Magick::instance().server.AddList(jupe);
@@ -2221,6 +2314,29 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    server = proto.Numeric.ServerToNumeric(server);
 	mstring out, token;
 
+	if (Magick::instance().nickserv.IsLiveAll(nick.LowerCase()))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
+	    nlive->Quit("SQUIT - " + nlive->Server());
+	    Magick::instance().nickserv.RemLive(nick);
+	    mMessage::CheckDependancies(mMessage::NickNoExists, nick);
+	}
+	map_entry < Nick_Live_t > tmp(new Nick_Live_t(nick, user, host, name));
+	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
+	    tmp->Mode(Magick::instance().startup.Setmode());
+	if (proto.Numeric.User())
+	    tmp->Numeric(proto.Numeric.FindUserNumeric());
+	Magick::instance().nickserv.AddLive(tmp);
+	{
+	    WLOCK2(("Server", "i_UserMax"));
+	    if (i_UserMax < Magick::instance().nickserv.LiveSize())
+	    {
+		MCB(i_UserMax);
+		i_UserMax = Magick::instance().nickserv.LiveSize();
+		MCE(i_UserMax);
+	    }
+	}
+
 	switch (proto.Signon())
 	{
 	case 0000:
@@ -2341,29 +2457,22 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 		timetstring() << " " << user << " " << host << " " << server << " 1 +" << Magick::instance().startup.
 		Setmode() << " " << host << " :" << name;
 	    break;
+	case 3000:
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
+		out << proto.GetNonToken(token);
+	    else
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " ";
+	    if (!Magick::instance().startup.Setmode().empty())
+		out << "+" << Magick::instance().startup.Setmode() << " ";
+	    out << "B]AAAB " << proto.Numeric.UserToNumeric(nick) << " :" << name;
+	    break;
 	}
 	// Sign ourselves in ...
 
-	if (Magick::instance().nickserv.IsLiveAll(nick.LowerCase()))
-	{
-	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
-	    nlive->Quit("SQUIT - " + nlive->Server());
-	    Magick::instance().nickserv.RemLive(nick);
-	    mMessage::CheckDependancies(mMessage::NickNoExists, nick);
-	}
-	map_entry < Nick_Live_t > tmp(new Nick_Live_t(nick, user, host, name));
-	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
-	    tmp->Mode(Magick::instance().startup.Setmode());
-	Magick::instance().nickserv.AddLive(tmp);
-	{
-	    WLOCK2(("Server", "i_UserMax"));
-	    if (i_UserMax < Magick::instance().nickserv.LiveSize())
-	    {
-		MCB(i_UserMax);
-		i_UserMax = Magick::instance().nickserv.LiveSize();
-		MCE(i_UserMax);
-	    }
-	}
 	raw(out);
 	mMessage::CheckDependancies(mMessage::NickExists, nick);
     }
@@ -3204,7 +3313,70 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 
     if (msgtype == "BURST")
     {
-	// Thanks to bahamut :)
+	if (params.WordCount(" ") > 2)
+	{
+	    mstring chan(params.ExtractWord(1, ": "));
+
+	    unsigned int i, offset = 3;
+
+	    vector < mstring > users;
+
+	    mstring modes = params.ExtractWord(offset, " ");
+
+	    if (modes[0u] != '+')
+		modes.erase();
+
+	    mstring mode_params, nick, opts;
+
+	    if (modes.length())
+	    {
+		offset++;
+		for (i = 0; i < modes.length(); i++)
+		    if (proto.ChanModeArg().Contains(modes[i]))
+			mode_params += " " + params.ExtractWord(offset++, " ");
+	    }
+
+	    for (i = offset; i <= params.WordCount(", "); i++)
+	    {
+		opts.erase();
+		nick = params.ExtractWord(i, ", ");
+		if (nick.Contains(":"))
+		{
+		    opts = nick.After(":");
+		    nick.Truncate(nick.Find(":"));
+		}
+		nick = GetUser(nick);
+
+		if (!nick.empty())
+		{
+		    if (opts.length())
+		    {
+			unsigned int j;
+
+			for (j = 0; j < opts.length(); j++)
+			{
+			    modes += opts[i];
+			    mode_params += nick;
+			}
+		    }
+		    users.push_back(nick);
+		}
+	    }
+
+	    for (i = 0; i < users.size(); i++)
+	    {
+		Magick::instance().nickserv.GetLive(users[i])->Join(chan);
+	    }
+	    CP(("MODE TO %s: %s", chan.LowerCase().c_str(), (modes + " " + mode_params).c_str()));
+	    if (Magick::instance().chanserv.IsLive(chan))
+	    {
+		Magick::instance().chanserv.GetLive(chan)->Mode(source, modes + " " + mode_params);
+	    }
+	    else if (modes.length() > 1)
+	    {
+		LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", ("MODE", source, chan));
+	    }
+	}
     }
     else
     {
@@ -3826,6 +3998,12 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		modes = params.ExtractWord(8, ": ");
 		server = GetServer(params.ExtractWord(6, ": "));
 		break;
+	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
+		modes = params.ExtractWord(6, ": ");
+		if (modes[0u] != '+')
+		    modes.erase();
+		server = source;
+		break;
 	    }
 	    if (Magick::instance().nickserv.IsLiveAll(newnick))
 	    {
@@ -3939,6 +4117,22 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 					params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
 		    tmp->Mode(modes);
 		    tmp->AltHost(params.ExtractWord(9, ": "));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		    if (modes.length())
+		    {
+			tmp->Mode(modes);
+			tmp->Numeric(proto.Numeric.str_to_base64(params.ExtractWord(8, ": ")));
+		    }
+		    else
+			tmp->Numeric(proto.Numeric.str_to_base64(params.ExtractWord(7, ": ")));
 		    Magick::instance().nickserv.AddLive(tmp);
 		}
 		break;
@@ -4678,17 +4872,14 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		}
 	    }
 
-	    if (users.size())
+	    for (i = 0; i < users.size(); i++)
 	    {
-		for (i = 0; i < users.size(); i++)
-		{
-		    Magick::instance().nickserv.GetLive(users[i])->Join(chan);
-		}
-		CP(("MODE TO %s: %s", chan.LowerCase().c_str(), (modes + " " + mode_params).c_str()));
-		if (Magick::instance().chanserv.IsLive(chan))
-		{
-		    Magick::instance().chanserv.GetLive(chan)->Mode(source, modes + " " + mode_params);
-		}
+		Magick::instance().nickserv.GetLive(users[i])->Join(chan);
+	    }
+	    CP(("MODE TO %s: %s", chan.LowerCase().c_str(), (modes + " " + mode_params).c_str()));
+	    if (Magick::instance().chanserv.IsLive(chan))
+	    {
+		Magick::instance().chanserv.GetLive(chan)->Mode(source, modes + " " + mode_params);
 	    }
 	    else if (modes.length() > 1)
 	    {
@@ -4823,6 +5014,12 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    modes = params.ExtractWord(8, ": ");
 	    server = GetServer(params.ExtractWord(6, ": "));
 	    break;
+	case 3000:		// SNICK nick hops time user host [mode] ipaddr numeric :realname
+	    modes = params.ExtractWord(6, ": ");
+	    if (!modes.length())
+		modes.erase();
+	    server = source;
+	    break;
 	}
 
 	if (Magick::instance().nickserv.IsLiveAll(newnick))
@@ -4937,6 +5134,22 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 				    server, params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
 		tmp->Mode(modes);
 		tmp->AltHost(params.ExtractWord(9, ": "));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		if (modes.length())
+		{
+		    tmp->Mode(modes);
+		    tmp->Numeric(proto.Numeric.str_to_base64(params.ExtractWord(8, ": ")));
+		}
+		else
+		    tmp->Numeric(proto.Numeric.str_to_base64(params.ExtractWord(7, ": ")));
 		Magick::instance().nickserv.AddLive(tmp);
 	    }
 	    break;
@@ -5422,10 +5635,10 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 
 	switch (proto.Signon())
 	{
-	case 0000:
+	case 0000:		// USER nick user host server :realname
 	    server = GetServer(params.ExtractWord(4, ": "));
 	    break;
-	case 0001:
+	case 0001:		// USER nick time user host server :realname
 	    server = GetServer(params.ExtractWord(5, ": "));
 	    break;
 	case 1000:		// NICK nick hops time user host server :realname
@@ -5436,6 +5649,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 2001:		// NICK nick hops time mode user host server 0 :realname
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	    break;
 	}
 
@@ -5481,14 +5695,15 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 		Magick::instance().nickserv.AddLive(tmp);
 	    }
 	    break;
-	case 1000:
-	case 1001:
-	case 1002:
-	case 1003:
-	case 2000:
-	case 2001:
-	case 2002:
-	case 2003:
+	case 1000:		// NICK nick hops time user host server :realname
+	case 1001:		// NICK nick hops time user host server 1 :realname
+	case 1002:		// NICK nick hops time user host server 0 real-host :realname
+	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 2000:		// NICK nick hops time mode user host server :realname
+	case 2001:		// NICK nick hops time mode user host server 0 :realname
+	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
+	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	    break;
 	}
 

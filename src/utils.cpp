@@ -384,10 +384,10 @@ mstring parseMessage(const mstring & message, const mVarArray & va)
     start = end = 0;
     while (end < length)
     {
-	end = message.Right(start).find("$");
+	end = message.SubString(start).find("$");
 	if (end < 0)
 	{
-	    data << message.Right(start);
+	    data << message.SubString(start);
 	    break;
 	}
 	end += start;

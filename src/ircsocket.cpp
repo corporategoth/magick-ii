@@ -626,16 +626,29 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
     u_long p(pri);
     mstring source, msgtype, params;
 
-    if (message[0u] == ':' || message[0u] == '@')
+    source = message.ExtractWord(1, ": ");
+
+    // Undernet IRCD hacks ... *sigh* Only in effect if we dont start with ':' or '@'
+    if (Magick::instance().server.proto.Number() >= 21 && Magick::instance().server.proto.Number() < 30 && source[0u] != ':' &&
+	source[0u] != '@' && !source.IsSameAs("PING", true) && !source.IsSameAs("SERVER", true))
     {
-	source = message.ExtractWord(1, ": ");
-	msgtype = message.ExtractWord(2, ": ").UpperCase();
+	// If we're < 3 chars, its a server, if below 6 or 4 (depending if EXTENDED_NUMERIC is set), a nick.
+	if (source.length() < 3)
+	    source.prepend("@");
+	else if (source.length() < (Magick::instance().server.proto.Numeric.Extended() ? 6 : 4))
+	    source.prepend(":");
+    }
+
+    if (source[0u] == ':' || source[0u] == '@')
+    {
+	msgtype = message.ExtractWord(2, ": ");
 	if (message.WordCount(" ") > 2)
 	    params = message.After(" ", 2);
     }
     else
     {
-	msgtype = message.ExtractWord(1, ": ").UpperCase();
+	source.erase();
+	msgtype = message.ExtractWord(1, ": ");
 	if (message.WordCount(" ") > 1)
 	    params = message.After(" ");
     }
@@ -1246,13 +1259,14 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	    tmp += " :TS";
 	Magick::instance().server.raw(tmp);
 
-	// 4 args - server name, hops, server desc and numeric (optional).
+	// 5 args - server name, hops, server desc and numeric (optional) and timestamp.
 
 	Magick::instance().server.
 	    raw(parseMessage
 		(Magick::instance().server.proto.Server(),
 		 mVarArray(Magick::instance().startup.Server_Name(), 1, Magick::instance().startup.Server_Desc(),
-			   Magick::instance().server.proto.Numeric.ServerLineNumeric(details.second.third))));
+			   Magick::instance().server.proto.Numeric.ServerLineNumeric(details.second.third), time(NULL),
+			   Magick::instance().StartTime().timetstring())));
 
 	if (Magick::instance().server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>

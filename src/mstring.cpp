@@ -1229,7 +1229,7 @@ mstring mstring::Before(const mstring & in, const int occurance) const
     int m_pos = Find(in, false, occurance);
 
     if (m_pos >= 0)
-	return Left(m_pos);
+	return SubString(0, m_pos - 1);
     else
     {
 	lock_read();
@@ -1245,7 +1245,7 @@ mstring mstring::After(const mstring & in, const int occurance) const
     int m_pos = Find(in, false, occurance);
 
     if (m_pos >= 0)
-	return Right(m_pos + in.i_len);
+	return SubString(m_pos + in.i_len);
     else
     {
 	lock_read();
@@ -1261,7 +1261,7 @@ mstring mstring::RevBefore(const mstring & in, const int occurance) const
     int m_pos = RevFind(in, false, occurance);
 
     if (m_pos >= 0)
-	return Left(m_pos);
+	return SubString(0, m_pos - 1);
     else
     {
 	lock_read();
@@ -1277,7 +1277,7 @@ mstring mstring::RevAfter(const mstring & in, const int occurance) const
     int m_pos = RevFind(in, false, occurance);
 
     if (m_pos >= 0)
-	return Right(m_pos + in.i_len);
+	return SubString(m_pos + in.i_len);
     else
     {
 	lock_read();
