@@ -807,8 +807,10 @@ public:
     virtual void pause_requested(DWORD control_code);
     virtual void continue_requested(DWORD control_code);
 
+#ifdef WIN32
     virtual int dependancy(const char *dep);
     virtual int user(const char *u, const char *p);
+#endif
 };
 
 #endif

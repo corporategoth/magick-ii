@@ -262,6 +262,7 @@ void Flow_Control::continue_requested(DWORD control_code)
 #endif
 }
 
+#ifdef WIN32
 int Flow_Control::dependancy(const char *deps)
 {
     SC_HANDLE svc = this->svc_sc_handle ();
@@ -299,4 +300,4 @@ int Flow_Control::user(const char *u, const char *p)
 	0);                       // No change to name
     return ok ? 0 : -1;
 }
-
+#endif

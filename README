@@ -211,33 +211,40 @@ a number of command-line options that override the settings of
 their equivalents on load.  NOTE: If the config file is loaded
 again at runtime, the settings in the config file will be used.
 
---help (-h)	Help output (summary of the below).
---version (-v)	Display the Magick version string.
---dir X		Set the initial services directory.
---config X	Set the name (and/or path) of the config file.
---nofork	Do not become a daemon/service process (dont fork()).
---service X     Manipulate Magick's NT Service settings, where X is:
-                        insert (insert Magick into service db)
-                        start (start Magick, must be a service)
-                        stop (stop Magick, must be a service)
-                        remove (remove Magick from service db)
-		This option is not valid on non-Windows installations.
---convert X	Convert another version of services databases
-		to Magick II format, where X is the type of
-                database to convert.  After the name of the
-                services to convert is the version that the
-                conversion utilities were taken from (you can
-                usually assume previous versions will also work).
-                    magick (1.4), ircservices (5.0.6), epona (1.4.14),
-                    hybserv (1.9.0), auspice (2.8), ptlink (2.22.3),
-                    sirv (2.9.0), wrecked (1.2.0), trircd (4.26),
-                    cygnus (0.1.1), bolivia (1.2.0).
-		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
---trace X:Y	Set the trace level on startup, equivalent of
-		using the OperServ TRACE SET command while
-		running, where X is the trace type (or ALL), and
-		Y is the trace level in hex.
-		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
+--help (-h)          Help output (summary of the below).
+--version (-v)       Display the Magick version string.
+--dir X              Set the initial services directory.
+--config X           Set the name (and/or path) of the config file.
+--nofork             Do not become a daemon/service process (dont fork()).
+--service X [Y Z]    Manipulate Magick's NT Service settings, where
+                     X is one of insert, start, stop, remove, or change.
+                     If X is change, you must specify what property to
+                     change and what to change it to (Y and Z).
+                     If Y = startup, Z = auto, manual or disabled.
+                     If Y = depend, Z = another service (magick will
+                         not startup if this service is not running.
+                         Setting this to none removes any dependancy.
+                     If Y = user, Z = the username Magick will run as,
+                         and the password for that user (separated by
+                         a colon (:)). eg. somebody:mypassword.
+                         Setting this to default means system user.
+                     This option is only available on WinNT-based systems.
+--convert X          Convert another version of services databases
+                     to Magick II format, where X is the type of
+                     database to convert.  After the name of the
+                     services to convert is the version that the
+                     conversion utilities were taken from (you can
+                     usually assume previous versions will also work).
+                         magick (1.4), ircservices (5.0.6), sirv (2.9.0),
+                         hybserv (1.9.0), auspice (2.8), ptlink (2.22.3),
+                         epona (1.4.14), wrecked (1.2.0), trircd (4.26),
+                         cygnus (0.1.1), bolivia (1.2.0).
+                     MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
+--trace X:Y          Set the trace level on startup, equivalent of
+                     using the OperServ TRACE SET command while
+                     running, where X is the trace type (or ALL), and
+                     Y is the trace level in hex.
+                     MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 
 All other command line options just override the configuration
 file settings.  Below is a list of the overrides available, and
