@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.158  2001/05/04 01:11:13  prez
+** Made chanserv mode stuff more efficiant
+**
 ** Revision 1.157  2001/05/03 22:34:35  prez
 ** Fixed SQUIT protection ...
 **
@@ -1043,6 +1046,14 @@ void EventTask::Heartbeat(ACE_thread_t thr)
     thread_heartbeat[thr] = mDateTime::CurrentDateTime();
 }
 
+void EventTask::AddChannelModePending(const mstring &in)
+{
+    FT("EventTask::AddChannelModePending", (in));
+    WLOCK(("Events", "cmodes_pending"));
+    cmodes_pending.insert(in);
+}
+
+
 void EventTask::ForceSave()
 {
     NFT("EventTask::ForceSave");
@@ -1439,82 +1450,6 @@ int EventTask::svc(void)
 		    cli->second.recent_parts.clear();
 		}
 
-		// Send pending ChanServ modes ...
-		// Make sure we got someone to send them first.
-		{
-		    RLOCK3(("ChanServ", "live", cli->first, "p_modes_on"));
-		    RLOCK4(("ChanServ", "live", cli->first, "p_modes_off"));
-		    RLOCK5(("ChanServ", "live", cli->first, "p_modes_on_params"));
-		    RLOCK6(("ChanServ", "live", cli->first, "p_modes_on_params"));
-		    if (!cli->second.p_modes_on.empty() || !cli->second.p_modes_off.empty())
-		    {
-			unsigned int j, k;
-			vector<mstring> modelines;
-			mstring mode;
-			mstring modeparam;
-
-			for (i=0, j=0, k=0; i<cli->second.p_modes_off.size(); i++)
-			{
-			    if (j>=Parent->server.proto.Modes())
-			    {
-				modelines.push_back(mode + " " + modeparam);
-				mode.erase();
-				modeparam.erase();
-				j=0;
-			    }
-			    if (mode.empty())
-				mode += "-";
-			    mode += cli->second.p_modes_off[i];
-			    if (cli->second.p_modes_off[i] != 'l' &&
-				Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_off[i]))
-			    {
-				if (!modeparam.empty())
-				    modeparam += " ";
-				modeparam +=  cli->second.p_modes_off_params[k];
-				j++; k++;
-			    }
-			}
-			{ WLOCK(("ChanServ", "live", cli->first, "p_modes_off"));
-			WLOCK2(("ChanServ", "live", cli->first, "p_modes_off_params"));
-			cli->second.p_modes_off.erase();
-			cli->second.p_modes_off_params.clear();
-			}
-			if (mode.size() && cli->second.p_modes_on.size())
-			    mode += "+";
-			for (i=0, k=0; i<cli->second.p_modes_on.size(); i++)
-			{
-			    if (j>=Parent->server.proto.Modes())
-			    {
-				modelines.push_back(mode + " " + modeparam);
-				mode.erase();
-				modeparam.erase();
-				j=0;
-			    }
-			    if (mode.empty())
-				mode += "+";
-			    mode += cli->second.p_modes_on[i];
-			    if (Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_on[i]))
-			    {
-				if (!modeparam.empty())
-				    modeparam += " ";
-				modeparam += cli->second.p_modes_on_params[k];
-				j++; k++;
-			    }
-			}
-			{ WLOCK(("ChanServ", "live", cli->first, "p_modes_on"));
-			WLOCK2(("ChanServ", "live", cli->first, "p_modes_on_params"));
-			cli->second.p_modes_on.erase();
-			cli->second.p_modes_on_params.clear();
-			}
-			if (mode.size())
-			    modelines.push_back(mode + " " + modeparam);
-			for (i=0; i<modelines.size(); i++)
-			{
-			    Parent->server.MODE(Parent->chanserv.FirstName(),
-				cli->first, modelines[i]);
-			}
-		    }
-		}
 	    }}
 
 	    // Check if we should rename people who are past their
@@ -1599,6 +1534,95 @@ int EventTask::svc(void)
 	    last_check = mDateTime::CurrentDateTime();
 	    MCE(last_check);
 	}}
+
+	{ WLOCK(("Events", "cmodes_pending"));
+	set<mstring>::iterator iter;
+	for (iter=cmodes_pending.begin(); iter!=cmodes_pending.end(); iter++)
+	{
+	    if (Parent->chanserv.IsLive(*iter))
+	    {
+		RLOCK(("ChanServ", "live", *iter));
+		Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
+		// Send pending ChanServ modes ...
+		// Make sure we got someone to send them first.
+		{
+		    RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
+		    RLOCK3(("ChanServ", "live", *iter, "p_modes_off"));
+		    RLOCK4(("ChanServ", "live", *iter, "p_modes_on_params"));
+		    RLOCK5(("ChanServ", "live", *iter, "p_modes_on_params"));
+		    if (!chan.p_modes_on.empty() || !chan.p_modes_off.empty())
+		    {
+			unsigned int j, k;
+			vector<mstring> modelines;
+			mstring mode;
+			mstring modeparam;
+
+			for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
+			{
+			    if (j>=Parent->server.proto.Modes())
+			    {
+				modelines.push_back(mode + " " + modeparam);
+				mode.erase();
+				modeparam.erase();
+				j=0;
+			    }
+			    if (mode.empty())
+				mode += "-";
+			    mode += chan.p_modes_off[i];
+			    if (chan.p_modes_off[i] != 'l' &&
+				Parent->server.proto.ChanModeArg().Contains(chan.p_modes_off[i]))
+			    {
+				if (!modeparam.empty())
+				    modeparam += " ";
+				modeparam +=  chan.p_modes_off_params[k];
+				j++; k++;
+			    }
+			}
+			{ WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
+			WLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
+			chan.p_modes_off.erase();
+			chan.p_modes_off_params.clear();
+			}
+			if (mode.size() && chan.p_modes_on.size())
+			    mode += "+";
+			for (i=0, k=0; i<chan.p_modes_on.size(); i++)
+			{
+			    if (j>=Parent->server.proto.Modes())
+			    {
+				modelines.push_back(mode + " " + modeparam);
+				mode.erase();
+				modeparam.erase();
+				j=0;
+			    }
+			    if (mode.empty())
+				mode += "+";
+			    mode += chan.p_modes_on[i];
+			    if (Parent->server.proto.ChanModeArg().Contains(chan.p_modes_on[i]))
+			    {
+				if (!modeparam.empty())
+				    modeparam += " ";
+				modeparam += chan.p_modes_on_params[k];
+				j++; k++;
+			    }
+			}
+			{ WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
+			WLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
+			chan.p_modes_on.erase();
+			chan.p_modes_on_params.clear();
+			}
+			if (mode.size())
+			    modelines.push_back(mode + " " + modeparam);
+			for (i=0; i<modelines.size(); i++)
+			{
+			    Parent->server.MODE(Parent->chanserv.FirstName(),
+				*iter, modelines[i]);
+			}
+		    }
+		}
+	    }
+	}
+	cmodes_pending.clear();
+	}
 
 	chunked.clear();
 	{ RLOCK(("Events", "last_msgcheck"));

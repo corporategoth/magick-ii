@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2001/05/04 01:11:13  prez
+** Made chanserv mode stuff more efficiant
+**
 ** Revision 1.52  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -203,6 +206,7 @@ typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
     map<ACE_thread_t,mDateTime> thread_heartbeat;
+    set<mstring> cmodes_pending;
     mDateTime last_expire;
     mDateTime last_save;
     mDateTime last_check;
@@ -213,6 +217,7 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
 public:
     void RemoveThread(ACE_thread_t thr = ACE_Thread::self());
     void Heartbeat(ACE_thread_t thr = ACE_Thread::self());
+    void AddChannelModePending(const mstring &in);
 
     void ForceSave();
     void ForcePing();

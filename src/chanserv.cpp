@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.238  2001/05/04 01:11:13  prez
+** Made chanserv mode stuff more efficiant
+**
 ** Revision 1.237  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -460,6 +463,7 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
 	    Parent->nickserv.GetStored(nick).IsOnline() &&
 	    !Parent->nickserv.GetStored(nick).Host().empty())
 	    target = Parent->nickserv.GetStored(nick).Host().LowerCase();
+	{ WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "recent_parts"));
 	MCB(users.size());
 	CB(1, recent_parts.size());
 	recent_parts[target.LowerCase()] = mDateTime::CurrentDateTime();
@@ -478,6 +482,7 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
 	}
 	CE(1, recent_parts.size());
 	MCE(users.size());
+	}
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.GetStored(i_Name).Part(nick);
     }
@@ -1400,6 +1405,9 @@ void Chan_Live_t::SendMode(const mstring& in)
     CE(2, p_modes_off);
     CE(3, p_modes_off_params.size());
     MCE(p_modes_on);
+    RLOCK2(("Events"));
+    if (Parent->events != NULL)
+	Parent->events->AddChannelModePending(i_Name);
 }
 
 
