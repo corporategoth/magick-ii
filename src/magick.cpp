@@ -477,6 +477,43 @@ int Magick::doparamparse()
 	    return MAGICK_RET_ERROR;
 	}
     }
+    if(check_config()==false)
+	return MAGICK_RET_ERROR;
+    if(outlet_on==true)
+	s_Outlet.Format("%s%d",services_prefix.c_str(),services_level);
+    //open_log();
+
+#ifndef WIN32
+    if(live==false)
+    {
+	if ((i = fork ()) < 0)
+	{
+	    //log_perror ("fork()");
+            return 1;
+        }
+        else if (i != 0)
+            return 0;
+        if (setpgid (0, 0) < 0)
+        {
+            //log_perror ("setpgid()");
+            return 1;
+        }
+    }
+#endif
+    wxFile pidfile;
+    pidfile.Create(pid_filename,true);
+    if(pidfile.IsOpened())
+    {
+	mstring dummystring;
+	dummystring<<getpid();
+	pidfile.Write(dummystring);
+	pidfile.Close();
+    }
+    /*else
+	log_perror ("Warning: cannot write to PID file %s", pid_filename);*/
+
+    //write_log ("All systems nominal");
+
     return MAGICK_RET_NORMAL;
 }
 

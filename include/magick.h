@@ -48,6 +48,8 @@ private:
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
 public:
+	mstring pid_filename;
+	mstring s_Outlet;
 	int lastmsgmax;
 	int flood_messages;
 	int passfail_max;
