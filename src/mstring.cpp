@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2001/11/22 17:54:09  prez
+** Fixed potential fatal error in mstring insert
+**
 ** Revision 1.112  2001/11/22 17:32:18  prez
 ** Some fixes to lockable for mpatrol, and mstring overwriting its own memory.
 **
@@ -646,9 +649,11 @@ void mstring::insert(const size_t pos, const char *in, const size_t len)
     memmove(&tmp[i+len], &i_str[pos], i_len-pos);
     memcpy(&tmp[i], in, len);
 
-    if (i_str != NULL)
+    if (i_str != tmp)
+    {
 	dealloc(i_str);
-    i_str = tmp;
+	i_str = tmp;
+    }
     i_len += len;
 
     lock_rel();
