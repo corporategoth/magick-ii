@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.185  2001/07/08 01:37:55  prez
+** Verified encryption works ...
+**
 ** Revision 1.184  2001/07/06 09:15:37  prez
 ** Fixed nickserv drop
 **
@@ -2715,6 +2718,11 @@ unsigned long Nick_Stored_t::Drop()
 	    else
 		killchans.push_back(iter->first);
 	}
+	MLOCK(("ChanServ", "stored", iter->first, "Access"));
+	if (iter->second.Access_find(i_Name))
+	{
+	    iter->second.Access_erase();
+	}
     }}
 
     for (i=0; i<killchans.size(); i++)
@@ -4881,25 +4889,27 @@ NickServ::NickServ()
 mstring NickServ::findnextnick(const mstring& in)
 {
     FT("NickServ::findnextnick", (in));
-    mstring retval(in);
-    // Amountof nicknames it will try, only
+
+    // Amount of nicknames it will try, only
     // for the guest????? method.
     unsigned int i, attempts = 64;
 
+    CP(("Renaming nickname %s", in.c_str()));
     if (Parent->nickserv.Append_Rename())
     {
 	for (i=0; i<Parent->nickserv.Suffixes().length(); i++)
 	{
+	    mstring retval(in);
 	    while (retval.length() < Parent->server.proto.NickLen())
 	    {
-		retval << Parent->nickserv.Suffixes()[i];
+		retval += Parent->nickserv.Suffixes()[i];
+		COM(("Attempting to use %s", retval.c_str()));
 		if (!Parent->nickserv.IsLiveAll(retval) &&
 		    !Parent->nickserv.IsStored(retval))
 		{
 		    RET(retval);
 		}
 	    }
-	    retval = in;
 	}
     }
     else
@@ -4907,10 +4917,11 @@ mstring NickServ::findnextnick(const mstring& in)
 	srand(time(NULL));
 	for (i=0; i<attempts; i++)
 	{
-	    retval.erase();
+	    mstring retval;
 	    retval.Format("%s%05d",
 		    Parent->nickserv.Suffixes().c_str(),
 		    rand() % 99999);
+	    COM(("Attempting to use %s", retval.c_str()));
 	    if (!Parent->nickserv.IsLiveAll(retval) &&
 		!Parent->nickserv.IsStored(retval))
 	    {

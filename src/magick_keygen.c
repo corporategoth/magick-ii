@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2001/07/08 01:37:55  prez
+** Verified encryption works ...
+**
 ** Revision 1.18  2001/07/01 05:02:45  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -266,6 +269,7 @@ int main(int argc, char **argv)
 #else
     mstring_snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
+
     memset(outstr, 0, MD5_DIGEST_LENGTH);
     mHASH16(instr, VERIFY_SIZE, outstr);
     memset(verify, 0, MAX_KEYLEN+1);

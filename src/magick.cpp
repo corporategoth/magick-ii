@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.318  2001/07/08 01:37:55  prez
+** Verified encryption works ...
+**
 ** Revision 1.317  2001/07/01 05:02:45  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -3573,6 +3576,7 @@ pair<mstring,mstring> Magick::GetKeys()const
 	    keyfile.Read(tmp, MAX_KEYLEN);
 	    mCRYPT(tmp, key2, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	    retval = pair<mstring,mstring>(key1,key2);
+fflush(stdout);
 	}
 	else
 	    LOG(LM_CRITICAL, "ERROR/KEY_CORRUPT", (files.KeyFile()));

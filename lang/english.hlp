@@ -1749,7 +1749,7 @@
 09 =REGD::news articles, you must have MEMOREAD access.
 
 [MEMOSERV/SEND]
-01 =REGD::SEND [channel] <message>
+01 =REGD::SEND <nickname|channel> <message>
 02 =REGD::
 03 =REGD::This will send a memo to another user, or a news article
 04 =REGD::to a channel.  You must have MEMOWRITE access to send a

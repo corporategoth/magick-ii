@@ -1,4 +1,4 @@
-
+#include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
 #else
@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.258  2001/07/08 01:37:54  prez
+** Verified encryption works ...
+**
 ** Revision 1.257  2001/07/05 15:23:53  prez
 ** Fixed the channel topic carryover
 **
@@ -5797,7 +5800,7 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "INFO*", Parent->commserv.ALL_Name(), ChanServ::do_Info);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LIST", Parent->commserv.ALL_Name(), ChanServ::do_List);
+	    "LIST*", Parent->commserv.ALL_Name(), ChanServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SUSP*", Parent->commserv.SOP_Name(), ChanServ::do_Suspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -6073,7 +6076,7 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "INFO*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LIST", Parent->commserv.ALL_Name());
+	    "LIST*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SUSP*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
