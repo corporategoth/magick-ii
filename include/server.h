@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.43  2000/06/25 07:58:48  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -100,7 +104,6 @@ static const char *ident_server_h = "@(#) $Id$";
 #include "mstring.h"
 #include "variant.h"
 #include "base.h"
-#include "mstream.h"
 #include "ircsocket.h"
 
 class Protocol
@@ -298,8 +301,6 @@ public:
     void KillUnknownUser(mstring user);
     unsigned int SeenMessage(mstring data);
 
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
     NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }

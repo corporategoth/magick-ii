@@ -825,6 +825,11 @@ will be sent to all users on the network, and services operators
 to offer files to users throuh the public file system.
 
 <sect>Questions and Answers<p>
+<sect1>My IRCD isnt supported, what can I do?<p>
+If this is the case, and none of the pre-defined IRCD's are compatable
+with it, please find out exactly (at a protocol level) how your IRCD
+is different to the ones Magick supports (or ask the IRCD's author) and 
+email the list of differences to the Magick Development Team.
 
 <sect>License
 <p>

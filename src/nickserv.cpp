@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.113  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -6902,16 +6906,11 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     {
 	lang = Parent->nickserv.DEF_Language().UpperCase();
     }
-    else
+    else if (!mFile::Exists(Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
     {
-	wxFileConfig fconf("magick","",Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng");
-	// check for valid language ...
-	if (!fconf.GetNumberOfGroups())
-	{
-	    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/NOLANG"),
+	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/NOLANG"),
 			lang.c_str());
-	    return;
-	}
+	return;
     }
 
     Parent->nickserv.stored[nickname.LowerCase()].L_Language(false);

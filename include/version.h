@@ -24,6 +24,10 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.101  2000/07/23 20:53:13  prez
 ** removing of antlr
 **
@@ -72,7 +76,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 2;
+const int BUILD_NUMBER = 3;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.53  2000/06/11 09:30:20  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -669,17 +673,6 @@ void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const
 	LeftOver=CurrentVal%1000;
 	sec=CurrentVal/1000;
 	msec=LeftOver;
-}
-
-wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src)
-{
-	os<<src.Val;
-	return os;
-}
-wxInputStream& operator>>(wxInputStream& is, mDateTime& src)
-{
-	is>>src.Val;
-	return is;
 }
 
 mDateTime Now()

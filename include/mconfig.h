@@ -25,6 +25,10 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.10  2000/07/24 17:50:35  ungod
 ** should be finished... not tested
 **
@@ -89,6 +93,7 @@ public:
     mstring GetKey(const mstring &KeyName, const mstring &DefValue);
     ceNode *GetNode(const mstring &NodeName);
     mstring Write(const mstring &KeyName, const mstring &Value);
+    map<mstring,mstring> GetMap();
 };
 
 class mConfigEngine
@@ -106,13 +111,14 @@ public:
     bool SaveFile();
     void Empty();
 
+    map<mstring,mstring> GetMap() { return RootNode.GetMap(); }
     mstring Read(const mstring &key, const mstring Defailt="");
     bool Read(const mstring &key, mstring &outvar, mstring Default="");
-    bool Read(const mstring &key, bool &outvar, bool Default=true);
+    bool Read(const mstring &key, bool &outvar, bool Default=false);
     bool Read(const mstring &key, int &outvar, int Default=0);
     bool Read(const mstring &key, unsigned int &outvar, unsigned int Default=0);
-    bool Read(const mstring &key, long &outvar, int Default=0);
-    bool Read(const mstring &key, unsigned long &outvar, unsigned int Default=0);
+    bool Read(const mstring &key, long &outvar, long Default=0);
+    bool Read(const mstring &key, unsigned long &outvar, unsigned long Default=0);
     bool Read(const mstring &key, double &outvar, double Default=0.0);
 
     mstring Write(const mstring &key,const mstring &value);

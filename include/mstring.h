@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.44  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -54,17 +58,6 @@ static const char *ident_mstring_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-/////////////////////////////////////////////////////////////////////////////
-// Name:        string.cpp
-// Purpose:     wxString class
-// Author:      Vadim Zeitlin
-// Modified by:
-// Created:     29/01/98
-// RCS-ID:      $Id$
-// Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
-// Licence:     wxWindows license
-/////////////////////////////////////////////////////////////////////////////
 
 class mstring:public string
 {

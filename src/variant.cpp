@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/07/28 14:49:36  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.38  2000/05/20 16:05:07  prez
 ** Finished off the log conversion (still via. wrappers)
 **
@@ -175,75 +179,6 @@ mVariant::mVariant(const mVariant & in)
 {
 	*this=in;
 
-}
-
-mVariant::mVariant(wxTextFileType in)
-{
-    truevaluetype="wxTextFileType";
-    valuetype="string";
-    switch(in)
-    {
-    case wxTextFileType_None:
-	StringValue="wxTextFileType_None";
-	break;
-    case wxTextFileType_Unix:
-	StringValue="wxTextFileType_Unix";
-	break;
-    case wxTextFileType_Dos:
-	StringValue="wxTextFileType_Dos";
-	break;
-    case wxTextFileType_Mac:
-	StringValue="wxTextFileType_Mac";
-	break;
-    }
-}
-
-mVariant::mVariant(LineList *in)
-{
-    if(in!=NULL)
-    {
-        truevaluetype="LineList";
-        valuetype="string";
-        StringValue=(in->Text());
-    }
-    else
-    {
-        truevaluetype="LineList";
-    	valuetype="NULL";
-    }
-}
-
-mVariant::mVariant(ConfigEntry *in)
-{
-    if(in!=NULL)
-    {
-    	truevaluetype="ConfigEntry";
-	valuetype="string";
-	if(in->GetLine()!=NULL)
-	    StringValue=in->GetLine()->Text();
-	else
-	    StringValue=in->Name();
-    }
-    else
-    {
-    	truevaluetype="ConfigEntry";
-    	valuetype="NULL";
-    }
-}
-
-mVariant::mVariant(ConfigGroup *in)
-{
-    if(in!=NULL)
-    {
-	truevaluetype="ConfigGroup";
-	valuetype="string";
-	StringValue=in->Name();
-    }
-    else
-    {
-	truevaluetype="ConfigGroup";
-	valuetype="NULL";
-    }
 }
 
 mVariant& mVariant::operator=(const mVariant& in)

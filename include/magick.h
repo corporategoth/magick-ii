@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.136  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.135  2000/06/28 12:20:47  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -149,7 +153,6 @@ static const char *ident_magick_h = "@(#) $Id$";
 
 
 #include "mstring.h"
-#include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
 #include "utils.h"
@@ -192,7 +195,6 @@ private:
 	map<mstring, map<mstring, mstring> > Messages;
 	// Language, token, vector<yescom, nocom, string>
 	map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > > Help;
-	vector<mstring> LoadHelpGroup(wxFileConfig *fconf, mstring basegroup);
 	// Token, string
 	map<mstring, mstring> LogMessages;
 	int doparamparse();

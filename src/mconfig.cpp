@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.14  2000/07/24 17:51:21  ungod
 ** should be finished... not tested
 **
@@ -80,17 +84,17 @@ static const char *ident = "@(#)$Id$";
 
 ceNode::ceNode()
 {
-    NFT("ceNode::cdNode");
+    NFT("ceNode::ceNode");
 }
 
 ceNode::ceNode(ceNode &in)
 {
-    FT("ceNode::cdNode", ("(ceNode &) in"));
+    FT("ceNode::ceNode", ("(ceNode &) in"));
 }
 
 ceNode::~ceNode()
 {
-    NFT("ceNode::~cdNode");
+    NFT("ceNode::~ceNode");
     // probably not needed, but for safety's sake anyway
     for(map<mstring,ceNode * >::iterator i=i_children.begin();i!=i_children.end();i++)
         if(i->second!=NULL)
@@ -154,28 +158,29 @@ bool ceNode::operator<(const ceNode &in)const
 bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
 {
     FT("ceNode::SetKey", (KeyName, Value));
+
     mstring temppath;
     if(KeyName[0]=='/')
         temppath=KeyName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=KeyName;
+    temppath.MakeUpper();
+
+    if(!temppath.Contains("/"))
     {
-        // end of the line
-        if(i_keys.find(temppath)==i_keys.end())
-        {
-            i_keys[temppath]=Value;
-        }
+	i_keys[temppath]=Value;
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
         {
-            i_children[temppath]=new ceNode;
+            i_children[next]=new ceNode;
+            i_children[next]->i_Name=next;
         }
-        i_children[temppath]->SetKey(rest,Value);
+        i_children[next]->SetKey(rest,Value);
     }
     // todo set up the return values, true if it actually sets it, false if it doesn't
     RET(false);
@@ -188,7 +193,10 @@ bool ceNode::DeleteKey(const mstring &KeyName)
     bool Result=false;
     if(KeyName[0]=='/')
         temppath=KeyName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=KeyName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_keys.find(temppath)==i_keys.end())
@@ -199,14 +207,13 @@ bool ceNode::DeleteKey(const mstring &KeyName)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
             Result=false;
         else
-            Result=i_children[temppath]->DeleteKey(rest);
+            Result=i_children[next]->DeleteKey(rest);
     }
     RET(Result);
 }
@@ -220,7 +227,10 @@ bool ceNode::CreateNode(const mstring &NodeName)
     mstring temppath;
     if(NodeName[0]=='/')
         temppath=NodeName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=NodeName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_children.find(temppath)==i_children.end())
@@ -231,15 +241,15 @@ bool ceNode::CreateNode(const mstring &NodeName)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
         {
-            i_children[temppath]=new ceNode;
+            i_children[next]=new ceNode;
+	    i_children[next]->i_Name=next;
         }
-        i_children[temppath]->CreateNode(rest);
+        i_children[next]->CreateNode(rest);
     }
     // todo set up the return values, true if it actually creates it, false if it doesn't
     RET(true);
@@ -251,7 +261,10 @@ bool ceNode::DeleteNode(const mstring &NodeName)
     mstring temppath;
     if(NodeName[0]=='/')
         temppath=NodeName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=NodeName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_children.find(temppath)!=i_children.end())
@@ -263,13 +276,12 @@ bool ceNode::DeleteNode(const mstring &NodeName)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
         {
-            i_children[temppath]->DeleteNode(rest);
+            i_children[next]->DeleteNode(rest);
         }
     }
     // todo set up the return values, true if it actually deletes it, false if it doesn't
@@ -286,7 +298,10 @@ bool ceNode::NodeExists(const mstring &NodeName)
     bool Result=false;
     if(NodeName[0]=='/')
         temppath=NodeName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=NodeName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_children.find(temppath)!=i_children.end()&&(i_children[temppath]!=NULL))
@@ -294,13 +309,12 @@ bool ceNode::NodeExists(const mstring &NodeName)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
         {
-            Result=i_children[temppath]->NodeExists(rest);
+            Result=i_children[next]->NodeExists(rest);
         }
     }
     RET(Result);
@@ -313,7 +327,10 @@ bool ceNode::KeyExists(const mstring &KeyName)
     bool Result=false;
     if(KeyName[0]=='/')
         temppath=KeyName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=KeyName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_keys.find(temppath)!=i_keys.end()&&(i_keys[temppath]!=""))
@@ -321,13 +338,12 @@ bool ceNode::KeyExists(const mstring &KeyName)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
         {
-            Result=i_children[temppath]->KeyExists(rest);
+            Result=i_children[next]->KeyExists(rest);
         }
     }
     RET(Result);
@@ -340,21 +356,25 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
     mstring Result=DefValue;
     if(KeyName[0]=='/')
         temppath=KeyName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=KeyName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_keys.find(temppath)!=i_keys.end()&&(i_keys[temppath]!=""))
             Result=i_keys[temppath];
+	else
+	    Result=DefValue;
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
-        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
+        if((i_children.find(next)!=i_children.end())&&(i_children[next]!=NULL))
         {
-            Result=i_children[temppath]->GetKey(rest,DefValue);
+            Result=i_children[next]->GetKey(rest,DefValue);
         }
     }
     RET(Result);
@@ -367,7 +387,10 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
     ceNode *Result=NULL;
     if(NodeName[0]=='/')
         temppath=NodeName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=NodeName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         if(i_children.find(temppath)!=i_children.end()&&(i_children[temppath]!=NULL))
@@ -375,18 +398,17 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
         {
-            i_children[me]=new ceNode;
-            i_children[me]->i_Name=me;
+            i_children[next]=new ceNode;
+            i_children[next]->i_Name=next;
         }
-        Result=i_children[temppath]->GetNode(rest);
+        Result=i_children[next]->GetNode(rest);
     }
     NRET(ceNode *,Result);
 }
@@ -398,7 +420,10 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
     mstring Result="";
     if(KeyName[0]=='/')
         temppath=KeyName.After("/");
-    if(temppath.WordCount("/")==1)
+    else
+	temppath=KeyName;
+    temppath.MakeUpper();
+    if(!temppath.Contains("/"))
     {
         // end of the line
         Result=i_keys[temppath];
@@ -406,22 +431,54 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
     }
     else
     {
-        //pull us out and pass us on
-        mstring me,rest;
-        me=temppath.Before("/");
-        rest=temppath.After("/");
+        mstring next,rest;
+	next = temppath.Before("/");
+	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        if((i_children.find(next)==i_children.end())||(i_children[next]==NULL))
         {
-            i_children[me]=new ceNode;
-            i_children[me]->i_Name=me;
+            i_children[next]=new ceNode;
+            i_children[next]->i_Name=next;
         }
-        Result=i_children[temppath]->Write(rest,Value);
+        Result=i_children[next]->Write(rest,Value);
     }
     RET(Result);
 }
 
+map<mstring,mstring> ceNode::GetMap()
+{
+    NFT("ceNode::GetMap");
+    map<mstring,mstring> submap, retval;
+
+    map<mstring,ceNode * >::iterator i;
+    map<mstring,mstring>::iterator j;
+    for(i = i_children.begin(); i != i_children.end(); i++)
+    {
+        if(i->second!=NULL)
+        {
+	    submap = i->second->GetMap();
+	    for (j=submap.begin(); j!=submap.end(); j++)
+	    {
+		if (i_Name != "")
+		    retval[i_Name + "/" + j->first] = j->second;
+		else
+		    retval[j->first] = j->second;
+
+	    }
+	    submap.clear();
+        }
+    }
+
+    for (j=i_keys.begin(); j!=i_keys.end(); j++)
+    {
+	if (i_Name != "")
+	    retval[i_Name + "/" + j->first] = j->second;
+	else
+	    retval[j->first] = j->second;
+    }
+    NRET(map<mstring_mstring>, retval);
+}
 
 mConfigEngine::mConfigEngine()
 {
@@ -482,11 +539,6 @@ bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default)
     FT("mConfigEngine::Read", (key, "(mstring &) outvar", Default));
     bool Result=true;
     outvar=RootNode.GetKey(key,Default);
-    if(outvar="")
-    {
-        outvar=Default;
-        Result=false;
-    }
     RET(Result);
 }
 
@@ -495,7 +547,7 @@ bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default)
     FT("mConfigEngine::Read", (key, "(bool &) outvar", Default));
     mstring tmp;
     bool Result=true;
-    tmp=RootNode.GetKey(key,Default);
+    tmp=RootNode.GetKey(key,Default ? "true" : "false");
     if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
      tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || tmp == "1")
         outvar=true;
@@ -515,7 +567,7 @@ bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
     FT("mConfigEngine::Read", (key, "(int &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,Default);
+    tmpvar=RootNode.GetKey(key,itoa(Default));
     if(tmpvar.IsNumber())
         outvar=ACE_OS::atoi(tmpvar.c_str());
     else
@@ -531,7 +583,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int 
     FT("mConfigEngine::Read", (key, "(unsigned int &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,Default);
+    tmpvar=RootNode.GetKey(key,itoa(Default));
     if(tmpvar.IsNumber())
         outvar=ACE_OS::atoi(tmpvar.c_str());
     else
@@ -542,15 +594,14 @@ bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int 
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, long &outvar, int Default)
+bool mConfigEngine::Read(const mstring &key, long &outvar, long Default)
 {
     FT("mConfigEngine::Read", (key, "(long &) outvar", Default));
     mstring tmpvar;
-    char **endptr;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,Default);
+    tmpvar=RootNode.GetKey(key,ltoa(Default));
     if(tmpvar.IsNumber())
-        outvar=ACE_OS::strtol(tmpvar.c_str(),endptr,10);
+        outvar=atol(tmpvar.c_str());
     else
     {
         outvar=Default;
@@ -559,15 +610,16 @@ bool mConfigEngine::Read(const mstring &key, long &outvar, int Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned int Default)
+bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned long Default)
 {
     FT("mConfigEngine::Read", (key, "(unsigned long &) outvar", Default));
     mstring tmpvar;
-    char **endptr;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,Default);
+    tmpvar=RootNode.GetKey(key,ultoa(Default));
     if(tmpvar.IsNumber())
-        outvar=ACE_OS::strtoul(tmpvar.c_str(),endptr,10);
+    {
+        outvar=atoul(tmpvar.c_str());
+    }
     else
     {
         outvar=Default;
@@ -580,11 +632,10 @@ bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
 {
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
-    char **endptr;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,Default);
+    tmpvar=RootNode.GetKey(key,ftoa(Default));
     if(tmpvar.IsNumber())
-        outvar=ACE_OS::strtod(tmpvar.c_str(),endptr);
+        outvar=atof(tmpvar.c_str());
     else
     {
         outvar=Default;
@@ -715,7 +766,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
     {
         currline=*i;
         currline.Trim(true).Trim(false);
-        if(currline[0]=='['&&currline.Last()==']')
+        if(currline[0]=='[' && currline.Last()==']')
         {
             // new section
             Result=RootNode.CreateNode(currline.After("[").Before("]"));
@@ -725,7 +776,11 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
         {
             // new value
             if(currNode!=NULL)
-                Result=currNode->SetKey(currline.Before("=").Trim(true), currline.After("=").Trim(false));
+            {
+		mstring data = currline.After("=").Trim(false);
+		data.Replace("\\ ", " ", true);
+                Result=currNode->SetKey(currline.Before("=").Trim(true), data);
+	    }
         }
     }
     RET(Result);
@@ -743,17 +798,21 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
     vector<mstring> Result;
     for(vector<mstring>::const_iterator i=in.begin();i!=in.end();i++)
     {
-        if(*i[0] != '#' && *i[0] != ';')
+	mstring tmp = *i;
+        if(tmp.Len() && tmp[0] != '#' && tmp[0] != ';')
         {
             // if we find ; then it's a comment to end of line, but /; is not a comment.
             bool founddelim=false;
             unsigned int j=1;
-            while(founddelim == false && j < i->Len())
+            for (; founddelim == false && j < tmp.Len(); j++)
             {
-                if(*i[j] == ';' && *i[j-1] != '\\')
+                if(tmp[j] == ';' && tmp[j-1] != '\\')
+                {
+		    j-=2;
                     founddelim=true;
+		}
             }
-            Result.push_back(i->SubString(0, j-1));
+            Result.push_back(tmp.SubString(0, j));
         }
     }
     NRET(vector<mstring>, Result);

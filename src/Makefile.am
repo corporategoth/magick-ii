@@ -2,7 +2,7 @@
 noinst_PROGRAMS = genrankeys
 bin_PROGRAMS = magick magick_keygen
 genrankeys_SOURCES = genrankeys.c
-magick_SOURCES = mconfig.cpp variant.cpp utils.cpp trace.cpp textfile.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp mstream.cpp memoserv.cpp main.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp fileconf.cpp dccengine.cpp datetime.cpp convert.cpp confbase.cpp commserv.cpp chanserv.cpp base.cpp 
+magick_SOURCES = variant.cpp utils.cpp trace.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp memoserv.cpp main.cpp mconfig.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp dccengine.cpp datetime.cpp convert.cpp commserv.cpp chanserv.cpp base.cpp 
 magick_LDADD   = ./xml/libxml.a ./des/libdes.a
 magick_keygen_SOURCES = magick_keygen.c
 magick_keygen_LDADD   = ./des/libdes.a
@@ -10,7 +10,7 @@ magick_keygen_LDADD   = ./des/libdes.a
 
 SUBDIRS = des xml 
 
-EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp confbase.cpp convert.cpp datetime.cpp dccengine.cpp fileconf.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp main.cpp memoserv.cpp mstream.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp textfile.cpp trace.cpp utils.cpp variant.cpp mconfig.cpp keygen.c genrandkeys.c
+EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp convert.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp mconfig.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp trace.cpp utils.cpp variant.cpp keygen.c genrandkeys.c
 
 ####### kdevelop will overwrite this part!!! (end)############
 
@@ -24,7 +24,7 @@ helper: genrankeys
 	@echo "May as well go grab your favourite caffiene supplement."
 	@echo "======================================================="
 	@$(srcdir)/genrankeys $(top_srcdir)/include/crypt.h
-	$(top_srcdir)/helper/build-ver $(top_srcdir)
+	#$(top_srcdir)/helper/build-ver $(top_srcdir)
 
 magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
 	@rm -f magick

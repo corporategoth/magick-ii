@@ -25,6 +25,10 @@ static const char *ident_variant_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.29  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -48,8 +52,6 @@ static const char *ident_variant_h = "@(#) $Id$";
 
 #include "mstring.h"
 #include "datetime.h"
-#include "textfile.h"
-#include "fileconf.h"
 
 // based upon mechanisms prevalent in Delphi.
 
@@ -98,10 +100,6 @@ public:
 	// Magick Only stuff
 	mVariant(const mstring& in);
 	mVariant(mDateTime in);
-	mVariant(wxTextFileType in);
-	mVariant(LineList *in);
-	mVariant(ConfigEntry *in);
-	mVariant(ConfigGroup *in);
 
 	mVariant& operator=(const mVariant& in);
 	bool operator==(const mVariant& in)const;

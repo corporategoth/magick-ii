@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/07/28 14:49:36  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.44  2000/07/21 00:18:50  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -116,123 +120,6 @@ static const char *ident = "@(#)$Id$";
 #ifdef HASCRYPT
 #include "des/spr.h"
 #endif
-
-void wxSplitPath(const char *pszFileName,
-                             mstring *pstrPath,
-                             mstring *pstrName,
-                             mstring *pstrExt)
-{
-  FT("wxSplitPath", (pszFileName, pstrPath, pstrName, pstrExt));
-  wxCHECK_RET( pszFileName, "NULL file name in wxSplitPath" );
-
-  const char *pDot = strrchr(pszFileName, FILE_SEP_EXT);
-  const char *pSepUnix = strrchr(pszFileName, FILE_SEP_PATH_UNIX);
-  const char *pSepDos = strrchr(pszFileName, FILE_SEP_PATH_DOS);
-
-  // take the last of the two
-  size_t nPosUnix = pSepUnix ? pSepUnix - pszFileName : 0;
-  size_t nPosDos = pSepDos ? pSepDos - pszFileName : 0;
-  if ( nPosDos > nPosUnix )
-    nPosUnix = nPosDos;
-//  size_t nLen = Strlen(pszFileName);
-
-  if ( pstrPath )
-    *pstrPath = mstring(pszFileName, nPosUnix);
-  if ( pDot ) {
-    size_t nPosDot = pDot - pszFileName;
-    if ( pstrName )
-      *pstrName = mstring(pszFileName + nPosUnix + 1, nPosDot - nPosUnix);
-    if ( pstrExt )
-      *pstrExt = mstring(pszFileName + nPosDot + 1);
-  }
-  else {
-    if ( pstrName )
-      *pstrName = mstring(pszFileName + nPosUnix + 1);
-    if ( pstrExt )
-      pstrExt->Empty();
-  }
-}
-
-mstring &wxGetHomeDir(mstring &pstr)
-{
-  FT("wxGetHomeDir", (pstr));
-  mstring& strDir = pstr;
-
-#ifdef WIN32
-      const char *szHome = ACE_OS::getenv("HOMEDRIVE");
-      if ( szHome != NULL )
-        strDir << szHome;
-      szHome = ACE_OS::getenv("HOMEPATH");
-      if ( szHome != NULL ) {
-        strDir << szHome;
-
-        // the idea is that under NT these variables have default values
-        // of "%systemdrive%:" and "\\". As we don't want to create our
-        // config files in the root directory of the system drive, we will
-        // create it in our program's dir. However, if the user took care
-        // to set HOMEPATH to something other than "\\", we suppose that he
-        // knows what he is doing and use the supplied value.
-        if ( ACE_OS::strcmp(szHome, "\\") != 0 )
-          RET(strDir);
-      }
-    // 260 was taken from windef.h
-# ifndef MAX_PATH
-#   define MAX_PATH  260
-# endif
-
-    mstring strPath;
-	char cstrPath[MAX_PATH+1];
-    ::GetModuleFileName(::GetModuleHandle(NULL),
-                        cstrPath, MAX_PATH);
-    strPath=cstrPath;
-
-    // extract the dir name
-    wxSplitPath(strPath, &strDir, NULL, NULL);
-
-#else /* WIN32 */
-    const char *szHome = ACE_OS::getenv("HOME");
-    if ( szHome == NULL ) {
-      // we're homeless...try passwd
-      struct passwd *pwent = ACE_OS::getpwnam(ACE_OS::cuserid(NULL));
-      if (pwent == NULL || pwent->pw_dir == NULL)
-      {
-	Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
-	strDir = ".";
-      }
-      else
-	strDir = pwent->pw_dir;
-    }
-    else
-       strDir = szHome;
-
-    // add a trailing slash if needed
-    if ( strDir.Last() != '/' )
-      strDir << '/';
-
-#endif /* WIN32 */
-
-  RET(strDir);
-}
-
-bool
-wxIsAbsolutePath (const mstring& filename)
-{
-  FT("wxIsAbsolutePath", (filename));
-  if (filename != "")
-    {
-      if (filename[0U] == '/'
-#ifdef __VMS__
-      || (filename[0U] == '[' && filename[1U] != '.')
-#endif
-#ifdef WIN32
-      /* MSDOS */
-      || filename[0U] == '\\' || (isalpha (filename[0U]) && filename[1U] == ':')
-#endif
-        )
-        RET(true);
-    }
-  RET(false);
-}
 
 const unsigned long TxnIds::min = 1000000000;
 const unsigned long TxnIds::keeptime = 60 * 60 * 24;

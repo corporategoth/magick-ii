@@ -25,6 +25,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.44  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -112,7 +116,6 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 
 
 #include "base.h"
-#include "mstream.h"
 #include "ircsocket.h"
 #include "filesys.h"
 #include "lockable.h"

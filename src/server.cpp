@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2000/07/28 14:49:36  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.109  2000/07/21 00:18:50  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -4062,12 +4066,4 @@ void NetworkServ::numeric_execute(const mstring & data)
 			data.c_str());
 	break;
     }
-}
-
-void NetworkServ::load_database(wxInputStream& in)
-{
-}
-
-void NetworkServ::save_database(wxOutputStream& out)
-{
 }

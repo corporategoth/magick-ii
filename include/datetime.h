@@ -25,6 +25,10 @@ static const char *ident_datetime_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.26  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -59,7 +63,6 @@ static const char *ident_datetime_h = "@(#) $Id$";
 
 
 #include "mstring.h"
-#include "mstream.h"
 
 class mDateTime
 {
@@ -235,15 +238,10 @@ public:
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);
-    friend wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);
-    friend wxInputStream& operator>>(wxInputStream& is, mDateTime& src);
 
 };
 
 mstring DisectTime(long intime);
-
-wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);
-wxInputStream& operator>>(wxInputStream& is, mDateTime& src);
 
 extern mDateTime Now();
 extern mDateTime Date();

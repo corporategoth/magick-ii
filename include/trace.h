@@ -25,6 +25,10 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.58  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -51,14 +55,12 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** ========================================================== */
 
 
-#include "mstream.h"
 #include "string.h"
 #include "variant.h"
 
 // NOTE: The following classes cannot be traced:
 // mstring
 // mVariant and mVarArray (AOC)
-// wxOutputStream
 // mDateTime
 
 // FunctionTrace -- FT("...", ());

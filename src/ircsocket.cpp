@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.114  2000/06/25 11:58:03  prez
 ** Fixed problem where messages from nickserv about killing user would not
 ** be sent out (people would not know a nick was forbidden).
@@ -443,13 +447,15 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Parent->GotConnect()) {
 	server = Parent->startup.PriorityList(1)[0];
     } else {
-	server = FindNext(Parent->Server());
+	if (Parent->Server() != "")
+	    server = FindNext(Parent->Server());
 	if (server == "") {
 	    server = Parent->startup.PriorityList(1)[0];
 	}
     }
     if (server != "")
 	details = Parent->startup.Server(server);
+
     ACE_INET_Addr addr(details.first, server);
 
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
@@ -471,7 +477,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     {
 	if (Parent->ircsvchandler != NULL)
 	{
-	    Parent->ircsvchandler->shutdown();
+	    //Parent->ircsvchandler->shutdown();
 	    delete Parent->ircsvchandler;
 	    Parent->ircsvchandler = NULL;
 	}

@@ -152,7 +152,7 @@ x Language files setup (with a default language set in the ini)
 	We will write english ones, and send a call to others to
 	translate it to other languages and make 'funky' versions).
  
-+ ini loading mechanism, allows for local and global ini files. (local
+x ini loading mechanism, allows for local and global ini files. (local
 	overrides global ini values but global values are unmodifiable)
 
 x All messages from IRCD read into main thread, which pushes them to "parser" thread,
@@ -470,7 +470,7 @@ GENERAL CODING CONSTRUCTS
 
 x change over the wxFile internals to use ACE_OS:: calls
 
-+ Get rid of wx?, replace with our own style equivilants.
+x Get rid of wx?, replace with our own style equivilants.
 
 x everywhere we use message queue's we need to have a bool shutting_down,
     when closing down task object, set it true, and push messages. while

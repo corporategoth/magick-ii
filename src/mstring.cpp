@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.65  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -224,7 +228,7 @@ mstring& mstring::Trim(bool bFromRight)
 {
 	// change find_last_of to Last(in)
 	if(bFromRight==true)
-		*this=Mid(0,find_last_not_of(" \t\n"));
+		*this=Mid(0,find_last_not_of(" \t\n")+1);
 	else
 		*this=Mid(find_first_not_of(" \t\n"));
 	return *this;

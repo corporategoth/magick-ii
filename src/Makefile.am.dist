@@ -26,9 +26,12 @@ helper: genrankeys
 	@$(srcdir)/genrankeys $(top_srcdir)/include/crypt.h
 	$(top_srcdir)/helper/build-ver $(top_srcdir)
 
-magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
+magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES) magick-link
+
+magick-link:
 	@rm -f magick
 	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
+	@mv magick-link magick
 	cp magick magick.debug
 	strip magick
 

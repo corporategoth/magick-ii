@@ -24,8 +24,9 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.17  2000/06/19 13:15:34  prez
-** Documentation, what a novel concept.
+** Revision 1.18  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
 **
 **
 ** ========================================================== */
@@ -33,10 +34,10 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Mon Jun 19 09:24:10 EST 2000
+ * Created on Fri Jul 28 07:00:01 EST 2000
  */
 
-unsigned int def_langent =     855;
+unsigned int def_langent =     858;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -218,7 +219,8 @@ char *def_lang[] = {
 "KILL_RECOVER       =RECOVER command used",
 "KILL_OPERDENY      =Tried to /OPER when DENIED",
 "KICK_RESTRICTED    =This channel is restricted.",
-"RENAMED            =You have been renamed for failure to identify.",
+"RENAMED_IDENT      =You have been renamed for failure to identify.",
+"RENAMED_FORBID     =You have been renamed as your nickname was forbidden.",
 "",
 "NICK_GETPASS       =%s just performed a GETPASS on nickname %s (%s).",
 "CHAN_GETPASS       =%s just performed a GETPASS on channel %s (%s).",
@@ -253,9 +255,11 @@ char *def_lang[] = {
 "ENTLIST_SET        =Value of %s has been set to %s.",
 "REVENGE            =REVENGE: Do not %s %s",
 "SYNC               =Databases will sync in %s.",
+"LANG_LIST          =Available languages are:",
+"LANG_NOLIST        =Error generating list of available languages.",
 "",
-"BREAKDOWN_HEAD     =SERVER                                        LAG  USERS (OPS)",
-"BREAKDOWN          =\"%-40s  % 3.3fs  %5d (%3d)  %3.2f%%\"",
+"BREAKDOWN_HEAD     =SERVER                                   LAG  USERS (OPS)",
+"BREAKDOWN          =\"%-35s  % 3.3fs  %5d (%3d)  %3.2f%%\"",
 "ON                 =ON",
 "OFF                =OFF",
 "ONLINE             =ONLINE",
@@ -574,10 +578,10 @@ char *def_lang[] = {
 "OPTIONS            =\\     Options: %s",
 "",
 "NOEXPIRE           =non-expiring",
-"OPS                =ops",
-"VOICES             =voices",
-"USERS              =users",
-"SPLIT_USERS        =split users",
+"OPS                =op(s)",
+"VOICES             =voice(s)",
+"USERS              =user(s)",
+"SPLIT_USERS        =split user(s)",
 "",
 "",
 ";",

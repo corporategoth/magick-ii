@@ -25,6 +25,10 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/07/28 14:49:35  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.28  2000/07/24 16:45:37  ungod
 ** no message
 **
@@ -83,20 +87,6 @@ static const char *ident_utils_h = "@(#) $Id$";
 #include "des/des_locl.h"
 #endif
 
-const char FILE_SEP_EXT = '.';
-const char FILE_SEP_DSK = ':';
-const char FILE_SEP_PATH_DOS = '\\';
-const char FILE_SEP_PATH_UNIX = '/';
-
-extern void wxSplitPath(const char *pszFileName,
-                             mstring *pstrPath,
-                             mstring *pstrName,
-                             mstring *pstrExt);
-
-extern mstring &wxGetHomeDir(mstring &pstr);
-
-extern bool wxIsAbsolutePath (const mstring& filename);
-
 // These are TRANSACTION ID's used for guarenteeing no
 // duplicate messages between Magick instances.  They are
 // always 10 digits, and with a 4-byte unsigned long,
@@ -118,10 +108,6 @@ public:
 };
     
 
-// Ensure subsequent IDs don't clash with this one
-extern void wxRegisterId(long id);
-#define RegisterId wxRegisterId
-
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);
 mstring ToHumanTime(unsigned long in);
@@ -137,13 +123,6 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 
 template<class T1, class T2, class T3> class triplet 
 {
-#ifdef WIN32
-    friend wxOutputStream &operator<<(wxOutputStream& out,const triplet<T1,T2,T3>& in);
-    friend wxInputStream &operator>>(wxInputStream& in, triplet<T1,T2,T3>& out);
-#else
-    friend wxOutputStream &operator<<<T1,T2,T3>(wxOutputStream& out,const triplet<T1,T2,T3>& in);
-    friend wxInputStream &operator>><T1,T2,T3>(wxInputStream& in, triplet<T1,T2,T3>& out);
-#endif
 public:
     typedef T1 first_type;
     typedef T2 second_type;
@@ -199,35 +178,6 @@ template<class T1, class T2, class T3> inline
 triplet<T1,T2,T3> make_triplet(const T1& X, const T2& Y, const T3& Z)
 {
     return (triplet<T1,T2,T3>(X,Y,Z));
-}
-
-
-template<class T1, class T2, class T3> inline
-wxOutputStream &operator<<(wxOutputStream& out,const triplet<T1,T2,T3>& in)
-{
-    out<<in.first<<in.second<<in.third;
-    return out;
-}
-
-template<class T1, class T2, class T3> inline
-wxInputStream &operator>>(wxInputStream& in, triplet<T1,T2,T3>& out)
-{
-    in>>out.first>>out.second>>out.third;
-    return in;
-}
-
-template<class T1, class T2> inline
-wxOutputStream &operator<<(wxOutputStream& out,const pair<T1,T2>& in)
-{
-    out<<in.first<<in.second;
-    return out;
-}
-
-template<class T1, class T2> inline
-wxInputStream &operator>>(wxInputStream& in, pair<T1,T2>& out)
-{
-    in>>out.first>>out.second;
-    return in;
 }
 
 #endif

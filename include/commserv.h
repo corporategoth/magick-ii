@@ -25,6 +25,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/07/28 14:49:34  prez
+** Ditched the old wx stuff, mconfig now in use, we're now ready to
+** release (only got some conversion tests to do).
+**
 ** Revision 1.33  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -170,8 +174,6 @@ public:
 
     size_t Usage();
 };
-wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
-wxInputStream &operator>>(wxInputStream& in, Committee& out);
 
 class CommServ : public mBase, public SXP::IPersistObj
 {
