@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.162  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.161  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -278,13 +281,13 @@ public:
 	if (Parent->ValidateLogger(ACE_LOG_MSG)) \
 		ACE_DEBUG(X)
 #define LOG(X, Y, Z) \
-	LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z)))
+	{ LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z))); }
 #define NLOG(X, Y) \
-	LOG2((X, parseMessage(Parent->getLogMessage(Y))))
+	{ LOG2((X, parseMessage(Parent->getLogMessage(Y)))); }
 #define SLOG(X, Y, Z) \
-	LOG2((X, parseMessage(Y, mVarArray Z)))
+	{ LOG2((X, parseMessage(Y, mVarArray Z))); }
 #define NSLOG(X, Y) \
-	LOG2((X, parseMessage(Y)))
+	{ LOG2((X, parseMessage(Y))); }
 
 class Logger : public ACE_Log_Msg_Callback
 {

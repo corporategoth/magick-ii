@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.63  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -170,7 +173,7 @@ RCSID(chanserv_h, "@(#) $Id$");
 class Chan_Live_t : public mUserDef
 {
     friend class Nick_Live_t;
-    friend void EventTask::svc();
+    friend int EventTask::svc(void);
     friend class Part_Handler;
 
     mstring i_Name;

@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.53  2001/05/04 01:11:13  prez
 ** Made chanserv mode stuff more efficiant
 **
@@ -160,49 +163,6 @@ public:
     int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
-class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
-{
-    typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
-    // This takes any characters read from the socket that dont
-    // end in \r or \n, and adds them to next read's run.
-    mstring flack;
-
-    map<time_t, size_t> traffic;
-    size_t in_traffic, out_traffic;
-    mDateTime connect_time;
-    mDateTime last_htm_check;
-    unsigned short htm_level;
-    time_t htm_gap;
-    size_t htm_threshold;
-    mSocket sock;
-    bool i_burst;
-    mDateTime i_synctime;
-public:
-    int send(const mstring& data);
-    int open(void *);
-    int handle_input(ACE_HANDLE handle);
-    int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
-		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
-
-    unsigned long Local_IP() const { return sock.Local_IP(); }
-    size_t In_Traffic() const { return in_traffic; }
-    size_t Out_Traffic() const { return out_traffic; }
-    mDateTime Connect_Time() const { return connect_time; }
-    time_t HTM_Gap() const;
-    unsigned short HTM_Level() const;
-    size_t HTM_Threshold() const;
-    void HTM_Threshold(const size_t in);
-    void HTM(const bool in);
-    size_t Average(time_t secs = 0) const;
-    bool Burst() const;
-    mDateTime SyncTime() const;
-    void EndBurst();
-    void DumpB() const;
-    void DumpE() const;
-};
-
-typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
-
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
     map<ACE_thread_t,mDateTime> thread_heartbeat;
@@ -228,5 +188,62 @@ public:
     void DumpB() const;
     void DumpE() const;
 };
+
+class mMessage;
+class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
+{
+    friend int EventTask::svc(void);
+    typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
+    // This takes any characters read from the socket that dont
+    // end in \r or \n, and adds them to next read's run.
+    mstring flack;
+
+    map<time_t, size_t> traffic;
+    size_t in_traffic, out_traffic;
+    mDateTime connect_time;
+    mDateTime last_htm_check;
+    unsigned short htm_level;
+    time_t htm_gap;
+    size_t htm_threshold;
+    mSocket sock;
+    bool i_burst;
+    mDateTime i_synctime;
+
+    ACE_Thread_Manager tm;
+    ACE_Activation_Queue message_queue;
+
+    static void *worker(void *);
+public:
+    int send(const mstring& data);
+    int open(void *);
+    int handle_input(ACE_HANDLE handle);
+    int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
+		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
+
+    unsigned long Local_IP() const { return sock.Local_IP(); }
+    size_t In_Traffic() const { return in_traffic; }
+    size_t Out_Traffic() const { return out_traffic; }
+    mDateTime Connect_Time() const { return connect_time; }
+    time_t HTM_Gap() const;
+    unsigned short HTM_Level() const;
+    size_t HTM_Threshold() const;
+    void HTM_Threshold(const size_t in);
+    void HTM(const bool in);
+    size_t Average(time_t secs = 0) const;
+    bool Burst() const;
+    mDateTime SyncTime() const;
+    void EndBurst();
+
+    void enqueue(mMessage *mm);
+    void enqueue(const mstring &message, const u_long priority = static_cast<u_long>(P_Normal));
+    void enqueue_shutdown();
+    void enqueue_sleep(const mstring& time = "1s");
+    void enqueue_test();
+
+    void DumpB() const;
+    void DumpE() const;
+};
+
+typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
 
 #endif

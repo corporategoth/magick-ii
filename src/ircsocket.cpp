@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.164  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.163  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -355,6 +358,70 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
+void *IrcSvcHandler::worker(void *in)
+{
+    mThread::Attach(tt_mBase);
+    FT("IrcSvcHandler::worker", (in));
+    mMessage *msg = NULL;
+    bool active = true;
+    
+    try {
+	while(!Parent->Shutdown() && active)
+	{
+	    { RLOCK(("Events"));
+	    if (Parent->events != NULL)
+		Parent->events->Heartbeat();
+	    }
+
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+	    {
+		MLOCK(("MessageQueue"));
+	    	msg = dynamic_cast<mMessage *>(Parent->ircsvchandler->message_queue.dequeue());
+	    }}
+	    if (msg != NULL)
+	    {
+		msg->call();
+		delete msg;
+	    }
+
+	    size_t msgcnt = 0, thrcnt = 0;
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+	    {
+		msgcnt = Parent->ircsvchandler->message_queue.method_count();
+		thrcnt = Parent->ircsvchandler->tm.count_threads();
+	    }}
+
+	    CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
+		thrcnt, msgcnt,
+		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thrcnt-2)),
+		thrcnt * Parent->config.High_Water_Mark()));
+
+	    if(thrcnt > Parent->config.Min_Threads() &&
+		msgcnt < Parent->config.Low_Water_Mark() +
+		(Parent->config.High_Water_Mark() * (thrcnt-2)))
+	    {
+		COM(("Low water mark reached, killing thread."));
+		NLOG(LM_NOTICE, "EVENT/KILL_THREAD");
+		active = false;
+	    }
+
+	    FLUSH();
+	}
+    }
+    catch (E_Thread &e)
+    {
+    }
+
+    { RLOCK(("Events"));
+    if (Parent->events != NULL)
+	Parent->events->RemoveThread();
+    }
+    DRET(static_cast<void *>(NULL));
+}
+
+
 int IrcSvcHandler::open(void *in)
 {
     //mThread::Attach(tt_MAIN);
@@ -372,10 +439,9 @@ int IrcSvcHandler::open(void *in)
     i_burst = true;
     i_synctime = mDateTime(0.0);
 
-    // Dont do the below (coz we dont call any svc())
-    // int retval = activate();
     // Only activate the threads when we're ready.
-    mBase::init();
+    tm.spawn_n(Parent->config.Min_Threads(), IrcSvcHandler::worker);
+
     DumpB();
     CP(("IrcSvcHandler activated"));
     RET(0);
@@ -487,7 +553,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    mstring text = data2.ExtractWord(i,"\n\r");
 	    if(!text.empty())
 	    {
-		mBase::push_message(text);
+		enqueue(text);
 	    }
 	}
 
@@ -496,7 +562,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    mstring text = data2.ExtractWord(i,"\n\r");
 	    if(!text.empty())
 	    {
-		mBase::push_message(text);
+		enqueue(text);
 	    }
 	}
 	else
@@ -521,9 +587,20 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 
     LOG(LM_ERROR, "OTHER/CLOSED", (Parent->CurrentServer()));
 
-    // We DONT want any processing once we're gone ... nowhere to send
-    // back the messages (duh!).
-    mBase::shutdown();
+    // We DONT want any processing once we're gone ...
+    // Dump the queue and kill all our threads nicely.
+    for (int i=0; i<tm.count_threads(); i++)
+	enqueue_sleep();
+    { MLOCK(("MessageQueue"));
+    mMessage *msg;
+    while (!message_queue.is_empty())
+    {
+	msg = dynamic_cast<mMessage *>(message_queue.dequeue());
+	if (msg != NULL)
+	    delete msg;
+    }}
+    for (int i=0; i<tm.count_threads(); i++)
+	enqueue_shutdown();
 
     // Should I do this with SQUIT protection ...?
     { WLOCK(("NickServ", "recovered"));
@@ -713,6 +790,80 @@ int IrcSvcHandler::send(const mstring & data)
     recvResult=sock.send(const_cast<char *>((data + "\r\n").c_str()),data.length()+2);
     CH(D_To,data);
     RET(recvResult);
+}
+
+void IrcSvcHandler::enqueue(mMessage *mm)
+{
+    FT("IrcSvcHandler::enqueue", (mm));
+
+    while (static_cast<unsigned int>(tm.count_threads()) < Parent->config.Min_Threads())
+    {
+	if (tm.spawn(IrcSvcHandler::worker) != -1)
+	{
+	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+	}
+	else
+	    CP(("Could not start new thread (below thread threshold)!"));
+    }
+
+    if (message_queue.method_count() > static_cast<int>(tm.count_threads() * Parent->config.High_Water_Mark()))
+    {
+	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
+	if(tm.spawn(IrcSvcHandler::worker) != -1)
+	{
+	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+	}
+	else
+	    CP(("Could not start new thread to handle load!"));
+    }
+
+    message_queue.enqueue(mm);
+}
+
+void IrcSvcHandler::enqueue(const mstring &message, const u_long priority)
+{
+    FT("IrcSvcHandler::enqueue",(message, priority));
+    CH(D_From,message);
+
+    mstring source, msgtype, params;
+    if (message[0u] == ':' || message[0u] == '@')
+    {
+	source = message.ExtractWord(1,": ");
+        msgtype = message.ExtractWord(2,": ").UpperCase();
+	if (message.WordCount(" ") > 2)
+	    params = message.After(" ", 2);
+    }
+    else
+    {
+        msgtype = message.ExtractWord(1,": ").UpperCase();
+	if (message.WordCount(" ") > 1)
+	    params = message.After(" ");
+    }
+
+    mMessage *msg = new mMessage(source, msgtype, params, priority);
+    if (!msg->OutstandingDependancies())
+	enqueue(msg);
+}
+
+void IrcSvcHandler::enqueue_shutdown()
+{
+    NFT("IrcSvcHandler::enqueue_shutdown");
+    mMessage *msg = new mMessage(" ", "SHUTDOWN", "", P_System);
+    message_queue.enqueue(msg);
+}
+
+void IrcSvcHandler::enqueue_sleep(const mstring &in)
+{
+    NFT("IrcSvcHandler::enqueue_sleep");
+    mMessage *msg = new mMessage(" ", "SLEEP", in, P_System);
+    message_queue.enqueue(msg);
+}
+
+void IrcSvcHandler::enqueue_test()
+{
+    NFT("IrcSvcHandler::enqueue_test");
+    mMessage *msg = new mMessage(" ", "TEST", "", P_System);
+    message_queue.enqueue(msg);
 }
 
 void IrcSvcHandler::DumpB() const
@@ -1690,28 +1841,39 @@ int EventTask::svc(void)
 	if (last_heartbeat.SecondsSince() > Parent->config.Heartbeat_Time())
 	{
 	    RLOCK(("Events", "thread_heartbeat"));
+	    vector<ACE_thread_t> dead;
 	    map<ACE_thread_t,mDateTime>::iterator iter;
-	    size_t dead = 0;
 	    for (iter=thread_heartbeat.begin(); iter!=thread_heartbeat.end(); iter++)
 	    {
 		if (iter->second.SecondsSince() > Parent->config.Heartbeat_Time())
 		{
-		    dead++;
-#if defined(SIGQUIT) && (SIGQUIT != 0)
-		    NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
-		    ACE_Thread::kill(iter->first, SIGQUIT);
-#endif
+		    dead.push_back(iter->first);
 		}
 	    }
-	    if (dead > (thread_heartbeat.size() / 2))
+	    if (dead.size() > (thread_heartbeat.size() / 2))
 	    {
 		NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
 		NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
 	    }
+	    else
+	    {
+		RLOCK(("IrcSvcHandler"));
+		if (Parent->ircsvchandler != NULL)
+		{
+		    for (i=0; i<dead.size(); i++)
+		    {
+			NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
+			Parent->ircsvchandler->tm.cancel(dead[i]);
+		    }
+		}
+	    }
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+		for (i=0; i<thread_heartbeat.size(); i++)
+		    Parent->ircsvchandler->enqueue_test();
+	    }
 	    WLOCK(("Events", "last_heartbeat"));
 	    last_heartbeat = mDateTime::CurrentDateTime();
-	    for (i=0; i<thread_heartbeat.size(); i++)
-		mBase::BaseTask.i_test();
 	}}
 
 	{ RLOCK(("Events", "last_ping"));

@@ -25,6 +25,9 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.74  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -125,6 +128,7 @@ enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
 enum socktype_enum { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
 			S_Client, S_Services, S_Telnet };
 enum dir_enum { D_Unknown, D_From, D_To };
+enum priority_enum { P_Normal = 0, P_DepFilled, P_System, P_Highest };
 
 class ThreadID {
 private:

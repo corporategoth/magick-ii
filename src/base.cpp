@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.165  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.164  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -315,7 +318,6 @@ RCSID(base_cpp, "@(#)$Id$");
 #include "magick.h"
 
 bool mBase::TaskOpened;
-mBaseTask mBase::BaseTask;
 map<mMessage::type_t, map<mstring, set<mMessage *> > > mMessage::AllDependancies;
 
 void entlist_t::operator=(const entlist_t &in)
@@ -427,6 +429,21 @@ void entlist_t::DumpE() const
 
 
 // --------- end of entlist_t -----------------------------------
+
+mMessage::mMessage(const mstring& source, const mstring& msgtype, const mstring& params, const u_long priority = 0)
+	: ACE_Method_Request(priority), source_(source), params_(params),
+	  creation_(mDateTime::CurrentDateTime())
+{
+    if (source != " " && Parent->server.proto.Tokens())
+    {
+	mstring tmp(Parent->server.proto.GetToken(msgtype));
+	if (!tmp.empty())
+	    msgtype_ = tmp;
+    }
+
+    if (msgtype_.empty())
+	msgtype_ = msgtype;
+}
 
 void mMessage::AddDependancies()
 {
@@ -725,8 +742,6 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
     // that message.  In either case, remove all dependancies on passed condition,
     // as this has been satisfied.
 
-    vector<mMessage *> msgs;
-
     { WLOCK(("AllDependancies"));
     map<type_t, map<mstring, set<mMessage *> > >::iterator i = AllDependancies.find(type);
     if (i != AllDependancies.end())
@@ -748,19 +763,16 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 		    (*k)->DependancySatisfied(type, target);
 		    if (!(*k)->OutstandingDependancies())
 		    {
-			msgs.push_back(*k);
+			(*k)->priority(static_cast<u_long>(P_DepFilled));
+			RLOCK(("IrcSvcHandler"));
+			if (Parent->ircsvchandler != NULL)
+			    Parent->ircsvchandler->enqueue(*k);
 		    }
 		}
 	    }
 	    i->second.erase(j);
 	}
     }}
-
-    for (unsigned int l=0; l<msgs.size(); l++)
-    {
-	msgs[l]->call();
-	delete msgs[l];
-    }
 }
 
 void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
@@ -801,6 +813,8 @@ int mMessage::call()
     }
 
     CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
+
+    // Remove ourselves from other's oustanding dependancy lists
     { WLOCK(("AllDependancies"));
     map<type_t, map<mstring, set<mMessage *> > >::iterator i;
     for (i=AllDependancies.begin(); i!=AllDependancies.end(); i++)
@@ -818,7 +832,6 @@ int mMessage::call()
 	for (unsigned int k=0; k<chunked.size(); k++)
 	    i->second.erase(chunked[k]);
     }}
-    //CH(D_From,data);
 
     try {
 
@@ -1060,240 +1073,7 @@ int mMessage::call()
 	}
     }
 
-    int retval = mBase::check_LWM();
-    RET(retval);
-}
-
-int mBaseTask::open(void *in)
-{
-    NFT("mBaseTask::open");
-    mBase::TaskOpened=true;
-    int retval = activate();
-    RET(retval);
-}
-
-int mBaseTask::close(unsigned long flags)
-{
-    FT("mBaseTask::close", (flags));
     RET(0);
-}
-
-int mBaseTask::svc(void)
-{
-    mThread::Attach(tt_mBase);
-    NFT("mBaseTask::svc");
-    mMessage *msg = NULL;
-    int retval = 0;
-    
-    try {
-	while(!Parent->Shutdown() && retval >= 0)
-	{
-	    { RLOCK(("Events"));
-	    if (Parent->events != NULL)
-		Parent->events->Heartbeat();
-	    }
-	    { MLOCK(("MessageQueue"));
-	    msg = dynamic_cast<mMessage *>(message_queue_.dequeue());
-	    }
-	    if (msg != NULL)
-	    {
-		retval = msg->call();
-		delete msg;
-	    }
-	}
-    }
-    catch (E_Thread &e)
-    {
-    }
-
-    { RLOCK(("Events"));
-    if (Parent->events != NULL)
-	Parent->events->RemoveThread();
-    }
-    DRET(retval);
-}
-
-void mBaseTask::message(const mstring& message)
-{
-    FT("mBaseTask::message",(message));
-    // Most likely the third condition will match most, as on a
-    // large network, average message size is about 100 bytes, a
-    // FAR cry from the 450 (default) size we're allocating per msg.
-    if (thread_count < Parent->config.Min_Threads() || message_queue_.is_full() ||
-	message_queue_.method_count() > static_cast<int>(thread_count * Parent->config.High_Water_Mark()))
-    {
-	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
-	{
-	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
-	}
-	else
-	{
-	    thread_count = thr_count();
-	   /* message_queue_.high_water_mark(thread_count *
-		Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
-	    message_queue_.low_water_mark(message_queue_.high_water_mark()); */
-
-	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
-	}
-    }
-
-    mstring data(message);
-    PreParse(data);
-
-    mstring source, msgtype, params;
-
-    if (data[0u] == ':' || data[0u] == '@')
-    {
-	source = data.ExtractWord(1,": ");
-        msgtype = data.ExtractWord(2,": ").UpperCase();
-	if (data.WordCount(" ") > 2)
-	    params = data.After(" ", 2);
-    }
-    else
-    {
-        msgtype = data.ExtractWord(1,": ").UpperCase();
-	if (data.WordCount(" ") > 1)
-	    params = data.After(" ");
-    }
-
-    mMessage *msg = new mMessage(source, msgtype, params);
-    if (!msg->OutstandingDependancies())
-	message_queue_.enqueue(msg);
-}
-
-int mBaseTask::check_LWM()
-{
-    NFT("mBaseTask::check_LWM");
-
-    // Theoretically, under mutex lock, only ONE can access this
-    // at once.  Under pressure tho, the thread system may need
-    // to be looked at.  Could be optimization.
-    size_t msgcnt = message_queue_.method_count();
-    if (thread_count > 1)
-    {
-	CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thread_count, msgcnt,
-		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thread_count-2)),
-		thread_count * Parent->config.High_Water_Mark()));
-    }
-    else
-    {
-	CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
-		thread_count, msgcnt, 0,
-		thread_count * Parent->config.High_Water_Mark()));
-    }
-    if(thread_count > Parent->config.Min_Threads() &&
-	msgcnt < Parent->config.Low_Water_Mark() +
-		(Parent->config.High_Water_Mark() * (thread_count-2)))
-    {
-	    COM(("Low water mark reached, killing thread."));
-	    thread_count--;
-	    /* message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
-		thread_count * Parent->server.proto.MaxLine());
-	    message_queue_.low_water_mark(message_queue_.high_water_mark()); */
-	    NLOG(LM_NOTICE, "EVENT/KILL_THREAD");
-	    FLUSH();
-	    RET(-1);
-    }
-    FLUSH();
-    RET(0);
-}
-
-void mBaseTask::PreParse(mstring& data) const
-{
-    FT("mBaseTask::PreParse", (data));
-
-    if (Parent->server.proto.Tokens())
-    {
-	if (((data[0u] == '@' && Parent->server.proto.Numeric()) ||
-	    data[0u] == ':') &&
-	   !Parent->server.proto.GetToken(data.ExtractWord(2, " ")).empty())
-	{
-	    data.replace(data.find(" ", 1)+1, data.find(" ", 2)-1, 
-		Parent->server.proto.GetToken(data.ExtractWord(2, " ")));
-	}
-	else if (!Parent->server.proto.GetToken(data.ExtractWord(1, " ")).empty())
-	{
-	    data.replace(0, data.find(" ", 1)-1, 
-		Parent->server.proto.GetToken(data.ExtractWord(1, " ")));
-	}
-    }
-}
-
-void mBaseTask::i_shutdown()
-{
-    NFT("mBaseTask::i_shutdown");
-    message_queue_.enqueue(new mMessage(" ", "SHUTDOWN", ""));
-}
-
-void mBaseTask::i_sleep(const mstring &in)
-{
-    NFT("mBaseTask::i_sleep");
-    message_queue_.enqueue(new mMessage(" ", "SLEEP", in));
-}
-
-void mBaseTask::i_test()
-{
-    NFT("mBaseTask::i_test");
-    message_queue_.enqueue(new mMessage(" ", "TEST", ""));
-}
-
-void mBase::push_message(const mstring& message)
-{
-    FT("mBase::push_message", (message));
-    if(TaskOpened==false)
-    {
-	if(BaseTask.open()!=0)
-	{
-	    CP(("Failed to create initial thread"));
-	    return;
-	}
-	while (BaseTask.thr_count() < Parent->config.Min_Threads())
-	{
-	    if(BaseTask.activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
-	    {
-		CP(("Failed to create additional (minimum) thread"));
-		return;
-	    }
-	}
-	BaseTask.thread_count = BaseTask.thr_count();
-    }
-    CH(D_From,message);
-    BaseTask.message(message);
-}
-
-void mBase::init()
-{
-    NFT("mBase::init");
-
-    TaskOpened = false;    
-    /*BaseTask.message_queue_.high_water_mark(Parent->config.Min_Threads() *
-	Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
-    BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark()); */
-}
-
-void mBase::shutdown()
-{
-    NFT("mBase::shutdown");
-
-    mMessage *msg = NULL;
-    int i, count=BaseTask.thr_count();
-
-    // This should release message queue mutex, and
-    // give us enough time to grab it and clear queue.
-    for(i=0;i<count;i++)
-	BaseTask.i_sleep();
-    { MLOCK(("MessageQueue"));
-    while (!BaseTask.message_queue_.is_empty())
-    {
-	msg = dynamic_cast<mMessage *>(BaseTask.message_queue_.dequeue());
-	if (msg != NULL)
-	    delete msg;
-    }}
-    for(i=0;i<count;i++)
-	BaseTask.i_shutdown();
-    mBase::TaskOpened=false;
 }
 
 bool mBase::signon(const mstring &nickname) const

@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.93  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -245,9 +248,8 @@ private:
     void AddDependancies();
 
 public:
-    mMessage(const mstring& source, const mstring& msgtype, const mstring& params, const u_long priority = 0)
-	: ACE_Method_Request(priority), source_(source), msgtype_(msgtype), params_(params),
-	  creation_(mDateTime::CurrentDateTime()) {}
+    mMessage(const mstring& source, const mstring& msgtype, const mstring& params,
+		const u_long priority = static_cast<u_long>(P_Normal));
 
     bool OutstandingDependancies();
     static void CheckDependancies(type_t type, const mstring& param1, const mstring& param2 = "");
@@ -261,30 +263,8 @@ public:
     virtual int call();
 };
 
-class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
-{
-    friend class mBase;
-
-    void PreParse(mstring& message) const;
-protected:
-    ACE_Activation_Queue message_queue_;
-    size_t thread_count;
-public:
-    mBaseTask() {}
-    virtual ~mBaseTask() {}
-    virtual int open(void *in=0);
-    virtual int close(unsigned long flags=0);
-    virtual int svc(void);
-    void message(const mstring& message);
-    int check_LWM();
-    void i_shutdown();
-    void i_sleep(const mstring& time = "1s");
-    void i_test();
-};
-
 class mBase
 {
-    friend int mBaseTask::open(void *in);
     friend class EventTask;
 protected:
     mstring names;		// Names of service (space delimited)
@@ -294,20 +274,14 @@ protected:
 
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
     static bool TaskOpened;
-    static mBaseTask BaseTask;
     virtual void AddCommands() {};
     virtual void RemCommands() {};
 
 public:
     mBase() {}
     virtual ~mBase() {}
-    static void init();
-    static void shutdown();
-    static int check_LWM() { return BaseTask.check_LWM(); }
 
-    static void push_message(const mstring& message);
     virtual void execute(mstring& source, const mstring& msgtype, const mstring& params) =0;
-
     virtual mstring FirstName() const { return names.Before(" "); }
     virtual mstring GetNames() const { return names; }
     virtual bool IsName(mstring in) const

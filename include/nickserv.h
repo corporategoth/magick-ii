@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2001/05/25 01:59:31  prez
+** Changed messaging system ...
+**
 ** Revision 1.69  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -554,7 +557,7 @@ public:
 class NickServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
-    friend int EventTask::svc();
+    friend int EventTask::svc(void);
     friend int IrcSvcHandler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
 
 private:
