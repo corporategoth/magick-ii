@@ -434,7 +434,7 @@ void NetworkServ::MODE(mstring nick, mstring mode)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
-	raw(":" + nick + " MODE " + mode);
+	raw(":" + nick + " MODE " + nick + " :" + mode);
     }
 }
 

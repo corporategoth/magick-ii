@@ -1192,7 +1192,9 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    break;
 
 	case 'b':
-	    if (GetAccess(mode.ExtractWord(fwdargs, ": ")) >= GetAccess(setter))
+	    if (add && (GetAccess(mode.ExtractWord(fwdargs, ": ")) != 0 ||
+			GetAccess(setter) != 0) &&
+		GetAccess(mode.ExtractWord(fwdargs, ": ")) >= GetAccess(setter))
 	    {
 		send_off += "b";
 		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");

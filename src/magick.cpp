@@ -38,7 +38,6 @@ Magick::Magick(int inargc, char **inargv)
     i_config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
-    LoadLogMessages("DEFAULT");
 
     i_level=0;
     i_reconnect = true;
@@ -61,6 +60,7 @@ int Magick::Start()
 
     // We log to STDERR until we find our logfile...
     logger=new wxLogStderr();
+    LoadLogMessages("DEFAULT");
 
     // more stuff to do
     i_programname=argv[0].RevAfter("/");
@@ -76,8 +76,7 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("--dir requires a paramter.");
+		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir");
 		}
 		i_services_dir=argv[i];
 	    }
@@ -86,8 +85,7 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("--config requires a paramter.");
+		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--config");
 		}
 		i_config_file=argv[i];
 	    }
@@ -96,18 +94,16 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("--trace requires a paramter.");
+		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--trace");
 		}
 		if(!argv[i].Contains(":"))
 		{
-		    // use static errors here because conf directory is not known yet
-		    wxLogFatal("trace level must be in format of TYPE:LEVEL.");
+		    wxLogFatal(getLogMessage("COMMANDLINE/TRACE_SYNTAX"));
 		}
 		unsigned short level = makehex(argv[i].After(":"));
 		if (level==0)
 		{
-		    wxLogError("Zero or error parsing LEVEL, ignoring.");
+		    wxLogFatal(getLogMessage("COMMANDLINE/ZERO_LEVEL"));
 		}
 		else
 		{
@@ -495,7 +491,7 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
     // Load requested language if its NOT loaded.
     // and then look for the Help of THAT type.
     CP(("Trying SPECIFIED language ..."));
-    if (lang != "")
+    if (lang != "" && lang != "DEFAULT")
     {
 	WLOCK(("Magick","LoadHelp"));
 
@@ -503,7 +499,9 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 
 	bool bContEntries;
 	long dummy=0;
+	int i;
 	mstring entryname, tempstr;
+	vector<mstring> entries;
 
 	if (fconf.HasGroup(name.UpperCase()))
 	{
@@ -511,9 +509,15 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
 	    while(bContEntries)
 	    {
-		fconf.Read(entryname, &tempstr, "");
-		helptext.push_back(tempstr);
+		entries.push_back(name.UpperCase()+"/"+entryname.UpperCase());
 		bContEntries=fconf.GetNextEntry(entryname,dummy);
+	    }
+	    fconf.SetPath("/");
+
+	    for (i=0; i<entries.size(); i++)
+	    {
+		fconf.Read(entries[i], &tempstr, "");
+		helptext.push_back(tempstr);
 	    }
 	}
     }
@@ -526,7 +530,9 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 
 	bool bContEntries;
 	long dummy=0;
+	int i;
 	mstring entryname, tempstr;
+	vector<mstring> entries;
 
 	if (fconf.HasGroup(name.UpperCase()))
 	{
@@ -534,9 +540,14 @@ vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
 	    while(bContEntries)
 	    {
-		fconf.Read(entryname, &tempstr, "");
-		helptext.push_back(tempstr);
+		entries.push_back(name.UpperCase()+"/"+entryname.UpperCase());
 		bContEntries=fconf.GetNextEntry(entryname,dummy);
+	    }
+	    fconf.SetPath("/");
+	    for (i=0; i<entries.size(); i++)
+	    {
+		fconf.Read(entries[i], &tempstr, "");
+		helptext.push_back(tempstr);
 	    }
 	}
     }
@@ -596,8 +607,8 @@ void Magick::LoadInternalMessages()
     int i;
     {
 #include "language.h"
-	remove((wxGetCwd()+DirSlash+"tmplang.lng").c_str());
-	wxFileOutputStream out(wxGetCwd()+DirSlash+"tmplang.lng");
+	remove((wxGetCwd()+DirSlash+"default.lng").c_str());
+	wxFileOutputStream out(wxGetCwd()+DirSlash+"default.lng");
 
 	for(i=0;i<def_langent;i++)
 	{
@@ -606,9 +617,9 @@ void Magick::LoadInternalMessages()
 	}
     }
 
-    // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
-    wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"tmplang.lng");
-    remove("tmplang.lng");
+    // need to transfer wxGetWorkingDirectory() and prepend it to default.lng
+    wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"default.lng");
+    remove((wxGetCwd()+DirSlash+"default.lng").c_str());
     bool bContGroup, bContEntries;
     long dummy1=0,dummy2=0;
     mstring groupname,entryname,combined;
@@ -715,8 +726,8 @@ bool Magick::LoadLogMessages(mstring language)
     int i;
     {
 #include "logfile.h"
-	remove((wxGetCwd()+DirSlash+"tmplang.lng").c_str());
-	wxFileOutputStream out(wxGetCwd()+DirSlash+"tmplang.lfo");
+	remove((wxGetCwd()+DirSlash+"default.lfo").c_str());
+	wxFileOutputStream out(wxGetCwd()+DirSlash+"default.lfo");
 
 	for(i=0;i<def_logent;i++)
 	{
@@ -725,15 +736,15 @@ bool Magick::LoadLogMessages(mstring language)
 	}
     }
 
-    // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
+    // need to transfer wxGetWorkingDirectory() and prepend it to default.lfo
     wxFileConfig *fconf;
-    remove("tmplang.lfo");
     bool bContGroup, bContEntries;
     long dummy1=0,dummy2=0;
     mstring groupname,entryname,combined;
     vector<mstring> entries;
 
-    fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"tmplang.lfo");
+    fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"default.lfo");
+    remove((wxGetCwd()+DirSlash+"default.lfo").c_str());
     bContGroup=fconf->GetFirstGroup(groupname,dummy1);
     // this code is fucked up and won't work. debug to find why it's not
     // finding the entries when it is actually loading them.
@@ -757,6 +768,10 @@ bool Magick::LoadLogMessages(mstring language)
 
     if (language != "DEFAULT")
     {
+	entries.clear();
+	dummy1=dummy2=0;
+	groupname=entryname=combined="";
+
 	fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lfo");
 	bContGroup=fconf->GetFirstGroup(groupname,dummy1);
 	// this code is fucked up and won't work. debug to find why it's not
@@ -831,9 +846,9 @@ int Magick::doparamparse()
 
 	    bool ArgUsed=false;
 	    if (argv[i][1U]=='-')
-		ArgUsed=paramlong(argv[i], (i-1 < argc) ? argv[i+1].c_str() : "");
+		ArgUsed=paramlong(argv[i], (i+1 < argc) ? argv[i+1].c_str() : "");
 	    else
-		ArgUsed=paramshort(argv[i], (i-1 < argc) ? argv[i+1].c_str() : "");
+		ArgUsed=paramshort(argv[i], (i+1 < argc) ? argv[i+1].c_str() : "");
 	    
 	    if (ArgUsed)
 		i++;
@@ -859,7 +874,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--name");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--name");
 	}
 	startup.server_name=second;
 	RET(true);
@@ -868,7 +883,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--desc");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--desc");
 	}
 	startup.server_name=second;
 	RET(true);
@@ -877,7 +892,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--user");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--user");
 	}
 	startup.services_user=second;
 	RET(true);
@@ -890,7 +905,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--host");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--host");
 	}
 	startup.services_host=second;
     }
@@ -898,7 +913,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--log");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--log");
 	}
 	files.logfile=second;
 	RET(true);
@@ -909,7 +924,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--relink");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--relink");
 	}
 	if(atoi(second.c_str())<0)
 	{
@@ -924,7 +939,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--level");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--level");
 	}
 	if(atoi(second.c_str())<=0)
 	{
@@ -937,7 +952,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--save");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--save");
 	}
 	if(atoi(second.c_str())<=0)
 	{
@@ -950,7 +965,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--keyfile");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--keyfile");
 	}
 	if(!wxFile::Exists(second.c_str()))
 	{
@@ -963,7 +978,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--convert");
+	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--convert");
 	}
 	if (second.CmpNoCase("magick")==0)
 	{
@@ -1518,7 +1533,7 @@ bool Magick::get_config_values()
     in.Read(ts_NickServ+"DEF_LANGUAGE",&value_mstring,"english");
     if (value_mstring != nickserv.def_language)
     {
-	nickserv.def_language = value_mstring;
+	nickserv.def_language = value_mstring.LowerCase();
 	LogMessages.clear();
 	LoadLogMessages(nickserv.def_language);
     }

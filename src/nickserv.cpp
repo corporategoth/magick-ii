@@ -3060,6 +3060,13 @@ void NickServ::do_Help(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    mstring HelpTopic = Parent->nickserv.GetInternalName() + " " + params.After(" ");
+    HelpTopic.Replace(" ", "/");
+    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+					
+    unsigned int i;
+    for (i=0; i<help.size(); i++)
+	::send(mynick, source, help[i]);
 }
 
 void NickServ::do_Register(mstring mynick, mstring source, mstring params)
