@@ -1,4 +1,8 @@
 @ECHO OFF
+IF NOT EXIST "%*\files\pic" mkdir "%*\files\pic"
+IF NOT EXIST "%*\files\memo" mkdir "%*\files\memo"
+IF NOT EXIST "%*\files\public" mkdir "%*\files\public"
+IF NOT EXIST "%*\files\temp" mkdir "%*\files\temp"
 
 REM
 REM Test if we have java installed ...
