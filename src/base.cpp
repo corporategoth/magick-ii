@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2000/05/13 06:48:23  ungod
+** no message
+**
 ** Revision 1.114  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -1053,12 +1056,6 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
     }
 }
 
-SXP::Tag entlist_t::tag_Entry("Entry");
-SXP::Tag entlist_t::tag_Last_Modify_Time("Last Modify Time");
-SXP::Tag entlist_t::tag_Last_Modifier("Last Modifier");
-SXP::Tag entlist_t::tag_entlist_t("entlist_t");
-SXP::Tag entlist_t::tag_UserDef("UserDef");
-
 void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     //TODO: Add your source code here
@@ -1076,18 +1073,29 @@ void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     //TODO: Add your source code here
-		pOut->BeginObject(tag_entlist_t, attribs);
+	pOut->BeginObject(tag_entlist_t, attribs);
 
-		pOut->WriteElement(tag_Entry, i_Entry);
-		pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
-		pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
+	pOut->WriteElement(tag_Entry, i_Entry);
+	pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
+	pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
 
-        map<mstring,mstring>::const_iterator iter;
-        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
-        {
-            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
-        }
+    map<mstring,mstring>::const_iterator iter;
+    for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+    {
+        pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+    }
 
 	pOut->EndObject(tag_entlist_t);
 }
+
+SXP::Tag tag_entlist_t("entlist_t");
+SXP::Tag tag_entlist_val_t("entlist_val_t");
+SXP::Tag tag_Entry("Entry");
+SXP::Tag tag_Value("Value");
+SXP::Tag tag_ValueFirst("Value First");
+SXP::Tag tag_ValueSecond("Value Second");
+SXP::Tag tag_Last_Modify_Time("Last Modify Time");
+SXP::Tag tag_Last_Modifier("Last Modifier");
+SXP::Tag tag_UserDef("UserDef");
+SXP::Tag tag_Stupid("Stupid");
 
