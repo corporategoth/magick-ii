@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2000/04/23 02:31:50  prez
+** *** empty log message ***
+**
 ** Revision 1.90  2000/04/18 14:34:23  prez
 ** Fixed the HELP system, it now loads into memory, and can be unloaded
 ** with the OS unload command.  The stats however are inaccurate.
@@ -291,7 +294,7 @@ void Protocol::Set(unsigned int in)
 	i_SVS = true;
 	i_Globops = true;
 	i_P12 = true;
-	i_Signon = 1001;
+	i_Signon = 1003;
 	i_Akill = 4;
 	i_Modes = 6;
 	i_Server = "SERVER %s %d relic2.1 :%s";
@@ -989,6 +992,11 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" 1 " << host << ":" << realname;
+	    break;
+	case 1003:
+	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+		" " << user << " " << host << " " << host << " " <<
+		server << " 1 " << ":" << realname;
 	    break;
 	}
 	// Sign ourselves in ...
@@ -1904,6 +1912,18 @@ void NetworkServ::execute(const mstring & data)
 			);
 		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(6, ": "));
 		    break;
+		case 1003: // NICK nick hops time user real-host host server 0 :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(8, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
+		    break;
 		}
 		if (i_UserMax < Parent->nickserv.live.size())
 		    i_UserMax = Parent->nickserv.live.size();
@@ -2310,6 +2330,19 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(6, ": "));
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
 		break;
+	    case 1003: // SNICK nick hops time user real-host host server 0 modes :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(8, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
+		break;
 	    }
 	    if (i_UserMax < Parent->nickserv.live.size())
 		i_UserMax = Parent->nickserv.live.size();
@@ -2607,6 +2640,7 @@ void NetworkServ::execute(const mstring & data)
 	    case 1000:
 	    case 1001:
 	    case 1002:
+	    case 1003:
 		break;
 	    }
 	    if (i_UserMax < Parent->nickserv.live.size())
