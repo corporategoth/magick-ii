@@ -100,15 +100,7 @@ void Server::Ping()
     if (!i_Ping)
     {
         SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
-#ifdef WIN32
- 	SYSTEMTIME lpSystemTime;
-	GetSystemTime(&lpSystemTime);
-	i_Ping=((double)lpSystemTime.wHour*3600.0)+((double)lpSystemTime.wMinute*60.0)+(double)lpSystemTime.wSecond+((double)lpSystemTime.wMilliseconds/1000.0);
-#else
-	timeval *tmp;
-	gettimeofday(tmp, NULL);
-	i_Ping = (tmp->tv_sec * 1000) + tmp->tv_usec;
-#endif
+	i_Ping = ACE_OS::gettimeofday().msec();
    }
 }
 
@@ -117,18 +109,8 @@ void Server::Pong()
     NFT("Server::Pong");
     if (i_Ping)
     {
-#ifdef WIN32
-        SYSTEMTIME lpSystemTime;
-	GetSystemTime(&lpSystemTime);
-	i_Lag=(((double)lpSystemTime.wHour*3600.0)+((double)lpSystemTime.wMinute*60.0)+(double)lpSystemTime.wSecond+((double)lpSystemTime.wMilliseconds/1000.0))-i_Ping;
-#else
- 	timeval *tmp;
-	gettimeofday(tmp, NULL);
-	i_Lag = ((tmp->tv_sec * 1000) + tmp->tv_usec) - i_Ping;
-#endif
-	mstring blah;
-        blah << "Lag time of " << i_Name << " is " << i_Lag / 1000.0 << " seconds.";
-	COM((blah.c_str()));
+	i_Lag = ACE_OS::gettimeofday().msec() - i_Ping;
+	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag / 1000.0));
 	i_Ping = 0;
     }
 }
