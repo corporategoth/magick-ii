@@ -49,6 +49,7 @@ RCSID(magick_h, "@(#) $Id$");
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
+const int MAGICK_RET_DIE = 2;
 const int MAGICK_RET_ERROR = -1;
 const int MAGICK_RET_LOCKED = -2;
 const int MAGICK_RET_STATE = -3;
@@ -658,7 +659,7 @@ public:
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator       mVariant() const
+    operator        mVariant() const
     {
 	mVariant locvar("Magick");
 

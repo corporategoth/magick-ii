@@ -231,29 +231,7 @@ void DccEngine::decodeRequest(const mstring & mynick, const mstring & source, co
 
 	    mstring tmp;
 
-	    tmp << PACKAGE << ":" << VERSION;
-	    if (!RELEASE.empty())
-		tmp += RELEASE;
-	    if (!PATCH1.empty())
-		tmp += "+" + PATCH1;
-	    if (!PATCH2.empty())
-		tmp += "+" + PATCH2;
-	    if (!PATCH3.empty())
-		tmp += "+" + PATCH3;
-	    if (!PATCH4.empty())
-		tmp += "+" + PATCH4;
-	    if (!PATCH5.empty())
-		tmp += "+" + PATCH5;
-	    if (!PATCH6.empty())
-		tmp += "+" + PATCH6;
-	    if (!PATCH7.empty())
-		tmp += "+" + PATCH7;
-	    if (!PATCH8.empty())
-		tmp += "+" + PATCH8;
-	    if (!PATCH9.empty())
-		tmp += "+" + PATCH9;
-	    tmp << ":" << sysinfo_type();
-
+	    tmp << PACKAGE << ":" << version_string(false) << ":" << sysinfo_type();
 	    Magick::instance().server.NOTICE(mynick, source, encode("VERSION", tmp));
 	}
 	else if (ResHigh.Before(" ").UpperCase() == "SOURCE")

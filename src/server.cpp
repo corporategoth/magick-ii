@@ -690,7 +690,7 @@ void Protocol::Set(const unsigned int in)
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 VL SJ3 NS VHP";
 	// Check serveropts in s_debug.c for what the letters are
-	i_Server = "SERVER $1 $2 :U2301-CFhiIpnXS-$4 $3";
+	i_Server = "SERVER $1 $2 :U2303-CFhiIpnXS-$4 $3";
 	Numeric.i_Trim = true;
 	Numeric.i_Server = 6;
 	Numeric.i_ServerNumber = true;
@@ -2303,9 +2303,18 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 
 	if (proto.Numeric.Server() && !server.empty())
 	{
-	    map_entry < Server_t > serv = GetList(server);
-	    if (serv->Numeric())
-		server = proto.Numeric.ServerNumeric(serv->Numeric());
+	    if (IsList(server))
+	    {
+		map_entry < Server_t > serv = GetList(server);
+		if (serv->Numeric())
+		    server = proto.Numeric.ServerNumeric(serv->Numeric());
+	    }
+	    else
+	    {
+		unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+
+		server = proto.Numeric.ServerNumeric(ournumeric);
+	    }
 	}
 	mstring out, token;
 
@@ -3973,6 +3982,9 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    mstring server;
 	    mstring modes;
 
+	    if (proto.Numeric.Server())
+		server = "@";
+
 	    switch (proto.Signon())
 	    {
 	    case 0000:
@@ -3981,23 +3993,23 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    case 1000:		// NICK nick hops time user host server :realname
 	    case 1001:		// NICK nick hops time user host server 1 :realname
 	    case 1002:		// NICK nick hops time user host server 0 real-host :realname
-		server = GetServer(params.ExtractWord(6, ": "));
+		server += params.ExtractWord(6, ": ");
 		break;
 	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
-		server = GetServer(params.ExtractWord(7, ": "));
+		server += params.ExtractWord(7, ": ");
 		break;
 	    case 2000:		// NICK nick hops time mode user host server :realname
 	    case 2001:		// NICK nick hops time mode user host server 0 :realname
 		modes = params.ExtractWord(4, ": ");
-		server = GetServer(params.ExtractWord(7, ": "));
+		server += params.ExtractWord(7, ": ");
 		break;
 	    case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 		modes = params.ExtractWord(4, ": ");
-		server = GetServer(params.ExtractWord(8, ": "));
+		server += params.ExtractWord(8, ": ");
 		break;
 	    case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
 		modes = params.ExtractWord(8, ": ");
-		server = GetServer(params.ExtractWord(6, ": "));
+		server += params.ExtractWord(6, ": ");
 		break;
 	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
 		modes = params.ExtractWord(6, ": ");
@@ -4006,6 +4018,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		server = source;
 		break;
 	    }
+	    server = GetServer(server);
+
 	    if (Magick::instance().nickserv.IsLiveAll(newnick))
 	    {
 		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
@@ -4951,6 +4965,9 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	mstring modes;
 	mstring server;
 
+	if (proto.Numeric.Server())
+	    server = "@";
+
 	switch (proto.Signon())
 	{
 	case 0000:
@@ -4958,32 +4975,32 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    break;
 	case 1000:		// SNICK nick hops time user host server modes :realname
 	    modes = params.ExtractWord(7, ": ");
-	    server = GetServer(params.ExtractWord(6, ": "));
+	    server += params.ExtractWord(6, ": ");
 	    break;
 	case 1001:		// SNICK nick hops time user host server 1 modes :realname
 	    modes = params.ExtractWord(8, ": ");
-	    server = GetServer(params.ExtractWord(6, ": "));
+	    server += params.ExtractWord(6, ": ");
 	    break;
 	case 1002:		// SNICK nick hops time user host server 0 real-host modes :realname
 	    modes = params.ExtractWord(9, ": ");
-	    server = GetServer(params.ExtractWord(6, ": "));
+	    server += params.ExtractWord(6, ": ");
 	    break;
 	case 1003:		// SNICK nick hops time user real-host host server 0 modes :realname
 	    modes = params.ExtractWord(9, ": ");
-	    server = GetServer(params.ExtractWord(7, ": "));
+	    server += params.ExtractWord(7, ": ");
 	    break;
 	case 2000:		// SNICK nick hops time mode user host server :realname
 	case 2001:		// SNICK nick hops time mode user host server 0 :realname
 	    modes = params.ExtractWord(4, ": ");
-	    server = GetServer(params.ExtractWord(7, ": "));
+	    server += params.ExtractWord(7, ": ");
 	    break;
 	case 2002:		// SNICK nick hops time mode user host maskhost server 0 :realname
-	    modes = params.ExtractWord(4, ": ");
-	    server = GetServer(params.ExtractWord(8, ": "));
+	    modes += params.ExtractWord(4, ": ");
+	    server += params.ExtractWord(8, ": ");
 	    break;
 	case 2003:		// SNICK nick hops time user host server 0 mode maskhost :realname
 	    modes = params.ExtractWord(8, ": ");
-	    server = GetServer(params.ExtractWord(6, ": "));
+	    server += params.ExtractWord(6, ": ");
 	    break;
 	case 3000:		// SNICK nick hops time user host [mode] ipaddr numeric :realname
 	    modes = params.ExtractWord(6, ": ");
@@ -4992,6 +5009,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    server = source;
 	    break;
 	}
+	server = GetServer(server);
 
 	if (Magick::instance().nickserv.IsLiveAll(newnick))
 	{
@@ -5653,13 +5671,16 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	mstring server;
 	mstring modes;
 
+	if (proto.Numeric.Server())
+	    server = "@";
+
 	switch (proto.Signon())
 	{
 	case 0000:		// USER nick user host server :realname
-	    server = GetServer(params.ExtractWord(4, ": "));
+	    server += params.ExtractWord(4, ": ");
 	    break;
 	case 0001:		// USER nick time user host server :realname
-	    server = GetServer(params.ExtractWord(5, ": "));
+	    server += params.ExtractWord(5, ": ");
 	    break;
 	case 1000:		// NICK nick hops time user host server :realname
 	case 1001:		// NICK nick hops time user host server 1 :realname
@@ -5672,6 +5693,8 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	    break;
 	}
+
+	server = GetServer(server);
 
 	if (Magick::instance().nickserv.IsLiveAll(newnick))
 	{
@@ -5866,65 +5889,10 @@ void Server::parse_V(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// :source VERSION :our.server
 	//:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
-	mstring tmp(VERSION);
 
-	if (!RELEASE.empty())
-	    tmp += RELEASE;
-	if (!PATCH1.empty())
-	    tmp += "+" + PATCH1;
-	if (!PATCH2.empty())
-	    tmp += "+" + PATCH2;
-	if (!PATCH3.empty())
-	    tmp += "+" + PATCH3;
-	if (!PATCH4.empty())
-	    tmp += "+" + PATCH4;
-	if (!PATCH5.empty())
-	    tmp += "+" + PATCH5;
-	if (!PATCH6.empty())
-	    tmp += "+" + PATCH6;
-	if (!PATCH7.empty())
-	    tmp += "+" + PATCH7;
-	if (!PATCH8.empty())
-	    tmp += "+" + PATCH8;
-	if (!PATCH9.empty())
-	    tmp += "+" + PATCH9;
-	tmp << " [";
-#ifdef HASCRYPT
-	tmp << "C";
-#else
-	tmp << "c";
-#endif
-#ifdef MAGICK_TRACE_WORKS
-	tmp << "T";
-#else
-	tmp << "t";
-#endif
-#ifdef MAGICK_LOCKS_WORK
-	tmp << "L";
-#else
-	tmp << "l";
-#endif
-#ifdef MAGICK_HAS_EXCEPTIONS
-	tmp << "E";
-#else
-	tmp << "e";
-#endif
-#ifdef CONVERT
-	tmp << "V";
-#else
-	tmp << "v";
-#endif
-#ifdef GETPASS
-	tmp << "G";
-#else
-	tmp << "g";
-#endif
-#if defined(MAGICK_USE_MPATROL) || defined(MAGICK_USE_EFENCE)
-	tmp << "D";
-#else
-	tmp << "d";
-#endif
-	tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME << ") " << sysinfo_type() << " " << sysinfo_rel() << ".";
+	mstring tmp = version_string();
+
+	tmp << " " << sysinfo_type() << " " << sysinfo_rel() << ".";
 	sraw("351 " + source + " " + PACKAGE + " " + Magick::instance().startup.Server_Name() + " :" + tmp);
     }
     else

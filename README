@@ -197,7 +197,8 @@ a number of command-line options that override the settings of
 their equivalents on load.  NOTE: If the config file is loaded
 again at runtime, the settings in the config file will be used.
 
---help (or -?)	Help output (summary of the below).
+--help (-h)	Help output (summary of the below).
+--version (-v)	Display the Magick version string.
 --dir X		Set the initial services directory.
 --config X	Set the name (and/or path) of the config file.
 --nofork	Do not become a daemon/service process (dont fork()).
@@ -227,19 +228,19 @@ option, and what it does.
 
 PARAMETER	SHORT	GROUP		OPTION
 ---------	-----	-----		------
---name X	-n	STARTUP		SERVER_NAME
---desc X	-d	STARTUP		SERVER_DESC
---user X	-u	STARTUP		SERVICES_USER
---host X	-h	STARTUP		SERVICES_HOST
+--name X	-N	STARTUP		SERVER_NAME
+--desc X	-D	STARTUP		SERVER_DESC
+--user X	-U	STARTUP		SERVICES_USER
+--host X	-H	STARTUP		SERVICES_HOST
 --ownuser	-o	STARTUP		OWNUSER=true
 --protocol X	-P	STARTUP		PROTOCOL
 --level X	-l	STARTUP		LEVEL
 --lagtime X	-g	STARTUP		LAGTIME
---umask X	-U	FILES		UMASK
---verbose	-v	FILES		VERBOSE=true
+--umask X	-u	FILES		UMASK
+--verbose	-V	FILES		VERBOSE=true
 --log X		-L	FILES		LOGFILE
 --logchan X	-C	FILES		LOGCHAN
---dbase X	-D	FILES		DATABASE
+--dbase X	-d	FILES		DATABASE
 --langdir X	-S	FILES		LANGDIR
 --encrypt	-E	FILES		ENCRYPTION=true
 --decrypt	-e	FILES		ENCRYPTION=false

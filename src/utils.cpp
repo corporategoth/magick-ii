@@ -552,3 +552,70 @@ mstring sysinfo_rel()
 
     return retval;
 }
+
+mstring version_string(bool extended)
+{
+    mstring tmp(VERSION);
+
+    if (!RELEASE.empty())
+	tmp += RELEASE;
+    if (!PATCH1.empty())
+	tmp += "+" + PATCH1;
+    if (!PATCH2.empty())
+	tmp += "+" + PATCH2;
+    if (!PATCH3.empty())
+	tmp += "+" + PATCH3;
+    if (!PATCH4.empty())
+	tmp += "+" + PATCH4;
+    if (!PATCH5.empty())
+	tmp += "+" + PATCH5;
+    if (!PATCH6.empty())
+	tmp += "+" + PATCH6;
+    if (!PATCH7.empty())
+	tmp += "+" + PATCH7;
+    if (!PATCH8.empty())
+	tmp += "+" + PATCH8;
+    if (!PATCH9.empty())
+	tmp += "+" + PATCH9;
+    if (extended)
+    {
+	tmp << " [";
+#ifdef HASCRYPT
+	tmp << "C";
+#else
+	tmp << "c";
+#endif
+#ifdef MAGICK_TRACE_WORKS
+	tmp << "T";
+#else
+	tmp << "t";
+#endif
+#ifdef MAGICK_LOCKS_WORK
+	tmp << "L";
+#else
+	tmp << "l";
+#endif
+#ifdef MAGICK_HAS_EXCEPTIONS
+	tmp << "E";
+#else
+	tmp << "e";
+#endif
+#ifdef CONVERT
+	tmp << "V";
+#else
+	tmp << "v";
+#endif
+#ifdef GETPASS
+	tmp << "G";
+#else
+	tmp << "g";
+#endif
+#if defined(MAGICK_USE_MPATROL) || defined(MAGICK_USE_EFENCE)
+	tmp << "D";
+#else
+	tmp << "d";
+#endif
+	tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME << ")";
+    }
+    return tmp;
+}

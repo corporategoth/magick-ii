@@ -294,29 +294,46 @@ void mMessage::AddDependancies()
 	AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
 	if (source_.empty() || source_[0u] == '@')
 	{
+	    mstring server;
+
 	    switch (Magick::instance().server.proto.Signon())
 	    {
 	    case 0000:
-		AddDepend(ServerExists, params_.ExtractWord(4, ": ").LowerCase());
+		if (Magick::instance().server.proto.Numeric.Server())
+		    AddDepend(ServerExists, "@" + params_.ExtractWord(4, ": "));
+		else
+		    AddDepend(ServerExists, params_.ExtractWord(4, ": ").LowerCase());
 		break;
 	    case 0001:
-		AddDepend(ServerExists, params_.ExtractWord(5, ": ").LowerCase());
+		if (Magick::instance().server.proto.Numeric.Server())
+		    AddDepend(ServerExists, "@" + params_.ExtractWord(5, ": "));
+		else
+		    AddDepend(ServerExists, params_.ExtractWord(5, ": ").LowerCase());
 		break;
 	    case 1000:
 	    case 1001:
 	    case 1002:
-		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
+		if (Magick::instance().server.proto.Numeric.Server())
+		    AddDepend(ServerExists, "@" + params_.ExtractWord(6, ": "));
+		else
+		    AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
 		break;
 	    case 1003:
 	    case 2000:
 	    case 2001:
-		AddDepend(ServerExists, params_.ExtractWord(7, ": ").LowerCase());
+		if (Magick::instance().server.proto.Numeric.Server())
+		    AddDepend(ServerExists, "@" + params_.ExtractWord(7, ": "));
+		else
+		    AddDepend(ServerExists, params_.ExtractWord(7, ": ").LowerCase());
 		break;
 	    case 2002:
 		AddDepend(ServerExists, params_.ExtractWord(8, ": ").LowerCase());
 		break;
 	    case 2003:
-		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
+		if (Magick::instance().server.proto.Numeric.Server())
+		    AddDepend(ServerExists, "@" + params_.ExtractWord(6, ": "));
+		else
+		    AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
 		break;
 	    case 3000:
 		// Source is already added ...

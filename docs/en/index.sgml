@@ -1040,7 +1040,8 @@ their equivalents on load.  NOTE: If the config file is loaded
 again at runtime, the settings in the config file will be used.
 
 <tscreen><verb>
---help (or -?)	Help output (summary of the below).
+--help (-h)	Help output (summary of the below).
+--version (-v)	Display the Magick version string.
 --dir X		Set the initial services directory.
 --config X	Set the name (and/or path) of the config file.
 --nofork	Do not become a daemon/service process (dont fork()).
@@ -1072,19 +1073,19 @@ option, and what it does.
 <tscreen><verb>
 PARAMETER	SHORT	GROUP		OPTION
 ---------	-----	-----		------
---name X	-n	STARTUP		SERVER_NAME
---desc X	-d	STARTUP		SERVER_DESC
---user X	-u	STARTUP		SERVICES_USER
---host X	-h	STARTUP		SERVICES_HOST
+--name X	-N	STARTUP		SERVER_NAME
+--desc X	-D	STARTUP		SERVER_DESC
+--user X	-U	STARTUP		SERVICES_USER
+--host X	-H	STARTUP		SERVICES_HOST
 --ownuser	-o	STARTUP		OWNUSER=true
 --protocol X	-P	STARTUP		PROTOCOL
 --level X	-l	STARTUP		LEVEL
 --lagtime X	-g	STARTUP		LAGTIME
---umask X	-U	FILES		UMASK
---verbose	-v	FILES		VERBOSE=true
+--umask X	-u	FILES		UMASK
+--verbose	-V	FILES		VERBOSE=true
 --log X		-L	FILES		LOGFILE
 --logchan X	-C	FILES		LOGCHAN
---dbase X	-D	FILES		DATABASE
+--dbase X	-d	FILES		DATABASE
 --langdir X	-S	FILES		LANGDIR
 --encrypt	-E	FILES		ENCRYPTION=true
 --decrypt	-e	FILES		ENCRYPTION=false
@@ -1302,10 +1303,32 @@ happened, so I cant reject it -- so I'll just deal with it'.
 Hybrid says 'I am going to make sure its not only syntactically
 correct, but that it adheres to all the rules I place on it'.
 
+<sect1>Why don't my services nicknames show up as services in the whois?<p>
+Some IRCD's have implemented a mode that can be set by services on
+services nicknames to add a line 'Is a network service' to the
+/whois info.  Sometimes it also allows extra privileges.  Magick
+allows you to have any mode you want set on the services clients
+with the Startup/SETMODE parameter.  If your IRCD supports this
+feature, and the services clients are not showing up as network
+services (or whatever) in the /whois, then you've probably not
+got the services nicknames setting the mode on signon.
+
+Here is a list of IRCD's that currently have this feature, and
+the mode you should include in the Startup/SETMODE parameter to
+make services clients show up as network services in their /whois
+information:
+
+<tscreen><verb>
+IRCD                    Startup/SETMODE
+------------------------------------------------
+Unreal			S
+</verb></tscreen>
+
+
 <sect1>I like these services and want to pay the author!<p>
    OK, so this isn't something I hear, but a little wishful thinking
 never hurts.  If you want to send me something by snail mail, then
-feel free to do so to PO BOX 216, HAWTHORNE, NY, USA, 10594.
+feel free to do so to PO BOX 215, HAWTHORNE, NY, USA, 10594.
 I always like tokens of appreciation, puts a smile on my face and
 makes the whole thing worth while (no, not necessarily money, but
 that is always nice!).  Remember tho, if you ARE going to send me

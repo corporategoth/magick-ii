@@ -79,12 +79,34 @@ Hybrid says 'I am going to make sure its not only syntactically
 correct, but that it adheres to all the rules I place on it'.
 
 
+Why don't my services nicknames show up as services in the whois?
+=================================================================
+
+Some IRCD's have implemented a mode that can be set by services on
+services nicknames to add a line 'Is a network service' to the
+/whois info.  Sometimes it also allows extra privileges.  Magick
+allows you to have any mode you want set on the services clients
+with the Startup/SETMODE parameter.  If your IRCD supports this
+feature, and the services clients are not showing up as network
+services (or whatever) in the /whois, then you've probably not
+got the services nicknames setting the mode on signon.
+
+Here is a list of IRCD's that currently have this feature, and
+the mode you should include in the Startup/SETMODE parameter to
+make services clients show up as network services in their /whois
+information:
+
+IRCD                    Startup/SETMODE
+------------------------------------------------
+Unreal			S
+
+
 I like these services and want to pay the author!
 =================================================
 
    OK, so this isn't something I hear, but a little wishful thinking
 never hurts.  If you want to send me something by snail mail, then
-feel free to do so to PO BOX 216, HAWTHORNE, NY, USA, 10594
+feel free to do so to PO BOX 215, HAWTHORNE, NY, USA, 10594
 I always like tokens of appreciation, puts a smile on my face and
 makes the whole thing worth while (no, not necessarily money, but
 that is always nice!).  Remember tho, if you ARE going to send me

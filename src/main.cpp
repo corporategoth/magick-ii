@@ -144,6 +144,8 @@ int main(int argc, char **argv)
     mThread::Detach();
     ACE::fini();
 
+    if (Result == MAGICK_RET_DIE)
+	Result = MAGICK_RET_NORMAL;
     return Result;
 }
 

@@ -48,20 +48,20 @@ RCSID(magick_cpp, "@(#)$Id$");
 
 mDateTime Magick::i_StartTime;
 
-map < ACE_thread_t, Magick * >Magick::InstanceMap;
+map < ACE_thread_t, Magick * > Magick::InstanceMap;
 #ifndef MAGICK_HAS_EXCEPTIONS
 static Magick GLOB_Magick;
 #endif
 
 /* Class for testing purposes ... */
 #ifdef TEST_MODE
-class TestInput:public ACE_Task < ACE_MT_SYNCH >
+class TestInput : public ACE_Task < ACE_MT_SYNCH >
 {
     typedef ACE_Task < ACE_MT_SYNCH > internal;
     Magick *magick_instance;
 
 public:
-    TestInput(ACE_Thread_Manager * tm = 0):internal(tm)
+    TestInput(ACE_Thread_Manager * tm = 0) : internal(tm)
     {
     }
 
@@ -75,7 +75,7 @@ public:
 
     int close(u_long flags = 0)
     {
-	static_cast < void >(flags);
+	static_cast < void > (flags);
 
 	return 0;
     }
@@ -133,9 +133,9 @@ bool Magick::instance_exists(ACE_thread_t id)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-Magick & Magick::instance(ACE_thread_t id) throw (E_Magick)
+Magick &Magick::instance(ACE_thread_t id) throw (E_Magick)
 #else
-Magick & Magick::instance(ACE_thread_t id)
+Magick &Magick::instance(ACE_thread_t id)
 #endif
 {
     map < ACE_thread_t, Magick * >::iterator iter = InstanceMap.find(id);
@@ -157,7 +157,7 @@ Magick::Magick(int inargc, char **inargv)
     init();
 }
 
-Magick::Magick(const vector < mstring > &inargv)
+Magick::Magick(const vector < mstring > & inargv)
 {
     argv = inargv;
     init();
@@ -253,13 +253,13 @@ int Magick::Init()
 
     for (i = 1; i < argc; i++)
     {
-	if (argv[i][0U] == '-')
+	if (argv[i] [0U] == '-')
 	{
 	    argv[i].MakeLower();
 	    if (argv[i] == "--dir")
 	    {
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--dir"));
 		    return MAGICK_RET_ERROR;
@@ -269,7 +269,7 @@ int Magick::Init()
 	    else if (argv[i] == "--config")
 	    {
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--config"));
 		    return MAGICK_RET_ERROR;
@@ -280,7 +280,7 @@ int Magick::Init()
 	    else if (argv[i] == "--trace")
 	    {
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--trace"));
 		    return MAGICK_RET_ERROR;
@@ -316,7 +316,7 @@ int Magick::Init()
 		    return MAGICK_RET_ERROR;
 		}
 		i++;
-		if (i == argc || argv[i][0U] == '-')
+		if (i == argc || argv[i] [0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service"));
 		    return MAGICK_RET_ERROR;
@@ -336,10 +336,15 @@ int Magick::Init()
 		}
 	    }
 #endif
-	    else if (argv[i] == "--help" || (argv[i][1U] != '-' && argv[i].Contains("?")))
+	    else if (argv[i] == "--help" || (argv[i] [1U] != '-' && (argv[i].Contains("?") || argv[i].Contains("h"))))
 	    {
 		dump_help();
-		return MAGICK_RET_NORMAL;
+		return MAGICK_RET_DIE;
+	    }
+	    else if (argv[i] == "--version" || (argv[i] [1U] != '-' && argv[i].Contains("v")))
+	    {
+		printf("%s v%s\n", FULLNAME.c_str(), version_string().c_str());
+		return MAGICK_RET_DIE;
 	    }
 	}
     }
@@ -817,7 +822,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	if (!lang.empty() && Messages.find(lang.UpperCase()) != Messages.end() &&
 	    Messages[lang.UpperCase()].find(name.UpperCase()) != Messages[lang.UpperCase()].end())
 	{
-	    retval = Messages[lang.UpperCase()][name.UpperCase()];
+	    retval = Messages[lang.UpperCase()] [name.UpperCase()];
 	    RET(retval);
 	}
     }
@@ -840,7 +845,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	    Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
 	    Messages[nickserv.DEF_Language().UpperCase()].end())
 	{
-	    retval = Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()];
+	    retval = Messages[nickserv.DEF_Language().UpperCase()] [name.UpperCase()];
 	    RET(retval);
 	}
     }
@@ -851,7 +856,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	RLOCK(("Messages", "DEFAULT", name.UpperCase()));
 	if (Messages["DEFAULT"].find(name.UpperCase()) != Messages["DEFAULT"].end())
 	{
-	    retval = Messages["DEFAULT"][name.UpperCase()];
+	    retval = Messages["DEFAULT"] [name.UpperCase()];
 	    RET(retval);
 	}
     }
@@ -895,7 +900,7 @@ vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 	language = nickserv.GetStored(nick)->Language().UpperCase();
     }
 
-  StartGetLang:
+StartGetLang:
     if (Help.find(language) == Help.end() && mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".hlp"))
     {
 	WLOCK(("Help", language));
@@ -919,7 +924,7 @@ vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 	    if (entry.third.empty())
 		entry.third = " ";
 
-	    Help[language][section].push_back(entry);
+	    Help[language] [section].push_back(entry);
 	}
 	MCE(Help.size());
 	if (tmp.size())
@@ -938,29 +943,29 @@ vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 	{
 	    bool sendline;
 
-	    for (j = 0; j < Help[language][Uname].size(); j++)
+	    for (j = 0; j < Help[language] [Uname].size(); j++)
 	    {
 		sendline = false;
-		if (!Help[language][Uname][j].first.empty())
+		if (!Help[language] [Uname] [j].first.empty())
 		{
-		    for (i = 1; !sendline && i <= Help[language][Uname][j].first.WordCount(" "); i++)
+		    for (i = 1; !sendline && i <= Help[language] [Uname] [j].first.WordCount(" "); i++)
 		    {
-			if (commserv.IsList(Help[language][Uname][j].first.ExtractWord(i, " ")) &&
-			    commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " "))->IsOn(nick))
+			if (commserv.IsList(Help[language] [Uname] [j].first.ExtractWord(i, " ")) &&
+			    commserv.GetList(Help[language] [Uname] [j].first.ExtractWord(i, " "))->IsOn(nick))
 			    sendline = true;
 		    }
 		}
 		else
 		    sendline = true;
-		if (!Help[language][Uname][j].second.empty())
-		    for (i = 1; sendline && i <= Help[language][Uname][j].second.WordCount(" "); i++)
+		if (!Help[language] [Uname] [j].second.empty())
+		    for (i = 1; sendline && i <= Help[language] [Uname] [j].second.WordCount(" "); i++)
 		    {
-			if (commserv.IsList(Help[language][Uname][j].second.ExtractWord(i, " ")) &&
-			    commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " "))->IsOn(nick))
+			if (commserv.IsList(Help[language] [Uname] [j].second.ExtractWord(i, " ")) &&
+			    commserv.GetList(Help[language] [Uname] [j].second.ExtractWord(i, " "))->IsOn(nick))
 			    sendline = false;
 		    }
 		if (sendline)
-		    helptext.push_back(Help[language][Uname][j].third);
+		    helptext.push_back(Help[language] [Uname] [j].third);
 	    }
 	}
     }
@@ -988,40 +993,41 @@ void Magick::dump_help() const
     cout << "\n" << FULLNAME + " - " + HOMEPAGE +
 	"\n" << "    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n" << "    (c) 1998-2002 William King <ungod@magick.tm>\n"
 	<< "\n" << "Syntax: " << i_programname << " [options]\n" << "\n" <<
-	"--help             -?      Help output (summary of the below).\n" <<
+	"--help             -h      Help output (summary of the below).\n" <<
+	"--version          -v      Display the Magick version string.\n" <<
 	"--dir X                    Set the initial services directory.\n" <<
 	"--config X                 Set the name of the config file.\n" <<
 	"--nofork                   Do not become a daemon/service process.\n"
 #ifdef WIN32
-	<< "--service X                Manipulate Magick's NT Service settings.\n" <<
+	 << "--service X                Manipulate Magick's NT Service settings.\n" <<
 	"                               Values are: insert, start, stop, remove.\n"
 #endif
 #ifdef CONVERT
-	<< "--convert X                Convert another version of services databases\n" <<
+	 << "--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
 	"                           database to convert.  Currently recognized:\n" <<
 	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n" <<
 	"                               sirv (N/A)\n"
 #endif
 #ifdef MAGICK_TRACE_WORKS
-	<< "--trace X:Y                Set the trace level on startup, equivilant of\n" <<
+	 << "--trace X:Y                Set the trace level on startup, equivilant of\n" <<
 	"                           using the OperServ TRACE SET command while\n" <<
 	"                           running, where X is the trace type (or ALL),\n" <<
 	"                           and Y is the trace level in hex.\n"
 #endif
-	<< "--name X           -n      Override [STARTUP/SERVER_NAME] to X.\n" <<
-	"--desc X           -d      Override [STARTUP/SERVER_DESC] to X.\n" <<
-	"--user X           -u      Override [STARTUP/SERVICES_USER] to X.\n" <<
-	"--host X           -h      Override [STARTUP/SERVICES_HOST] to X.\n" <<
+	 << "--name X           -N      Override [STARTUP/SERVER_NAME] to X.\n" <<
+	"--desc X           -D      Override [STARTUP/SERVER_DESC] to X.\n" <<
+	"--user X           -U      Override [STARTUP/SERVICES_USER] to X.\n" <<
+	"--host X           -H      Override [STARTUP/SERVICES_HOST] to X.\n" <<
 	"--ownuser          -o      Override [STARTUP/OWNUSER] to true.\n" <<
 	"--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n" <<
 	"--level X          -l      Override [STARTUP/LEVEL] to X.\n" <<
 	"--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n" <<
-	"--umask            -U      Override [FILES/UMASK] to X.\n" <<
-	"--verbose          -v      Override [FILES/VERBOSE] to true.\n" <<
+	"--umask            -u      Override [FILES/UMASK] to X.\n" <<
+	"--verbose          -V      Override [FILES/VERBOSE] to true.\n" <<
 	"--log X            -L      Override [FILES/LOGFILE] to X.\n" <<
 	"--logchan X        -C      Override [FILES/LOGCHAN] to X.\n" <<
-	"--dbase X          -D      Override [FILES/DATABASE] to X.\n" <<
+	"--dbase X          -d      Override [FILES/DATABASE] to X.\n" <<
 	"--langdir X        -S      Override [FILES/LANGDIR] to X.\n" <<
 	"--encrypt          -E      Override [FILES/ENCRYPTION] to true.\n" <<
 	"--decrypt          -e      Override [FILES/ENCRYPTION] to false.\n" <<
@@ -1184,11 +1190,11 @@ int Magick::doparamparse()
 
     for (i = 1; i < argc; i++)
     {
-	if (argv[i][0U] == '-')
+	if (argv[i] [0U] == '-')
 	{
 	    bool ArgUsed = false;
 
-	    if (argv[i][1U] == '-')
+	    if (argv[i] [1U] == '-')
 		ArgUsed = paramlong(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
 	    else
 		ArgUsed = paramshort(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
@@ -1261,10 +1267,10 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	if (atoi(second.c_str()) != static_cast < int >(server.proto.Number()))
+	if (atoi(second.c_str()) != static_cast < int > (server.proto.Number()))
 	{
 	    server.proto.Set(atoi(second.c_str()));
-	    if (atoi(second.c_str()) != static_cast < int >(server.proto.Number()))
+	    if (atoi(second.c_str()) != static_cast < int > (server.proto.Number()))
 	    {
 		LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (second, server.proto.Number()));
 	    }
@@ -1670,11 +1676,11 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 
     for (unsigned int i = 1; i < first.length(); i++)
     {
-	if (first[i] == '?')
+	if (first[i] == '?' || first[i] == 'h' || first[i] == 'v')
 	{
 	    // Already handled
 	}
-	else if (first[i] == 'n')
+	else if (first[i] == 'N')
 	{
 	    if (ArgUsed)
 	    {
@@ -1683,7 +1689,7 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	    else
 		ArgUsed = paramlong("--name", second);
 	}
-	else if (first[i] == 'd')
+	else if (first[i] == 'D')
 	{
 	    if (ArgUsed)
 	    {
@@ -1692,7 +1698,7 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	    else
 		ArgUsed = paramlong("--desc", second);
 	}
-	else if (first[i] == 'u')
+	else if (first[i] == 'U')
 	{
 	    if (ArgUsed)
 	    {
@@ -1701,7 +1707,7 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	    else
 		ArgUsed = paramlong("--user", second);
 	}
-	else if (first[i] == 'h')
+	else if (first[i] == 'H')
 	{
 	    if (ArgUsed)
 	    {
@@ -1741,11 +1747,11 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	    else
 		ArgUsed = paramlong("--lagtime", second);
 	}
-	else if (first[i] == 'v')
+	else if (first[i] == 'V')
 	{
 	    ArgUsed = paramlong("--verbose", second);
 	}
-	else if (first[i] == 'U')
+	else if (first[i] == 'u')
 	{
 	    if (ArgUsed)
 	    {
@@ -1772,7 +1778,7 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	    else
 		ArgUsed = paramlong("--logchan", second);
 	}
-	else if (first[i] == 'D')
+	else if (first[i] == 'd')
 	{
 	    if (ArgUsed)
 	    {
@@ -2069,11 +2075,13 @@ bool Magick::get_config_values()
 		{
 		    // startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
 		    startup.servers[tmp[0].LowerCase()] =
-			pair < unsigned int, triplet < unsigned int, mstring, unsigned long >>(atol(tmp[3]),
-											       triplet < unsigned int, mstring,
-											       unsigned long >(atoi(tmp[1]),
-													       tmp[2],
-													       atol(tmp[4])));
+			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > (atol(tmp[3]),
+												 triplet < unsigned int,
+												 mstring,
+												 unsigned long > (atoi(tmp[1]),
+														  tmp[2],
+														  atol(tmp
+														       [4])));
 		    if (min_level < 1 || atoi(tmp[3]) < min_level)
 			min_level = atoi(tmp[3]);
 		}
@@ -2088,7 +2096,7 @@ bool Magick::get_config_values()
 	if (min_level > 1)
 	{
 	    // We NEED the lowest priority to be 1
-	    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long >>>::iterator iter;
+	    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::iterator iter;
 
 	    for (iter = startup.servers.begin(); iter != startup.servers.end(); iter++)
 	    {
@@ -2200,7 +2208,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2243,7 +2251,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2284,7 +2292,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2325,7 +2333,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2366,7 +2374,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2407,7 +2415,7 @@ bool Magick::get_config_values()
 		{
 		    server.
 			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty())? server.proto.
+			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
@@ -2424,7 +2432,7 @@ bool Magick::get_config_values()
     if (!isonstr.empty())
 	server.
 	    sraw(((server.proto.Tokens() &&
-		   !server.proto.GetNonToken("ISON").empty())? server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
+		   !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
 		 isonstr);
 
     in.Read(ts_Files + "UMASK", value_mstring, "027");
@@ -3100,7 +3108,7 @@ bool Magick::get_config_values()
     {
 	server.
 	    raw(((server.proto.Tokens() &&
-		  !server.proto.GetNonToken("ERROR").empty())? server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
+		  !server.proto.GetNonToken("ERROR").empty()) ? server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
 		" :Closing Link: Configuration reload required restart!");
 	Disconnect();
     }
@@ -3112,8 +3120,8 @@ bool Magick::get_config_values()
 
 int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 {
-    static_cast < void >(si);
-    static_cast < void >(uctx);
+    static_cast < void > (si);
+    static_cast < void > (uctx);
 
     // No trace, screws with LastFunc...
     //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) si", "(ucontext_t *) uctx"));
@@ -3125,7 +3133,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 #if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
 	{
-	    vector < ThreadID * >ids = mThread::findall();
+	    vector < ThreadID * > ids = mThread::findall();
 	    for (unsigned int i = 0; i < ids.size(); i++)
 		if (ids[i] != NULL)
 		    ids[i]->Flush();
@@ -3149,9 +3157,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 		{
 		    RLOCK(("IrcSvcHandler"));
 		    if (Magick::instance().ircsvchandler != NULL)
-			thr_mgr = &Magick::instance().ircsvchandler->tm;
+			thr_mgr = & Magick::instance().ircsvchandler->tm;
 		    else
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 		}
 		break;
 	    case Heartbeat_Handler::H_IrcServer:
@@ -3161,7 +3169,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 			thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 		}
 		if (thr_mgr == NULL)
-		    thr_mgr = &Magick::instance().thr_mgr();
+		    thr_mgr = & Magick::instance().thr_mgr();
 		Magick::instance().Disconnect();
 		if (Magick::instance().dh_timer > 0)
 		    Magick::instance().reactor().cancel_timer(Magick::instance().dh_timer);
@@ -3181,7 +3189,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 			Magick::instance().events = NULL;
 		    }
 		    if (thr_mgr == NULL)
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 		    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
 		    Magick::instance().events->open((void *) &Magick::instance());
 		}
@@ -3200,14 +3208,14 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 			Magick::instance().dcc = NULL;
 		    }
 		    if (thr_mgr == NULL)
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 		    Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
 		    Magick::instance().dcc->open((void *) &Magick::instance());
 		}
 		break;
 	    case Heartbeat_Handler::H_Main:	// Its a REAL SIGABRT ...
 		{
-		    vector < ThreadID * >ids = mThread::findall();
+		    vector < ThreadID * > ids = mThread::findall();
 		    for (unsigned int i = 0; i < ids.size(); i++)
 			if (ids[i] != NULL)
 			    ids[i]->Flush();
@@ -3264,7 +3272,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 #endif
     case SIGSEGV:		// Segmentation Fault
 	{
-	    vector < ThreadID * >ids = mThread::findall();
+	    vector < ThreadID * > ids = mThread::findall();
 	    for (unsigned int i = 0; i < ids.size(); i++)
 		if (ids[i] != NULL)
 		    ids[i]->Flush();
@@ -3570,18 +3578,18 @@ bool Magick::startup_t::IsServer(const mstring & svr) const
     RET(false);
 }
 
-pair < unsigned int, triplet < unsigned int, mstring, unsigned long >>Magick::startup_t::Server(const mstring & svr) const
+pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Magick::startup_t::Server(const mstring & svr) const
 {
     FT("Magick::startup_t::Server", (svr));
-    pair < unsigned int, triplet < unsigned int, mstring, unsigned long >>value(0, triplet < unsigned int, mstring,
-										unsigned long >(0, "", 0));
+    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > value(0, triplet < unsigned int, mstring,
+										  unsigned long > (0, "", 0));
 
     RLOCK(("Startup", "Servers"));
     if (IsServer(svr))
     {
 	value = servers.find(svr.LowerCase())->second;
     }
-    NRET(pair < unsigned int.triplet < unsigned int.mstring.unsigned long >>, value);
+    NRET(pair < unsigned int.triplet < unsigned int.mstring.unsigned long > >, value);
 }
 
 vector < mstring > Magick::startup_t::PriorityList(const unsigned int pri) const
@@ -3589,7 +3597,7 @@ vector < mstring > Magick::startup_t::PriorityList(const unsigned int pri) const
     FT("Magick::startup_t::PriorityList", (pri));
     vector < mstring > list;
 
-    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long >>>::const_iterator iter;
+    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::const_iterator iter;
 
     RLOCK(("Startup", "Servers"));
     for (iter = servers.begin(); iter != servers.end(); iter++)
@@ -3733,7 +3741,7 @@ void Magick::Disconnect(const bool reconnect)
 		    ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 
 		    if (thr_mgr == NULL)
-			thr_mgr = &Magick::instance().thr_mgr();
+			thr_mgr = & Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 		    thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 #endif
@@ -3798,7 +3806,7 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast < void >(pIn);
+    static_cast < void > (pIn);
 
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
@@ -3816,7 +3824,7 @@ void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast < void >(attribs);
+    static_cast < void > (attribs);
 
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
 
@@ -3900,7 +3908,7 @@ void Magick::save_databases()
 	if (ls != NULL)
 	    retval = ls->Consume();
 
-      CleanUp:
+    CleanUp:
 	if (fs != NULL)
 	    delete fs;
 
@@ -4014,7 +4022,7 @@ void Magick::load_databases()
 	    }
 	}
 
-      CleanUp:
+    CleanUp:
 	if (xs != NULL)
 	    delete xs;
 
@@ -4069,7 +4077,7 @@ size_t Magick::LNG_Usage(const mstring & lang) const
 set < mstring > Magick::HLP_Loaded() const
 {
     set < mstring > retval;
-    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > >>>::const_iterator i;
+    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
     RLOCK(("Help"));
     for (i = Help.begin(); i != Help.end(); i++)
     {
@@ -4082,8 +4090,8 @@ size_t Magick::HLP_Usage(const mstring & lang) const
 {
     size_t retval = 0;
 
-    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > >>>::const_iterator i;
-    map < mstring, vector < triplet < mstring, mstring, mstring > >>::const_iterator j;
+    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
+    map < mstring, vector < triplet < mstring, mstring, mstring > > >::const_iterator j;
     vector < triplet < mstring, mstring, mstring > >::const_iterator k;
 
     RLOCK(("Help"));

@@ -55,6 +55,7 @@ void mHASH(const char *in, const size_t size, char *out);
 mstring sysinfo_node();
 mstring sysinfo_type();
 mstring sysinfo_rel();
+mstring version_string(bool extended = true);
 
 // Something required to basically facilitate locking on
 // a reference to a class extracted from a map.
