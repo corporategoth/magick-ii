@@ -1,0 +1,18 @@
+Magick IRC Services
+
+$Id$
+(c) 1997-2000 Preston A. Elder <prez@magick.tm>
+(c) 1998-2000 William King <ungod@magick.tm>
+
+Known problems that exist in magick that should be fixed.
+
+* CS ACCESS DEL allows you to remove ANYONE on list
+
+* CS ACCESS ADD does not check if the user is >= you when changing
+
+* CS AKICK ADD does not check to see if your akicking a user >= you
+  on the access list (or someone matching it currently in channel).
+
+* No real locking, need to start locking everything
+  - BUG in ACE locking, there is a max char length on locks, must
+    make locks get set as 'Last X chars of lock string'.
