@@ -50,9 +50,9 @@ char* wxGetWorkingDirectory(char *buf = (char *) NULL,int sz = 1000);
 // NB: can't have the same name because of overloading ambiguity
 mstring wxGetCwd();
 
-
-
 vector<int> ParseNumbers(mstring what);
+unsigned long FromHumanTime(mstring in);
+mstring ToHumanTime(unsigned long in);
 
 // extrapolated from the ms's pair<T1,T2> template code
 

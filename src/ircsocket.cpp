@@ -138,7 +138,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	return 0;
 
     mstring server;
-    triplet<int,mstring,int> details;
+    triplet<unsigned int,mstring,unsigned int> details;
     if (Parent->GotConnect) {
 	server = Parent->startup.PriorityList(1)[0];
     } else {
@@ -328,10 +328,12 @@ int EventTask::svc(void)
 		{
 		    if (firstgone)
 		    {
+			if (!Parent->operserv.Akill_size())
+			    break;
 			Parent->operserv.Akill = Parent->operserv.Akill_begin();
 			firstgone = false;
 		    }
-		    if (Parent->operserv.Akill->Last_Modify_Time().HoursSince() >
+		    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
 			    Parent->operserv.Akill->Value().first)
 		    {
 			if (Parent->operserv.Akill == Parent->operserv.Akill_begin())
@@ -404,6 +406,8 @@ int EventTask::svc(void)
 		    {
 			if (firstgone)
 			{
+			    if (!ni->second.size())
+				break;
 			    lni = ni->second.begin();
 			    firstgone = false;
 			}
@@ -455,9 +459,9 @@ int EventTask::svc(void)
 		csi = Parent->chanserv.stored.find(cli->first);
 		// Removing bans ...
 		if (!Parent->chanserv.LCK_Bantime() ||
-		    !Parent->chanserv.DEF_Bantime())
+		    Parent->chanserv.DEF_Bantime())
 		{
-		    unsigned long bantime;
+		    unsigned long bantime = 0;
 		    if (Parent->chanserv.LCK_Bantime())
 			bantime = Parent->chanserv.DEF_Bantime();
 		    else if (csi != Parent->chanserv.stored.end())
@@ -484,7 +488,7 @@ int EventTask::svc(void)
 		// Sending pending modes ...
 		if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
 		{
-		    int modesperline = 4, j, k;
+		    unsigned int modesperline = 4, j, k;
 		    vector<mstring> modelines;
 		    mstring mode;
 		    mstring modeparam;

@@ -277,7 +277,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			if (Parent->chanserv.IsLive(recipiant))
 			{
 			    Chan_Live_t *chan = &Parent->chanserv.live[recipiant.LowerCase()];
-			    int i;
+			    unsigned int i;
 			    for(i=0; i<chan->Users(); i++)
 			    {
 				if (Parent->chanserv.stored[recipiant.LowerCase()].GetAccess(chan->User(i), "READMEMO"))
@@ -456,7 +456,7 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
 	joined_channels.insert(*i);
     last_msg_times.empty();
     last_msg_times.reserve(in.last_msg_times.size());
-    int k;
+    unsigned int k;
     for(k=0;k<in.last_msg_times.size();k++)
 	last_msg_times.push_back(in.last_msg_times[k]);
     last_msg_entries=in.last_msg_entries;
@@ -536,7 +536,7 @@ void Nick_Live_t::Quit(mstring reason)
     MLOCK(("OperServ","Ignore"));
     if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
     {
-	if (Parent->operserv.Ignore->Value().second != true)
+	if (Parent->operserv.Ignore->Value() != true)
 	{
 	    Parent->operserv.Ignore_erase();
 	}
@@ -551,7 +551,7 @@ void Nick_Live_t::Quit(mstring reason)
     // We successfully ident to all channels we tried to
     // ident for before, so that they 0 our count -- we dont
     // want it carrying over to next time we log on.
-    for (int i=0; i<try_chan_ident.size(); i++)
+    for (unsigned int i=0; i<try_chan_ident.size(); i++)
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
 	    Parent->chanserv.stored[try_chan_ident[i]].CheckPass(i_Name,
 		Parent->chanserv.stored[try_chan_ident[i]].Password());
@@ -586,8 +586,8 @@ bool Nick_Live_t::FloodTrigger()
 	if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
 	{
 	    // IF we havnt ignored for long enough yet, or its perminant ...
-	    if (mDateTime(0,0,Parent->operserv.Ignore_Time(),0) > Now() - Parent->operserv.Ignore->Value().first
-		|| Parent->operserv.Ignore->Value().second == true)
+	    if (mDateTime(0,0,Parent->operserv.Ignore_Time(),0) > Now() - Parent->operserv.Ignore->Last_Modify_Time()
+		|| Parent->operserv.Ignore->Value() == true)
 	    {
 		RET(true);
 	    }
@@ -613,8 +613,7 @@ bool Nick_Live_t::FloodTrigger()
 	WLOCK(("OperServ","Ignore"));
 	mstring message;
 	if (flood_triggered_times >= Parent->operserv.Ignore_Limit()) {
-	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()),
-		Now(), true, i_Name);
+	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), true, i_Name);
 	    message << "You have triggered services IGNORE (" << Parent->operserv.Flood_Msgs()
 		<< " messages in " << Parent->operserv.Flood_Time() << " seconds).";
 	    Parent->nickserv.send(i_Name, message); message = "";
@@ -622,8 +621,7 @@ bool Nick_Live_t::FloodTrigger()
 		<< " times.  Services will no longer respond.";
 	    Parent->nickserv.send(i_Name, message); message = "";
 	} else {
-	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()),
-		Now(), false, i_Name);
+	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), false, i_Name);
 	    message << "You have triggered services IGNORE (" << Parent->operserv.Flood_Msgs()
 		<< " messages in " << Parent->operserv.Flood_Time() << " seconds).";
 	    Parent->nickserv.send(i_Name, message); message = "";
@@ -647,7 +645,7 @@ void Nick_Live_t::Name(mstring in)
 
     set<mstring>::iterator iter;
     vector<mstring> chunked;
-    int i;
+    unsigned int i;
 
     // Store what committee's we WERE on ...
     set<mstring> wason;
@@ -914,7 +912,7 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
     FT("Nick_Live_t::ChanIdentify", (channel, password));
     if (Parent->chanserv.IsStored(channel))
     {
-	int failtimes = Parent->chanserv.stored[channel.LowerCase()].CheckPass(i_Name, password);
+	unsigned int failtimes = Parent->chanserv.stored[channel.LowerCase()].CheckPass(i_Name, password);
 	if (!failtimes)
 	{
 	    chans_founder_identd.insert(channel.LowerCase());
@@ -1539,7 +1537,7 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 }
 
 
-int Nick_Stored_t::Siblings()
+unsigned int Nick_Stored_t::Siblings()
 {
     NFT("Nick_Stored_t::Siblings");
     if (i_Host == "")
@@ -1560,13 +1558,13 @@ int Nick_Stored_t::Siblings()
 }
 
 
-mstring Nick_Stored_t::Sibling(int count)
+mstring Nick_Stored_t::Sibling(unsigned int count)
 {
     FT("Nick_Stored_t::Siblings", (count));
     if (i_Host == "")
     {
 	set<mstring>::iterator iter;
-	int i;
+	unsigned int i;
 	for (i=0, iter=i_slaves.begin(); iter!=i_slaves.end(); iter++, i++)
 	{
 	    if (i==count)
@@ -1779,7 +1777,7 @@ bool Nick_Stored_t::MakeHost()
 	// Re-point all slaves to me and copy the slaves list.
 	// Then clear the host's slave list, point host to me,
 	// and finally set my host pointer to "".
-	for (int i=0; i<Parent->nickserv.stored[i_Host.LowerCase()].Siblings(); i++)
+	for (unsigned int i=0; i<Parent->nickserv.stored[i_Host.LowerCase()].Siblings(); i++)
 	{
 	    if (Parent->nickserv.IsStored(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)))
 	    {
@@ -1882,7 +1880,7 @@ bool Nick_Stored_t::Unlink()
 }
 
 
-int Nick_Stored_t::Access()
+unsigned int Nick_Stored_t::Access()
 {
     NFT("Nick_Stored_t::Access");
     if (i_Host == "")
@@ -1903,13 +1901,13 @@ int Nick_Stored_t::Access()
 }
 
 
-mstring Nick_Stored_t::Access(int count)
+mstring Nick_Stored_t::Access(unsigned int count)
 {
     FT("Nick_Stored_t::Access", (count));
     if (i_Host == "")
     {
 	set<mstring>::iterator iter;
-	int i;
+	unsigned int i;
 	for (i=0, iter=i_access.begin(); iter!=i_access.end(); i++, iter++)
 	    if (i==count)
 	    {
@@ -1958,7 +1956,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 	    {
 		chunked.push_back(*iter);
 	    }
-	for (int i=0; i<chunked.size(); i++)
+	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_access.erase(chunked[i]);
 
 	i_access.insert(in.LowerCase());
@@ -1978,7 +1976,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 }
 
 
-int Nick_Stored_t::AccessDel(mstring in)
+unsigned int Nick_Stored_t::AccessDel(mstring in)
 {
     FT("Nick_Stored_t::AccessDel", (in));
     if (i_Host == "")
@@ -1991,7 +1989,7 @@ int Nick_Stored_t::AccessDel(mstring in)
 		chunked.push_back(*iter);
 	    }
 
-	for (int i=0; i<chunked.size(); i++)
+	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_access.erase(chunked[i].LowerCase());
 	RET(chunked.size());
     }
@@ -2036,7 +2034,7 @@ bool Nick_Stored_t::IsAccess(mstring in)
 }
 
 
-int Nick_Stored_t::Ignore()
+unsigned int Nick_Stored_t::Ignore()
 {
     NFT("Nick_Stored_t::Ignore");
     if (i_Host == "")
@@ -2057,13 +2055,13 @@ int Nick_Stored_t::Ignore()
 }
 
 
-mstring Nick_Stored_t::Ignore(int count)
+mstring Nick_Stored_t::Ignore(unsigned int count)
 {
     FT("Nick_Stored_t::Ignore", (count));
     if (i_Host == "")
     {
 	set<mstring>::iterator iter;
-	int i;
+	unsigned int i;
 	for (i=0, iter=i_ignore.begin(); iter!=i_ignore.end(); i++, iter++)
 	    if (i==count)
 	    {
@@ -2118,7 +2116,7 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
 }
 
 
-int Nick_Stored_t::IgnoreDel(mstring in)
+unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 {
     FT("Nick_Stored_t::IgnoreDel", (in));
     if (i_Host == "")
@@ -2131,7 +2129,7 @@ int Nick_Stored_t::IgnoreDel(mstring in)
 		chunked.push_back(*iter);
 	    }
 
-	for (int i=0; i<chunked.size(); i++)
+	for (unsigned int i=0; i<chunked.size(); i++)
 	    i_ignore.erase(chunked[i].LowerCase());
 	RET(chunked.size());
     }
@@ -2978,7 +2976,7 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     else if (i_Host == "")
     {
 	mDateTime lastseen = i_LastSeenTime;
-	for (int i=0; i<Siblings(); i++)
+	for (unsigned int i=0; i<Siblings(); i++)
 	{
 	    if (Parent->nickserv.IsStored(Sibling(i)))
 	    {
@@ -3043,7 +3041,7 @@ mstring Nick_Stored_t::LastAllMask()
     {
 	mDateTime lastseen = i_LastSeenTime;
 	mstring lastmask = Name() + "!" + LastMask();
-	for (int i=0; i<Siblings(); i++)
+	for (unsigned int i=0; i<Siblings(); i++)
 	{
 	    if (Parent->nickserv.IsStored(Sibling(i)))
 	    {
@@ -3455,8 +3453,6 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_Drop", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-
-
     if (params.WordCount(" ") < 2)
     {
 	if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
@@ -3648,7 +3644,7 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
     output << IRC_Bold << targetnick << IRC_Off << " (" <<
 	Parent->nickserv.stored[targetnick.LowerCase()].Siblings() << "):";
 
-    for (int i=0; i<Parent->nickserv.stored[targetnick.LowerCase()].Siblings(); i++)
+    for (unsigned int i=0; i<Parent->nickserv.stored[targetnick.LowerCase()].Siblings(); i++)
     {
 	if (Parent->nickserv.stored[targetnick.LowerCase()].Sibling(i).Len() +
 		output.Len() > 510)
@@ -3692,7 +3688,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    int i;
+    unsigned int i;
     mstring target   = params.ExtractWord(2, " ");
     Nick_Stored_t *nick;
     if (!Parent->nickserv.IsStored(target))
@@ -3879,6 +3875,9 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 
     if (output != "")
 	::send(mynick, source, "    Options: " + output);
+    if (nick->PicNum())
+	::send(mynick, source, "This user has a picture available.  Type /MSG " +
+	    mynick + " SEND " + nick->Name() + " to download it.");
     if (nick->IsOnline())
 	::send(mynick, source, "This user is online, type /WHOIS " +
 	    Parent->nickserv.live[target.LowerCase()].Name() +
@@ -3968,7 +3967,7 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 {
     FT("NickServ::do_List", (mynick, source, params));
 
-    int listsize, i, count;
+    unsigned int listsize, i, count;
     mstring mask;
 
     mstring message  = params.Before(" ").UpperCase();
@@ -4225,7 +4224,7 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
 
     if (hostmask.IsNumber())
 	hostmask = Parent->nickserv.stored[source.LowerCase()].Access(atoi(hostmask.c_str())-1);
-    int count;
+    unsigned int count;
     if (count = Parent->nickserv.stored[source.LowerCase()].AccessDel(hostmask))
     {
 	mstring retval = "";
@@ -4267,7 +4266,7 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, "No access list for " + target);
     }
 
-    int i;
+    unsigned int i;
     mstring retval;
     for (i=0; i<Parent->nickserv.stored[target.LowerCase()].Access(); i++)
     {
@@ -4321,7 +4320,7 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 
     if (target.IsNumber())
 	target = Parent->nickserv.stored[source.LowerCase()].Ignore(atoi(target.c_str())-1);
-    int count;
+    unsigned int count;
     if (count = Parent->nickserv.stored[source.LowerCase()].IgnoreDel(target))
     {
 	mstring retval = "";
@@ -4364,7 +4363,7 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, "No ignore list for " + target);
     }
 
-    int i;
+    unsigned int i;
     mstring retval;
     for (i=0; i<Parent->nickserv.stored[target.LowerCase()].Ignore(); i++)
     {

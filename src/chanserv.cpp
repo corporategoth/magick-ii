@@ -39,7 +39,7 @@ void Chan_Live_t::Join(mstring nick)
     }
 }
 
-int Chan_Live_t::Part(mstring nick)
+unsigned int Chan_Live_t::Part(mstring nick)
 {
     FT("Chan_Live_t::Part", (nick));
     if (users.find(nick.LowerCase())!=users.end())
@@ -86,7 +86,7 @@ void Chan_Live_t::UnSquit(mstring nick)
 	Part(nick);
 }
 
-int Chan_Live_t::Kick(mstring nick, mstring kicker)
+unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Live_t::Kick", (nick, kicker));
     if (users.find(nick.LowerCase())==users.end())
@@ -165,17 +165,17 @@ void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
 }
 
 
-int Chan_Live_t::Squit()
+unsigned int Chan_Live_t::Squit()
 {
     NFT("Chan_Livt_t::Squit");
     RET(squit.size());
 }
 
 
-mstring Chan_Live_t::Squit(int num)
+mstring Chan_Live_t::Squit(unsigned int num)
 {
     FT("Chan_Live_t::Squit", (num));
-    int i;
+    unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
     for(i=0, k=squit.begin();k!=squit.end();k++, i++)
 	if (i==num)
@@ -187,17 +187,17 @@ mstring Chan_Live_t::Squit(int num)
 }
 
 
-int Chan_Live_t::Users()
+unsigned int Chan_Live_t::Users()
 {
     NFT("Chan_Livt_t::Users");
     RET(users.size());
 }
 
 
-mstring Chan_Live_t::User(int num)
+mstring Chan_Live_t::User(unsigned int num)
 {
     FT("Chan_Live_t::Users", (num));
-    int i;
+    unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
     for(i=0, k=users.begin();k!=users.end();k++, i++)
 	if (i==num)
@@ -209,17 +209,17 @@ mstring Chan_Live_t::User(int num)
 }
 
 
-int Chan_Live_t::Ops()
+unsigned int Chan_Live_t::Ops()
 {
     NFT("Chan_Live_t::Ops");
     RET(count_if(users.begin(),users.end(),checkops));
 }
 
 
-mstring Chan_Live_t::Op(int num)
+mstring Chan_Live_t::Op(unsigned int num)
 {
     FT("Chan_Live_t::Op", (num));
-    int i;
+    unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
     for(i=0, k=users.begin();k!=users.end();k++)
 	if (IsOp(k->first))
@@ -235,17 +235,17 @@ mstring Chan_Live_t::Op(int num)
 }
 
 
-int Chan_Live_t::Voices()
+unsigned int Chan_Live_t::Voices()
 {
     NFT("Chan_Live_t::Voices");
     RET(count_if(users.begin(),users.end(),checkvoices));
 }
 
 
-mstring Chan_Live_t::Voice(int num)
+mstring Chan_Live_t::Voice(unsigned int num)
 {
     FT("Chan_Live_t::Voice", (num));
-    int i;
+    unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
     for(i=0, k=users.begin();k!=users.end();k++)
 	if (IsVoice(k->first))
@@ -276,17 +276,17 @@ pair<bool,bool> Chan_Live_t::User(mstring name)
 }
 
 
-int Chan_Live_t::Bans()
+unsigned int Chan_Live_t::Bans()
 {
     NFT("Chan_Live_t::Bans");
     RET(bans.size());
 }
 
 
-mstring Chan_Live_t::Ban(int num)
+mstring Chan_Live_t::Ban(unsigned int num)
 {
     FT("Chan_Live_t::Ban", (num));
-    int i;
+    unsigned int i;
     map<mstring, mDateTime>::const_iterator k;
     for(i=0, k=bans.begin();k!=bans.end();k++, i++)
 	if (i==num)
@@ -849,7 +849,7 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
 {
     FT("Chan_Stored_t::ChgAttempt", (nick, newnick));
 
-    map<mstring, int>::iterator iter;
+    map<mstring, unsigned int>::iterator iter;
 
     // Create a new one if we find the entry
     for (iter=failed_passwds.begin(); iter!=failed_passwds.end(); iter++)
@@ -1033,9 +1033,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
     mstring send_off_args;
 
     mstring change = mode.ExtractWord(1, ": ");
-    int fwdargs = 2;
+    unsigned int fwdargs = 2, i;
     bool add = true;
-    unsigned int i;
     for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
@@ -1409,7 +1408,7 @@ void Chan_Stored_t::CoFounder(mstring in)
 }
 
 
-int Chan_Stored_t::CheckPass(mstring nick, mstring password)
+unsigned int Chan_Stored_t::CheckPass(mstring nick, mstring password)
 {
     FT("Chan_Stored_t::CheckPass", (nick, password));
     if (i_Password == password)
@@ -1460,11 +1459,10 @@ mstring Chan_Stored_t::Mlock(mstring mode)
     i_Mlock_Limit = 0;
     mstring retval = "";
     mstring change = mode.ExtractWord(1, ": ");
-    int fwdargs = 2;
+    unsigned int i, fwdargs = 2;
     bool add = true;
     bool ignorek = false;
     bool ignorel = false;
-    unsigned int i;
 
     if (change.WordCount("k") > 2)
     {

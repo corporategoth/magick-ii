@@ -841,7 +841,8 @@ bool Magick::check_config()
 void Magick::get_config_values()
 {
     NFT("Magick::get_config_values");
-    bool verbose;
+    bool reconnect = false;
+    bool reconnect_clients = false;
     unsigned int i;
     if(MagickIni==NULL)
     {
@@ -849,6 +850,14 @@ void Magick::get_config_values()
 	return;
     }
     wxFileConfig& in=*MagickIni;
+
+    mstring value_mstring;
+    bool value_bool;
+    int value_int;
+    unsigned int value_uint;
+    long value_long;
+    unsigned long value_ulong;
+    short value_float;
 
     // Groups ...
     mstring ts_Startup=mstring("Startup/");
@@ -862,15 +871,35 @@ void Magick::get_config_values()
     mstring ts_CommServ=mstring("CommServ/");
     mstring ts_ServMsg=mstring("ServMsg/");
 
-    in.Read(ts_Startup+"SERVER_NAME",&startup.server_name,"services.magick.tm");
-    in.Read(ts_Startup+"SERVER_DESC",&startup.server_desc,FULL_NAME);
-    in.Read(ts_Startup+"SERVICES_USER",&startup.services_user,"services");
+    in.Read(ts_Startup+"SERVER_NAME",&value_mstring,"services.magick.tm");
+    if (value_mstring != startup.server_name)
+	reconnect = true;
+    startup.server_name = value_mstring;
+
+    in.Read(ts_Startup+"SERVER_DESC",&value_mstring,FULL_NAME);
+    if (value_mstring != startup.server_desc)
+	reconnect = true;
+    startup.server_desc = value_mstring;
+
+    in.Read(ts_Startup+"SERVICES_USER",&value_mstring,"services");
+    in.Read(ts_Startup+"OWNUSER",&value_bool,false);
+    if (value_bool != startup.ownuser)
+	reconnect_clients = true;
+    else if (value_mstring != startup.services_user &&
+	     !startup.ownuser)
+	reconnect_clients = true;
+    startup.services_user = value_mstring;
+    startup.ownuser = value_bool;
+
     in.Read(ts_Startup+"SERVICES_HOST",&startup.services_host,"magick.tm");
-    in.Read(ts_Startup+"OWNUSER",&startup.ownuser,false);
+    if (value_mstring != startup.services_host)
+	reconnect_clients = true;
+    startup.services_host = value_mstring;
 
     // REMOTE entries
     mstring ent="";
     i=1;
+    startup.servers.clear();
     do {
 	mstring rem = "REMOTE_";
 	rem << i;
@@ -882,65 +911,297 @@ void Magick::get_config_values()
 		tmp[2]=ent.ExtractWord(3, ":");
 		tmp[3]=ent.ExtractWord(4, ":");
 		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
-		    startup.servers[tmp[0].LowerCase()] = triplet<int,mstring,int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
+		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
 		else
 		    wxLogWarning("REMOTE entry for %s contained incorrect syntax, ignored!", tmp[0].c_str());
 	}
 	i++;
     } while (ent!="");
+    if (startup.servers.find(server.i_OurUplink) == startup.servers.end())
+	reconnect = true;
 
-    in.Read(ts_Startup+"LEVEL",&startup.level,1);
-    level = startup.level;
-    in.Read(ts_Startup+"LAGTIME",&startup.lagtime,10);
-    in.Read(ts_Startup+"STOP",&i_shutdown,true);
+    in.Read(ts_Startup+"LEVEL",&value_uint,1);
+    if (value_uint > level)
+	level = value_uint;
+    startup.level = value_uint;
 
-    in.Read(ts_Services+"NickServ",&nickserv.names,"NickServ");
-    in.Read(ts_Services+"NickServ_Name",&nickserv.realname,"Nickname Service");
-    in.Read(ts_Services+"ChanServ",&chanserv.names,"ChanServ");
-    in.Read(ts_Services+"ChanServ_Name",&chanserv.realname,"Channel Service");
-    in.Read(ts_Services+"MemoServ",&memoserv.names,"MemoServ");
-    in.Read(ts_Services+"MemoServ_Name",&memoserv.realname,"Memo/News Service");
+    in.Read(ts_Startup+"LAGTIME",&value_mstring,"10s");
+    if (FromHumanTime(value_mstring))
+	startup.lagtime = FromHumanTime(value_mstring);
+    else
+	startup.lagtime = FromHumanTime("10s");
+
+    in.Read(ts_Startup+"STOP",&value_bool,true);
+    i_shutdown = value_bool;
+
+    in.Read(ts_Services+"NickServ",&value_mstring,"NickServ");
+    for (i=0; i<nickserv.names.WordCount(" "); i++)
+    {
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
+	    (" " + nickserv.names.ExtractWord(i+1, " ") + " ")))
+	{
+	    nickserv.signoff(nickserv.names.ExtractWord(i+1, " "));
+	}
+    }
+    nickserv.names = value_mstring;
+
+    in.Read(ts_Services+"NickServ_Name",&value_mstring,"Nickname Service");
+    if (value_mstring != nickserv.realname)
+    {
+	nickserv.realname = value_mstring;
+	for (i=0; i<nickserv.names.WordCount(" "); i++)
+	{
+	    nickserv.signoff(nickserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    for (i=0; i<nickserv.names.WordCount(" "); i++)
+    {
+	if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
+	{
+	    nickserv.signon(nickserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    in.Read(ts_Services+"ChanServ",&value_mstring,"ChanServ");
+    for (i=0; i<chanserv.names.WordCount(" "); i++)
+    {
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
+	    (" " + chanserv.names.ExtractWord(i+1, " ") + " ")))
+	{
+	    chanserv.signoff(chanserv.names.ExtractWord(i+1, " "));
+	}
+    }
+    chanserv.names = value_mstring;
+
+    in.Read(ts_Services+"ChanServ_Name",&value_mstring,"Channel Service");
+    if (value_mstring != chanserv.realname)
+    {
+	chanserv.realname = value_mstring;
+	for (i=0; i<chanserv.names.WordCount(" "); i++)
+	{
+	    chanserv.signoff(chanserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    for (i=0; i<chanserv.names.WordCount(" "); i++)
+    {
+	if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
+	{
+	    chanserv.signon(chanserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    in.Read(ts_Services+"MemoServ",&value_mstring,"MemoServ");
+    for (i=0; i<memoserv.names.WordCount(" "); i++)
+    {
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
+	    (" " + memoserv.names.ExtractWord(i+1, " ") + " ")))
+	{
+	     memoserv.signoff(memoserv.names.ExtractWord(i+1, " "));
+	}
+    }
+    memoserv.names = value_mstring;
+
+    in.Read(ts_Services+"MemoServ_Name",&value_mstring,"Memo/News Service");
+    if (value_mstring != memoserv.realname)
+    {
+	memoserv.realname = value_mstring;
+	for (i=0; i<memoserv.names.WordCount(" "); i++)
+	{
+	    memoserv.signoff(memoserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
     in.Read(ts_Services+"MEMO",&memoserv.memo,true);
     in.Read(ts_Services+"NEWS",&memoserv.news,true);
-    in.Read(ts_Services+"OperServ",&operserv.names,"OperServ");
-    in.Read(ts_Services+"OperServ_Name",&operserv.realname,"Operator Service");
+    if (memoserv.memo || memoserv.news)
+    {
+	for (i=0; i<memoserv.names.WordCount(" "); i++)
+	{
+	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i+1, " ")))
+	    {
+		memoserv.signon(memoserv.names.ExtractWord(i+1, " "));
+	    }
+	}
+    }
+
+    in.Read(ts_Services+"OperServ",&value_mstring,"OperServ");
+    for (i=0; i<operserv.names.WordCount(" "); i++)
+    {
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
+	    (" " + operserv.names.ExtractWord(i+1, " ") + " ")))
+	{
+	    operserv.signoff(operserv.names.ExtractWord(i+1, " "));
+	}
+    }
+    operserv.names = value_mstring;
+
+    in.Read(ts_Services+"OperServ_Name",&value_mstring,"Operator Service");
+    if (value_mstring != operserv.realname)
+    {
+	operserv.realname = value_mstring;
+	for (i=0; i<operserv.names.WordCount(" "); i++)
+	{
+	    operserv.signoff(operserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    for (i=0; i<operserv.names.WordCount(" "); i++)
+    {
+	if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
+	{
+	    operserv.signon(operserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
     in.Read(ts_Services+"FLOOD",&operserv.flood,true);
     in.Read(ts_Services+"AKILL",&operserv.akill,true);
     in.Read(ts_Services+"OPERDENY",&operserv.operdeny,true);
-    in.Read(ts_Services+"CommServ",&commserv.names,"CommServ");
-    in.Read(ts_Services+"CommServ_Name",&commserv.realname,"Committee Service");
-    in.Read(ts_Services+"ServMsg",&servmsg.names,"GlobalMsg DevNull");
-    in.Read(ts_Services+"ServMsg_Name",&servmsg.realname,PRODUCT + " <--> User");
+
+    in.Read(ts_Services+"CommServ",&value_mstring,"CommServ");
+    for (i=0; i<commserv.names.WordCount(" "); i++)
+    {
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
+	    (" " + commserv.names.ExtractWord(i+1, " ") + " ")))
+	{
+	    commserv.signoff(commserv.names.ExtractWord(i+1, " "));
+	}
+    }
+    commserv.names = value_mstring;
+
+    in.Read(ts_Services+"CommServ_Name",&value_mstring,"Committee Service");
+    if (value_mstring != commserv.realname)
+    {
+	commserv.realname = value_mstring;
+	for (i=0; i<commserv.names.WordCount(" "); i++)
+	{
+	    commserv.signoff(commserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    for (i=0; i<commserv.names.WordCount(" "); i++)
+    {
+	if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
+	{
+	    commserv.signon(commserv.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    in.Read(ts_Services+"ServMsg",&value_mstring,"GlobalMsg DevNull");
+    for (i=0; i<servmsg.names.WordCount(" "); i++)
+    {
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
+	    (" " + servmsg.names.ExtractWord(i+1, " ") + " ")))
+	{
+	    servmsg.signoff(servmsg.names.ExtractWord(i+1, " "));
+	}
+    }
+    servmsg.names = value_mstring;
+
+    in.Read(ts_Services+"ServMsg_Name",&value_mstring,PRODUCT + " <--> User");
+    if (value_mstring != servmsg.realname)
+    {
+	servmsg.realname = value_mstring;
+	for (i=0; i<servmsg.names.WordCount(" "); i++)
+	{
+	    servmsg.signoff(servmsg.names.ExtractWord(i+1, " "));
+	}
+    }
+
+    for (i=0; i<servmsg.names.WordCount(" "); i++)
+    {
+	if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
+	{
+	    servmsg.signon(servmsg.names.ExtractWord(i+1, " "));
+	}
+    }
+
     in.Read(ts_Services+"SHOWSYNC",&servmsg.showsync,true);
 
     in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
-    in.Read(ts_Files+"VERBOSE", &verbose, false);
-    logger->SetVerbose(verbose);
+    in.Read(ts_Files+"VERBOSE", &value_bool, false);
+    logger->SetVerbose(value_bool);
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
     in.Read(ts_Files+"COMPRESSION",&files.compression,6);
-    in.Read(ts_Files+"KEYFILE",&files.keyfile,"");
+    if (files.compression < 0)
+	files.compression = 0;
+    else if (files.compression > 9)
+	files.compression = 9;
+    in.Read(ts_Files+"KEYFILE",&files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
 
-    in.Read(ts_Config+"SERVER_RELINK",&config.server_relink,5);
-    in.Read(ts_Config+"SQUIT_PROTECT",&config.squit_protect,120);
-    in.Read(ts_Config+"SQUIT_CANCEL",&config.squit_cancel,10);
-    in.Read(ts_Config+"CYCLETIME",&config.cycletime,300);
-    in.Read(ts_Config+"CHECKTIME",&config.checktime,5);
-    in.Read(ts_Config+"PING_FREQUENCY",&config.ping_frequency,30);
+    in.Read(ts_Config+"SERVER_RELINK",&value_mstring,"5s");
+    if (FromHumanTime(value_mstring))
+	config.server_relink = FromHumanTime(value_mstring);
+    else
+	config.server_relink = FromHumanTime("5s");
+
+    in.Read(ts_Config+"SQUIT_PROTECT",&value_mstring,"2m");
+    if (FromHumanTime(value_mstring))
+	config.squit_protect = FromHumanTime(value_mstring);
+    else
+	config.squit_protect = FromHumanTime("2m");
+
+    in.Read(ts_Config+"SQUIT_CANCEL",&value_mstring,"10s");
+    if (FromHumanTime(value_mstring))
+	config.squit_cancel = FromHumanTime(value_mstring);
+    else
+	config.squit_cancel = FromHumanTime("10s");
+
+    in.Read(ts_Config+"CYCLETIME",&value_mstring,"5m");
+    if (FromHumanTime(value_mstring))
+	config.cycletime = FromHumanTime(value_mstring);
+    else
+	config.cycletime = FromHumanTime("5m");
+
+    in.Read(ts_Config+"CHECKTIME",&value_mstring,"5s");
+    if (FromHumanTime(value_mstring))
+	config.checktime = FromHumanTime(value_mstring);
+    else
+	config.checktime = FromHumanTime("5s");
+
+    in.Read(ts_Config+"PING_FREQUENCY",&value_mstring,"30s");
+    if (FromHumanTime(value_mstring))
+	config.ping_frequency = FromHumanTime(value_mstring);
+    else
+	config.ping_frequency = FromHumanTime("30s");
+
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
     in.Read(ts_Config+"LISTSIZE",&config.listsize, 50);
-    in.Read(ts_Config+"MAXLIST",&config.maxlist, 250);
+    in.Read(ts_Config+"MAXLIST",&value_uint, 250);
+    if (value_int < config.listsize)
+	value_int = config.listsize;
+    config.maxlist = value_int;
+
     in.Read(ts_Config+"STARTUP_THREADS",&config.startup_threads, 2);
     in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);
     in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 25);
+    if (config.high_water_mark < config.low_water_mark)
+	config.high_water_mark = config.low_water_mark;
 
     in.Read(ts_NickServ+"MAXLEN",&nickserv.maxlen,9);
     in.Read(ts_NickServ+"SUFFIXES",&nickserv.suffixes,"_-^`");
-    in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
-    in.Read(ts_NickServ+"IDENT",&nickserv.ident,60);
-    in.Read(ts_NickServ+"RELEASE",&nickserv.release,60);
+    in.Read(ts_NickServ+"EXPIRE",&value_mstring,"4w");
+    if (FromHumanTime(value_mstring))
+	nickserv.expire = FromHumanTime(value_mstring);
+    else
+	nickserv.expire = FromHumanTime("4w");
+
+    in.Read(ts_NickServ+"IDENT",&value_mstring,"1m");
+    if (FromHumanTime(value_mstring))
+	nickserv.ident = FromHumanTime(value_mstring);
+    else
+	nickserv.ident = FromHumanTime("1m");
+
+    in.Read(ts_NickServ+"RELEASE",&value_mstring,"1m");
+    if (FromHumanTime(value_mstring))
+	nickserv.release = FromHumanTime(value_mstring);
+    else
+	nickserv.release = FromHumanTime("1m");
+
     in.Read(ts_NickServ+"PASSFAIL",&nickserv.passfail,5);
     in.Read(ts_NickServ+"DEF_PROTECT",&nickserv.def_protect,true);
     in.Read(ts_NickServ+"LCK_PROTECT",&nickserv.lck_protect,false);
@@ -957,13 +1218,28 @@ void Magick::get_config_values()
     in.Read(ts_NickServ+"PICSIZE",&nickserv.picsize,0);
     in.Read(ts_NickServ+"PICEXT",&nickserv.picext,"jpg gif bmp tif");
 
-    in.Read(ts_ChanServ+"EXPIRE",&chanserv.expire,14);
+    in.Read(ts_ChanServ+"EXPIRE",&value_mstring,"2w");
+    if (FromHumanTime(value_mstring))
+	chanserv.expire = FromHumanTime(value_mstring);
+    else
+	chanserv.expire = FromHumanTime("2w");
+
     in.Read(ts_ChanServ+"DEF_AKICK",&chanserv.def_akick_reason,"You have been banned from channel");
     in.Read(ts_ChanServ+"PASSFAIL",&chanserv.passfail,5);
-    in.Read(ts_ChanServ+"CHANKEEP",&chanserv.chankeep,15);
+    in.Read(ts_ChanServ+"CHANKEEP",&value_mstring,"15s");
+    if (FromHumanTime(value_mstring))
+	chanserv.chankeep = FromHumanTime(value_mstring);
+    else
+	chanserv.chankeep = FromHumanTime("15s");
+
     in.Read(ts_ChanServ+"DEF_MLOCK",&chanserv.def_mlock,"+nt");
     in.Read(ts_ChanServ+"LCK_MLOCK",&chanserv.lck_mlock,"+");
-    in.Read(ts_ChanServ+"DEF_BANTIME",&chanserv.def_bantime, 0u);
+    in.Read(ts_ChanServ+"DEF_BANTIME",&value_mstring, "0");
+    if (FromHumanTime(value_mstring))
+	chanserv.def_bantime = FromHumanTime(value_mstring);
+    else
+	chanserv.def_bantime = FromHumanTime("0");
+
     in.Read(ts_ChanServ+"LCK_BANTIME",&chanserv.lck_bantime,false);
     in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&chanserv.def_keeptopic,true);
     in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&chanserv.lck_keeptopic,false);
@@ -1009,27 +1285,77 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LVL_CMDMODE",&chanserv.lvl["CMDMODE"],15);
     in.Read(ts_ChanServ+"LVL_CMDCLEAR",&chanserv.lvl["CMDCLEAR"],20);
 
-    in.Read(ts_MemoServ+"NEWS_EXPIRE",&memoserv.news_expire,21);
-    in.Read(ts_MemoServ+"INFLIGHT",&memoserv.inflight,180);
+    in.Read(ts_MemoServ+"NEWS_EXPIRE",&value_mstring,"3w");
+    if (FromHumanTime(value_mstring))
+	memoserv.news_expire = FromHumanTime(value_mstring);
+    else
+	memoserv.news_expire = FromHumanTime("3w");
+
+    in.Read(ts_MemoServ+"INFLIGHT",&value_mstring,"3m");
+    if (FromHumanTime(value_mstring))
+	memoserv.inflight = FromHumanTime(value_mstring);
+    else
+	memoserv.inflight = FromHumanTime("3m");
+
     in.Read(ts_MemoServ+"FILES",&memoserv.files,0);
     in.Read(ts_MemoServ+"FILESIZE",&memoserv.filesize,0);
 
     in.Read(ts_OperServ+"SERVICES_ADMIN",&operserv.services_admin,"");
     in.Read(ts_OperServ+"SECURE",&operserv.secure,false);
-    in.Read(ts_OperServ+"DEF_EXPIRE",&operserv.expire_oper,"3h");
-    in.Read(ts_OperServ+"EXPIRE_OPER",&operserv.expire_oper,"1d");
-    in.Read(ts_OperServ+"EXPIRE_ADMIN",&operserv.expire_admin,"7d");
-    in.Read(ts_OperServ+"EXPIRE_SOP",&operserv.expire_sop,"1m");
-    in.Read(ts_OperServ+"EXPIRE_SADMIN",&operserv.expire_sadmin,"1y");
+    in.Read(ts_OperServ+"DEF_EXPIRE",&value_mstring,"3h");
+    if (FromHumanTime(value_mstring))
+	operserv.def_expire = FromHumanTime(value_mstring);
+    else
+	operserv.def_expire = FromHumanTime("3h");
+
+    in.Read(ts_OperServ+"EXPIRE_OPER",&value_mstring,"1d");
+    if (FromHumanTime(value_mstring))
+	operserv.expire_oper = FromHumanTime(value_mstring);
+    else
+	operserv.expire_oper = FromHumanTime("1d");
+
+    in.Read(ts_OperServ+"EXPIRE_ADMIN",&value_mstring,"1w");
+    if (FromHumanTime(value_mstring))
+	operserv.expire_admin = FromHumanTime(value_mstring);
+    else
+	operserv.expire_admin = FromHumanTime("1w");
+
+    in.Read(ts_OperServ+"EXPIRE_SOP",&value_mstring,"8w");
+    if (FromHumanTime(value_mstring))
+	operserv.expire_sop = FromHumanTime(value_mstring);
+    else
+	operserv.expire_sop = FromHumanTime("8w");
+
+    in.Read(ts_OperServ+"EXPIRE_SADMIN",&value_mstring,"1y");
+    if (FromHumanTime(value_mstring))
+	operserv.expire_sadmin = FromHumanTime(value_mstring);
+    else
+	operserv.expire_sadmin = FromHumanTime("1y");
+
     in.Read(ts_OperServ+"CLONE_MAX",&operserv.clone_limit,50);
     in.Read(ts_OperServ+"CLONE_LIMIT",&operserv.clone_limit,2);
     in.Read(ts_OperServ+"DEF_CLONE",&operserv.def_clone,"Maximum connections from one host exceeded");
-    in.Read(ts_OperServ+"FLOOD_TIME",&operserv.flood_time,10);
+    in.Read(ts_OperServ+"FLOOD_TIME",&value_mstring,"10s");
+    if (FromHumanTime(value_mstring))
+	operserv.flood_time = FromHumanTime(value_mstring);
+    else
+	operserv.flood_time = FromHumanTime("10s");
+
     in.Read(ts_OperServ+"FLOOD_MSGS",&operserv.flood_msgs,5);
 
-    in.Read(ts_OperServ+"IGNORE_TIME",&operserv.ignore_time,20);
+    in.Read(ts_OperServ+"IGNORE_TIME",&value_mstring,"20s");
+    if (FromHumanTime(value_mstring))
+	operserv.ignore_time = FromHumanTime(value_mstring);
+    else
+	operserv.ignore_time = FromHumanTime("20s");
+
     in.Read(ts_OperServ+"IGNORE_LIMIT",&operserv.ignore_limit,5);
-    in.Read(ts_OperServ+"IGNORE_REMOVE",&operserv.ignore_remove,300);
+    in.Read(ts_OperServ+"IGNORE_REMOVE",&value_mstring,"5m");
+    if (FromHumanTime(value_mstring))
+	operserv.ignore_remove = FromHumanTime(value_mstring);
+    else
+	operserv.ignore_remove = FromHumanTime("5m");
+
     in.Read(ts_OperServ+"IGNORE_METHOD",&operserv.ignore_method,8);
     
     RemCommands();
@@ -1060,6 +1386,7 @@ void Magick::get_config_values()
     commserv.sop_name.MakeUpper();
     commserv.admin_name.MakeUpper();
     commserv.oper_name.MakeUpper();
+    AddCommands();
 
     if (Parent->commserv.IsList(commserv.all_name))
 	while (i<Parent->commserv.list[commserv.all_name].size())
@@ -1139,8 +1466,6 @@ void Magick::get_config_values()
 	Parent->commserv.list[commserv.oper_name].Private(commserv.oper_private);
 	Parent->commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
     }
-
-    AddCommands();
 
     CP(("%s read and loaded to live configuration.", config_file.c_str()));
 }
@@ -1307,23 +1632,23 @@ bool Magick::startup_t::IsServer(mstring server)
     RET(false);
 }
 
-triplet<int,mstring,int> Magick::startup_t::Server(mstring server)
+triplet<unsigned int,mstring,unsigned int> Magick::startup_t::Server(mstring server)
 {
     FT("Magick::startup_t::Server", (server));
-    triplet<int,mstring,int> value(0, "", 0);
+    triplet<unsigned int,mstring,unsigned int> value(0, "", 0);
 
     if (IsServer(server)) {
 	value = servers.find(server.LowerCase())->second;
     }
-    NRET(triplet<int.mstring.int>, value);
+    NRET(triplet<unsigned int.mstring.unsigned int>, value);
 }
 
-vector<mstring> Magick::startup_t::PriorityList(int pri)
+vector<mstring> Magick::startup_t::PriorityList(unsigned int pri)
 {
     FT("Magick::startup_t::PriorityList", (pri));
     vector<mstring> list;
 
-    map<mstring,triplet<int,mstring,int> >::iterator iter;
+    map<mstring,triplet<unsigned int,mstring,unsigned int> >::iterator iter;
 
     for (iter=servers.begin(); iter!=servers.end(); iter++) {
 	if (iter->second.third == pri)

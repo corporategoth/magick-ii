@@ -37,9 +37,10 @@ public:
     virtual mstring GetInternalName() const { return "ServMsg"; }
     virtual void execute(const mstring & message);
 
+    static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_BreakDown(mstring mynick, mstring source, mstring params);
     static void do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server);
-
+    static void do_Global(mstring mynick, mstring source, mstring params);
 };
 
 #endif

@@ -219,3 +219,90 @@ vector<int> ParseNumbers(mstring what)
     NRET(vector<int>, numbers);
 }
 
+unsigned long FromHumanTime(mstring in)
+{
+    FT("FromHumanTime", (in));
+
+    unsigned int i;
+    unsigned long number = 0, total = 0;
+
+    for (i=0; i<in.size(); i++)
+    {
+	switch(in[i])
+	{
+	case 'Y':
+	case 'y':
+	    if (number != 0)
+	    {
+		total += (long) (number * 60 * 60 * 24 * 365.25);
+		number = 0;
+	    }
+	case 'W':
+	case 'w':
+	    if (number != 0)
+	    {
+		total += (long) (number * 60 * 60 * 24 * 7);
+		number = 0;
+	    }
+	case 'D':
+	case 'd':
+	    if (number != 0)
+	    {
+		total += (long) (number * 60 * 60 * 24);
+		number = 0;
+	    }
+	case 'H':
+	case 'h':
+	    if (number != 0)
+	    {
+		total += (long) (number * 60 * 60);
+		number = 0;
+	    }
+	case 'M':
+	case 'm':
+	    if (number != 0)
+	    {
+		total += (long) (number * 60);
+		number = 0;
+	    }
+	case 'S':
+	case 's':
+	    if (number != 0)
+	    {
+		total += number;
+		number = 0;
+	    }
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	    number *= 10;
+	    number += (long) (in[i] - '0');
+	default:
+	    RET(0);
+	}
+    }
+    if (number != 0)
+	total += number;
+
+    RET(total);
+}
+
+mstring ToHumanTime(unsigned long in)
+{
+    FT("ToHumanTime", (in));
+
+    if (in==0)
+    {
+	RET("unlimited");
+    }
+
+    mDateTime mytime = Now() - (double) (in / (60 * 60 * 24));
+    RET(mytime.Ago());
+}

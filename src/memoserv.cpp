@@ -102,6 +102,8 @@ void MemoServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SEND*", Parent->commserv.REGD_Name(), MemoServ::do_Send);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FLUSH*", Parent->commserv.REGD_Name(), MemoServ::do_Flush);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FORW*", Parent->commserv.REGD_Name(), MemoServ::do_Forward);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "F*W*D", Parent->commserv.REGD_Name(), MemoServ::do_Forward);
@@ -793,8 +795,32 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, name, text);
+    ::send(mynick, source, "Memo is now pending ... You have " +
+	    mstring(itoa(Parent->memoserv.InFlight())) +
+	    " seconds to continue or cancel it before it is delivered.");
 }
 
+
+void MemoServ::do_Flush(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Flush", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    {
+	if (Parent->nickserv.live[source.LowerCase()].InFlight.File())
+	{
+	    ::send(mynick, source, "Memos with file attachments cannot be flushed.");
+	    return;
+	}
+	Parent->nickserv.live[source.LowerCase()].InFlight.End(0);
+    }
+    else
+    {
+	::send(mynick, source, "No memos are pending to be sent.");
+    }
+}
 
 void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 {
@@ -1020,6 +1046,9 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, who, text);
+	::send(mynick, source, "Memo is now pending ... You have " +
+	    mstring(itoa(Parent->memoserv.InFlight())) +
+	    " seconds to continue or cancel it before it is delivered.");
     }
     else
     {
@@ -1075,6 +1104,9 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	output << "\"] " << text;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    false, mynick, who, text);
+	::send(mynick, source, "Memo is now pending ... You have " +
+	    mstring(itoa(Parent->memoserv.InFlight())) +
+	    " seconds to continue or cancel it before it is delivered.");
     }
 }
 
@@ -1353,6 +1385,9 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
     if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
     {
 	Parent->nickserv.live[source.LowerCase()].InFlight.Continue(text);
+	::send(mynick, source, "Pending memo timer reset ... You have " +
+	    mstring(itoa(Parent->memoserv.InFlight())) +
+	    " seconds to continue or cancel it before it is delivered.");
     }
     else
     {
@@ -1397,6 +1432,9 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
 					    true, mynick, name, text);
+    ::send(mynick, source, "Memo is now pending ... You have " +
+	    mstring(itoa(Parent->memoserv.InFlight())) +
+	    " seconds to begin your file transfer, continue or cancel it.");
 }
 
 

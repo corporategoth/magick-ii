@@ -17,7 +17,72 @@
 #include "variant.h"
 #include "base.h"
 
-class Committee;
+class Committee : public mUserDef
+{
+    friend wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
+    friend wxInputStream &operator>>(wxInputStream& in, Committee& out);
+    mstring i_Name;
+    mstring i_HeadCom;
+    mstring i_Head;
+    mstring i_Description;
+
+    set<entlist_t> i_Members;
+    bool i_Private;
+    bool i_OpenMemos;
+    bool i_Secure;
+    list<entlist_t> i_Messages;
+
+public:
+    Committee() {}
+    Committee(const Committee &in) { *this = in; }
+    Committee(mstring name, mstring head, mstring description);
+    Committee(mstring name, Committee *head, mstring description);
+    Committee(mstring name, mstring description);
+    void operator=(const Committee &in);
+    bool operator==(const Committee &in) const
+    	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Committee &in) const
+    	{ return (i_Name != in.i_Name); }
+    bool operator<(const Committee &in) const
+    	{ return (i_Name < in.i_Name); }
+
+    mstring Name()const		{ return i_Name; }
+    mstring HeadCom()const	{ return i_HeadCom; }
+    mstring Head()const		{ return i_Head; }
+    mstring Description()const	{ return i_Description; }
+    void Head(mstring newhead);
+
+    bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
+    bool erase();
+    entlist_ui begin()const	{ return i_Members.begin(); }
+    entlist_ui end()const	{ return i_Members.end(); }
+    size_t size()const		{ return i_Members.size(); }
+    bool find(mstring entry);
+    entlist_ui member;
+
+    bool IsIn(mstring nick);
+    bool IsHead(mstring nick);
+    bool IsOn(mstring nick);
+
+    // If TRUE, all members can do a /MS COMMITTEE 
+    void Private(bool in)	{ i_Private = in; }
+    bool Private()const		{ return i_Private; }
+    void OpenMemos(bool in)	{ i_OpenMemos = in; }
+    bool OpenMemos()const	{ return i_OpenMemos; }
+    void Secure(bool in)	{ i_Secure = in; }
+    bool Secure()const		{ return i_Secure; }
+
+    bool MSG_insert(mstring entry, mstring nick);
+    bool MSG_erase();
+    entlist_i MSG_begin()	{ return i_Messages.begin(); }
+    entlist_i MSG_end()		{ return i_Messages.end(); }
+    size_t MSG_size()		{ return i_Messages.size(); }
+    bool MSG_find(int num);
+    entlist_i message;
+
+};
+wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
+wxInputStream &operator>>(wxInputStream& in, Committee& out);
 
 class CommServ : public mBase
 {
@@ -100,72 +165,5 @@ public:
     static void do_set_Private(mstring mynick, mstring source, mstring params);
     static void do_set_OpenMemos(mstring mynick, mstring source, mstring params);
 };
-
-class Committee : public mUserDef
-{
-    friend wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
-    friend wxInputStream &operator>>(wxInputStream& in, Committee& out);
-    mstring i_Name;
-    mstring i_HeadCom;
-    mstring i_Head;
-    mstring i_Description;
-
-    set<entlist_t> i_Members;
-    bool i_Private;
-    bool i_OpenMemos;
-    bool i_Secure;
-    list<entlist_t> i_Messages;
-
-public:
-    Committee() {}
-    Committee(const Committee &in) { *this = in; }
-    Committee(mstring name, mstring head, mstring description);
-    Committee(mstring name, Committee *head, mstring description);
-    Committee(mstring name, mstring description);
-    void operator=(const Committee &in);
-    bool operator==(const Committee &in) const
-    	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Committee &in) const
-    	{ return (i_Name != in.i_Name); }
-    bool operator<(const Committee &in) const
-    	{ return (i_Name < in.i_Name); }
-
-    mstring Name()const		{ return i_Name; }
-    mstring HeadCom()const	{ return i_HeadCom; }
-    mstring Head()const		{ return i_Head; }
-    mstring Description()const	{ return i_Description; }
-    void Head(mstring newhead);
-
-    bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
-    bool erase();
-    entlist_ui begin()const	{ return i_Members.begin(); }
-    entlist_ui end()const	{ return i_Members.end(); }
-    size_t size()const		{ return i_Members.size(); }
-    bool find(mstring entry);
-    entlist_ui member;
-
-    bool IsIn(mstring nick);
-    bool IsHead(mstring nick);
-    bool IsOn(mstring nick);
-
-    // If TRUE, all members can do a /MS COMMITTEE 
-    void Private(bool in)	{ i_Private = in; }
-    bool Private()const		{ return i_Private; }
-    void OpenMemos(bool in)	{ i_OpenMemos = in; }
-    bool OpenMemos()const	{ return i_OpenMemos; }
-    void Secure(bool in)	{ i_Secure = in; }
-    bool Secure()const		{ return i_Secure; }
-
-    bool MSG_insert(mstring entry, mstring nick);
-    bool MSG_erase();
-    entlist_i MSG_begin()	{ return i_Messages.begin(); }
-    entlist_i MSG_end()		{ return i_Messages.end(); }
-    size_t MSG_size()		{ return i_Messages.size(); }
-    bool MSG_find(int num);
-    entlist_i message;
-
-};
-wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
-wxInputStream &operator>>(wxInputStream& in, Committee& out);
 
 #endif

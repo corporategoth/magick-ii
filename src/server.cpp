@@ -475,7 +475,9 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
     {
 	wxLogWarning("NOTICE command requested by non-service %s", nick.c_str());
     }
-    else if (!(Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
+    else if (!(dest[0u] == '$' || dest[0u] == '#' ||
+		Parent->nickserv.IsLive(dest) ||
+		Parent->chanserv.IsLive(dest)))
     {
 	wxLogWarning("NOTICE command requested for non-existant user/channel %s", dest.c_str());
     }
@@ -534,7 +536,9 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
     {
 	wxLogWarning("PRIVMSG command requested by non-service %s", nick.c_str());
     }
-    else if (!(Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
+    else if (!(dest[0u] == '$' || dest[0u] == '#' ||
+		Parent->nickserv.IsLive(dest) ||
+		Parent->chanserv.IsLive(dest)))
     {
 	wxLogWarning("PRIVMSG command requested by %s for non-existant user/channel %s",
 		nick.c_str(), dest.c_str());

@@ -61,7 +61,7 @@ void OperServ::RemHost(mstring host)
 }
 
 
-bool OperServ::Clone_insert(mstring entry, int value, mstring reason, mstring nick)
+bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick)
 {
     FT("OperServ::Clone_insert", (entry, value, reason, nick));
 
@@ -73,7 +73,7 @@ bool OperServ::Clone_insert(mstring entry, int value, mstring reason, mstring ni
 
     if (!Clone_find(entry))
     {
-	entlist_val_t<pair<int, mstring> > tmp(entry, pair<int, mstring>(value, reason), nick);
+	entlist_val_t<pair<unsigned int, mstring> > tmp(entry, pair<unsigned int, mstring>(value, reason), nick);
 	Clone = i_Clone.insert(i_Clone.end(), tmp);
 	RET(true);
     }
@@ -107,7 +107,7 @@ bool OperServ::Clone_find(mstring entry)
     FT("OperServ::Clone_find", (entry));
 
 //  entlist_val_ui<pair<int, mstring> > iter = i_Clone.end();
-    set<entlist_val_t<pair<int, mstring> > >::iterator iter = i_Clone.end();
+    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator iter = i_Clone.end();
     if (!i_Clone.empty())
 	for (iter=i_Clone.begin(); iter!=i_Clone.end(); iter++)
 	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
@@ -126,15 +126,15 @@ bool OperServ::Clone_find(mstring entry)
 }
 
 
-pair<int,mstring> OperServ::Clone_value(mstring entry)
+pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
 {
     FT("OperServ::Clone_value", (entry));
 
-    pair<int,mstring> retval = pair<int,mstring>(0,"");
+    pair<unsigned int,mstring> retval = pair<unsigned int,mstring>(0,"");
     {
     MLOCK(("OperServ", "Clone"));
 //  entlist_val_ui<pair<int, mstring> > iter = Clone;
-    set<entlist_val_t<pair<int, mstring> > >::iterator iter = Clone;
+    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator iter = Clone;
 
     if (Clone_find(entry))
 	retval=Clone->Value();
@@ -144,7 +144,7 @@ pair<int,mstring> OperServ::Clone_value(mstring entry)
 }
 
 
-bool OperServ::Akill_insert(mstring entry, long value, mstring reason, mstring nick)
+bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick)
 {
     FT("OperServ::Akill_insert", (entry, value, reason, nick));
 
@@ -156,7 +156,7 @@ bool OperServ::Akill_insert(mstring entry, long value, mstring reason, mstring n
 
     if (!Akill_find(entry))
     {
-	entlist_val_t<pair<long, mstring> > tmp(entry, pair<long, mstring>(value, reason), nick);
+	entlist_val_t<pair<unsigned long, mstring> > tmp(entry, pair<unsigned long, mstring>(value, reason), nick);
 	Akill = i_Akill.insert(i_Akill.end(), tmp);
 	RET(true);
     }
@@ -197,7 +197,7 @@ bool OperServ::Akill_find(mstring entry)
     }
 
 //  entlist_val_ui<pair<long, mstring> > iter = i_Akill.end();
-    set<entlist_val_t<pair<long, mstring> > >::iterator iter = i_Akill.end();
+    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = i_Akill.end();
     if (!i_Akill.empty())
 	for (iter=i_Akill.begin(); iter!=i_Akill.end(); iter++)
 	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
@@ -216,15 +216,15 @@ bool OperServ::Akill_find(mstring entry)
 }
 
 
-pair<long,mstring> OperServ::Akill_value(mstring entry)
+pair<unsigned long,mstring> OperServ::Akill_value(mstring entry)
 {
     FT("OperServ::Akill_value", (entry));
 
-    pair<long,mstring> retval = pair<long,mstring>(0,"");
+    pair<unsigned long,mstring> retval = pair<unsigned long,mstring>(0,"");
     {
     MLOCK(("OperServ", "Akill"));
 //  entlist_val_ui<pair<long, mstring> > iter = Akill;
-    set<entlist_val_t<pair<long, mstring> > >::iterator iter = Akill;
+    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = Akill;
 
     if (Akill_find(entry))
 	retval=Akill->Value();
@@ -333,9 +333,9 @@ mstring OperServ::OperDeny_value(mstring entry)
 
 
 
-bool OperServ::Ignore_insert(mstring entry, mDateTime value, bool perm, mstring nick)
+bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
 {
-    FT("OperServ::Ignore_insert", (entry, value, perm, nick));
+    FT("OperServ::Ignore_insert", (entry, perm, nick));
 
     // no @
     if (!entry.Contains("@"))
@@ -349,7 +349,7 @@ bool OperServ::Ignore_insert(mstring entry, mDateTime value, bool perm, mstring 
 
     if (!Ignore_find(entry))
     {
-	entlist_val_t<pair<mDateTime, bool> > tmp(entry, pair<mDateTime, bool>(value, perm), nick);
+	entlist_val_t<bool> tmp(entry, perm, nick);
 	Ignore = i_Ignore.insert(i_Ignore.end(), tmp);
 	RET(true);
     }
@@ -394,7 +394,7 @@ bool OperServ::Ignore_find(mstring entry)
 	entry.Prepend("*!");
 
 //  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
-    set<entlist_val_t<pair<mDateTime, bool> > >::iterator iter = i_Ignore.end();
+    set<entlist_val_t<bool> >::iterator iter = i_Ignore.end();
 
     if (!i_Ignore.empty())
 	for (iter=i_Ignore.begin(); iter!=i_Ignore.end(); iter++)
@@ -416,15 +416,15 @@ bool OperServ::Ignore_find(mstring entry)
 }
 
 
-pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
+bool OperServ::Ignore_value(mstring entry)
 {
     FT("OperServ::Ignore_value", (entry));
 
-    pair<mDateTime,bool> retval = pair<mDateTime,bool>((long) 0,false);
+    bool retval = false;
     {
     MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
-    set<entlist_val_t<pair<mDateTime, bool> > >::iterator iter = Ignore;
+    set<entlist_val_t<bool> >::iterator iter = Ignore;
 
     if (Ignore_find(entry))
 	retval=Ignore->Value();
@@ -433,10 +433,144 @@ pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
     return retval;
 }
 
+OperServ::OperServ()
+{
+}
+
+void OperServ::AddCommands()
+{
+    NFT("OperServ::AddCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HELP", Parent->commserv.SADMIN_Name(), OperServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* CONF*", Parent->commserv.OPER_Name(), OperServ::do_settings_Config);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* NICK*", Parent->commserv.OPER_Name(), OperServ::do_settings_Nick);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* CHAN*", Parent->commserv.OPER_Name(), OperServ::do_settings_Channel);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* OTH*", Parent->commserv.OPER_Name(), OperServ::do_settings_Other);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* *ALL*", Parent->commserv.OPER_Name(), OperServ::do_settings_All);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* ADD*", Parent->commserv.SOP_Name(), OperServ::do_clone_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* DEL*", Parent->commserv.SOP_Name(), OperServ::do_clone_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* ERA*", Parent->commserv.SOP_Name(), OperServ::do_clone_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* LIST", Parent->commserv.OPER_Name(), OperServ::do_clone_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* VIEW", Parent->commserv.OPER_Name(), OperServ::do_clone_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL ADD*", Parent->commserv.OPER_Name(), OperServ::do_akill_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL DEL*", Parent->commserv.OPER_Name(), OperServ::do_akill_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL ERA*", Parent->commserv.OPER_Name(), OperServ::do_akill_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL LIST", Parent->commserv.OPER_Name(), OperServ::do_akill_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL VIEW", Parent->commserv.OPER_Name(), OperServ::do_akill_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* ADD*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* DEL*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* ERA*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* LIST", Parent->commserv.OPER_Name(), OperServ::do_operdeny_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* VIEW", Parent->commserv.OPER_Name(), OperServ::do_operdeny_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* ADD*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* DEL*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* ERA*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* LIST", Parent->commserv.OPER_Name(), OperServ::do_ignore_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* VIEW", Parent->commserv.OPER_Name(), OperServ::do_ignore_List);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* *", Parent->commserv.OPER_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET*", Parent->commserv.OPER_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* *", Parent->commserv.OPER_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE*", Parent->commserv.OPER_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL* *", Parent->commserv.OPER_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL*", Parent->commserv.OPER_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* *", Parent->commserv.OPER_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY*", Parent->commserv.OPER_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* *", Parent->commserv.OPER_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN*", Parent->commserv.OPER_Name(), do_1_2param);
+}
+
+void OperServ::RemCommands()
+{
+    NFT("OperServ::RemCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		    "TRACE", Parent->commserv.SADMIN_Name());
+}
+
+void OperServ::execute(const mstring & data)
+{
+    mThread::ReAttach(tt_OperServ);
+    FT("OperServ::execute", (data));
+    //okay this is the main operserv command switcher
+
+
+    // Nick/Server PRIVMSG/NOTICE mynick :message
+
+    mstring source, msgtype, mynick, message, command;
+    source  = data.ExtractWord(1, ": ");
+    msgtype = data.ExtractWord(2, ": ").UpperCase();
+    mynick  = data.ExtractWord(3, ": ");
+    message = data.After(":", 2);
+    command = message.ExtractWord(1, " ").UpperCase();
+
+    if (message[0U] == CTCP_DELIM_CHAR)
+    {
+	if (msgtype == "PRIVMSG")
+	    DccEngine::decodeRequest(mynick, source, message);
+	else
+	    DccEngine::decodeReply(mynick, source, message);
+    }
+    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    {
+	// Invalid command or not enough privs.
+	send(mynick, source, "Invalid command.");
+    }
+
+    mThread::ReAttach(tt_mBase);
+}
+
+void OperServ::do_Help(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Help", (mynick, source, params));
+}
+
+
 void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Trace", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 4)
     {
 	::send(mynick, source, "Not enough paramaters");
@@ -445,7 +579,6 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 
     unsigned short i, j, k;
     mstring output;
-    mstring message = params.ExtractWord(1, " ").UpperCase();
     mstring action  = params.ExtractWord(2, " ").UpperCase();
     mstring ttype   = params.ExtractWord(3, " ").UpperCase();
     threadtype_enum type;
@@ -612,7 +745,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    mstring("\" is not valid, ignored."));
 	}
     }
-    else if (action == "VIEW")
+    else if (action == "VIEW" || action == "LIST")
     {
 	// Its taken care of below :)
     }
@@ -634,58 +767,717 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, line2);
 }
 
-OperServ::OperServ()
+
+void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params)
 {
+    FT("OperServ::do_settings_Config", (mynick, source, params));
+/*
+CONFIG:
+    Base level is ?, Current level is ?.
+    Level is increased if lag is more than ? seconds.
+-   Databases are (not) encrypted, and compressed at level ?.
+    Services will re-link in ? seconds upon server SQUIT.
+    Squit protection lasts ? seconds.  Nicknames have ? seconds
+	to rejoin before squit protection activates.
+    Services have ? server(s) available to connect to.
+    Databases are saved every ? seconds, and sync in ...?
+    HyperActive cycle is ? seconds, and lag check is ? seconds.
+-   Minimum threads active is ?, Current threads active is ?.
+-   New thread will spawn each ? messages, and die when below ?.
+*/
+}
+    
+void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_settings_Nick", (mynick, source, params));
+
+/*
+NICK:
+    Nicknames will expire after ?.
+    Users have ? seconds to identify.
+    Nicks are held for ? seconds on ident failure.
+    Users are killed if they fail to ident ? times.
+    Default options are: ...
+    Maximim picture size is ? bytes.
+    Allowable picture extensions are: ?
+    Users may have a maximum of ? file attachments, of up to ? bytes each.
+*/
 }
 
-void OperServ::AddCommands()
-{
-    NFT("OperServ::AddCommands");
-    // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
+void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_settings_Channel", (mynick, source, params));
+
+/*
+CHAN:
+    Channels will expire after ?.
+    Users are killed if they fail to chan ident ? times.
+    Channels are kept for ? seconds after akick of last user.
+    Default ban time is ? seconds, Default MLOCK is: ?.
+    Default options are: ...
+    Default revenge level is: 
+    Minimum ACCESS level is ?, Maximum is ?
+    Channel news articles expire after ?.
+*/
 }
 
-void OperServ::RemCommands()
-{
-    NFT("OperServ::RemCommands");
-    // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		    "TRACE", Parent->commserv.SADMIN_Name());
+void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_settings_Other", (mynick, source, params));
+
+/*
+OTHER:
+    Memos are InFlight for ? seconds.
+    Default AKILL expire time is ?.
+    Maximums are (by committee):
+	x: ?
+	x: ?
+	x: ?
+	x: ?
+    A user may have up to ? clones per host, or overridden to up to ?.
+    Flood is triggered with ? messages in ? seconds.
+    Services remember old flood for triggers up to ? seconds later.
+    Ignore lasts ? seconds, and is perminant if triggered more than ? times.
+    Default committee options are: ...
+*/
 }
 
-void OperServ::execute(const mstring & data)
+
+void OperServ::do_settings_All(mstring mynick, mstring source, mstring params)
 {
-    mThread::ReAttach(tt_OperServ);
-    FT("OperServ::execute", (data));
-    //okay this is the main operserv command switcher
+    FT("OperServ::do_settings_All", (mynick, source, params));
+
+    do_settings_Config(mynick, source, params);
+    do_settings_Nick(mynick, source, params);
+    do_settings_Channel(mynick, source, params);
+    do_settings_Other(mynick, source, params);
+}
 
 
-    // Nick/Server PRIVMSG/NOTICE mynick :message
+void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_clone_Add", (mynick, source, params));
 
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = data.ExtractWord(3, ": ");
-    message = data.After(":", 2);
-    command = message.ExtractWord(1, " ").UpperCase();
-
-    if (message[0U] == CTCP_DELIM_CHAR)
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 5)
     {
-	if (msgtype == "PRIVMSG")
-	    DccEngine::decodeRequest(mynick, source, message);
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+    mstring amount = params.ExtractWord(4, " ");
+    mstring reason = params.After(" ", 4);
+
+    if (host.Contains("!") || host.Contains("@"))
+    {
+	::send(mynick, source, "Host may not contain a \'!\' or \'@\' character.");
+	return;
+    }
+
+    if (!amount.IsNumber() || amount.Contains(".") || atoi(amount.c_str()) <= 0)
+    {
+	::send(mynick, source, "Amount must be a posetive whole number.");
+	return;
+    }
+
+    MLOCK(("OperServ", "Clone"));
+    if (Parent->operserv.Clone_find(host))
+    {
+	mstring entry = Parent->operserv.Clone->Entry();
+	Parent->operserv.Clone_erase();
+	Parent->operserv.Clone_insert(entry, atoi(amount.c_str()), reason, source);
+	::send(mynick, source, "Entry " + entry + " changed to " + amount + ".");
+    }
+    else
+    {
+	Parent->operserv.Clone_insert(host, atoi(amount.c_str()), reason, source);
+	::send(mynick, source, "Entry " + host + " added with " + amount + ".");
+    }
+}
+
+void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_clone_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+
+    if (host.Contains("!") || host.Contains("@"))
+    {
+	::send(mynick, source, "Host may not contain a \'!\' or \'@\' character.");
+	return;
+    }
+
+    MLOCK(("OperServ", "Clone"));
+    if (host.IsNumber() && !host.Contains("."))
+    {
+	unsigned int i, num = atoi(host.c_str());
+	if (num <= 0 || num > Parent->operserv.Clone_size())
+	{
+	    ::send(mynick, source, "Entry number must be between 0 and " +
+				    mstring(itoa(Parent->operserv.Clone_size())));
+	    return;
+	}
+
+	for (i=1, Parent->operserv.Clone = Parent->operserv.Clone_begin();
+		i < num && Parent->operserv.Clone != Parent->operserv.Clone_end();
+		i++, Parent->operserv.Clone++) ;
+	if (Parent->operserv.Clone != Parent->operserv.Clone_end())
+	{
+	    Parent->operserv.Clone_erase();
+	    ::send(mynick, source, "Clone entry #" + mstring(itoa(num)) + " removed.");
+	}
+    }
+    else
+    {
+	if (Parent->operserv.Clone_find(host))
+	{
+	    Parent->operserv.Clone_erase();
+	    ::send(mynick, source, "Clone entry matching " + host + " removed.");
+	}
 	else
-	    DccEngine::decodeReply(mynick, source, message);
+	{
+	    ::send(mynick, source, "No such clone entry matching " + host + ".");
+	}
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+}
+
+void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_clone_List", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 2)
     {
-	// Invalid command or not enough privs.
-	send(mynick, source, "Invalid command.");
+	::send(mynick, source, "Not enough paramaters");
+	return;
     }
 
-    mThread::ReAttach(tt_mBase);
+    mstring host   = "*";
+    if (params.WordCount(" ") > 2)
+    {
+	host   = params.ExtractWord(3, " ").LowerCase();
+
+	if (host.Contains("!") || host.Contains("@"))
+	{
+	    ::send(mynick, source, "Host may not contain a \'!\' or \'@\' character.");
+	    return;
+	}
+    }
+
+    unsigned int i=1;
+    mstring output;
+    MLOCK(("OperServ", "Clone"));
+    for (Parent->operserv.Clone = Parent->operserv.Clone_begin();
+		Parent->operserv.Clone != Parent->operserv.Clone_end();
+		Parent->operserv.Clone++)
+    {
+	if (host.Matches(Parent->operserv.Clone->Entry().LowerCase()))
+	{
+	    output.Format("%3d. %s (modified %s ago by %s)", i,
+			    Parent->operserv.Clone->Entry().c_str(),
+			    Parent->operserv.Clone->Last_Modify_Time().Ago().c_str(),
+			    Parent->operserv.Clone->Last_Modifier().c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    output.Format("     [%4d] %s", Parent->operserv.Clone->Value().first,
+			    Parent->operserv.Clone->Value().second.c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    i++;
+	}
+    }
+}
+
+void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_akill_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+    mstring reason = params.After(" ", 3);
+    long time = FromHumanTime(Parent->operserv.Def_Expire());
+
+    if (FromHumanTime(reason.Before(" ")))
+    {
+	if (params.WordCount(" ") < 5)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+
+	time = FromHumanTime(reason.Before(" "));
+	reason = reason.After(" ");
+    }
+
+    if ((Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source) &&
+	FromHumanTime(Parent->operserv.Expire_SAdmin()) &&
+	time > FromHumanTime(Parent->operserv.Expire_SAdmin())) ||
+	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source) &&
+	FromHumanTime(Parent->operserv.Expire_Sop()) &&
+	time > FromHumanTime(Parent->operserv.Expire_Sop())) ||
+	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source) &&
+	FromHumanTime(Parent->operserv.Expire_Admin()) &&
+	time > FromHumanTime(Parent->operserv.Expire_Admin())) ||
+	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source) &&
+	FromHumanTime(Parent->operserv.Expire_Oper()) &&
+	time > FromHumanTime(Parent->operserv.Expire_Oper())))
+    {
+	::send(mynick, source, "Akill time limit specified is too great for your privilage level.");
+	return;
+    }
+	
+    if (host.Contains("!"))
+    {
+	::send(mynick, source, "Host may not contain a \'!\' character.");
+	return;
+    }
+
+    if (!host.Contains("@"))
+    {
+	host.Prepend("*@");
+    }
+
+    MLOCK(("OperServ", "Akill"));
+    if (Parent->operserv.Akill_find(host))
+    {
+	mstring entry = Parent->operserv.Akill->Entry();
+	Parent->operserv.Akill_erase();
+	Parent->operserv.Akill_insert(entry, time, reason, source);
+	::send(mynick, source, "Entry " + entry + " extended for another " +
+							ltoa(time) + " seconds.");
+    }
+    else
+    {
+	Parent->operserv.Akill_insert(host, time, reason, source);
+	::send(mynick, source, "Entry " + host + " added for " + ltoa(time) +
+								    " seconds.");
+    }
+}
+
+void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_akill_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+
+    if (host.Contains("!"))
+    {
+	::send(mynick, source, "Host may not contain a \'!\' character.");
+	return;
+    }
+
+    MLOCK(("OperServ", "Akill"));
+    if (host.IsNumber() && !host.Contains("."))
+    {
+	unsigned int i, num = atoi(host.c_str());
+	if (num <= 0 || num > Parent->operserv.Akill_size())
+	{
+	    ::send(mynick, source, "Entry number must be between 0 and " +
+				    mstring(itoa(Parent->operserv.Akill_size())));
+	    return;
+	}
+
+	for (i=1, Parent->operserv.Akill = Parent->operserv.Akill_begin();
+		i < num && Parent->operserv.Akill != Parent->operserv.Akill_end();
+		i++, Parent->operserv.Akill++) ;
+	if (Parent->operserv.Akill != Parent->operserv.Akill_end())
+	{
+	    Parent->operserv.Akill_erase();
+	    ::send(mynick, source, "Akill entry #" + mstring(itoa(num)) + " removed.");
+	}
+    }
+    else
+    {
+	if (!host.Contains("@"))
+	{
+	    host.Prepend("*@");
+	}
+
+	if (Parent->operserv.Akill_find(host))
+	{
+	    Parent->operserv.Akill_erase();
+	    ::send(mynick, source, "Akill entry matching " + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "No such akill entry matching " + host + ".");
+	}
+    }
+}
+
+void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_akill_List", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = "*";
+    if (params.WordCount(" ") > 2)
+    {
+	host   = params.ExtractWord(3, " ").LowerCase();
+
+	if (host.Contains("!"))
+	{
+	    ::send(mynick, source, "Host may not contain a \'!\' character.");
+	    return;
+	}
+    }
+
+    unsigned int i=1;
+    mstring output;
+    MLOCK(("OperServ", "Akill"));
+    for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
+		Parent->operserv.Akill != Parent->operserv.Akill_end();
+		Parent->operserv.Akill++)
+    {
+	if (host.Matches(Parent->operserv.Akill->Entry().LowerCase()))
+	{
+	    output.Format("%3d. %s (modified %s ago by %s)", i,
+			    Parent->operserv.Akill->Entry().c_str(),
+			    Parent->operserv.Akill->Last_Modify_Time().Ago().c_str(),
+			    Parent->operserv.Akill->Last_Modifier().c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    output.Format("     [%8l] %s", Parent->operserv.Akill->Value().first,
+			    Parent->operserv.Akill->Value().second.c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    i++;
+	}
+    }
+}
+
+void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_operdeny_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+    mstring reason = params.After(" ", 3);
+
+    if (!host.Contains("@"))
+    {
+	if (!Parent->nickserv.IsLive(host))
+	{
+	    ::send(mynick, source, "Nickname " + host + " is not online.");
+	    return;
+	}
+	host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+    }
+    else if (!host.Contains("!"))
+    {
+	host.Prepend("*!");
+    }
+
+    MLOCK(("OperServ", "OperDeny"));
+    if (Parent->operserv.OperDeny_find(host))
+    {
+	Parent->operserv.OperDeny_erase();
+    }
+    Parent->operserv.OperDeny_insert(host, reason, source);
+    ::send(mynick, source, "Entry " + host + " added to OperDeny list.");
+}
+
+void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_operdeny_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+
+    MLOCK(("OperServ", "OperDeny"));
+    if (host.IsNumber() && !host.Contains("."))
+    {
+	unsigned int i, num = atoi(host.c_str());
+	if (num <= 0 || num > Parent->operserv.OperDeny_size())
+	{
+	    ::send(mynick, source, "Entry number must be between 0 and " +
+				    mstring(itoa(Parent->operserv.OperDeny_size())));
+	    return;
+	}
+
+	for (i=1, Parent->operserv.OperDeny = Parent->operserv.OperDeny_begin();
+		i < num && Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
+		i++, Parent->operserv.OperDeny++) ;
+	if (Parent->operserv.OperDeny != Parent->operserv.OperDeny_end())
+	{
+	    Parent->operserv.OperDeny_erase();
+	    ::send(mynick, source, "OperDeny entry #" + mstring(itoa(num)) + " removed.");
+	}
+    }
+    else
+    {
+	if (!host.Contains("@"))
+	{
+	    if (!Parent->nickserv.IsLive(host))
+	    {
+		::send(mynick, source, "Nickname " + host + " is not online.");
+		return;
+	    }
+	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	}
+	else if (!host.Contains("!"))
+	{
+	    host.Prepend("*!");
+	}
+
+	if (Parent->operserv.OperDeny_find(host))
+	{
+	    Parent->operserv.OperDeny_erase();
+	    ::send(mynick, source, "OperDeny entry matching " + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "No such operdeny entry matching " + host + ".");
+	}
+    }
+}
+
+void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_operdeny_List", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = "*";
+    if (params.WordCount(" ") > 2)
+    {
+	host   = params.ExtractWord(3, " ").LowerCase();
+
+	if (!host.Contains("@"))
+	{
+	    if (!Parent->nickserv.IsLive(host))
+	    {
+		::send(mynick, source, "Nickname " + host + " is not online.");
+		return;
+	    }
+	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	}
+	else if (!host.Contains("!"))
+	{
+	    host.Prepend("*!");
+	}
+    }
+
+    unsigned int i=1;
+    mstring output;
+    MLOCK(("OperServ", "OperDeny"));
+    for (Parent->operserv.OperDeny = Parent->operserv.OperDeny_begin();
+		Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
+		Parent->operserv.OperDeny++)
+    {
+	if (host.Matches(Parent->operserv.OperDeny->Entry().LowerCase()))
+	{
+	    output.Format("%3d. %s (modified %s ago by %s)", i,
+			    Parent->operserv.OperDeny->Entry().c_str(),
+			    Parent->operserv.OperDeny->Last_Modify_Time().Ago().c_str(),
+			    Parent->operserv.OperDeny->Last_Modifier().c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    output.Format("     %s", Parent->operserv.OperDeny->Value().c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    i++;
+	}
+    }
+}
+
+void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_ignore_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+
+    if (!host.Contains("@"))
+    {
+	if (!Parent->nickserv.IsLive(host))
+	{
+	    ::send(mynick, source, "Nickname " + host + " is not online.");
+	    return;
+	}
+	host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+    }
+    else if (!host.Contains("!"))
+    {
+	host.Prepend("*!");
+    }
+
+    MLOCK(("OperServ", "Ignore"));
+    if (Parent->operserv.Ignore_find(host))
+    {
+	Parent->operserv.Ignore_erase();
+    }
+    Parent->operserv.Ignore_insert(host, true, source);
+    ::send(mynick, source, "Entry " + host + " added to Ignore list.");
+}
+
+void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_ignore_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = params.ExtractWord(3, " ").LowerCase();
+
+    MLOCK(("OperServ", "Ignore"));
+    if (host.IsNumber() && !host.Contains("."))
+    {
+	unsigned int i, num = atoi(host.c_str());
+	if (num <= 0 || num > Parent->operserv.Ignore_size())
+	{
+	    ::send(mynick, source, "Entry number must be between 0 and " +
+				    mstring(itoa(Parent->operserv.Ignore_size())));
+	    return;
+	}
+
+	for (i=1, Parent->operserv.Ignore = Parent->operserv.Ignore_begin();
+		i < num && Parent->operserv.Ignore != Parent->operserv.Ignore_end();
+		i++, Parent->operserv.Ignore++) ;
+	if (Parent->operserv.Ignore != Parent->operserv.Ignore_end())
+	{
+	    Parent->operserv.Ignore_erase();
+	    ::send(mynick, source, "Ignore entry #" + mstring(itoa(num)) + " removed.");
+	}
+    }
+    else
+    {
+	if (!host.Contains("@"))
+	{
+	    if (!Parent->nickserv.IsLive(host))
+	    {
+		::send(mynick, source, "Nickname " + host + " is not online.");
+		return;
+	    }
+	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	}
+	else if (!host.Contains("!"))
+	{
+	    host.Prepend("*!");
+	}
+
+	if (Parent->operserv.Ignore_find(host))
+	{
+	    Parent->operserv.Ignore_erase();
+	    ::send(mynick, source, "Ignore entry matching " + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "No such ignore entry matching " + host + ".");
+	}
+    }
+}
+
+void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_ignore_List", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring host   = "*";
+    if (params.WordCount(" ") > 2)
+    {
+	host   = params.ExtractWord(3, " ").LowerCase();
+
+	if (!host.Contains("@"))
+	{
+	    if (!Parent->nickserv.IsLive(host))
+	    {
+		::send(mynick, source, "Nickname " + host + " is not online.");
+		return;
+	    }
+	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	}
+	else if (!host.Contains("!"))
+	{
+	    host.Prepend("*!");
+	}
+    }
+
+    unsigned int i=1;
+    mstring output;
+    MLOCK(("OperServ", "OperDeny"));
+    for (Parent->operserv.OperDeny = Parent->operserv.OperDeny_begin();
+		Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
+		Parent->operserv.OperDeny++)
+    {
+	if (host.Matches(Parent->operserv.OperDeny->Entry().LowerCase()) &&
+	    Parent->operserv.OperDeny->Value())
+	{
+	    output.Format("%3d. %s (modified %s ago by %s)", i,
+			    Parent->operserv.OperDeny->Entry().c_str(),
+			    Parent->operserv.OperDeny->Last_Modify_Time().Ago().c_str(),
+			    Parent->operserv.OperDeny->Last_Modifier().c_str());
+	    ::send(mynick, source, output);
+	    output = "";
+	    i++;
+	}
+    }
 }
 
 void OperServ::load_database(wxInputStream& in)

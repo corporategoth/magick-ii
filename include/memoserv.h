@@ -17,60 +17,6 @@
 #include "variant.h"
 #include "base.h"
 
-class Memo_t;
-class News_t;
-
-// todo: move this over to a ACE_TASK style architecture
-// maybe even use an ACE  message queue for passing data too
-// but then again, maybe not.
-class MemoServ : public mBase
-{
-    friend class Magick;
-private:
-    int news_expire;
-    int inflight;
-    int files;
-    int filesize;
-
-    bool memo;
-    bool news;
-
-    void AddCommands();
-    void RemCommands();
-public:
-    bool IsNick(mstring nick);
-    bool IsChannel(mstring channel);
-    map<mstring,list<Memo_t> > nick;
-    map<mstring,list<News_t> > channel;
-
-    int News_Expire()	{ return news_expire; }
-    int InFlight()	{ return inflight; }
-    int Files()		{ return files; }
-    int FileSize()	{ return filesize; }
-    bool Memo()		{ return memo; }
-    bool News()		{ return news; }
-
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
-    MemoServ() {}
-    virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
-    virtual mstring GetInternalName() const { return "MemoServ"; }
-    virtual void execute(const mstring & message);
-
-    static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_Read(mstring mynick, mstring source, mstring params);
-    static void do_UnRead(mstring mynick, mstring source, mstring params);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static void do_Send(mstring mynick, mstring source, mstring params);
-    static void do_Reply(mstring mynick, mstring source, mstring params);
-    static void do_Forward(mstring mynick, mstring source, mstring params);
-    static void do_Forward2(mstring mynick, mstring source, mstring dest, mstring text);
-    static void do_Cancel(mstring mynick, mstring source, mstring params);
-    static void do_Del(mstring mynick, mstring source, mstring params);
-    static void do_Continue(mstring mynick, mstring source, mstring params);
-    static void do_File(mstring mynick, mstring source, mstring params);
-};
-
 class Memo_t : public mUserDef
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
@@ -137,6 +83,58 @@ public:
     bool IsRead(mstring name);
     void Read(mstring name);
     void Unread(mstring name);
+};
+
+// todo: move this over to a ACE_TASK style architecture
+// maybe even use an ACE  message queue for passing data too
+// but then again, maybe not.
+class MemoServ : public mBase
+{
+    friend class Magick;
+private:
+    unsigned long news_expire;
+    unsigned long inflight;
+    unsigned int files;
+    unsigned long filesize;
+
+    bool memo;
+    bool news;
+
+    void AddCommands();
+    void RemCommands();
+public:
+    bool IsNick(mstring nick);
+    bool IsChannel(mstring channel);
+    map<mstring,list<Memo_t> > nick;
+    map<mstring,list<News_t> > channel;
+
+    unsigned long News_Expire()	{ return news_expire; }
+    unsigned long InFlight()	{ return inflight; }
+    unsigned int Files()	{ return files; }
+    unsigned long FileSize()	{ return filesize; }
+    bool Memo()		{ return memo; }
+    bool News()		{ return news; }
+
+    virtual void load_database(wxInputStream& in);
+    virtual void save_database(wxOutputStream& in);
+    MemoServ() {}
+    virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
+    virtual mstring GetInternalName() const { return "MemoServ"; }
+    virtual void execute(const mstring & message);
+
+    static void do_Help(mstring mynick, mstring source, mstring params);
+    static void do_Read(mstring mynick, mstring source, mstring params);
+    static void do_UnRead(mstring mynick, mstring source, mstring params);
+    static void do_List(mstring mynick, mstring source, mstring params);
+    static void do_Send(mstring mynick, mstring source, mstring params);
+    static void do_Flush(mstring mynick, mstring source, mstring params);
+    static void do_Reply(mstring mynick, mstring source, mstring params);
+    static void do_Forward(mstring mynick, mstring source, mstring params);
+    static void do_Forward2(mstring mynick, mstring source, mstring dest, mstring text);
+    static void do_Cancel(mstring mynick, mstring source, mstring params);
+    static void do_Del(mstring mynick, mstring source, mstring params);
+    static void do_Continue(mstring mynick, mstring source, mstring params);
+    static void do_File(mstring mynick, mstring source, mstring params);
 };
 
 #endif

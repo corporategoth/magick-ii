@@ -84,28 +84,28 @@ public:
 	class startup_t {
 		friend Magick;
 
-		map<mstring,triplet<int,mstring,int> > servers;
+		// map<server name, triplet<port, password, priority> >
+		map<mstring,triplet<unsigned int,mstring,unsigned int> > servers;
 		mstring server_name;
 		mstring server_desc;
 		mstring services_user;
 		mstring services_host;
 		bool ownuser;
-		int level;
-		int lagtime;
-		int deadtime;
+		unsigned int level;
+		unsigned long lagtime;
 		float gmt;
 	public:
 		bool IsServer(mstring server);
-		triplet<int,mstring,int> Server(mstring server);
-		vector<mstring> PriorityList(int pri);
+		triplet<unsigned int,mstring,unsigned int> Server(mstring server);
+		vector<mstring> PriorityList(unsigned int pri);
 
 		mstring Server_Name()const	{ return server_name; }
 		mstring Server_Desc()const	{ return server_desc; }
 		mstring Services_User()const	{ return services_user; }
 		mstring Services_Host()const	{ return services_host; }
 		bool Ownuser()const		{ return ownuser; }
-		int Level()const		{ return level; }
-		int Lagtime()const		{ return lagtime; }
+		unsigned int Level()const	{ return level; }
+		unsigned long Lagtime()const	{ return lagtime; }
 	} startup;
 
 	class files_t {
@@ -116,48 +116,48 @@ public:
 		mstring motdfile;
 		mstring language;
 		mstring database;
-		int compression;
+		unsigned int compression;
 		mstring keyfile;
 		bool encryption;
 	public:
-		mstring Pidfile()const	{ return pidfile; }
-		mstring Logfile()const	{ return logfile; }
-		mstring Motdfile()const	{ return motdfile; }
-		mstring Language()const	{ return language; }
-		mstring Database()const	{ return database; }
-		int Compression()const	{ return compression; }
-		mstring KeyFile()const	{ return keyfile; }
-		bool Encryption()const	{ return encryption; }
+		mstring Pidfile()const		    { return pidfile; }
+		mstring Logfile()const		    { return logfile; }
+		mstring Motdfile()const		    { return motdfile; }
+		mstring Language()const		    { return language; }
+		mstring Database()const		    { return database; }
+		unsigned int Compression()const	    { return compression; }
+		mstring KeyFile()const		    { return keyfile; }
+		bool Encryption()const		    { return encryption; }
 	} files;
 
 	class config_t {
 		friend Magick;
 
-		int server_relink;
-		int squit_protect;
-		int squit_cancel;
-		int cycletime;
-		int checktime;
-		int ping_frequency;
-		int starthresh;
-		int listsize;
-		int maxlist;
-		int startup_threads;
-		int low_water_mark;
-		int high_water_mark;
+		unsigned long server_relink;
+		unsigned long squit_protect;
+		unsigned long squit_cancel;
+		unsigned long cycletime;
+		unsigned long checktime;
+		unsigned long ping_frequency;
+		unsigned int starthresh;
+		unsigned int listsize;
+		unsigned int maxlist;
+		unsigned int startup_threads;
+		unsigned int low_water_mark;
+		unsigned int high_water_mark;
 	public:
-		int Server_Relink()	{ return server_relink; }
-		int Squit_Protect()	{ return squit_protect; }
-		int Squit_Cancel()	{ return squit_cancel; }
-		int Cycletime()		{ return cycletime; }
-		int Checktime()		{ return checktime; }
-		int Ping_Frequency()	{ return ping_frequency; }
-		int Starthresh()	{ return starthresh; }
-		int Listsize()		{ return listsize; }
-		int Maxlist()		{ return maxlist; }
-		int Startup_Threads()	{ return startup_threads; }
-		int Low_Water_Mark()	{ return low_water_mark; }
-		int High_Water_Mark()	{ return high_water_mark; }
+		unsigned long Server_Relink()	{ return server_relink; }
+		unsigned long Squit_Protect()	{ return squit_protect; }
+		unsigned long Squit_Cancel()	{ return squit_cancel; }
+		unsigned long Cycletime()	{ return cycletime; }
+		unsigned long Checktime()	{ return checktime; }
+		unsigned long Ping_Frequency()	{ return ping_frequency; }
+		unsigned int Starthresh()	{ return starthresh; }
+		unsigned int Listsize()		{ return listsize; }
+		unsigned int Maxlist()		{ return maxlist; }
+		unsigned int Startup_Threads()	{ return startup_threads; }
+		unsigned int Low_Water_Mark()	{ return low_water_mark; }
+		unsigned int High_Water_Mark()	{ return high_water_mark; }
 	} config;
 
 
@@ -201,9 +201,6 @@ public:
 
 	void get_config_values();
 	bool check_config();
-	int ping_frequency;
-	int update_timeout;
-	int server_relink;
 	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);
 	bool paramlong(mstring first, mstring second);

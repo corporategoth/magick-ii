@@ -19,136 +19,6 @@
 #include "mstream.h"
 #include "ircsocket.h"
 
-class Nick_Live_t;
-class Nick_Stored_t;
-
-// todo: move this over to a ACE_TASK style architecture
-// maybe even use an ACE  message queue for passing data too
-// but then again, maybe not.
-class NickServ : public mBase
-{
-    friend class Magick;
-private:
-
-    // Config Entries ...
-    int maxlen;			// Maximum length of a nickname
-    mstring suffixes;		// What to add to unidentified nicks
-    int expire;			// How long to keep nicknames
-    int ident;			// How long to wait for IDENT
-    int release;		// How long to keep after failed ident
-    int passfail;		// Number of password fails before kill
-    bool def_protect;		// Default val of PROTECT
-    bool lck_protect;		// PROTECT is locked?
-    bool def_secure;		// Default val of SECURE
-    bool lck_secure;		// SECURE is locked?
-    bool def_noexpire;		// Default val of NOEXPIRE
-    bool lck_noexpire;		// NOEXPIRE is locked?
-    bool def_nomemo;		// Default val of NOMEMO
-    bool lck_nomemo;		// NOMEMO is locked?
-    bool def_private;		// Default val of PRIVATE
-    bool lck_private;		// PRIVATE is locked?
-    bool def_privmsg;		// Default val of PRIVMSG
-    bool lck_privmsg;		// PRIVMSG is locked?
-    mstring def_language;	// Default val of Language
-    bool lck_language;		// Language is locked?
-    int picsize;		// MAX size of a personal pic
-    mstring picext;		// Valid PIC extensions
-
-    void AddCommands();
-    void RemCommands();
-public:
-    int Maxlen()		{ return maxlen; }
-    mstring Suffixes()		{ return suffixes; }
-    int Expire()		{ return expire; }
-    int Ident()			{ return ident; }
-    int Release()		{ return release; }
-    int Passfail()		{ return passfail; }
-    bool DEF_Protect()		{ return def_protect; }
-    bool LCK_Protect()		{ return lck_protect; }
-    bool DEF_Secure()		{ return def_secure; }
-    bool LCK_Secure()		{ return lck_secure; }
-    bool DEF_NoExpire()		{ return def_noexpire; }
-    bool LCK_NoExpire()		{ return lck_noexpire; }
-    bool DEF_NoMemo()		{ return def_nomemo; }
-    bool LCK_NoMemo()		{ return lck_nomemo; }
-    bool DEF_Private()		{ return def_private; }
-    bool LCK_Private()		{ return lck_private; }
-    bool DEF_PRIVMSG()		{ return def_privmsg; }
-    bool LCK_PRIVMSG()		{ return lck_privmsg; }
-    mstring DEF_Language()	{ return def_privmsg; }
-    bool LCK_Language()		{ return lck_privmsg; }
-    int PicSize()		{ return picsize; }
-    mstring PicExt()		{ return picext; }
-
-    virtual void load_database(wxInputStream& in);
-    virtual void save_database(wxOutputStream& in);
-    bool IsStored(mstring in);
-    bool IsLive(mstring in);
-    map<mstring,Nick_Stored_t> stored;
-    map<mstring,Nick_Live_t> live;
-    map<mstring,mDateTime> recovered;
-    KillOnSignon_Handler kosh;
-    InFlight_Handler ifh;
-
-    static mstring findnextnick(mstring in);
-
-    NickServ();
-    virtual threadtype_enum Get_TType() const { return tt_NickServ; }
-    virtual mstring GetInternalName() const { return "NickServ"; }
-    virtual void execute(const mstring & message);
-
-    static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_Register(mstring mynick, mstring source, mstring params);
-    static void do_Drop(mstring mynick, mstring source, mstring params);
-    static void do_Link(mstring mynick, mstring source, mstring params);
-    static void do_UnLink(mstring mynick, mstring source, mstring params);
-    static void do_Host(mstring mynick, mstring source, mstring params);
-    static void do_Slaves(mstring mynick, mstring source, mstring params);
-    static void do_Identify(mstring mynick, mstring source, mstring params);
-    static void do_Info(mstring mynick, mstring source, mstring params);
-    static void do_Ghost(mstring mynick, mstring source, mstring params);
-    static void do_Recover(mstring mynick, mstring source, mstring params);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static void do_Suspend(mstring mynick, mstring source, mstring params);
-    static void do_UnSuspend(mstring mynick, mstring source, mstring params);
-    static void do_Forbid(mstring mynick, mstring source, mstring params);
-    static void do_Getpass(mstring mynick, mstring source, mstring params);
-
-    static void do_access_Current(mstring mynick, mstring source, mstring params);
-    static void do_access_Add(mstring mynick, mstring source, mstring params);
-    static void do_access_Del(mstring mynick, mstring source, mstring params);
-    static void do_access_List(mstring mynick, mstring source, mstring params);
-    static void do_ignore_Add(mstring mynick, mstring source, mstring params);
-    static void do_ignore_Del(mstring mynick, mstring source, mstring params);
-    static void do_ignore_List(mstring mynick, mstring source, mstring params);
-    static void do_set_Password(mstring mynick, mstring source, mstring params);
-    static void do_set_Email(mstring mynick, mstring source, mstring params);
-    static void do_set_URL(mstring mynick, mstring source, mstring params);
-    static void do_set_ICQ(mstring mynick, mstring source, mstring params);
-    static void do_set_Description(mstring mynick, mstring source, mstring params);
-    static void do_set_Comment(mstring mynick, mstring source, mstring params);
-    static void do_set_Picture(mstring mynick, mstring source, mstring params);
-    static void do_set_Protect(mstring mynick, mstring source, mstring params);
-    static void do_set_Secure(mstring mynick, mstring source, mstring params);
-    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
-    static void do_set_NoMemo(mstring mynick, mstring source, mstring params);
-    static void do_set_Private(mstring mynick, mstring source, mstring params);
-    static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params);
-    static void do_set_Language(mstring mynick, mstring source, mstring params);
-    static void do_lock_Protect(mstring mynick, mstring source, mstring params);
-    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_NoMemo(mstring mynick, mstring source, mstring params);
-    static void do_lock_Private(mstring mynick, mstring source, mstring params);
-    static void do_lock_PRIVMSG(mstring mynick, mstring source, mstring params);
-    static void do_lock_Language(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Protect(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_unlock_NoMemo(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
-    static void do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params);
-    static void do_unlock_Language(mstring mynick, mstring source, mstring params);
-};
-
 class Nick_Live_t : public mUserDef
 {
     mstring i_Name;
@@ -164,9 +34,9 @@ class Nick_Live_t : public mUserDef
     mstring modes;
     set<mstring> joined_channels;
     vector<time_t> last_msg_times;
-    int last_msg_entries;
-    int flood_triggered_times;
-    int failed_passwds;
+    unsigned int last_msg_entries;
+    unsigned int flood_triggered_times;
+    unsigned int failed_passwds;
     set<mstring> chans_founder_identd;
     vector<mstring> try_chan_ident;
     bool identified;
@@ -372,26 +242,26 @@ public:
     void UnSuspend();
 
     mstring Host() { return i_Host; }
-    int Siblings();
-    mstring Sibling(int count);
+    unsigned int Siblings();
+    mstring Sibling(unsigned int count);
     bool IsSibling(mstring nick);
     bool Slave(mstring nick, mstring password, mDateTime regtime = Now());
     bool MakeHost();
     bool Unlink();
 
-    int Access();
-    mstring Access(int count);
+    unsigned int Access();
+    mstring Access(unsigned int count);
     bool AccessAdd(const mstring& in);
-    int AccessDel(mstring in);
-    int AccessDel(int in)
+    unsigned int AccessDel(mstring in);
+    unsigned int AccessDel(unsigned int in)
 	{ return AccessDel(Access(in)); }
     bool IsAccess(mstring in);
 
-    int Ignore();
-    mstring Ignore(int count);
+    unsigned int Ignore();
+    mstring Ignore(unsigned int count);
     bool IgnoreAdd(mstring in);
-    int IgnoreDel(mstring in);
-    int IgnoreDel(int in)
+    unsigned int IgnoreDel(mstring in);
+    unsigned int IgnoreDel(unsigned int in)
 	{ return IgnoreDel(Ignore(in)); }
     bool IsIgnore(mstring in);
 
@@ -446,5 +316,132 @@ public:
 };
 wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in);
 wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);
+
+// todo: move this over to a ACE_TASK style architecture
+// maybe even use an ACE  message queue for passing data too
+// but then again, maybe not.
+class NickServ : public mBase
+{
+    friend class Magick;
+private:
+
+    // Config Entries ...
+    unsigned int maxlen;	// Maximum length of a nickname
+    mstring suffixes;		// What to add to unidentified nicks
+    unsigned long expire;	// How long to keep nicknames
+    unsigned long ident;	// How long to wait for IDENT
+    unsigned long release;	// How long to keep after failed ident
+    unsigned int passfail;	// Number of password fails before kill
+    bool def_protect;		// Default val of PROTECT
+    bool lck_protect;		// PROTECT is locked?
+    bool def_secure;		// Default val of SECURE
+    bool lck_secure;		// SECURE is locked?
+    bool def_noexpire;		// Default val of NOEXPIRE
+    bool lck_noexpire;		// NOEXPIRE is locked?
+    bool def_nomemo;		// Default val of NOMEMO
+    bool lck_nomemo;		// NOMEMO is locked?
+    bool def_private;		// Default val of PRIVATE
+    bool lck_private;		// PRIVATE is locked?
+    bool def_privmsg;		// Default val of PRIVMSG
+    bool lck_privmsg;		// PRIVMSG is locked?
+    mstring def_language;	// Default val of Language
+    bool lck_language;		// Language is locked?
+    unsigned long picsize;	// MAX size of a personal pic
+    mstring picext;		// Valid PIC extensions
+
+    void AddCommands();
+    void RemCommands();
+public:
+    unsigned int Maxlen()	{ return maxlen; }
+    mstring Suffixes()		{ return suffixes; }
+    unsigned long Expire()	{ return expire; }
+    unsigned long Ident()	{ return ident; }
+    unsigned long Release()	{ return release; }
+    unsigned int Passfail()	{ return passfail; }
+    bool DEF_Protect()		{ return def_protect; }
+    bool LCK_Protect()		{ return lck_protect; }
+    bool DEF_Secure()		{ return def_secure; }
+    bool LCK_Secure()		{ return lck_secure; }
+    bool DEF_NoExpire()		{ return def_noexpire; }
+    bool LCK_NoExpire()		{ return lck_noexpire; }
+    bool DEF_NoMemo()		{ return def_nomemo; }
+    bool LCK_NoMemo()		{ return lck_nomemo; }
+    bool DEF_Private()		{ return def_private; }
+    bool LCK_Private()		{ return lck_private; }
+    bool DEF_PRIVMSG()		{ return def_privmsg; }
+    bool LCK_PRIVMSG()		{ return lck_privmsg; }
+    mstring DEF_Language()	{ return def_privmsg; }
+    bool LCK_Language()		{ return lck_privmsg; }
+    unsigned long PicSize()	{ return picsize; }
+    mstring PicExt()		{ return picext; }
+
+    virtual void load_database(wxInputStream& in);
+    virtual void save_database(wxOutputStream& in);
+    bool IsStored(mstring in);
+    bool IsLive(mstring in);
+    map<mstring,Nick_Stored_t> stored;
+    map<mstring,Nick_Live_t> live;
+    map<mstring,mDateTime> recovered;
+    KillOnSignon_Handler kosh;
+    InFlight_Handler ifh;
+
+    static mstring findnextnick(mstring in);
+
+    NickServ();
+    virtual threadtype_enum Get_TType() const { return tt_NickServ; }
+    virtual mstring GetInternalName() const { return "NickServ"; }
+    virtual void execute(const mstring & message);
+
+    static void do_Help(mstring mynick, mstring source, mstring params);
+    static void do_Register(mstring mynick, mstring source, mstring params);
+    static void do_Drop(mstring mynick, mstring source, mstring params);
+    static void do_Link(mstring mynick, mstring source, mstring params);
+    static void do_UnLink(mstring mynick, mstring source, mstring params);
+    static void do_Host(mstring mynick, mstring source, mstring params);
+    static void do_Slaves(mstring mynick, mstring source, mstring params);
+    static void do_Identify(mstring mynick, mstring source, mstring params);
+    static void do_Info(mstring mynick, mstring source, mstring params);
+    static void do_Ghost(mstring mynick, mstring source, mstring params);
+    static void do_Recover(mstring mynick, mstring source, mstring params);
+    static void do_List(mstring mynick, mstring source, mstring params);
+    static void do_Suspend(mstring mynick, mstring source, mstring params);
+    static void do_UnSuspend(mstring mynick, mstring source, mstring params);
+    static void do_Forbid(mstring mynick, mstring source, mstring params);
+    static void do_Getpass(mstring mynick, mstring source, mstring params);
+
+    static void do_access_Current(mstring mynick, mstring source, mstring params);
+    static void do_access_Add(mstring mynick, mstring source, mstring params);
+    static void do_access_Del(mstring mynick, mstring source, mstring params);
+    static void do_access_List(mstring mynick, mstring source, mstring params);
+    static void do_ignore_Add(mstring mynick, mstring source, mstring params);
+    static void do_ignore_Del(mstring mynick, mstring source, mstring params);
+    static void do_ignore_List(mstring mynick, mstring source, mstring params);
+    static void do_set_Password(mstring mynick, mstring source, mstring params);
+    static void do_set_Email(mstring mynick, mstring source, mstring params);
+    static void do_set_URL(mstring mynick, mstring source, mstring params);
+    static void do_set_ICQ(mstring mynick, mstring source, mstring params);
+    static void do_set_Description(mstring mynick, mstring source, mstring params);
+    static void do_set_Comment(mstring mynick, mstring source, mstring params);
+    static void do_set_Picture(mstring mynick, mstring source, mstring params);
+    static void do_set_Protect(mstring mynick, mstring source, mstring params);
+    static void do_set_Secure(mstring mynick, mstring source, mstring params);
+    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_set_NoMemo(mstring mynick, mstring source, mstring params);
+    static void do_set_Private(mstring mynick, mstring source, mstring params);
+    static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params);
+    static void do_set_Language(mstring mynick, mstring source, mstring params);
+    static void do_lock_Protect(mstring mynick, mstring source, mstring params);
+    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_lock_NoMemo(mstring mynick, mstring source, mstring params);
+    static void do_lock_Private(mstring mynick, mstring source, mstring params);
+    static void do_lock_PRIVMSG(mstring mynick, mstring source, mstring params);
+    static void do_lock_Language(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Protect(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_unlock_NoMemo(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
+    static void do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Language(mstring mynick, mstring source, mstring params);
+};
 
 #endif

@@ -23,10 +23,72 @@ ServMsg::ServMsg()
 {
 }
 
+
+void ServMsg::AddCommands()
+{
+    NFT("ServMsg::AddCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HELP", Parent->commserv.ADMIN_Name(), ServMsg::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GLOB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Global);
+}
+
+void ServMsg::RemCommands()
+{
+    NFT("ServMsg::RemCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+}
+
+void ServMsg::execute(const mstring & data)
+{
+    mThread::ReAttach(tt_OtherServ);
+    FT("ServMsg::execute", (data));
+    //okay this is the main nickserv command switcher
+
+
+    // Nick/Server PRIVMSG/NOTICE mynick :message
+
+    mstring source, msgtype, mynick, message, command;
+    source  = data.ExtractWord(1, ": ");
+    msgtype = data.ExtractWord(2, ": ").UpperCase();
+    mynick  = data.ExtractWord(3, ": ");
+    message = data.After(":", 2);
+    command = message.Before(" ");
+
+    if (message[0U] == CTCP_DELIM_CHAR)
+    {
+	if (msgtype == "PRIVMSG")
+	    DccEngine::decodeRequest(mynick, source, message);
+	else
+	    DccEngine::decodeReply(mynick, source, message);
+    }
+    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    {
+	// Invalid command or not enough privs.
+	send(mynick, source, "Invalid command.");
+    }
+
+    mThread::ReAttach(tt_mBase);
+
+}
+
+void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_Help", (mynick, source, params));
+}
+
+
 void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_BreakDown", (mynick, source, params));
 
+    mstring message  = params.Before(" ").UpperCase();
     ::send(mynick, source,
 	"SERVER                                         LAG  USERS (OPS).");
     mstring out;
@@ -115,60 +177,29 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 }
 
 
-void ServMsg::AddCommands()
+void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 {
-    NFT("ServMsg::AddCommands");
-    // Put in ORDER OF RUN.  ie. most specific to least specific.
+    FT("ServMsg::do_Global", (mynick, source, params));
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
-}
-
-void ServMsg::RemCommands()
-{
-    NFT("ServMsg::RemCommands");
-    // Put in ORDER OF RUN.  ie. most specific to least specific.
-
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"BREAKD*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"*MAP", Parent->commserv.ALL_Name());
-}
-
-void ServMsg::execute(const mstring & data)
-{
-    mThread::ReAttach(tt_OtherServ);
-    FT("ServMsg::execute", (data));
-    //okay this is the main nickserv command switcher
-
-
-    // Nick/Server PRIVMSG/NOTICE mynick :message
-
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = data.ExtractWord(3, ": ");
-    message = data.After(":", 2);
-    command = message.Before(" ");
-
-    if (message[0U] == CTCP_DELIM_CHAR)
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
     {
-	if (msgtype == "PRIVMSG")
-	    DccEngine::decodeRequest(mynick, source, message);
-	else
-	    DccEngine::decodeReply(mynick, source, message);
+	::send(mynick, source, "Not enough paramaters");
+	return;
     }
-    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    mstring text = params.After(" ");
+
+    map<mstring, Server>::iterator iter;
+    for (iter=Parent->server.ServerList.begin();
+			iter != Parent->server.ServerList.end(); iter++)
     {
-	// Invalid command or not enough privs.
-	send(mynick, source, "Invalid command.");
+	Parent->server.NOTICE(Parent->servmsg.FirstName(), "$" +
+						    iter->first, text);
     }
-
-    mThread::ReAttach(tt_mBase);
-
+    Parent->server.GLOBOPS(mynick, IRC_Bold + source + IRC_Off +
+				" just sent a message to ALL users.");
 }
+
 
 void ServMsg::load_database(wxInputStream& in)
 {
