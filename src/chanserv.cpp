@@ -3153,7 +3153,7 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stored[channel.LowerCase()] =
 		Chan_Stored_t(channel, source, password, desc);
-    Parent->chanserv.stored[i_Name.LowerCase()].Topic(
+    Parent->chanserv.stored[channel.LowerCase()].Topic(
 		Parent->chanserv.live[channel.LowerCase()].Topic(),
 		Parent->chanserv.live[channel.LowerCase()].Topic_Setter(),
 		Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time());
