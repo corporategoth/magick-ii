@@ -1,4 +1,9 @@
 
+/* Define if you have the type bool */
+#ifndef HAVE_BOOL
+#undef HAVE_BOOL
+#endif
+
 /* Define if you want to test only (no connections) */
 #ifndef TEST_MODE
 #undef TEST_MODE

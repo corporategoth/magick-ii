@@ -48,7 +48,7 @@ AC_CANONICAL_HOST
 dnl Test for java.
 AC_CHECK_PROG(JAVAC, javac, javac)
 if test -n "$JAVAC"; then
-    echo $ECHO_N$ac_n "checking whether Java compiler works"" ... $ECHO_C$ac_c"
+    echo $ECHO_N$ac_n "checking whether Java compiler is sufficiant"" ... $ECHO_C$ac_c"
     cat >jtest.java <<EOT
 import javax.swing.JFormattedTextField;
 class jtest extends JFormattedTextField
@@ -566,7 +566,25 @@ AC_CHECK_FUNCS(_snprintf)
 AC_CHECK_FUNCS(_vsnprintf)
 
 dnl Find out which types we must provide ...
-AC_CHECK_TYPES(bool)
+dnl AC_CHECK_TYPES(bool)
+
+echo $ECHO_N$ac_n "checking for bool"" ... $ECHO_C$ac_c"
+cat >.conftest.cpp <<EOT
+int main()
+{
+  bool test = false;
+  test = true;
+  return 0;
+}
+EOT
+$CXX -o .conftest .conftest.cpp >/dev/null 2>&1
+if test -f .conftest; then
+  AC_DEFINE(HAVE_BOOL)
+  echo "${ECHO_T}${ac_t}yes"
+else
+  echo "${ECHO_T}${ac_t}no"
+fi
+rm -f .conftest*
 
 dnl ====================================================
 

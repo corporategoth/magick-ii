@@ -105,9 +105,7 @@ bool MakeDirectory(const mstring & in)
 	{
 	    // Its the root, forget it ... *sigh*
 	    if (pos == 0)
-	    {
-		RET(false);
-	    }
+		continue;
 
 	    // Doesnt exist, try and create it ...
 	    j = ACE_OS::mkdir(in.c_str());
