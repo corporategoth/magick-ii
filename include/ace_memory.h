@@ -1,58 +1,33 @@
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _ACE_MEMORY_H
 #define _ACE_MEMORY_H
 //RCSID(ace_memory_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.10  2002/01/14 07:16:53  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.9  2002/01/12 14:42:07  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.8  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.7  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.4  2000/12/23 22:22:23  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.3  2000/11/09 10:58:18  prez
-** THINK I have it working again ... with the free list.
-** Will check, still thinking of sorting free list by size.
-**
-** Revision 1.2  2000/10/26 07:59:52  prez
-** The goddamn memory system and mstring WORK!  Well, so far ;)
-**
-** Revision 1.1  2000/10/18 18:46:33  prez
-** Well, mstring still coredumps, but it gets past the initial loading of
-** all the STATIC (or const) strings, etc -- now its coring on loading a
-** file (or possibly language.h or something).  Still investigating.
-**
-**
-*/
+** ======================================================================= */
 
 /* This is written by Preston Elder, and is included
  * only until it is intergrated into ACE propper

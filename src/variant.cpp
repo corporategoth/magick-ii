@@ -5,110 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_variant_cpp_ ## x () { return y; }
 RCSID(variant_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.52  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.51  2002/01/13 05:18:42  prez
-** More formatting, changed style slightly
-**
-** Revision 1.50  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.49  2001/11/12 01:05:03  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.48  2001/04/02 02:11:23  prez
-** Fixed up some inlining, and added better excption handling
-**
-** Revision 1.47  2001/03/08 14:34:29  prez
-** Fixed some OS incompatabilities
-**
-** Revision 1.46  2001/03/08 08:07:41  ungod
-** fixes for bcc 5.5
-**
-** Revision 1.45  2001/03/02 05:24:42  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.44  2001/02/03 02:21:35  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.43  2001/01/01 05:32:45  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.42  2000/12/09 10:17:14  prez
-** Added +h to unreal IRCD profile, and made variant more efficiant
-** string wise by cutting out many operator= calls.
-**
-** Revision 1.41  2000/09/01 10:54:39  prez
-** Added Changing and implemented Modify tracing, now just need to create
-** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
-** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
-**
-** Revision 1.40  2000/08/31 06:25:09  prez
-** Added our own socket class (wrapper around ACE_SOCK_Stream,
-** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
-**
-** Revision 1.39  2000/07/28 14:49:36  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.38  2000/05/20 16:05:07  prez
-** Finished off the log conversion (still via. wrappers)
-**
-** Revision 1.37  2000/03/28 16:20:59  prez
-** LOTS of RET() fixes, they should now be safe and not do double
-** calculations.  Also a few bug fixes from testing.
-**
-** Revision 1.36  2000/03/28 15:07:40  ungod
-** fix for mVariant(long)
-**
-** Revision 1.35  2000/02/27 03:58:41  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.34  2000/02/23 12:21:04  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.33  2000/02/16 12:59:41  ungod
-** fixing for borland compilability
-**
-** Revision 1.32  2000/02/15 13:27:04  prez
-** *** empty log message ***
-**
-** Revision 1.31  2000/02/15 10:37:51  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 // gah microsoft sucks, the below is to make sure our header get's included, not ms's
 #include "../include/variant.h"

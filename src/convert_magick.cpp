@@ -5,146 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_convert_magick_cpp_ ## x () { return y; }
 RCSID(convert_magick_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.11  2002/01/13 05:18:41  prez
-** More formatting, changed style slightly
-**
-** Revision 1.10  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.9  2002/01/10 19:30:38  prez
-** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
-** ensures that data being used cannot be deleted while still being used.
-**
-** Revision 1.8  2001/12/20 08:02:32  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.7  2001/11/12 01:05:02  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.6  2001/11/03 21:02:53  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.5  2001/05/28 11:17:34  prez
-** Added some more anti-deadlock stuff, and fixed nick ident warnings
-**
-** Revision 1.4  2001/05/05 17:33:58  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
-**
-** Revision 1.3  2001/03/27 07:04:31  prez
-** All maps have been hidden, and are now only accessable via. access functions.
-**
-** Revision 1.2  2001/03/04 02:04:14  prez
-** Made mstring a little more succinct ... and added vector/list operations
-**
-** Revision 1.1  2001/02/03 02:22:34  prez
-** added conversion for ESPERNET
-**
-** Revision 1.23  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.22  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.21  2000/10/10 11:47:51  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.20  2000/09/30 10:48:07  prez
-** Some general code cleanups ... got rid of warnings, etc.
-**
-** Revision 1.19  2000/09/13 12:45:33  prez
-** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
-** must enable with --enable-mpatrol in configure (and have mpatrol in system).
-**
-** Revision 1.18  2000/09/06 11:27:33  prez
-** Finished the T_Modify / T_Changing traces, fixed a bug in clone
-** adding (was adding clone liimt as the mask length), updated docos
-** a little more, and added a response to SIGINT to signon clients.
-**
-** Revision 1.17  2000/08/07 12:20:27  prez
-** Fixed akill and news expiry (flaw in logic), added transferral of
-** memo list when set new nick as host, and fixed problems with commserv
-** caused by becoming a new host (also made sadmin check all linked nicks).
-**
-** Revision 1.16  2000/07/30 09:04:05  prez
-** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
-** on linux, as it seems to corrupt the databases.
-**
-** Revision 1.15  2000/07/29 21:58:53  prez
-** Fixed XML loading of weird characters ...
-** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
-** of nicknames, which means we expire lots of nicknames.  2) services
-** wont rejoin a +i/+k channel when last user exits.
-**
-** Revision 1.14  2000/05/21 04:49:39  prez
-** Removed all wxLog tags, now totally using our own logging.
-**
-** Revision 1.13  2000/04/30 03:48:29  prez
-** Replaced all system calls with ACE_OS equivilants,
-** also removed any dependancy on ACE from sxp (xml)
-**
-** Revision 1.12  2000/03/28 16:20:58  prez
-** LOTS of RET() fixes, they should now be safe and not do double
-** calculations.  Also a few bug fixes from testing.
-**
-** Revision 1.11  2000/03/19 08:50:54  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.10  2000/03/08 23:38:36  prez
-** Added LIVE to nickserv/chanserv, added help funcitonality to all other
-** services, and a bunch of other small changes (token name changes, etc)
-**
-** Revision 1.9  2000/02/27 03:58:39  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.8  2000/02/23 12:21:03  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.7  2000/02/15 13:27:03  prez
-** *** empty log message ***
-**
-** Revision 1.6  2000/02/15 10:37:49  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #ifdef CONVERT
 #include "convert_magick.h"

@@ -5,166 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_dccengine_cpp_ ## x () { return y; }
 RCSID(dccengine_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.52  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.51  2002/01/13 05:18:41  prez
-** More formatting, changed style slightly
-**
-** Revision 1.50  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.49  2002/01/10 19:30:38  prez
-** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
-** ensures that data being used cannot be deleted while still being used.
-**
-** Revision 1.48  2001/12/20 08:02:32  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.47  2001/12/10 09:43:17  prez
-** Updated to remove '-' in front of release name in version tags.
-**
-** Revision 1.46  2001/11/12 01:05:02  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.45  2001/07/24 02:51:13  prez
-** Added ability to do JOIN or SJOIN
-**
-** Revision 1.44  2001/05/06 03:03:07  prez
-** Changed all language sends to use $ style tokens too (aswell as logs), so we're
-** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
-** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
-** Also added example lng and lfo file, so you can see the context of each line.
-**
-** Revision 1.43  2001/03/27 07:04:31  prez
-** All maps have been hidden, and are now only accessable via. access functions.
-**
-** Revision 1.42  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.41  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.40  2001/02/11 07:41:27  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.39  2001/02/03 02:21:33  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.38  2001/01/15 23:31:38  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.37  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.36  2000/12/29 15:31:55  prez
-** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
-**
-** Revision 1.35  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.34  2000/12/11 11:19:46  prez
-** Use Occurance not occurance (because occurance could later be private)
-**
-** Revision 1.33  2000/10/10 11:47:51  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.32  2000/06/10 07:01:03  prez
-** Fixed a bunch of little bugs ...
-**
-** Revision 1.31  2000/06/08 13:07:34  prez
-** Added Secure Oper and flow control to DCC's.
-** Also added DCC list and cancel ability
-**
-** Revision 1.30  2000/05/27 15:10:12  prez
-** Misc changes, mainly re-did the makefile system, makes more sense.
-** Also added a config.h file.
-**
-** Revision 1.29  2000/05/22 13:00:09  prez
-** Updated version.h and some other stuff
-**
-** Revision 1.28  2000/05/17 14:08:11  prez
-** More tweaking with DCC, and getting iostream mods working ...
-**
-** Revision 1.27  2000/05/17 07:47:58  prez
-** Removed all save_databases calls from classes, and now using XML only.
-** To be worked on: DCC Xfer pointer transferal and XML Loading
-**
-** Revision 1.26  2000/05/03 14:12:22  prez
-** Added 'public' filesystem, ie. the ability to add
-** arbitary files for download via. servmsg (sops may
-** upload/download, and set the committees who can
-** grab the file).
-**
-** Revision 1.25  2000/04/03 09:45:23  prez
-** Made use of some config entries that were non-used, and
-** removed some redundant ones ...
-**
-** Revision 1.24  2000/03/24 12:53:04  prez
-** FileSystem Logging
-**
-** Revision 1.23  2000/03/23 10:22:24  prez
-** Fully implemented the FileSys and DCC system, untested,
-**
-** Revision 1.22  2000/02/27 03:58:39  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.21  2000/02/23 14:29:05  prez
-** Added beginnings of a File Map for stored files.
-** Also updated Help files (finished nickserv).
-**
-** Revision 1.20  2000/02/23 12:21:03  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.19  2000/02/16 12:59:39  ungod
-** fixing for borland compilability
-**
-** Revision 1.18  2000/02/15 13:27:03  prez
-** *** empty log message ***
-**
-** Revision 1.17  2000/02/15 10:37:49  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "magick.h"
 #include "dccengine.h"

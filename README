@@ -1,8 +1,8 @@
 Magick IRC Services
 
 $Id$
-(c) 1997-2001 Preston A. Elder <prez@magick.tm>
-(c) 1998-2001 William King <ungod@magick.tm>
+(c) 1997-2002 Preston A. Elder <prez@magick.tm>
+(c) 1998-2002 William King <ungod@magick.tm>
 
 Magick Services are released under the GNU General Public
 License, see the "COPYING" file for further details.  By
@@ -262,8 +262,8 @@ Example:
 ./magick_keygen
 
 Magick IRC Services - http://www.magick.tm
-    (c) 1997-2001 Preston A. Elder <prez@magick.tm>
-    (c) 1998-2001 William King <ungod@magick.tm>
+    (c) 1997-2002 Preston A. Elder <prez@magick.tm>
+    (c) 1998-2002 William King <ungod@magick.tm>
 
 Enter filename to output to [magick.key]:
 NOTE: A key must be at least 18 bytes long and may be up to 288 bytes long.

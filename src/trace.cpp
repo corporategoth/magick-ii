@@ -5,178 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_trace_cpp_ ## x () { return y; }
 RCSID(trace_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.117  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.116  2002/01/13 05:18:42  prez
-** More formatting, changed style slightly
-**
-** Revision 1.115  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.114  2001/12/20 08:02:33  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.113  2001/12/16 01:30:46  prez
-** More changes to fix up warnings ... added some new warning flags too!
-**
-** Revision 1.112  2001/11/18 03:26:53  prez
-** More changes re: trace names, and made the command system know the
-** difference between 'insufficiant access' and 'unknown command'.
-**
-** Revision 1.111  2001/11/18 01:03:29  prez
-** Fixed up the trace names.
-**
-** Revision 1.110  2001/11/12 01:05:03  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.109  2001/05/03 04:40:18  prez
-** Fixed locking mechanism (now use recursive mutexes) ...
-** Also now have a deadlock/nonprocessing detection mechanism.
-**
-** Revision 1.108  2001/05/01 14:00:24  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.107  2001/03/20 14:22:15  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.106  2001/03/02 05:24:42  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.105  2001/02/11 07:41:28  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.104  2001/02/03 02:21:35  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.103  2001/01/01 05:32:45  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.102  2000/12/23 22:22:25  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.101  2000/10/10 11:47:53  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.100  2000/09/01 10:54:39  prez
-** Added Changing and implemented Modify tracing, now just need to create
-** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
-** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
-**
-** Revision 1.99  2000/08/31 06:25:09  prez
-** Added our own socket class (wrapper around ACE_SOCK_Stream,
-** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
-**
-** Revision 1.98  2000/08/22 08:43:41  prez
-** Another re-write of locking stuff -- this time to essentially make all
-** locks re-entrant ourselves, without relying on implementations to do it.
-** Also stops us setting the same lock twice in the same thread.
-**
-** Revision 1.97  2000/08/06 05:27:48  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
-**
-** Revision 1.96  2000/07/29 21:58:55  prez
-** Fixed XML loading of weird characters ...
-** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
-** of nicknames, which means we expire lots of nicknames.  2) services
-** wont rejoin a +i/+k channel when last user exits.
-**
-** Revision 1.95  2000/06/25 07:58:50  prez
-** Added Bahamut support, listing of languages, and fixed some minor bugs.
-**
-** Revision 1.94  2000/06/21 09:00:06  prez
-** Fixed bug in mFile
-**
-** Revision 1.93  2000/05/20 15:17:00  prez
-** Changed LOG system to use ACE's log system, removed wxLog, and
-** added wrappers into pch.h and magick.cpp.
-**
-** Revision 1.92  2000/05/20 03:28:12  prez
-** Implemented transaction based tracing (now tracing wont dump its output
-** until logical 'transactions' are done, which are ended by the thread
-** being re-attached to another type, ending, or an explicit FLUSH() call).
-**
-** Revision 1.91  2000/05/17 14:08:12  prez
-** More tweaking with DCC, and getting iostream mods working ...
-**
-** Revision 1.90  2000/05/17 09:10:36  ungod
-** changed most wxOutputStream to ofstream and wxInputStream
-** to ifstream
-**
-** Revision 1.89  2000/03/24 15:35:18  prez
-** Fixed establishment of DCC transfers, and some other misc stuff
-** (eg. small bug in trace, etc).  Still will not send or receive
-** any data through DCC tho (will time out, but not receive data,
-** error 14 - "Bad Access" -- to be investigated).
-**
-** Revision 1.88  2000/03/19 08:50:56  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.87  2000/03/08 23:38:37  prez
-** Added LIVE to nickserv/chanserv, added help funcitonality to all other
-** services, and a bunch of other small changes (token name changes, etc)
-**
-** Revision 1.86  2000/02/27 03:58:40  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.85  2000/02/23 12:21:04  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.84  2000/02/17 12:55:07  ungod
-** still working on borlandization
-**
-** Revision 1.83  2000/02/16 12:59:41  ungod
-** fixing for borland compilability
-**
-** Revision 1.82  2000/02/15 13:27:04  prez
-** *** empty log message ***
-**
-** Revision 1.81  2000/02/15 10:37:51  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "magick.h"
 

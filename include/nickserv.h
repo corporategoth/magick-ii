@@ -2,232 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _NICKSERV_H
 #define _NICKSERV_H
 #include "pch.h"
 RCSID(nickserv_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.80  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.79  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.78  2002/01/10 19:30:37  prez
-** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
-** ensures that data being used cannot be deleted while still being used.
-**
-** Revision 1.77  2001/12/25 08:43:12  prez
-** Fixed XML support properly ... it now works again with new version of
-** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
-**
-** Revision 1.76  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.75  2001/11/04 23:43:14  prez
-** Updates for MS Visual C++ compilation (it works now!).
-**
-** Revision 1.74  2001/11/03 21:02:50  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.73  2001/07/05 05:59:05  prez
-** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
-**
-** Revision 1.72  2001/06/15 07:20:39  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.71  2001/05/28 11:17:33  prez
-** Added some more anti-deadlock stuff, and fixed nick ident warnings
-**
-** Revision 1.70  2001/05/25 01:59:31  prez
-** Changed messaging system ...
-**
-** Revision 1.69  2001/05/17 19:18:53  prez
-** Added ability to chose GETPASS or SETPASS.
-**
-** Revision 1.68  2001/05/13 00:55:17  prez
-** More patches to try and fix deadlocking ...
-**
-** Revision 1.67  2001/05/03 22:34:35  prez
-** Fixed SQUIT protection ...
-**
-** Revision 1.66  2001/05/01 14:00:22  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.65  2001/04/05 05:59:50  prez
-** Turned off -fno-default-inline, and split up server.cpp, it should
-** compile again with no special options, and have default inlines :)
-**
-** Revision 1.64  2001/04/02 02:13:27  prez
-** Added inlines, fixed more of the exception code.
-**
-** Revision 1.63  2001/03/27 07:04:30  prez
-** All maps have been hidden, and are now only accessable via. access functions.
-**
-** Revision 1.62  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.61  2001/03/08 08:07:40  ungod
-** fixes for bcc 5.5
-**
-** Revision 1.60  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.59  2001/02/11 07:41:27  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.57  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.53  2000/12/23 22:22:23  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.52  2000/12/22 19:50:19  prez
-** Made all config options const.  Beginnings of securing all non-modifying
-** commands to const.  also added serviceschk.
-**
-** Revision 1.51  2000/12/21 14:18:17  prez
-** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
-** logon messages.  Also added ability to clear stats and showing of time
-** stats are effective for (ie. time since clear).  Also fixed ordering of
-** commands, anything with 2 commands (ie. a space in it) should go before
-** anything with 1.
-**
-** Revision 1.50  2000/09/12 21:17:01  prez
-** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
-**
-** Revision 1.49  2000/09/01 10:54:38  prez
-** Added Changing and implemented Modify tracing, now just need to create
-** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
-** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
-**
-** Revision 1.48  2000/08/19 10:59:46  prez
-** Added delays between nick/channel registering and memo sending,
-** Added limit of channels per reg'd nick
-** Added setting of user modes when recognized on hard-coded committees
-**
-** Revision 1.47  2000/08/06 05:27:46  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
-**
-** Revision 1.46  2000/08/03 13:06:29  prez
-** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
-**
-** Revision 1.45  2000/07/28 14:49:34  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.44  2000/07/21 00:18:46  prez
-** Fixed database loading, we can now load AND save databases...
-**
-** Almost ready to release now :)
-**
-** Revision 1.43  2000/06/15 13:41:10  prez
-** Added my tasks to develop *grin*
-** Also did all the chanserv live locking (stored to be done).
-** Also made magick check if its running, and kill on startup if so.
-**
-** Revision 1.42  2000/06/12 06:07:49  prez
-** Added Usage() functions to get ACCURATE usage stats from various
-** parts of services.  However bare in mind DONT use this too much
-** as it has to go through every data item to grab the usages.
-**
-** Revision 1.41  2000/06/11 08:20:11  prez
-** More minor bug fixes, godda love testers.
-**
-** Revision 1.40  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.39  2000/05/25 08:16:38  prez
-** Most of the LOGGING for commands is complete, now have to do mainly
-** backend stuff ...
-**
-** Revision 1.38  2000/05/17 07:47:58  prez
-** Removed all save_databases calls from classes, and now using XML only.
-** To be worked on: DCC Xfer pointer transferal and XML Loading
-**
-** Revision 1.37  2000/05/14 04:02:52  prez
-** Finished off per-service XML stuff, and we should be ready to go.
-**
-** Revision 1.36  2000/05/08 14:42:01  prez
-** More on xmlisation of nickserv and chanserv
-**
-** Revision 1.35  2000/05/03 14:12:22  prez
-** Added 'public' filesystem, ie. the ability to add
-** arbitary files for download via. servmsg (sops may
-** upload/download, and set the committees who can
-** grab the file).
-**
-** Revision 1.34  2000/04/04 03:21:34  prez
-** Added support for SVSHOST where applicable.
-**
-** Revision 1.33  2000/04/04 03:13:50  prez
-** Added support for masking hostnames.
-**
-** Revision 1.32  2000/04/03 09:45:21  prez
-** Made use of some config entries that were non-used, and
-** removed some redundant ones ...
-**
-** Revision 1.31  2000/03/23 10:22:24  prez
-** Fully implemented the FileSys and DCC system, untested,
-**
-** Revision 1.30  2000/03/19 08:50:53  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.29  2000/03/15 14:42:58  prez
-** Added variable AKILL types (including GLINE)
-**
-** Revision 1.28  2000/03/08 23:38:36  prez
-** Added LIVE to nickserv/chanserv, added help funcitonality to all other
-** services, and a bunch of other small changes (token name changes, etc)
-**
-** Revision 1.27  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.26  2000/02/21 03:27:38  prez
-** Updated language files ...
-**
-** Revision 1.25  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "base.h"
 #include "ircsocket.h"

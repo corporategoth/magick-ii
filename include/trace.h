@@ -2,152 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _TRACE_H
 #define _TRACE_H
 #include "pch.h"
 RCSID(trace_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.83  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.82  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.81  2002/01/01 22:16:55  prez
-** Fixed memory leak properly in db saving ...
-**
-** Revision 1.80  2001/12/30 21:27:29  prez
-** Some trace code beautification, and added ACE_Thread::exit() to worker
-** and save_databases threads ..
-**
-** Revision 1.79  2001/11/16 20:27:33  prez
-** Added a MAX_THREADS option, and made the thread heartbeat a timer based
-** operation, instead of part of the threads.
-**
-** Revision 1.78  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.77  2001/06/20 06:07:01  prez
-** ome GCC 3.0 and solaris fixes
-**
-** Revision 1.76  2001/06/11 03:44:45  prez
-** Re-wrote how burst works, and made the burst message a lower priority
-** than normal.  Also removed the chance of a stray pointer being picked
-** up in the dependancy system.
-**
-** Revision 1.75  2001/05/25 01:59:31  prez
-** Changed messaging system ...
-**
-** Revision 1.74  2001/05/01 14:00:22  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.73  2001/04/05 05:59:50  prez
-** Turned off -fno-default-inline, and split up server.cpp, it should
-** compile again with no special options, and have default inlines :)
-**
-** Revision 1.72  2001/04/02 02:13:27  prez
-** Added inlines, fixed more of the exception code.
-**
-** Revision 1.71  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.70  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.68  2000/12/23 22:22:23  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.67  2000/12/12 02:51:58  prez
-** Moved the do_nothing function
-**
-** Revision 1.66  2000/10/14 04:25:31  prez
-** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
-** TODO - make mstring use MemoryManager.
-**
-** Revision 1.65  2000/09/01 10:54:38  prez
-** Added Changing and implemented Modify tracing, now just need to create
-** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
-** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
-**
-** Revision 1.64  2000/08/31 06:25:08  prez
-** Added our own socket class (wrapper around ACE_SOCK_Stream,
-** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
-**
-** Revision 1.63  2000/08/28 10:51:35  prez
-** Changes: Locking mechanism only allows one lock to be set at a time.
-** Activation_Queue removed, and use pure message queue now, mBase::init()
-** now resets us back to the stage where we havnt started threads, and is
-** called each time we re-connect.  handle_close added to ircsvchandler.
-** Also added in locking for all accesses of ircsvchandler, and checking
-** to ensure it is not null.
-**
-** Revision 1.62  2000/08/22 08:43:39  prez
-** Another re-write of locking stuff -- this time to essentially make all
-** locks re-entrant ourselves, without relying on implementations to do it.
-** Also stops us setting the same lock twice in the same thread.
-**
-** Revision 1.61  2000/08/06 05:27:46  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
-**
-** Revision 1.60  2000/07/30 09:04:04  prez
-** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
-** on linux, as it seems to corrupt the databases.
-**
-** Revision 1.59  2000/07/28 14:49:35  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.58  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.57  2000/05/20 03:28:10  prez
-** Implemented transaction based tracing (now tracing wont dump its output
-** until logical 'transactions' are done, which are ended by the thread
-** being re-attached to another type, ending, or an explicit FLUSH() call).
-**
-** Revision 1.56  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.55  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "variant.h"
 

@@ -2,88 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001r William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _VARIANT_H
 #define _VARIANT_H
 //#include "pch.h"
 RCSID(variant_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.42  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.41  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.40  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.39  2001/04/09 07:55:26  prez
-** Fixed type of Empty
-**
-** Revision 1.38  2001/04/05 05:59:51  prez
-** Turned off -fno-default-inline, and split up server.cpp, it should
-** compile again with no special options, and have default inlines :)
-**
-** Revision 1.37  2001/04/02 02:13:27  prez
-** Added inlines, fixed more of the exception code.
-**
-** Revision 1.36  2001/03/08 08:07:40  ungod
-** fixes for bcc 5.5
-**
-** Revision 1.35  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.32  2000/12/09 10:17:14  prez
-** Added +h to unreal IRCD profile, and made variant more efficiant
-** string wise by cutting out many operator= calls.
-**
-** Revision 1.31  2000/09/01 10:54:38  prez
-** Added Changing and implemented Modify tracing, now just need to create
-** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
-** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
-**
-** Revision 1.30  2000/07/28 14:49:35  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.29  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.28  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.27  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "datetime.h"
 

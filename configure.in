@@ -1,14 +1,31 @@
 dnl Magick IRC Services
 dnl
-dnl (c) 1997-2001 Preston Elder <prez@magick.tm>
-dnl (c) 1998-2001 William King <ungod@magick.tm>
+dnl (c) 1997-2002 Preston Elder <prez@magick.tm>
+dnl (c) 1998-2002 William King <ungod@magick.tm>
 dnl
-dnl The above copywright may not be removed under any
-dnl circumstances, however it may be added to if any
-dnl modifications are made to this file.  All modified
-dnl code must be clearly documented and labelled.
-
+dnl The above copywright may not be removed under any circumstances,
+dnl however it may be added to if any modifications are made to this
+dnl file.  All modified code must be clearly documented and labelled.
+dnl
+dnl This code is released under the GNU General Public License, which
+dnl means (in short), it may be distributed freely, and may not be sold
+dnl or used as part of any closed-source product.  Please check the
+dnl COPYING file for full rights and restrictions of this software.
+dnl
+dnl =======================================================================
 dnl $Id$
+
+dnl =======================================================================
+dnl
+dnl For official changes (by the Magick Development Team),please
+dnl check the ChangeLog* files that come with this distribution.
+dnl
+dnl Third Party Changes (please include e-mail address):
+dnl
+dnl N/A
+dnl
+dnl =======================================================================
+
 
 dnl Standard stuff
 dnl ==============

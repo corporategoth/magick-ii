@@ -1,65 +1,32 @@
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_magick_stampkeys_c_ ## x () { return y; }
 RCSID(magick_stampkeys_c, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.8  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.7  2001/12/16 01:48:08  prez
-** Fixed RCSID
-**
-** Revision 1.6  2001/11/12 01:05:03  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.5  2001/11/03 21:02:53  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.4  2001/07/12 00:28:42  prez
-** Added propper support for Anarchy mode
-**
-** Revision 1.3  2001/06/15 07:20:40  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.2  2001/05/14 04:46:32  prez
-** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
-**
-** Revision 1.1  2001/04/15 03:10:51  prez
-** Changed stampkeys -> magick_stampkeys and updated the RPM spec
-**
-** Revision 1.2  2001/04/13 07:42:49  prez
-** Fixed the stampkeys program
-**
-** Revision 1.1  2001/04/13 07:12:49  prez
-** Changed genrankeys style random key generation to binary stamping
-** (allowing people to stamp the binary AFTER it has been created, and
-** thus, allowing pre-compiled binaries to be stamped for security).
-**
-** Revision 1.10  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include <stdio.h>
 #include <string.h>

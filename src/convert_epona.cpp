@@ -5,89 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_convert_epona_cpp_ ## x () { return y; }
 RCSID(convert_epona_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.11  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.10  2002/01/13 05:18:41  prez
-** More formatting, changed style slightly
-**
-** Revision 1.9  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.8  2002/01/10 19:30:38  prez
-** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
-** ensures that data being used cannot be deleted while still being used.
-**
-** Revision 1.7  2001/12/20 08:02:32  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.6  2001/12/12 07:43:52  prez
-** Some more platform changes.  Made it look for _snprintf and _vsnprintf
-** aswell (is the case on windows).  Also updated windows config.h.win.
-**
-** Revision 1.5  2001/11/17 07:18:12  prez
-** Fixed up unbanning, so it gets ALL bans ...
-**
-** Revision 1.4  2001/11/12 01:05:02  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.3  2001/11/05 16:23:02  ungod
-** more borland goodness
-**
-** Revision 1.2  2001/11/04 19:23:09  ungod
-** fixed up compilation for borland c++ builder
-**
-** Revision 1.1  2001/11/03 21:02:53  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.6  2001/06/15 07:20:40  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.5  2001/05/28 11:17:34  prez
-** Added some more anti-deadlock stuff, and fixed nick ident warnings
-**
-** Revision 1.4  2001/05/05 17:33:58  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
-**
-** Revision 1.3  2001/03/27 07:04:31  prez
-** All maps have been hidden, and are now only accessable via. access functions.
-**
-** Revision 1.2  2001/03/04 02:04:14  prez
-** Made mstring a little more succinct ... and added vector/list operations
-**
-** Revision 1.1  2001/02/03 02:22:34  prez
-** added conversion for EPOERNET
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #ifdef CONVERT
 #include "convert_epona.h"

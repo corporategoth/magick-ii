@@ -2,126 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _SERVMSG_H
 #define _SERVMSG_H
 #include "pch.h"
 RCSID(servmsg_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.35  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.34  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.33  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.32  2001/05/01 14:00:22  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.31  2001/04/05 05:59:50  prez
-** Turned off -fno-default-inline, and split up server.cpp, it should
-** compile again with no special options, and have default inlines :)
-**
-** Revision 1.30  2001/04/02 02:13:27  prez
-** Added inlines, fixed more of the exception code.
-**
-** Revision 1.29  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.28  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.27  2001/02/11 07:41:27  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.25  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.21  2000/12/22 19:50:19  prez
-** Made all config options const.  Beginnings of securing all non-modifying
-** commands to const.  also added serviceschk.
-**
-** Revision 1.20  2000/12/21 14:18:17  prez
-** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
-** logon messages.  Also added ability to clear stats and showing of time
-** stats are effective for (ie. time since clear).  Also fixed ordering of
-** commands, anything with 2 commands (ie. a space in it) should go before
-** anything with 1.
-**
-** Revision 1.19  2000/06/25 07:58:48  prez
-** Added Bahamut support, listing of languages, and fixed some minor bugs.
-**
-** Revision 1.18  2000/06/18 12:49:26  prez
-** Finished locking, need to do some cleanup, still some small parts
-** of magick.cpp/h not locked properly, and need to ensure the case
-** is the same every time something is locked/unlocked, but for the
-** most part, locks are done, we lock pretty much everything :)
-**
-** Revision 1.17  2000/06/09 13:57:00  prez
-** Added tracing to mconfig
-**
-** Revision 1.16  2000/06/08 13:07:33  prez
-** Added Secure Oper and flow control to DCC's.
-** Also added DCC list and cancel ability
-**
-** Revision 1.15  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.14  2000/05/17 07:47:58  prez
-** Removed all save_databases calls from classes, and now using XML only.
-** To be worked on: DCC Xfer pointer transferal and XML Loading
-**
-** Revision 1.13  2000/05/03 14:12:22  prez
-** Added 'public' filesystem, ie. the ability to add
-** arbitary files for download via. servmsg (sops may
-** upload/download, and set the committees who can
-** grab the file).
-**
-** Revision 1.12  2000/04/04 03:21:34  prez
-** Added support for SVSHOST where applicable.
-**
-** Revision 1.11  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.10  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "base.h"
 

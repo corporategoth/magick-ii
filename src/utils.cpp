@@ -5,241 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_utils_cpp_ ## x () { return y; }
 RCSID(utils_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.78  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.77  2002/01/13 05:18:42  prez
-** More formatting, changed style slightly
-**
-** Revision 1.76  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.75  2001/12/20 08:02:33  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.74  2001/12/09 11:25:52  prez
-** Some windows compilation fixes ...
-**
-** Revision 1.73  2001/11/17 03:16:02  prez
-** Extra logging, actually made DCC identify as a DCC thread, and fixed some
-** mkdir failures ...
-**
-** Revision 1.72  2001/11/12 01:05:03  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.71  2001/07/03 06:00:08  prez
-** More deadlock fixes ... also cleared up the Signal #6 problem.
-**
-** Revision 1.70  2001/07/01 05:02:46  prez
-** Added changes to dependancy system so it wouldnt just remove a dependancy
-** after the first one was satisfied.
-**
-** Revision 1.69  2001/06/17 09:39:08  prez
-** Hopefully some more changes that ensure uptime (mainly to do with locking
-** entries in an iterated search, and using copies of data instead of references
-** where we can get away with it -- reducing the need to lock the data).
-**
-** Revision 1.68  2001/06/17 05:22:12  prez
-** Resolved compatability issues with ACE 5.1.17
-**
-** Revision 1.67  2001/06/15 07:20:41  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.66  2001/06/02 16:27:04  prez
-** Intergrated the staging system for dbase loading/saving.
-**
-** Revision 1.65  2001/05/17 19:18:55  prez
-** Added ability to chose GETPASS or SETPASS.
-**
-** Revision 1.64  2001/05/14 07:17:28  prez
-** Fixed encryption :)
-**
-** Revision 1.63  2001/05/14 04:46:32  prez
-** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
-**
-** Revision 1.62  2001/05/06 03:03:08  prez
-** Changed all language sends to use $ style tokens too (aswell as logs), so we're
-** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
-** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
-** Also added example lng and lfo file, so you can see the context of each line.
-**
-** Revision 1.61  2001/05/05 17:34:00  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
-**
-** Revision 1.60  2001/03/20 14:22:15  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.59  2001/03/02 05:24:42  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.58  2001/02/11 07:41:28  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.57  2001/02/03 02:21:35  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.56  2001/01/01 05:32:45  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.55  2000/12/19 07:24:54  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.54  2000/12/10 13:06:13  prez
-** Ditched alot of the *toa's since mstring can do it internally now.
-**
-** Revision 1.53  2000/10/10 11:47:53  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.52  2000/10/04 07:39:46  prez
-** Added MemCluster to speed up lockable, but it cores when we start
-** getting real messages -- seemingly in an alloc in the events.
-** Lots of printf's left in for debugging (so run as ./magick >output)
-**
-** Revision 1.51  2000/09/30 10:48:09  prez
-** Some general code cleanups ... got rid of warnings, etc.
-**
-** Revision 1.50  2000/09/13 12:45:34  prez
-** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
-** must enable with --enable-mpatrol in configure (and have mpatrol in system).
-**
-** Revision 1.49  2000/09/09 02:17:49  prez
-** Changed time functions to actuallt accept the source nick as a param
-** so that the time values (minutes, etc) can be customized.  Also added
-** weeks to the time output.
-**
-** Revision 1.48  2000/08/22 09:30:14  prez
-** Modified md5 hash to always return non-binary characters
-**
-** Revision 1.47  2000/08/22 08:43:42  prez
-** Another re-write of locking stuff -- this time to essentially make all
-** locks re-entrant ourselves, without relying on implementations to do it.
-** Also stops us setting the same lock twice in the same thread.
-**
-** Revision 1.46  2000/08/06 05:27:48  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
-**
-** Revision 1.45  2000/07/28 14:49:36  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.44  2000/07/21 00:18:50  prez
-** Fixed database loading, we can now load AND save databases...
-**
-** Almost ready to release now :)
-**
-** Revision 1.43  2000/07/11 13:22:19  prez
-** Fixed loading/saving -- they now work with encryption and compression.
-** Tested, it works too!  Now all we need to do is fix the loading, and
-** we're set ... :))
-**
-** Revision 1.42  2000/06/29 06:30:57  prez
-** Added the support for the 'extra' chars (ie. at the end of a string)
-** so we support odd-length strings.  Also updated documentation.
-**
-** Revision 1.41  2000/06/28 18:52:42  prez
-** OOps, forgot to #include des/spr.h
-**
-** Revision 1.40  2000/06/28 12:20:50  prez
-** Lots of encryption stuff, but essentially, we now have random
-** key generation for the keyfile keys, and we can actually encrypt
-** something, and get it back as we sent it in (specifically, the
-** keyfile itself).
-**
-** Revision 1.39  2000/06/27 18:56:59  prez
-** Added choosing of keys to configure, also created the keygen,
-** and scrambler (so keys are not stored in clear text, even in
-** the .h and binary files).  We should be set to do the decryption
-** process now, as encryption (except for encryption of db's) is
-** all done :)
-**
-** Revision 1.38  2000/05/28 05:05:14  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.37  2000/05/21 04:49:41  prez
-** Removed all wxLog tags, now totally using our own logging.
-**
-** Revision 1.36  2000/05/20 15:17:00  prez
-** Changed LOG system to use ACE's log system, removed wxLog, and
-** added wrappers into pch.h and magick.cpp.
-**
-** Revision 1.35  2000/05/13 07:05:47  prez
-** Added displaying of sizes to all file fields..
-**
-** Revision 1.34  2000/04/30 03:48:30  prez
-** Replaced all system calls with ACE_OS equivilants,
-** also removed any dependancy on ACE from sxp (xml)
-**
-** Revision 1.33  2000/03/28 16:20:59  prez
-** LOTS of RET() fixes, they should now be safe and not do double
-** calculations.  Also a few bug fixes from testing.
-**
-** Revision 1.32  2000/03/19 08:50:57  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.31  2000/02/27 03:58:40  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.30  2000/02/23 12:21:04  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.29  2000/02/17 12:55:08  ungod
-** still working on borlandization
-**
-** Revision 1.28  2000/02/16 12:59:41  ungod
-** fixing for borland compilability
-**
-** Revision 1.27  2000/02/15 13:27:04  prez
-** *** empty log message ***
-**
-** Revision 1.26  2000/02/15 10:37:51  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "magick.h"
 

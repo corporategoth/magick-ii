@@ -1,177 +1,33 @@
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _PCH_H
 #define _PCH_H
 // RCSID(pch_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
-**
-** $Log$
-** Revision 1.49  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.48  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.47  2001/12/31 07:49:46  prez
-** Found out stl_config.h didnt get included by default .. fixed that.
-**
-** Revision 1.46  2001/12/30 11:53:08  prez
-** Added thread safety for STL to pch.h, and started using ACE to do it.
-**
-** Revision 1.45  2001/12/25 05:57:27  prez
-** Updated SXP and EXPAT -- untested, but should work.
-**
-** Revision 1.44  2001/12/12 07:43:52  prez
-** Some more platform changes.  Made it look for _snprintf and _vsnprintf
-** aswell (is the case on windows).  Also updated windows config.h.win.
-**
-** Revision 1.43  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.42  2001/06/20 06:07:01  prez
-** ome GCC 3.0 and solaris fixes
-**
-** Revision 1.41  2001/06/17 19:29:53  prez
-** Fixed pch again to support 5.1.0 aswell as 5.1.17 ACE
-**
-** Revision 1.40  2001/06/17 05:22:12  prez
-** Resolved compatability issues with ACE 5.1.17
-**
-** Revision 1.39  2001/06/02 16:27:04  prez
-** Intergrated the staging system for dbase loading/saving.
-**
-** Revision 1.38  2001/05/28 11:17:33  prez
-** Added some more anti-deadlock stuff, and fixed nick ident warnings
-**
-** Revision 1.37  2001/05/01 14:00:22  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.36  2001/04/08 18:53:09  prez
-** It now all compiles and RUNS with -fno-default-inline OFF.
-**
-** Revision 1.35  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.34  2001/03/08 14:34:29  prez
-** Fixed some OS incompatabilities
-**
-** Revision 1.33  2001/03/08 08:07:40  ungod
-** fixes for bcc 5.5
-**
-** Revision 1.32  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.30  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.29  2000/12/29 14:00:40  prez
-** needed to include ace/Version.h
-**
-** Revision 1.28  2000/12/29 13:55:09  prez
-** Compiled with 5.1.11, some changes to accomodate (will work with older
-** versions of ace still).
-**
-** Revision 1.27  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.26  2000/12/09 11:15:11  prez
-** Changed string.h -> strings.h for sunos compliance.
-**
-** Revision 1.25  2000/10/18 18:46:33  prez
-** Well, mstring still coredumps, but it gets past the initial loading of
-** all the STATIC (or const) strings, etc -- now its coring on loading a
-** file (or possibly language.h or something).  Still investigating.
-**
-** Revision 1.24  2000/10/03 05:36:27  prez
-** Updated some makefiles, helper stuff, and headers -- nothing
-** too earth shattering.
-**
-** Revision 1.23  2000/09/30 10:48:06  prez
-** Some general code cleanups ... got rid of warnings, etc.
-**
-** Revision 1.22  2000/09/18 08:17:57  prez
-** Intergrated mpatrol into the xml/des sublibs, and did
-** some minor fixes as a result of mpatrol.
-**
-** Revision 1.21  2000/09/13 12:45:33  prez
-** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
-** must enable with --enable-mpatrol in configure (and have mpatrol in system).
-**
-** Revision 1.20  2000/05/28 05:20:46  prez
-** More stuff ..
-**
-** Revision 1.19  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.18  2000/05/27 15:14:45  prez
-** *** empty log message ***
-**
-** Revision 1.17  2000/05/27 15:10:10  prez
-** Misc changes, mainly re-did the makefile system, makes more sense.
-** Also added a config.h file.
-**
-** Revision 1.16  2000/05/21 04:49:38  prez
-** Removed all wxLog tags, now totally using our own logging.
-**
-** Revision 1.15  2000/05/20 16:05:07  prez
-** Finished off the log conversion (still via. wrappers)
-**
-** Revision 1.14  2000/05/20 15:17:00  prez
-** Changed LOG system to use ACE's log system, removed wxLog, and
-** added wrappers into pch.h and magick.cpp.
-**
-** Revision 1.13  2000/05/17 09:10:35  ungod
-** changed most wxOutputStream to ofstream and wxInputStream
-** to ifstream
-**
-** Revision 1.12  2000/03/23 10:22:24  prez
-** Fully implemented the FileSys and DCC system, untested,
-**
-** Revision 1.11  2000/03/19 08:50:53  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.10  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.9  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)

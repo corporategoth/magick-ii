@@ -2,143 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copyright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _VERSION_H
 #define _VERSION_H
 #include "pch.h"
 RCSID(version_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.131  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.130  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.129  2001/12/16 00:07:42  prez
-** Updated configure.in to be more solaris friendly.
-**
-** Revision 1.128  2001/12/15 23:47:55  prez
-** *** empty log message ***
-**
-** Revision 1.36  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.35  2001/11/03 21:02:51  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.34  2001/07/24 02:51:13  prez
-** Added ability to do JOIN or SJOIN
-**
-** Revision 1.33  2001/07/05 06:00:39  prez
-** Up'd version to b11
-**
-** Revision 1.32  2001/05/28 11:17:33  prez
-** Added some more anti-deadlock stuff, and fixed nick ident warnings
-**
-** Revision 1.31  2001/05/17 19:18:53  prez
-** Added ability to chose GETPASS or SETPASS.
-**
-** Revision 1.30  2001/05/06 03:03:07  prez
-** Changed all language sends to use $ style tokens too (aswell as logs), so we're
-** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
-** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
-** Also added example lng and lfo file, so you can see the context of each line.
-**
-** Revision 1.29  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.28  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.24  2000/12/10 07:49:26  prez
-** *** empty log message ***
-**
-** Revision 1.23  2000/10/03 05:36:27  prez
-** Updated some makefiles, helper stuff, and headers -- nothing
-** too earth shattering.
-**
-** Revision 1.22  2000/09/27 11:21:37  prez
-** Added a BURST mode ...
-**
-** Revision 1.21  2000/09/19 08:05:24  prez
-** Ran text files through spell checker.
-**
-** Revision 1.20  2000/08/22 08:43:39  prez
-** Another re-write of locking stuff -- this time to essentially make all
-** locks re-entrant ourselves, without relying on implementations to do it.
-** Also stops us setting the same lock twice in the same thread.
-**
-** Revision 1.19  2000/08/19 10:59:46  prez
-** Added delays between nick/channel registering and memo sending,
-** Added limit of channels per reg'd nick
-** Added setting of user modes when recognized on hard-coded committees
-**
-** Revision 1.18  2000/08/07 22:40:52  prez
-** *** empty log message ***
-**
-** Revision 1.17  2000/07/28 14:49:35  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.16  2000/07/23 20:53:13  prez
-** removing of antlr
-**
-** Revision 1.15  2000/07/11 13:22:18  prez
-** Fixed loading/saving -- they now work with encryption and compression.
-** Tested, it works too!  Now all we need to do is fix the loading, and
-** we're set ... :))
-**
-** Revision 1.14  2000/06/08 13:07:34  prez
-** Added Secure Oper and flow control to DCC's.
-** Also added DCC list and cancel ability
-**
-** Revision 1.13  2000/05/22 13:00:08  prez
-** Updated version.h and some other stuff
-**
-** Revision 1.12  2000/03/26 14:59:36  prez
-** LOADS of bugfixes due to testing in the real-time environment
-** Also enabled the SECURE OperServ option in the CFG file.
-**
-** Revision 1.11  2000/03/25 04:26:48  prez
-** Added tracing into filesys for easier detection as to why it will not
-** receive data.  Also put version number to a2 now, ready for release soon.
-**
-** Revision 1.10  2000/02/27 03:58:39  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.9  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.8  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
@@ -192,8 +85,8 @@ const mstring PATCH9 = "";
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
     FULLNAME + " - " + SLOGAN,
-    "  (c) 1997-2001 Preston Elder <prez@magick.tm>",
-    "  (c) 1998-2001 William King <ungod@magick.tm>",
+    "  (c) 1997-2002 Preston Elder <prez@magick.tm>",
+    "  (c) 1998-2002 William King <ungod@magick.tm>",
     "",
     mstring(PACKAGE) + " is dedicated to the memory of PreZ's beloved",
     "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",

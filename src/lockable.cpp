@@ -5,243 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_lockable_cpp_ ## x () { return y; }
 RCSID(lockable_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.81  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.80  2002/01/13 05:18:41  prez
-** More formatting, changed style slightly
-**
-** Revision 1.79  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.78  2002/01/10 19:30:38  prez
-** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
-** ensures that data being used cannot be deleted while still being used.
-**
-** Revision 1.77  2001/12/20 08:02:32  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.76  2001/12/16 01:30:45  prez
-** More changes to fix up warnings ... added some new warning flags too!
-**
-** Revision 1.75  2001/11/28 13:40:47  prez
-** Added UMASK option to config.  Also made the 'dead thread' protection
-** send a SIGIOT signal to try and get the thread to die gracefully, else
-** it will do the cancel it used to do.
-**
-** Revision 1.74  2001/11/12 01:05:02  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.73  2001/11/03 21:02:53  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.72  2001/05/17 19:18:54  prez
-** Added ability to chose GETPASS or SETPASS.
-**
-** Revision 1.71  2001/05/05 17:33:58  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
-**
-** Revision 1.70  2001/05/03 04:40:17  prez
-** Fixed locking mechanism (now use recursive mutexes) ...
-** Also now have a deadlock/nonprocessing detection mechanism.
-**
-** Revision 1.69  2001/05/02 04:57:07  prez
-** Fixed up problems in failing to release locks
-**
-** Revision 1.68  2001/05/02 02:35:27  prez
-** Fixed dependancy system, and removed printf's - we no longer coredump on
-** a 1000 user network.  As a bonus, we actually synd perfectly ;P
-**
-** Revision 1.67  2001/05/01 14:00:23  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.66  2001/04/08 18:53:09  prez
-** It now all compiles and RUNS with -fno-default-inline OFF.
-**
-** Revision 1.65  2001/04/02 02:11:23  prez
-** Fixed up some inlining, and added better excption handling
-**
-** Revision 1.64  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.63  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.62  2001/02/11 07:41:27  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.61  2001/02/03 02:21:33  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.60  2001/01/15 23:31:39  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.59  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.58  2000/12/25 06:36:14  prez
-** Added locking around the threadtoself map, and removed a bunch of
-** defines from mstring (while keeping it the same!)
-**
-** Revision 1.57  2000/12/23 22:22:24  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.56  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.55  2000/10/18 18:46:33  prez
-** Well, mstring still coredumps, but it gets past the initial loading of
-** all the STATIC (or const) strings, etc -- now its coring on loading a
-** file (or possibly language.h or something).  Still investigating.
-**
-** Revision 1.54  2000/10/10 11:47:51  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.53  2000/10/07 11:01:13  prez
-** Took out placement new's from lockable.cpp, now using derived classes.
-**
-** Revision 1.52  2000/10/04 10:52:08  prez
-** Fixed the memory pool and removed printf's.
-**
-** Revision 1.51  2000/10/04 07:39:46  prez
-** Added MemCluster to speed up lockable, but it cores when we start
-** getting real messages -- seemingly in an alloc in the events.
-** Lots of printf's left in for debugging (so run as ./magick >output)
-**
-** Revision 1.50  2000/09/13 12:45:34  prez
-** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
-** must enable with --enable-mpatrol in configure (and have mpatrol in system).
-**
-** Revision 1.49  2000/09/07 08:13:17  prez
-** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
-** Also added CPU statistics and fixed problem with socket deletions.
-**
-** Revision 1.48  2000/09/06 11:27:33  prez
-** Finished the T_Modify / T_Changing traces, fixed a bug in clone
-** adding (was adding clone liimt as the mask length), updated docos
-** a little more, and added a response to SIGINT to signon clients.
-**
-** Revision 1.47  2000/09/05 10:53:07  prez
-** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
-** tracing -- also modified keygen to allow for cmdline generation (ie.
-** specify 1 option and enter keys, or 2 options and the key is read from
-** a file).  This allows for paragraphs with \n's in them, and helps so you
-** do not have to type out 1024 bytes :)
-**
-** Revision 1.46  2000/09/01 10:54:38  prez
-** Added Changing and implemented Modify tracing, now just need to create
-** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
-** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
-**
-** Revision 1.45  2000/08/31 06:25:09  prez
-** Added our own socket class (wrapper around ACE_SOCK_Stream,
-** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
-**
-** Revision 1.44  2000/08/28 10:51:37  prez
-** Changes: Locking mechanism only allows one lock to be set at a time.
-** Activation_Queue removed, and use pure message queue now, mBase::init()
-** now resets us back to the stage where we havnt started threads, and is
-** called each time we re-connect.  handle_close added to ircsvchandler.
-** Also added in locking for all accesses of ircsvchandler, and checking
-** to ensure it is not null.
-**
-** Revision 1.43  2000/08/22 08:43:41  prez
-** Another re-write of locking stuff -- this time to essentially make all
-** locks re-entrant ourselves, without relying on implementations to do it.
-** Also stops us setting the same lock twice in the same thread.
-**
-** Revision 1.42  2000/08/19 10:59:47  prez
-** Added delays between nick/channel registering and memo sending,
-** Added limit of channels per reg'd nick
-** Added setting of user modes when recognized on hard-coded committees
-**
-** Revision 1.41  2000/08/06 05:27:47  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
-**
-** Revision 1.40  2000/08/03 13:06:31  prez
-** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
-**
-** Revision 1.39  2000/07/21 00:18:49  prez
-** Fixed database loading, we can now load AND save databases...
-**
-** Almost ready to release now :)
-**
-** Revision 1.38  2000/06/13 14:11:54  prez
-** Locking system has been re-written, it doent core anymore.
-** So I have set 'MAGICK_LOCKS_WORK' define active :)
-**
-** Revision 1.37  2000/06/06 08:57:56  prez
-** Finished off logging in backend processes except conver (which I will
-** leave for now).  Also fixed some minor bugs along the way.
-**
-** Revision 1.36  2000/05/20 03:28:11  prez
-** Implemented transaction based tracing (now tracing wont dump its output
-** until logical 'transactions' are done, which are ended by the thread
-** being re-attached to another type, ending, or an explicit FLUSH() call).
-**
-** Revision 1.35  2000/02/27 03:58:40  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.34  2000/02/23 12:21:03  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.33  2000/02/16 12:59:39  ungod
-** fixing for borland compilability
-**
-** Revision 1.32  2000/02/15 13:27:03  prez
-** *** empty log message ***
-**
-** Revision 1.31  2000/02/15 10:37:49  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "magick.h"
 

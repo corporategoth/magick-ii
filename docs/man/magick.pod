@@ -416,6 +416,6 @@ who knew him forget him.
 
 Magick Development Team E<lt>magick-devel@magick.tmE<gt>
 
-(c) 1997-2001 Preston Elder E<lt>prez@magick.tmE<gt>
+(c) 1997-2002 Preston Elder E<lt>prez@magick.tmE<gt>
 
-(c) 1998-2001 William King E<lt>ungod@magick.tmE<gt>
+(c) 1998-2002 William King E<lt>ungod@magick.tmE<gt>

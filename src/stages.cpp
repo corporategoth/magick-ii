@@ -5,84 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_stages_cpp_ ## x () { return y; }
 RCSID(stages_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.17  2002/01/14 07:19:16  prez
-** Fixed delete calls
-**
-** Revision 1.16  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.15  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.14  2001/12/26 23:30:35  prez
-** More fixes to see if I can fix the memory leak ...
-**
-** Revision 1.13  2001/12/25 11:15:29  prez
-** Fixed up my ASC hack in XML parsing
-**
-** Revision 1.12  2001/12/25 08:43:13  prez
-** Fixed XML support properly ... it now works again with new version of
-** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
-**
-** Revision 1.11  2001/12/25 04:06:46  prez
-** Fixed up memory leak in stages
-**
-** Revision 1.10  2001/12/16 01:30:46  prez
-** More changes to fix up warnings ... added some new warning flags too!
-**
-** Revision 1.9  2001/11/12 01:05:03  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.8  2001/11/03 21:02:55  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.7  2001/07/28 21:50:57  prez
-** Added trace codes ...
-**
-** Revision 1.6  2001/07/12 04:27:47  prez
-** Fixed problem with it cutting encrypted db's just a bit too short.
-**
-** Revision 1.5  2001/06/07 06:21:06  prez
-** Think I fixed staging encryption layer ... ugh.
-**
-** Revision 1.4  2001/06/07 03:58:05  prez
-** Aparently we dont need or want a Feed call with 1
-**
-** Revision 1.3  2001/06/03 02:12:44  prez
-** Fixed problem with compress stage not recognizing its end ...
-**
-** Revision 1.2  2001/06/02 16:27:04  prez
-** Intergrated the staging system for dbase loading/saving.
-**
-** Revision 1.1  2001/06/02 11:04:20  prez
-** Initial checkin of stages
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "magick.h"
 

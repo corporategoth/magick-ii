@@ -5,171 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_mconfig_cpp_ ## x () { return y; }
 RCSID(mconfig_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.40  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.39  2002/01/13 05:18:41  prez
-** More formatting, changed style slightly
-**
-** Revision 1.38  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.37  2001/12/12 03:31:15  prez
-** Re-wrote the occurances/find/replace functions in mstring to actually work
-** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
-**
-** Revision 1.36  2001/12/06 01:41:39  prez
-** Some fixes to the config file parser -- slightly more flexable now.
-**
-** Revision 1.35  2001/11/12 01:05:03  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.34  2001/11/03 21:02:53  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.33  2001/07/15 07:35:38  prez
-** Fixed problem of it removing access list entries on slave nickname drop.
-** Also fixed it so it wouldnt ignore ini entries that were deliberately blank.
-**
-** Revision 1.32  2001/06/15 07:20:40  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.31  2001/04/02 02:11:23  prez
-** Fixed up some inlining, and added better excption handling
-**
-** Revision 1.30  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.29  2001/02/03 02:21:34  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.28  2001/01/15 23:31:39  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.27  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.26  2000/12/30 19:53:13  prez
-** Fixed problem where it would create keys twice ...
-**
-** Revision 1.25  2000/12/25 06:36:14  prez
-** Added locking around the threadtoself map, and removed a bunch of
-** defines from mstring (while keeping it the same!)
-**
-** Revision 1.24  2000/12/23 23:18:36  prez
-** Fixed problem with it using default value always
-**
-** Revision 1.23  2000/12/23 22:22:24  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.22  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.21  2000/12/09 20:16:41  prez
-** Fixed SubString and Left to have correct count/end possitions.  Also
-** adjusted rest of source to follow suit.
-**
-** Revision 1.20  2000/11/09 10:58:19  prez
-** THINK I have it working again ... with the free list.
-** Will check, still thinking of sorting free list by size.
-**
-** Revision 1.19  2000/10/10 11:47:52  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.18  2000/09/30 10:48:08  prez
-** Some general code cleanups ... got rid of warnings, etc.
-**
-** Revision 1.17  2000/08/31 06:25:09  prez
-** Added our own socket class (wrapper around ACE_SOCK_Stream,
-** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
-**
-** Revision 1.16  2000/08/19 15:17:40  ungod
-** no message
-**
-** Revision 1.15  2000/07/28 14:49:35  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.14  2000/07/24 17:51:21  ungod
-** should be finished... not tested
-**
-** Revision 1.13  2000/07/21 00:18:49  prez
-** Fixed database loading, we can now load AND save databases...
-**
-** Almost ready to release now :)
-**
-** Revision 1.12  2000/06/23 14:21:18  ungod
-** more completion of the ceNode class and more work done on mConfigEngine
-**
-** Revision 1.11  2000/06/23 12:49:44  ungod
-** completion of the ceNode class
-**
-** Revision 1.10  2000/06/11 09:30:21  prez
-** Added propper MaxLine length, no more hard-coded constants.
-**
-** Revision 1.9  2000/06/09 13:57:00  prez
-** Added tracing to mconfig
-**
-** Revision 1.8  2000/05/25 11:49:32  ungod
-** even more mConfigEngine meaty bits. (should we change it's name to Good-O's?)
-**
-** Revision 1.7  2000/05/25 08:16:39  prez
-** Most of the LOGGING for commands is complete, now have to do mainly
-** backend stuff ...
-**
-** Revision 1.6  2000/05/22 13:25:12  ungod
-** making it compilable again after removal of log.cpp/.h
-**
-** Revision 1.5  2000/05/22 13:00:09  prez
-** Updated version.h and some other stuff
-**
-** Revision 1.4  2000/05/21 14:01:10  ungod
-** body for decomment and load/save to files.
-**
-** Revision 1.3  2000/05/20 01:20:59  ungod
-** more meaty goodness in the quest for a better config engine.
-**
-** Revision 1.2  2000/05/20 00:08:02  ungod
-** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
-**
-** Revision 1.1  2000/05/19 13:11:34  ungod
-** initial checkin of the new config engine, class structure is in, but no code in it.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "mconfig.h"
 #include "mexceptions.h"

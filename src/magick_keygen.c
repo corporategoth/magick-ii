@@ -1,127 +1,32 @@
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_magick_keygen_c_ ## x () { return y; }
 RCSID(magick_keygen_c, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.24  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.23  2001/12/09 11:25:52  prez
-** Some windows compilation fixes ...
-**
-** Revision 1.22  2001/12/05 00:13:04  prez
-** Got rid of a warning in magick_keygen
-**
-** Revision 1.21  2001/11/04 19:23:09  ungod
-** fixed up compilation for borland c++ builder
-**
-** Revision 1.20  2001/11/03 21:02:53  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.19  2001/07/08 01:37:55  prez
-** Verified encryption works ...
-**
-** Revision 1.18  2001/07/01 05:02:45  prez
-** Added changes to dependancy system so it wouldnt just remove a dependancy
-** after the first one was satisfied.
-**
-** Revision 1.17  2001/06/15 07:20:40  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.16  2001/05/14 07:17:28  prez
-** Fixed encryption :)
-**
-** Revision 1.15  2001/05/14 04:46:32  prez
-** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
-**
-** Revision 1.14  2001/05/13 18:59:17  prez
-** Fixed adding of 8 extra bytes when we align to 8 byte boundaries
-**
-** Revision 1.13  2001/05/13 18:45:15  prez
-** Fixed up the keyfile validation bug, and added more error reporting to
-** the db load (also made sure it did not hang on certain circumstances).
-**
-** Revision 1.12  2001/05/13 00:55:18  prez
-** More patches to try and fix deadlocking ...
-**
-** Revision 1.11  2001/04/13 07:12:48  prez
-** Changed genrankeys style random key generation to binary stamping
-** (allowing people to stamp the binary AFTER it has been created, and
-** thus, allowing pre-compiled binaries to be stamped for security).
-**
-** Revision 1.10  2001/04/02 02:11:23  prez
-** Fixed up some inlining, and added better excption handling
-**
-** Revision 1.9  2001/02/03 02:21:34  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.8  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.7  2000/09/05 10:53:07  prez
-** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
-** tracing -- also modified keygen to allow for cmdline generation (ie.
-** specify 1 option and enter keys, or 2 options and the key is read from
-** a file).  This allows for paragraphs with \n's in them, and helps so you
-** do not have to type out 1024 bytes :)
-**
-** Revision 1.6  2000/08/28 10:51:38  prez
-** Changes: Locking mechanism only allows one lock to be set at a time.
-** Activation_Queue removed, and use pure message queue now, mBase::init()
-** now resets us back to the stage where we havnt started threads, and is
-** called each time we re-connect.  handle_close added to ircsvchandler.
-** Also added in locking for all accesses of ircsvchandler, and checking
-** to ensure it is not null.
-**
-** Revision 1.5  2000/08/03 13:06:31  prez
-** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
-**
-** Revision 1.4  2000/07/21 00:18:49  prez
-** Fixed database loading, we can now load AND save databases...
-**
-** Almost ready to release now :)
-**
-** Revision 1.3  2000/06/29 06:30:57  prez
-** Added the support for the 'extra' chars (ie. at the end of a string)
-** so we support odd-length strings.  Also updated documentation.
-**
-** Revision 1.2  2000/06/28 12:20:48  prez
-** Lots of encryption stuff, but essentially, we now have random
-** key generation for the keyfile keys, and we can actually encrypt
-** something, and get it back as we sent it in (specifically, the
-** keyfile itself).
-**
-** Revision 1.1  2000/06/27 18:56:59  prez
-** Added choosing of keys to configure, also created the keygen,
-** and scrambler (so keys are not stored in clear text, even in
-** the .h and binary files).  We should be set to do the decryption
-** process now, as encryption (except for encryption of db's) is
-** all done :)
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include <stdio.h>
 #include <string.h>
@@ -174,8 +79,8 @@ int main(int argc, char **argv)
 {
 #ifndef HASCRYPT
     printf("Magick IRC Services - http://www.magick.tm\n");
-    printf("    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n");
-    printf("    (c) 1998-2001 William King <ungod@magick.tm>\n\n");
+    printf("    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n");
+    printf("    (c) 1998-2002 William King <ungod@magick.tm>\n\n");
 
     fprintf(stderr, "You do not have encryption support.\n");
 
@@ -196,8 +101,8 @@ int main(int argc, char **argv)
 #endif
 
     printf("Magick IRC Services - http://www.magick.tm\n");
-    printf("    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n");
-    printf("    (c) 1998-2001 William King <ungod@magick.tm>\n\n");
+    printf("    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n");
+    printf("    (c) 1998-2002 William King <ungod@magick.tm>\n\n");
 
     if (argc > 1)
     {

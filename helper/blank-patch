@@ -1,37 +1,38 @@
 #!/bin/sh
 #
-#  Magick IRC Services
+# Magick IRC Services
 #
 # $Id$
-# (c) 1997-2001 Preston Elder <prez@magick.tm>
-# (c) 1998-2001 William King <ungod@magick.tm>
+# (c) 1997-2002 Preston Elder <prez@magick.tm>
+# (c) 1998-2002 William King <ungod@magick.tm>
 #
-# The above copywright may not be removed under any
-# circumstances, however it may be added to if any
-# modifications are made to this file.  All modified
-# code must be clearly documented and labelled.
+# The above copywright may not be removed under any circumstances,
+# however it may be added to if any modifications are made to this
+# file.  All modified code must be clearly documented and labelled.
 #
-# ==========================================================
+# This code is released under the GNU General Public License, which
+# means (in short), it may be distributed freely, and may not be sold
+# or used as part of any closed-source product.  Please check the
+# COPYING file for full rights and restrictions of this software.
 #
-# Blank PATCH file for application with Magick.
-# First, change the PATCHNAME to the short name
-# of your patch (one word).  Then put the output
-# of a DIFF in between the END_OF_PATCH tokens.
-# You should also rename this to the short name
-# of your patch with -patch on the end.  It should
-# be run as:
+# =======================================================================
+#
+# Blank PATCH file for application with Magick.  First, change the
+# PATCHNAME to the short name of your patch (one word).  Then put the
+# output of a DIFF in between the END_OF_PATCH tokens.  You should also
+# rename this to the short name of your patch with -patch on the end.
+# It should be run as:
 #    blank-patch [-h] [-r] <directory to magick src>
 #
-# The text that goes between the END_OF_PATCH
-# tokens should be generated using the command:
+# The text that goes between the END_OF_PATCH tokens should be generated
+# using the command:
 #    diff -urN original-dir patched-dir
-# Where original-dir is the directory where a
-# default magick distribution is located, and
-# patched-dir where the same distribution with
-# your patch applied is located.
 #
-# The addition to and removal from version.h is
-# automated with this script.
+# Where original-dir is the directory where a default magick distribution
+# is located, and patched-dir where the same distribution with your patch
+ #applied is located.
+#
+# The addition to and removal from version.h is automated with this script.
 
 # Short name for the patch
 # Author of the patch (include email)
@@ -40,11 +41,11 @@ PATCHNAME="blank"
 PATCHAUTHOR="Preston Elder <prez@magick.tm>"
 PATCHDESC="do nothing"
 
-# ==========================================================
+# =======================================================================
 
 echo "Magick IRC Services - http://www.magick.tm"
-echo "    (c) 1997-2001 Preston Elder <prez@magick.tm>"
-echo "    (c) 1998-2001 William King <ungod@magick.tm>"
+echo "    (c) 1997-2002 Preston Elder <prez@magick.tm>"
+echo "    (c) 1998-2002 William King <ungod@magick.tm>"
 echo ""
 
 while [ -n "$1" ]; do

@@ -2,219 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _MSTRING_H
 #define _MSTRING_H
 #include "pch.h"
 RCSID(mstring_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.92  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.91  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.90  2001/12/27 04:54:46  prez
-** Converted SXP to not use STL strings, use mstring instead.
-**
-** Revision 1.89  2001/12/27 01:02:15  prez
-** Fixed up init, moved to header (for efficiancy)
-**
-** Revision 1.88  2001/12/27 00:40:44  prez
-** Some efficiancy changes to mstring
-**
-** Revision 1.87  2001/12/16 00:12:44  prez
-** Some code in mstring to make its vsnprintf more safe, if possible.
-**
-** Revision 1.86  2001/12/12 15:40:21  prez
-** Made *toa functions guarentee the result is terminated.
-**
-** Revision 1.85  2001/12/12 07:43:52  prez
-** Some more platform changes.  Made it look for _snprintf and _vsnprintf
-** aswell (is the case on windows).  Also updated windows config.h.win.
-**
-** Revision 1.84  2001/12/12 07:19:20  prez
-** Added check for snprintf, and changed *toa functions to use snprintf.  Also
-** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
-** for systems without the system calls.  Made them inline.  Finally, made
-** mstring's copy() commands for non-string types use *toa functions.
-**
-** Revision 1.83  2001/12/12 03:51:00  prez
-** Forgot to return SV in all the *toa functions
-**
-** Revision 1.82  2001/12/12 03:48:47  prez
-** Fixed all the *toa functions, to NOT return c_str() of a temporary veriable.
-**
-** Revision 1.81  2001/12/07 02:51:39  prez
-** Added doxygen comments to mstring, and removed doxygen generated stuff
-** from CVS -- you can now just generate it yourself with the config file.
-**
-** Revision 1.80  2001/12/04 22:45:04  prez
-** Re-vamped the operator overloads, making it even MORE portable, and using
-** up alot less room in the process.
-**
-** Revision 1.79  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.78  2001/11/03 21:02:50  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.77  2001/06/20 06:07:01  prez
-** ome GCC 3.0 and solaris fixes
-**
-** Revision 1.76  2001/06/15 07:20:39  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.75  2001/05/13 00:55:17  prez
-** More patches to try and fix deadlocking ...
-**
-** Revision 1.74  2001/05/05 17:33:58  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
-**
-** Revision 1.73  2001/04/09 07:52:22  prez
-** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
-**
-** Revision 1.72  2001/04/05 05:59:50  prez
-** Turned off -fno-default-inline, and split up server.cpp, it should
-** compile again with no special options, and have default inlines :)
-**
-** Revision 1.71  2001/04/02 02:13:27  prez
-** Added inlines, fixed more of the exception code.
-**
-** Revision 1.70  2001/03/27 07:04:30  prez
-** All maps have been hidden, and are now only accessable via. access functions.
-**
-** Revision 1.69  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.68  2001/03/04 02:08:27  prez
-** Enhansed mstring
-**
-** Revision 1.67  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.66  2001/02/11 07:41:27  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.65  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.62  2000/12/25 06:36:14  prez
-** Added locking around the threadtoself map, and removed a bunch of
-** defines from mstring (while keeping it the same!)
-**
-** Revision 1.61  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.59  2000/12/09 20:16:41  prez
-** Fixed SubString and Left to have correct count/end possitions.  Also
-** adjusted rest of source to follow suit.
-**
-** Revision 1.58  2000/12/09 16:45:37  prez
-** Fixed rfind in mstring.
-**
-** Revision 1.57  2000/12/09 15:40:13  prez
-** Fixed some stuff with mstring (ie. Contains called find_first_of
-** not find, and the makeupper/makelower calls had != NULL not == NULL).
-**
-** Revision 1.56  2000/12/09 12:53:56  prez
-** Forgot to add the 'return' to all find_first_of, find_last_of,
-** find_first_not_of and find_last_not_of calls ...
-**
-** Revision 1.55  2000/12/09 10:33:47  prez
-** Added ACE style alloc as an option.
-**
-** Revision 1.54  2000/12/05 07:48:26  prez
-** *** empty log message ***
-**
-** Revision 1.53  2000/10/15 03:29:27  prez
-** Mods to the memory system, LOTS of printf's to try and figure out why
-** the damn thing coredumps on init.
-**
-** Revision 1.52  2000/10/14 04:25:31  prez
-** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
-** TODO - make mstring use MemoryManager.
-**
-** Revision 1.51  2000/10/11 08:38:10  prez
-** Changes so mstring works better ... kinda
-**
-** Revision 1.50  2000/10/10 11:47:50  prez
-** mstring is re-written totally ... find or occurances
-** or something has a problem, but we can debug that :)
-**
-** Revision 1.49  2000/10/07 11:00:11  ungod
-** no message
-**
-** Revision 1.48  2000/09/30 10:48:06  prez
-** Some general code cleanups ... got rid of warnings, etc.
-**
-** Revision 1.47  2000/08/03 13:06:29  prez
-** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
-**
-** Revision 1.46  2000/07/29 21:58:52  prez
-** Fixed XML loading of weird characters ...
-** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
-** of nicknames, which means we expire lots of nicknames.  2) services
-** wont rejoin a +i/+k channel when last user exits.
-**
-** Revision 1.45  2000/07/28 14:49:34  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.44  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.43  2000/05/17 14:08:11  prez
-** More tweaking with DCC, and getting iostream mods working ...
-**
-** Revision 1.42  2000/02/27 03:58:39  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.41  2000/02/23 12:21:02  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.40  2000/02/17 12:55:03  ungod
-** still working on borlandization
-**
-** Revision 1.39  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 /* This class is totally written by Preston A. Elder <prez@magick.tm>.
  * Primerily this was written for Magick IRC Services (and by default,

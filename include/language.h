@@ -2,42 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _LANGUAGE_H
 #define _LANGUAGE_H
 #include "pch.h"
 RCSID(language_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
-**
-** $Log$
-** Revision 1.36  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.35  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.34  2002/01/02 02:15:02  prez
-** Updated default language definitions
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
@@ -47,8 +41,8 @@ RCSID(language_h, "@(#) $Id$");
 const unsigned int def_langent = 940;
 const char *def_lang[] = {
     "; Magick IRC Services",
-    "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
-    "; (c) 1998-2001 William King <ungod@magick.tm>",
+    "; (c) 1997-2002 Preston A. Elder <prez@magick.tm>",
+    "; (c) 1998-2002 William King <ungod@magick.tm>",
     ";",
     "; English On-Line Language File",
     "; Translated By: Preston A. Elder <prez@magick.tm>",

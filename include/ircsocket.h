@@ -2,174 +2,36 @@
 #pragma interface
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _IRCSOCKET_H
 #define _IRCSOCKET_H
 #include "pch.h"
 RCSID(ircsocket_h, "@(#) $Id$");
 
-/* ========================================================== **
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.65  2002/01/14 07:16:54  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.64  2002/01/12 14:42:08  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.63  2002/01/02 08:30:09  prez
-** Fixed the shutdown code.  Also added a thread manager as a magick member.
-**
-** Revision 1.62  2001/12/26 23:30:35  prez
-** More fixes to see if I can fix the memory leak ...
-**
-** Revision 1.61  2001/12/20 08:02:31  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.60  2001/11/28 13:40:47  prez
-** Added UMASK option to config.  Also made the 'dead thread' protection
-** send a SIGIOT signal to try and get the thread to die gracefully, else
-** it will do the cancel it used to do.
-**
-** Revision 1.59  2001/11/16 20:27:33  prez
-** Added a MAX_THREADS option, and made the thread heartbeat a timer based
-** operation, instead of part of the threads.
-**
-** Revision 1.58  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.57  2001/11/04 23:43:14  prez
-** Updates for MS Visual C++ compilation (it works now!).
-**
-** Revision 1.56  2001/11/03 21:02:50  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
-**
-** Revision 1.55  2001/06/15 07:20:39  prez
-** Fixed windows compiling -- now works with MS Visual Studio 6.0
-**
-** Revision 1.54  2001/05/25 01:59:31  prez
-** Changed messaging system ...
-**
-** Revision 1.53  2001/05/04 01:11:13  prez
-** Made chanserv mode stuff more efficiant
-**
-** Revision 1.52  2001/05/03 04:40:17  prez
-** Fixed locking mechanism (now use recursive mutexes) ...
-** Also now have a deadlock/nonprocessing detection mechanism.
-**
-** Revision 1.51  2001/05/01 14:00:21  prez
-** Re-vamped locking system, and entire dependancy system.
-** Will work again (and actually block across threads), however still does not
-** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
-** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
-**
-** Revision 1.50  2001/04/05 05:59:50  prez
-** Turned off -fno-default-inline, and split up server.cpp, it should
-** compile again with no special options, and have default inlines :)
-**
-** Revision 1.49  2001/04/02 02:13:27  prez
-** Added inlines, fixed more of the exception code.
-**
-** Revision 1.48  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.47  2001/02/03 03:20:33  prez
-** Fixed up some differences in previous committed versions ...
-**
-** Revision 1.44  2000/12/23 22:22:23  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.43  2000/09/27 11:21:37  prez
-** Added a BURST mode ...
-**
-** Revision 1.42  2000/09/09 02:17:47  prez
-** Changed time functions to actuallt accept the source nick as a param
-** so that the time values (minutes, etc) can be customized.  Also added
-** weeks to the time output.
-**
-** Revision 1.41  2000/09/06 11:27:33  prez
-** Finished the T_Modify / T_Changing traces, fixed a bug in clone
-** adding (was adding clone liimt as the mask length), updated docos
-** a little more, and added a response to SIGINT to signon clients.
-**
-** Revision 1.40  2000/08/31 06:25:08  prez
-** Added our own socket class (wrapper around ACE_SOCK_Stream,
-** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
-**
-** Revision 1.39  2000/08/28 10:51:35  prez
-** Changes: Locking mechanism only allows one lock to be set at a time.
-** Activation_Queue removed, and use pure message queue now, mBase::init()
-** now resets us back to the stage where we havnt started threads, and is
-** called each time we re-connect.  handle_close added to ircsvchandler.
-** Also added in locking for all accesses of ircsvchandler, and checking
-** to ensure it is not null.
-**
-** Revision 1.38  2000/08/06 05:27:46  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
-**
-** Revision 1.37  2000/08/03 13:06:29  prez
-** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
-**
-** Revision 1.36  2000/07/29 21:58:52  prez
-** Fixed XML loading of weird characters ...
-** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
-** of nicknames, which means we expire lots of nicknames.  2) services
-** wont rejoin a +i/+k channel when last user exits.
-**
-** Revision 1.35  2000/06/18 12:49:26  prez
-** Finished locking, need to do some cleanup, still some small parts
-** of magick.cpp/h not locked properly, and need to ensure the case
-** is the same every time something is locked/unlocked, but for the
-** most part, locks are done, we lock pretty much everything :)
-**
-** Revision 1.34  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.33  2000/05/26 11:21:28  prez
-** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
-**
-** Revision 1.32  2000/05/22 13:00:08  prez
-** Updated version.h and some other stuff
-**
-** Revision 1.31  2000/02/23 12:21:01  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.30  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "variant.h"
 

@@ -1,17 +1,22 @@
 #!/bin/sh
 #
-#  Magick IRC Services
+# Magick IRC Services
 #
 # $Id$
-# (c) 1997-2001 Preston Elder <prez@magick.tm>
-# (c) 1998-2001 William King <ungod@magick.tm>
+# (c) 1997-2002 Preston Elder <prez@magick.tm>
+# (c) 1998-2002 William King <ungod@magick.tm>
 #
-# The above copywright may not be removed under any
-# circumstances, however it may be added to if any
-# modifications are made to this file.  All modified
-# code must be clearly documented and labelled.
+# The above copywright may not be removed under any circumstances,
+# however it may be added to if any modifications are made to this
+# file.  All modified code must be clearly documented and labelled.
 #
-# ==========================================================
+# This code is released under the GNU General Public License, which
+# means (in short), it may be distributed freely, and may not be sold
+# or used as part of any closed-source product.  Please check the
+# COPYING file for full rights and restrictions of this software.
+#
+# =======================================================================
+#
 #
 # Re-create logfile.h
 #
@@ -38,38 +43,42 @@ if [ -f include/logfile.h ]; then
 #ifndef WIN32
 #pragma interface
 #endif
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #ifndef _LOGFILE_H
 #define _LOGFILE_H
 #include "pch.h"
 RCSID(logfile_h, "@(#) \$Id\$");
-/* ========================================================== **
+
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
-**
-** \$Log\$
-**
-** ========================================================== */
+** ======================================================================= */
 
-
-/* Automatically generated hard-coded log output file.
- * Based upon $LANG.
- * Created on $DATE
- */
+/*
+** Automatically generated hard-coded log output file.
+** Based upon $LANG.
+** Created on $DATE
+*/
 
 EOF
 	echo "const unsigned int def_logent = `cat $LANG | wc -l`;" >>include/logfile.h

@@ -5,153 +5,34 @@
 #pragma implementation
 #endif
 
-/*  Magick IRC Services
+/* Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2002 Preston Elder <prez@magick.tm>
+** (c) 1998-2002 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
-** circumstances, however it may be added to if any
-** modifications are made to this file.  All modified
-** code must be clearly documented and labelled.
+** The above copywright may not be removed under any circumstances,
+** however it may be added to if any modifications are made to this
+** file.  All modified code must be clearly documented and labelled.
 **
-** ========================================================== */
+** This code is released under the GNU General Public License, which
+** means (in short), it may be distributed freely, and may not be sold
+** or used as part of any closed-source product.  Please check the
+** COPYING file for full rights and restrictions of this software.
+**
+** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_datetime_cpp_ ## x () { return y; }
 RCSID(datetime_cpp, "@(#)$Id$");
 
-/* ==========================================================
+/* ======================================================================= **
+**
+** For official changes (by the Magick Development Team),please
+** check the ChangeLog* files that come with this distribution.
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <devel@magick.tm>:
-**
-** $Log$
-** Revision 1.76  2002/01/14 07:16:55  prez
-** More pretty printing with a newer indent with C++ fixes (not totally done)
-**
-** Revision 1.75  2002/01/13 05:18:41  prez
-** More formatting, changed style slightly
-**
-** Revision 1.74  2002/01/12 14:42:09  prez
-** Pretty-printed all code ... looking at implementing an auto-prettyprint.
-**
-** Revision 1.73  2001/12/20 08:02:32  prez
-** Massive change -- 'Parent' has been changed to Magick::instance(), will
-** soon also move the ACE_Reactor over, and will be able to have multipal
-** instances of Magick in the same process if necessary.
-**
-** Revision 1.72  2001/11/12 01:05:02  prez
-** Added new warning flags, and changed code to reduce watnings ...
-**
-** Revision 1.71  2001/08/04 18:32:02  prez
-** Made some changes for Hybrid 6 -- we now work with it ... mostly.
-**
-** Revision 1.70  2001/05/05 17:33:58  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
-**
-** Revision 1.69  2001/04/13 00:46:38  prez
-** Fixec channel registering
-**
-** Revision 1.68  2001/04/02 02:11:23  prez
-** Fixed up some inlining, and added better excption handling
-**
-** Revision 1.67  2001/03/20 14:22:14  prez
-** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
-** by reference all over the place.  Next step is to stop using operator=
-** to initialise (ie. use mstring blah(mstring) not mstring blah = mstring).
-**
-** Revision 1.66  2001/03/02 05:24:41  prez
-** HEAPS of modifications, including synching up my own archive.
-**
-** Revision 1.65  2001/02/11 07:41:27  prez
-** Enhansed support for server numerics, specifically for Unreal.
-**
-** Revision 1.63  2001/02/03 02:21:33  prez
-** Loads of changes, including adding ALLOW to ini file, cleaning up
-** the includes, RCSID, and much more.  Also cleaned up most warnings.
-**
-** Revision 1.62  2001/01/15 23:31:38  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.61  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.60  2000/12/23 22:22:24  prez
-** 'constified' all classes (ie. made all functions that did not need to
-** touch another non-const function const themselves, good for data integrity).
-**
-** Revision 1.59  2000/12/19 07:24:53  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
-**
-** Revision 1.58  2000/09/30 10:48:07  prez
-** Some general code cleanups ... got rid of warnings, etc.
-**
-** Revision 1.57  2000/09/11 10:58:19  prez
-** Now saves in in GMT
-**
-** Revision 1.56  2000/09/09 02:17:48  prez
-** Changed time functions to actuallt accept the source nick as a param
-** so that the time values (minutes, etc) can be customized.  Also added
-** weeks to the time output.
-**
-** Revision 1.55  2000/07/29 21:58:53  prez
-** Fixed XML loading of weird characters ...
-** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
-** of nicknames, which means we expire lots of nicknames.  2) services
-** wont rejoin a +i/+k channel when last user exits.
-**
-** Revision 1.54  2000/07/28 14:49:35  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
-**
-** Revision 1.53  2000/06/11 09:30:20  prez
-** Added propper MaxLine length, no more hard-coded constants.
-**
-** Revision 1.52  2000/06/06 08:57:56  prez
-** Finished off logging in backend processes except conver (which I will
-** leave for now).  Also fixed some minor bugs along the way.
-**
-** Revision 1.51  2000/05/21 04:49:40  prez
-** Removed all wxLog tags, now totally using our own logging.
-**
-** Revision 1.50  2000/05/20 15:17:00  prez
-** Changed LOG system to use ACE's log system, removed wxLog, and
-** added wrappers into pch.h and magick.cpp.
-**
-** Revision 1.49  2000/04/03 09:45:22  prez
-** Made use of some config entries that were non-used, and
-** removed some redundant ones ...
-**
-** Revision 1.48  2000/02/27 03:58:39  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.47  2000/02/23 12:21:03  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.46  2000/02/16 12:59:39  ungod
-** fixing for borland compilability
-**
-** Revision 1.45  2000/02/15 13:27:03  prez
-** *** empty log message ***
-**
-** Revision 1.44  2000/02/15 10:37:49  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
-**
-**
-** ========================================================== */
+** ======================================================================= */
 
 #include "magick.h"
 
@@ -534,7 +415,7 @@ mstring mDateTime::DateTimeString() const
     return Result;
 }
 
-mDateTime::operator          time_t() const
+mDateTime::operator           time_t() const
 {
     int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 
