@@ -104,6 +104,7 @@ int Magick::Start()
 	LoadExternalMessages();
 
 	StartTime=Now();
+	ThreadtoTypeMap[ACE_Thread::self()]=MAIN;
 
 	if(logfile!=NULL)
 		fclose(logfile);

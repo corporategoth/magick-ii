@@ -213,6 +213,8 @@ public:
 //     T_Functions("FuncName, tid, AOC((param, param)));
 
 // from ungod: lol, easy as pie, both pthreads and msvc have a "what's my thread id" call, we just backwards map it to the object that owns it.
+// eg 	to set it:  MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=MAIN;
+// to get the threadtype_enum: return MagickObject->ThreadtoTypeMap[ACE_Thread::self()];
 class ThreadID {
 private:
     threadtype_enum internaltype;

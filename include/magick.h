@@ -22,11 +22,13 @@
 #include <map>
 using namespace std;
 #include "ace/Synch.h"
+#include "ace/Thread.h"
 
 #include "bob.hpp"
 #include "mstring.h"
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
+#include "trace.h"
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
@@ -44,6 +46,7 @@ class Magick
 	vector<mstring> MessageNamesShort;
 	ACE_Thread_Mutex mutex;
 public:
+	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	mDateTime StartTime;
 	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);
@@ -57,4 +60,7 @@ public:
 	Magick(int inargc, char **inargv);
 	int Start();
 };
+
+extern Magick *MagickObject;
+
 #endif
