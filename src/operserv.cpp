@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2001/07/29 21:22:26  prez
+** Delayed clone akills on sync until AFTER we're synced
+**
 ** Revision 1.130  2001/07/21 18:09:44  prez
 ** Fixed IsBool in mstring and made SVINFO actually give a GMT timestamp.
 **
@@ -362,7 +365,13 @@ bool OperServ::AddHost(const mstring& host)
 				CloneList[host.LowerCase()].second.size()));
 
 	CloneList[host.LowerCase()].second.push_back(mDateTime::CurrentDateTime());
-	if (CloneList[host.LowerCase()].second.size() >
+	bool burst = false;
+	{ RLOCK(("IrcSvcHandler"));
+	if (Parent->ircsvchandler != NULL)
+	    burst = Parent->ircsvchandler->Burst();
+	}
+		
+	if (!burst && CloneList[host.LowerCase()].second.size() >
 			Parent->operserv.Clone_Trigger())
 	{
 	    CP(("Reached MAX clone kills, adding AKILL ..."));
@@ -471,6 +480,54 @@ size_t OperServ::CloneList_Usage() const
     return retval;
 }
 
+void OperServ::CloneList_check()
+{
+    NFT("OperServ::CloneList_check");
+
+    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator iter;
+    MLOCK(("OperServ", "CloneList"));
+    for (iter=CloneList.begin(); iter!=CloneList.end(); iter++)
+    {
+	if (iter->second.second.size() > Parent->operserv.Clone_Trigger())
+	{
+	    CP(("Reached MAX clone kills, adding AKILL ..."));
+
+	    MLOCK2(("OperServ", "Akill"));
+	    if (!Akill_find("*@" + iter->first))
+	    {
+		NickServ::live_t::iterator nlive;
+		vector<mstring> killusers;
+		{ RLOCK(("NickServ", "live"));
+		for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
+		{
+		    RLOCK2(("NickServ", "live", nlive->first));
+		    if (nlive->second.Host().IsSameAs(iter->first, true))
+			killusers.push_back(nlive->first);
+		}}
+
+		float percent = 100.0 * static_cast<float>(killusers.size()) /
+				static_cast<float>(Parent->nickserv.LiveSize());
+
+		Parent->server.AKILL("*@" + iter->first,
+			Parent->operserv.Clone_Akill(),
+			Parent->operserv.Clone_AkillTime(),
+			Parent->nickserv.FirstName());
+
+		Akill_insert("*@" + iter->first, Parent->operserv.Clone_AkillTime(),
+			Parent->operserv.Clone_Akill(), FirstName());
+	 	ANNOUNCE(FirstName(), "MISC/AKILL_ADD", (
+			FirstName(), iter->first,
+			ToHumanTime(Parent->operserv.Clone_AkillTime()),
+			Parent->operserv.Clone_Akill(),
+			killusers.size(), fmstring("%.2f", percent)));
+		LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
+			FirstName(), iter->first,
+			ToHumanTime(Parent->operserv.Clone_AkillTime()),
+			Parent->operserv.Clone_Akill()));
+	    }
+	}
+    }
+}
 
 bool OperServ::Clone_insert(const mstring& entry, const unsigned int value, const mstring& reason, const mstring& nick, const mDateTime& added)
 {
@@ -3048,9 +3105,9 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 
     mstring host   = params.ExtractWord(3, " ").LowerCase();
     mstring reason = params.After(" ", 3);
-    unsigned long time;
+    unsigned long time = FromHumanTime(reason.Before(" "));
 
-    if (time = FromHumanTime(reason.Before(" ")))
+    if (time)
     {
 	if (params.WordCount(" ") < 5)
 	{

@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.321  2001/07/29 21:22:26  prez
+** Delayed clone akills on sync until AFTER we're synced
+**
 ** Revision 1.320  2001/07/29 03:12:23  prez
 ** Fixed up stuff for the NEW rn4.0
 **
@@ -2315,7 +2318,7 @@ bool Magick::get_config_values()
     {
 	for (i=0; i<chanserv.names.WordCount(" "); i++)
 	{
-	    if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{

@@ -25,6 +25,9 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/07/29 21:22:27  prez
+** Delayed clone akills on sync until AFTER we're synced
+**
 ** Revision 1.58  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -299,6 +302,7 @@ public:
     size_t CloneList_sum()const;
     size_t CloneList_size(const unsigned int amt)const;
     size_t CloneList_Usage()const;
+    void CloneList_check();
 
     bool Clone_insert(const mstring& entry, const unsigned int value, const mstring& reason, const mstring& nick, const mDateTime& added = mDateTime::CurrentDateTime());
     bool Clone_erase();

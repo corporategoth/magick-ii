@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.190  2001/07/29 21:22:26  prez
+** Delayed clone akills on sync until AFTER we're synced
+**
 ** Revision 1.189  2001/07/29 03:12:23  prez
 ** Fixed up stuff for the NEW rn4.0
 **
@@ -5979,7 +5982,8 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
     switch (numeric)
     {
     case 303:     // RPL_ISON
-	{{ RLOCK(("IrcSvcHandler"));
+	{
+	{ RLOCK(("IrcSvcHandler"));
 	if (Parent->ircsvchandler != NULL &&
 	    Parent->ircsvchandler->Burst())
 	{
@@ -5989,6 +5993,8 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 		    !proto.GetNonToken(proto.Burst()).empty()) ?
 		    proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
 	}}
+
+	Parent->operserv.CloneList_check();
 	for (unsigned int i=1; i<=params.WordCount(": "); i++)
 	{
 	    // Remove clients from 'signon list' who are
@@ -5997,7 +6003,6 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 	    if (WaitIsOn.find(params.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
 		WaitIsOn.erase(params.ExtractWord(i, ": "));
 	}
-
 	if (WaitIsOn.size())
 	{
 	    set<mstring>::reverse_iterator k;
