@@ -1,0 +1,22 @@
+# Microsoft Developer Studio Generated Dependency File, included by crypt.mak
+
+.\src\crypt\bf_enc.c : \
+	".\include\crypt\bf_locl.h"\
+	".\include\crypt\blowfish.h"\
+	
+
+.\src\crypt\bf_skey.c : \
+	".\include\crypt\bf_locl.h"\
+	".\include\crypt\bf_pi.h"\
+	".\include\crypt\blowfish.h"\
+	
+
+.\src\crypt\md5_dgst.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	"..\support\zlib-1.1.3\zconf.h"\
+	"..\support\zlib-1.1.3\zlib.h"\
+	".\include\config.h"\
+	".\include\crypt\md5.h"\
+	".\include\crypt\md5_locl.h"\
+	".\include\pch.h"\
+	

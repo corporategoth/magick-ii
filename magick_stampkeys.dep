@@ -1,0 +1,10 @@
+# Microsoft Developer Studio Generated Dependency File, included by magick_stampkeys.mak
+
+.\src\magick_stampkeys.c : \
+	".\include\config.h"\
+	".\include\crypt\blowfish.h"\
+	
+
+.\magick.rc : \
+	".\dragonfly.ico"\
+	
