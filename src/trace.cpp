@@ -14,13 +14,26 @@
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
+// Bit	Use
+// 1	
+// 2	
+// 3	
+// 4	
+// 5	
+// 6	
+// 7	
+// 8	
+
 class Trace
 {
 public:
-    enum { FuncTrace };
+    enum {
+	FuncTrace = 0x00000001,	// Trace functions
+	DataMB    = 0x10000000,	// Data before modification
+	DataMA    = 0x20000000,	// Data AFTER modification
+    };
     Trace()
     {
-	SET_FuncTrace = 0;
     }
     ~Trace() {}
     bool IsOn(int level);
