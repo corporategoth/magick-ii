@@ -418,8 +418,8 @@ mstring Protocol::Numeric_t::ChannelNumeric(unsigned long in) const
 }
 
 Protocol::Protocol() : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false), i_Helpops(false), i_Chatops(false),
-i_Tokens(false), i_P12(false), i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false), i_Akill(0), i_Signon(0),
-i_Modes(3), i_ChanModeArg("ovbkl"), i_Server("SERVER $1 $2 :$3")
+i_Tokens(false), i_P12(false), i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false), i_ServerModes(false),
+i_Akill(0), i_Signon(0), i_Modes(3), i_ChanModeArg("ovbkl"), i_Server("SERVER $1 $2 :$3")
 {
     NFT("Protocol::Protocol");
     DumpB();
@@ -516,9 +516,11 @@ void Protocol::Set(const unsigned int in)
 	Numeric.i_Combine = true;
 	Numeric.i_Field = 6;
 	Numeric.i_Prefix = true;
-	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
+	i_ServicesModes = "k";
 	i_Tokens = true;	// Nothing tells us to turn it on ...
+	i_ServerModes = true;
+	i_TSora = true;
 	SetTokens(1000);
 	Numeric.SetBase64(0001);
 	i_Server = "SERVER $1 $2 $6 $5 J10 $4 :$3";
@@ -532,9 +534,11 @@ void Protocol::Set(const unsigned int in)
 	Numeric.i_Combine = true;
 	Numeric.i_Field = 6;
 	Numeric.i_Prefix = true;
-	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
+	i_ServicesModes = "k";
 	i_Tokens = true;	// Nothing tells us to turn it on ...
+	i_ServerModes = true;
+	i_TSora = true;
 	SetTokens(1000);
 	Numeric.SetBase64(0001);
 	i_Server = "SERVER $1 $2 $6 $5 J10 $4 0 :$3";
@@ -2271,10 +2275,15 @@ void Server::MODE(const mstring & nick, const mstring & channel, const mstring &
     else
     {
 	Magick::instance().chanserv.GetLive(channel)->Mode(nick, mode);
-	nraw(nick,
-	     ((proto.Tokens() &&
-	       !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
-	     mode.Before(" ") + " " + mode.After(" "));
+	if (proto.ServerModes())
+	    sraw(((proto.Tokens() &&
+		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
+		 mode.Before(" ") + " " + mode.After(" "));
+	else
+	    nraw(nick,
+		 ((proto.Tokens() &&
+		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
+		 mode.Before(" ") + " " + mode.After(" "));
     }
 }
 
@@ -2310,7 +2319,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	}
 	map_entry < Nick_Live_t > tmp(new Nick_Live_t(nick, user, host, name));
 	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 4000))
-	    tmp->Mode(Magick::instance().startup.Setmode());
+	    tmp->Mode(Magick::instance().startup.Setmode() + proto.ServicesModes());
 	if (proto.Numeric.User())
 	    tmp->Numeric(proto.Numeric.FindUserNumeric());
 	Magick::instance().nickserv.AddLive(tmp);
@@ -2354,7 +2363,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
 		timetstring() << " " << user << " " << host << " " << server;
 	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode();
+		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 1001:
@@ -2368,7 +2377,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
 		timetstring() << " " << user << " " << host << " " << server << " 1";
 	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode();
+		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 1002:
@@ -2382,7 +2391,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
 		timetstring() << " " << user << " " << host << " " << server << " 1 " << host;
 	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode();
+		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 1003:
@@ -2396,7 +2405,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
 		timetstring() << " " << user << " " << host << " " << host << " " << server << " 1";
 	    if (proto.P12())
-		out << " +" << Magick::instance().startup.Setmode();
+		out << " +" << Magick::instance().startup.Setmode() << proto.ServicesModes();
 	    out << " :" << name;
 	    break;
 	case 2000:
@@ -2408,7 +2417,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << Magick::instance().startup.
-		Setmode() << " " << user << " " << host << " " << server << " :" << name;
+		Setmode() << proto.ServicesModes() << " " << user << " " << host << " " << server << " :" << name;
 	    break;
 	case 2001:
 	    token = "NICK";
@@ -2419,7 +2428,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << Magick::instance().startup.
-		Setmode() << " " << user << " " << host << " " << server << " 1 :" << name;
+		Setmode() << proto.ServicesModes() << " " << user << " " << host << " " << server << " 1 :" << name;
 	    break;
 	case 2002:
 	    token = "NICK";
@@ -2430,7 +2439,8 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << Magick::instance().startup.
-		Setmode() << " " << user << " " << host << " " << host << " " << server << " 1 :" << name;
+		Setmode() << proto.
+		ServicesModes() << " " << user << " " << host << " " << host << " " << server << " 1 :" << name;
 	    break;
 	case 2003:
 	    token = "NICK";
@@ -2442,7 +2452,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
 		timetstring() << " " << user << " " << host << " " << server << " 1 +" << Magick::instance().startup.
-		Setmode() << " " << host << " :" << name;
+		Setmode() << proto.ServicesModes() << " " << host << " :" << name;
 	    break;
 	case 3000:
 	    token = "NICK";
@@ -2453,8 +2463,8 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " ";
-	    if (!Magick::instance().startup.Setmode().empty())
-		out << "+" << Magick::instance().startup.Setmode() << " ";
+	    if (!Magick::instance().startup.Setmode().empty() || !proto.ServicesModes().empty())
+		out << "+" << Magick::instance().startup.Setmode() << proto.ServicesModes() << " ";
 
 	    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
 
@@ -6275,8 +6285,9 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 		    }
 
 		    if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 4000)) &&
-			Magick::instance().nickserv.IsLive(*k) && !Magick::instance().startup.Setmode().empty())
-			Magick::instance().server.MODE(*k, "+" + Magick::instance().startup.Setmode());
+			Magick::instance().nickserv.IsLive(*k) && (!Magick::instance().startup.Setmode().empty() ||
+								   !proto.ServicesModes().empty()))
+			Magick::instance().server.MODE(*k, "+" + Magick::instance().startup.Setmode() + proto.ServicesModes());
 		    FlushMsgs(*k);
 		}
 	    }

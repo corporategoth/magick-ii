@@ -2472,6 +2472,8 @@ void EventTask::do_modes(mDateTime & synctime)
 			COM(("i = %d (%c), j = %d, k = %d", i, chan->p_modes_off[i], j, k));
 			if (j >= Magick::instance().server.proto.Modes())
 			{
+			    if (Magick::instance().server.proto.TSora())
+				modeparam << " " << time(NULL);
 			    modelines[*iter].push_back(mode + " " + modeparam);
 			    mode.erase();
 			    modeparam.erase();
@@ -2506,6 +2508,8 @@ void EventTask::do_modes(mDateTime & synctime)
 			COM(("i = %d (%c), j = %d, k = %d", i, chan->p_modes_on[i], j, k));
 			if (j >= Magick::instance().server.proto.Modes())
 			{
+			    if (Magick::instance().server.proto.TSora())
+				modeparam << " " << time(NULL);
 			    modelines[*iter].push_back(mode + " " + modeparam);
 			    mode.erase();
 			    modeparam.erase();
@@ -2529,7 +2533,11 @@ void EventTask::do_modes(mDateTime & synctime)
 		    chan->p_modes_on_params.clear();
 		}
 		if (mode.size())
+		{
+		    if (Magick::instance().server.proto.TSora())
+			modeparam << " " << time(NULL);
 		    modelines[*iter].push_back(mode + " " + modeparam);
+		}
 	    }
 	}
     }
