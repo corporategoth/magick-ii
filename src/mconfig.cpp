@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/05/21 14:01:10  ungod
+** body for decomment and load/save to files.
+**
 ** Revision 1.3  2000/05/20 01:20:59  ungod
 ** more meaty goodness in the quest for a better config engine.
 **
@@ -201,7 +204,31 @@ bool mConfigEngine::NodeExists(const mstring &NodeName)
 {
 }
 
-vector<mstring> &mConfigEngine::DeComment(const vector<mstring> in)
+vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
 {
+    vector<mstring> Result;
+    for(vector<mstring>::const_iterator i=in.begin();i!=in.end();i++)
+    {
+        mstring currline=*i;
+        mstring newlinestr="";
+        if(currline[0]!='#'&&currline[0]!=';')
+        {
+            // if we find ; then it's a comment to end of line, but /; is not a comment.
+            bool founddelim=false;
+            int j=1;
+            while(founddelim=false&&j<currline.Len())
+            {
+                if(currline[j]=';'&&currline[j-1]!='\\')
+                    founddelim=true;
+                else
+                {
+                    newlinestr=newlinestr+currline[j];
+                    j++;
+                }
+            }
+            Result.push_back(newlinestr);
+        }
+    }
+    return Result;
 }
 

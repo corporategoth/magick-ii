@@ -24,6 +24,9 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/05/21 14:01:09  ungod
+** body for decomment and load/save to files.
+**
 ** Revision 1.4  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -69,7 +72,7 @@ class mConfigEngine
 private:
     ceNode RootNode;
     mstring i_FileName;
-    vector<mstring> &DeComment(const vector<mstring> in);
+    vector<mstring> DeComment(const vector<mstring> in);
 public:
     mConfigEngine();
     mConfigEngine(const mstring& FileName);
