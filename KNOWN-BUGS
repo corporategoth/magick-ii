@@ -7,5 +7,6 @@ $Id$
 Known problems that exist in magick that should be fixed.
 
 * No real locking, need to start locking everything
-  - BUG in ACE locking, there is a max char length on locks, must
-    make locks get set as 'Last X chars of lock string'.
+  - MLOCK and RLOCK/WLOCK are incompatable.  Use one or
+    the other.  Mainly coz these are implemeted differently
+    depending on thread library used, and revision of it.
