@@ -1,0 +1,13 @@
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ========================================================== */
+#ifndef _CONFIG_H
+#define _CONFIG_H

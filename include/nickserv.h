@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _NICKSERV_H
 #define _NICKSERV_H
+#include "pch.h"
 static const char *ident_nickserv_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.39  2000/05/25 08:16:38  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...

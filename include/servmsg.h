@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _SERVMSG_H
 #define _SERVMSG_H
+#include "pch.h"
 static const char *ident_servmsg_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.14  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading

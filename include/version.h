@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _VERSION_H
 #define _VERSION_H
+#include "pch.h"
 static const char *ident_version_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.93  2000/05/28 02:37:15  prez
 ** Minor bug fixes (help system and changing nicks)
 **
@@ -67,7 +74,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 4;
+const int BUILD_NUMBER = 7;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 

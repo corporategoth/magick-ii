@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _MSTRING_H
 #define _MSTRING_H
+#include "pch.h"
 static const char *ident_mstring_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.43  2000/05/17 14:08:11  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -58,10 +65,6 @@ static const char *ident_mstring_h = "@(#) $Id$";
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-
-// Need these to make SunOS happy
-#include <stdio.h>
-#include <stdarg.h>
 
 class mstring:public string
 {
@@ -175,25 +178,19 @@ public:
 	unsigned int WordPosition(unsigned int count,const mstring& separators, bool assemble = true)const;
 };
 
-#define NEED_ITOA
-#define NEED_FTOA
-#define NEED_LTOA
-#define NEED_ULTOA
-#define NEED_ATOUL
-
-#ifdef NEED_ITOA
+#ifndef HAVE_ITOA
 const char *itoa(int i);
 #endif
-#ifdef NEED_FTOA
+#ifndef HAVE_FTOA
 const char *ftoa(float f);
 #endif
-#ifdef NEED_LTOA
+#ifndef HAVE_LTOA
 const char *ltoa(long l);
 #endif
-#ifdef NEED_ULTOA
+#ifndef HAVE_ULTOA
 const char *ultoa(unsigned long l);
 #endif
-#ifdef NEED_ATOUL
+#ifndef HAVE_ATOUL
 #define atoul(x) strtoul(x, NULL, 10);
 #endif
 

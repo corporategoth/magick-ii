@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _MCONFIG_H
 #define _MCONFIG_H
+#include "pch.h"
 static const char *ident_mconfig_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.6  2000/05/25 11:49:32  ungod
 ** even more mConfigEngine meaty bits. (should we change it's name to Good-O's?)
 **

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/05/28 05:05:14  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.63  2000/05/19 10:48:14  prez
 ** Finalized the DCC Sending (now uses the Action map properly)
 **
@@ -812,7 +818,7 @@ bool mstring::Matches(const mstring& in, bool nocase)const
     return match_wild(in.c_str(), c_str(), nocase);
 }
 
-#ifdef NEED_ITOA
+#ifndef HAVE_ITOA
 const char *itoa(int i)
 {
     mstring str;
@@ -821,7 +827,7 @@ const char *itoa(int i)
 }
 #endif
 
-#ifdef NEED_FTOA
+#ifndef HAVE_FTOA
 const char *ftoa(float f)
 {
     mstring str;
@@ -830,7 +836,7 @@ const char *ftoa(float f)
 }
 #endif
 
-#ifdef NEED_LTOA
+#ifndef HAVE_LTOA
 const char *ltoa(long l)
 {
     mstring str;
@@ -839,7 +845,7 @@ const char *ltoa(long l)
 }
 #endif
 
-#ifdef NEED_LTOA
+#ifndef HAVE_ULTOA
 const char *ultoa(unsigned long ul)
 {
     mstring str;

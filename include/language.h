@@ -14,7 +14,7 @@
 ** ========================================================== */
 #ifndef _LANGUAGE_H
 #define _LANGUAGE_H
-
+#include "pch.h"
 static const char *ident_language_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -25,6 +25,12 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.14  2000/03/19 08:50:52  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.

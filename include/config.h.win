@@ -1,3 +1,4 @@
+/* include/config.h.  Generated automatically by configure.  */
 /* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
 /*  Magick IRC Services
 **
@@ -14,92 +15,92 @@
 #define _CONFIG_H
 
 /* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
-#undef STAT_MACROS_BROKEN
+/* #undef STAT_MACROS_BROKEN */
 
 /* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
+#define STDC_HEADERS 1
 
 /* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#undef TIME_WITH_SYS_TIME
+/* #undef TIME_WITH_SYS_TIME */
 
 /* Define if you want to use DES encryption */
 #ifndef HASCRYPT
-#undef HASCRYPT
+#define HASCRYPT 1
 #endif
 
 /* Define if your system can handle exceptions */
 #ifndef MAGICK_HAS_EXCEPTIONS
-#undef MAGICK_HAS_EXCEPTIONS
+#define MAGICK_HAS_EXCEPTIONS 1
 #endif
 
 /* Define if your system's locking works */
 #ifndef MAGICK_LOCKS_WORK
-#undef MAGICK_LOCKS_WORK
+/* #undef MAGICK_LOCKS_WORK */
 #endif
 
 /* Define if we are on a windows system */
 #ifndef WIN32
-#undef WIN32
+#define WIN32 1
 #endif
 
 /* Define if you have the atoul function.  */
-#undef HAVE_ATOUL
+/* #undef HAVE_ATOUL */
 
 /* Define if you have the ftoa function.  */
-#undef HAVE_FTOA
+/* #undef HAVE_FTOA */
 
 /* Define if you have the itoa function.  */
-#undef HAVE_ITOA
+/* #undef HAVE_ITOA */
 
 /* Define if you have the ltoa function.  */
-#undef HAVE_LTOA
+/* #undef HAVE_LTOA */
 
 /* Define if you have the ultoa function.  */
-#undef HAVE_ULTOA
+/* #undef HAVE_ULTOA */
 
 /* Define if you have the <algorithm.h> header file.  */
-#undef HAVE_ALGORITHM_H
+/* #undef HAVE_ALGORITHM_H */
 
 /* Define if you have the <deque.h> header file.  */
-#undef HAVE_DEQUE_H
+/* #undef HAVE_DEQUE_H */
 
 /* Define if you have the <exceptions.h> header file.  */
-#undef HAVE_EXCEPTIONS_H
+/* #undef HAVE_EXCEPTIONS_H */
 
 /* Define if you have the <fstream.h> header file.  */
-#undef HAVE_FSTREAM_H
+/* #undef HAVE_FSTREAM_H */
 
 /* Define if you have the <iostream.h> header file.  */
-#undef HAVE_IOSTREAM_H
+/* #undef HAVE_IOSTREAM_H */
 
 /* Define if you have the <istream.h> header file.  */
-#undef HAVE_ISTREAM_H
+/* #undef HAVE_ISTREAM_H */
 
 /* Define if you have the <list.h> header file.  */
-#undef HAVE_LIST_H
+/* #undef HAVE_LIST_H */
 
 /* Define if you have the <map.h> header file.  */
-#undef HAVE_MAP_H
+/* #undef HAVE_MAP_H */
 
 /* Define if you have the <ostream.h> header file.  */
-#undef HAVE_OSTREAM_H
+/* #undef HAVE_OSTREAM_H */
 
 /* Define if you have the <queue.h> header file.  */
-#undef HAVE_QUEUE_H
+/* #undef HAVE_QUEUE_H */
 
 /* Define if you have the <set.h> header file.  */
-#undef HAVE_SET_H
+/* #undef HAVE_SET_H */
 
 /* Define if you have the <stack.h> header file.  */
-#undef HAVE_STACK_H
+/* #undef HAVE_STACK_H */
 
 /* Define if you have the <strstream.h> header file.  */
-#undef HAVE_STRSTREAM_H
+/* #undef HAVE_STRSTREAM_H */
 
 /* Define if you have the <utility.h> header file.  */
-#undef HAVE_UTILITY_H
+/* #undef HAVE_UTILITY_H */
 
 /* Define if you have the <vector.h> header file.  */
-#undef HAVE_VECTOR_H
+/* #undef HAVE_VECTOR_H */
 
 #endif

@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _MSTREAM_H
 #define _MSTREAM_H
+#include "pch.h"
 static const char *ident_mstream_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_mstream_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.27  2000/04/30 03:48:28  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -55,7 +62,6 @@ static const char *ident_mstream_h = "@(#) $Id$";
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
-#include <vector>
 #include "mstring.h"
 
 class wxStreamBase;

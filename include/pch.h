@@ -21,6 +21,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.18  2000/05/27 15:14:45  prez
 ** *** empty log message ***
 **
@@ -68,14 +74,40 @@
 #pragma warning(disable:4786)
 #endif
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
+/* Standard C Extensions */
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
 #include <signal.h>
-#include <stdarg.h>
 #include <stdio.h>
-#include <time.h>
+#include <sys/stat.h>
 
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#ifdef STDC_HEADERS
+#  include <stdlib.h>
+#  include <stdarg.h>
+#endif
+
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+/* ACE Extensions */
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>
 #include <ace/Connector.h>
@@ -98,26 +130,80 @@
 #include <ace/Thread_Manager.h>
 #include <ace/Thread.h>
 
-
-#include <algorithm>
-#include <deque>
-#include <exception>
-#include <iostream>
-#include <fstream>
-#include <list>
-#include <map>
-#include <queue>
-#include <set>
-#include <string>
-#include <strstream>
-#include <utility>
-#include <vector>
+/* Standard C++ Extensions ... */
+/* These all have IFDEF's because
+ * unix machines tend to use .h files
+ */
+#ifdef MAGICK_HAS_EXCEPTIONS
+#  ifdef HAVE_EXCEPTION_H
+#    include <exception.h>
+#  else
+#    include <exception>
+#  endif
+#endif
+#ifdef HAVE_ALGORITHM_H
+#  include <algorithm.h>
+#else
+#  include <algorithm>
+#endif
+#ifdef HAVE_DEQUE_H
+#  include <deque.h>
+#else
+#  include <deque>
+#endif
+#ifdef HAVE_IOSTREAM_H
+#  include <iostream.h>
+#else
+#  include <iostream>
+#endif
+#ifdef HAVE_FSTREAM_H
+#  include <fstream.h>
+#else
+#  include <fstream>
+#endif
+#ifdef HAVE_LIST_H
+#  include <list.h>
+#else
+#  include <list>
+#endif
+#ifdef HAVE_MAP_H
+#  include <map.h>
+#else
+#  include <map>
+#endif
+#ifdef HAVE_QUEUE_H
+#  include <queue.h>
+#else
+#  include <queue>
+#endif
+#ifdef HAVE_SET_H
+#  include <set.h>
+#else
+#  include <set>
+#endif
+#ifdef HAVE_STRING_H
+#  include <string.h>
+#else
+#  include <string>
+#endif
+#ifdef HAVE_STRSTREAM_H
+#  include <strstream.h>
+#else
+#  include <strstream>
+#endif
+#ifdef HAVE_UTILITY_H
+#  include <utility.h>
+#else
+#  include <utility>
+#endif
+#ifdef HAVE_VECTOR_H
+#  include <vector.h>
+#else
+#  include <vector>
+#endif
 using namespace std;
 
 #include <zlib.h>
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
 extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);

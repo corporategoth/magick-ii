@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/05/28 05:05:14  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.29  2000/05/27 15:10:12  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -133,7 +139,6 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include <sys/stat.h>
 #include "lockable.h"
 #include "magick.h"
 

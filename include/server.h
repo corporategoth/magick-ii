@@ -14,6 +14,7 @@
 ** ========================================================== */
 #ifndef _SERVER_H
 #define _SERVER_H
+#include "pch.h"
 static const char *ident_server_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -24,6 +25,12 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/05/28 05:05:13  prez
+** More makefile stuff ... Now we should work on all platforms.
+** Added alot of checking for different .h files, functions, etc.
+** So now all #define's are config.h based (also added a default
+** windows config.h, which will need to be copied on these systems).
+**
 ** Revision 1.36  2000/04/04 03:21:34  prez
 ** Added support for SVSHOST where applicable.
 **
