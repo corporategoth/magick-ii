@@ -469,8 +469,6 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*MODE*", Parent->commserv.OPER_Name(), OperServ::do_Mode);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "KICK*", Parent->commserv.OPER_Name(), OperServ::do_Kick);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "Q*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_Qline);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNQ*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_UnQline);
@@ -851,13 +849,15 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 	if (Parent->chanserv.IsLive(target))
 	{
 	    Parent->server.MODE(mynick, target, mode);
-	    announce(mynick, "MODE performed on channel " +
-					    target + " (" + mode +
-					    ") requested by " + source);
+	    announce(mynick, Parent->getMessage("MISC/CHAN_MODE"),
+			source.c_str(), mode.c_str(), target.c_str());
+	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/CHAN_MODE"),
+			mode.c_str(), target.c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "Channel " + target + " is not in use.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+					    target.c_str());
 	}
     }
     else
@@ -868,62 +868,22 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 	    if (Parent->nickserv.IsLive(target))
 	    {
 		Parent->server.SVSMODE(mynick, target, mode);
-		announce(mynick, "MODE performed on nickname " +
-					    target + " (" + mode +
-					    ") requested by " + source);
-		::send(mynick, source, "MODE sent for nickname " + target);
+		announce(mynick, Parent->getMessage("MISC/NICK_MODE"),
+			source.c_str(), mode.c_str(), target.c_str());
+		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NICK_MODE"),
+			mode.c_str(), target.c_str());
+
 	    }
 	    else
 	    {
-		::send(mynick, source, "Nickname " + target + " is not online.");
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+					    target.c_str());
 	    }
 	}
 	else
 	{
-	    ::send(mynick, source, "Access denied.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	}
-    }
-}
-
-
-void OperServ::do_Kick(mstring mynick, mstring source, mstring params)
-{
-    FT("OperServ::do_Kick", (mynick, source, params));
-
-    mstring message = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 3)
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
-	return;
-    }
-
-    mstring target  = params.ExtractWord(2, " ");
-    mstring channel = params.ExtractWord(3, " ");
-    mstring reason  = "Requested by " + source;
-    if (params.WordCount(" ") > 3)
-    {
-	reason = params.After(" ", 3) + " (" + source + ")";
-    }
-
-    if (Parent->chanserv.IsLive(channel))
-    {
-	if (Parent->chanserv.live[channel.LowerCase()].IsIn(target))
-	{
-	    Parent->server.KICK(mynick, target, channel, reason);
-	    announce(mynick, "KICK performed on channel " +
-					    channel + " for " + target +
-					    " requested by " + source);
-	}
-	else
-	{
-	    ::send(mynick, source, "Nickname " + target +
-				" is not in channel " + channel + ".");
-	}
-    }
-    else
-    {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
     }
 }
 
@@ -943,6 +903,11 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
     mstring target  = params.ExtractWord(2, " ");
     mstring reason  = params.After(" ", 2);
     Parent->server.QLINE(mynick, target, reason);
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
+		target.c_str(), Parent->getMessage(source, "MISC/ON").c_str());
+    announce(mynick, Parent->getMessage("MISC/QLINE"),
+		source.c_str(), Parent->getMessage("MISC/ON").c_str(),
+		target.c_str());
 }
 
 
@@ -960,6 +925,11 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 
     mstring target  = params.ExtractWord(2, " ");
     Parent->server.UNQLINE(mynick, target);
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
+		target.c_str(), Parent->getMessage(source, "MISC/OFF").c_str());
+    announce(mynick, Parent->getMessage("MISC/QLINE"),
+		source.c_str(), Parent->getMessage("MISC/OFF").c_str(),
+		target.c_str());
 }
 
 
@@ -980,17 +950,28 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 
     if (!Parent->server.IsServer(target))
     {
-	::send(mynick, source, "Server specified is not linked.");
+	::send(mynick, source, Parent->getMesage(source, "OS_STATUS/ISNOTLINKED"),
+			target.c_str());
 	return;
     }
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "You may only turn NOOP ON or OFF");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     Parent->server.NOOP(mynick, target, onoff.GetBool());
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NOOP"),
+	    onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str(),
+	    target.c_str());
+    announce(mynick, Parent->getMessage("MISC/NOOP"),
+	    source.c_str(), onoff.GetBool() ?
+		Parent->getMessage("MISC/ON").c_str() :
+		Parent->getMessage("MISC/OFF").c_str(),
+	    target.c_str());
 }
 
 
@@ -1012,13 +993,15 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
     if (Parent->nickserv.IsLive(target))
     {
 	Parent->server.SVSKILL(mynick, target, reason);
-	announce(mynick, "SILENT KILL performed on nickname " +
-					    target + " (" + reason +
-					    ") requested by " + source);
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/KILL"),
+		    target.c_str());
+	announce(mynick, Parent->getMessage("MISC/KILL"),
+		    source.c_str(), target.c_str());
     }
     else
     {
-	::send(mynick, source, "Nickname " + target + " is not online.");
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
     }
 }
 
@@ -1027,7 +1010,7 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Ping", (mynick, source, params));
     Parent->events.ForcePing();
-    ::send(mynick, source, "Server PING's have been sent out.");
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
 }
 
 
@@ -1035,15 +1018,15 @@ void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Update", (mynick, source, params));
     Parent->events.ForceSave();
-    ::send(mynick, source, "Updating Databases.");
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
 }
 
 
 void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
-    ::send(mynick, source, "Shutting down ...");
-    announce(mynick, "SHUTDOWN command received by " + source + ".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SHUTDOWN"));
+    announce(mynick, Parent->getMessage("MISC/SHUTDOWN"), source.c_str());
 #ifdef WIN32
     Sleep(1000);
 #else
@@ -1059,12 +1042,13 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Reload", (mynick, source, params));
     if (Parent->get_config_values())
     {
-	::send(mynick, source, "Configuration reloaded.");
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD"));
+	announce(mynick, Parent->getMessage("MISC/RELOAD"), source.c_str());
     }
     else
     {
 	wxLogError("Could not read magick config file %s.", Parent->Config_File().c_str());
-	::send(mynick, source, "WARNING: Could not read config file.");
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD_FAIL"));
     }
 }
 
@@ -1085,11 +1069,13 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 
     if (Parent->UnloadExternalMessages(language))
     {
-	::send(mynick, source, "Language " + language.UpperCase() + " unloaded.");
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UNLOAD"),
+			language.c_str());
     }
     else
     {
-	::send(mynick, source, "Language " + language.UpperCase() + " was not loaded.");
+	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/ISNOTLANG"),
+			language.c_str());
     }
 }
 
@@ -1110,8 +1096,10 @@ void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
     mstring reason = params.After(" ", 2);
 
     Parent->server.Jupe(target, reason);
-    ::send(mynick, source, "Server " + target + " JUPED.");
-    announce(mynick, "Server " + target + " JUPED by " + source + ".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/JUPE"),
+		target.c_str());
+    announce(mynick, Parent->getMessage(source, "MISC/JUPE"),
+		source.c_str(), target.c_str());
 }
 
 
@@ -1122,8 +1110,10 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
     // Later, make the ability to turn on/off specific services
     // also the ability to turn of either MSG, or AUTO or BOTH
     Parent->MSG(true);
-    ::send(mynick, source, "Services will respond to messages.");
-    announce(mynick, "Services turned ON by " + source + ".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
+	    Parent->getMessage(source, "MISC/ON").c_str());
+    announce(mynick, Parent->getMessage("MISC/ONOFF"),
+	    Parent->getMessage("MISC/ON").c_str(), source.c_str());
 }
 
 
@@ -1134,8 +1124,10 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
     // Later, make the ability to turn on/off specific services
     // also the ability to turn of either MSG, or AUTO or BOTH
     Parent->MSG(false);
-    ::send(mynick, source, "Services will not respond to messages.");
-    announce(mynick, "Services turned OFF by " + source + ".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
+	    Parent->getMessage(source, "MISC/OFF").c_str());
+    announce(mynick, Parent->getMessage("MISC/ONOFF"),
+	    Parent->getMessage("MISC/OFF").c_str(), source.c_str());
 }
 
 
@@ -1148,53 +1140,47 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 -   Minimum threads active is ?, Current threads active is ?.
 -   New thread will spawn each ? messages, and die when below ?.
 */
-    ::send(mynick, source, "Base level is " + mstring(itoa(Parent->startup.Level())) +
-		    ", Current level is " + mstring(itoa(Parent->Level())) + ".");
-    ::send(mynick, source, "Services have " + mstring(itoa(Parent->startup.Server_size())) +
-		    " possible servers to connect to.");
-    ::send(mynick, source, "Level is increased if lag is more than " +
-		    ToHumanTime(Parent->startup.Lagtime()) + ".");
-    ::send(mynick, source, "Services will relink in " +
-		    ToHumanTime(Parent->config.Server_Relink()) +
-		    " upon server SQUIT.");
-    ::send(mynick, source, "SQUIT protection lasts " +
-		    ToHumanTime(Parent->config.Squit_Protect()) + ".");
-    ::send(mynick, source, "Users have " +
-		    ToHumanTime(Parent->config.Squit_Cancel()) +
-		    " to reconnect before SQUIT protection activates.");
-    ::send(mynick, source, "Databases are saved every " +
-		    ToHumanTime(Parent->config.Cycletime()) +
-		    " and sync in " + Parent->events.SyncTime());
-    ::send(mynick, source, "HyperActive cycle is " +
-		    ToHumanTime(Parent->config.Checktime()) +
-		    " and lag check is " +
-		    ToHumanTime(Parent->config.Ping_Frequency()) + ".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LEVEL"),
+		    Parent->startup.Level(), Parent->Level());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAG"),
+		    ToHumanTime(Parent->startup.Lagtime()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SERVERS"),
+		    Parent->startup.Server_size());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_RELINK"),
+		    ToHumanTime(Parent->config.Server_Relink()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT1"),
+		    ToHumanTime(Parent->config.Squit_Protect()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT1"),
+		    ToHumanTime(Parent->config.Squit_Cancel()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
+		    ToHumanTime(Parent->config.Cycletime()).c_str(),
+		    Parent->events.SyncTime().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
+		    ToHumanTime(Parent->config.Checktime()).c_str(),
+		    ToHumanTime(Parent->config.Ping_Frequency()).c_str());
 }
     
 void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Nick", (mynick, source, params));
 
-    ::send(mynick, source, "Nicknames will expire after " +
-			ToHumanTime(Parent->nickserv.Expire()) + ".");
-    ::send(mynick, source, "Users have " +
-			ToHumanTime(Parent->nickserv.Ident()) +
-			" to identify.");
-    ::send(mynick, source, "Nicknames are held for " +
-			ToHumanTime(Parent->nickserv.Release()) +
-			" on failure to ident.");
-    ::send(mynick, source, "Users are killed if they fail to ident " +
-			mstring(itoa(Parent->nickserv.Passfail())) +
-			" times.");
-    mstring output = "";
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_EXPIRE"),
+			ToHumanTime(Parent->nickserv.Expire()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_IDENT"),
+			ToHumanTime(Parent->nickserv.Ident()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_HOLD"),
+			ToHumanTime(Parent->nickserv.Release()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PASS"),
+			Parent->nickserv.Passfail());
 
+    mstring output = "";
     if (Parent->nickserv.DEF_Protect())
     {
 	if (output != "")
 	    output << ", ";
 	if (Parent->nickserv.LCK_Protect())
 	    output << IRC_Bold;
-	output << "Kill Protect";
+	output << Parent->getMessage(source, "NS_SET/PROTECT");
 	if (Parent->nickserv.LCK_Protect())
 	    output << IRC_Off;
     }
@@ -1205,7 +1191,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->nickserv.LCK_Secure())
 	    output << IRC_Bold;
-	output << "Secure";
+	output << Parent->getMessage(source, "NS_SET/SECURE");
 	if (Parent->nickserv.LCK_Secure())
 	    output << IRC_Off;
     }
@@ -1216,7 +1202,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->nickserv.LCK_NoExpire())
 	    output << IRC_Bold;
-	output << "No Expire";
+	output << Parent->getMessage(source, "NS_SET/NOEXPIRE");
 	if (Parent->nickserv.LCK_NoExpire())
 	    output << IRC_Off;
     }
@@ -1227,7 +1213,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->nickserv.LCK_NoMemo())
 	    output << IRC_Bold;
-	output << "Ignoring Memos";
+	output << Parent->getMessage(source, "NS_SET/NOMEMO");
 	if (Parent->nickserv.LCK_NoMemo())
 	    output << IRC_Off;
     }
@@ -1238,7 +1224,7 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->nickserv.LCK_Private())
 	    output << IRC_Bold;
-	output << "Private";
+	output << Parent->getMessage(source, "NS_SET/PRIVATE");
 	if (Parent->nickserv.LCK_Private())
 	    output << IRC_Off;
     }
@@ -1249,12 +1235,13 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->nickserv.LCK_PRIVMSG())
 	    output << IRC_Bold;
-	output << "PRIVMSG";
+	output << Parent->getMessage(source, "NS_SET/PRIVMSG");
 	if (Parent->nickserv.LCK_PRIVMSG())
 	    output << IRC_Off;
     }
 
-    ::send(mynick, source, "Default options are: " + output);
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_OPTIONS"),
+			output.c_str());
 
     output = "";
     if (Parent->nickserv.LCK_Language())
@@ -1263,17 +1250,16 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
     if (Parent->nickserv.LCK_Language())
 	output << IRC_Off;    
 
-    ::send(mynick, source, "Default language is: " + output);
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_LANG"),
+			output.c_str());
 
-    ::send(mynick, source, "Maximum picture size is " +
-		    mstring(ltoa(Parent->nickserv.PicSize())) + " bytes.");
-    ::send(mynick, source, "Allowable picture extensions are: " +
-		    Parent->nickserv.PicExt());
-    ::send(mynick, source, "Users may have a maximum of " +
-		    mstring(itoa(Parent->memoserv.Files())) +
-		    " files of up to " +
-		    mstring(ltoa(Parent->memoserv.FileSize())) +
-		    " bytes each.");
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PICSIZE"),
+		    Parent->nickserv.PicSize());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PICEXT"),
+		    Parent->nickserv.PicExt().c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_FILES"),
+		    Parent->memoserv.Files(),
+		    Parent->memoserv.FileSize());
 }
 
 
@@ -1281,14 +1267,12 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 {
     FT("OperServ::do_settings_Channel", (mynick, source, params));
 
-    ::send(mynick, source, "Channels will expire after " +
-			ToHumanTime(Parent->chanserv.Expire()) + ".");
-    ::send(mynick, source, "Users are killed if they fail to ident " +
-			mstring(itoa(Parent->chanserv.Passfail())) +
-			" times.");
-    ::send(mynick, source, "Channels are kept for " +
-			ToHumanTime(Parent->chanserv.ChanKeep()) +
-			" after akick of last user.");
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_EXPIRE"),
+		    ToHumanTime(Parent->chanserv.Expire()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_IDENT"),
+		    Parent->chanserv.Passfail());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_KEEPTIME"),
+		    ToHumanTime(Parent->chanserv.ChanKeep()).c_str());
 
     mstring output = "";
     if (Parent->chanserv.LCK_Bantime())
@@ -1296,14 +1280,14 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     output << ToHumanTime(Parent->chanserv.DEF_Bantime());
     if (Parent->chanserv.LCK_Bantime())
 	output << IRC_Off;    
-    ::send(mynick, source, "Default ban time is: " + output);
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_BANTIME"),
+		    output.c_str());
 
-    ::send(mynick, source, "Default MLOCK is \"" +
-			Parent->chanserv.DEF_MLock() + "\" and locked is \"" +
-			Parent->chanserv.LCK_MLock() + "\".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_MLOCK"),
+		    Parent->chanserv.DEF_MLock().c_str()
+		    Parent->chanserv.LCK_MLock().c_str());
 
     output = "";
-
     if (Parent->chanserv.DEF_Keeptopic())
     {
 	if (output != "")
@@ -1403,7 +1387,8 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << IRC_Off;
     }
 
-    ::send(mynick, source, "Default options are: " + output);
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_OPTIONS"),
+		    output.c_str());
 
     output = "";
     if (Parent->chanserv.LCK_Revenge())
@@ -1411,14 +1396,14 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     output << Parent->chanserv.DEF_Revenge();
     if (Parent->chanserv.LCK_Revenge())
 	output << IRC_Off;    
-    ::send(mynick, source, "Default ban time is: " + output);
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_REVENGE"),
+		    output.c_str());
 
-    ::send(mynick, source, "Minimum access level is " +
-		    mstring(ltoa(Parent->chanserv.Level_Min())) +
-		    " and maximum is " +
-		    mstring(ltoa(Parent->chanserv.Level_Max())) + ".");
-    ::send(mynick, source, "Channel news articles expire after " +
-		    ToHumanTime(Parent->memoserv.News_Expire()) + ".");
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_ACCESS"),
+		    Parent->chanserv.Level_Min(),
+		    Parent->chanserv.Level_Max());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_NEWS"),
+		    ToHumanTime(Parent->memoserv.News_Expire()).c_str());
 }
 
 
@@ -1426,34 +1411,34 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
-    ::send(mynick, source, "Memos are InFlight for " +
-			ToHumanTime(Parent->memoserv.InFlight()) + ".");
-    ::send(mynick, source, "Default AKILL exipry time is " +
-			ToHumanTime(Parent->operserv.Def_Expire()) + ".");
-    ::send(mynick, source, "Maximum AKILL expire times (by committee):");
-    ::send(mynick, source, "    " + Parent->commserv.SADMIN_Name() + ": " +
-			ToHumanTime(Parent->operserv.Expire_SAdmin()));
-    ::send(mynick, source, "    " + Parent->commserv.SOP_Name() + ": " +
-			ToHumanTime(Parent->operserv.Expire_Sop()));
-    ::send(mynick, source, "    " + Parent->commserv.ADMIN_Name() + ": " +
-			ToHumanTime(Parent->operserv.Expire_Admin()));
-    ::send(mynick, source, "    " + Parent->commserv.OPER_Name() + ": " +
-			ToHumanTime(Parent->operserv.Expire_Oper()));
-    ::send(mynick, source, "A user may have up to " +
-			mstring(itoa(Parent->operserv.Clone_Limit())) +
-			" clones per host, which can be overridden up to " +
-			mstring(itoa(Parent->operserv.Max_Clone())) + ".");
-
-    ::send(mynick, source, "Flood is triggered with " +
-			mstring(itoa(Parent->operserv.Flood_Msgs())) + " messages in " +
-			ToHumanTime(Parent->operserv.Flood_Time()) + ".");
-    ::send(mynick, source, "Services remember old flood triggers for up to " +
-			ToHumanTime(Parent->operserv.Ignore_Remove()) + " later.");
-    ::send(mynick, source, "Ignore lasts for " +
-			ToHumanTime(Parent->operserv.Ignore_Time()) +
-			" and is permanent if triggered " +
-			mstring(itoa(Parent->operserv.Ignore_Limit())) +
-			" times.");
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_INFLIGHT"),
+		    ToHumanTime(Parent->memoserv.InFlight()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL1"),
+		    ToHumanTime(Parent->operserv.Def_Expire()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL2"));
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
+		    Parent->commserv.SADMIN_Name(),
+		    ToHumanTime(Parent->operserv.Expire_SAdmin()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
+		    Parent->commserv.SOP_Name(),
+		    ToHumanTime(Parent->operserv.Expire_Sop()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
+		    Parent->commserv.ADMIN_Name(),
+		    ToHumanTime(Parent->operserv.Expire_Admin()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
+		    Parent->commserv.OPER_Name(),
+		    ToHumanTime(Parent->operserv.Expire_Oper()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_CLONES"),
+		    Parent->operserv.Clone_Limit(),
+		    Parent->operserv.Max_Clone());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_FLOOD1"),
+		    Parent->operserv.Flood_Msgs(),
+		    ToHumanTime(Parent->operserv.Flood_Time()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_FLOOD2"),
+		    ToHumanTime(Parent->operserv.Ignore_Remove()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_IGNORE"),
+		    ToHumanTime(Parent->operserv.Ignore_Time()).c_str(),
+		    Parent->operserv.Ignore_Limit());
     mstring output = "";
 
     if (Parent->commserv.DEF_OpenMemos())
@@ -1462,7 +1447,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->commserv.LCK_OpenMemos())
 	    output << IRC_Bold;
-	output << "Open Memos";
+	output << Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS");
 	if (Parent->commserv.LCK_OpenMemos())
 	    output << IRC_Off;
     }
@@ -1473,7 +1458,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->commserv.LCK_Private())
 	    output << IRC_Bold;
-	output << "Private";
+	output << Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE");
 	if (Parent->commserv.LCK_Private())
 	    output << IRC_Off;
     }
@@ -1484,11 +1469,12 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 	    output << ", ";
 	if (Parent->commserv.LCK_Secure())
 	    output << IRC_Bold;
-	output << "Secure";
+	output << Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE");
 	if (Parent->commserv.LCK_Secure())
 	    output << IRC_Off;
     }
-    ::send(mynick, source, "Default committee options are: " + output);
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_COMM_OPT"),
+		    output.c_str());
 }
 
 

@@ -143,7 +143,6 @@ public:
     static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_Trace(mstring mynick, mstring source, mstring params);
     static void do_Mode(mstring mynick, mstring source, mstring params);
-    static void do_Kick(mstring mynick, mstring source, mstring params);
     static void do_Qline(mstring mynick, mstring source, mstring params);
     static void do_UnQline(mstring mynick, mstring source, mstring params);
     static void do_NOOP(mstring mynick, mstring source, mstring params);

@@ -112,6 +112,7 @@ TEMP_IGNORE        =This is your %s ignore (of a maximum %d).  Services will not
 PERM_IGNORE        =You have been ignored the maximum %d times.  Services will no longer respond.
 PROTECTED          =This nickname has KILL protection enabled.  If you do not IDENTIFY, you will be killed.
 DEFCOMMITTEE       =Default committees may NOT be modified.
+NOACCESS           =Access denied.
 
 [MISC]
 KILL_PASS_FAIL     =Too many password failures
@@ -123,6 +124,16 @@ CHAN_GETPASS       =%s just performed a GETPASS on channel %s (%s).
 GLOBAL_MSG         =%s just sent a message to ALL users.
 FLOOD_TEMP         =%s is FLOODING services.  Placed on temporary ignore.
 FLOOD_PERM         =%s is FLOODING services.  Placed on perminant ignore.
+CHAN_MODE          =%s just performed a mode change (%s) on channel %s.
+NICK_MODE          =%s just performed a mode change (%s) on nickname %s.
+QLINE              =%s just turned %s a quarentine on nicknames matching %s.
+NOOP               =%s just turned %s IRC Operator quarentine on server %s.
+KILL               =%s just silently killed user %s.
+SHUTDOWN           =SHUTDOWN command received from %s.
+RELOAD             =%s just reloaded the server configuration file.
+JUPE               =%s just JUPED server %s.
+ONOFF              =Services have been turned %s by %s.
+ONOFF_ONE          =Service %s has been turned %s by %s.
 BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
 ON                 =ON
 OFF                =OFF
@@ -323,6 +334,9 @@ OPT_SET_TO         =%s option has been set to %s.
 ISSTORED           =Channel %s is already registered.
 ISNOTSTORED        =Channel %s is not registered.
 
+ISINUSE            =Channel %s is currently in use.
+ISNOTINUSE         =Channel %s is not currently in use.
+
 [CS_COMMAND]
 IDENTIFIED         =Password accepted - you are now identified as founder of %s.
 
@@ -366,9 +380,63 @@ SET_OPENMEMOS      =Open Memos
 [OS_STATUS]
 INVALID_THREAD     =Thread type %s is not valid.
 INVALID_LEVEL      =Trace level %s is not valid (ignored).
+ISLINKED           =Server %s is already linked.
+ISNOTLINKED        =Server %s is not linked.
+ISLANG             =Language %s is already loaded.
+ISNOTLANG          =Language %s is not loaded.
 
 [OS_SETTINGS]
+CFG_LEVEL          =Base level is %d, current level is %d.
+CFG_LAG            =Level is increased if lag is more than %s.
+CFG_SERVERS        =Services have %d possable servers to connect to.
+CFG_RELINK         =Services relink in %s if SQUIT.
+CFG_SQUIT1         =SQUIT protection lasts %s.
+CFG_SQUIT2         =Users have %s to reconnect before SQUIT protection activates.
+CFG_SYNC           =Databases save every %s, and sync in %s.
+CFG_CYCLE          =HyperActive cycle is %s, and lag check is %s.
 
+NICK_EXPIRE        =Nicknames will expire after %s.
+NICK_IDENT         =Users have %s to identify.
+NICK_HOLD          =Nicknames are held for %s on failure to identify.
+NICK_PASS          =Users will be killed if they fail to identify %d times.
+NICK_OPTIONS       =Default nickname options are: %s
+NICK_LANG          =Default language is %s.
+NICK_PICSIZE       =Maximum picture size is %d bytes.
+NICK_PICEXT        =Valid picture extensions are: %s
+NICK_FILES         =Users may have up to %d files of up to %d bytes each.
+
+CHAN_EXPIRE        =Channels will expire after %s.
+CHAN_IDENT         =Users will be killed if they fail to identify %d tiems.
+CHAN_KEEPTIME      =Channels are kept for %s after AKICKing the last user.
+CHAN_BANTIME       =Default ban keep time is %s.
+CHAN_MLOCK         =Default mode lock is "%s", modes "%s" are forced.
+CHAN_OPTIONS       =Default channel options are: %s
+CHAN_REVENGE       =Default revenge level is %s.
+CHAN_ACCESS        =Minimum access level is %d, and maximum is %d.
+CHAN_NEWS          =News articles expire after %s.
+
+MISC_INFLIGHT      =Memos are in-flight for %s.
+MISC_AKILL1        =Default AutoKill time is %s.
+MISC_AKILL2        =Maximum AutoKill times (by committee) are:
+MISC_AKILL3        =    %s: %s
+MISC_CLONES        =Users may have up to %d clones per host, which may be overridden up to %d.
+MISC_FLOOD1        =Flood is triggered with %d messages is %s.
+MISC_FLOOD2        =Services remember old flood triggers for %s.
+MISC_IGNORE        =Ignore lasts for %s, and is made permanent if triggered %d times.
+MISC_COMM_OPT      =Default committee options are: %s
 
 [OS_COMMAND]
-
+CHAN_MODE          =Mode change %s has been sent for channel %s.
+NICK_MODE          =Mode change %s has been sent for nickname %s.
+QLINE              =Quarentine for nicknames matching %s has been turned %s.
+NOOP               =IRC Operator quarentine has been turned %s for server %s.
+KILL               =User %s has been killed (silently).
+PING               =PING message being sent to all servers.
+UPDATE             =Saving databases.
+SHUTDOWN           =Shutting down ...
+RELOAD             =Configuration file reloaded.
+RELOAD_FAIL        =WARNING: Could not read configuration file.
+UNLOAD             =Language %s has been unloaded.
+JUPE               =Server %s has been juped.
+ONOFF              =Services have been turned %s.
+ONOFF_ONE          =Service %s has been turned %s.
