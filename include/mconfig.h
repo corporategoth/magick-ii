@@ -25,6 +25,9 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2001/03/27 07:04:30  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.17  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -84,8 +87,6 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** ========================================================== */
 
 #include "mstring.h"
-
-class ceNode;
 
 class ceNode
 {

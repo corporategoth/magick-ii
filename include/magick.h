@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.153  2001/03/27 07:04:30  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.152  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -201,6 +204,7 @@ RCSID(magick_h, "@(#) $Id$");
 **
 ** ========================================================== */
 
+#include "mexceptions.h"
 #include "filesys.h"
 #include "utils.h"
 #include "server.h"
@@ -282,7 +286,7 @@ private:
 	bool i_reconnect;
 	unsigned long i_localhost;
 	bool i_gotconnect;
-	mstring i_server;
+	mstring i_currentserver;
 	bool i_connected;
 	bool i_saving;
 
@@ -305,7 +309,7 @@ public:
 	CommServ commserv;
 
 	// Other stuff ...
-	NetworkServ server;
+	Server server;
 
 	// Config Values
 	class startup_t {
@@ -476,7 +480,7 @@ public:
 	bool GotConnect()const		{ return i_gotconnect; }
 	void GotConnect(bool in)	{ i_gotconnect = in; }
 	unsigned long LocalHost()const	{ return i_localhost; }
-	mstring Server()const		{ return i_server; }
+	mstring CurrentServer()const	{ return i_currentserver; }
 	bool Connected()const		{ return i_connected; }
 	void Connected(bool in)		{ i_connected = in; }
 	bool Saving()const		{ return i_saving; }

@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.66  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -1054,7 +1057,7 @@ vector<unsigned long> FileMap::GetList(const FileMap::FileType type, const mstri
 		    for (i=1; i<=iter->second.second.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
-			    Parent->commserv.list[iter->second.second.ExtractWord(i, " ").UpperCase()].IsOn(source))
+			    Parent->commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase()).IsOn(source))
 			{
 			    retval.push_back(iter->first);
 			    break;
@@ -1273,10 +1276,10 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     if (!Parent->nickserv.IsLive(i_Source))
 	return;
 
-    if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.File() &&
-	!Parent->nickserv.live[i_Source.LowerCase()].InFlight.InProg())
+    if (Parent->nickserv.GetLive(i_Source).InFlight.File() &&
+	!Parent->nickserv.GetLive(i_Source).InFlight.InProg())
     {
-	Parent->nickserv.live[i_Source.LowerCase()].InFlight.SetInProg();
+	Parent->nickserv.GetLive(i_Source).InFlight.SetInProg();
     }
     else
     {
@@ -1337,19 +1340,19 @@ DccXfer::~DccXfer()
     // what we get!
     if (i_Type == Get &&
 	Parent->nickserv.IsLiveAll(i_Source) &&
-	Parent->nickserv.live[i_Source.LowerCase()].InFlight.File() &&
-	Parent->nickserv.live[i_Source.LowerCase()].InFlight.InProg())
+	Parent->nickserv.GetLive(i_Source).InFlight.File() &&
+	Parent->nickserv.GetLive(i_Source).InFlight.InProg())
     {
 	if ((i_Filesize > 0) ? i_Total == i_Filesize
 			  : i_Total > 0)
 	{
 	    mstring tmp;
 	    FileMap::FileType filetype = FileMap::Unknown;
-	    if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Memo())
+	    if (Parent->nickserv.GetLive(i_Source).InFlight.Memo())
 		filetype = FileMap::MemoAttach;
-	    else if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Picture())
+	    else if (Parent->nickserv.GetLive(i_Source).InFlight.Picture())
 		filetype = FileMap::Picture;
-	    else if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Public())
+	    else if (Parent->nickserv.GetLive(i_Source).InFlight.Public())
 		filetype = FileMap::Public;
 	    unsigned long filenum = Parent->filesys.NewFile(filetype, i_Filename);
 	    if (filenum)
@@ -1367,17 +1370,17 @@ DccXfer::~DccXfer()
 		if (mFile::Exists(i_Tempfile))
 		{
 		    mFile::Copy(i_Tempfile, tmp);
-		    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
+		    Parent->nickserv.GetLive(i_Source).InFlight.File(filenum);
 		    CP(("Added entry %d to FileMap", filenum));
 		}
 		else
-		    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
+		    Parent->nickserv.GetLive(i_Source).InFlight.File(0);
 	    }
 	    else
-		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
+		Parent->nickserv.GetLive(i_Source).InFlight.File(0);
 	}
 	else
-	    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
+	    Parent->nickserv.GetLive(i_Source).InFlight.File(0);
     }
 
     if (mFile::Exists(i_Tempfile))
@@ -1500,7 +1503,7 @@ void DccXfer::Cancel()
     WLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     WLOCK2(("DccMap", "xfers", i_DccId, "i_File"));
     if (Parent->nickserv.IsLiveAll(i_Source))
-	Parent->nickserv.live[i_Source.LowerCase()].InFlight.Cancel();
+	Parent->nickserv.GetLive(i_Source).InFlight.Cancel();
     MCB(i_Total);
     CB(1, i_File.Length());
     i_Total = 0;

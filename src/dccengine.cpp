@@ -27,6 +27,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.42  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -551,8 +554,8 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     if (!Parent->nickserv.IsLive(source))
 	return;
 
-    if (!(Parent->nickserv.live[source.LowerCase()].InFlight.File() &&
-	!Parent->nickserv.live[source.LowerCase()].InFlight.InProg()))
+    if (!(Parent->nickserv.GetLive(source).InFlight.File() &&
+	!Parent->nickserv.GetLive(source).InFlight.InProg()))
     {
 	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
 						"GET");
@@ -560,7 +563,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     }
 
 
-    if (Parent->nickserv.live[source.LowerCase()].InFlight.Picture())
+    if (Parent->nickserv.GetLive(source).InFlight.Picture())
     {
 	if (size && Parent->nickserv.PicSize() && size > Parent->nickserv.PicSize())
 	{
@@ -573,7 +576,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	    (" " + Parent->nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
 	{
 	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/INVALIDEXT"));
-	    Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
+	    Parent->nickserv.GetLive(source).InFlight.Cancel();
 	    return;
 	}
 	else
@@ -582,7 +585,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	}
     }
 
-    if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
+    if (Parent->nickserv.GetLive(source).InFlight.Memo())
     {
 	if (size && Parent->memoserv.FileSize() && size > Parent->memoserv.FileSize())
 	{

@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2001/03/27 07:04:30  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.84  2001/03/20 14:22:13  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -190,7 +193,7 @@ public:
 
 class mBase
 {
-    friend mBaseTask;
+    friend int mBaseTask::open(void *in);
 protected:
     mstring names;		// Names of service (space delimited)
     mstring realname;		// 'Real Name' of service
@@ -501,14 +504,6 @@ public:
 
 class CommandMap
 {
-    friend class OperServ;
-    friend class NickServ;
-    friend class ChanServ;
-    friend class MemoServ;
-    friend class CommServ;
-    friend class ServMsg;
-    // friend class scripted;
-
     typedef void (*functor)(const mstring&, const mstring&, const mstring&);
     // map<service, map<command, pair<committees, functor> > >
 	typedef list<triplet<mstring, mstring, functor> > cmdtype;
@@ -516,11 +511,11 @@ class CommandMap
 	cmdmap i_user;
     cmdmap i_system;
 
+public:
     void AddSystemCommand(const mstring &service, const mstring &command,
 	    const mstring &committees, functor function);
     void RemSystemCommand(const mstring &service, const mstring &command,
 	    const mstring &committees);
-public:
     void AddCommand(const mstring &service, const mstring &command,
 	    const mstring &committees, functor function);
     void RemCommand(const mstring &service, const mstring &command,

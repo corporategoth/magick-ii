@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.293  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.292  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -889,10 +892,10 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
     FT("Magick::getMessage", (nick, name));
 
     if (!nick.empty() && nickserv.IsStored(nick) &&
-	nickserv.stored[nick.LowerCase()].IsOnline())
+	nickserv.GetStored(nick.LowerCase()).IsOnline())
     {
 	CP(("Using USER-DEIFNED language."));
-	mstring retval = getMessageL(nickserv.stored[nick.LowerCase()].Language(), name);
+	mstring retval = getMessageL(nickserv.GetStored(nick.LowerCase()).Language(), name);
 	RET(retval);
     }
     else
@@ -992,9 +995,9 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
     // Load requested language if its NOT loaded.
     // and then look for the Help of THAT type.
     if (!nick.empty() && nickserv.IsStored(nick) &&
-	nickserv.stored[nick.LowerCase()].IsOnline())
+	nickserv.GetStored(nick.LowerCase()).IsOnline())
     {
-	language = nickserv.stored[nick.LowerCase()].Language().UpperCase();
+	language = nickserv.GetStored(nick.LowerCase()).Language().UpperCase();
     }
     WLOCK(("Magick","LoadHelp"));
 
@@ -1048,7 +1051,7 @@ StartGetLang:
 		for (i=1; !sendline && i<=Help[language][name.UpperCase()][j].first.WordCount(" "); i++)
 		{
 		    if (commserv.IsList(Help[language][name.UpperCase()][j].first.ExtractWord(i, " ")) &&
-			commserv.list[Help[language][name.UpperCase()][j].first.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			commserv.GetList(Help[language][name.UpperCase()][j].first.ExtractWord(i, " ")).IsOn(nick))
 			sendline = true;
 		}
 	    }
@@ -1058,7 +1061,7 @@ StartGetLang:
 		for (i=1; sendline && i<=Help[language][name.UpperCase()][j].second.WordCount(" "); i++)
 		{
 		    if (commserv.IsList(Help[language][name.UpperCase()][j].second.ExtractWord(i, " ")) &&
-			commserv.list[Help[language][name.UpperCase()][j].second.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			commserv.GetList(Help[language][name.UpperCase()][j].second.ExtractWord(i, " ")).IsOn(nick))
 			sendline = false;
 		}
 	    if (sendline)
@@ -2092,7 +2095,7 @@ bool Magick::get_config_values()
 	    iter->second.first -= (min_level-1);
 	}
     }}
-    if (Server().empty() || !startup.IsServer(Server()))
+    if (CurrentServer().empty() || !startup.IsServer(CurrentServer()))
 	reconnect = true;
 
     // REMOTE entries
@@ -2131,7 +2134,7 @@ bool Magick::get_config_values()
 	i++;
     } while (!value_mstring.empty());
     }
-    if (Server().empty() || !startup.IsAllowed(Server(), startup.Server_Name()))
+    if (CurrentServer().empty() || !startup.IsAllowed(CurrentServer(), startup.Server_Name()))
 	reconnect = true;
 
     in.Read(ts_Startup+"PROTOCOL",value_uint,0U);
@@ -2908,65 +2911,65 @@ bool Magick::get_config_values()
     if (commserv.IsList(commserv.all_name))
     {
 	MLOCK(("CommServ", "list", commserv.all_name, "member"));
-	while (commserv.list[commserv.all_name].size())
+	while (commserv.GetList(commserv.all_name).size())
 	{
-	    commserv.list[commserv.all_name].member =
-			commserv.list[commserv.all_name].begin();
-	    commserv.list[commserv.all_name].erase();
+	    commserv.GetList(commserv.all_name).member =
+			commserv.GetList(commserv.all_name).begin();
+	    commserv.GetList(commserv.all_name).erase();
 	}
     }
     else
     {
 	WLOCK(("CommServ", "list"));
-	commserv.list[commserv.all_name] = Committee(commserv.all_name, 
-					    "All Users");
+	Committee_t tmp(commserv.all_name, "All Users");
+	commserv.AddList(&tmp);
     }
-    commserv.list[commserv.all_name].Secure(false);
-    commserv.list[commserv.all_name].Private(true);
-    commserv.list[commserv.all_name].OpenMemos(false);
+    commserv.GetList(commserv.all_name).Secure(false);
+    commserv.GetList(commserv.all_name).Private(true);
+    commserv.GetList(commserv.all_name).OpenMemos(false);
 
     if (commserv.IsList(commserv.regd_name))
     {
 	MLOCK(("CommServ", "list", commserv.regd_name, "member"));
-	while (commserv.list[commserv.regd_name].size())
+	while (commserv.GetList(commserv.regd_name).size())
 	{
-	    commserv.list[commserv.regd_name].member =
-			commserv.list[commserv.regd_name].begin();
-	    commserv.list[commserv.regd_name].erase();
+	    commserv.GetList(commserv.regd_name).member =
+			commserv.GetList(commserv.regd_name).begin();
+	    commserv.GetList(commserv.regd_name).erase();
 	}
     }
     else
     {
 	WLOCK(("CommServ", "list"));
-	commserv.list[commserv.regd_name] = Committee(commserv.regd_name, 
-					    "Registered Users");
+	Committee_t tmp(commserv.regd_name, "Registered Users");
+	commserv.AddList(&tmp);
     }
-    commserv.list[commserv.regd_name].Secure(false);
-    commserv.list[commserv.regd_name].Private(true);
-    commserv.list[commserv.regd_name].OpenMemos(false);
+    commserv.GetList(commserv.regd_name).Secure(false);
+    commserv.GetList(commserv.regd_name).Private(true);
+    commserv.GetList(commserv.regd_name).OpenMemos(false);
 
     if (commserv.IsList(commserv.sadmin_name))
     {
 	MLOCK(("CommServ", "list", commserv.sadmin_name, "member"));
-	while (commserv.list[commserv.sadmin_name].size())
+	while (commserv.GetList(commserv.sadmin_name).size())
 	{
-	    commserv.list[commserv.sadmin_name].member =
-			commserv.list[commserv.sadmin_name].begin();
-	    commserv.list[commserv.sadmin_name].erase();
+	    commserv.GetList(commserv.sadmin_name).member =
+			commserv.GetList(commserv.sadmin_name).begin();
+	    commserv.GetList(commserv.sadmin_name).erase();
 	}
     }
     else
     {
 	WLOCK(("CommServ", "list"));
-	commserv.list[commserv.sadmin_name] = Committee(commserv.sadmin_name, 
-					    "Services Administrators");
+	Committee_t tmp(commserv.sadmin_name, "Services Administrators");
+	commserv.AddList(&tmp);
     }
-    commserv.list[commserv.sadmin_name].Secure(commserv.sadmin_secure);
-    commserv.list[commserv.sadmin_name].Private(commserv.sadmin_private);
-    commserv.list[commserv.sadmin_name].OpenMemos(commserv.sadmin_openmemos);
+    commserv.GetList(commserv.sadmin_name).Secure(commserv.sadmin_secure);
+    commserv.GetList(commserv.sadmin_name).Private(commserv.sadmin_private);
+    commserv.GetList(commserv.sadmin_name).OpenMemos(commserv.sadmin_openmemos);
     { MLOCK(("CommServ", "list", commserv.sadmin_name, "member"));
     for (i=1; i<=operserv.services_admin.WordCount(", "); i++)
-	commserv.list[commserv.sadmin_name].insert(
+	commserv.GetList(commserv.sadmin_name).insert(
 	    operserv.services_admin.ExtractWord(i, ", "),
 	    operserv.FirstName());
     }
@@ -2974,35 +2977,35 @@ bool Magick::get_config_values()
     if (!commserv.IsList(commserv.sop_name))
     {
 	WLOCK(("CommServ", "list"));
-	commserv.list[commserv.sop_name] = Committee(commserv.sop_name,
-				    commserv.list[commserv.sadmin_name],
+	Committee_t tmp(commserv.sop_name, commserv.GetList(commserv.sadmin_name),
 				    "Services Operators");
+	commserv.AddList(&tmp);
     }
-    commserv.list[commserv.sop_name].Secure(commserv.sop_secure);
-    commserv.list[commserv.sop_name].Private(commserv.sop_private);
-    commserv.list[commserv.sop_name].OpenMemos(commserv.sop_openmemos);
+    commserv.GetList(commserv.sop_name).Secure(commserv.sop_secure);
+    commserv.GetList(commserv.sop_name).Private(commserv.sop_private);
+    commserv.GetList(commserv.sop_name).OpenMemos(commserv.sop_openmemos);
 
     if (!commserv.IsList(commserv.admin_name))
     {
 	WLOCK(("CommServ", "list"));
-	commserv.list[commserv.admin_name] = Committee(commserv.admin_name, 
-				    commserv.list[commserv.sadmin_name],
+	Committee_t tmp(commserv.admin_name, commserv.GetList(commserv.sadmin_name),
 				    "Server Administrators");
+	commserv.AddList(&tmp);
     }
-    commserv.list[commserv.admin_name].Secure(commserv.admin_secure);
-    commserv.list[commserv.admin_name].Private(commserv.admin_private);
-    commserv.list[commserv.admin_name].OpenMemos(commserv.admin_openmemos);
+    commserv.GetList(commserv.admin_name).Secure(commserv.admin_secure);
+    commserv.GetList(commserv.admin_name).Private(commserv.admin_private);
+    commserv.GetList(commserv.admin_name).OpenMemos(commserv.admin_openmemos);
 
     if (!commserv.IsList(commserv.oper_name))
     {
 	WLOCK(("CommServ", "list"));
-	commserv.list[commserv.oper_name] = Committee(commserv.oper_name, 
-				    commserv.list[commserv.admin_name],
+	Committee_t tmp(commserv.oper_name, commserv.GetList(commserv.admin_name),
 				    "Server Operators");
+	commserv.AddList(&tmp);
     }
-    commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
-    commserv.list[commserv.oper_name].Private(commserv.oper_private);
-    commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
+    commserv.GetList(commserv.oper_name).Secure(commserv.oper_secure);
+    commserv.GetList(commserv.oper_name).Private(commserv.oper_private);
+    commserv.GetList(commserv.oper_name).OpenMemos(commserv.oper_openmemos);
 
     if (reconnect && Connected())
     {
@@ -3723,7 +3726,7 @@ void Magick::DumpB() const
 	handlermap.size(), i_verbose, i_services_dir, i_config_file,
 	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
 	i_localhost, i_gotconnect));
-    MB(16, (i_server, i_connected, i_saving));
+    MB(16, (i_currentserver, i_connected, i_saving));
 }
 
 void Magick::DumpE() const
@@ -3732,6 +3735,6 @@ void Magick::DumpE() const
 	handlermap.size(), i_verbose, i_services_dir, i_config_file,
 	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
 	i_localhost, i_gotconnect));
-    ME(16, (i_server, i_connected, i_saving));
+    ME(16, (i_currentserver, i_connected, i_saving));
 }
 

@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.153  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.152  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -547,7 +550,7 @@ int mBaseTask::message_i(const mstring& message)
 	    CP(("Target changed, new data: %s", data.c_str()));
 	}
 
-	if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
+	if (!Parent->nickserv.GetLive(source).FloodTrigger())
 	{
 	    // Find out if the target nick is one of the services 'clones'
 	    // Pass the message to them if so.
@@ -860,9 +863,9 @@ void mBase::sendV(const mstring &source, const mstring &dest, const char *pszFor
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
 	if (!Parent->nickserv.LCK_PRIVMSG() && Parent->nickserv.IsStored(dest) &&
-		Parent->nickserv.stored[dest.LowerCase()].IsOnline())
+		Parent->nickserv.GetStored(dest).IsOnline())
 	{
-	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
+	    if (Parent->nickserv.GetStored(dest).PRIVMSG()) {
 		privmsgV(source, dest, pszFormat, argptr);
 	    }
 	    else
@@ -1133,7 +1136,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
 		    if (Parent->commserv.IsList(list)
-			&& Parent->commserv.list[list].IsOn(user))
+			&& Parent->commserv.GetList(list).IsOn(user))
 		    {
 			retval.first = true;
 			retval.second = iter->third;
@@ -1197,7 +1200,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
 		    if (Parent->commserv.IsList(list)
-			 && Parent->commserv.list[list].IsOn(user))
+			 && Parent->commserv.GetList(list).IsOn(user))
 		    {
 			retval.first = true;
 			retval.second = iter->third;

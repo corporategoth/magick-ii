@@ -27,6 +27,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.2  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -332,7 +335,7 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
 	    }
 
 	    nick = ESP_CreateNickEntry(ni);
-	    Parent->nickserv.stored[nick.Name().LowerCase()] = nick;
+	    Parent->nickserv.AddStored(&nick);
 	    ESP_delnick(ni);
 	} /* while (ESP_getc_db(f) != 0) */
     } /* for (i) */
@@ -344,7 +347,7 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
 void ESP_load_ns_dbase(void)
 {
     Nick_Stored_t nick;
-    list<Memo_t> memo;
+    MemoServ::nick_memo_t memo;
 
     ESP_dbFILE *f;
     int ver, i, j, c;
@@ -455,10 +458,10 @@ void ESP_load_ns_dbase(void)
 		ni->id_timestamp = 0;
 
 		nick = ESP_CreateNickEntry(ni);
-		Parent->nickserv.stored[nick.Name().LowerCase()] = nick;
+		Parent->nickserv.AddStored(&nick);
 		memo = ESP_CreateMemoEntry(&ni->memos, ni->nick);
 		if (memo.size())
-		    Parent->memoserv.nick[mstring(ni->nick).LowerCase()] = memo;
+		    Parent->memoserv.AddNick(memo);
 		ESP_delnick(ni);
 	    } /* while (ESP_getc_db(f) != 0) */
 	} /* for (i) */
@@ -744,7 +747,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 	    ci->memos.memomax = ESP_MSMaxMemos;
 
 	    chan = ESP_CreateChanEntry(ci);
-	    Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
+	    Parent->nickserv.AddStored(&chan);
 	    ESP_delchan(ci);
 	} /* while (ESP_getc_db(f) != 0) */
     } /* for (i) */
@@ -754,7 +757,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 void ESP_load_cs_dbase(void)
 {
     Chan_Stored_t chan;
-    list<News_t> news;
+    MemoServ::channel_news_t news;
 
     ESP_dbFILE *f;
     int ver, i, j, c;
@@ -892,10 +895,10 @@ void ESP_load_cs_dbase(void)
 		SAFE(ESP_read_string(&ci->entry_message, f));
 
 		chan = ESP_CreateChanEntry(ci);
-		Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
+		Parent->chanserv.AddStored(&chan);
 		news = ESP_CreateNewsEntry(&ci->memos, ci->name);
 		if (news.size())
-		    Parent->memoserv.channel[mstring(ci->name).LowerCase()] = news;
+		    Parent->memoserv.AddChannel(news);
 		ESP_delchan(ci);
 	    } /* while (ESP_getc_db(f) != 0) */
 	} /* for (i) */
@@ -992,7 +995,7 @@ int ESP_delchan(ESP_ChannelInfo *ci)
 
 void ESP_load_old_ms_dbase(void)
 {
-    list<Memo_t> memo;
+    MemoServ::nick_memo_t memo;
     ESP_dbFILE *f;
     int ver, i, j, c;
     ESP_Memo *memos;
@@ -1048,7 +1051,7 @@ void ESP_load_old_ms_dbase(void)
 
 		memo = ESP_CreateMemoEntry(&mi, old_memolist.nick);
 		if (memo.size())
-		    Parent->memoserv.nick[mstring(old_memolist.nick).LowerCase()] = memo;
+		    Parent->memoserv.AddNick(memo);
 
 		for (j = 0; j < old_memolist.n_memos; j++) {
 		    if (memos[j].text)
@@ -1116,14 +1119,14 @@ void ESP_load_news()
 	    if (news[i].type == ESP_NEWS_LOGON &&
 		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
 	    {
-		Parent->commserv.list[Parent->commserv.ALL_Name()].MSG_insert(
+		Parent->commserv.GetList(Parent->commserv.ALL_Name()).MSG_insert(
 			mstring(news[i].text), mstring(news[i].who),
 			mDateTime(news[i].time));
 	    }
 	    else if (news[i].type == ESP_NEWS_OPER &&
 		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
 	    {
-		Parent->commserv.list[Parent->commserv.OPER_Name()].MSG_insert(
+		Parent->commserv.GetList(Parent->commserv.OPER_Name()).MSG_insert(
 			mstring(news[i].text), mstring(news[i].who),
 			mDateTime(news[i].time));
 	    }
@@ -1182,8 +1185,8 @@ void ESP_load_os_dbase(void)
 		   services_admins[i] = findnick(s); */
 
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(s)))
-		    Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
+		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
+		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
 		    mstring(s), Parent->commserv.FirstName());
 		if (s)
 		    free(s); 
@@ -1207,8 +1210,8 @@ void ESP_load_os_dbase(void)
 		    services_opers[i] = findnick(s); */
 
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(s)))
-		    Parent->commserv.list[Parent->commserv.OPER_Name()].insert(
+		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
+		    Parent->commserv.GetList(Parent->commserv.OPER_Name()).insert(
 		    mstring(s), Parent->commserv.FirstName());
 		if (s)
 		    free(s);
@@ -1241,8 +1244,8 @@ void ESP_load_os_dbase(void)
 		    services_admins[i] = findnick(s); */
 
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(s)))
-		    Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
+		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
+		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
 		    mstring(s), Parent->commserv.FirstName());
 		if (s)
 		    free(s);
@@ -1796,10 +1799,10 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
     }
 }
 
-list<Memo_t> ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick)
+MemoServ::nick_memo_t ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick)
 {
     int i;
-    list<Memo_t> out;
+    MemoServ::nick_memo_t out;
     Memo_t *tmp;
     ESP_Memo *memos;
 
@@ -1817,10 +1820,10 @@ list<Memo_t> ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick)
     return out;
 }
 
-list<News_t> ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan)
+MemoServ::channel_news_t ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan)
 {
     int i;
-    list<News_t> out;
+    MemoServ::channel_news_t out;
     News_t *tmp;
     ESP_Memo *memos;
 

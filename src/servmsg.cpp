@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2001/03/27 07:04:32  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.82  2001/03/20 14:22:15  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -603,27 +606,27 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
     mstring out;
 
     map<mstring,pair<unsigned int,unsigned int> > ServCounts;
-    map<mstring,Nick_Live_t>::iterator k;
+    NickServ::live_t::iterator k;
     { RLOCK(("NickServ", "live"));
-    for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
+    for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
     {
 	if (ServCounts.find(k->second.Server().LowerCase()) == ServCounts.end())
 	{
-	    ServCounts[k->second.Server().LowerCase()] =
+	    ServCounts[k->second.Server()] =
 	    				pair<unsigned int,unsigned int>(0,0);
 	}
 	if (!k->second.Name().empty())
 	{
-	    ServCounts[k->second.Server().LowerCase()].first++;
+	    ServCounts[k->second.Server()].first++;
 	    if (k->second.HasMode("o"))
-		ServCounts[k->second.Server().LowerCase()].second++;
+		ServCounts[k->second.Server()].second++;
 	}
     }}
     ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0,
 	    ServCounts[""].first, ServCounts[""].second,
 	    100.0 * static_cast<float>(ServCounts[""].first) /
-	    static_cast<float>(Parent->nickserv.live.size()));
+	    static_cast<float>(Parent->nickserv.LiveSize()));
     do_BreakDown2(ServCounts, mynick, source, "", "");
 }
 
@@ -639,10 +642,10 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 
     if (server.empty())
     {
-	map<mstring, Server>::iterator iter;
-	RLOCK(("Server", "ServerList"));
-	for (iter = Parent->server.ServerList.begin();
-		iter != Parent->server.ServerList.end(); iter++)
+	Server::list_t::iterator iter;
+	RLOCK(("Server", "list"));
+	for (iter = Parent->server.ListBegin();
+		iter != Parent->server.ListEnd(); iter++)
 	{
 	    if (!iter->second.Name().empty() &&
 		iter->second.Uplink() == Parent->startup.Server_Name().LowerCase())
@@ -651,24 +654,24 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
     }
     else
     {
-	if (Parent->server.IsServer(server))
-	    downlinks = Parent->server.ServerList[server].Downlinks();
+	if (Parent->server.IsList(server))
+	    downlinks = Parent->server.GetList(server).Downlinks();
     }
 
     for (unsigned int i=0; i<downlinks.size(); i++)
     {
-	if (Parent->server.IsServer(downlinks[i]))
+	if (Parent->server.IsList(downlinks[i]))
 	{
-	    users = ServCounts[downlinks[i].LowerCase()].first;
-	    opers = ServCounts[downlinks[i].LowerCase()].second;
-	    lag = Parent->server.ServerList[downlinks[i]].Lag();
-	    servername = Parent->server.ServerList[downlinks[i]].AltName();
+	    users = ServCounts[downlinks[i]].first;
+	    opers = ServCounts[downlinks[i]].second;
+	    lag = Parent->server.GetList(downlinks[i]).Lag();
+	    servername = Parent->server.GetList(downlinks[i]).AltName();
 	    if (i<downlinks.size()-1)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "|-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
-			static_cast<float>(Parent->nickserv.live.size()));
+			static_cast<float>(Parent->nickserv.LiveSize()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
@@ -676,7 +679,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "`-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
-			static_cast<float>(Parent->nickserv.live.size()));
+			static_cast<float>(Parent->nickserv.LiveSize()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
@@ -701,17 +704,17 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
     {
 	Parent->nickserv.stats.clear();
 	return;
     }
 
     unsigned long linked = 0, suspended = 0, forbidden = 0;
-    map<mstring,Nick_Stored_t>::iterator i;
+    NickServ::stored_t::iterator i;
     { RLOCK(("NickServ", "stored"));
-    for (i=Parent->nickserv.stored.begin();
-		i!=Parent->nickserv.stored.end(); i++)
+    for (i=Parent->nickserv.StoredBegin();
+		i!=Parent->nickserv.StoredEnd(); i++)
     {
 	if (i->second.Forbidden())
 	    forbidden++;
@@ -725,7 +728,7 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     }}
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_REGD"),
-		Parent->nickserv.stored.size(), linked);
+		Parent->nickserv.StoredSize(), linked);
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_DENIED"),
 		suspended, forbidden);
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD"),
@@ -781,17 +784,17 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
     {
 	Parent->chanserv.stats.clear();
 	return;
     }
 
     unsigned long suspended = 0, forbidden = 0;
-    map<mstring,Chan_Stored_t>::iterator i;
+    ChanServ::stored_t::iterator i;
     { RLOCK(("ChanServ", "stored"));
-    for (i=Parent->chanserv.stored.begin();
-		i!=Parent->chanserv.stored.end(); i++)
+    for (i=Parent->chanserv.StoredBegin();
+		i!=Parent->chanserv.StoredEnd(); i++)
     {
 	if (i->second.Forbidden())
 	    forbidden++;
@@ -803,7 +806,7 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     }}
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_REGD"),
-		Parent->chanserv.stored.size());
+		Parent->chanserv.StoredSize());
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_DENIED"),
 		suspended, forbidden);
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD"),
@@ -870,7 +873,7 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
     {
 	Parent->memoserv.stats.clear();
 	Parent->commserv.stats.clear();
@@ -881,11 +884,11 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
 
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_MEMO"),
-		Parent->memoserv.nick.size());
+		Parent->memoserv.NickSize());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_NEWS"),
-		Parent->memoserv.channel.size());
+		Parent->memoserv.ChannelSize());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_COMM"),
-		Parent->commserv.list.size());
+		Parent->commserv.ListSize());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
 		Parent->memoserv.GetInternalName().c_str(),
@@ -964,7 +967,7 @@ void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
     {
 	Parent->operserv.stats.clear();
 	return;
@@ -1066,52 +1069,52 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     }}
 
     size = 0;
-    map<mstring, Nick_Live_t>::iterator i;
+    NickServ::live_t::iterator i;
     { RLOCK(("NickServ", "live"));
-    for (i=Parent->nickserv.live.begin(); i!=Parent->nickserv.live.end(); i++)
+    for (i=Parent->nickserv.LiveBegin(); i!=Parent->nickserv.LiveEnd(); i++)
     {
 	size += i->first.capacity();
 	size += i->second.Usage();
     }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
-		Parent->nickserv.live.size(),ToHumanSpace(size).c_str());
+		Parent->nickserv.LiveSize(),ToHumanSpace(size).c_str());
     size = 0;
-    map<mstring, Chan_Live_t>::iterator j;
+    ChanServ::live_t::iterator j;
     { RLOCK(("ChanServ", "live"));
-    for (j=Parent->chanserv.live.begin(); j!=Parent->chanserv.live.end(); j++)
+    for (j=Parent->chanserv.LiveBegin(); j!=Parent->chanserv.LiveEnd(); j++)
     {
 	size += j->first.capacity();
 	size += j->second.Usage();
     }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
-		Parent->chanserv.live.size(), ToHumanSpace(size).c_str());
+		Parent->chanserv.LiveSize(), ToHumanSpace(size).c_str());
     size = 0;
-    map<mstring, Nick_Stored_t>::iterator k;
+    NickServ::stored_t::iterator k;
     { RLOCK(("NickServ", "stored"));
-    for (k=Parent->nickserv.stored.begin(); k!=Parent->nickserv.stored.end(); k++)
+    for (k=Parent->nickserv.StoredBegin(); k!=Parent->nickserv.StoredEnd(); k++)
     {
 	size += k->first.capacity();
 	size += k->second.Usage();
     }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
-		Parent->nickserv.stored.size(), ToHumanSpace(size).c_str());
+		Parent->nickserv.StoredSize(), ToHumanSpace(size).c_str());
     size = 0;
-    map<mstring, Chan_Stored_t>::iterator l;
+    ChanServ::stored_t::iterator l;
     { RLOCK(("ChanServ", "stored"));
-    for (l=Parent->chanserv.stored.begin(); l!=Parent->chanserv.stored.end(); l++)
+    for (l=Parent->chanserv.StoredBegin(); l!=Parent->chanserv.StoredEnd(); l++)
     {
 	size += l->first.capacity();
 	size += l->second.Usage();
     }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
-		Parent->chanserv.stored.size(), ToHumanSpace(size).c_str());
+		Parent->chanserv.StoredSize(), ToHumanSpace(size).c_str());
 
     size = 0;
-    map<mstring,list<Memo_t> >::iterator m1;
-    list<Memo_t>::iterator m2;
+    MemoServ::nick_t::iterator m1;
+    MemoServ::nick_memo_t::iterator m2;
     { RLOCK(("MemoServ", "nick"));
-    for (count = 0, m1=Parent->memoserv.nick.begin();
-			m1!=Parent->memoserv.nick.end(); m1++)
+    for (count = 0, m1=Parent->memoserv.NickBegin();
+			m1!=Parent->memoserv.NickEnd(); m1++)
     {
 	size += m1->first.capacity();
 	{ RLOCK(("MemoServ", "nick", m1->first));
@@ -1125,11 +1128,11 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 		count, ToHumanSpace(size).c_str());
 
     size = 0;
-    map<mstring,list<News_t> >::iterator n1;
-    list<News_t>::iterator n2;
+    MemoServ::channel_t::iterator n1;
+    MemoServ::channel_news_t::iterator n2;
     { RLOCK(("MemoServ", "channel"));
-    for (count = 0, n1=Parent->memoserv.channel.begin();
-			n1!=Parent->memoserv.channel.end(); n1++)
+    for (count = 0, n1=Parent->memoserv.ChannelBegin();
+			n1!=Parent->memoserv.ChannelEnd(); n1++)
     {
 	size += n1->first.capacity();
 	{ RLOCK(("MemoServ", "channel", n1->first));
@@ -1143,15 +1146,15 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 		count, ToHumanSpace(size).c_str());
 
     size = 0;
-    map<mstring, Committee>::iterator o;
+    CommServ::list_t::iterator o;
     { RLOCK(("CommServ", "list"));
-    for (o=Parent->commserv.list.begin(); o!=Parent->commserv.list.end(); o++)
+    for (o=Parent->commserv.ListBegin(); o!=Parent->commserv.ListEnd(); o++)
     {
 	size += o->first.capacity();
 	size += o->second.Usage();
     }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
-		Parent->commserv.list.size(), ToHumanSpace(size).c_str());
+		Parent->commserv.ListSize(), ToHumanSpace(size).c_str());
 
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OPERSERV"),
@@ -1165,15 +1168,15 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 		Parent->operserv.Ignore_Usage()).c_str());
 
     size = 0;
-    map<mstring, Server>::iterator p;
-    { RLOCK(("Server", "ServerList"));
-    for (p=Parent->server.ServerList.begin(); p!=Parent->server.ServerList.end(); p++)
+    Server::list_t::iterator p;
+    { RLOCK(("Server", "list"));
+    for (p=Parent->server.ListBegin(); p!=Parent->server.ListEnd(); p++)
     {
 	size += p->first.capacity();
 	size += p->second.Usage();
     }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
-		Parent->server.ServerList.size(), ToHumanSpace(size).c_str());
+		Parent->server.ListSize(), ToHumanSpace(size).c_str());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANGHEAD"));
 
@@ -1223,9 +1226,9 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 
     if (params.WordCount(" ") > 1 &&
 	((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source)) ||
+	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)) ||
 	 (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))))
     {
 	do_1_2param(mynick, source, params);
 	return;
@@ -1251,14 +1254,14 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 		Parent->server.UserMax());
 
     size_t opers = 0;
-    map<mstring,Nick_Live_t>::iterator k;
-    for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
+    NickServ::live_t::iterator k;
+    for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
     {
 	if (k->second.HasMode("o"))
 		opers++;
     }
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_USERS"),
-		Parent->nickserv.live.size(), opers);
+		Parent->nickserv.LiveSize(), opers);
 
     if ((Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1)))
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
@@ -1323,7 +1326,7 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
     		mask.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
 
     bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-		Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source));
+		Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
 
     for (j=0, i=0, count = 0; j < filelist.size(); j++)
     {
@@ -1346,7 +1349,7 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 		    {
 			for (unsigned int k=1; k<=priv.WordCount(" "); k++)
 			    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
-				Parent->commserv.list[priv.ExtractWord(k, " ").UpperCase()].IsOn(source))
+				Parent->commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
 			    {
 				display = true;
 				break;
@@ -1395,7 +1398,7 @@ void ServMsg::do_file_Add(const mstring &mynick, const mstring &source, const ms
 	priv = params.After(" ", 2).UpperCase();
 
     Parent->servmsg.stats.i_file_Add++;
-    Parent->nickserv.live[source.LowerCase()].InFlight.Public(mynick, priv);
+    Parent->nickserv.GetLive(source).InFlight.Public(mynick, priv);
 }
 
 
@@ -1458,7 +1461,7 @@ void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		newfile.c_str());
     LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_RENAME"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	file.c_str(), newfile.c_str()));
     Parent->filesys.Rename(FileMap::Public, num, newfile);
 }
@@ -1496,7 +1499,7 @@ void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const m
     		Parent->getMessage(source, "LIST/ACCESS").c_str(),
     		priv.c_str());
     LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	file.c_str(), ((priv.empty()) ? "ALL" : priv.c_str())));
     Parent->filesys.SetPriv(FileMap::Public, num, priv);
 }
@@ -1535,7 +1538,7 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     {
 	for (unsigned int k=1; k<=priv.WordCount(" "); k++)
 	    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
-		Parent->commserv.list[priv.ExtractWord(k, " ").UpperCase()].IsOn(source))
+		Parent->commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
 	    {
 		display = true;
 		break;
@@ -1742,10 +1745,10 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     {
     	if (Parent->filesys.Exists(FileMap::MemoAttach, number))
     	{
-    	    map<mstring, list<Memo_t> >::iterator i;
-    	    list<Memo_t>::iterator j;
+    	    MemoServ::nick_t::iterator i;
+    	    MemoServ::nick_memo_t::iterator j;
 	    RLOCK(("MemoServ", "nick"));
-	    for (i=Parent->memoserv.nick.begin(); i!=Parent->memoserv.nick.end(); i++)
+	    for (i=Parent->memoserv.NickBegin(); i!=Parent->memoserv.NickEnd(); i++)
 	    {
 		RLOCK(("MemoServ", "nick", i->first));
 	    	for(k=1, j=i->second.begin(); j!=i->second.end(); j++, k++)
@@ -1756,7 +1759,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 				number, Parent->filesys.GetName(FileMap::MemoAttach, number).c_str(),
 				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
 			LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
-				Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+				Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
 				number, type.c_str()));
 	  		return;
 	    	    }
@@ -1772,14 +1775,14 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     	{
     	    map<mstring, Nick_Stored_t >::iterator i;
 	    RLOCK(("NickServ", "stored"));
-	    for (i=Parent->nickserv.stored.begin(); i!=Parent->nickserv.stored.end(); i++)
+	    for (i=Parent->nickserv.StoredBegin(); i!=Parent->nickserv.StoredEnd(); i++)
 	    {
 	    	if (i->second.PicNum() == number)
 	    	{
 		    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PICTURE"),
 	  			number, i->second.Name().c_str());
 		    LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
-			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
 			number, type.c_str()));
 	  	    return;
 	    	}
@@ -1796,7 +1799,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	  		number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
 	  		Parent->filesys.GetPriv(FileMap::Public, number).c_str());
 	    LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		number, type.c_str()));
 	    return;
     	}
@@ -1824,10 +1827,10 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     }
     mstring text = params.After(" ");
 
-    map<mstring, Server>::iterator iter;
-    RLOCK(("Server", "ServerList"));
-    for (iter=Parent->server.ServerList.begin();
-			iter != Parent->server.ServerList.end(); iter++)
+    Server::list_t::iterator iter;
+    RLOCK(("Server", "list"));
+    for (iter=Parent->server.ListBegin();
+			iter != Parent->server.ListEnd(); iter++)
     {
 	Parent->server.NOTICE(Parent->servmsg.FirstName(), "$" +
 						    iter->first, text);
@@ -1836,7 +1839,7 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
 				source.c_str());
     LOG((LM_NOTICE, Parent->getLogMessage("SERVMSG/GLOBAL"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	text.c_str()));
 }
 

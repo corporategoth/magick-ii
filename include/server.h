@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/03/27 07:04:30  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.63  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -289,63 +292,12 @@ public:
     void DumpE() const;
 };
 
-class Server
+class Server_t;
+
+class Server : public mBase
 {
-    mstring i_Name;
-    mstring i_AltName;
-    unsigned long i_Numeric;
-    mstring i_Uplink;
-    int i_Hops;
-    mstring i_Description;
-    long i_Ping;
-    long i_Lag;
-    bool i_Jupe;
-public:
-    Server() {}
-    Server(const Server &in) { *this = in; }
-    Server(const mstring& name, const mstring& description,
-    				const unsigned long numeric = 0);
-    Server(const mstring& name, const int hops, const mstring& description,
-				const unsigned long numeric = 0);
-    Server(const mstring& name, const mstring& uplink, const int hops,
-		const mstring& description, const unsigned long numeric = 0);
-    void operator=(const Server &in);
-    bool operator==(const Server &in) const
-	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Server &in) const
-	{ return (i_Name == in.i_Name); }
-    bool operator<(const Server &in) const
-	{ return (i_Name < in.i_Name); }
-
-    mstring Name() const	{ return i_Name; }
-    mstring AltName() const;
-    void AltName(const mstring& in);
-    unsigned long Numeric() const;
-    void Numeric(const unsigned long num);
-    mstring Uplink() const;
-    int Hops() const;
-    mstring Description() const;
-    void Ping();
-    void Pong();
-    float Lag() const;
-    bool Jupe() const;
-    unsigned int Users() const;
-    unsigned int Opers() const;
-
-    vector<mstring> Downlinks() const;
-    vector<mstring> AllDownlinks() const;
-    
-    ~Server();
-
-    size_t Usage() const;
-    void DumpB() const;
-    void DumpE() const;
-};
-
-class NetworkServ : public mBase
-{
-    friend class Server;
     friend class Magick;
+    friend class Server_t;
     friend class Reconnect_Handler;
     friend class ToBeSquit_Handler;
     friend class Squit_Handler;
@@ -371,9 +323,16 @@ class NetworkServ : public mBase
     void FlushMsgs(const mstring& nick);
     map<mstring, list<triplet<mDateTime, mstring, mstring> > > ToBeDone;
 
+public:
+    typedef map<mstring,Server_t> list_t;
+
+private:
+
+    list_t i_list;
+
     void OurUplink(const mstring& server);
 public:
-    ~NetworkServ() {}
+    ~Server() {}
     void FlushUser(const mstring& nick, const mstring& channel = "");
     void PushUser(const mstring& nick, const mstring& message,
 		const mstring& channel = "");
@@ -381,10 +340,25 @@ public:
     void SignOnAll();
     Protocol proto;
     size_t UserMax() const;
-    map<mstring,Server> ServerList;
-    mstring OurUplink() const;
-    bool IsServer(const mstring& server) const;
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+    void AddList(Server_t *in) throw(E_Server_List);
+    Server_t &GetList(const mstring &in) const throw(E_Server_List);
+    void RemList(const mstring &in) throw(E_Server_List);
+#else
+    void AddServer(Server_t *in);
+    Server_t &GetServer(const mstring &in);
+    void RemServer(const mstring &in);
+#endif
+    list_t::iterator ListBegin() { return i_list.begin(); }
+    list_t::iterator ListEnd() { return i_list.end(); }
+    list_t::const_iterator ListBegin() const { return i_list.begin(); }
+    list_t::const_iterator ListEnd() const { return i_list.end(); }
+    size_t ListSize() const { return i_list.size(); }
+    bool IsList(const mstring& server) const;
     mstring ServerNumeric(const unsigned long num) const;
+
+    mstring OurUplink() const;
     mstring GetServer(const mstring& server) const;
     unsigned long GetOurNumeric() const;
     // NOTE: This is NOT always accurate -- all it does is look
@@ -430,12 +404,65 @@ public:
     void KillUnknownUser(const mstring& user) const;
     unsigned int SeenMessage(const mstring& data);
 
-    NetworkServ();
+    Server();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
-    virtual mstring GetInternalName() const { return "NetworkServ"; }
+    virtual mstring GetInternalName() const { return "Server"; }
     virtual void execute(const mstring & message);
     void numeric_execute(const mstring & message);
 
+    void DumpB() const;
+    void DumpE() const;
+};
+
+class Server_t
+{
+    mstring i_Name;
+    mstring i_AltName;
+    unsigned long i_Numeric;
+    mstring i_Uplink;
+    int i_Hops;
+    mstring i_Description;
+    long i_Ping;
+    long i_Lag;
+    bool i_Jupe;
+public:
+    Server_t() {}
+    Server_t(const Server_t &in) { *this = in; }
+    Server_t(const mstring& name, const mstring& description,
+    				const unsigned long numeric = 0);
+    Server_t(const mstring& name, const int hops, const mstring& description,
+				const unsigned long numeric = 0);
+    Server_t(const mstring& name, const mstring& uplink, const int hops,
+		const mstring& description, const unsigned long numeric = 0);
+    void operator=(const Server_t &in);
+    bool operator==(const Server_t &in) const
+	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Server_t &in) const
+	{ return (i_Name == in.i_Name); }
+    bool operator<(const Server_t &in) const
+	{ return (i_Name < in.i_Name); }
+
+    mstring Name() const	{ return i_Name; }
+    mstring AltName() const;
+    void AltName(const mstring& in);
+    unsigned long Numeric() const;
+    void Numeric(const unsigned long num);
+    mstring Uplink() const;
+    int Hops() const;
+    mstring Description() const;
+    void Ping();
+    void Pong();
+    float Lag() const;
+    bool Jupe() const;
+    unsigned int Users() const;
+    unsigned int Opers() const;
+
+    vector<mstring> Downlinks() const;
+    vector<mstring> AllDownlinks() const;
+    
+    ~Server_t();
+
+    size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
 };

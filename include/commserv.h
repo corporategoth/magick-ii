@@ -25,6 +25,9 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2001/03/27 07:04:30  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.50  2001/03/20 14:22:13  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -132,106 +135,7 @@ RCSID(commserv_h, "@(#) $Id$");
 
 #include "base.h"
 
-class Committee : public mUserDef, public SXP::IPersistObj
-{
-    friend class CommServ;
-
-    mstring i_Name;
-    mDateTime i_RegTime;
-    mstring i_HeadCom;
-    mstring i_Head;
-    mstring i_Description;
-    mstring i_Email;
-    mstring i_URL;
-
-    set<entlist_t> i_Members;
-    bool i_Private;
-    bool l_Private;
-    bool i_OpenMemos;
-    bool l_OpenMemos;
-    bool i_Secure;
-    bool l_Secure;
-    list<entlist_t> i_Messages;
-
-    vector<entlist_t *> members_array;
-    vector<entlist_t *> messages_array;
-
-    static SXP::Tag tag_Committee, tag_Name, tag_HeadCom, tag_Head,
-	tag_Description, tag_Email, tag_URL, tag_set_Private,
-	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private,
-	tag_lock_OpenMemos, tag_lock_Secure, tag_Members,
-	tag_Messages, tag_UserDef, tag_RegTime;
-public:
-    Committee() {}
-    Committee(const Committee &in) { *this = in; }
-    Committee(const mstring& name, const mstring& head, const mstring& description);
-    Committee(const mstring& name, const Committee& head, const mstring& description);
-    Committee(const mstring& name, const mstring& description);
-    ~Committee() {}
-    void operator=(const Committee &in);
-    bool operator==(const Committee &in) const
-    	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Committee &in) const
-    	{ return (i_Name != in.i_Name); }
-    bool operator<(const Committee &in) const
-    	{ return (i_Name < in.i_Name); }
-
-    mstring Name()const		{ return i_Name; }
-    mDateTime RegTime() const;
-    mstring HeadCom() const;
-    mstring Head() const;
-    void Head(const mstring& newhead);
-
-    bool insert(const mstring& entry, const mstring& nick,
-	const mDateTime& modtime = mDateTime::CurrentDateTime());
-    bool erase();
-    entlist_ui begin()		{ return i_Members.begin(); }
-    entlist_ui end()		{ return i_Members.end(); }
-    size_t size()const		{ return i_Members.size(); }
-    bool find(const mstring& entry);
-    entlist_ui member;
-
-    bool IsIn(const mstring& nick) const;
-    bool IsHead(const mstring& nick) const;
-    bool IsOn(const mstring& nick) const;
-
-    void Description(const mstring& in);
-    mstring Description() const;
-    void Email(const mstring& in);
-    mstring Email() const;
-    void URL(const mstring& in);
-    mstring URL() const;
-    void Private(const bool in);
-    bool Private() const;
-    void L_Private(const bool in);
-    bool L_Private() const;
-    void OpenMemos(const bool in);
-    bool OpenMemos() const;
-    void L_OpenMemos(const bool in);
-    bool L_OpenMemos() const;
-    void Secure(const bool in);
-    bool Secure() const;
-    void L_Secure(const bool in);
-    bool L_Secure() const;
-
-    bool MSG_insert(const mstring& entry, const mstring& nick,
-	const mDateTime& time = mDateTime::CurrentDateTime());
-    bool MSG_erase();
-    entlist_i MSG_begin()	{ return i_Messages.begin(); }
-    entlist_i MSG_end()		{ return i_Messages.end(); }
-    size_t MSG_size()const	{ return i_Messages.size(); }
-    bool MSG_find(const int num);
-    entlist_i message;
-
-    SXP::Tag& GetClassTag() const { return tag_Committee; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-
-    size_t Usage() const;
-    void DumpB() const;
-    void DumpE() const;
-};
+class Committee_t;
 
 class CommServ : public mBase, public SXP::IPersistObj
 {
@@ -282,7 +186,13 @@ private:
     mstring ovr_cs_clear;
     static SXP::Tag tag_CommServ;
 
-    vector<Committee *> c_array;
+public:
+    typedef map<mstring,Committee_t> list_t;
+
+private:
+
+    vector<Committee_t *> c_array;
+    list_t i_list;
 
     void AddCommands();
     void RemCommands();
@@ -362,7 +272,20 @@ public:
     mstring OVR_CS_Unban()const		{ return ovr_cs_unban; }
     mstring OVR_CS_Clear()const		{ return ovr_cs_clear; }
 
-    map<mstring,Committee> list;
+#ifdef MAGICK_HAS_EXCEPTIONS
+    void AddList(Committee_t *in) throw(E_CommServ_List);
+    Committee_t &GetList(const mstring &in) const throw(E_CommServ_List);
+    void RemList(const mstring &in) throw(E_CommServ_List);
+#else
+    void AddList(Committee_t *in);
+    Committee_t &GetList(const mstring &in);
+    void RemList(const mstring &in);
+#endif
+    list_t::iterator ListBegin() { return i_list.begin(); }
+    list_t::iterator ListEnd() { return i_list.end(); }
+    list_t::const_iterator ListBegin() const { return i_list.begin(); }
+    list_t::const_iterator ListEnd() const { return i_list.end(); }
+    size_t ListSize() const { return i_list.size(); }
     bool IsList(const mstring& in)const;
 
     CommServ();
@@ -403,6 +326,107 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
+};
+
+class Committee_t : public mUserDef, public SXP::IPersistObj
+{
+    friend void CommServ::PostLoad();
+
+    mstring i_Name;
+    mDateTime i_RegTime;
+    mstring i_HeadCom;
+    mstring i_Head;
+    mstring i_Description;
+    mstring i_Email;
+    mstring i_URL;
+
+    set<entlist_t> i_Members;
+    bool i_Private;
+    bool l_Private;
+    bool i_OpenMemos;
+    bool l_OpenMemos;
+    bool i_Secure;
+    bool l_Secure;
+    list<entlist_t> i_Messages;
+
+    vector<entlist_t *> members_array;
+    vector<entlist_t *> messages_array;
+
+    static SXP::Tag tag_Committee_t, tag_Name, tag_HeadCom, tag_Head,
+	tag_Description, tag_Email, tag_URL, tag_set_Private,
+	tag_set_OpenMemos, tag_set_Secure, tag_lock_Private,
+	tag_lock_OpenMemos, tag_lock_Secure, tag_Members,
+	tag_Messages, tag_UserDef, tag_RegTime;
+public:
+    Committee_t() {}
+    Committee_t(const Committee_t &in) { *this = in; }
+    Committee_t(const mstring& name, const mstring& head, const mstring& description);
+    Committee_t(const mstring& name, const Committee_t& head, const mstring& description);
+    Committee_t(const mstring& name, const mstring& description);
+    ~Committee_t() {}
+    void operator=(const Committee_t &in);
+    bool operator==(const Committee_t &in) const
+    	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Committee_t &in) const
+    	{ return (i_Name != in.i_Name); }
+    bool operator<(const Committee_t &in) const
+    	{ return (i_Name < in.i_Name); }
+
+    mstring Name()const		{ return i_Name; }
+    mDateTime RegTime() const;
+    mstring HeadCom() const;
+    mstring Head() const;
+    void Head(const mstring& newhead);
+
+    bool insert(const mstring& entry, const mstring& nick,
+	const mDateTime& modtime = mDateTime::CurrentDateTime());
+    bool erase();
+    entlist_ui begin()		{ return i_Members.begin(); }
+    entlist_ui end()		{ return i_Members.end(); }
+    size_t size()const		{ return i_Members.size(); }
+    bool find(const mstring& entry);
+    entlist_ui member;
+
+    bool IsIn(const mstring& nick) const;
+    bool IsHead(const mstring& nick) const;
+    bool IsOn(const mstring& nick) const;
+
+    void Description(const mstring& in);
+    mstring Description() const;
+    void Email(const mstring& in);
+    mstring Email() const;
+    void URL(const mstring& in);
+    mstring URL() const;
+    void Private(const bool in);
+    bool Private() const;
+    void L_Private(const bool in);
+    bool L_Private() const;
+    void OpenMemos(const bool in);
+    bool OpenMemos() const;
+    void L_OpenMemos(const bool in);
+    bool L_OpenMemos() const;
+    void Secure(const bool in);
+    bool Secure() const;
+    void L_Secure(const bool in);
+    bool L_Secure() const;
+
+    bool MSG_insert(const mstring& entry, const mstring& nick,
+	const mDateTime& time = mDateTime::CurrentDateTime());
+    bool MSG_erase();
+    entlist_i MSG_begin()	{ return i_Messages.begin(); }
+    entlist_i MSG_end()		{ return i_Messages.end(); }
+    size_t MSG_size()const	{ return i_Messages.size(); }
+    bool MSG_find(const int num);
+    entlist_i message;
+
+    SXP::Tag& GetClassTag() const { return tag_Committee_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 #endif

@@ -27,6 +27,9 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.2  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -220,7 +223,7 @@ load_ns_dbase (void)
 	    }
 
 	    nick = CreateNickEntry(ni);
-	    Parent->nickserv.stored[nick.Name().LowerCase()] = nick;
+	    Parent->nickserv.AddStored(&nick);
 	    delnick(ni);
 	}
 	break;
@@ -284,7 +287,7 @@ load_ns_dbase (void)
 		}
 
 		nick = CreateNickEntry(ni);
-		Parent->nickserv.stored[nick.Name().LowerCase()] = nick;
+		Parent->nickserv.AddStored(&nick);
 		delnick(ni);
 	    }
 	break;
@@ -328,7 +331,7 @@ load_ns_dbase (void)
 		}
 
 		nick = CreateNickEntry(ni);
-		Parent->nickserv.stored[nick.Name().LowerCase()] = nick;
+		Parent->nickserv.AddStored(&nick);
 		delnick(ni);
 	    }
 	break;
@@ -458,9 +461,9 @@ CreateNickEntry(NickInfo_CUR *ni)
 	    out.i_NoExpire = true;
 	    // NOT a SADMIN, and OPER does exist.
 	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		  Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(out.i_Name)) &&
+		  Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(out.i_Name)) &&
 		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
-		Parent->commserv.list[Parent->commserv.OPER_Name()].insert(
+		Parent->commserv.GetList(Parent->commserv.OPER_Name()).insert(
 		    mstring(out.i_Name), Parent->commserv.FirstName());
 	}
 
@@ -613,7 +616,7 @@ load_cs_dbase (void)
 		}
 
 		chan = CreateChanEntry(ci);
-		Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
+		Parent->chanserv.AddStored(&chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 5, etc. */
@@ -793,7 +796,7 @@ load_cs_dbase (void)
 		free (old_ci);
 
 		chan = CreateChanEntry(ci);
-		Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
+		Parent->chanserv.AddStored(&chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 3, etc. */
@@ -960,7 +963,7 @@ load_cs_dbase (void)
 		free (old_ci);
 
 		chan = CreateChanEntry(ci);
-		Parent->chanserv.stored[chan.Name().LowerCase()] = chan;
+		Parent->chanserv.AddStored(&chan);
 		delchan(ci);
 	    }
 	break;			/* case 1, etc. */
@@ -1259,7 +1262,7 @@ load_ms_dbase (void)
     int i, j;
     MemoList *ml;
     Memo *memos;
-    list<Memo_t> memo;
+    MemoServ::nick_memo_t memo;
 
     if (!f)
     {
@@ -1290,7 +1293,7 @@ load_ms_dbase (void)
 
 		memo = CreateMemoEntry(ml);
 		if (memo.size())
-		    Parent->memoserv.nick[mstring(ml->nick).LowerCase()] = memo;
+		    Parent->memoserv.AddNick(memo);
 		del_memolist(ml);
 	    }
 	break;
@@ -1309,7 +1312,7 @@ load_news_dbase (void)
     int i, j;
     NewsList *nl;
     Memo *newss;
-    list<News_t> news;
+    MemoServ::channel_news_t news;
 
     if (!f)
     {
@@ -1341,7 +1344,7 @@ load_news_dbase (void)
 
 		news = CreateNewsEntry(nl);
 		if (news.size())
-		    Parent->memoserv.channel[mstring(nl->chan).LowerCase()] = news;
+		    Parent->memoserv.AddChannel(news);
 		del_newslist(nl);
 	    }
 	}
@@ -1390,7 +1393,7 @@ del_newslist (NewsList * nl)
     free (nl);
 }
 
-list<Memo_t>
+MemoServ::nick_memo_t
 CreateMemoEntry(MemoList_CUR *ml)
 {
 /*  char sender[NICKMAX];
@@ -1406,7 +1409,7 @@ CreateMemoEntry(MemoList_CUR *ml)
     long reserved[4]; */
 
     int i;
-    list<Memo_t> out;
+    MemoServ::nick_memo_t out;
     Memo_t *tmp;
     Memo *memos;
 
@@ -1422,7 +1425,7 @@ CreateMemoEntry(MemoList_CUR *ml)
     return out;
 }
 
-list<News_t>
+MemoServ::channel_news_t
 CreateNewsEntry(NewsList_CUR *nl)
 {
 /*  char sender[NICKMAX];
@@ -1438,7 +1441,7 @@ CreateNewsEntry(NewsList_CUR *nl)
     long reserved[4]; */
 
     int i;
-    list<News_t> out;
+    MemoServ::channel_news_t out;
     News_t *tmp;
     Memo *newss;
 
@@ -1495,8 +1498,8 @@ load_sop ()
 	    for (j=0; j<nsop; ++j)
 	    {
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].find(sops[j].nick)))
-		    Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
+		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(sops[j].nick)))
+		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
 		    mstring(sops[j].nick), Parent->commserv.FirstName());
 	    }
 	}
@@ -1551,13 +1554,13 @@ load_message ()
 	    if (messages[j].type == M_LOGON &&
 		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
 	    {
-		Parent->commserv.list[Parent->commserv.ALL_Name()].MSG_insert(
+		Parent->commserv.GetList(Parent->commserv.ALL_Name()).MSG_insert(
 			mstring(messages[j].text), mstring(messages[j].who));
 	    }
 	    else if (messages[j].type == M_OPER &&
 		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
 	    {
-		Parent->commserv.list[Parent->commserv.OPER_Name()].MSG_insert(
+		Parent->commserv.GetList(Parent->commserv.OPER_Name()).MSG_insert(
 			mstring(messages[j].text), mstring(messages[j].who));
 	    }
 	}

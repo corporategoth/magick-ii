@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2001/03/27 07:04:32  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.118  2001/03/20 14:22:15  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -324,17 +327,17 @@ bool OperServ::AddHost(const mstring& host)
 	    MLOCK2(("OperServ", "Akill"));
 	    if (!Akill_find("*@" + host))
 	    {
-		map<mstring,Nick_Live_t>::iterator nlive;
+		NickServ::live_t::iterator nlive;
 		vector<mstring> killusers;
 		{ RLOCK(("NickServ", "live"));
-		for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+		for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
 		{
 		    if (nlive->second.Host().IsSameAs(host, true))
 			killusers.push_back(nlive->first);
 		}}
 
 		float percent = 100.0 * static_cast<float>(killusers.size()) /
-				static_cast<float>(Parent->nickserv.live.size());
+				static_cast<float>(Parent->nickserv.LiveSize());
 
 		Parent->server.AKILL("*@" + host,
 			Parent->operserv.Clone_Akill(),
@@ -1247,7 +1250,7 @@ void OperServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (Secure() && !Parent->nickserv.live[source.LowerCase()].HasMode("o"))
+    else if (Secure() && !Parent->nickserv.GetLive(source.LowerCase()).HasMode("o"))
     {
 	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
     }
@@ -1552,7 +1555,7 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 			mode.c_str(), target.c_str());
 
 	    LOG((LM_INFO, Parent->getLogMessage("OPERSERV/MODE"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		mode.c_str(), target.c_str()));
 	}
 	else
@@ -1564,7 +1567,7 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
     else
     {
 	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+	    Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))
 	{
 	    if (Parent->nickserv.IsLive(target))
 	    {
@@ -1577,7 +1580,7 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 		    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NICK_MODE"),
 			mode.c_str(), target.c_str());
 		    LOG((LM_INFO, Parent->getLogMessage("OPERSERV/MODE"),
-			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+			Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 			mode.c_str(), target.c_str()));
 		}
 		else
@@ -1629,7 +1632,7 @@ void OperServ::do_Qline(const mstring &mynick, const mstring &source, const mstr
 		source.c_str(), Parent->getMessage("VALS/ON").c_str(),
 		target.c_str());
     LOG((LM_INFO, Parent->getLogMessage("OPERSERV/QLINE"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	target.c_str()));
 }
 
@@ -1661,7 +1664,7 @@ void OperServ::do_UnQline(const mstring &mynick, const mstring &source, const ms
 		source.c_str(), Parent->getMessage("VALS/OFF").c_str(),
 		target.c_str());
     LOG((LM_INFO, Parent->getLogMessage("OPERSERV/UNQLINE"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	target.c_str()));
 }
 
@@ -1687,7 +1690,7 @@ void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstri
     mstring target  = params.ExtractWord(2, " ");
     mstring onoff   = params.ExtractWord(3, " ");
 
-    if (!Parent->server.IsServer(target))
+    if (!Parent->server.IsList(target))
     {
 	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/ISNOTLINKED"),
 			target.c_str());
@@ -1713,7 +1716,7 @@ void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstri
 		Parent->getMessage("VALS/OFF").c_str(),
 	    target.c_str());
     LOG((LM_INFO, Parent->getLogMessage("OPERSERV/NOOP"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	target.c_str(), onoff.GetBool() ?
 		Parent->getMessage("VALS/ON").c_str() :
 		Parent->getMessage("VALS/OFF").c_str()));
@@ -1750,7 +1753,7 @@ void OperServ::do_Kill(const mstring &mynick, const mstring &source, const mstri
 	announce(mynick, Parent->getMessage("MISC/KILL"),
 		    source.c_str(), target.c_str());
 	LOG((LM_INFO, Parent->getLogMessage("OPERSERV/KILL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		target.c_str(), reason.c_str()));
     }
     else
@@ -1791,7 +1794,7 @@ void OperServ::do_Hide(const mstring &mynick, const mstring &source, const mstri
 	announce(mynick, Parent->getMessage("MISC/HIDE"),
 		    source.c_str(), target.c_str(), newhost.c_str());
 	LOG((LM_INFO, Parent->getLogMessage("OPERSERV/HIDE"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		target.c_str(), newhost.c_str()));
     }
     else
@@ -1823,7 +1826,7 @@ void OperServ::do_Ping(const mstring &mynick, const mstring &source, const mstri
 	Parent->operserv.stats.i_Ping++;
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
 	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/PING"),
-	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str()));
     }}
 }
 
@@ -1840,7 +1843,7 @@ void OperServ::do_Update(const mstring &mynick, const mstring &source, const mst
 	Parent->operserv.stats.i_Update++;
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
 	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/UPDATE"),
-	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str()));
     }}
 }
 
@@ -1852,7 +1855,7 @@ void OperServ::do_Shutdown(const mstring &mynick, const mstring &source, const m
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SHUTDOWN"));
     announce(mynick, Parent->getMessage("MISC/SHUTDOWN"), source.c_str());
     LOG((LM_CRITICAL, Parent->getLogMessage("OPERSERV/SHUTDOWN"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str()));
     ACE_OS::sleep(1);
     Parent->Shutdown(true);
     Parent->Die();
@@ -1879,7 +1882,7 @@ void OperServ::do_Reload(const mstring &mynick, const mstring &source, const mst
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD"));
 	announce(mynick, Parent->getMessage("MISC/RELOAD"), source.c_str());
 	LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/RELOAD"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str()));
     }
     else
     {
@@ -1941,7 +1944,7 @@ void OperServ::do_Unload(const mstring &mynick, const mstring &source, const mst
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UNLOAD"),
 			language.c_str());
 	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/UNLOAD"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		language.c_str()));
     }
     else
@@ -1974,7 +1977,7 @@ void OperServ::do_Jupe(const mstring &mynick, const mstring &source, const mstri
     announce(mynick, Parent->getMessage(source, "MISC/JUPE"),
 		source.c_str(), target.c_str());
     LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/JUPE"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	target.c_str(), reason.c_str()));
 }
 
@@ -2008,7 +2011,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 	    Parent->getMessage("VALS/SVC_AUTO").c_str(),
 	    Parent->getMessage("VALS/ON").c_str(), source.c_str());
 	LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
-	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	    Parent->getMessage("VALS/ON").c_str(),
 	    Parent->getMessage("VALS/SVC_AUTO").c_str()));
     }
@@ -2023,7 +2026,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 	    Parent->getMessage("VALS/SVC_LOG").c_str(),
 	    Parent->getMessage("VALS/ON").c_str(), source.c_str());
 	LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
-	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	    Parent->getMessage("VALS/ON").c_str(),
 	    Parent->getMessage("VALS/SVC_LOG").c_str()));
     }
@@ -2040,7 +2043,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 		Parent->getMessage("VALS/SVC_MSG").c_str(),
 		Parent->getMessage("VALS/ON").c_str(), source.c_str());
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("VALS/ON").c_str(),
 		Parent->getMessage("VALS/SVC_MSG").c_str()));
 	}
@@ -2079,7 +2082,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 		    service.c_str(),
 		    Parent->getMessage("VALS/ON").c_str(), source.c_str());
 		LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF_ONE"),
-		    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		    Parent->getMessage("VALS/ON").c_str(),
 		    Parent->getMessage("VALS/SVC_MSG").c_str(),
 		    service.c_str()));
@@ -2118,7 +2121,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 	    Parent->getMessage("VALS/SVC_AUTO").c_str(),
 	    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
 	LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
-	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	    Parent->getMessage("VALS/OFF").c_str(),
 	    Parent->getMessage("VALS/SVC_AUTO").c_str()));
     }
@@ -2132,7 +2135,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 	    Parent->getMessage("VALS/SVC_LOG").c_str(),
 	    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
 	LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
-	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	    Parent->getMessage("VALS/OFF").c_str(),
 	    Parent->getMessage("VALS/SVC_LOG").c_str()));
 	Parent->DeactivateLogger();
@@ -2150,7 +2153,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 		Parent->getMessage("VALS/SVC_MSG").c_str(),
 		Parent->getMessage("VALS/OFF").c_str(), source.c_str());
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("VALS/OFF").c_str(),
 		Parent->getMessage("VALS/SVC_MSG").c_str()));
 	}
@@ -2189,7 +2192,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 		    service.c_str(),
 		    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
 		LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF_ONE"),
-		    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		    Parent->getMessage("VALS/OFF").c_str(),
 		    Parent->getMessage("VALS/SVC_MSG").c_str(),
 		    service.c_str()));
@@ -2226,7 +2229,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	    announce(mynick, Parent->getMessage("MISC/HTM_ON_FORCE"),
 		source.c_str());
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_FORCE"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("VALS/ON").c_str()));
 	}
 	else if (command.IsSameAs("OFF", true))
@@ -2237,7 +2240,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	    announce(mynick, Parent->getMessage("MISC/HTM_OFF_FORCE"),
 		source.c_str());
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_FORCE"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("VALS/OFF").c_str()));
 	}
 	else if (command.IsSameAs("SET", true))
@@ -2262,7 +2265,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	    announce(mynick, Parent->getMessage("MISC/HTM_SET"),
 		ToHumanSpace(newsize).c_str(), source.c_str());
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_SET"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		ToHumanSpace(newsize).c_str()));
 	}
 	else
@@ -2754,7 +2757,7 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 
     unsigned int i, num;
     bool super = (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source));
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source));
     // i+1 below because unsigned i will always be >= 0
     for (i=host.size()-1, num=0; i+1>0; i--)
     {
@@ -2808,7 +2811,7 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 		    Parent->getMessage(source, "LIST/CLONE").c_str(),
 		    num);
 	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/CLONE_ADD"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		entry.c_str(), num));
     }
     else
@@ -2820,7 +2823,7 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 		    Parent->getMessage(source, "LIST/CLONE").c_str(),
 		    num);
 	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/CLONE_ADD"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		host.c_str(), num));
     }
 }
@@ -2873,7 +2876,7 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 			Parent->operserv.Clone->Entry().c_str(),
 			Parent->getMessage(source, "LIST/CLONE").c_str());
 	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/CLONE_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.Clone->Entry().c_str()));
 	    Parent->operserv.Clone_erase();
 	}
@@ -2889,7 +2892,7 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 	while (Parent->operserv.Clone_find(host))
 	{
 	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/CLONE_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.Clone->Entry().c_str()));
 	    Parent->operserv.Clone_erase();
 	    count++;
@@ -3013,7 +3016,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     }
 
     if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
     {
 	if (time > Parent->operserv.Expire_SAdmin())
 	{
@@ -3023,7 +3026,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
     }
     else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))
     {
 	if (time > Parent->operserv.Expire_Sop())
 	{
@@ -3033,7 +3036,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
     }
     else if (Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).IsOn(source))
     {
 	if (time > Parent->operserv.Expire_Admin())
 	{
@@ -3043,7 +3046,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
     }
     else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source))
+	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
     {
 	if (time > Parent->operserv.Expire_Oper())
 	{
@@ -3068,7 +3071,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     unsigned int num;
     int i;
     bool super = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source));
+	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
     for (i=host.size()-1, num=0; i>=0; i--)
     {
 	switch (host[i])
@@ -3117,22 +3120,22 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 		    source.c_str(), entry.c_str(),
 		    ToHumanTime(time, source).c_str());
 	LOG((LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		entry.c_str(), ToHumanTime(time, source).c_str(), reason.c_str()));
     }
     else
     {
-	map<mstring,Nick_Live_t>::iterator nlive;
+	NickServ::live_t::iterator nlive;
 	vector<mstring> killusers;
 	{ RLOCK(("NickServ", "live"));
-	for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+	for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
 	{
 	    if (nlive->second.Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
 		killusers.push_back(nlive->first);
 	}}
 
 	float percent = 100.0 * static_cast<float>(killusers.size()) /
-			static_cast<float>(Parent->nickserv.live.size());
+			static_cast<float>(Parent->nickserv.LiveSize());
 	if (percent > Parent->operserv.Akill_Reject())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOMANY"),
@@ -3152,7 +3155,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 		    ToHumanTime(time, source).c_str(), reason.c_str(),
 		    killusers.size(), percent);
 	    LOG((LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		host.c_str(), ToHumanTime(time, source).c_str(), reason.c_str()));
 	}
     }}
@@ -3201,7 +3204,7 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 			Parent->operserv.Akill->Entry().c_str(),
 			Parent->getMessage(source, "LIST/AKILL").c_str());
 	    LOG((LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.Akill->Entry().c_str()));
 	    Parent->operserv.Akill_erase();
 	}
@@ -3218,7 +3221,7 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 	{
 	    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 	    LOG((LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.Akill->Entry().c_str()));
 	    Parent->operserv.Akill_erase();
 	    count++;
@@ -3329,7 +3332,7 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
 			    host.c_str());
 	    return;
 	}
-	host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
     }
     else if (!host.Contains("!"))
     {
@@ -3375,20 +3378,20 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
     announce(mynick, Parent->getMessage("MISC/OPERDENY_ADD"),
 		source.c_str(), host.c_str());
     LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/OPERDENY_ADD"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	host.c_str(), reason.c_str()));
 
-    map<mstring,Nick_Live_t>::iterator nlive;
+    NickServ::live_t::iterator nlive;
     vector<mstring> killusers;
-    for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+    for (nlive = Parent->nickserv.LiveBegin(); nlive != Parent->nickserv.LiveEnd(); nlive++)
     {
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host, true))
 	{
 	    // IF user is recognized and on sadmin, ignore.
 	    if (!(Parent->nickserv.IsStored(nlive->first) &&
-		Parent->nickserv.stored[nlive->first].IsOnline() &&
+		Parent->nickserv.GetStored(nlive->first).IsOnline() &&
 		Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(nlive->first)))
+		Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(nlive->first)))
 		continue;
 	    if (!Parent->server.proto.SVSMODE().empty())
 	    {
@@ -3441,7 +3444,7 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 			Parent->operserv.OperDeny->Entry().c_str(),
 			Parent->getMessage(source, "LIST/OPERDENY").c_str());
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/OPERDENY_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.OperDeny->Entry().c_str()));
 	    Parent->operserv.OperDeny_erase();
 	}
@@ -3461,7 +3464,7 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 			    host.c_str());
 		return;
 	    }
-	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
         {
@@ -3472,7 +3475,7 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	while (Parent->operserv.OperDeny_find(host))
 	{
 	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/OPERDENY_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.OperDeny->Entry().c_str()));
 	    Parent->operserv.OperDeny_erase();
 	    count++;
@@ -3529,7 +3532,7 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
 			    host.c_str());
 		return;
 	    }
-	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
 	{
@@ -3589,7 +3592,7 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
 			    host.c_str());
 	    return;
 	}
-	host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
     }
     else if (!host.Contains("!"))
     {
@@ -3598,7 +3601,7 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
 
     unsigned int i, num;
     bool super = (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source));
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source));
     // i+1 below because unsigned i will always be >= 0
     for (i=host.size()-1, num=0; i+1>0; i--)
     {
@@ -3639,7 +3642,7 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
 	    host.c_str(), Parent->getMessage(source, "LIST/SIGNORE").c_str());
     LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORE_ADD"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 	host.c_str()));
 }
 
@@ -3678,7 +3681,7 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 			Parent->operserv.Ignore->Entry().c_str(),
 			Parent->getMessage(source, "LIST/SIGNORE").c_str());
 	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORE_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.Ignore->Entry().c_str()));
 	    Parent->operserv.Ignore_erase();
 	}
@@ -3698,7 +3701,7 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 			    host.c_str());
 		return;
 	    }
-	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
         {
@@ -3709,7 +3712,7 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	while (Parent->operserv.Ignore_find(host))
 	{
 	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORE_DEL"),
-		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->operserv.Ignore->Entry().c_str()));
 	    Parent->operserv.Ignore_erase();
 	    count++;
@@ -3766,7 +3769,7 @@ void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 			    host.c_str());
 		return;
 	    }
-	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
+	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
 	{

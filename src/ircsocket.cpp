@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.151  2001/03/27 07:04:31  prez
+** All maps have been hidden, and are now only accessable via. access functions.
+**
 ** Revision 1.150  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -311,7 +314,7 @@ int IrcSvcHandler::open(void *in)
     FT("IrcSvcHandler::open", (in));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     sock.Bind(&Parent->ircsvchandler->peer(), D_From, false);
-    sock.Resolve(S_IrcServer, Parent->Server());
+    sock.Resolve(S_IrcServer, Parent->CurrentServer());
 
     in_traffic = out_traffic = 0;
     connect_time = mDateTime::CurrentDateTime();
@@ -692,7 +695,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		server = FindNext(server);
 	    }
 	} else {
-	    server = Parent->Server();
+	    server = Parent->CurrentServer();
 	    if (!server.empty())
 	    {
 		server = FindNext(server);
@@ -721,9 +724,9 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     ACE_INET_Addr addr(details.second.first, server);
 
     Parent->DumpB();
-    CB(1, Parent->i_server);
+    CB(1, Parent->i_currentserver);
     Parent->GotConnect(false);
-    Parent->i_server = server;
+    Parent->i_currentserver = server;
     Parent->server.proto.Tokens(false);
     WLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)
@@ -791,7 +794,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
 	Parent->Connected(true);
     }
-    CE(1, Parent->i_server);
+    CE(1, Parent->i_currentserver);
     Parent->DumpE();
 
     DRET(0);
@@ -812,11 +815,11 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     CE(1, Parent->server.ServerSquit.size());
     }
 
-    if (Parent->server.IsServer(*tmp))
+    if (Parent->server.IsList(*tmp))
     {
 	LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
 		tmp->c_str(),
-		Parent->server.ServerList[tmp->LowerCase()].Uplink().c_str()));
+		Parent->server.GetList(tmp->LowerCase()).Uplink().c_str()));
     }
     else
     {
@@ -834,9 +837,9 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	{
 	    if (Parent->nickserv.IsLiveAll(*iter))
 	    {
-		Parent->nickserv.live[*iter].Quit("FAKE SQUIT - " + *tmp);
+		Parent->nickserv.GetLive(*iter).Quit("FAKE SQUIT - " + *tmp);
 		WLOCK(("NickServ", "live"));
-		Parent->nickserv.live.erase(*iter);
+		Parent->nickserv.RemLive(*iter);
 	    }
 	}
 	Parent->server.ToBeSquit.erase(*tmp);
@@ -869,11 +872,11 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     }
 
     // QUIT all user's who did not come back from SQUIT
-    map<mstring,Nick_Live_t>::iterator i;
+    NickServ::live_t::iterator i;
     vector<mstring> SquitMe;
     vector<mstring>::iterator k;
     { RLOCK(("NickServ", "live"));
-    for (i=Parent->nickserv.live.begin(); i != Parent->nickserv.live.end(); i++)
+    for (i=Parent->nickserv.LiveBegin(); i != Parent->nickserv.LiveEnd(); i++)
     {
 	if (i->second.Squit() == *tmp)
 	{
@@ -884,9 +887,9 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     {
 	if (Parent->nickserv.IsLiveAll(*k))
 	{
-	    Parent->nickserv.live[*k].Quit("SQUIT - " + *tmp);
+	    Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
 	    WLOCK(("NickServ", "live"));
-	    Parent->nickserv.live.erase(*k);
+	    Parent->nickserv.RemLive(*k);
 	}
     }
 
@@ -902,25 +905,25 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // If its a file, and not inprogress, ignore.
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
-    Nick_Live_t *entry;
 
     if (Parent->nickserv.IsLiveAll(*tmp))
     {
-	entry = &Parent->nickserv.live[tmp->LowerCase()];
-	if (entry->InFlight.File())
+	WLOCK(("NickServ", "live", tmp->LowerCase(), "InFlight"));
+	Nick_Live_t &entry = Parent->nickserv.GetLive(tmp->LowerCase());
+	if (entry.InFlight.File())
 	{
-	    if (!entry->InFlight.InProg())
+	    if (!entry.InFlight.InProg())
 	    {
 		/* Already handled by DccXfer::DccXfer
-		send(entry->InFlight.service, entry->Name(),
-			Parent->getMessage(entry->Name(), "DCC/NOCONNECT"), "GET");
+		send(entry.InFlight.service, entry.Name(),
+			Parent->getMessage(entry.Name(), "DCC/NOCONNECT"), "GET");
 		*/
-		entry->InFlight.Cancel();
+		entry.InFlight.Cancel();
 	    }
 	}
 	else
 	{
-	    entry->InFlight.End(0u);
+	    entry.InFlight.End(0u);
 	}
     }
     delete tmp;
@@ -938,16 +941,16 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // in (ie. dont have JOIN on, and I'm the only user
     // in them).  ie. after AKICK, etc.
     if (Parent->chanserv.IsLive(*tmp) &&
-	Parent->chanserv.live[tmp->LowerCase()].IsIn(
+	Parent->chanserv.GetLive(tmp->LowerCase()).IsIn(
 			Parent->chanserv.FirstName()))
     {
 	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
 	MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
-	Parent->chanserv.live[tmp->LowerCase()].DumpB();
-	CB(1, Parent->chanserv.live[tmp->LowerCase()].ph_timer);
-	Parent->chanserv.live[tmp->LowerCase()].ph_timer = 0;
-	CE(1, Parent->chanserv.live[tmp->LowerCase()].ph_timer);
-	Parent->chanserv.live[tmp->LowerCase()].DumpE();
+	Parent->chanserv.GetLive(tmp->LowerCase()).DumpB();
+	CB(1, Parent->chanserv.GetLive(tmp->LowerCase()).ph_timer);
+	Parent->chanserv.GetLive(tmp->LowerCase()).ph_timer = 0;
+	CE(1, Parent->chanserv.GetLive(tmp->LowerCase()).ph_timer);
+	Parent->chanserv.GetLive(tmp->LowerCase()).DumpE();
     }
     delete tmp;
     DRET(0);
@@ -1028,17 +1031,17 @@ int EventTask::svc(void)
 	}
 
  	// Main routine -- when we end this, we're done!!
-	map<mstring, Nick_Live_t>::iterator nli;
-	map<mstring, Nick_Stored_t>::iterator nsi;
-	map<mstring, Chan_Live_t>::iterator cli;
-	map<mstring, Chan_Stored_t>::iterator csi;
-//	map<mstring, list<Memo_t> >::iterator mi;
-//	list<Memo_t>::iterator lmi;
-	map<mstring, list<News_t> >::iterator ni;
-	list<News_t>::iterator lni;
-//	map<mstring, Committee>::iterator ci;
-	map<mstring, Server>::iterator si;
-	map<mstring, mDateTime>::iterator di;
+	NickServ::live_t::iterator nli;
+	NickServ::stored_t::iterator nsi;
+	NickServ::recovered_t::iterator di;
+	ChanServ::live_t::iterator cli;
+	ChanServ::stored_t::iterator csi;
+//	MemoServ::nick_t::iterator mi;
+//	MemoServ::nick_memo_t::iterator lmi;
+	MemoServ::channel_t::iterator ni;
+	MemoServ::channel_news_t::iterator lni;
+//	CommServ::list_t::iterator ci;
+	Server::list_t::iterator si;
 	unsigned int i;
 	vector<mstring> chunked;
 
@@ -1102,8 +1105,8 @@ int EventTask::svc(void)
 	    {
 		vector<mstring> expired_nicks;
 		{ RLOCK2(("NickServ", "stored"));
-		for (nsi = Parent->nickserv.stored.begin();
-			nsi != Parent->nickserv.stored.end(); nsi++)
+		for (nsi = Parent->nickserv.StoredBegin();
+			nsi != Parent->nickserv.StoredEnd(); nsi++)
 		{
 		    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
 			nsi->second.Suspended()))
@@ -1129,16 +1132,16 @@ int EventTask::svc(void)
 		WLOCK(("NickServ", "stored"));
 		for (i=0; i<expired_nicks.size(); i++)
 		{
-		    if (!Parent->nickserv.stored[expired_nicks[i]].Name().empty())
+		    if (!Parent->nickserv.GetStored(expired_nicks[i]).Name().empty())
 		    {
 			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
-			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str(),
-			    ((!Parent->nickserv.stored[expired_nicks[i]].Host().empty()) ?
-				Parent->nickserv.stored[expired_nicks[i]].Host().c_str() :
-				Parent->nickserv.stored[expired_nicks[i]].Name().c_str())));
+			    Parent->nickserv.GetStored(expired_nicks[i]).Name().c_str(),
+			    ((!Parent->nickserv.GetStored(expired_nicks[i]).Host().empty()) ?
+				Parent->nickserv.GetStored(expired_nicks[i]).Host().c_str() :
+				Parent->nickserv.GetStored(expired_nicks[i]).Name().c_str())));
 		    }
-		    Parent->nickserv.stored[expired_nicks[i]].Drop();
-		    Parent->nickserv.stored.erase(expired_nicks[i]);
+		    Parent->nickserv.GetStored(expired_nicks[i]).Drop();
+		    Parent->nickserv.RemStored(expired_nicks[i]);
 		}
 	    }
 
@@ -1146,8 +1149,8 @@ int EventTask::svc(void)
 	    {
 		vector<mstring> expired_chans;
 		{ RLOCK2(("ChanServ", "stored"));
-		for (csi = Parent->chanserv.stored.begin();
-			csi != Parent->chanserv.stored.end(); csi++)
+		for (csi = Parent->chanserv.StoredBegin();
+			csi != Parent->chanserv.StoredEnd(); csi++)
 		{
 		    if (!(csi->second.NoExpire() || csi->second.Forbidden() ||
 			csi->second.Suspended()))
@@ -1160,48 +1163,59 @@ int EventTask::svc(void)
 		WLOCK(("ChanServ", "stored"));
 		for (i=0; i<expired_chans.size(); i++)
 		{
-		    if (!Parent->chanserv.stored[expired_chans[i]].Name().empty())
+		    if (!Parent->chanserv.GetStored(expired_chans[i]).Name().empty())
 		    {
 			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
-			    Parent->chanserv.stored[expired_chans[i]].Name().c_str(),
-			    Parent->chanserv.stored[expired_chans[i]].Founder().c_str()));
+			    Parent->chanserv.GetStored(expired_chans[i]).Name().c_str(),
+			    Parent->chanserv.GetStored(expired_chans[i]).Founder().c_str()));
 		    }
-		    Parent->chanserv.stored.erase(expired_chans[i]);
+		    Parent->chanserv.RemStored(expired_chans[i]);
 		}
 	    }
 
 	    // news articles
 	    {
-		vector<mstring> expired_news;
+		map<mstring, vector<size_t> > expired_news;
+		map<mstring, vector<size_t> >::iterator iter;
 		{ RLOCK2(("MemoServ", "channel"));
-		for (ni=Parent->memoserv.channel.begin();
-			ni!=Parent->memoserv.channel.end(); ni++)
+		for (ni=Parent->memoserv.ChannelBegin();
+			ni!=Parent->memoserv.ChannelEnd(); ni++)
 		{
-		    WLOCK(("MemoServ", "channel", ni->first));
-		    for (lni=ni->second.begin(); lni != ni->second.end();)
+		    size_t i, cnt = 0;
+		    RLOCK(("MemoServ", "channel", ni->first));
+		    for (lni=ni->second.begin(), i=0; lni != ni->second.end(); lni++, i++)
 		    {
 			if (!lni->NoExpire() && lni->Time().SecondsSince() >
 			    Parent->memoserv.News_Expire())
 			{
-			    list<News_t>::iterator lni2 = lni;
-			    lni2++;
 			    LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
 					lni->Channel().c_str()));
-			    ni->second.erase(lni);
-			    lni = lni2;
-			}
-			else
-			{
-			    lni++;
+			    expired_news[ni->first].push_back(i);
+			    cnt++;
 			}
 		    }
-		    if (!ni->second.size())
-			expired_news.push_back(ni->first);
+		    // If we see an entry in the map, but its empty, it will mean
+		    // ALL news articles are gone ... an efficiancy thing.
+		    if (cnt == ni->second.size())
+			expired_news[ni->first].clear();
 		}}
 		{ WLOCK(("MemoServ", "channel"));
-		for (i=0; i<expired_news.size(); i++)
+		for (iter=expired_news.begin(); iter!=expired_news.end(); iter++)
 		{
-		    Parent->memoserv.channel.erase(expired_news[i]);
+		    WLOCK(("MemoServ", "channel", iter->first));
+		    if (iter->second.size())
+		    {
+			size_t i, adjust = 0;
+			for (i=0; i < iter->second.size(); i++)
+			{
+			    Parent->memoserv.RemChannelNews(iter->first, iter->second[i] - adjust);
+			    adjust++;
+			}
+		    }
+		    else
+		    {
+			Parent->memoserv.RemChannel(iter->first);
+		    }
 		}}
 	    }
 
@@ -1232,8 +1246,8 @@ int EventTask::svc(void)
 
 	    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 	    { RLOCK2(("ChanServ", "live"));
-	    for (cli=Parent->chanserv.live.begin();
-		    cli!=Parent->chanserv.live.end(); cli++)
+	    for (cli=Parent->chanserv.LiveBegin();
+		    cli!=Parent->chanserv.LiveEnd(); cli++)
 	    {
 		csi = Parent->chanserv.stored.find(cli->first);
 		// Removing bans ...
@@ -1243,7 +1257,7 @@ int EventTask::svc(void)
 		    unsigned long bantime = 0;
 		    if (Parent->chanserv.LCK_Bantime())
 			bantime = Parent->chanserv.DEF_Bantime();
-		    else if (csi != Parent->chanserv.stored.end())
+		    else if (csi != Parent->chanserv.StoredEnd())
 			bantime = csi->second.Bantime();
 		    if (bantime)
 		    {
@@ -1266,7 +1280,7 @@ int EventTask::svc(void)
 		}
 
 		chunked.clear();
-		if (csi != Parent->chanserv.stored.end())
+		if (csi != Parent->chanserv.StoredEnd())
 		{
 		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		    for (di=cli->second.recent_parts.begin();
@@ -1368,78 +1382,77 @@ int EventTask::svc(void)
 	    chunked.clear();
 	    if (synctime.SecondsSince() >= Parent->nickserv.Ident() &&
 		Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
-	    {{ RLOCK(("NickServ", "live"));
-	    for (nli = Parent->nickserv.live.begin();
-			    nli != Parent->nickserv.live.end(); nli++)
 	    {
-		nsi = Parent->nickserv.stored.find(nli->first);
-		if (nsi != Parent->nickserv.stored.end() &&
-		    !nsi->second.IsOnline() && nsi->second.Protect() &&
-		    !nli->second.IsServices() && nli->second.Squit().empty() &&
-		    nli->second.MySignonTime().SecondsSince() >=
+		{ RLOCK(("NickServ", "live"));
+		for (nli = Parent->nickserv.LiveBegin();
+			    nli != Parent->nickserv.LiveEnd(); nli++)
+		{
+		    nsi = Parent->nickserv.stored.find(nli->first);
+		    if (nsi != Parent->nickserv.StoredEnd() &&
+			!nsi->second.IsOnline() && nsi->second.Protect() &&
+			!nli->second.IsServices() && nli->second.Squit().empty() &&
+			nli->second.MySignonTime().SecondsSince() >=
 					    Parent->nickserv.Ident())
+		    {
+			chunked.push_back(nli->first);
+		    }
+		}}
+		for (i=0; i<chunked.size(); i++)
 		{
-		    chunked.push_back(nli->first);
-		}
-	    }}
-	    for (i=0; i<chunked.size(); i++)
-	    {
-		nli = Parent->nickserv.live.find(chunked[i]);
-		nsi = Parent->nickserv.stored.find(chunked[i]);
-		mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
-		mstring oldnick = nli->second.Name();
-		LOG((LM_INFO, Parent->getLogMessage("EVENT/KILLPROTECT"),
+		    nli = Parent->nickserv.live.find(chunked[i]);
+		    nsi = Parent->nickserv.stored.find(chunked[i]);
+		    mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
+		    mstring oldnick = nli->second.Name();
+		    LOG((LM_INFO, Parent->getLogMessage("EVENT/KILLPROTECT"),
 			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str()));
-		if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
-		{
-		    if (nsi->second.Forbidden())
-			send(Parent->nickserv.FirstName(), oldnick,
+		    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
+		    {
+			if (nsi->second.Forbidden())
+			    send(Parent->nickserv.FirstName(), oldnick,
 				Parent->getMessage("MISC/RENAMED_FORBID"));
-		    else
-			send(Parent->nickserv.FirstName(), oldnick,
+			else
+			    send(Parent->nickserv.FirstName(), oldnick,
 				Parent->getMessage("MISC/RENAMED_IDENT"));
-		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
-			oldnick, newnick);
-		}
-		else
-		{
-		    if (nsi->second.Forbidden())
-			Parent->server.KILL(Parent->nickserv.FirstName(),
-				oldnick, Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
+			Parent->server.SVSNICK(Parent->nickserv.FirstName(),
+				oldnick, newnick);
+		    }
 		    else
-			Parent->server.KILL(Parent->nickserv.FirstName(),
+		    {
+			if (nsi->second.Forbidden())
+			    Parent->server.KILL(Parent->nickserv.FirstName(),
+				oldnick, Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
+			else
+			    Parent->server.KILL(Parent->nickserv.FirstName(),
 				oldnick, Parent->getMessage("NS_SET/PROTECT"));
-		    Parent->server.NICK(oldnick, (Parent->startup.Ownuser() ?
+			Parent->server.NICK(oldnick, (Parent->startup.Ownuser() ?
 				    oldnick.LowerCase() :
 				    Parent->startup.Services_User()),
 				    Parent->startup.Services_Host(),
 				    Parent->startup.Server_Name(),
 				    Parent->nickserv.Enforcer_Name());
-		}
-		WLOCK(("NickServ", "recovered"));
-		Parent->nickserv.recovered[oldnick.LowerCase()] = mDateTime::CurrentDateTime();
-	    }
-
-	    // Sign off clients we've decided to take.
-	    chunked.clear();
-	    { RLOCK(("NickServ", "recovered"));
-	    for (di = Parent->nickserv.recovered.begin();
-			di != Parent->nickserv.recovered.end(); di++)
-	    {
-		if (di->second.SecondsSince() >= Parent->nickserv.Release())
-		{
-		    if (Parent->nickserv.IsLive(di->first) &&
-			Parent->nickserv.live[di->first].IsServices())
-		    {
-			Parent->server.QUIT(di->first, "RECOVER period expired");
-			chunked.push_back(di->first);
 		    }
+		    Parent->nickserv.AddRecovered(oldnick, mDateTime::CurrentDateTime());
 		}
-	    }}
-	    { WLOCK(("NickServ", "recovered"));
-	    for (i=0; i<chunked.size(); i++)
-		Parent->nickserv.recovered.erase(chunked[i]);
-	    }}
+
+		// Sign off clients we've decided to take.
+		chunked.clear();
+		{ RLOCK(("NickServ", "recovered"));
+		for (di = Parent->nickserv.RecoveredBegin();
+			di != Parent->nickserv.RecoveredEnd(); di++)
+		{
+		    if (di->second.SecondsSince() >= Parent->nickserv.Release())
+		    {
+			if (Parent->nickserv.IsLive(di->first) &&
+				Parent->nickserv.GetLive(di->first).IsServices())
+			{
+			    Parent->server.QUIT(di->first, "RECOVER period expired");
+			    chunked.push_back(di->first);
+			}
+		    }
+		}}
+		for (i=0; i<chunked.size(); i++)
+		    Parent->nickserv.RemRecovered(chunked[i]);
+	    }
 	    WLOCK(("Events", "last_check"));
 	    MCB(last_check);
 	    last_check = mDateTime::CurrentDateTime();
@@ -1455,9 +1468,9 @@ int EventTask::svc(void)
 
 	    vector<double> pingtimes;
 	    double min = -1, max = 0, sum = 0, avg = 0;
-	    { RLOCK2(("Server", "ServerList"));
-	    for (si=Parent->server.ServerList.begin();
-		    si!=Parent->server.ServerList.end(); si++)
+	    { RLOCK2(("Server", "list"));
+	    for (si=Parent->server.ListBegin();
+		    si!=Parent->server.ListEnd(); si++)
 	    {
 		if (min == -1 || si->second.Lag() < min)
 		    min = si->second.Lag();
@@ -1487,9 +1500,9 @@ int EventTask::svc(void)
 	    if (Parent->ircsvchandler != NULL)
 		if (Parent->ircsvchandler->HTM_Level() <= 3)
 		{
-		    RLOCK2(("Server", "ServerList"));
-		    for (si=Parent->server.ServerList.begin();
-				si!=Parent->server.ServerList.end();si++)
+		    RLOCK2(("Server", "list"));
+		    for (si=Parent->server.ListBegin();
+				si!=Parent->server.ListEnd();si++)
 			si->second.Ping();
 		    LOG((LM_TRACE, Parent->getLogMessage("EVENT/PING")));
 		}
