@@ -2173,13 +2173,8 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    }
 	    sendmode = false;
 
-	    {
-		Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
-
-		// B]AAAB == 127.0.0.1 for ipaddress.
-		out << "B]AAAB " << proto.Numeric.ServerNumeric(svr.Numeric()) << " " <<
-			proto.Numeric.UserNumeric(tmp->Numeric()) << " :" << name;
-	    }
+	    // B]AAAB == 127.0.0.1 for ipaddress.
+	    out << "B]AAAB " << proto.Numeric.UserNumeric(tmp->Numeric()) << " :" << name;
 	    break;
 	case 4000:
 	    token = "CLIENT";
