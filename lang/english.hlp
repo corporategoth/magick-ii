@@ -1417,9 +1417,9 @@
 01 =REGD::SET <channel> ANARCHY <ON|OFF|RESET>
 02 =REGD::
 03 =REGD::This will turn on or off Anarchy.
-04 =REGD::When this option is on, services not deop a user
-05 =REGD::who is not on the access list if they're the first
-06 =REGD::user to join channel.
+04 =REGD::When this option is on, services not reverse any
+05 =REGD::modes set by a server (this includes the initial
+06 =REGD::user's +o, and mode hacks from a split server).
 07 =REGD::You must have SET privileges to use this command.
 
 [CHANSERV/SET/KICKONBAN]
