@@ -1,3 +1,94 @@
+* 2002-10-05 16:34  Preston A. Elder <prez@magick.tm>
+  lang/english.hlp (1.53):
+  
+  Fixed some of the 'menu's
+
+* 2002-10-05 13:58  Preston A. Elder <prez@magick.tm>
+  helper/run_gui.bat (1.7), helper/run_magick.bat (1.8),
+  helper/run_magick_keygen.bat (1.5):
+  
+  Fixed to work on 9x.
+
+* 2002-10-05 13:48  Preston A. Elder <prez@magick.tm>
+  helper/run_gui.bat (1.6), helper/run_magick.bat (1.7),
+  helper/run_magick_keygen.bat (1.4):
+  
+  Something that works on all 3 scripts ...
+
+* 2002-10-05 13:27  Preston A. Elder <prez@magick.tm>
+  helper/run_magick.bat (1.6):
+  
+  Fixed to run on win95/98/me
+
+* 2002-10-04 13:50  Preston A. Elder <prez@magick.tm>
+  crypt.dsp (1.5), magick.dsp (1.77), magick_keygen.dsp (1.6),
+  magick_stampkeys.dsp (1.7), what.dsp (1.7), xml.dsp (1.6),
+  include/filesys.h (1.62), include/ircsocket.h (1.74), include/magick.h
+  (1.189), include/pch.h (1.64), include/stl_fix.h (1.1), include/utils.h
+  (1.61), src/chanserv.cpp (1.309), src/commserv.cpp (1.132),
+  src/filesys.cpp (1.108), src/ircsocket.cpp (1.240), src/magick.cpp
+  (1.379), src/memoserv.cpp (1.126), src/nickdata.cpp (1.16),
+  src/operserv.cpp (1.165), src/server.cpp (1.254):
+  
+  Windows fixes to make magick compile on windows after the STL/ACE
+  updates.
+
+* 2002-10-04 13:11  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.19), configure.in (1.70), include/config.h.in (1.33),
+  include/config.h.win (1.25):
+  
+  Added more STL fixing stuff ... ugh, damn M$ STL.
+
+* 2002-10-04 09:13  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.18), configure.in (1.69), include/config.h.in (1.32),
+  include/config.h.win (1.24), include/pch.h (1.63), src/memoserv.cpp
+  (1.125):
+  
+  Hacked in mem_fun1_ref for windows.
+
+* 2002-10-04 08:20  Preston A. Elder <prez@magick.tm>
+  include/config.h.win (1.23):
+  
+  Updated config to adjust for new items in configure.in
+
+* 2002-10-04 06:36  Preston A. Elder <prez@magick.tm>
+  include/version.h (1.140):
+  
+  Changed release to 'cvs'
+
+* 2002-10-04 06:34  Preston A. Elder <prez@magick.tm>
+  crypt.dsp (1.4), magick.dsp (1.76), magick_keygen.dsp (1.5),
+  magick_stampkeys.dsp (1.6), what.dsp (1.6), xml.dsp (1.5):
+  
+  Updated paths to exclude version number in 'zlib' dir.
+
+* 2002-10-03 07:45  Preston A. Elder <prez@magick.tm>
+  include/ircsocket.h (1.73), include/magick.h (1.188), lang/english.lfo
+  (1.56), src/ircsocket.cpp (1.239), src/magick.cpp (1.378), src/server.cpp
+  (1.253):
+  
+  Changed the server list to use a new class (Connection_t), and be a
+  vector.
+
+* 2002-10-02 14:11  Preston A. Elder <prez@magick.tm>
+  configure.in (1.68), include/base.h (1.118), include/config.h.in (1.31),
+  include/memoserv.h (1.64), include/pch.h (1.62), include/server.h (1.96),
+  include/trace.h (1.98), include/utils.h (1.60), include/xml/sxp.h (1.37),
+  src/base.cpp (1.205), src/chandata.cpp (1.19), src/chanserv.cpp (1.308),
+  src/commserv.cpp (1.131), src/dccengine.cpp (1.58), src/filesys.cpp
+  (1.107), src/ircsocket.cpp (1.238), src/magick.cpp (1.377),
+  src/mconfig.cpp (1.46), src/memoserv.cpp (1.124), src/mstring.cpp
+  (1.138), src/nickdata.cpp (1.15), src/operserv.cpp (1.164),
+  src/server.cpp (1.252), src/servmsg.cpp (1.111), src/trace.cpp (1.131):
+  
+  Stage 1 of fixing up magick's STL usage.  Got rid of many custom loops in
+  favour or algorithms.
+
+* 2002-09-30 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.51):
+  
+  Created version 2.0s20020930
+
 * 2002-09-23 03:00  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.50):
   
