@@ -17,76 +17,8 @@
 #include "variant.h"
 #include "base.h"
 
-
-class Memo_t : public mUserDef
-{
-    friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, Memo_t& out);
-
-    mstring i_Nick;
-    mstring i_Sender;
-    mDateTime i_Time;
-    mstring i_Text;
-
-    bool i_Read;
-    unsigned long i_File;
-public:
-    Memo_t() {}
-    Memo_t(const Memo_t &in) { *this = in; }
-    Memo_t(mstring nick, mstring sender, mstring text, unsigned long file = 0);
-    void operator=(const Memo_t &in);
-    bool operator==(const Memo_t &in) const
-    	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator!=(const Memo_t &in) const
-    	{ return !(i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator<(const Memo_t &in) const
-    	{ return (i_Time < in.i_Time); }
-
-    mstring Nick()const	    { return i_Nick; }
-    mstring Sender()const   { return i_Sender; }
-    mDateTime Time()const   { return i_Time; }
-    mstring Text()const	    { return i_Text; }
-    unsigned long File()const	{ return i_File; }
-
-    bool IsRead()const	    { return i_Read; }
-    void Read()		    { i_Read = true; }
-    void Unread()	    { i_Read = false; }
-};
-
-
-class News_t : public mUserDef
-{
-    friend wxOutputStream &operator<<(wxOutputStream& out,News_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, News_t& out);
-
-    mstring i_Channel;
-    mstring i_Sender;
-    mDateTime i_Time;
-    mstring i_Text;
-    
-    set<mstring> i_Read;
-public:
-    News_t() {}
-    News_t(const News_t &in) { *this = in; }
-    News_t(mstring channel, mstring sender, mstring text);
-    void operator=(const News_t &in);
-    bool operator==(const News_t &in) const
-    	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator!=(const News_t &in) const
-    	{ return !(i_Sender == in.i_Sender && i_Time == in.i_Time); }
-    bool operator<(const News_t &in) const
-    	{ return (i_Time < in.i_Time); }
-
-    mstring Channel()const	{ return i_Channel; }
-    mstring Sender()const	{ return i_Sender; }
-    mDateTime Time()const	{ return i_Time; }
-    mstring Text()const		{ return i_Text; }
-
-    bool IsRead(mstring name);
-    void Read(mstring name);
-    void Unread(mstring name);
-};
-
+class Memo_t;
+class News_t;
 
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
@@ -137,6 +69,74 @@ public:
     static void do_Del(mstring mynick, mstring source, mstring params);
     static void do_Continue(mstring mynick, mstring source, mstring params);
     static void do_File(mstring mynick, mstring source, mstring params);
+};
+
+class Memo_t : public mUserDef
+{
+    friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, Memo_t& out);
+
+    mstring i_Nick;
+    mstring i_Sender;
+    mDateTime i_Time;
+    mstring i_Text;
+
+    bool i_Read;
+    unsigned long i_File;
+public:
+    Memo_t() {}
+    Memo_t(const Memo_t &in) { *this = in; }
+    Memo_t(mstring nick, mstring sender, mstring text, unsigned long file = 0);
+    void operator=(const Memo_t &in);
+    bool operator==(const Memo_t &in) const
+    	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
+    bool operator!=(const Memo_t &in) const
+    	{ return !(i_Sender == in.i_Sender && i_Time == in.i_Time); }
+    bool operator<(const Memo_t &in) const
+    	{ return (i_Time < in.i_Time); }
+
+    mstring Nick()const	    { return i_Nick; }
+    mstring Sender()const   { return i_Sender; }
+    mDateTime Time()const   { return i_Time; }
+    mstring Text()const	    { return i_Text; }
+    unsigned long File()const	{ return i_File; }
+
+    bool IsRead()const	    { return i_Read; }
+    void Read()		    { i_Read = true; }
+    void Unread()	    { i_Read = false; }
+};
+
+class News_t : public mUserDef
+{
+    friend wxOutputStream &operator<<(wxOutputStream& out,News_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, News_t& out);
+
+    mstring i_Channel;
+    mstring i_Sender;
+    mDateTime i_Time;
+    mstring i_Text;
+    
+    set<mstring> i_Read;
+public:
+    News_t() {}
+    News_t(const News_t &in) { *this = in; }
+    News_t(mstring channel, mstring sender, mstring text);
+    void operator=(const News_t &in);
+    bool operator==(const News_t &in) const
+    	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
+    bool operator!=(const News_t &in) const
+    	{ return !(i_Sender == in.i_Sender && i_Time == in.i_Time); }
+    bool operator<(const News_t &in) const
+    	{ return (i_Time < in.i_Time); }
+
+    mstring Channel()const	{ return i_Channel; }
+    mstring Sender()const	{ return i_Sender; }
+    mDateTime Time()const	{ return i_Time; }
+    mstring Text()const		{ return i_Text; }
+
+    bool IsRead(mstring name);
+    void Read(mstring name);
+    void Unread(mstring name);
 };
 
 #endif

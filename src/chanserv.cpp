@@ -154,17 +154,6 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 }
 
 
-void Chan_Live_t::Topic(mstring topic, mstring setter)
-{
-    FT("Chan_Live_t::Topic", (topic, setter));
-    i_Topic = topic;
-    i_Topic_Setter = setter;
-    i_Topic_Set_Time = Now();
-    if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.stored[i_Name.LowerCase()].Topic(i_Topic, i_Topic_Setter, i_Topic_Set_Time);
-}
-
-
 void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
 {
     FT("Chan_Live_t::Topic", (topic, setter, time));
@@ -2518,6 +2507,10 @@ long Chan_Stored_t::GetAccess(mstring entry)
 
     if (!Secure() || (Secure() && nlive->IsIdentified()))
     {
+	if (i_Founder.LowerCase() == entry.LowerCase())
+	{
+	    RET(Parent->chanserv.Level_Max() + 1);
+	}
 	RET(Access_value(entry));
     }
     RET(0);
@@ -3564,7 +3557,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(cstored->GetAccess(source, "CMDMODE") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	mstring modes = params.After(" ", 2);
 	clive->SendMode(modes);
@@ -3633,7 +3626,7 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -3718,7 +3711,7 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -3788,7 +3781,7 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -3873,7 +3866,7 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -4169,7 +4162,7 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -4236,7 +4229,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 && 
 	(cstored->GetAccess(source, "SUPER") ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
 	target = params.ExtractWord(2, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -4317,7 +4310,7 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source)))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -4363,7 +4356,7 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source)))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -4410,7 +4403,7 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source)))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -4458,7 +4451,7 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source)))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -4506,7 +4499,7 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source)))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
 	::send(mynick, source, "Access denied.");
 	return;
@@ -4559,7 +4552,7 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source)))
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
 	::send(mynick, source, "Access denied.");
 	return;
