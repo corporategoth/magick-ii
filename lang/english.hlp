@@ -102,8 +102,10 @@
 06 =::    INFO         GHOST        RECOVER      LIST
 07 =REGD::    DROP         UNLINK       HOST         SLAVES
 08 =REGD::    ACCESS       IGNORE       SET          SEND
-09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
+09a=OPER:SOP:And as an IRC Operator, the following commands:
+09b=SOP::And as a Services Operator, the following commands:
+10a=OPER:SOP:    LIVE
+10b=SOP::    SETPASS      LOCK         UNLOCK       FORBID
 11 =SOP:SADMIN:    SUSPEND      UNSUSPEND    LIVE
 11 =SADMIN::    GETPASS      SUSPEND      UNSUSPEND    LIVE
 12 =::
@@ -336,17 +338,17 @@
 07 =SOP:SADMIN:Administrator.
 
 [NICKSERV/LIVE]
-01 =SOP::LIVE [mask [maximum]]
-02 =SOP::LIVEOPER [mask [maximum]]
-03 =SOP::
-04 =SOP::This will list all online nicknames that match the
-05 =SOP::full nick!user@host mask specified.  If the nick is
-06 =SOP::left off, * will be assumed.  If the host is left
-07 =SOP::off, *@* will be assumed.  This will display the
-08 =SOP::users full host, what server they are on, and what
-09 =SOP::modes they currently have set.  The OPER suffix to
-10 =SOP::the LIST command will list only people with mode
-11 =SOP::+o set (ie. IRC Operators).
+01 =OPER SOP::LIVE [mask [maximum]]
+02 =OPER SOP::LIVEOPER [mask [maximum]]
+03 =OPER SOP::
+04 =OPER SOP::This will list all online nicknames that match the
+05 =OPER SOP::full nick!user@host mask specified.  If the nick is
+06 =OPER SOP::left off, * will be assumed.  If the host is left
+07 =OPER SOP::off, *@* will be assumed.  This will display the
+08 =OPER SOP::users full host, what server they are on, and what
+09 =OPER SOP::modes they currently have set.  The OPER suffix to
+10 =OPER SOP::the LIST command will list only people with mode
+11 =OPER SOP::+o set (ie. IRC Operators).
 
 [NICKSERV/ACCESS]
 01 =REGD::Your access list is a method to be able to come in
@@ -781,8 +783,10 @@
 09 =REGD::    UNBAN        KICK         REMOVE       CLEAR
 10 =REGD::    ACCESS       AKICK        GREET        MESSAGE
 11 =REGD::    SET          LEVEL
-12 =SOP::And as a Services Operator, the following commands:
-13 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
+12a=OPER:SOP:And as an IRC Operator, the following commands:
+12b=SOP::And as a Services Operator, the following commands:
+13a=OPER:SOP:    LIVE
+13b=SOP::    SETPASS      LOCK         UNLOCK       FORBID
 14 =SOP::    SUSPEND      UNSUSPEND    LIVE         DETAIL
 15 =SADMIN::    GETPASS
 16 =::
@@ -1062,14 +1066,14 @@
 07B=SOP::online user.
 
 [CHANSERV/LIVE]
-01 =SOP::LIVE [mask [maximum]]
-02 =SOP::
-03 =SOP::This will list all channels active that match the
-04 =SOP::full mask specified.  This will display the full
-05 =SOP::channel name, the amount of users, ops, voices
-06 =SOP::squit users and bans are active in channel, and
-07 =SOP::what modes the channel currently has set (including
-08 =SOP::key and limit).
+01 =OPER SOP::LIVE [mask [maximum]]
+02 =OPER SOP::
+03 =OPER SOP::This will list all channels active that match the
+04 =OPER SOP::full mask specified.  This will display the full
+05 =OPER SOP::channel name, the amount of users, ops, voices
+06 =OPER SOP::squit users and bans are active in channel, and
+07 =OPER SOP::what modes the channel currently has set (including
+08 =OPER SOP::key and limit).
 
 [CHANSERV/DETAIL]
 01 =SOP::DETAIL <nickname>
