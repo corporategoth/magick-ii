@@ -36,9 +36,9 @@ void mBase::push_message(const mstring& message)
 	if(Buffer_Queue.is_full())
 	{
 	    // set new water marks and spawn off a new thread.
-	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()+1)*4);
+	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads())*4);
 	    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
-	    Buffer_Queue.high_water_mark(Buffer_Queue.high_water_mark());
+	    Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
 	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
 		    CP(("High water mark reached, failed to create a new thread"));
 	}
@@ -77,6 +77,16 @@ void *thread_handler(void *owner)
 	    mstring message=mBase::Buffer_Tuple[messageid];
 	    mBase::Buffer_Tuple.erase(messageid);
 	    // unlock here and start splitting and siphoning.
+
+	    // lock here temporarily
+	    if(mBase::Buffer_Queue.message_count()<
+		MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)+MagickObject->low_water_mark)
+	    {
+		mBase::Buffer_Queue.high_water_mark(MagickObject->high_water_mark*ACE_Thread_Manager::instance()->count_threads()*4);
+		 mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
+		 return NULL;
+	    }
+	    // unlock here and return if necessary. return will kill off this thread.
 	}
     }
 
