@@ -17,6 +17,8 @@ dist:
 	done 
 	cp config.sub config1.sub
 	cp config.guess config1.guess
+	helper/cvs2cl.pl --revisions --separate-header --prune \
+		--accum --usermap AUTHORS -I 'docs\/devel.*'
 	rm -f config.* *.ini *.log *.key *.mnd *.pid magick
 	rm -f `find . -type f -name "*~"`
 	rm -f `find . -type f -name ".#*"`

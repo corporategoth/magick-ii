@@ -35,7 +35,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-, root, root)
-%doc AUTHORS COPYING ChangeLog FAQ INSTALL KNOWN-BUGS NEWS README TODO rtfm
+%doc AUTHORS COPYING ChangeLog* FAQ INSTALL KNOWN-BUGS NEWS README TODO rtfm
 %doc docs/en docs/rfcs
 %config /etc/magick.ini
 

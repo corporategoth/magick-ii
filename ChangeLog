@@ -1,189 +1,27 @@
-Magick IRC Services
+* 2001-12-04 19:13  Preston A. Elder <prez@magick.tm>
+  src/magick_keygen.c (1.22):
+  
+  Got rid of a warning in magick_keygen
 
-$Id$
-(c) 1997-2001 Preston A. Elder <prez@magick.tm>
-(c) 1998-2001 William King <ungod@magick.tm>
+* 2001-12-04 17:45  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.80):
+  
+  Re-vamped the operator overloads, making it even MORE portable, and using
+  up alot less room in the process.
 
-Please note, this document only has FULL releases in it.
-ALPHA and BETA releases are not listed, nor are patches.
+* 2001-12-03 15:02  Preston A. Elder <prez@magick.tm>
+  docs/man/magick.pod (1.12):
+  
+  Added umask parameter for man pages.
 
-Magick II (Magick Development Team <devel@magick.tm>)
----------
+* 2001-12-03 05:04  Preston A. Elder <prez@magick.tm>
+  docs/en/.cvsignore (1.2), docs/en/index-1.html (1.10),
+  docs/en/index-2.html (1.21), docs/en/index-3.html (1.15),
+  docs/en/index-4.html (1.9), docs/en/index-5.html (1.4),
+  docs/en/index-6.html (1.5), docs/en/index.html (1.11), docs/en/index.info
+  (1.75), docs/en/index.info-1 (1.35), docs/en/index.info-2 (1.35),
+  docs/en/index.txt (1.3):
+  
+  Removed the ever-changing result files from index, and left the SGML
+  file.
 
-Total re-write in C++, so version .0 is merely a 'new feature' list.
-
-2000/??/?? .0	Fully multi-threaded (can do >1 thing at once)
-		Database saves in XML and supports compression and
-		    encryption. Is also no longer endian specific.
-		Works on most *NIX and all Win32 platforms.
-		Fully multi-lingual (log files, help, etc).
-		Supports DCC file transfers and a filesystem (memo
-		    attachments, nickserv pictures or public FS).
-		Times saved in GMT, so timezone inspecific.
-		Committee-based, can also add new committees.
-		Can now lock any SET option (except text fields).
-		Supports HTM (High Traffic Mode).
-		Supports ALOT more IRC protocols (and alot of their
-		    more specialised features) and can switch
-		    irc protocols without need to recompile.
-		Can now set time limits on akills.
-		Supports IRC Operator Deny (ensures mask cant oper).
-		Services ignore now ignores by mask, not nickname.
-		Supports TRACING, for on-line debugging.
-		Has SQUIT protection (to save on IDENT's).
-		Many new ChanServ features like Kick On Ban, timed
-		    ban removal, channel greetings, on-join messages.
-		Nicknames & Channels now have a NoExpire flag.
-		Time delay on memo sending to allow continuance or
-		    cancellation of memos, or DCC of file attachments.
-		'Read' and 'Unread' status on memos / news articles.
-		Supports multiple connection entries (aka. C/N's).
-		Can bind to a single IP address.
-		Supports multiple nicknames for same service.
-		Limits placed on time between registrations and amount
-		    of channels a user may own.
-		Clone prot will auto-akill for too many triggers.
-		Added the ability to output logfile to a channel.
-		Expanded ON/OFF command to allow turning off of one
-		    service only, just log files or the events engine.
-		Added Secure Server listing ability (ie. if we dont
-		    have a listing for the server, squit it!).
-		MANY, MANY, MANY more enhancements.
-		
-
-Magick I (Preston Elder <prez@magick.tm>)
---------
-
-Renamed to this to avoid conflicting version numbers, etc and finally
-rid myself of all the excess EsperNet baggage.
-
-1999/02/20 .4	Added copyrights back from espernet, so they would stop
-		    bitching at me for removing them (even though I DID
-		    modify the code to an extent they no longer resemble
-		    their services).  *shrug* some people.
-		Added configuration file (see DOC dir) (Ungod)
-		Added messages.h to customize Magick output.
-		Added SYNC_TIME (dbase save) showing option
-		Made MODE strings (User, Channel, ChanInfo) DYNAMIC
-		Fixed AutoUpdate on databases
-		Fixed fuckloads more bugs (as usual).
-		Added killing for repeated password failures.
-		Added LIVE (non-fork) mode (CTRL-C forks).
-		Added MS REPLY, NS ACCESS CURRENT and NS SLAVES functions.
-1998/01/20 .3	Added MLOCK +i and +k support (ChanServ will keep channel if
-		    noone in it!).
-		doc/Distribution -- READ it (and all files in that DIR!) :)
-		Removed time_zone and added the "X time ago" formats
-		Fixed lots and lots of bugs, and optimized alot of code!
-		Replaced IRCOP_OVERRIDE with OVERRIDE_LEVEL (6 levels)
-		Added TimeZone support for backup services (fixes timings)
-		Added auto -v and -o for non-access'd people off split
-		Added Nick Linking (BIG MF of an addition)
-		Replaced old IGNORE with Flood Protect (smarter system!)
-		Theres lots more little additions, but too many to document.
-1997/12/30 .2	Added new revenge level (REVERSE, now NONE will do NOTHING).
-		Fixed a few minor bugs (with unsuspension, breakdown
-		    percentages, and handling nick collides, etc).
-		Moved Services OP list to a access list-style format.
-		Removed the SUPER_PASSWORD - now only the SERVICES_ADMINS
-		    (hardcoded in config.h) can do that :)
-		Added removing by number to ALL lists now :)
-		Added OperServ MASKLIST (like USERLIST but accepts user@host).
-		Removed the magick.msg and magick.omsg in favour of the new
-		    OperServ LOGONMSG and OPERMSG commands :)
-		Wrote both user and oper documentation for ALL commands!
-1997/12/15 .1	Optimized code and implemented hash tables (if you dont know,
-		    dont worry - just take it as a good thing!).
-		Added some of Andy Church's services routines (overflow stuff,
-		    some socket stuff, and the configure script mainly).
-		Removed upaccess - people should have used it, or not need it.
-		Added MemoServ OPERSEND.
-		Fixed user/oper counting when SQUIT.
-		Fixed ghost command and Channel/Nick expiry bugs.
-		Added Users on Servers breakdown (OperServ)
-		OFF/ON commands now close/open logs aswell.
-1997/12/08 .0	Forgot the new services.h for Services 3.0.9, included here.
-		Veriable ChanServ levels implemented (finally).
-		Added deletion of user from access lists, and all
-		    a user's channels when a user is deleted.
-		Moved names for services to config.h
-		Magick know more about their own actions (dont laugh!)
-		IrcOP's dont trigger clone protection (are ignored).
-		Added ability to use PRIVMSG instead of NOTICE.
-		Added ChanServ JOIN ability (some like it - I dont).
-		Added ChanServ REVENGE module, for protecting userlist.
-		AKILL and CLONE may now be removed by number.
-
-
-Services 3.0 (Preston Elder <prez@magick.tm>)
-------------
-
-1997/11/30 .9	Little maintinance (checked all various compiles, etc).
-		Fixed MAJOR bug with list-duplication on re-connect.
-		Minor bugfixes and adds (OFF reasons, pidfile fix, etc)
-1997/11/26 .8	Changed the way CLONE detection works (MAJORLY!)
-		Added "CLONE" for allowing more than "Default max clones"
-		Fixed bug that didnt reset "current online" lists.
-		Added "is already there" and "kill all matching" to akill
-		Added chanserv Auto-Unban for when ppls are banned on a
-		    channel by someone equal to or lower than them.
-		Capped the chanserv levels (to stop the "10000" bug).
-		Fixed the chanserv UNBAN option so it does ALL bans.
-		Added 'bounce bans on link' for def_level[2]+ (10 usually)
-1997/11/20 .7	Fixed a few bugs (nickserv IDENT, Globals and Mass -v's)
-		Removed SKELETON defines - obsolite by Pick 'n' Choose.
-		Removed test/ directory - was old, outdated and useless!
-		Added (optional) mask restrictions to USERLIST and CHANLIST.
-		AKILL mask's must be >7 chars in length (stop *@*.com).
-		Added Services Restart/Reconnect - see config.h for details.
-		Added Services Leveling to replace READONLY - better way of
-		    implementing backup services versions, etc.
-1997/11/10 .6	Fixed up the "Pick 'n' Choose" section of config.h so it
-		    now actually makes the end result smaller :)
-		Added ChanServ and NickServ SUSPEND/UNSUSPEND functions
-		AKILL's will now expire after a time specified in config.h
-		Added PAKILL - non-expiring AKILLS settable by SOP's
-		Channel/Nick memos will get erased with the channel/nick
-		Added ON/OFF so u can enable/disable services without QUIT
-		ON, OFF, QUIT, SHUTDOWN and RAW are passworded (config.h)
-1997/11/05 .5	Implemented DAL4.4.15+ Services Support, Including:
-		    Killing users without a Killed (IrcOp (reason))
-		    Server and Nick quarentining via. OperServ
-		    Setting of nick's modes with MODE command.
-		    CHANGE nick instead of KILL it on nick protection
-		SOP's get help for their commands in /msg OperServ HELP
-		Memo Forwarding To/From Nick/Channel (in any combo)
-		Message to users when they /oper (services.omsg)
-		Made use of the till now unused def_access in chanserv.c
-1997/10/30 .4	Added support for DAL4.4.15+ servers.
-		Moved up all chanserv levels by 5 - 5 is now auto-voice.
-		Added /msg operserv listsops (FINALLY!)
-		SOPS now need to be /oper'd to be SOPS (oops)
-		Oper override of chanserv now #definable (in config.h)
-1997/10/22 .3	Fixed a bug in ignore (was stuffing ACCESS list)
-		Added OperServ Mode #channel returning current modes
-		Opers can override chanserv op/deop/invite/unban
-		SOPs can override chanserv clear
-1997/10/21 .2	Added READ ALL to MemoServ (channel and nick)
-		Added ability for oper to op, deop, invite, unban (ChanServ)
-		Added ability for SOP to use clear (ChanServ)
-		Added hard-coded /msg HelpServ Credits (so sue me).
-		Added memo IGNORE list to nickserv.
-		Fixed the nickserv SET IRCOP function
-1997/09/15 .1	Only Lvl 20 or sender can delete channel news
-		Fixed bug in NickServ that Mis-Saved URL/NICK fields
-1997/09/15 .0	Services now respawn if /kill'd
-		Message to users when logon added (services.msg)
-		Disabled @* (and @*.*, etc) AKILLS except for SOPS
-		Disabled @* (and @*.*, etc) AKICKS except for Level 20's
-		Created FILE_VERSION 3 (autoconverts from 2)
-		Added NickServ URL and EMAIL fields (v3)
-		Added ChanServ URL field (v3)
-		Added NEWS system (Basically Channel MEMO's)
-		Added IRC Operator NickServ flag (no nick expiry)
-		Added ChanServ level 20 (can set all but PASS and FOUNDER)
-		Added CURRENT TIME to info displays
-
-Originally, Magick was based on Services 2.2.26, by Andrew Church.
-As of Magick II, they are no longer based in any way, shape or form
-on these services.
