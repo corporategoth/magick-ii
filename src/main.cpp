@@ -30,6 +30,10 @@ int start_server(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    Trace internaltrace;
+    TraceObject = &internaltrace;
+    TraceObject->TurnSet(0x44444444);
+    mainthread = new ThreadID(tt_MAIN, 1);
     Start_Time=Now();
     try
     {
@@ -38,15 +42,18 @@ restart:
 	Result=start_server(argc,argv);
 	if(Result==MAGICK_RET_RESTART)
 	    goto restart;
+	delete mainthread;
 	return Result;
     }
     catch(exception &e)
     {
 	fprintf(stderr,"Unhandled exception: %s\n",e.what());
+	delete mainthread;
     }
     catch(...)
     {
 	fprintf(stderr,"Unhandled exception: Unknown\n");
+	delete mainthread;
 	return -1;
     }
 }

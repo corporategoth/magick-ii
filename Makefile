@@ -33,7 +33,10 @@ SUBDIRS=$(CRYPTDIR)
 
 # --[ Dont edit below this line ]-----------------------------------------
 
-all: magick
+all: rmexec magick
+
+rmexec:
+	rm -f magick
 
 magick:
 	@for x in $(SUBDIRS) ./src; \

@@ -18,7 +18,7 @@
 
 long Trace::TraceLevel=0;
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
-
+Trace *TraceObject;
 
 Trace::Trace()
 {
@@ -73,6 +73,9 @@ Trace::Trace()
 	tmap[levelpair(tt_BOB,External)]	= BOB_External;
 
 }
+
+Trace::~Trace() {}
+
 //todo change this to a vector< >
 const struct Trace::levelname_struct Trace::levelname[] = {
 	levelname_struct( "OFF", Off ),
@@ -97,8 +100,6 @@ int levelname_count()
     return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
 }
 
-Trace::~Trace() {}
-
 Trace::TraceTypes Trace::resolve(Trace::level_enum level, threadtype_enum type)
 { 
 	return tmap[levelpair(type,level)]; 
@@ -121,28 +122,30 @@ Trace::TraceTypes Trace::resolve(ThreadID *tid)
 
 ThreadID::ThreadID()
 {
-    indent = 0;
+    t_indent = 0;
+    t_internaltype = tt_MAIN;
+    t_number = 0;
 }
 
 ThreadID::ThreadID(threadtype_enum Type, int Number)
 {
-    indent = 0;
-    internaltype = Type;
-    number = Number;
+    t_indent = 0;
+    t_internaltype = Type;
+    t_number = Number;
 }
 
 ThreadID ThreadID::assign(threadtype_enum Type, int Number)
 {
-    internaltype = Type;
-    number = Number;
+    t_internaltype = Type;
+    t_number = Number;
     return *this;
 }
 
 mstring ThreadID::logname()
 {
     mstring name;
-	if (internaltype)
-	    name << "trace_" << threadname[internaltype] << "_" << number << ".log";
+	if (t_internaltype)
+	    name << "trace_" << threadname[t_internaltype] << "_" << t_number << ".log";
 	else
 	    name << "trace.log";
     return name;
@@ -150,19 +153,26 @@ mstring ThreadID::logname()
 
 void ThreadID::WriteOut(const mstring &message)
 {
+    
     //below for now till i get the operator bool happening.
-    if (out.LastError()!=wxStream_NOERROR) 
+/*    if (out.LastError()!=wxStream_NOERROR) 
     {
         out=wxFileOutputStream(logname());
         out.SeekO(0,wxFromEnd);
     }
     assert(out.LastError()==wxStream_NOERROR);
-    mstring finalout;
-    for (int i=0; i<indent; i++)
+*/
+cout << "POST: " << message << endl;
+    mstring finalout = "";
+    for (int i=0; i<t_indent; i++)
         finalout += "  ";
     finalout += message;
-    out << finalout << wxEndL;
+//    out << finalout << wxEndL;
+    cout << finalout << endl;
 }
+
+// Temporary!!
+ThreadID *mainthread;
 
 // ===================================================
 
@@ -170,9 +180,11 @@ void ThreadID::WriteOut(const mstring &message)
 T_Functions::T_Functions(const mstring &name)
 {
     ShortLevel(Functions);
-    m_name=name;
+    m_name+=name;
+    tid = mainthread;
     if (IsOn(tid)) {
 	mstring message = "\\\\ " + m_name + "()";
+cout << "PRE: " << message << endl;
 	tid->WriteOut(message);
     }
     tid->indentup();
@@ -183,14 +195,19 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
     m_name=name;
+    tid = mainthread;
     if (IsOn(tid)) {
 	mstring message = "\\\\ " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
+cout << "DEBUG: " << message << endl;
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
+cout << "DEBUG: " << message << endl;
 	    if (i < args.count() - 1)
 		message += ", ";
 	}
+cout << "DEBUG: " << message << endl;
 	message += " )";
+cout << "PRE: " << message << endl;
 	tid->WriteOut(message);
     }
     tid->indentup();
@@ -200,6 +217,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     ShortLevel(Functions);
+    if (tid == NULL)
+	tid = mainthread;
     tid->indentdown(); 
     if (IsOn(tid)) {
 	mstring message="// (" + return_value.type() + ") " + return_value.AsString();
@@ -229,6 +248,7 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 void T_CheckPoint::common(const char *input)
 {
     ShortLevel(CheckPoint);
+    tid = mainthread;
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -244,6 +264,7 @@ void T_CheckPoint::common(const char *input)
 T_Modify::T_Modify(const mVarArray &args)
 {
     ShortLevel(Modify);
+    tid = mainthread;
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -259,6 +280,7 @@ T_Modify::T_Modify(const mVarArray &args)
 void T_Modify::End(const mVarArray &args)
 {
     ShortLevel(Modify);
+    tid = mainthread;
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -276,6 +298,7 @@ void T_Modify::End(const mVarArray &args)
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
     ShortLevel(Chatter);
+    tid = mainthread;
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
@@ -308,6 +331,7 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
     ShortLevel(Locking);
+    tid = mainthread;
     if (IsOn(tid)) 
     {
 	locktype = ltype;
@@ -329,6 +353,8 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking() {
     ShortLevel(Locking);
+    if (tid == NULL)
+	tid = mainthread;
     if (IsOn(tid)) {
 	if (name) {
     	    mstring message;

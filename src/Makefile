@@ -10,7 +10,7 @@ OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) bob.$(OBJ) chanserv.$(OBJ) confbase.$(OB
        trace.$(OBJ) utils.$(OBJ) variant.$(OBJ)
 SUBDIRS=antlr bob
 
-all: SUBS $(LIBNAME)
+all: SUBS RMLIB $(LIBNAME)
 
 clean:
 	@for x in $(SUBDIRS); \
@@ -33,8 +33,11 @@ SUBS:
 		$(MAKE) -C $$x $(PASSTHRU); \
 	done
 
+RMLIB:
+	rm -f $(LIBNAME)
+
 $(LIBNAME): $(OBJS)
-	@ar rcs $@ $(OBJS) || \
+	ar rcs $@ $(OBJS) || \
 	( ar rc $@ $(OBJS) && \
 	  ranlib $@ )
 	

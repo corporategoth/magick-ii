@@ -56,10 +56,6 @@ using namespace std;
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) { T_Chatter __ch(x,y); }
 
-// forward declarations till we get them done
-class Thread;
-class ThreadID;
-
 // OperServ TRACE Syntax:
 //
 // TRACE SET 0x000000B0		Set exact TraceTypes
@@ -120,6 +116,55 @@ extern mstring threadname[tt_MAX];
 //   !!  BOB Binds, Registrations (T_Bind)
 //   ??  External commands (T_External)
 
+// ===================================================
+
+// ToDo -- A method to get the current ThreadID number
+
+// in here, without specifying it everywhere.
+// ACE_thread_t threadid = ACE_Thread::self();
+// threadtype_enum Type=MagickObject->ThreadtoTypeMap[ACE_Thread::self()];
+// or to set the Type in the map  eg: MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
+
+class ThreadID {
+private:
+    threadtype_enum t_internaltype;
+    int t_number;
+    short t_indent;
+    wxOutputStream out;
+    
+    mstring logname();
+
+public:
+    ThreadID();
+    ThreadID(threadtype_enum Type, int Number);
+    ~ThreadID() {}
+    ThreadID assign(threadtype_enum Type, int Number);
+    threadtype_enum type() { return t_internaltype; }
+    void indentup() { t_indent++; }
+    void indentdown() { t_indent--; }
+    int number() { return t_number;  }
+    short indent() { return t_indent; }
+
+    void WriteOut (const mstring &message);
+};
+
+extern ThreadID *mainthread;
+
+/* typedef map <ACE_thread_t, int> ThreadMap;
+ThreadMap threadmap;
+
+threadmap[ACE_Thread::self()] = number;
+
+int FindTID(ACE_Thread *in = current) {
+    if (in == NULL)
+	return 1;
+    for (ThreadMap::iterator TM = threadmap.begin(); TM != threadmap.end(); TM++)
+	if (TM.first == in.self())
+	    return TM.second;
+    return 0;
+}
+*/
+
 class Trace
 {
     static long TraceLevel;
@@ -178,7 +223,7 @@ private:
     typedef pair<threadtype_enum,level_enum> levelpair;
 
     bool IsOnBig(TraceTypes level)
-	{ return (level & TraceLevel!=0); }
+	{ return ((level & TraceLevel)!=0); }
 
     TraceTypes resolve(level_enum level, threadtype_enum type);
     TraceTypes resolve(level_enum level, ThreadID *tid);
@@ -207,7 +252,8 @@ public:
     bool IsOn(threadtype_enum type)
 	{ return IsOnBig(resolve(type)); }
     bool IsOn(ThreadID *tid)
-	{ return IsOnBig(resolve(tid)); }
+	{ return true; }
+//	{ return IsOnBig(resolve(tid)); }
 
     void TurnUp(level_enum level, threadtype_enum type)
 	{ TurnUp(resolve(level, type)); }
@@ -228,35 +274,7 @@ public:
 	{ TurnDown(resolve(tid)); }
 };
 
-// ===================================================
-
-// ToDo -- A method to get the current ThreadID number
-
-// in here, without specifying it everywhere.
-// ACE_thread_t threadid = ACE_Thread::self();
-// threadtype_enum Type=MagickObject->ThreadtoTypeMap[ACE_Thread::self()];
-// or to set the Type in the map  eg: MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
-
-class ThreadID {
-private:
-    threadtype_enum internaltype;
-    int number;
-    short indent;
-    wxOutputStream out;
-    
-    mstring logname();
-
-public:
-    ThreadID();
-    ThreadID(threadtype_enum Type, int Number);
-    ~ThreadID();
-    ThreadID assign(threadtype_enum Type, int Number);
-    threadtype_enum type() { return internaltype; }
-    void indentup() { indent++; }
-    void indentdown() { indent--; }
-
-    void WriteOut (const mstring &message);
-};
+extern Trace *TraceObject;
 
 // ===================================================
 
