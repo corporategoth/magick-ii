@@ -2,8 +2,8 @@
 REM Magick IRC Services
 REM
 REM $Id$
-REM (c) 1997-2002 Preston Elder <prez@magick.tm>
-REM (c) 1998-2002 William King <ungod@magick.tm>
+REM "(c) 1997-2002 Preston Elder <prez@magick.tm>"
+REM "(c) 1998-2002 William King <ungod@magick.tm>"
 REM
 REM The above copywright may not be removed under any circumstances,
 REM however it may be added to if any modifications are made to this
@@ -25,7 +25,10 @@ REM N/A
 REM
 REM =======================================================================
 
+IF NOT "%OS%" == "Windows_NT" GOTO CommonStartup
 TITLE Magick IRC Services
+
+:CommonStartup
 REM
 REM First we do the semaphore check, and stamp new binaries.
 REM
@@ -35,39 +38,33 @@ magick_stampkeys.exe magick.exe magick_keygen.exe
 del need_stamp.sem
 
 :Check
+IF NOT "%OS%" == "Windows_NT" GOTO NotService
 REM
 REM Check for the --nofork option (just incase we're on NT)
 REM
-IF "%1" == "--nofork" GOTO NotAsService
+IF "%1" == "--nofork" GOTO NotService
 SHIFT
 IF NOT "%1" == "" GOTO Check
 
-REM
-REM No --nofork specified, so if its NT, we run as a service
-REM
-IF "%OS%" == "Windows_NT" GOTO AsService
-GOTO NotAsService
-
-:AsService
 REM
 REM Run as NT Service
 REM
 ECHO Launching Magick IRC Services ...
 ECHO.
 magick.exe --service insert %*
-IF NOT %ERRORLEVEL% == 0 GOTO Error
+IF NOT "%ERRORLEVEL%" == "0" GOTO Error
 magick.exe --service start %*
-IF NOT %ERRORLEVEL% == 0 GOTO Error
+IF NOT "%ERRORLEVEL%" == "0" GOTO Error
 GOTO End
 
-:NotAsService
+:NotService
 REM
 REM Run sequentially (when --nofork is specified, or non-NT).
 REM
 ECHO Launching Magick IRC Services ...
 ECHO.
-magick.exe %*
-IF NOT %ERRORLEVEL% == 0 GOTO Error
+magick.exe %1 %2 %3 %4 %5 %6 %7 %8 %9
+IF NOT "%ERRORLEVEL%" == "0" GOTO Error
 ECHO.
 ECHO Executed has ended.
 pause
