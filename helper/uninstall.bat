@@ -48,7 +48,8 @@ set ALL_ARGS=%ALL_ARGS% %9
 :start
 copy /Y "%ALL_ARGS%\uninstall2.bat" "%ALL_ARGS%\..\magick_uninstall.bat"
 cls
-"%ALL_ARGS%\..\magick_uninstall.bat" %ALL_ARGS%
+cd "%ALL_ARGS%\.."
+magick_uninstall.bat %ALL_ARGS%
 goto End
 
 :NeedParam

@@ -67,14 +67,22 @@ IF NOT %ERRORLEVEL% == 0 GOTO Error
 IF NOT %ERRORLEVEL% == 0 GOTO Error
 
 :NotService
+IF NOT EXIST "%ALL_ARGS%\Uninst.isu" goto End
+IF "%OS%" == "Windows_NT" GOTO NTDel
+isuninst.exe -f"%ALL_ARGS%\Uninst.isu"
+rem The above does not wait, so can't do the below.
+rem deltree "%ALL_ARGS"
+GOTO End
+
+:NTDel
 uninst.exe -f"%ALL_ARGS%\Uninst.isu"
-IF NOT EXIST "%ALL_ARGS%" goto End
 ECHO You are about to remove all residual files in
 rd /S "%ALL_ARGS%"
 GOTO End
 
 :NeedParam
 ECHO You MUST specify the path where Magick is installed.
+goto Error
 
 :Error
 ECHO.
@@ -83,4 +91,4 @@ pause
 
 :End
 REM Delete ourselves!
-del /Q /F "%ALL_ARGS%\..\magick_uninstall.bat"
+del "%ALL_ARGS%\..\magick_uninstall.bat"
