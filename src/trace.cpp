@@ -26,7 +26,7 @@ Trace::Trace()
 
 	tmap[levelpair(tt_MAIN,Off)]		= TT_Off;
 	tmap[levelpair(tt_MAIN,Stats)]		= G_Stats;
-	tmap[levelpair(tt_MAIN,Source)]		= G_SourceFiles;
+	tmap[levelpair(tt_MAIN,Source)]		= G_Source;
 	tmap[levelpair(tt_MAIN,Functions)]	= G_Functions;
 	tmap[levelpair(tt_MAIN,Locking)]	= G_Locking;
 
@@ -211,8 +211,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     ShortLevel(Functions);
-    if (tid == NULL)
-	tid = mainthread;
+    tid = mainthread;
     tid->indentdown(); 
     if (IsOn(tid)) {
 	mstring message;
@@ -350,8 +349,7 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking() {
     ShortLevel(Locking);
-    if (tid == NULL)
-	tid = mainthread;
+    tid = mainthread;
     if (IsOn(tid)) {
 	if (strlen(name)) {
     	    mstring message;
@@ -373,7 +371,7 @@ T_Locking::~T_Locking() {
 //      || 3: Telnet (Ungod)
 //      || 3: DCC (PreZ)
 //      || 3: ServNet (2)
-//      |- 3 (Socket Timeout)
+//      |- 3: Socket Timeout
 
 // T_Sockets::T_Sockets() {}
 

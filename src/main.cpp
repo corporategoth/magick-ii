@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 {
     Trace internaltrace;
     TraceObject = &internaltrace;
-    TraceObject->TurnSet(0x44444444);
+    TraceObject->TurnSet(0xffffffff); // Full tracing.
     mainthread = new ThreadID(tt_MAIN, 1);
     Start_Time=Now();
 #ifdef MAGICK_HAS_EXCEPTIONS

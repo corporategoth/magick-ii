@@ -27,7 +27,8 @@ Magick::Magick(int inargc, char **inargv)
     config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
-    low_water_mark=100;
+
+    low_water_mark=100;   // To be deciphered at runtime later
     high_water_mark=200;
 }
 
@@ -67,7 +68,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    cerr<<"-dir"<<" requires a paramter."<<endl;
+		    cerr<< argv[i-1] <<" requires a paramter."<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
 		services_dir=argv[i];
@@ -78,7 +79,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    cerr<<"-config"<<" requires a paramter."<<endl;
+		    cerr<< argv[i-1] <<" requires a paramter."<<endl;
 		    RET(MAGICK_RET_ERROR);
 		}
 		config_file=argv[i];
@@ -111,16 +112,19 @@ int Magick::Start()
 	RET(MAGICK_RET_ERROR);
 
     // load the local messages database and internal "default messages"
-    // the external messages are part of a separate ini called language.ini (both local and global can be done here too)
+    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
     LoadExternalMessages();
     StartTime=Now();
     ThreadtoTypeMap[ACE_Thread::self()]=tt_MAIN;
 
-    if(ProgramName=="listnicks")
-	RET(MAGICK_RET_TERMINATE); /*nickserv.listnicks(argv)*/
+    // We should take out this functionality,
+    // This kind of thing is more for the CLIENT
+/*  if(ProgramName=="listnicks")
+	RET(nickserv.listnicks(argv));
     if(ProgramName=="listchans")
-	RET(chanserv.listchans(argv));
+	RET(chanserv.listchans(argv)); */
+
     //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.
 
     Result=doparamparse();

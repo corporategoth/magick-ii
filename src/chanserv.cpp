@@ -52,7 +52,7 @@ void *chanserv_thread_handler(void *level)
 	    if(highestlevel!=1 && ilevel==highestlevel && MagickObject->chanserv.inputbuffer.size() <
 			(highestlevel - 1) * MagickObject->high_water_mark + MagickObject->low_water_mark)
 	    {
-		CP("chanserv has reached lowtide mark, dropping a thread");
+		CP(("chanserv has reached lowtide mark, dropping a thread"));
 		highestlevel--;
 	    }
 	}
@@ -64,7 +64,7 @@ void *chanserv_thread_handler(void *level)
 	//ACE_Thread::yield();
         if(highestlevel == 1 && MagickObject->chanserv.inputbuffer.size() == 0)
         {
-            CP("chanserv has no more messages left going to suspended state...");
+            CP(("chanserv has no more messages left going to suspended state..."));
 	    ACE_hthread_t temp;
 	    ACE_Thread::self(temp);
 	    ACE_Thread::suspend(temp);
@@ -92,12 +92,12 @@ void ChanServ::push_message(const mstring& servicename, const mstring& message)
     // starts up another when the threshhold gets hit
     if(inputbuffer.size()>highestlevel*MagickObject->high_water_mark)
     {
-        CP("chanserv has reached hightide mark, starting a new thread");
+        CP(("chanserv has reached hightide mark, starting a new thread"));
         ACE_Thread::spawn(chanserv_thread_handler,(void *)(highestlevel+1));
     }
     if(highestlevel==1&&MagickObject->chanserv.inputbuffer.size()==1)
     {
-        CP("chanserv has new messages resuming thread...");
+        CP(("chanserv has new messages resuming thread..."));
 	ACE_hthread_t temp;
 	ACE_Thread::self(temp);
 	ACE_Thread::resume(temp);
@@ -111,8 +111,9 @@ void ChanServ::execute(const mstring & servicename, const mstring & message)
     //okay this is the main chanserv command switcher
 }
 
-int ChanServ::listchans(vector<mstring> &args)
+/*int ChanServ::listchans(vector<mstring> &args)
 {
     FT("ChanServ::listchans", ("(vector<mstring>) args"));
     RET(MAGICK_RET_TERMINATE);
 }
+*/

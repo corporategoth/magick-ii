@@ -47,8 +47,9 @@
 // NB: wxCONFIG_IMMUTABLE_PREFIX and wxCONFIG_PATH_SEPARATOR must be valid chars,
 //     but _not_ ']' (group name delimiter)
 inline bool IsValid(char c) {
-	FT("IsValid", (c));
-	RET(isalnum(c) || strchr("@_/-!.*%", c));
+//	FT("IsValid", (c));
+//	RET(isalnum(c) || strchr("@_/-!.*%", c));
+	return (isalnum(c) || strchr("@_/-!.*%", c));
 }
 
 // compare functions for sorting the arrays

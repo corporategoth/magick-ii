@@ -171,7 +171,7 @@ class Trace
     enum TraceTypes {
 	TT_Off		= 0,
 	G_Stats		= 0x00000001,	// CPU/Memory and Global Flags
-	G_SourceFiles	= 0x00000002,	// Config / Language / Bob Script
+	G_Source	= 0x00000002,	// Config / Language / Bob Script
 	G_Functions	= 0x00000004,	// Functions not covered below
 	G_Locking	= 0x00000008,	// All read/write locks
 	NS_Chatter	= 0x00000010,	// Nick & NickServ messages
@@ -205,8 +205,18 @@ class Trace
     };
 
 public:
-    enum level_enum { Off = 0, Stats = 1, Source = 2, Locking = 8, Sockets = 8, Bind = 2,
-	External = 8, Chatter = 1, CheckPoint = 2, Functions = 4, Modify = 8 };
+    enum level_enum { Off = 0,
+    	Stats = 1,
+	Chatter = 1,
+    	Source = 2,
+    	Bind = 2,
+	CheckPoint = 2,
+	Functions = 4,
+    	Locking = 8,
+    	Sockets = 8,
+	External = 8,
+	Modify = 8 };
+
     struct levelname_struct {
 	mstring name;
 	level_enum level;
@@ -223,7 +233,7 @@ private:
     typedef pair<threadtype_enum,level_enum> levelpair;
 
     bool IsOnBig(TraceTypes level)
-	{ return ((level & TraceLevel)!=0); }
+	{ return (level & TraceLevel) ? true : false; }
 
     TraceTypes resolve(level_enum level, threadtype_enum type);
     TraceTypes resolve(level_enum level, ThreadID *tid);
@@ -252,8 +262,7 @@ public:
     bool IsOn(threadtype_enum type)
 	{ return IsOnBig(resolve(type)); }
     bool IsOn(ThreadID *tid)
-	{ return true; }
-//	{ return IsOnBig(resolve(tid)); }
+	{ return IsOnBig(resolve(tid)); }
 
     void TurnUp(level_enum level, threadtype_enum type)
 	{ TurnUp(resolve(level, type)); }
