@@ -2120,7 +2120,7 @@ void Chan_Stored_t::Kick(const mstring & nick, const mstring & kicker)
     // Users shouldnt kick us, but we just rejoin!
     if (Magick::instance().nickserv.IsLive(nick) && Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	if (Join())
+	if (Join() || (Forbidden() && (Mlock_On().Contains("i") || !Mlock_Key().empty())))
 	    Magick::instance().server.JOIN(nick, i_Name);
 	return;
     }
