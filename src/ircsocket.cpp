@@ -132,9 +132,10 @@ int KillOnSignon_Handler::handle_timeout (const ACE_Time_Value &tv, const void *
 {
     FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     // Nick and Reason
-    mstring tmp = *((mstring *) arg);
+    mstring *tmp = (mstring *) arg;
 
-    Parent->server.KILL(Parent->nickserv.FirstName(), tmp.Before(":"), tmp.After(":"));
+    Parent->server.KILL(Parent->nickserv.FirstName(), tmp->Before(":"), tmp->After(":"));
+    delete tmp;
     RET(0);
 }
 
