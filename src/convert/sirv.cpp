@@ -427,6 +427,23 @@ void sirv_load_nick()
                 }
 
                 ni->flags &= ~(sirv_NI_IDENTIFIED | sirv_NI_RECOGNIZED);
+
+#ifdef GETPASS
+                if (ni->flags & sirv_NI_ENCRYPTEDPW) {
+                    /* Bail: it makes no sense to continue with encrypted
+                     * passwords, since we won't be able to verify them */
+                    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
+                          "but encryption disabled, aborting",(
+                          "NickServ", ni->nick));
+                }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+		if (ni->flags & sirv_NI_ENCRYPTEDPW) {
+		    SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		          "but not with the same encryption scheme, aborting",(
+		          "NickServ", ni->nick));
+		}
+#endif
+
                 if (ni->url)
                     ni->url = sirv_read_string(f, sirv_NICKSERV_DB);
                 if (ni->email)
@@ -469,6 +486,23 @@ void sirv_load_nick()
                        SLOG(LM_EMERGENCY, "Read error on $1",( sirv_NICKSERV_DB));
 
                 ni->flags &= ~(sirv_NI_IDENTIFIED | sirv_NI_RECOGNIZED);
+
+#ifdef GETPASS
+                if (ni->flags & sirv_NI_ENCRYPTEDPW) {
+                    /* Bail: it makes no sense to continue with encrypted
+                     * passwords, since we won't be able to verify them */
+                    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
+                          "but encryption disabled, aborting",(
+                          "NickServ", ni->nick));
+                }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+	    if (ni->flags & sirv_NI_ENCRYPTEDPW) {
+		SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		          "but not with the same encryption scheme, aborting",(
+		          "NickServ", ni->nick));
+	    }
+#endif
+
                 if (ni->url)
                     ni->url = sirv_read_string(f, sirv_NICKSERV_DB);
                 if (ni->email)
@@ -563,7 +597,7 @@ void sirv_load_chan()
                 if (1 != fread(ci, sizeof(sirv_ChanInfo), 1, f))
                     SLOG(LM_EMERGENCY, "Read error on $1",( sirv_CHANSERV_DB));
 
-
+#ifdef GETPASS
                 if (ci->flags & sirv_CI_ENCRYPTEDPW) {
                     /* Bail: it makes no sense to continue with encrypted
                      * passwords, since we won't be able to verify them */
@@ -571,6 +605,13 @@ void sirv_load_chan()
                           "but encryption disabled, aborting",(
                           "ChanServ", ci->name));
                 }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+		if (ci->flags & sirv_CI_ENCRYPTEDPW) {
+		    SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		          "but not with the same encryption scheme, aborting",(
+		          "ChanServ", ci->name));
+		}
+#endif
 
                 /* Can't guarantee the file is in a particular order...
                  * (Well, we can, but we don't have to depend on it.) */
@@ -725,7 +766,7 @@ void sirv_load_chan()
                 if (1 != fread(ci, sizeof(sirv_ChanInfo), 1, f))
                     SLOG(LM_EMERGENCY, "Read error on $1",( sirv_CHANSERV_DB));
 
-
+#ifdef GETPASS
                 if (ci->flags & sirv_CI_ENCRYPTEDPW) {
                     /* Bail: it makes no sense to continue with encrypted
                      * passwords, since we won't be able to verify them */
@@ -733,6 +774,14 @@ void sirv_load_chan()
                           "but encryption disabled, aborting",(
                           "ChanServ", ci->name));
                 }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+	    if (ci->flags & sirv_CI_ENCRYPTEDPW) {
+		SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		          "but not with the same encryption scheme, aborting",(
+		          "ChanServ", ci->name));
+	    }
+#endif
+
                 /* Can't guarantee the file is in a particular order...
                  * (Well, we can, but we don't have to depend on it.) */
                 ci->desc = sirv_read_string(f, sirv_CHANSERV_DB);
@@ -1399,6 +1448,15 @@ Nick_Stored_t *Convert::sirv_CreateNickEntry(sirv_NickInfo * ni)
 
 	if (out == NULL)
 	    return NULL;
+
+	if (ni->flags & sirv_NI_ENCRYPTEDPW)
+	{
+	    char pwbuf[33] = {0};
+	    for (int i=0; i<16; i++)
+		sprintf(&pwbuf[i*2], "%02x", ni->pass[i]);
+	    out->i_Password = pwbuf;
+	}
+
 	if (ni->email != NULL && strlen(ni->email))
 	    out->i_Email = mstring(ni->email);
 	if (ni->url != NULL && strlen(ni->url))
@@ -1467,6 +1525,14 @@ Chan_Stored_t *Convert::Convert::sirv_CreateChanEntry(sirv_ChanInfo * ci)
 
 	if (out == NULL)
 	    return NULL;
+
+	if (ci->flags & sirv_CI_ENCRYPTEDPW)
+	{
+	    char pwbuf[33] = {0};
+	    for (int i=0; i<16; i++)
+		sprintf(&pwbuf[i*2], "%02x", ci->founderpass[i]);
+	    out->i_Password = pwbuf;
+	}
 
 	if (ci->email != NULL && strlen(ci->email))
 	    out->i_Email = mstring(ci->email);

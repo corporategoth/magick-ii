@@ -538,6 +538,100 @@ void mHASH(const char *in, const size_t size, char *out)
     ETCB();
 }
 
+#ifdef JP2CRYPT
+void mJP2HASH16(const char *in, const size_t size, char *out)
+{
+    BTCB();
+/* Simple XOR encryption algorithm - Joao Pinto 1999 */
+    char sum=0;
+    int i;
+    strcpy(out,in);
+    for(i=0;i<size;++i) sum+=in[i];
+    out[--i]|=sum;
+    i--;
+    for(;i>=0;--i) {
+        out[i]^=in[i+1];
+        if(out[i]=='\0') out[i]='!'; /* make sure passwords are not truncated*/
+    }
+    ETCB();
+}
+
+void mJP2HASH(const char *in, const size_t size, char *out)
+{
+    BTCB();
+    char *tmp = new char[size];
+    mJP2HASH16(in, size, tmp);
+
+    memset(out, 0, (size * 2) + 1);
+    for (int i = 0; i < size; i++)
+	sprintf(&out[i * 2], "%02x", tmp[i]);
+    delete [] tmp;
+    ETCB();
+}
+#endif
+
+#if defined(DESCRYPT) || defined(MD5CRYPT)
+void mCRYPTHASH(const char *in, char *out, const char *salt)
+{
+    BTCB();
+    memset(out, 0, 35);
+    size_t epos = 2;
+    bool is_md5 = false;
+
+    char mysalt[12];
+    if (salt)
+    {
+	if (strlen(salt) < 2)
+	    return;
+
+	if (memcmp(salt, "$1$", 3)==0)
+	{
+	    if (strlen(salt) < 5)
+		return;
+
+	    epos = 3;
+	    while (salt[epos] != '$' && epos < 12)
+		epos++;
+	    epos++;
+	    if (epos > 12)
+		return;
+
+	    memcpy(mysalt, salt, epos);
+	    is_md5 = true;
+	}
+	else
+	    memcpy(mysalt, salt, 2);
+    }
+    else
+    {
+	size_t i;
+#ifdef MD5CRYPT
+	is_md5 = true;
+	mysalt[0] = '$';
+	mysalt[1] = '1';
+	mysalt[2] = '$';
+	mysalt[11] = '$';
+	for (i=3; i<11; i++)
+#else
+	for (i=0; i<2; i++)
+#endif
+	{
+	    mysalt[i] = (rand() % 64) + 46;
+	    if (mysalt[i] > 57)
+		mysalt[i] += 8;
+	    if (mysalt[i] > 90)
+		mysalt[i] += 7;
+	}
+	epos = i;
+    }
+
+    char *res = crypt(in, mysalt);
+    if (res)
+	memcpy(out, res, epos + (is_md5 ? 22 : 11));
+    ETCB();
+}
+#endif
+
 unsigned int sleep(const mDateTime &in)
 {
 	ACE_Time_Value tv(in.Second(), in.MSecond());

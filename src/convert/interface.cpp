@@ -48,9 +48,6 @@ RCSID(convert_interface_cpp, "@(#)$Id$");
 #include "convert/wrecked.h"
 #include "convert/trircd.h"
 #include "convert/cygnus.h"
-#include "convert/srvx.h"
-#include "convert/daylight.h"
-#include "convert/ircs.h"
 #include "convert/bolivia.h"
 
 void convert_db(convert_t c)

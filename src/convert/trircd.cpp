@@ -786,6 +786,7 @@ void trircd_load_old_nick(trircd_dbFILE *f, int ver)
 	    if (ni->flags & 8)
 		ni->status |= trircd_NS_ENCRYPTEDPW;
 	    ni->flags &= ~0xE000000C;
+#ifdef GETPASS
 	    if (ni->status & trircd_NS_ENCRYPTEDPW) {
 		/* Bail: it makes no sense to continue with encrypted
 		 * passwords, since we won't be able to verify them */
@@ -793,6 +794,14 @@ void trircd_load_old_nick(trircd_dbFILE *f, int ver)
 		          "but encryption disabled, aborting",(
 		          "NickServ", ni->nick));
 	    }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+	    if (ni->status & trircd_NS_ENCRYPTEDPW) {
+		SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		          "but not with the same encryption scheme, aborting",(
+		          "NickServ", ni->nick));
+	    }
+#endif
+
 	    if (old_nickinfo.url)
 		trircd_SAFE(trircd_read_string(&ni->url, f));
 	    if (old_nickinfo.email)
@@ -870,6 +879,8 @@ trircd_NickInfo *trircd_load_nick_record(trircd_dbFILE *f, int ver)
     ni->last_seen = tmp32;
     trircd_SAFE(trircd_read_int16(&ni->status, f));
     ni->status &= ~trircd_NS_TEMPORARY;
+
+#ifdef GETPASS
     if (ni->status & trircd_NS_ENCRYPTEDPW) {
 	/* Bail: it makes no sense to continue with encrypted
 	 * passwords, since we won't be able to verify them */
@@ -877,6 +888,14 @@ trircd_NickInfo *trircd_load_nick_record(trircd_dbFILE *f, int ver)
 	      "but encryption disabled, aborting",(
 	      "NickServ", ni->nick));
     }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+    if (ni->status & trircd_NS_ENCRYPTEDPW) {
+	SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+	      "but not with the same encryption scheme, aborting",(
+	      "NickServ", ni->nick));
+    }
+#endif
+
     /* Store the _name_ of the link target in ni->link for now;
      * we'll resolve it after we've loaded all the nicks */
     trircd_SAFE(trircd_read_string((char **)&ni->link, f));
@@ -1413,6 +1432,8 @@ void trircd_load_old_chan(trircd_dbFILE *f, int ver)
 	    strncpy(ci->last_topic_setter,
 			old_channelinfo.last_topic_setter, trircd_NICKMAX);
 	    ci->last_topic_time = old_channelinfo.last_topic_time;
+
+#ifdef GETPASS
 	    if (ci->flags & trircd_CI_ENCRYPTEDPW) {
 		/* Bail: it makes no sense to continue with encrypted
 		 * passwords, since we won't be able to verify them */
@@ -1420,6 +1441,14 @@ void trircd_load_old_chan(trircd_dbFILE *f, int ver)
 		          "but encryption disabled, aborting",(
 		          "ChanServ", ci->name));
 	    }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+	    if (ci->flags & trircd_CI_ENCRYPTEDPW) {
+		SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+		          "but not with the same encryption scheme, aborting",(
+		          "ChanServ", ci->name));
+	    }
+#endif
+
 	    trircd_SAFE(trircd_read_string(&ci->desc, f));
 	    if (!ci->desc)
 		ci->desc = strdup("");
@@ -1596,6 +1625,8 @@ trircd_ChanInfo *trircd_load_chan_record(trircd_dbFILE *f, int ver)
 	si->expires = tmp32;
 	ci->suspendinfo = si;
     }
+
+#ifdef GETPASS
     if (ci->flags & trircd_CI_ENCRYPTEDPW) {
 	/* Bail: it makes no sense to continue with encrypted
 	 * passwords, since we won't be able to verify them */
@@ -1603,6 +1634,14 @@ trircd_ChanInfo *trircd_load_chan_record(trircd_dbFILE *f, int ver)
 	      "but encryption disabled, aborting",(
 	      "ChanServ", ci->name));
     }
+#elsif defined(JP2CRYPT) || defined(DESCRYPT) || defined(MD5CRYPT)
+    if (ci->flags & trircd_CI_ENCRYPTEDPW) {
+	SLOG(LM_EMERGENCY, "%s: load database: password for %s encrypted "
+	      "but not with the same encryption scheme, aborting",(
+	      "ChanServ", ci->name));
+    }
+#endif
+
     trircd_SAFE(trircd_read_int16(&tmp16, f));
     n_levels = tmp16;
     trircd_reset_levels(ci);
@@ -2407,6 +2446,15 @@ Nick_Stored_t *Convert::trircd_CreateNickEntry(trircd_NickInfo * ni)
 
 	if (out == NULL)
 	    return NULL;
+
+	if (ni->status & trircd_NS_ENCRYPTEDPW)
+	{
+	    char pwbuf[33] = {0};
+	    for (int i=0; i<16; i++)
+		sprintf(&pwbuf[i*2], "%02x", ni->pass[i]);
+	    out->i_Password = pwbuf;
+	}
+
 	if (ni->email != NULL && strlen(ni->email))
 	    out->i_Email = mstring(ni->email);
 	if (ni->url != NULL && strlen(ni->url))
@@ -2536,6 +2584,14 @@ Chan_Stored_t *Convert::Convert::trircd_CreateChanEntry(trircd_ChanInfo * ci)
 
 	if (out == NULL)
 	    return NULL;
+
+	if (ci->flags & trircd_CI_ENCRYPTEDPW)
+	{
+	    char pwbuf[33] = {0};
+	    for (i=0; i<16; i++)
+		sprintf(&pwbuf[i*2], "%02x", ci->founderpass[i]);
+	    out->i_Password = pwbuf;
+	}
 
 	if (ci->successor != NULL && strlen(ci->successor))
 	    out->i_CoFounder = mstring(ci->successor);

@@ -13,6 +13,21 @@
 #undef HASCRYPT
 #endif
 
+/* Define if you want to use JP2 (XOR) for passwords */
+#ifndef JP2CRYPT
+#undef JP2CRYPT
+#endif
+
+/* Define if you want to use the DES form of crypt() */
+#ifndef DESCRYPT
+#undef DESCRYPT
+#endif
+
+/* Define if you want to use the MD5 form of crypt() */
+#ifndef MD5CRYPT
+#undef MD5CRYPT
+#endif
+
 /* Define if your system's locking works */
 #ifndef MAGICK_LOCKS_WORK
 #undef MAGICK_LOCKS_WORK

@@ -3002,10 +3002,20 @@ void Nick_Stored_t::Password(const mstring & in)
 #ifdef GETPASS
 	i_Password = in;
 #else
+#if defined(JP2CRYPT)
+	char *newpass = new char[(in.length() * 2) + 1];
+	mJP2HASH(in.c_str(). in.length(), newpass);
+#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+	char newpass[35];
+	mCRYPTHASH(in.c_str(), newpass, NULL);
+#else
 	char newpass[33];
-
 	mHASH(in.c_str(), in.length(), newpass);
+#endif
 	i_Password = newpass;
+#if defined(JP2CRYPT)
+	delete [] newpass;
+#endif
 #endif
 	MCE(i_Password);
     }
@@ -3022,15 +3032,26 @@ bool Nick_Stored_t::CheckPass(const mstring & password)
     FT("Nick_Stored_t::CheckPass", (password));
     if (Host().empty())
     {
+	RLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_Password"));
 #ifdef GETPASS
 	mstring check(password);
 #else
-	char chkpass[33];
-
-	mHASH(password.c_str(), password.length(), chkpass);
-	mstring check(chkpass);
+#if defined(JP2CRYPT)
+	char *newpass = new char[(password.length() * 2) + 1];
+	mJP2HASH(password.c_str(). password.length(), newpass);
+#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+	char newpass[35];
+	mCRYPTHASH(password.c_str(), newpass, i_Password.empty() ? NULL : i_Password.c_str());
+#else
+	char newpass[33];
+	mHASH(password.c_str(), password.length(), newpass);
 #endif
-	if_RLOCK ((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_Password"), i_Password == check)
+	mstring check(newpass);
+#if defined(JP2CRYPT)
+	delete [] newpass;
+#endif
+#endif
+	if (i_Password == check)
 	{
 	    RET(true);
 	}
@@ -4739,17 +4760,44 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	    NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
 	}
 #else
+	int hash = atoi(pElement->Attrib("hash"));
 	// If password was stored clear, but we use one-way, change it.
-	if (!atoi(pElement->Attrib("hash")))
+	if (!hash)
 	{
 	    mstring clearpass;
-
 	    pElement->Retrieve(clearpass);
-	    char newpass[33];
 
+#if defined(JP2CRYPT)
+	    char *newpass = new char[(clearpass.length() * 2) + 1];
+	    mJP2HASH(clearpass.c_str(). clearpass.length(), newpass);
+#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+	    char newpass[35];
+	    mCRYPTHASH(clearpass.c_str(), newpass, NULL);
+#else
+	    char newpass[33];
 	    mHASH(clearpass.c_str(), clearpass.length(), newpass);
+#endif
 	    i_Password = newpass;
+#if defined(JP2CRYPT)
+	    delete [] newpass;
+#endif
 	}
+#if defined(JP2CRYPT)
+	else if (hash != 2)
+	{
+	    NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
+	}
+#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+	else if (hash != 3)
+	{
+	    NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
+	}
+#else
+	else if (hash != 1)
+	{
+	    NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
+	}
+#endif
 #endif
 	else
 	    pElement->Retrieve(i_Password);
@@ -4914,7 +4962,13 @@ void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 #ifdef GETPASS
 	attr["hash"] = "0";
 #else
+#if defined(JP2CRYPT)
+	attr["hash"] = "2";
+#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+	attr["hash"] = "3";
+#else
 	attr["hash"] = "1";
+#endif
 #endif
 	pOut->WriteElement(tag_Password, i_Password, attr);
     }

@@ -691,17 +691,41 @@ void ptlink_load_nick()
 		    ni->birth_date = tmp32;
 		} else ni->birth_date = 0;
 		ptlink_SAFE(ptlink_read_int16(&ni->status, f));
-		ni->status &= ~ptlink_NS_TEMPORARY;		
-		if (ni->status & ptlink_NS_ENCRYPTEDPW)
-		{
-		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted " "but encryption disabled, aborting",
-			("NickServ", ni->nick));
-		}
+		ni->status &= ~ptlink_NS_TEMPORARY;
 		if(sver>4) {
 		    ptlink_SAFE(ptlink_read_int16(&tmp16, f));
 		    ni->crypt_method = tmp16;
 		} else
 		    ni->crypt_method = (ni->status & ptlink_NS_ENCRYPTEDPW) ? 1 : 0;
+
+#ifdef GETPASS
+		if (ni->crypt_method)
+		{
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
+			"but encryption disabled, aborting",
+			("NickServ", ni->nick));
+		}
+#else
+#if !defined(JP2CRYPT)
+		if (ni->crypt_method == 1)
+		{
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 uses the "
+			"JP2 encryption scheme, but magick is not compiled with JP2 "
+			"as our password encryption method of choice.  Re-compile with "
+			"the --enable-jp2-crypt option to fix.", ("NickServ", ni->nick));
+		}
+#endif
+#if !defined(DESCRYPT)
+		if (ni->crypt_method == 2)
+		{
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 uses the "
+			"DES crypt() encryption scheme, but magick is not compiled with "
+			"DES crypt() as our password encryption method of choice.  Re-compile "
+			"with the --enable-des-crypt option to fix.", ("NickServ", ni->nick));
+		}
+#endif
+#endif
+
 		if(sver<3) {
 		    ni->news_mask = ptlink_NM_ALL;
 		    ni->news_status = ptlink_NW_WELCOME;
@@ -959,19 +983,40 @@ void ptlink_load_chan()
 		ptlink_SAFE(ptlink_read_int32(&tmp32, f));
 		ci->last_topic_time = tmp32;
 		ptlink_SAFE(ptlink_read_int32(&ci->flags, f));		
-		if (ci->flags & ptlink_CI_ENCRYPTEDPW)
-		{
-		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted " "but encryption disabled, aborting",			("ChanServ", ci->name));
-		}
 		if(sver>5) {
 		    ptlink_SAFE(ptlink_read_int16(&tmp16, f));
 		    ci->crypt_method = tmp16;		
 		} else
 		    ci->crypt_method = (ci->flags & ptlink_CI_ENCRYPTEDPW) ? 1 : 0;
-		if (!ci->crypt_method) {
-		    SLOG(LM_EMERGENCY, "%s: load database: Can't encrypt %s password!",(
-				"ChanServ", ci->name));
+
+#ifdef GETPASS
+		if (ci->crypt_method)
+		{
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 encrypted "
+			"but encryption disabled, aborting",
+			("ChanServ", ci->name));
 		}
+#else
+#if !defined(JP2CRYPT)
+		if (ci->crypt_method == 1)
+		{
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 uses the "
+			"JP2 encryption scheme, but magick is not compiled with JP2 "
+			"as our password encryption method of choice.  Re-compile with "
+			"the --enable-jp2-crypt option to fix.", ("ChanServ", ci->name));
+		}
+#endif
+#if !defined(DESCRYPT)
+		if (ci->crypt_method == 2)
+		{
+		    SLOG(LM_EMERGENCY, "$1: load database: password for $2 uses the "
+			"DES crypt() encryption scheme, but magick is not compiled with "
+			"DES crypt() as our password encryption method of choice.  Re-compile "
+			"with the --enable-des-crypt option to fix.", ("ChanServ", ci->name));
+		}
+#endif
+#endif
+
 		if (ci->flags & ptlink_CI_DROPPED)    {
 		    ptlink_SAFE(ptlink_read_int32(&tmp32, f));
 		    ci->drop_time = tmp32;		
@@ -1513,6 +1558,21 @@ Nick_Stored_t *Convert::ptlink_CreateNickEntry(ptlink_NickInfo * ni)
 
 	if (out == NULL)
 	    return NULL;
+	switch (ni->crypt_method)
+	{
+	case 1:
+	case 2:
+	    out->i_Password = ni->pass;
+	    break;
+	case 3:
+	    {
+		char pwbuf[33] = {0};
+		for (int i=0; i<16; i++)
+		    sprintf(&pwbuf[i*2], "%02x", ni->pass[i]);
+		out->i_Password = pwbuf;
+	    }
+	    break;
+	}
 	if (ni->email != NULL && strlen(ni->email))
 	    out->i_Email = mstring(ni->email);
 	if (ni->url != NULL && strlen(ni->url))
@@ -1600,6 +1660,21 @@ Chan_Stored_t *Convert::Convert::ptlink_CreateChanEntry(ptlink_ChanInfo * ci)
 	if (out == NULL)
 	    return NULL;
 
+	switch (ci->crypt_method)
+	{
+	case 1:
+	case 2:
+	    out->i_Password = ci->founderpass;
+	    break;
+	case 3:
+	    {
+		char pwbuf[33] = {0};
+		for (i=0; i<16; i++)
+		    sprintf(&pwbuf[i*2], "%02x", ci->founderpass[i]);
+		out->i_Password = pwbuf;
+	    }
+	    break;
+	}
 	if (ci->successor != NULL && strlen(ci->successor))
 	    out->i_CoFounder = mstring(ci->successor);
 	if (ci->email != NULL && strlen(ci->email))

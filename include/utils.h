@@ -54,6 +54,14 @@ void mHASH16(const char *in, const size_t size, char *out);
 void mHASH(const char *in, const size_t size, char *out);
 unsigned int sleep(const mDateTime &in);
 
+#if defined(JP2CRYPT)
+void mJP2HASH16(const char *in, const size_t size, char *out);
+void mJP2HASH(const char *in, const size_t size, char *out);
+#endif
+#if defined(DESCRYPT) || defined(MD5CRYPT)
+void mCRYPTHASH(const char *in, char *out, const char *salt = NULL);
+#endif
+
 mstring sysinfo_node();
 mstring sysinfo_type();
 mstring sysinfo_rel();

@@ -224,6 +224,30 @@ AC_ARG_WITH(zinc, [  --with-zinc=dir         Location of compression include fil
 
 dnl ====================================================
 
+dnl First we check if we were GIVEN the location of CRYPT.
+dnl If we were (ie. crtpt) we need to add -L<directory>
+dnl and -l<file> to the LIBS paramater.
+
+AC_ARG_WITH(zlib, [  --with-cryptlib=file    Location of crypt library file],
+  [if test -f ${withval}; then
+    libdir="`dirname ${withval}`"
+    libfile="`echo \`basename ${withval}\` | \
+	sed -e s,\^lib,, -e s,\.a$,, -e s,\.so$,, \
+	    -e s,\.sl$,, -e s,\.lib$,, -e s,\.dll$,,`"
+    if test ! "x$libdir" = "x$libfile"; then
+      LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
+      export LD_LIBRARY_PATH
+      LIBS="$LIBS -L${libdir}"
+    fi
+    if test ! "x$libfile" = "x"; then
+      LIBS="$LIBS -l$libfile"
+    fi
+    libcrypt=1
+    echo "checking for $libfile ... (specified) yes"
+  fi])
+
+dnl ====================================================
+
 AC_ARG_WITH(locknode, [  --with-locknode=node    Nodename to lock binary for],
   [BUILD_NODE=${withval}])
 
@@ -325,7 +349,6 @@ if test 0$libz -eq 0; then
   fi
 fi
 
-
 if test 0$libz -eq 0; then
   echo "
 The Z compression library (zlib) is required to compile and
@@ -388,6 +411,51 @@ if test "$crypt" = "true"; then
   AC_DEFINE(HASCRYPT)
 fi
 
+AC_ARG_ENABLE(jp2-crypt, [  --enable-jp2-crypt      Use the JP2 (XOR) for passwords
+  --disable-jp2-crypt     Do not use JP2 (XOR) for passwords (default)],
+  [case "${enableval}" in
+    yes) jp2crypt=true;;
+    no) jp2crypt=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for JP2-CRYPT option);;
+  esac], [jp2crypt=false])
+if test "$jp2crypt" = "true"; then
+  if test $descrypt = "true" -o $md5crypt = "true"; then
+    echo "JP2, DES and MD5 password enctyption schemes are mutually exclusive."
+    exit 1
+  fi
+  AC_DEFINE(JP2CRYPT)
+fi
+
+AC_ARG_ENABLE(des-crypt, [  --enable-des-crypt      Use the DES form of the crypt() system call
+  --disable-des-crypt     Do not use the crypt() system call (default)],
+  [case "${enableval}" in
+    yes) descrypt=true;;
+    no) descrypt=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for DES-CRYPT option);;
+  esac], [descrypt=false])
+if test "$descrypt" = "true"; then
+  if test $jp2crypt = "true" -o $md5crypt = "true"; then
+    echo "JP2, DES and MD5 password enctyption schemes are mutually exclusive."
+    exit 1
+  fi
+  AC_DEFINE(DESCRYPT)
+fi
+
+AC_ARG_ENABLE(md5-crypt, [  --enable-md5-crypt      Use the MD5 form of the crypt() system call
+  --disable-md5-crypt     Do not use the crypt() system call (default)],
+  [case "${enableval}" in
+    yes) md5crypt=true;;
+    no) md5crypt=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for DES-CRYPT option);;
+  esac], [md5crypt=false])
+if test "$md5crypt" = "true"; then
+  if test $jp2crypt = "true" -o $descrypt = "true"; then
+    echo "JP2, DES and MD5 password enctyption schemes are mutually exclusive."
+    exit 1
+  fi
+  AC_DEFINE(MD5CRYPT)
+fi
+
 AC_ARG_ENABLE(trace, [  --enable-trace          Enable TRACE code (code bloat)
   --disable-trace         Disable TRACE code (default)],
   [case "${enableval}" in
@@ -419,6 +487,10 @@ AC_ARG_ENABLE(getpass, [  --enable-getpass        Enable GETPASS
     *) AC_MSG_ERROR(bad value ${enableval} for GETPASS option);;
   esac], [getpass=false])
 if test "$getpass" = "true"; then
+  if test $jp2crypt = "true" -o $descrypt = "true" -o $md5crypt = "true"; then
+    echo "JP2, DES and MD5 password enctyption schemes do not make sense with GETPASS."
+    exit 1
+  fi
   AC_DEFINE(GETPASS)
 fi
 
@@ -506,6 +578,35 @@ if true; then
   AC_DEFINE(HAVE_MEM_FUN_CONST)
 else
   AC_DEFINE(HAVE_MEM_FUN1)
+fi
+
+dnl ====================================================
+
+dnl OK, CRYPTLIB wasnt specified.  See if we can find
+dnl it in the LD_LIBRARY_PATH, if not, error out.
+
+if test $descrypt = true -o $md5crypt = true; then
+  if test 0$libcrypt -eq 0; then
+    AC_CHECK_LIB(c, crypt,
+      [libcrypt=1])
+    if test 0$libcrypt -eq 0; then
+      AC_CHECK_LIB(crypt, crypt,
+        [LIBS="$LIBS -lcrypt"
+        libcrypt=1])
+    fi
+  fi
+
+  if test 0$libcrypt -eq 0; then
+    echo "
+No library could be found containing the crypt() system
+call, however you have specified you wish to use it for
+encryption of passwords in Magick (via. the
+--enable-des-crypt or --enable-md5-crypt options).  If
+you do indeed have a library containing the crypt() system
+call, please specify the library location with the option
+--with-zlib=<dir>."
+  exit 1
+  fi
 fi
 
 dnl ====================================================

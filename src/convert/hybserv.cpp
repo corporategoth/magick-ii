@@ -586,6 +586,12 @@ Nick_Stored_t *Convert::hybserv_CreateNickEntry(hybserv_NickInfo * ni)
 	if (out == NULL)
 	    return NULL;
 
+	// If we're using special encoding, assume the source medium did.
+	// We have no real way of telling if they really did.
+#if defined(DESCRYPT) || defined(MD5CRYPT)
+	out->i_Password = ni->password;
+#endif
+
 	out->i_LastRealName = ni->nick;
 	if (!ni->lastu.empty() && !ni->lasth.empty())
 	    out->i_LastMask = ni->lastu + "@" + ni->lasth;
@@ -687,6 +693,12 @@ Chan_Stored_t *Convert::hybserv_CreateChanEntry(hybserv_ChanInfo * ci)
 	    new Chan_Stored_t(ci->name, ci->founder, ci->password, ci->name);
 	if (out == NULL)
 	    return NULL;
+
+	// If we're using special encoding, assume the source medium did.
+	// We have no real way of telling if they really did.
+#if defined(DESCRYPT) || defined(MD5CRYPT)
+	out->i_Password = ci->password;
+#endif
 
 	if (!ci->successor.empty())
 	    out->i_CoFounder = ci->successor;
