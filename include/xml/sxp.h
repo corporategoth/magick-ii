@@ -93,7 +93,7 @@ namespace SXP
     interface IPersistObj;
     struct Tag;
 
-    template < class T > interface IFilePointer
+      template < class T > interface IFilePointer
     {
 	inline FILE *FP()
 	{
@@ -107,14 +107,14 @@ namespace SXP
 
     template < class T > class IFilePrint
     {
-   public:
+      public:
 	inline void Print(const char *format, ...)
 	{
 	    va_list argptr;
 
-	      va_start(argptr, format);
-	      static_cast < T * > (this)->PrintV(format, argptr);
-	      va_end(argptr);
+	    va_start(argptr, format);
+	    static_cast < T * > (this)->PrintV(format, argptr);
+	    va_end(argptr);
 	}
 	inline void PrintV(const char *format, va_list argptr)
 	{
@@ -128,7 +128,7 @@ namespace SXP
 
     interface IData
     {
-	virtual ~IData();
+	virtual ~ IData();
 	virtual const char *Data() const = 0;
     };
 
@@ -178,15 +178,15 @@ namespace SXP
 
     interface IElement : public IDataInput
     {
-	virtual ~IElement()
+	virtual ~ IElement()
 	{
 	}
 	virtual const char *Name();
 	virtual const char *Attrib(const char *attrName);
 
-	virtual int IsA(const char *name);
-	virtual int IsA(Tag & t);
-	virtual int AttribIs(const char *attrName, const char *val);
+	virtual bool IsA(const char *name);
+	virtual bool IsA(Tag & t);
+	virtual bool AttribIs(const char *attrName, const char *val);
     };
 
     // The user classes need only this much access to the parser:
@@ -224,12 +224,12 @@ namespace SXP
 
     class TagHashtable
     {
-   private:
+      private:
 	TagHashtable()
 	{
 	}
-   public:
-	inline static TagHashtable &TagHT()
+      public:
+	  inline static TagHashtable &TagHT()
 	{
 	    if (g_pHashTable)
 	    {
@@ -307,14 +307,14 @@ namespace SXP
     // IOutStream to an stdio file.
     class CFileOutStream : public IOutStreamT < CFileOutStream >
     {
-   public:
+      public:
 	FILE * m_fp;
-   private:
+      private:
 	int m_nIndent;
 
 	// ugly...
-   public:
-	inline FILE *FP()
+      public:
+	  inline FILE * FP()
 	{
 	    return m_fp;
 	}
@@ -382,12 +382,12 @@ namespace SXP
 	char *buffer;
 
 	void ExpandBuf();
-   public:
-	virtual void Print(const char *format, ...);
+      public:
+	  virtual void Print(const char *format, ...);
 	virtual void PrintV(const char *format, va_list argptr);
 	virtual void Indent();
 	  MOutStream();
-	virtual ~MOutStream();
+	  virtual ~ MOutStream();
 	inline size_t BufSize()
 	{
 	    return buf_cnt;
@@ -413,7 +413,7 @@ namespace SXP
 	dict m_Attribs;
 	unsigned long m_dwTagHash;
 
-   public:
+      public:
 	  CElement()
 	{
 	}
@@ -455,11 +455,11 @@ namespace SXP
 	{
 	    return (m_Attribs[attrName]).c_str();
 	}
-	inline int AttribIs(const char *attrName, const char *val)
+	virtual bool AttribIs(const char *attrName, const char *val)
 	{
 	    return ((m_Attribs[attrName]).compare(val) == 0);
 	}
-	inline int IsA(Tag & t)
+	virtual bool IsA(Tag & t)
 	{
 	    if (m_dwTagHash == (unsigned long) ~0)
 	    {
@@ -467,9 +467,9 @@ namespace SXP
 	    }
 	    return (t.dw == m_dwTagHash);
 	}
-	inline int IsA(const char *pchName)
+	virtual bool IsA(const char *pchName)
 	{
-	    return (!m_strName.compare(pchName));
+	    return (m_strName.compare(pchName) == 0);
 	}
     };
 
@@ -515,11 +515,11 @@ namespace SXP
 	int m_nErrorLine, m_nErrorCol;	// position of error as reported by expat
 	mstring m_strError;
 
-   public:
+      public:
 	// The parser begins feeding element events into a "root" object -
 	// typically an object factory of sorts
 	  CParser(IPersistObj * pRoot);
-	virtual ~CParser()
+	  virtual ~ CParser()
 	{
 	    DoShutdown();
 	}

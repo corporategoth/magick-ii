@@ -59,24 +59,24 @@ namespace SXP
 
     const char *IElement::Name()
     {
-	return 0;
+	return "";
     }
     const char *IElement::Attrib(const char *attrName)
     {
-	return 0;
+	return "";
     }
 
-    int IElement::IsA(const char *name)
+    bool IElement::IsA(const char *name)
     {
-	return 0;
+	return false;
     }
-    int IElement::IsA(Tag & t)
+    bool IElement::IsA(Tag & t)
     {
-	return 0;
+	return false;
     }
-    int IElement::AttribIs(const char *attrName, const char *val)
+    bool IElement::AttribIs(const char *attrName, const char *val)
     {
-	return 0;
+	return false;
     }
 
     ErrCode RemapError(int expat_err)
