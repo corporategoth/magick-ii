@@ -212,8 +212,7 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
-    ACE_Sig_Action sigpipe (ACE_SignalHandler (SIG_IGN), SIGPIPE);
-    ACE_UNUSED_ARG (sigpipe);
+    ACE_Reactor::instance()->register_handler(SIGPIPE,signalhandler);
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
     ACE_Reactor::instance()->register_handler(SIGQUIT,signalhandler);
@@ -322,6 +321,9 @@ int Magick::Start()
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->remove_handler(SIGTERM);
 #endif
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    ACE_Reactor::instance()->remove_handler(SIGPIPE);
+#endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
     ACE_Reactor::instance()->remove_handler(SIGQUIT);
 #endif
@@ -354,7 +356,7 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGALRM);
 #endif
 #ifdef SIGCHLD
-    ACE_Reactor::instance()->remove_handler(SIGHLD);
+    ACE_Reactor::instance()->remove_handler(SIGCHLD);
 #endif
 #ifdef SIGWINCH
     ACE_Reactor::instance()->remove_handler(SIGWINCH);
@@ -1008,6 +1010,10 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
 	Parent->shutdown(true);	// Temp, we just kill on CTRL-C
+	break;
+#endif
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    case SIGPIPE:	// Ignore
 	break;
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
