@@ -25,6 +25,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/10/11 08:38:10  prez
+** Changes so mstring works better ... kinda
+**
 ** Revision 1.50  2000/10/10 11:47:50  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -206,7 +209,7 @@ class mstring
 
 public:
     mstring()
-	{ i_len = 0; i_str = NULL; }
+	{ i_str = NULL; i_len = 0; }
     mstring(const mstring &in)
 	{ i_str = NULL; copy(in); }
     mstring(const string &in)
