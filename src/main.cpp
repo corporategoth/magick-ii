@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     Trace::levelname.push_back(Trace::levelname_struct("CHAT*", Trace::Chatter));
     Trace::levelname.push_back(Trace::levelname_struct("CHE*", Trace::CheckPoint));
     Trace::levelname.push_back(Trace::levelname_struct("C*P*", Trace::CheckPoint));
-    Trace::levelname.push_back(Trace::levelname_struct("COM*", Trace::Comments));
+    Trace::levelname.push_back(Trace::levelname_struct("COM*", Trace::Comment));
     Trace::levelname.push_back(Trace::levelname_struct("EXC*", Trace::Exception));
     Trace::levelname.push_back(Trace::levelname_struct("F*NC*", Trace::Function));
     Trace::levelname.push_back(Trace::levelname_struct("MOD*", Trace::Modify));
