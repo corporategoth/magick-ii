@@ -25,6 +25,10 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.37  2000/08/03 13:06:29  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -75,12 +79,6 @@ class Reconnect_Handler : public ACE_Event_Handler
 public:
     virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
     mstring Reconnect_Handler::FindNext(mstring server);
-};
-
-class KillOnSignon_Handler : public ACE_Event_Handler
-{
-public:
-    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class ToBeSquit_Handler : public ACE_Event_Handler

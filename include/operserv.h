@@ -25,6 +25,10 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.40  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -105,6 +109,7 @@ private:
     unsigned int clone_trigger;
     unsigned long clone_time;
     mstring clone_akill;
+    unsigned long clone_akilltime;
     unsigned long flood_time;
     unsigned int flood_msgs;
     unsigned long ignore_time;
@@ -204,6 +209,7 @@ public:
     unsigned int Clone_Trigger()    { return clone_trigger; }
     unsigned long Clone_Time()	    { return clone_time; }
     mstring Clone_Akill()	    { return clone_akill; }
+    unsigned long Clone_AkillTime() { return clone_akilltime; }
     unsigned long Flood_Time()	    { return flood_time; }
     unsigned int Flood_Msgs()	    { return flood_msgs; }
     unsigned long Ignore_Time()	    { return ignore_time; }
@@ -277,7 +283,9 @@ public:
     virtual void execute(const mstring & message);
 
     static void do_Help(mstring mynick, mstring source, mstring params);
+#ifdef MAGICK_TRACE_WORKS
     static void do_Trace(mstring mynick, mstring source, mstring params);
+#endif
     static void do_Mode(mstring mynick, mstring source, mstring params);
     static void do_Qline(mstring mynick, mstring source, mstring params);
     static void do_UnQline(mstring mynick, mstring source, mstring params);
@@ -288,6 +296,7 @@ public:
     static void do_Update(mstring mynick, mstring source, mstring params);
     static void do_Shutdown(mstring mynick, mstring source, mstring params);
     static void do_Reload(mstring mynick, mstring source, mstring params);
+    static void do_Signon(mstring mynick, mstring source, mstring params);
     static void do_Unload(mstring mynick, mstring source, mstring params);
     static void do_Jupe(mstring mynick, mstring source, mstring params);
     static void do_On(mstring mynick, mstring source, mstring params);

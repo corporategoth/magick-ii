@@ -447,6 +447,7 @@ x (cont) 4 hard-coded committees, being SADMIN for services admins (hard-coded
 	this, 5 levels is enough, SADMIN, SOP, ADMIN, OPER, and NONE).  Its
 	possible to say allow statistical information only to people who are
 	not on the OPER list.
+  > This can be done via. scripted language by re-binding commands to committees.
 
 - More online statistics (including CPU load, memory usage of magick, CPU usage
 	of magick -- memory usage of various databases, etc).

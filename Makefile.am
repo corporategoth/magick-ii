@@ -1,7 +1,6 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
 SUBDIRS = docs src include 
-
 EXTRA_DIST = magick.kdevprj AUTHORS COPYING ChangeLog INSTALL README TODO magick.lsm what.c
 
 ####### kdevelop will overwrite this part!!! (end)############

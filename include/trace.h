@@ -25,6 +25,10 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.60  2000/07/30 09:04:04  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -58,16 +62,69 @@ static const char *ident_trace_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-#include "string.h"
 #include "variant.h"
+#include "mstring.h"
+
+enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
+extern mstring threadname[tt_MAX];
+extern unsigned short makehex(mstring SLevel);
+enum locktype_enum { L_Read, L_Write, L_Mutex };
+
+class shutdown_MO : public ACE_Method_Object
+{
+public:
+    virtual int call()
+    {
+	return -1;
+    }
+};
+
+class ThreadID {
+private:
+    threadtype_enum t_internaltype;
+    short t_indent;
+    mstring t_lastfunc;
+    list<mstring> messages;
+    
+public:
+    ThreadID();
+    ThreadID(threadtype_enum Type);
+    ~ThreadID();
+    mstring LastFunc() { return t_lastfunc; }
+    void LastFunc(mstring in) { t_lastfunc = in; }
+    void assign(threadtype_enum Type);
+    threadtype_enum type() { return t_internaltype; }
+    void indentup() { t_indent++; }
+    void indentdown() { if (t_indent>0) t_indent--; }
+    short indent() { return t_indent; }
+    mstring logname();
+    void WriteOut (const mstring &message);
+    void Flush();
+};
+
+inline void do_nothing() {}
+
+#ifndef MAGICK_TRACE_WORKS
+
+#define FT(x,y) { ThreadID *tid = mThread::find(); if (tid != NULL) tid->LastFunc(x); }
+#define NFT(x) { ThreadID *tid = mThread::find(); if (tid != NULL) tid->LastFunc(x); }
+#define RET(x) return x
+#define NRET(x,y) return y
+#define DRET(x) return x
+#define NDRET(x,y) return y
+#define CP(x) do_nothing()
+#define COM(x) do_nothing()
+#define MB(x) do_nothing()
+#define ME(x) do_nothing()
+#define CH(x,y) do_nothing()
+#define FLUSH() do_nothing()
+
+#else /* MAGICK_TRACE_WORKS */
 
 // NOTE: The following classes cannot be traced:
 // mstring
 // mVariant and mVarArray (AOC)
 // mDateTime
-
-inline void do_nothing() {}
 
 // FunctionTrace -- FT("...", ());
 #define FT(x,y)  mVarArray __ft_VarArray y; T_Functions __ft(x, __ft_VarArray)
@@ -84,17 +141,11 @@ inline void do_nothing() {}
     __ft.return_value=("(" + mstring(#x) + ") " + y).c_str(); return z;}
 #endif
 
-#ifdef MAGICK_TRACE_WORKS
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
 
 // Comments definition -- COM(());
 #define COM(x) { T_Comments __com x; }
-
-#else
-#define CP(x) do_nothing()
-#define COM(x) do_nothing()
-#endif
 
 // Modify begin -- MB(AOC());
 #define MB(x) mVarArray __mb_VarArray x; T_Modify __mod(__mb_VarArray)
@@ -132,9 +183,6 @@ inline void do_nothing() {}
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
-extern mstring threadname[tt_MAX];
-extern unsigned short makehex(mstring SLevel);
 extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 
 // Trace Codes
@@ -158,37 +206,6 @@ extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 //   ()  Trace Level Changes.
 
 // ===================================================
-
-class shutdown_MO : public ACE_Method_Object
-{
-public:
-    virtual int call()
-    {
-	return -1;
-    }
-};
-
-class Magick;
-
-class ThreadID {
-private:
-    threadtype_enum t_internaltype;
-    short t_indent;
-    list<mstring> messages;
-    
-public:
-    ThreadID();
-    ThreadID(threadtype_enum Type);
-    ~ThreadID();
-    void assign(threadtype_enum Type);
-    threadtype_enum type() { return t_internaltype; }
-    void indentup() { t_indent++; }
-    void indentdown() { if (t_indent>0) t_indent--; }
-    short indent() { return t_indent; }
-    mstring logname();
-    void WriteOut (const mstring &message);
-    void Flush();
-};
 
 class Trace
 {
@@ -282,6 +299,7 @@ class T_Functions : public Trace
 {
     ThreadID *tid;
     mstring m_name;
+    mstring i_prevfunc;
 
     T_Functions() {}
 
@@ -352,17 +370,13 @@ public:
 // ===================================================
 
 class T_Locking : public Trace {
-public:
-    enum type_enum { Read, Write, Mutex };
-
-private:
     ThreadID *tid;
-    type_enum locktype;
+    locktype_enum locktype;
     mstring name;
 
 public:
     T_Locking() {}
-    void open(T_Locking::type_enum ltype, mstring lockname);
+    void open(locktype_enum ltype, mstring lockname);
     ~T_Locking();
 
 };
@@ -379,5 +393,5 @@ public:
 
 // class T_External : public Trace {};
 
-
+#endif /* MAGICK_TRACE_WORKS */
 #endif /* _TRACE_H */

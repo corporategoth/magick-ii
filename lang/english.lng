@@ -209,6 +209,9 @@ HTM_OFF            =Resuming standard operation...
 HTM_OFF_FORCE      =Resuming standard operation forced by %s...
 HTM_SET            =HTM threshold has been set to %s/s by %s.
 HTM                =Cannot execute command %s, currently in high-traffic mode - Please try again later.
+SIGNAL_LOAD        =Recieved signal #%d, server configuration file reloaded.
+SIGNAL_SAVE        =Recieved signal #%d, database save triggered.
+SIGNAL_KILL        =PANIC!  Recieved signal #%d, Last function was %s, shutting down!
 
 ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.
@@ -800,6 +803,7 @@ UPDATE             =Saving databases.
 SHUTDOWN           =Shutting down ...
 RELOAD             =Configuration file reloaded.
 RELOAD_FAIL        =WARNING: Could not read configuration file.
+SIGNON             =Signed on all non-active services clients.
 UNLOAD             =Language %s has been unloaded.
 JUPE               =Server %s has been juped.
 ONOFF              =Services have been turned %s.

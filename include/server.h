@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.45  2000/08/02 20:08:56  prez
 ** Minor code cleanups, added ACE installation instructions, updated the
 ** suggestions file and stopped people doing a whole bunch of stuff to
@@ -153,7 +157,7 @@ class Protocol
      * 1001 = NICK nick hops signon-time user host server service :realname
      * 1002 = NICK nick hops signon-time user host server service althost :realname
      * 1003 - NICK nick hops signon-time user host althost server service :realname
-     * 1004 = NICK nick hops signon-time mode user host server :realname
+     * 1004 = NICK nick hops signon-time mode user host server service :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */
@@ -247,7 +251,6 @@ class NetworkServ : public mBase
 private:
     void raw(mstring send);
     void sraw(mstring send);
-    void SignOnAll();
     set<mstring> WaitIsOn;
     map<mstring, pair<unsigned int, mDateTime> > ReDoMessages;
 
@@ -267,6 +270,7 @@ private:
 
     void OurUplink(mstring server);
 public:
+    void SignOnAll();
     Protocol proto;
     size_t UserMax();
     map<mstring,Server> ServerList;

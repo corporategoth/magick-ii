@@ -306,7 +306,22 @@ This should only be used if Magick does not detect a threads library.
 
 `--enable-des'
 `--disable-des'
-     This turns on or off encryption support in Magick.
+     This turns on or off encryption support in Magick.  Some versions
+of Magick may not be distributed with DES encryption, in which case you
+will have to download it and enable it to use it.
+
+`--enable-trace'
+`--disable-trace'
+     This turns on or off the internal tracing functions of Magick.  This
+can cause problems right now with large databases.  It is therefore by
+default disabled.
+
+`--enable-locks'
+`--disable-locks'
+     This turns on or off thread locking.  Thread locking is essential
+for ensuring only one thread can access a bit of data at once.  On some
+bad thread implementations, this will stop segfaults, however it is a
+big target asking for data corruption turning this off.
 
 `--with-keylen=size'
      This is the maximum size of the key file, and the input key that

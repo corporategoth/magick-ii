@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.35  2000/07/30 09:04:04  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -62,7 +66,6 @@ static const char *ident_lockable_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
 #include "mstring.h"
 #include "trace.h"
 
@@ -74,30 +77,32 @@ class mLOCK
     ACE_Recursive_Thread_Mutex *mlock;
     ACE_RW_Thread_Mutex *rwlock;
     ACE_RW_Thread_Mutex *lock[MAX_LOCKS-1];
+    locktype_enum last_type;
+#ifdef MAGICK_TRACE_WORKS
     T_Locking tlock[MAX_LOCKS];
-    T_Locking::type_enum last_type;
+#endif
 
     int count;
 public:
-    mLOCK(T_Locking::type_enum, const mVarArray &args);
+    mLOCK(locktype_enum type, const mVarArray &args);
     ~mLOCK();
 };
 
-#define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(T_Locking::Read,  __lockR1_VarArray)
-#define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(T_Locking::Read,  __lockR2_VarArray)
-#define RLOCK3(y)  mVarArray __lockR3_VarArray y; mLOCK __lockR3(T_Locking::Read,  __lockR3_VarArray)
-#define RLOCK4(y)  mVarArray __lockR4_VarArray y; mLOCK __lockR4(T_Locking::Read,  __lockR4_VarArray)
-#define RLOCK5(y)  mVarArray __lockR5_VarArray y; mLOCK __lockR5(T_Locking::Read,  __lockR5_VarArray)
-#define WLOCK(y)   mVarArray __lockW1_VarArray y; mLOCK __lockW1(T_Locking::Write, __lockW1_VarArray)
-#define WLOCK2(y)  mVarArray __lockW2_VarArray y; mLOCK __lockW2(T_Locking::Write, __lockW2_VarArray)
-#define WLOCK3(y)  mVarArray __lockW3_VarArray y; mLOCK __lockW3(T_Locking::Write, __lockW3_VarArray)
-#define WLOCK4(y)  mVarArray __lockW4_VarArray y; mLOCK __lockW4(T_Locking::Write, __lockW4_VarArray)
-#define WLOCK5(y)  mVarArray __lockW5_VarArray y; mLOCK __lockW5(T_Locking::Write, __lockW5_VarArray)
-#define MLOCK(y)   mVarArray __lockM1_VarArray y; mLOCK __lockM1(T_Locking::Mutex, __lockM1_VarArray)
-#define MLOCK2(y)  mVarArray __lockM2_VarArray y; mLOCK __lockM2(T_Locking::Mutex, __lockM2_VarArray)
-#define MLOCK3(y)  mVarArray __lockM3_VarArray y; mLOCK __lockM3(T_Locking::Mutex, __lockM3_VarArray)
-#define MLOCK4(y)  mVarArray __lockM4_VarArray y; mLOCK __lockM4(T_Locking::Mutex, __lockM4_VarArray)
-#define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(T_Locking::Mutex, __lockM5_VarArray)
+#define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(L_Read,  __lockR1_VarArray)
+#define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(L_Read,  __lockR2_VarArray)
+#define RLOCK3(y)  mVarArray __lockR3_VarArray y; mLOCK __lockR3(L_Read,  __lockR3_VarArray)
+#define RLOCK4(y)  mVarArray __lockR4_VarArray y; mLOCK __lockR4(L_Read,  __lockR4_VarArray)
+#define RLOCK5(y)  mVarArray __lockR5_VarArray y; mLOCK __lockR5(L_Read,  __lockR5_VarArray)
+#define WLOCK(y)   mVarArray __lockW1_VarArray y; mLOCK __lockW1(L_Write, __lockW1_VarArray)
+#define WLOCK2(y)  mVarArray __lockW2_VarArray y; mLOCK __lockW2(L_Write, __lockW2_VarArray)
+#define WLOCK3(y)  mVarArray __lockW3_VarArray y; mLOCK __lockW3(L_Write, __lockW3_VarArray)
+#define WLOCK4(y)  mVarArray __lockW4_VarArray y; mLOCK __lockW4(L_Write, __lockW4_VarArray)
+#define WLOCK5(y)  mVarArray __lockW5_VarArray y; mLOCK __lockW5(L_Write, __lockW5_VarArray)
+#define MLOCK(y)   mVarArray __lockM1_VarArray y; mLOCK __lockM1(L_Mutex, __lockM1_VarArray)
+#define MLOCK2(y)  mVarArray __lockM2_VarArray y; mLOCK __lockM2(L_Mutex, __lockM2_VarArray)
+#define MLOCK3(y)  mVarArray __lockM3_VarArray y; mLOCK __lockM3(L_Mutex, __lockM3_VarArray)
+#define MLOCK4(y)  mVarArray __lockM4_VarArray y; mLOCK __lockM4(L_Mutex, __lockM4_VarArray)
+#define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(L_Mutex, __lockM5_VarArray)
 
 #else /* MAGICK_LOCKS_WORK */
 #define RLOCK(y)   do_nothing()

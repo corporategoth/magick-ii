@@ -1,3 +1,4 @@
+
 #include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
@@ -26,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.117  2000/08/03 13:06:31  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -919,32 +924,30 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     InFlight.init();
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
 
-    // User is on AKILL, add the mask, and KOSH the kill.
+    // User is on AKILL, add the mask, and No server will kill
     { MLOCK(("OperServ", "Akill"));
     if (Parent->operserv.Akill_find(i_user + "@" + i_host))
     {
+	mstring reason = Parent->operserv.Akill->Value().second;
 	Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_AKILL"),
 		Mask(N_U_P_H).c_str(), Parent->operserv.Akill->Entry().c_str(),
-		Parent->operserv.Akill->Value().second.c_str());
-	Parent->server.AKILL(Parent->operserv.Akill->Entry(),
-			Parent->operserv.Akill->Value().second,
+		reason.c_str());
+	Parent->server.AKILL(Parent->operserv.Akill->Entry(), reason,
 			Parent->operserv.Akill->Value().first -
 				Parent->operserv.Akill->Last_Modify_Time().SecondsSince(),
 			Parent->operserv.Akill->Last_Modifier());
-        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
-	    new mstring(i_Name + ":" + Parent->operserv.Akill->Value().second),
-	    ACE_Time_Value::zero);
+	i_server = "";
+	i_realname = reason;
 	return;
     }}
 
-    // User triggered CLONE protection, KOSH the kill.
+    // User triggered CLONE protection, No server will kill
     if (Parent->operserv.AddHost(i_host))
     {
 	Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_CLONE"),
 		Mask(N_U_P_H).c_str());
-        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
-	    new mstring(i_Name + ":" + Parent->operserv.Def_Clone()),
-	    ACE_Time_Value::zero);
+	i_server = "";
+	i_realname = Parent->operserv.Def_Clone();
 	return;
     }
 
@@ -1393,6 +1396,7 @@ void Nick_Live_t::Mode(mstring in)
 		    {
 			Parent->server.KILL(Parent->operserv.FirstName(),
 		    	    i_Name, Parent->getMessage(i_Name, "MISC/KILL_OPERDENY"));
+			return;
 		    }
 		}
 	    }
@@ -2374,6 +2378,7 @@ void Nick_Stored_t::UnSuspend()
 mstring Nick_Stored_t::Host()
 {
     NFT("Nick_Stored_t::Host");
+    mstring retval;
     RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
     if (i_Host != "" && !Parent->nickserv.IsStored(i_Host))
     {
@@ -2382,7 +2387,8 @@ mstring Nick_Stored_t::Host()
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
 	i_Host = "";
     }
-    mstring retval = Parent->getSname(i_Host);
+    else
+	retval = Parent->nickserv.stored[i_Host.LowerCase()].Name();
     RET(retval);
 }
 
@@ -5258,6 +5264,12 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 					mask.c_str());
     map<mstring, Nick_Stored_t>::iterator iter;
 
+
+    bool isoper = (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source));
+    bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+		Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source));
+
     RLOCK(("NickServ", "stored"));
     for (iter = Parent->nickserv.stored.begin(), i=0, count = 0;
 			iter != Parent->nickserv.stored.end(); iter++)
@@ -5267,12 +5279,9 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 	    if (iter->second.Host() != "")
 		continue;
 
-	    if (i < listsize && (!iter->second.Private() ||
-		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+	    if (i < listsize && (!iter->second.Private() || isoper))
 	    {
-		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-		    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+		if (issop)
 		{
 		    if (message.Contains("NOEXP") && !iter->second.NoExpire())
 			continue;

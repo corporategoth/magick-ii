@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.259  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.258  2000/08/03 13:06:31  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -481,6 +485,7 @@ int Magick::Start()
 		}
 		i_config_file=argv[i];
 	    }
+#ifdef MAGICK_TRACE_WORKS
 	    else if(argv[i]=="--trace")
 	    {
 		i++;
@@ -507,6 +512,7 @@ int Magick::Start()
 			    Trace::TurnSet((threadtype_enum) i, level);
 		}
 	    }
+#endif
 	    else if(argv[i]=="--help" ||
 		(argv[i][1U]!='-' && argv[i].Contains("?")))
     	    {
@@ -540,7 +546,7 @@ int Magick::Start()
     mFile pidfile;
     if (mFile::Exists(files.Pidfile()))
     {
-	pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"r");
+	pidfile.Open(files.Pidfile(),"r");
 	if (pidfile.IsOpened())
 	{
 	    mstring dummystring = pidfile.ReadLine();
@@ -556,7 +562,7 @@ int Magick::Start()
     }
 
     // Re-direct log output to this file (log output is to STDERR)
-    freopen((files.Logfile()).c_str(), "a", stderr);
+    freopen(files.Logfile().c_str(), "a", stderr);
 
     FLUSH();
     // Need to shut down, it wont be carried over fork.
@@ -572,15 +578,14 @@ int Magick::Start()
     {
 	RET(0);
     }
-    Result = ACE_OS::setpgid (0, 0);
+/*    Result = ACE_OS::setpgid (0, 0);
     if (Result < 0)
     {
 	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result);
 	RET(1);
-    }
-    // Can only open these after fork if we want then to live
+    } */
 
-    pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"w");
+    pidfile.Open(files.Pidfile(),"w");
     if(pidfile.IsOpened())
     {
 	mstring dummystring;
@@ -588,12 +593,6 @@ int Magick::Start()
 	pidfile.Write(dummystring);
 	pidfile.Close();
     }
-    /*else
-	log_perror ("Warning: cannot write to PID file %s", files.Pidfile());*/
-
-/*			Trace::TurnSet(tt_MAIN, 0xffff);
-		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
-			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
@@ -602,6 +601,7 @@ int Magick::Start()
 
     load_databases();
 
+    // Can only open these after fork if we want then to live
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS"));
     { WLOCK(("Events"));
     events = new EventTask;
@@ -670,6 +670,16 @@ int Magick::Start()
 
     mBase::init();
 
+/* Please leave this somewhere in this file, as it
+ * is quite handy when you are getting a segfault
+ * after load but before you can turn on trace.
+ *
+#ifdef MAGICK_TRACE_WORKS
+    Trace::TurnSet(tt_MAIN, 0xffff);
+    for (int i=tt_MAIN+1; i<tt_MAX; i++)
+	Trace::TurnSet((threadtype_enum) i, 0xffff);
+#endif
+*/
     // etc.
 
     //Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_CALIBRATE"));
@@ -2268,10 +2278,10 @@ bool Magick::get_config_values()
     in.Read(ts_NickServ+"LCK_PRIVATE",nickserv.lck_private,false);
     in.Read(ts_NickServ+"DEF_PRIVMSG",nickserv.def_privmsg,false);
     in.Read(ts_NickServ+"LCK_PRIVMSG",nickserv.lck_privmsg,false);
-    in.Read(ts_NickServ+"DEF_LANGUAGE",value_mstring,"english");
+    in.Read(ts_NickServ+"DEF_LANGUAGE",value_mstring,"ENGLISH");
     if (value_mstring != nickserv.def_language)
     {
-	nickserv.def_language = value_mstring.LowerCase();
+	nickserv.def_language = value_mstring.UpperCase();
 	WLOCK(("LogMessages"));
 	LogMessages.clear();
 	LoadLogMessages(nickserv.def_language);
@@ -2442,6 +2452,11 @@ bool Magick::get_config_values()
     else
 	operserv.clone_time = FromHumanTime("3h");
     in.Read(ts_OperServ+"CLONE_AKILL",operserv.clone_akill,"Clone trigger exceeded, Automatic AKILL");
+    in.Read(ts_OperServ+"CLONE_AKILLTIME",value_mstring,"30m");
+    if (FromHumanTime(value_mstring))
+	operserv.clone_akilltime = FromHumanTime(value_mstring);
+    else
+	operserv.clone_akilltime = FromHumanTime("30m");
 
     in.Read(ts_OperServ+"FLOOD_TIME",value_mstring,"10s");
     if (FromHumanTime(value_mstring))
@@ -2640,65 +2655,33 @@ bool Magick::get_config_values()
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
 {
-    FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
+    // No trace, screws with LastFunc...
+    //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
     static mDateTime LastSEGV;
+    static mstring LastFunc;
+    ThreadID *tid;
 
     // todo: fill this sucker in
     switch(signum)
     {
-    case 0:		// this is here to show up clashes for badly defined signal constants
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
     case SIGINT:	// CTRL-C, Background.
+#if defined(SIGQUIT) && (SIGQUIT != 0)
+    case SIGQUIT:	// Terminal dead, Background.
+#endif
 	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	//fork();
 	break;
+
+
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
 	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SAVE"), signum);
-	Parent->save_databases();
+	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_SAVE"), signum);
+	Parent->events->ForceSave();
 	break;
 #endif
-#if defined(SIGPIPE) && (SIGPIPE != 0)
-    case SIGPIPE:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#if defined(SIGQUIT) && (SIGQUIT != 0)
-    case SIGQUIT:	// Terminal dead, Background.
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	//fork();
-	break;
-#endif
-    case SIGSEGV:	// Segfault, validate all storage.
-	// IF LastSEGV is defined, and time between now and
-	// LastSEGV is < 5 seconds ...
-	if(((time_t) LastSEGV != 0) && ((time_t) (Now() - LastSEGV) < 5))
-	{
-	    FLUSH();
-	    Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
-	    CP(("Got second sigsegv call, giving magick the boot"));
-	    Parent->Shutdown(true);
-	    Parent->Die();
-	    RET(-1);
-	}
-	else
-	{
-	    FLUSH();
-	    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/SIGNAL_RETRY"), signum);
-	    LastSEGV = Now();
-	    CP(("Got first sigsegv call, giving it another chance"));
-	}
-	break;
-#ifdef SIGBUS
-    case SIGBUS:	// BUS error (fatal)
-	FLUSH();
-	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
-	Parent->Shutdown(true);
-	Parent->Die();
-	RET(-1);
-	break;
-#endif
+
+
 #if defined(SIGHUP) && (SIGHUP != 0)
     case SIGHUP:	// Reload CFG/DB's
 	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_LOAD"), signum);
@@ -2707,77 +2690,66 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	    Log(LM_EMERGENCY, Parent->getLogMessage("COMMANDLINE/NO_CFG_FILE"),
 	    					Parent->Config_File().c_str());
 	}
+	else
+	{
+	    announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_LOAD"), signum);
+	}
 	break;
 #endif
+
+
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
-	FLUSH();
-	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
-	Parent->Shutdown(true);
-	Parent->Die();
-	RET(-1);
-	break;
-#ifdef SIGTRAP
-    case SIGTRAP:	// Throw exception
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
 #ifdef SIGIOT
     case SIGIOT:	// abort(), exit immediately!
+#endif
+#ifdef SIGBUS
+    case SIGBUS:	// BUS error (fatal)
+#endif
+	tid = mThread::find();
+	if (tid != NULL)
+	    LastFunc = tid->LastFunc();
 	FLUSH();
-	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
+	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum, LastFunc.c_str());
+	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, LastFunc.c_str());
+	LastFunc = "";
 	Parent->Shutdown(true);
 	Parent->Die();
-	RET(-1);
+	return -1;
 	break;
-#endif
-    case SIGFPE:	// Retry last call
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
+
+
+    case SIGSEGV:	// Segfault, validate all storage.
+	// IF LastSEGV is defined, and time between now and
+	// LastSEGV is < 5 seconds ...
+	if(LastSEGV.SecondsSince() < 5)
+	{
+	    FLUSH();
+	    Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum, LastFunc.c_str());
+	    CP(("Got second sigsegv call, giving magick the boot"));
+	    announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, LastFunc.c_str());
+	    LastFunc = "";
+	    Parent->Shutdown(true);
+	    Parent->Die();
+	    return -1;
+	}
+	else
+	{
+	    tid = mThread::find();
+	    if (tid != NULL)
+		LastFunc = tid->LastFunc();
+	    FLUSH();
+	    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/SIGNAL_RETRY"), signum);
+	    LastSEGV = Now();
+	    CP(("Got first sigsegv call, giving it another chance"));
+	}
 	break;
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    case SIGUSR1:	// ??
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    case SIGUSR2:	// ??
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#if defined(SIGALRM) && (SIGALRM != 0)
-    case SIGALRM:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#if defined(SIGCHLD) && (SIGCHLD != 0)
-    case SIGCHLD:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#ifdef SIGWINCH
-    case SIGWINCH:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#ifdef SIGTTIN
-    case SIGTTIN:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#ifdef SIGTTOU
-    case SIGTTOU:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
-#ifdef SIGTSTP
-    case SIGTSTP:	// Ignore
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
-	break;
-#endif
+
+
     default:		// Everything else.
 	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
 	break;//ignore (todo log that we got it and we're ignoring it)
     }
-    RET(0);
+    return 0;
 }
 
 /*

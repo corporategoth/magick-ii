@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2000/08/06 05:27:48  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.96  2000/07/29 21:58:55  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -94,24 +98,11 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-//
-// Tracing functions -- Include making TraceMap's and
-// receiving all trace information.
-
+#include "magick.h"
 #include "trace.h"
 #include "lockable.h"
-#include "magick.h"
 
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE", "LOST" };
-Trace::level_enum Trace::SLevel = Off;
-unsigned short Trace::traces[tt_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-vector<Trace::levelname_struct> Trace::levelname; // Initialised in main.cpp
-list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
-
-int levelname_count()
-{
-    return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
-}
 
 unsigned short makehex (mstring SLevel)
 {
@@ -269,12 +260,14 @@ void ThreadID::assign(threadtype_enum Type)
 
 void ThreadID::WriteOut(const mstring &message)
 {
+#ifdef MAGICK_TRACE_WORKS
     mstring finalout = "";
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;
 
     messages.push_back(finalout);
+#endif
 }
 
 mstring ThreadID::logname()
@@ -292,6 +285,7 @@ mstring ThreadID::logname()
 // locks are being set/removed.                                
 void ThreadID::Flush()
 {
+#ifdef MAGICK_TRACE_WORKS
     list<pair<threadtype_enum, mstring> >::iterator iter, iter2;
     { WLOCK(("ThreadMessageQueue"));
     iter = ThreadMessageQueue.end();
@@ -319,6 +313,23 @@ void ThreadID::Flush()
 
     mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
     messages.clear();
+#endif
+}
+
+
+#ifdef MAGICK_TRACE_WORKS
+//
+// Tracing functions -- Include making TraceMap's and
+// receiving all trace information.
+
+Trace::level_enum Trace::SLevel = Off;
+unsigned short Trace::traces[tt_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+vector<Trace::levelname_struct> Trace::levelname; // Initialised in main.cpp
+list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
+
+int levelname_count()
+{
+    return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
 }
 
 
@@ -331,6 +342,8 @@ T_Functions::T_Functions(const mstring &name)
     tid = mThread::find();
     if (tid == NULL)
 	return; // should throw an exception later
+    i_prevfunc = tid->LastFunc();
+    tid->LastFunc(name);
     ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "()";
@@ -346,6 +359,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
     tid = mThread::find();
     if (tid == NULL)
 	return; // should throw an exception later
+    i_prevfunc = tid->LastFunc();
+    tid->LastFunc(name);
     ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "(";
@@ -367,6 +382,7 @@ T_Functions::~T_Functions()
     if (tid == NULL)
 	return; // should throw an exception later
     tid->indentdown(); 
+    tid->LastFunc(i_prevfunc);
     ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message;
@@ -517,7 +533,7 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 //      :+ R ChanInfo::#Magick
 //      :+ W NickInfo::PreZ::Flags
 //      :+ M Magick::LoadMessages
-void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
+void T_Locking::open(locktype_enum ltype, mstring lockname) 
 {
     tid = mThread::find();
     if (tid == NULL)
@@ -528,9 +544,9 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 	locktype = ltype;
 	name = lockname;
 	mstring message;
-	if(locktype == Read)
+	if(locktype == L_Read)
 	    message << ":+ " << "R " << name;
-	else if(locktype == Write)
+	else if(locktype == L_Write)
 	    message << ":+ " << "W " << name;
 	else
 	    message << ":+ " << "M " << name;
@@ -552,9 +568,9 @@ T_Locking::~T_Locking()
 	if (!name.IsEmpty())
 	{
     	    mstring message;
-	    if(locktype == Read)
+	    if(locktype == L_Read)
 	        message << ":- " << "R " << name;
-	    else if(locktype == Write)
+	    else if(locktype == L_Write)
 		message << ":- " << "W " << name;
 	    else
 		message << ":- " << "M " << name;
@@ -625,3 +641,4 @@ T_Sockets::End(mstring reason)
 
 // T_External::T_External() {}
 
+#endif /* MAGICK_TRACE_WORKS */

@@ -24,6 +24,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.41  2000/05/20 03:28:12  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -70,7 +74,7 @@ mDateTime Start_Time, Reset_Time;
 
 int main(int argc, char **argv)
 {
-
+#ifdef MAGICK_TRACE_WORKS
     Trace::levelname.push_back(Trace::levelname_struct( "OFF", Trace::Off ));
     Trace::levelname.push_back(Trace::levelname_struct( "FULL", Trace::Full ));
     Trace::levelname.push_back(Trace::levelname_struct( "ALL", Trace::Full ));
@@ -90,6 +94,7 @@ int main(int argc, char **argv)
     Trace::levelname.push_back(Trace::levelname_struct( "F*NC*", Trace::Functions ));
     Trace::levelname.push_back(Trace::levelname_struct( "MOD*", Trace::Modify ));
     Trace::levelname.push_back(Trace::levelname_struct( "CHANG*", Trace::Changing ));
+#endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     try

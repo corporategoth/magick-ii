@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/08/06 05:27:48  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.62  2000/08/03 13:06:32  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -1095,14 +1099,16 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
     		mask.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
 
+    bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+		Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source));
+
     for (j=0, i=0, count = 0; j < filelist.size(); j++)
     {
 	if (Parent->filesys.GetName(FileMap::Public, filelist[j]).LowerCase().Matches(mask))
 	{
 	    if (i < listsize)
 	    {
-		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-			Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+		if (issop)
 		    ::send(mynick, source, "%s (%s) [%s]",
 			Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
 			ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str(),

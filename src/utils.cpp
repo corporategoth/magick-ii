@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/08/06 05:27:48  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.45  2000/07/28 14:49:36  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -240,10 +244,12 @@ unsigned long FromHumanTime(mstring in)
 {
     FT("FromHumanTime", (in));
 
-    unsigned int i;
+    unsigned int i = 0;
     unsigned long number = 0, total = 0;
 
-    for (i=0; i<in.size(); i++)
+    if (in[0u] == '+')
+	i++;
+    for (; i<in.size(); i++)
     {
 	switch(in[i])
 	{
@@ -400,9 +406,11 @@ unsigned long FromHumanSpace(mstring in)
 {
     FT("FromHumanTime", (in));
 
-    unsigned int i;
+    unsigned int i=0;
     unsigned long number = 0, total = 0;
 
+    if (in[0]=='+')
+	i++;
     for (i=0; i<in.size(); i++)
     {
 	switch(in[i])

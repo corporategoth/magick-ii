@@ -24,11 +24,9 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.9  2000/07/29 21:58:52  prez
-** Fixed XML loading of weird characters ...
-** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
-** of nicknames, which means we expire lots of nicknames.  2) services
-** wont rejoin a +i/+k channel when last user exits.
+** Revision 1.10  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
 **
 **
 ** ========================================================== */
@@ -36,7 +34,7 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Sun Jul 30 05:27:38 EST 2000
+ * Created on Fri Aug  4 10:31:55 EST 2000
  */
 
 unsigned int def_logent =     319;
@@ -288,7 +286,7 @@ char *def_log[] = {
 "SIGNAL_SAVE      =Caught signal #%d, saving databases.",
 "SIGNAL_LOAD      =Caught signal #%d, loading configuration file.",
 "SIGNAL_RETRY     =Caught signal #%d, attempting to retry.",
-"SIGNAL_KILL      =Caught signal #%d, attempting to shutdown.",
+"SIGNAL_KILL      =Caught signal #%d - last function was %s, attempting to shutdown.",
 "SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.",
 "NOT_IMPLEMENTED  =Entered %s, which is not implemented.",
 "INVALID_FORMAT   =Invalid date format char %d%c in %s.",

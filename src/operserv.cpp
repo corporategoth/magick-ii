@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.92  2000/08/02 20:08:58  prez
 ** Minor code cleanups, added ACE installation instructions, updated the
 ** suggestions file and stopped people doing a whole bunch of stuff to
@@ -215,15 +219,15 @@ bool OperServ::AddHost(mstring host)
 		MLOCK(("OperServ", "Akill"));
 		if (Akill_find("*@" + host))
 		    Akill_erase();
-		Akill_insert("*@" + host, Parent->operserv.Def_Expire(),
+		Akill_insert("*@" + host, Parent->operserv.Clone_AkillTime(),
 			Parent->operserv.Clone_Akill(), FirstName());
 		announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
 			FirstName().c_str(), host.c_str(),
-			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
 			Parent->operserv.Clone_Akill().c_str());
 		Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
 			FirstName().c_str(), host.c_str(),
-			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
 			Parent->operserv.Clone_Akill().c_str());
 	    }
 	    RET(true);
@@ -249,15 +253,15 @@ bool OperServ::AddHost(mstring host)
 		MLOCK(("OperServ", "Akill"));
 		if (Akill_find("*@" + host))
 		    Akill_erase();
-		Akill_insert("*@" + host, Parent->operserv.Def_Expire(),
+		Akill_insert("*@" + host, Parent->operserv.Clone_AkillTime(),
 			Parent->operserv.Clone_Akill(), FirstName());
 		announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
 			FirstName().c_str(), host.c_str(),
-			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
 			Parent->operserv.Clone_Akill().c_str());
 		Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
 			FirstName().c_str(), host.c_str(),
-			ToHumanTime(Parent->operserv.Def_Expire()).c_str(),
+			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
 			Parent->operserv.Clone_Akill().c_str());
 	    }
 	    RET(true);
@@ -510,8 +514,13 @@ bool OperServ::Akill_find(mstring entry)
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = i_Akill.end();
     if (!i_Akill.empty())
 	for (iter=i_Akill.begin(); iter!=i_Akill.end(); iter++)
+	{
 	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+	    {
+CP(("DEBUG %s %s", iter->Entry().c_str(), iter->Value().second.c_str()));
 		break;
+	    }
+	}
 
     if (iter != i_Akill.end())
     {
@@ -520,6 +529,7 @@ bool OperServ::Akill_find(mstring entry)
     }
     else
     {
+CP(("DEBUG 6"));
 	Akill = i_Akill.end();
 	RET(false);
     }
@@ -794,8 +804,10 @@ void OperServ::AddCommands()
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "HELP", Parent->commserv.ALL_Name(), OperServ::do_Help);
+#ifdef MAGICK_TRACE_WORKS
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
+#endif
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*MODE*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_Mode);
@@ -818,6 +830,8 @@ void OperServ::AddCommands()
 	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "RELOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Reload);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SIGNON*", Parent->commserv.SADMIN_Name(), OperServ::do_Signon);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Unload);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1140,6 +1154,7 @@ void OperServ::do_Help(mstring mynick, mstring source, mstring params)
 }
 
 
+#ifdef MAGICK_TRACE_WORKS
 void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Trace", (mynick, source, params));
@@ -1365,6 +1380,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 	Log(LM_NOTICE, line2);
     }
 }
+#endif
 
 
 void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
@@ -1714,6 +1730,23 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
 		Parent->Config_File().c_str());
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD_FAIL"));
     }
+}
+
+
+void OperServ::do_Signon(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Reload", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
+    Parent->server.SignOnAll();
+    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SIGNON"));
 }
 
 
@@ -2667,11 +2700,10 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	host.Prepend("*@");
     }
 
-    unsigned int i, num;
+    int i, num;
     bool super = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source));
-    // i+1 below because unsigned i will always be >= 0
-    for (i=host.size()-1, num=0; i+1>0; i--)
+    for (i=host.size()-1, num=0; i>=0; i--)
     {
 	switch (host[i])
 	{
@@ -2740,11 +2772,15 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 
     Parent->server.AKILL(host, reason, time, source);
     map<mstring,Nick_Live_t>::iterator nlive;
+    vector<mstring> killusers;
+    { RLOCK(("NickServ", "live"));
     for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
     {
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host))
-	    Parent->server.KILL(mynick, nlive->second.Name(), reason);
-    }
+	    killusers.push_back(nlive->first);
+    }}
+    for (i=0; i<killusers.size(); i++)
+	Parent->server.KILL(mynick, killusers[i], reason);
 }
 
 void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
@@ -2966,6 +3002,7 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	host.c_str(), reason.c_str());
 
     map<mstring,Nick_Live_t>::iterator nlive;
+    vector<mstring> killusers;
     for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
     {
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host))
@@ -2976,12 +3013,13 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	    }
 	    else
 	    {
-		Parent->server.KILL(Parent->operserv.FirstName(),
-	    	    nlive->second.Name(),
-		    Parent->getMessage(nlive->second.Name(), "MISC/KILL_OPERDENY"));
+		killusers.push_back(nlive->first);
 	    }
 	}
     }
+    for (i=0; i<killusers.size(); i++)
+	Parent->server.KILL(Parent->operserv.FirstName(), killusers[i],
+		    Parent->getMessage("MISC/KILL_OPERDENY"));
 
 }
 

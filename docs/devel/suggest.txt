@@ -42,3 +42,5 @@ x Done
 * Enforce time delay between allowing nick/channel registrations.
 * AKICK should be triggered if a user does /nick and suddenly matches.
 * Ability to 'rename' a channel (eg. #aic -> #lucida).
+* Have AKILL check online to ensure they are not akilling anyone on
+  a committee higher than themselves.

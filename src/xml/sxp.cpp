@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/08/06 05:27:48  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.10  2000/07/29 21:58:55  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -128,8 +132,8 @@ Tag::Tag(const char *name)
 
 void MFileOutStream::ExpandBuf()
 {
-    buffer = (char *) realloc(buffer, sizeof(char) * buf_sz * 2);
-    memset(&buffer[buf_sz], 0, buf_sz);
+    buffer = (char *) ACE_OS::realloc(buffer, sizeof(char) * buf_sz * 2);
+    ACE_OS::memset(&buffer[buf_sz], 0, buf_sz);
     buf_sz *= 2;
 }
 
@@ -148,7 +152,7 @@ void MFileOutStream::PrintV(char *format, va_list argptr)
     tmp.FormatV(format, argptr);
     if (buf_cnt + tmp.Len() >= buf_sz)
 	ExpandBuf();
-    strcpy(&buffer[buf_cnt], tmp.c_str());
+    ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
     buf_cnt+=tmp.Len();
 }
 
@@ -172,8 +176,8 @@ MFileOutStream::MFileOutStream(mstring chFilename, int comp, mstring ikey)
 	key = ikey;
 	buf_sz = INIT_BUFSIZE;
 	buf_cnt = 0;
-	buffer = (char *) malloc(sizeof(char) * buf_sz);
-	memset(buffer, 0, sizeof(char) * buf_sz);
+	buffer = (char *) ACE_OS::malloc(sizeof(char) * buf_sz);
+	ACE_OS::memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
 MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring ikey)
@@ -185,8 +189,8 @@ MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring i
 	key = ikey;
 	buf_sz = INIT_BUFSIZE;
 	buf_cnt = 0;
-	buffer = (char *) malloc(sizeof(char) * buf_sz);
-	memset(buffer, 0, sizeof(char) * buf_sz);
+	buffer = (char *) ACE_OS::malloc(sizeof(char) * buf_sz);
+	ACE_OS::memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
 MFileOutStream::~MFileOutStream()
@@ -199,7 +203,7 @@ MFileOutStream::~MFileOutStream()
 	if (compress)
 	{
 	    z_streamp strm = new z_stream_s;
-	    memset(strm, 0, sizeof(z_stream_s));
+	    ACE_OS::memset(strm, 0, sizeof(z_stream_s));
 	    strm->zalloc = Z_NULL;
 	    strm->zfree  = Z_NULL;
 	    strm->opaque = Z_NULL;
@@ -209,8 +213,8 @@ MFileOutStream::~MFileOutStream()
 	    // than avail_in plus 12 bytes.
 	    new_sz = (size_t) (length * 1.001 + 12);
 	    deflateInit(strm, compress);
-	    outbuf = (char *) malloc(sizeof(char) * new_sz);
-	    memset(outbuf, 0, sizeof(char) * new_sz);
+	    outbuf = (char *) ACE_OS::malloc(sizeof(char) * new_sz);
+	    ACE_OS::memset(outbuf, 0, sizeof(char) * new_sz);
 
 	    strm->next_in   = (unsigned char *) buffer;
 	    strm->avail_in  = length;
@@ -225,35 +229,29 @@ MFileOutStream::~MFileOutStream()
 		attempt++)
 	    {
 		new_sz += 12;
-		if (outbuf)
-		    free(outbuf);
-		outbuf = (char *) malloc(sizeof(char) * new_sz);
-		memset(outbuf, 0, sizeof(char) * new_sz);
+		if (outbuf != NULL)
+		    ACE_OS::free(outbuf);
+		outbuf = (char *) ACE_OS::malloc(sizeof(char) * new_sz);
+		ACE_OS::memset(outbuf, 0, sizeof(char) * new_sz);
 		strm->next_out = (unsigned char *) outbuf;
 	    }
 	    deflateEnd(strm);
-	    if (strm)
+	    if (strm != NULL)
 		delete strm;
 	    if (attempt < 10)
 	    {
 		length = strm->total_out;
 		buf_sz = length + 1;
-		if (buffer)
-		    free(buffer);
-		buffer = (char *) malloc(sizeof(char) * buf_sz);
-		memset(buffer, 0, sizeof(char) * buf_sz);
+		if (buffer != NULL)
+		    ACE_OS::free(buffer);
+		buffer = (char *) ACE_OS::malloc(sizeof(char) * buf_sz);
+		ACE_OS::memset(buffer, 0, sizeof(char) * buf_sz);
 		memcpy(buffer, outbuf, length);
-		if (outbuf)
-		    free(outbuf);
-		outbuf = NULL;
 		tag |= SXP_COMPRESS;
 	    }
-	    else
-	    {
-		if (outbuf)
-		    free(outbuf);
-		outbuf = NULL;
-	    }
+	    if (outbuf != NULL)
+		ACE_OS::free(outbuf);
+	    outbuf = NULL;
 	    
 	}
 	if (key != "")
@@ -262,8 +260,8 @@ MFileOutStream::~MFileOutStream()
 	    des_cblock ckey1, ckey2;
 
 	    new_sz = length + 8;
-	    outbuf = (char *) malloc(sizeof(char) * new_sz);
-	    memset(outbuf, 0, sizeof(char) * new_sz);
+	    outbuf = (char *) ACE_OS::malloc(sizeof(char) * new_sz);
+	    ACE_OS::memset(outbuf, 0, sizeof(char) * new_sz);
 
 	    des_string_to_2keys((char *)key.c_str(), &ckey1, &ckey2);
 	    des_set_key(&ckey1, key1);
@@ -277,19 +275,19 @@ MFileOutStream::~MFileOutStream()
 		length = new_sz;
 		while (outbuf[length-1]==0)
 		    length--;
-		if (buffer)
-		    free(buffer);
+		if (buffer != NULL)
+		    ACE_OS::free(buffer);
 		buffer = outbuf;
 		outbuf = NULL;
 	    }
 	    tag |= SXP_ENCRYPT;
 	}
 	
-	if (buffer)
+	if (buffer != NULL)
 	{
 	    out.Write(mstring(tag), false);
 	    out.Write(buffer, length * sizeof(char));
-	    free(buffer);
+	    ACE_OS::free(buffer);
 	}
 	out.Close();
 }
@@ -303,7 +301,7 @@ void MFileOutStream::BeginXML(void)
 	mstring tmp = XML_STRING;
 	if (buf_cnt + strlen(XML_STRING) >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[buf_cnt], XML_STRING);
+	ACE_OS::strcpy(&buffer[buf_cnt], XML_STRING);
 	buf_cnt+=strlen(XML_STRING);
 }
 
@@ -314,7 +312,7 @@ void MFileOutStream::BeginObject(Tag& t, dict& attribs)
 	tmp.Format("<%s", t.ch);
 	if (buf_cnt + tmp.Len() >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[buf_cnt], tmp.c_str());
+	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
 	buf_cnt+=tmp.Len();
 	for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
 		tmp = "";
@@ -323,13 +321,13 @@ void MFileOutStream::BeginObject(Tag& t, dict& attribs)
 			(*i).second.c_str() );
 		if (buf_cnt + tmp.Len() >= buf_sz)
 		    ExpandBuf();
-		strcpy(&buffer[buf_cnt], tmp.c_str());
+		ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
 		buf_cnt+=tmp.Len();
 	}
 	tmp = ">\n";
 	if (buf_cnt + tmp.Len() >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[buf_cnt], tmp.c_str());
+	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
 	buf_cnt+=tmp.Len();
 }
 
@@ -341,7 +339,7 @@ void MFileOutStream::EndObject  (Tag& t)
 	tmp.Format("</%s>\n", t.ch);
 	if (buf_cnt + tmp.Len() >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[buf_cnt], tmp.c_str());
+	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
 	buf_cnt+=tmp.Len();
 }
 
@@ -359,12 +357,12 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
     {
 	long filesize = in.Length(), new_sz;
 	unsigned char tag = 0;
-	char *tmpbuf, *buffer = (char *) malloc(filesize * sizeof(char));
-	memset(buffer, 0, filesize * sizeof(char));
+	char *tmpbuf, *buffer = (char *) ACE_OS::malloc(filesize * sizeof(char));
+	ACE_OS::memset(buffer, 0, filesize * sizeof(char));
 	new_sz = filesize + 8;
 
 	in.Read(&tag, sizeof(unsigned char));
-	memset(buffer, 0, filesize);
+	ACE_OS::memset(buffer, 0, filesize);
 	in.Read(buffer, (filesize-1) * sizeof(char));
 	in.Close();
 
@@ -375,8 +373,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		des_key_schedule key1, key2;
 		des_cblock ckey1, ckey2;
 
-		tmpbuf = (char *) malloc(new_sz * sizeof(char));
-		memset(tmpbuf, 0, new_sz * sizeof(char));
+		tmpbuf = (char *) ACE_OS::malloc(new_sz * sizeof(char));
+		ACE_OS::memset(tmpbuf, 0, new_sz * sizeof(char));
 		des_string_to_2keys((char *)ikey.c_str(), &ckey1, &ckey2);
 		des_set_key(&ckey1, key1);
 		des_set_key(&ckey2, key2);
@@ -386,8 +384,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 
 		if (tmpbuf != NULL)
 		{
-		    if (buffer)
-			free(buffer);
+		    if (buffer != NULL)
+			ACE_OS::free(buffer);
 		    buffer = tmpbuf;
 		    tmpbuf = NULL;
 		}
@@ -396,15 +394,15 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 	    {
 		int bufsize = 1024, index = 0;
 		z_streamp strm = new z_stream_s;
-		memset(strm, 0, sizeof(z_stream_s));
+		ACE_OS::memset(strm, 0, sizeof(z_stream_s));
 
 		strm->zalloc = Z_NULL;
 		strm->zfree  = Z_NULL;
 		strm->opaque = Z_NULL;
 		inflateInit(strm);
 
-		tmpbuf = (char *) malloc(bufsize * sizeof(char));
-		memset(tmpbuf, 0, bufsize * sizeof(char));
+		tmpbuf = (char *) ACE_OS::malloc(bufsize * sizeof(char));
+		ACE_OS::memset(tmpbuf, 0, bufsize * sizeof(char));
 		strm->next_in   = (unsigned char *) buffer;
 		strm->avail_in  = new_sz;
 		strm->total_in  = 0;
@@ -419,8 +417,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    {
 			index = bufsize;
 			bufsize *= 2;
-			tmpbuf = (char *) realloc(tmpbuf, bufsize * sizeof(char));
-			memset(&tmpbuf[index], 0, index);
+			tmpbuf = (char *) ACE_OS::realloc(tmpbuf, bufsize * sizeof(char));
+			ACE_OS::memset(&tmpbuf[index], 0, index);
 			strm->next_out  = (unsigned char *) &tmpbuf[index];
 			strm->avail_out = index;
 		    }
@@ -428,24 +426,22 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		if (retval == Z_STREAM_END || retval == Z_OK)
 		{
 		    if (buffer)
-			free(buffer);
+			ACE_OS::free(buffer);
 		    new_sz = strm->total_out;
-		    buffer = (char *) malloc(sizeof(char) * new_sz+1);
-		    memset(buffer, 0, sizeof(char) * new_sz+1);
+		    buffer = (char *) ACE_OS::malloc(sizeof(char) * new_sz+1);
+		    ACE_OS::memset(buffer, 0, sizeof(char) * new_sz+1);
 		    memcpy(buffer, tmpbuf, new_sz);
-		    if (tmpbuf)
-			free(tmpbuf);
+		    if (tmpbuf != NULL)
+			ACE_OS::free(tmpbuf);
 		    tmpbuf = NULL;
 		}
 		inflateEnd(strm);
-		if (strm)
+		if (strm != NULL)
 		    delete strm;
 	    }
 	    if (strncmp(buffer, XML_STRING, strlen(XML_STRING))==0)
 	    {
 		retval = Feed(buffer, new_sz);
-		if (buffer)
-		    free(buffer);
 		if (retval == 0)
 		{
 		    Shutdown();
@@ -455,6 +451,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    DoShutdown();
 	    }
 	}
+	if (buffer != NULL)
+	    ACE_OS::free(buffer);
     }
     return retval;
 }

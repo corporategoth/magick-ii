@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.113  2000/08/03 13:06:32  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -356,7 +360,7 @@ void Protocol::Set(unsigned int in)
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
 	break;
     case 20: /* UnderNet < 2.8.10  */
-	i_Signon = 1000;
+	i_Signon = 0001;
 	i_Akill = 3;
 	break;
     case 30: /* Aurora */
@@ -946,7 +950,8 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	    line << proto.GetNonToken("AKILL");
 	else
 	    line << "AKILL";
-	line << " " << host.After("@") << " " << host.Before("@") << " :" << reason;
+	line << " " << host.After("@") << " " << host.Before("@") <<
+		" :" << reason;
 	break;
     case 2:
 	if (proto.Tokens() && proto.GetNonToken("GLINE") != "")
@@ -974,8 +979,8 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	    line << proto.GetNonToken("AKILL");
 	else
 	    line << "AKILL";
-	line << host.After("@") << " " << host.Before("@") <<
-		time << " " << (killer != "" ? killer :
+	line << " " << host.After("@") << " " << host.Before("@") <<
+		" " << time << " " << ((killer != "") ? killer :
 		Parent->operserv.FirstName()) << " :" << reason;
 	break;
     }
@@ -1217,9 +1222,9 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
     }
     else
     {
+	WLOCK(("NickServ", "live"));
 	Parent->nickserv.live[dest.LowerCase()].Quit(
 		"Killed (" + nick + " (" + reason + "))");
-	WLOCK(("NickServ", "live"));
 	Parent->nickserv.live.erase(dest.LowerCase());
 	raw(":" + nick + " " +
 		((proto.Tokens() && proto.GetNonToken("KILL") != "") ?
@@ -1298,80 +1303,111 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
     }
     else
     {
-	mstring send;
+	mstring send, token;
 	switch (proto.Signon())
 	{
 	case 0000:
-	    if (proto.Tokens() && proto.GetNonToken("USER") != "")
-		send << proto.GetNonToken("USER");
+	    token = "USER";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "USER";
+		send << token;
 	    send << " " << nick  << " " << user << " " << host <<
 		" " << server << " :" << realname;
 	    break;
 	case 0001:
-	    if (proto.Tokens() && proto.GetNonToken("USER") != "")
-		send << proto.GetNonToken("USER");
+	    token = "USER";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "USER";
+		send << token;
 	    send << " " << nick  << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" :" << realname;
 	    break;
 	case 1000:
-	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
-		send << proto.GetNonToken("NICK");
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "NICK";
+		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
-		" " << user << " " << host << " " << server <<
-		" :" << realname;
+		" " << user << " " << host << " " << server;
+	    if (proto.P12())
+		send << " +" << Parent->startup.Setmode();
+	    send << " :" << realname;
 	    break;
 	case 1001:
-	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
-		send << proto.GetNonToken("NICK");
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "NICK";
+		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
-		" " << user << " " << host << " " << server <<
-		" 1 :" << realname;
+		" " << user << " " << host << " " << server << " 1 ";
+	    if (proto.P12())
+		send << " +" << Parent->startup.Setmode();
+	    send << " :" << realname;
 	    break;
 	case 1002:
-	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
-		send << proto.GetNonToken("NICK");
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "NICK";
+		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
-		" " << user << " " << host << " " << server <<
-		" 1 " << host << ":" << realname;
+		" " << user << " " << host << " " << server << " 1 "
+		<< host;
+	    if (proto.P12())
+		send << " +" << Parent->startup.Setmode();
+	    send << " :" << realname;
 	    break;
 	case 1003:
-	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
-		send << proto.GetNonToken("NICK");
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "NICK";
+		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << host << " " <<
-		server << " 1 " << ":" << realname;
+		server << " 1 ";
+	    if (proto.P12())
+		send << " +" << Parent->startup.Setmode();
+	    send << " :" << realname;
 	    break;
 	case 1004:
-	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
-		send << proto.GetNonToken("NICK");
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
 	    else
-		send << "NICK";
+		send << token;
 	    send << " " << nick << " 1 " << Now().timetstring() <<
-		" + " << user << " " << host << host << " " <<
-		server << " :" << realname;
+		" +" << Parent->startup.Setmode() << " " << user <<
+		" " << host << " " << server << " 1 :" << realname;
 	    break;
 	}
 	// Sign ourselves in ...
 	{ WLOCK(("NickServ", "live"));
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
+	if (proto.P12() || proto.Signon() == 1004)
+		Parent->nickserv.live[nick.LowerCase()].Mode(
+			Parent->startup.Setmode());
 	}
-	WLOCK2(("Server", "i_UserMax"));
+	{ WLOCK2(("Server", "i_UserMax"));
 	if (i_UserMax < Parent->nickserv.live.size())
 	    i_UserMax = Parent->nickserv.live.size();
+	}
 	raw(send);
     }
 }
@@ -2087,8 +2123,15 @@ void NetworkServ::execute(const mstring & data)
 	}
 	break;
     case 'B':
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	if (msgtype=="BURST")
+	{
+	    // Thanks to bahamut :)
+	}
+	else
+	{
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
+	}
 	break;
     case 'C':
 	if (msgtype=="CAPAB")
@@ -2096,6 +2139,9 @@ void NetworkServ::execute(const mstring & data)
 	    // Bahamut version of the PROTOCTL line
 	    if ((data + " ").Contains(" TOKEN "))
 		proto.Tokens(true);
+	}
+	else if (msgtype=="CHATOPS")
+	{
 	}
 	else if (msgtype=="CONNECT")
 	{
@@ -2499,8 +2545,8 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		    else
 		    {
-			Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
 			WLOCK(("NickServ", "live"));
+			Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
 			Parent->nickserv.live.erase(sourceL);
 		    }
 		}
@@ -2557,7 +2603,7 @@ void NetworkServ::execute(const mstring & data)
 			);
 		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		    break;
-		case 1004: // NICK nick hops time mode user host server :realname
+		case 1004: // NICK nick hops time mode user host server 0 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
@@ -2570,46 +2616,55 @@ void NetworkServ::execute(const mstring & data)
 		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
 		    break;
 		}}
-		{ WLOCK(("Server", "i_UserMax"));
-		if (i_UserMax < Parent->nickserv.live.size())
-		    i_UserMax = Parent->nickserv.live.size();
-		}
+		if (Parent->nickserv.IsLive(sourceL))
+		{
+		    if (Parent->nickserv.live[sourceL].IsServices())
+		    {
+			KILL(Parent->nickserv.FirstName(), sourceL,
+				Parent->nickserv.live[sourceL].RealName());
+			return;
+		    }
 
-		// HAS to be AFTER the nickname is added to map.
-		map<mstring, Committee>::iterator iter;
-		{ RLOCK(("CommServ", "list"));
-		for (iter = Parent->commserv.list.begin();
+		    { WLOCK(("Server", "i_UserMax"));
+		    if (i_UserMax < Parent->nickserv.live.size())
+			i_UserMax = Parent->nickserv.live.size();
+		    }
+
+		    // HAS to be AFTER the nickname is added to map.
+		    map<mstring, Committee>::iterator iter;
+		    { RLOCK(("CommServ", "list"));
+		    for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
-		{
-		    if (iter->second.IsOn(sourceL))
 		    {
-			MLOCK(("CommServ", "list", iter->first, "message"));
-			for (iter->second.message = iter->second.MSG_begin();
-			    iter->second.message != iter->second.MSG_end();
-			    iter->second.message++)
+			if (iter->second.IsOn(sourceL))
 			{
-			    Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+			    MLOCK(("CommServ", "list", iter->first, "message"));
+			    for (iter->second.message = iter->second.MSG_begin();
+				iter->second.message != iter->second.MSG_end();
+				iter->second.message++)
+			    {
+				Parent->servmsg.send(sourceL, "[" + IRC_Bold +
 					    iter->first + IRC_Off + "] " +
 					    iter->second.message->Entry());
+			    }
 			}
-		    }
-		}}
-		if (Parent->nickserv.IsStored(sourceL))
-		{
-		
-		    if (Parent->nickserv.stored[sourceL].Forbidden())
+		    }}
+		    if (Parent->nickserv.IsStored(sourceL))
 		    {
-			Parent->nickserv.send(Parent->nickserv.FirstName(),
+			if (Parent->nickserv.stored[sourceL].Forbidden())
+			{
+			    Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
 				ToHumanTime(Parent->nickserv.Ident()).c_str());
-		    }
-		    else if (Parent->nickserv.stored[sourceL].Protect() &&
+			}
+			else if (Parent->nickserv.stored[sourceL].Protect() &&
 		    	     !Parent->nickserv.stored[sourceL].IsOnline())
-		    {
-			Parent->nickserv.send(Parent->nickserv.FirstName(),
+			{
+			    Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
 				ToHumanTime(Parent->nickserv.Ident()).c_str());
+			}
 		    }
 		}
 	    }
@@ -2620,10 +2675,6 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()] =
 			Parent->nickserv.live[sourceL];
-		}
-		else if (sourceL != data.ExtractWord(3, ": ").LowerCase())
-		{
-		    KillUnknownUser(data.ExtractWord(3, ": "));
 		}
 		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].
 		    Name(data.ExtractWord(3, ": "));
@@ -2889,54 +2940,89 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    //:server SJOIN chan-stamp #channel +modes extra-params :@opd_nick +voice_nick nick 
 	    //:relic.devel.relic.net SJOIN 952608432 #blah + <none> :@Kwahraw +PreZ Zephyr
-	    unsigned int i;
+	    
+	    //:user SJOIN chan-stamp #channel #channel etc...
 
-	    vector<mstring> users;
-	    mstring modes = data.ExtractWord(5, ": ");
-	    mstring mode_params = "", nick;
-	    bool oped, voiced;
-	    if (modes.Contains("l") || modes.Contains("k"))
-		mode_params = data.Before(":", 2).After(" ", 5);
-	    for (i=0; i < data.After(":", 2).WordCount(" "); i++)
+	    if (source.Contains(".") || source == "")
 	    {
-		nick = data.After(":", 2).ExtractWord(i+1, " ");
-		if (nick != "")
+		unsigned int i;
+
+		vector<mstring> users;
+		mstring modes = data.ExtractWord(5, ": ");
+		mstring mode_params = "", nick;
+		bool oped, voiced;
+		if (modes.Contains("l") || modes.Contains("k"))
+		    mode_params = data.Before(":", 2).After(" ", 5);
+		for (i=0; i < data.After(":", 2).WordCount(" "); i++)
 		{
-		    oped = voiced = false;
-		    if (nick[0u] == '@')
+		    nick = data.After(":", 2).ExtractWord(i+1, " ");
+		    if (nick != "")
 		    {
-			oped = true;
-			nick.Replace("@", "");
-		    }
-		    if (nick[0u] == '+')
-		    {
-			voiced = true;
-			nick.Replace("+", "");
-		    }
-		    if (Parent->nickserv.IsLive(nick))
-		    {
-			if (oped)
+			oped = voiced = false;
+			if (nick[0u] == '@')
 			{
-			    modes += "o";
-			    mode_params += " " + nick;
+			    oped = true;
+			    nick.Replace("@", "");
 			}
-			if (voiced)
+			if (nick[0u] == '+')
 			{
-			    modes += "v";
-			    mode_params += " " + nick;
+			    voiced = true;
+			    nick.Replace("+", "");
 			}
-			users.push_back(nick);
+			if (Parent->nickserv.IsLive(nick))
+			{
+			    if (oped)
+			    {
+				modes += "o";
+				mode_params += " " + nick;
+			    }
+			    if (voiced)
+			    {
+				modes += "v";
+				mode_params += " " + nick;
+			    }
+			    users.push_back(nick);
+			}
 		    }
 		}
-	    }
 
-	    for (i=0; i<users.size(); i++)
-		Parent->nickserv.live[users[i].LowerCase()].Join(data.ExtractWord(4, ": "));
-	    CP(("MODE TO %s: %s", data.ExtractWord(4, ": ").LowerCase().c_str(),
+		for (i=0; i<users.size(); i++)
+		    Parent->nickserv.live[users[i].LowerCase()].Join(data.ExtractWord(4, ": "));
+		CP(("MODE TO %s: %s", data.ExtractWord(4, ": ").LowerCase().c_str(),
 			(modes + " " + mode_params).c_str()));
-	    if (Parent->chanserv.IsLive(data.ExtractWord(4, ": ")))
-		Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(source,
-									modes + " " + mode_params);
+		if (Parent->chanserv.IsLive(data.ExtractWord(4, ": ")))
+		    Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(
+		    	Parent->chanserv.FirstName(), modes + " " + mode_params);
+	    }
+	    else
+	    {
+		unsigned int i;
+		bool oped, voiced;
+		mstring chan;
+
+		for (i=4; i<=data.WordCount(": "); i++)
+		{
+		    chan = data.ExtractWord(i, ": ");
+		    voiced = oped = false;
+		    if (chan[0u] == '@')
+		    {
+			oped = true;
+			chan.Replace("@", "");
+		    }
+		    if (chan[0u] == '+')
+		    {
+			voiced = true;
+			chan.Replace("+", "");
+		    }
+		    Parent->nickserv.live[sourceL].Join(chan);
+		    if (oped)
+			Parent->chanserv.live[chan.LowerCase()].Mode(
+				Parent->chanserv.FirstName(), "+o " + source);
+		    if (voiced)
+			Parent->chanserv.live[chan.LowerCase()].Mode(
+				Parent->chanserv.FirstName(), "+v " + source);
+		}
+	    }
 	}
 	else if (msgtype=="SNICK")
 	{
@@ -3038,7 +3124,7 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
 		break;
-	    case 1004: // NICK nick hops time mode user host server :realname
+	    case 1004: // NICK nick hops time mode user host server 0 :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
@@ -3051,45 +3137,55 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
 		break;
 	    }}
-	    { WLOCK(("Server", "i_UserMax"));
-	    if (i_UserMax < Parent->nickserv.live.size())
-		i_UserMax = Parent->nickserv.live.size();
-	    }
+	    if (Parent->nickserv.IsLive(sourceL))
+	    {
+		if (Parent->nickserv.live[sourceL].IsServices())
+		{
+		    KILL(Parent->nickserv.FirstName(), sourceL,
+				Parent->nickserv.live[sourceL].RealName());
+		    return;
+		}
 
-	    // HAS to be AFTER the nickname is added to map.
-	    map<mstring, Committee>::iterator iter;
-	    { RLOCK(("CommServ", "list"));
-	    for (iter = Parent->commserv.list.begin();
+		{ WLOCK(("Server", "i_UserMax"));
+		if (i_UserMax < Parent->nickserv.live.size())
+		    i_UserMax = Parent->nickserv.live.size();
+		}
+
+		// HAS to be AFTER the nickname is added to map.
+		map<mstring, Committee>::iterator iter;
+		{ RLOCK(("CommServ", "list"));
+		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
-	    {
-		if (iter->second.IsOn(sourceL))
 		{
-		    MLOCK(("CommServ", "list", iter->first, "message"));
-		    for (iter->second.message = iter->second.MSG_begin();
+		    if (iter->second.IsOn(sourceL))
+		    {
+			MLOCK(("CommServ", "list", iter->first, "message"));
+			for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
-		    {
-			Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+			{
+			    Parent->servmsg.send(sourceL, "[" + IRC_Bold +
 					    iter->first + IRC_Off + "] " +
 					    iter->second.message->Entry());
+			}
 		    }
-		}
-	    }}
-	    if (Parent->nickserv.IsStored(sourceL))
-	    {
-		if (Parent->nickserv.stored[sourceL].Forbidden())
+		}}
+		if (Parent->nickserv.IsStored(sourceL))
 		{
-		    Parent->nickserv.send(Parent->nickserv.FirstName(),
-			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-			ToHumanTime(Parent->nickserv.Ident()).c_str());
-		}
-		else if (Parent->nickserv.stored[sourceL].Protect() &&
+		    if (Parent->nickserv.stored[sourceL].Forbidden())
+		    {
+			Parent->nickserv.send(Parent->nickserv.FirstName(),
+				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+				ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    }
+		    else if (Parent->nickserv.stored[sourceL].Protect() &&
 			!Parent->nickserv.stored[sourceL].IsOnline())
-		{
-		    Parent->nickserv.send(Parent->nickserv.FirstName(),
-			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-			ToHumanTime(Parent->nickserv.Ident()).c_str());
+		   {
+			Parent->nickserv.send(Parent->nickserv.FirstName(),
+				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+				ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    }
 		}
 	    }
 	}
@@ -3393,45 +3489,56 @@ void NetworkServ::execute(const mstring & data)
 	    case 1004:
 		break;
 	    }}
-	    { WLOCK(("Server", "i_UserMax"));
-	    if (i_UserMax < Parent->nickserv.live.size())
-		i_UserMax = Parent->nickserv.live.size();
-	    }
 
-	    // HAS to be AFTER the nickname is added to map.
-	    map<mstring, Committee>::iterator iter;
-	    { RLOCK(("CommServ", "list"));
-	    for (iter = Parent->commserv.list.begin();
+	    if (Parent->nickserv.IsLive(sourceL))
+	    {
+		if (Parent->nickserv.live[sourceL].IsServices())
+		{
+		    KILL(Parent->nickserv.FirstName(), sourceL,
+				Parent->nickserv.live[sourceL].RealName());
+		    return;
+		}
+
+		{ WLOCK(("Server", "i_UserMax"));
+		if (i_UserMax < Parent->nickserv.live.size())
+		    i_UserMax = Parent->nickserv.live.size();
+		}
+
+		// HAS to be AFTER the nickname is added to map.
+		map<mstring, Committee>::iterator iter;
+		{ RLOCK(("CommServ", "list"));
+		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
-	    {
-		if (iter->second.IsOn(sourceL))
 		{
-		    MLOCK(("CommServ", "list", iter->first, "message"));
-		    for (iter->second.message = iter->second.MSG_begin();
+		    if (iter->second.IsOn(sourceL))
+		    {
+			MLOCK(("CommServ", "list", iter->first, "message"));
+			for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
-		    {
-			Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+			{
+			    Parent->servmsg.send(sourceL, "[" + IRC_Bold +
 					    iter->first + IRC_Off + "] " +
 					    iter->second.message->Entry());
+			}
 		    }
-		}
-	    }}
-	    if (Parent->nickserv.IsStored(sourceL))
-	    {
-		if (Parent->nickserv.stored[sourceL.LowerCase()].Forbidden())
+		}}
+		if (Parent->nickserv.IsStored(sourceL))
 		{
-		    Parent->nickserv.send(Parent->nickserv.FirstName(),
-			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-			ToHumanTime(Parent->nickserv.Ident()).c_str());
-		}
-		else if (Parent->nickserv.stored[sourceL].Protect() &&
+		    if (Parent->nickserv.stored[sourceL].Forbidden())
+		    {
+			Parent->nickserv.send(Parent->nickserv.FirstName(),
+				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+				ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    }
+		    else if (Parent->nickserv.stored[sourceL].Protect() &&
 			!Parent->nickserv.stored[sourceL].IsOnline())
-		{
-		    Parent->nickserv.send(Parent->nickserv.FirstName(),
-			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-			ToHumanTime(Parent->nickserv.Ident()).c_str());
+		   {
+			Parent->nickserv.send(Parent->nickserv.FirstName(),
+				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+				ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    }
 		}
 	    }
 	}
@@ -3738,7 +3845,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 
     mstring source, sourceL;
     unsigned int msgtype;
-    if (data[0u]==':')
+    if (data[0u]==':' || data.ExtractWord(1, ": ").Contains("."))
     {
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
@@ -3919,7 +4026,9 @@ void NetworkServ::numeric_execute(const mstring & data)
 		    if (Parent->servmsg.FirstName() == *k)
 			Parent->server.MODE(*k, "+o");
 		}
-		if (Parent->nickserv.IsLive(*k) && Parent->startup.Setmode() != "")
+
+		if (!(proto.P12() || proto.Signon() == 1004) &&
+		    Parent->nickserv.IsLive(*k) && Parent->startup.Setmode() != "")
 		    Parent->server.MODE(*k, "+" + Parent->startup.Setmode());
 		FlushMsgs(*k);
 	    }
@@ -3959,6 +4068,8 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 331:     // RPL_NOTOPIC
 	break;
     case 332:     // RPL_TOPIC
+	break;
+    case 333:     // RPL_??? (Bahamut)
 	break;
     case 341:     // RPL_INVITING
 	break;

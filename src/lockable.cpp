@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.40  2000/08/03 13:06:31  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -76,7 +80,7 @@ static const char *ident = "@(#)$Id$";
 
 #ifdef MAGICK_LOCKS_WORK
 
-mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
+mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 {
     int i;
     count=0;
@@ -94,14 +98,16 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 		"READ", lockname.c_str());
 	else count++;
-	tlock[i].open(T_Locking::Read, lockname);
+#ifdef MAGICK_TRACE_WORKS
+	tlock[i].open(L_Read, lockname);
+#endif
     }
 
     if (lockname != "")
 	lockname += "::";
     lockname += args[i].AsString();
 
-    if (type == T_Locking::Read)
+    if (type == L_Read)
     {
 	rwlock = NULL;
 	rwlock = new ACE_RW_Thread_Mutex(lockname.c_str());
@@ -113,7 +119,7 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 		"READ", lockname.c_str());
 	else count++;
     }
-    else if (type == T_Locking::Write)
+    else if (type == L_Write)
     {
 	rwlock = NULL;
 	rwlock = new ACE_RW_Thread_Mutex(lockname.c_str());
@@ -125,7 +131,7 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 		"WRITE", lockname.c_str());
 	else count++;
     }
-    else if (type == T_Locking::Mutex)
+    else if (type == L_Mutex)
     {
 	mlock = NULL;
 	mlock = new ACE_Recursive_Thread_Mutex(lockname.c_str());
@@ -141,13 +147,15 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
     {
 	// Unknown Lock Type
     }
+#ifdef MAGICK_TRACE_WORKS
     tlock[i].open(type, lockname);
+#endif
     last_type = type;
 }
 
 mLOCK::~mLOCK()
 {
-    if (last_type == T_Locking::Read && rwlock != NULL)
+    if (last_type == L_Read && rwlock != NULL)
     {
 	if (rwlock->release() < 0)
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
@@ -158,7 +166,7 @@ mLOCK::~mLOCK()
 	    count--;
 	}
     }
-    else if (last_type == T_Locking::Write && rwlock != NULL)
+    else if (last_type == L_Write && rwlock != NULL)
     {
 	if (rwlock->release() < 0)
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
@@ -169,7 +177,7 @@ mLOCK::~mLOCK()
 	    count--;
 	}
     }
-    else if (last_type == T_Locking::Mutex && mlock != NULL)
+    else if (last_type == L_Mutex && mlock != NULL)
     {
 	if (mlock->release() < 0)
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),

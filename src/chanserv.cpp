@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.191  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.190  2000/08/03 13:06:30  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -3931,7 +3935,8 @@ long Chan_Stored_t::GetAccess(mstring entry)
 	RET(retval);
     }
 
-    if (Parent->nickserv.IsStored(entry))
+    if (Parent->nickserv.IsStored(entry) &&
+	Parent->nickserv.stored[entry].IsOnline())
     {
 	realentry = entry.LowerCase();
 	if (Parent->nickserv.stored[realentry].Host() != "")
@@ -5646,17 +5651,18 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 					mask.c_str());
     map<mstring, Chan_Stored_t>::iterator iter;
 
+    bool isoper = (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source));
+    bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+		Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source));
     for (iter = Parent->chanserv.stored.begin(), i=0, count = 0;
 			iter != Parent->chanserv.stored.end(); iter++)
     {
 	if (iter->second.Name().LowerCase().Matches(mask))
 	{
-	    if (i < listsize && (!iter->second.Private() ||
-		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+	    if (i < listsize && (!iter->second.Private() || isoper))
 	    {
-		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-		    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+		if (issop)
 		{
 		    if (message.Contains("NOEXP") && !iter->second.NoExpire())
 			continue;

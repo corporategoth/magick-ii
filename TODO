@@ -17,6 +17,9 @@ development team to be worked on, and are coming:
 
 - Per-channel clone override lists (kick if cloning)
 
+- Re-add the 'CS Override' level system (where you can
+  config what level you need for various overrides).
+
 - Change .lfo and .lng files (in language directory) to
   accept something like $1, $2, etc and replace with the
   string equivilant of arg1, arg2, etc.  This way we can
@@ -30,6 +33,9 @@ development team to be worked on, and are coming:
   function does, peculiarities about it, and other
   commenting that tell you how the program works or the
   bit of code in question fits into the grand scheme.
+
+- Performance tuning, as parts of the code work, but are
+  horribly slow or convoluted (as with any big project!)
 
 This is by no means an extensive list, there are alot more
 suggestions being tracked in the docs/develop directory.

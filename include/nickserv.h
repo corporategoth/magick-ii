@@ -25,6 +25,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/08/06 05:27:46  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.46  2000/08/03 13:06:29  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -565,7 +569,6 @@ public:
     map<mstring,Nick_Stored_t> stored;
     map<mstring,Nick_Live_t> live;
     map<mstring,mDateTime> recovered;
-    KillOnSignon_Handler kosh;
     InFlight_Handler ifh;
 
     static mstring findnextnick(mstring in);

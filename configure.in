@@ -61,7 +61,8 @@ dnl C/CPP flags
 
 AC_ARG_WITH(aceinc, [  --with-aceinc=dir       Location of ACE include files],
 	[CFLAGS="$CFLAGS -I${withval}"
-	CPPFLAGS="$CPPFLAGS -I${withval}"])
+	CPPFLAGS="$CPPFLAGS -I${withval}"
+	libacehead=1])
 
 dnl ====================================================
 
@@ -69,7 +70,7 @@ dnl First we check to see if we're going to use BSD
 dnl threads, because if we are, we need an special
 dnl paramater in $LIBS.
 
-AC_ARG_ENABLE(bsdthread, [  --enable-bsdthread      Use BSD-style pthreads],
+AC_ARG_ENABLE(bsdthread, [  --enable-bsdthread      Use BSD-style (libc_r) pthreads],
 	[LIBS="$LIBS -pthread"
 	libthread=1])
 
@@ -97,7 +98,8 @@ dnl C/CPP flags
 
 AC_ARG_WITH(threadinc, [  --with-threadinc=dir    Location of threads include files],
 	[CFLAGS="$CFLAGS -I${withval}"
-	CPPFLAGS="$CPPFLAGS -I${withval}"])
+	CPPFLAGS="$CPPFLAGS -I${withval}"
+	libthreadhead=1])
 
 dnl ====================================================
 
@@ -124,7 +126,8 @@ dnl C/CPP flags
 
 AC_ARG_WITH(zinc, [  --with-zinc=dir         Location of compression include files],
 	[CFLAGS="$CFLAGS -I${withval}"
-	CPPFLAGS="$CPPFLAGS -I${withval}"])
+	CPPFLAGS="$CPPFLAGS -I${withval}"
+	libzhead=1])
 
 dnl ====================================================
 
@@ -165,6 +168,11 @@ if test 0$libthread -eq 0; then
 AC_CHECK_LIB(pth,	pthread_create,	
 	[LIBS="$LIBS -lpth"
 	libthread=1])
+if test 0$libthread -eq 0; then
+AC_CHECK_LIB(thread,	thread_create,	
+	[LIBS="$LIBS -lthread"
+	libthread=1])
+fi
 fi
 fi
 
@@ -202,6 +210,7 @@ AC_CHECK_LIB(gz,	inflate,
 fi
 fi
 
+
 if test 0$libz -eq 0; then
 	echo "
 The Z compression library (zlib) is required to compile and
@@ -234,16 +243,6 @@ dnl exceptions work, anyone have examples?
 dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])
 AC_DEFINE(MAGICK_HAS_EXCEPTIONS)
 
-dnl Again, I will have to figure out how to check if the
-dnl thread locking mechanism works, right now I assume.
-dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_LOCKS_WORK)])
-AC_DEFINE(MAGICK_LOCKS_WORK)
-
-dnl Right now, I think linux trace is broken (symptom is
-dnl trace text ends up in unfortunate places, like the DB).
-AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_TRACE_WORKS)])
-dnl AC_DEFINE(MAGICK_TRACE_WORKS)
-
 dnl ====================================================
 
 dnl Now we check to see if they want encryption.
@@ -252,13 +251,79 @@ dnl default, but here is where they can disable it.
 
 AC_ARG_ENABLE(des, [  --enable-des            Add DES encryption to Magick (default)
   --disable-des           Remove DES encryption from Magick],
-	[case "${enablevel}" in
+	[case "${enableval}" in
 		yes) des=true;;
 		no) des=false;;
-		*) AC_MSG_ERROR(bad value ${enablevel} for DES option);;
+		*) AC_MSG_ERROR(bad value ${enableval} for DES option);;
 	 esac], [des=true])
 if test "$des" = "true"; then
 	AC_DEFINE(HASCRYPT)
+fi
+
+AC_ARG_ENABLE(trace, [  --enable-trace          Enable TRACE code (can cause problems)
+  --disable-trace         Disable TRACE code (default)],
+	[case "${enableval}" in
+		yes) trace=true;;
+		no) trace=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for TRACE option);;
+	 esac], [trace=false])
+if test "$trace" = "true"; then
+	AC_DEFINE(MAGICK_TRACE_WORKS)
+fi
+
+
+AC_ARG_ENABLE(trace, [  --enable-locks          Enable thread locking (default)
+  --disable-locks         Disable thread locking (dangerous!)],
+	[case "${enableval}" in
+		yes) locks=true;;
+		no) locks=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for LOCKS option);;
+	 esac], [locks=true])
+if test "$locks" = "true"; then
+	AC_DEFINE(MAGICK_LOCKS_WORK)
+fi
+
+
+if test 0$libacehead -eq 0; then
+AC_CHECK_HEADER(ace/OS.h, [libacehead=1])
+fi
+
+if test 0$libacehead -eq 0; then
+	echo "
+The ACE library has been found, however you must specify
+the location of its header files with the --with-aceinc
+paramater (this should point to your ACE_wrappers directory,
+NOT ACE_wrappers/ace)."
+	exit 1
+fi
+
+if test 0$libthreadhead -eq 0; then
+AC_CHECK_HEADER(pthread.h, [libthreadhead=1])
+if test 0$libthreadhead -eq 0; then
+AC_CHECK_HEADER(pthreads.h, [libthreadhead=1])
+if test 0$libthreadhead -eq 0; then
+AC_CHECK_HEADER(thread.h, [libthreadhead=1])
+fi
+fi
+fi
+
+if test 0$libacehead -eq 0; then
+	echo "
+A threads library has been found, however you must specify
+the location of its header files with the --with-threadinc
+paramater."
+	exit 1
+fi
+
+if test 0$libzhead -eq 0; then
+AC_CHECK_HEADER(zlib.h, [libzhead=1])
+fi
+
+if test 0$libacehead -eq 0; then
+	echo "
+The Z library has been found, however you must specify the
+location of its header files with the --with-zinc paramater."
+	exit 1
 fi
 
 dnl Find out which to use for C++ headers ...
@@ -287,7 +352,7 @@ AC_CHECK_FUNCS(ltoa)
 AC_CHECK_FUNCS(ultoa)
 AC_CHECK_FUNCS(atoul)
 
-AC_ARG_WITH(keylen, [  --with-keylen=size        Maximum size of key (and keyfile)],
+AC_ARG_WITH(keylen, [  --with-keylen=size      Maximum size of key (and keyfile)],
 	[AC_DEFINE_UNQUOTED(KEYLEN, $withval)],
 	[AC_DEFINE_UNQUOTED(KEYLEN, 1024)])
 

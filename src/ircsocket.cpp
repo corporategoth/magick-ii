@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2000/08/06 05:27:47  prez
+** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
+** and infact disabled by default due to it interfering everywhere.
+**
 ** Revision 1.118  2000/08/03 13:06:31  prez
 ** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
 **
@@ -525,27 +529,6 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(itoa(time(NULL))));
 	Parent->Connected(true);
     }
-    RET(0);
-}
-
-int KillOnSignon_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
-{
-    // If nickserv isnt online yet, wait 1s
-    mstring *tmp = (mstring *) arg;
-    FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", *tmp));
-
-    if (!Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
-    {
-        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),arg,ACE_Time_Value(1));
-	CP(("Re-Queing KOSH timer (NickServ is not online)"));
-	RET(0);
-    }
-
-    if (tmp->Contains(":") && tmp->After(":").Len() &&
-				Parent->nickserv.IsLive(tmp->Before(":")))
-	Parent->server.KILL(Parent->nickserv.FirstName(),
-					tmp->Before(":"), tmp->After(":"));
-    delete tmp;
     RET(0);
 }
 
