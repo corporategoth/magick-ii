@@ -33,7 +33,7 @@ public class IniParser
 
     public IniParser(String rawtext)
     {
-	StringTokenizer st = new StringTokenizer(rawtext, "\n");
+	StringTokenizer st = new StringTokenizer(rawtext, "\n\r");
 
 	String section = "";
 	while (st.hasMoreTokens())

@@ -37,6 +37,7 @@ import java.net.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 
 public class mct extends JApplet implements ActionListener
 {
@@ -168,7 +169,7 @@ public class mct extends JApplet implements ActionListener
 		   
 		    File f = new File(rv);
 		    if (!f.isAbsolute())
-			f = new File(currentDirectory() + "/" + rv);
+			f = new File(currentDirectory() + File.separator + rv);
 		    FileInputStream is = new FileInputStream(f);
 		    array = new byte[(int) f.length()];
 		    is.read(array);
@@ -192,14 +193,16 @@ public class mct extends JApplet implements ActionListener
 	    {
 		File f = new File(rv);
 		if (!f.isAbsolute())
-		    f = new File(currentDirectory() + "/" + rv);
+		    f = new File(currentDirectory() + File.separator + rv);
 		String cfg = getConfigData();
-		byte[] array = cfg.getBytes();
+		cfg = cfg.replaceAll("\n\n", "\n \n");
 		try
 		{
 		    f.createNewFile();
-		    FileOutputStream os = new FileOutputStream(f);
-		    os.write(array);
+		    PrintStream os = new PrintStream(new FileOutputStream(f), true);
+		    StringTokenizer st = new StringTokenizer(cfg, "\n");
+		    while (st.hasMoreTokens())
+			os.println(st.nextToken());
 		}
 		catch (Exception ex)
 		{
@@ -549,7 +552,7 @@ public class mct extends JApplet implements ActionListener
 	    {
 		File f = new File(path);
 		if (!f.isAbsolute())
-		    f = new File(currentDirectory() + "/" + path);
+		    f = new File(currentDirectory() + File.separator + path);
 		if (f.isDirectory())
 		    directory = f.getCanonicalPath();
 		else
@@ -621,7 +624,7 @@ public class mct extends JApplet implements ActionListener
 		chooser.setFileFilter(filt);
 	    }
 	    if (selected != null)
-		chooser.setSelectedFile(new File(directory + "/" + selected));
+		chooser.setSelectedFile(new File(directory + File.separator + selected));
 	    int rv = chooser.showDialog(null, approve);
 	    if (rv == JFileChooser.APPROVE_OPTION)
 	    {
