@@ -77,14 +77,19 @@ public:
   static wxConfigBase *Set(wxConfigBase *pConfig);
     // get the config object, creates it on demand unless DontCreateOnDemand
     // was called
-  static wxConfigBase *Get() { if ( !ms_pConfig ) Create(); return ms_pConfig; }
+  static wxConfigBase *Get() {
+	NFT("wxConfigBase::Get");
+	if ( !ms_pConfig ) Create();
+	NRET(wxConfigBase, ms_pConfig); }
     // create a new config object: this function will create the "best"
     // implementation of wxConfig available for the current platform, see
     // comments near definition wxCONFIG_WIN32_NATIVE for details. It returns
     // the created object and also sets it as ms_pConfig.
   static wxConfigBase *Create();
     // should Get() try to create a new log object if the current one is NULL?
-  static void DontCreateOnDemand() { ms_bAutoCreate = false; }
+  static void DontCreateOnDemand() {
+	NFT("wxConfigBase::DontCreateOnDemand");
+	ms_bAutoCreate = false; }
 
   // ctor & virtual dtor
     // environment variable expansion is on by default
@@ -128,8 +133,9 @@ public:
     // same as above, but for an entry
   virtual bool HasEntry(const mstring& strName) const = 0;
     // returns TRUE if either a group or an entry with a given name exist
-  bool Exists(const mstring& strName) const
-    { return HasGroup(strName) || HasEntry(strName); }
+  bool Exists(const mstring& strName) const {
+	FT("wxConfigBase::Exists", (strName));
+	RET(HasGroup(strName) || HasEntry(strName)); }
 
   // key access: returns TRUE if value was really read, FALSE if default used
   // (and if the key is not found the default value is returned.)
@@ -143,8 +149,11 @@ public:
   virtual bool Read(const mstring& key, long *pl) const = 0;
   virtual bool Read(const mstring& key, long *pl, long defVal) const;
 
-  virtual long Read(const mstring& strKey, long defVal) const
-    { long l; Read(strKey, &l, defVal); return l; }
+  virtual long Read(const mstring& strKey, long defVal) const {
+  	FT("wxConfigBase::Read", (strKey, defVal));
+	long l;
+	Read(strKey, &l, defVal);
+	RET(l); }
 
   // Convenience functions that are built on other forms
 
@@ -185,26 +194,47 @@ public:
   // options
     // we can automatically expand environment variables in the config entries
     // (this option is on by default, you can turn it on/off at any time)
-  bool IsExpandingEnvVars() const { return m_bExpandEnvVars; }
-  void SetExpandEnvVars(bool bDoIt = true) { m_bExpandEnvVars = bDoIt; }
+  bool IsExpandingEnvVars() const {
+	NFT("wxConfigBase::IsExpandingEnvVars");
+	RET(m_bExpandEnvVars); }
+  void SetExpandEnvVars(bool bDoIt = true) {
+	FT("wxConfigBase::SetExpandEnvVars", (bDoIt));
+	m_bExpandEnvVars = bDoIt; }
     // recording of default values
-  void SetRecordDefaults(bool bDoIt = true) { m_bRecordDefaults = bDoIt; }
-  bool IsRecordingDefaults() const { return m_bRecordDefaults; }
+  void SetRecordDefaults(bool bDoIt = true) {
+	FT("wxConfigBase::SetRecordDefaults", (bDoIt));
+	m_bRecordDefaults = bDoIt; }
+  bool IsRecordingDefaults() const {
+	NFT("wxConfigBase::IsRecordingDefaults");
+	RET(m_bRecordDefaults); }
   // does expansion only if needed
   mstring ExpandEnvVars(const mstring& str) const;
 
     // misc accessors
-  inline mstring GetAppName() const { return m_appName; }
-  inline mstring GetVendorName() const { return m_vendorName; }
+  inline mstring GetAppName() const {
+	NFT("wxConfigBase::GetAppName");
+	RET(m_appName); }
+  inline mstring GetVendorName() const {
+	NFT("wxConfigBase::GetVendorName");
+	RET(m_vendorName); }
 
-  inline void SetAppName(const mstring& appName) { m_appName = appName; }
-  inline void SetVendorName(const mstring& vendorName) { m_vendorName = vendorName; }
-  inline void SetStyle(long style) { m_style = style; }
-  inline long GetStyle() const { return m_style; }
+  inline void SetAppName(const mstring& appName) {
+	FT("wxConfigBase::SetAppName", (appName));
+	m_appName = appName; }
+  inline void SetVendorName(const mstring& vendorName) {
+	FT("wxConfigBase::SetVendorName", (vendorName));
+	m_vendorName = vendorName; }
+  inline void SetStyle(long style) {
+	FT("wxConfigBase::SetStyle", (style));
+	m_style = style; }
+  inline long GetStyle() const {
+	NFT("wxConfigBase::GetStyle");
+	RET(m_style); }
 
 protected:
-  static bool IsImmutable(const mstring& key)
-    { return !key.IsEmpty() && key[0] == wxCONFIG_IMMUTABLE_PREFIX; }
+  static bool IsImmutable(const mstring& key) {
+	FT("wxConfigBase::IsImmutable", (key));
+	RET(!key.IsEmpty() && key[0] == wxCONFIG_IMMUTABLE_PREFIX); }
 
 private:
   // are we doing automatic environment variable expansion?
@@ -237,7 +267,9 @@ public:
  ~wxConfigPathChanger();
 
   // get the key name
-  const mstring& Name() const { return m_strName; }
+  const mstring& Name() const {
+	NFT("wxConfigBase::Name");
+	RET(m_strName); }
 
 private:
   wxConfigBase *m_pContainer;   // object we live in
