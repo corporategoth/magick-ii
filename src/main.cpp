@@ -11,11 +11,10 @@
 //
 // ===================================================
 
-#include "magickmemory.hpp"
-#include "magick.h"
-#include "datetime.h"
 #include <exception>
 using namespace std;
+#include "magick.h"
+#include "datetime.h"
 mDateTime Start_Time, Reset_Time;
 
 Magick *MagickObject;

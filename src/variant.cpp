@@ -10,7 +10,6 @@
 // code must be clearly documented and labelled.
 //
 // ===================================================
-#include "magickmemory.hpp"
 #include "variant.h"
 #include "trace.h"
 
@@ -585,3 +584,4 @@ mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& t
     values.push_back(fourteen);
     values.push_back(fifteen);
 }
+

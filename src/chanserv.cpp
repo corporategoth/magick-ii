@@ -11,7 +11,6 @@
 //
 // ===================================================
 
-#include "magickmemory.hpp"
 #include "chanserv.h"
 #include "lockable.h"
 #include "magick.h"

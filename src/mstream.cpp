@@ -21,15 +21,13 @@
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-#include "magickmemory.hpp"
-#include "mstream.h"
-#include "utils.h"
+#include "ace/OS.h"
 #include <math.h>
 #include <zlib.h>
-
 #include <stdarg.h>
+#include "mstream.h"
+#include "utils.h"
 #include "log.h"
-#include "ace/OS.h"
 
 #define BUF_TEMP_SIZE 10000
 void ConvertToIeeeExtended(double num, unsigned char *bytes);
@@ -1762,3 +1760,4 @@ wxFileStream::wxFileStream(const mstring& fileName)
  : wxFileInputStream(fileName), wxFileOutputStream(*wxFileInputStream::m_file)
 {
 }
+

@@ -31,7 +31,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include "magickmemory.hpp"
 #include <string>
 using namespace std;
 

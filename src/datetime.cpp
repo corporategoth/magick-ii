@@ -11,7 +11,6 @@
 //
 // ===================================================
 
-#include "magickmemory.hpp"
 #include "datetime.h"
 #include "log.h"
 
@@ -675,3 +674,4 @@ mDateTime StringToTime(const mstring& in)
 mDateTime StringToDateTime(const mstring& in);
 
 #endif
+

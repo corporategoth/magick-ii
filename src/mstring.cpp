@@ -24,13 +24,12 @@
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
-#include "magickmemory.hpp"
-#include "mstring.h"
 #include "ace/OS.h"
 #include <ctype.h>
 #include <stdarg.h>
 #include <algorithm>
 using namespace std;
+#include "mstring.h"
 
 mstring::mstring(const mstring& in)
 :inherited(in)

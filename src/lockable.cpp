@@ -11,7 +11,6 @@
 //
 // ===================================================
 
-#include "magickmemory.hpp"
 #include "lockable.h"
 
 RLOCK::RLOCK(mstring x1)

@@ -22,7 +22,6 @@
 //                       Vadim Zeitlin      <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
-#include "magickmemory.hpp"
 #include "confbase.h"
 #include "fileconf.h"
 #include "trace.h"
@@ -215,8 +214,8 @@ wxConfigBase *wxConfigBase::Create()
   NFT("wxConfigBase::Create");
   if ( ms_bAutoCreate && ms_pConfig == NULL ) 
   {
-/*    ms_pConfig =
-      new wxFileConfig("magick");*/
+    ms_pConfig =
+      new wxFileConfig("magick");
   }
 
   NRET(wxConfBase, ms_pConfig);

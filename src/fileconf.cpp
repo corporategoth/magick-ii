@@ -22,14 +22,12 @@
 //                       Ballueder@usa.net     <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
-#include "magickmemory.hpp"
-#include "fileconf.h"
-#include "utils.h"
-#include <ctype.h>
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#include "fileconf.h"
+#include "utils.h"
 #include "trace.h"
 
 #define CONST_CAST ((wxFileConfig *)this)->

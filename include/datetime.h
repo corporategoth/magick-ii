@@ -24,44 +24,44 @@
 
 class mDateTime
 {
+    double Val;
 public:
-	double Val;
-	enum mDateTimeFlag {Date, Time, DateTime};
+    enum mDateTimeFlag {Date, Time, DateTime};
 
-	static mDateTime CurrentDate();
-	static mDateTime CurrentTime();
-	static mDateTime CurrentDateTime();
+    static mDateTime CurrentDate();
+    static mDateTime CurrentTime();
+    static mDateTime CurrentDateTime();
 
-	mDateTime() {Val=0.0;}
-	mDateTime(const mDateTime& src) {Val=src.Val;}
-	mDateTime(double src) {Val=src;}
-	mDateTime(time_t src);
-	mDateTime(const mstring& src, mDateTimeFlag flag=DateTime);
-	mDateTime(unsigned int year, unsigned int month, unsigned int day);
-	mDateTime(unsigned int hour, unsigned int min, unsigned int sec, unsigned int msec);
+    mDateTime() {Val=0.0;}
+    mDateTime(const mDateTime& src) {Val=src.Val;}
+    mDateTime(double src) {Val=src;}
+    mDateTime(time_t src);
+    mDateTime(const mstring& src, mDateTimeFlag flag=DateTime);
+    mDateTime(unsigned int year, unsigned int month, unsigned int day);
+    mDateTime(unsigned int hour, unsigned int min, unsigned int sec, unsigned int msec);
+    mDateTime& operator=(const mDateTime& in);
 
-	mDateTime& operator=(const mDateTime& in);
-	mDateTime& operator=(double in);
-	mDateTime& operator=(time_t in);
-	mDateTime& operator+=(const mDateTime& in);
-	mDateTime& operator+=(double in);
-	mDateTime& operator+=(time_t in);
-	mDateTime& operator-=(const mDateTime& in);
-	mDateTime& operator-=(double in);
-	mDateTime& operator-=(time_t in);
-	mDateTime& operator+(const mDateTime& in);
-	mDateTime& operator+(double in);
-	mDateTime& operator+(time_t in);
-	mDateTime& operator-(const mDateTime& in);
-	mDateTime& operator-(double in);
-	mDateTime& operator-(time_t in);
+    mDateTime& operator=(double in);
+    mDateTime& operator=(time_t in);
+    mDateTime& operator+=(const mDateTime& in);
+    mDateTime& operator+=(double in);
+    mDateTime& operator+=(time_t in);
+    mDateTime& operator-=(const mDateTime& in);
+    mDateTime& operator-=(double in);
+    mDateTime& operator-=(time_t in);
+    mDateTime& operator+(const mDateTime& in);
+    mDateTime& operator+(double in);
+    mDateTime& operator+(time_t in);
+    mDateTime& operator-(const mDateTime& in);
+    mDateTime& operator-(double in);
+    mDateTime& operator-(time_t in);
 
-	bool operator==(const mDateTime& in);
-	bool operator!=(const mDateTime& in);
-	bool operator>(const mDateTime& in);
-	bool operator<(const mDateTime& in);
-	bool operator>=(const mDateTime& in);
-	bool operator<=(const mDateTime& in);
+    bool operator==(const mDateTime& in);
+    bool operator!=(const mDateTime& in);
+    bool operator>(const mDateTime& in);
+    bool operator<(const mDateTime& in);
+    bool operator>=(const mDateTime& in);
+    bool operator<=(const mDateTime& in);
 
 /* FormatString formats the date-and-time using the format given by 
    format. The following format specifiers are supported:
@@ -161,19 +161,24 @@ public:
 
   assigns 'The meeting is on Wednesday, February 15, 1995 at 10:30 AM' to
   the string variable S. */
+    mstring FormatString(const mstring& format);
 
-	mstring FormatString(const mstring& format);
-	mstring DateString();
-	mstring TimeString();
-	mstring DateTimeString();
+    mstring DateString();
+    mstring TimeString();
+    mstring DateTimeString();
 
-	operator double(){return Val;}
-	operator time_t();
-	operator mstring();
+    operator double(){return Val;}
+    operator time_t();
+    operator mstring();
 
-	int DayOfWeek();
-	void DecodeDate(int &year, int &month, int &day);
-	void DecodeTime(int &hour, int &min, int &sec, int& msec); 
+    int DayOfWeek();
+    void DecodeDate(int &year, int &month, int &day);
+    void DecodeTime(int &hour, int &min, int &sec, int& msec); 
+
+    friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
+    friend wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);
+    friend wxInputStream& operator>>(wxInputStream& is, mDateTime& src);
+
 };
 
 wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);

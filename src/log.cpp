@@ -33,14 +33,13 @@
   #pragma implementation "log.h"
 #endif
 
-#include "magickmemory.hpp"
-#include "log.h"
-#include <time.h>
-#include <ctype.h>
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#include <time.h>
+#include <ctype.h>
+#include "log.h"
 
 // ----------------------------------------------------------------------------
 // non member functions
