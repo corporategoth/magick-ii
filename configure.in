@@ -75,7 +75,9 @@ dnl and -l<file> to the LIBS paramater.
 AC_ARG_WITH(acelib, [  --with-acelib=file      Location of ACE library file],
   [if test -f ${withval}; then
     libdir="`dirname ${withval}`"
-    libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
+    libfile="`echo \`basename ${withval}\` | \
+	sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,, -e s,\.sl$,, \
+		-e s,\.lib$,, -e s,\.dll$,,`"
     if test ! "x$libdir" = "x$libfile"; then
       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
       export LD_LIBRARY_PATH
@@ -116,7 +118,9 @@ dnl and -l<file> to the LIBS paramater.
 AC_ARG_WITH(threadlib, [  --with-threadlib=file   Location of threads library file],
   [if test -f ${withval}; then
     libdir="`dirname ${withval}`"
-    libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
+    libfile="`echo \`basename ${withval}\` | \
+	sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,, -e s,\.sl$,, \
+		-e s,\.lib$,, -e s,\.dll$,,`"
     if test ! "x$libdir" = "x$libfile"; then
       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
       export LD_LIBRARY_PATH
@@ -145,7 +149,9 @@ dnl and -l<file> to the LIBS paramater.
 AC_ARG_WITH(zlib, [  --with-zlib=file        Location of compression library file],
   [if test -f ${withval}; then
     libdir="`dirname ${withval}`"
-    libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
+    libfile="`echo \`basename ${withval}\` | \
+	sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,, -e s,\.sl$,, \
+		-e s,\.lib$,, -e s,\.dll$,,`"
     if test ! "x$libdir" = "x$libfile"; then
       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
       export LD_LIBRARY_PATH
@@ -384,8 +390,8 @@ AC_ARG_ENABLE(hostlock, [  --enable-hostlock       Enable binary locking to a ho
     *) AC_MSG_ERROR(bad value ${enableval} for HOSTLOCK option);;
   esac], [hostlock=true])
 
+echo $ECHO_N "configuring system lock paramaters"" ... $ECHO_C"
 if test "$hostlock" = "true"; then
-  echo $ac_n "configuring system lock paramaters"" ... $ac_c"
   if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
     if test -f ace_uname.cpp; then
       $CXX $LIBS $CPPFLAGS -o ace_uname ace_uname.cpp >/dev/null 2>&1
@@ -404,16 +410,17 @@ if test "$hostlock" = "true"; then
     fi
   fi
   if test -n "$BUILD_NODE" -a -n "$BUILD_TYPE" -a -n "$BUILD_REL"; then
-    echo "$ac_t""done"
+    echo "${ECHO_T}done"
     AM_CONDITIONAL(STAMPED, test 1)
     CPPFLAGS="$CPPFLAGS -DBUILD_NODE=\"\\\"$BUILD_NODE\\\"\" \
       -DBUILD_TYPE=\"\\\"$BUILD_TYPE\\\"\" \
       -DBUILD_REL=\"\\\"$BUILD_REL\\\"\""
   else
-    echo "$ac_t""not done"
+    echo "${ECHO_T}not done"
     unset BUILD_NODE BUILD_TYPE BUILD_REL
   fi
 else
+  echo "${ECHO_T}not done"
   unset BUILD_NODE BUILD_TYPE BUILD_REL
 fi
 
@@ -518,23 +525,29 @@ dnl Work out how big our maximum key size is, and create the stamp tokens
 cat >.max_keylen.c <<EOF
 #include <stdio.h>
 #include "include/crypt/blowfish.h"
+#define BUF_SZ ((BF_ROUNDS+2)*4)
 int main() {
-  printf("%d\n", ((BF_ROUNDS+2)*4));
-  return 0; }
+  char *p, *out = (char *) malloc(BUF_SZ + 1);
+  p = out + BUF_SZ;
+  *p = 0;
+  memset(out, '.', BUF_SZ);
+  sprintf(out, "| Magick II Key Stamp X");
+  p = out + strlen(out);
+  *p = ' ';
+  p = out + strlen(out) - 2;
+  *p = ' ';
+  p++;
+  *p = '|';
+  printf("%s", out);
+  free(out);
+  return strlen(out); }
 EOF
-$CC -o .max_keylen .max_keylen.c
-keylen=`./.max_keylen`; rm -f .max_keylen*
+$CC -I. -o .max_keylen .max_keylen.c 2>/dev/null
 
-fill="."
-while test `echo $fill | wc -c` -lt $keylen; do
-  fill=`echo $fill | sed "s/\./\.\./g"`
-done
-len=`expr $keylen - 2`
-str="| Magick II Key Stamp 1 $fill"
-str="`echo $str | cut -b1-$len` |"
+str="`echo \`./.max_keylen\` | sed -e s/X/1/`"
 AC_DEFINE_UNQUOTED(CRYPTO_KEY1, "$str")
-str="| Magick II Key Stamp 2 $fill"
-str="`echo $str | cut -b1-$len` |"
+str="`echo \`./.max_keylen\` | sed -e s/X/2/`"
 AC_DEFINE_UNQUOTED(CRYPTO_KEY2, "$str")
+rm -f .max_keylen*
 
 AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/crypt/Makefile src/xml/Makefile include/Makefile include/crypt/Makefile include/xml/Makefile docs/man/Makefile lang/Makefile)
