@@ -131,6 +131,12 @@ The files themselves are stored as hexidecimal numbers, with no
 extension -- the map to real filenames is stored in the database.
 The path name actually used is a setting in the magick.ini file.
 
+files/public - This directory is where all files in the public
+filesystem (uploaded by SOPS only)are stored. The files themselves
+are stored as hexidecimal numbers, with no extension -- the map to
+real filenames is stored in the database. The path name actually
+used is a setting in the magick.ini file.
+
 files/temp - This directory is where all files involved in DCC
 transfers (sending or receiving) are stored.  These files are
 considered volatile, and if Magick is not running, can safely be
@@ -148,7 +154,7 @@ again at runtime, the settings in the config file will be used.
 
 --help (or -?)	Help output (summary of the below).
 --dir X		Set the initial services directory.
---config X	Set the name of the config file.
+--config X	Set the name (and/or path) of the config file.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognized:
@@ -199,6 +205,10 @@ PARAMATER	SHORT	GROUP		OPTION
 --inflight X	-f	MEMOSERV	INFLIGHT
 --logignore	-i	OPERSERV	LOG_IGNORE=true
 --ignore X      -I	OPERSERV	IGNORE_METHOD
+
+Example:
+
+./magick --config /etc/magick.ini
 
 5. FUNCTIONALITY
 ================

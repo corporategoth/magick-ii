@@ -6,7 +6,7 @@ install=false
 type=SOURCE
 [docs/Makefile.am]
 type=normal
-sub_dirs=en,
+sub_dirs=en,man,
 [src/xml/dllmain.c]
 install_location=
 dist=true
@@ -484,7 +484,7 @@ type=SOURCE
 [Makefile.am]
 files=magick.kdevprj,AUTHORS,COPYING,ChangeLog,INSTALL,README,TODO,magick.lsm,
 type=normal
-sub_dirs=magick,docs,src,include,
+sub_dirs=magick,docs,src,include,lang,
 [include/xml/hashtable.h]
 install_location=
 dist=true
