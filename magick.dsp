@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib-1.1.3" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /D ACE_NTRACE=1 /Fr /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /D ACE_NTRACE=1 /Fr /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
