@@ -292,7 +292,7 @@ void News_t::Read(const mstring & name)
     ETCB();
 }
 
-void News_t::Unread(const mstring & name)
+void News_t::Unread(const mstring name)
 {
     BTCB();
     FT("News_t::Unread", (name));
@@ -1501,15 +1501,8 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	Magick::instance().memoserv.stats.i_Unread++;
 	if (what.IsSameAs("all", true))
 	{
-	    MemoServ::channel_news_t::iterator iter;
-	    mstring output;
-
 	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
-	    for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
-		 iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
-	    {
-		iter->Unread(whoami);
-	    }
+	    for_each(Magick::instance().memoserv.ChannelNewsBegin(who), Magick::instance().memoserv.ChannelNewsEnd(who), bind2nd(mem_fun1_ref(&News_t::Unread), whoami));
 	    SEND(mynick, source, "MS_COMMAND/UNREAD_ALL", (who.LowerCase()));
 	}
 	else
@@ -1581,15 +1574,9 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	Magick::instance().memoserv.stats.i_Unread++;
 	if (what.IsSameAs("all", true))
 	{
-	    MemoServ::nick_memo_t::iterator iter;
-	    mstring output;
-
 	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
-	    for (iter = Magick::instance().memoserv.NickMemoBegin(who); iter != Magick::instance().memoserv.NickMemoEnd(who);
-		 iter++)
-	    {
-		iter->Unread();
-	    }
+	    for_each(Magick::instance().memoserv.NickMemoBegin(who), Magick::instance().memoserv.NickMemoEnd(who),
+		mem_fun_ref(&Memo_t::Unread));
 	    NSEND(mynick, source, "MS_COMMAND/NS_UNREAD_ALL");
 	}
 	else
@@ -2051,7 +2038,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 
 	unsigned int num = atoi(what.c_str());
 
-	if (num <= 0 || num > Magick::instance().memoserv.ChannelNewsSize(who))
+	if (num < 1 || num > Magick::instance().memoserv.ChannelNewsSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, Magick::instance().memoserv.ChannelNewsSize(who)));
 	    return;
@@ -2065,16 +2052,13 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 	    return;
 	}
 
-	unsigned int i;
 	mstring output;
 
 	{
 	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
-	    MemoServ::channel_news_t::iterator iter = Magick::instance().memoserv.ChannelNewsEnd(who);
-	    for (i = 1; i < num; iter++, i++);
-	    output =
-		parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD_ARG"),
-			     mVarArray(Magick::instance().chanserv.GetStored(who)->Name(), iter->Sender(), iter->Text()));
+	    News_t &n = Magick::instance().memoserv.GetChannelNews(who, num - 1);
+	    output = parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD_ARG"),
+				  mVarArray(Magick::instance().chanserv.GetStored(who)->Name(), n.Sender(), n.Text()));
 	}
 
 	do_Forward2(mynick, source, dest, output);
@@ -2102,7 +2086,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 
 	unsigned int num = atoi(what.c_str());
 
-	if (num <= 0 || num > Magick::instance().memoserv.NickMemoSize(who))
+	if (num < 1 || num > Magick::instance().memoserv.NickMemoSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, Magick::instance().memoserv.NickMemoSize(who)));
 	    return;
@@ -2116,23 +2100,17 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 	    return;
 	}
 
-	unsigned int i;
 	mstring output;
 
 	{
 	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
-	    MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
-	    for (i = 1; i < num; iter++, i++);
-
-	    if (iter->File())
-		output =
-		    parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD_ARG"),
-				 mVarArray(Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
-					   iter->Sender(), iter->Text()));
+	    Memo_t &m = Magick::instance().memoserv.GetNickMemo(who, num - 1);
+	    if (m.File())
+		output = parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD_ARG"),
+				      mVarArray(Magick::instance().filesys.GetName(FileMap::MemoAttach, m.File()), m.Sender(), m.Text()));
 	    else
-		output =
-		    parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD"),
-				 mVarArray(iter->Sender(), iter->Text()));
+		output = parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD"),
+				      mVarArray(m.Sender(), m.Text()));
 	}
 
 	do_Forward2(mynick, source, dest, output);
@@ -2258,7 +2236,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 
 	unsigned int num = atoi(what.c_str());
 
-	if (num <= 0 || num > Magick::instance().memoserv.ChannelNewsSize(who))
+	if (num < 1 || num > Magick::instance().memoserv.ChannelNewsSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, Magick::instance().memoserv.ChannelNewsSize(who)));
 	    return;
@@ -2271,19 +2249,13 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	    return;
 	}
 
-	unsigned int i;
-
 	{
 	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
-	    MemoServ::channel_news_t::iterator iter = Magick::instance().memoserv.ChannelNewsBegin(who);
-	    for (i = 1; i < num; iter++, i++);
+	    News_t &n = Magick::instance().memoserv.GetChannelNews(who, num - 1);
 
-	    recipiant = iter->Sender();
-	    output =
-		parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
-			     mVarArray(who,
-				       ((iter->Text().size() > 20) ? (iter->Text().SubString(0, 19) + "...") : iter->Text()),
-				       text));
+	    recipiant = n.Sender();
+	    output = parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
+				  mVarArray(who, ((n.Text().size() > 20) ? (n.Text().SubString(0, 19) + "...") : n.Text()), text));
 	}
     }
     else
@@ -2310,7 +2282,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 
 	unsigned int num = atoi(what.c_str());
 
-	if (num <= 0 || num > Magick::instance().memoserv.NickMemoSize(who))
+	if (num < 1 || num > Magick::instance().memoserv.NickMemoSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, Magick::instance().memoserv.NickMemoSize(who)));
 	    return;
@@ -2323,26 +2295,18 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	    return;
 	}
 
-	unsigned int i;
-
 	{
 	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
-	    MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
-	    for (i = 1; i < num; iter++, i++);
+	    Memo_t &m = Magick::instance().memoserv.GetNickMemo(who, num - 1);
 
-	    recipiant = iter->Sender();
-	    if (iter->File())
-		output =
-		    parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
-				 mVarArray(Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
-					   ((iter->Text().length() >
-					     20) ? (iter->Text().SubString(0, 19) + "...") : iter->Text()), text));
+	    recipiant = m.Sender();
+	    if (m.File())
+		output = parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
+				      mVarArray(Magick::instance().filesys.GetName(FileMap::MemoAttach, m.File()),
+					   ((m.Text().length() > 20) ? (m.Text().SubString(0, 19) + "...") : m.Text()), text));
 	    else
-		output =
-		    parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY"),
-				 mVarArray(((iter->Text().length() >
-					     20) ? (iter->Text().SubString(0, 19) + "...") : iter->Text()), text));
-
+		output = parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY"),
+				      mVarArray(((m.Text().length() > 20) ? (m.Text().SubString(0, 19) + "...") : m.Text()), text));
 	}
     }
 
@@ -2491,7 +2455,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 		MemoServ::channel_news_t::iterator iter = newslist.begin();
 		for (ni = numbers.begin(); ni != numbers.end(); ni++)
 		{
-		    if (*ni - adjust <= 0)
+		    if (*ni - adjust < 1)
 			nonnumeric = true;
 		    else if (*ni - adjust > static_cast < int > (newslist.size()))
 			triedabove = true;
@@ -2603,12 +2567,12 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 
 	    {
 		WLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
-		MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(who);
+		MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
 		amt = memolist.size();
 		MemoServ::nick_memo_t::iterator iter = memolist.begin();
 		for (ni = numbers.begin(); ni != numbers.end(); ni++)
 		{
-		    if (*ni - adjust <= 0)
+		    if (*ni - adjust < 1)
 			nonnumeric = true;
 		    else if (*ni - adjust > static_cast < int > (memolist.size()))
 			triedabove = true;
@@ -2785,15 +2749,9 @@ void MemoServ::do_File(const mstring & mynick, const mstring & source, const mst
 	    {
 		unsigned int count = 0;
 
-		MemoServ::nick_memo_t::iterator iter;
 		{
 		    RLOCK((lck_MemoServ, lck_nick, target.LowerCase()));
-		    for (iter = Magick::instance().memoserv.NickMemoBegin(target);
-			 iter != Magick::instance().memoserv.NickMemoEnd(target); iter++)
-		    {
-			if (iter->File())
-			    count++;
-		    }
+		    count = count_if(Magick::instance().memoserv.NickMemoBegin(target), Magick::instance().memoserv.NickMemoEnd(target), mem_fun_ref(&Memo_t::File));
 		}
 		if (count >= Magick::instance().memoserv.Files())
 		{
@@ -2908,16 +2866,10 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	Magick::instance().memoserv.stats.i_Set++;
 	if (what.IsSameAs("all", true))
 	{
-	    MemoServ::channel_news_t::iterator iter;
-	    mstring output;
-
 	    {
+		bool val = onoff.GetBool();
 		WLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
-		for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
-		     iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
-		{
-		    iter->NoExpire(onoff.GetBool());
-		}
+		for_each(Magick::instance().memoserv.ChannelNewsBegin(who), Magick::instance().memoserv.ChannelNewsEnd(who), bind2nd(mem_fun1_ref<void,News_t,bool>(&News_t::NoExpire), val));
 	    }
 	    SEND(mynick, source, "MS_COMMAND/CS_SET_ALL",
 		 (Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), who,
@@ -3020,14 +2972,11 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	Magick::instance().memoserv.stats.i_Set++;
 	if (what.IsSameAs("all", true))
 	{
-	    MemoServ::nick_memo_t::iterator iter;
-	    mstring output;
-	    { WLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
-	    for (iter = Magick::instance().memoserv.NickMemoBegin(who);
-		    iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 	    {
-		iter->NoExpire(onoff.GetBool());
-	    }}
+		bool val = onoff.GetBool();
+		WLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
+		for_each(Magick::instance().memoserv.NickMemoBegin(who), Magick::instance().memoserv.NickMemoEnd(who), bind2nd(mem_fun1_ref(&Memo_t::NoExpire), val));
+	    }
 	    SEND(mynick, source, "MS_COMMAND/NS_SET_ALL", (
 		Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 		(onoff.GetBool() ?

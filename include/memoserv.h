@@ -175,7 +175,7 @@ public:
     void NoExpire(const bool in);
     bool IsRead(const mstring name) const;
     void Read(const mstring & name);
-    void Unread(const mstring & name);
+    void Unread(const mstring name);
 
     SXP::Tag & GetClassTag() const
     {
