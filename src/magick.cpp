@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.230  2000/05/18 11:49:13  ungod
+** no message
+**
 ** Revision 1.229  2000/05/18 10:13:15  prez
 ** Finished off the mFile structure, and the DCC system, it all works.
 **
@@ -2070,9 +2073,13 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"KEYFILE",&files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",&files.memoattach,"files/memo");
+    ACE_OS::mkdir(files.memoattach.c_str());
     in.Read(ts_Files+"PICTURE",&files.picture,"files/pic");
+    ACE_OS::mkdir(files.picture.c_str());
     in.Read(ts_Files+"PUBLIC",&files.i_public,"files/public");
+    ACE_OS::mkdir(files.i_public.c_str());
     in.Read(ts_Files+"TEMPDIR",&files.tempdir,"files/temp");
+    ACE_OS::mkdir(files.tempdir.c_str());
     in.Read(ts_Files+"FILESYSSIZE",&files.filesyssize,0);
     in.Read(ts_Files+"BLOCKSIZE",&files.blocksize,1024);
     in.Read(ts_Files+"TIMEOUT",&value_mstring,"2m");
