@@ -24,6 +24,9 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/05/25 11:49:32  ungod
+** even more mConfigEngine meaty bits. (should we change it's name to Good-O's?)
+**
 ** Revision 1.5  2000/05/21 14:01:09  ungod
 ** body for decomment and load/save to files.
 **
@@ -49,6 +52,7 @@ class ceNode;
 
 class ceNode
 {
+    friend class mConfigEngine;
 private:
     mstring i_Name;
     map<mstring,mstring> i_keys;
@@ -60,10 +64,10 @@ public:
     ceNode& operator=(const ceNode &in);
     bool operator==(const ceNode &in)const;
     bool operator<(const ceNode &in)const;
-    void SetKey(const mstring &KeyName, const mstring &Value);
-    void DeleteKey(const mstring &KeyName);
-    void CreateNode(const mstring &NodeName);
-    void DeleteNode(const mstring &NodeName);
+    bool SetKey(const mstring &KeyName, const mstring &Value);
+    bool DeleteKey(const mstring &KeyName);
+    bool CreateNode(const mstring &NodeName);
+    bool DeleteNode(const mstring &NodeName);
     bool NodeExists(const mstring &NodeName);
 };
 
@@ -99,7 +103,7 @@ public:
     void Write(const mstring &key,unsigned long value);
     void Write(const mstring &key,double value);
 
-    ceNode &GetNode(const mstring& NodeName);
+    auto_ptr<ceNode> GetNode(const mstring& NodeName);
     bool DeleteNode(const mstring& NodeName);
     bool DeleteKey(const mstring& KeyName);
     bool NodeExists(const mstring &NodeName);

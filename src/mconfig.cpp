@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/05/25 11:49:32  ungod
+** even more mConfigEngine meaty bits. (should we change it's name to Good-O's?)
+**
 ** Revision 1.7  2000/05/25 08:16:39  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -64,6 +67,9 @@ ceNode::ceNode(ceNode &in)
 
 ceNode::~ceNode()
 {
+    // probably not needed, but for safety's sake anyway
+    i_children.clear();
+    i_keys.clear();
 }
 
 ceNode& ceNode::operator=(const ceNode &in)
@@ -78,24 +84,30 @@ bool ceNode::operator<(const ceNode &in)const
 {
 }
 
-void ceNode::SetKey(const mstring &KeyName, const mstring &Value)
+bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
 {
 }
 
-void ceNode::DeleteKey(const mstring &KeyName)
+bool ceNode::DeleteKey(const mstring &KeyName)
 {
 }
 
-void ceNode::CreateNode(const mstring &NodeName)
+bool ceNode::CreateNode(const mstring &NodeName)
 {
+    // strip off the first bit of the path, if not exists, create the node, and pass
+    // the rest of the path to it, so it can do the same itself.
+    // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
 }
 
-void ceNode::DeleteNode(const mstring &NodeName)
+bool ceNode::DeleteNode(const mstring &NodeName)
 {
 }
 
 bool ceNode::NodeExists(const mstring &NodeName)
 {
+    // strip off the first bit of the path, if not exists, return false, otherwise pass
+    // the rest of the path to it, so it can do the same itself.
+    // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
 }
 
 mConfigEngine::mConfigEngine()
@@ -104,6 +116,8 @@ mConfigEngine::mConfigEngine()
 
 mConfigEngine::mConfigEngine(const mstring& FileName)
 {
+    i_FileName=FileName;
+    LoadFile();
 }
 
 bool mConfigEngine::LoadFile()
@@ -124,6 +138,8 @@ bool mConfigEngine::SaveFile()
 
 void mConfigEngine::Empty()
 {
+    RootNode.i_children.clear();
+    RootNode.i_keys.clear();
 }
 
 
@@ -189,16 +205,21 @@ void mConfigEngine::Write(const mstring &key,double value)
 }
 
 
-ceNode &mConfigEngine::GetNode(const mstring& NodeName)
+auto_ptr<ceNode> mConfigEngine::GetNode(const mstring& NodeName)
 {
+    auto_ptr<ceNode> Result;
+
+    return Result;
 }
 
 bool mConfigEngine::DeleteNode(const mstring& NodeName)
 {
+    return RootNode.DeleteNode(NodeName);
 }
 
 bool mConfigEngine::DeleteKey(const mstring& KeyName)
 {
+    return RootNode.DeleteKey(KeyName);
 }
 
 bool mConfigEngine::LoadFromString(const mstring& configstring)
@@ -223,10 +244,12 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
         if(currline[0]=='['&&currline.Last()==']')
         {
             // new section
+            Result=RootNode.CreateNode(currline.After("[").Before("]"));
         }
         else if(currline.First('=')>0)
         {
             // new value
+            Result=RootNode.SetKey(currline.Before("="),currline.After("="));
         }
     }
     return Result;
