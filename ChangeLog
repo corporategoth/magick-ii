@@ -1,3 +1,23 @@
+* 2002-06-14 10:19  Preston A. Elder <prez@magick.tm>
+  include/version.h (1.134), include/version.h-release (1.38):
+  
+  Updated version to b13
+
+* 2002-05-21 01:19  Preston A. Elder <prez@magick.tm>
+  gui/mct.html (1.2), helper/run_gui.bat (1.1):
+  
+  Removed old mct.html, and added run_gui.bat, to help on windows.
+
+* 2002-05-21 00:59  Preston A. Elder <prez@magick.tm>
+  gui/config.html (1.1):
+  
+  Added HTML file that activates mct.jar
+
+* 2002-05-21 00:30  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.35):
+  
+  Created version 2.0b13
+
 * 2002-05-21 00:10  Preston A. Elder <prez@magick.tm>
   src/server.cpp (1.214):
   
