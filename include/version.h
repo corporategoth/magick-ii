@@ -24,6 +24,11 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/04/02 13:06:03  prez
+** Fixed the channel TOPIC and MODE LOCK stuff ...
+**
+** Also fixed the setting of both on join...
+**
 ** Revision 1.81  2000/04/02 07:25:05  prez
 ** Fixed low watermarks with threads, it all works now!
 **
@@ -70,7 +75,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 75;
+const int BUILD_NUMBER = 95;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

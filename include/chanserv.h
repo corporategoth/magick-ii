@@ -24,6 +24,11 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/04/02 13:06:02  prez
+** Fixed the channel TOPIC and MODE LOCK stuff ...
+**
+** Also fixed the setting of both on join...
+**
 ** Revision 1.34  2000/03/27 21:26:11  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -91,7 +96,7 @@ class Chan_Live_t : public mUserDef
     void RemoveMode(mstring mode, vector<mstring> mode_params,
 			bool change, char reqmode, mstring reqparam = "");
 
-    void Join(mstring nick); // Called by Nick_Live_t
+    bool Join(mstring nick); // Called by Nick_Live_t
     unsigned int Part(mstring nick); // Called by Nick_Live_t
     void Squit(mstring nick); // Called by Nick_Live_t
     void UnSquit(mstring nick); // Called by Nick_Live_t
@@ -112,7 +117,7 @@ public:
     mstring Name()		{ return i_Name; }
     mDateTime Creation_Time()	{ return i_Creation_Time; }
 
-    void Topic(mstring topic, mstring setter, mDateTime time = Now());
+    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = Now());
     mstring Topic()		{ return i_Topic; }
     mstring Topic_Setter()	{ return i_Topic_Setter; }
     mDateTime Topic_Set_Time()	{ return i_Topic_Set_Time; }
@@ -221,7 +226,7 @@ class Chan_Stored_t : public mUserDef
     void Join(mstring nick);
     void Part(mstring nick);
     void Kick(mstring nick, mstring kicker);
-    void Topic(mstring topic, mstring setter, mDateTime time);
+    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = Now());
     void Mode(mstring setter, mstring mode);
     void defaults();
     bool DoRevenge(mstring type, mstring target, mstring source);
@@ -241,6 +246,7 @@ public:
     mstring Name()			{ return i_Name; }
     mDateTime RegTime()			{ return i_RegTime; }
     mDateTime LastUsed();
+    void SetTopic(mstring mynick, mstring topic, mstring setter);
     void Founder(mstring in);
     void CoFounder(mstring in);
     mstring Founder()			{ return i_Founder; }

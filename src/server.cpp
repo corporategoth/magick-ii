@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2000/04/02 13:06:04  prez
+** Fixed the channel TOPIC and MODE LOCK stuff ...
+**
+** Also fixed the setting of both on join...
+**
 ** Revision 1.84  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -1244,9 +1249,9 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 }
 
 
-void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
+void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring topic, mDateTime time)
 {
-    FT("NetworkServ::TOPIC", (nick, channel, topic));
+    FT("NetworkServ::TOPIC", (nick, setter, channel, topic, time));
 
     if (!Parent->nickserv.IsLive(nick))
     {
@@ -1268,20 +1273,14 @@ void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
     else
     {
 	mstring send;
-/*	if (topic == "")
-	    send << ":" << nick << " TOPIC " << channel << " " << nick;
+	if (topic == "")
+	    send << ":" << nick << " TOPIC " << channel << " " << setter;
 	else
 	    send << ":" << nick << " TOPIC " << channel << " " <<
-		nick << " " << Now().timetstring() << " :" << topic;
-*/
-	if (topic == "")
-	    send << "TOPIC " << channel << " " << nick;
-	else
-	    send << "TOPIC " << channel << " " <<
-		nick << " " << Now().timetstring() << " :" << topic;
+		setter << " " << time.timetstring() << " :" << topic;
 
-	Parent->chanserv.live[channel.LowerCase()].Topic(topic, nick);
-	sraw(send);
+	Parent->chanserv.live[channel.LowerCase()].Topic(nick, topic, setter, time);
+	raw(send);
     }
 }
 
@@ -2299,6 +2298,7 @@ void NetworkServ::execute(const mstring & data)
 		if (data.ExtractWord(5, ": ") != "")
 		{ // Setting
 		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
+			source,
 		        data.After(":", 2),
 		        data.ExtractWord(4, ": "),
 		        (time_t) atol(data.ExtractWord(5, ": "))
@@ -2307,7 +2307,7 @@ void NetworkServ::execute(const mstring & data)
 		else
 		{ // Clearing
 		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
-		        "", data.ExtractWord(4, ": "));
+		        source, "", data.ExtractWord(4, ": "));
 		}
 	    }
 	}

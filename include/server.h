@@ -24,6 +24,11 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/04/02 13:06:03  prez
+** Fixed the channel TOPIC and MODE LOCK stuff ...
+**
+** Also fixed the setting of both on join...
+**
 ** Revision 1.32  2000/03/15 14:42:58  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -226,7 +231,7 @@ public:
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
     void SVSNICK(mstring mynick, mstring nick, mstring newnick);
     void SVSKILL(mstring mynick, mstring nick, mstring reason);
-    void TOPIC(mstring nick, mstring channel, mstring topic = "");
+    void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = Now());
     void UNQLINE(mstring nick, mstring target);
     void WALLOPS(mstring nick, mstring message);    
     void KillUnknownUser(mstring user);

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/04/02 13:06:04  prez
+** Fixed the channel TOPIC and MODE LOCK stuff ...
+**
+** Also fixed the setting of both on join...
+**
 ** Revision 1.74  2000/04/02 07:25:05  prez
 ** Fixed low watermarks with threads, it all works now!
 **
@@ -625,14 +630,19 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
 void Nick_Live_t::Join(mstring chan)
 {
     FT("Nick_Live_t::Join", (chan));
+    bool joined = true;
     if (Parent->chanserv.IsLive(chan))
     {
-	Parent->chanserv.live[chan.LowerCase()].Join(i_Name);
+	joined = Parent->chanserv.live[chan.LowerCase()].Join(i_Name);
     }
     else
     {
 	Parent->chanserv.live[chan.LowerCase()] = Chan_Live_t(chan, i_Name);
     }
+    // We do this seperately coz we require initialisation of
+    // the channel to be completed.
+    if (joined && Parent->chanserv.IsStored(chan))
+	Parent->chanserv.stored[chan.LowerCase()].Join(i_Name);
 
     joined_channels.insert(chan.LowerCase());
 }

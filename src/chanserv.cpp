@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.159  2000/04/02 13:06:03  prez
+** Fixed the channel TOPIC and MODE LOCK stuff ...
+**
+** Also fixed the setting of both on join...
+**
 ** Revision 1.158  2000/04/02 08:08:08  prez
 ** Misc Changes
 **
@@ -116,7 +121,7 @@ static const char *ident = "@(#)$Id$";
 
 // Private functions
 
-void Chan_Live_t::Join(mstring nick)
+bool Chan_Live_t::Join(mstring nick)
 {
     FT("Chan_Live_t::Join", (nick));
 
@@ -124,12 +129,12 @@ void Chan_Live_t::Join(mstring nick)
     {
 	wxLogWarning(Parent->getLogMessage("ERROR/DUP_CHAN"),
 		"JOIN", nick.c_str(), i_Name.c_str());
+	RET(false);
     }
     else
     {
 	users[nick.LowerCase()] = pair<bool,bool>(false,false);
-	if (Parent->chanserv.IsStored(i_Name))
-	    Parent->chanserv.stored[i_Name.LowerCase()].Join(nick);
+	RET(true);
     }
 }
 
@@ -228,8 +233,6 @@ Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
     i_Name = name;
     i_Limit = 0;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
-    if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.stored[i_Name.LowerCase()].Join(first_user);
 }
 
 
@@ -261,14 +264,14 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 }
 
 
-void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
+void Chan_Live_t::Topic(mstring source, mstring topic, mstring setter, mDateTime time)
 {
-    FT("Chan_Live_t::Topic", (topic, setter, time));
+    FT("Chan_Live_t::Topic", (source, topic, setter, time));
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = time;
     if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.stored[i_Name.LowerCase()].Topic(i_Topic, i_Topic_Setter, i_Topic_Set_Time);
+	Parent->chanserv.stored[i_Name.LowerCase()].Topic(source, i_Topic, i_Topic_Setter, i_Topic_Set_Time);
 }
 
 
@@ -744,21 +747,23 @@ void Chan_Live_t::SendMode(mstring in)
 		{
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
-		    if (!ModeExists(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(param, " ")))
-		    {
-			p_modes_on += "l";
-			p_modes_on_params.push_back(in.ExtractWord(param, " "));
-		    }
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
+		    p_modes_on += "l";
+		    p_modes_on_params.push_back(in.ExtractWord(param, " "));
 		    param++;
 		}
 	    }
 	    else
 	    {
-		if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
-		    RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
-		if (!ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
+		if (i_Limit)
 		{
-		    p_modes_off += "l";
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
+		    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
+		    {
+			p_modes_off += "l";
+		    }
 		}
 	    }
 	    break;
@@ -797,18 +802,22 @@ void Chan_Live_t::SendMode(mstring in)
 	default:
 		if (add)
 		{
-		    if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
-			RemoveMode(p_modes_off, p_modes_off_params, false, mode[i]);
-		    if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
-			p_modes_on += mode[i];
+		    if (!modes.Contains(mode[i]))
+		    {
+			if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i]);
+			if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+			    p_modes_on += mode[i];
+		    }
 		}
 		else
 		{
-		    if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
-			RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
-		    if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
+		    if (modes.Contains(mode[i]))
 		    {
-			p_modes_off += mode[i];
+			if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
+			if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
+			    p_modes_off += mode[i];
 		    }
 		}
 	    break;
@@ -1045,7 +1054,7 @@ void Chan_Stored_t::Join(mstring nick)
 	wxLogWarning("channel not exist");
 	return;
     }
-    unsigned int users = clive->Users();
+    size_t users = clive->Users();
 
     if (Parent->nickserv.IsLive(nick))
 	nlive = &Parent->nickserv.live[nick.LowerCase()];
@@ -1136,15 +1145,8 @@ void Chan_Stored_t::Join(mstring nick)
 	// Carry over topic ..
 	if (Keeptopic() && i_Topic != "")
 	{
-	    if (i_Topic_Setter != "")
-	    {
-		Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
-			i_Topic + "(" + i_Topic_Setter + ")");
-	    }
-	    else
-	    {
-		Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name, i_Topic);
-	    }
+	    Parent->server.TOPIC(Parent->chanserv.FirstName(),
+		i_Topic_Setter, i_Name, i_Topic, i_Topic_Set_Time);
 	}
     }
 
@@ -1253,28 +1255,34 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
 }
 
 
-void Chan_Stored_t::Topic(mstring topic, mstring setter, mDateTime time)
+void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTime time)
 {
-    FT("Chan_Stored_t::Topic", (topic, setter, time));
+    FT("Chan_Stored_t::Topic", (source, topic, setter, time));
 
     // Its us re-setting it!
-    if (Parent->nickserv.IsLive(setter) &&
-	Parent->nickserv.live[setter.LowerCase()].IsServices())
+    if (Parent->nickserv.IsLive(source) &&
+	Parent->nickserv.live[source.LowerCase()].IsServices())
+	return;
+
+    if (!Parent->chanserv.IsLive(i_Name))
 	return;
 
     if (Suspended())
     {
-	Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
-			"[" + IRC_Bold + Parent->getMessage("MISC/SUSPENDED") +
-			IRC_Off + "] " + i_Comment + " [" + IRC_Bold +
-			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]");
+	Parent->server.TOPIC(Parent->chanserv.FirstName(),
+			Parent->chanserv.FirstName(), i_Name, "[" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "] " +
+			i_Comment + " [" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]",
+			Parent->chanserv.live[i_Name.LowerCase()].Topic_Set_Time() -
+				(double) (1.0 / (60.0 * 60.0 * 24.0)));
 	return;
     }
 
     if (Topiclock())
     {
-	Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
-		i_Topic + " (" + i_Topic_Setter + ")");
+	Parent->server.TOPIC(Parent->chanserv.FirstName(),
+			i_Topic_Setter, i_Name, i_Topic, i_Topic_Set_Time);
     }
     else
     {
@@ -1285,9 +1293,33 @@ void Chan_Stored_t::Topic(mstring topic, mstring setter, mDateTime time)
 }
 
 
+void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
+{
+    FT("Chan_Stored_t::SetTopic", (source, setter, topic));
+
+    // Its us re-setting it!
+    if (Parent->nickserv.IsLive(setter) &&
+	Parent->nickserv.live[setter.LowerCase()].IsServices())
+	return;
+
+    if (!Parent->chanserv.IsLive(i_Name))
+	return;
+
+    if (Suspended())
+	return;
+
+    i_Topic = topic;
+    i_Topic_Setter = setter;
+    i_Topic_Set_Time = Now();
+    Parent->server.TOPIC(source, setter, i_Name, topic,
+	Parent->chanserv.live[i_Name.LowerCase()].Topic_Set_Time() -
+		(double) (1.0 / (60.0 * 60.0 * 24.0)));
+}
+
+
 void Chan_Stored_t::Mode(mstring setter, mstring mode)
 {
-    FT("Chan_Stored_t::Mode", (mode));
+    FT("Chan_Stored_t::Mode", (setter, mode));
     // ENFORCE mlock
 
     if (!Parent->chanserv.IsLive(i_Name))
@@ -1297,11 +1329,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	Parent->nickserv.live[setter.LowerCase()].IsServices())
 	    return;
 
-    mstring change = mode.ExtractWord(1, ": ");
+    mstring change = mode.Before(" ");
     unsigned int fwdargs = 2, i;
     bool add = true;
     for (i=0; i<change.size(); i++)
     {
+	CP(("Checking change %c", change[i]));
 	switch(change[i])
 	{
 	case '+':
@@ -1355,7 +1388,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    vector<mstring> tobekicked;
 	    bool DidRevenge = false;
 	    mstring bantype = "BAN1";
-	    int i;
+	    int j;
 
 	    mstring nick = mode.ExtractWord(fwdargs, ": ").Before("!");
 	    mstring user = mode.ExtractWord(fwdargs, ": ").After("!").Before("@");
@@ -1366,8 +1399,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    else
 		bantype = "BAN3";
 
-	    for (i=0; bantype != "BAN2" && i<user.size(); i++)
-		switch (user[i])
+	    for (j=0; bantype != "BAN2" && j<user.size(); j++)
+		switch (user[j])
 		{
 		case '*':
 		case '?':
@@ -1377,8 +1410,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    break;
 		}
 
-	    for (i=0; bantype != "BAN1" && i<nick.size(); i++)
-		switch (nick[i])
+	    for (j=0; bantype != "BAN1" && j<nick.size(); j++)
+		switch (nick[j])
 		{
 		case '*':
 		case '?':
@@ -1388,31 +1421,31 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    break;
 		}
 
-	    for (i=0; !DidRevenge && i<clive->Users(); i++)
+	    for (j=0; !DidRevenge && j<clive->Users(); j++)
 	    {
-		if (Parent->nickserv.IsLive(clive->User(i)) &&
-		    Parent->nickserv.live[clive->User(i).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")))
+		if (Parent->nickserv.IsLive(clive->User(j)) &&
+		    Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")))
 		{
-		    if (DoRevenge(bantype, setter, clive->User(i)))
+		    if (DoRevenge(bantype, setter, clive->User(j)))
 		    {
 			clive->SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
 		    }
 		    else
 		    {
-			tobekicked.push_back(clive->User(i));
+			tobekicked.push_back(clive->User(j));
 		    }
 		}
 	    }
 	    if (!DidRevenge && KickOnBan())
 	    {
-		for (i=0; i<tobekicked.size(); i++)
+		for (j=0; j<tobekicked.size(); j++)
 		{
-		    Parent->server.KICK(Parent->chanserv.FirstName(), tobekicked[i], i_Name, Parent->chanserv.DEF_Akick_Reason());
+		    Parent->server.KICK(Parent->chanserv.FirstName(), tobekicked[j], i_Name, Parent->chanserv.DEF_Akick_Reason());
 		}
 	    }
 
-	    fwdargs++;
 	    }
+	    fwdargs++;
 	    break;
 
 	case 'k':
@@ -1433,7 +1466,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    {
 		if (i_Mlock_Limit)
 		{
-		    clive->SendMode("+l " + i_Mlock_Limit);
+		    clive->SendMode("+l " + mstring(itoa(i_Mlock_Limit)));
 		}
 		else
 		{
@@ -1446,9 +1479,9 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 
 	default:
 	    if (add && i_Mlock_Off.Contains(change[i]))
-		clive->SendMode("-" + change[i]);
+		clive->SendMode("-" + mstring(change[i]));
 	    else if (!add && i_Mlock_On.Contains(change[i]))
-		clive->SendMode("+" + change[i]);
+		clive->SendMode("+" + mstring(change[i]));
 	}
     }
 }
@@ -2030,14 +2063,14 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	}
     }
 
-    mstring locked = Parent->chanserv.LCK_MLock()
-	+ "+" + l_Mlock_On + "-" + l_Mlock_Off;
+    mstring locked = Parent->chanserv.LCK_MLock() +
+	"+" + l_Mlock_On + "-" + l_Mlock_Off;
     mstring override_on;
     mstring override_off;
     mstring forced_on;
     mstring forced_off;
     add = true;
-    for (i; i<locked.size(); i++)
+    for (i=0; i<locked.size(); i++)
     {
 	switch (locked[i])
 	{
@@ -2251,7 +2284,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     mstring override_on;
     mstring override_off;
     add = true;
-    for (i; i<locked.size(); i++)
+    for (i=0; i<locked.size(); i++)
     {
 	switch (locked[i])
 	{
@@ -2298,7 +2331,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	}
 	if (i_Mlock_Off.Contains(l_Mlock_On[i]))
 	{
-	    i_Mlock_Off.Remove(l_Mlock_On[i]);
+	    i_Mlock_Off.Remove((mstring) l_Mlock_On[i]);
 	}
     }
 
@@ -2310,7 +2343,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	}
 	if (i_Mlock_On.Contains(l_Mlock_Off[i]))
 	{
-	    i_Mlock_On.Remove(l_Mlock_Off[i]);
+	    i_Mlock_On.Remove((mstring) l_Mlock_Off[i]);
 	}
     }
 
@@ -2330,6 +2363,9 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	    ((l_Mlock_On  != "" ? ("+" + l_Mlock_On )  : mstring("")) +
 	     (l_Mlock_Off != "" ? ("-" + l_Mlock_Off)  : mstring(""))).c_str());
 	retval.push_back(output);
+	if (Parent->chanserv.IsLive(i_Name))
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode(
+		"+" + i_Mlock_On + "-" + i_Mlock_Off);
     }
     else
     {
@@ -3543,7 +3579,7 @@ void ChanServ::AddCommands()
 	    "GET*PASS*", Parent->commserv.SOP_Name(), ChanServ::do_Getpass);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*MODE", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
+	    "MODE", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "OP*", Parent->commserv.REGD_Name(), ChanServ::do_Op);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3553,7 +3589,7 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "D*VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_DeVoice);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_Topic);
+	    "TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_Topic);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "KICK*", Parent->commserv.REGD_Name(), ChanServ::do_Kick);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -4270,10 +4306,13 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].Suspend(source, reason);
-    Parent->server.TOPIC(mynick, channel, "[" + IRC_Bold +
+    if (Parent->chanserv.IsLive(channel))
+	Parent->server.TOPIC(mynick, mynick, channel, "[" + IRC_Bold +
 			Parent->getMessage("MISC/SUSPENDED") +
 			IRC_Off + "] " + reason + " [" + IRC_Bold +
-			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]");
+			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]",
+			Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time() -
+				(double) (1.0 / (60.0 * 60.0 * 24.0)));
     Parent->chanserv.stats.i_Suspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SUSPENDED"),
 	    channel.c_str());
@@ -4818,7 +4857,7 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
     }
 
     Parent->chanserv.stats.i_Topic++;
-    Parent->server.TOPIC(mynick, channel, topic);
+    chan->SetTopic(mynick, source, topic);
 }
 
 void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
