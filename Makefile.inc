@@ -13,7 +13,7 @@ CFLAGS=-DMAGICK_HAS_EXCEPTIONS -O3 -fcheck-new -fpermissive \
 LFLAGS=-L/usr/local/lib -lACE -lpthread -lz
 
 # What third-party libraries to include in link
-LIBS=./src/magick.a ./src/antlr/antlr.a ./src/des/des.a ./src/rx-1.5/rx/librx.a
+SUBLIBS=./src/magick.a ./src/antlr/antlr.a ./src/des/des.a ./src/rx-1.5/rx/librx.a
 
 # What are source and object files
 .SUFFIXES:	.o .obj .cpp .c

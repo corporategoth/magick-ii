@@ -22,7 +22,7 @@
 
 include Makefile.inc
 
-TOPDIR=$${PWD}
+TOPDIR=/home/user/Magick-2.0
 
 # What directories to enter and compile.
 SUBDIRS=$(ZDIR)
@@ -31,6 +31,7 @@ SUBDIRS=$(ZDIR)
 LIBS=$(SUBLIBS) $(LIBZ)
 
 # --[ Dont edit below this line ]-----------------------------------------
+OLDPWD=$(TOPDIR)
 
 all: rmexec magick
 
@@ -44,8 +45,8 @@ magick:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
+		$(MAKE) TOPDIR=$(TOPDIR); \
 		cd $${OLDPWD}; \
-		$(MAKE) -C $$x TOPDIR=$(TOPDIR); \
 	done
 	$(CC) $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
