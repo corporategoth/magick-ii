@@ -16,12 +16,12 @@ Contents
 1.2	Obtaining Magick
 1.3	License
 1.4	IRC in General
-1.3.1	Wildcards
-1.3.2	Hostmasks
-1.3.3	Time Formats
-1.3.4	Space Formats
-1.4	Documentation Key
-1.4.1	Committee Membership
+1.4.1	Wildcards
+1.4.2	Hostmasks
+1.4.3	Time Formats
+1.4.4	Space Formats
+1.5	Documentation Key
+1.5.1	Committee Membership
 
 2	NickServ
 2.1	Extended Commands
@@ -246,7 +246,7 @@ A very good site dedicated to help on the usage of IRC, how to get on it,
 what networks exist, etc is available at http://www.irchelp.org.
 
 
-1.3.1	Wildcards
+1.4.1	Wildcards
 -----------------
 
 IRC in general uses two kinds of wildcards throughout its command and
@@ -262,7 +262,7 @@ wildcards:	*.srealm.net.au
 		??????.??????.???.??
 
 
-1.3.2	Hostmasks
+1.4.2	Hostmasks
 -----------------
 
 A hostmask is used to depict 2 forms of user identifying information.
@@ -286,7 +286,7 @@ list, where you may put youruser@*.yourisp.com to match any dialup
 line coming from your own ISP.
 
 
-1.3.3	Time Formats
+1.4.3	Time Formats
 --------------------
 
 The time formats used throughout this manual are specific to Magick. When
@@ -307,7 +307,7 @@ unit types following them will be assumed to be seconds.
 Only positive time values are allowed, and it may not contain spaces.
 
 
-1.3.4	Space Formats
+1.4.4	Space Formats
 ---------------------
 
 As with time formats, all space formats are specific to Magick.
@@ -328,7 +328,7 @@ unit types following them will be assumed to be bytes.
 Only positive space values are allowed, and it may not contain spaces.
 
 
-1.4	Documentation Key
+1.5	Documentation Key
 =========================
 
 Any parameter in <> braces are required.
@@ -338,7 +338,7 @@ A pipe (|) in the parameter indicates that you may use any one of the
 listed options, but only one.
 
 
-1.4.1	Committee Membership
+1.5.1	Committee Membership
 ----------------------------
 
 Magick as of version 2.0 is committee based.  All commands and extra
@@ -1906,7 +1906,7 @@ OFF will force High Traffic Mode off, and the sampling window will be
 	that High Traffic Mode was forced off.
 SET will change the traffic threshold at which High Traffic Mode will
 	activate.  This value should be in Magick's own Space Format
-	(1.3.4).  A global message will be sent announcing that the
+	(1.4.4).  A global message will be sent announcing that the
 	High Traffic Mode threshold was changed, and its new value.
 
 You must be on the SOP committees to use this command.
