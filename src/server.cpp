@@ -392,15 +392,9 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
     else
     {
 	mstring send;
-/*
-	send << "NICK " << nick << " 1 " << (time_t) Now() <<
+	send << "NICK " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << server << " 1 " <<
 		host << " :" << realname;
-*/
-	send << "NICK " << nick << " 1 " << "934023496" <<
-		" " << user << " " << host << " " << server << " 1 " <<
-		host << " :" << realname;
-
 	// Sign ourselves in ...
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
@@ -537,7 +531,7 @@ void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
 	    send << ":" << nick << " TOPIC " << channel << " " << nick;
 	else
 	    send << ":" << nick << " TOPIC " << channel << " " <<
-		nick << " " << (time_t) Now() << " :" << topic;
+		nick << " " << Now().timetstring() << " :" << topic;
 
 	raw(send);
     }
@@ -885,8 +879,7 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[data.ExtractWord(2, ": ").LowerCase()] =
 		    Nick_Live_t(
 			data.ExtractWord(2, ": "),
-//			(time_t) atof(data.ExtractWord(4, ": ")),
-			Now(),
+			(time_t) atol(data.ExtractWord(4, ": ")),
 			data.ExtractWord(7, ": "),
 			data.ExtractWord(5, ": "),
 			data.ExtractWord(6, ": "),
@@ -1448,9 +1441,9 @@ void NetworkServ::execute(const mstring & data)
 		if (Parent->nickserv.live[targetL].IsServices())
 		{
     		    mstring signon_idletime;
-//		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<(time_t)Parent->nickserv.live[targetL].SignonTime();
-//		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<"934023496";
-//		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
+		    signon_idletime << Parent->nickserv.live[targetL].IdleTime().timetstring()
+			<< " " << Parent->nickserv.live[targetL].SignonTime().timetstring();
+		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
 		}
 
 		sraw("318 " + source + " " + target + " :End of /WHOIS list.");

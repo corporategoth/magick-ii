@@ -103,10 +103,9 @@ mDayTable &GetDayTable(int Year)
 bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
 {
   int I;
-  bool Result;
+  bool Result = false;
   int tmpDay=Day;
 
-  Result = false;
   mDayTable &DayTable = GetDayTable(Year);
   if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) &&
     (Day >= 1) && (Day <= DayTable[Month]))
@@ -133,7 +132,7 @@ bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
   bool Result = false;
   if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
   {
-    Time = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
+    Time.Val = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
     Result = true;
   }
   return Result;
@@ -160,7 +159,7 @@ mDateTime& mDateTime::operator=(time_t in)
 {
 	tm *tmst;
 	tmst=localtime(&in);
-	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
+	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec-1,0);
 	return *this;
 }
 mDateTime& mDateTime::operator+=(const mDateTime& in)
@@ -505,11 +504,11 @@ mDateTime::operator time_t()
 	DecodeTime(Hour,Min,Sec,MSec);
 	tm localtm;
 	localtm.tm_year=Year-1900;
-	localtm.tm_mon=Month;
+	localtm.tm_mon=Month-1;
 	localtm.tm_mday=Day;
 	localtm.tm_hour=Hour;
 	localtm.tm_min=Min;
-	localtm.tm_sec=Sec;
+	localtm.tm_sec=Sec+1;
 	localtm.tm_isdst=0;
 	return mktime(&localtm);
 }
@@ -532,7 +531,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
   const int D100 = D4 * 25 - 1;
   const int D400 = D100 * 4 + 1;
   int NumDays = (int)Val;
-  int Y400,Y100,Y4,Y1,Y,M=0,D;
+  int Y400,Y100,Y4,Y1,Y,M=1,D;
   int LeftOver;
 
   LeftOver=NumDays%D400;
@@ -558,10 +557,10 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
   while(DayTable[i]<NumDays)
   {
 	  M++;
-	  i++;
 	  NumDays-=DayTable[i];
+	  i++;
   }
-  D=NumDays;
+  D=NumDays-1;
   year=Y+1900;
   month=M;
   day=D;
@@ -678,11 +677,11 @@ mstring mDateTime::timetstring()const
 	DecodeTime(Hour,Min,Sec,MSec);
 	tm localtm;
 	localtm.tm_year=Year-1900;
-	localtm.tm_mon=Month;
+	localtm.tm_mon=Month-1;
 	localtm.tm_mday=Day;
 	localtm.tm_hour=Hour;
 	localtm.tm_min=Min;
-	localtm.tm_sec=Sec;
+	localtm.tm_sec=Sec+1;
 	localtm.tm_isdst=0;
 	Res2=mktime(&localtm);
     Result<<(unsigned long)Res2;

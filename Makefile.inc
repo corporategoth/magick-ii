@@ -4,7 +4,10 @@ CC=gcc
 # What linker to use
 CXX=g++
 
-CFLAGS=-DMAGICK_HAS_EXCEPTIONS -O3 -fno-default-inline -I/usr/local/include -I$(TOPDIR)/include -g
+# -fno-default-inline
+# -fcheck-new -fpermissive -fno-strict-aliasing
+CFLAGS=-DMAGICK_HAS_EXCEPTIONS -O3 -fcheck-new -fpermissive \
+	-fno-default-inline -I/usr/local/include -I$(TOPDIR)/include -g
 
 # Linking flags to give the compiler
 LFLAGS=-L/usr/local/lib -lACE -lpthread -lz
