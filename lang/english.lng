@@ -33,10 +33,10 @@
 ;
 ; C replacement codes:
 ;   %s = String		%c = Single Character
-;   %d = Integer	%l = Numeric (with DP's)
+;   %d = Integer	%f = Numeric (with DP's)
 ;   %o = Octal		%x = Hexidecimal
 ;   %% = Literal %
-; The DP in %l can be moved by telling it how many numbers
+; The DP in %f can be moved by telling it how many numbers
 ; are to appear before and after the DP.  eg. %3.2l for 3
 ; numbers before, and 2 after the decimal point.
 ;

@@ -6,7 +6,7 @@
  */
 
 int def_langent =     372;
-mstring *def_lang[] = {
+char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
 ";",

@@ -7,8 +7,6 @@ using namespace std;
 #include "EscLexer.hpp"
 #include "EscParser.hpp"
 
-#include "language.h"
-
 Magick::Magick(int inargc, char **inargv)
 {
 	services_dir=".";
@@ -73,7 +71,7 @@ int Magick::Start()
 			}
 		}
 	}
-	MagickIni=new wxFileConfig("magick","",config_file,"");
+	MagickIni=new wxFileConfig("magick","",config_file);
 	if(MagickIni==NULL)
 	{
 		cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
@@ -140,6 +138,34 @@ void Magick::LoadInternalMessages()
 		right side will *not* be trimmed*/
 
 	ACE_Thread_Mutex_Guard guard(mutex);
+	// so that the language file strings are only loaded in memory while this function is in effect.
+#include "language.h"
+	int i;
+	wxFileOutputStream *fostream=new wxFileOutputStream("tmplang.lng");
+	for(i=0;i<def_langent;i++)
+	{
+		*fostream<<def_lang[i]<<"\n";
+	}
+	fostream->Sync();
+	delete fostream;
+	wxFileConfig fconf("magick","","tmplang.lng");
+	bool bContGroup, bContEntries;
+	long dummy1,dummy2;
+	mstring groupname,entryname;
+	bContGroup=fconf.GetFirstGroup(groupname,dummy1);
+	while(bContGroup)
+	{
+		bContEntries=fconf.GetFirstEntry(entryname,dummy2);
+		while(bContEntries)
+		{
+			MessageNamesLong.push_back(groupname+"/"+entryname);
+			MessageNamesShort.push_back(entryname);
+			bContEntries=fconf.GetNextEntry(entryname,dummy2);
+			Messages[entryname]=fconf.Read(groupname+"/"+entryname,"");
+		}
+		bContGroup=fconf.GetNextGroup(groupname,dummy1);
+	}
+
 }
 
 mstring Magick::parseEscapes(const mstring & in)

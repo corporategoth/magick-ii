@@ -26,6 +26,8 @@ class Magick
 	vector<mstring> argv;
 	wxFileConfig* MagickIni;
 	mapstringstring Messages;
+	vector<mstring> MessageNamesLong;
+	vector<mstring> MessageNamesShort;
 	ACE_Thread_Mutex mutex;
 public:
 	void LoadExternalMessages();
