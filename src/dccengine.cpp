@@ -21,13 +21,41 @@ bytevector DccEngine::lowDequote(bytevector& in)
 bytevector DccEngine::ctcpQuote(bytevector& in)
 {
     bytevector Result;
-
+    bytevector::iterator pos;
+    for(pos=in.begin();pos!=in.end();pos++)
+    {
+	if(*pos==CTCP_DELIM_CHAR)
+	{
+	    Result.push_back(CTCP_QUOTE_CHAR);
+	    Result.push_back('a');
+	}
+	else if(*pos==CTCP_QUOTE_CHAR)
+	{
+	    Result.push_back(CTCP_QUOTE_CHAR);
+	    Result.push_back(CTCP_QUOTE_CHAR);
+	}
+	else
+	    Result.push_back(*pos);
+    }
     return Result;
 }
 bytevector DccEngine::ctcpDequote(bytevector& in)
 {
     bytevector Result;
-
+    bytevector::iterator pos;
+    for(pos=in.begin();pos!=in.end();pos++)
+    {
+	if(*pos==CTCP_DELIM_CHAR&&*(pos+1)=='a')
+	{
+	    Result.push_back(CTCP_DELIM_CHAR);
+	}
+	else if(*pos==CTCP_QUOTE_CHAR&&*(pos+1)==CTCP_QUOTE_CHAR)
+	{
+	    Result.push_back(CTCP_QUOTE_CHAR);
+	}
+	else
+	    Result.push_back(*pos);
+    }
     return Result;
 }
 
@@ -35,7 +63,7 @@ bytevector DccEngine::ctcpExtract(bytevector& in)
 {
     bytevector Result;
     bytevector::iterator delim;
-    start=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
+    delim=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
     Result.assign(in.begin(),delim-1);
     return Result;
 }
