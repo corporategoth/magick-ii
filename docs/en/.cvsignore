@@ -3,3 +3,6 @@ Makefile.in
 *.htm*
 *.info*
 *.txt
+*.rtf
+*.dvi
+*.lyx
