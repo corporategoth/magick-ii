@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/05/18 11:42:44  prez
+** fixed the default assignment
+**
 ** Revision 1.23  2000/05/18 11:41:46  prez
 ** Fixed minor front-end issues with the filesystem...
 **
@@ -168,7 +171,7 @@ long mFile::Seek(long offset, int whence)
     RET(retpos);
 }
 
-size_t mFile::Write(mstring buf, bool endline = true)
+size_t mFile::Write(mstring buf, bool endline)
 {
     FT("mFile::Write", (buf, endline));
     if (endline)
