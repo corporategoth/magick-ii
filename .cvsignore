@@ -3,5 +3,10 @@ Release
 magick.plg
 magick.opt
 magick.ncb
+magick.pid
+magick.ini
+magick.exe
+magick
+magick.debug
 err.out
 *.log
