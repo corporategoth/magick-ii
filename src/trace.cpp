@@ -28,10 +28,9 @@ bool Trace::IsOn(long level)
     return (level & TraceLevel);
 }
 
-long Trace::Resolve(short level, int threadid, mstring &message)
+TraceTypes Trace::Resolve(short level, int threadid)
 {
     ThreadID *tid = ThreadMap.find(threadid);
-    TraceTypes types;
 
     switch (tid.type) {
 	case NickServ:

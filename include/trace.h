@@ -16,6 +16,7 @@ class Trace
     long TraceLevel;
 public:
     enum TraceTypes {
+	Off		= 0,
 	G_Stats		= 0x00000001,	// CPU/Memory and Global Flags
 	G_SourceFiles	= 0x00000002,	// Config / Language / Bob Script
 	G_Functions	= 0x00000004,	// Functions not covered below
@@ -55,7 +56,7 @@ public:
     Trace();
     ~Trace();
     bool IsOn(long level);
-    void Sort(short level, int threadid, mstring &message);
+    TraceTypes Resolve(short level, int threadid);
 }
 
 class FuncTrace() : public Trace
