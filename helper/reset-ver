@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Gather and increment BUILD VERSION stuff
+
+if [ ! -f include/version.h ]; then
+	echo "This must be run from the MAIN COMPILE directory"
+	exit 1
+fi
+
+cd include
+mv version.h version.h~
+sed	-e "s/BUILD_TIME.*;/BUILD_TIME = \"N\/A\";/" \
+	-e "s/BUILD_NUMBER.*;/BUILD_NUMBER = 0;/" \
+	-e "s/BUILD_TYPE.*;/BUILD_TYPE = \"N\/A\";/" \
+	-e "s/BUILD_SYS.*;/BUILD_SYS = \"N\/A\";/" \
+	version.h~ >version.h

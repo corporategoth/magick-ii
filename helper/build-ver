@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# Gather and increment BUILD VERSION stuff
+
+if [ ! -f include/version.h ]; then
+	echo "This must be run from the MAIN COMPILE directory"
+	exit 1
+fi
+
+cd include
+build=`grep BUILD_NUMBER.*\=.*\; version.h | cut -f2 -d\= | cut -f1 -d\;`
+build=`expr $build + 1`;
+
+rm -f version.h~
+mv version.h version.h~
+sed	-e "s/BUILD_NUMBER.*;/BUILD_NUMBER = $build;/" \
+	-e "s/BUILD_TYPE.*;/BUILD_TYPE = \"`uname -mrsp`\";/" \
+	-e "s/BUILD_SYS.*;/BUILD_SYS = \"`hostname -f`\";/" \
+	version.h~ >version.h
