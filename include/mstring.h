@@ -443,15 +443,15 @@ public:
 	init();
 	copy(in);
     }
-    mstring(const vector < mstring > & in)
+    mstring(const vector < mstring > & in, const mstring & delim = " ")
     {
 	init();
-	Assemble(in);
+	Assemble(in, delim);
     }
-    mstring(const list < mstring > & in)
+    mstring(const list < mstring > & in, const mstring & delim = " ")
     {
 	init();
-	Assemble(in);
+	Assemble(in, delim);
     }
     //@}
 
