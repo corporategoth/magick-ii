@@ -27,6 +27,10 @@
 #ifndef _MSTRING_H
 #define _MSTRING_H
 
+// Need these to make SunOS happy
+#include <stdio.h>
+#include <stdarg.h>
+
 class mstring:public string
 {
 	typedef string inherited;
