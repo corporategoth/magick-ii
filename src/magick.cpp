@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.223  2000/05/13 15:50:07  ungod
+** Getting Magick::BeginElement right this time.
+**
 ** Revision 1.222  2000/05/13 15:46:33  ungod
 ** more xmlising magick
 **
@@ -2837,19 +2840,19 @@ SXP::Tag Magick::tag_Magick("Magick");
 
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    /*if( pElement->IsA( OperServ::s_GetClassTag() ) )
+    /*if( pElement->IsA( operserv.GetClassTag() ) )
         pIn->ReadTo(&operserv);
-    if( pElement->IsA( NickServ::s_GetClassTag() ) )
+    if( pElement->IsA( nickserv.GetClassTag() ) )
         pIn->ReadTo(&nickserv);
-    if( pElement->IsA( ChanServ::s_GetClassTag() ) )
+    if( pElement->IsA( chanserv.GetClassTag() ) )
         pIn->ReadTo(&chanserv);
-    if( pElement->IsA( MemoServ::s_GetClassTag() ) )
+    if( pElement->IsA( memoserv.GetClassTag() ) )
         pIn->ReadTo(&memoserv);
-    if( pElement->IsA( CommServ::s_GetClassTag() ) )
+    if( pElement->IsA( commserv.GetClassTag() ) )
         pIn->ReadTo(&commserv);
-    if( pElement->IsA( ServMsg::s_GetClassTag() ) )
+    if( pElement->IsA( servmsg.GetClassTag() ) )
         pIn->ReadTo(&servmsg);
-    if( pElement->IsA( FileSys::s_GetClassTag() ) )
+    if( pElement->IsA( filesys.GetClassTag() ) )
         pIn->ReadTo(&filesys);
     */
 }
