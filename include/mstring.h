@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.66  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -388,6 +391,7 @@ public:
     int compare(const char *in, size_t length) const;
     void swap(mstring &in);
     const char *c_str() const;
+    const unsigned char *uc_str() const;
     const char first() const;
     const char last() const;
     size_t length() const;
@@ -405,7 +409,7 @@ public:
     void copy(const char in)
 	{ copy(&in, 1); }
     void copy(const unsigned char in)
-	{ copy((const char *) &in, 1); }
+	{ copy(&static_cast<const char>(in), 1); }
     void copy(const int in)
 	{ mstring out; out.Format("%d", in); copy(out); }
     void copy(const unsigned int in)
@@ -428,7 +432,7 @@ public:
     void append(const char in)
 	{ append(&in, 1); }
     void append(const unsigned char in)
-	{ append((const char *) &in, 1); }
+	{ append(&static_cast<const char>(in), 1); }
     void append(const int in)
 	{ mstring out(in); append(out); }
     void append(const unsigned int in)
@@ -451,7 +455,7 @@ public:
     void insert(size_t pos, const char in)
 	{ insert(pos, &in, 1); }
     void insert(size_t pos, const unsigned char in)
-	{ insert(pos, (const char *) &in, 1); }
+	{ insert(pos, &static_cast<const char>(in), 1); }
     void insert(size_t pos, const int in)
 	{ mstring out(in); insert(pos, out); }
     void insert(size_t pos, const unsigned int in)
@@ -474,7 +478,7 @@ public:
     int compare(const char in) const
 	{ return compare(&in, 1); }
     int compare(const unsigned char in) const
-	{ return compare((const char *) &in, 1); }
+	{ return compare(&static_cast<const char>(in), 1); }
     int compare(const int in) const
 	{ mstring out(in); return compare(in); }
     int compare(const unsigned int in) const
@@ -581,7 +585,7 @@ public:
     int find_first_of(const char in) const
 	{ return find_first_of(&in, 1); }
     int find_first_of(const unsigned char in) const
-	{ return find_first_of((const char *) &in, 1); }
+	{ return find_first_of(&static_cast<const char>(in), 1); }
 
     int find_last_of(const mstring &in) const
 	{ return find_last_of(in.i_str, in.i_len); }
@@ -592,7 +596,7 @@ public:
     int find_last_of(const char in) const
 	{ return find_last_of(&in, 1); }
     int find_last_of(const unsigned char in) const
-	{ return find_last_of((const char *) &in, 1); }
+	{ return find_last_of(&static_cast<const char>(in), 1); }
 
     int find_first_not_of(const mstring &in) const
 	{ return find_first_not_of(in.i_str, in.i_len); }
@@ -603,7 +607,7 @@ public:
     int find_first_not_of(const char in) const
 	{ return find_first_not_of(&in, 1); }
     int find_first_not_of(const unsigned char in) const
-	{ return find_first_not_of((const char *) &in, 1); }
+	{ return find_first_not_of(&static_cast<const char>(in), 1); }
 
     int find_last_not_of(const mstring &in) const
 	{ return find_last_not_of(in.i_str, in.i_len); }
@@ -614,7 +618,7 @@ public:
     int find_last_not_of(const char in) const
 	{ return find_last_not_of(&in, 1); }
     int find_last_not_of(const unsigned char in) const
-	{ return find_last_not_of((const char *) &in, 1); }
+	{ return find_last_not_of(&static_cast<const char>(in), 1); }
 
 
     // str here is used completely
@@ -682,6 +686,9 @@ public:
 						bool assemble = true) const;
     int WordPosition(unsigned int count, const mstring &delim,
 						bool assemble = true) const;
+
+    vector<mstring> Vector(const mstring &delim, bool assemble = true) const;
+    list<mstring> List(const mstring &delim, bool assemble = true) const;
 };
 
 #endif

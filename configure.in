@@ -46,6 +46,7 @@ dnl -pg   Profiling output for gprof
 OPTFLAGS="-O3 -g3"
 
 dnl What warnings we will give off
+dnl REMOVED: -Wold-style-cast
 WARNFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
 	-Wmissing-declarations -Wnested-externs -Woverloaded-virtual"
 
@@ -153,6 +154,15 @@ AC_ARG_WITH(zinc, [  --with-zinc=dir         Location of compression include fil
 
 dnl ====================================================
 
+AC_ARG_WITH(locknode, [  --with-locknode=node    Nodename to lock binary for],
+	[BUILD_NODE=${withval}])
+
+AC_ARG_WITH(locktype, [  --with-locktype=type    System OS/CPU Type to lock binary for],
+	[BUILD_TYPE=${withval}])
+
+AC_ARG_WITH(lockrel, [  --with-lockrel=rel      OS Release number to lock binary for],
+ 	[BUILD_REL=${withval}])
+
 AC_ARG_WITH(libdir, [  --with-libdir=dir       Add in search path for libraries],
 	[LIBS="$LIBS -L${withval}"])
 
@@ -259,15 +269,15 @@ fi
 
 dnl ====================================================
 
-AC_CHECK_HEADER(kenny, , [echo "Oh my god! you killed kenny!"])
-
-dnl ====================================================
-
 dnl Unlikely if you are using this that it will be windows ...
 case "$host" in
 	*Windows*)	AC_DEFINE(WIN32) ;;
 	*)		;;
 esac
+
+dnl ====================================================
+
+AC_CHECK_HEADER(kenny, , [echo "Oh my god! you killed kenny!"])
 
 dnl ====================================================
 
@@ -320,6 +330,39 @@ if test "$locks" = "true"; then
 fi
 
 
+AC_ARG_ENABLE(hostlock, [  --enable-hostlock       Enable binary locking to this host (default)
+  --disable-hostlock      Disable binary locking to this host],
+	[case "${enableval}" in
+		yes) hostlock=true;;
+		no) hostlock=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for HOSTLOCK option);;
+	 esac], [hostlock=true])
+if test "$hostlock" = "true"; then
+    if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
+	if test -f ace_uname.cpp; then
+	    echo $ac_n "configuring system lock paramaters"" ... $ac_c"
+	    $CXX -o ace_uname ace_uname.cpp
+	    if test -x ace_uname; then
+		if test -z "$BUILD_NODE"; then
+		    BUILD_NODE="`ace_uname nodename`"
+		fi
+		if test -z "$BUILD_TYPE"; then
+		    BUILD_TYPE="`ace_uname sysname`/`ace_uname machine`"
+		fi
+		if test -z "$BUILD_REL"; then
+		    BUILD_REL="`ace_uname release`"
+		fi
+		rm -f ace_uname
+		echo "$ac_t""done"
+	    else
+		echo "$ac_t""not done"
+	    fi
+	fi
+    fi
+else
+    unset BUILD_NODE BUILD_TYPE BUILD_REL
+fi
+
 AC_ARG_ENABLE(mpatrol, [  --enable-mpatrol        Enable mpatrol (memory debug)
   --disable-mpatrol       Disable mpatrol (default)],
 	[case "${enableval}" in
@@ -345,6 +388,15 @@ if test "$efence" = "true"; then
 	LIBS="$LIBS -lefence"
 fi
 
+dnl ====================================================
+
+if test -n "$BUILD_NODE" -o -n "$BUILD_TYPE" -o -n "$BUILD_REL"; then
+	CPPFLAGS="$CPPFLAGS -DBUILD_NODE=\"\\\"$BUILD_NODE\\\"\" \
+		-DBUILD_TYPE=\"\\\"$BUILD_TYPE\\\"\" \
+		-DBUILD_REL=\"\\\"$BUILD_REL\\\"\""
+fi
+
+dnl ====================================================
 
 if test 0$libacehead -eq 0; then
 AC_CHECK_HEADER(ace/OS.h, [libacehead=1])

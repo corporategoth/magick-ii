@@ -47,6 +47,11 @@ install_location=
 dist=true
 install=false
 type=HEADER
+[src/convert_esper.cpp]
+install_location=
+dist=true
+install=false
+type=SOURCE
 [src/des/cbc_cksm.c]
 install_location=
 dist=true
@@ -66,7 +71,7 @@ ldflags=
 addcxxflags=
 ldadd=
 bin_program=magick
-cxxflags= -O3 -g3 -pg -Wall -Wtraditional -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -Woverloaded-virtual
+cxxflags=-O3 -g3 -pg -Wall -Wtraditional -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -Woverloaded-virtual
 [include/lockable.h]
 install_location=
 dist=true
@@ -88,7 +93,7 @@ dist=true
 install=false
 type=DATA
 [src/xml/Makefile.am]
-files=srx/xml/sxp.cpp,src/xml/hashtable.c,src/xml/xmlparse.c,src/xml/xmlrole.c,src/xml/xmltok.c,src/xml/sxp.cpp,
+files=src/xml/sxp.cpp,src/xml/hashtable.c,src/xml/xmlparse.c,src/xml/xmlrole.c,src/xml/xmltok.c,
 type=static_library
 sub_dirs=
 [include/datetime.h]
@@ -117,6 +122,11 @@ dist=true
 install=false
 type=HEADER
 [include/magick.h]
+install_location=
+dist=true
+install=false
+type=HEADER
+[include/convert_magick.h]
 install_location=
 dist=true
 install=false
@@ -221,16 +231,6 @@ install_location=
 dist=true
 install=false
 type=DATA
-[src/convert_magick.cpp]
-install_location=
-dist=true
-install=false
-type=SOURCE
-[src/convert_esper.cpp]
-install_location=
-dist=true
-install=false
-type=SOURCE
 [src/des/Makefile.am]
 files=src/des/cbc_cksm.c,src/des/des_enc.c,src/des/md5_dgst.c,src/des/set_key.c,src/des/str2key.c,
 type=static_library
@@ -289,17 +289,12 @@ install_location=
 dist=true
 install=false
 type=DATA
-[include/convert_magick.h]
+[include/filesys.h]
 install_location=
 dist=true
 install=false
 type=HEADER
 [include/convert_esper.h]
-install_location=
-dist=true
-install=false
-type=HEADER
-[include/filesys.h]
 install_location=
 dist=true
 install=false
@@ -486,6 +481,8 @@ install_location=
 dist=true
 install=false
 type=DATA
+[srx/xml/Makefile.am]
+files=
 [include/xml/filemap.h]
 install_location=
 dist=true
@@ -598,11 +595,11 @@ type=HEADER
 files=docs/man/magick.pod,docs/man/magick_keygen.pod,
 type=normal
 sub_dirs=
-[srx/xml/sxp.cpp]
+[src/convert_magick.cpp]
 install_location=
-dist=false
+dist=true
 install=false
-type=DATA
+type=SOURCE
 [src/variant.cpp]
 install_location=
 dist=true

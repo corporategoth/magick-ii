@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.7  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -93,7 +96,7 @@ template <class T, class ACE_LOCK> ACE_INLINE void
 ACE_Expandable_Cached_Allocator<T, ACE_LOCK>::free (void * ptr)
 {
   ACE_OS::memset(ptr, 0, sizeof(T));
-  this->free_list_.add ((ACE_Cached_Mem_Pool_Node<T> *) ptr) ;
+  this->free_list_.add (ptr);
 }
 
 template <class T, class ACE_LOCK>
@@ -118,7 +121,7 @@ ACE_Expandable_Cached_Allocator<T, ACE_LOCK>::ACE_Expandable_Cached_Allocator (s
        c++)
     {
       void* placement = temp + c * sizeof(T);
-      this->free_list_.add ((ACE_Cached_Mem_Pool_Node<T> *) placement);
+      this->free_list_.add (placement);
     }
   // Put into free list using placement contructor, no real memory
   // allocation in the above <new>.
@@ -162,7 +165,7 @@ ACE_Expandable_Cached_Allocator<T, ACE_LOCK>::malloc (size_t nbytes)
          c++)
       {
         void* placement = temp + c * sizeof(T);
-        this->free_list_.add ((ACE_Cached_Mem_Pool_Node<T> *) placement);
+        this->free_list_.add (placement);
       }    
     // Put into free list using placement contructor, no real memory
     // allocation in the above <new>.
@@ -240,7 +243,7 @@ template <class ACE_LOCK> ACE_INLINE void
 ACE_Cached_Fixed_Allocator<ACE_LOCK>::free (void * ptr)
 {
   ACE_OS::memset(ptr, 0, n_size_);
-  this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) ptr) ;
+  this->free_list_.add (ptr);
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
@@ -284,7 +287,7 @@ ACE_Cached_Fixed_Allocator<ACE_LOCK>::ACE_Cached_Fixed_Allocator (size_t n_size,
        c++)
     {
       void* placement = pool_ + c * n_size_;
-      this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) placement);
+      this->free_list_.add (placement);
     }
   // Put into free list using placement contructor, no real memory
   // allocation in the above <new>.
@@ -353,7 +356,7 @@ template <class ACE_LOCK> ACE_INLINE void
 ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::free (void * ptr)
 {
   ACE_OS::memset(ptr, 0, n_size_);
-  this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) ptr) ;
+  this->free_list_.add (static_cast<ACE_Cached_Mem_Pool_Node<void *> *>(ptr));
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
@@ -404,7 +407,7 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::ACE_Expandable_Cached_Fixed_All
        c++)
     {
       void* placement = temp + c * n_size_;
-      this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) placement);
+      this->free_list_.add (static_cast<ACE_Cached_Mem_Pool_Node<void *> *>(placement));
     }
   // Put into free list using placement contructor, no real memory
   // allocation in the above <new>.
@@ -448,7 +451,7 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::malloc (size_t nbytes)
          c++)
       {
         void* placement = temp + c * n_size_;
-        this->free_list_.add ((ACE_Cached_Mem_Pool_Node<void *> *) placement);
+        this->free_list_.add (static_cast<ACE_Cached_Mem_Pool_Node<void *> *>(placement));
       }    
     // Put into free list using placement contructor, no real memory
     // allocation in the above <new>.

@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.62  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -226,8 +229,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
-	    rlock = new mLock_Read((const char *) hash);
+	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    rlock = new mLock_Read(reinterpret_cast<const char *>(hash));
 	    if (rlock != NULL)
 	    {
 		if (rlock->acquire() < 0)
@@ -266,8 +269,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
-	    rlock = new mLock_Read((const char *) hash);
+	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    rlock = new mLock_Read(reinterpret_cast<const char *>(hash));
 	    if (rlock != NULL)
 	    {
 		if (rlock->acquire() < 0)
@@ -298,7 +301,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) != (*lockroot).end() &&
 	    (*lockroot)[lockname].first == L_Read)
 	{
-	    rlock = (mLock_Read *) (*lockroot)[lockname].second;
+	    rlock = reinterpret_cast<mLock_Read *>((*lockroot)[lockname].second);
 	    (*lockroot)[lockname].second = NULL;
 	    if (rlock != NULL)
 	    {
@@ -315,8 +318,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
-	    wlock = new mLock_Write((const char *) hash);
+	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    wlock = new mLock_Write(reinterpret_cast<const char *>(hash));
 	    if (wlock != NULL)
 	    {
 		if (wlock->acquire() < 0)
@@ -347,7 +350,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) != (*lockroot).end() &&
 	    (*lockroot)[lockname].first == L_Read)
 	{
-	    rlock = (mLock_Read *) (*lockroot)[lockname].second;
+	    rlock = reinterpret_cast<mLock_Read *>((*lockroot)[lockname].second);
 	    (*lockroot)[lockname].second = NULL;
 	    if (rlock != NULL)
 	    {
@@ -364,8 +367,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
 	    memset(hash, 0, sizeof(hash));
-	    mHASH((unsigned char *) lockname.c_str(), lockname.length(), hash);
-	    mlock = new mLock_Mutex((const char *) hash);
+	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    mlock = new mLock_Mutex(reinterpret_cast<const char *>(hash));
 	    if (mlock != NULL)
 	    {
 		if (mlock->acquire() < 0)
@@ -434,7 +437,7 @@ mLOCK::~mLOCK()
 
 	    if ((*lockroot)[locks[i]].first == L_Read)
 	    {
-		rlock = (mLock_Read *) (*lockroot)[locks[i]].second;
+		rlock = reinterpret_cast<mLock_Read *>((*lockroot)[locks[i]].second);
 		(*lockroot)[locks[i]].second = NULL;
 		if (rlock != NULL)
 		{
@@ -449,7 +452,7 @@ mLOCK::~mLOCK()
 	    }
 	    else if ((*lockroot)[locks[i]].first == L_Write)
 	    {
-		wlock = (mLock_Write *) (*lockroot)[locks[i]].second;
+		wlock = reinterpret_cast<mLock_Write *>((*lockroot)[locks[i]].second);
 		(*lockroot)[locks[i]].second = NULL;
 		if (wlock != NULL)
 		{
@@ -464,7 +467,7 @@ mLOCK::~mLOCK()
 	    }
 	    else if ((*lockroot)[locks[i]].first == L_Mutex)
 	    {
-		mlock = (mLock_Mutex *) (*lockroot)[locks[i]].second;
+		mlock = reinterpret_cast<mLock_Mutex *>((*lockroot)[locks[i]].second);
 		(*lockroot)[locks[i]].second = NULL;
 		if (mlock != NULL)
 		{
@@ -554,6 +557,18 @@ size_t mLOCK::AllLocks()
 }
 
 #endif /* MAGICK_LOCKS_WORK */
+
+unsigned short mSocket::FindAvailPort()
+{
+    NFT("mSocket::FindAvailPort");
+
+    ACE_INET_Addr local;
+    ACE_SOCK_Acceptor accept(ACE_Addr::sap_any);
+    accept.get_local_addr(local);
+    unsigned short retval = local.get_port_number();
+    accept.close();
+    RET(retval);
+}
 
 void mSocket::init()
 {
@@ -656,13 +671,11 @@ bool mSocket::Connect(ACE_INET_Addr addr, unsigned long timeout)
     DestroyMe = true;
     ACE_Time_Value tv(timeout);
     ACE_SOCK_Connector tmp;
-    int result = tmp.connect(*sock, (ACE_Addr &) addr, timeout ? &tv : 0);
-    last_error = errno;
-    sock->get_local_addr(local);
-    sock->get_remote_addr(remote);
+    int result = tmp.connect(*sock, addr, timeout ? &tv : 0);
 
     if (result < 0)
     {
+	last_error = errno;
 #ifdef MAGICK_TRACE_WORKS
 	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(),
 	    mstring(remote.get_host_addr()), Last_Error_String(), D_From);
@@ -672,6 +685,9 @@ bool mSocket::Connect(ACE_INET_Addr addr, unsigned long timeout)
 	sock = NULL;
 	RET(false);
     }
+    last_error = 0;
+    sock->get_local_addr(local);
+    sock->get_remote_addr(remote);
 #ifdef MAGICK_TRACE_WORKS
     trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
 	mstring(remote.get_host_addr()), D_From);
@@ -713,12 +729,10 @@ bool mSocket::Accept(unsigned short port, unsigned long timeout)
     ACE_Time_Value tv(timeout);
     ACE_SOCK_Acceptor tmp(addr);
     int result = tmp.accept(*sock, NULL, timeout ? &tv : 0);
-    last_error = errno;
-    sock->get_local_addr(local);
-    sock->get_remote_addr(remote);
 
     if (result < 0)
     {
+	last_error = errno;
 #ifdef MAGICK_TRACE_WORKS
 	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(),
 	    mstring(remote.get_host_addr()), Last_Error_String(), D_To);
@@ -727,6 +741,10 @@ bool mSocket::Accept(unsigned short port, unsigned long timeout)
 	sock = NULL;
 	RET(false);
     }
+
+    last_error = 0;
+    sock->get_local_addr(local);
+    sock->get_remote_addr(remote);
 #ifdef MAGICK_TRACE_WORKS
     trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
 	mstring(remote.get_host_addr()), D_To);
@@ -747,6 +765,7 @@ bool mSocket::Bind(ACE_SOCK_Stream *in, dir_enum direction, bool alloc)
     sock = in;
     in = NULL;
     DestroyMe = alloc;
+    last_error = 0;
     sock->get_local_addr(local);
     sock->get_remote_addr(remote);
 
@@ -828,7 +847,7 @@ bool mSocket::IsConnected() const
 
 void mSocket::Resolve(socktype_enum type, mstring info)
 {
-    FT("mSocket::Resolve", ((int) type, info));
+    FT("mSocket::Resolve", (static_cast<int>(type), info));
     MLOCK(("mSocket", sockid));
 #ifdef MAGICK_TRACE_WORKS
     trace.Resolve(type, info);
@@ -856,12 +875,14 @@ ssize_t mSocket::send(void *buf, size_t len, unsigned long timeout)
     ACE_Time_Value tv(timeout);
     MLOCK(("mSocket", sockid));
     ssize_t retval = sock->send(buf, len, timeout ? &tv : 0);
-    last_error = errno;
 
-    /* if (result < 0)
+    if (retval < 0)
     {
-	close();
-    } */
+	last_error = errno;
+	// close();
+    }
+    else
+	last_error = 0;
 
     RET(retval);
 }
@@ -872,12 +893,14 @@ ssize_t mSocket::recv(void *buf, size_t len, unsigned long timeout)
     ACE_Time_Value tv(timeout);
     MLOCK(("mSocket", sockid));
     ssize_t retval = sock->recv(buf, len, timeout ? &tv : 0);
-    last_error = errno;
 
-    /* if (result < 0)
+    if (retval < 0)
     {
-	close();
-    } */
+	last_error = errno;
+	// close();
+    }
+    else
+	last_error = 0;
 
     RET(retval);
 }
@@ -893,11 +916,14 @@ int mSocket::close()
 	trace.End(Last_Error_String());
 #endif	
 	retval = sock->close();
+	if (retval < 0)
+	    last_error = errno;
+	else
+	    last_error = 0;
 	if (DestroyMe)
 	    delete sock;
 	sock = NULL;
     }
-    last_error = 0;
     RET(retval);
 }
 

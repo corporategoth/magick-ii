@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.150  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.149  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -1246,6 +1249,28 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
     }
 }
 
+void do_1_4param(mstring mynick, mstring source, mstring params)
+{
+    FT("do_1_4param", (mynick, source, params));
+    if (params.WordCount(" ") < 4)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.Before(" ") + " " + params.ExtractWord(4, " ");
+    command.MakeUpper();
+
+    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+}
+
 void do_1_2paramswap(mstring mynick, mstring source, mstring params)
 {
     FT("do_1_2paramswap", (mynick, source, params));
@@ -1300,6 +1325,34 @@ void do_1_3paramswap(mstring mynick, mstring source, mstring params)
     }
 }
 
+void do_1_4paramswap(mstring mynick, mstring source, mstring params)
+{
+    FT("do_1_3paramswap", (mynick, source, params));
+    if (params.WordCount(" ") < 4)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.ExtractWord(4, " ") + " " + params.Before(" ");
+    command.MakeUpper();
+
+    mstring data = params.ExtractWord(4, " ") + " " +
+	params.ExtractWord(2, " ") + params.ExtractWord(3, " ") +
+	" " + params.Before(" ");
+    if (params.WordCount(" ") > 4)
+	data += " " + params.After(" ", 4);
+
+    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+}
+
 void do_2param(mstring mynick, mstring source, mstring params)
 {
     FT("do_2param", (mynick, source, params));
@@ -1344,6 +1397,34 @@ void do_3param(mstring mynick, mstring source, mstring params)
 	params.ExtractWord(2, " ") + " " + params.Before(" ");
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
+
+    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+}
+
+void do_4param(mstring mynick, mstring source, mstring params)
+{
+    FT("do_3param", (mynick, source, params));
+    if (params.WordCount(" ") < 4)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.ExtractWord(4, " ");
+    command.MakeUpper();
+
+    mstring data = params.ExtractWord(4, " ") + " " +
+	params.ExtractWord(2, " ") + " " + params.ExtractWord(3, " ") +
+	" " + params.Before(" ");
+    if (params.WordCount(" ") > 4)
+	data += " " + params.After(" ", 4);
 
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {

@@ -27,6 +27,9 @@ RCSID(variant_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.44  2001/02/03 02:21:35  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -342,7 +345,7 @@ bool mVariant::operator<(const mVariant& in)const
 	    return false;
 	if(valuetype=="bool")
 	{
-	    if((int)BoolValue<(int)in.BoolValue)
+	    if(static_cast<int>(BoolValue) < static_cast<int>(in.BoolValue))
 	    	return true;
 	    else 
 	    	return false;

@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.59  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -218,6 +221,8 @@ public:
 	void End(unsigned long filenum);
 	void Picture (mstring mynick);
 	void Public (mstring mynick, mstring committees = "");
+	mstring Text();
+	mstring Recipiant();
 	bool Memo() const;
 	bool Picture() const;
 	bool Public() const;
@@ -566,6 +571,8 @@ public:
 	unsigned long i_NoExpire;
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
+	unsigned long i_SetPicture;
+	unsigned long i_Send;
     public:
 	stats_t() { clear(); }
 	void clear() {
@@ -574,7 +581,7 @@ public:
 		i_Identify = i_Ghost = i_Recover = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Access =
 		i_Ignore = i_Set = i_NoExpire = i_Lock =
-		i_Unlock = 0; }
+		i_Unlock = i_SetPicture = i_Send = 0; }
 	mDateTime ClearTime()const	{ return i_ClearTime; }
 	unsigned long Register()const	{ return i_Register; }
 	unsigned long Drop()const	{ return i_Drop; }
@@ -594,6 +601,8 @@ public:
 	unsigned long NoExpire()const	{ return i_NoExpire; }
 	unsigned long Lock()const	{ return i_Lock; }
 	unsigned long Unlock()const	{ return i_Unlock; }
+	unsigned long SetPicture()const	{ return i_SetPicture; }
+	unsigned long Send()const	{ return i_Send; }
     } stats;
 
     mstring Enforcer_Name()const	{ return enforcer_name; }

@@ -152,6 +152,8 @@ UNLOCK           =%s unlocked the value of %s for channel %s.
 SEND             =%s sent a news article to %s.
 DEL              =%s removed %d news article(s) from %s.
 DEL_ALL          =%s removed all news articles from %s.
+SET              =%s set the value of %s for %d news article(s) of %s to %s.
+SET_ALL          =%s set the value of %s for all news articles of %s to %s.
 FILE             =%s sent a file attachment (%s / %08x - %s) to %s.
 GET              =%s received a file attachment (%s / %08x - %s) from %s.
 
@@ -240,7 +242,10 @@ KILL_THREAD      =Killing thread, not enough work to warrant it.
 ; These are errors that come from system based
 ;
 [SYS_ERRORS]
-COULDNOTOPEN     =Could not open file %s (%s).
+COULDNOTOPEN     =Could not open file %s (%s) - #%d: %s.
+FILEOPERROR      =Could not perform %s on file %s - #%d: %s.
+DIROPERROR       =Could not perform %s on directory %s - #%d: %s.
+OPERROR          =Could nor perform %s - #%d: %s.
 FILEMAPFULL      =Could not find an available file number for type %d!
 MISSING_FILE1    =Removed physical file type %d, #%08x that did not have a file map entry.
 MISSING_FILE2    =Removed file map entry type %d, #%08x that did not have a physical file.
@@ -254,15 +259,12 @@ SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.
 NOT_IMPLEMENTED  =Entered %s, which is not implemented.
 INVALID_FORMAT   =Invalid date format char %d%c in %s.
 NOT_LITERAL      =Character %c should be in quotes, taken as literal in %s.
-OUTOFTXNIDS      =Cannot create any more Transaction ID's
-FAILED_FORK      =Failed to fork new process with %d, terminating.
-FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.
-FAILED_SETSID    =Failed to become process session leader with %d, terminating.
 RUN_AS_ROOT      =Running as a super user is a potential security risk!
 LOCK_OPEN        =Failed to open %s lock for %s.
 LOCK_ACQUIRE     =Failed to acquire %s lock for %s.
 LOCK_RELEASE     =Failed to release %s lock for %s.
 EXCEPTION        =Exception thrown on line %d, column %d of %s.
+LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 
 ;
 ; This is a section for miscellaneous other occurrences.
@@ -324,5 +326,6 @@ KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.
 NOLIMIT          =No limit specified when required for channel %s from %s.
 NOLANGTOKEN      =Invalid token %s for language %s used, error returned.
 BADSET           =Tried to set BAD data (%s) for %s on %s.
-CORRUPT_DB       =Database file corrupted or invalid key in key file.
+DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).
+DB_CORRUPT       =Database load failed due to data corruption.
 INVALID_TYPE     =Invalid data type %d on message queue, ignored.

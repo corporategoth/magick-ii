@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.62  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -299,7 +302,7 @@ mFile::mFile(mstring name, mstring mode)
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
-				name.c_str(), mode.c_str()));
+		name.c_str(), mode.c_str(), errno, strerror(errno)));
     }
     else
 	i_name = name;
@@ -309,17 +312,24 @@ bool mFile::Open(mstring name, mstring mode)
 {
     FT("mFile::Open", (name, mode));
 
-    i_name.erase();
+    int opres;
     if (fd != NULL)
     {
-	ACE_OS::fclose(fd);
+	MLOCK(("mFile", i_name));
+	opres = ACE_OS::fclose(fd);
+	if (opres != 0 && errno)
+	{
+	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fclose", i_name.c_str(), errno, strerror(errno)));
+	}
 	fd = NULL;
     }
+    i_name.erase();
     MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
-				name.c_str(), mode.c_str()));
+		name.c_str(), mode.c_str(), errno, strerror(errno)));
     }
     else
 	i_name = name;
@@ -329,11 +339,23 @@ bool mFile::Open(mstring name, mstring mode)
 void mFile::Close()
 {
     NFT("mFile::Close");
+
+    int opres;
     MLOCK(("mFile", i_name));
     if (IsOpened())
     {
-	ACE_OS::fflush(fd);
-	ACE_OS::fclose(fd);
+	opres = ACE_OS::fflush(fd);
+	if (opres != 0 && errno)
+	{
+	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fflush", i_name.c_str(), errno, strerror(errno)));
+	}
+	opres = ACE_OS::fclose(fd);
+	if (opres != 0 && errno)
+	{
+	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fclose", i_name.c_str(), errno, strerror(errno)));
+	}
 	i_name.erase();
     }
     fd = NULL;
@@ -350,18 +372,21 @@ bool mFile::IsOpened() const
 long mFile::Seek(long offset, int whence)
 {
     FT("mFile::Seek", (offset, whence));
+    MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(-1);
-    MLOCK(("mFile", i_name));
-    long retpos = fseek(fd, offset, whence);
+    long retpos = ACE_OS::fseek(fd, offset, whence);
+    if (retpos < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fseek", i_name.c_str(), errno, strerror(errno)));
+    }
     RET(retpos);
 }
 
 size_t mFile::Write(mstring buf, bool endline)
 {
     FT("mFile::Write", (buf, endline));
-    if (!IsOpened())
-	RET(0);
     if (endline)
 	buf << "\n";
     long written = Write(buf.c_str(), buf.length());
@@ -371,20 +396,30 @@ size_t mFile::Write(mstring buf, bool endline)
 size_t mFile::Write(const void *buf, size_t size)
 {
     FT("mFile::Write", ("(const void *)", size));
+    MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(0);
-    MLOCK(("mFile", i_name));
     long written = ACE_OS::fwrite(buf, 1, size, fd);
+    if (ferror(fd) && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fwrite", i_name.c_str(), errno, strerror(errno)));
+    }
     RET(written);
 }
 
 size_t mFile::Read(void *buf, size_t size)
 {
     FT("mFile::Read", ("(const void *)", size));
+    MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(0);
-    MLOCK(("mFile", i_name));
     long read = ACE_OS::fread(buf, 1, size, fd);
+    if (ferror(fd) && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fread", i_name.c_str(), errno, strerror(errno)));
+    }
     RET(read);
 }
 
@@ -392,10 +427,10 @@ mstring mFile::ReadLine()
 {
     NFT("mFile::ReadLine");
     mstring Result;
+    MLOCK(("mFile", i_name));
     if(!IsOpened())
         RET("");
 
-    MLOCK(("mFile", i_name));
     char buffer[1025];
     memset(buffer, 0, 1025);
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -403,9 +438,18 @@ mstring mFile::ReadLine()
     {
 #endif
         ACE_OS::fgets(buffer,1024,fd);
-        Result=buffer;
-        Result.replace("\n", "");
-        Result.replace("\r", "");
+	if (ferror(fd) && errno)
+	{
+	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fgets", i_name.c_str(), errno, strerror(errno)));
+	    clearerr(fd);
+	}
+	else
+	{
+	    Result=buffer;
+	    Result.replace("\n", "");
+	    Result.replace("\r", "");
+	}
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
     catch(...)
@@ -421,33 +465,61 @@ mstring mFile::ReadLine()
 long mFile::Length() const
 {
     NFT("mFile::Length");
+
+    int opres;
+    MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(-1);
-    MLOCK(("mFile", i_name));
+    long retval = 0;
     struct stat st;
-    fstat(fileno(fd), &st);
-    RET((long) st.st_size);
+    opres = ACE_OS::fstat(fileno(fd), &st);
+    if (opres < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fstat", i_name.c_str(), errno, strerror(errno)));
+    }
+    else
+    {
+	retval = static_cast<long>(st.st_size);
+    }
+    RET(retval);
 }
 
 mDateTime mFile::LastMod() const
 {
     NFT("mFile::LastMod");
+
+    int opres;
+    MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(0.0);
-    MLOCK(("mFile", i_name));
+    mDateTime retval;
     struct stat st;
-    fstat(fileno(fd), &st);
-    mDateTime retval = (time_t) ACE_Time_Value(st.st_mtime).sec();
+    opres = ACE_OS::fstat(fileno(fd), &st);
+    if (opres < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fstat", i_name.c_str(), errno, strerror(errno)));
+    }
+    else
+    {
+	retval = static_cast<time_t>(ACE_Time_Value(st.st_mtime).sec());
+    }
     RET(retval);
 }
 
 bool mFile::Eof() const
 {
     NFT("mFile::Eof");
+    MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(true);
-    MLOCK(("mFile", i_name));
     bool retval = feof(fd);
+    if (ferror(fd) && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"feof", i_name.c_str(), errno, strerror(errno)));
+    }
     RET(retval);
 }
 
@@ -462,12 +534,30 @@ void mFile::Attach(mstring name, FILE *in)
     fd = in;
 }
 
+FILE *mFile::Detach()
+{
+    NFT("mFile::Detach");
+    MLOCK(("mFile", i_name));
+    FILE *rfd = fd;
+    fd = NULL;
+    NRET(FILE *, rfd);
+}
+
 void mFile::Flush()
 {
     NFT("mFile::Flush");
+
+    int opres;
     MLOCK(("mFile", i_name));
     if (IsOpened())
-	ACE_OS::fflush(fd);
+    {
+	opres = ACE_OS::fflush(fd);
+	if (opres < 0 && errno)
+	{
+	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"fflush", i_name.c_str(), errno, strerror(errno)));
+	}
+    }
 }
 
 bool mFile::Exists(mstring name)
@@ -484,43 +574,64 @@ bool mFile::Exists(mstring name)
 bool mFile::Erase(mstring name)
 {
     FT("mFile::Erase", (name));
+
+    int opres;
+    MLOCK(("mFile", name));
     if (!Exists(name))
 	RET(false);
-    MLOCK(("mFile", name));
-    remove(name);
+    opres = remove(name);
+    if (opres < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"remove", name.c_str(), errno, strerror(errno)));
+    }
     RET(true);
 }
 
 long mFile::Length(mstring name)
 {
     FT("mFile::Length", (name));
+
+    int opres;
+    MLOCK(("mFile", name));
     if (!Exists(name))
 	RET(0);
-    MLOCK(("mFile", name));
+    long retval = 0;
     struct stat st;
-    stat(name.c_str(), &st);
-    RET((long) st.st_size);
+    opres = ACE_OS::stat(name.c_str(), &st);
+    if (opres < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"stat", name.c_str(), errno, strerror(errno)));
+    }
+    else
+    {
+	retval = static_cast<long>(st.st_size);
+    }
+    RET(retval);
 }
 
 mDateTime mFile::LastMod(mstring name)
 {
     FT("mFile::LastMod", (name));
+
+    int opres;
+    MLOCK(("mFile", name));
     if (!Exists(name))
 	RET(0.0);
-    MLOCK(("mFile", name));
+    mDateTime retval;
     struct stat st;
-    stat(name.c_str(), &st);
-    mDateTime retval = (time_t) ACE_Time_Value(st.st_mtime).sec();
+    opres = ACE_OS::stat(name.c_str(), &st);
+    if (opres < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"stat", name.c_str(), errno, strerror(errno)));
+    }
+    else
+    {
+	retval = static_cast<time_t>(ACE_Time_Value(st.st_mtime).sec());
+    }
     RET(retval);
-}
-
-FILE *mFile::Detach()
-{
-    NFT("mFile::Detach");
-    MLOCK(("mFile", i_name));
-    FILE *rfd = fd;
-    fd = NULL;
-    NRET(FILE *, rfd);
 }
 
 long mFile::Copy(mstring sin, mstring sout, bool append)
@@ -529,13 +640,13 @@ long mFile::Copy(mstring sin, mstring sout, bool append)
     
     if (sin.empty() || !Exists(sin) || sout.empty())
 	RET(0);
+    MLOCK(("mFile", sin));
+    MLOCK2(("mFile", sout));
     mFile in(sin.c_str());
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!(in.IsOpened() && out.IsOpened()))
 	RET(0);
     
-    MLOCK(("mFile", sin));
-    MLOCK2(("mFile", sout));
     unsigned char c[1024];
     size_t read, total = 0;
     do {
@@ -553,11 +664,11 @@ long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
     FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
     if (!sin.size() || sout.empty())
 	RET(0);
+    MLOCK(("mFile", sout));
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!out.IsOpened())
 	RET(0);
 
-    MLOCK(("mFile", sout));
     size_t i, total = 0;
     for (i=0; i<sin.size(); i++)
     {
@@ -576,11 +687,11 @@ long mFile::Dump(list<mstring> sin, mstring sout, bool append, bool endline)
     FT("mFile::Dump", ("(list<mstring>) sin", sout, append, endline));
     if (!sin.size() || sout.empty())
 	RET(0);
+    MLOCK(("mFile", sout));
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!out.IsOpened())
 	RET(0);
 	
-    MLOCK(("mFile", sout));
     size_t total = 0;
     list<mstring>::iterator iter;
     for (iter=sin.begin(); iter!=sin.end(); iter++)
@@ -600,11 +711,11 @@ vector<mstring> mFile::UnDump( const mstring &sin)
 
     if(sin.empty() || !Exists(sin))
         NRET(vector<mstring>,Result);
+    MLOCK(("mFile", sin));
     mFile in(sin.c_str(), "r");
     if(!in.IsOpened())
         NRET(vector<mstring>,Result);
 
-    MLOCK(("mFile", sin));
     mstring Line;
     Line=in.ReadLine();
     while(!in.Eof())
@@ -619,6 +730,7 @@ vector<mstring> mFile::UnDump( const mstring &sin)
 size_t mFile::DirUsage(mstring directory)
 {
     FT("mFile::DirUsage", (directory));
+    int opres;
     size_t retval = 0;
     DIR *dir = NULL;
     struct dirent *entry = NULL;
@@ -638,11 +750,24 @@ size_t mFile::DirUsage(mstring directory)
 	{
 	    if (strlen(entry->d_name))
 	    {
-		stat((directory + DirSlash + entry->d_name).c_str(), &st);
-		retval += st.st_size;
+		opres = ACE_OS::stat((directory + DirSlash + entry->d_name).c_str(), &st);
+		if (opres < 0 && errno)
+		{
+		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
+			"stat", (directory + DirSlash + entry->d_name).c_str(), errno, strerror(errno)));
+		}
+		else
+		{
+		    retval += st.st_size;
+		}
 	    }
 	}
 	ACE_OS::closedir(dir);
+    }
+    else
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"opendir", directory.c_str(), errno, strerror(errno)));
     }
 #endif
     RET(retval);
@@ -675,29 +800,21 @@ set<mstring> mFile::DirList(mstring directory, mstring filemask)
 	}
 	ACE_OS::closedir(dir);
     }
+    else
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"opendir", directory.c_str(), errno, strerror(errno)));
+    }
 #endif
     NRET(set<mstring>, retval);
 }
 
-
-unsigned short FindAvailPort()
-{
-    NFT("FindAvailPort");
-
-    ACE_INET_Addr local;
-    ACE_SOCK_Acceptor accept(ACE_Addr::sap_any);
-    accept.get_local_addr(local);
-    unsigned short retval = local.get_port_number();
-    accept.close();
-    RET(retval);
-}
-
 unsigned long FileMap::FindAvail(FileMap::FileType type)
 {
-    FT("FileMap::FindAvail", ((int) type));
+    FT("FileMap::FindAvail", (static_cast<int>(type)));
 
     unsigned long filenum = 1;
-    WLOCK(("FileMap", (int) type));
+    WLOCK(("FileMap", static_cast<int>(type)));
     while (filenum > 0) // Guarentee 8 digits
     {
 	if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
@@ -708,14 +825,14 @@ unsigned long FileMap::FindAvail(FileMap::FileType type)
     }
 
     LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
-		(int) type));
+		static_cast<int>(type)));
     RET(0);
 }
 
 
 bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 {
-    FT("FileMap::Exists", ((int) type, num));
+    FT("FileMap::Exists", (static_cast<int>(type), num));
 
     mstring filename;
     filename.Format("%08x", num);
@@ -732,7 +849,7 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	filemap_t::const_iterator fmi = i_FileMap.find(type);
 	if (fmi != i_FileMap.end())
 	{
-	    RLOCK(("FileMap", (int) type));
+	    RLOCK(("FileMap", static_cast<int>(type)));
 	    if (fmi->second.find(num) != fmi->second.end())
 	    {
 		RET(true);
@@ -740,19 +857,19 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	}
 	mFile::Erase(filename);
 	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE1"),
-		(int) type, num));
+		static_cast<int>(type), num));
     }
     else
     {
 	filemap_t::iterator fmi = i_FileMap.find(type);
 	if (fmi != i_FileMap.end())
 	{
-	    WLOCK(("FileMap", (int) type));
+	    WLOCK(("FileMap", static_cast<int>(type)));
 	    if (fmi->second.find(num) != fmi->second.end())
 	    {
 	    	fmi->second.erase(num);
 		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE2"),
-			(int) type, num));
+			static_cast<int>(type), num));
 	    }
 	}
     }
@@ -762,11 +879,11 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 
 mstring FileMap::GetName(FileMap::FileType type, unsigned long num)
 {
-    FT("FileMap::GetName", ((int) type, num));
+    FT("FileMap::GetName", (static_cast<int>(type), num));
 
     if (Exists(type, num))
     {
-	RLOCK(("FileMap", (int) type, num));
+	RLOCK(("FileMap", static_cast<int>(type), num));
 	RET(i_FileMap[type][num].first);
     }
     RET("");
@@ -775,7 +892,7 @@ mstring FileMap::GetName(FileMap::FileType type, unsigned long num)
 
 mstring FileMap::GetRealName(FileMap::FileType type, unsigned long num)
 {
-    FT("FileMap::GetRealName", ((int) type, num));
+    FT("FileMap::GetRealName", (static_cast<int>(type), num));
 
     if (Exists(type, num))
     {
@@ -796,11 +913,11 @@ mstring FileMap::GetRealName(FileMap::FileType type, unsigned long num)
 
 mstring FileMap::GetPriv(FileMap::FileType type, unsigned long num)
 {
-    FT("FileMap::GetPriv", ((int) type, num));
+    FT("FileMap::GetPriv", (static_cast<int>(type), num));
 
     if (Exists(type, num))
     {
-	RLOCK(("FileMap", (int) type, num));
+	RLOCK(("FileMap", static_cast<int>(type), num));
 	RET(i_FileMap[type][num].second);
     }
     RET("");
@@ -809,11 +926,11 @@ mstring FileMap::GetPriv(FileMap::FileType type, unsigned long num)
 
 bool FileMap::SetPriv(FileMap::FileType type, unsigned long num, mstring priv)
 {
-    FT("FileMap::SetPriv", ((int) type, num, priv));
+    FT("FileMap::SetPriv", (static_cast<int>(type), num, priv));
 
     if (Exists(type, num))
     {
-	WLOCK(("FileMap", (int) type, num));
+	WLOCK(("FileMap", static_cast<int>(type), num));
 	i_FileMap[type][num] = pair<mstring,mstring>(
 	    			i_FileMap[type][num].first, priv);
 	RET(true);
@@ -824,11 +941,11 @@ bool FileMap::SetPriv(FileMap::FileType type, unsigned long num, mstring priv)
 
 bool FileMap::Rename(FileMap::FileType type, unsigned long num, mstring newname)
 {
-    FT("FileMap::SetPriv", ((int) type, num, newname));
+    FT("FileMap::SetPriv", (static_cast<int>(type), num, newname));
 
     if (type != Picture && Exists(type, num))
     {
-	WLOCK(("FileMap", (int) type, num));
+	WLOCK(("FileMap", static_cast<int>(type), num));
 	i_FileMap[type][num] = pair<mstring,mstring>(newname,
 	    			i_FileMap[type][num].second);
 	RET(true);
@@ -839,7 +956,7 @@ bool FileMap::Rename(FileMap::FileType type, unsigned long num, mstring newname)
 
 size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
 {
-    FT("FileMap::GetSize", ((int) type, num));
+    FT("FileMap::GetSize", (static_cast<int>(type), num));
     mstring filename = GetRealName(type, num);
     if (!filename.empty())
     {
@@ -855,7 +972,7 @@ size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
 
 unsigned long FileMap::NewFile(FileMap::FileType type, mstring filename, mstring priv)
 {
-    FT("FileMap::NewFile", ((int) type, filename, priv));
+    FT("FileMap::NewFile", (static_cast<int>(type), filename, priv));
 
     unsigned long filenum = 0;
     if (!GetNum(type, filename))
@@ -863,7 +980,7 @@ unsigned long FileMap::NewFile(FileMap::FileType type, mstring filename, mstring
 	filenum = FindAvail(type);
 	if (filenum)
 	{
-	    WLOCK(("FileMap", (int) type, filenum));
+	    WLOCK(("FileMap", static_cast<int>(type), filenum));
 	    i_FileMap[type][filenum] = pair<mstring,mstring>(filename, priv);
 	}
     }
@@ -879,7 +996,7 @@ void FileMap::EraseFile(FileType type, unsigned long num)
     if (!filename.empty())
     {
 	mFile::Erase(filename);
-	WLOCK(("FileMap", (int) type));
+	WLOCK(("FileMap", static_cast<int>(type)));
 	i_FileMap[type].erase(num);
     }
 }
@@ -887,14 +1004,14 @@ void FileMap::EraseFile(FileType type, unsigned long num)
 
 vector<unsigned long> FileMap::GetList(FileMap::FileType type, mstring source)
 {
-    FT("FileMap::GetList", ((int) type, source));
+    FT("FileMap::GetList", (static_cast<int>(type), source));
     vector<unsigned long> retval;
     map<unsigned long, pair<mstring, mstring> >::iterator iter;
     unsigned int i;
 
     if (i_FileMap.find(type) != i_FileMap.end())
     {
-	RLOCK(("FileMap", (int) type));
+	RLOCK(("FileMap", static_cast<int>(type)));
     	for (iter = i_FileMap[type].begin(); iter != i_FileMap[type].end(); iter++)
 	{
 	    if (!Exists(type, iter->first))
@@ -903,7 +1020,7 @@ vector<unsigned long> FileMap::GetList(FileMap::FileType type, mstring source)
 	    }
 	    else
 	    {
-		RLOCK(("FileMap", (int) type, iter->first));
+		RLOCK(("FileMap", static_cast<int>(type), iter->first));
 		if (iter->second.second.empty())
 		    retval.push_back(iter->first);
 		else
@@ -925,16 +1042,16 @@ vector<unsigned long> FileMap::GetList(FileMap::FileType type, mstring source)
 
 unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
 {
-    FT("FileMap::GetNum", ((int) type, name));
+    FT("FileMap::GetNum", (static_cast<int>(type), name));
     map<unsigned long, pair<mstring, mstring> >::iterator iter;
 
     filemap_t::iterator fmi = i_FileMap.find(type);
     if (fmi != i_FileMap.end())
     {
-	RLOCK(("FileMap", (int) type));
+	RLOCK(("FileMap", static_cast<int>(type)));
     	for (iter = fmi->second.begin(); iter != fmi->second.end(); iter++)
 	{
-	    RLOCK(("FileMap", (int) type, iter->first));
+	    RLOCK(("FileMap", static_cast<int>(type), iter->first));
 	    if (iter->second.first == name)
 	    {
 	    	if (Exists(type, iter->first))
@@ -949,7 +1066,7 @@ unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
 
 size_t FileMap::FileSysSize(FileMap::FileType type) const
 {
-    FT("FileMap::FileSysSize", ((int) type));
+    FT("FileMap::FileSysSize", (static_cast<int>(type)));
     size_t retval = 0;
 
     if (type == MemoAttach)
@@ -1000,8 +1117,8 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(i2=i1->second.begin(); i2!=i1->second.end(); i2++)
 	{
 	    out.erase();
-	    out << (int) i1->first << "\n" << i2->first << "\n" <<
-		i2->second.first << "\n" << i2->second.second;
+	    out << static_cast<int>(i1->first) << "\n" << i2->first <<
+		"\n" << i2->second.first << "\n" << i2->second.second;
 	    pOut->WriteElement(tag_File, out);
 	}
     }
@@ -1026,7 +1143,7 @@ void FileMap::PostLoad()
 	{
 	    if (fm_array[i]->WordCount("\n") >= 3)
 	    {
-		type = (FileMap::FileType) atoi(fm_array[i]->ExtractWord(1, "\n").c_str());
+		type = static_cast<FileMap::FileType>(atoi(fm_array[i]->ExtractWord(1, "\n").c_str()));
 		number = atoul(fm_array[i]->ExtractWord(2, "\n").c_str());
 		name = fm_array[i]->ExtractWord(3, "\n");
 		if (fm_array[i]->WordCount("\n") > 3)
@@ -1046,7 +1163,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
 	FileMap::FileType filetype, unsigned long filenum)
 {
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
-			mynick, source, (int) filetype, filenum));
+			mynick, source, static_cast<int>(filetype), filenum));
 
     WLOCK(("DccMap", "xfers", dccid));
     // Setup Paramaters
@@ -1384,7 +1501,7 @@ void DccXfer::Action()
 	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
 		Average() <= Parent->files.Max_Speed()))
 	{
-	    XferAmt = i_Socket.recv((void *) &i_Transiant[i_XferTotal],
+	    XferAmt = i_Socket.recv(reinterpret_cast<void *>(&i_Transiant[i_XferTotal]),
 			i_Blocksize - i_XferTotal, 1);
 	    COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)",
 		i_DccId, XferAmt, i_Socket.Last_Error(),
@@ -1394,7 +1511,8 @@ void DccXfer::Action()
 	map<time_t, size_t>::iterator iter;
 	time_t now = time(NULL);
 	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
-		iter->first < now - (time_t) (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
+		iter->first < now - static_cast<time_t>(Parent->files.Sampletime()+2);
+		iter = i_Traffic.begin())
 	    i_Traffic.erase(iter->first);
 	if (i_Traffic.find(now) == i_Traffic.end())
 	    i_Traffic[now] = 0;
@@ -1420,7 +1538,7 @@ void DccXfer::Action()
 		    i_XferTotal = 0;
 		    memset(i_Transiant, 0, i_Blocksize);
 		    verify = htonl(i_Total);
-		    XferAmt = i_Socket.send((void *) &verify, 4, 1);
+		    XferAmt = i_Socket.send(reinterpret_cast<void *>(&verify), 4, 1);
 		    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)",
 			i_DccId, XferAmt, i_Socket.Last_Error(),
 			i_Socket.Last_Error_String().c_str()));
@@ -1468,7 +1586,7 @@ void DccXfer::Action()
 	{
 	    if (i_XferTotal == i_Blocksize)
 	    {
-		XferAmt = i_Socket.recv((void *) &verify, 4, 1);
+		XferAmt = i_Socket.recv(reinterpret_cast<void *>(&verify), 4, 1);
 		COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)",
 			i_DccId, XferAmt, i_Socket.Last_Error(),
 			i_Socket.Last_Error_String().c_str()));
@@ -1511,7 +1629,7 @@ void DccXfer::Action()
 		i_XferTotal = 0;
 	    }
 	    CP(("Going to send %d bytes ...", TranSz));
-	    XferAmt = i_Socket.send((void *) &i_Transiant[i_XferTotal],
+	    XferAmt = i_Socket.send(reinterpret_cast<void *>(&i_Transiant[i_XferTotal]),
 			TranSz - i_XferTotal, 1);
 	    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)",
 		i_DccId, XferAmt, i_Socket.Last_Error(),
@@ -1521,7 +1639,8 @@ void DccXfer::Action()
 	map<time_t, size_t>::iterator iter;
 	time_t now = time(NULL);
 	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
-		iter->first < now - (time_t) (Parent->files.Sampletime()+2); iter = i_Traffic.begin())
+		iter->first < now - static_cast<time_t>(Parent->files.Sampletime()+2);
+		iter = i_Traffic.begin())
 	    i_Traffic.erase(iter->first);
 	if (i_Traffic.find(now) == i_Traffic.end())
 	    i_Traffic[now] = 0;
@@ -1574,7 +1693,7 @@ size_t DccXfer::Average(time_t secs) const
     size_t total = 0;
     int i = 0;
     map<time_t, size_t>::const_iterator iter;
-    if (secs > (time_t) Parent->files.Sampletime())
+    if (secs > static_cast<time_t>(Parent->files.Sampletime()))
 	secs = 0;
 
     RLOCK(("DccMap", "xfers", i_DccId, "i_Traffic"));
@@ -1738,7 +1857,7 @@ void *DccMap::Connect2(void *in)
     mThread::Attach(tt_MAIN);
     FT("DccMap::Connect2", ("(void *) in"));
 
-    NewSocket *val = (NewSocket *) in;
+    NewSocket *val = reinterpret_cast<NewSocket *>(in);
 
     mSocket DCC_SOCK(val->address, Parent->files.Timeout());
     if (DCC_SOCK.IsConnected())
@@ -1779,7 +1898,7 @@ void *DccMap::Accept2(void *in)
     mThread::Attach(tt_MAIN);
     FT("DccMap::Accept2", ("(void *) in"));
 
-    NewSocket *val = (NewSocket *) in;
+    NewSocket *val = reinterpret_cast<NewSocket *>(in);
 
     mSocket DCC_SOCK(val->port, Parent->files.Timeout());
     if (DCC_SOCK.IsConnected())
@@ -1829,13 +1948,13 @@ void DccMap::Connect(ACE_INET_Addr address,
     tmp->filesize = filesize;
     tmp->blocksize = blocksize;
 
-    tm.spawn(Connect2, (void *) tmp);
+    tm.spawn(Connect2, reinterpret_cast<void *>(tmp));
 }
 
 void DccMap::Accept(unsigned short port, mstring mynick,
 	mstring source, FileMap::FileType filetype, unsigned long filenum)
 {
-    FT("DccMap::Accept", (port, mynick, source, (int) filetype, filenum));
+    FT("DccMap::Accept", (port, mynick, source, static_cast<int>(filetype), filenum));
     NewSocket *tmp = new NewSocket;
     tmp->port = port;
     tmp->source = source;
@@ -1843,7 +1962,7 @@ void DccMap::Accept(unsigned short port, mstring mynick,
     tmp->filetype = filetype;
     tmp->filenum = filenum;
 
-    tm.spawn(Accept2, (void *) tmp);
+    tm.spawn(Accept2, reinterpret_cast<void *>(tmp));
 }
 
 void DccMap::Cancel(unsigned long DccId, bool silent)

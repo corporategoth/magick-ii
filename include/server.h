@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.61  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -213,13 +216,21 @@ class Protocol
      *
      * NOQUIT      Do not quit each user on SQUIT (assume it)
      * TOKEN       Use one-char tokens instead of PRIVMSG, etc
-     * WATCH=128   ?
-     * SAFELIST    ?
+     * WATCH=128   Allow the WATCH command (for signon/off notification)
+     * SAFELIST    Currently does nothing.
      * TS3         Timestamp everything (aka. TSora)
-     * SSJOIN      Use SJOIN as opposed to multi JOINS/modes
+     * SSJOIN      Use SJOIN for joins, includes: @ (op) + (voice)
+     * SJOIN       Same as SSJOIN, includes: % (halfop) * (owner) ~ (prot)
+     * SJOIN2      Same as SJOIN, but <none> is now <->
+     * SJ3         Same as SJOIN2, includes: & (ban) " (except)
      * BURST       Allow the BURST keyword (to indicate sync)
-     * UNCONNECT   ?
+     * UNCONNECT   Support UNCONNECT (at the moment, does nothing)
+     * NICKv2      Add UMODE & v.host (if supported) to nick signon
+     * UMODE2      Allow the UMODE2 command (aka. :user MODE user mode)
+     * NS          Allow use of server numerics (not just server name)
+     * VHP         Enable virtual host support
      */
+
     mstring i_Protoctl; /* Verbatum (null if not sent) */
 
     /* Strings for each of the following commands ... */

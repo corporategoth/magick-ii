@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.89  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -464,10 +467,9 @@ bool Committee::IsIn(mstring nick) const
 	RET(true);
     }
 
-    mstring target = nick.LowerCase();
-    if (!Parent->nickserv.stored[target].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[target].Host()))
-	target = Parent->nickserv.stored[target].Host().LowerCase();
+    mstring target = Parent->nickserv.stored[nick.LowerCase()].Host();
+    if (target.empty())
+	target = nick.LowerCase();
 
     // We're a HEAD, in by DEFAULT
     { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
@@ -478,7 +480,7 @@ bool Committee::IsIn(mstring nick) const
     }}
 
     { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
-    if (!i_Head.empty() && target == i_Head)
+    if (!i_Head.empty() && target.IsSameAs(i_Head, true))
     {
 	RET(true);
     }}
@@ -487,7 +489,7 @@ bool Committee::IsIn(mstring nick) const
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
     {
-	if (target == iter->Entry().LowerCase())
+	if (target.IsSameAs(iter->Entry(), true))
 	{
 	    RET(true);
 	}
@@ -1235,8 +1237,8 @@ void CommServ::do_Add(mstring mynick, mstring source, mstring params)
     }
 
     Parent->commserv.list[committee] = Committee(committee, head, desc);
-    Parent->commserv.stats.i_New++;
-    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/NEW"),
+    Parent->commserv.stats.i_Add++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/ADD"),
 				committee.c_str(), head.c_str());
     LOG((LM_NOTICE, Parent->getLogMessage("COMMSERV/ADD"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
@@ -1280,8 +1282,8 @@ void CommServ::do_Del(mstring mynick, mstring source, mstring params)
     { WLOCK(("CommServ", "list"));
     Parent->commserv.list.erase(committee);
     }
-    Parent->commserv.stats.i_Kill++;
-    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/KILL"), committee.c_str());
+    Parent->commserv.stats.i_Del++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/DEL"), committee.c_str());
     LOG((LM_NOTICE, Parent->getLogMessage("COMMSERV/DEL"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	committee.c_str()));
@@ -1434,11 +1436,11 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
     Nick_Stored_t *nick;
     mstring realme;
     if (Parent->nickserv.IsStored(source))
-	realme = source;
+	realme = Parent->nickserv.stored[source.LowerCase()].Host();
     else
 	return;
-    if (!Parent->nickserv.stored[source.LowerCase()].Host().empty())
-	realme = Parent->nickserv.stored[source.LowerCase()].Host();
+    if (realme.empty())
+	realme = source;
 
     if (!comm->HeadCom().empty())
     {
@@ -1454,7 +1456,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	    mstring realrecipiant = Parent->nickserv.stored[comm->Head().LowerCase()].Host();
 	    if (realrecipiant.empty())
 		realrecipiant = comm->Head();
-	    if (realme.LowerCase() != realrecipiant.LowerCase())
+	    if (!realme.IsSameAs(realrecipiant, true))
 	    {
 		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 		    Memo_t(realrecipiant, source, text));
@@ -1491,7 +1493,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	    mstring realrecipiant = Parent->nickserv.stored[comm->member->Entry().LowerCase()].Host();
 	    if (realrecipiant.empty())
 		realrecipiant = comm->member->Entry();
-	    if (realme.LowerCase() != realrecipiant.LowerCase())
+	    if (!realme.IsSameAs(realrecipiant, true))
 	    {
 		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 		    Memo_t(realrecipiant, source, text));
@@ -1712,7 +1714,7 @@ void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
     Committee *comm = &Parent->commserv.list[committee];
     MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     comm->insert(member, source);
-    Parent->commserv.stats.i_AddDel++;
+    Parent->commserv.stats.i_Member++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 				member.c_str(), committee.c_str(),
 				Parent->getMessage(source, "LIST/MEMBER").c_str());
@@ -1773,7 +1775,7 @@ void CommServ::do_member_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     if (comm->find(member))
     {
-	Parent->commserv.stats.i_AddDel++;
+	Parent->commserv.stats.i_Member++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 			comm->member->Entry().c_str(), committee.c_str(),
 			Parent->getMessage(source, "LIST/MEMBER").c_str());
@@ -3099,7 +3101,7 @@ void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	    for(l=i_Members.begin(); l!=i_Members.end(); l++)
 	    {
 		pOut->BeginObject(tag_Members, attribs);
-		pOut->WriteSubElement((entlist_t *) &(*l), attribs);
+		pOut->WriteSubElement(const_cast<entlist_t *>(&(*l)), attribs);
 		pOut->EndObject(tag_Members);
 	    }
 	}

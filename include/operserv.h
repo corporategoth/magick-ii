@@ -25,6 +25,9 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.51  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -260,7 +263,7 @@ public:
     unsigned int Ignore_Limit()const	    { return ignore_limit; }
     unsigned long Ignore_Remove()const	    { return ignore_remove; }
     Nick_Live_t::styles Ignore_Method()const
-	{ return (Nick_Live_t::styles) ignore_method; }
+	{ return static_cast<Nick_Live_t::styles>(ignore_method); }
     bool Log_Ignore()const		    { return log_ignore; }
     unsigned long Init_HTM_Gap()const	    { return init_htm_gap; }
     unsigned long Init_HTM_Thresh()const    { return init_htm_thresh; }

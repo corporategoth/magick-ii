@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.14  2001/02/03 02:21:31  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -96,7 +99,7 @@ RCSID(sxp_h, "@(#) $Id$");
 #include "filesys.h"
 #undef JUST_MFILE
 
-const char XML_STRING[]="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+const char XML_STRING[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 const int INIT_BUFSIZE = 32 * 1024;
 const unsigned int SXP_TAG = 0x01;	// Required to force write.
 const unsigned int SXP_COMPRESS	= 0x02;
@@ -179,8 +182,8 @@ SXP_NS_BEGIN
 	template<class T>
 	class IFilePointer {
     public:
-		inline FILE *FP() { return ((T *)this)->FP(); }
-		inline void Indent()   { ((T *)this)->Indent(); }
+		inline FILE *FP() { return static_cast<T *>(this)->FP(); }
+		inline void Indent()   { static_cast<T *>(this)->Indent(); }
 	};
 
 	template<class T>
@@ -190,20 +193,20 @@ SXP_NS_BEGIN
 		{
 		    va_list argptr;
 		    va_start(argptr, format);
-		    ((T *)this)->PrintV(format, argptr);
+		    static_cast<T *>(this)->PrintV(format, argptr);
 		    va_end(argptr);
 		}
 		inline void PrintV(char *format, va_list argptr)
 		{
-		    ((T *)this)->PrintV(format, argptr);
+		    static_cast<T *>(this)->PrintV(format, argptr);
 		}
-		inline void Indent()   { ((T *)this)->Indent(); }
+		inline void Indent()   { static_cast<T *>(this)->Indent(); }
 	};
 
 	template<class T>
 	class IData {
     public:
-		inline const char *Data() { return ((T *)this)->Data(); }
+		inline const char *Data() { return static_cast<T *>(this)->Data(); }
 	};
 
 #include "sxp_data.h"
@@ -215,14 +218,14 @@ SXP_NS_BEGIN
 	class IOutStreamT:
 	public IDataOutput<T> {
     public:
-		inline void BeginXML(void) { ((T *)this)->BeginXML(); }
+		inline void BeginXML(void) { static_cast<T *>(this)->BeginXML(); }
 
-		inline void BeginObject(Tag& t, dict& attribs) { ((T *)this)->BeginObject(t, attribs); }
-		inline void EndObject  (Tag& t) { ((T *)this)->EndObject(t); }
+		inline void BeginObject(Tag& t, dict& attribs) { static_cast<T *>(this)->BeginObject(t, attribs); }
+		inline void EndObject  (Tag& t) { static_cast<T *>(this)->EndObject(t); }
 
 		// recursively write other objects
 		inline void WriteSubElement(IPersistObj *pObj, dict& attribs) { 
-			((T *)this)->WriteSubElement(pObj, attribs); 
+			static_cast<T *>(this)->WriteSubElement(pObj, attribs); 
 		} 
 	};
 
@@ -237,16 +240,16 @@ SXP_NS_BEGIN
 	class IElementT:
 	public IDataInput<T>{
     public:
-		inline const char *Name() { return ((T *)this)->Name(); }
+		inline const char *Name() { return static_cast<T *>(this)->Name(); }
 		inline const char *Attrib(const char *attrName)
-			{ return ((T *)this)->Attrib(attrName); }
+			{ return static_cast<T *>(this)->Attrib(attrName); }
 
 		inline int IsA(const char *name)
-			{ return ((T *)this)->IsA(name); }
+			{ return static_cast<T *>(this)->IsA(name); }
 		inline int IsA(Tag& t)
-			{ return ((T *)this)->IsA(t); }
+			{ return static_cast<T *>(this)->IsA(t); }
 		inline int AttribIs(const char *attrName, const char *val)
-			{ return ((T *)this)->AttribIs(attrName, val); }
+			{ return static_cast<T *>(this)->AttribIs(attrName, val); }
 	};
 
 	// The user classes need only this much access to the parser:
@@ -271,7 +274,7 @@ SXP_NS_BEGIN
 		// create the pool with an initial size of sz
 		CPoolAllocator(int sz = 32) {
 			size = sz;
-			pool = (T **)malloc(size * sizeof(T*));
+			pool = static_cast<T **>(malloc(size * sizeof(T*)));
 			for(int i=0; i<size; i++) {
 				pool[i] = new T; // construct objects
 			}
@@ -291,7 +294,7 @@ SXP_NS_BEGIN
 			} else {
 				// pool exhausted, try to allocated new elements
 				T **newpool;
-				newpool = (T **)realloc(pool, size * sizeof(T*) * 2);
+				newpool = static_cast<T **>(realloc(pool, size * sizeof(T*) * 2));
 				if( newpool == 0 ) {
 					return 0; // failed, can't allocate
 				} else {
@@ -408,7 +411,7 @@ SXP_NS_BEGIN
 			    if (*p < 32 || *p > 126)
 			    {
 				mstring tmp;
-				tmp.Format("&asc%d;", (unsigned char) *p);
+				tmp.Format("&asc%d;", static_cast<unsigned char>(*p));
 				ret.append(tmp.c_str(), tmp.length());
 			    }
 			    else
@@ -433,23 +436,21 @@ SXP_NS_BEGIN
 				    if (*p < 32 || *p > 126)
 				    {
 					mstring tmp;
-					tmp.Format("&asc%d;", (unsigned char) *p);
+					tmp.Format("&asc%d;", static_cast<unsigned char>(*p));
 					ret.append(tmp.c_str());
 				    }
 				    else
-					ret.append(1, (char)*p);
+					ret.append(1, static_cast<char>(*p));
 				}
 			} else {
-#define SXP_CHAR_CAST (char)
 				if( *p < 0x800 ) {
-					ret.append(1, SXP_CHAR_CAST (0xC0 | ((*p) >> 6) ));
-					ret.append(1, SXP_CHAR_CAST (0x80 | ((*p) & 0x3F )));
+					ret.append(1, static_cast<char>(0xC0 | ((*p) >> 6) ));
+					ret.append(1, static_cast<char>(0x80 | ((*p) & 0x3F )));
 				} else {
-					ret.append(1, SXP_CHAR_CAST (0xE0 | ( (*p) >> 12)         ));
-					ret.append(1, SXP_CHAR_CAST (0x80 | (((*p) >>  6) & 0x3F )));
-					ret.append(1, SXP_CHAR_CAST (0x80 | ( (*p)        & 0x3F )));
+					ret.append(1, static_cast<char>(0xE0 | ( (*p) >> 12)         ));
+					ret.append(1, static_cast<char>(0x80 | (((*p) >>  6) & 0x3F )));
+					ret.append(1, static_cast<char>(0x80 | ( (*p)        & 0x3F )));
 				}
-#undef SXP_CHAR_CAST
 			}
 		}
 		return ret;
@@ -483,7 +484,7 @@ SXP_NS_BEGIN
 					    tmp[i] = *p;
 					p--;
 					if (strlen(tmp))
-					    ret.append(1, (char) atoi(tmp));
+					    ret.append(1, static_cast<char>(atoi(tmp)));
 				} else {
 					ret.append(1, '&');
 				}
@@ -736,7 +737,7 @@ SXP_NS_BEGIN
 		// typically an object factory of sorts
 		CParser(IPersistObj *pRoot) {
 			m_parser = XML_ParserCreate(NULL);
-			XML_SetUserData(m_parser, (void *)this);
+			XML_SetUserData(m_parser, static_cast<void *>(this));
 			XML_SetElementHandler(m_parser, CParser::StaticStartElement, CParser::StaticEndElement);
 			XML_SetCharacterDataHandler(m_parser, CParser::StaticCharData);
 			ReadTo(pRoot);
@@ -764,19 +765,19 @@ SXP_NS_BEGIN
 		// with expat
 		
 		static void StaticStartElement(void *puserData, const XML_Char *name, const XML_Char **atts) {
-			CParser *pThis = (CParser *)puserData;
+			CParser *pThis = static_cast<CParser *>(puserData);
 			if( !pThis->m_bShuttingDown ) {
 				pThis->StartElement(name, atts);
 			}
 		}
 		static void StaticEndElement(void *puserData, const XML_Char *name) {
-			CParser *pThis = (CParser *)puserData;
+			CParser *pThis = static_cast<CParser *>(puserData);
 			if( !pThis->m_bShuttingDown ) {
 				pThis->EndElement(name);
 			}
 		}
 		static void StaticCharData(void *puserData, const XML_Char *data, int len) {
-			CParser *pThis = (CParser *)puserData;
+			CParser *pThis = static_cast<CParser *>(puserData);
 			if( !pThis->m_bShuttingDown ) {
 				pThis->CharData(data, len);
 			}

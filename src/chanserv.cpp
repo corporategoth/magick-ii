@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.227  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.226  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -990,7 +993,7 @@ void Chan_Live_t::UnLock()
     MCB(ph_timer);
     if (ph_timer &&
 	ACE_Reactor::instance()->cancel_timer(ph_timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 	arg != NULL)
     {
 	    delete arg;
@@ -1631,7 +1634,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else if (!add && modes.Contains(change[i]))
 	    {
-		modes.Remove((mstring) change[i]);
+		modes.Remove(change[i]);
 		if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]));
 		    RemoveMode(p_modes_off, p_modes_off_params, false, change[i]);
 	    }
@@ -1899,7 +1902,7 @@ bool Chan_Stored_t::Join(mstring nick)
 	RET(false);
     }}
 
-    if (Restricted() && !Suspended() && GetAccess(nick) < (long) 1)
+    if (Restricted() && !Suspended() && GetAccess(nick) < 1)
     {
 	// If this user is the only user in channel
 	if (users == 1)
@@ -2152,7 +2155,7 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
     }}
 
     // Check we're still alowed in here!
-    if (Restricted() && !Suspended() && GetAccess(newnick) < (long) 1)
+    if (Restricted() && !Suspended() && GetAccess(newnick) < 1)
     {
 	// If this user is the only user in channel
 	if (users == 1)
@@ -2206,7 +2209,7 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
 			i_Comment + " [" + IRC_Bold +
 			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "]",
-			time - (double) (1.0 / (60.0 * 60.0 * 24.0)));
+			time - (1.0 / (60.0 * 60.0 * 24.0)));
 	return;
     }
 
@@ -2217,7 +2220,7 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
     {
 	Parent->server.TOPIC(Parent->chanserv.FirstName(),
 			i_Topic_Setter, i_Name, i_Topic,
-			time - (double) (1.0 / (60.0 * 60.0 * 24.0)));
+			time - (1.0 / (60.0 * 60.0 * 24.0)));
     }
     else
     {
@@ -2268,7 +2271,7 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
     MCE(i_Topic);
     Parent->server.TOPIC(source, setter, i_Name, topic,
 	Parent->chanserv.live[i_Name.LowerCase()].Topic_Set_Time() -
-		(double) (1.0 / (60.0 * 60.0 * 24.0)));
+		(1.0 / (60.0 * 60.0 * 24.0)));
 }
 
 
@@ -2544,14 +2547,14 @@ void Chan_Stored_t::defaults()
 		if (!i_Mlock_On.Contains(defaulted[i]))
 		    i_Mlock_On += defaulted[i];
 		if (i_Mlock_Off.Contains(defaulted[i]))
-		    i_Mlock_Off.Remove((mstring) defaulted[i]);
+		    i_Mlock_Off.Remove(defaulted[i]);
 	    }
 	    else
 	    {
 		if (!i_Mlock_Off.Contains(defaulted[i]))
 		    i_Mlock_Off += defaulted[i];
 		if (i_Mlock_On.Contains(defaulted[i]))
-		    i_Mlock_On.Remove((mstring) defaulted[i]);
+		    i_Mlock_On.Remove(defaulted[i]);
 	    }
 	}
     }
@@ -2574,14 +2577,14 @@ void Chan_Stored_t::defaults()
 		if (!i_Mlock_On.Contains(locked[i]))
 		    i_Mlock_On += locked[i];
 		if (i_Mlock_Off.Contains(locked[i]))
-		    i_Mlock_Off.Remove((mstring) locked[i]);
+		    i_Mlock_Off.Remove(locked[i]);
 	    }
 	    else
 	    {
 		if (!i_Mlock_Off.Contains(locked[i]))
 		    i_Mlock_Off += locked[i];
 		if (i_Mlock_On.Contains(locked[i]))
-		    i_Mlock_On.Remove((mstring) locked[i]);
+		    i_Mlock_On.Remove(locked[i]);
 	    }
 	}
     }
@@ -3198,7 +3201,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		    if (!i_Mlock_On.Contains(change[i]))
 			i_Mlock_On += change[i];
 		    if (i_Mlock_Off.Contains(change[i]))
-			i_Mlock_Off.Remove((mstring) change[i]);
+			i_Mlock_Off.Remove(change[i]);
 		}
 	    }
 	    else
@@ -3210,7 +3213,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		    if (!i_Mlock_Off.Contains(change[i]))
 			i_Mlock_Off += change[i];
 		    if (i_Mlock_On.Contains(change[i]))
-			i_Mlock_On.Remove((mstring) change[i]);
+			i_Mlock_On.Remove(change[i]);
 		}
 	    }
 	}
@@ -3249,7 +3252,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		    if (i_Mlock_Off.Contains(locked[i]))
 		    {
 			override_off += locked[i];
-			i_Mlock_Off.Remove((mstring) locked[i]);
+			i_Mlock_Off.Remove(locked[i]);
 		    }
 		}
 	    }
@@ -3271,7 +3274,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		    if (i_Mlock_On.Contains(locked[i]))
 		    {
 			override_on += locked[i];
-			i_Mlock_On.Remove((mstring) locked[i]);
+			i_Mlock_On.Remove(locked[i]);
 		    }
 		}
 	    }
@@ -3415,7 +3418,7 @@ mstring Chan_Stored_t::L_Mlock() const
 		    if (!mode_on.Contains(locked[i]))
 			mode_on += locked[i];
 		    if (mode_off.Contains(locked[i]))
-			mode_off.Remove((mstring) locked[i]);
+			mode_off.Remove(locked[i]);
 		}
 	    }
 	    else
@@ -3426,7 +3429,7 @@ mstring Chan_Stored_t::L_Mlock() const
 		    if (!mode_off.Contains(locked[i]))
 			mode_off += locked[i];
 		    if (mode_on.Contains(locked[i]))
-			mode_on.Remove((mstring) locked[i]);
+			mode_on.Remove(locked[i]);
 		}
 	    }
 	}
@@ -3475,7 +3478,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 		    if (!l_Mlock_On.Contains(change[i]))
 			l_Mlock_On += change[i];
 		    if (l_Mlock_Off.Contains(change[i]))
-			l_Mlock_Off.Remove((mstring) change[i]);
+			l_Mlock_Off.Remove(change[i]);
 		}
 	    }
 	    else
@@ -3486,7 +3489,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 		    if (!l_Mlock_Off.Contains(change[i]))
 			l_Mlock_Off += change[i];
 		    if (l_Mlock_On.Contains(change[i]))
-			l_Mlock_On.Remove((mstring) change[i]);
+			l_Mlock_On.Remove(change[i]);
 		}
 	    }
 	}
@@ -3515,7 +3518,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 		    if (l_Mlock_Off.Contains(locked[i]))
 		    {
 			override_off += locked[i];
-			l_Mlock_Off.Remove((mstring) locked[i]);
+			l_Mlock_Off.Remove(locked[i]);
 		    }
 		}
 	    }
@@ -3527,7 +3530,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 		    if (l_Mlock_On.Contains(locked[i]))
 		    {
 			override_on += locked[i];
-			l_Mlock_On.Remove((mstring) locked[i]);
+			l_Mlock_On.Remove(locked[i]);
 		    }
 		}
 	    }
@@ -3547,7 +3550,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	}
 	if (i_Mlock_Off.Contains(l_Mlock_On[i]))
 	{
-	    i_Mlock_Off.Remove((mstring) l_Mlock_On[i]);
+	    i_Mlock_Off.Remove(l_Mlock_On[i]);
 	}
     }
 
@@ -3569,7 +3572,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	}
 	if (i_Mlock_On.Contains(l_Mlock_Off[i]))
 	{
-	    i_Mlock_On.Remove((mstring) l_Mlock_Off[i]);
+	    i_Mlock_On.Remove(l_Mlock_Off[i]);
 	}
     }
     CE(2, i_Mlock_Off);
@@ -4339,8 +4342,7 @@ bool Chan_Stored_t::Level_change(mstring entry, long value, mstring nick)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
     if (Level_find(entry))
     {
-	entlist_val_t<long> *ptr = (entlist_val_t<long> *) &(*Level);
-	ptr->Value(value, nick);
+	const_cast<entlist_val_t<long> *>(&(*Level))->Value(value, nick);
 	RET(true);
     }
     else
@@ -4419,7 +4421,7 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDate
 	else
 	{
 	    if (!Parent->nickserv.stored[entry.LowerCase()].Host().empty())
-		entry = Parent->nickserv.stored[Parent->nickserv.stored[entry.LowerCase()].Host().LowerCase()].Name();
+		entry = Parent->nickserv.stored[entry.LowerCase()].Host();
 	}
     }
     else
@@ -4563,9 +4565,9 @@ long Chan_Stored_t::GetAccess(mstring entry)
     if (Parent->nickserv.IsStored(entry) &&
 	Parent->nickserv.stored[entry.LowerCase()].IsOnline())
     {
-	realentry = entry.LowerCase();
-	if (!Parent->nickserv.stored[realentry].Host().empty())
-	    realentry = Parent->nickserv.stored[realentry].Host().LowerCase();
+	realentry = Parent->nickserv.stored[entry.LowerCase()].Host().LowerCase();
+	if (realentry.empty())
+	    realentry = entry.LowerCase();
     }
     else
     {
@@ -5116,7 +5118,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(j=i_Level.begin(); j!=i_Level.end(); j++)
 	{
 	    pOut->BeginObject(tag_Level, attribs);
-	    pOut->WriteSubElement((entlist_val_t<long> *) &(*j), attribs);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<long> *>(&(*j)), attribs);
 	    pOut->EndObject(tag_Level);
 	}}
 
@@ -5124,7 +5126,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(j=i_Access.begin(); j!=i_Access.end(); j++)
 	{
 	    pOut->BeginObject(tag_Access, attribs);
-	    pOut->WriteSubElement((entlist_val_t<long> *) &(*j), attribs);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<long> *>(&(*j)), attribs);
 	    pOut->EndObject(tag_Access);
 	}}
 
@@ -5132,7 +5134,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(k=i_Akick.begin(); k!=i_Akick.end(); k++)
 	{
 	    pOut->BeginObject(tag_Akick, attribs);
-	    pOut->WriteSubElement((entlist_val_t<mstring> *) &(*k), attribs);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)), attribs);
 	    pOut->EndObject(tag_Akick);
 	}}
 
@@ -5991,12 +5993,9 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mstring founder = Parent->getSname(source);
-    if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-    {
-	founder = Parent->getSname(Parent->nickserv.stored[source.LowerCase()].Host());
-    }
+    mstring founder = Parent->nickserv.stored[source.LowerCase()].Host();
+    if (founder.empty())
+	founder = Parent->getSname(source);
 
     if (Parent->chanserv.Max_Per_Nick() &&
 	Parent->nickserv.stored[founder.LowerCase()].MyChannels() >=
@@ -6459,7 +6458,7 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
 			IRC_Off + "] " + reason + " [" + IRC_Bold +
 			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "]",
 			Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time() -
-				(double) (1.0 / (60.0 * 60.0 * 24.0)));
+				(1.0 / (60.0 * 60.0 * 24.0)));
 
 	Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
 	Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
@@ -6512,7 +6511,7 @@ void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
     if (Parent->chanserv.IsLive(channel))
 	Parent->server.TOPIC(mynick, mynick, channel, "",
 			Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time() -
-				(double) (1.0 / (60.0 * 60.0 * 24.0)));
+				(1.0 / (60.0 * 60.0 * 24.0)));
 
     Parent->chanserv.stored[channel.LowerCase()].UnSuspend();
     Parent->chanserv.stats.i_Unsuspend++;
@@ -7464,7 +7463,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     if (found)
     {
 	Parent->chanserv.stats.i_Unban++;
-	if (target == source)
+	if (source.IsSameAs(target, true))
 	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNBANNED"),
 		    channel.c_str());
 	else
@@ -7476,7 +7475,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (target == source)
+	if (source.IsSameAs(target, true))
 	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTBANNED"),
 		    channel.c_str());
 	else
@@ -8658,9 +8657,9 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	    else
 	    {
 		// Kick stored user ...
-		mstring realnick = who;
-		if (!Parent->nickserv.stored[who.LowerCase()].Host().empty())
-		    realnick = Parent->nickserv.stored[who.LowerCase()].Host();
+		mstring realnick = Parent->nickserv.stored[who.LowerCase()].Host();
+		if (realnick.empty())
+		    realnick = who;
 		if (Parent->chanserv.live[channel.LowerCase()].IsIn(realnick))
 		{
 		    Parent->server.KICK(mynick, realnick, channel,
@@ -8872,7 +8871,7 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel   = params.ExtractWord(2, " ");
-    mstring target    = source;
+    mstring target    = Parent->getSname(source);
     mstring option    = params.After(" ", 3);
 
     if (!Parent->chanserv.IsStored(channel))
@@ -8900,10 +8899,11 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 		    target.c_str());
 		return;
 	    }
+	    target = Parent->getSname(target);
 	    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-			Parent->getSname(target).c_str());
+			target.c_str());
 		return;
 	    }
 	}
@@ -8921,17 +8921,15 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	    option = option.After("!");
     }
 
-    if (!Parent->nickserv.stored[target.LowerCase()].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+    if (!Parent->nickserv.stored[target.LowerCase()].Host().empty())
     {
 	target = Parent->nickserv.stored[target.LowerCase()].Host();
     }
-    target = Parent->getSname(target);
 
     { MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
     if (cstored->Greet_find(target))
     {
-	if (cstored->Greet->Entry()[0U] == '!' && source == target &&
+	if (cstored->Greet->Entry()[0U] == '!' && source.IsSameAs(target, true) &&
 	    !cstored->GetAccess(source, "OVERGREET"))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/LOCKGREET"),
@@ -8965,7 +8963,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring target = source;
+    mstring target = Parent->getSname(source);
 
     if (!Parent->chanserv.IsStored(channel))
     {
@@ -8985,13 +8983,12 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	{ MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
 	if (!cstored->Greet_find(target))
 	{
-	    if (Parent->nickserv.IsStored(target) &&
-		!Parent->nickserv.stored[target.LowerCase()].Host().empty() &&
-		Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+	    if (Parent->nickserv.IsStored(target))
 	    {
 		target = Parent->nickserv.stored[target.LowerCase()].Host();
+		if (target.empty())
+		    target = Parent->getSname(target);
 	    }
-	    target = Parent->getSname(target);
 
 	    if (!cstored->Greet_find(target))
 	    {
@@ -9008,7 +9005,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (source != target)
+    if (!source.IsSameAs(target, true))
     {
 	cstored->Greet_erase();
 	Parent->chanserv.stats.i_Greet++;
@@ -9018,12 +9015,8 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (!Parent->nickserv.stored[target.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
-	{
+	if (!Parent->nickserv.stored[target.LowerCase()].Host().empty())
 	    target = Parent->nickserv.stored[target.LowerCase()].Host();
-	}
-	target = Parent->getSname(target);
 
 	{ MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
 	if (cstored->Greet_find(target))
@@ -9108,17 +9101,13 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	target = source;
+	target = Parent->getSname(source);
     }
 
     if (!target.empty() && Parent->nickserv.IsStored(target))
     {
-	if (!Parent->nickserv.stored[target.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
-	{
+	if (!Parent->nickserv.stored[target.LowerCase()].Host().empty())
 	    target = Parent->nickserv.stored[target.LowerCase()].Host();
-	}
-	target = Parent->getSname(target);
     }
 
     bool found = false;
@@ -9238,7 +9227,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
     int num = atoi(target);
-    if (num < 1 || num > (int) cstored->Message_size())
+    if (num < 1 || num > static_cast<int>(cstored->Message_size()))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 		1, cstored->Message_size());
@@ -9386,12 +9375,14 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
 		Parent->getSname(founder).c_str());
 	return;
     }
-    else if (!Parent->nickserv.stored[founder.LowerCase()].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
+    else if (!Parent->nickserv.stored[founder.LowerCase()].Host().empty())
     {
 	founder = Parent->nickserv.stored[founder.LowerCase()].Host();
     }
-    founder = Parent->getSname(founder);
+    else
+    {
+	founder = Parent->getSname(founder);
+    }
 
     if (Parent->chanserv.Max_Per_Nick() &&
 	Parent->nickserv.stored[founder.LowerCase()].MyChannels() >=
@@ -9460,12 +9451,14 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 		Parent->getSname(founder).c_str());
 	return;
     }
-    else if (!Parent->nickserv.stored[founder.LowerCase()].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
+    else if (!Parent->nickserv.stored[founder.LowerCase()].Host().empty())
     {
 	founder = Parent->nickserv.stored[founder.LowerCase()].Host();
     }
-    founder = Parent->getSname(founder);
+    else
+    {
+	founder = Parent->getSname(founder);
+    }
 
     if (cstored->Founder().LowerCase() == founder.LowerCase())
     {
@@ -12327,7 +12320,7 @@ void ChanServ::PostLoad()
 			if (!iter->second.i_Mlock_On.Contains(locked[i]))
 			    iter->second.i_Mlock_On += locked[i];
 			if (iter->second.i_Mlock_Off.Contains(locked[i]))
-			    iter->second.i_Mlock_Off.Remove((mstring) locked[i]);
+			    iter->second.i_Mlock_Off.Remove(locked[i]);
 		    }
 		}
 		else
@@ -12343,7 +12336,7 @@ void ChanServ::PostLoad()
 			if (!iter->second.i_Mlock_Off.Contains(locked[i]))
 			    iter->second.i_Mlock_Off += locked[i];
 			if (iter->second.i_Mlock_On.Contains(locked[i]))
-			    iter->second.i_Mlock_On.Remove((mstring) locked[i]);
+			    iter->second.i_Mlock_On.Remove(locked[i]);
 		    }
 		}
 	    }

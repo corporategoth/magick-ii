@@ -27,6 +27,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.65  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -216,7 +219,7 @@ bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
     for(I = 1; I<Month;I++) 
 		tmpDay+=DayTable[I-1];
     I = Year - 1;
-    Date.Val = (double)(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
+    Date.Val = static_cast<double>(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
     Result = true;
   }
   return Result;
@@ -235,7 +238,10 @@ bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
   bool Result = false;
   if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
   {
-    Time.Val = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
+    Time.Val = (static_cast<double>(Hour) * 3600000.0 +
+		static_cast<double>(Min) * 60000.0 +
+		static_cast<double>(Sec) * 1000.0 +
+		static_cast<double>(MSec)) / static_cast<double>(MSecsPerDay);
     Result = true;
   }
   return Result;
@@ -660,7 +666,7 @@ mDateTime::operator mstring() const
 int mDateTime::DayOfWeek()const
 {
 	mDateTime knownmonday(1970,1,5);
-	int Result=((int)(Val-knownmonday.Val))%7;
+	int Result=static_cast<int>(Val-knownmonday.Val) % 7;
 	return Result;
 }
 
@@ -670,7 +676,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
   const int D4 = D1 * 4 + 1;
   const int D100 = D4 * 25 - 1;
   const int D400 = D100 * 4 + 1;
-  int NumDays = (int)Val;
+  int NumDays = static_cast<int>(Val);
   int Y400,Y100,Y4,Y1,Y,M=1;
   int LeftOver;
 
@@ -709,7 +715,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
 void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const
 {
 	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
-	int CurrentVal=(int)(fmod(Val,1.0)*(double)MSecsPerDay);
+	int CurrentVal=static_cast<int>(fmod(Val,1.0)*static_cast<double>(MSecsPerDay));
 	int LeftOver;
 	//Time = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
 
@@ -801,7 +807,7 @@ mstring mDateTime::timetstring()const
 	localtm.tm_sec=Sec+1;
 	localtm.tm_isdst=0;
 	Res2=mktime(&localtm);
-    Result<<(unsigned long)Res2;
+    Result << static_cast<unsigned long>(Res2);
     return Result;
 }
 
@@ -859,7 +865,7 @@ int mDateTime::Century() const
 unsigned long mDateTime::MSecondsSince() const
 {
     mDateTime dummyvar=mDateTime::CurrentDateTime()-(*this);
-    unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)MSecsPerDay);
+    unsigned long CurrentVal=static_cast<unsigned long>(dummyvar.Val*static_cast<double>(MSecsPerDay));
     return CurrentVal;
 }
 
@@ -872,7 +878,7 @@ mstring mDateTime::Ago(bool gmt, mstring source) const
 unsigned long mDateTime::SecondsSince() const
 {
     mDateTime dummyvar=mDateTime::CurrentDateTime()-(*this);
-    unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)SecsPerDay);
+    unsigned long CurrentVal=static_cast<unsigned long>(dummyvar.Val*static_cast<double>(SecsPerDay));
     return CurrentVal;
 }
 
@@ -893,7 +899,7 @@ unsigned long mDateTime::DaysSince() const
 
 unsigned long mDateTime::YearsSince() const
 {
-    return (int)((double) DaysSince() / 365.25);
+    return static_cast<int>(static_cast<double>(DaysSince()) / 365.25);
 }
 
 mstring DisectTime(long intime, mstring source)
@@ -1031,9 +1037,9 @@ mDateTime GMT(mDateTime in, bool to)
     long offset = ACE_OS::timezone() * (to ? 1 : -1);
     double val = in.Internal();
     int days = 0, secs = 0;
-    days = (int) val;
+    days = static_cast<int>(val);
     val -= days;
-    secs = (int) (val * (double) SecsPerDay);
+    secs = static_cast<int>(val * static_cast<double>(SecsPerDay));
 
     if (secs + offset > SecsPerDay)
     {
@@ -1052,6 +1058,7 @@ mDateTime GMT(mDateTime in, bool to)
     {
 	secs += offset;
     }
-    val = (double) days + ((double) secs * (1.0 / (double) SecsPerDay));
+    val = static_cast<double>(days) + (static_cast<double>(secs) *
+		(1.0 / static_cast<double>(SecsPerDay)));
     return mDateTime(val);
 }

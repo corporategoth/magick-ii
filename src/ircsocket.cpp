@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.148  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.147  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -343,7 +346,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     
     { WLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
-		iter->first < now - (time_t) (Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
+		iter->first < now - static_cast<time_t>(Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
 	traffic.erase(iter->first);
     if (traffic.find(now) == traffic.end())
 	traffic[now] = 0;
@@ -355,7 +358,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     { WLOCK(("IrcSvcHandler", "htm_gap"));
     WLOCK2(("IrcSvcHandler", "htm_level"));
     WLOCK3(("IrcSvcHandler", "last_htm_check"));
-    if ((time_t) last_htm_check.SecondsSince() > htm_gap)
+    if (static_cast<time_t>(last_htm_check.SecondsSince()) > htm_gap)
     {
 	last_htm_check = mDateTime::CurrentDateTime();
 	size_t total = 0;
@@ -368,7 +371,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	RLOCK(("IrcSvcHandler", "htm_threshold"));
 	if (total > (htm_gap * htm_threshold))
 	{
-	    if (htm_gap > (time_t) Parent->operserv.Max_HTM_Gap())
+	    if (htm_gap > static_cast<time_t>(Parent->operserv.Max_HTM_Gap()))
 	    {
 		announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/HTM_DIE"));
@@ -380,24 +383,28 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 		if (!htm_level)
 		    announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/HTM_ON"),
-			(float) total / (float) htm_gap / 1024.0,
-			(float) htm_threshold / 1024.0);
+			static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0,
+			static_cast<float>(htm_threshold) / 1024.0);
 		else if (htm_level < 3)
 		    announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/HTM_STILL"),
 			htm_level + 1, htm_gap,
-			(float) total / (float) htm_gap / 1024.0);
+			static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0);
 		else
 		    announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/HTM_TURBO"),
 			htm_level + 1, htm_gap,
-			(float) total / (float) htm_gap / 1024.0);
+			static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0);
 		htm_level++;
 		htm_gap += 2;
 		LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_ON"),
 			htm_level, htm_gap,
-			(float) total / (float) htm_gap / 1024.0,
-			(float) htm_threshold / 1024.0));
+			static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0,
+			static_cast<float>(htm_threshold) / 1024.0));
 	    }
 	}
 	else if (htm_level)
@@ -551,7 +558,7 @@ size_t IrcSvcHandler::Average(time_t secs) const
     size_t total = 0;
     int i = 0;
     map<time_t, size_t>::const_iterator iter;
-    if (secs > (time_t) Parent->operserv.Max_HTM_Gap())
+    if (secs > static_cast<time_t>(Parent->operserv.Max_HTM_Gap()))
 	secs = 0;
     RLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
@@ -598,7 +605,7 @@ int IrcSvcHandler::send(const mstring & data)
     FT("IrcSvcHandler::send",(data));
     int recvResult;
     out_traffic += data.length();
-    recvResult=sock.send((void *) (data + "\r\n").c_str(),data.length()+2);
+    recvResult=sock.send(const_cast<char *>((data + "\r\n").c_str()),data.length()+2);
     CH(D_To,data);
     RET(recvResult);
 }
@@ -733,7 +740,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
 
     ACE_INET_Addr laddr;
-    unsigned short port = FindAvailPort();
+    unsigned short port = mSocket::FindAvailPort();
     if (i==5)
 	laddr.set(port, Parent->startup.Bind().c_str());
     else
@@ -756,12 +763,12 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->i_localhost = Parent->ircsvchandler->Local_IP();
 	    CE(2, Parent->i_localhost);
 	}
+	if (!Parent->server.proto.Protoctl().empty())
+	    Parent->server.raw(Parent->server.proto.Protoctl());
 	if (Parent->server.proto.TSora())
 	    Parent->server.raw("PASS " + details.second.second + " :TS");
 	else
 	    Parent->server.raw("PASS " + details.second.second);
-	if (!Parent->server.proto.Protoctl().empty())
-	    Parent->server.raw(Parent->server.proto.Protoctl());
 	mstring tmp;
 	if (Parent->server.proto.Numeric())
 	    tmp.Format(Parent->server.proto.Server().c_str(),
@@ -789,7 +796,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     // We ONLY get here if we didnt receive a SQUIT message in <10s
     // after any QUIT message with 2 valid servers in it
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    mstring *tmp = (mstring *) arg;
+    mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     { WLOCK(("Server", "ServerSquit"));
     Parent->server.DumpB();
@@ -840,7 +847,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    mstring *tmp = (mstring *) arg;
+    mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     { WLOCK(("Server", "ServerSquit"));
     WLOCK2(("Server", "ToBeSquit"));
@@ -887,7 +894,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // Memo timed out, send it!
     // If its a file, and not inprogress, ignore.
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    mstring *tmp = (mstring *) arg;
+    mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
     Nick_Live_t *entry;
 
     if (Parent->nickserv.IsLiveAll(*tmp))
@@ -918,7 +925,7 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
     mThread::Attach(tt_MAIN);
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-    mstring *tmp = (mstring *) arg;
+    mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     // This is to part channels I'm not supposed to be
     // in (ie. dont have JOIN on, and I'm the only user
@@ -970,7 +977,7 @@ mstring EventTask::SyncTime(mstring source) const
     FT("EventTask::SyncTime", (source));
     RLOCK(("Events", "last_save"));
     mstring retval = ToHumanTime(Parent->config.Savetime() -
-	(unsigned long)last_save.SecondsSince(), source);
+	last_save.SecondsSince(), source);
     RET(retval);
 }
 
@@ -1157,7 +1164,7 @@ int EventTask::svc(void)
 		    WLOCK(("MemoServ", "channel", ni->first));
 		    for (lni=ni->second.begin(); lni != ni->second.end();)
 		    {
-			if (lni->Time().SecondsSince() >
+			if (!lni->NoExpire() && lni->Time().SecondsSince() >
 			    Parent->memoserv.News_Expire())
 			{
 			    list<News_t>::iterator lni2 = lni;
@@ -1444,17 +1451,17 @@ int EventTask::svc(void)
 		sum += si->second.Lag();
 	    }}
 	    if (pingtimes.size() >= 3)
-		avg = (sum - min - max) / (double)(pingtimes.size() - 2);
+		avg = (sum - min - max) / static_cast<double>(pingtimes.size() - 2);
 	    else
-		avg = sum / (double) pingtimes.size();
+		avg = sum / static_cast<double>(pingtimes.size());
 
-	    if (avg > (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+	    if (avg > static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
 	    {
 		Parent->LevelUp();
 		LOG((LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_UP"), avg));
 	    }
 	    else if (Parent->Level() > Parent->startup.Level() &&
-		avg <= (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
+		avg <= static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
 	    {
 		Parent->LevelDown();
 		LOG((LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg));

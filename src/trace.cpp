@@ -27,6 +27,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.105  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -436,11 +439,11 @@ T_CheckPoint::T_CheckPoint()
 
 T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 {
+    mstring output;
     va_list args;
     va_start (args, fmt);
-
-    mstring output;
     output.FormatV(fmt, args);
+    va_end (args);
     common(output.c_str());
 }
 
@@ -467,10 +470,10 @@ T_Comments::T_Comments()
 T_Comments::T_Comments(const char *fmt, ...)
 {
     va_list args;
-    va_start (args, fmt);
-
     mstring output;
+    va_start (args, fmt);
     output.FormatV(fmt, args);
+    va_end (args);
     common(output.c_str());
 }
 

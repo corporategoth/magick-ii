@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.115  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -322,8 +325,8 @@ bool OperServ::AddHost(mstring host)
 			killusers.push_back(nlive->first);
 		}}
 
-		float percent = 100.0 * (float) killusers.size() /
-				(float) Parent->nickserv.live.size();
+		float percent = 100.0 * static_cast<float>(killusers.size()) /
+				static_cast<float>(Parent->nickserv.live.size());
 
 		Parent->server.AKILL("*@" + host,
 			Parent->operserv.Clone_Akill(),
@@ -1311,7 +1314,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		break;
 	if (i<tt_MAX)
 	{
-	    type = (threadtype_enum) i;
+	    type = static_cast<threadtype_enum>(i);
 	}
 	else
 	{
@@ -1329,11 +1332,13 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 	    {
 		for (i=tt_MAIN; i<tt_MAX; i++)
 		{
-		    Trace::TurnSet((threadtype_enum) i, makehex(levels[0U]));
+		    Trace::TurnSet(static_cast<threadtype_enum>(i),
+			makehex(levels[0U]));
 		    output.Format("%s SET: Trace level set to %#06x.",
-			mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) i));
+			mDateTime::CurrentDateTime().DateTimeString().c_str(),
+			Trace::TraceLevel(static_cast<threadtype_enum>(i)));
 		    { MLOCK(("ThreadMessageQueue"));
-		    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) i, output));
+		    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(static_cast<threadtype_enum>(i), output));
 		    }
 		}
 	    }
@@ -1362,14 +1367,16 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			    {
 				if (k==tt_MAIN)
 				{
-				    Trace::TurnSet((threadtype_enum) k, 0U);
+				    Trace::TurnSet(static_cast<threadtype_enum>(k), 0U);
 				    gotone = true;
 				}
-				Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
+				Trace::TurnUp(static_cast<threadtype_enum>(k),
+					Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
-				    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				    mDateTime::CurrentDateTime().DateTimeString().c_str(),
+				    Trace::TraceLevel(static_cast<threadtype_enum>(k)));
 				{ MLOCK(("ThreadMessageQueue"));
-				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(static_cast<threadtype_enum>(k), output));
 				}
 			    }
 			}
@@ -1382,7 +1389,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 				}
 				Trace::TurnUp(type, Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
-				    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel(type));
+				    mDateTime::CurrentDateTime().DateTimeString().c_str(),
+				    Trace::TraceLevel(type));
 				{ MLOCK(("ThreadMessageQueue"));
 				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
 				}
@@ -1408,11 +1416,13 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    {
 			for (k=tt_MAIN; k<tt_MAX; k++)
 			{
-			    Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
+			    Trace::TurnUp(static_cast<threadtype_enum>(k),
+				Trace::levelname[j].level);
 			    output.Format("%s UP: Trace level set to %#06x.",
-				mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				mDateTime::CurrentDateTime().DateTimeString().c_str(),
+				Trace::TraceLevel(static_cast<threadtype_enum>(k)));
 			    { MLOCK(("ThreadMessageQueue"));
-			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(static_cast<threadtype_enum>(k), output));
 			    }
 			}
 		    }
@@ -1445,11 +1455,13 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    {
 			for (k=tt_MAIN; k<tt_MAX; k++)
 			{
-			    Trace::TurnDown((threadtype_enum) k, Trace::levelname[j].level);
+			    Trace::TurnDown(static_cast<threadtype_enum>(k),
+				Trace::levelname[j].level);
 			    output.Format("%s DOWN: Trace level set to %#06x.",
-				mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				mDateTime::CurrentDateTime().DateTimeString().c_str(),
+				Trace::TraceLevel(static_cast<threadtype_enum>(k)));
 			    { MLOCK(("ThreadMessageQueue"));
-			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(static_cast<threadtype_enum>(k), output));
 			    }
 			}
 		    }
@@ -1486,7 +1498,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
     {
 	tmp.Format("%6s  ", (i == tt_MAIN) ? "MAIN" : threadname[i].c_str());
 	line1 += tmp;
-	tmp.Format("%#06x  ", Trace::TraceLevel((threadtype_enum) i));
+	tmp.Format("%#06x  ", Trace::TraceLevel(static_cast<threadtype_enum>(i)));
 	line2 += tmp;
     }
     Parent->operserv.stats.i_Trace++;
@@ -2184,7 +2196,7 @@ void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/HTM"),
 		ToHumanSpace(Parent->ircsvchandler->HTM_Threshold()).c_str(),
-		(float) Parent->ircsvchandler->Average(Parent->ircsvchandler->HTM_Gap()) / (float) 1024);
+		static_cast<float>(Parent->ircsvchandler->Average(Parent->ircsvchandler->HTM_Gap())) / static_cast<float>(1024));
     }
     else
     {
@@ -3107,8 +3119,8 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 		killusers.push_back(nlive->first);
 	}}
 
-	float percent = 100.0 * (float) killusers.size() /
-			(float) Parent->nickserv.live.size();
+	float percent = 100.0 * static_cast<float>(killusers.size()) /
+			static_cast<float>(Parent->nickserv.live.size());
 	if (percent > Parent->operserv.Akill_Reject())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOMANY"),
@@ -3838,7 +3850,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(i=i_Clone.begin(); i!=i_Clone.end(); i++)
 	{
 	    pOut->BeginObject(tag_Clone, attribs);
-	    pOut->WriteSubElement((entlist_val_t<pair<unsigned int, mstring> > *) &(*i), attribs);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned int, mstring> > *>(&(*i)), attribs);
 	    pOut->EndObject(tag_Clone);
 	}}
 
@@ -3846,7 +3858,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(j=i_Akill.begin(); j!=i_Akill.end(); j++)
 	{
 	    pOut->BeginObject(tag_Akill, attribs);
-	    pOut->WriteSubElement((entlist_val_t<pair<unsigned long, mstring> > *) &(*j), attribs);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned long, mstring> > *>(&(*j)), attribs);
 	    pOut->EndObject(tag_Akill);
 	}}
 
@@ -3854,7 +3866,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	for(k=i_OperDeny.begin(); k!=i_OperDeny.end(); k++)
 	{
 	    pOut->BeginObject(tag_OperDeny, attribs);
-	    pOut->WriteSubElement((entlist_val_t<mstring> *) &(*k), attribs);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)), attribs);
 	    pOut->EndObject(tag_OperDeny);
 	}}
 
@@ -3865,7 +3877,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	    if (l->Value())
 	    {
 		pOut->BeginObject(tag_Ignore, attribs);
-		pOut->WriteSubElement((entlist_val_t<bool> *) &(*l), attribs);
+		pOut->WriteSubElement(const_cast<entlist_val_t<bool> *>(&(*l)), attribs);
 		pOut->EndObject(tag_Ignore);
 	    }
 	}}

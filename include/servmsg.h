@@ -25,6 +25,9 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.27  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -115,24 +118,29 @@ public:
 	unsigned long i_Ask;
 	unsigned long i_Stats;
 	unsigned long i_Credits;
-	unsigned long i_file_AddDel;
+	unsigned long i_file_Add;
+	unsigned long i_file_Del;
 	unsigned long i_file_Send;
-	unsigned long i_file_Change;
+	unsigned long i_file_Priv;
+	unsigned long i_file_Rename;
 	unsigned long i_file_Cancel;
     public:
 	stats_t() { clear(); }
 	void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
-	    i_Global = i_Ask = i_Stats = i_Credits = i_file_AddDel =
-	    i_file_Send = i_file_Change = i_file_Cancel = 0; }
+	    i_Global = i_Ask = i_Stats = i_Credits = i_file_Add =
+	    i_file_Del = i_file_Send = i_file_Priv = i_file_Rename =
+	    i_file_Cancel = 0; }
 	mDateTime ClearTime()const		{ return i_ClearTime; }
 	unsigned long Global()const		{ return i_Global; }
 	unsigned long Ask()const		{ return i_Ask; }
 	unsigned long Stats()const		{ return i_Stats; }
 	unsigned long Credits()const		{ return i_Credits; }
-	unsigned long File_AddDel()const	{ return i_file_AddDel; }
+	unsigned long File_Add()const		{ return i_file_Add; }
+	unsigned long File_Del()const		{ return i_file_Del; }
 	unsigned long File_Send()const		{ return i_file_Send; }
-	unsigned long File_Change()const	{ return i_file_Change; }
+	unsigned long File_Priv()const		{ return i_file_Priv; }
+	unsigned long File_Rename()const	{ return i_file_Rename; }
 	unsigned long File_Cancel()const	{ return i_file_Cancel; }
     } stats;
 

@@ -33,3 +33,6 @@ uninstall-exec-am:
 	@list=$(magick_INFO); for p in $$list; do \
 	  rm -f $(DESTDIR)$(infodir)/magick/$$p ;\
 	done
+
+ace_uname:
+	$(CXX) -o ace_uname ace_uname.cpp

@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.58  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -230,7 +233,7 @@ unsigned long FromHumanTime(mstring in)
 	case 'y':
 	    if (number != 0)
 	    {
-		total += number * (unsigned long)(60.0 * 60.0 * 24.0 * 365.25);
+		total += number * static_cast<unsigned long>(60.0 * 60.0 * 24.0 * 365.25);
 		number = 0;
 	    }
 	    break;
@@ -285,7 +288,7 @@ unsigned long FromHumanTime(mstring in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += (unsigned long) (in[i] - '0');
+	    number += static_cast<unsigned long>(in[i] - '0');
 	    break;
 	default:
 	    RET(0);
@@ -308,7 +311,7 @@ mstring ToHumanTime(unsigned long in, mstring source)
     }
     else
     {
-	retval = DisectTime((long) in, source);
+	retval = DisectTime(static_cast<long>(in), source);
     }
 
     RET(retval);
@@ -443,7 +446,7 @@ unsigned long FromHumanSpace(mstring in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += (unsigned long) (in[i] - '0');
+	    number += static_cast<unsigned long>(in[i] - '0');
 	    break;
 	default:
 	    RET(0);
@@ -509,7 +512,7 @@ void mHASH(unsigned char *in, size_t size, unsigned char *out)
     memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
     for (int i=0; i<MD5_DIGEST_LENGTH; i++)
     {
-	sprintf((char *) &out[i*2], "%02x", md[i]);
+	sprintf(reinterpret_cast<char *>(&out[i*2]), "%02x", md[i]);
     }
     memset(md, 0, MD5_DIGEST_LENGTH);
 }
@@ -551,12 +554,12 @@ unsigned long str_to_base64(mstring in)
 	if (!in.length())
 	    return 0;
 
-	unsigned long i = 0, v = char_to_base64[(unsigned char) in[i++]];
+	unsigned long i = 0, v = char_to_base64[static_cast<unsigned char>(in[i++])];
 
 	while (i < in.length())
 	{
 		v <<= 6;
-		v += char_to_base64[(unsigned char) in[i++]];
+		v += char_to_base64[static_cast<unsigned char>(in[i++])];
 	}
 
 	return v;
@@ -580,4 +583,34 @@ mstring base64_to_str(unsigned long in)
 	while (in >>= 6);
 
 	return mstring(base64buf + i);
+}
+
+mstring sysinfo_node()
+{
+    mstring retval;
+    struct utsname *type = new struct utsname;
+    ACE_OS::uname(type);
+    retval = type->nodename;
+    delete type;
+    return retval;
+}
+
+mstring sysinfo_type()
+{
+    mstring retval;
+    struct utsname *type = new struct utsname;
+    ACE_OS::uname(type);
+    retval << type->sysname << "/" << type->machine;
+    delete type;
+    return retval;
+}
+
+mstring sysinfo_rel()
+{
+    mstring retval;
+    struct utsname *type = new struct utsname;
+    ACE_OS::uname(type);
+    retval = type->release;
+    delete type;
+    return retval;
 }

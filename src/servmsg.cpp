@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.80  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -614,7 +617,8 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0,
 	    ServCounts[""].first, ServCounts[""].second,
-	    ((float) ServCounts[""].first / (float) Parent->nickserv.live.size()) * 100.0);
+	    100.0 * static_cast<float>(ServCounts[""].first) /
+	    static_cast<float>(Parent->nickserv.live.size()));
     do_BreakDown2(ServCounts, mynick, source, "", "");
 }
 
@@ -657,14 +661,16 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "|-" + servername).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+			100.0 * static_cast<float>(users) /
+			static_cast<float>(Parent->nickserv.live.size()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "`-" + servername).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
+			100.0 * static_cast<float>(users) /
+			static_cast<float>(Parent->nickserv.live.size()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
@@ -745,6 +751,9 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD9"),
 		Parent->nickserv.stats.Lock(),
 		Parent->nickserv.stats.Unlock());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD10"),
+		Parent->nickserv.stats.SetPicture(),
+		Parent->nickserv.stats.Send());
     Parent->servmsg.stats.i_Stats++;
 }
 
@@ -889,38 +898,44 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 		Parent->memoserv.stats.Del());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD5"),
 		Parent->memoserv.stats.Continue(),
-		Parent->memoserv.stats.File());
+		Parent->memoserv.stats.Set());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD6"),
+		Parent->memoserv.stats.File(),
+		Parent->memoserv.stats.Get());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
 		Parent->commserv.GetInternalName().c_str(),
 		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD6"),
-		Parent->commserv.stats.New(),
-		Parent->commserv.stats.Kill());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD7"),
-		Parent->commserv.stats.AddDel(),
-		Parent->commserv.stats.Memo());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD8"),
-		Parent->commserv.stats.Logon(),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+		Parent->commserv.stats.Add(),
+		Parent->commserv.stats.Del());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
+		Parent->commserv.stats.Member(),
+		Parent->commserv.stats.Logon());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
+		Parent->commserv.stats.Memo(),
 		Parent->commserv.stats.Set());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD9"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD14"),
 		Parent->commserv.stats.Lock(),
 		Parent->commserv.stats.Unlock());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
 		Parent->servmsg.GetInternalName().c_str(),
 		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD21"),
 		Parent->servmsg.stats.Global(),
 		Parent->servmsg.stats.Credits());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD22"),
 		Parent->servmsg.stats.Ask(),
 		Parent->servmsg.stats.Stats());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
-		Parent->servmsg.stats.File_AddDel(),
-		Parent->servmsg.stats.File_Send());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
-		Parent->servmsg.stats.File_Change(),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD23"),
+		Parent->servmsg.stats.File_Add(),
+		Parent->servmsg.stats.File_Del());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD24"),
+		Parent->servmsg.stats.File_Priv(),
+		Parent->servmsg.stats.File_Rename());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD25"),
+		Parent->servmsg.stats.File_Send(),
 		Parent->servmsg.stats.File_Cancel());
     Parent->servmsg.stats.i_Stats++;
 }
@@ -1373,7 +1388,7 @@ void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2)
 	priv = params.After(" ", 2).UpperCase();
 
-    Parent->servmsg.stats.i_file_AddDel++;
+    Parent->servmsg.stats.i_file_Add++;
     Parent->nickserv.live[source.LowerCase()].InFlight.Public(mynick, priv);
 }
 
@@ -1400,7 +1415,7 @@ void ServMsg::do_file_Del(mstring mynick, mstring source, mstring params)
  	return;
     }
 
-    Parent->servmsg.stats.i_file_AddDel++;
+    Parent->servmsg.stats.i_file_Del++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source,"LIST/FILES").c_str());
@@ -1431,7 +1446,7 @@ void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
  	return;
     }
 
-    Parent->servmsg.stats.i_file_Change++;
+    Parent->servmsg.stats.i_file_Rename++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
@@ -1468,7 +1483,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
  	return;
     }
 
-    Parent->servmsg.stats.i_file_Change++;
+    Parent->servmsg.stats.i_file_Priv++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_TIME"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
@@ -1549,7 +1564,7 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
     if (Parent->dcc != NULL)
     {
 	Parent->servmsg.stats.i_file_Send++;
-	unsigned short port = FindAvailPort();
+	unsigned short port = mSocket::FindAvailPort();
 	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 		" " + mstring(Parent->LocalHost()) + " " +
 		mstring(port) + " " + mstring(filesize)));
@@ -1572,7 +1587,7 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 	for (iter = DccMap::xfers.begin(); iter != DccMap::xfers.end();
  						iter++)
  	{
-	    float speed = (float) iter->second->Average();
+	    float speed = static_cast<float>(iter->second->Average());
 	    char scale = 'b';
 	    while (speed >= 1024.0)
 	    {
@@ -1601,8 +1616,8 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "DCC/LIST"), iter->first,
 		((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'),			
 		iter->second->Filesize(),
-		((float) iter->second->Total() /
-			(float) iter->second->Filesize() * 100.0),
+		100.0 * static_cast<float>(iter->second->Total()) /
+			static_cast<float>(iter->second->Filesize()),
 		speed, scale, iter->second->Source().c_str(),
 		iter->second->Filename().c_str());
  	}

@@ -25,19 +25,21 @@ RCSID(language_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.28  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
-**
 **
 ** ========================================================== */
 
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Fri Feb  2 23:53:02 EST 2001
+ * Created on Sun Feb 18 18:32:02 EST 2001
  */
 
-unsigned int def_langent =     899;
+unsigned int def_langent =     914;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -96,15 +98,17 @@ char *def_lang[] = {
 "; (included with Magick, or available with the command",
 "; 'man format' or 'man formats' depending on the system).",
 "; Briefly tho, if a number is specified in between the %",
-"; and the letter, then it indicates the LENGTH of the",
+"; and the letter (%3d), then it indicates the LENGTH of the",
 "; field in question (usually its not recommended you change",
 "; these).  If the number is negative, it forces it to be",
-"; LEFT justified.  If the number has a decimal point, then",
-"; it specifies how many digits appear AFTER the DP.",
+"; LEFT justified (%-20s).  If the number has a decimal point",
+"; (%.2f or %5.2f), then it specifies how many digits appear",
+"; AFTER the DP.  If the first number is a 0 (%08x), it will",
+"; cuase the number to be 0 padded.",
 ";",
 "; IRC beautifying codes:",
 ";   ^B () = BOLD       - Make text between look brighter",
-";   ^_ () = UNDERLINE  - Underline text between",
+";   ^_ () = UNDERLINE  - Underline text between",
 ";   ^V () = REVERSE    - Switch foreground and background",
 ";   ^O () = CANCEL     - Back to non-bold/underline/reverse",
 ";   ^C () = COLOUR     - See below",
@@ -154,6 +158,10 @@ char *def_lang[] = {
 "NOSERVICE          =Service %s does not exist.",
 "ONYOURSELF         =You may only perform %s on yourself.",
 "NOTONYOURSELF      =You may not perform %s on yourself.",
+"ONANICK            =You may only perform %s a nickname.",
+"NOTONANICK         =You may not perform %s a nickname.",
+"ONACHAN            =You may only perform %s a channel.",
+"NOTONACHAN         =You may not perform %s a channel.",
 "ONCOMMITTEE        =You may only perform %s on a member of the %s committee.",
 "NOTONCOMMITTEE     =You may not perform %s on a member of the %s committee.",
 "ONPRIVCOMMITTEE    =You may only perform %s on a member of the privileged committees.",
@@ -316,6 +324,7 @@ char *def_lang[] = {
 "NICK_CMD7          =ACCESS        %10d / IGNORE        %10d",
 "NICK_CMD8          =SET           %10d / NOEXPIRE      %10d",
 "NICK_CMD9          =LOCK          %10d / UNLOCK        %10d",
+"NICK_CMD10         =SET PICTURE   %10d / SEND          %10d",
 "",
 "CHAN_REGD          =Currently Registered: %d",
 "CHAN_DENIED        =Currently Suspended : %d (%d forbidden)",
@@ -359,17 +368,19 @@ char *def_lang[] = {
 "OTH_CMD2           =SEND          %10d / FLUSH         %10d",
 "OTH_CMD3           =REPLY         %10d / FORWARD       %10d",
 "OTH_CMD4           =CANCEL        %10d / DEL           %10d",
-"OTH_CMD5           =CONTINUE      %10d / FILE/GET      %10d",
+"OTH_CMD5           =CONTINUE      %10d / SET           %10d",
+"OTH_CMD6           =FILE          %10d / GET           %10d",
 "",
-"OTH_CMD6           =NEW           %10d / KILL          %10d",
-"OTH_CMD7           =ADD/DEL       %10d / MEMO          %10d",
-"OTH_CMD8           =LOGON         %10d / SET           %10d",
-"OTH_CMD9           =LOCK          %10d / UNLOCK        %10d",
+"OTH_CMD11          =ADD           %10d / DEL           %10d",
+"OTH_CMD12          =MEMBER        %10d / LOGON         %10d",
+"OTH_CMD13          =MEMO          %10d / SET           %10d",
+"OTH_CMD14          =LOCK          %10d / UNLOCK        %10d",
 "",
-"OTH_CMD10          =GLOBAL        %10d / CREDITS       %10d",
-"OTH_CMD11          =ASK           %10d / STATS         %10d",
-"OTH_CMD12          =FILE ADD/DEL  %10d / FILE SEND     %10d",
-"OTH_CMD13          =FILE CHANGE   %10d / FILE CANCEL   %10d",
+"OTH_CMD21          =GLOBAL        %10d / CREDITS       %10d",
+"OTH_CMD22          =ASK           %10d / STATS         %10d",
+"OTH_CMD23          =FILE ADD      %10d / FILE DEL      %10d",
+"OTH_CMD24          =FILE PRIV     %10d / FILE RENAME   %10d",
+"OTH_CMD25          =FILE SEND     %10d / FILE CANCEL   %10d",
 "",
 "USE_CPU            =CPU Usage %s system and %s user.",
 "USE_TRAFFIC        =Sent %s (%s/s) and Received %s (%s/s) in %s.",
@@ -443,7 +454,7 @@ char *def_lang[] = {
 "OPERDENY           =IRC operator deny",
 "SIGNORE            =services ignore",
 "CHANNEL            =channel",
-"NICKNAME           =nicknames",
+"NICKNAME           =nickname",
 "FILES              =available files",
 "",
 ";",
@@ -543,7 +554,7 @@ char *def_lang[] = {
 "[NS_OTH_COMMAND]",
 "REGISTERED         =Nickname %s is now registered under host %s.",
 "LINKED             =Nickname %s is now linked to %s.",
-"DROPPED            =Nickname %s has been droped.",
+"DROPPED            =Nickname %s has been dropped.",
 "UNLINKED           =Nickname %s has been unlinked.",
 "NEWHOST            =Nickname %s is now the host.",
 "IDENTIFIED         =Password accepted - you are now identified for nickname %s.",
@@ -569,7 +580,7 @@ char *def_lang[] = {
 "[NS_YOU_COMMAND]",
 "REGISTERED         =Your nickname is now registered under host %s.",
 "LINKED             =Your nickname is now linked to %s.",
-"DROPPED            =Your nickname has been droped.",
+"DROPPED            =Your nickname has been dropped.",
 "UNLINKED           =Your nickname has been unlinked.",
 "NEWHOST            =Your nickname is now the host.",
 "IDENTIFIED         =Password accepted - you are now identified.",
@@ -670,10 +681,10 @@ char *def_lang[] = {
 "REV_REVERSE        =Reverse Activity",
 "REV_DEOP           =Deop Only",
 "REV_KICK           =Kick Only",
-"REV_BAN1           =Nick (nick!*@*) Ban",
-"REV_BAN2           =Mask (*!*user@*.host) Ban",
-"REV_BAN3           =Port (*!*@port.host) Ban",
-"REV_BAN4           =Host (*!*@*.host) Ban",
+"REV_BAN1           =Nick Ban (nick!*@*)",
+"REV_BAN2           =Mask Ban (*!*user@*.host)",
+"REV_BAN3           =Port Ban (*!*@port.host)",
+"REV_BAN4           =Host Ban (*!*@*.host)",
 "REV_MIRROR         =Mirror Activity",
 "",
 ";",
@@ -724,7 +735,7 @@ char *def_lang[] = {
 ";",
 "[CS_COMMAND]",
 "REGISTERED         =Channel %s has been registered with founder %s.",
-"DROPPED            =Channel %s has been droped.",
+"DROPPED            =Channel %s has been dropped.",
 "IDENTIFIED         =Password accepted - you are now identified as founder of %s.",
 "SET_TO             =%s for channel %s has been set to %s.",
 "UNSET              =%s for channel %s has been unset.",
@@ -768,8 +779,8 @@ char *def_lang[] = {
 "OTH_NOTMEMBER      =%s is not on the %s committee.",
 "OTH_HEAD           =%s is head of the %s committee.",
 "OTH_NOTHEAD        =%s is not head of the %s committee.",
-"NEW                =Committee %s has been created with head %s.",
-"KILL               =Committee %s has been deleted.",
+"ADD                =Committee %s has been created with head %s.",
+"DEL                =Committee %s has been deleted.",
 "MEMO               =Memo sent to all members of the %s committee.",
 "ISLOCKED           =%s for committee %s is locked.",
 "ISNOTLOCKED        =%s for committee %s is not locked.",
@@ -855,7 +866,7 @@ char *def_lang[] = {
 "MISC_INFLIGHT      =Memos are in-flight for %s.",
 "MISC_AKILL1        =Default Auto Kill time is %s and will reject if more than %.2f%% of the network.",
 "MISC_AKILL2        =Maximum Auto Kill times (by committee) are:",
-"MISC_AKILL3        =    %s: %s",
+"MISC_AKILL3        =%-20s: %s",
 "MISC_CLONES        =Users may have up to %d clone(s) per host, which may be overridden up to %d.",
 "MISC_FLOOD1        =Flood is triggered with %d message(s) is %s.",
 "MISC_FLOOD2        =Services remember old flood triggers for %s.",
@@ -896,7 +907,7 @@ char *def_lang[] = {
 "CS_NOUNREAD        =Channel %s has no unread news articles.",
 "NS_EMPTY           =You have no memos.",
 "NS_UNREAD          =You have %d new memo(s).  Type /MSG %s LIST to list them.",
-"NS_NOUNREAD        =You have no news memos.",
+"NS_NOUNREAD        =You have no new memos.",
 "IGNORE             =Nickname %s is ignoring your memos.",
 "TRUNCATE           =Message truncated at \"...%s\".  Type /MSG %s CONTINUE <text> to continue message.",
 "PENDING            =You have memos pending to be sent.",
@@ -907,6 +918,8 @@ char *def_lang[] = {
 "FORWARD_ARG        =[FORWARD(%s): %s] %s",
 "REPLY              =[REPLY: \"%s\"] %s",
 "REPLY_ARG          =[REPLY(%s): \"%s\"] %s",
+"",
+"SET_NOEXPIRE       =No Expire",
 "",
 ";",
 "; This section contains the output used at the end of SUCCESSFUL",
@@ -928,7 +941,12 @@ char *def_lang[] = {
 "CS_DEL_ALL         =All news articles for channel %s have been deleted.",
 "NS_DEL             =Your memo(s) %s have been deleted.",
 "NS_DEL_ALL         =All your memos have been deleted.",
+"CS_SET             =%s for news article(s) %s of channel %s has been set to %s.",
+"CS_SET_ALL         =%s for all news articles of channel %s has been set to %s.",
+"NS_SET             =%s for your memo(s) %s has been set to %s",
+"NS_SET_ALL         =%s for all your memos %s has been set to %s",
 "CANCEL             =Pending memo has been cancelled.",
+"PREVIEW            =Pending memo to %s is currently:",
 "PENDING            =Memo is now pending.  You have %s to continue or cancel it.",
 "PENDING_FILE       =Memo is now pending.  You have %s to begin your file transfer, continue or cancel it.",
 "TOOBIG             =Your memo attachment is too big, pending memo has been cancelled.",
@@ -937,6 +955,5 @@ char *def_lang[] = {
 "SENT               =Memo has been sent to %s (%s).",
 "CS_NEW             =There is a new news article (#%d) for channel %s from %s.  Type /MSG %s READ %s %d to read it.",
 "NS_NEW             =You have a new memo (#%d).  Type /MSG %s READ %d to read it.",
-"",
 "" };
 #endif

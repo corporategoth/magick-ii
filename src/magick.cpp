@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.289  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.288  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -443,9 +446,7 @@ mstring Magick::files_t::MakePath(mstring in)const
 
 Magick::Magick(int inargc, char **inargv)
 {
-    char buf[1024];
-    ACE_OS::getcwd(buf, 1024);
-    i_services_dir=buf;
+    char buf[1024], *c;
     i_config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
@@ -466,6 +467,16 @@ Magick::Magick(int inargc, char **inargv)
     i_gotconnect = false;
     i_connected = false;
     i_saving = false;
+
+    LoadLogMessages("DEFAULT");
+    c = ACE_OS::getcwd(buf, 1024);
+    if (c == NULL && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"getcwd", ".", errno, strerror(errno)));
+    }
+    else
+	i_services_dir=buf;
 }
 
 Magick::~Magick()
@@ -478,8 +489,15 @@ int Magick::Start()
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 
-    // We log to STDERR until we find our logfile...
-    LoadLogMessages("DEFAULT");
+#if defined(BUILD_NODE) && defined(BUILD_TYPE)
+    if (!sysinfo_node().IsSameAs(BUILD_NODE) ||
+	!sysinfo_type().IsSameAs(BUILD_TYPE))
+    {
+	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/LOCKED_BIN")));
+	mFile::Erase(argv[0]);
+	return MAGICK_RET_LOCKED;
+    }
+#endif
 
     // more stuff to do
     unsigned int argc=argv.size();
@@ -495,6 +513,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir"));
+		    return MAGICK_RET_ERROR;
 		}
 		i_services_dir=files.MakePath(argv[i]);
 	    }
@@ -504,6 +523,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--config"));
+		    return MAGICK_RET_ERROR;
 		}
 		i_config_file=argv[i];
 	    }
@@ -514,15 +534,18 @@ int Magick::Start()
 		if(i==argc||argv[i][0U]=='-')
 		{
 		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--trace"));
+		    return MAGICK_RET_ERROR;
 		}
 		if(!argv[i].Contains(":"))
 		{
 		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TRACE_SYNTAX")));
+		    return MAGICK_RET_ERROR;
 		}
 		unsigned short level = makehex(argv[i].After(":"));
 		if (level==0)
 		{
 		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ZERO_LEVEL")));
+		    return MAGICK_RET_ERROR;
 		}
 		else
 		{
@@ -531,7 +554,7 @@ int Magick::Start()
 			Trace::TurnSet(tt_MAIN, level);
 		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
 			if (type==threadname[i] || type=="ALL")
-			    Trace::TurnSet((threadtype_enum) i, level);
+			    Trace::TurnSet(static_cast<threadtype_enum>(i), level);
 		}
 	    }
 #endif
@@ -544,9 +567,11 @@ int Magick::Start()
 	}
     }
     NFT("Magick::Start");
-    if (ACE_OS::chdir (Services_Dir()) < 0)
+    i = ACE_OS::chdir(Services_Dir());
+    if (i < 0 && errno)
     {
-        perror (Services_Dir());
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"chdir", Services_Dir().c_str(), errno, strerror(errno)));
 #ifdef WIN32
         WSACleanup ();
 #endif
@@ -588,36 +613,33 @@ int Magick::Start()
 	}
     }
 
-    // Re-direct log output to this file (log output is to STDERR)
-    ActivateLogger();
+    if (!ActivateLogger())
+    {
+	RET(MAGICK_RET_ERROR);
+    }
     FLUSH();
 
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK")));
-    Result = ACE_OS::setsid();
-/*    if (Result < 0)
+    errno = 0;
+    Result = ACE::daemonize(Services_Dir(), 0, i_programname);
+    if (Result < 0 && errno)
     {
-	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETSID"), Result));
-	RET(MAGICK_RET_ERROR);
-    } */
-    Result = ACE::fork(i_programname);
-    if (Result < 0)
-    {
-	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_FORK"), Result));
-	RET(MAGICK_RET_ERROR);
+	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/OPERROR"),
+		"fork", errno, strerror(errno)));
     }
     else if (Result != 0)
     {
 	RET(MAGICK_RET_NORMAL);
     }
-    ACE_LOG_MSG->sync(i_programname.c_str());
+    errno = 0;
     Result = ACE_OS::setpgid (0, 0);
-/*    if (Result < 0)
+    if (Result < 0 && errno)
     {
-	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result));
-	RET(MAGICK_RET_ERROR);
-    } */
+	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/OPERROR"),
+		"setpgid", errno, strerror(errno)));
+    }
     Result = ACE_OS::getuid();
     if (Result == 0)
     {
@@ -1325,10 +1347,10 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
-	if (atoi(second.c_str()) != (int) server.proto.Number())
+	if (atoi(second.c_str()) != static_cast<int>(server.proto.Number()))
 	{
 	    server.proto.Set(atoi(second.c_str()));
-	    if (atoi(second.c_str()) != (int) server.proto.Number())
+	    if (atoi(second.c_str()) != static_cast<int>(server.proto.Number()))
 	    {
 		LOG((LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
 			    atoi(second.c_str()), server.proto.Number()));
@@ -2396,28 +2418,52 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"KEYFILE",files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",files.memoattach,"files/memo");
-    ACE_OS::mkdir(files.memoattach.c_str());
+    i = ACE_OS::mkdir(files.memoattach.c_str());
+    if (i < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"mkdir", files.memoattach.c_str(), errno, strerror(errno)));
+    }
+
     in.Read(ts_Files+"MEMOATTACHSIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
 	files.memoattachsize = FromHumanSpace(value_mstring);
     else
 	files.memoattachsize = FromHumanSpace("0");
     in.Read(ts_Files+"PICTURE",files.picture,"files/pic");
-    ACE_OS::mkdir(files.picture.c_str());
+    i = ACE_OS::mkdir(files.picture.c_str());
+    if (i < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"mkdir", files.picture.c_str(), errno, strerror(errno)));
+    }
+
     in.Read(ts_Files+"PICTURESIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
 	files.picturesize = FromHumanSpace(value_mstring);
     else
 	files.picturesize = FromHumanSpace("0");
     in.Read(ts_Files+"PUBLIC",files.i_public,"files/public");
-    ACE_OS::mkdir(files.i_public.c_str());
+    i = ACE_OS::mkdir(files.i_public.c_str());
+    if (i < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"mkdir", files.i_public.c_str(), errno, strerror(errno)));
+    }
+
     in.Read(ts_Files+"PUBLICSIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
 	files.publicsize = FromHumanSpace(value_mstring);
     else
 	files.publicsize = FromHumanSpace("0");
     in.Read(ts_Files+"TEMPDIR",files.tempdir,"files/temp");
-    ACE_OS::mkdir(files.tempdir.c_str());
+    i = ACE_OS::mkdir(files.tempdir.c_str());
+    if (i < 0 && errno)
+    {
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
+		"mkdir", files.tempdir.c_str(), errno, strerror(errno)));
+    }
+
     in.Read(ts_Files+"TEMPDIRSIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
 	files.tempdirsize = FromHumanSpace(value_mstring);
@@ -3081,12 +3127,18 @@ bool Magick::ValidateLogger(ACE_Log_Msg *instance) const
     return true;
 }
 
-void Magick::ActivateLogger()
+bool Magick::ActivateLogger()
 {
     NFT("Magick::ActivateLogger");
     if (logger != NULL)
 	delete logger;
     logger = new Logger;
+    if (logger != NULL && !logger->opened())
+    {
+	delete logger;
+	logger = NULL;
+    }
+    RET(logger != NULL);
 }
 
 void Magick::DeactivateLogger()
@@ -3102,24 +3154,22 @@ Logger::Logger()
     NFT("Logger::Logger");
     ACE_Log_Msg::enable_debug_messages();
 
-    MLOCK(("LogFile"));
-    if ((fout = fopen(Parent->files.Logfile().c_str(), "a")) == NULL)
-	return;
+    fout.Open(Parent->files.Logfile(), "a");
 }
 
 Logger::~Logger()
 {
     NFT("Logger::~Logger");
 
-    if (fout != NULL)
-	fclose(fout);
+    if (fout.IsOpened())
+	fout.Close();
 }
 
 void Logger::log(ACE_Log_Record &log_record)
 {
     FT("Logger::log", ("(ACE_Log_Record &) log_record"));
 
-    if (fout == NULL)
+    if (!fout.IsOpened())
 	return;
 
     mstring text_priority;
@@ -3200,9 +3250,9 @@ void Logger::log(ACE_Log_Record &log_record)
     out.Format("%s.%03ld | %-8s | %s",
 	ctp, log_record.time_stamp().usec() / 1000,
 	text_priority.c_str(), log_record.msg_data ());
-    MLOCK(("LogFile"));
-    fprintf(fout, "%s\n", out.c_str());
-    ACE_OS::fflush(fout);
+
+    fout.Write(out);
+    fout.Flush();
 
     if (!Parent->files.Logchan().empty() && Parent->Connected())
     {
@@ -3218,18 +3268,16 @@ void Logger::log(ACE_Log_Record &log_record)
     }
 
     if (log_record.type() == LM_EMERGENCY)
-	exit(-1);
+	exit(MAGICK_RET_ERROR);
 }
 
 void Logger::close()
 {
     NFT("Logger::close");
 
-    MLOCK(("LogFile"));
-    if (fout != NULL)
+    if (fout.IsOpened())
     {
-	fclose(fout);
-	fout = NULL;
+	fout.Close();
     }
 }
 
@@ -3237,18 +3285,16 @@ void Logger::open()
 {
     NFT("Logger::open");
 
-    MLOCK(("LogFile"));
-    if (fout == NULL)
+    if (!fout.IsOpened())
     {
-	fout = fopen(Parent->files.Logfile().c_str(), "a");
+	fout.Open(Parent->files.Logfile(), "a");
     }
 }
 
 bool Logger::opened() const
 {
     NFT("Logger::opened");
-    MLOCK(("LogFile"));
-    RET(fout != NULL);
+    RET(fout.IsOpened());
 }
 
 
@@ -3422,7 +3468,7 @@ mstring Magick::GetKey()const
 
 	/* Use keyfile keys to get REAL key */
 	mDES(tmp, key, key_size, key1, key2, 0);
-	retval = (char *) key;
+	retval = reinterpret_cast<char *>(key);
     }
 #endif
     NRET(mstring, retval);
@@ -3559,9 +3605,18 @@ void Magick::load_databases()
     {
 	LOG((LM_STARTUP, getLogMessage("EVENT/LOAD")));
    	SXP::CParser p( this ); // let the parser know which is the object
-	if (p.FeedFile(files.Database(), GetKey()) < 1)
+	int retval = p.FeedFile(files.Database(), GetKey());
+	if (retval == -2)
 	{
-	    LOG((LM_EMERGENCY, getLogMessage("ERROR/CORRUPT_DB")));
+	    LOG((LM_EMERGENCY, getLogMessage("ERROR/DB_LOCK_FAIL")));
+	}
+	else if (retval == -1)
+	{
+	    LOG((LM_EMERGENCY, getLogMessage("ERROR/DB_SANITY_FAIL")));
+	}
+	else if (retval < 1)
+	{
+	    LOG((LM_EMERGENCY, getLogMessage("ERROR/DB_CORRUPT")));
 	}
     }
 }

@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.81  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -523,10 +526,13 @@ public:
 };
 void do_1_2param(mstring mynick, mstring source, mstring params);
 void do_1_3param(mstring mynick, mstring source, mstring params);
+void do_1_4param(mstring mynick, mstring source, mstring params);
 void do_1_2paramswap(mstring mynick, mstring source, mstring params);
 void do_1_3paramswap(mstring mynick, mstring source, mstring params);
+void do_1_4paramswap(mstring mynick, mstring source, mstring params);
 void do_2param(mstring mynick, mstring source, mstring params);
 void do_3param(mstring mynick, mstring source, mstring params);
+void do_4param(mstring mynick, mstring source, mstring params);
 
 #endif
 

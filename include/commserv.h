@@ -25,6 +25,9 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.48  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -283,11 +286,11 @@ public:
 	friend class CommServ;
 
 	mDateTime i_ClearTime;
-	unsigned long i_New;
-	unsigned long i_Kill;
-	unsigned long i_AddDel;
-	unsigned long i_Memo;
+	unsigned long i_Add;
+	unsigned long i_Del;
+	unsigned long i_Member;
 	unsigned long i_Logon;
+	unsigned long i_Memo;
 	unsigned long i_Set;
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
@@ -295,14 +298,14 @@ public:
 	stats_t() { clear(); }
 	void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
-	    i_New = i_Kill = i_AddDel = i_Memo =
-		i_Logon = i_Set = i_Lock = i_Unlock = 0; }
+	    i_Add = i_Del = i_Member = i_Logon = i_Memo =
+		i_Set = i_Lock = i_Unlock = 0; }
 	mDateTime ClearTime()const	{ return i_ClearTime; }
-	unsigned long New()const	{ return i_New; }
-	unsigned long Kill()const	{ return i_Kill; }
-	unsigned long AddDel()const	{ return i_AddDel; }
-	unsigned long Memo()const	{ return i_Memo; }
+	unsigned long Add()const	{ return i_Add; }
+	unsigned long Del()const	{ return i_Del; }
+	unsigned long Member()const	{ return i_Member; }
 	unsigned long Logon()const	{ return i_Logon; }
+	unsigned long Memo()const	{ return i_Memo; }
 	unsigned long Set()const	{ return i_Set; }
 	unsigned long Lock()const	{ return i_Lock; }
 	unsigned long Unlock()const	{ return i_Unlock; }

@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.150  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.149  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -206,10 +209,11 @@ const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;
 const int MAGICK_RET_TERMINATE		    = 2;
 const int MAGICK_RET_ERROR		    = -1;
+const int MAGICK_RET_LOCKED		    = -2;
 const int MAGICK_RET_INVALID_SERVICES_DIR   = -20;
 
 class Magick; // fwd reference, leave it here
-const mstring ChanSpec = "#&+";
+const mstring ChanSpec = "#&+!";
 inline bool IsChan(mstring input)
 { return (ChanSpec.Contains(input[0U])); }
 
@@ -226,7 +230,7 @@ public:
 
 class Logger : public ACE_Log_Msg_Callback
 {
-    FILE *fout;
+    mFile fout;
 
 public:
     Logger();
@@ -421,7 +425,7 @@ public:
 		unsigned int MSG_Seen_Act()const	{ return msg_seen_act; }
 	} config;
 
-	void ActivateLogger();
+	bool ActivateLogger();
 	void DeactivateLogger();
 	bool ValidateLogger(ACE_Log_Msg *instance) const;
 	bool Verbose()const		{ return i_verbose; }

@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.156  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.155  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -535,12 +538,12 @@ void Protocol::SetTokens(unsigned int type)
 	tokens["Rz"] = "RW";
 	break;
 
-    case 0003:
+    case 0003: /* Bahamut */
 	SetTokens(0001);
 	tokens["e"] = "MODNICK";
 	break;
 
-    case 0004:
+    case 0004: /* Unreal */
 	SetTokens(0001);
 	tokens["t"] = "RULES";
 	tokens["u"] = "MAP";
@@ -593,6 +596,8 @@ void Protocol::SetTokens(unsigned int type)
 	tokens["BN"] = "POST";
 	tokens["BO"] = "PRIVMSG InfoServ";
 	break;
+    default:
+	tokens.clear();
     }
 }
 
@@ -654,7 +659,7 @@ void Protocol::Set(unsigned int in)
 	i_Helpops = true;
 	i_Akill = 1000;
 	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -694,7 +699,7 @@ void Protocol::Set(unsigned int in)
 	i_Signon = 1000;
 	i_Akill = 2000;
 	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
-	i_Numeric = 7;
+	i_Numeric = 6;
 	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
 	SetTokens(1000);
@@ -730,7 +735,7 @@ void Protocol::Set(unsigned int in)
 	i_Akill = 1000;
 	i_Modes = 6;
 	i_Server = "SERVER %s %d relic2.0 :%s";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -750,7 +755,7 @@ void Protocol::Set(unsigned int in)
 	i_Modes = 6;
 	i_ChanModeArg = "ovbekl";
 	i_Server = "SERVER %s %d relic2.1 :%s";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -786,7 +791,7 @@ void Protocol::Set(unsigned int in)
 	i_Helpops = true;
 	i_Akill = 1000;
 	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -807,7 +812,7 @@ void Protocol::Set(unsigned int in)
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 SJ3 NS VHP";
 	/* Check serveropts in s_debug.c for what the letters are */
 	i_Server = "SERVER %s %d :U2301-CFhiIpnXS-%d %s";
-	i_Numeric = 4;
+	i_Numeric = 3;
 	i_ChanModeArg = "ovbehklLf";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -825,7 +830,7 @@ void Protocol::Set(unsigned int in)
 	i_Helpops = true;
 	i_Akill = 1000;
 	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -1361,7 +1366,7 @@ void NetworkServ::FlushMsgs(mstring nick)
 		break;
 	    default:
 		LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_UNKNOWN"),
-			(int) j->first, i->first.c_str(), j->third.first.c_str(),
+			static_cast<int>(j->first), i->first.c_str(), j->third.first.c_str(),
 			j->third.second.c_str(), j->third.third.c_str(),
 			ToHumanTime(j->second.SecondsSince()).c_str()));
 		break;
@@ -1601,7 +1606,8 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	line << " " << host.After("@") << " " << host.Before("@") <<
 		" " << time << " " << ((!killer.empty()) ? killer :
 		Parent->operserv.FirstName()) << " " <<
-		(time_t) mDateTime::CurrentDateTime() << " :" << reason;
+		static_cast<time_t>(mDateTime::CurrentDateTime()) <<
+		" :" << reason;
 	break;
     case 2000:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
@@ -2822,35 +2828,41 @@ void NetworkServ::execute(const mstring & message)
     //okay this is the main networkserv command switcher
     FT("NetworkServ::execute", (message));
 
-    mstring data(message);
-    mstring source, sourceL, msgtype;
+    mstring source, sourceL, msgtype, params;
 
     if (data[0u] == ':' || data[0u] == '@')
     {
 	if (data[0u] == '@' && proto.Numeric())
 	{
+	    RLOCK(("ServerLinking"));
 	    source = GetServer(data.ExtractWord(1, "@ "));
 	    for (unsigned int i = 0; source.empty() && i < 10; i++)
 	    {
 		ACE_OS::sleep(1);
 		source = GetServer(data.ExtractWord(1, "@ "));
 	    }
-	    data.replace(0, ':');
 	}
 	else
 	    source = data.ExtractWord(1,": ");
-	sourceL = source.LowerCase();
-        msgtype = data.ExtractWord(2,": ").UpperCase();
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
 	    PushUser(source, data);
 	    return;
 	}
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
     }
     else
     {
+	source = OurUplink();
         msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
     }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    sourceL = source.LowerCase();
 
     // Message names direct from RFC1459, with DAL4.4.15+
     // extensions.  Will add to for other ircd's.
@@ -2901,18 +2913,19 @@ void NetworkServ::execute(const mstring & message)
 	}
 	else if (msgtype=="AWAY")
 	{
-	    if (source.Contains(".") || source.empty())
+	    if (source.Contains("."))
 		return;
 
+	    RLOCK(("UsingNick", sourceL));
 	    // :source AWAY
 	    // :source AWAY :This is my reason
-	    if (data.ExtractWord(3, ": ").empty())
+	    if (params.empty())
 	    {
 		Parent->nickserv.live[sourceL].Away("");
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
-		RLOCK(("CommServ", "list"));
+		{ RLOCK2(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
@@ -2929,10 +2942,34 @@ void NetworkServ::execute(const mstring & message)
 					    iter->second.message->Entry());
 			}
 		    }
+		}}
+
+		if (Parent->nickserv.IsStored(source))
+		{
+		    mstring who = Parent->nickserv.stored[sourceL].Host().LowerCase();
+		    if (who.empty())
+			who = sourceL;
+		    if (Parent->memoserv.IsNick(who))
+		    {
+			list<Memo_t>::iterator iter;
+			unsigned int count = 0;
+			{ RLOCK(("MemoServ", "nick", who));
+			for (iter = Parent->memoserv.nick[who].begin();
+				iter != Parent->memoserv.nick[who].end();
+				iter++)
+			{
+			    if (!iter->IsRead())
+				count++;
+			}}
+			if (count)
+			    send(Parent->memoserv.FirstName(), source,
+				Parent->getMessage(source, "MS_STATUS/NS_UNREAD"),
+				count, Parent->memoserv.FirstName().c_str());
+		    }
 		}
 	    }
 	    else
-		Parent->nickserv.live[sourceL].Away(data.After(":", 2));
+		Parent->nickserv.live[sourceL].Away(params.After(":"));
 	}
 	else
 	{
@@ -2964,23 +3001,21 @@ void NetworkServ::execute(const mstring & message)
 	else if (msgtype=="CONNECT")
 	{
 	    // :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
-
-
 	    // :source CONNECT some.server port :our.server
-	    if (IsServer(data.ExtractWord(3, ": ")) ||
-	    	data.ExtractWord(3, ": ").LowerCase() == Parent->startup.Server_Name().LowerCase())
+	    if (IsServer(params.ExtractWord(1, ": ")) ||
+	    	params.ExtractWord(1, ": ").LowerCase() == Parent->startup.Server_Name().LowerCase())
 	    {
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
+		sraw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
+			" " + source + " :Connect: Server " + params.ExtractWord(1, ": ") +
 			" already exists from " + Parent->startup.Server_Name());
 	    }
 	    else
 	    {
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
+		sraw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :Connect: Host " +
-			data.ExtractWord(3, ": ") + " not listed in irc.conf");
+			params.ExtractWord(1, ": ") + " not listed in irc.conf");
 	    }
 	}
 	else
@@ -3010,7 +3045,7 @@ void NetworkServ::execute(const mstring & message)
 	{
 	    // ERROR :This is my error
 	    LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
-		    msgtype.c_str(), data.After(":").c_str()));
+		    msgtype.c_str(), params.After(":").c_str()));
 	}
 	else
 	{
@@ -3036,16 +3071,8 @@ void NetworkServ::execute(const mstring & message)
 	else if (msgtype=="GNOTICE")
 	{
 	    // :server GNOTICE :This message
-	    if (!source.empty())
-	    {
-		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
-		    msgtype.c_str(), data.After(":", 2).c_str()));
-	    }
-	    else
-	    {
-		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
-		    msgtype.c_str(), data.After(":").c_str()));
-	    }
+	    LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
+		msgtype.c_str(), params.After(":").c_str()));
 	}
 	else if (msgtype=="GOPER")
 	{
@@ -3111,15 +3138,16 @@ void NetworkServ::execute(const mstring & message)
 
 	    // repl: :our.server 303 source :local.nick
 	    mstring isonstr;
-	    for (unsigned int i=3; i<=data.WordCount(": "); i++)
+	    for (unsigned int i=1; i<=params.WordCount(": "); i++)
 	    {
+		RLOCK(("UsingNick", params.ExtractWord(i, ": ").LowerCase()));
 		if (isonstr.length() > proto.MaxLine())
 		{
 		    sraw("303 " + source + " :" + isonstr);
 		    isonstr.erase();
 		}
-		if (Parent->nickserv.IsLive(data.ExtractWord(i, ": ")))
-		    isonstr += data.ExtractWord(i, ": ") + " ";
+		if (Parent->nickserv.IsLive(params.ExtractWord(i, ": ")))
+		    isonstr += params.ExtractWord(i, ": ") + " ";
 	    }
 	    if (!isonstr.empty())
 		sraw("303 " + source + " :" + isonstr);
@@ -3133,34 +3161,35 @@ void NetworkServ::execute(const mstring & message)
     case 'J':
 	if (msgtype=="JOIN")
 	{
-	    if (source.Contains(".") || source.empty())
+	    if (source.Contains("."))
 		return;
 
+	    RLOCK(("UsingNick", sourceL));
 	    /* In burst mode, make sure NICK processing is done */
-	    { RLOCK(("IrcSvcHandler"));
-	      RLOCK2(("Server", "proc_NICK"));
+	    { RLOCK2(("IrcSvcHandler"));
+	      RLOCK3(("Server", "proc_NICK"));
 	    if (proc_NICK && Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->Burst())
 	    {
 		WLOCK(("WaitEndNickAdd"));
 	    }}
 	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN++; }
-	    RLOCK(("WaitEndChanAdd"));
+	    RLOCK2(("WaitEndChanAdd"));
 
 	    // :source JOIN :#channel
-	    for (unsigned int i=3; i<=data.WordCount(":, "); i++)
+	    for (unsigned int i=1; i<=params.WordCount(":, "); i++)
 	    {
-		mstring chan(data.ExtractWord(i, ":, "));
+		WLOCK(("UsingChan", params.ExtractWord(i, ":, ").LowerCase()));
+		mstring chan(params.ExtractWord(i, ":, "));
 		// If we're IN channel, then we may be cycling ...
 		if (Parent->chanserv.IsLive(chan) &&
 		    Parent->chanserv.live[chan.LowerCase()].IsIn(sourceL) &&
 		    SeenMessage(data) < Parent->config.MSG_Seen_Act())
 		{
-		    mBase::push_message(data.Before(" ", 2) + " " + chan);
+		    mBase::push_message(":" + source + " " + msgtype + " " + chan);
 		}
 		else
 		{
-		    MLOCK(("BlockChannel", chan.LowerCase()));
 		    Parent->nickserv.live[sourceL].Join(chan);
 		}
 	    }
@@ -3176,54 +3205,59 @@ void NetworkServ::execute(const mstring & message)
 	if (msgtype=="KICK")
 	{
 	    // :source KICK #channel target :reason
+	    // KICK #channel target :reason
 
+	    RLOCK(("UsingNick", sourceL));
+	    RLOCK2(("UsingNick", params.ExtractWord(2, ": ").LowerCase()));
+	    WLOCK(("UsingChan", params.ExtractWord(1, ": ").LowerCase()));
 	    // KICK for UNKNOWN USER.
-	    if (!Parent->nickserv.IsLive(data.ExtractWord(4, ": ")))
+	    if (!Parent->nickserv.IsLive(params.ExtractWord(2, ": ")))
 	    {
-		KillUnknownUser(data.ExtractWord(4, ": "));
+		KillUnknownUser(params.ExtractWord(2, ": "));
 		return;
 	    }
 
-	    if (!(source.Contains(".") || source.empty()) &&
-		!Parent->nickserv.live[sourceL].IsInChan(data.ExtractWord(3, ": ")))
+	    if (!source.Contains(".") &&
+		!Parent->nickserv.live[sourceL].IsInChan(params.ExtractWord(1, ": ")))
 		sraw(((proto.Tokens() && !proto.GetNonToken("KICK").empty()) ?
 			proto.GetNonToken("KICK") : mstring("KICK")) +
-			" " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
+			" " + params.ExtractWord(1, ": ") + " " + source + " :You are not in this channel");
 
 	    // NOTE: as the message has already been broadcasted,
 	    // we still need to acomodate for it.
-	    Parent->nickserv.live[data.ExtractWord(4, ": ").LowerCase()].Kick(source, data.ExtractWord(3, ": "));
+	    Parent->nickserv.live[params.ExtractWord(2, ": ").LowerCase()].Kick(source, params.ExtractWord(1, ": "));
 	}
 	else if (msgtype=="KILL")
 	{
 	    // :source/server KILL target :reason
 	    // LOCAL clients ONLY (remotes are a QUIT).
 	    //:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
-	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    WLOCK(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+	    if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 	    {
 		// sign on services again if they're killed.
-		if (Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
+		if (Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].IsServices())
 		{
 		    LOG((LM_WARNING, Parent->getLogMessage("OTHER/KILLED"),
-			    data.ExtractWord(3, ": ").c_str(),
+			    params.ExtractWord(1, ": ").c_str(),
 			    (!Parent->nickserv.IsLive(sourceL) ? sourceL.c_str() :
 			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str())));
-		    WLOCK(("Server", "WaitIsOn"));
-		    WaitIsOn.insert(data.ExtractWord(3, ": "));
+		    WLOCK2(("Server", "WaitIsOn"));
+		    WaitIsOn.insert(params.ExtractWord(1, ": "));
 		    sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
 			proto.GetNonToken("ISON") : mstring("ISON")) +
-			" " + data.ExtractWord(3, ": "));
+			" " + params.ExtractWord(1, ": "));
 		}
-		int wc = data.After(":", 2).WordCount("!");
-		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
-			"Killed (" + data.After(":", 2).After("!", wc-1) + ")");
-		WLOCK(("NickServ", "live"));
-		Parent->nickserv.live.erase(data.ExtractWord(3, ": ").LowerCase());
+		int wc = params.After(":").WordCount("!");
+		Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].Quit(
+			"Killed (" + params.After(":").After("!", wc-1) + ")");
+		WLOCK2(("NickServ", "live"));
+		Parent->nickserv.live.erase(params.ExtractWord(1, ": ").LowerCase());
 	    }
 	    else
 	    {
 		LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"KILL", source.c_str(), data.ExtractWord(3, ": ").c_str()));
+			"KILL", source.c_str(), params.ExtractWord(1, ": ").c_str()));
 	    }
 
 	}
@@ -3312,12 +3346,13 @@ void NetworkServ::execute(const mstring & message)
 	    // :source MODE source :mode
 	    // :source MODE #channel mode params...
 	    // :server MODE #channel mode params... creationtime
-	    if (IsChan(data.ExtractWord(3, ": ")))
+	    if (IsChan(params.ExtractWord(1, ": ")))
 	    {
-		if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
+		RLOCK(("UsingChan", sourceL));
+		RLOCK2(("UsingChan", params.ExtractWord(1, ": ").LowerCase()));
+		if (Parent->chanserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    MLOCK(("BlockChannel", data.ExtractWord(3, ": ").LowerCase()));
-		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(source, data.After(" ", 3));
+		    Parent->chanserv.live[params.ExtractWord(1, ": ").LowerCase()].Mode(source, params.After(" "));
 		}
 		else
 		{
@@ -3326,22 +3361,23 @@ void NetworkServ::execute(const mstring & message)
 			if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
 			{
 			    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str()));
+				"MODE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
 			}
 			else
 			    mBase::push_message(data);
 		    }
 		    else
 		    {
-			PushUser(source, data, data.ExtractWord(3, ": "));
+			PushUser(source, data, params.ExtractWord(1, ": "));
 		    }
 		}
 	    }
 	    else
 	    {
-		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+		RLOCK(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+		if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(data.ExtractWord(4, ": "));
+		    Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].Mode(params.After(" "));
 		}
 		else
 		{
@@ -3350,7 +3386,7 @@ void NetworkServ::execute(const mstring & message)
 			if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
 			{
 			    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str()));
+				"MODE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
 			}
 			else
 			    mBase::push_message(data);
@@ -3408,7 +3444,7 @@ void NetworkServ::execute(const mstring & message)
 	    // :source NAMES #channel our.server
 //:soul.darker.net 353 ChanServ = #chatzone :killkickabuseme @Aimee Jupiter @Allanon Ghost_ wildrose
 //:soul.darker.net 366 ChanServ #chatzone :End of /NAMES list.
-	    sraw("366 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
+	    sraw("366 " + source + " " + params.ExtractWord(1, ": ") + " :End of /NAMES list.");
 
 	}
 	else if (msgtype=="NETINFO")
@@ -3418,12 +3454,10 @@ void NetworkServ::execute(const mstring & message)
 	else if (msgtype=="NICK")
 	{
 	    if (source.Contains("."))
-		return;
-
-	    if (source.empty())
 	    {
 		// NEW USER
-		sourceL = data.ExtractWord(2, ": ").LowerCase();
+		sourceL = params.ExtractWord(1, ": ").LowerCase();
+		WLOCK(("UsingNick", sourceL));
 
 		// DONT kill when we do SQUIT protection.
 		map<mstring,list<mstring> >::iterator i;
@@ -3431,7 +3465,7 @@ void NetworkServ::execute(const mstring & message)
 		for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 		{
 		    list<mstring>::iterator k;
-		    WLOCK(("Server", "ToBeSquit", i->first.LowerCase()));
+		    WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
 		    for (k=i->second.begin(); k!=i->second.end(); k++)
 			if (*k == sourceL)
 			{
@@ -3444,15 +3478,15 @@ void NetworkServ::execute(const mstring & message)
 		if (Parent->nickserv.IsLiveAll(sourceL))
 		{
 		    // IF the squit server = us, and the signon time matches
-		    if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
-			&& Parent->nickserv.live[sourceL].SignonTime() == mDateTime((time_t) atol(data.ExtractWord(4, ": "))))
+		    if (Parent->nickserv.live[sourceL].Squit() == params.ExtractWord(6, ": ").LowerCase()
+			&& Parent->nickserv.live[sourceL].SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
 		    {
 			Parent->nickserv.live[sourceL].ClearSquit();
 			return;    // nice way to avoid repeating ones self :)
 		    }
 		    else
 		    {
-			WLOCK(("NickServ", "live"));
+			WLOCK2(("NickServ", "live"));
 			Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
 			Parent->nickserv.live.erase(sourceL);
 		    }
@@ -3464,12 +3498,12 @@ void NetworkServ::execute(const mstring & message)
 		if (proc_SERVER && Parent->ircsvchandler != NULL &&
 			Parent->ircsvchandler->Burst())
 		{
-		    WLOCK(("WaitEndServerAdd"));
+		    WLOCK2(("WaitEndServerAdd"));
 		}}
-		{ WLOCK(("Server", "proc_NICK")); proc_NICK++; }
+		{ WLOCK2(("Server", "proc_NICK")); proc_NICK++; }
 		RLOCK(("WaitEndNickAdd"));
 
-		{ WLOCK(("NickServ", "live"));
+		{ WLOCK2(("NickServ", "live"));
 		switch (proto.Signon())
 		{
 		case 0000:
@@ -3478,98 +3512,98 @@ void NetworkServ::execute(const mstring & message)
 		case 1000: // NICK nick hops time user host server :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(2, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
 		    break;
 		case 1001: // NICK nick hops time user host server 1 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
 		    break;
 		case 1002: // NICK nick hops time user host server 0 real-host :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(9, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(8, ": "),
+			    params.After(":")
 			);
-		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(6, ": "));
+		    Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(5, ": "));
 		    break;
 		case 1003: // NICK nick hops time user real-host host server 0 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(8, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(4, ": "))),
+			    GetServer(params.ExtractWord(7, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
-		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
+		    Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(6, ": "));
 		    break;
 		case 2000: // NICK nick hops time mode user host server :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(8, ": ")),
-			    data.ExtractWord(6, ": "),
-			    data.ExtractWord(7, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(7, ": ")),
+			    params.ExtractWord(5, ": "),
+			    params.ExtractWord(6, ": "),
+			    params.After(":")
 			);
-		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		    Parent->nickserv.live[sourceL].Mode(params.ExtractWord(4, ": "));
 		    break;
 		case 2001: // NICK nick hops time mode user host server 0 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(8, ": ")),
-			    data.ExtractWord(6, ": "),
-			    data.ExtractWord(7, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(7, ": ")),
+			    params.ExtractWord(5, ": "),
+			    params.ExtractWord(6, ": "),
+			    params.After(":")
 			);
-		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		    Parent->nickserv.live[sourceL].Mode(params.ExtractWord(4, ": "));
 		    break;
 		case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(9, ": ")),
-			    data.ExtractWord(6, ": "),
-			    data.ExtractWord(7, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(8, ": ")),
+			    params.ExtractWord(5, ": "),
+			    params.ExtractWord(6, ": "),
+			    params.After(":")
 			);
-		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
-		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(8, ": "));
+		    Parent->nickserv.live[sourceL].Mode(params.ExtractWord(4, ": "));
+		    Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(7, ": "));
 		    break;
 		case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
-		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
-		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(10, ": "));
+		    Parent->nickserv.live[sourceL].Mode(params.ExtractWord(8, ": "));
+		    Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(9, ": "));
 		    break;
 		}}
 		if (Parent->nickserv.IsLive(sourceL))
@@ -3579,11 +3613,11 @@ void NetworkServ::execute(const mstring & message)
 			PopUser(sourceL);
 			KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
-			{ WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+			{ WLOCK2(("Server", "proc_NICK")); proc_NICK--; }
 			return;
 		    }
 
-		    { WLOCK(("Server", "i_UserMax"));
+		    { WLOCK2(("Server", "i_UserMax"));
 		    if (i_UserMax < Parent->nickserv.live.size())
 		    {
 			MCB(i_UserMax);
@@ -3655,22 +3689,24 @@ void NetworkServ::execute(const mstring & message)
 			}
 		    }
 		}
-		{ WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+		{ WLOCK2(("Server", "proc_NICK")); proc_NICK--; }
 	    }
 	    else
 	    {
 		// CHANGE NICK
-		if (!Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+		WLOCK(("UsingNick", sourceL));
+		WLOCK2(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+		if (!Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()] =
+		    Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()] =
 			Parent->nickserv.live[sourceL];
 		}
-		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].
-		    Name(data.ExtractWord(3, ": "));
+		Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].
+		    Name(params.ExtractWord(1, ": "));
 
-		if (sourceL != data.ExtractWord(3, ": ").LowerCase())
+		if (sourceL != params.ExtractWord(1, ": ").LowerCase())
 		{
-		    { WLOCK(("NickServ", "live"));
+		    { WLOCK3(("NickServ", "live"));
 		    Parent->nickserv.live.erase(sourceL);
 		    }
 		    // We just did a SVSNICK ...
@@ -3695,18 +3731,11 @@ void NetworkServ::execute(const mstring & message)
 	    if (!Parent->GotConnect())
 		return;
 
-	    if (source.empty())
-		if (!IsChan(data.ExtractWord(2, ": ")))
-		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"NOTICE", Parent->startup.Server_Name().c_str(), data.ExtractWord(2, ": ").c_str()));
-		}
-	    else
-		if (!IsChan(data.ExtractWord(3, ": ")))
-		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"NOTICE", source.c_str(), data.ExtractWord(3, ": ").c_str()));
-		}
+	    if (!IsChan(params.ExtractWord(1, ": ")))
+	    {
+		LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"NOTICE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+	    }
 	}
 	else
 	{
@@ -3727,17 +3756,21 @@ void NetworkServ::execute(const mstring & message)
     case 'P':
 	if (msgtype=="PART")
 	{
-	    if (source.Contains(".") || source.empty())
+	    if (source.Contains("."))
 		return;
 
 	    // :source PART #channel :reason
-	    MLOCK(("BlockChannel", data.ExtractWord(3, ": ").LowerCase()));
-	    Parent->nickserv.live[sourceL].Part(data.ExtractWord(3, ": "));
+	    RLOCK(("UsingNick", sourceL));
+	    WLOCK(("UsingChan", params.ExtractWord(1, ": ").LowerCase()));
+	    Parent->nickserv.live[sourceL].Part(params.ExtractWord(1, ": "));
 	}
 	else if (msgtype=="PASS")
 	{
+	    if (!source.Contains("."))
+		return;
+
 	    // PASS :password
-	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server()).second.second)
+	    if (params.ExtractWord(1, ": ") != Parent->startup.Server(Parent->Server()).second.second)
 	    {
 		LOG((LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
 			Parent->Server().c_str()));
@@ -3756,15 +3789,9 @@ void NetworkServ::execute(const mstring & message)
 	{
 	    // PING :some.server
 	    // :some.server PING some.server :our.server
-	    if (!source.empty())
-		sraw(((proto.Tokens() && !proto.GetNonToken("PONG").empty()) ?
-			proto.GetNonToken("PONG") : mstring("PONG")) +
-			" " + Parent->startup.Server_Name() + " :" + source);
-	    else
-		sraw(((proto.Tokens() && !proto.GetNonToken("PONG").empty()) ?
-			proto.GetNonToken("PONG") : mstring("PONG")) +
-			" " + Parent->startup.Server_Name() + " :" +
-			data.ExtractWord(2, ": "));
+	    sraw(((proto.Tokens() && !proto.GetNonToken("PONG").empty()) ?
+		proto.GetNonToken("PONG") : mstring("PONG")) +
+		" " + Parent->startup.Server_Name() + " :" + source);
 	}
 	else if (msgtype=="PONG")
 	{
@@ -3783,21 +3810,17 @@ void NetworkServ::execute(const mstring & message)
 	    if (!Parent->GotConnect())
 		return;
 
-	    if (source.empty())
-		if (!IsChan(data.ExtractWord(2, ": ")))
-		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"PRIVMSG", Parent->startup.Server_Name().c_str(), data.ExtractWord(2, ": ").c_str()));
-		}
-	    else
-		if (!IsChan(data.ExtractWord(3, ": ")))
-		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"PRIVMSG", source.c_str(), data.ExtractWord(3, ": ").c_str()));
-		}
+	    if (!IsChan(params.ExtractWord(1, ": ")))
+	    {
+		LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"PRIVMSG", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+	    }
 	}
 	else if (msgtype=="PROTOCTL")
 	{
+	    if (!source.Contains("."))
+		return;
+
 	    // Turn on tokens dynamically ...
 	    if ((data + " ").Contains(" TOKEN "))
 		proto.Tokens(true);
@@ -3814,13 +3837,14 @@ void NetworkServ::execute(const mstring & message)
 	    // :source QUIT :reason
 	    // :source QUIT :server server
 
-	    if (source.Contains(".") || source.empty())
+	    if (source.Contains("."))
 		return;
 
+	    WLOCK(("UsingNick", sourceL));
 	    // OK, 4 words (always for squit), the 4nd word is a server
 	    // and the 3rd word is the uplink of the 4th word (a server)
-	    if (data.WordCount(": ")==4 && IsServer(data.ExtractWord(4, ": ")) &&
-		ServerList[data.ExtractWord(4, ": ").LowerCase()].Uplink() == data.ExtractWord(3, ": ").LowerCase())
+	    if (params.WordCount(": ")==2 && IsServer(params.ExtractWord(2, ": ")) &&
+		ServerList[params.ExtractWord(2, ": ").LowerCase()].Uplink() == params.ExtractWord(1, ": ").LowerCase())
 	    {
 		/* Suspected SQUIT
 		 *
@@ -3831,14 +3855,14 @@ void NetworkServ::execute(const mstring & message)
 		 * is removed from ServerSquit map -- ie. its FAKE!
 		 */
 		Parent->nickserv.live[sourceL].SetSquit();
-		WLOCK(("Server", "ToBeSquit"));
+		WLOCK2(("Server", "ToBeSquit"));
 		MCB(ToBeSquit.size());
-		ToBeSquit[data.ExtractWord(4, ": ").LowerCase()].push_back(sourceL);
+		ToBeSquit[params.ExtractWord(2, ": ").LowerCase()].push_back(sourceL);
 		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_FIRST"),
-			data.ExtractWord(4, ": ").c_str(),
-			data.ExtractWord(3, ": ").c_str()));
+			params.ExtractWord(2, ": ").c_str(),
+			params.ExtractWord(1, ": ").c_str()));
 
-		WLOCK2(("Server", "ServerSquit"));
+		WLOCK3(("Server", "ServerSquit"));
 		if (ServerSquit.find(Parent->nickserv.live[sourceL].Server().LowerCase()) == ServerSquit.end())
 		{
 		    CB(1, ServerSquit.size());
@@ -3860,8 +3884,8 @@ void NetworkServ::execute(const mstring & message)
 		    sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
 			proto.GetNonToken("ISON") : mstring("ISON")) +
 			" " + sourceL);
-		Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
-		WLOCK(("NickServ", "live"));
+		Parent->nickserv.live[sourceL].Quit(params.After(":"));
+		WLOCK2(("NickServ", "live"));
 		Parent->nickserv.live.erase(sourceL);
 	    }
 	}
@@ -3894,11 +3918,15 @@ void NetworkServ::execute(const mstring & message)
     case 'S':
 	if (msgtype=="SETHOST")
 	{
+	    if (source.Contains("."))
+		return;
+
 	    // From UnrealIRCD
 	    // :source SVSHOST newhost
+	    WLOCK(("UsingNick", sourceL));
 	    if (Parent->nickserv.IsLive(sourceL))
 	    {
-		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(3, ": "));
+		Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(1, ": "));
 	    }
 	}
 	else if (msgtype=="SETTIME")
@@ -3907,12 +3935,11 @@ void NetworkServ::execute(const mstring & message)
 	}
 	else if (msgtype=="SERVER")
 	{
+	    if (!source.Contains("."))
+		return;
+
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
-
-	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
-	    // SQUIT lifestone.darker.net :Ping timeout
-	    // :PreZ SQUIT server :reason
 
 	    /* Ensure only ONE server is added at a time ... */
 	    { RLOCK(("IrcSvcHandler"));
@@ -3926,10 +3953,9 @@ void NetworkServ::execute(const mstring & message)
 	    RLOCK(("WaitEndServerAdd"));
 
 	    unsigned long numeric = 0;
-	    if (source.empty())
+	    if (source.IsSameAs(Parent->startup.Server_Name(), true))
 	    {
-		if (Parent->startup.IsAllowed(data.ExtractWord(2, ": "),
-			Parent->startup.Server_Name()))
+		if (Parent->startup.IsAllowed(params.ExtractWord(1, ": "), source))
 		{
 		    WLOCK(("Server", "ServerList"));
 		    // unreal puts the numeric in the desctiption, ie.
@@ -3937,28 +3963,29 @@ void NetworkServ::execute(const mstring & message)
 		    //        Only this way for direct links --^^^^^^^
 		    if (proto.Number() >= 70 && proto.Number() <= 79)
 		    {
-			numeric = atoi(data.After(":").ExtractWord(3, "-"));
-			ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
-				data.ExtractWord(2, ": ").LowerCase(),
-				atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
-				data.After(":").After(" "), numeric);
+			numeric = atoi(params.After(":").ExtractWord(3, "-"));
+			ServerList[params.ExtractWord(1, ": ").LowerCase()] = Server(
+				params.ExtractWord(1, ": ").LowerCase(),
+				atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
+				params.After(":").After(" "), numeric);
+
 		    }
 		    else
 		    {
-			ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
-				data.ExtractWord(2, ": ").LowerCase(),
-				atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
-				data.After(":"));
+			ServerList[params.ExtractWord(1, ": ").LowerCase()] = Server(
+				params.ExtractWord(1, ": ").LowerCase(),
+				atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
+				params.After(":"));
 			if (proto.Numeric())
 			{
-			    numeric = atoi(data.ExtractWord(proto.Numeric(), ": "));
-			    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
+			    numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
+			    ServerList[params.ExtractWord(1, ": ").LowerCase()].Numeric(
 				numeric);
 			}
 		    }
 
 		    LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
-			data.ExtractWord(2, ": ").c_str(),
+			params.ExtractWord(1, ": ").c_str(),
 			Parent->startup.Server_Name().c_str()));
 		    Parent->GotConnect(true);
 		    SignOnAll();
@@ -3967,43 +3994,43 @@ void NetworkServ::execute(const mstring & message)
 		{
 		    /* announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/INVALIDLINK"),
-			data.ExtractWord(2, ": ").c_str(),
+			params.ExtractWord(1, ": ").c_str(),
 			Parent->startup.Server_Name().c_str()); */
 		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
-			data.ExtractWord(2, ": ").c_str(),
+			params.ExtractWord(1, ": ").c_str(),
 			Parent->startup.Server_Name().c_str()));
-		    raw("SQUIT " + data.ExtractWord(2, ": ") + " :" +
+		    raw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
 			Parent->getMessage("MISC/MAYNOTLINK"));
 		    Parent->Disconnect();
 		}
 	    }
 	    else
 	    {
-		if (Parent->startup.IsAllowed(data.ExtractWord(3, ": "), source))
+		if (Parent->startup.IsAllowed(params.ExtractWord(1, ": "), source))
 		{
 		    if (IsServer(sourceL))
 		    {
 			WLOCK(("Server", "ServerList"));
-			ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
-			    data.ExtractWord(3, ": ").LowerCase(),
+			ServerList[params.ExtractWord(1, ": ").LowerCase()] = Server(
+			    params.ExtractWord(1, ": ").LowerCase(),
 			    sourceL,
-			    atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
-			    data.After(":", 2));
+			    atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
+			    params.After(":"));
 			if (proto.Numeric())
 			{
-			    numeric = atoi(data.ExtractWord(proto.Numeric()+1, ": "));
-			    ServerList[data.ExtractWord(3, ": ").LowerCase()].Numeric(
+			    numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
+			    ServerList[params.ExtractWord(1, ": ").LowerCase()].Numeric(
 				numeric);
 			}
 			LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
-			    data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
+			    params.ExtractWord(1, ": ").c_str(), sourceL.c_str()));
 		    }
 		    else
 		    {
 			if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
 			{
 			    LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
-				"SERVER", data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
+				"SERVER", params.ExtractWord(1, ": ").c_str(), sourceL.c_str()));
 			}
 		        else
 			    mBase::push_message(data);
@@ -4013,10 +4040,10 @@ void NetworkServ::execute(const mstring & message)
 		{
 		    announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/INVALIDLINK"),
-			data.ExtractWord(3, ": ").c_str(), source.c_str());
+			params.ExtractWord(1, ": ").c_str(), source.c_str());
 		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
-			data.ExtractWord(3, ": ").c_str(), source.c_str()));
-		    sraw("SQUIT " + data.ExtractWord(3, ": ") + " :" +
+			params.ExtractWord(1, ": ").c_str(), source.c_str()));
+		    sraw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
 			Parent->getMessage("MISC/MAYNOTLINK"));
 		}
 	    }
@@ -4044,16 +4071,16 @@ void NetworkServ::execute(const mstring & message)
 	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN++; }
 	    RLOCK(("WaitEndChanAdd"));
 
-	    if (source.Contains(".") || source.empty())
+	    if (source.Contains("."))
 	    {
-		unsigned int i;
-		bool nosource = source.empty();
-		mstring chan = data.ExtractWord((nosource ? 3 : 4), ": ");
+		mstring chan = params.ExtractWord(2, ": ");
+		WLOCK(("UsingChan", chan.LowerCase()));
 
+		unsigned int i;
 		vector<mstring> users;
 		mstring modes;
-		if (data.Before(":", (nosource ? 1 : 2)).WordCount(": ") >= (nosource ? 4u : 5u))
-		    modes = data.Before(":", (nosource ? 1 : 2)).ExtractWord((nosource ? 4 : 5), ": ");
+		if (params.Before(":").WordCount(" ") >= 3)
+		    modes = params.Before(":").ExtractWord(3, " ");
 		mstring mode_params, nick;
 		bool oped, halfoped, voiced, owner, prot, isban, isexcept;
 		if (modes.length())
@@ -4061,13 +4088,13 @@ void NetworkServ::execute(const mstring & message)
 		    for (i=0; i < proto.ChanModeArg().length(); i++)
 			if (modes.Contains(proto.ChanModeArg()[i]))
 			{
-			    mode_params = data.Before(":", (nosource ? 1 : 2)).After(" ", 5);
+			    mode_params = params.Before(":").After(" ", 3);
 			    break;
 			}
 		}
-		for (i=0; i < data.After(":", (nosource ? 1 : 2)).WordCount(" "); i++)
+		for (i=1; i <= params.After(":").WordCount(" "); i++)
 		{
-		    nick = data.After(":", (nosource ? 1 : 2)).ExtractWord(i+1, " ");
+		    nick = params.After(":").ExtractWord(i, " ");
 		    if (!nick.empty())
 		    {
 			char c = 0;
@@ -4108,6 +4135,7 @@ void NetworkServ::execute(const mstring & message)
 			        break;
 			    }
 			}
+			RLOCK2(("UsingNick", nick.LowerCase()));
 			if (!(isban || isexcept) &&
 			    Parent->nickserv.IsLive(nick))
 			{
@@ -4116,34 +4144,59 @@ void NetworkServ::execute(const mstring & message)
 				modes += "o";
 				mode_params += " " + nick;
 			    }
+			    if (halfoped)
+			    {
+				modes += "h";
+				mode_params += " " + nick;
+			    }
 			    if (voiced)
 			    {
 				modes += "v";
 				mode_params += " " + nick;
 			    }
+			    if (owner)
+			    {
+				modes += "q";
+				mode_params += " " + nick;
+			    }
+			    if (prot)
+			    {
+				modes += "a";
+				mode_params += " " + nick;
+			    }
+
 			    users.push_back(nick);
 			}
 			else if (isban)
 			{
 			    modes += "b";
 			    mode_params += " " + nick;
+			    nick.erase();
 			}
 			else if (isexcept)
 			{
 			    modes += "e";
 			    mode_params += " " + nick;
+			    nick.erase();
 			}
 			else
 			{
 			    PushUser(nick, ":" + nick + " JOIN " + chan);
 			    if (oped)
-				PushUser(nick, ":" + (nosource ?
-				    OurUplink() : source) + " MODE " +
+				PushUser(nick, ":" + source + " MODE " +
 				    chan + " +o :" + nick, chan);
+			    if (halfoped)
+				PushUser(nick, ":" + source + " MODE " +
+				    chan + " +h :" + nick, chan);
 			    if (voiced)
-				PushUser(nick, ":" + (nosource ?
-				    OurUplink() : source) + " MODE " +
+				PushUser(nick, ":" + source + " MODE " +
 				    chan + " +v :" + nick, chan);
+			    if (owner)
+				PushUser(nick, ":" + source + " MODE " +
+				    chan + " +q :" + nick, chan);
+			    if (prot)
+				PushUser(nick, ":" + source + " MODE " +
+				    chan + " +a :" + nick, chan);
 			}
 		    }
 		}
@@ -4152,6 +4205,7 @@ void NetworkServ::execute(const mstring & message)
 		{
 		    for (i=0; i<users.size(); i++)
 		    {
+			RLOCK2(("UsingNick", users[i].LowerCase()));
 			Parent->nickserv.live[users[i].LowerCase()].Join(chan);
 		    }
 		    CP(("MODE TO %s: %s", chan.LowerCase().c_str(),
@@ -4162,38 +4216,73 @@ void NetworkServ::execute(const mstring & message)
 		}
 		else if (modes.length() > 1)
 		{
-		    PushUser(nick, ":" + (nosource ?
-			OurUplink() : source) + " MODE " + chan +
+		    PushUser(nick, ":" + source + " MODE " + chan +
 			" " + modes + " :" + mode_params, chan);
 		}
 	    }
 	    else
 	    {
 		unsigned int i;
-		bool oped, voiced;
+		bool oped, halfoped, voiced, owner, prot;
 		mstring chan;
+		RLOCK2(("UsingNick", sourceL));
 
-		for (i=4; i<=data.WordCount(": "); i++)
+		if (Parent->nickserv.IsLive(source))
 		{
-		    chan = data.ExtractWord(i, ": ");
-		    voiced = oped = false;
-		    if (chan[0u] == '@')
+		    for (i=2; i<=params.WordCount(": "); i++)
 		    {
-			oped = true;
-			chan.erase(0, 0);
-		    }
-		    if (chan[0u] == '+')
-		    {
-			voiced = true;
-			chan.erase(0, 0);
-		    }
-		    Parent->nickserv.live[sourceL].Join(chan);
-		    if (oped)
-			Parent->chanserv.live[chan.LowerCase()].Mode(
+			char c = 0;
+			chan = params.ExtractWord(i, ": ");
+			oped = halfoped = voiced = owner = prot = false;
+			while (c != chan[0u])
+			{
+			    c = chan[0u];
+			    switch(chan[0u])
+			    {
+			    case '@':
+				oped = true;
+				chan.erase(0, 0);
+				break;
+			    case '%':
+				halfoped = true;
+				chan.erase(0, 0);
+				break;
+			    case '+':
+				voiced = true;
+				chan.erase(0, 0);
+				break;
+			    case '*':
+				owner = true;
+				chan.erase(0, 0);
+				break;
+			    case '~':
+				prot = true;
+				chan.erase(0, 0);
+				break;
+			    }
+			}
+			WLOCK(("UsingChan", chan.LowerCase()));
+			Parent->nickserv.live[sourceL].Join(chan);
+			if (oped)
+			    Parent->chanserv.live[chan.LowerCase()].Mode(
 				Parent->chanserv.FirstName(), "+o " + source);
-		    if (voiced)
-			Parent->chanserv.live[chan.LowerCase()].Mode(
+			if (halfoped)
+			    Parent->chanserv.live[chan.LowerCase()].Mode(
+				Parent->chanserv.FirstName(), "+h " + source);
+			if (voiced)
+			    Parent->chanserv.live[chan.LowerCase()].Mode(
 				Parent->chanserv.FirstName(), "+v " + source);
+			if (owner)
+			    Parent->chanserv.live[chan.LowerCase()].Mode(
+				Parent->chanserv.FirstName(), "+q " + source);
+			if (prot)
+			    Parent->chanserv.live[chan.LowerCase()].Mode(
+				Parent->chanserv.FirstName(), "+a " + source);
+		    }
+		}
+		else
+		{
+		    PushUser(source, data);
 		}
 	    }
 	    { WLOCK(("Server", "proc_CHAN")); proc_CHAN--; }
@@ -4204,11 +4293,12 @@ void NetworkServ::execute(const mstring & message)
 	}
 	else if (msgtype=="SNICK")
 	{
-	    if (source.Contains("."))
+	    if (!source.Contains("."))
 		return;
 
 	    // NEW USER
-	    sourceL = data.ExtractWord(2, ": ").LowerCase();
+	    sourceL = params.ExtractWord(1, ": ").LowerCase();
+	    WLOCK(("UsingNick", sourceL));
 
 	    // DONT kill when we do SQUIT protection.
 	    map<mstring,list<mstring> >::iterator i;
@@ -4216,7 +4306,7 @@ void NetworkServ::execute(const mstring & message)
 	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 	    {
 		list<mstring>::iterator k;
-		WLOCK(("Server", "ToBeSquit", i->first.LowerCase()));
+		WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {
@@ -4228,8 +4318,8 @@ void NetworkServ::execute(const mstring & message)
 	    if (Parent->nickserv.IsLiveAll(sourceL))
 	    {
 		// IF the squit server = us, and the signon time matches
-		if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
-		    && Parent->nickserv.live[sourceL].SignonTime() == mDateTime((time_t) atol(data.ExtractWord(4, ": "))))
+		if (Parent->nickserv.live[sourceL].Squit() == params.ExtractWord(6, ": ").LowerCase()
+		    && Parent->nickserv.live[sourceL].SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
 		{
 		    Parent->nickserv.live[sourceL].ClearSquit();
 		    return;    // nice way to avoid repeating ones self :)
@@ -4237,7 +4327,7 @@ void NetworkServ::execute(const mstring & message)
 		else
 		{
 		    Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
-		    WLOCK(("NickServ", "live"));
+		    WLOCK2(("NickServ", "live"));
 		    Parent->nickserv.live.erase(sourceL);
 		}
 	    }
@@ -4252,12 +4342,12 @@ void NetworkServ::execute(const mstring & message)
 	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->Burst())
 	    {
-		WLOCK(("WaitEndServerAdd"));
+		WLOCK2(("WaitEndServerAdd"));
 	    }}
-	    { WLOCK(("Server", "proc_NICK")); proc_NICK++; }
+	    { WLOCK2(("Server", "proc_NICK")); proc_NICK++; }
 	    RLOCK(("WaitEndNickAdd"));
 
-	    { WLOCK(("NickServ", "live"));
+	    { WLOCK2(("NickServ", "live"));
 	      RLOCK2(("AddingServer"));
 	    switch (proto.Signon())
 	    {
@@ -4267,102 +4357,102 @@ void NetworkServ::execute(const mstring & message)
 	    case 1000: // SNICK nick hops time user host server modes :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(8, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(7, ": "));
 		break;
 	    case 1001: // SNICK nick hops time user host server 1 modes :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(8, ": "));
 		break;
 	    case 1002: // SNICK nick hops time user host server 0 real-host modes :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(9, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(8, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(6, ": "));
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
+		Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(5, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(9, ": "));
 		break;
 	    case 1003: // SNICK nick hops time user real-host host server 0 modes :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(8, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(7, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
+		Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(6, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(9, ": "));
 		break;
 	    case 2000: // NICK nick hops time mode user host server :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(8, ": ")),
-			    data.ExtractWord(6, ": "),
-			    data.ExtractWord(7, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(7, ": ")),
+			    params.ExtractWord(5, ": "),
+			    params.ExtractWord(6, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(6, ": "));
 		break;
 	    case 2001: // NICK nick hops time mode user host server 0 :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(8, ": ")),
-			    data.ExtractWord(6, ": "),
-			    data.ExtractWord(7, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(7, ": ")),
+			    params.ExtractWord(5, ": "),
+			    params.ExtractWord(6, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(4, ": "));
 		break;
 	    case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(9, ": ")),
-			    data.ExtractWord(6, ": "),
-			    data.ExtractWord(7, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(8, ": ")),
+			    params.ExtractWord(5, ": "),
+			    params.ExtractWord(6, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
-		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(8, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(4, ": "));
+		Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(7, ": "));
 		break;
 	    case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
-			    data.ExtractWord(2, ": "),
-			    (time_t) atol(data.ExtractWord(4, ": ")),
-			    GetServer(data.ExtractWord(7, ": ")),
-			    data.ExtractWord(5, ": "),
-			    data.ExtractWord(6, ": "),
-			    data.After(":")
+			    params.ExtractWord(1, ": "),
+			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
+			    GetServer(params.ExtractWord(6, ": ")),
+			    params.ExtractWord(4, ": "),
+			    params.ExtractWord(5, ": "),
+			    params.After(":")
 			);
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
-		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(10, ": "));
+		Parent->nickserv.live[sourceL].Mode(params.ExtractWord(8, ": "));
+		Parent->nickserv.live[sourceL].AltHost(params.ExtractWord(9, ": "));
 		break;
 	    }}
 	    if (Parent->nickserv.IsLive(sourceL))
@@ -4372,12 +4462,12 @@ void NetworkServ::execute(const mstring & message)
 		    PopUser(sourceL);
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
-		    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+		    { WLOCK2(("Server", "proc_NICK")); proc_NICK--; }
 
 		    return;
 		}
 
-		{ WLOCK(("Server", "i_UserMax"));
+		{ WLOCK2(("Server", "i_UserMax"));
 		if (i_UserMax < Parent->nickserv.live.size())
 		{
 		    MCB(i_UserMax);
@@ -4448,7 +4538,7 @@ void NetworkServ::execute(const mstring & message)
 		    }
 		}
 	    }
-	    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+	    { WLOCK2(("Server", "proc_NICK")); proc_NICK--; }
 	}
 	else if (msgtype=="SQLINE")
 	{
@@ -4460,11 +4550,7 @@ void NetworkServ::execute(const mstring & message)
 	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
 	    // SQUIT lifestone.darker.net :Ping timeout
 	    // :PreZ SQUIT server :reason
-	    mstring target;
-	    if (source.empty())
-		target = data.ExtractWord(2, ": ").LowerCase();
-	    else
-		target = data.ExtractWord(3, ": ").LowerCase();
+	    mstring target = params.ExtractWord(1, ": ").LowerCase();
 
 	    LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_SECOND"),
 		    target.c_str(),
@@ -4480,7 +4566,7 @@ void NetworkServ::execute(const mstring & message)
 	    {
 		mstring *arg = NULL;
 		if (ACE_Reactor::instance()->cancel_timer(
-			ServerSquit[target], (const void **) arg)
+			ServerSquit[target], reinterpret_cast<const void **>(arg))
 		    && arg != NULL)
 		    delete arg;
 		ServerSquit[target] =
@@ -4514,7 +4600,7 @@ void NetworkServ::execute(const mstring & message)
 	{
 	    // :source STATS type :our.server
 	    //:temple.magick.tm 219 ChanServ o :End of /STATS report
-	    sraw("219 " + source + " " + data.ExtractWord(3, ": ") +
+	    sraw("219 " + source + " " + params.ExtractWord(1, ": ") +
 		" :End of /STATS report");
 	}
 	else if (msgtype=="SUMMON")
@@ -4529,9 +4615,10 @@ void NetworkServ::execute(const mstring & message)
 	else if (msgtype=="SVSHOST")
 	{
 	    // :source SVSHOST user newhost
-	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    WLOCK(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+	    if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 	    {
-		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].AltHost(data.ExtractWord(4, ": "));
+		Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].AltHost(params.ExtractWord(2, ": "));
 	    }
 	}
 	else if (msgtype=="SVSKILL")
@@ -4541,28 +4628,31 @@ void NetworkServ::execute(const mstring & message)
 	else if (msgtype=="SVSMODE")
 	{
 	    // Handle just as mode, WITHOUT sanity
-	    if (IsChan(data.ExtractWord(3, ": ")))
+	    if (IsChan(params.ExtractWord(1, ": ")))
 	    {
-		if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
+		RLOCK(("UsingNick", sourceL));
+		RLOCK2(("UsingChan", params.ExtractWord(1, ": ").LowerCase()));
+		if (Parent->chanserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(source, data.After(" ", 3));
+		    Parent->chanserv.live[params.ExtractWord(1, ": ").LowerCase()].Mode(source, params.After(" "));
 		}
 		else
 		{
 		    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"SVSMODE", source.c_str(),  data.ExtractWord(3, ": ").c_str()));
+			"SVSMODE", source.c_str(),  params.ExtractWord(1, ": ").c_str()));
 		}
 	    }
 	    else
 	    {
-		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+		RLOCK(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+		if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(data.ExtractWord(4, ": "));
+		    Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].Mode(params.After(" "));
 		}
 		else
 		{
 		    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"SVSMODE", source.c_str(),  data.ExtractWord(3, ": ").c_str()));
+			"SVSMODE", source.c_str(),  params.ExtractWord(1, ": ").c_str()));
 		}
 	    }
 	}
@@ -4595,22 +4685,24 @@ void NetworkServ::execute(const mstring & message)
 	    // :server/user TOPIC #channel setter time :topic
 	    // :server/user TOPIC #channel setter
 	    // TIME is not standard (time is optional);
-	    if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
+
+	    RLOCK(("UsingNick", params.ExtractWord(2, ": ").LowerCase()));
+	    RLOCK2(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+	    if (Parent->chanserv.IsLive(params.ExtractWord(1, ": ")))
 	    {
-		MLOCK(("BlockChannel", data.ExtractWord(3, ": ").LowerCase()));
-		if (!data.ExtractWord(5, ": ").empty())
+		if (!params.ExtractWord(3, ": ").empty())
 		{ // Setting
-		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
+		    Parent->chanserv.live[params.ExtractWord(1, ": ").LowerCase()].Topic(
 			source,
-		        data.After(":", 2),
-		        data.ExtractWord(4, ": "),
-		        (time_t) atol(data.ExtractWord(5, ": "))
+		        params.After(":"),
+		        params.ExtractWord(2, ": "),
+		        static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))
 		    );
 		}
 		else
 		{ // Clearing
-		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
-		        source, "", data.ExtractWord(4, ": "));
+		    Parent->chanserv.live[params.ExtractWord(1, ": ").LowerCase()].Topic(
+		        source, "", params.ExtractWord(2, ": "));
 		}
 	    }
 	    else
@@ -4620,14 +4712,14 @@ void NetworkServ::execute(const mstring & message)
 		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
 		    {
 			LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str()));
+				"MODE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
 		    }
 		    else
 			mBase::push_message(data);
 		}
 		else
 		{
-		    PushUser(source, data, data.ExtractWord(3, ": "));
+		    PushUser(source, data, params.ExtractWord(1, ": "));
 		}
 	    }
 	}
@@ -4671,12 +4763,13 @@ void NetworkServ::execute(const mstring & message)
 			" " + source + " :" + tmp.c_str());
 		return;
 	    }}
+	    RLOCK(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
 	    mstring out;
-	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")) &&
-		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
+	    if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")) &&
+		Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()].IsServices())
 	    {
-		RLOCK(("NickServ", "live", data.ExtractWord(3, ": ").LowerCase()));
-		Nick_Live_t *nlive = &Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()];
+		RLOCK2(("NickServ", "live", params.ExtractWord(1, ": ").LowerCase()));
+		Nick_Live_t *nlive = &Parent->nickserv.live[params.ExtractWord(1, ": ").LowerCase()];
 		if (nlive->HasMode("o"))
 		    out << "204 " << source << " Operator 10 ";
 		else
@@ -4694,7 +4787,7 @@ void NetworkServ::execute(const mstring & message)
 			Parent->startup.Server_Name() << " :0";
 		sraw(out);
 
-		RLOCK(("NickServ", "live"));
+		RLOCK2(("NickServ", "live"));
 		map<mstring, Nick_Live_t>::iterator iter;
 		for (iter=Parent->nickserv.live.begin();
 			iter!=Parent->nickserv.live.end(); iter++)
@@ -4750,10 +4843,11 @@ void NetworkServ::execute(const mstring & message)
     case 'U':
 	if (msgtype=="UMODE2")
 	{
-	    if (!source.Contains("."))
-	    {
-		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(3, ": "));
-	    }
+	    if (source.Contains("."))
+		return;
+
+	    RLOCK(("UsingNick", sourceL));
+	    Parent->nickserv.live[sourceL].Mode(params.ExtractWord(1, ": "));
 	}
 	else if (msgtype=="UNGLINE")
 	{
@@ -4772,11 +4866,12 @@ void NetworkServ::execute(const mstring & message)
 	}
 	else if (msgtype=="USER")
 	{
-	    if (source.Contains("."))
+	    if (!source.Contains("."))
 		return;
 
 	    // NEW USER
-	    sourceL = data.ExtractWord(2, ": ").LowerCase();
+	    sourceL = params.ExtractWord(1, ": ").LowerCase();
+	    WLOCK(("UsingNick", sourceL));
 
 	    // DONT kill when we do SQUIT protection.
 	    map<mstring,list<mstring> >::iterator i;
@@ -4784,7 +4879,7 @@ void NetworkServ::execute(const mstring & message)
 	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 	    {
 		list<mstring>::iterator k;
-		WLOCK(("Server", "ToBeSquit", i->first.LowerCase()));
+		WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {
@@ -4797,8 +4892,8 @@ void NetworkServ::execute(const mstring & message)
 	    if (Parent->nickserv.IsLiveAll(sourceL))
 	    {
 	        // IF the squit server = us, and the signon time matches
-	        if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
-	    	    && Parent->nickserv.live[sourceL].SignonTime() == mDateTime((time_t) atol(data.ExtractWord(4, ": "))))
+	        if (Parent->nickserv.live[sourceL].Squit() == params.ExtractWord(6, ": ").LowerCase()
+	    	    && Parent->nickserv.live[sourceL].SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
 	        {
 	    	    Parent->nickserv.live[sourceL].ClearSquit();
 	    	    return;    // nice way to avoid repeating ones self :)
@@ -4806,7 +4901,7 @@ void NetworkServ::execute(const mstring & message)
 	        else
 	        {
 	    	    Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
-		    WLOCK(("NickServ", "live"));
+		    WLOCK2(("NickServ", "live"));
 	    	    Parent->nickserv.live.erase(sourceL);
 	        }
 	    }
@@ -4817,35 +4912,35 @@ void NetworkServ::execute(const mstring & message)
 	    if (proc_SERVER && Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->Burst())
 	    {
-		WLOCK(("WaitEndServerAdd"));
+		WLOCK2(("WaitEndServerAdd"));
 	    }}
-	    { WLOCK(("Server", "proc_NICK")); proc_NICK++; }
+	    { WLOCK2(("Server", "proc_NICK")); proc_NICK++; }
 	    RLOCK(("WaitEndNickAdd"));
 
-	    { WLOCK(("NickServ", "live"));
+	    { WLOCK2(("NickServ", "live"));
 	      RLOCK2(("AddingServer"));
 	    switch (proto.Signon())
 	    {
 	    case 0000: // USER nick user host server :realname
 	        Parent->nickserv.live[sourceL] =
 		    Nick_Live_t(
-			data.ExtractWord(2, ": "),
+			params.ExtractWord(1, ": "),
 			time(NULL),
-			GetServer(data.ExtractWord(5, ": ")),
-			data.ExtractWord(3, ": "),
-			data.ExtractWord(4, ": "),
-			data.After(":")
+			GetServer(params.ExtractWord(4, ": ")),
+			params.ExtractWord(2, ": "),
+			params.ExtractWord(3, ": "),
+			params.After(":")
 		    );
 		break;
 	    case 0001: // USER nick time user host server :realname
 	        Parent->nickserv.live[sourceL] =
 		    Nick_Live_t(
-			data.ExtractWord(2, ": "),
-			(time_t) atol(data.ExtractWord(3, ": ")),
-			GetServer(data.ExtractWord(6, ": ")),
-			data.ExtractWord(4, ": "),
-			data.ExtractWord(5, ": "),
-			data.After(":")
+			params.ExtractWord(1, ": "),
+			static_cast<time_t>(atoul(params.ExtractWord(2, ": "))),
+			GetServer(params.ExtractWord(5, ": ")),
+			params.ExtractWord(3, ": "),
+			params.ExtractWord(4, ": "),
+			params.After(":")
 		    );
 		break;
 	    case 1000:
@@ -4866,11 +4961,11 @@ void NetworkServ::execute(const mstring & message)
 		    PopUser(sourceL);
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
-		    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+		    { WLOCK2(("Server", "proc_NICK")); proc_NICK--; }
 		    return;
 		}
 
-		{ WLOCK(("Server", "i_UserMax"));
+		{ WLOCK2(("Server", "i_UserMax"));
 		if (i_UserMax < Parent->nickserv.live.size())
 		{
 		    MCB(i_UserMax);
@@ -4941,43 +5036,45 @@ void NetworkServ::execute(const mstring & message)
 		    }
 		}
 	    }
-	    { WLOCK(("Server", "proc_NICK")); proc_NICK--; }
+	    { WLOCK2(("Server", "proc_NICK")); proc_NICK--; }
 	}
 	else if (msgtype=="USERHOST")
 	{
-	    if (data.WordCount(": ") > 2)
+	    if (!params.empty())
 	    {
 		sraw("461 " + source + " USERHOST :Not enough paramaters");
 	    }
-	    else if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    else
 	    {
-		mstring target = Parent->getLname(data.ExtractWord(3, ": "));
-		if (!Parent->nickserv.IsStored(target) ? 1 :
-			!Parent->nickserv.stored[target.LowerCase()].Private())
+		RLOCK(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+		if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    sraw("302 " + source + " :" +
-			Parent->nickserv.live[target.LowerCase()].Name() +
-			"*=-" +
-			Parent->nickserv.live[target.LowerCase()].User() +
-			"@" +
-			Parent->nickserv.live[target.LowerCase()].AltHost());
+		    mstring target = Parent->getLname(params.ExtractWord(1, ": "));
+		    if (!Parent->nickserv.IsStored(target) ? 1 :
+			!Parent->nickserv.stored[target.LowerCase()].Private())
+		    {
+			sraw("302 " + source + " :" +
+				Parent->nickserv.live[target.LowerCase()].Name() +
+				"*=-" +
+				Parent->nickserv.live[target.LowerCase()].User() +
+				"@" +
+				Parent->nickserv.live[target.LowerCase()].AltHost());
+		    }
+		    else
+		    {
+			sraw("302 " + source + " :" +
+				Parent->nickserv.live[target.LowerCase()].Name() +
+				"*=-" +
+				Parent->nickserv.live[target.LowerCase()].User() +
+				"@" + Parent->getMessage("VALS/ONLINE"));
+		    }
 		}
 		else
 		{
-		    sraw("302 " + source + " :" +
-			Parent->nickserv.live[target.LowerCase()].Name() +
-			"*=-" +
-			Parent->nickserv.live[target.LowerCase()].User() +
-			"@" + Parent->getMessage("VALS/ONLINE"));
-		}
-
-	    }
-	    else
-	    {
-		sraw("401 " + source + " " + data.ExtractWord(3, ": ") +
+		    sraw("401 " + source + " " + params.ExtractWord(1, ": ") +
 			" :No such nickname/channel.");
+		}
 	    }
-
 	}
 	else if (msgtype=="USERS")
 	{
@@ -5043,7 +5140,7 @@ void NetworkServ::execute(const mstring & message)
 	    tmp << "d";
 #endif
 	    tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME <<
-		") " << BUILD_SYS << "/" << BUILD_TYPE << ".";
+		") " << sysinfo_type() << " " << sysinfo_rel() << ".";
 	    sraw("351 " + source + " " + PACKAGE + " " + Parent->startup.Server_Name() + " :" + tmp);
 	}
 	else
@@ -5139,7 +5236,7 @@ void NetworkServ::execute(const mstring & message)
 		//:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
 		//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
 
-	    mstring target = data.ExtractWord(3, ": ");
+	    mstring target = params.ExtractWord(1, ": ");
 	    mstring targetL = target.LowerCase();
 	    { RLOCK(("IrcSvcHandler"));
 	    if (Parent->ircsvchandler != NULL &&
@@ -5154,80 +5251,82 @@ void NetworkServ::execute(const mstring & message)
 		sraw("318 " + source + " " + target + " :End of /WHOIS list.");
 		return;
 	    }
-	    else if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    else
 	    {
-		sraw("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
+		RLOCK2(("UsingNick", params.ExtractWord(1, ": ").LowerCase()));
+		if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
+		{
+		    sraw("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
 			" " + Parent->nickserv.live[targetL].Host() + " * :" +
 			Parent->nickserv.live[targetL].RealName());
 
-		if (Parent->nickserv.live[targetL].IsRecognized())
-		{
-		    sraw("307 " + source + " " + target + " : is a registered nick");
-		}
-
-		set<mstring> chans = Parent->nickserv.live[targetL].Channels();
-		set<mstring>::iterator iter;
-		mstring outline = "319 " + source + " " + target + " :";
-		for (iter=chans.begin(); iter!=chans.end(); iter++)
-		{
-		    if (outline.size() + iter->size() > proto.MaxLine())
+		    if (Parent->nickserv.live[targetL].IsRecognized())
 		    {
-			sraw(outline);
-			outline = "319 " + source + " " + target + " :";
+			sraw("307 " + source + " " + target + " : is a registered nick");
 		    }
 
-		    // Channel doesnt exist
-		    if (!Parent->chanserv.IsLive(*iter))
-			continue;
+		    set<mstring> chans = Parent->nickserv.live[targetL].Channels();
+		    set<mstring>::iterator iter;
+		    mstring outline = "319 " + source + " " + target + " :";
+		    for (iter=chans.begin(); iter!=chans.end(); iter++)
+		    {
+			if (outline.size() + iter->size() > proto.MaxLine())
+			{
+			    sraw(outline);
+			    outline = "319 " + source + " " + target + " :";
+			}
 
-		    // Channel +p or +s, and source not in chan
-		    if ((Parent->chanserv.live[*iter].HasMode("s") ||
+			// Channel doesnt exist
+			if (!Parent->chanserv.IsLive(*iter))
+			    continue;
+
+			// Channel +p or +s, and source not in chan
+			if ((Parent->chanserv.live[*iter].HasMode("s") ||
 				Parent->chanserv.live[*iter].HasMode("p")) &&
 				!Parent->chanserv.live[*iter].IsIn(source))
-			continue;
+			    continue;
 
-		    if (Parent->chanserv.live[*iter].IsOp(target))
-			outline += "@" + *iter + " ";
-		    else if (Parent->chanserv.live[*iter].IsVoice(target))
-			outline += "+" + *iter + " ";
-		    else
-			outline += *iter + " ";
+			if (Parent->chanserv.live[*iter].IsOp(target))
+			    outline += "@" + *iter + " ";
+			else if (Parent->chanserv.live[*iter].IsVoice(target))
+			    outline += "+" + *iter + " ";
+			else
+			    outline += *iter + " ";
+		    }
+		    if (outline.After(":").length() > 0)
+			sraw(outline);
+
+		    if (Parent->nickserv.live[targetL].IsServices())
+			sraw("312 " + source + " " + target + " " + Parent->startup.Server_Name() +
+				" :" + Parent->startup.Server_Desc());
+		    else if (IsServer(Parent->nickserv.live[targetL].Server()))
+			sraw("312 " + source + " " + target + " " + Parent->nickserv.live[targetL].Server() +
+				" :" + ServerList[Parent->nickserv.live[targetL].Server()].Description());
+
+		    if (!Parent->nickserv.live[targetL].Away().empty())
+			sraw("301 " + source + " " + target + " :" + Parent->nickserv.live[targetL].Away());
+
+		    if (Parent->nickserv.live[targetL].HasMode("o"))
+			sraw("313 " + source + " " + target + " :is an IRC Operator");
+
+		    if (Parent->nickserv.live[targetL].HasMode("h"))
+			sraw("310 " + source + " " + target + " :looks very helpful.");
+
+		    if (Parent->nickserv.live[targetL].IsServices())
+		    {
+    			mstring signon_idletime;
+			signon_idletime << Parent->nickserv.live[targetL].LastAction().SecondsSince()
+				<< " " << Parent->nickserv.live[targetL].SignonTime().timetstring();
+			sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
+		    }
+
+		    sraw("318 " + source + " " + target + " :End of /WHOIS list.");
 		}
-		if (outline.After(":").length() > 0)
-		    sraw(outline);
-
-		if (Parent->nickserv.live[targetL].IsServices())
-		    sraw("312 " + source + " " + target + " " + Parent->startup.Server_Name() +
-			" :" + Parent->startup.Server_Desc());
-		else if (IsServer(Parent->nickserv.live[targetL].Server()))
-		    sraw("312 " + source + " " + target + " " + Parent->nickserv.live[targetL].Server() +
-			" :" + ServerList[Parent->nickserv.live[targetL].Server()].Description());
-
-
-		if (!Parent->nickserv.live[targetL].Away().empty())
-		    sraw("301 " + source + " " + target + " :" + Parent->nickserv.live[targetL].Away());
-
-		if (Parent->nickserv.live[targetL].HasMode("o"))
-		    sraw("313 " + source + " " + target + " :is an IRC Operator");
-
-		if (Parent->nickserv.live[targetL].HasMode("h"))
-		    sraw("310 " + source + " " + target + " :looks very helpful.");
-
-		if (Parent->nickserv.live[targetL].IsServices())
+		else
 		{
-    		    mstring signon_idletime;
-		    signon_idletime << Parent->nickserv.live[targetL].LastAction().SecondsSince()
-			<< " " << Parent->nickserv.live[targetL].SignonTime().timetstring();
-		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
+		    mstring target = params.ExtractWord(1, ": ");
+		    sraw("401 " + source + " " + target + " :No such nickname/channel.");
 		}
-
-		sraw("318 " + source + " " + target + " :End of /WHOIS list.");
-
-	    }
-	    else
-	    {
-		mstring target = data.ExtractWord(3, ": ");
-		sraw("401 " + source + " " + target + " :No such nickname/channel.");
 	    }}
 
 	}
@@ -5271,38 +5370,44 @@ void NetworkServ::execute(const mstring & message)
 
 void NetworkServ::numeric_execute(const mstring & message)
 {
-    FT("NetworkServ::numeric_execute", (message));
-    unsigned int i;
+    FT("NetworkServ::numeric_execute", (data));
 
-    mstring data(message);
-    mstring source, sourceL;
+    mstring source, sourceL, params;
     unsigned int msgtype;
     
     if (data[0u] == ':' || data[0u] == '@')
     {
 	if (data[0u] == '@' && proto.Numeric())
 	{
+	    RLOCK(("ServerLinking"));
 	    source = GetServer(data.ExtractWord(1, "@ "));
 	    for (unsigned int i = 0; source.empty() && i < 10; i++)
 	    {
 		ACE_OS::sleep(1);
 		source = GetServer(data.ExtractWord(1, "@ "));
 	    }
-	    data.replace(0, ':');
 	}
 	else
 	    source = data.ExtractWord(1,": ");
-	sourceL = source.LowerCase();
-        msgtype = atoi(data.ExtractWord(2,": "));
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
 	    PushUser(source, data);
+	    return;
 	}
+        msgtype = atoi(data.ExtractWord(2,": "));
+	if (params.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
     }
     else
     {
+	source = OurUplink();
         msgtype = atoi(data.ExtractWord(1,": "));
+	if (params.WordCount(" ") > 1)
+	    params = data.After(" ", 1);
     }
+    if (source.empty())
+	source = Parent->startup.Server_Name();
+    sourceL = source.LowerCase();
 
     // Numerics direct from RFC1459
     // MOST we can (and will) ignore.
@@ -5319,13 +5424,13 @@ void NetworkServ::numeric_execute(const mstring & message)
 	    Parent->server.sraw(((proto.Tokens() &&
 		!proto.GetNonToken(proto.Burst()).empty()) ?
 		proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
-	for (i=4; i<=data.WordCount(": "); i++)
+	for (unsigned int i=1; i<=params.WordCount(": "); i++)
 	{
 	    // Remove clients from 'signon list' who are
 	    // already on the network.
 	    WLOCK(("Server", "WaitIsOn"));
-	    if (WaitIsOn.find(data.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
-		WaitIsOn.erase(data.ExtractWord(i, ": "));
+	    if (WaitIsOn.find(params.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
+		WaitIsOn.erase(params.ExtractWord(i, ": "));
 	}
 
 	if (WaitIsOn.size())

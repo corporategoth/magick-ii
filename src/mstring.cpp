@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.94  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -210,12 +213,12 @@ mstring const DirSlash="\\";
 mstring const DirSlash="/";
 #endif
 mstring const Blank;
-mstring const IRC_CTCP((char) 1);	// ^A
-mstring const IRC_Bold((char) 2);	// ^B
-mstring const IRC_Underline((char) 31);	// ^_
-mstring const IRC_Reverse((char) 21);	// ^V
-mstring const IRC_Color((char) 3);	// ^C
-mstring const IRC_Off((char) 15);	// ^O
+mstring const IRC_CTCP(static_cast<char>(1));		// ^A
+mstring const IRC_Bold(static_cast<char>(2));		// ^B
+mstring const IRC_Underline(static_cast<char>(31));	// ^_
+mstring const IRC_Reverse(static_cast<char>(21));	// ^V
+mstring const IRC_Color(static_cast<char>(3));		// ^C
+mstring const IRC_Off(static_cast<char>(15));		// ^O
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 char *mstring::alloc(size_t size) throw(mstring_noalloc)
@@ -474,8 +477,8 @@ void mstring::erase(int begin, int end)
 	return;
     }
 
-    if (end < 0 || end >= (int) i_len)
-	if (begin >= (int) i_len)
+    if (end < 0 || end >= static_cast<int>(i_len))
+	if (begin >= static_cast<int>(i_len))
 	{
 	    lock_rel();
 	    return;
@@ -491,7 +494,7 @@ void mstring::erase(int begin, int end)
 	end = i;
     }
 
-    if (begin > 0 || end+1 < (int) i_len)
+    if (begin > 0 || end+1 < static_cast<int>(i_len))
     {
 	i=0;
 	if (i_res==0)
@@ -519,7 +522,7 @@ void mstring::erase(int begin, int end)
 	    tmp = i_str;
 	}
 
-	if (end+1 < (int) i_len)
+	if (end+1 < static_cast<int>(i_len))
 	{
 	    memcpy(&tmp[i], &i_str[end+1], i_len-(end+1));
 	}
@@ -667,7 +670,19 @@ const char *mstring::c_str() const
 	retval = i_str;
     lock_rel();
 
-    return (const char *) retval;    
+    return static_cast<const char *>(retval);
+}
+
+const unsigned char *mstring::uc_str() const
+{
+    unsigned char *retval = reinterpret_cast<unsigned char *>(const_cast<char *>(""));
+
+    lock_read();
+    if (i_str != NULL)
+	retval = reinterpret_cast<unsigned char *>(i_str);
+    lock_rel();
+
+    return static_cast<const unsigned char *>(retval);
 }
 
 const char mstring::operator[] (size_t offs) const
@@ -679,7 +694,7 @@ const char mstring::operator[] (size_t offs) const
 	retval = i_str[offs];
     lock_rel();
 
-    return (const char) retval;
+    return static_cast<const char>(retval);
 }
 
 const char mstring::first() const
@@ -691,7 +706,7 @@ const char mstring::first() const
 	retval = i_str[0];
     lock_rel();
 
-    return (const char) retval;
+    return static_cast<const char>(retval);
 }
 
 const char mstring::last() const
@@ -703,7 +718,7 @@ const char mstring::last() const
 	retval = i_str[i_len-1];
     lock_rel();
 
-    return (const char) retval;
+    return static_cast<const char>(retval);
 }
 
 size_t mstring::length() const
@@ -759,7 +774,7 @@ int mstring::find_first_of(const char *str, size_t length) const
 	if (ptr != NULL && ptr - i_str < retval)
 	    retval = ptr - i_str;
     }
-    if (retval > (int) i_len)
+    if (retval > static_cast<int>(i_len))
 	retval = -1;
 
     lock_rel();
@@ -1062,7 +1077,7 @@ mstring mstring::substr(int nFirst, int nCount) const
 	    nFirst = 0;
 	if (nCount < 0)
 	    nCount = i_len - nFirst;
-	if ((nCount + nFirst) > (int) i_len)
+	if ((nCount + nFirst) > static_cast<int>(i_len))
 	    nCount = i_len - nFirst;
 	lock_rel();
 	if (nCount > 0)
@@ -1416,7 +1431,7 @@ mstring mstring::SubString(int from, int to) const
     if (to < 0)
     {
 	lock_read();
-	if (from < (int) i_len)
+	if (from < static_cast<int>(i_len))
 	    to = i_len-1;
 	else
 	{
@@ -1462,7 +1477,8 @@ mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
     {
 	i=begin;
 	lock_read();
-	while(i < (int) i_len && !delim.Contains(i_str[(unsigned int) i]))
+	while(i < static_cast<int>(i_len) &&
+		!delim.Contains(i_str[static_cast<unsigned int>(i)]))
 	    i++;
 	if (i!=begin)
 	{
@@ -1495,6 +1511,46 @@ int mstring::WordPosition(unsigned int count, const mstring &delim,
 	}
 	else
 	    Result=i;
+    }
+    lock_rel();
+    return Result;
+}
+
+vector<mstring> mstring::Vector(const mstring &delim, bool assemble) const
+{
+    vector<mstring> Result;
+    size_t begin = 0, i=0;
+    lock_read();
+    while(i<i_len)
+    {
+	while(i<i_len && assemble && delim.Contains(i_str[i]))
+	    i++;
+	if(i<i_len)
+	    begin = i;
+	while(i<i_len && !delim.Contains(i_str[i]))
+	    i++;
+	if (i!=begin)
+	    Result.push_back(SubString(begin, i-1));
+    }
+    lock_rel();
+    return Result;
+}
+
+list<mstring> mstring::List(const mstring &delim, bool assemble) const
+{
+    list<mstring> Result;
+    size_t begin = 0, i=0;
+    lock_read();
+    while(i<i_len)
+    {
+	while(i<i_len && assemble && delim.Contains(i_str[i]))
+	    i++;
+	if(i<i_len)
+	    begin = i;
+	while(i<i_len && !delim.Contains(i_str[i]))
+	    i++;
+	if (i!=begin)
+	    Result.push_back(SubString(begin, i-1));
     }
     lock_rel();
     return Result;
@@ -1766,7 +1822,7 @@ mstring operator+ (const mstring &lhs, const char rhs)
 mstring operator+ (const mstring &lhs, const unsigned char rhs)
 {
     mstring str(lhs);
-    str.append((const char *) &rhs, 1);
+    str.append(reinterpret_cast<const char *>(&rhs), 1);
     return str;
 }
 

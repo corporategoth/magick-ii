@@ -25,19 +25,21 @@ RCSID(logfile_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.18  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
-**
 **
 ** ========================================================== */
 
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Fri Feb  2 23:53:05 EST 2001
+ * Created on Sun Feb 18 18:32:05 EST 2001
  */
 
-unsigned int def_logent =     328;
+unsigned int def_logent =     333;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -193,6 +195,8 @@ char *def_log[] = {
 "SEND             =%s sent a news article to %s.",
 "DEL              =%s removed %d news article(s) from %s.",
 "DEL_ALL          =%s removed all news articles from %s.",
+"SET              =%s set the value of %s for %d news article(s) of %s to %s.",
+"SET_ALL          =%s set the value of %s for all news articles of %s to %s.",
 "FILE             =%s sent a file attachment (%s / %08x - %s) to %s.",
 "GET              =%s received a file attachment (%s / %08x - %s) from %s.",
 "",
@@ -281,7 +285,9 @@ char *def_log[] = {
 "; These are errors that come from system based",
 ";",
 "[SYS_ERRORS]",
-"COULDNOTOPEN     =Could not open file %s (%s).",
+"COULDNOTOPEN     =Could not open file %s (%s) - #%d: %s.",
+"FILEOPERROR      =Could not perform %s on file %s - #%d: %s.",
+"DIROPERROR       =Could not perform %s on directory %s - #%d: %s.",
 "FILEMAPFULL      =Could not find an available file number for type %d!",
 "MISSING_FILE1    =Removed physical file type %d, #%08x that did not have a file map entry.",
 "MISSING_FILE2    =Removed file map entry type %d, #%08x that did not have a physical file.",
@@ -295,7 +301,6 @@ char *def_log[] = {
 "NOT_IMPLEMENTED  =Entered %s, which is not implemented.",
 "INVALID_FORMAT   =Invalid date format char %d%c in %s.",
 "NOT_LITERAL      =Character %c should be in quotes, taken as literal in %s.",
-"OUTOFTXNIDS      =Cannot create any more Transaction ID's",
 "FAILED_FORK      =Failed to fork new process with %d, terminating.",
 "FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.",
 "FAILED_SETSID    =Failed to become process session leader with %d, terminating.",
@@ -304,6 +309,7 @@ char *def_log[] = {
 "LOCK_ACQUIRE     =Failed to acquire %s lock for %s.",
 "LOCK_RELEASE     =Failed to release %s lock for %s.",
 "EXCEPTION        =Exception thrown on line %d, column %d of %s.",
+"LOCKED_BIN       =System lock values do not match!  Binary recompile required!",
 "",
 ";",
 "; This is a section for miscellaneous other occurrences.",
@@ -365,7 +371,8 @@ char *def_log[] = {
 "NOLIMIT          =No limit specified when required for channel %s from %s.",
 "NOLANGTOKEN      =Invalid token %s for language %s used, error returned.",
 "BADSET           =Tried to set BAD data (%s) for %s on %s.",
-"CORRUPT_DB       =Database file corrupted or invalid key in key file.",
+"DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).",
+"DB_CORRUPT       =Database load failed due to data corruption.",
 "INVALID_TYPE     =Invalid data type %d on message queue, ignored.",
 "" };
 #endif

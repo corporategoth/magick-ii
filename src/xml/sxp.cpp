@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2001/03/02 05:24:42  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.16  2001/02/03 02:21:36  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -154,7 +157,7 @@ Tag::Tag(const char *name)
 
 void MFileOutStream::ExpandBuf()
 {
-    buffer = (char *) realloc(buffer, sizeof(char) * buf_sz * 2);
+    buffer = static_cast<char *>(realloc(buffer, sizeof(char) * buf_sz * 2));
     memset(&buffer[buf_sz], 0, buf_sz);
     buf_sz *= 2;
 }
@@ -198,7 +201,7 @@ MFileOutStream::MFileOutStream(mstring chFilename, int comp, mstring ikey)
 	key = ikey;
 	buf_sz = INIT_BUFSIZE;
 	buf_cnt = 0;
-	buffer = (char *) malloc(sizeof(char) * buf_sz);
+	buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
@@ -211,7 +214,7 @@ MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring i
 	key = ikey;
 	buf_sz = INIT_BUFSIZE;
 	buf_cnt = 0;
-	buffer = (char *) malloc(sizeof(char) * buf_sz);
+	buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
@@ -233,16 +236,16 @@ MFileOutStream::~MFileOutStream()
 	    // From the zlib documentation:
 	    // avail_out must be at least 0.1% larger
 	    // than avail_in plus 12 bytes.
-	    new_sz = (size_t) (length * 1.001 + 12);
+	    new_sz = static_cast<size_t>(length * 1.001 + 12);
 	    deflateInit(strm, compress);
-	    outbuf = (char *) malloc(sizeof(char) * new_sz);
+	    outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
 	    memset(outbuf, 0, sizeof(char) * new_sz);
 
-	    strm->next_in   = (unsigned char *) buffer;
+	    strm->next_in   = reinterpret_cast<unsigned char *>(buffer);
 	    strm->avail_in  = length;
 	    strm->total_in  = 0;
 
-	    strm->next_out  = (unsigned char *) outbuf;
+	    strm->next_out  = reinterpret_cast<unsigned char *>(outbuf);
 	    strm->avail_out = new_sz;
 	    strm->total_out = 0;
 
@@ -253,9 +256,9 @@ MFileOutStream::~MFileOutStream()
 		new_sz += 12;
 		if (outbuf != NULL)
 		    free(outbuf);
-		outbuf = (char *) malloc(sizeof(char) * new_sz);
+		outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
 		memset(outbuf, 0, sizeof(char) * new_sz);
-		strm->next_out = (unsigned char *) outbuf;
+		strm->next_out = reinterpret_cast<unsigned char *>(outbuf);
 	    }
 	    deflateEnd(strm);
 	    if (strm != NULL)
@@ -266,7 +269,7 @@ MFileOutStream::~MFileOutStream()
 		buf_sz = length + 1;
 		if (buffer != NULL)
 		    free(buffer);
-		buffer = (char *) malloc(sizeof(char) * buf_sz);
+		buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
 		memset(buffer, 0, sizeof(char) * buf_sz);
 		memcpy(buffer, outbuf, length);
 		tag |= SXP_COMPRESS;
@@ -282,15 +285,16 @@ MFileOutStream::~MFileOutStream()
 	    des_cblock ckey1, ckey2;
 
 	    new_sz = length + 8;
-	    outbuf = (char *) malloc(sizeof(char) * new_sz);
+	    outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
 	    memset(outbuf, 0, sizeof(char) * new_sz);
 
-	    des_string_to_2keys((char *)key.c_str(), &ckey1, &ckey2);
+	    des_string_to_2keys(const_cast<char *>(key.c_str()), &ckey1, &ckey2);
 	    des_set_key(&ckey1, key1);
 	    des_set_key(&ckey2, key2);
 
-	    mDES((unsigned char *) buffer, (unsigned char *) outbuf,
-	    				length, key1, key2, 1);
+	    mDES(reinterpret_cast<unsigned char *>(buffer),
+				reinterpret_cast<unsigned char *>(outbuf),
+	    			length, key1, key2, 1);
 
 	    if (outbuf != NULL)
 	    {
@@ -320,11 +324,11 @@ void MFileOutStream::BeginXML(void)
 	// support for storing widechars as character data, via
 	// conversion functions in IElement::Retrieve() and 
 	// IOutStream::WriteElement
-	mstring tmp = XML_STRING;
-	if (buf_cnt + strlen(XML_STRING) >= buf_sz)
+	mstring tmp(XML_STRING);
+	if (buf_cnt + tmp.length() >= buf_sz)
 	    ExpandBuf();
-	ACE_OS::strcpy(&buffer[buf_cnt], XML_STRING);
-	buf_cnt+=strlen(XML_STRING);
+	ACE_OS::strcpy(&buffer[buf_cnt], tmp.c_str());
+	buf_cnt+=tmp.length();
 }
 
 void MFileOutStream::BeginObject(Tag& t, dict& attribs)
@@ -379,7 +383,7 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
     {
 	long filesize = in.Length(), new_sz;
 	unsigned char tag = 0;
-	char *tmpbuf, *buffer = (char *) malloc(filesize * sizeof(char));
+	char *tmpbuf, *buffer = static_cast<char *>(malloc(filesize * sizeof(char)));
 	memset(buffer, 0, filesize * sizeof(char));
 	new_sz = filesize + 8;
 
@@ -395,13 +399,14 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		des_key_schedule key1, key2;
 		des_cblock ckey1, ckey2;
 
-		tmpbuf = (char *) malloc(new_sz * sizeof(char));
+		tmpbuf = static_cast<char *>(malloc(new_sz * sizeof(char)));
 		memset(tmpbuf, 0, new_sz * sizeof(char));
-		des_string_to_2keys((char *)ikey.c_str(), &ckey1, &ckey2);
+		des_string_to_2keys(const_cast<char *>(ikey.c_str()), &ckey1, &ckey2);
 		des_set_key(&ckey1, key1);
 		des_set_key(&ckey2, key2);
 
-		mDES((unsigned char *) buffer, (unsigned char *) tmpbuf,
+		mDES(reinterpret_cast<unsigned char *>(buffer),
+					reinterpret_cast<unsigned char *>(tmpbuf),
 	    				filesize-1, key1, key2, 0);
 
 		if (tmpbuf != NULL)
@@ -423,13 +428,13 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		strm->opaque = Z_NULL;
 		inflateInit(strm);
 
-		tmpbuf = (char *) malloc(bufsize * sizeof(char));
+		tmpbuf = static_cast<char *>(malloc(bufsize * sizeof(char)));
 		memset(tmpbuf, 0, bufsize * sizeof(char));
-		strm->next_in   = (unsigned char *) buffer;
+		strm->next_in   = reinterpret_cast<unsigned char *>(buffer);
 		strm->avail_in  = new_sz;
 		strm->total_in  = 0;
 
-		strm->next_out  = (unsigned char *) &tmpbuf[index];
+		strm->next_out  = reinterpret_cast<unsigned char *>(&tmpbuf[index]);
 		strm->avail_out = bufsize;
 		strm->total_out = 0;
 
@@ -439,9 +444,9 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    {
 			index = bufsize;
 			bufsize *= 2;
-			tmpbuf = (char *) realloc(tmpbuf, bufsize * sizeof(char));
+			tmpbuf = static_cast<char *>(realloc(tmpbuf, bufsize * sizeof(char)));
 			memset(&tmpbuf[index], 0, index);
-			strm->next_out  = (unsigned char *) &tmpbuf[index];
+			strm->next_out  = reinterpret_cast<unsigned char *>(&tmpbuf[index]);
 			strm->avail_out = index;
 		    }
 		}
@@ -450,7 +455,7 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    if (buffer != NULL)
 			free(buffer);
 		    new_sz = strm->total_out;
-		    buffer = (char *) malloc(sizeof(char) * new_sz+1);
+		    buffer = static_cast<char *>(malloc(sizeof(char) * new_sz+1));
 		    memset(buffer, 0, sizeof(char) * new_sz+1);
 		    memcpy(buffer, tmpbuf, new_sz);
 		    if (tmpbuf != NULL)
@@ -466,8 +471,13 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		inflateEnd(strm);
 		if (strm != NULL)
 		    delete strm;
+		retval = 0;
 	    }
-	    if (strncmp(buffer, XML_STRING, strlen(XML_STRING))==0)
+	    if (strncmp(buffer, XML_STRING, strlen(XML_STRING)) != 0)
+	    {
+		retval = -1;
+	    }
+	    else
 	    {
 		retval = Feed(buffer, new_sz);
 		if (retval == 0)

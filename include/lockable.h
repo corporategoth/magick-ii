@@ -25,6 +25,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.54  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -293,6 +296,7 @@ class mSocket
     void init();
 public:
     static map<unsigned long, mSocket *> SockMap;
+    static unsigned short FindAvailPort();
 
     mSocket();
     mSocket(ACE_INET_Addr addr, unsigned long timeout = 0);

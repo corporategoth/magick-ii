@@ -67,7 +67,7 @@ public:
 #endif /* HAVE_WSTRING */
 
 	inline void WriteElement(Tag& t, mDateTime &val) {
-		WriteElement(t,(double) GMT(val, true));
+		WriteElement(t,static_cast<double>(GMT(val, true)));
 	}
 };
 
@@ -95,11 +95,11 @@ public:
 	}
 
 	inline void Retrieve(unsigned int& val) {
-		val = atoi(Data()) - (unsigned int) 0;
+		val = atoi(Data()) - static_cast<unsigned int>(0);
 	}
 
 	inline void Retrieve(unsigned long& val) {
-		val = atol(Data()) - (unsigned long) 0;
+		val = atol(Data()) - static_cast<unsigned long>(0);
 	}
 
 	inline void Retrieve(mstring& val) {

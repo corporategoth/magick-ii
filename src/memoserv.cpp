@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.89  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -370,7 +373,7 @@ void Memo_t::DumpE() const
 }
 
 
-News_t::News_t(mstring channel, mstring sender, mstring text)
+News_t::News_t(mstring channel, mstring sender, mstring text, bool noexpire)
 {
     FT("News_t::News_t", (channel, sender, text));
     i_Channel = channel;
@@ -378,6 +381,7 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
     i_Time = mDateTime::CurrentDateTime();
     i_Sender = sender;
     i_Text = text;
+    i_NoExpire = noexpire;
     DumpE();
 }
 
@@ -391,6 +395,7 @@ void News_t::operator=(const News_t &in)
     i_Sender = in.i_Sender;
     i_Text = in.i_Text;
     i_Read = in.i_Read;
+    i_NoExpire = in.i_NoExpire;
 }
 
 
@@ -415,6 +420,22 @@ mstring News_t::Text() const
     RET(i_Text);
 }
 
+
+bool News_t::NoExpire() const
+{
+    NFT("News_t::NoExpire");
+    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_NoExpire"));
+    RET(i_NoExpire);
+}
+
+void News_t::NoExpire(bool in)
+{
+    NFT("News_t::NoExpire");
+    WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_NoExpire"));
+    MCB(i_NoExpire);
+    i_NoExpire = in;
+    MCE(i_NoExpire);
+}
 
 bool News_t::IsRead(mstring name) const
 {
@@ -468,6 +489,7 @@ size_t News_t::Usage() const
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
     retval += sizeof(i_Time.Internal());
+    retval += sizeof(i_NoExpire);
     set<mstring>::const_iterator i;
     for (i=i_Read.begin(); i!=i_Read.end(); i++)
 	retval += i->capacity();
@@ -482,13 +504,13 @@ size_t News_t::Usage() const
 
 void News_t::DumpB() const
 {
-    MB(0, (i_Channel, i_Sender, i_Text, i_Time, i_Read.size(),
+    MB(0, (i_Channel, i_Sender, i_Text, i_Time, i_NoExpire, i_Read.size(),
 	i_UserDef.size()));
 }
 
 void News_t::DumpE() const
 {
-    ME(0, (i_Channel, i_Sender, i_Text, i_Time, i_Read.size(),
+    ME(0, (i_Channel, i_Sender, i_Text, i_Time, i_NoExpire, i_Read.size(),
 	i_UserDef.size()));
 }
 
@@ -537,9 +559,33 @@ void MemoServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CONT*", Parent->commserv.REGD_Name(), MemoServ::do_Continue);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "P*VIEW*", Parent->commserv.REGD_Name(), MemoServ::do_Preview);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE*", Parent->commserv.REGD_Name(), MemoServ::do_File);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*ATTACH", Parent->commserv.REGD_Name(), MemoServ::do_File);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Parent->commserv.REGD_Name(), MemoServ::do_set_NoExpire);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* #*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET*", Parent->commserv.REGD_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK #*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK", Parent->commserv.REGD_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK #*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK", Parent->commserv.REGD_Name(), do_1_2param);
 }
 
 void MemoServ::RemCommands()
@@ -580,9 +626,33 @@ void MemoServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CONT*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "P*VIEW*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "FILE*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "*ATTACH", Parent->commserv.REGD_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Parent->commserv.REGD_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* #*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK #*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK #*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK", Parent->commserv.REGD_Name());
 }
 
 bool MemoServ::IsNick(mstring in) const
@@ -693,12 +763,9 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
-	mstring whoami = source.LowerCase();
-	if (!Parent->nickserv.stored[whoami].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
-	{
-	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
-	}
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
 
 	if (!Parent->chanserv.IsStored(who))
 	{
@@ -780,7 +847,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > (int) Parent->memoserv.channel[who.LowerCase()].size())
+		else if (numbers[i] > static_cast<int>(Parent->memoserv.channel[who.LowerCase()].size()))
 		    triedabove = true;
 		else
 		{
@@ -834,14 +901,11 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	mstring who = source;
+	mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
 	mstring what = params.After(" ", 1);
 
-	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-	{
-	    who = Parent->nickserv.stored[source.LowerCase()].Host();
-	}
+	if (who.empty())
+	    who = source;
 
 	if (!Parent->memoserv.IsNick(who))
 	{
@@ -916,7 +980,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > (int) Parent->memoserv.nick[who.LowerCase()].size())
+		else if (numbers[i] > static_cast<int>(Parent->memoserv.nick[who.LowerCase()].size()))
 		    triedabove = true;
 		else
 		{
@@ -1014,12 +1078,9 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
-	mstring whoami = source.LowerCase();
-	if (!Parent->nickserv.stored[whoami].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
-	{
-	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
-	}
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
 
 	if (!Parent->chanserv.IsStored(who))
 	{
@@ -1069,7 +1130,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > (int) Parent->memoserv.channel[who.LowerCase()].size())
+		else if (numbers[i] > static_cast<int>(Parent->memoserv.channel[who.LowerCase()].size()))
 		    triedabove = true;
 		else
 		{
@@ -1109,14 +1170,11 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	mstring who = source;
+	mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
 	mstring what = params.After(" ", 1);
 
-	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-	{
-	    who = Parent->nickserv.stored[source.LowerCase()].Host();
-	}
+	if (who.empty())
+	    who = source;
 
 	if (!Parent->memoserv.IsNick(who))
 	{
@@ -1150,7 +1208,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    {
 		if (numbers[i] <= 0)
 		    nonnumeric = true;
-		else if (numbers[i] > (int) Parent->memoserv.nick[who.LowerCase()].size())
+		else if (numbers[i] > static_cast<int>(Parent->memoserv.nick[who.LowerCase()].size()))
 		    triedabove = true;
 		else
 		{
@@ -1213,14 +1271,11 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mstring who = source;
+    mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
     mstring what = params.After(" ", 1);
 
-    if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-    {
-	who = Parent->nickserv.stored[source.LowerCase()].Host();
-    }
+    if (who.empty())
+	who = source;
 
     if (!Parent->memoserv.IsNick(who))
     {
@@ -1235,11 +1290,12 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
     RLOCK(("MemoServ", "nick", who.LowerCase()));
     list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
     mstring output;
+    Parent->memoserv.stats.i_Get++;
     for (i=0; i<numbers.size(); i++)
     {
 	if (numbers[i] <= 0)
 	    nonnumeric = true;
-	else if (numbers[i] > (int) Parent->memoserv.nick[who.LowerCase()].size())
+	else if (numbers[i] > static_cast<int>(Parent->memoserv.nick[who.LowerCase()].size()))
 	    triedabove = true;
 	else
 	{
@@ -1284,7 +1340,7 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		{ RLOCK(("DCC"));
 		if (Parent->dcc != NULL)
 		{
-		    unsigned short port = FindAvailPort();
+		    unsigned short port = mSocket::FindAvailPort();
 		    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 			" " + mstring(Parent->LocalHost()) + " " +
 			mstring(port) + " " + mstring(filesize)));
@@ -1334,12 +1390,9 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
-	mstring whoami = source.LowerCase();
-	if (!Parent->nickserv.stored[whoami].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
-	{
-	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
-	}
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
 
 	if (!Parent->chanserv.IsStored(who))
 	{
@@ -1383,13 +1436,9 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	mstring who = source;
-
-	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-	{
-	    who = Parent->nickserv.stored[source.LowerCase()].Host();
-	}
+	mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
+	if (who.empty())
+	    who = source;
 
 	if (!Parent->memoserv.IsNick(who))
 	{
@@ -1579,13 +1628,9 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.ExtractWord(3, " ");
 	mstring dest = params.ExtractWord(4, " ");
-	mstring whoami = source.LowerCase();
-
-	if (!Parent->nickserv.stored[whoami].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
-	{
-	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
-	}
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
 
 	if (!Parent->chanserv.IsStored(who))
 	{
@@ -1647,15 +1692,12 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	mstring who = source;
+	mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
 	mstring what = params.ExtractWord(2, " ");
 	mstring dest = params.ExtractWord(3, " ");
 
-	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-	{
-	    who = Parent->nickserv.stored[source.LowerCase()].Host();
-	}
+	if (who.empty())
+	    who = source;
 
 	if (!Parent->memoserv.IsNick(who))
 	{
@@ -1796,13 +1838,9 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.ExtractWord(3, " ");
 	mstring text = params.After(" ", 3);
-	mstring whoami = source.LowerCase();
-
-	if (!Parent->nickserv.stored[whoami].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
-	{
-	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
-	}
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
 
 	if (!Parent->chanserv.IsStored(who))
 	{
@@ -1869,15 +1907,12 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	mstring who = source;
+	mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
 	mstring what = params.ExtractWord(2, " ");
 	mstring text = params.After(" ", 2);
 
-	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-	{
-	    who = Parent->nickserv.stored[source.LowerCase()].Host();
-	}
+	if (who.empty())
+	    who = source;
 
 	if (!Parent->memoserv.IsNick(who))
 	{
@@ -2014,13 +2049,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
-	mstring whoami = source.LowerCase();
-
-	if (!Parent->nickserv.stored[whoami].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
-	{
-	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
-	}
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
 
 	if (!Parent->chanserv.IsStored(who))
 	{
@@ -2095,7 +2126,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    {
 		if (*ni - adjust <= 0)
 		    nonnumeric = true;
-		else if (*ni - adjust > (int) Parent->memoserv.channel[who.LowerCase()].size())
+		else if (*ni - adjust > static_cast<int>(Parent->memoserv.channel[who.LowerCase()].size()))
 		    triedabove = true;
 		else
 		{
@@ -2154,14 +2185,11 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	mstring who = source;
+	mstring who = Parent->nickserv.stored[source.LowerCase()].Host();
 	mstring what = params.After(" ", 1);
 
-	if (!Parent->nickserv.stored[source.LowerCase()].Host().empty() &&
-	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
-	{
-	    who = Parent->nickserv.stored[source.LowerCase()].Host();
-	}
+	if (who.empty())
+	    who = source;
 
 	if (!Parent->memoserv.IsNick(who))
 	{
@@ -2212,7 +2240,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    {
 		if (*ni - adjust <= 0)
 		    nonnumeric = true;
-		else if (*ni - adjust > (int) Parent->memoserv.nick[who.LowerCase()].size())
+		else if (*ni - adjust > static_cast<int>(Parent->memoserv.nick[who.LowerCase()].size()))
 		    triedabove = true;
 		else
 		{
@@ -2289,6 +2317,43 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 }
 
 
+void MemoServ::do_Preview(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Continue", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
+    {
+	mstring text(Parent->nickserv.live[source.LowerCase()].InFlight.Text());
+	size_t shown = 0, length = text.length();
+
+	::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/PREVIEW"),
+		Parent->nickserv.live[source.LowerCase()].InFlight.Recipiant().c_str());
+	while (shown < length)
+	{
+	    if (length-shown > Parent->server.proto.MaxLine())
+	    {
+		::send(mynick, source, (shown ? "    ..." : "    ") +
+			text.SubString(shown,
+			Parent->server.proto.MaxLine()-1) + "...");
+		shown += Parent->server.proto.MaxLine();
+	    }
+	    else
+	    {
+		::send(mynick, source, (shown ? "    ..." : "    ") +
+			text.SubString(shown, length-1));
+		shown += length-shown;
+	    }
+	}
+    }
+    else
+    {
+	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NOPENDING"));
+    }
+}
+
+
 void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_File", (mynick, source, params));
@@ -2334,9 +2399,9 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 			name.c_str());
 	    return;
 	}
-	mstring target = name;
-	if (!Parent->nickserv.stored[name.LowerCase()].Host().empty())
-	    target = Parent->getSname(Parent->nickserv.stored[name.LowerCase()].Host());
+	mstring target = Parent->nickserv.stored[name.LowerCase()].Host();
+	if (target.empty())
+	    target = name;
 
 	if (Parent->memoserv.Files() > 0)
 	{
@@ -2401,6 +2466,262 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 }
 
 
+void MemoServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_set_NoExpire", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }}
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	message += " " + params.ExtractWord(3, " ").UpperCase();
+	if (params.WordCount(" ") < 5)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring onoff = params.ExtractWord(4, " ");
+	mstring what = params.After(" ", 4);
+	mstring whoami = Parent->nickserv.stored[source.LowerCase()].Host().LowerCase();
+	if (whoami.empty())
+	    whoami = source.LowerCase();
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		    who.c_str());
+	    return;
+	}
+	who = Parent->getSname(who);
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "WRITEMEMO"))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
+				who.LowerCase().c_str());
+	    return;
+	}
+
+	if (!onoff.IsBool())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO"))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    return;
+	}
+
+	Parent->memoserv.stats.i_Set++;
+	if (what.IsSameAs("all", true))
+	{
+	    list<News_t>::iterator iter;
+	    mstring output;
+	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
+	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
+		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
+	    {
+		iter->NoExpire(onoff.GetBool());
+	    }}
+	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_SET_ALL"),
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+			who.c_str(), onoff.GetBool() ?
+				Parent->getMessage("VALS/ON").c_str() :
+				Parent->getMessage("VALS/OFF").c_str());
+
+	    LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/SET_ALL"),
+		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+		who.c_str(), onoff.GetBool() ?
+			Parent->getMessage("VALS/ON").c_str() :
+			Parent->getMessage("VALS/OFF").c_str()));
+	}
+	else
+	{
+	    unsigned int i;
+	    int j=1, count = 0;
+	    vector<int> numbers1 = ParseNumbers(what);
+	    set<int> numbers;
+	    set<int>::iterator ni;
+	    for (i=0; i<numbers1.size(); i++)
+		numbers.insert(numbers1[i]);
+
+	    bool triedabove = false, nonnumeric = false;
+	    mstring output, denied;
+	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
+	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
+	    {
+		if (*ni <= 0)
+		    nonnumeric = true;
+		else if (*ni > static_cast<int>(Parent->memoserv.channel[who.LowerCase()].size()))
+		    triedabove = true;
+		else
+		{
+		    while (*ni > j &&
+			iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			if (!output.empty())
+			    output << ", ";
+			output << j;
+			iter->NoExpire(onoff.GetBool());
+			count++;
+		    }
+		}
+	    }}
+	    if (!output.empty())
+	    {
+		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_SET"),
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+			output.c_str(), who.c_str(), onoff.GetBool() ?
+				Parent->getMessage("VALS/ON").c_str() :
+				Parent->getMessage("VALS/OFF").c_str());
+		output.erase();
+		LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/SET"),
+			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+			count, who.c_str(), onoff.GetBool() ?
+				Parent->getMessage("VALS/ON").c_str() :
+				Parent->getMessage("VALS/OFF").c_str()));
+	    }
+	    if (nonnumeric)
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+	    if (triedabove)
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"),
+			Parent->memoserv.channel[who.LowerCase()].size());
+	}
+    }
+    else
+    {
+	message += " " + params.ExtractWord(2, " ").UpperCase();
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONANICK"),
+		message.c_str());
+
+/* No NoExpire setting for nicknames.
+
+	mstring who = Parent->nickserv.stored[name.LowerCase()].Host();
+	mstring onoff = params.ExtractWord(3, " ");
+	mstring what = params.After(" ", 3);
+
+	if (who.empty())
+	    who = source;
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    return;
+	}
+
+	if (!onoff.IsBool())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	    return;
+	}
+
+	Parent->memoserv.stats.i_Set++;
+	if (what.IsSameAs("all", true))
+	{
+	    list<Memo_t>::iterator iter;
+	    mstring output;
+	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
+	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
+		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
+	    {
+		iter->NoExpire(onoff.GetBool());
+	    }}
+	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_SET_ALL"),
+		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+		onoff.GetBool() ?
+			Parent->getMessage("VALS/ON").c_str() :
+			Parent->getMessage("VALS/OFF").c_str());
+	}
+	else
+	{
+	    unsigned int i;
+	    int j=1, count = 0;
+	    vector<int> numbers1 = ParseNumbers(what);
+	    set<int> numbers;
+	    set<int>::iterator ni;
+	    for (i=0; i<numbers1.size(); i++)
+		numbers.insert(numbers1[i]);
+	    bool triedabove = false, nonnumeric = false;
+	    mstring output;
+	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
+	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
+	    {
+		if (*ni <= 0)
+		    nonnumeric = true;
+		else if (*ni > static_cast<int>(Parent->memoserv.nick[who.LowerCase()].size()))
+		    triedabove = true;
+		else
+		{
+		    while (*ni > j &&
+			iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			if (!output.empty())
+			    output << ", ";
+			output << j;
+			iter->NoExpire(onoff.GetBool());
+			count++;
+		    }
+		}
+	    }}
+	    if (!output.empty())
+	    {
+		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_SET"),
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+			output.c_str(), onoff.GetBool() ?
+				Parent->getMessage("VALS/ON").c_str() :
+				Parent->getMessage("VALS/OFF").c_str());
+		output.erase();
+	    }
+	    if (nonnumeric)
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+	    if (triedabove)
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"),
+			Parent->memoserv.channel[who.LowerCase()].size());
+	}
+*/
+    }
+}
+
+
 SXP::Tag Memo_t::tag_Memo_t("Memo_t");
 SXP::Tag Memo_t::tag_Nick("Nick");
 SXP::Tag Memo_t::tag_Sender("Sender");
@@ -2414,6 +2735,7 @@ SXP::Tag News_t::tag_Channel("Channel");
 SXP::Tag News_t::tag_Sender("Sender");
 SXP::Tag News_t::tag_Time("Time");
 SXP::Tag News_t::tag_Text("Text");
+SXP::Tag News_t::tag_set_NoExpire("SET_NoExpire");
 SXP::Tag News_t::tag_Read("Read");
 SXP::Tag News_t::tag_UserDef("UserDef");
 
@@ -2483,6 +2805,7 @@ void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_Sender) )		pElement->Retrieve(i_Sender);
 	if( pElement->IsA(tag_Time) )		pElement->Retrieve(i_Time);
 	if( pElement->IsA(tag_Text) )		pElement->Retrieve(i_Text);
+	if( pElement->IsA(tag_set_NoExpire) )	pElement->Retrieve(i_NoExpire);
 
     if( pElement->IsA(tag_Read) )
     {
@@ -2503,6 +2826,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_Sender, i_Sender);
 	pOut->WriteElement(tag_Time, i_Time);
 	pOut->WriteElement(tag_Text, i_Text);
+	pOut->WriteElement(tag_set_NoExpire, i_NoExpire);
 
 	set<mstring>::iterator iter2;
 	for (iter2=i_Read.begin(); iter2!=i_Read.end(); iter2++)

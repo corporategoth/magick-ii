@@ -1680,7 +1680,7 @@
 06 =REGD::    HELP         LIST         READ         UNREAD
 07 =REGD::    SEND         REPLY        FORWARD      FLUSH
 08 =REGD::    CONTINUE     CANCEL       DEL          FILE
-09 =REGD::    GET
+09 =REGD::    GET          PREVIEW      SET
 10 =::
 11 =::You may request help on the syntax and functionality
 12 =::of any and all of the above commands by specifying
@@ -1823,6 +1823,31 @@
 09 =REGD::will cancel this file attachment.  Once the DCC is
 10 =REGD::received, the memo will be sent upon its completion.
 
+[MEMOSERV/PREVIEW]
+01 =REGD::PREVIEW
+02 =REGD::
+03 =REGD::This will show you what a pending memo (if one exists)
+04 =REGD::currently says and who it is going to.  This will NOT
+05 =REGD::reset the pending memo timer.
+
+[MEMOSERV/SET]
+01 =REGD::Services maintains many settings for each user's memo
+02 =REGD::list, channel's news article list, all memos and all
+03 =REGD::news articles.
+04 =REGD::
+05 =REGD::You may alter news articles with these commands:
+06 =REGD::    NOEXPIRE
+
+[MEMOSERV/SET/NOEXPIRE]
+01 =REGD::SET channel NOEXPIRE <ON|OFF> <NUM|ALL>
+02 =REGD::
+03 =REGD::This will set the No Expire flag on a news article.  If
+04 =REGD::the option has been on, and is turned off, and is past
+05 =REGD::the expiry due date, it will expire immediately.  You
+06 =REGD::may specify a number, range of numbers (1-5), list of
+07 =REGD::numbers (1,3,5) or ALL for all news articles.  The
+08 =REGD::numbers specified may be obtained from the LIST command.
+09 =REGD::You must have MEMODEL privilages to set No Expire.
 
 [COMMSERV]
 01 =::This service allows user to be grouped together into

@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.41  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -177,15 +180,16 @@ class News_t : public mUserDef, public SXP::IPersistObj
     mstring i_Sender;
     mDateTime i_Time;
     mstring i_Text;
+    bool i_NoExpire;
     
     set<mstring> i_Read;
     
     static SXP::Tag tag_News_t, tag_Channel, tag_Sender, tag_Time,
-	tag_Text, tag_Read, tag_UserDef;
+	tag_Text, tag_set_NoExpire, tag_Read, tag_UserDef;
 public:
     News_t() {}
     News_t(const News_t &in) { *this = in; }
-    News_t(mstring channel, mstring sender, mstring text);
+    News_t(mstring channel, mstring sender, mstring text, bool noexpire = false);
     ~News_t() {}
     void operator=(const News_t &in);
     bool operator==(const News_t &in) const
@@ -200,6 +204,8 @@ public:
     mDateTime Time() const;
     mstring Text() const;
 
+    bool NoExpire() const;
+    void NoExpire(bool in);
     bool IsRead(mstring name) const;
     void Read(mstring name);
     void Unread(mstring name);
@@ -248,15 +254,16 @@ public:
 	unsigned long i_Forward;
 	unsigned long i_Cancel;
 	unsigned long i_Del;
+	unsigned long i_Set;
 	unsigned long i_Continue;
 	unsigned long i_File;
+	unsigned long i_Get;
     public:
 	stats_t() { clear(); }
 	void clear() {
 	    i_ClearTime = mDateTime::CurrentDateTime();
-	    i_Read = i_Unread = i_Send = i_Flush = i_Reply =
-		i_Forward = i_Cancel = i_Del = i_Continue =
-		i_File = 0; }
+	    i_Read = i_Unread = i_Send = i_Flush = i_Reply = i_Forward =
+	    	i_Cancel = i_Del = i_Set = i_Continue = i_File = i_Get = 0; }
 	mDateTime ClearTime()	    { return i_ClearTime; }
 	unsigned long Read()	    { return i_Read; }
 	unsigned long Unread()	    { return i_Unread; }
@@ -266,8 +273,10 @@ public:
 	unsigned long Forward()	    { return i_Forward; }
 	unsigned long Cancel()	    { return i_Cancel; }
 	unsigned long Del()	    { return i_Del; }
+	unsigned long Set()	    { return i_Set; }
 	unsigned long Continue()    { return i_Continue; }
 	unsigned long File()	    { return i_File; }
+	unsigned long Get()	    { return i_Get; }
     } stats;
 
     bool IsNick(mstring nick) const;
@@ -299,7 +308,10 @@ public:
     static void do_Cancel(mstring mynick, mstring source, mstring params);
     static void do_Del(mstring mynick, mstring source, mstring params);
     static void do_Continue(mstring mynick, mstring source, mstring params);
+    static void do_Preview(mstring mynick, mstring source, mstring params);
     static void do_File(mstring mynick, mstring source, mstring params);
+
+    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
 
     virtual SXP::Tag& GetClassTag() const { return tag_MemoServ; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

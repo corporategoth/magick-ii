@@ -27,6 +27,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.40  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -220,8 +223,8 @@ vector<mstring> DccEngine::ctcpExtract(mstring& in)
     End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     if (End<0)
 	NRET(vector<mstring>, Result);
-    while(Start >= 0 && Start < (int) in.length() &&
-	  End >= 0 && End < (int) in.length())
+    while(Start >= 0 && Start < static_cast<int>(in.length()) &&
+	  End >= 0 && End < static_cast<int>(in.length()))
     {
 	// the +1,-1 removes the '\001' markers off front and back
 	Result.push_back(in.SubString(Start+1,End-1));
@@ -311,26 +314,26 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    mstring tmp;
 	    tmp << PACKAGE << ":" << VERSION;
 	    if(!RELEASE.empty())
-		tmp+="-" + RELEASE;
+		tmp += "-" + RELEASE;
 	    if(!PATCH1.empty())
-		tmp+="+"+PATCH1;
+		tmp += "+" + PATCH1;
 	    if(!PATCH2.empty())
-		tmp+="+"+PATCH2;
+		tmp += "+" + PATCH2;
 	    if(!PATCH3.empty())
-		tmp+="+"+PATCH3;
+		tmp += "+" + PATCH3;
 	    if(!PATCH4.empty())
-		tmp+="+"+PATCH4;
+		tmp += "+" + PATCH4;
 	    if(!PATCH5.empty())
-		tmp+="+"+PATCH5;
+		tmp += "+" + PATCH5;
 	    if(!PATCH6.empty())
-		tmp+="+"+PATCH6;
+		tmp += "+" + PATCH6;
 	    if(!PATCH7.empty())
-		tmp+="+"+PATCH7;
+		tmp += "+" + PATCH7;
 	    if(!PATCH8.empty())
-		tmp+="+"+PATCH8;
+		tmp += "+" + PATCH8;
 	    if(!PATCH9.empty())
-		tmp+="+"+PATCH9;
-	    tmp<<":"<<BUILD_TYPE;
+		tmp += "+" + PATCH9;
+	    tmp << ":" << sysinfo_type();
 
 	    Parent->server.NOTICE(mynick, source, encode("VERSION", tmp));
 	}
@@ -477,7 +480,7 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
 
     address = atoul(straddress.c_str());
     longport = atoul(strport.c_str());
-    port = (unsigned short) longport;
+    port = static_cast<unsigned short>(longport);
     size = 0;
     if (!strsize.empty())
 	size = atoul(strsize.c_str());

@@ -126,7 +126,7 @@ logging all successful commands to services.
 
 Override the B<FILES/LOG> value in the configuration file,
 which is the file to output all log output to, this defaults to
-f<magick.log>.
+F<magick.log>.
 
 =item --logchan X, -C
 
@@ -153,7 +153,7 @@ setting it to true, which tells magick to encrypt the databases
 next time it saves (depends on the F<magick.key> file existing).
 
 I<NOTE>: if your F<magick.key> file was created with a different
-f<magick_keygen> binary than the one associated with the current
+F<magick_keygen> binary than the one associated with the current
 version of F<magick> you are running (including the actual COMPILE
 of it), you will essentially create corrupted databases.
 
@@ -227,7 +227,7 @@ which is a number to help in the releasing of old
 threads to reduce overhead, basically the equation is
 
 C<if (((No_of_Threads - 2) * High_Water_Mark) + Low_Water_Mark E<gt>
-No_Unprocessed_Messages && No_of_Threads > 1)>
+No_Unprocessed_Messages && No_of_Threads E<gt> 1)>
 
 then release a thread from the pool.
 
@@ -374,7 +374,7 @@ L<magick_keygen(1)>
 =head1 NOTES
 
 Magick may be obtained from B<http://www.magick.tm> or
-B<ftp://ftp.magick.tm/pub/Magick> and is distributed under
+B<ftp://ftp.magick.tm/pub/magick.tm> and is distributed under
 the I<GNU General Public License>.
 
 =head1 DEDICATION

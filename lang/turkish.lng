@@ -175,7 +175,7 @@ GEN_CLONES         =Su Andaki Clonlar: %d (%d hosts)
 
 NICK_REGD          =Su Anda Kayitli: %d (%d linked)
 NICK_DENIED        =Su Anda Yasakli : %d (%d forbidden)
-NICK_CMD           =Basarili Komut Kullanimi:
+NICK_CMD           =Basarili Komut Kullanimi (%s):
 NICK_CMD1          =REGISTER   %10d / DROP       %10d
 NICK_CMD2          =LINK       %10d / UNLINK     %10d
 NICK_CMD3          =HOST       %10d / IDENTIFY   %10d
@@ -188,7 +188,7 @@ NICK_CMD9          =LOCK       %10d / UNLOCK     %10d
 
 CHAN_REGD          =Su Anda Kayitli: %d
 CHAN_DENIED        =Su Anda Yasakli : %d (%d forbidden)
-CHAN_CMD           =Basarili Komut Kullanimi:
+CHAN_CMD           =Basarili Komut Kullanimi (%s):
 CHAN_CMD1          =REGISTER   %10d / DROP       %10d
 CHAN_CMD2          =IDENTIFY   %10d
 CHAN_CMD3          =SUSPEND    %10d / UNSUSPEND  %10d
@@ -212,7 +212,7 @@ OTH_AKILL          =AutoKill girisi            : %d
 OTH_OPERDENY       =OperDeny girisi            : %d
 OTH_IGNORE         =Ignore girisi              : %d
 
-OTH_CMD            =Basarili %s Komut Kullanimi:
+OTH_CMD            =Basarili %s Komut Kullanimi (%s):
 OTH_CMD1           =READ       %10d / UNREAD     %10d
 OTH_CMD2           =SEND       %10d / FLUSH      %10d
 OTH_CMD3           =REPLY      %10d / FORWARD    %10d

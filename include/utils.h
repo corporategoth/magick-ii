@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.36  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -114,6 +117,9 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 void mHASH(unsigned char *in, size_t size, unsigned char *out);
 unsigned long str_to_base64(mstring in);
 mstring base64_to_str(unsigned long in);
+mstring sysinfo_node();
+mstring sysinfo_type();
+mstring sysinfo_rel();
 
 // extrapolated from the ms's pair<T1,T2> template code
 

@@ -184,7 +184,7 @@ GEN_CLONES         =Clones Connectado: %d (%d hosts)
 
 NICK_REGD          =Registrata : %d (%d linkada)
 NICK_DENIED        =Suspendida : %d (%d prohibida)
-NICK_CMD           =Lista de Commandos:
+NICK_CMD           =Lista de Commandos (%s):
 NICK_CMD1          =REGISTER   %10d / DROP       %10d
 NICK_CMD2          =LINK       %10d / UNLINK     %10d
 NICK_CMD3          =HOST       %10d / IDENTIFY   %10d
@@ -197,7 +197,7 @@ NICK_CMD9          =LOCK       %10d / UNLOCK     %10d
 
 CHAN_REGD          =Registrado : %d
 CHAN_DENIED        =Suspendido : %d (%d prohibido)
-CHAN_CMD           =Lista de Commandos:
+CHAN_CMD           =Lista de Commandos (%s):
 CHAN_CMD1          =REGISTER   %10d / DROP       %10d
 CHAN_CMD2          =IDENTIFY   %10d
 CHAN_CMD3          =SUSPEND    %10d / UNSUSPEND  %10d
@@ -221,7 +221,7 @@ OTH_AKILL          =Entradas de Akill                  : %d
 OTH_OPERDENY       =Entradas de OperDeny               : %d
 OTH_IGNORE         =Entradas de Ignore                 : %d
 
-OTH_CMD            =Lista de Commandos: %s
+OTH_CMD            =Lista de Commandos (%s): %s
 OTH_CMD1           =READ       %10d / UNREAD     %10d
 OTH_CMD2           =SEND       %10d / FLUSH      %10d
 OTH_CMD3           =REPLY      %10d / FORWARD    %10d

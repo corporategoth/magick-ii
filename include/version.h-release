@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copyright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.28  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -107,8 +110,6 @@ RCSID(version_h, "@(#) $Id$");
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
 const int BUILD_NUMBER = 0;
-const mstring BUILD_TYPE = "Windows 95/98/NT";
-const mstring BUILD_SYS = "localhost";
 
 /* Versioning Information
  *
@@ -138,7 +139,7 @@ const mstring FULLNAME			= "Magick IRC Services";
 const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
-const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
+const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm";
 const mstring RELEASE			= "b8";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";

@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.157  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
 ** Revision 1.156  2001/02/11 07:41:28  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -437,7 +440,7 @@ void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
 	CB(1, timer);
 	mstring *arg = NULL;
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
 	    delete arg;
@@ -479,7 +482,7 @@ Nick_Live_t::InFlight_t::~InFlight_t()
     if (timer)
     {
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
 	    delete arg;
@@ -535,7 +538,7 @@ void Nick_Live_t::InFlight_t::SetInProg()
     {
 	CB(1, timer);
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
 	    delete arg;
@@ -666,7 +669,7 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
     {
 	CB(1, timer);
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
 	    delete arg;
@@ -693,7 +696,7 @@ void Nick_Live_t::InFlight_t::Cancel()
     {
 	MCB(timer);
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
 	    delete arg;
@@ -733,7 +736,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	{
 	    MCB(timer);
 	    if (ACE_Reactor::instance()->cancel_timer(timer,
-		(const void **) arg) &&
+		reinterpret_cast<const void **>(arg)) &&
 		arg != NULL)
 	    {
 		delete arg;
@@ -744,10 +747,9 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
 	if (Parent->nickserv.IsStored(sender))
 	{
-	    if (!Parent->nickserv.stored[sender.LowerCase()].Host().empty() &&
-		Parent->nickserv.IsStored(Parent->nickserv.stored[sender.LowerCase()].Host()))
+	    if (!Parent->nickserv.stored[sender.LowerCase()].Host().empty())
 	    {
-		sender = Parent->getSname(Parent->nickserv.stored[sender.LowerCase()].Host());
+		sender = Parent->nickserv.stored[sender.LowerCase()].Host();
 	    }
 	    if (Memo())
 	    {
@@ -806,7 +808,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/NOSPACE"));
 			}
-			else if (recipiant == realrecipiant ||
+			else if (recipiant.IsSameAs(realrecipiant, true) ||
 			    Parent->nickserv.IsStored(realrecipiant))
 			{
 			    { WLOCK(("MemoServ", "nick", realrecipiant.LowerCase()));
@@ -1025,6 +1027,20 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PUB_PENDING"));
 }
 
+mstring Nick_Live_t::InFlight_t::Text()
+{
+    NFT("Nick_Live_t::InFlight_t::Memo");
+    RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "text"));
+    RET(text);
+}
+
+mstring Nick_Live_t::InFlight_t::Recipiant()
+{
+    NFT("Nick_Live_t::InFlight_t::Memo");
+    RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "recipiant"));
+    RET(recipiant);
+}
+
 bool Nick_Live_t::InFlight_t::Memo() const
 {
     NFT("Nick_Live_t::InFlight_t::Memo");
@@ -1241,6 +1257,7 @@ void Nick_Live_t::Join(mstring chan)
     }
     else
     {
+	WLOCK(("ChanServ", "live"));
 	Parent->chanserv.live[chan.LowerCase()] = Chan_Live_t(chan, i_Name);
     }
     // We do this seperately coz we require initialisation of
@@ -1280,7 +1297,7 @@ void Nick_Live_t::Part(mstring chan)
     joined_channels.erase(chan.LowerCase());
     MCE(joined_channels.size());
     // Just incase we were cycling and need to JOIN
-    Parent->server.FlushUser(i_Name, chan);
+    //Parent->server.FlushUser(i_Name, chan);
 }
 
 void Nick_Live_t::Kick(mstring kicker, mstring chan)
@@ -1739,7 +1756,7 @@ void Nick_Live_t::Mode(mstring in)
 	    {
 		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
 		Parent->operserv.AddHost(i_host);
-		modes.Remove((mstring) in[i]);
+		modes.Remove(in[i]);
 		// Break here for non-services ...
 		break;
 	    }
@@ -1752,7 +1769,7 @@ void Nick_Live_t::Mode(mstring in)
 	    }
 	    else if (!add && modes.Contains(in[i]))
 	    {
-		modes.Remove((mstring) in[i]);
+		modes.Remove(in[i]);
 	    }
 	    else
 	    {
@@ -1964,7 +1981,7 @@ void Nick_Live_t::ClearSquit()
 
 mstring Nick_Live_t::Mask(Nick_Live_t::styles type) const
 {
-    FT("Nick_Live_t::Mask", ((int) type));
+    FT("Nick_Live_t::Mask", (static_cast<int>(type)));
 
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_user"));
     RLOCK2(("NickServ", "live", i_Name.LowerCase(), "i_host"));
@@ -2043,7 +2060,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type) const
 
 mstring Nick_Live_t::AltMask(Nick_Live_t::styles type) const
 {
-    FT("Nick_Live_t::AltMask", ((int) type));
+    FT("Nick_Live_t::AltMask", (static_cast<int>(type)));
 
     RLOCK2(("NickServ", "live", i_Name.LowerCase(), "i_user"));
     RLOCK3(("NickServ", "live", i_Name.LowerCase(), "i_alt_host"));
@@ -2442,17 +2459,21 @@ void Nick_Stored_t::Signon(mstring realname, mstring mask)
     MCE(i_LastRealName);
     }
 
-    if (Parent->memoserv.IsNick(i_Name))
+    mstring who = Host();
+    if (who.empty())
+	who = i_Name;
+    if (Parent->memoserv.IsNick(who))
     {
 	list<Memo_t>::iterator iter;
 	unsigned int count = 0;
-	for (iter = Parent->memoserv.nick[i_Name.LowerCase()].begin();
-		iter != Parent->memoserv.nick[i_Name.LowerCase()].end();
+	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
+	for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
+		iter != Parent->memoserv.nick[who.LowerCase()].end();
 		iter++)
 	{
 	    if (!iter->IsRead())
 		count++;
-	}
+	}}
 	if (count)
 	    send(Parent->memoserv.FirstName(), i_Name,
 		Parent->getMessage(i_Name, "MS_STATUS/NS_UNREAD"),
@@ -4868,7 +4889,11 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET*", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK", Parent->commserv.REGD_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5024,7 +5049,11 @@ void NickServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK *", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK *", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -5223,7 +5252,7 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
     }
     else if (Parent->nickserv.IsStored(params.ExtractWord(2, " ")))
     {
-	mstring target = params.ExtractWord(2, " ");
+	mstring target = Parent->getSname(params.ExtractWord(2, " "));
 	if ((Parent->nickserv.stored[target.LowerCase()].IsSibling(source) &&
 	    Parent->nickserv.live[source.LowerCase()].IsIdentified()) ||
 	    (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
@@ -5231,7 +5260,6 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
 	     !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(target))))
 	{
-	    target = Parent->getSname(target);
 	    Parent->nickserv.stats.i_Drop++;
 	    dropped = Parent->nickserv.stored[target.LowerCase()].Drop();
 	    { WLOCK(("NickServ", "stored"));
@@ -5248,7 +5276,7 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTYOURS"),
-				Parent->getSname(params.ExtractWord(2, " ")).c_str());
+				target.c_str());
 	}
     }
     else
@@ -5392,7 +5420,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
 	if (Parent->nickserv.stored[source.LowerCase()].Unlink())
 	{
 	    Parent->nickserv.stats.i_Unlink++;
-	    mstring target = Parent->getSname(Parent->nickserv.stored[source.LowerCase()].Host());
+	    mstring target = Parent->nickserv.stored[source.LowerCase()].Host();
 	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/UNLINKED"));
 	    LOG((LM_INFO, Parent->getLogMessage("NICKSERV/UNLINK"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
@@ -5436,7 +5464,7 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (!(source.LowerCase() == newhost.LowerCase() ||
+	if (!(source.IsSameAs(newhost, true) ||
 		Parent->nickserv.stored[newhost.LowerCase()].IsSibling(source) ||
 		Parent->nickserv.stored[newhost.LowerCase()].Host().IsSameAs(source, true)))
 	{
@@ -5474,40 +5502,36 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
     mstring target;
     if (params.WordCount(" ") < 2)
     {
-	target = source;
+	target = Parent->getSname(source);
     }
     else
     {
 	if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
 		Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))
+	{
 	    target = params.ExtractWord(2, " ");
-	else
-	    target = source;
-    }
-
-    if (source != target)
-    {
-	if (!Parent->nickserv.IsStored(target))
-	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+	    if (!Parent->nickserv.IsStored(target))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 						target.c_str());
-	    return;
-	}
+		return;
+	    }
 
-	target = Parent->getSname(target);
-	if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
-	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+	    target = Parent->getSname(target);
+	    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+	    {
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
 					target.c_str());
-	    return;
+		return;
+	    }
 	}
+	else
+	    target = Parent->getSname(source);
     }
-
 
     mstring output;
-    if (!Parent->nickserv.stored[target.LowerCase()].Host().empty() &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
-	target = Parent->getSname(Parent->nickserv.stored[target.LowerCase()].Host());
+    if (!Parent->nickserv.stored[target.LowerCase()].Host().empty())
+	target = Parent->nickserv.stored[target.LowerCase()].Host();
 
     output << IRC_Bold << target << IRC_Off << " (" <<
 	Parent->nickserv.stored[target.LowerCase()].Siblings() << "):";
@@ -5614,7 +5638,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/REALNAME"),
 			nick->Name().c_str(), nick->LastRealName().c_str());
-    if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host()))
+    if (!nick->Host().empty())
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HOST"),
 		Parent->nickserv.stored[nick->Host().LowerCase()].Name().c_str());
     output.erase();
@@ -5628,8 +5652,8 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     {
 	output.erase();
 	bool isonline = false;
-	if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host())
-	    && Parent->nickserv.stored[nick->Host().LowerCase()].IsOnline())
+	if (!nick->Host().empty() &&
+	    Parent->nickserv.stored[nick->Host().LowerCase()].IsOnline())
 	    output = Parent->nickserv.live[nick->Host().LowerCase()].Name() + " ";
 	for (i=0; i<nick->Siblings(); i++)
 	{
@@ -6107,7 +6131,8 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
     { RLOCK(("DCC"));
     if (Parent->dcc != NULL)
     {
-	unsigned short port = FindAvailPort();
+	Parent->nickserv.stats.i_Send++;
+	unsigned short port = mSocket::FindAvailPort();
 	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 		" " + mstring(Parent->LocalHost()) + " " +
 		mstring(port) + " " + mstring(filesize)));
@@ -6290,9 +6315,9 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
     }
 
     Nick_Stored_t *nick = &Parent->nickserv.stored[target.LowerCase()];
-    mstring host = nick->Name();
-    if (!nick->Host().empty() && Parent->nickserv.IsStored(nick->Host()))
-	host = Parent->getSname(nick->Host());
+    mstring host = nick->Host();
+    if (host.empty())
+	host = nick->Name();
 
     Parent->nickserv.stats.i_Getpass++;
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/GETPASS"),
@@ -6535,7 +6560,7 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_access_List", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
-    mstring target = source;
+    mstring target = Parent->getSname(source);
 
     { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL &&
@@ -6550,11 +6575,7 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
 	Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
 	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))
     {
-	    target = params.ExtractWord(3, " ");
-    }
-
-    if (source != target)
-    {
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsStored(target))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
@@ -6562,18 +6583,18 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	target = Parent->getSname(target);
 	if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						Parent->getSname(target).c_str());
+						target.c_str());
 	    return;
 	}
     }
 
-    target = Parent->getSname(target);
     if (Parent->nickserv.stored[target.LowerCase()].Access())
     {
-	if (source != target)
+	if (!source.IsSameAs(target, true))
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
 			target.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
 	else
@@ -6582,7 +6603,7 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (source != target)
+	if (!source.IsSameAs(target, true))
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
 			target.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
 	else
@@ -6703,7 +6724,7 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_ignore_List", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
-    mstring target = source;
+    mstring target = Parent->getSname(source);
 
     { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL &&
@@ -6718,11 +6739,7 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
 	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))
     {
-	    target = params.ExtractWord(3, " ");
-    }
-
-    if (source != target)
-    {
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsStored(target))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
@@ -6730,18 +6747,18 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	target = Parent->getSname(target);
 	if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						Parent->getSname(target).c_str());
+						target.c_str());
 	    return;
 	}
     }
 
-    target = Parent->getSname(target);
     if (Parent->nickserv.stored[target.LowerCase()].Ignore())
     {
-	if (source != target)
+	if (!source.IsSameAs(target, true))
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
 			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
 	else
@@ -6750,7 +6767,7 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (source != target)
+	if (!source.IsSameAs(target, true))
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
 			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
 	else
@@ -7068,6 +7085,7 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    Parent->nickserv.stats.i_SetPicture++;
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("none", true))
     {

@@ -1,3 +1,31 @@
+/*  Magick IRC Services
+**
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ========================================================== */
+#define RCSID(x,y) const char *rcsid_genrankeys_c_ ## x () { return y; }
+RCSID(genrankeys_c, "@(#)$Id$");
+/* ==========================================================
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <devel@magick.tm>:
+**
+** $Log$
+** Revision 1.10  2001/03/02 05:24:41  prez
+** HEAPS of modifications, including synching up my own archive.
+**
+**
+** ========================================================== */
+
 #include <stdio.h>
 #include <stdlib.h>
 #ifndef WIN32
@@ -52,10 +80,7 @@ int main(int argc, char **argv)
 	    i--;
     }
 
-    fprintf(fout, "#ifndef WIN32\n\
-#pragma interface\n\
-#endif\n\
-/*  Magick IRC Services\n\
+    fprintf(fout, "/*  Magick IRC Services\n\
 **\n\
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>\n\
 ** (c) 1998-2001 William King <ungod@magick.tm>\n\
