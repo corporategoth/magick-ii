@@ -1,3 +1,77 @@
+* 2003-01-26 22:21  Preston A. Elder <prez@magick.tm>
+  README (1.30), docs/en/index.sgml (1.48), include/convert/daylight.h
+  (1.2), include/convert/interface.h (1.4), include/convert/ircs.h (1.2),
+  include/convert/ircservices.h (1.2), include/convert/srvx.h (1.2),
+  src/magick.cpp (1.389), src/convert/daylight.cpp (1.2),
+  src/convert/interface.cpp (1.4), src/convert/ircs.cpp (1.2),
+  src/convert/srvx.cpp (1.2), src/convert/trircd.cpp (1.3):
+  
+  Removed ircs, daylight and srvx from the conversion plans.  ircs and
+  daylight I cannot find the source for (and do not want to use the
+  conversion routines from ircservices).  srvx is just so different its not
+  worth my time unless there is actually someone who needs it.
+
+* 2003-01-26 21:33  Preston A. Elder <prez@magick.tm>
+  include/convert/interface.h (1.3), include/convert/sirv.h (1.3),
+  include/convert/trircd.h (1.2), src/convert/interface.cpp (1.3),
+  src/convert/ptlink.cpp (1.2), src/convert/trircd.cpp (1.2):
+  
+  Added trircd-services conversion routines.
+
+* 2003-01-25 19:43  Preston A. Elder <prez@magick.tm>
+  src/trace.cpp (1.132):
+  
+  Fixed LM_EMERGENCY log level when logger not yet started.
+
+* 2003-01-25 16:01  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.264), src/chandata.cpp (1.24):
+  
+  Fixed chanserv joining and parting over and over on TopicJoin IRCD's.
+
+* 2003-01-25 01:49  Preston A. Elder <prez@magick.tm>
+  include/convert/interface.h (1.2), include/convert/sirv.h (1.2),
+  src/chandata.cpp (1.23), src/convert/interface.cpp (1.2),
+  src/convert/sirv.cpp (1.2):
+  
+  Finished up SIRV conversion routines.
+
+* 2003-01-25 00:22  Preston A. Elder <prez@magick.tm>
+  include/convert/.cvsignore (1.1), src/convert/.cvsignore (1.1):
+  
+  Added cvsignore files for convert
+
+* 2003-01-25 00:21  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.69), FAQ (1.11), README (1.29), configure.in (1.72),
+  docs/en/index.sgml (1.47), include/Makefile.am (1.16), include/chanserv.h
+  (1.89), include/convert_epona.h (1.10), include/convert_esper.h (1.12),
+  include/convert_hybserv.h (1.3), include/convert_magick.h (1.9),
+  include/magick.h (1.194), include/memoserv.h (1.68), include/nickserv.h
+  (1.92), include/operserv.h (1.68), include/trace.h (1.99),
+  include/convert/Makefile.am (1.1), include/convert/auspice.h (1.1),
+  include/convert/bolivia.h (1.1), include/convert/cygnus.h (1.1),
+  include/convert/daylight.h (1.1), include/convert/epona.h (1.1),
+  include/convert/hybserv.h (1.1), include/convert/interface.h (1.1),
+  include/convert/ircs.h (1.1), include/convert/ircservices.h (1.1),
+  include/convert/magick.h (1.1), include/convert/ptlink.h (1.1),
+  include/convert/sirv.h (1.1), include/convert/srvx.h (1.1),
+  include/convert/trircd.h (1.1), include/convert/wrecked.h (1.1),
+  src/Makefile.am (1.36), src/convert_epona.cpp (1.16),
+  src/convert_esper.cpp (1.20), src/convert_hybserv.cpp (1.3),
+  src/convert_magick.cpp (1.16), src/magick.cpp (1.388), src/operserv.cpp
+  (1.170), src/convert/Makefile.am (1.1), src/convert/auspice.cpp (1.1),
+  src/convert/bolivia.cpp (1.1), src/convert/cygnus.cpp (1.1),
+  src/convert/daylight.cpp (1.1), src/convert/epona.cpp (1.1),
+  src/convert/hybserv.cpp (1.1), src/convert/interface.cpp (1.1),
+  src/convert/ircs.cpp (1.1), src/convert/ircservices.cpp (1.1),
+  src/convert/magick.cpp (1.1), src/convert/ptlink.cpp (1.1),
+  src/convert/sirv.cpp (1.1), src/convert/srvx.cpp (1.1),
+  src/convert/trircd.cpp (1.1), src/convert/wrecked.cpp (1.1),
+  src/xml/sxp.cpp (1.43), src/xml/xmlparse.c (1.15), src/xml/xmlrole.c
+  (1.8), src/xml/xmltok.c (1.13), src/xml/xmltok_impl.c (1.15):
+  
+  Changed conversion structure, now all conversion files are in one module.
+   Also added many more conversion options (not complete yet).
+
 * 2003-01-20 19:48  Preston A. Elder <prez@magick.tm>
   src/nickdata.cpp (1.22):
   
