@@ -25,6 +25,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.41  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -282,63 +286,63 @@ public:
 	    i_ClearTime = Now();
 	    i_New = i_Kill = i_AddDel = i_Memo =
 		i_Logon = i_Set = i_Lock = i_Unlock = 0; }
-	mDateTime ClearTime()	{ return i_ClearTime; }
-	unsigned long New()	{ return i_New; }
-	unsigned long Kill()	{ return i_Kill; }
-	unsigned long AddDel()	{ return i_AddDel; }
-	unsigned long Memo()	{ return i_Memo; }
-	unsigned long Logon()	{ return i_Logon; }
-	unsigned long Set()	{ return i_Set; }
-	unsigned long Lock()	{ return i_Lock; }
-	unsigned long Unlock()	{ return i_Unlock; }
+	mDateTime ClearTime()const	{ return i_ClearTime; }
+	unsigned long New()const	{ return i_New; }
+	unsigned long Kill()const	{ return i_Kill; }
+	unsigned long AddDel()const	{ return i_AddDel; }
+	unsigned long Memo()const	{ return i_Memo; }
+	unsigned long Logon()const	{ return i_Logon; }
+	unsigned long Set()const	{ return i_Set; }
+	unsigned long Lock()const	{ return i_Lock; }
+	unsigned long Unlock()const	{ return i_Unlock; }
     } stats;
 
-    unsigned int Max_Logon()	{ return max_logon; }
-    bool    DEF_OpenMemos()	{ return def_openmemos; }
-    bool    LCK_OpenMemos()	{ return lck_openmemos; }
-    bool    DEF_Private()	{ return def_private; }
-    bool    LCK_Private()	{ return lck_private; }
-    bool    DEF_Secure()	{ return def_secure; }
-    bool    LCK_Secure()	{ return lck_secure; }
-    mstring ALL_Name()		{ return all_name; }
-    mstring ALL_SetMode()	{ return all_setmode; }
-    mstring REGD_Name()		{ return regd_name; }
-    mstring REGD_SetMode()	{ return regd_setmode; }
-    mstring SADMIN_Name()	{ return sadmin_name; }
-    bool    SADMIN_Secure()	{ return sadmin_secure; }
-    bool    SADMIN_Private()	{ return sadmin_private; }
-    bool    SADMIN_OpenMemos()	{ return sadmin_openmemos; }
-    bool    SADMIN_ModeO()	{ return sadmin_modeo; }
-    mstring SADMIN_SetMode()	{ return sadmin_setmode; }
-    mstring SOP_Name()		{ return sop_name; }
-    bool    SOP_Secure()	{ return sop_secure; }
-    bool    SOP_Private()	{ return sop_private; }
-    bool    SOP_OpenMemos()	{ return sop_openmemos; }
-    bool    SOP_ModeO()		{ return sop_modeo; }
-    mstring SOP_SetMode()	{ return sop_setmode; }
-    mstring ADMIN_Name()	{ return admin_name; }
-    bool    ADMIN_Secure()	{ return admin_secure; }
-    bool    ADMIN_Private()	{ return admin_private; }
-    bool    ADMIN_OpenMemos()	{ return admin_openmemos; }
-    bool    ADMIN_ModeO()	{ return admin_modeo; }
-    mstring ADMIN_SetMode()	{ return admin_setmode; }
-    mstring OPER_Name()		{ return oper_name; }
-    bool    OPER_Secure()	{ return oper_secure; }
-    bool    OPER_Private()	{ return oper_private; }
-    bool    OPER_OpenMemos()	{ return oper_openmemos; }
-    bool    OPER_ModeO()	{ return oper_modeo; }
-    mstring OPER_SetMode()	{ return oper_setmode; }
-    mstring OVR_View()		{ return ovr_view; }
-    mstring OVR_Owner()		{ return ovr_owner; }
-    mstring OVR_CS_Mode()	{ return ovr_cs_mode; }
-    mstring OVR_CS_Op()		{ return ovr_cs_op; }
-    mstring OVR_CS_Voice()	{ return ovr_cs_voice; }
-    mstring OVR_CS_Invite()	{ return ovr_cs_invite; }
-    mstring OVR_CS_Unban()	{ return ovr_cs_unban; }
-    mstring OVR_CS_Clear()	{ return ovr_cs_clear; }
+    unsigned int Max_Logon()const	{ return max_logon; }
+    bool    DEF_OpenMemos()const	{ return def_openmemos; }
+    bool    LCK_OpenMemos()const	{ return lck_openmemos; }
+    bool    DEF_Private()const		{ return def_private; }
+    bool    LCK_Private()const		{ return lck_private; }
+    bool    DEF_Secure()const		{ return def_secure; }
+    bool    LCK_Secure()const		{ return lck_secure; }
+    mstring ALL_Name()const		{ return all_name; }
+    mstring ALL_SetMode()const		{ return all_setmode; }
+    mstring REGD_Name()const		{ return regd_name; }
+    mstring REGD_SetMode()const		{ return regd_setmode; }
+    mstring SADMIN_Name()const		{ return sadmin_name; }
+    bool    SADMIN_Secure()const	{ return sadmin_secure; }
+    bool    SADMIN_Private()const	{ return sadmin_private; }
+    bool    SADMIN_OpenMemos()const	{ return sadmin_openmemos; }
+    bool    SADMIN_ModeO()const		{ return sadmin_modeo; }
+    mstring SADMIN_SetMode()const	{ return sadmin_setmode; }
+    mstring SOP_Name()const		{ return sop_name; }
+    bool    SOP_Secure()const		{ return sop_secure; }
+    bool    SOP_Private()const		{ return sop_private; }
+    bool    SOP_OpenMemos()const	{ return sop_openmemos; }
+    bool    SOP_ModeO()const		{ return sop_modeo; }
+    mstring SOP_SetMode()const		{ return sop_setmode; }
+    mstring ADMIN_Name()const		{ return admin_name; }
+    bool    ADMIN_Secure()const		{ return admin_secure; }
+    bool    ADMIN_Private()const	{ return admin_private; }
+    bool    ADMIN_OpenMemos()const	{ return admin_openmemos; }
+    bool    ADMIN_ModeO()const		{ return admin_modeo; }
+    mstring ADMIN_SetMode()const	{ return admin_setmode; }
+    mstring OPER_Name()const		{ return oper_name; }
+    bool    OPER_Secure()const		{ return oper_secure; }
+    bool    OPER_Private()const		{ return oper_private; }
+    bool    OPER_OpenMemos()const	{ return oper_openmemos; }
+    bool    OPER_ModeO()const		{ return oper_modeo; }
+    mstring OPER_SetMode()const		{ return oper_setmode; }
+    mstring OVR_View()const		{ return ovr_view; }
+    mstring OVR_Owner()const		{ return ovr_owner; }
+    mstring OVR_CS_Mode()const		{ return ovr_cs_mode; }
+    mstring OVR_CS_Op()const		{ return ovr_cs_op; }
+    mstring OVR_CS_Voice()const		{ return ovr_cs_voice; }
+    mstring OVR_CS_Invite()const	{ return ovr_cs_invite; }
+    mstring OVR_CS_Unban()const		{ return ovr_cs_unban; }
+    mstring OVR_CS_Clear()const		{ return ovr_cs_clear; }
 
     map<mstring,Committee> list;
-    bool IsList(mstring in);
+    bool IsList(mstring in)const;
 
     CommServ();
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; };

@@ -25,6 +25,10 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.44  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -204,58 +208,58 @@ public:
 		i_Kill = i_Hide = i_Ping = i_Update = i_Reload =
 		i_Unload = i_Jupe = i_OnOff = i_Clone =
 		i_Akill = i_OperDeny = i_Ignore = 0; }
-	mDateTime ClearTime()	    { return i_ClearTime; }
-	unsigned long Trace()	    { return i_Trace; }
-	unsigned long Mode()	    { return i_Mode; }
-	unsigned long Qline()	    { return i_Qline; }
-	unsigned long Unqline()	    { return i_Unqline; }
-	unsigned long Noop()	    { return i_Noop; }
-	unsigned long Kill()	    { return i_Kill; }
-	unsigned long Hide()	    { return i_Hide; }
-	unsigned long Ping()	    { return i_Ping; }
-	unsigned long Update()	    { return i_Update; }
-	unsigned long Reload()	    { return i_Reload; }
-	unsigned long Unload()	    { return i_Unload; }
-	unsigned long Jupe()	    { return i_Jupe; }
-	unsigned long OnOff()	    { return i_OnOff; }
-	unsigned long Clone()	    { return i_Clone; }
-	unsigned long Akill()	    { return i_Akill; }
-	unsigned long OperDeny()    { return i_OperDeny; }
-	unsigned long Ignore()	    { return i_Ignore; }
+	mDateTime ClearTime()const	    { return i_ClearTime; }
+	unsigned long Trace()const	    { return i_Trace; }
+	unsigned long Mode()const	    { return i_Mode; }
+	unsigned long Qline()const	    { return i_Qline; }
+	unsigned long Unqline()const	    { return i_Unqline; }
+	unsigned long Noop()const	    { return i_Noop; }
+	unsigned long Kill()const	    { return i_Kill; }
+	unsigned long Hide()const	    { return i_Hide; }
+	unsigned long Ping()const	    { return i_Ping; }
+	unsigned long Update()const	    { return i_Update; }
+	unsigned long Reload()const	    { return i_Reload; }
+	unsigned long Unload()const	    { return i_Unload; }
+	unsigned long Jupe()const	    { return i_Jupe; }
+	unsigned long OnOff()const	    { return i_OnOff; }
+	unsigned long Clone()const	    { return i_Clone; }
+	unsigned long Akill()const	    { return i_Akill; }
+	unsigned long OperDeny()const	    { return i_OperDeny; }
+	unsigned long Ignore()const	    { return i_Ignore; }
     } stats;
 
-    mstring Services_Admin()	    { return services_admin; }
-    bool Secure()		    { return secure; }
-    bool SecureOper()		    { return secureoper; }
-    unsigned long Def_Expire()	    { return def_expire; }
-    unsigned long Expire_Oper()	    { return expire_oper; }
-    unsigned long Expire_Admin()    { return expire_admin; }
-    unsigned long Expire_Sop()	    { return expire_sop; }
-    unsigned long Expire_SAdmin()   { return expire_sadmin; }
-    float Akill_Reject()	    { return akill_reject; }
-    unsigned int Max_Clone()	    { return max_clone; }
-    unsigned int Clone_Limit()	    { return clone_limit; }
-    mstring Def_Clone()		    { return def_clone; }
-    unsigned int Clone_Trigger()    { return clone_trigger; }
-    unsigned long Clone_Time()	    { return clone_time; }
-    mstring Clone_Akill()	    { return clone_akill; }
-    unsigned long Clone_AkillTime() { return clone_akilltime; }
-    unsigned long Flood_Time()	    { return flood_time; }
-    unsigned int Flood_Msgs()	    { return flood_msgs; }
-    unsigned long Ignore_Time()	    { return ignore_time; }
-    unsigned int Ignore_Limit()	    { return ignore_limit; }
-    unsigned long Ignore_Remove()   { return ignore_remove; }
-    Nick_Live_t::styles Ignore_Method()
+    mstring Services_Admin()const	    { return services_admin; }
+    bool Secure()const			    { return secure; }
+    bool SecureOper()const		    { return secureoper; }
+    unsigned long Def_Expire()const	    { return def_expire; }
+    unsigned long Expire_Oper()const	    { return expire_oper; }
+    unsigned long Expire_Admin()const	    { return expire_admin; }
+    unsigned long Expire_Sop()const	    { return expire_sop; }
+    unsigned long Expire_SAdmin()const	    { return expire_sadmin; }
+    float Akill_Reject()const		    { return akill_reject; }
+    unsigned int Max_Clone()const	    { return max_clone; }
+    unsigned int Clone_Limit()const	    { return clone_limit; }
+    mstring Def_Clone()const		    { return def_clone; }
+    unsigned int Clone_Trigger()const	    { return clone_trigger; }
+    unsigned long Clone_Time()const	    { return clone_time; }
+    mstring Clone_Akill()const		    { return clone_akill; }
+    unsigned long Clone_AkillTime()const    { return clone_akilltime; }
+    unsigned long Flood_Time()const	    { return flood_time; }
+    unsigned int Flood_Msgs()const	    { return flood_msgs; }
+    unsigned long Ignore_Time()const	    { return ignore_time; }
+    unsigned int Ignore_Limit()const	    { return ignore_limit; }
+    unsigned long Ignore_Remove()const	    { return ignore_remove; }
+    Nick_Live_t::styles Ignore_Method()const
 	{ return (Nick_Live_t::styles) ignore_method; }
-    bool Log_Ignore()		    { return log_ignore; }
-    unsigned long Init_HTM_Gap()    { return init_htm_gap; }
-    unsigned long Init_HTM_Thresh() { return init_htm_thresh; }
-    unsigned long Max_HTM_Gap()     { return max_htm_gap; }
-    unsigned long HTM_On_Gap()      { return htm_on_gap; }
+    bool Log_Ignore()const		    { return log_ignore; }
+    unsigned long Init_HTM_Gap()const	    { return init_htm_gap; }
+    unsigned long Init_HTM_Thresh()const    { return init_htm_thresh; }
+    unsigned long Max_HTM_Gap()const	    { return max_htm_gap; }
+    unsigned long HTM_On_Gap()const	    { return htm_on_gap; }
 
-    size_t CloneList_size() { return CloneList.size(); }
-    size_t CloneList_sum();
-    size_t CloneList_size(unsigned int amt);
+    size_t CloneList_size()const { return CloneList.size(); }
+    size_t CloneList_sum()const;
+    size_t CloneList_size(unsigned int amt)const;
     size_t CloneList_Usage();
 
     bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());

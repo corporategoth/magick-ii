@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.217  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.216  2000/12/22 08:55:40  prez
 ** Made forbidden entries (chanserv or nickserv) show up as forbidden in
 ** a list (rather than (nick!) or whatever)
@@ -5765,7 +5769,7 @@ void ChanServ::RemCommands()
 	    "UNLOCK", Parent->commserv.SOP_Name());
 }
 
-bool ChanServ::IsLive(mstring in)
+bool ChanServ::IsLive(mstring in)const
 {
     FT("ChanServ::IsLive", (in));
     RLOCK(("ChanServ", "live", in.LowerCase()));
@@ -5773,7 +5777,7 @@ bool ChanServ::IsLive(mstring in)
     RET(retval);
 }
 
-bool ChanServ::IsStored(mstring in)
+bool ChanServ::IsStored(mstring in)const
 {
     FT("ChanServ::IsStored", (in));
     RLOCK(("ChanServ", "stored", in.LowerCase()));
@@ -12028,12 +12032,12 @@ long ChanServ::LVL(mstring level)
 }
 
 
-vector<mstring> ChanServ::LVL()
+vector<mstring> ChanServ::LVL()const
 {
     NFT("ChanServ::LVL");
 
     vector<mstring> retval;
-    map<mstring, long>::iterator iter;
+    map<mstring, long>::const_iterator iter;
     for (iter = lvl.begin(); iter != lvl.end(); iter++)
     {
 	retval.push_back(iter->first.UpperCase());
@@ -12042,7 +12046,7 @@ vector<mstring> ChanServ::LVL()
 }
 
 
-bool ChanServ::IsLVL(mstring level)
+bool ChanServ::IsLVL(mstring level)const
 {
     FT("ChanServ::IsLVL", (level));
     bool retval = lvl.find(level.UpperCase()) != lvl.end();

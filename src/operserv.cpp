@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.108  2000/12/22 03:30:26  prez
 ** Fixed bug in nickserv ident.
 **
@@ -341,11 +345,11 @@ void OperServ::RemHost(mstring host)
     MCE(CloneList.size());
 }
 
-size_t OperServ::CloneList_sum()
+size_t OperServ::CloneList_sum()const
 {
     NFT("OperServ::ClonesList_sum");
 
-    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator i;
+    map<mstring, pair<unsigned int, list<mDateTime> > >::const_iterator i;
     size_t value = 0;
 
     RLOCK(("OperServ", "CloneList"));
@@ -356,11 +360,11 @@ size_t OperServ::CloneList_sum()
     RET(value);
 }
 
-size_t OperServ::CloneList_size(unsigned int amt)
+size_t OperServ::CloneList_size(unsigned int amt)const
 {
     FT("OperServ::CloneList_size", (amt));
 
-    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator i;
+    map<mstring, pair<unsigned int, list<mDateTime> > >::const_iterator i;
     size_t value = 0;
 
     RLOCK(("OperServ", "CloneList"));

@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.279  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.278  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -388,7 +392,7 @@ static const char *ident = "@(#)$Id$";
 mDateTime StartTime;
 Magick *Parent;
 
-mstring Magick::files_t::MakePath(mstring in)
+mstring Magick::files_t::MakePath(mstring in)const
 {
 #ifdef WIN32
 	if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
@@ -2846,6 +2850,12 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     // todo: fill this sucker in
     switch(signum)
     {
+    // Silent ignores (commonplace!)
+#ifdef SIGCHLD
+    case SIGCHLD:
+	break;
+#endif
+
     case SIGINT:	// Re-signon all clients
 	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SIGNON"), signum));
 	Parent->server.SignOnAll();
@@ -3123,7 +3133,7 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
 }
 */
 
-bool Magick::startup_t::IsServer(mstring server)
+bool Magick::startup_t::IsServer(mstring server)const
 {
     FT("Magick::startup_t::IsServer", (server));
 
@@ -3134,7 +3144,7 @@ bool Magick::startup_t::IsServer(mstring server)
     RET(false);
 }
 
-triplet<unsigned int,mstring,unsigned int> Magick::startup_t::Server(mstring server)
+triplet<unsigned int,mstring,unsigned int> Magick::startup_t::Server(mstring server)const
 {
     FT("Magick::startup_t::Server", (server));
     triplet<unsigned int,mstring,unsigned int> value(0, "", 0);
@@ -3161,7 +3171,7 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri)
     NRET(vector<mstring>, list);
 }
 
-mstring Magick::GetKey()
+mstring Magick::GetKey()const
 {
     NFT("Magick::GetKey");
     mstring retval = "";
@@ -3294,6 +3304,8 @@ void Magick::save_databases()
     if (i_saving)
 	return;
     i_saving = true;
+    if (mFile::Exists(files.Database()+".old"))
+	mFile::Erase(files.Database()+".old");
     if (mFile::Exists(files.Database()+".new"))
 	mFile::Erase(files.Database()+".new");
     {

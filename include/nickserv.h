@@ -25,6 +25,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.51  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -560,55 +564,55 @@ public:
 		i_Unsuspend = i_Forbid = i_Getpass = i_Access =
 		i_Ignore = i_Set = i_NoExpire = i_Lock =
 		i_Unlock = 0; }
-	mDateTime ClearTime()	    { return i_ClearTime; }
-	unsigned long Register()    { return i_Register; }
-	unsigned long Drop()	    { return i_Drop; }
-	unsigned long Link()	    { return i_Link; }
-	unsigned long Unlink()	    { return i_Unlink; }
-	unsigned long Host()	    { return i_Host; }
-	unsigned long Identify()    { return i_Identify; }
-	unsigned long Ghost()	    { return i_Ghost; }
-	unsigned long Recover()	    { return i_Recover; }
-	unsigned long Suspend()	    { return i_Suspend; }
-	unsigned long Unsuspend()   { return i_Unsuspend; }
-	unsigned long Forbid()	    { return i_Forbid; }
-	unsigned long Getpass()	    { return i_Getpass; }
-	unsigned long Access()	    { return i_Access; }
-	unsigned long Ignore()	    { return i_Ignore; }
-	unsigned long Set()	    { return i_Set; }
-	unsigned long NoExpire()    { return i_NoExpire; }
-	unsigned long Lock()	    { return i_Lock; }
-	unsigned long Unlock()	    { return i_Unlock; }
+	mDateTime ClearTime()const	{ return i_ClearTime; }
+	unsigned long Register()const	{ return i_Register; }
+	unsigned long Drop()const	{ return i_Drop; }
+	unsigned long Link()const	{ return i_Link; }
+	unsigned long Unlink()const	{ return i_Unlink; }
+	unsigned long Host()const	{ return i_Host; }
+	unsigned long Identify()const	{ return i_Identify; }
+	unsigned long Ghost()const	{ return i_Ghost; }
+	unsigned long Recover()const	{ return i_Recover; }
+	unsigned long Suspend()const	{ return i_Suspend; }
+	unsigned long Unsuspend()const	{ return i_Unsuspend; }
+	unsigned long Forbid()const	{ return i_Forbid; }
+	unsigned long Getpass()const	{ return i_Getpass; }
+	unsigned long Access()const	{ return i_Access; }
+	unsigned long Ignore()const	{ return i_Ignore; }
+	unsigned long Set()const	{ return i_Set; }
+	unsigned long NoExpire()const	{ return i_NoExpire; }
+	unsigned long Lock()const	{ return i_Lock; }
+	unsigned long Unlock()const	{ return i_Unlock; }
     } stats;
 
-    mstring Enforcer_Name()	{ return enforcer_name; }
-    bool Append_Rename()	{ return append_rename; }
-    mstring Suffixes()		{ return suffixes; }
-    unsigned long Expire()	{ return expire; }
-    unsigned long Delay()	{ return delay; }
-    unsigned long Ident()	{ return ident; }
-    unsigned long Release()	{ return release; }
-    unsigned int Passfail()	{ return passfail; }
-    bool DEF_Protect()		{ return def_protect; }
-    bool LCK_Protect()		{ return lck_protect; }
-    bool DEF_Secure()		{ return def_secure; }
-    bool LCK_Secure()		{ return lck_secure; }
-    bool DEF_NoExpire()		{ return def_noexpire; }
-    bool LCK_NoExpire()		{ return lck_noexpire; }
-    bool DEF_NoMemo()		{ return def_nomemo; }
-    bool LCK_NoMemo()		{ return lck_nomemo; }
-    bool DEF_Private()		{ return def_private; }
-    bool LCK_Private()		{ return lck_private; }
-    bool DEF_PRIVMSG()		{ return def_privmsg; }
-    bool LCK_PRIVMSG()		{ return lck_privmsg; }
-    mstring DEF_Language()	{ return def_language; }
-    bool LCK_Language()		{ return lck_language; }
-    unsigned long PicSize()	{ return picsize; }
-    mstring PicExt()		{ return picext; }
+    mstring Enforcer_Name()const	{ return enforcer_name; }
+    bool Append_Rename()const		{ return append_rename; }
+    mstring Suffixes()const		{ return suffixes; }
+    unsigned long Expire()const		{ return expire; }
+    unsigned long Delay()const		{ return delay; }
+    unsigned long Ident()const		{ return ident; }
+    unsigned long Release()const	{ return release; }
+    unsigned int Passfail()const	{ return passfail; }
+    bool DEF_Protect()const		{ return def_protect; }
+    bool LCK_Protect()const		{ return lck_protect; }
+    bool DEF_Secure()const		{ return def_secure; }
+    bool LCK_Secure()const		{ return lck_secure; }
+    bool DEF_NoExpire()const		{ return def_noexpire; }
+    bool LCK_NoExpire()const		{ return lck_noexpire; }
+    bool DEF_NoMemo()const		{ return def_nomemo; }
+    bool LCK_NoMemo()const		{ return lck_nomemo; }
+    bool DEF_Private()const		{ return def_private; }
+    bool LCK_Private()const		{ return lck_private; }
+    bool DEF_PRIVMSG()const		{ return def_privmsg; }
+    bool LCK_PRIVMSG()const		{ return lck_privmsg; }
+    mstring DEF_Language()const		{ return def_language; }
+    bool LCK_Language()const		{ return lck_language; }
+    unsigned long PicSize()const	{ return picsize; }
+    mstring PicExt()const		{ return picext; }
 
-    bool IsStored(mstring in);
-    bool IsLive(mstring in);
-    bool IsLiveAll(mstring in);
+    bool IsStored(mstring in)const;
+    bool IsLive(mstring in)const;
+    bool IsLiveAll(mstring in)const;
     map<mstring,Nick_Stored_t> stored;
     map<mstring,Nick_Live_t> live;
     map<mstring,mDateTime> recovered;

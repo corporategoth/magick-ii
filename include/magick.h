@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.142  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.141  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -304,10 +308,10 @@ public:
 		unsigned int level;
 		unsigned long lagtime;
 	public:
-		bool IsServer(mstring server);
-		triplet<unsigned int,mstring,unsigned int> Server(mstring server);
+		bool IsServer(mstring server)const;
+		triplet<unsigned int,mstring,unsigned int> Server(mstring server)const;
 		vector<mstring> PriorityList(unsigned int pri);
-		size_t Server_size() { return servers.size(); }
+		size_t Server_size()const { return servers.size(); }
 
 		mstring Server_Name()const	{ return server_name; }
 		mstring Server_Desc()const	{ return server_desc; }
@@ -345,22 +349,22 @@ public:
 		unsigned long max_speed;
 		unsigned long sampletime;
 	public:
-		mstring MakePath(mstring in);
-		mstring Pidfile()		    { return MakePath(pidfile); }
-		mstring Logfile()		    { return MakePath(logfile); }
-		mstring Motdfile()		    { return MakePath(motdfile); }
-		mstring Langdir()		    { return MakePath(langdir); }
-		mstring Database()		    { return MakePath(database); }
+		mstring MakePath(mstring in)const;
+		mstring Pidfile()const		    { return MakePath(pidfile); }
+		mstring Logfile()const		    { return MakePath(logfile); }
+		mstring Motdfile()const		    { return MakePath(motdfile); }
+		mstring Langdir()const		    { return MakePath(langdir); }
+		mstring Database()const		    { return MakePath(database); }
 		unsigned int Compression()const	    { return compression; }
-		mstring KeyFile()		    { return MakePath(keyfile); }
+		mstring KeyFile()const		    { return MakePath(keyfile); }
 		bool Encryption()const		    { return encryption; }
-		mstring MemoAttach()		    { return MakePath(memoattach); }
+		mstring MemoAttach()const	    { return MakePath(memoattach); }
 		unsigned long MemoAttachSize()const { return memoattachsize; }
-		mstring Picture()		    { return MakePath(picture); }
+		mstring Picture()const		    { return MakePath(picture); }
 		unsigned long PictureSize()const    { return picturesize; }
-		mstring Public()		    { return MakePath(i_public); }
+		mstring Public()const		    { return MakePath(i_public); }
 		unsigned long PublicSize()const	    { return publicsize; }
-		mstring TempDir()		    { return MakePath(tempdir); }
+		mstring TempDir()const		    { return MakePath(tempdir); }
 		unsigned long TempDirSize()const    { return tempdirsize; }
 		unsigned long Blocksize()const	    { return blocksize; }
 		unsigned long Timeout()const	    { return timeout; }
@@ -388,37 +392,37 @@ public:
 		unsigned long msg_seen_time;
 		unsigned int msg_seen_act;
 	public:
-		unsigned long Server_Relink()	{ return server_relink; }
-		unsigned long Squit_Protect()	{ return squit_protect; }
-		unsigned long Squit_Cancel()	{ return squit_cancel; }
-		unsigned long Cycletime()	{ return cycletime; }
-		unsigned long Savetime()	{ return savetime; }
-		unsigned long Checktime()	{ return checktime; }
-		unsigned long Ping_Frequency()	{ return ping_frequency; }
-		unsigned int Starthresh()	{ return starthresh; }
-		unsigned int Listsize()		{ return listsize; }
-		unsigned int Maxlist()		{ return maxlist; }
-		unsigned int Min_Threads()	{ return min_threads; }
-		unsigned int Low_Water_Mark()	{ return low_water_mark; }
-		unsigned int High_Water_Mark()	{ return high_water_mark; }
-		unsigned long MSG_Seen_Time()	{ return msg_seen_time; }
-		unsigned int MSG_Seen_Act()	{ return msg_seen_act; }
+		unsigned long Server_Relink()const	{ return server_relink; }
+		unsigned long Squit_Protect()const	{ return squit_protect; }
+		unsigned long Squit_Cancel()const	{ return squit_cancel; }
+		unsigned long Cycletime()const		{ return cycletime; }
+		unsigned long Savetime()const		{ return savetime; }
+		unsigned long Checktime()const		{ return checktime; }
+		unsigned long Ping_Frequency()const	{ return ping_frequency; }
+		unsigned int Starthresh()const		{ return starthresh; }
+		unsigned int Listsize()const		{ return listsize; }
+		unsigned int Maxlist()const		{ return maxlist; }
+		unsigned int Min_Threads()const		{ return min_threads; }
+		unsigned int Low_Water_Mark()const	{ return low_water_mark; }
+		unsigned int High_Water_Mark()const	{ return high_water_mark; }
+		unsigned long MSG_Seen_Time()const	{ return msg_seen_time; }
+		unsigned int MSG_Seen_Act()const	{ return msg_seen_act; }
 	} config;
 
 	void ActivateLogger();
 	void DeactivateLogger();
 	void ValidateLogger(ACE_Log_Msg *instance);
-	bool Verbose()		    { return i_verbose; }
-	mstring Services_Dir()	    { return i_services_dir; }
-	mstring Config_File()	    { return files.MakePath(i_config_file); }
-	mstring ProgramName()	    { return i_programname; }
+	bool Verbose()const		{ return i_verbose; }
+	mstring Services_Dir()const	{ return i_services_dir; }
+	mstring Config_File()const	{ return files.MakePath(i_config_file); }
+	mstring ProgramName()const	{ return i_programname; }
 
 	// Current STATES, and switching between them.
 	Magick(int inargc, char **inargv);
 	~Magick();
 	int Start();
-	mDateTime ResetTime()	{ return i_ResetTime; }
-	unsigned int Level()	{ return i_level; }
+	mDateTime ResetTime()const	{ return i_ResetTime; }
+	unsigned int Level()const	{ return i_level; }
 	void LevelUp()
 	{
 	    i_level++;
@@ -439,22 +443,22 @@ public:
 	    servmsg.MSG(on);
 	    commserv.MSG(on);
 	}
-	void Die()		{ ACE_Reactor::instance()->end_event_loop(); }
-	void Shutdown(bool in)	{ i_shutdown = in; }
-	bool Shutdown()		{ return i_shutdown; }
+	void Die()			{ ACE_Reactor::instance()->end_event_loop(); }
+	void Shutdown(bool in)		{ i_shutdown = in; }
+	bool Shutdown()const		{ return i_shutdown; }
 
 	// Streams, etc
-	bool Reconnect()	    { return i_reconnect; }
-	bool GotConnect()	    { return i_gotconnect; }
-	void GotConnect(bool in)    { i_gotconnect = in; }
-	unsigned long LocalHost()   { return i_localhost; }
-	mstring Server()	    { return i_server; }
-	bool Connected()	    { return i_connected; }
-	void Connected(bool in)	    { i_connected = in; }
-	bool Saving()		    { return i_saving; }
+	bool Reconnect()const		{ return i_reconnect; }
+	bool GotConnect()const		{ return i_gotconnect; }
+	void GotConnect(bool in)	{ i_gotconnect = in; }
+	unsigned long LocalHost()const	{ return i_localhost; }
+	mstring Server()const		{ return i_server; }
+	bool Connected()const		{ return i_connected; }
+	void Connected(bool in)		{ i_connected = in; }
+	bool Saving()const		{ return i_saving; }
 	void Disconnect();
 	void send(mstring text);
-	mstring GetKey();
+	mstring GetKey()const;
 	void save_databases();
 	void load_databases();
         Reconnect_Handler rh;
@@ -478,7 +482,7 @@ public:
 	vector<mstring> getHelp(const mstring& nick, const mstring& name);
 	vector<mstring> getHelp(const mstring& name)
 	    { return getHelp("", name); }
-	mstring parseEscapes(const mstring& in);
+
 	void AddCommands(void)
 	{
 	    operserv.AddCommands();

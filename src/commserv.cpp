@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.81  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -885,7 +889,7 @@ CommServ::CommServ()
     messages = true;
 }
 
-bool CommServ::IsList(mstring in)
+bool CommServ::IsList(mstring in)const
 {
     FT("CommServ::IsList", (in));
     RLOCK(("CommServ", "list", in.LowerCase()));

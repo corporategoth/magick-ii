@@ -25,6 +25,10 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.48  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -607,83 +611,83 @@ public:
 		i_Clear = i_Akick = i_Level = i_Access =
 		i_Greet = i_Message = i_Set = i_NoExpire =
 		i_Lock = i_Unlock = 0; }
-	mDateTime ClearTime()	    { return i_ClearTime; }
-	unsigned long Register()    { return i_Register; }
-	unsigned long Drop()	    { return i_Drop; }
-	unsigned long Identify()    { return i_Identify; }
-	unsigned long Suspend()	    { return i_Suspend; }
-	unsigned long Unsuspend()   { return i_Unsuspend; }
-	unsigned long Forbid()	    { return i_Forbid; }
-	unsigned long Getpass()	    { return i_Getpass; }
-	unsigned long Mode()	    { return i_Mode; }
-	unsigned long Topic()	    { return i_Topic; }
-	unsigned long Op()	    { return i_Op; }
-	unsigned long Deop()	    { return i_Deop; }
-	unsigned long Voice()	    { return i_Voice; }
-	unsigned long Devoice()	    { return i_Devoice; }
-	unsigned long Kick()	    { return i_Kick; }
-	unsigned long Anonkick()    { return i_Anonkick; }
-	unsigned long Invite()	    { return i_Invite; }
-	unsigned long Unban()	    { return i_Unban; }
-	unsigned long Clear()	    { return i_Clear; }
-	unsigned long Akick()	    { return i_Akick; }
-	unsigned long Level()	    { return i_Level; }
-	unsigned long Access()	    { return i_Access; }
-	unsigned long Greet()	    { return i_Greet; }
-	unsigned long Message()	    { return i_Message; }
-	unsigned long Set()	    { return i_Set; }
-	unsigned long NoExpire()    { return i_NoExpire; }
-	unsigned long Lock()	    { return i_Lock; }
-	unsigned long Unlock()	    { return i_Unlock; }
+	mDateTime ClearTime()const	    { return i_ClearTime; }
+	unsigned long Register()const    { return i_Register; }
+	unsigned long Drop()const	    { return i_Drop; }
+	unsigned long Identify()const    { return i_Identify; }
+	unsigned long Suspend()const	    { return i_Suspend; }
+	unsigned long Unsuspend()const   { return i_Unsuspend; }
+	unsigned long Forbid()const	    { return i_Forbid; }
+	unsigned long Getpass()const	    { return i_Getpass; }
+	unsigned long Mode()const	    { return i_Mode; }
+	unsigned long Topic()const	    { return i_Topic; }
+	unsigned long Op()const	    { return i_Op; }
+	unsigned long Deop()const	    { return i_Deop; }
+	unsigned long Voice()const	    { return i_Voice; }
+	unsigned long Devoice()const	    { return i_Devoice; }
+	unsigned long Kick()const	    { return i_Kick; }
+	unsigned long Anonkick()const    { return i_Anonkick; }
+	unsigned long Invite()const	    { return i_Invite; }
+	unsigned long Unban()const	    { return i_Unban; }
+	unsigned long Clear()const	    { return i_Clear; }
+	unsigned long Akick()const	    { return i_Akick; }
+	unsigned long Level()const	    { return i_Level; }
+	unsigned long Access()const	    { return i_Access; }
+	unsigned long Greet()const	    { return i_Greet; }
+	unsigned long Message()const	    { return i_Message; }
+	unsigned long Set()const	    { return i_Set; }
+	unsigned long NoExpire()const    { return i_NoExpire; }
+	unsigned long Lock()const	    { return i_Lock; }
+	unsigned long Unlock()const	    { return i_Unlock; }
     } stats;
 
-    bool IsRevengeLevel(mstring level)
+    bool IsRevengeLevel(mstring level)const
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }
-    bool Hide()			{ return hide; }
-    unsigned long Expire()	{ return expire; }
-    unsigned long Delay()	{ return delay; }
-    unsigned int Max_Per_Nick()	{ return max_per_nick; }
-    unsigned int Max_Messages()	{ return max_messages; }
-    mstring DEF_Akick_Reason()	{ return def_akick_reason; }
-    unsigned int Passfail()	{ return passfail; }
-    unsigned long ChanKeep()	{ return chankeep; }
-    mstring DEF_MLock()		{ return def_mlock; }
-    mstring LCK_MLock()		{ return lck_mlock; }
-    unsigned long DEF_Bantime()	{ return def_bantime; }
-    bool LCK_Bantime()	        { return lck_bantime; }
-    unsigned long DEF_Parttime(){ return def_bantime; }
-    bool LCK_Parttime()	        { return lck_bantime; }
-    bool DEF_Keeptopic()	{ return def_keeptopic; }
-    bool LCK_Keeptopic()	{ return lck_keeptopic; }
-    bool DEF_Topiclock()	{ return def_topiclock; }
-    bool LCK_Topiclock()	{ return lck_topiclock; }
-    bool DEF_Private()		{ return def_private; }
-    bool LCK_Private()		{ return lck_private; }
-    bool DEF_Secureops()	{ return def_secureops; }
-    bool LCK_Secureops()	{ return lck_secureops; }
-    bool DEF_Secure()		{ return def_secure; }
-    bool LCK_Secure()		{ return lck_secure; }
-    bool DEF_NoExpire()		{ return def_noexpire; }
-    bool LCK_NoExpire()		{ return lck_noexpire; }
-    bool DEF_Anarchy()		{ return def_anarchy; }
-    bool LCK_Anarchy()		{ return lck_anarchy; }
-    bool DEF_KickOnBan()	{ return def_kickonban; }
-    bool LCK_KickOnBan()	{ return lck_kickonban; }
-    bool DEF_Restricted()	{ return def_restricted; }
-    bool LCK_Restricted()	{ return lck_restricted; }
-    bool DEF_Join()		{ return def_join; }
-    bool LCK_Join()		{ return lck_join; }
-    mstring DEF_Revenge()	{ return def_revenge; }
-    bool LCK_Revenge()		{ return lck_revenge; }
-    long Level_Min()		{ return level_min; }
-    long Level_Max()		{ return level_max; }
+    bool Hide()const			{ return hide; }
+    unsigned long Expire()const	{ return expire; }
+    unsigned long Delay()const	{ return delay; }
+    unsigned int Max_Per_Nick()const	{ return max_per_nick; }
+    unsigned int Max_Messages()const	{ return max_messages; }
+    mstring DEF_Akick_Reason()const	{ return def_akick_reason; }
+    unsigned int Passfail()const	{ return passfail; }
+    unsigned long ChanKeep()const	{ return chankeep; }
+    mstring DEF_MLock()const		{ return def_mlock; }
+    mstring LCK_MLock()const		{ return lck_mlock; }
+    unsigned long DEF_Bantime()const	{ return def_bantime; }
+    bool LCK_Bantime()const	        { return lck_bantime; }
+    unsigned long DEF_Parttime()const{ return def_bantime; }
+    bool LCK_Parttime()const	        { return lck_bantime; }
+    bool DEF_Keeptopic()const	{ return def_keeptopic; }
+    bool LCK_Keeptopic()const	{ return lck_keeptopic; }
+    bool DEF_Topiclock()const	{ return def_topiclock; }
+    bool LCK_Topiclock()const	{ return lck_topiclock; }
+    bool DEF_Private()const		{ return def_private; }
+    bool LCK_Private()const		{ return lck_private; }
+    bool DEF_Secureops()const	{ return def_secureops; }
+    bool LCK_Secureops()const	{ return lck_secureops; }
+    bool DEF_Secure()const		{ return def_secure; }
+    bool LCK_Secure()const		{ return lck_secure; }
+    bool DEF_NoExpire()const		{ return def_noexpire; }
+    bool LCK_NoExpire()const		{ return lck_noexpire; }
+    bool DEF_Anarchy()const		{ return def_anarchy; }
+    bool LCK_Anarchy()const		{ return lck_anarchy; }
+    bool DEF_KickOnBan()const	{ return def_kickonban; }
+    bool LCK_KickOnBan()const	{ return lck_kickonban; }
+    bool DEF_Restricted()const	{ return def_restricted; }
+    bool LCK_Restricted()const	{ return lck_restricted; }
+    bool DEF_Join()const		{ return def_join; }
+    bool LCK_Join()const		{ return lck_join; }
+    mstring DEF_Revenge()const	{ return def_revenge; }
+    bool LCK_Revenge()const		{ return lck_revenge; }
+    long Level_Min()const		{ return level_min; }
+    long Level_Max()const		{ return level_max; }
     long LVL(mstring level);
-    bool IsLVL(mstring level);
-    vector<mstring> LVL();
+    bool IsLVL(mstring level)const;
+    vector<mstring> LVL()const;
 
-    bool IsStored(mstring in);
-    bool IsLive(mstring in);
+    bool IsStored(mstring in)const;
+    bool IsLive(mstring in)const;
     map<mstring,Chan_Stored_t> stored;
     map<mstring,Chan_Live_t> live;
     Part_Handler ph;

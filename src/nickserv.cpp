@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.147  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.146  2000/12/22 08:55:41  prez
 ** Made forbidden entries (chanserv or nickserv) show up as forbidden in
 ** a list (rather than (nick!) or whatever)
@@ -4963,21 +4967,22 @@ void NickServ::RemCommands()
 }
 
 
-bool NickServ::IsLive(mstring in)
+bool NickServ::IsLive(mstring in)const
 {
     FT("NickServ::IsLive", (in));
     bool retval = false;
-    map<mstring, Nick_Live_t>::iterator i;
+    map<mstring, Nick_Live_t>::const_iterator i;
     RLOCK(("NickServ", "live", in.LowerCase()));
     if ((i = live.find(in.LowerCase())) != live.end())
     {
-	if (i->second.Squit() == "")
+	Nick_Live_t *ptr = (Nick_Live_t *) &i->second;
+	if (ptr->Squit() == "")
 	    retval = true;
     }
     RET(retval);
 }
 
-bool NickServ::IsLiveAll(mstring in)
+bool NickServ::IsLiveAll(mstring in)const
 {
     FT("NickServ::IsLiveAll", (in));
     RLOCK(("NickServ", "live", in.LowerCase()));
@@ -4985,7 +4990,7 @@ bool NickServ::IsLiveAll(mstring in)
     RET(retval);
 }
 
-bool NickServ::IsStored(mstring in)
+bool NickServ::IsStored(mstring in)const
 {
     FT("NickServ::IsStored", (in));
     RLOCK(("NickServ", "stored", in.LowerCase()));

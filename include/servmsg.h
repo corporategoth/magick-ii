@@ -25,6 +25,10 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/12/22 19:50:19  prez
+** Made all config options const.  Beginnings of securing all non-modifying
+** commands to const.  also added serviceschk.
+**
 ** Revision 1.20  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -114,16 +118,16 @@ public:
 	    i_ClearTime = Now();
 	    i_Global = i_Credits = i_file_AddDel = i_file_Send =
 	    i_file_Change = i_file_Cancel = 0; }
-	mDateTime ClearTime()		{ return i_ClearTime; }
-	unsigned long Global()		{ return i_Global; }
-	unsigned long Credits()		{ return i_Credits; }
-	unsigned long File_AddDel()	{ return i_file_AddDel; }
-	unsigned long File_Send()	{ return i_file_Send; }
-	unsigned long File_Change()	{ return i_file_Change; }
-	unsigned long File_Cancel()	{ return i_file_Cancel; }
+	mDateTime ClearTime()const		{ return i_ClearTime; }
+	unsigned long Global()const		{ return i_Global; }
+	unsigned long Credits()const		{ return i_Credits; }
+	unsigned long File_AddDel()const	{ return i_file_AddDel; }
+	unsigned long File_Send()const		{ return i_file_Send; }
+	unsigned long File_Change()const	{ return i_file_Change; }
+	unsigned long File_Cancel()const	{ return i_file_Cancel; }
     } stats;
 
-    bool ShowSync() { return showsync; }
+    bool ShowSync()const { return showsync; }
 
     ServMsg();
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; }
