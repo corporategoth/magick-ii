@@ -150,10 +150,10 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 
     if (IsChan(who))
     {
-	if (!Parent->nickserv.IsStored(who))
+	if (!Parent->chanserv.IsStored(who))
 	{
 	    send(mynick, nick,
-		"Nickname " + who + " is not registered, cannot send memo.");
+		"Channel " + who + " is not registered, cannot send memo.");
 	    return;
 	}
 
