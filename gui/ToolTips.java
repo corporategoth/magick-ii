@@ -296,7 +296,11 @@ public class ToolTips
 	{ "ChanServ/DELAY",		"Delay between allowing channels to be registered by one user." },
 	{ "ChanServ/MAX_PER_NICK",	"Maximum amount of channels that may have a single user listed as\n" +
 					"their founder or co-founder." },
+	{ "ChanServ/OVR_PER_NICK",	"Committees that, if a user is a member of any of them, are not subject\n" +
+					"to the maximum amount of channels limit." },
 	{ "ChanServ/MAX_MESSAGES",	"Maximum number of on-join messages a channel may have." },
+	{ "ChanServ/OVR_MESSAGES",	"Committees that, if a user is a member of any of them, are not subject\n" +
+					"to the maximum amount of on-join messages limit." },
 	{ "ChanServ/DEF_AKICK",		"Default reason for AutoKicking someone if none is supplied." },
 	{ "ChanServ/PASSFAIL",		"Amount of times a user is allowed to fail identifying to a single\n" +
 					"channel before being killed for too many failed attempts." },
@@ -394,6 +398,8 @@ public class ToolTips
 	{ "OperServ/HTM_ON_GAP",	"Amount of time to set the HTM gap to when it is manually switched on." },
 
 	{ "CommServ/MAX_LOGON",		"Maximum number of logon messages a committee may add." },
+	{ "CommServ/OVR_LOGON",		"Committees that, are not subject to the maximum number of logon messages\n" +
+					"limit." },
 	{ "CommServ/OPTIONS",		"Default setting for all options settable on a committee, and\n" +
 					"whether this setting should be changable by the committee head." },
 	{ "CommServ/COMMITTEES",	"Names, default settings, and modes to set on members for all\n" +

@@ -119,32 +119,32 @@ public class OperServ extends TabbedPane
 	addToGridBag(gb, gc, "AutoKills", new JLabel(" "));
 	addToGridBag(gb, gc, "Clone Protection", new JLabel(" "));
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Default Expiry", def_expire);
+	addToGridBag(gb, gc, "Default Expiry Time", def_expire);
 	addToGridBag(gb, gc, "Clone Limit", clone_limit);
 
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "OPER Expire", expire_oper);
+	addToGridBag(gb, gc, "Maximum OPER Expiry Time", expire_oper);
 	addToGridBag(gb, gc, "Maximum Override", max_clone);
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "ADMIN Expire", expire_admin);
+	addToGridBag(gb, gc, "Maximum ADMIN Expiry Time", expire_admin);
 	addToGridBag(gb, gc, "AKILL Trigger", clone_trigger);
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "SOP Expire", expire_sop);
+	addToGridBag(gb, gc, "Maximum SOP Expiry Time", expire_sop);
 	addToGridBag(gb, gc, "Trigger Memory", clone_time);
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "SADMIN Expire", expire_sadmin);
+	addToGridBag(gb, gc, "Maximum SADMIN Expiry Time", expire_sadmin);
 	addToGridBag(gb, gc, "AKILL Time", clone_akilltime);
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "Reject Match", akill_reject);
+	addToGridBag(gb, gc, "Reject Match Percentage", akill_reject);
 	addGridBagLine(gb, gc);
 
-	addToGridBagLine(gb, gc, "Clone KILL reason", def_clone);
-	addToGridBagLine(gb, gc, "Clone AKILL reason", clone_akill);
+	addToGridBagLine(gb, gc, "Clone KILL Reason", def_clone);
+	addToGridBagLine(gb, gc, "Clone AKILL Reason", clone_akill);
 
 	addToGridBag(gb, gc, "Ignore Time", ignore_time);
 	addToGridBag(gb, gc, "Flood Time", flood_time);
@@ -156,11 +156,11 @@ public class OperServ extends TabbedPane
 	addToGridBag(gb, gc, "Log Ignored", log_ignore);
 	addGridBagLine(gb, gc);
 	addToGridBagLine(gb, gc, "Ignore Method", ignore_method);
-	addToGridBag(gb, gc, "Initial HTM gap", init_htm_gap);
-	addToGridBag(gb, gc, "Initial HTM threshold", init_htm_thresh);
+	addToGridBag(gb, gc, "Initial HTM Gap", init_htm_gap);
+	addToGridBag(gb, gc, "Initial HTM Threshold", init_htm_thresh);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Maximum HTP gap", max_htm_gap);
-	addToGridBag(gb, gc, "HTM ON gap", htm_on_gap);
+	addToGridBag(gb, gc, "Maximum HTM Gap", max_htm_gap);
+	addToGridBag(gb, gc, "HTM ON Gap", htm_on_gap);
 	addGridBagLine(gb, gc);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 

@@ -83,13 +83,13 @@ public class MemoServ extends TabbedPane
 	GridBagConstraints gc = createStandardConstraints();
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
-	addToGridBag(gb, gc, "In Flight time", inflight);
-	addToGridBag(gb, gc, "Send delay", delay);
+	addToGridBag(gb, gc, "In Flight Time", inflight);
+	addToGridBag(gb, gc, "Send Delay", delay);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Stored Files", files);
 	addToGridBag(gb, gc, "File Size", filesize);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Expiration time", news_expire);
+	addToGridBag(gb, gc, "Expiration Time", news_expire);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();

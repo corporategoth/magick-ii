@@ -2749,7 +2749,9 @@ bool Magick::get_config_values()
 	chanserv.delay = FromHumanTime("30s");
 
     in.Read(ts_ChanServ + "MAX_PER_NICK", chanserv.max_per_nick, 15U);
+    in.Read(ts_ChanServ + "OVR_PER_NICK", chanserv.ovr_per_nick, "");
     in.Read(ts_ChanServ + "MAX_MESSAGES", chanserv.max_messages, 15U);
+    in.Read(ts_ChanServ + "OVR_MESSAGES", chanserv.ovr_messages, "");
     in.Read(ts_ChanServ + "DEF_AKICK", chanserv.def_akick_reason, "You have been banned from channel");
     in.Read(ts_ChanServ + "PASSFAIL", chanserv.passfail, 5U);
     in.Read(ts_ChanServ + "CHANKEEP", value_mstring, "15s");
@@ -2976,6 +2978,7 @@ bool Magick::get_config_values()
 	operserv.htm_on_gap = FromHumanTime("30s");
 
     in.Read(ts_CommServ + "MAX_LOGON", commserv.max_logon, 5U);
+    in.Read(ts_ChanServ + "OVR_LOGON", commserv.ovr_logon, "");
     RemCommands();
     in.Read(ts_CommServ + "DEF_OPENMEMOS", value_bool, true);
     commserv.def.OpenMemos = value_bool;

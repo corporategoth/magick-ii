@@ -184,7 +184,8 @@ class CommServ : public mBase, public SXP::IPersistObj
     friend class Magick;
 
 private:
-    unsigned int max_logon;
+    unsigned int max_logon;	// Maximum amount of logon msgs.
+    mstring ovr_logon;		// Override committees for max_messages
 
     class
     {
@@ -307,6 +308,10 @@ public:
     unsigned int Max_Logon() const
     {
 	return max_logon;
+    }
+    mstring Ovr_Logon() const
+    {
+	return ovr_logon;
     }
     bool DEF_Private() const
     {

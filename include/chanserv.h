@@ -564,7 +564,9 @@ private:
     unsigned long expire;	// How long to keep channels
     unsigned long delay;	// How long between registrations
     unsigned int max_per_nick;	// Max channels per nickname
+    mstring ovr_per_nick;	// Override committees for max_per_nick
     unsigned int max_messages;	// Max messages per channel
+    mstring ovr_messages;	// Override committees for max_messages
     mstring def_akick_reason;	// Default AKICK reason
     unsigned int passfail;	// How many times they can fail ident
     unsigned long chankeep;	// Time to keep channel after AKICK
@@ -829,7 +831,15 @@ public:
     {
 	return max_per_nick;
     }
+    mstring Ovr_Per_Nick() const
+    {
+	return max_per_nick;
+    }
     unsigned int Max_Messages() const
+    {
+	return max_messages;
+    }
+    mstring Ovr_Messages() const
     {
 	return max_messages;
     }

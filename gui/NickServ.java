@@ -229,14 +229,14 @@ public class NickServ extends TabbedPane
 	GridBagConstraints gc = createStandardConstraints();
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
-	addToGridBag(gb, gc, "Registration delay", delay);
-	addToGridBag(gb, gc, "Time to identify", ident);
+	addToGridBag(gb, gc, "Registration Delay", delay);
+	addToGridBag(gb, gc, "Time To Identify", ident);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Expiration time", expire);
-	addToGridBag(gb, gc, "Time to keep nick", release);
+	addToGridBag(gb, gc, "Expiration Time", expire);
+	addToGridBag(gb, gc, "Time To Keep Nickname", release);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Allowed pass fails", passfail);
-	addToGridBag(gb, gc, "Nick Action", append_rename);
+	addToGridBag(gb, gc, "Maximum Password Failures", passfail);
+	addToGridBag(gb, gc, "Nickname Action", append_rename);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Picture Size", picsize);
 	gc.anchor = gc.EAST;

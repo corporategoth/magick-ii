@@ -2,7 +2,7 @@
 ; (c) 1997-2002 Preston A. Elder <prez@magick.tm>
 ; (c) 1998-2002 William King <ungod@magick.tm>
 ;
-; English Log Output Language File
+; Example Log Output Language File
 ; Translated By: Preston A. Elder <prez@magick.tm>
 ; Please also edit the COMMANDLINE/TRANSLATED token
 ; to reflect the above (this is displayed on startup).
@@ -41,8 +41,11 @@
 [COMMANDLINE]
 TRANSLATED       =Preston A. Elder <prez@magick.tm>
 UNKNOWN_OPTION   =Unknown option --config, ignored.
+UNKNOWN_PARAM    =Unknown parameter junk for option --service.
 NEEDPARAM        =Option --config requires a parameter.
 MUSTBENUMBER     =Parameter for --level must be a positive number.
+MUSTHAVEDIGITS   =Parameter for --umask must be 3 digits between 0 and 7 (inclusive).
+INCORRECT_OS     =The --service option is only available on Windows NT based operating systems.
 TIMEORZERO       =Time value specified is invalid or zero, on value --check.
 VALUETOOHIGH     =Value specified for --compress must be below or equal to 9.
 NO_CFG_FILE      =Could not read config file magick.ini, aborting.
@@ -56,9 +59,14 @@ ONEOPTION        =You may only specify one parameter after a group of options.
 TRACE_SYNTAX     =Parameter for --trace must be in the format of TYPE:LEVEL
 ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.
 CFG_SYNTAX       =Configuration token "REMOTE_1" contains a syntax error or invalid data.
-UNKNOWN_PROTO    =Unknown protocol identifier 100, default (0) used.
+UNKNOWN_PROTO    =Error processing protocol file ircd/ircd.rfc1459.ini, default used.
+UNKNOWN_AKILL    =Akill type specfied in protocol definition file does not exist.
+UNKNOWN_SIGNON   =Signon type specfied in protocol definition file does not exist.
+START_CONVERT    =Converting and loading foreign databases ...
 START_LANG       =Loading default language file ...
 START_FORK       =Spawning into background ...
+START_NOFORK     =Cannot spawn into background, running in foreground.\n\
+                  Closing this window will terminate execution.
 START_EVENTS     =Starting events engine ...
 START_CALIBRATE  =Calibrating thread thresholds ...
 START_COMPLETE   =Magick 2.0 startup procedure complete.
@@ -70,7 +78,7 @@ STOP_COMPLETE    =Magick 2.0 shutdown procedure complete.
 ;
 [NICKSERV]
 REGISTER         =PreZ!prez@some.isp.com registered nickname PreZ.
-DROP             =PreZ!prez@some.isp.com droped nickname PreZ (2 slaves).
+DROP             =PreZ!prez@some.isp.com dropped nickname PreZ (2 slaves).
 LINK             =PreZ!prez@some.isp.com linked nickname Saidin to PreZ.
 UNLINK           =PreZ!prez@some.isp.com unlinked nickname Saidin from PreZ.
 HOST             =PreZ!prez@some.isp.com changed their host nickname from PreZ to Saidin.
@@ -82,6 +90,7 @@ SUSPEND          =PreZ!prez@some.isp.com suspended nickname BadGuy for Doing som
 UNSUSPEND        =PreZ!prez@some.isp.com unsuspended nickname BadGuy.
 FORBID           =PreZ!prez@some.isp.com forbade nickname BadName from being registered.
 GETPASS          =PreZ!prez@some.isp.com retrieved the password for nickname SomeUser (HostUser).
+SETPASS          =PreZ!prez@some.isp.com reset the password for nickname SomeUser (HostUser).
 ACCESS_ADD       =PreZ!prez@some.isp.com added hostmask *prez@other.isp.com to nickname PreZ.
 ACCESS_DEL       =PreZ!prez@some.isp.com removed hostmask *prez@other.isp.com from nickname PreZ.
 IGNORE_ADD       =PreZ!prez@some.isp.com added nickname BadGuy to the ignore list for nickname PreZ.
@@ -99,16 +108,19 @@ UNLOCK           =PreZ!prez@some.isp.com unlocked the value of PRIVATE for nickn
 ;
 [CHANSERV]
 REGISTER         =PreZ!prez@some.isp.com registered channel #magick.
-DROP             =PreZ!prez@some.isp.com droped channel #magick (PreZ).
+DROP             =PreZ!prez@some.isp.com dropped channel #magick (PreZ).
 IDENTIFY         =PreZ!prez@some.isp.com identified as founder for channel #magick.
 IDENTIFY_FAILED  =PreZ!prez@some.isp.com failed identification for channel #magick.
 SUSPEND          =PreZ!prez@some.isp.com suspended channel #badchan for being bad.
 UNSUSPEND        =PreZ!prez@some.isp.com unsuspended channel #badchan.
 FORBID           =PreZ!prez@some.isp.com forbade channel #badchan from being registered.
 GETPASS          =PreZ!prez@some.isp.com retrieved the password for channel #somechan (SomeFounder).
+SETPASS          =PreZ!prez@some.isp.com reset the password for channel #magick (SomeFounder).
 MODE             =PreZ!prez@some.isp.com changed mode "+s" on channel #magick with the MODE command.
 OP               =PreZ!prez@some.isp.com oped PreZ in channel #magick with the OP command.
 DEOP             =PreZ!prez@some.isp.com deoped PreZ in channel #magick with the DEOP command.
+HALFOP           =PreZ!prez@some.isp.com half oped PreZ in channel #magick with the HALFOP command.
+DEHALFOP         =PreZ!prez@some.isp.com de-half oped PreZ in channel #magick with the DEHALFOP command.
 VOICE            =PreZ!prez@some.isp.com voiced PreZ in channel #magick with the VOICE command.
 DEVOICE          =PreZ!prez@some.isp.com devoiced PreZ in channel #magick with the DEVOICE command.
 TOPIC            =PreZ!prez@some.isp.com set the topic on #magick with the TOPIC command.
@@ -118,6 +130,7 @@ INVITE           =PreZ!prez@some.isp.com invited PreZ to channel #magick with th
 UNBAN            =PreZ!prez@some.isp.com unbanned PreZ from channel #magick with the UNBAN command.
 COMMAND          =PreZ!prez@some.isp.com executed the CLEAR ALL command for channel #magick.
 LEVEL            =PreZ!prez@some.isp.com set the level of AUTOOP to 10 for channel #magick.
+LEVEL_ALL        =PreZ!prez@some.isp.com reset all levels for channel #magick.
 ACCESS_ADD       =PreZ!prez@some.isp.com added SomeUser to the access list for channel #magick at level 10.
 ACCESS_CHANGE    =PreZ!prez@some.isp.com changed SomeUser on the access list of channel #magick to level 5.
 ACCESS_DEL       =PreZ!prez@some.isp.com removed SomeUser from the access list for channel #magick.
@@ -150,7 +163,7 @@ GET              =PreZ!prez@some.isp.com received a file attachment (otherfile.e
 ;
 [COMMSERV]
 ADD              =PreZ!prez@some.isp.com created a new committee called MAGICK-BETA with MrLame as its head.
-DEL              =PreZ!prez@some.isp.com deleted committee MAGICK-BETA.
+DEL              =PreZ!prez@some.isp.com deleted committee MAGICK-BETA (2 subcomittees).
 MEMO             =PreZ!prez@some.isp.com sent a memo to all members of committee MAGICK-BETA.
 MEMBER_ADD       =PreZ!prez@some.isp.com added nickname SomeUser to committee MAGICK-BETA.
 MEMBER_DEL       =PreZ!prez@some.isp.com removed nickname SomeUser from committee MAGICK-BETA.
@@ -185,7 +198,8 @@ KILL             =PreZ!prez@some.isp.com silently killed nickname BadGuy with "c
 HIDE             =PreZ!prez@some.isp.com has changed the hostname of nickname PreZ to hidden.isp.com.
 PING             =PreZ!prez@some.isp.com triggered server pings manually.
 UPDATE           =PreZ!prez@some.isp.com triggered database update manually.
-SHUTDOWN         =PreZ!prez@some.isp.com REQUESTED A SHUTDOWN OF SERVICES.
+SHUTDOWN         =PreZ!prez@some.isp.com REQUESTED A SHUTDOWN OF SERVICES (Coz I can).
+RESTART          =PreZ!prez@some.isp.com REQUESTED A RESTART OF SERVICES (Coz I can).
 RELOAD           =PreZ!prez@some.isp.com reloaded the services configuration file.
 UNLOAD           =PreZ!prez@some.isp.com unloaded language ENGLISH.
 JUPE             =PreZ!prez@some.isp.com juped server bad.server.com (laggy server).
@@ -225,6 +239,9 @@ AKICK            =Kicked user BadGuy from channel #magick for triggering AKICK (
 RESTRICTED       =Kicked user BadGuy from restricted channel #somechan.
 NEW_THREAD       =Starting new thread to handle excess load.
 KILL_THREAD      =Killing thread, not enough work to warrant it.
+NEW_THREAD_FAIL  =Failed to create new thread.
+MAX_THREADS      =Maximum number of threads reached, cannot start a new one.
+NETSYNCED        =Network synchronised in $1 seconds.
 
 ;
 ; These are errors that come from system based
@@ -252,11 +269,17 @@ LOCK_OPEN        =Failed to open READ lock for NickServ::live.
 LOCK_ACQUIRE     =Failed to acquire READ lock for NickServ::live.
 LOCK_RELEASE     =Failed to release READ lock for NickServ::live.
 LOCK_DUP         =Duplicate MUTEX lock MessageQueue detected where only 1 allowed!
-THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
+STAGE_FAIL       =Could not create/validate a stage in load or save process, skipping.
+STAGE_FAIL_ABORT =Could not create/validate a stage in load or save process, aborting.
+IPADDR_SERVER    =Unable to determine remote server address (attempted [127.0.0.1]:6667).
+IPADDR_BIND      =Unable to determine local binding address (attempted [127.0.0.1]:7666).
+THREAD_DEAD      =Non-processing worker thread detected - attempting to stop thread!
 THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
+THREAD_DEAD_MAIN =The main thread has stopped processing, shutting down!
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 
 [EXCEPTIONS]
+MAGICK           =Exception - Thread $1 could not obtain Magick instance.
 GENERIC          =Exception - Memo:Nick:Add:Blank
 GENERIC1         =Exception - Memo:Nick:Get:NotFound - PreZ
 GENERIC2         =Exception - Memo:NickMemo:Get:NotFound - PreZ/3
@@ -279,12 +302,12 @@ KILL_CLONE       =Clone protection triggered for PreZ!prez@some.isp.com, killing
 KILL_AKILL       =Killing user PreZ!prez@some.isp.com on auto kill list $2 ($3).
 KILL_UNKNOWN     =Killed unknown user PreZ.
 NOVALIDSERVERS   =Magick aborting, no valid servers available to connect to!
-CONNECTING       =Connecting to server 127.0.0.1:6667 ...
-CONNECTED        =Connection established and authenticated to server hub.network.com.
-WRONGPASS        =Password mismatch connecting to server hub.network.com, skipping.
-WEAREBANNED      =We are k-lined from server hub.network.com, skipping.
-REFUSED          =Connection to server 127.0.0.1:6667 refused.
-CLOSED           =Connection to server 127.0.0.1 closed.
+CONNECTING       =Connecting to server [127.0.0.1]:6667 ...
+CONNECTED        =Connection established and authenticated to server [127.0.0.1]:6667.
+WRONGPASS        =Password mismatch connecting to server [127.0.0.1]:6667, skipping.
+WEAREBANNED      =We are k-lined from server [127.0.0.1]:6667, skipping.
+REFUSED          =Connection to server [127.0.0.1]:6667 refused.
+CLOSED           =Connection to server [127.0.0.1]:6667 closed.
 SERVER_MSG       =SERVER MESSAGE (GNOTICE): Server services.network.com has linked to network
 LINK             =Server server.network.com has linked to the network via. hub.network.com.
 INVALIDLINK      =Server server.network.com has been SQUIT from hub.network.com as it is not allowed!
@@ -304,9 +327,11 @@ DCC_CANCEL       =DCC ID 00000001 failed to complete successfully.
 ; These are errors (of varying severity) that we may encounter.
 ;
 [ERROR]
+SEQUENCE         =Execution sequence invalid (4 may not follow 1).
 REQ_BYNONUSER    =KILL command requested by non-existent user NotOnline.
 REQ_BYNONSERVICE =KILL command requested by non-service NotAService.
 REQ_FORNONUSER   =KILL command requested by NickServ for non-existent user NotOnline.
+REQ_TOSERVICE    =PRIVMSG command requested by PreZ to services user NickServ.
 REQ_TOUSER       =NICK command requested by NickServ to existing user ChanServ.
 REQ_FORNONCHAN   =INVITE command requested by ChanServ for non-existent channel #notchan.
 REQ_FORNONSERVER =SVSNOOP command requested by OperServ for non-existent server nonserv.network.com.
@@ -321,7 +346,7 @@ REC_FORNONSERVER =Received SERVER from server.network.com for non-existent serve
 DUP_CHAN         =Duplicate JOIN received from PreZ for channel #magick.
 MODE_INEFFECT    =MODE change +s received from PreZ for #magick that is already in effect.
 MODE_NOTINCHAN   =MODE change +o received from PreZ for SomeUser who is not in channel #magick.
-FOUNDER_NOTREGD  =Channel #badchan has a founder of BadGuy who is not registered (channel droped).
+FOUNDER_NOTREGD  =Channel #badchan has a founder of BadGuy who is not registered (channel dropped).
 HOST_NOTREGD     =Nickname PreZ was listed as the host of Saidin, but does not exist (rectified)!
 SLAVE_NOTREGD    =Nickname Saidin was listed as a slave of PreZ, but does not exist (rectified)!
 KEYMISMATCH      =Channel key mismatch (Key1 | Key2) for channel #magick from PreZ.
@@ -334,5 +359,6 @@ DB_NODECRYPT     =Decryption of database failed (usually because the database is
 DB_NODECOMPRESS  =Decompression of databases failed (usually because the wrong key was used).
 DB_NOSANITY      =Database failed sanity check (usually because the wrong database version is used).
 DB_NOPARSE       =Failed to parse databases (internal data structure is incorrect!).
+WRONG_PASS_TYPE  =Hashed (one-way) passwords found - this binary does not support them!
 KEY_CORRUPT      =Keyfile magick.ini failed validation checks (requires regeneration) - NOT USED!
 EXCEPTION_CAUGHTUNHANDLED = Caught an unhandled exception in file $1 line $2, this should be reported to the developers ASAP.

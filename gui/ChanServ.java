@@ -40,7 +40,7 @@ public class ChanServ extends TabbedPane
     private JCheckBox hide, lck_bantime, lck_parttime, lck_revenge;
     private JFormattedTextField expire, delay, max_per_nick, max_messages,
 		passfail, chankeep, def_bantime, def_parttime, level_max, level_min;
-    private JTextField def_akick, def_mlock, lck_mlock;
+    private JTextField def_akick, def_mlock, lck_mlock, ovr_per_nick, ovr_messages;
     private JComboBox def_revenge;
 
     private final String[] optnames = {
@@ -332,7 +332,9 @@ public class ChanServ extends TabbedPane
 	expire = createFormattedTextField("EXPIRE", 4, new TimeFormat(), "2w", true);
 	delay = createFormattedTextField("DELAY", 4, new TimeFormat(), "30s", true);
 	max_per_nick = createFormattedTextField("MAX_PER_NICK", 3, new NumberRangeFormat(0, -1), "15", true);
+	ovr_per_nick = createTextField("OVR_PER_NICK", 20, "", true);
 	max_messages = createFormattedTextField("MAX_MESSAGES", 3, new NumberRangeFormat(0, -1), "15", true);
+	ovr_messages = createTextField("OVR_PER_NICK", 20, "", true);
 	def_akick = createTextField("DEF_AKICK", 30, "You have been banned from channel", true);
 	passfail = createFormattedTextField("PASSFAIL", 2, new NumberRangeFormat(0, -1), "5", true);
 	chankeep = createFormattedTextField("CHANKEEP", 4, new TimeFormat(), "15s", true);
@@ -385,34 +387,37 @@ public class ChanServ extends TabbedPane
 	GridBagConstraints gc = createStandardConstraints();
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
-	addToGridBag(gb, gc, "Registration delay", delay);
+	addToGridBag(gb, gc, "Registration Delay", delay);
 	addToGridBag(gb, gc, "Hide", hide);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Expiration time", expire);
-	addToGridBag(gb, gc, "Keep time", chankeep);
+	addToGridBag(gb, gc, "Expiration Time", expire);
+	addToGridBag(gb, gc, "Keep Time", chankeep);
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "Maximum per nickname", max_per_nick);
-	addToGridBag(gb, gc, "Pass Fails", passfail);
+	addToGridBag(gb, gc, "Maximum Per Nickname Override", ovr_per_nick);
+	addToGridBag(gb, gc, "Maximum Per Nickname", max_per_nick);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Maximum on-joins", max_messages);
+	addToGridBag(gb, gc, "Maximum On-joins Override", ovr_messages);
+	addToGridBag(gb, gc, "Maximum On-joins", max_messages);
+	addGridBagLine(gb, gc);
+	addToGridBag(gb, gc, "Maximum Pass Failures", passfail);
 	addGridBagLine(gb, gc);
 	addToGridBagLine(gb, gc, "Default AutoKick", def_akick);
 	addToGridBag(gb, gc, "Default ModeLock", def_mlock);
 	addToGridBag(gb, gc, "Locked", lck_mlock);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Default Ban time", def_bantime);
+	addToGridBag(gb, gc, "Default Ban Time", def_bantime);
 	addToGridBag(gb, gc, "Locked", lck_bantime);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Default Part time", def_parttime);
+	addToGridBag(gb, gc, "Default Part Time", def_parttime);
 	addToGridBag(gb, gc, "Locked", lck_parttime);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Default Revenge level", def_revenge);
+	addToGridBag(gb, gc, "Default Revenge Level", def_revenge);
 	addToGridBag(gb, gc, "Locked", lck_revenge);
 	addGridBagLine(gb, gc);
 	addToGridBagTable(gb, gc, "Default Options", options);
-	addToGridBag(gb, gc, "Minimum level", level_min);
-	addToGridBag(gb, gc, "Maximum level", level_max);
+	addToGridBag(gb, gc, "Minimum Level", level_min);
+	addToGridBag(gb, gc, "Maximum Level", level_max);
 	addGridBagLine(gb, gc);
 	addToGridBagTable(gb, gc, "Access Levels", levels);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
@@ -436,8 +441,10 @@ public class ChanServ extends TabbedPane
 	rv += "DELAY = " + delay.getText() + "\n";
 	if (!isEditValid(max_per_nick)) throw new DataFormatException("ChanServ/MAX_PER_NICK");
 	rv += "MAX_PER_NICK = " + max_per_nick.getText() + "\n";
+	rv += "OVR_PER_NICK = " + ovr_per_nick.getText() + "\n";
 	if (!isEditValid(max_messages)) throw new DataFormatException("ChanServ/MAX_MESSAGES");
 	rv += "MAX_MESSAGES = " + max_messages.getText() + "\n";
+	rv += "OVR_MESSAGES = " + ovr_messages.getText() + "\n";
 	rv += "DEF_AKICK = " + def_akick.getText() + "\n";
 	if (!isEditValid(passfail)) throw new DataFormatException("ChanServ/PASSFAIL");
 	rv += "PASSFAIL = " + passfail.getText() + "\n";
@@ -489,7 +496,9 @@ public class ChanServ extends TabbedPane
 	setFmtField(expire, data, "ChanServ/EXPIRE");
 	setFmtField(delay, data, "ChanServ/DELAY");
 	setFmtField(max_per_nick, data, "ChanServ/MAX_PER_NICK");
+	ovr_per_nick.setText(data.getValue("ChanServ/OVR_PER_NICK"));
 	setFmtField(max_messages, data, "ChanServ/MAX_MESSAGES");
+	ovr_messages.setText(data.getValue("ChanServ/OVR_MESSAGES"));
 	def_akick.setText(data.getValue("ChanServ/DEF_AKICK"));
 	setFmtField(passfail, data, "ChanServ/PASSFAIL");
 	setFmtField(chankeep, data, "ChanServ/CHANKEEP");

@@ -2241,7 +2241,7 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
     }
     else if (Magick::instance().nickserv.IsLive(dest) && Magick::instance().nickserv.GetLive(dest)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", ("NOTICE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", ("NOTICE", nick, dest));
     }
     else
     {
@@ -2351,7 +2351,7 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
     }
     else if (Magick::instance().nickserv.IsLive(dest) && Magick::instance().nickserv.GetLive(dest)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", ("PRIVMSG", nick));
+	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", ("PRIVMSG", nick, dest));
     }
     else
     {

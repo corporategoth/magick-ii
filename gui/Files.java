@@ -239,39 +239,39 @@ public class Files extends TabbedPane
 	addGridBagLine(gb, gc);
 
 	if (mct.currentDirectory() != null)
-	    addToGridBagButtonLine(gb, gc, "Language Dir", langdir, b_langdir);
+	    addToGridBagButtonLine(gb, gc, "Language Directory", langdir, b_langdir);
 	else
-	    addToGridBagLine(gb, gc, "Language Dir", langdir);
+	    addToGridBagLine(gb, gc, "Language Directory", langdir);
 	addGridBagLine(gb, gc);
 	if (mct.currentDirectory() != null)
-	    addToGridBagButton(gb, gc, "Picture Dir", picture, b_picture);
+	    addToGridBagButton(gb, gc, "Picture Directory", picture, b_picture);
 	else
-	    addToGridBag(gb, gc, "Picture Dir", picture);
+	    addToGridBag(gb, gc, "Picture Directory", picture);
 	addToGridBag(gb, gc, "Size", picture_size);
 	addGridBagLine(gb, gc);
 	if (mct.currentDirectory() != null)
-	    addToGridBagButton(gb, gc, "Memo Attach Dir", memoattach, b_memoattach);
+	    addToGridBagButton(gb, gc, "Memo Attach Directory", memoattach, b_memoattach);
 	else
-	    addToGridBag(gb, gc, "Memo Attach Dir", memoattach);
+	    addToGridBag(gb, gc, "Memo Attach Directory", memoattach);
 	addToGridBag(gb, gc, "Size", memoattach_size);
 	addGridBagLine(gb, gc);
 	if (mct.currentDirectory() != null)
-	    addToGridBagButton(gb, gc, "Public FS Dir", f_public, b_public);
+	    addToGridBagButton(gb, gc, "Public Filesystem Directory", f_public, b_public);
 	else
-	    addToGridBag(gb, gc, "Public FS Dir", f_public);
+	    addToGridBag(gb, gc, "Public FS Directory", f_public);
 	addToGridBag(gb, gc, "Size", public_size);
 	addGridBagLine(gb, gc);
 	if (mct.currentDirectory() != null)
-	    addToGridBagButton(gb, gc, "Temp Dir", tempdir, b_tempdir);
+	    addToGridBagButton(gb, gc, "Temp Directory", tempdir, b_tempdir);
 	else
-	    addToGridBag(gb, gc, "Temp Dir", tempdir);
+	    addToGridBag(gb, gc, "Temp Directory", tempdir);
 	addToGridBag(gb, gc, "Size", tempdir_size);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Block Size", blocksize);
-	addToGridBag(gb, gc, "Min Speed", min_speed);
+	addToGridBag(gb, gc, "Minimum Speed", min_speed);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Timeout", timeout);
-	addToGridBag(gb, gc, "Max Speed", max_speed);
+	addToGridBag(gb, gc, "Maximum Speed", max_speed);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Sample Time", sampletime);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));

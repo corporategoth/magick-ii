@@ -32,11 +32,13 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.table.*;
+import java.util.zip.DataFormatException;
 
 public class CommServ extends TabbedPane
 {
 // private:
     private JFormattedTextField max_logon;
+    private JTextField ovr_logon;
 
     private final String[] optnames = {
 		"SECURE",
@@ -388,6 +390,7 @@ public class CommServ extends TabbedPane
 	super(t);
 
 	max_logon = createFormattedTextField("MAX_LOGON", 3, new NumberRangeFormat(0, -1), "5", true);
+	ovr_logon = createTextField("OVR_LOGON", 20, "", true);
 
 	OptionsTableModel optionsModel = new OptionsTableModel();
 	OptionsTableCellRenderer optionsRenderer = new OptionsTableCellRenderer();
@@ -418,6 +421,7 @@ public class CommServ extends TabbedPane
 	GridBagConstraints gc = createStandardConstraints();
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
+	addToGridBag(gb, gc, "Max Logon Messages Override", ovr_logon);
 	addToGridBag(gb, gc, "Max Logon Messages", max_logon);
 	addGridBagLine(gb, gc);
 	addToGridBagTable(gb, gc, "Default Options", options);
@@ -432,12 +436,14 @@ public class CommServ extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
 	rv += "[CommServ]\n";
+	if (!isEditValid(max_logon)) throw new DataFormatException("CommServ/MAX_LOGON");
 	rv += "MAX_LOGON = " + max_logon.getText() + "\n";
+	rv += "OVR_LOGON = " + ovr_logon.getText() + "\n";
 	CellEditor ce;
 	ce = options.getCellEditor();
 	if (ce != null)
@@ -485,6 +491,7 @@ public class CommServ extends TabbedPane
     {
 	int i;
 	setFmtField(max_logon, data, "CommServ/MAX_LOGON");
+	ovr_logon.setText(data.getValue("CommServ/OVR_LOGON"));
 
 	for (i=0; i<optnames.length; i++)
 	{

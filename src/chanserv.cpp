@@ -870,8 +870,16 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
 
     if (Magick::instance().chanserv.Max_Per_Nick() && nstored->MyChannels() >= Magick::instance().chanserv.Max_Per_Nick())
     {
-	NSEND(mynick, source, "CS_STATUS/TOOMANY");
-	return;
+	unsigned int i;
+	for (i=0; i<Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "); i++)
+	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
+		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
+		break;
+	if (i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
+	{
+	    NSEND(mynick, source, "CS_STATUS/TOOMANY");
+	    return;
+	}
     }
 
     map_entry < Chan_Stored_t > cstored(new Chan_Stored_t(channel, founder, password, desc));
@@ -4828,8 +4836,16 @@ void ChanServ::do_message_Add(const mstring & mynick, const mstring & source, co
 
     if (cstored->Message_size() >= Magick::instance().chanserv.Max_Messages())
     {
-	SEND(mynick, source, "CS_STATUS/MAX_MESSAGES", (channel));
-	return;
+	unsigned int i;
+	for (i=0; i<Magick::instance().chanserv.Ovr_Messages().WordCount(" "); i++)
+	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " ")) &&
+		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " "))->IsOn(source))
+		break;
+	if (i == Magick::instance().chanserv.Ovr_Messages().WordCount(" "))
+	{
+	    SEND(mynick, source, "CS_STATUS/MAX_MESSAGES", (channel));
+	    return;
+	}
     }
 
     cstored->Message_insert(text, source);
@@ -5028,8 +5044,16 @@ void ChanServ::do_set_Founder(const mstring & mynick, const mstring & source, co
 
     if (Magick::instance().chanserv.Max_Per_Nick() && nstored->MyChannels() >= Magick::instance().chanserv.Max_Per_Nick())
     {
-	SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (founder));
-	return;
+	unsigned int i;
+	for (i=0; i<Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "); i++)
+	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
+		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
+		break;
+	if (i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (founder));
+	    return;
+	}
     }
 
     map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);
@@ -5101,8 +5125,16 @@ void ChanServ::do_set_CoFounder(const mstring & mynick, const mstring & source, 
 
     if (Magick::instance().chanserv.Max_Per_Nick() && nstored->MyChannels() >= Magick::instance().chanserv.Max_Per_Nick())
     {
-	SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (founder));
-	return;
+	unsigned int i;
+	for (i=0; i<Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "); i++)
+	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
+		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
+		break;
+	if (i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
+	{
+	    SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (founder));
+	    return;
+	}
     }
 
     map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);

@@ -2,7 +2,7 @@
 ; (c) 1997-2002 Preston A. Elder <prez@magick.tm>
 ; (c) 1998-2002 William King <ungod@magick.tm>
 ;
-; English On-Line Language File
+; Example On-Line Language File
 ; Translated By: Preston A. Elder <prez@magick.tm>
 ; Please also edit the ERR_SYNTAX/TRANSLATED token to
 ; reflect the above (this is displayed when someone
@@ -90,7 +90,7 @@
 [ERR_SYNTAX]
 TRANSLATED         =Preston Elder <prez@magick.tm>
 UNKNOWN_COMMAND    =Unrecognised command \bSOMECOMMAND\b.  Type \b/MSG NickServ HELP\b for help.
-UNKNOWN_OPTION     =Unrecognised option \bSOMEOPTION\b.  Type \b/MSG NickServ HELP SET\b for hezlp.
+UNKNOWN_OPTION     =Unrecognised option \bSOMEOPTION\b.  Type \b/MSG NickServ HELP SET\b for help.
 ACCESS_COMMAND     =Insufficiant access for \bSOMECOMMAND\b command.  Type \b/MSG NickServ HELP\b for help.
 ACCESS_OPTION      =Insufficiant access for \bSOMEOPTION\b command.  Type \b/MSG NickServ HELP SET\b for help.
 NEED_PARAMS        =Insufficient parameters specified for \bREGISTER\b.  Type \b/MSG NickServ HELP REGISTER\b for help.
@@ -117,7 +117,7 @@ MUSTBEHOST         =You may only specify something that would be valid as a host
 ; not fulfilled all the correct criteria to continue.
 ;
 [ERR_SITUATION]
-NOHELP             =Sorry, there is no help available for BLAH.
+NOHELP             =Sorry, there is no help available for \bBLAH\b.
 NOSERVICE          =Service BlahServ does not exist.
 ONYOURSELF         =You may only perform \bIDENTIFY\b on yourself.
 NOTONYOURSELF      =You may not perform \bGHOST\b on yourself.
@@ -238,7 +238,7 @@ FLOOD_TEMP         =BadGuy is FLOODING services.  Placed on temporary ignore.
 FLOOD_PERM         =BadGuy is FLOODING services.  Placed on permanent ignore.
 CHAN_MODE          =PreZ just performed a mode change (+s) on channel #somechan.
 NICK_MODE          =PreZ just performed a mode change (+i) on nickname SomeUser.
-AKILL_ADD          =PreZ just added AKILL on host \b*badguy@bad.isp.com\b for 3 hours (being bad) - 2 clients killed (3.45%).
+AKILL_ADD          =PreZ just added AKILL on host \b*badguy@bad.isp.com\b for 3 hours (being bad) - 2 client(s) killed (3.45%).
 AKILL_EXTEND       =PreZ just extended the AKILL on host \b*badguy@bad.isp.com\b by 5 hours.
 OPERDENY_ADD       =PreZ just added Oper Deny on host \b*!*badoper@bad.isp.com\b.
 QLINE              =PreZ just turned ON a quarantine on nicknames matching \b*Bad*\b.
@@ -497,7 +497,7 @@ SUSPENDFOR         =\           For: being a bad programmer
 EMAIL              =\        E-Mail: prez@magick.tm
 URL                =\      WWW Page: http://www.magick.tm
 ICQ                =\       ICQ UIN: 1234567
-AIM                =\        AIM ID: SomeAIMperson
+AIM                =\      AIM Name: SomeAIMperson
 MSN                =\    MSN E-Mail: someone@hotmail.com
 YAHOO              =\     Yahoo! ID: someuserid
 DESCRIPTION        =\   Description: A chick magnet ...
@@ -516,7 +516,7 @@ PASSWORD           =Password
 EMAIL              =E-Mail Address
 URL                =WWW Page
 ICQ                =ICQ UIN
-AIM                =AIM ID
+AIM                =AIM Name
 MSN                =MSN Passport E-Mail
 YAHOO              =Yahoo! Messenger ID
 DESCRIPTION        =Physical Description
@@ -881,7 +881,7 @@ SHUTDOWN           =Shutting down ...
 RESTART            =Restarting ...
 RELOAD             =Configuration file reloaded.
 RELOAD_FAIL        =WARNING: Could not read configuration file.
-SIGNON             =Signed on all non-active services clients.
+SIGNON             =Signed on all non-active services client(s).
 UNLOAD             =Language ENGLISH has been unloaded.
 JUPE               =Server bad.server.com has been juped.
 ONOFF              =Message services have been turned \bOFF\b.

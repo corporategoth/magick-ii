@@ -101,20 +101,20 @@ public class Config extends TabbedPane
 	GridBagConstraints gc = createStandardConstraints();
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
-	addToGridBag(gb, gc, "Relink time", server_relink);
-	addToGridBag(gb, gc, "SQUIT Protect time", squit_protect);
+	addToGridBag(gb, gc, "Relink Time", server_relink);
+	addToGridBag(gb, gc, "SQUIT Protect Time", squit_protect);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Active Cycle time", cycletime);
-	addToGridBag(gb, gc, "SQUIT Cancel time", squit_cancel);
+	addToGridBag(gb, gc, "Active Cycle Time", cycletime);
+	addToGridBag(gb, gc, "SQUIT Cancel Time", squit_cancel);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Hyperactive Cycle time", checktime);
-	addToGridBag(gb, gc, "Default List size", listsize);
+	addToGridBag(gb, gc, "Hyperactive Cycle Time", checktime);
+	addToGridBag(gb, gc, "Default List Size", listsize);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "DB Save time", savetime);
-	addToGridBag(gb, gc, "Maximum List size", maxlist);
+	addToGridBag(gb, gc, "Database Save Time", savetime);
+	addToGridBag(gb, gc, "Maximum List Size", maxlist);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Heartbeat time", heartbeat_time);
-	addToGridBag(gb, gc, "Server Ping time", ping_frequency);
+	addToGridBag(gb, gc, "Heartbeat Time", heartbeat_time);
+	addToGridBag(gb, gc, "Server Ping Time", ping_frequency);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Minimum Threads", min_threads);
 	addToGridBag(gb, gc, "Low Water Mark", low_water_mark);
@@ -122,10 +122,10 @@ public class Config extends TabbedPane
 	addToGridBag(gb, gc, "Maximum Threads", max_threads);
 	addToGridBag(gb, gc, "High Water Mark", high_water_mark);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "MSG Expire time", msg_seen_time);
+	addToGridBag(gb, gc, "Message Expire Time", msg_seen_time);
 	addToGridBag(gb, gc, "Wildcard Threshold", starthresh);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "MSG Expire Check time", msg_check_time);
+	addToGridBag(gb, gc, "Message Expire Check Time", msg_check_time);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();

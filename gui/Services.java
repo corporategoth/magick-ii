@@ -112,21 +112,21 @@ public class Services extends TabbedPane
 	GridBagConstraints gc = createStandardConstraints();
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
-	addToGridBagLine(gb, gc, "NickServ nicknames", nickserv);
-	addToGridBagLine(gb, gc, "NickServ real name", nickserv_name);
-	addToGridBagLine(gb, gc, "ChanServ nicknames", chanserv);
-	addToGridBagLine(gb, gc, "ChanServ real name", chanserv_name);
-	addToGridBagLine(gb, gc, "MemoServ nicknames", memoserv);
-	addToGridBagLine(gb, gc, "MemoServ real name", memoserv_name);
-	addToGridBagLine(gb, gc, "OperServ nicknames", operserv);
-	addToGridBagLine(gb, gc, "OperServ real name", operserv_name);
-	addToGridBagLine(gb, gc, "CommServ nicknames", commserv);
-	addToGridBagLine(gb, gc, "CommServ real name", commserv_name);
-	addToGridBagLine(gb, gc, "ServMsg nicknames", servmsg);
-	addToGridBagLine(gb, gc, "ServMsg real name", servmsg_name);
-	addToGridBagLine(gb, gc, "Enforcer real name", enforcer_name);
-	addToGridBagLine(gb, gc, "Quit message", quit_message);
-	addToGridBagLine(gb, gc, "Show DB Sync time", showsync);
+	addToGridBagLine(gb, gc, "NickServ Nicknames", nickserv);
+	addToGridBagLine(gb, gc, "NickServ Real Name", nickserv_name);
+	addToGridBagLine(gb, gc, "ChanServ Nicknames", chanserv);
+	addToGridBagLine(gb, gc, "ChanServ Real Name", chanserv_name);
+	addToGridBagLine(gb, gc, "MemoServ Nicknames", memoserv);
+	addToGridBagLine(gb, gc, "MemoServ Real Name", memoserv_name);
+	addToGridBagLine(gb, gc, "OperServ Nicknames", operserv);
+	addToGridBagLine(gb, gc, "OperServ Real Name", operserv_name);
+	addToGridBagLine(gb, gc, "CommServ Nicknames", commserv);
+	addToGridBagLine(gb, gc, "CommServ Real Name", commserv_name);
+	addToGridBagLine(gb, gc, "ServMsg Nicknames", servmsg);
+	addToGridBagLine(gb, gc, "ServMsg Real Name", servmsg_name);
+	addToGridBagLine(gb, gc, "Enforcer Real Name", enforcer_name);
+	addToGridBagLine(gb, gc, "Quit Message", quit_message);
+	addToGridBagLine(gb, gc, "Show DB Sync Time", showsync);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
