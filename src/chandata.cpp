@@ -4803,25 +4803,28 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
 		    if (iter->Entry().IsSameAs(tmp, true))
 			break;
 	    }
-	    else
-		tmp = entry;
+	}
 
-	    // Check if user is on a committee on the acess list ...
-	    if (commstat != C_None && iter == i_Access.end())
+	// Check if user is on a committee on the access list ...
+	if (commstat != C_None && iter == i_Access.end())
+	{
+	    set < entlist_val_t < long > >::iterator iter2 = i_Access.end();
+
+	    for (iter = i_Access.begin(); iter != i_Access.end(); iter++)
 	    {
-		set < entlist_val_t < long > >::iterator iter2 = i_Access.end();
-
-		for (iter = i_Access.begin(); iter != i_Access.end(); iter++)
-		    // It is indeed a committee entry ...
-		    if (iter->Entry() [0u] == '@' && Magick::instance().commserv.IsList(iter->Entry().After("@")))
-			// Verify that we do the right check ...
-			if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(tmp)) ||
-			    (commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(tmp)))
-			    // Update iter2 if we have a higher value
-			    if (iter2 == i_Access.end() || iter->Value() > iter2->Value())
-				iter2 = iter;
-		iter = iter2;
+		// It is indeed a committee entry ...
+		if (iter->Entry() [0u] == '@' && Magick::instance().commserv.IsList(iter->Entry().After("@")))
+		{
+		    if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(entry)) ||
+			(commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(entry)))
+		    {
+			// Update iter2 if we have a higher value
+			if (iter2 == i_Access.end() || iter->Value() > iter2->Value())
+			    iter2 = iter;
+		    }
+		}
 	    }
+	    iter = iter2;
 	}
 
 	// Not exact or host, try either match or live lookup
@@ -4829,11 +4832,11 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
 	{
 	    set < entlist_val_t < long > >::iterator iter2 = i_Access.end();
 
-	    if (entry.Contains("@"))
+	    if (entry.Contains("@") && entry[0u] != '@')
 	    {
 		for (iter = i_Access.begin(); iter != i_Access.end(); iter++)
 		    // Its a hostmask matching what we were passed
-		    if (iter->Entry().Contains("@") && entry.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && iter->Entry()[0u] != '@' && entry.Matches(iter->Entry(), true))
 			// It is more specific that what we have already
 			if (iter2 == i_Access.end() || iter->Entry().Matches(iter2->Entry()))
 			    iter2 = iter;
@@ -4844,7 +4847,7 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
 
 		for (iter = i_Access.begin(); iter != i_Access.end(); iter++)
 		    // Its a hostmask matching the user
-		    if (iter->Entry().Contains("@") && mask.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && iter->Entry()[0u] != '@' && mask.Matches(iter->Entry(), true))
 			// It is more specific that what we have already
 			if (iter2 == i_Access.end() || iter->Entry().Matches(iter2->Entry()))
 			    iter2 = iter;
@@ -5105,28 +5108,26 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
 		    if (iter->Entry().IsSameAs(tmp, true))
 			break;
 	    }
-	    else
-		tmp = entry;
+	}
 
 	    // Check if user is on a committee on the acess list ...
-	    if (commstat != C_None && iter == i_Akick.end())
-	    {
-		for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
-		    if (iter->Entry() [0u] == '@' && Magick::instance().commserv.IsList(iter->Entry().After("@")))
-			if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(tmp)) ||
-			    (commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(tmp)))
-			    break;
-	    }
+	if (commstat != C_None && iter == i_Akick.end())
+	{
+	    for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
+		if (iter->Entry() [0u] == '@' && Magick::instance().commserv.IsList(iter->Entry().After("@")))
+		    if ((commstat == C_IsIn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsIn(entry)) ||
+			(commstat == C_IsOn && Magick::instance().commserv.GetList(iter->Entry().After("@"))->IsOn(entry)))
+			break;
 	}
 
 	// Not exact or host, try either match or live lookup
 	if (iter == i_Akick.end())
 	{
 	    set < entlist_val_t < mstring > >::iterator iter2 = i_Akick.end();
-	    if (entry.Contains("@"))
+	    if (entry.Contains("@") && entry[0u] != '@')
 	    {
 		for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
-		    if (iter->Entry().Contains("@") && entry.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && iter->Entry()[0u] != '@' && entry.Matches(iter->Entry(), true))
 			// It is more specific that what we have already
 			if (iter2 == i_Akick.end() || iter->Entry().Matches(iter2->Entry()))
 			    iter2 = iter;
@@ -5136,7 +5137,7 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
 		mstring mask(Magick::instance().nickserv.GetLive(entry)->Mask(Nick_Live_t::N_U_P_H));
 
 		for (iter = i_Akick.begin(); iter != i_Akick.end(); iter++)
-		    if (iter->Entry().Contains("@") && mask.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && iter->Entry()[0u] != '@' && mask.Matches(iter->Entry(), true))
 			// It is more specific that what we have already
 			if (iter2 == i_Akick.end() || iter->Entry().Matches(iter2->Entry()))
 			    iter2 = iter;
