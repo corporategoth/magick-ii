@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2001/05/13 23:46:28  prez
+** got rid of temp veriable, and revised decryption failure condition
+**
 ** Revision 1.19  2001/05/13 18:45:15  prez
 ** Fixed up the keyfile validation bug, and added more error reporting to
 ** the db load (also made sure it did not hang on certain circumstances).
@@ -417,10 +420,11 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		mDES(reinterpret_cast<unsigned char *>(buffer),
 					reinterpret_cast<unsigned char *>(tmpbuf),
 	    				filesize-1, key1, key2, 0);
-		for(unsigned int i=new_sz-1; tmpbuf[i]==0; i--, new_sz--) ;
 
-		if (tmpbuf != NULL && tmpbuf[filesize-2] == 0)
+		if (tmpbuf != NULL && tmpbuf[filesize-1] == 0)
 		{
+		    while (tmpbuf[new_sz-1] == 0)
+			new_sz--;
 		    if (buffer != NULL)
 			free(buffer);
 		    buffer = tmpbuf;
