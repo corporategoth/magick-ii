@@ -12,19 +12,33 @@ conditions described therein.
 CONTENTS
 ========
 
+Please read the file "AUTHORS" to find out about who
+wrote Magick, and how to be on the testing teams.
+Please read the file "INSTALL" for information about
+how to compile and install Magick on your system.
+Please read the file "ChangeLog" for a summary list
+of changes since the previous release of Magick.
+
 1. DEDICATION
 2. INTRUDUCTION
 3. SUPPORT FILES
 4. OPERATION
 5. FUNCTIONALITY
-6. THE AUTHORS
 
 1. DEDICATION
 =============
 
-Magick is dedicated to the memory of PreZ's] beloved
-sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and
-Ungod's brother Edward Kevin King (Aug 1982 - Nov 1997).
+Magick is dedicated to the memory of PreZ's loving sister,
+Stacey Louise Elder (1st Jan, 1975 - 25th Feb, 1998). She
+has been there for me more than anyone over the years, and I
+was distraught when she died, may her Lord love her as much
+as I did, and keep her safe like I could not. Merry Parting,
+Dear Sister.
+
+Magick is also dedicated to the memory of Ungod's brother,
+Edward Kevin King (28th Aug, 1982 - 21st Nov, 1997), His
+life was short, but his memory is great, never will those
+who knew him forget him.
 
 2. INTRODUCTION
 ===============
@@ -186,8 +200,4 @@ PARAMATER	SHORT	GROUP		OPTION
 
 5. FUNCTIONALITY
 ================
-
-6. THE AUTHORS
-==============
-
 
