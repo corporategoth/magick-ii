@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.64  2000/08/28 10:51:40  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -866,6 +870,16 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 							message.c_str());
 	return;
     }}
+
+    {
+	rusage tmp;
+	ACE_OS::getrusage(RUSAGE_SELF, &tmp);
+	ACE_Time_Value user, sys;
+	user = tmp.ru_utime;
+	sys  = tmp.ru_stime;
+	::send(mynick, source, Parent->getMessage(source, "STATS/USE_CPU"),
+		ToHumanTime(sys.sec()).c_str(), ToHumanTime(user.sec()).c_str());
+    }
 
     { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)

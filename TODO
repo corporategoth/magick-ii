@@ -7,10 +7,6 @@ $Id$
 Feature requests that have been 'approved' by the
 development team to be worked on, and are coming:
 
-- Make magick abort if magick data file presant, but
-  data in it is corrupted (not just start with blank
-  dbases).  This will be an indicator of a bad key.
-
 - Expanded flood protection (eg. nick flood = kill, etc)
 
 - Optional secure server list (auto squit if not listed)

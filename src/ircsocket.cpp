@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.129  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.128  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -226,7 +230,7 @@ int IrcSvcHandler::open(void *in)
     //mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::open", (in));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
-    sock.Bind(&Parent->ircsvchandler->peer(), D_From);
+    sock.Bind(&Parent->ircsvchandler->peer(), D_From, false);
     sock.Resolve(S_IrcServer, Parent->Server());
 
     in_traffic = out_traffic = 0;

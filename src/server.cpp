@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.125  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.124  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -460,8 +464,8 @@ void Protocol::Set(unsigned int in)
 	tokens["LO"] = "LOCOPS";
 	tokens.erase("c");
 	tokens.erase("d");
-	tokens["QL"] = "QLINE";
-	tokens["Uq"] = "UNQLINE";
+	tokens["QL"] = "SQLINE";
+	tokens["Uq"] = "UNSQLINE";
 	tokens["o"] = "OMODE";
 	tokens.erase("p");
 	tokens["s"] = "OPERMOTD";
@@ -948,8 +952,8 @@ void NetworkServ::FlushMsgs(mstring nick)
 		    PRIVMSG(nick, j->third.first,
 				j->third.second);
 		    break;
-		case t_QLINE:
-		    QLINE(nick, j->third.first,
+		case t_SQLINE:
+		    SQLINE(nick, j->third.first,
 				j->third.second);
 		    break;
 		case t_SVSMODE:
@@ -972,8 +976,8 @@ void NetworkServ::FlushMsgs(mstring nick)
 		    TOPIC(nick, j->third.first,
 				j->third.second);
 		    break;
-		case t_UNQLINE:
-		    UNQLINE(nick, j->third.first);
+		case t_UNSQLINE:
+		    UNSQLINE(nick, j->third.first);
 		    break;
 		case t_WALLOPS:
 		    WALLOPS(nick, j->third.first);
@@ -1713,9 +1717,9 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
 }
 
 
-void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
+void NetworkServ::SQLINE(mstring nick, mstring target, mstring reason)
 {
-    FT("NetworkServ::QLINE", (nick, target,reason));
+    FT("NetworkServ::SQLINE", (nick, target,reason));
 
     if (!Parent->server.proto.SVS())
 	return;
@@ -1726,7 +1730,7 @@ void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_QLINE, Now(), triplet<mstring, mstring, mstring>(
+		t_SQLINE, Now(), triplet<mstring, mstring, mstring>(
 		target, reason, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -1734,13 +1738,13 @@ void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"QLINE", nick.c_str());
+		"SQLINE", nick.c_str());
     }
     else
     {
 	raw(":" + nick + " " +
-		((proto.Tokens() && proto.GetNonToken("QLINE") != "") ?
-			proto.GetNonToken("QLINE") : mstring("QLINE")) +
+		((proto.Tokens() && proto.GetNonToken("SQLINE") != "") ?
+			proto.GetNonToken("SQLINE") : mstring("SQLINE")) +
 		" " + target + " :" + reason);
     }
 }
@@ -1936,10 +1940,14 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].AltHost(newhost);
-	raw(":" + mynick + " " +
-		((proto.Tokens() && proto.GetNonToken("SVSHOST") != "") ?
-			proto.GetNonToken("SVSHOST") : mstring("SVSHOST")) +
-		" " + nick + " " + newhost);
+	mstring output;
+	
+	if (proto.Tokens() && proto.GetNonToken("SVSHOST") != "")
+	    output << proto.GetNonToken("SVSHOST");
+	else
+	    output << "SVSHOST";
+	output << " " << nick << " " << newhost << " :" << time(NULL);
+	sraw(output);
     }
 }
 
@@ -2037,9 +2045,9 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 }
 
 
-void NetworkServ::UNQLINE(mstring nick, mstring target)
+void NetworkServ::UNSQLINE(mstring nick, mstring target)
 {
-    FT("NetworkServ::UNQLINE", (nick, target));
+    FT("NetworkServ::UNSQLINE", (nick, target));
 
     if (!Parent->server.proto.SVS())
 	return;
@@ -2050,7 +2058,7 @@ void NetworkServ::UNQLINE(mstring nick, mstring target)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_UNQLINE, Now(), triplet<mstring, mstring, mstring>(
+		t_UNSQLINE, Now(), triplet<mstring, mstring, mstring>(
 		target, "", "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2058,13 +2066,13 @@ void NetworkServ::UNQLINE(mstring nick, mstring target)
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"UNQLINE", nick.c_str());
+		"UNSQLINE", nick.c_str());
     }
     else
     {
 	raw(":" + nick + " " +
-		((proto.Tokens() && proto.GetNonToken("UNQLINE") != "") ?
-			proto.GetNonToken("UNQLINE") : mstring("UNQLINE")) +
+		((proto.Tokens() && proto.GetNonToken("UNSQLINE") != "") ?
+			proto.GetNonToken("UNSQLINE") : mstring("UNSQLINE")) +
 		" " + target);
     }
 }

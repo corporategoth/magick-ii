@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.99  2000/09/06 12:10:14  prez
 ** OOps, fixed compile error with operserv
 **
@@ -1517,7 +1521,7 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (params.WordCount(" ") < 3)
+    if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
 				message.c_str(), mynick.c_str(), message.c_str());
@@ -1525,8 +1529,10 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
     }
 
     mstring target  = params.ExtractWord(2, " ");
-    mstring reason  = params.After(" ", 2);
-    Parent->server.QLINE(mynick, target, reason);
+    mstring reason;
+    if (params.WordCount(" ") > 2)
+	reason = params.After(" ", 2);
+    Parent->server.SQLINE(mynick, target, reason);
     Parent->operserv.stats.i_Qline++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
 		target.c_str(), Parent->getMessage(source, "MISC/ON").c_str());
@@ -1558,7 +1564,7 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
     }
 
     mstring target  = params.ExtractWord(2, " ");
-    Parent->server.UNQLINE(mynick, target);
+    Parent->server.UNSQLINE(mynick, target);
     Parent->operserv.stats.i_Unqline++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
 		target.c_str(), Parent->getMessage(source, "MISC/OFF").c_str());

@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.48  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -287,8 +291,8 @@ private:
     
     enum send_type {
 	t_GLOBOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
-	t_PRIVMSG, t_QLINE, t_SVSMODE, t_SVSNICK,
-	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNQLINE, t_WALLOPS };
+	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
+	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(mstring nick);
 
@@ -324,14 +328,14 @@ public:
     void PART(mstring nick, mstring channel, mstring reason = "");
     void PRIVMSG(mstring nick, mstring dest, mstring text);
     void QUIT(mstring nick, mstring reason = "");
-    void QLINE(mstring nick, mstring target, mstring reason = "");
+    void SQLINE(mstring nick, mstring target, mstring reason = "");
     void RAKILL(mstring host);
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
     void SVSNICK(mstring mynick, mstring nick, mstring newnick);
     void SVSKILL(mstring mynick, mstring nick, mstring reason);
     void SVSHOST(mstring mynick, mstring nick, mstring newhost);
     void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = Now());
-    void UNQLINE(mstring nick, mstring target);
+    void UNSQLINE(mstring nick, mstring target);
     void WALLOPS(mstring nick, mstring message);    
     void KillUnknownUser(mstring user);
     unsigned int SeenMessage(mstring data);

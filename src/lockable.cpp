@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.48  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -455,6 +459,7 @@ void mSocket::init()
     sock = NULL;
     last_error = 0;
     sockid = 0;
+    DestroyMe = false;
 
     unsigned long i;
     MLOCK(("SockMap"));
@@ -494,11 +499,11 @@ mSocket::mSocket(unsigned short port, unsigned long timeout)
     Accept(port, timeout);
 }
 
-mSocket::mSocket(ACE_SOCK_Stream *in, dir_enum direction)
+mSocket::mSocket(ACE_SOCK_Stream *in, dir_enum direction, bool alloc)
 {
     FT("mSocket::mSocket", ("(ACE_SOCK_Stream *) in"));
     init();
-    Bind(in, direction);
+    Bind(in, direction, alloc);
 }
 
 
@@ -521,6 +526,7 @@ void mSocket::operator=(const mSocket &in)
     local = in.local;
     remote = in.remote;
     last_error = in.last_error;
+    DestroyMe = in.DestroyMe;
 #ifdef MAGICK_TRACE_WORKS
     trace = in.trace;
 #endif
@@ -538,10 +544,14 @@ bool mSocket::Connect(ACE_INET_Addr addr, unsigned long timeout)
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
 
     MLOCK(("mSocket", sockid));
+    if (sock != NULL)
+	close();
+
     sock = new ACE_SOCK_Stream;
     if (sock == NULL)
 	RET(false);
 
+    DestroyMe = true;
     ACE_Time_Value tv(timeout);
     ACE_SOCK_Connector tmp;
     int result = tmp.connect(*sock, (ACE_Addr &) addr, timeout ? &tv : 0);
@@ -590,10 +600,14 @@ bool mSocket::Accept(unsigned short port, unsigned long timeout)
     ACE_INET_Addr addr(port, Parent->LocalHost());
 
     MLOCK(("mSocket", sockid));
+    if (sock != NULL)
+	close();
+
     sock = new ACE_SOCK_Stream;
     if (sock == NULL)
 	RET(false);
 
+    DestroyMe = true;
     ACE_Time_Value tv(timeout);
     ACE_SOCK_Acceptor tmp(addr);
     int result = tmp.accept(*sock, NULL, timeout ? &tv : 0);
@@ -618,15 +632,19 @@ bool mSocket::Accept(unsigned short port, unsigned long timeout)
     RET(true);
 }
 
-bool mSocket::Bind(ACE_SOCK_Stream *in, dir_enum direction)
+bool mSocket::Bind(ACE_SOCK_Stream *in, dir_enum direction, bool alloc)
 {
     FT("mSocket::Bind", ("(ACE_SOCK_Stream *) in"));
     if (in == NULL)
 	RET(false);
 
     MLOCK(("mSocket", sockid));
+    if (sock != NULL)
+	close();
+
     sock = in;
     in = NULL;
+    DestroyMe = alloc;
     sock->get_local_addr(local);
     sock->get_remote_addr(remote);
 
@@ -773,7 +791,8 @@ int mSocket::close()
 	trace.End(Last_Error_String());
 #endif	
 	retval = sock->close();
-	/* delete sock; */
+	if (DestroyMe)
+	    delete sock;
 	sock = NULL;
     }
     last_error = 0;

@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/09/07 08:13:17  prez
+** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
+** Also added CPU statistics and fixed problem with socket deletions.
+**
 ** Revision 1.41  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -175,6 +179,7 @@ class mSocket
     ACE_SOCK_Stream *sock;
     ACE_INET_Addr local, remote;
     int last_error;
+    bool DestroyMe;
 
 #ifdef MAGICK_TRACE_WORKS
     T_Sockets trace;
@@ -189,7 +194,7 @@ public:
     mSocket(unsigned long host, unsigned short port, unsigned long timeout = 0);
     mSocket(mstring host, unsigned short port, unsigned long timeout = 0);
     mSocket(unsigned short port, unsigned long timeout = 0);
-    mSocket(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown);
+    mSocket(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown, bool alloc = true);
     mSocket(const mSocket &in) { *this = in; }
     ~mSocket();
     void operator=(const mSocket &in);
@@ -198,7 +203,7 @@ public:
     bool Connect(unsigned long host, unsigned short port, unsigned long timeout = 0);
     bool Connect(mstring host, unsigned short port, unsigned long timeout = 0);
     bool Accept(unsigned short port, unsigned long timeout = 0);
-    bool Bind(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown);
+    bool Bind(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown, bool alloc = true);
     ACE_SOCK_Stream *Unbind();
 
     mstring Local_Host();

@@ -320,7 +320,7 @@ Magick is freely downloadable from:
 	<htmlurl url="ftp://ftp.magick.tm/pub/Magick">
 
 The Magick public mailing list is <htmlurl url="mailto:magick@magick.tm" name="magick@magick.tm">
-To subscribe, email <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with 'subscribe
+To subscribe, email <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with `subscribe
 magick' (no quotes) in the text of the message.
 
 <sect1>Requirements
@@ -369,16 +369,16 @@ cd ../..
 make
 </verb></tscreen>
 
-Note on the above.  The 'export ACE_ROOT=' command may not work on
-your shell.  csh and tcsh users will have to se 'set ACE_ROOT=',
-and on some other weird shells, just 'ACE_ROOT='.  Try them until
+Note on the above.  The `export ACE_ROOT=' command may not work on
+your shell.  csh and tcsh users will have to se `set ACE_ROOT=',
+and on some other weird shells, just `ACE_ROOT='.  Try them until
 you get one that doesnt error.  Once you have one that doesnt have
-an error, just type 'echo $ACE_ROOT' to ensure it gives you your
+an error, just type `echo $ACE_ROOT' to ensure it gives you your
 current directory, if not, keep trying.  I love unix standards :)
 
 Note, If you get problems in the make with erorrs like:
 
-ACE_wrappers/include/makeinclude/wrapper_macros.GNU",
+ACE_wrappers/include/makeinclude/wrapper_macros.GNU,
        line 135: Missing dependency operator
 
 Your version of make is either old or not GNU standard.  ACE requires
@@ -386,7 +386,7 @@ a GNU standard make program to compile.  First see if the program
 `gmake' exists, and if so try it, if not, or it doesnt work, please
 download it by going to http://www.gnu.org/software/make/make.html
 and downloading it from one of their mirror sites.  Incase your
-wondering 'do I need root for this?'  No, you dont.  Just download
+wondering `do I need root for this?'  No, you dont.  Just download
 it, compile it, and then type:
 
 alias make=/path/to/make-x.y/make
@@ -414,7 +414,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/ACE_wrappers/ace
 
 Obviously the /path/to should be replaced with the full path leading
 up to the ACE_wrappers directory (eg. /home/myuser).  The same note
-above about 'export ACE_ROOT=' applies to the above export.
+above about `export ACE_ROOT=' applies to the above export.
 
 <sect1>Basic Installation
 <p>

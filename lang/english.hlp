@@ -2445,7 +2445,7 @@
 08B=SOP::supports it (Please check with an IRC Admin).
 
 [OPERSERV/QLINE]
-01 =ADMIN::QLINE <mask>
+01 =ADMIN::QLINE <mask> [reason]
 02 =ADMIN::
 03 =ADMIN::This will attempt to quarentine a nickname from being
 04 =ADMIN::used on the network, as long as the IRC network

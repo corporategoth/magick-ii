@@ -223,7 +223,7 @@ LANG_LIST          =Available languages are:
 LANG_NOLIST        =Error generating list of available languages.
 
 BREAKDOWN_HEAD     =SERVER                                   LAG  USERS (OPS)
-BREAKDOWN          ="%-35s  % 3.3fs  %5d (%3d)  %3.2f%%"
+BREAKDOWN          =%-35s  % 3.3fs  %5d (%3d)  %3.2f%%
 ON                 =ON
 OFF                =OFF
 ONLINE             =ONLINE
@@ -305,6 +305,7 @@ OTH_CMD10          =GLOBAL        %10d / CREDITS       %10d
 OTH_CMD11          =FILE ADD/DEL  %10d / FILE SEND     %10d
 OTH_CMD12          =FILE CHANGE   %10d / FILE CANCEL   %10d
 
+USE_CPU            =CPU Usage %s system and %s user.
 USE_TRAFFIC        =Sent %s (%s/s) and Recieved %s (%s/s) in %s.
 USE_NS_LIVE        =Live Nicknames      %5d (%s)
 USE_CS_LIVE        =Live Channels       %5d (%s)
