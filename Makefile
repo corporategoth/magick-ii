@@ -53,8 +53,7 @@ PASSTHRU=CC=$(CC) CFLAG=$(CFLAG) LFLAG=$(LFLAG) .SUFFIXES=$(.SUFFIXES) OBJ=$(OBJ
 all: magick
 
 magick:
-	rm -f ./include/bob ./include/ace
-	ln -s $$PWD/src/bob ./include/bob
+	rm -f ./include/bob
 	ln -s $${PWD}/$(ACEDIR)/ace ./include/ace
 	@for x in $(SUBDIRS) ./src; \
 	do	cd $$x; \
