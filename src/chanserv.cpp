@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.192  2000/08/06 07:25:10  prez
+** Fixed some minor channel bugs
+**
 ** Revision 1.191  2000/08/06 05:27:46  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -3936,7 +3939,7 @@ long Chan_Stored_t::GetAccess(mstring entry)
     }
 
     if (Parent->nickserv.IsStored(entry) &&
-	Parent->nickserv.stored[entry].IsOnline())
+	Parent->nickserv.stored[entry.LowerCase()].IsOnline())
     {
 	realentry = entry.LowerCase();
 	if (Parent->nickserv.stored[realentry].Host() != "")
@@ -7054,11 +7057,28 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 
     Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
     unsigned int i;
+    mstring mode;
 
-    clive->SendMode("-" + clive->Mode() + " " + clive->Key());
-    if (cstored->Mlock() != "")
-	clive->SendMode(cstored->Mlock() + " " + cstored->Mlock_Key() + " " +
-		cstored->Mlock_Limit());
+    mode << "-" << clive->Mode();
+    if (clive->Limit())
+	mode << "l";
+    if (clive->Key() != "")
+	mode << "k " << clive->Key();
+    clive->SendMode(mode);
+    if (cstored->Mlock_On() != "")
+    {
+	mode = "+" + cstored->Mlock_On();
+	if (cstored->Mlock_Limit())
+	    mode << "l";
+	if (cstored->Mlock_Key() != "")
+	    mode << "l";
+	if (cstored->Mlock_Limit())
+	    mode << " " << cstored->Mlock_Limit();
+	if (cstored->Mlock_Key() != "")
+	    mode << " " << cstored->Mlock_Key();
+	
+	clive->SendMode(mode);
+    }
     if (!message.After(" ").Matches("*ALL*"))
     {
 	for (i=0; i<clive->Ops(); i++)
