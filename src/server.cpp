@@ -103,7 +103,7 @@ void Server::Ping()
 	SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
 	timeval *tmp;
 	gettimeofday(tmp, NULL);
-	i_Ping = tmp->tv_sec + (tmp->tv_usec / 1000);
+	i_Ping = (double) tmp->tv_sec + ((double) tmp->tv_usec / 1000.0);
    }
 }
 
@@ -114,7 +114,7 @@ void Server::Pong()
     {
 	timeval *tmp;
 	gettimeofday(tmp, NULL);
-	i_Lag = (tmp->tv_sec + (tmp->tv_usec / 1000)) - i_Ping;
+	i_Lag = ((double) tmp->tv_sec + ((double) tmp->tv_usec / 1000.0)) - i_Ping;
 	i_Ping = 0;
     }
 }
