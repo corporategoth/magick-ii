@@ -18,18 +18,21 @@ private:
 		char CharValue;
 		float FloatValue;
 		double DoubleValue;
-		mstring StringValue;
-		mDateTime DateValue;
+		char *StringValue;
+		// this will use the raw datatype
+		//mDateTime DateValue;
 		bool BoolValue;
 		unsigned char UCharValue;
 		unsigned short UShortValue;
 		unsigned int UIntValue;
 		void *PtrValue;
 	};
-	typeenum valuetype;
 public:
 	enum typeenum { VarEmpty, VarShort, VarInt, VarChar, 
 		VarFloat, VarDouble, VarString, VarNull, VarDate, VarBoolean, VarUChar, VarUShort, VarUInt, VarPtr};
+private:
+	typeenum valuetype;
+
 	
 };
 
