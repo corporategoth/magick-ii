@@ -118,7 +118,7 @@ mstring ThreadID::logname()
     return name;
 }
 
-void ThreadID::WriteOut(mstring &message)
+void ThreadID::WriteOut(const mstring &message)
 {
     //below for now till i get the operator bool happening.
     if (out.LastError()!=wxStream_NOERROR) 
@@ -138,11 +138,9 @@ void ThreadID::WriteOut(mstring &message)
 
 FuncTrace::FuncTrace(const mstring &name, const mVarArray &args)
 {
-    tid->indentup();
     ShortLevel(Functions);
-
     if (IsOn(tid)) {
-	mstring message = name + "(";
+	mstring message = "` " + name + "(";
 	for (int i=0; i<args.count(); i++) {
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
@@ -151,4 +149,76 @@ FuncTrace::FuncTrace(const mstring &name, const mVarArray &args)
 	message += " )";
 	tid->WriteOut(message);
     }
+    tid->indentup();
 }
+
+// ===================================================
+
+CheckPoint::CheckPoint()
+{
+    common("CheckPoint Reached");
+}
+
+CheckPoint::CheckPoint(const char *fmt, ...)
+{
+    va_list args;
+    va_start (args, fmt);
+
+    mstring output;
+    output.FormatV(fmt, args);
+    common(output.c_str());
+}
+
+void CheckPoint::common(const char *input)
+{
+    ShortLevel(CheckPoint);
+    if (IsOn(tid)) {
+	mstring message;
+	message << "** " << input;
+	tid->WriteOut(message);
+    }
+}
+
+// ===================================================
+
+Modify::Modify(const mVarArray &args)
+{
+    ShortLevel(Modify);
+    if (IsOn(tid)) {
+	for (int i=0; i<args.count(); i++) {
+	    mstring message;
+	    message << "<<" << "DE" << i+1 << "(" << args[i].AsString() << ")";
+	    tid->WriteOut(message);
+	}
+    }
+}
+
+Modify::EndModify(const mVarArray &args)
+{
+    ShortLevel(Modify);
+    if (IsOn(tid)) {
+	for (int i=0; i<args.count(); i++) {
+	    mstring message;
+	    message << ">>" << "DE" << i+1 << "(" << args[i].AsString() << ")";
+	    tid->WriteOut(message);
+	}
+    }
+}
+
+// ===================================================
+
+Chatter::Chatter(dir_enum direction, const mstring &input)
+{
+    ShortLevel(Chatter);
+    if (IsOn(tid)) {
+	mstring message;
+	if (direction == From)
+	    message << "<- " << input;
+	else
+	    message << "-> " << input;
+	tid->WriteOut(message);
+    }
+}
+
+// ===================================================
+

@@ -23,6 +23,13 @@ using namespace std;
 #include "string.h"
 #include "variant.h"
 
+
+#define FT(x) FuncTrace __ft(#x);
+#define CP(x) { CheckPoint __cp(#x); }
+#define MB(x) Modify __mod(#x);
+#define ME(x) __mod.EndModify(#x);
+#define CH(x) { Chatter __ch(#x); }
+
 // forward declarations till we get them done
 class Thread;
 class ThreadID;
@@ -119,7 +126,7 @@ public:
     threadtype_enum type() { return internaltype; }
     void indentup() { indent++; }
     void indentdown() { indent--; }
-    void WriteOut (mstring &message);
+    void WriteOut (const mstring &message);
 };
 
 // ===================================================
@@ -131,7 +138,44 @@ class FuncTrace : public Trace
 public:
     FuncTrace(const mstring &name, const mVarArray &args);
     ~FuncTrace() { tid->indentdown(); }
-
 };
+
+// ===================================================
+
+class CheckPoint : public Trace
+{
+    ThreadID *tid;
+    void common(const char *input);
+public:
+    CheckPoint();
+    CheckPoint(const char *fmt, ...);
+    ~CheckPoint() {}
+};
+
+// ===================================================
+
+class Modify : public Trace
+{
+    ThreadID *tid;
+    Modify() {} 
+public:
+    Modify(const mVarArray &args);
+    EndModify(const mVarArray &args);
+    ~Modify() {}
+};
+
+// ===================================================
+
+class Chatter : public Trace
+{
+    ThreadID *tid;
+    Chatter() {} 
+public:
+    enum dir_enum { From, To };
+    Chatter(dir_enum direction, const mstring &input);
+    ~Chatter() {}
+};
+
+// ===================================================
 
 #endif /* _TRACE_H */
