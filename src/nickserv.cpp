@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2000/05/13 08:26:44  ungod
+** no message
+**
 ** Revision 1.86  2000/05/13 07:05:46  prez
 ** Added displaying of sizes to all file fields..
 **
@@ -1965,7 +1968,7 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	    }
 	    if (citer->second.IsHead(i_Name) || citer->second.IsHead(oldnick))
 	    {
-		citer->Head(i_Name);
+		citer->second.Head(i_Name);
 		found = false;
 	    }
 	    if (found)
