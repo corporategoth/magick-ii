@@ -850,7 +850,7 @@ void Chan_Live_t::LockDown()
     MCB(ph_timer);
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    mstring *arg;
+    mstring *arg = NULL;
     if (ph_timer && Magick::instance().reactor().cancel_timer(ph_timer, reinterpret_cast < const void ** > (arg)) &&
 	arg != NULL)
     {
