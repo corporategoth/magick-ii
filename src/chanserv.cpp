@@ -295,3 +295,89 @@ void ChanServ::execute(const mstring & data)
 
     mThread::ReAttach(tt_mBase);
 }
+
+wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
+{
+    out<<in.i_Name<<in.i_RegTime<<in.i_Description<<in.i_Password<<in.i_URL;
+    out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Limit;
+
+    list<userlist_t>::iterator i;
+    out<<in.i_Access_Level.size();
+    for(i=in.i_Access_Level.begin();i!=in.i_Access_Level.end();i++)
+	out<<*i;
+    out<<in.i_Access.size();
+    for(i=in.i_Access.begin();i!=in.i_Access.end();i++)
+	out<<*i;
+    out<<in.i_Akick.size();
+    for(i=in.i_Akick.begin();i!=in.i_Akick.end();i++)
+	out<<*i;
+    out<<in.i_Greet.size();
+    for(i=in.i_Greet.begin();i!=in.i_Greet.end();i++)
+	out<<*i;
+
+    map<mstring,mstring>::iterator j;
+    out<<in.i_UserDef.size();
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	out<<(mstring)j->first<<(mstring)j->second;
+    return out;
+}
+
+wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
+{
+    unsigned int i,count;
+    mstring dummy,dummy2;
+    userlist_t udummy;
+    in>>out.i_Name>>out.i_RegTime>>out.i_Description>>out.i_Password>>out.i_URL;
+    in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
+
+    out.i_Access_Level.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>udummy;
+	out.i_Access_Level.push_back(udummy);
+    }
+    out.i_Access.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>udummy;
+	out.i_Access.push_back(udummy);
+    }
+    out.i_Akick.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>udummy;
+	out.i_Akick.push_back(udummy);
+    }
+    out.i_Greet.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>udummy;
+	out.i_Greet.push_back(udummy);
+    }
+
+    out.i_UserDef.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>dummy>>dummy2;
+	out.i_UserDef[dummy]=dummy2;
+    }
+    return in;
+}
+
+wxOutputStream &operator<<(wxOutputStream& out,userlist_t& in)
+{
+    return out;
+}
+wxInputStream &operator>>(wxInputStream& in, userlist_t& out)
+{
+    return in;
+}
+
+userlist_t::userlist_t ()
+{
+}
