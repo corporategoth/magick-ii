@@ -1,6 +1,5 @@
 #include "pch.h"
 #ifdef WIN32
-#include "winbase.h"
 #pragma hdrstop
 #else
 #pragma implementation
@@ -28,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2001/11/05 05:10:20  prez
+** Removed winbase.h from sxp.h ;P
+**
 ** Revision 1.25  2001/11/05 04:19:18  prez
 ** more windows tuning, now it actually works without silly runtime dependancies
 **
