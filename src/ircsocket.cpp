@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.137  2000/10/04 10:52:08  prez
+** Fixed the memory pool and removed printf's.
+**
 ** Revision 1.136  2000/10/04 07:39:46  prez
 ** Added MemCluster to speed up lockable, but it cores when we start
 ** getting real messages -- seemingly in an alloc in the events.
@@ -390,7 +393,6 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    mstring text = data2.ExtractWord(i,"\n\r");
 	    if(text!="")
 	    {
-printf("Got message %s\n", text.c_str()); fflush(stdout);
 		if (text.SubString(0, 4) == "PING ")
 		    mBase::push_message_immediately(text);
 		else

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/10/04 10:52:08  prez
+** Fixed the memory pool and removed printf's.
+**
 ** Revision 1.51  2000/10/04 07:39:46  prez
 ** Added MemCluster to speed up lockable, but it cores when we start
 ** getting real messages -- seemingly in an alloc in the events.
@@ -165,7 +168,6 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     {
 	if (maplock.release() < 0)
 	{
-printf("DEBUG 1\n"); fflush(stdout);
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
 	}
@@ -178,10 +180,6 @@ printf("DEBUG 1\n"); fflush(stdout);
 	    lockname += "::";
 	lockname += args[i].AsString();
 	rlock = NULL;
-
-printf("(%d) -> %d. LOCK SIZE = %d / %d (%s)\n",
-		ACE_Thread::self(), i, memory_area.count(),
-		memory_area.size(), lockname.c_str()); fflush(stdout);
 
 	if ((*lockroot).find(lockname) == (*lockroot).end())
 	{
@@ -219,10 +217,6 @@ printf("(%d) -> %d. LOCK SIZE = %d / %d (%s)\n",
     wlock = NULL;
     mlock = NULL;
 
-printf("(%d) -> %d. LOCK SIZE = %d / %d (%s)\n",
-		ACE_Thread::self(), i, memory_area.count(),
-		memory_area.size(), lockname.c_str()); fflush(stdout);
-
     if (type == L_Read)
     {
 	if ((*lockroot).find(lockname) == (*lockroot).end())
@@ -259,11 +253,11 @@ printf("(%d) -> %d. LOCK SIZE = %d / %d (%s)\n",
 	    (*lockroot)[lockname].first == L_Read)
 	{
 	    rlock = (mLock_Read *) (*lockroot)[lockname].second;
+	    (*lockroot)[lockname].second = NULL;
 	    if (rlock != NULL)
 	    {
 		if (rlock->release() < 0)
 		{
-printf("DEBUG 2\n"); fflush(stdout);
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"READ", lockname.c_str());
 		}
@@ -284,6 +278,7 @@ printf("DEBUG 2\n"); fflush(stdout);
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"WRITE", lockname.c_str());
 		    memory_area.dealloc(wlock);
+		    (*lockroot)[lockname].second;
 		    wlock = NULL;
 		}
 		else
@@ -306,11 +301,11 @@ printf("DEBUG 2\n"); fflush(stdout);
 	    (*lockroot)[lockname].first == L_Read)
 	{
 	    rlock = (mLock_Read *) (*lockroot)[lockname].second;
+	    (*lockroot)[lockname].second = NULL;
 	    if (rlock != NULL)
 	    {
 		if (rlock->release() < 0)
 		{
-printf("DEBUG 3\n"); fflush(stdout);
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"READ", lockname.c_str());
 		}
@@ -348,13 +343,8 @@ printf("DEBUG 3\n"); fflush(stdout);
 	}
     }
 
-printf("(%d) -> *. LOCK SIZE = %d / %d (%s)\n",
-		ACE_Thread::self(), memory_area.count(),
-		memory_area.size(), lockname.c_str()); fflush(stdout);
-
     if (maplock.release() < 0)
     {
-printf("DEBUG 4\n"); fflush(stdout);
 	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
     }
@@ -382,7 +372,6 @@ mLOCK::~mLOCK()
     {
 	if (maplock.release() < 0)
 	{
-printf("DEBUG 5\n"); fflush(stdout);
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
 	}
@@ -394,18 +383,14 @@ printf("DEBUG 5\n"); fflush(stdout);
 	if ((*lockroot).find(locks[i]) != (*lockroot).end())
 	{
 
-printf("(%d) <- %d. LOCK SIZE = %d / %d (%s)\n",
-		ACE_Thread::self(), i, memory_area.count(),
-		memory_area.size(), locks[i].c_str()); fflush(stdout);
-
 	    if ((*lockroot)[locks[i]].first == L_Read)
 	    {
 		rlock = (mLock_Read *) (*lockroot)[locks[i]].second;
+		(*lockroot)[locks[i]].second = NULL;
 		if (rlock != NULL)
 		{
 		    if (rlock->release() < 0)
 		    {
-printf("DEBUG 6\n"); fflush(stdout);
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"READ", locks[i].c_str());
 		    }
@@ -416,11 +401,11 @@ printf("DEBUG 6\n"); fflush(stdout);
 	    else if ((*lockroot)[locks[i]].first == L_Write)
 	    {
 		wlock = (mLock_Write *) (*lockroot)[locks[i]].second;
+		(*lockroot)[locks[i]].second = NULL;
 		if (wlock != NULL)
 		{
 		    if (wlock->release() < 0)
 		    {
-printf("DEBUG 7\n"); fflush(stdout);
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"WRITE", locks[i].c_str());
 		    }
@@ -431,11 +416,11 @@ printf("DEBUG 7\n"); fflush(stdout);
 	    else if ((*lockroot)[locks[i]].first == L_Mutex)
 	    {
 		mlock = (mLock_Mutex *) (*lockroot)[locks[i]].second;
+		(*lockroot)[locks[i]].second = NULL;
 		if (mlock != NULL)
 		{
 		    if (mlock->release() < 0)
 		    {
-printf("DEBUG 8\n"); fflush(stdout);
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"MUTEX", locks[i].c_str());
 		    }
@@ -447,13 +432,8 @@ printf("DEBUG 8\n"); fflush(stdout);
 	}
     }
 
-printf("(%d) <- *. LOCK SIZE = %d / %d\n",
-		ACE_Thread::self(), memory_area.count(),
-		memory_area.size()); fflush(stdout);
-
     if (maplock.release() < 0)
     {
-printf("DEBUG 9\n"); fflush(stdout);
 	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
     }
@@ -479,7 +459,6 @@ bool mLOCK::Locked()
 	{
 	    if (maplock.release() < 0)
 	    {
-printf("DEBUG 10\n"); fflush(stdout);
 		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"MUTEX", "LockMap");
 	    }
@@ -492,7 +471,6 @@ printf("DEBUG 10\n"); fflush(stdout);
 	    retval = true;
 	if (maplock.release() < 0)
 	{
-printf("DEBUG 11\n"); fflush(stdout);
 	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
 	}
@@ -520,7 +498,6 @@ size_t mLOCK::AllLocks()
 
     if (maplock.release() < 0)
     {
-printf("DEBUG 12\n"); fflush(stdout);
 	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "LockMap");
     }

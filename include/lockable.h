@@ -25,6 +25,9 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/10/04 10:52:07  prez
+** Fixed the memory pool and removed printf's.
+**
 ** Revision 1.43  2000/10/04 07:39:45  prez
 ** Added MemCluster to speed up lockable, but it cores when we start
 ** getting real messages -- seemingly in an alloc in the events.
@@ -149,7 +152,7 @@ public:
 	    pool.push_back(tmp);
 	    for (unsigned int i=0; i < e_max; i++)
 	    {
-		void *ptr = (void *) &tmp[i + e_size];
+		void *ptr = (void *) &tmp[i * e_size];
 		free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
 	    }
 	}
@@ -159,7 +162,7 @@ public:
     void dealloc(void *ptr)
     {
 	memset(ptr, 0, sizeof(char) * e_size);
-	free_list.add ((ACE_Cached_Mem_Pool_Node<void *> *) ptr) ;
+	free_list.add (new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
     }
 
     size_t size()	{ return e_max * pool.size(); }
