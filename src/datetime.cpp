@@ -263,6 +263,12 @@ mstring mDateTime::FormatString(const mstring& format)const
 	int ampmtype=0;
 	DecodeDate(Year,Month,Day);
 	DecodeTime(Hour,Min,Sec,MSec);
+	wxLogDebug("mDateTime::FormatString values Hour: %d, Min: %d, Sec: %d MSec: %d",Hour,Min,Sec,MSec);
+	Hour=abs(Hour);
+	Min=abs(Min);
+	Sec=abs(Sec);
+	MSec=abs(MSec);
+
 	if(format.Find("a/p")!=-1)
 		ampmtype=1;
 	else if(format.Find("am/pm")!=-1)
