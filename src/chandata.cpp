@@ -2257,7 +2257,7 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 					i_Name,
 					"[" + IRC_Bold + Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
 					i_Comment + " [" + IRC_Bold + Magick::instance().getMessage("VALS/SUSPENDED") +
-					IRC_Off + "]", settime - (1.0 / (60.0 * 60.0 * 24.0)));
+					IRC_Off + "]", settime);
 	return;
     }
 
@@ -2271,7 +2271,7 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 	RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
 	RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(), i_Topic_Setter, i_Name, i_Topic,
-					settime - (1.0 / (60.0 * 60.0 * 24.0)));
+					settime);
     }
     else
     {
@@ -2325,8 +2325,7 @@ void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, con
 	MCE(i_Topic);
     }
     Magick::instance().server.TOPIC(source, setter, i_Name, topic,
-				    Magick::instance().chanserv.GetLive(i_Name)->Topic_Set_Time() -
-				    (1.0 / (60.0 * 60.0 * 24.0)));
+				    Magick::instance().chanserv.GetLive(i_Name)->Topic_Set_Time());
     ETCB();
 }
 

@@ -215,6 +215,7 @@ bool Protocol::Set(const mstring & filename)
     cfg.Read(ts_Protocol + "SJOIN", i_SJoin, false);
     cfg.Read(ts_Protocol + "BIGTOPIC", i_BigTopic, false);
     cfg.Read(ts_Protocol + "TOPICJOIN", i_TopicJoin, false);
+    cfg.Read(ts_Protocol + "TOPICCURRENT", i_TopicCurrent, false);
     cfg.Read(ts_Protocol + "SERVERMODES", i_ServerModes, false);
 
     cfg.Read(ts_Protocol + "AKILL", value_uint, 0000);
@@ -336,10 +337,10 @@ void Protocol::DumpB() const
     BTCB();
     MB(0,
        (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
-	i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
+	i_TopicCurrent, i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg));
     MB(16,
-       (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
-	tokens.size()));
+       (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
+        i_SVSHOST, tokens.size()));
     ETCB();
 }
 
@@ -348,10 +349,10 @@ void Protocol::DumpE() const
     BTCB();
     ME(0,
        (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
-	i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
+	i_TopicCurrent, i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg));
     ME(16,
-       (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
-	tokens.size()));
+       (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
+        i_SVSHOST, tokens.size()));
     ETCB();
 }
 
@@ -2788,7 +2789,13 @@ void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring &
 	if (!topic.empty())
 	{
 	    if (proto.BigTopic())
-		out << " " << settime.timetstring();
+	    {
+		out << " ";
+		if (proto.TopicCurrent())
+		    out << mDateTime::CurrentDateTime().timetstring();
+		else
+		    out << settime.timetstring();
+	    }
 	    out << " :" << topic;
 	}
 

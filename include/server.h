@@ -53,6 +53,7 @@ class Protocol
     bool i_SJoin;		// Use SJOIN instead of JOIN
     bool i_BigTopic;		// Topic includes setter and timestamp
     bool i_TopicJoin;		// ChanServ must join to set topic
+    bool i_TopicCurrent;	// Use current time when setting topic.
     bool i_ServerModes;		// Server must set modes, not ChanServ
 
     /* AKILL types
@@ -300,6 +301,10 @@ public:
     bool TopicJoin() const
     {
 	return i_TopicJoin;
+    }
+    bool TopicCurrent() const
+    {
+	return i_TopicCurrent;
     }
     bool ServerModes() const
     {

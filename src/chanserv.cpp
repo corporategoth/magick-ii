@@ -1331,7 +1331,7 @@ void ChanServ::do_Suspend(const mstring & mynick, const mstring & source, const 
 	Magick::instance().server.TOPIC(mynick, mynick, channel,
 					"[" + IRC_Bold + Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
 					reason + " [" + IRC_Bold + Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off +
-					"]", clive->Topic_Set_Time() - (1.0 / (60.0 * 60.0 * 24.0)));
+					"]", clive->Topic_Set_Time());
 
 	clive->SendMode("-" + clive->Mode() + " " + clive->Key());
 	if (!cstored->Mlock().empty())
@@ -1390,8 +1390,7 @@ void ChanServ::do_UnSuspend(const mstring & mynick, const mstring & source, cons
 
     if (Magick::instance().chanserv.IsLive(channel))
 	Magick::instance().server.TOPIC(mynick, mynick, channel, "",
-					Magick::instance().chanserv.GetLive(channel)->Topic_Set_Time() -
-					(1.0 / (60.0 * 60.0 * 24.0)));
+					Magick::instance().chanserv.GetLive(channel)->Topic_Set_Time());
 
     cstored->UnSuspend();
     Magick::instance().chanserv.stats.i_Unsuspend++;
