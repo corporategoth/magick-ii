@@ -571,7 +571,7 @@ float IrcSvcHandler::BurstTime() const
     NFT("IrcSvcHandler::BurstTime");
     RLOCK(("IrcSvcHandler", "connect_time"));
     RLOCK2(("IrcSvcHandler", "i_synctime"));
-    float retval = static_cast < float > ((i_synctime - connect_time).MSecond() / 1000000.0);
+    float retval = static_cast < float > ((i_synctime - connect_time).asMSeconds() / 1000000.0);
 
     RET(retval);
 }

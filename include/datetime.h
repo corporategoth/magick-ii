@@ -262,12 +262,12 @@ public:
 	return (Val <= in.Val);
     }
 
-    operator       double () const
+    operator        double () const
     {
 	return Val;
     }
-    operator       time_t() const;
-    operator       mstring() const
+    operator        time_t() const;
+    operator        mstring() const
     {
 	return DateTimeString();
     }
@@ -412,6 +412,29 @@ public:
     int Century() const
     {
 	return Year() - Year2();
+    }
+
+    double asMSeconds() const;
+    unsigned long asSeconds() const
+    {
+	return static_cast < unsigned long > (asMSeconds() / 1000000.0);
+    }
+
+    unsigned long asMinutes() const
+    {
+	return asSeconds() / 60;
+    }
+    unsigned long asHours() const
+    {
+	return asMinutes() / 60;
+    }
+    unsigned long asDays() const
+    {
+	return asHours() / 24;
+    }
+    unsigned long asYears() const
+    {
+	return static_cast < unsigned long > (static_cast < double > (asDays()) / 365.25);
     }
 
     double MSecondsSince() const;

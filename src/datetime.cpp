@@ -456,7 +456,7 @@ mstring mDateTime::DateTimeString() const
     return Result;
 }
 
-mDateTime::operator              time_t() const
+mDateTime::operator               time_t() const
 {
     int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 
@@ -700,9 +700,13 @@ int mDateTime::Year() const
 double mDateTime::MSecondsSince() const
 {
     mDateTime dummyvar = mDateTime::CurrentDateTime() - (*this);
-    unsigned long CurrentVal = static_cast < unsigned long > (dummyvar.Val * MSecsPerDay);
 
-    return CurrentVal;
+    return dummyvar.Val * MSecsPerDay;
+}
+
+double mDateTime::asMSeconds() const
+{
+    return Val * MSecsPerDay;
 }
 
 mstring DisectTime(const long intime, const mstring & source)
