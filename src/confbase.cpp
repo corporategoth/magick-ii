@@ -15,7 +15,7 @@
 // Name:        config.cpp
 // Purpose:     implementation of wxConfigBase class
 // Author:      Vadim Zeitlin
-// Modified by: Ungod for use in magick2
+// Modified by: W. King for use with Magick II
 // Created:     07.04.98
 // RCS-ID:      $Id$
 // Copyright:   (c) 1997 Karsten Ballnder   Ballueder@usa.net

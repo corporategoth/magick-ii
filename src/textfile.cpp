@@ -17,7 +17,7 @@
 //              (file is fully loaded in memory) and which understands CR/LF
 //              differences between platforms.
 // Author:      Vadim Zeitlin
-// Modified by: Ungod for magick2
+// Modified by: W. King for use with Magick II
 // Created:     03.04.98
 // RCS-ID:      $Id$
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>

@@ -15,7 +15,7 @@
 // Name:        stream.cpp
 // Purpose:     wxStream base classes
 // Author:      Guilhem Lavaux
-// Modified by: Hacked heavily for magick use by Ungod
+// Modified by: W. King for use with Magick II
 // Created:     11/07/98
 // RCS-ID:      $Id$
 // Copyright:   (c) Guilhem Lavaux

@@ -1,8 +1,21 @@
+// $Id$
+//
+// Magick IRC Services
+// (c) 1997-1999 Preston A. Elder <prez@magick.tm>
+// (c) 1998-1999 W. King <ungod@magick.tm>
+//
+// The above copywright may not be removed under any
+// circumstances, however it may be added to if any
+// modifications are made to this file.  All modified
+// code must be clearly documented and labelled.
+//
+// ===================================================
+
 /////////////////////////////////////////////////////////////////////////////
 // Name:        log.cpp
 // Purpose:     Assorted wxLogXXX functions, and wxLog (sink for logs)
 // Author:      Vadim Zeitlin
-// Modified by: Ungod for use in magick-ii
+// Modified by: W. King for use with Magick II
 // Created:     29/01/98
 // RCS-ID:      $Id$
 // Copyright:   (c) 1998 Vadim Zeitlin <zeitlin@dptmaths.ens-cachan.fr>

@@ -15,7 +15,7 @@
 // Name:        fileconf.cpp
 // Purpose:     wxFileConfig derivation of wxConfigBase
 // Author:      Vadim Zeitlin
-// Modified by: Ungod for magick2
+// Modified by: W. King for use with Magick II
 // Created:     07.04.98 (adapted from appconf.cpp)
 // RCS-ID:      $Id$
 // Copyright:   (c) 1997 Karsten Ballnder   &  Vadim Zeitlin
