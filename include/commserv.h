@@ -25,6 +25,12 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.31  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -105,10 +111,10 @@ public:
     	{ return (i_Name < in.i_Name); }
 
     mstring Name()const		{ return i_Name; }
-    mDateTime RegTime()const	{ return i_RegTime; }
-    mstring HeadCom()const	{ return i_HeadCom; }
-    mstring Head()const		{ return i_Head; }
-    mstring Description()const	{ return i_Description; }
+    mDateTime RegTime();
+    mstring HeadCom();
+    mstring Head();
+    mstring Description();
     void Head(mstring newhead);
 
     bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
@@ -123,11 +129,10 @@ public:
     bool IsHead(mstring nick);
     bool IsOn(mstring nick);
 
-    // If TRUE, all members can do a /MS COMMITTEE 
-    void Email(mstring in)	{ i_Email = in; }
-    mstring Email()const	{ return i_Email; }
-    void URL(mstring in)	{ i_URL = in; }
-    mstring URL()const		{ return i_URL; }
+    void Email(mstring in);
+    mstring Email();
+    void URL(mstring in);
+    mstring URL();
     void Private(bool in);
     bool Private();
     void L_Private(bool in);

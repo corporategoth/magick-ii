@@ -25,6 +25,12 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.21  2000/06/10 07:01:02  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -115,26 +121,29 @@ unsigned short FindAvailPort();
 class mFile
 {
     FILE *fd;
+    mstring i_name;
 public:
     mFile() { fd = NULL; }
     mFile(FILE *in);
     mFile(mstring name, mstring mode = "r");
     ~mFile() { Close(); }
+    mstring Name()		{ return i_name; }
     bool Open(mstring name, mstring mode = "r");
     void Close();
-    bool IsOpened() { return (fd != NULL); }
+    bool IsOpened();
     long Seek(long offset, int whence = SEEK_SET);
     size_t Write(mstring buf, bool endline = true);
     size_t Write(const void *buf, size_t size);
     size_t Read(void *buf, size_t size);
     mstring ReadLine();
     long Length();
-    bool Eof() { return feof(fd); }
-    void Attach(FILE *in) { fd = in; }
+    bool Eof();
+    void Attach(mstring name, FILE *in);
     FILE *Detach();
     void Flush();
     
     static bool Exists(mstring name);
+    static bool Erase(mstring name);
     static long Length(mstring name);
     static long Copy(mstring sin, mstring sout, bool append = false);
     static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
@@ -213,21 +222,22 @@ public:
 
     ~DccXfer();
 
-    bool Ready()		{ return i_File.IsOpened(); }
     unsigned long DccId()	{ return i_DccId; }
-    XF_Type Type()		{ return i_Type; }
-    mstring Mynick()		{ return i_Mynick; }
-    mstring Source()		{ return i_Source; }
-    mstring Filename()		{ return i_Filename; }
-    size_t Filesize()		{ return i_Filesize; }
-    size_t Total()		{ return i_Total; }
-    mDateTime LastData()	{ return i_LastData; }
+    bool Ready();
+    XF_Type Type();
+    mstring Mynick();
+    mstring Source();
+    mstring Filename();
+    size_t Filesize();
+    size_t Total();
+    mDateTime LastData();
 
-    void ChgNick(mstring in)	{ i_Source = in; }
+    void ChgNick(mstring in);
     void Cancel();
     void Action();	// Do what we want!
     size_t Average(time_t secs = 0);
     size_t Traffic()		{ return i_Traffic.size(); }
+    size_t Usage();
 };
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>

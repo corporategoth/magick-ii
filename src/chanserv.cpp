@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.181  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.180  2000/06/16 14:47:31  prez
 ** Finished chanserv locking ...
 **
@@ -1053,21 +1059,19 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    break;
 
 	case 'k':
-	    if (add && i_Key == "")
+	    if (add)
 	    {
 		WLOCK2(("ChanServ", "live", i_Name, "i_Key"));
 		i_Key = in.ExtractWord(fwdargs, ": ");
 	    }
-	    else if (!add && in.ExtractWord(fwdargs, ": ") == i_Key)
-	    {
-		WLOCK2(("ChanServ", "live", i_Name, "i_Key"));
-		i_Key = "";
-	    }
 	    else
 	    {
-		Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
+		WLOCK2(("ChanServ", "live", i_Name, "i_Key"));
+		if (i_Key != in.ExtractWord(fwdargs, ": "))
+		    Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 			i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
 			i_Name.c_str(), source.c_str());
+		i_Key = "";
 	    }
 	    fwdargs++;
 	    break;
@@ -5118,7 +5122,9 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
     }
 
     mstring founder = Parent->chanserv.stored[channel.LowerCase()].Founder();
+    { WLOCK(("ChanServ", "stored"));
     Parent->chanserv.stored.erase(channel.LowerCase());
+    }
     Parent->nickserv.live[source.LowerCase()].UnChanIdentify(channel);
     Parent->chanserv.stats.i_Drop++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/DROPPED"),
@@ -11001,8 +11007,10 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     pOut->BeginObject(tag_ChanServ, attribs);
 
     map<mstring, Chan_Stored_t>::iterator iter;
+    { RLOCK(("ChanServ", "stored"));
     for (iter = stored.begin(); iter != stored.end(); iter++)
 	pOut->WriteSubElement(&iter->second, attribs);
+    }
 
     pOut->EndObject(tag_ChanServ);
 }

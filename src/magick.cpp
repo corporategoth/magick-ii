@@ -28,6 +28,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.248  2000/06/18 12:49:27  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.247  2000/06/15 13:41:11  prez
 ** Added my tasks to develop *grin*
 ** Also did all the chanserv live locking (stored to be done).
@@ -541,10 +547,14 @@ int Magick::Start()
 			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
 
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS"));
+    { WLOCK(("Events"));
     events = new EventTask;
     events->open();
+    }
+    { WLOCK(("DccMap"));
     dcc = new DccMap;
     dcc->open();
+    }
 
     pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"w");
     if(pidfile.IsOpened())
@@ -629,7 +639,9 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     //load_databases();
+    { WLOCK(("i_ResetTime"));
     i_ResetTime=Now();
+    }
 
     // Use the reconnect handler to get a connection
 
@@ -652,11 +664,13 @@ int Magick::Start()
 
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_EVENTS"));
     // We're going down .. execute relivant shutdowns.
+    { WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
   	ircsvchandler->shutdown();
 	delete ircsvchandler;
-    }
+	ircsvchandler = NULL;
+    }}
     mBase::shutdown();
     while (mThread::size() > 2)
     {
@@ -718,18 +732,19 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGTSTP);
 #endif
 
-
+    { WLOCK(("Events"));
     if (events != NULL)
     {
 	events->close(0);
 	delete events;
-    }
+    }}
 
+    { WLOCK(("DccMap"));
     if (dcc != NULL)
     {
 	dcc->close(0);
 	delete dcc;
-    }
+    }}
 
     delete signalhandler;
 
@@ -772,6 +787,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     {
 	LoadExternalMessages(lang);
     }
+    { RLOCK(("Messages", lang.UpperCase(), name.UpperCase()));
     if (lang != "" &&
 	Messages.find(lang.UpperCase()) != Messages.end() &&
 	Messages[lang.UpperCase()].find(name.UpperCase()) !=
@@ -779,7 +795,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     {
 	retval = Messages[lang.UpperCase()][name.UpperCase()];
 	RET(retval);
-    }
+    }}
 
     // Load nickserv default language if its NOT loaded.
     // and then look for the message of THAT type.
@@ -791,6 +807,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     {
 	LoadExternalMessages(nickserv.DEF_Language());
     }
+    { RLOCK(("Messages", nickserv.DEF_Language().UpperCase(), name.UpperCase()));
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
 	nickserv.DEF_Language() != "" &&
 	Messages.find(nickserv.DEF_Language().UpperCase()) !=
@@ -800,15 +817,16 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     {
 	retval = Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()];
 	RET(retval);
-    }
+    }}
 
     // Otherwise just try and find it in the DEFAULTs.
     CP(("Trying HARD-CODED language ..."));
+    { RLOCK(("Messages", "DEFAULT", name.UpperCase()));
     if (Messages["DEFAULT"].find(name.UpperCase()) !=
 		Messages["DEFAULT"].end())
     {
 	retval = Messages["DEFAULT"][name.UpperCase()];
-    }
+    }}
     RET(retval);
 }
 
@@ -824,11 +842,12 @@ mstring Magick::getLogMessage(const mstring & name)
     mstring retval = "Could not find log message token \"" + name.UpperCase() +
 			    "\", please check your language file.";
     CP(("Trying to get log entry ..."));
+    { RLOCK(("LogMessages", name.UpperCase()));
     if (LogMessages.find(name.UpperCase()) !=
 		LogMessages.end())
     {
 	retval = LogMessages[name.UpperCase()];
-    }
+    }}
     RET(retval);
 }
 
@@ -852,6 +871,8 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 StartGetLang:
     if (Help.find(language) == Help.end())
     {
+	WLOCK(("Help", language.UpperCase()));
+
 	wxFileConfig fconf("magick","",files.Langdir()+DirSlash+language.LowerCase()+".hlp");
 
 	mstring tempstr;
@@ -897,6 +918,7 @@ StartGetLang:
 	}
     }
 
+    { RLOCK(("Help", language.UpperCase(), name.UpperCase()));
     if (Help.find(language) != Help.end() &&
 	Help[language].find(name.UpperCase()) != Help[language].end())
     {
@@ -926,7 +948,7 @@ StartGetLang:
 	    if (sendline)
 		helptext.push_back(Help[language][name.UpperCase()][j].third);
 	}
-    }
+    }}
 
     if (!helptext.size())
     {
@@ -1049,7 +1071,6 @@ void Magick::LoadInternalMessages()
 {
     NFT("Magick::LoadInternalMessages");
 
-    WLOCK(("Magick","LoadMessages"));
     // so that the language file strings are only loaded in memory while this function is in effect.
     unsigned int i;
     {
@@ -1060,6 +1081,7 @@ void Magick::LoadInternalMessages()
             out<<def_lang[i]<<endl;
     }
 
+    WLOCK(("Messages", "DEFAULT"));
     wxFileConfig fconf("magick","",files.TempDir()+DirSlash+"default.lng");
     remove((files.TempDir()+DirSlash+"default.lng").c_str());
     bool bContGroup, bContEntries;
@@ -1089,7 +1111,6 @@ mstring Magick::parseEscapes(const mstring & in)
 {
     FT("Magick::parseEscparse", (in));
     // hmm doesn't *really* need a mutex here.
-    MLOCK(("Magick","parseEscapes"));
     mstring Result;
     strstream inputstream;
     inputstream<<in;
@@ -1111,7 +1132,6 @@ bool Magick::LoadExternalMessages(mstring language)
 {
     FT("Magick::LoadExternalMessages", (language));
     // use the previously created name array to get the names to load
-    WLOCK(("Magick","LoadMessages"));
 
     if (language.UpperCase() == "DEFAULT")
     {
@@ -1120,6 +1140,7 @@ bool Magick::LoadExternalMessages(mstring language)
     }
     else
     {
+	WLOCK(("Messages", language.UpperCase()));
 	wxFileConfig fconf("magick","",files.Langdir()+DirSlash+language.LowerCase()+".lng");
 
 	bool bContGroup, bContEntries;
@@ -1160,7 +1181,6 @@ bool Magick::LoadLogMessages(mstring language)
 {
     FT("Magick::LoadLogMessages", (language));
     // use the previously created name array to get the names to load
-    WLOCK(("Magick","LoadLogMessages"));
 
     unsigned int i;
     {
@@ -1178,6 +1198,7 @@ bool Magick::LoadLogMessages(mstring language)
     mstring groupname,entryname,combined;
     vector<mstring> entries;
 
+    WLOCK(("LogMessages"));
     fconf = new wxFileConfig("magick","",files.TempDir()+DirSlash+"default.lfo");
     remove((files.TempDir()+DirSlash+"default.lfo").c_str());
     bContGroup=fconf->GetFirstGroup(groupname,dummy1);
@@ -1244,6 +1265,7 @@ bool Magick::UnloadExternalMessages(mstring language)
     if (language != "" &&
 	Messages.find(language.UpperCase()) != Messages.end())
     {
+	WLOCK(("Messages"));
 	Messages.erase(language.UpperCase());
 	RET(true);
     }
@@ -1257,6 +1279,7 @@ bool Magick::UnloadHelp(mstring language)
     if (language != "" &&
 	Help.find(language.UpperCase()) != Help.end())
     {
+	WLOCK(("Help"));
 	Help.erase(language.UpperCase());
 	RET(true);
     }
@@ -1916,6 +1939,7 @@ bool Magick::get_config_values()
     // REMOTE entries
     mstring ent="";
     i=1;
+    { WLOCK(("Startup", "Servers"));
     startup.servers.clear();
     do {
 	mstring rem = "REMOTE_";
@@ -1934,6 +1958,7 @@ bool Magick::get_config_values()
 	}
 	i++;
     } while (ent!="");
+    }
     if (Server() == "" || !startup.IsServer(Server()))
 	reconnect = true;
 
@@ -1995,6 +2020,7 @@ bool Magick::get_config_values()
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(nickserv.names.ExtractWord(i+1, " "));
 		isonstr += nickserv.names.ExtractWord(i+1, " ") + " ";
 	    }
@@ -2036,6 +2062,7 @@ bool Magick::get_config_values()
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(chanserv.names.ExtractWord(i+1, " "));
 		isonstr += chanserv.names.ExtractWord(i+1, " ") + " ";
 	    }
@@ -2075,6 +2102,7 @@ bool Magick::get_config_values()
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(memoserv.names.ExtractWord(i+1, " "));
 		isonstr += memoserv.names.ExtractWord(i+1, " ") + " ";
 	    }
@@ -2114,6 +2142,7 @@ bool Magick::get_config_values()
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(operserv.names.ExtractWord(i+1, " "));
 		isonstr += operserv.names.ExtractWord(i+1, " ") + " ";
 	    }
@@ -2153,6 +2182,7 @@ bool Magick::get_config_values()
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(commserv.names.ExtractWord(i+1, " "));
 		isonstr += commserv.names.ExtractWord(i+1, " ") + " ";
 	    }
@@ -2192,6 +2222,7 @@ bool Magick::get_config_values()
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
 		    isonstr = "";
 		}
+		WLOCK(("Server", "WaitIsOn"));
 		server.WaitIsOn.insert(servmsg.names.ExtractWord(i+1, " "));
 		isonstr += servmsg.names.ExtractWord(i+1, " ") + " ";
 	    }
@@ -2319,6 +2350,12 @@ bool Magick::get_config_values()
     in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 15);
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
+    in.Read(ts_Config+"MSG_SEEN_TIME",&value_mstring,"30s");
+    if (FromHumanTime(value_mstring))
+	config.msg_seen_time = FromHumanTime(value_mstring);
+    else
+	config.msg_seen_time = FromHumanTime("30s");
+    in.Read(ts_Config+"MSG_SEEN_ACT",&config.msg_seen_act, 10);
 
     in.Read(ts_NickServ+"APPEND_RENAME",&nickserv.append_rename, true);
     in.Read(ts_NickServ+"SUFFIXES",&nickserv.suffixes,"_-^`");
@@ -2357,6 +2394,7 @@ bool Magick::get_config_values()
     if (value_mstring != nickserv.def_language)
     {
 	nickserv.def_language = value_mstring.LowerCase();
+	WLOCK(("LogMessages"));
 	LogMessages.clear();
 	LoadLogMessages(nickserv.def_language);
     }
@@ -2597,71 +2635,100 @@ bool Magick::get_config_values()
     AddCommands();
 
     if (commserv.IsList(commserv.all_name))
+    {
+	MLOCK(("CommServ", "list", commserv.all_name, "member"));
 	while (commserv.list[commserv.all_name].size())
 	{
 	    commserv.list[commserv.all_name].member =
 			commserv.list[commserv.all_name].begin();
 	    commserv.list[commserv.all_name].erase();
 	}
+    }
     else
+    {
+	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.all_name] = Committee(commserv.all_name, 
 					    "All Users");
+    }
     commserv.list[commserv.all_name].Secure(false);
     commserv.list[commserv.all_name].Private(true);
     commserv.list[commserv.all_name].OpenMemos(false);
 
     if (commserv.IsList(commserv.regd_name))
+    {
+	MLOCK(("CommServ", "list", commserv.regd_name, "member"));
 	while (commserv.list[commserv.regd_name].size())
 	{
 	    commserv.list[commserv.regd_name].member =
 			commserv.list[commserv.regd_name].begin();
 	    commserv.list[commserv.regd_name].erase();
 	}
+    }
     else
+    {
+	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.regd_name] = Committee(commserv.regd_name, 
 					    "Registered Users");
+    }
     commserv.list[commserv.regd_name].Secure(false);
     commserv.list[commserv.regd_name].Private(true);
     commserv.list[commserv.regd_name].OpenMemos(false);
 
     if (commserv.IsList(commserv.sadmin_name))
+    {
+	MLOCK(("CommServ", "list", commserv.sadmin_name, "member"));
 	while (commserv.list[commserv.sadmin_name].size())
 	{
 	    commserv.list[commserv.sadmin_name].member =
 			commserv.list[commserv.sadmin_name].begin();
 	    commserv.list[commserv.sadmin_name].erase();
 	}
+    }
     else
+    {
+	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.sadmin_name] = Committee(commserv.sadmin_name, 
 					    "Services Administrators");
+    }
     commserv.list[commserv.sadmin_name].Secure(commserv.sadmin_secure);
     commserv.list[commserv.sadmin_name].Private(commserv.sadmin_private);
     commserv.list[commserv.sadmin_name].OpenMemos(commserv.sadmin_openmemos);
+    { MLOCK(("CommServ", "list", commserv.sadmin_name, "member"));
     for (i=1; i<=operserv.services_admin.WordCount(", "); i++)
 	commserv.list[commserv.sadmin_name].insert(
 	    operserv.services_admin.ExtractWord(i, ", "),
 	    operserv.FirstName());
+    }
 
     if (!commserv.IsList(commserv.sop_name))
+    {
+	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.sop_name] = Committee(commserv.sop_name,
 				    &commserv.list[commserv.sadmin_name],
 				    "Services Operators");
+    }
     commserv.list[commserv.sop_name].Secure(commserv.sop_secure);
     commserv.list[commserv.sop_name].Private(commserv.sop_private);
     commserv.list[commserv.sop_name].OpenMemos(commserv.sop_openmemos);
 
     if (!commserv.IsList(commserv.admin_name))
+    {
+	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.admin_name] = Committee(commserv.admin_name, 
 				    &commserv.list[commserv.sadmin_name],
 				    "Server Administrators");
+    }
     commserv.list[commserv.admin_name].Secure(commserv.admin_secure);
     commserv.list[commserv.admin_name].Private(commserv.admin_private);
     commserv.list[commserv.admin_name].OpenMemos(commserv.admin_openmemos);
 
     if (!commserv.IsList(commserv.oper_name))
+    {
+	WLOCK(("CommServ", "list"));
 	commserv.list[commserv.oper_name] = Committee(commserv.oper_name, 
 				    &commserv.list[commserv.admin_name],
 				    "Server Operators");
+    }
     commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
     commserv.list[commserv.oper_name].Private(commserv.oper_private);
     commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
@@ -2671,8 +2738,14 @@ bool Magick::get_config_values()
 	server.raw(((server.proto.Tokens() && server.proto.GetNonToken("ERROR") != "") ?
 		server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
 		" :Closing Link: Configuration reload required restart!");
-	ircsvchandler->shutdown();
-	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value(1));
+	WLOCK(("IrcSvcHandler"));
+	if (ircsvchandler != NULL)
+	{
+	    ircsvchandler->shutdown();
+	    delete ircsvchandler;
+	    ircsvchandler = NULL;
+	}
+	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value::zero);
     }
 
     RET(true);
@@ -2859,6 +2932,7 @@ bool Magick::startup_t::IsServer(mstring server)
 {
     FT("Magick::startup_t::IsServer", (server));
 
+    RLOCK(("Startup", "Servers"));
     if (servers.find(server.LowerCase()) != servers.end()) {
 	RET(true);
     }
@@ -2870,6 +2944,7 @@ triplet<unsigned int,mstring,unsigned int> Magick::startup_t::Server(mstring ser
     FT("Magick::startup_t::Server", (server));
     triplet<unsigned int,mstring,unsigned int> value(0, "", 0);
 
+    RLOCK(("Startup", "Servers"));
     if (IsServer(server)) {
 	value = servers.find(server.LowerCase())->second;
     }
@@ -2883,6 +2958,7 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri)
 
     map<mstring,triplet<unsigned int,mstring,unsigned int> >::iterator iter;
 
+    RLOCK(("Startup", "Servers"));
     for (iter=servers.begin(); iter!=servers.end(); iter++) {
 	if (iter->second.third == pri)
 	    list.push_back(iter->first);
@@ -3097,12 +3173,18 @@ void Magick::Disconnect()
     NFT("Magick::Disconnect");
     i_reconnect = false;
     i_connected = false;
+    WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
+    {
 	ircsvchandler->shutdown();
+	delete ircsvchandler;
+	ircsvchandler = NULL;
+    }
 }
 
 void Magick::send(mstring in)
 {
+    RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
 	ircsvchandler->send(in);
 }
@@ -3196,6 +3278,7 @@ set<mstring> Magick::LNG_Loaded()
 {
     set<mstring> retval;
     map<mstring, map<mstring, mstring> >::iterator i;
+    RLOCK(("Messages"));
     for (i=Messages.begin(); i!=Messages.end(); i++)
     {
 	retval.insert(i->first);
@@ -3208,9 +3291,11 @@ size_t Magick::LNG_Usage(mstring lang)
     size_t retval = 0;
 
     map<mstring, mstring>::iterator i;
+    RLOCK(("Messages"));
     if (Messages.find(lang.UpperCase()) != Messages.end())
     {
 	retval += Messages.find(lang.UpperCase())->first.capacity();
+	RLOCK(("Messages", lang.UpperCase()));
 	for (i = Messages[lang.UpperCase()].begin();
 				i != Messages[lang.UpperCase()].end(); i++)
 	{
@@ -3226,6 +3311,7 @@ set<mstring> Magick::HLP_Loaded()
 {
     set<mstring> retval;
     map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::iterator i;
+    RLOCK(("Help"));
     for (i=Help.begin(); i!=Help.end(); i++)
     {
 	retval.insert(i->first);
@@ -3240,9 +3326,11 @@ size_t Magick::HLP_Usage(mstring lang)
     map<mstring, vector<triplet<mstring, mstring, mstring> > >::iterator i;
     vector<triplet<mstring, mstring, mstring> >::iterator j;
 
+    RLOCK(("Help"));
     if (Help.find(lang.UpperCase()) != Help.end())
     {
 	retval += Help.find(lang.UpperCase())->first.capacity();
+	RLOCK(("Help", lang.UpperCase()));
 	for (i=Help[lang.UpperCase()].begin();
 				i != Help[lang.UpperCase()].end(); i++)
 	{
@@ -3264,6 +3352,7 @@ size_t Magick::LFO_Usage()
     size_t retval = 0;
 
     map<mstring,mstring>::iterator i;
+    RLOCK(("LogMessages"));
     for (i=LogMessages.begin(); i!=LogMessages.end(); i++)
     {
 	retval += i->first.capacity();

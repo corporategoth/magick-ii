@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/06/18 12:49:27  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.65  2000/06/12 06:07:50  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -149,6 +155,7 @@ Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
     i_Nick = nick;
+    WLOCK(("MemoServ", "nick", i_Nick));
     i_Time = Now();
     i_Sender = sender;
     i_Text = text;
@@ -160,6 +167,7 @@ Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
 void Memo_t::operator=(const Memo_t &in)
 {
     FT("Memo_t::operator=", ("(const Memo_t &) in"));
+    WLOCK(("MemoServ", "nick", in.i_Nick));
     i_Nick = in.i_Nick;
     i_Time = in.i_Time;
     i_Sender = in.i_Sender;
@@ -168,10 +176,58 @@ void Memo_t::operator=(const Memo_t &in)
     i_Read = in.i_Read;
 }
 
+mstring Memo_t::Sender()
+{
+    NFT(("Memo_t::Sender"));
+    RLOCK(("MemoServ", "nick", i_Nick, "i_Sender"));
+    RET(i_Sender);
+}
+
+mDateTime Memo_t::Time()
+{
+    NFT(("Memo_t::Time"));
+    RLOCK(("MemoServ", "nick", i_Nick, "i_Time"));
+    RET(i_Time);
+}
+
+mstring Memo_t::Text()
+{
+    NFT(("Memo_t::Text"));
+    RLOCK(("MemoServ", "nick", i_Nick, "i_Text"));
+    RET(i_Text);
+}
+
+unsigned long Memo_t::File()
+{
+    NFT(("Memo_t::File"));
+    RLOCK(("MemoServ", "nick", i_Nick, "i_File"));
+    RET(i_File);
+}
+
+bool Memo_t::IsRead()
+{
+    NFT(("Memo_t::IsRead"));
+    RLOCK(("MemoServ", "nick", i_Nick, "i_Read"));
+    RET(i_Read);
+}
+void Memo_t::Read()
+{
+    NFT(("Memo_t::Read"));
+    WLOCK(("MemoServ", "nick", i_Nick, "i_Read"));
+    i_Read = true;
+}
+void Memo_t::Unread()
+{
+    NFT(("Memo_t::Unread"));
+    WLOCK(("MemoServ", "nick", i_Nick, "i_Read"));
+    i_Read = false;
+}
+
 
 size_t Memo_t::Usage()
 {
     size_t retval = 0;
+    WLOCK(("MemoServ", "nick", i_Nick));
     retval += i_Nick.capacity();
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
@@ -192,6 +248,7 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
 {
     FT("News_t::News_t", (channel, sender, text));
     i_Channel = channel;
+    WLOCK(("MemoServ", "channel", i_Channel));
     i_Time = Now();
     i_Sender = sender;
     i_Text = text;
@@ -201,11 +258,34 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
 void News_t::operator=(const News_t &in)
 {
     FT("News_t::operator=", ("(const News_t &) in"));
+    WLOCK(("MemoServ", "channel", in.i_Channel));
     i_Channel = in.i_Channel;
     i_Time = in.i_Time;
     i_Sender = in.i_Sender;
     i_Text = in.i_Text;
     i_Read = in.i_Read;
+}
+
+
+mstring News_t::Sender()
+{
+    NFT("News_t::Sender");
+    RLOCK(("MemoServ", "channel", i_Channel, "i_Sender"));
+    RET(i_Sender);
+}
+
+mDateTime News_t::Time()
+{
+    NFT("News_t::Time");
+    RLOCK(("MemoServ", "channel", i_Channel, "i_Time"));
+    RET(i_Time);
+}
+
+mstring News_t::Text()
+{
+    NFT("News_t::Text");
+    RLOCK(("MemoServ", "channel", i_Channel, "i_Text"));
+    RET(i_Text);
 }
 
 
@@ -217,6 +297,7 @@ bool News_t::IsRead(mstring name)
 	RET(false);
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
+    RLOCK(("MemoServ", "channel", i_Channel, "i_Read"));
     bool retval (i_Read.find(target.LowerCase())!=i_Read.end());
     RET(retval);
 }
@@ -230,6 +311,7 @@ void News_t::Read(mstring name)
 	return;
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
+    WLOCK(("MemoServ", "channel", i_Channel, "i_Read"));
     i_Read.insert(target.LowerCase());
 }
 
@@ -242,12 +324,15 @@ void News_t::Unread(mstring name)
 	return;
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
+    WLOCK(("MemoServ", "channel", i_Channel, "i_Read"));
+    i_Read.erase(name.LowerCase());
     i_Read.erase(target.LowerCase());
 }
 
 size_t News_t::Usage()
 {
     size_t retval = 0;
+    WLOCK(("MemoServ", "channel", i_Channel));
     retval += i_Channel.capacity();
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
@@ -360,6 +445,7 @@ void MemoServ::RemCommands()
 bool MemoServ::IsNick(mstring in)
 {
     FT("MemoServ::IsNick", (in));
+    RLOCK(("MemoServ", "nick"));
     bool retval = (nick.find(in.LowerCase())!=nick.end());
     RET(retval);
 }
@@ -367,6 +453,7 @@ bool MemoServ::IsNick(mstring in)
 bool MemoServ::IsChannel(mstring in)
 {
     FT("MemoServ::IsChannel", (in));
+    RLOCK(("MemoServ", "channel"));
     bool retval = (channel.find(in.LowerCase())!=channel.end());
     RET(retval);
 }
@@ -494,6 +581,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    bool unread = (what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0);
 	    list<News_t>::iterator iter;
 	    int i = 1;
+	    RLOCK(("MemoServ", "channel", who.LowerCase()));
 	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
 	    {
@@ -537,6 +625,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    int j=1;
 	    mstring output;
 	    bool triedabove = false, nonnumeric = false;
+	    RLOCK(("MemoServ", "channel", who.LowerCase()));
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    for (i=0; i<numbers.size(); i++)
 	    {
@@ -618,6 +707,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    list<Memo_t>::iterator iter;
 	    bool unread = (what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0);
 	    int i = 1;
+	    RLOCK(("MemoServ", "nick", who.LowerCase()));
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
 	    {
@@ -668,6 +758,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    unsigned int i;
 	    int j=1;
 	    bool triedabove = false, nonnumeric = false;
+	    RLOCK(("MemoServ", "nick", who.LowerCase()));
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
 	    for (i=0; i<numbers.size(); i++)
@@ -803,6 +894,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	{
 	    list<News_t>::iterator iter;
 	    mstring output;
+	    RLOCK(("MemoServ", "channel", who.LowerCase()));
 	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
 	    {
@@ -817,6 +909,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    unsigned int i;
 	    int j=1;
 	    bool triedabove = false, nonnumeric = false;
+	    RLOCK(("MemoServ", "channel", who.LowerCase()));
 	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    mstring output;
 	    for (i=0; i<numbers.size(); i++)
@@ -883,6 +976,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	{
 	    list<Memo_t>::iterator iter;
 	    mstring output;
+	    RLOCK(("MemoServ", "nick", who.LowerCase()));
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
 	    {
@@ -896,6 +990,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    unsigned int i;
 	    int j=1;
 	    bool triedabove = false, nonnumeric = false;
+	    RLOCK(("MemoServ", "nick", who.LowerCase()));
 	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
 	    for (i=0; i<numbers.size(); i++)
@@ -982,6 +1077,7 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
     unsigned int i;
     int j=1;
     bool triedabove = false, nonnumeric = false, nonfiles = false;
+    RLOCK(("MemoServ", "nick", who.LowerCase()));
     list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
     mstring output;
     for (i=0; i<numbers.size(); i++)
@@ -1103,6 +1199,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	list<News_t>::iterator iter;
 	int i = 1;
 	mstring output;
+	RLOCK(("MemoServ", "channel", who.LowerCase()));
 	for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
 	{
@@ -1137,6 +1234,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	list<Memo_t>::iterator iter;
 	int i = 1;
 	mstring output;
+	RLOCK(("MemoServ", "nick", who.LowerCase()));
 	for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
 	{
@@ -1338,12 +1436,14 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	}
 
 	unsigned int i;
+	mstring output = "";
+	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
-	mstring output = "";
 	output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG").c_str(),
 		Parent->chanserv.stored[who.LowerCase()].Name().c_str(),
 		iter->Sender().c_str(), iter->Text().c_str());
+	}
 
 	do_Forward2(mynick, source, dest, output);
     }
@@ -1380,10 +1480,11 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	}
 
 	unsigned int i;
+	mstring output = "";
+	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
 	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
 
-	mstring output = "";
 	if (iter->File())
 	    output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG").c_str(),
 		"filename",
@@ -1391,6 +1492,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	else
 	    output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD").c_str(),
 		iter->Sender().c_str(), iter->Text().c_str());
+	}
 
 	do_Forward2(mynick, source, dest, output);
     }
@@ -1520,16 +1622,18 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	mstring output = "";
 	unsigned int i;
+	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
-	mstring output = "";
 	output.Format(Parent->getMessage("MS_STATUS/REPLY_ARG").c_str(),
 		iter->Sender().c_str(),
 		(iter->Text().size() < 21) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
 		    iter->Text().SubString(0, iter->Text().size()).c_str(),
 		text.c_str());
+	}
 
 	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
@@ -1569,6 +1673,8 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	}
 
 	unsigned int i;
+	mstring output = "";
+	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
 	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	for (i=1; i < num; iter++, i++) ;
 
@@ -1588,7 +1694,6 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	mstring output = "";
 	if (iter->File())
 	    output.Format(Parent->getMessage("MS_STATUS/REPLY_ARG").c_str(),
 		"filename",
@@ -1602,6 +1707,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
 		    iter->Text().SubString(0, iter->Text().size()).c_str(),
 		text.c_str());
+	}
 
 	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
@@ -1701,6 +1807,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 
 	    list<News_t>::iterator iter;
 	    mstring output;
+	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
 	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		    iter != Parent->memoserv.channel[who.LowerCase()].end();)
 	    {
@@ -1708,6 +1815,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 		iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    }
 	    Parent->memoserv.channel.erase(who.LowerCase());
+	    }
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL_ALL"),
 				    who.c_str());
 	    Log(LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL_ALL"),
@@ -1733,8 +1841,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 		numbers.insert(numbers1[i]);
 
 	    bool triedabove = false, nonnumeric = false;
-	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    mstring output, denied;
+	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
+	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
 	    {
 		if (*ni - adjust <= 0)
@@ -1773,6 +1882,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    }
 	    if (Parent->memoserv.channel[who.LowerCase()].size() == 0)
 		Parent->memoserv.channel.erase(who.LowerCase());
+	    }
 	    if (denied != "")
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_NOTDEL"),
@@ -1817,6 +1927,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	{
 	    list<Memo_t>::iterator iter;
 	    mstring output;
+	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		    iter != Parent->memoserv.nick[who.LowerCase()].end();)
 	    {
@@ -1826,6 +1937,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 		iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    }
 	    Parent->memoserv.nick.erase(who.LowerCase());
+	    }
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_DEL_ALL"));
 	}
 	else
@@ -1846,8 +1958,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    for (i=0; i<numbers1.size(); i++)
 		numbers.insert(numbers1[i]);
 	    bool triedabove = false, nonnumeric = false;
-	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    mstring output;
+	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
+	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
 	    {
 		if (*ni - adjust <= 0)
@@ -1878,6 +1991,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    }
 	    if (Parent->memoserv.nick[who.LowerCase()].size() == 0)
 		Parent->memoserv.nick.erase(who.LowerCase());
+	    }
 	    if (output != "")
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_DEL"),
@@ -1975,13 +2089,14 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	    {
 		unsigned int count = 0;
 		list<Memo_t>::iterator iter;
+		{ RLOCK(("MemoServ", "nick", target.LowerCase()));
 		for (iter=Parent->memoserv.nick[target.LowerCase()].begin();
 			iter!=Parent->memoserv.nick[target.LowerCase()].end();
 			iter++)
 		{
 		    if (iter->File())
 			count++;
-		}
+		}}
 		if (count >= Parent->memoserv.Files())
 		{
 		    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/ATTACHLIMIT"),
@@ -2060,6 +2175,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Memo_t, attribs);
 
+	WLOCK(("MemoServ", "nick", i_Nick));
 	pOut->WriteElement(tag_Nick, i_Nick);
 	pOut->WriteElement(tag_Sender, i_Sender);
 	pOut->WriteElement(tag_Time, i_Time);
@@ -2104,6 +2220,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     //TODO: Add your source code here
 	pOut->BeginObject(tag_News_t, attribs);
 
+	WLOCK(("MemoServ", "nick", i_Channel));
 	pOut->WriteElement(tag_Channel, i_Channel);
 	pOut->WriteElement(tag_Sender, i_Sender);
 	pOut->WriteElement(tag_Time, i_Time);
@@ -2162,17 +2279,21 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     map<mstring, list<News_t> >::iterator j1;
     list<News_t>::iterator j2;
 
+    { RLOCK(("MemoServ", "nick"));
     for (i1 = nick.begin(); i1 != nick.end(); i1++)
 	for (i2=i1->second.begin(); i2!=i1->second.end(); i2++)
 	{
 	    pOut->WriteSubElement(&(*i2), attribs);
 	}
+    }
 
+    { RLOCK(("MemoServ", "channel"));
     for (j1 = channel.begin(); j1 != channel.end(); j1++)
 	for (j2=j1->second.begin(); j2!=j1->second.end(); j2++)
 	{
 	    pOut->WriteSubElement(&(*j2), attribs);
 	}
+    }
 
     pOut->EndObject(tag_MemoServ);
 }

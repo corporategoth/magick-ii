@@ -25,6 +25,12 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.41  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -195,15 +201,15 @@ public:
 	{ return (i_Name < in.i_Name); }
 
     mstring Name()		{ return i_Name; }
-    mstring AltName()		{ return i_AltName; }
-    void AltName(mstring in)	{ i_AltName = in; }
-    mstring Uplink()		{ return i_Uplink; }
-    int Hops()			{ return i_Hops; }
-    mstring Description()	{ return i_Description; }
+    mstring AltName();
+    void AltName(mstring in);
+    mstring Uplink();
+    int Hops();
+    mstring Description();
     void Ping();
     void Pong();
-    float Lag()			{ return i_Lag / 1000.0; }
-    bool Jupe()			{ return i_Jupe; }
+    float Lag();
+    bool Jupe();
     unsigned int Users();
     unsigned int Opers();
 
@@ -227,6 +233,7 @@ private:
     void sraw(mstring send);
     void SignOnAll();
     set<mstring> WaitIsOn;
+    map<mstring, pair<unsigned int, mDateTime> > ReDoMessages;
 
     size_t i_UserMax;
     map<mstring,long> ServerSquit;
@@ -242,12 +249,12 @@ private:
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(mstring nick);
 
-    void OurUplink(mstring server) { i_OurUplink = server; }
+    void OurUplink(mstring server);
 public:
     Protocol proto;
-    size_t UserMax() { return i_UserMax; }
+    size_t UserMax();
     map<mstring,Server> ServerList;
-    mstring OurUplink() { return i_OurUplink; }
+    mstring OurUplink();
     bool IsServer(mstring server);
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
@@ -283,6 +290,7 @@ public:
     void UNQLINE(mstring nick, mstring target);
     void WALLOPS(mstring nick, mstring message);    
     void KillUnknownUser(mstring user);
+    unsigned int SeenMessage(mstring data);
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);

@@ -25,6 +25,12 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.134  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.133  2000/06/12 08:15:36  prez
 ** Added 'minimum threads' option to config (set to 2)
 **
@@ -320,6 +326,8 @@ public:
 		unsigned int min_threads;
 		unsigned int low_water_mark;
 		unsigned int high_water_mark;
+		unsigned long msg_seen_time;
+		unsigned int msg_seen_act;
 	public:
 		unsigned long Server_Relink()	{ return server_relink; }
 		unsigned long Squit_Protect()	{ return squit_protect; }
@@ -333,6 +341,8 @@ public:
 		unsigned int Min_Threads()	{ return min_threads; }
 		unsigned int Low_Water_Mark()	{ return low_water_mark; }
 		unsigned int High_Water_Mark()	{ return high_water_mark; }
+		unsigned long MSG_Seen_Time()	{ return msg_seen_time; }
+		unsigned int MSG_Seen_Act()	{ return msg_seen_act; }
 	} config;
 
 	mstring Services_Dir()	    { return i_services_dir; }

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2000/06/18 12:49:27  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.107  2000/06/15 13:41:11  prez
 ** Added my tasks to develop *grin*
 ** Also did all the chanserv live locking (stored to be done).
@@ -517,8 +523,10 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		{
 		    if (Parent->chanserv.IsStored(recipiant))
 		    {
+			{ WLOCK(("MemoServ", "channel", recipiant.LowerCase()));
 			Parent->memoserv.channel[recipiant.LowerCase()].push_back(
 			    News_t(recipiant, sender, text));
+			}
 			send(service, nick, Parent->getMessage(nick, "MS_COMMAND/SENT"),
 			    recipiant.c_str(),
 			    Parent->chanserv.stored[recipiant.LowerCase()].Founder().c_str());
@@ -569,8 +577,10 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			else if (recipiant == realrecipiant ||
 			    Parent->nickserv.IsStored(realrecipiant))
 			{
+			    { WLOCK(("MemoServ", "nick", realrecipiant.LowerCase()));
 			    Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 				Memo_t(realrecipiant, sender, text, filenum));
+			    }
 			    if (filenum)
 				Log(LM_DEBUG, Parent->getLogMessage("MEMOSERV/FILE"),
 					Parent->nickserv.live[sender.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
@@ -7162,8 +7172,10 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     pOut->BeginObject(tag_NickServ, attribs);
 
     map<mstring, Nick_Stored_t>::iterator iter;
+    { RLOCK(("NickServ", "stored"));
     for (iter = stored.begin(); iter != stored.end(); iter++)
 	pOut->WriteSubElement(&iter->second, attribs);
+    }
 
     pOut->EndObject(tag_NickServ);
 }

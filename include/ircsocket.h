@@ -25,6 +25,12 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.34  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -110,10 +116,10 @@ public:
     virtual int open(void *);
     virtual int handle_input(ACE_HANDLE handle);
 
-    time_t HTM_Gap() { return htm_gap; }
-    unsigned short HTM_Level() { return htm_level; }
-    size_t HTM_Threshold() { return htm_threshold; }
-    void HTM_Threshold(size_t in) { htm_threshold = in; }
+    time_t HTM_Gap();
+    unsigned short HTM_Level();
+    size_t HTM_Threshold();
+    void HTM_Threshold(size_t in);
     void HTM(bool in);
     size_t Average(time_t secs = 0);
 };
@@ -127,8 +133,8 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
     mDateTime last_check;
     mDateTime last_ping;
 public:
-    void ForceSave() { last_save = mDateTime(0.0); }
-    void ForcePing() { last_ping = mDateTime(0.0); }
+    void ForceSave();
+    void ForcePing();
     mstring SyncTime();
     virtual int open(void *in=0);
     virtual int close(unsigned long in);

@@ -25,6 +25,12 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.17  2000/06/09 13:57:00  prez
 ** Added tracing to mconfig
 **
@@ -114,7 +120,8 @@ public:
     static void do_Credits(mstring mynick, mstring source, mstring params);
     static void do_Contrib(mstring mynick, mstring source, mstring params);
     static void do_BreakDown(mstring mynick, mstring source, mstring params);
-    static void do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server);
+    static void do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCounts,
+	mstring mynick, mstring source, mstring previndent, mstring server);
     static void do_Global(mstring mynick, mstring source, mstring params);
     static void do_stats_Nick(mstring mynick, mstring source, mstring params);
     static void do_stats_Channel(mstring mynick, mstring source, mstring params);

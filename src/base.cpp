@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.123  2000/06/12 08:15:36  prez
 ** Added 'minimum threads' option to config (set to 2)
 **
@@ -269,6 +275,7 @@ void mBase::init()
 	    }
 	}
     }
+    MLOCK(("MessageQueue"));
     BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (sizeof(ACE_Method_Object *) * 2));
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
@@ -412,7 +419,7 @@ void mBase::sendV(const mstring &source, const mstring &dest, const mstring &psz
     RLOCK(("NickServ", "live", dest));
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
-	if (Parent->nickserv.IsStored(dest) && !Parent->nickserv.LCK_PRIVMSG() &&
+	if (!Parent->nickserv.LCK_PRIVMSG() && Parent->nickserv.IsStored(dest) &&
 		Parent->nickserv.stored[dest.LowerCase()].IsOnline())
 	{
 	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
@@ -651,7 +658,7 @@ private:
 void mBaseTask::message(const mstring& message)
 {
     FT("mBaseTask::message",(message));
-    MLOCK(("MessageQueue"));
+    { MLOCK(("MessageQueue"));
     if(message_queue_.is_full())
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
@@ -665,7 +672,7 @@ void mBaseTask::message(const mstring& message)
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
 	}
-    }
+    }}
     MLOCK2(("ActivationQueue"));
     activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
 }
@@ -765,6 +772,7 @@ int mBaseTask::message_i(const mstring& message)
 	Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
 	RET(-1);
     }
+    FLUSH();
     RET(0);
 }
 
@@ -796,7 +804,7 @@ mstring mBaseTask::PreParse(const mstring& message)
 void mBaseTask::i_shutdown()
 {
     NFT("mBaseTask::i_shutdown");
-    MLOCK(("MessageQueue"));
+    MLOCK(("ActivationQueue"));
     activation_queue_.enqueue(new shutdown_MO);
 }
 

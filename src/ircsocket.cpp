@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2000/06/18 12:49:27  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.109  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -177,22 +183,31 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // Traffic Accounting ...
     map<time_t, size_t>::iterator iter;
     time_t now = time(NULL);
+    
+    { WLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
 		iter->first < now - (Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
 	traffic.erase(iter->first);
     if (traffic.find(now) == traffic.end())
 	traffic[now] = 0;
     traffic[now] += ACE_OS::strlen(data);
+    }
 
     // Check to see if we're in HTM.
+    { WLOCK(("IrcSvcHandler", "htm_gap"));
+    WLOCK2(("IrcSvcHandler", "htm_level"));
+    WLOCK3(("IrcSvcHandler", "last_htm_check"));
     if (last_htm_check.SecondsSince() > htm_gap)
     {
 	last_htm_check = Now();
 	size_t total = 0;
 	time_t i;
+	{ RLOCK(("IrcSvcHandler", "traffic"));
 	for (i = now - (htm_gap + 1); i<now; i++)
 	    if (traffic.find(i) != traffic.end())
 		total += traffic[i];
+	}
+	RLOCK(("IrcSvcHandler", "htm_threshold"));
 	if (total > (htm_gap * htm_threshold))
 	{
 	    if (htm_gap > Parent->operserv.Max_HTM_Gap())
@@ -237,8 +252,9 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    htm_gap = Parent->operserv.Init_HTM_Gap();
 	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_OFF"));
 	}
-    }    
+    }}
 
+    unsigned int i;
     mstring data2 = flack + data;
     flack = "";
     // if(recvResult==-1) major problem.
@@ -246,15 +262,22 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
     if(data2.Contains("\n")||data2.Contains("\r"))
     {
-	if (!(data2.Last() == '\n' || data2.Last() == '\r'))
-	    flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
-
-	for(unsigned int i=1;i<data2.WordCount("\n\r");i++)
+	for(i=1;i<data2.WordCount("\n\r");i++)
+	{
 	    if(data2.ExtractWord(i,"\n\r")!="")
 		mBase::push_message(data2.ExtractWord(i,"\n\r"));
+	}
 
-	if (flack == "")
-	    mBase::push_message(data2.ExtractWord(data2.WordCount("\n\r"),"\n\r"));
+	if (data2.Last() == '\n' || data2.Last() == '\r')
+	{
+	    if(data2.ExtractWord(i,"\n\r")!="")
+		mBase::push_message(data2.ExtractWord(i,"\n\r"));
+	}
+	else
+	{
+	    flack = data2.ExtractWord(i, "\n\r");
+	}
+
 	FLUSH();
     }
     else
@@ -263,9 +286,41 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     RET(0);
 }
 
+time_t IrcSvcHandler::HTM_Gap()
+{
+    NFT("IrcSvcHandler::HTM_Gap");
+    RLOCK(("IrcSvcHandler", "htm_gap"));
+    RET(htm_gap);
+}
+
+unsigned short IrcSvcHandler::HTM_Level()
+{
+    NFT("IrcSvcHandler::HTM_Level");
+    RLOCK(("IrcSvcHandler", "htm_level"));
+    RET(htm_level);
+}
+
+size_t IrcSvcHandler::HTM_Threshold()
+{
+    NFT("IrcSvcHandler::HTM_Threshold");
+    RLOCK(("IrcSvcHandler", "htm_threshold"));
+    RET(htm_threshold);
+}
+
+void IrcSvcHandler::HTM_Threshold(size_t in)
+{
+    FT("IrcSvcHandler::HTM_Threshold", (in));
+    WLOCK(("IrcSvcHandler", "htm_threshold"));
+    htm_threshold = in;
+}
+
+
 void IrcSvcHandler::HTM(bool in)
 {
     FT("IrcSvcHandler::HTM", (in));
+    WLOCK(("IrcSvcHandler", "last_htm_check"));
+    WLOCK2(("IrcSvcHandler", "htm_level"));
+    WLOCK3(("IrcSvcHandler", "htm_gap"));
     last_htm_check = Now();
     if (in)
     {
@@ -288,6 +343,7 @@ size_t IrcSvcHandler::Average(time_t secs)
     map<time_t, size_t>::iterator iter;
     if (secs > Parent->operserv.Max_HTM_Gap())
 	secs = 0;
+    RLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
 			iter->first < now; iter++)
     {
@@ -336,7 +392,8 @@ mstring Reconnect_Handler::FindNext(mstring server) {
 	vector<mstring> serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).third);
 	vector<mstring>::iterator iter;
 	for (iter=serverlist.begin(); iter!=serverlist.end(); iter++)
-	    if (*iter == server) break;
+	    if (*iter == server)
+		break;
 
 	if (iter != serverlist.end()) iter++;
 
@@ -386,13 +443,24 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->GotConnect(false);
     Parent->i_server = server;
     Parent->server.proto.Tokens(false);
+    WLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)
+    {
+	Parent->ircsvchandler->shutdown();
 	delete Parent->ircsvchandler;
+	Parent->ircsvchandler = NULL;
+    }
     Parent->ircsvchandler=new IrcSvcHandler;
     Log(LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
 		server.c_str(), details.first);
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
     {
+	if (Parent->ircsvchandler != NULL)
+	{
+	    Parent->ircsvchandler->shutdown();
+	    delete Parent->ircsvchandler;
+	    Parent->ircsvchandler = NULL;
+	}
 	Log(LM_ERROR, Parent->getLogMessage("OTHER/REFUSED"),
 		server.c_str(), details.first);
 	//okay we got a connection problem here. log it and try again
@@ -445,7 +513,9 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
+    { WLOCK(("Server", "ServerSquit"));
     Parent->server.ServerSquit.erase(*tmp);
+    }
 
     if (Parent->server.IsServer(*tmp))
 	Log(LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
@@ -456,6 +526,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		tmp->c_str(), "?");
 
     // QUIT all user's who faked it ...
+    WLOCK2(("Server", "ToBeSquit"));
     if (Parent->server.ToBeSquit.find(*tmp) != Parent->server.ToBeSquit.end())
     {
 	list<mstring>::iterator iter;
@@ -464,6 +535,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    if (Parent->nickserv.IsLive(*iter))
 	    {
 		Parent->nickserv.live[*iter].Quit("FAKE SQUIT - " + *tmp);
+		WLOCK(("NickServ", "live"));
 		Parent->nickserv.live.erase(*iter);
 	    }
 	}
@@ -481,25 +553,30 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
+    { WLOCK(("Server", "ServerSquit"));
+    WLOCK2(("Server", "ToBeSquit"));
     Parent->server.ServerSquit.erase(*tmp);
     Parent->server.ToBeSquit.erase(*tmp);
+    }
 
     // QUIT all user's who did not come back from SQUIT
     map<mstring,Nick_Live_t>::iterator i;
     vector<mstring> SquitMe;
     vector<mstring>::iterator k;
+    { RLOCK(("NickServ", "live"));
     for (i=Parent->nickserv.live.begin(); i != Parent->nickserv.live.end(); i++)
     {
 	if (i->second.Squit() == *tmp)
 	{
 	    SquitMe.push_back(i->first);
 	}
-    }
+    }}
     for (k=SquitMe.begin(); k != SquitMe.end(); k++)
     {
 	if (Parent->nickserv.IsLive(*k))
 	{
 	    Parent->nickserv.live[*k].Quit("SQUIT - " + *tmp);
+	    WLOCK(("NickServ", "live"));
 	    Parent->nickserv.live.erase(*k);
 	}
     }
@@ -552,16 +629,31 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 			Parent->chanserv.FirstName()))
     {
 	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
+	MLOCK(("ChanServ", "live", tmp, "ph_timer"));
 	Parent->chanserv.live[tmp->LowerCase()].ph_timer = 0;
     }
     delete tmp;
     RET(0);
 }
 
+void EventTask::ForceSave()
+{
+    NFT("EventTask::ForceSave");
+    WLOCK(("Events", "last_save"));
+    last_save = mDateTime(0.0);
+}
+
+void EventTask::ForcePing()
+{
+    NFT("EventTask::ForcePing");
+    WLOCK(("Events", "last_ping"));
+    last_ping = mDateTime(0.0);
+}
 
 mstring EventTask::SyncTime()
 {
     NFT("EventTask::SyncTime");
+    RLOCK(("Events", "last_save"));
     mstring retval = ToHumanTime(Parent->config.Cycletime() - (unsigned long)last_save.SecondsSince());
     RET(retval);
 }
@@ -586,7 +678,12 @@ int EventTask::svc(void)
     mThread::Attach(tt_MAIN);
     NFT("EventTask::svc");
 
+    { WLOCK(("Events", "last_expire"));
+    WLOCK2(("Events", "last_save"));
+    WLOCK3(("Events", "last_check"));
+    WLOCK4(("Events", "last_ping"));
     last_expire = last_save = last_check = last_ping = Now();
+    }
     while(!Parent->Shutdown())
     {
 	// Make sure we're turned on ...
@@ -611,6 +708,7 @@ int EventTask::svc(void)
 	unsigned int i;
 	vector<mstring> chunked;
 
+	{ RLOCK(("Events", "last_expire"));
 	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting EXPIRATION check ..."));
@@ -674,8 +772,8 @@ int EventTask::svc(void)
 
 	    // nicknames
 	    {
-		MLOCK(("NickServ", "stored"));
 		vector<mstring> expired_nicks;
+		{ RLOCK2(("NickServ", "stored"));
 		for (nsi = Parent->nickserv.stored.begin();
 			nsi != Parent->nickserv.stored.end(); nsi++)
 		{
@@ -694,7 +792,8 @@ int EventTask::svc(void)
 				expired_nicks.push_back(nsi->first);
 			}
 		    }
-		}
+		}}
+		WLOCK(("NickServ", "stored"));
 		for (i=0; i<expired_nicks.size(); i++)
 		{
 		    Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
@@ -709,8 +808,8 @@ int EventTask::svc(void)
 
 	    // channels
 	    {
-		MLOCK(("ChanServ", "stored"));
 		vector<mstring> expired_chans;
+		{ RLOCK2(("ChanServ", "stored"));
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); csi++)
 		{
@@ -720,7 +819,8 @@ int EventTask::svc(void)
 			    Parent->chanserv.Expire())
 			    expired_chans.push_back(csi->first);
 		    }
-		}
+		}}
+		WLOCK(("ChanServ", "stored"));
 		for (i=0; i<expired_chans.size(); i++)
 		{
 		    Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
@@ -732,11 +832,12 @@ int EventTask::svc(void)
 
 	    // news articles
 	    {
-		MLOCK(("MemoServ", "channel"));
+		RLOCK2(("MemoServ", "channel"));
 		for (ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 		{
 		    bool firstgone = false;
+		    WLOCK(("MemoServ", "channel", ni->first));
 		    for (lni=ni->second.begin();
 			ni->second.size() &&
 			(lni != ni->second.end() || firstgone); lni++)
@@ -774,21 +875,26 @@ int EventTask::svc(void)
 	    // transaction ID's (for inter-magick)
 	    TxnIds::Expire();
 
+	    WLOCK(("Events", "last_expire"));
 	    last_expire = Now();
-	}
+	}}
 
+	{ RLOCK(("Events", "last_save"));
 	if (last_save.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
 	    Parent->save_databases();
 
+	    WLOCK(("Events", "last_save"));
 	    last_save = Now();
-	}
+	}}
 
+	{ RLOCK(("Events", "last_check"));
 	if (last_check.SecondsSince() >= Parent->config.Checktime())
 	{
 	    CP(("Starting CHECK cycle ..."));
 
+	    { RLOCK2(("ChanServ", "live"));
 	    for (cli=Parent->chanserv.live.begin();
 		    cli!=Parent->chanserv.live.end(); cli++)
 	    {
@@ -806,6 +912,7 @@ int EventTask::svc(void)
 		    {
 			vector<mstring> remove;
 			vector<mstring>::iterator ri;
+			RLOCK3(("ChanServ", "live", cli->first, "bans"));
 			for (di=cli->second.bans.begin();
 				di!=cli->second.bans.end(); di++)
 			{
@@ -824,6 +931,7 @@ int EventTask::svc(void)
 		chunked.clear();
 		if (csi != Parent->chanserv.stored.end())
 		{
+		    RLOCK3(("ChanServ", "live", cli->first, "recent_parts"));
 		    for (di=cli->second.recent_parts.begin();
 				di!=cli->second.recent_parts.end(); di++)
 		    {
@@ -833,15 +941,22 @@ int EventTask::svc(void)
 		}
 		else
 		{
+		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		    cli->second.recent_parts.clear();
 		}
+		{ WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
 		for (i=0; i<chunked.size(); i++)
 		    cli->second.recent_parts.erase(chunked[i]);
+		}
 
 		// Send pending ChanServ modes ...
 		// Make sure we got someone to send them first.
 		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 		{
+		    RLOCK(("ChanServ", "live", cli->first, "p_modes_on"));
+		    RLOCK2(("ChanServ", "live", cli->first, "p_modes_off"));
+		    RLOCK3(("ChanServ", "live", cli->first, "p_modes_on_params"));
+		    RLOCK4(("ChanServ", "live", cli->first, "p_modes_on_params"));
 		    if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
 		    {
 			unsigned int j, k;
@@ -872,8 +987,11 @@ int EventTask::svc(void)
 				j++; k++;
 			    }
 			}
+			{ WLOCK(("ChanServ", "live", cli->first, "p_modes_off"));
+			WLOCK2(("ChanServ", "live", cli->first, "p_modes_off_params"));
 			cli->second.p_modes_off = "";
 			cli->second.p_modes_off_params.clear();
+			}
 			if (mode.size() && cli->second.p_modes_on.size())
 			    mode += "+";
 			for (i=0, k=0; i<cli->second.p_modes_on.size(); i++)
@@ -900,8 +1018,11 @@ int EventTask::svc(void)
 				j++; k++;
 			    }
 			}
+			{ WLOCK(("ChanServ", "live", cli->first, "p_modes_on"));
+			WLOCK2(("ChanServ", "live", cli->first, "p_modes_on_params"));
 			cli->second.p_modes_on = "";
 			cli->second.p_modes_on_params.clear();
+			}
 			if (mode.size())
 			    modelines.push_back(mode + " " + modeparam);
 			for (i=0; i<modelines.size(); i++)
@@ -911,12 +1032,13 @@ int EventTask::svc(void)
 			}
 		    }
 		}
-	    }
+	    }}
 
 	    // Check if we should rename people who are past their
 	    // grace time on ident (if KillProtect is on, and they
 	    // are not on access list or secure is on).
 	    chunked.clear();
+	    { RLOCK(("NickServ", "live"));
 	    for (nli = Parent->nickserv.live.begin();
 			    nli != Parent->nickserv.live.end(); nli++)
 	    {
@@ -929,7 +1051,7 @@ int EventTask::svc(void)
 		{
 		    chunked.push_back(nli->first);
 		}
-	    }
+	    }}
 	    for (i=0; i<chunked.size(); i++)
 	    {
 		nli = Parent->nickserv.live.find(chunked[i]);
@@ -956,11 +1078,13 @@ int EventTask::svc(void)
 				    Parent->startup.Server_Name(),
 				    Parent->nickserv.Enforcer_Name());
 		}
+		WLOCK(("NickServ", "recovered"));
 		Parent->nickserv.recovered[oldnick.LowerCase()] = Now();
 	    }
 
 	    // Sign off clients we've decided to take.
 	    chunked.clear();
+	    { RLOCK(("NickServ", "recovered"));
 	    for (di = Parent->nickserv.recovered.begin();
 			di != Parent->nickserv.recovered.end(); di++)
 	    {
@@ -973,18 +1097,23 @@ int EventTask::svc(void)
 			chunked.push_back(di->first);
 		    }
 		}
-	    }
+	    }}
+	    { WLOCK(("NickServ", "recovered"));
 	    for (i=0; i<chunked.size(); i++)
 		Parent->nickserv.recovered.erase(chunked[i]);
+	    }
+	    WLOCK(("Events", "last_check"));
 	    last_check = Now();
-	}
+	}}
 
+	{ RLOCK(("Events", "last_ping"));
 	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
 	{
 	    CP(("Starting SERVER PING ..."));
 
 	    vector<double> pingtimes;
 	    double min = -1, max = 0, sum = 0, avg = 0;
+	    { RLOCK2(("Server", "ServerList"));
 	    for (si=Parent->server.ServerList.begin();
 		    si!=Parent->server.ServerList.end(); si++)
 	    {
@@ -994,7 +1123,7 @@ int EventTask::svc(void)
 		    max = si->second.Lag();
 		pingtimes.push_back(si->second.Lag());
 		sum += si->second.Lag();
-	    }
+	    }}
 	    if (pingtimes.size() >= 3)
 		avg = (sum - min - max) / (double)(pingtimes.size() - 2);
 	    else
@@ -1012,15 +1141,20 @@ int EventTask::svc(void)
 		Log(LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg);
 	    }
 
-	    if (Parent->ircsvchandler->HTM_Level() <= 3)
-	    {
-		for (si=Parent->server.ServerList.begin();
-			si!=Parent->server.ServerList.end();si++)
-		    si->second.Ping();
-		Log(LM_TRACE, Parent->getLogMessage("EVENT/PING"));
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+		if (Parent->ircsvchandler->HTM_Level() <= 3)
+		{
+		    RLOCK2(("Server", "ServerList"));
+		    for (si=Parent->server.ServerList.begin();
+				si!=Parent->server.ServerList.end();si++)
+			si->second.Ping();
+		    Log(LM_TRACE, Parent->getLogMessage("EVENT/PING"));
+		}
 	    }
+	    WLOCK(("Events", "last_ping"));
 	    last_ping = Now();
-	}
+	}}
 	
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);

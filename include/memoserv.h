@@ -25,6 +25,12 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/06/18 12:49:26  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.29  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -101,14 +107,14 @@ public:
     	{ return (i_Time < in.i_Time); }
 
     mstring Nick()const	    { return i_Nick; }
-    mstring Sender()const   { return i_Sender; }
-    mDateTime Time()const   { return i_Time; }
-    mstring Text()const	    { return i_Text; }
-    unsigned long File()const	{ return i_File; }
+    mstring Sender();
+    mDateTime Time();
+    mstring Text();
+    unsigned long File();
 
-    bool IsRead()const	    { return i_Read; }
-    void Read()		    { i_Read = true; }
-    void Unread()	    { i_Read = false; }
+    bool IsRead();
+    void Read()	;
+    void Unread();
 
     SXP::Tag& GetClassTag() const { return tag_Memo_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
@@ -144,9 +150,9 @@ public:
     	{ return (i_Time < in.i_Time); }
 
     mstring Channel()const	{ return i_Channel; }
-    mstring Sender()const	{ return i_Sender; }
-    mDateTime Time()const	{ return i_Time; }
-    mstring Text()const		{ return i_Text; }
+    mstring Sender();
+    mDateTime Time();
+    mstring Text();
 
     bool IsRead(mstring name);
     void Read(mstring name);

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/06/18 12:49:28  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.58  2000/06/12 06:07:51  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -417,25 +423,33 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 
     ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN_HEAD"));
     mstring out;
-    unsigned int users = 0, opers = 0;
 
+    map<mstring,pair<unsigned int,unsigned int> > ServCounts;
     map<mstring,Nick_Live_t>::iterator k;
+    { RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
     {
-	if (k->second.IsServices() && k->second.Name() != "")
+	if (ServCounts.find(k->second.Server().LowerCase()) == ServCounts.end())
 	{
-	    users++;
-	    if (k->second.HasMode("o"))
-		opers++;
+	    ServCounts[k->second.Server().LowerCase()] =
+	    				pair<unsigned int,unsigned int>(0,0);
 	}
-    }
+	if (k->second.Name() != "")
+	{
+	    ServCounts[k->second.Server().LowerCase()].first++;
+	    if (k->second.HasMode("o"))
+		ServCounts[k->second.Server().LowerCase()].second++;
+	}
+    }}
     ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
-	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0, users, opers,
-	    ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-    do_BreakDown2(mynick, source, "", "");
+	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0,
+	    ServCounts[""].first, ServCounts[""].second,
+	    ((float) ServCounts[""].first / (float) Parent->nickserv.live.size()) * 100.0);
+    do_BreakDown2(ServCounts, mynick, source, "", "");
 }
 
-void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server)
+void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCounts,
+	mstring mynick, mstring source, mstring previndent, mstring server)
 {
     FT("ServMsg::do_BreakDown2", (mynick, source, previndent, server));
     vector<mstring> downlinks;
@@ -446,6 +460,7 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
     if (server == "")
     {
 	map<mstring, Server>::iterator iter;
+	RLOCK(("Server", "ServerList"));
 	for (iter = Parent->server.ServerList.begin();
 		iter != Parent->server.ServerList.end(); iter++)
 	{
@@ -464,8 +479,8 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
     {
 	if (Parent->server.IsServer(downlinks[i]))
 	{
-	    users = Parent->server.ServerList[downlinks[i]].Users();
-	    opers = Parent->server.ServerList[downlinks[i]].Opers();
+	    users = ServCounts[downlinks[i].LowerCase()].first;
+	    opers = ServCounts[downlinks[i].LowerCase()].second;
 	    lag = Parent->server.ServerList[downlinks[i]].Lag();
 	    servername = Parent->server.ServerList[downlinks[i]].AltName();
 	    if (i<downlinks.size()-1)
@@ -473,14 +488,14 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "|-" + servername).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		do_BreakDown2(mynick, source, previndent + "| ", downlinks[i]);
+		do_BreakDown2(ServCounts, mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
 	    {
 		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "`-" + servername).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		do_BreakDown2(mynick, source, previndent + "  ", downlinks[i]);
+		do_BreakDown2(ServCounts, mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
     }
@@ -501,6 +516,7 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 
     unsigned long linked = 0, suspended = 0, forbidden = 0;
     map<mstring,Nick_Stored_t>::iterator i;
+    { RLOCK(("NickServ", "stored"));
     for (i=Parent->nickserv.stored.begin();
 		i!=Parent->nickserv.stored.end(); i++)
     {
@@ -513,7 +529,7 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 	    if (i->second.Suspended())
 		suspended++;
 	}
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_REGD"),
 		Parent->nickserv.stored.size(), linked);
@@ -564,6 +580,7 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 
     unsigned long suspended = 0, forbidden = 0;
     map<mstring,Chan_Stored_t>::iterator i;
+    { RLOCK(("ChanServ", "stored"));
     for (i=Parent->chanserv.stored.begin();
 		i!=Parent->chanserv.stored.end(); i++)
     {
@@ -574,7 +591,7 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 	    if (i->second.Suspended())
 		suspended++;
 	}
-    }
+    }}
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_REGD"),
 		Parent->chanserv.stored.size());
@@ -762,80 +779,89 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 
     size = 0;
     map<mstring, Nick_Live_t>::iterator i;
+    { RLOCK(("NickServ", "live"));
     for (i=Parent->nickserv.live.begin(); i!=Parent->nickserv.live.end(); i++)
     {
 	size += i->first.capacity();
 	size += i->second.Usage();
-    }
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
 		Parent->nickserv.live.size(),ToHumanSpace(size).c_str());
     size = 0;
     map<mstring, Chan_Live_t>::iterator j;
+    { RLOCK(("ChanServ", "live"));
     for (j=Parent->chanserv.live.begin(); j!=Parent->chanserv.live.end(); j++)
     {
 	size += j->first.capacity();
 	size += j->second.Usage();
-    }
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
 		Parent->chanserv.live.size(), ToHumanSpace(size).c_str());
     size = 0;
     map<mstring, Nick_Stored_t>::iterator k;
+    { RLOCK(("NickServ", "stored"));
     for (k=Parent->nickserv.stored.begin(); k!=Parent->nickserv.stored.end(); k++)
     {
 	size += k->first.capacity();
 	size += k->second.Usage();
-    }
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
 		Parent->nickserv.stored.size(), ToHumanSpace(size).c_str());
     size = 0;
     map<mstring, Chan_Stored_t>::iterator l;
+    { RLOCK(("ChanServ", "stored"));
     for (l=Parent->chanserv.stored.begin(); l!=Parent->chanserv.stored.end(); l++)
     {
 	size += l->first.capacity();
 	size += l->second.Usage();
-    }
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
 		Parent->chanserv.stored.size(), ToHumanSpace(size).c_str());
 
     size = 0;
     map<mstring,list<Memo_t> >::iterator m1;
     list<Memo_t>::iterator m2;
+    { RLOCK(("MemoServ", "nick"));
     for (count = 0, m1=Parent->memoserv.nick.begin();
 			m1!=Parent->memoserv.nick.end(); m1++)
     {
 	size += m1->first.capacity();
+	{ RLOCK(("MemoServ", "nick", m1->first));
 	count += m1->second.size();
 	for (m2 = m1->second.begin(); m2 != m1->second.end(); m2++)
 	{
 	    size += m2->Usage();
-	}
-    }
+	}}
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_MEMO"),
 		count, ToHumanSpace(size).c_str());
 
     size = 0;
     map<mstring,list<News_t> >::iterator n1;
     list<News_t>::iterator n2;
+    { RLOCK(("MemoServ", "channel"));
     for (count = 0, n1=Parent->memoserv.channel.begin();
 			n1!=Parent->memoserv.channel.end(); n1++)
     {
 	size += n1->first.capacity();
+	{ RLOCK(("MemoServ", "channel", n1->first));
 	count += n1->second.size();
 	for (n2 = n1->second.begin(); n2 != n1->second.end(); n2++)
 	{
 	    size += n2->Usage();
-	}
-    }
+	}}
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NEWS"),
 		count, ToHumanSpace(size).c_str());
 
     size = 0;
     map<mstring, Committee>::iterator o;
+    { RLOCK(("CommServ", "list"));
     for (o=Parent->commserv.list.begin(); o!=Parent->commserv.list.end(); o++)
     {
 	size += o->first.capacity();
 	size += o->second.Usage();
-    }
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
 		Parent->commserv.list.size(), ToHumanSpace(size).c_str());
 
@@ -852,11 +878,12 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 
     size = 0;
     map<mstring, Server>::iterator p;
+    { RLOCK(("Server", "ServerList"));
     for (p=Parent->server.ServerList.begin(); p!=Parent->server.ServerList.end(); p++)
     {
 	size += p->first.capacity();
 	size += p->second.Usage();
-    }
+    }}
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
 		Parent->server.ServerList.size(), ToHumanSpace(size).c_str());
 
@@ -1247,11 +1274,11 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-
     if (DccMap::xfers.size())
     {
 	::send(mynick, source, Parent->getMessage(source, "DCC/LIST_HEAD"));
 	map<unsigned long, DccXfer *>::iterator iter;
+	RLOCK(("DccMap", "xfers"));
 	for (iter = DccMap::xfers.begin(); iter != DccMap::xfers.end();
  						iter++)
  	{
@@ -1338,6 +1365,7 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    RLOCK(("DccMap", "xfers"));
     if (DccMap::xfers.find(number) == DccMap::xfers.end())
     {
 	::send(mynick, source, Parent->getMessage(source, "DCC/NODCCID"),
@@ -1401,8 +1429,10 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
     	{
     	    map<mstring, list<Memo_t> >::iterator i;
     	    list<Memo_t>::iterator j;
+	    RLOCK(("MemoServ", "nick"));
 	    for (i=Parent->memoserv.nick.begin(); i!=Parent->memoserv.nick.end(); i++)
 	    {
+		RLOCK(("MemoServ", "nick", i->first));
 	    	for(k=1, j=i->second.begin(); j!=i->second.end(); j++, k++)
 	    	{
 	    	    if (j->File() == number)
@@ -1426,6 +1456,7 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
     	if (Parent->filesys.Exists(FileMap::Picture, number))
     	{
     	    map<mstring, Nick_Stored_t >::iterator i;
+	    RLOCK(("NickServ", "stored"));
 	    for (i=Parent->nickserv.stored.begin(); i!=Parent->nickserv.stored.end(); i++)
 	    {
 	    	if (i->second.PicNum() == number)
@@ -1479,6 +1510,7 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
     mstring text = params.After(" ");
 
     map<mstring, Server>::iterator iter;
+    RLOCK(("Server", "ServerList"));
     for (iter=Parent->server.ServerList.begin();
 			iter != Parent->server.ServerList.end(); iter++)
     {

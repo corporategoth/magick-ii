@@ -27,6 +27,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2000/06/18 12:49:27  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.104  2000/06/12 06:07:51  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -403,6 +409,7 @@ mstring Protocol::GetNonToken(mstring in)
 Server::Server(mstring name, mstring description)
 {
     FT("Server::Server", (name, description));
+    MLOCK(("Server", "ServerList", name));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
     i_Uplink = Parent->startup.Server_Name().LowerCase();
@@ -416,6 +423,7 @@ Server::Server(mstring name, mstring description)
 Server::Server(mstring name, int hops, mstring description)
 {
     FT("Server::Server", (name, hops, description));
+    MLOCK(("Server", "ServerList", name));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
     i_Uplink = Parent->startup.Server_Name().LowerCase();
@@ -429,6 +437,7 @@ Server::Server(mstring name, int hops, mstring description)
 Server::Server(mstring name, mstring uplink, int hops, mstring description)
 {
     FT("Server::Server", (name, uplink, hops, description));
+    MLOCK(("Server", "ServerList", name));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
     i_Uplink = uplink.LowerCase();
@@ -441,6 +450,7 @@ Server::Server(mstring name, mstring uplink, int hops, mstring description)
 void Server::operator=(const Server &in)
 {
     FT("Server::operator=", ("(const Server &) in"));
+    MLOCK(("Server", "ServerList", in.i_Name));
     i_Name = in.i_Name;
     i_AltName = in.i_AltName;
     i_Uplink = in.i_Uplink;
@@ -451,28 +461,81 @@ void Server::operator=(const Server &in)
     i_Jupe = in.i_Jupe;
 }
 
+mstring Server::AltName()
+{
+    NFT("Server::AltName");
+    RLOCK(("Server", "ServerList", i_Name, "i_AltName"));
+    RET(i_AltName);
+}
+
+void Server::AltName(mstring in)
+{
+    FT("Server::AltName", (in));
+    WLOCK(("Server", "ServerList", i_Name, "i_AltName"));
+    i_AltName = in;
+}
+
+mstring Server::Uplink()
+{
+    NFT("Server::Uplink");
+    RLOCK(("Server", "ServerList", i_Name, "i_Uplink"));
+    RET(i_Uplink);
+}
+
+int Server::Hops()
+{
+    NFT("Server::Hops");
+    RLOCK(("Server", "ServerList", i_Name, "i_Hops"));
+    RET(i_Hops);
+}
+
+mstring Server::Description()
+{
+    NFT("Server::Description");
+    RLOCK(("Server", "ServerList", i_Name, "i_Description"));
+    RET(i_Description);
+}
+
 void Server::Ping()
 {
     NFT("Server::Ping");
 
+    WLOCK(("Server", "ServerList", i_Name, "i_Ping"));
     if (!i_Ping)
     {
         Parent->server.sraw(((Parent->server.proto.Tokens() && Parent->server.proto.GetNonToken("PING") != "") ?
 		Parent->server.proto.GetNonToken("PING") : mstring("PING")) +
 		" " + Parent->startup.Server_Name() + " :" + i_Name);
 	i_Ping = ACE_OS::gettimeofday().msec();
-   }
+    }
 }
 
 void Server::Pong()
 {
     NFT("Server::Pong");
+    WLOCK(("Server", "ServerList", i_Name, "i_Ping"));
     if (i_Ping)
     {
+	WLOCK2(("Server", "ServerList", i_Name, "i_Lag"));
 	i_Lag = ACE_OS::gettimeofday().msec() - i_Ping;
 	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag / 1000.0));
 	i_Ping = 0;
     }
+}
+
+float Server::Lag()
+{
+    NFT("Server::Lag");
+    RLOCK(("Server", "ServerList", i_Name, "i_Lag"));
+    float retval = i_Lag / 1000.0;
+    RET(retval);
+}
+
+bool Server::Jupe()
+{
+    NFT("Server::Jupe");
+    RLOCK(("Server", "ServerList", i_Name, "i_Jupe"));
+    RET(i_Jupe);
 }
 
 unsigned int Server::Users()
@@ -481,6 +544,7 @@ unsigned int Server::Users()
 
     unsigned int count = 0;
     map<mstring,Nick_Live_t>::iterator k;
+    RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
 	if (k->second.Server() == i_Name) count++;
     RET(count);
@@ -492,6 +556,7 @@ unsigned int Server::Opers()
 
     unsigned int count = 0;
     map<mstring,Nick_Live_t>::iterator k;
+    RLOCK(("NickServ", "live"));
     for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
 	if (k->second.Server() == i_Name && k->second.HasMode("o")) count++;
     RET(count);
@@ -503,6 +568,7 @@ vector<mstring> Server::Downlinks()
     vector<mstring> downlinks;
     map<mstring,Server>::iterator serv;
 
+    RLOCK(("Server", "ServerList"));
     for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
     {
 	if (serv->second.Uplink() == i_Name && i_Name != "")
@@ -519,6 +585,7 @@ vector<mstring> Server::AllDownlinks()
     map<mstring,Server>::iterator serv;
     bool found = false;
 
+    RLOCK(("Server", "ServerList"));
     for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
     {
 	if (serv->second.Uplink() == i_Name)
@@ -556,6 +623,7 @@ Server::~Server()
 {
     NFT("Server::~Server");
 
+    WLOCK(("Server", "ServerList", i_Name));
     if (Parent->Shutdown())
 	return;
 
@@ -572,6 +640,7 @@ size_t Server::Usage()
 {
     size_t retval = 0;
 
+    WLOCK(("Server", "ServerList", i_Name));
     retval += i_Name.capacity();
     retval += i_AltName.capacity();
     retval += i_Uplink.capacity();
@@ -601,6 +670,7 @@ void NetworkServ::SignOnAll()
 
     mstring doison;
     unsigned int i;
+    WLOCK(("Server", "WaitIsOn"));
     for (i=1; i<=Parent->operserv.GetNames().WordCount(" "); i++)
     {
 	doison += " " + Parent->operserv.GetNames().ExtractWord(i, " ");
@@ -643,7 +713,29 @@ NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
     messages=true;
+    WLOCK(("Server", "i_UserMax"));
     i_UserMax = 0;
+}
+
+size_t NetworkServ::UserMax()
+{
+    NFT("NetworkServ::UserMax");
+    RLOCK(("Server", "i_UserMax"));
+    RET(i_UserMax);
+}
+
+void NetworkServ::OurUplink(mstring server)
+{
+    FT("NetworkServ::OurUplink", (server));
+    WLOCK(("Server", "i_OurUplink"));
+    i_OurUplink = server;
+}
+
+mstring NetworkServ::OurUplink()
+{
+    NFT("NetworkServ::OurUplink");
+    RLOCK(("Server", "i_OurUplink"));
+    RET(i_OurUplink);
 }
 
 void NetworkServ::FlushMsgs(mstring nick)
@@ -657,10 +749,12 @@ void NetworkServ::FlushMsgs(mstring nick)
     if (!Parent->nickserv.IsLive(nick))
 	return;
 
+    RLOCK(("Server", "ToBeSent"));
     for (i=ToBeSent.begin(); i!=ToBeSent.end(); i++)
     {
 	if (nick.LowerCase() == i->first)
 	{
+	    WLOCK(("Server", "ToBeSent", i->first));
 	    for (j=i->second.begin(); j!=i->second.end(); j++)
 	    {
 		if (j->second.SecondsSince() > Parent->config.Squit_Protect())
@@ -739,6 +833,7 @@ void NetworkServ::FlushMsgs(mstring nick)
 bool NetworkServ::IsServer(mstring server)
 {
     FT("NetworkServ::IsServer", (server));
+    RLOCK(("Server", "ServerList"));
     bool retval = (ServerList.find(server.LowerCase()) != ServerList.end());
     RET(retval);
 }
@@ -747,6 +842,7 @@ bool NetworkServ::IsServer(mstring server)
 bool NetworkServ::IsSquit(mstring server)
 {
     FT("NetworkServ::IsSquit", (server));
+    RLOCK(("Server", "ServerSquit"));
     bool retval = (ServerSquit.find(server.LowerCase()) != ServerSquit.end());
     RET(retval);
 }
@@ -765,6 +861,7 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 	    server.LowerCase().c_str(), 2,
 	    ("JUPED (" + reason + ")").c_str());
     raw(tmp);
+    WLOCK(("Server", "ServerList"));
     Parent->server.ServerList[server.LowerCase()] =
 		    Server(server.LowerCase(), "JUPED (" + reason + ")");
 }
@@ -820,6 +917,7 @@ void NetworkServ::ANONKILL(mstring nick, mstring dest, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_KILL, Now(), triplet<mstring, mstring, mstring>(
@@ -840,6 +938,7 @@ void NetworkServ::ANONKILL(mstring nick, mstring dest, mstring reason)
     {
 	Parent->nickserv.live[dest.LowerCase()].Quit(
 		"Killed (" + reason + ")");
+	WLOCK(("NickServ", "live"));
 	Parent->nickserv.live.erase(dest.LowerCase());
 	raw(":" + nick + " " +
 		((proto.Tokens() && proto.GetNonToken("KILL") != "") ?
@@ -884,6 +983,7 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_GLOBOPS, Now(), triplet<mstring, mstring, mstring>(
@@ -918,6 +1018,7 @@ void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_INVITE, Now(), triplet<mstring, mstring, mstring>(
@@ -981,6 +1082,7 @@ void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reas
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_KICK, Now(), triplet<mstring, mstring, mstring>(
@@ -1024,6 +1126,7 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_KILL, Now(), triplet<mstring, mstring, mstring>(
@@ -1044,6 +1147,7 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
     {
 	Parent->nickserv.live[dest.LowerCase()].Quit(
 		"Killed (" + nick + " (" + reason + "))");
+	WLOCK(("NickServ", "live"));
 	Parent->nickserv.live.erase(dest.LowerCase());
 	raw(":" + nick + " " +
 		((proto.Tokens() && proto.GetNonToken("KILL") != "") ?
@@ -1180,8 +1284,11 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	    break;
 	}
 	// Sign ourselves in ...
+	{ WLOCK(("NickServ", "live"));
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
+	}
+	WLOCK2(("Server", "i_UserMax"));
 	if (i_UserMax < Parent->nickserv.live.size())
 	    i_UserMax = Parent->nickserv.live.size();
 	raw(send);
@@ -1205,11 +1312,13 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
     }
     else
     {
+	{ WLOCK(("NickServ", "live"));
 	if (!Parent->nickserv.IsLive(newnick))
 	    Parent->nickserv.live.erase(newnick.LowerCase());
 	Parent->nickserv.live[newnick.LowerCase()] =
 		Parent->nickserv.live[oldnick.LowerCase()];
 	Parent->nickserv.live.erase(oldnick.LowerCase());
+	}
 	Parent->nickserv.live[newnick.LowerCase()].Name(newnick);
 	raw(":" + oldnick + " " +
 		((proto.Tokens() && proto.GetNonToken("NICK") != "") ?
@@ -1257,6 +1366,7 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_NOTICE, Now(), triplet<mstring, mstring, mstring>(
@@ -1336,6 +1446,7 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_PRIVMSG, Now(), triplet<mstring, mstring, mstring>(
@@ -1378,6 +1489,7 @@ void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_QLINE, Now(), triplet<mstring, mstring, mstring>(
@@ -1416,6 +1528,7 @@ void NetworkServ::QUIT(mstring nick, mstring reason)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
+	WLOCK(("NickServ", "live"));
 	Parent->nickserv.live.erase(nick.LowerCase());
 	raw(":" + nick + " " +
 		((proto.Tokens() && proto.GetNonToken("QUIT") != "") ?
@@ -1479,6 +1592,7 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
 
     if (!Parent->nickserv.IsLive(mynick))
     {
+	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSMODE, Now(), triplet<mstring, mstring, mstring>(
@@ -1515,6 +1629,7 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
 
     if (!Parent->nickserv.IsLive(mynick))
     {
+	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSKILL, Now(), triplet<mstring, mstring, mstring>(
@@ -1534,6 +1649,8 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
+	WLOCK(("NickServ", "live"));
+	Parent->nickserv.live.erase(nick.LowerCase());
 	raw(":" + mynick + " " +
 		((proto.Tokens() && proto.GetNonToken("SVSKILL") != "") ?
 			proto.GetNonToken("SVSKILL") : mstring("SVSKILL")) +
@@ -1551,6 +1668,7 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 
     if (!Parent->nickserv.IsLive(mynick))
     {
+	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSHOST, Now(), triplet<mstring, mstring, mstring>(
@@ -1587,6 +1705,7 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 
     if (!Parent->nickserv.IsLive(mynick))
     {
+	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSNICK, Now(), triplet<mstring, mstring, mstring>(
@@ -1629,6 +1748,7 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_TOPIC, Now(), triplet<mstring, mstring, mstring>(
@@ -1674,6 +1794,7 @@ void NetworkServ::UNQLINE(mstring nick, mstring target)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_UNQLINE, Now(), triplet<mstring, mstring, mstring>(
@@ -1701,6 +1822,7 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
 
     if (!Parent->nickserv.IsLive(nick))
     {
+	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_WALLOPS, Now(), triplet<mstring, mstring, mstring>(
@@ -1736,6 +1858,35 @@ void NetworkServ::KillUnknownUser(mstring user)
 }
 
 
+unsigned int NetworkServ::SeenMessage(mstring data)
+{
+    FT("NetworkServ::SeenMessage", (data));
+
+    map<mstring, pair<unsigned int, mDateTime> >::iterator iter;
+    vector<mstring> chunked;
+    unsigned int times = 0;
+
+    WLOCK(("Server", "ReDoMessages"));
+    for (iter=ReDoMessages.begin(); iter!=ReDoMessages.end(); iter++)
+    {
+	if (iter->second.second.SecondsSince() > Parent->config.MSG_Seen_Time())
+	    chunked.push_back(iter->first);
+    }
+    for (unsigned int i=0; i<chunked.size(); i++)
+	ReDoMessages.erase(chunked[i]);
+
+    if (ReDoMessages.find(data) != ReDoMessages.end())
+    {
+	times = ReDoMessages[data].first;
+	times++;
+    }
+
+    ReDoMessages[data] = pair<unsigned int,mDateTime>(times, Now());
+
+    RET(times);
+}
+
+
 void NetworkServ::execute(const mstring & data)
 {
     //okay this is the main networkserv command switcher
@@ -1749,7 +1900,11 @@ void NetworkServ::execute(const mstring & data)
         msgtype=data.ExtractWord(2,": ").UpperCase();
 	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
 	{
-		KillUnknownUser(source);
+		// Requeue the message ...
+		if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+		    KillUnknownUser(source);
+		else
+		    mBase::push_message(data);
 		return;
 	}
     }
@@ -1813,12 +1968,14 @@ void NetworkServ::execute(const mstring & data)
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
+		RLOCK(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
 		{
 		    if (iter->second.IsOn(sourceL))
 		    {
+			MLOCK(("CommServ", "list", iter->first, "message"));
 			for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
@@ -2030,6 +2187,7 @@ void NetworkServ::execute(const mstring & data)
 		    Log(LM_WARNING, Parent->getLogMessage("OTHER/KILLED"),
 			    data.ExtractWord(3, ": ").c_str(),
 			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str());
+		    WLOCK(("Server", "WaitIsOn"));
 		    WaitIsOn.insert(data.ExtractWord(3, ": "));
 		    sraw(((proto.Tokens() && proto.GetNonToken("ISON") != "") ?
 			proto.GetNonToken("ISON") : mstring("ISON")) +
@@ -2038,6 +2196,7 @@ void NetworkServ::execute(const mstring & data)
 		int wc = data.After(":", 2).WordCount("!");
 		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
 			"Killed (" + data.After(":", 2).After("!", wc-1) + ")");
+		WLOCK(("NickServ", "live"));
 		Parent->nickserv.live.erase(data.ExtractWord(3, ": ").LowerCase());
 	    }
 	    else
@@ -2076,6 +2235,7 @@ void NetworkServ::execute(const mstring & data)
 		    Parent->startup.Server_Name() + " :0 " + Parent->startup.Server_Desc());
 
 		map<mstring,Server>::iterator serv;
+		RLOCK(("Server", "ServerList"));
 		for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
 		{
 		    sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
@@ -2103,10 +2263,13 @@ void NetworkServ::execute(const mstring & data)
 	    else
 	    {
 		map<mstring,Chan_Live_t>::iterator chan;
+		RLOCK(("ChanServ", "live"));
 		for (chan=Parent->chanserv.live.begin(); chan!=Parent->chanserv.live.end(); chan++)
 		{
-		    sraw("322 " + source + " " + chan->first + " " + mstring(chan->second.Users()) + 
-			" :" + chan->second.Topic());
+		    if (!(chan->second.HasMode("s") || chan->second.HasMode("p")))
+			sraw("322 " + source + " " + chan->first + " " +
+				mstring(chan->second.Users()) +  " :" +
+				chan->second.Topic());
 		}
 	    }
 
@@ -2132,8 +2295,11 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
+		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
+		    else
+			mBase::push_message(data);
 		}
 	    }
 	    else
@@ -2144,8 +2310,11 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
+		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
+		    else
+			mBase::push_message(data);
 		}
 	    }
 	}
@@ -2204,9 +2373,11 @@ void NetworkServ::execute(const mstring & data)
 
 		// DONT kill when we do SQUIT protection.
 		map<mstring,list<mstring> >::iterator i;
+		{ RLOCK(("Server", "ToBeSquit"));
 		for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 		{
 		    list<mstring>::iterator k;
+		    WLOCK(("Server", "ToBeSquit", i->first));
 		    for (k=i->second.begin(); k!=i->second.end(); k++)
 			if (*k == sourceL)
 			{
@@ -2214,7 +2385,7 @@ void NetworkServ::execute(const mstring & data)
 			    i->second.erase(k);
 			    k=j;
 			}
-		}
+		}}
 
 		if (Parent->nickserv.IsLive(sourceL))
 		{
@@ -2228,10 +2399,12 @@ void NetworkServ::execute(const mstring & data)
 		    else
 		    {
 			Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
+			WLOCK(("NickServ", "live"));
 			Parent->nickserv.live.erase(sourceL);
 		    }
 		}
 
+		{ WLOCK(("NickServ", "live"));
 		switch (proto.Signon())
 		{
 		case 0000:
@@ -2283,18 +2456,22 @@ void NetworkServ::execute(const mstring & data)
 			);
 		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		    break;
-		}
+		}}
+		{ WLOCK(("Server", "i_UserMax"));
 		if (i_UserMax < Parent->nickserv.live.size())
 		    i_UserMax = Parent->nickserv.live.size();
+		}
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
+		{ RLOCK(("CommServ", "list"));
 		for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
 		{
 		    if (iter->second.IsOn(sourceL))
 		    {
+			MLOCK(("CommServ", "list", iter->first, "message"));
 			for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
@@ -2304,7 +2481,7 @@ void NetworkServ::execute(const mstring & data)
 					    iter->second.message->Entry());
 			}
 		    }
-		}
+		}}
 		if (Parent->nickserv.IsStored(sourceL))
 		{
 		
@@ -2339,8 +2516,11 @@ void NetworkServ::execute(const mstring & data)
 
 		if (sourceL != data.ExtractWord(3, ": ").LowerCase())
 		{
+		    { WLOCK(("NickServ", "live"));
 		    Parent->nickserv.live.erase(sourceL);
+		    }
 		    // We just did a SVSNICK ...
+		    RLOCK(("Server", "recovered"));
 		    if (Parent->nickserv.recovered.find(source.LowerCase()) !=
 			    Parent->nickserv.recovered.end())
 		    {
@@ -2361,8 +2541,6 @@ void NetworkServ::execute(const mstring & data)
 	    if (!Parent->GotConnect())
 		return;
 
-	
-	
 	    if (source == "")
 		if (!IsChan(data.ExtractWord(2, ": ")))
 		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
@@ -2495,11 +2673,14 @@ void NetworkServ::execute(const mstring & data)
 		 * is removed from ServerSquit map -- ie. its FAKE!
 		 */
 		Parent->nickserv.live[sourceL].SetSquit();
+		{ WLOCK(("Server", "ToBeSquit"));
 		ToBeSquit[data.ExtractWord(4, ": ").LowerCase()].push_back(sourceL);
+		}
 		Log(LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_FIRST"),
 			data.ExtractWord(4, ": ").c_str(),
 			data.ExtractWord(3, ": ").c_str());
 
+		WLOCK(("Server", "ServerSquit"));
 		if (ServerSquit.find(Parent->nickserv.live[sourceL].Server().LowerCase()) == ServerSquit.end())
 		{
 		    ServerSquit[Parent->nickserv.live[sourceL].Server().LowerCase()] =
@@ -2519,6 +2700,7 @@ void NetworkServ::execute(const mstring & data)
 			proto.GetNonToken("ISON") : mstring("ISON")) +
 			" " + sourceL);
 		Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
+		WLOCK(("NickServ", "live"));
 		Parent->nickserv.live.erase(sourceL);
 	    }
 	}
@@ -2549,12 +2731,17 @@ void NetworkServ::execute(const mstring & data)
 	}
 	break;
     case 'S':
+	if (msgtype=="SETTIME")
+	{
+	    // RWORLDism -- ignore.
+	}
 	if (msgtype=="SERVER")
 	{
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
 	    if (source.IsEmpty())
 	    {
+		WLOCK(("Server", "ServerList"));
 		ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
 			data.ExtractWord(2, ": ").LowerCase(),
 			ACE_OS::atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
@@ -2567,6 +2754,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (IsServer(sourceL))
 		{
+		    WLOCK(("Server", "ServerList"));
 		    ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
 			data.ExtractWord(3, ": ").LowerCase(),
 			sourceL,
@@ -2577,6 +2765,8 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
+		    Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
+			"SERVER", data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
 		    // Uplink (source) does not exist, WTF?!?
 		}
 	    }
@@ -2590,7 +2780,8 @@ void NetworkServ::execute(const mstring & data)
 	    vector<mstring> users;
 	    mstring modes = data.ExtractWord(5, ": ");
 	    mstring mode_params = "", nick;
-	    bool oped, voiced;	    if (modes.Contains("l") || modes.Contains("k"))
+	    bool oped, voiced;
+	    if (modes.Contains("l") || modes.Contains("k"))
 		mode_params = data.Before(":", 2).After(" ", 5);
 	    for (i=0; i < data.After(":", 2).WordCount(" "); i++)
 	    {
@@ -2643,16 +2834,18 @@ void NetworkServ::execute(const mstring & data)
 
 	    // DONT kill when we do SQUIT protection.
 	    map<mstring,list<mstring> >::iterator i;
+	    { RLOCK(("Server", "ToBeSquit"));
 	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 	    {
 		list<mstring>::iterator k;
+		WLOCK(("ServeR", "ToBeSquit", i->first));
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {
 			i->second.erase(k);
 			break;
 		    }
-	    }
+	    }}
 
 	    if (Parent->nickserv.IsLive(sourceL))
 	    {
@@ -2666,6 +2859,7 @@ void NetworkServ::execute(const mstring & data)
 		else
 		{
 		    Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
+		    WLOCK(("NickServ", "live"));
 		    Parent->nickserv.live.erase(sourceL);
 		}
 	    }
@@ -2674,6 +2868,7 @@ void NetworkServ::execute(const mstring & data)
 	    // services = 1 for service, 0 for user
 	    // DAL4.4.15+ SNICK name hops time user host server services modes :real name
 
+	    {WLOCK(("NickServ", "live"));
 	    switch (proto.Signon())
 	    {
 	    case 0000:
@@ -2729,18 +2924,22 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
 		break;
-	    }
+	    }}
+	    { WLOCK(("Server", "i_UserMax"));
 	    if (i_UserMax < Parent->nickserv.live.size())
 		i_UserMax = Parent->nickserv.live.size();
+	    }
 
 	    // HAS to be AFTER the nickname is added to map.
 	    map<mstring, Committee>::iterator iter;
+	    { RLOCK(("CommServ", "list"));
 	    for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
 	    {
 		if (iter->second.IsOn(sourceL))
 		{
+		    MLOCK(("CommServ", "lisT", iter->first, "message"));
 		    for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
@@ -2750,7 +2949,7 @@ void NetworkServ::execute(const mstring & data)
 					    iter->second.message->Entry());
 		    }
 		}
-	    }
+	    }}
 	    if (Parent->nickserv.IsStored(sourceL))
 	    {
 		if (Parent->nickserv.stored[sourceL].Forbidden())
@@ -2787,7 +2986,10 @@ void NetworkServ::execute(const mstring & data)
 		    target.c_str(),
 		    ServerList[target.LowerCase()].Uplink().c_str());
 
+	    { WLOCK(("Server", "ServerList"));
 	    ServerList.erase(target);
+	    }
+	    { WLOCK(("Server", "ServerSquit"));
 	    if (ServerSquit.find(target) != ServerSquit.end())
 	    {
 		mstring *arg = NULL;
@@ -2799,10 +3001,13 @@ void NetworkServ::execute(const mstring & data)
 		    ACE_Reactor::instance()->schedule_timer(&squit,
 			new mstring(target),
 			ACE_Time_Value(Parent->config.Squit_Protect()));
-	    }
+	    }}
+	    { WLOCK(("Server", "ToBeSquit"));
 	    ToBeSquit.erase(target);
+	    }
 	    map<mstring,Nick_Live_t>::iterator iter;
 	    vector<mstring> chunked;
+	    { RLOCK(("NickServ", "live"));
 	    for (iter=Parent->nickserv.live.begin(); iter != Parent->nickserv.live.end(); iter++)
 	    {
 		if (iter->second.IsServices() && ServerList.size() == 0)
@@ -2811,7 +3016,7 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else if (iter->second.Server() == target)
 		    iter->second.SetSquit();
-	    }
+	    }}
 	    // Sign off services if we have NO uplink
 	    unsigned int i;
 	    for (i=0; i<chunked.size(); i++)
@@ -2911,6 +3116,14 @@ void NetworkServ::execute(const mstring & data)
 		        source, "", data.ExtractWord(4, ": "));
 		}
 	    }
+	    else
+	    {
+		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+				"TOPIC", source.c_str(), data.ExtractWord(3, ": ").c_str());
+		    else
+			mBase::push_message(data);
+	    }
 	}
 	else if (msgtype=="TRACE")
 	{
@@ -2971,6 +3184,11 @@ void NetworkServ::execute(const mstring & data)
 	    // We will ignore SQLINES because they're not relivant to us.
 	    // we will not be qlining our own clients ;P
 	}
+	if (msgtype=="UNZLINE")
+	{
+	    // We will ignore ZLINES because they're not relivant to us.
+	    // we will not be zlining our own clients ;P
+	}
 	else if (msgtype=="USER")
 	{
 	    if (source.Contains("."))
@@ -2981,9 +3199,11 @@ void NetworkServ::execute(const mstring & data)
 
 	    // DONT kill when we do SQUIT protection.
 	    map<mstring,list<mstring> >::iterator i;
+	    { RLOCK(("Server", "ToBeSquit"));
 	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 	    {
 		list<mstring>::iterator k;
+		WLOCK(("Server", "ToBeSquit", i->first));
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {
@@ -2991,7 +3211,7 @@ void NetworkServ::execute(const mstring & data)
 		        i->second.erase(k);
 		        k=j;
 		    }
-	    }
+	    }}
 
 	    if (Parent->nickserv.IsLive(sourceL))
 	    {
@@ -3005,10 +3225,12 @@ void NetworkServ::execute(const mstring & data)
 	        else
 	        {
 	    	    Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
+		    WLOCK(("NickServ", "live"));
 	    	    Parent->nickserv.live.erase(sourceL);
 	        }
 	    }
 
+	    { WLOCK(("NickServ", "live"));
 	    switch (proto.Signon())
 	    {
 	    case 0000: // USER nick user host server :realname
@@ -3038,18 +3260,22 @@ void NetworkServ::execute(const mstring & data)
 	    case 1002:
 	    case 1003:
 		break;
-	    }
+	    }}
+	    { WLOCK(("Server", "i_UserMax"));
 	    if (i_UserMax < Parent->nickserv.live.size())
 		i_UserMax = Parent->nickserv.live.size();
+	    }
 
 	    // HAS to be AFTER the nickname is added to map.
 	    map<mstring, Committee>::iterator iter;
+	    { RLOCK(("CommServ", "list"));
 	    for (iter = Parent->commserv.list.begin();
 				    iter != Parent->commserv.list.end();
 				    iter++)
 	    {
 		if (iter->second.IsOn(sourceL))
 		{
+		    MLOCK(("CommServ", "list", iter->first, "message"));
 		    for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
@@ -3059,7 +3285,7 @@ void NetworkServ::execute(const mstring & data)
 					    iter->second.message->Entry());
 		    }
 		}
-	    }
+	    }}
 	    if (Parent->nickserv.IsStored(sourceL))
 	    {
 		if (Parent->nickserv.stored[sourceL.LowerCase()].Forbidden())
@@ -3382,8 +3608,16 @@ void NetworkServ::execute(const mstring & data)
 			data.c_str());
 	break;
     case 'Z':
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	if (msgtype=="ZLINE")
+	{
+	    // We will ignore ZLINES because they're not relivant to us.
+	    // we will not be zlining our own clients ;P
+	}
+	else
+	{
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
+	}
 	break;
     default:
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
@@ -3407,7 +3641,11 @@ void NetworkServ::numeric_execute(const mstring & data)
         msgtype=ACE_OS::atoi(data.ExtractWord(2,": "));
 	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
 	{
-		KillUnknownUser(source);
+		// Requeue the message ...
+		if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+		    KillUnknownUser(source);
+		else
+		    mBase::push_message(data);
 		return;
 	}
     }
@@ -3492,6 +3730,9 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 303:     // RPL_ISON
 	for (i=4; i<=data.WordCount(": "); i++)
 	{
+	    // Remove clients from 'signon list' who are
+	    // already on the network.
+	    WLOCK(("Server", "WaitIsOn"));
 	    if (WaitIsOn.find(data.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
 		WaitIsOn.erase(data.ExtractWord(i, ": "));
 	}
@@ -3499,6 +3740,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 	if (WaitIsOn.size())
 	{
 	    set<mstring>::iterator k;
+	    RLOCK(("Server", "WaitIsOn"));
 	    for (k=WaitIsOn.begin(); k!=WaitIsOn.end(); k++)
 	    {
 		if (Parent->operserv.IsName(*k))
@@ -3515,6 +3757,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 			    MODE(*k, "+s");
 			mstring joinline;
 			map<mstring,Chan_Stored_t>::iterator iter;
+			{ RLOCK(("ChanServ", "stored"));
 			for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
 			{
 			    // If its live and got JOIN on || not live and mlock +k or +i
@@ -3532,7 +3775,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 				    joinline = "";
 				}
 			    }
-			}
+			}}
 			if (joinline.Len())
 			{
 			    JOIN(Parent->chanserv.FirstName(), joinline);
@@ -3555,7 +3798,9 @@ void NetworkServ::numeric_execute(const mstring & data)
 		FlushMsgs(*k);
 	    }
 	}
+	{ WLOCK(("Server", "WaitIsOn"));
 	WaitIsOn.clear();
+	}
 	break;
     case 305:     // RPL_UNAWAY
 	break;

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2000/06/18 12:49:27  prez
+** Finished locking, need to do some cleanup, still some small parts
+** of magick.cpp/h not locked properly, and need to ensure the case
+** is the same every time something is locked/unlocked, but for the
+** most part, locks are done, we lock pretty much everything :)
+**
 ** Revision 1.85  2000/06/12 06:07:51  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -154,13 +160,13 @@ bool OperServ::AddHost(mstring host)
 {
     FT("OperServ::AddHost", (host));
 
+    WLOCK(("OperServ", "CloneList"));
     if (CloneList.find(host.LowerCase()) == CloneList.end() ||
 	CloneList[host.LowerCase()] < 1)
 	CloneList[host.LowerCase()] = 0;
     CloneList[host.LowerCase()]++;
 
-    {
-    //MLOCK("OperServ","Clone");
+    { MLOCK2(("OperServ","Clone"));
     if (Clone_find(host))
     {
 	if (CloneList[host.LowerCase()] > Clone->Value().first)
@@ -174,8 +180,7 @@ bool OperServ::AddHost(mstring host)
 	{
 	    RET(true);
 	}
-    }
-    }
+    }}
     RET(false);
 }
 
@@ -183,6 +188,7 @@ void OperServ::RemHost(mstring host)
 {
     FT("OperServ::RemHost", (host));
 
+    WLOCK(("OperServ", "CloneList"));
     if (CloneList.find(host.LowerCase()) != CloneList.end())
     {
 	if (CloneList[host.LowerCase()] > 1)
@@ -199,6 +205,7 @@ size_t OperServ::CloneList_sum()
     map<mstring, unsigned int>::iterator i;
     size_t value = 0;
 
+    RLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	value += i->second;
@@ -213,6 +220,7 @@ size_t OperServ::CloneList_size(unsigned int amt)
     map<mstring, unsigned int>::iterator i;
     size_t value = 0;
 
+    RLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	if (i->second == amt)
@@ -225,6 +233,7 @@ size_t OperServ::CloneList_Usage()
 {
     size_t retval = 0;
     map<mstring, unsigned int>::iterator i;
+    WLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	retval += i->first.capacity();
@@ -244,6 +253,7 @@ bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, m
 	    RET(false);
     }
 
+    MLOCK(("OperServ", "Clone"));
     if (!Clone_find(entry))
     {
 	pair<set<entlist_val_t<pair<unsigned int, mstring> > >::iterator,bool> tmp;
@@ -267,6 +277,7 @@ bool OperServ::Clone_erase()
 {
     NFT("OperServ::Clone_erase");
 
+    MLOCK(("OperServ", "Clone"));
     if (Clone != i_Clone.end())
     {
 	i_Clone.erase(Clone);
@@ -283,6 +294,7 @@ size_t OperServ::Clone_Usage()
 {
     size_t retval = 0;
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
+    MLOCK(("OperServ", "Clone"));
     for (i=i_Clone.begin(); i!=i_Clone.end(); i++)
     {
 	entlist_val_t<pair<unsigned int, mstring> > tmp = *i;
@@ -297,6 +309,7 @@ bool OperServ::Clone_find(mstring entry)
     FT("OperServ::Clone_find", (entry));
 
 //  entlist_val_ui<pair<int, mstring> > iter = i_Clone.end();
+    MLOCK(("OperServ", "Clone"));
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator iter = i_Clone.end();
     if (!i_Clone.empty())
 	for (iter=i_Clone.begin(); iter!=i_Clone.end(); iter++)
@@ -321,7 +334,6 @@ pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
     FT("OperServ::Clone_value", (entry));
 
     pair<unsigned int,mstring> retval = pair<unsigned int,mstring>(0,"");
-    {
     MLOCK(("OperServ", "Clone"));
 //  entlist_val_ui<pair<int, mstring> > iter = Clone;
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator iter = Clone;
@@ -329,7 +341,6 @@ pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
     if (Clone_find(entry))
 	retval=Clone->Value();
     Clone = iter;
-    }
     return retval;
 }
 
@@ -344,6 +355,7 @@ bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, 
 	    RET(false);
     }
 
+    MLOCK(("OperServ", "Akill"));
     if (!Akill_find(entry))
     {
 	pair<set<entlist_val_t<pair<unsigned long, mstring> > >::iterator, bool> tmp;
@@ -367,6 +379,7 @@ bool OperServ::Akill_erase()
 {
     NFT("OperServ::Akill_erase");
 
+    MLOCK(("OperServ", "Akill"));
     if (Akill != i_Akill.end())
     {
 	i_Akill.erase(Akill);
@@ -385,6 +398,7 @@ size_t OperServ::Akill_Usage()
 {
     size_t retval = 0;
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator i;
+    MLOCK(("OperServ", "Akill"));
     for (i=i_Akill.begin(); i!=i_Akill.end(); i++)
     {
 	entlist_val_t<pair<unsigned long, mstring> > tmp = *i;
@@ -405,6 +419,7 @@ bool OperServ::Akill_find(mstring entry)
     }
 
 //  entlist_val_ui<pair<long, mstring> > iter = i_Akill.end();
+    MLOCK(("OperServ", "Akill"));
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = i_Akill.end();
     if (!i_Akill.empty())
 	for (iter=i_Akill.begin(); iter!=i_Akill.end(); iter++)
@@ -429,7 +444,6 @@ pair<unsigned long,mstring> OperServ::Akill_value(mstring entry)
     FT("OperServ::Akill_value", (entry));
 
     pair<unsigned long,mstring> retval = pair<unsigned long,mstring>(0,"");
-    {
     MLOCK(("OperServ", "Akill"));
 //  entlist_val_ui<pair<long, mstring> > iter = Akill;
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = Akill;
@@ -437,7 +451,6 @@ pair<unsigned long,mstring> OperServ::Akill_value(mstring entry)
     if (Akill_find(entry))
 	retval=Akill->Value();
     Akill = iter;
-    }
     return retval;
 }
 
@@ -456,6 +469,7 @@ bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
     if (!entry.Contains("!"))
 	entry.Prepend("*!");
 
+    MLOCK(("OperServ", "OperDeny"));
     if (!OperDeny_find(entry))
     {
 	pair<set<entlist_val_t<mstring > >::iterator, bool> tmp;
@@ -478,6 +492,7 @@ bool OperServ::OperDeny_erase()
 {
     NFT("OperServ::OperDeny_erase");
 
+    MLOCK(("OperServ", "OperDeny"));
     if (OperDeny != i_OperDeny.end())
     {
 	i_OperDeny.erase(OperDeny);
@@ -496,6 +511,7 @@ size_t OperServ::OperDeny_Usage()
 {
     size_t retval = 0;
     set<entlist_val_t<mstring> >::iterator i;
+    MLOCK(("OperServ", "OperDeny"));
     for (i=i_OperDeny.begin(); i!=i_OperDeny.end(); i++)
     {
 	entlist_val_t<mstring> tmp = *i;
@@ -519,6 +535,7 @@ bool OperServ::OperDeny_find(mstring entry)
     if (!entry.Contains("!"))
 	entry.Prepend("*!");
 
+    MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = i_OperDeny.end();
     set<entlist_val_t<mstring> >::iterator iter = i_OperDeny.end();
     if (!i_OperDeny.empty())
@@ -544,7 +561,6 @@ mstring OperServ::OperDeny_value(mstring entry)
     FT("OperServ::OperDeny_value", (entry));
 
     mstring retval = mstring(0,"");
-    {
     MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = OperDeny;
     set<entlist_val_t<mstring> >::iterator iter = OperDeny;
@@ -552,7 +568,6 @@ mstring OperServ::OperDeny_value(mstring entry)
     if (OperDeny_find(entry))
 	retval=OperDeny->Value();
     OperDeny = iter;
-    }
     return retval;
 }
 
@@ -572,6 +587,7 @@ bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
     if (!entry.Contains("!"))
 	entry.Prepend("*!");
 
+    MLOCK(("OperServ", "Ignore"));
     if (!Ignore_find(entry))
     {
 	pair<set<entlist_val_t<bool> >::iterator, bool> tmp;
@@ -594,6 +610,7 @@ bool OperServ::Ignore_erase()
 {
     NFT("OperServ::Ignore_erase");
 
+    MLOCK(("OperServ", "Ignore"));
     if (Ignore != i_Ignore.end())
     {
 	i_Ignore.erase(Ignore);
@@ -612,6 +629,7 @@ size_t OperServ::Ignore_Usage()
 {
     size_t retval = 0;
     set<entlist_val_t<bool> >::iterator i;
+    MLOCK(("OperServ", "Ignore"));
     for (i=i_Ignore.begin(); i!=i_Ignore.end(); i++)
     {
 	entlist_val_t<bool> tmp = *i;
@@ -635,6 +653,7 @@ bool OperServ::Ignore_find(mstring entry)
     if (!entry.Contains("!"))
 	entry.Prepend("*!");
 
+    MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
     set<entlist_val_t<bool> >::iterator iter = i_Ignore.end();
 
@@ -663,7 +682,6 @@ bool OperServ::Ignore_value(mstring entry)
     FT("OperServ::Ignore_value", (entry));
 
     bool retval = false;
-    {
     MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
     set<entlist_val_t<bool> >::iterator iter = Ignore;
@@ -671,7 +689,6 @@ bool OperServ::Ignore_value(mstring entry)
     if (Ignore_find(entry))
 	retval=Ignore->Value();
     Ignore = iter;
-    }
     return retval;
 }
 
@@ -2580,7 +2597,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
     }
 
 
-    MLOCK(("OperServ", "Akill"));
+    { MLOCK(("OperServ", "Akill"));
     if (Parent->operserv.Akill_find(host))
     {
 	mstring entry = Parent->operserv.Akill->Entry();
@@ -2612,7 +2629,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		host.c_str(), ToHumanTime(time).c_str(), reason.c_str());
-    }
+    }}
 
     Parent->server.AKILL(host, reason, time);
     map<mstring,Nick_Live_t>::iterator nlive;
@@ -2825,12 +2842,13 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    MLOCK(("OperServ", "OperDeny"));
+    { MLOCK(("OperServ", "OperDeny"));
     if (Parent->operserv.OperDeny_find(host))
     {
 	Parent->operserv.OperDeny_erase();
     }
     Parent->operserv.OperDeny_insert(host, reason, source);
+    }
     Parent->operserv.stats.i_OperDeny++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
 	host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
@@ -3312,27 +3330,31 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     //TODO: Add your source code here
 	pOut->BeginObject(tag_OperServ, attribs);
 
+	{ MLOCK(("OperServ", "Clone"));
 	for(i=i_Clone.begin(); i!=i_Clone.end(); i++)
 	{
 	    pOut->BeginObject(tag_Clone, attribs);
 	    pOut->WriteSubElement((entlist_val_t<pair<unsigned int, mstring> > *) &(*i), attribs);
 	    pOut->EndObject(tag_Clone);
-	}
+	}}
 
+	{ MLOCK(("OperServ", "Akill"));
 	for(j=i_Akill.begin(); j!=i_Akill.end(); j++)
 	{
 	    pOut->BeginObject(tag_Akill, attribs);
 	    pOut->WriteSubElement((entlist_val_t<pair<unsigned long, mstring> > *) &(*j), attribs);
 	    pOut->EndObject(tag_Akill);
-	}
+	}}
 
+	{ MLOCK(("OperServ", "OperDeny"));
 	for(k=i_OperDeny.begin(); k!=i_OperDeny.end(); k++)
 	{
 	    pOut->BeginObject(tag_OperDeny, attribs);
 	    pOut->WriteSubElement((entlist_val_t<mstring> *) &(*k), attribs);
 	    pOut->EndObject(tag_OperDeny);
-	}
+	}}
 
+	{ MLOCK(("OperServ", "Ignore"));
 	for(l=i_Ignore.begin(); l!=i_Ignore.end(); l++)
 	{
 	    // Only save PERM entries
@@ -3342,7 +3364,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 		pOut->WriteSubElement((entlist_val_t<bool> *) &(*l), attribs);
 		pOut->EndObject(tag_Ignore);
 	    }
-	}
+	}}
 
 	pOut->EndObject(tag_OperServ);
 }

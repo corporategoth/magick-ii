@@ -321,6 +321,7 @@ REC_FORNONUSER   =Received %s from %s for non-existant user %s.
 REC_FORNONCHAN   =Received %s from %s for non-existant channel %s.
 REC_NOTINCHAN    =Received %s from %s for %s who is not in channel %s.
 REC_FORNOTINCHAN =Received %s for %s who is not in channel %s.
+REC_FORNONSERVER =Received %s from %s for non-existant server %s.
 DUP_CHAN         =Duplicate %s received from %s for channel %s.
 MODE_INEFFECT    =MODE change %c%c received from %s for %s that is already in effect.
 MODE_NOTINCHAN   =MODE change %c%c received from %s for %s who is not in channel %s.
