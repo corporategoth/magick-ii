@@ -141,6 +141,8 @@ class Chan_Stored_t : public mUserDef
     bool l_Secureops;
     bool i_Secure;
     bool l_Secure;
+    bool i_NoExpire;
+    bool l_NoExpire;
     bool i_Restricted;
     bool l_Restricted;
     bool i_Join;
@@ -232,6 +234,10 @@ public:
     void Secure(bool in);
     bool L_Secure();
     void L_Secure(bool in);
+    bool NoExpire();
+    void NoExpire(bool in);
+    bool L_NoExpire();
+    void L_NoExpire(bool in);
     bool Restricted();
     void Restricted(bool in);
     bool L_Restricted();
@@ -349,6 +355,8 @@ private:
     bool lck_secureops;		// SECUREOPS is locked?
     bool def_secure;		// Default value of SECURE
     bool lck_secure;		// SECURE is locked?
+    bool def_noexpire;		// Default value of NOEXPIRE
+    bool lck_noexpire;		// NOEXPIRE is locked?
     bool def_restricted;	// Default value of RESTRICTED
     bool lck_restricted;	// RESTRICTED is locked?
     bool def_join;		// Default value of JOIN
@@ -397,6 +405,8 @@ public:
     bool LCK_Secureops()	{ return lck_secureops; }
     bool DEF_Secure()		{ return def_secure; }
     bool LCK_Secure()		{ return lck_secure; }
+    bool DEF_NoExpire()		{ return def_noexpire; }
+    bool LCK_NoExpire()		{ return lck_noexpire; }
     bool DEF_Restricted()	{ return def_restricted; }
     bool LCK_Restricted()	{ return lck_restricted; }
     bool DEF_Join()		{ return def_join; }
@@ -434,5 +444,67 @@ public:
     virtual threadtype_enum Get_TType() const { return tt_ChanServ; }
     virtual mstring GetInternalName() const { return "ChanServ"; }
     virtual void execute(const mstring & message);
+
+    static void do_Help(mstring mynick, mstring source, mstring params);
+    static void do_Register(mstring mynick, mstring source, mstring params);
+    static void do_Drop(mstring mynick, mstring source, mstring params);
+    static void do_Identify(mstring mynick, mstring source, mstring params);
+    static void do_Info(mstring mynick, mstring source, mstring params);
+    static void do_List(mstring mynick, mstring source, mstring params);
+    static void do_Suspend(mstring mynick, mstring source, mstring params);
+    static void do_UnSuspend(mstring mynick, mstring source, mstring params);
+    static void do_Forbid(mstring mynick, mstring source, mstring params);
+
+    static void do_Mode(mstring mynick, mstring source, mstring params);
+    static void do_Op(mstring mynick, mstring source, mstring params);
+    static void do_DeOp(mstring mynick, mstring source, mstring params);
+    static void do_Voice(mstring mynick, mstring source, mstring params);
+    static void do_DeVoice(mstring mynick, mstring source, mstring params);
+    static void do_Topic(mstring mynick, mstring source, mstring params);
+    static void do_Kick(mstring mynick, mstring source, mstring params);
+    static void do_AnonKick(mstring mynick, mstring source, mstring params);
+    static void do_Users(mstring mynick, mstring source, mstring params);
+    static void do_Invite(mstring mynick, mstring source, mstring params);
+    static void do_Unban(mstring mynick, mstring source, mstring params);
+    static void do_Clear(mstring mynick, mstring source, mstring params);
+
+    static void do_access_Add(mstring mynick, mstring source, mstring params);
+    static void do_access_Del(mstring mynick, mstring source, mstring params);
+    static void do_access_List(mstring mynick, mstring source, mstring params);
+    static void do_akick_Add(mstring mynick, mstring source, mstring params);
+    static void do_akick_Del(mstring mynick, mstring source, mstring params);
+    static void do_akick_List(mstring mynick, mstring source, mstring params);
+    static void do_greet_Add(mstring mynick, mstring source, mstring params);
+    static void do_greet_Del(mstring mynick, mstring source, mstring params);
+    static void do_greet_List(mstring mynick, mstring source, mstring params);
+    static void do_set_Founder(mstring mynick, mstring source, mstring params);
+    static void do_set_CoFounder(mstring mynick, mstring source, mstring params);
+    static void do_set_Description(mstring mynick, mstring source, mstring params);
+    static void do_set_Password(mstring mynick, mstring source, mstring params);
+    static void do_set_Email(mstring mynick, mstring source, mstring params);
+    static void do_set_URL(mstring mynick, mstring source, mstring params);
+    static void do_set_Comment(mstring mynick, mstring source, mstring params);
+    static void do_set_Mlock(mstring mynick, mstring source, mstring params);
+    static void do_set_BanTime(mstring mynick, mstring source, mstring params);
+    static void do_set_KeepTopic(mstring mynick, mstring source, mstring params);
+    static void do_set_TopicLock(mstring mynick, mstring source, mstring params);
+    static void do_set_Private(mstring mynick, mstring source, mstring params);
+    static void do_set_SecureOps(mstring mynick, mstring source, mstring params);
+    static void do_set_Secure(mstring mynick, mstring source, mstring params);
+    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_set_Restricted(mstring mynick, mstring source, mstring params);
+    static void do_set_Join(mstring mynick, mstring source, mstring params);
+    static void do_set_Revenge(mstring mynick, mstring source, mstring params);
+    static void do_lock_Mlock(mstring mynick, mstring source, mstring params);
+    static void do_lock_BanTime(mstring mynick, mstring source, mstring params);
+    static void do_lock_KeepTopic(mstring mynick, mstring source, mstring params);
+    static void do_lock_TopicLock(mstring mynick, mstring source, mstring params);
+    static void do_lock_Private(mstring mynick, mstring source, mstring params);
+    static void do_lock_SecureOps(mstring mynick, mstring source, mstring params);
+    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_lock_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_lock_Restricted(mstring mynick, mstring source, mstring params);
+    static void do_lock_Join(mstring mynick, mstring source, mstring params);
+    static void do_lock_Revenge(mstring mynick, mstring source, mstring params);
 };
 #endif

@@ -502,7 +502,8 @@ void Nick_Live_t::Quit(mstring reason)
 	    Parent->chanserv.stored[try_chan_ident[i]].CheckPass(i_Name,
 		Parent->chanserv.stored[try_chan_ident[i]].Password());
 
-    if (Parent->nickserv.IsStored(i_Name))
+    if (Parent->nickserv.IsStored(i_Name) &&
+	Parent->nickserv.stored[i_Name].IsOnline())
 	Parent->nickserv.stored[i_Name.LowerCase()].Quit(reason);
 }
 
@@ -639,11 +640,16 @@ void Nick_Live_t::Name(mstring in)
 
     // WooHoo, we have a new nick!
     i_Name = in;
+    i_My_Signon_Time = Now();
 
     if (Parent->nickserv.IsStored(i_Name))
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
 	    Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
+	else if (Parent->nickserv.stored[i_Name.LowerCase()].Protect())
+	    Parent->nickserv.send(i_Name,
+			"Please identify or you will be killed.");
+
     }
 
     // Send notices for committees we were NOT on
@@ -795,8 +801,10 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     case N_U_H:		// nick!user@*.host
 	if (i_host.IsNumber())
 	    retval = i_Name + "!" + i_user + "@" + i_host.Before(".", 3) + ".*";
-	else
+	else if (i_host.Contains("."))
 	    retval = i_Name + "!" + i_user + "@*." + i_host.After(".");
+	else
+	    retval = i_Name + "!" + i_user + "@" + i_host;
 	break;
 
     case N_P_H:		// nick!*@port.host
@@ -806,8 +814,10 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     case N_H:		// nick!*@*.host
 	if (i_host.IsNumber())
 	    retval = i_Name + "!*@" + i_host.Before(".", 3) + ".*";
-	else
+	else if (i_host.Contains("."))
 	    retval = i_Name + "!*@*." + i_host.After(".");
+	else
+	    retval = i_Name + "!*@" + i_host;
 	break;
 
     case U_P_H:		// *!user@port.host
@@ -817,8 +827,10 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     case U_H:		// *!user@*.host
 	if (i_host.IsNumber())
 	    retval = "*!" + i_user + "@" + i_host.Before(".", 3) + ".*";
-	else
+	else if (i_host.Contains("."))
 	    retval = "*!" + i_user + "@*." + i_host.After(".");
+	else
+	    retval = "*!" + i_user + "@" + i_host;
 	break;
 
     case P_H:		// *!*@port.host
@@ -828,8 +840,10 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     case H:		// *!*@*.host
 	if (i_host.IsNumber())
 	    retval = "*!*@" + i_host.Before(".", 3) + ".*";
-	else
+	else if (i_host.Contains("."))
 	    retval = "*!*@*." + i_host.After(".");
+	else
+	    retval = "*!*@" + i_host;
 	break;
 
     default:
@@ -2968,6 +2982,28 @@ NickServ::NickServ()
     automation=true;
 }
 
+mstring NickServ::findnextnick(mstring in)
+{
+    FT("NickServ::findnextnick", (in));
+    mstring retval = in;
+    unsigned int i;
+
+    for (i=0; i<Parent->nickserv.Suffixes().Len(); i++)
+    {
+	while (retval.Len() < Parent->nickserv.Maxlen())
+	{
+	    retval << Parent->nickserv.Suffixes()[i];
+	    if (!Parent->nickserv.IsLive(retval) &&
+		!Parent->nickserv.IsStored(retval))
+	    {
+		RET(retval);
+	    }
+	}
+	retval = in;
+    }
+    RET("");
+}
+
 void NickServ::AddCommands()
 {
     NFT("NickServ::AddCommands");
@@ -3067,7 +3103,7 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIN*", Parent->commserv.ALL_Name(), NickServ::do_Link);
+		"LINK*", Parent->commserv.ALL_Name(), NickServ::do_Link);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3078,6 +3114,12 @@ void NickServ::AddCommands()
 		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"REC*", Parent->commserv.ALL_Name(), NickServ::do_Recover);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3615,6 +3657,97 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, "This user is online, type /WHOIS " +
 	    Parent->nickserv.live[target.LowerCase()].Name() +
 	    " for more information.");
+}
+
+void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Ghost", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nick = params.ExtractWord(2, " ");
+    mstring pass = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nick))
+    {
+	::send(mynick, source, "Nickname " + nick + " is not registered.");
+	return;
+    }
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	::send(mynick, source, "Nickname " + nick + " is not being used.");
+	return;
+    }
+
+    if (pass != Parent->nickserv.stored[nick.LowerCase()].Password())
+    {
+	::send(mynick, source, "Password Incorrect.");
+	return;
+    }
+
+    Parent->server.KILL(mynick, nick, source + " (GHOST command used)");
+    if (Parent->nickserv.recovered.find(nick.LowerCase()) !=
+				    Parent->nickserv.recovered.end())
+	Parent->nickserv.recovered.erase(nick.LowerCase());
+    ::send(mynick, source, "Nickname using " + nick + " has been killed.");
+}
+
+void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Recover", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nick = params.ExtractWord(2, " ");
+    mstring pass = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nick))
+    {
+	::send(mynick, source, "Nickname " + nick + " is not registered.");
+	return;
+    }
+
+    if (pass != Parent->nickserv.stored[nick.LowerCase()].Password())
+    {
+	::send(mynick, source, "Password Incorrect.");
+	return;
+    }
+
+    if (Parent->nickserv.IsLive(nick))
+    {
+	Parent->server.KILL(mynick, nick, source + " (RECOVER command used)");
+    }
+
+    Parent->server.NICK(nick, Parent->startup.Ownuser() ? nick.LowerCase() :
+				Parent->startup.Services_User(),
+				Parent->startup.Services_Host(),
+				Parent->startup.Server_Name(),
+				"Nickname Enforcer");
+    Parent->nickserv.recovered[nick.LowerCase()] = Now();
+    ::send(mynick, source, "Nickname " + nick + " is now held.");
+}
+
+void NickServ::do_List(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_List", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
 }
 
 void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)

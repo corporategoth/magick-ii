@@ -296,6 +296,8 @@ int EventTask::svc(void)
 {
     NFT("EventTask::svc");
     mThread::Attach(tt_MAIN);
+
+    last_expire = last_save = last_check = last_ping = Now();
     while(!Parent->shutdown())
     {
 	// Main routine -- when we end this, we're done!!
@@ -422,7 +424,6 @@ int EventTask::svc(void)
 		    }
 		}
 	    }
-
 	    last_expire = Now();
 	}
 
@@ -448,7 +449,7 @@ int EventTask::svc(void)
 	    for (cli=Parent->chanserv.live.begin();
 		    cli!=Parent->chanserv.live.end(); cli++)
 	    {
-		csi = Parent->chanserv.stored.find(cli->first.LowerCase());
+		csi = Parent->chanserv.stored.find(cli->first);
 		// Removing bans ...
 		if (!Parent->chanserv.LCK_Bantime() ||
 		    !Parent->chanserv.DEF_Bantime())
@@ -535,6 +536,64 @@ int EventTask::svc(void)
 		    }
 		}
 	    }
+
+	    // Check if we should rename people who are past their
+	    // grace time on ident (if KillProtect is on, and they
+	    // are not on access list or secure is on).
+	    vector<mstring> chunked;
+	    for (nli = Parent->nickserv.live.begin();
+			    nli != Parent->nickserv.live.end(); nli++)
+	    {
+		nsi = Parent->nickserv.stored.find(nli->first);
+		if (!nli->second.IsServices() &&
+		    nsi != Parent->nickserv.stored.end() &&
+		    nsi->second.Protect() && !nsi->second.IsOnline() &&
+		    nli->second.MySignonTime().SecondsSince() >=
+					    Parent->nickserv.Ident())
+		{
+		    chunked.push_back(nli->first);
+		}
+	    }
+	    for (i=0; i<chunked.size(); i++)
+	    {
+		nli = Parent->nickserv.live.find(chunked[i]);
+		nsi = Parent->nickserv.stored.find(chunked[i]);
+		mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
+		mstring oldnick = nli->second.Name();
+		if (newnick != "")
+		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
+			oldnick, newnick);
+		else
+		{
+		    Parent->server.KILL(Parent->nickserv.FirstName(),
+			oldnick, "Kill Protection enforced.");
+		    Parent->server.NICK(oldnick, Parent->startup.Ownuser() ?
+				    oldnick.LowerCase() :
+				    Parent->startup.Services_User(),
+				    Parent->startup.Services_Host(),
+				    Parent->startup.Server_Name(),
+				    "Nickname Enforcer");
+		}
+		Parent->nickserv.recovered[oldnick.LowerCase()] = Now();
+	    }
+
+	    chunked.clear();
+	    // Sign off clients we've decided to take.
+	    for (di = Parent->nickserv.recovered.begin();
+			di != Parent->nickserv.recovered.end(); di++)
+	    {
+		if (di->second.SecondsSince() >= Parent->nickserv.Release())
+		{
+		    if (Parent->nickserv.IsLive(di->first) &&
+			Parent->nickserv.live[di->first].IsServices())
+		    {
+			Parent->server.QUIT(di->first, "RECOVER period expired");
+			chunked.push_back(di->first);
+		    }
+		}
+	    }
+	    for (i=0; i<chunked.size(); i++)
+		Parent->nickserv.recovered.erase(chunked[i]);
 	    last_check = Now();
 	}
 
@@ -571,6 +630,7 @@ int EventTask::svc(void)
 	    last_ping = Now();
 	}
 	
+
 #ifdef WIN32
 	Sleep(1000);
 #else

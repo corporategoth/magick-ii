@@ -41,8 +41,8 @@ Magick::Magick(int inargc, char **inargv)
     low_water_mark=20;   // To be deciphered at runtime later
     high_water_mark=25;
     reconnect=true;
-    events.open();
     loggertask.open();
+    events.open();
 }
 
 int Magick::Start()
@@ -934,6 +934,8 @@ void Magick::get_config_values()
     in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);
     in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 25);
 
+    in.Read(ts_NickServ+"MAXLEN",&nickserv.maxlen,9);
+    in.Read(ts_NickServ+"SUFFIXES",&nickserv.suffixes,"_-^`");
     in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
     in.Read(ts_NickServ+"IDENT",&nickserv.ident,60);
     in.Read(ts_NickServ+"RELEASE",&nickserv.release,60);
@@ -971,6 +973,8 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LCK_SECUREOPS",&chanserv.lck_secureops,false);
     in.Read(ts_ChanServ+"DEF_SECURE",&chanserv.def_secure,false);
     in.Read(ts_ChanServ+"LCK_SECURE",&chanserv.lck_secure,false);
+    in.Read(ts_ChanServ+"DEF_NOEXPIRE",&chanserv.def_secure,false);
+    in.Read(ts_ChanServ+"LCK_NOEXPIRE",&chanserv.lck_secure,false);
     in.Read(ts_ChanServ+"DEF_RESTRICTED",&chanserv.def_restricted,false);
     in.Read(ts_ChanServ+"LCK_RESTRICTED",&chanserv.lck_restricted,false);
     in.Read(ts_ChanServ+"DEF_JOIN",&chanserv.def_join,false);

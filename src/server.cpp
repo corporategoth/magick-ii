@@ -558,6 +558,7 @@ void NetworkServ::QUIT(mstring nick, mstring reason)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
+	Parent->nickserv.live.erase(nick.LowerCase());
 	raw(":" + nick + " QUIT :" + reason);
     }
 }
@@ -575,7 +576,7 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
     {
 	wxLogWarning("MODE command requested by non-service %s", mynick.c_str());
     }
-    if (!Parent->nickserv.IsLive(nick))
+    else if (!Parent->nickserv.IsLive(nick))
     {
 	wxLogWarning("MODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
@@ -583,6 +584,36 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
     {
 	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
 	raw(":" + mynick + " SVSMODE " + nick + " " + mode);
+    }
+}
+
+
+void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
+{
+    FT("NetworkServ::SVSNICK", (mynick, nick, newnick));
+
+    if (!Parent->nickserv.IsLive(mynick))
+    {
+	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
+    {
+	wxLogWarning("MODE command requested by non-service %s", mynick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("MODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+    }
+    else if (Parent->nickserv.IsLive(newnick))
+    {
+	wxLogWarning("MODE command requested by %s to non-existant user %s", mynick.c_str(), newnick.c_str());
+    }
+    else
+    {
+	mstring output;
+	output << ":" << mynick << " SVSNICK " << nick << " " <<
+		    newnick << " :" << time_t(NULL);
+	raw(output);
     }
 }
 
@@ -1039,6 +1070,13 @@ void NetworkServ::execute(const mstring & data)
 			}
 		    }
 		}
+		if (Parent->nickserv.IsStored(sourceL) &&
+		    Parent->nickserv.stored[sourceL].Protect() &&
+		    !Parent->nickserv.stored[sourceL].IsOnline())
+		{
+		    Parent->nickserv.send(sourceL,
+			"Please identify or you will be killed.");
+		}
 	    }
 	    else
 	    {
@@ -1057,6 +1095,17 @@ void NetworkServ::execute(const mstring & data)
 		}
 
 		Parent->nickserv.live.erase(sourceL);
+		// We just did a SVSNICK ...
+		if (Parent->nickserv.recovered.find(source.LowerCase()) !=
+			    Parent->nickserv.recovered.end())
+		{
+		    Parent->server.NICK(source,
+				Parent->startup.Ownuser() ?
+				sourceL : Parent->startup.Services_User(),
+				Parent->startup.Services_Host(),
+				Parent->startup.Server_Name(),
+				"Nickname Enforcer");
+		}
 	    }
 	}
 	else if (msgtype=="NOTICE")

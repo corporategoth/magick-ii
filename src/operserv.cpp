@@ -654,7 +654,7 @@ void OperServ::RemCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.RemSystemCommand(GetInternalName(),
-		    "TRACE", "SADMIN");
+		    "TRACE", Parent->commserv.SADMIN_Name());
 }
 
 void OperServ::execute(const mstring & data)

@@ -100,6 +100,7 @@ public:
     void PRIVMSG(mstring nick, mstring dest, mstring text);
     void QUIT(mstring nick, mstring reason = "");
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
+    void SVSNICK(mstring mynick, mstring nick, mstring newnick);
     void TOPIC(mstring nick, mstring channel, mstring topic = "");
     void WALLOPS(mstring nick, mstring message);    
 

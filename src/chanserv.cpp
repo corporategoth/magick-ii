@@ -1196,6 +1196,8 @@ void Chan_Stored_t::defaults()
     l_Secureops = false;
     i_Secure = Parent->chanserv.DEF_Secure();
     l_Secure = false;
+    i_NoExpire = Parent->chanserv.DEF_NoExpire();
+    l_NoExpire = false;
     i_Restricted = Parent->chanserv.DEF_Restricted();
     l_Restricted = false;
     i_Join = Parent->chanserv.DEF_Join();
@@ -1370,6 +1372,8 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     l_Secureops=in.l_Secureops;
     i_Secure=in.i_Secure;
     l_Secure=in.l_Secure;
+    i_NoExpire=in.i_NoExpire;
+    l_NoExpire=in.l_NoExpire;
     i_Restricted=in.i_Restricted;
     l_Restricted=in.l_Restricted;
     i_Join=in.i_Join;
@@ -2122,6 +2126,44 @@ bool Chan_Stored_t::L_Secure()
 }
 
 
+void Chan_Stored_t::NoExpire(bool in)
+{
+    FT("Chan_Stored_t::NoExpire", (in));
+    if (!(Parent->chanserv.LCK_NoExpire() || l_NoExpire))
+	i_NoExpire = in;
+}
+
+
+bool Chan_Stored_t::NoExpire()
+{
+    NFT("Chan_Stored_t::NoExpire");
+    if (!Parent->chanserv.LCK_NoExpire())
+    {
+	RET(i_NoExpire);
+    }
+    RET(Parent->chanserv.DEF_NoExpire());
+}
+
+
+void Chan_Stored_t::L_NoExpire(bool in)
+{
+    FT("Chan_Stored_t::L_NoExpire", (in));
+    if (!Parent->chanserv.LCK_NoExpire())
+	l_NoExpire = in;
+}
+
+
+bool Chan_Stored_t::L_NoExpire()
+{
+    NFT("Chan_Stored_t::L_NoExpire");
+    if (!Parent->chanserv.LCK_NoExpire())
+    {
+	RET(l_NoExpire);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Restricted(bool in)
 {
     FT("Chan_Stored_t::Restricted", (in));
@@ -2614,9 +2656,9 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_CoFounder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
     out<<in.i_Bantime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
-	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
+	in.i_Secure<<in.i_NoExpire<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
     out<<in.l_Bantime<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops<<
-	in.l_Secure<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
+	in.l_Secure<<in.l_NoExpire<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
 //  entlist_val_cui<long> j;
@@ -2658,9 +2700,9 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_CoFounder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Bantime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
-	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
+	out.i_Secure>>out.i_NoExpire>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
     in>>out.l_Bantime>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops>>
-	out.l_Secure>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
+	out.l_Secure>>out.l_NoExpire>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
     out.i_Access_Level.clear();

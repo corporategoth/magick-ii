@@ -125,6 +125,7 @@ public:
     void Action();
 
     mDateTime SignonTime()	{ return i_Signon_Time; }
+    mDateTime MySignonTime()	{ return i_My_Signon_Time; }
     mstring RealName()		{ return i_realname; }
     mstring User()		{ return i_user; }
     mstring Host()		{ return i_host; }
@@ -324,6 +325,8 @@ class NickServ : public mBase
 private:
 
     // Config Entries ...
+    int maxlen;			// Maximum length of a nickname
+    mstring suffixes;		// What to add to unidentified nicks
     int expire;			// How long to keep nicknames
     int ident;			// How long to wait for IDENT
     int release;		// How long to keep after failed ident
@@ -348,6 +351,8 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    int Maxlen()		{ return maxlen; }
+    mstring Suffixes()		{ return suffixes; }
     int Expire()		{ return expire; }
     int Ident()			{ return ident; }
     int Release()		{ return release; }
@@ -375,8 +380,11 @@ public:
     bool IsLive(mstring in);
     map<mstring,Nick_Stored_t> stored;
     map<mstring,Nick_Live_t> live;
+    map<mstring,mDateTime> recovered;
     KillOnSignon_Handler kosh;
     InFlight_Handler ifh;
+
+    static mstring findnextnick(mstring in);
 
     NickServ();
     virtual threadtype_enum Get_TType() const { return tt_NickServ; }
@@ -392,6 +400,9 @@ public:
     static void do_Slaves(mstring mynick, mstring source, mstring params);
     static void do_Identify(mstring mynick, mstring source, mstring params);
     static void do_Info(mstring mynick, mstring source, mstring params);
+    static void do_Ghost(mstring mynick, mstring source, mstring params);
+    static void do_Recover(mstring mynick, mstring source, mstring params);
+    static void do_List(mstring mynick, mstring source, mstring params);
     static void do_Suspend(mstring mynick, mstring source, mstring params);
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
