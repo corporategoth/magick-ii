@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/12/29 13:55:09  prez
+** Compiled with 5.1.11, some changes to accomodate (will work with older
+** versions of ace still).
+**
 ** Revision 1.49  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -167,8 +171,8 @@ class mLock_Read : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
 public:
-	mLock_Read (LPCTSTR name = 0, void *arg = 0)
-		: base(name, arg) {}
+	mLock_Read (const char *name = 0)
+		: base(name) {}
 
 	int acquire()		{ return acquire_read(); }
 	int tryacquire()	{ return tryacquire_read(); }
@@ -183,8 +187,8 @@ class mLock_Write : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
 public:
-	mLock_Write (LPCTSTR name = 0, void *arg = 0)
-		: base(name, arg) {}
+	mLock_Write (const char *name = 0)
+		: base(name) {}
 
 	int acquire()		{ return acquire_write(); }
 	int tryacquire()	{ return tryacquire_write(); }
@@ -199,8 +203,8 @@ class mLock_Mutex : public ACE_Thread_Mutex
 {
 	typedef ACE_Thread_Mutex base;
 public:
-	mLock_Mutex (LPCTSTR name = 0, void *arg = 0)
-		: base(name, arg) {}
+	mLock_Mutex (const char *name = 0)
+		: base(name) {}
 
 	void *operator new (size_t size)
 		{ return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }

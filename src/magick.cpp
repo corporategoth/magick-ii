@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.281  2000/12/29 13:55:09  prez
+** Compiled with 5.1.11, some changes to accomodate (will work with older
+** versions of ace still).
+**
 ** Revision 1.280  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -647,14 +651,6 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
 #endif
-#if 0 // Posix threads use these grrr
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
-#endif
-#endif
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Reactor::instance()->register_handler(SIGALRM,signalhandler);
 #endif
@@ -670,8 +666,17 @@ int Magick::Start()
 #ifdef SIGTTOU
     ACE_Reactor::instance()->register_handler(SIGTTOU,signalhandler);
 #endif
+
+#if 0 // Posix threads use these grrr
+#if defined(SIGUSR1) && (SIGUSR1 != 0)
+    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
+#endif
+#if defined(SIGUSR2) && (SIGUSR2 != 0)
+    ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
+#endif
 #ifdef SIGTSTP
     ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
+#endif
 #endif
 
 /* Please leave this somewhere in this file, as it
@@ -763,14 +768,6 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->remove_handler(SIGFPE);
 #endif
-#if 0 // Posix threads use these, grr
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->remove_handler(SIGUSR1);
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Reactor::instance()->remove_handler(SIGUSR2);
-#endif
-#endif
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Reactor::instance()->remove_handler(SIGALRM);
 #endif
@@ -786,8 +783,16 @@ int Magick::Start()
 #ifdef SIGTTOU
     ACE_Reactor::instance()->remove_handler(SIGTTOU);
 #endif
+#if 0 // Posix threads use these, grr
+#if defined(SIGUSR1) && (SIGUSR1 != 0)
+    ACE_Reactor::instance()->remove_handler(SIGUSR1);
+#endif
+#if defined(SIGUSR2) && (SIGUSR2 != 0)
+    ACE_Reactor::instance()->remove_handler(SIGUSR2);
+#endif
 #ifdef SIGTSTP
     ACE_Reactor::instance()->remove_handler(SIGTSTP);
+#endif
 #endif
 
     { WLOCK(("Events"));
@@ -3053,7 +3058,7 @@ void Logger::log(ACE_Log_Record &log_record)
     /* Pulled directly from ACE ... */
     time_t sec = log_record.time_stamp().sec();
     struct tm *tmval = localtime(&sec);
-    ASYS_TCHAR ctp[21]; // 21 is a magic number...
+    char ctp[21]; // 21 is a magic number...
     if (ACE_OS::strftime (ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
 	return;
 
