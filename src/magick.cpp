@@ -41,6 +41,7 @@ Magick::Magick(int inargc, char **inargv)
     low_water_mark=20;   // To be deciphered at runtime later
     high_water_mark=25;
     reconnect=true;
+    event.open();
     loggertask.open();
 }
 
