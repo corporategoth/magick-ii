@@ -2,6 +2,7 @@ default: all
 
 dist: maint
 	rm -rf `find . -type d -name CVS`
+	rm -f `find . -type f -name .cvsignore`
 
 maint:
 	@echo "This file is to make it easier for you to create all you need"
@@ -26,7 +27,6 @@ maint:
 	rm -f `find . -type f -name "*~"`
 	rm -f `find . -type f -name ".#*"`
 	rm -f `find . -type f -name "*.bak"`
-	rm -f `find . -type f -name .cvsignore`
 	rm -f `find . -type f -name DEADJOE`
 	rm -f Makefile.dist
 	mv config1.sub config.sub
