@@ -241,19 +241,53 @@ bool wxConfigBase::Read(const mstring& key, mstring *str, const mstring& defVal)
         RET(true);
 }
 
-bool wxConfigBase::Read(const mstring& key, long *pl, long defVal) const
+bool wxConfigBase::Read(const mstring& key, long* val) const
 {
-    FT("wxConfigBase::Read", (key, pl, defVal));
-    if (!Read(key, pl))
+    FT("wxConfigBase::Read", (key, val));
+    mstring str;
+    if (Read(key, & str))
     {
-        *pl = defVal;
-        RET(false);
+        *val = atol(str);
+        RET(true);
     }
     else
-        RET(true);
+        RET(false);
 }
 
-bool wxConfigBase::Read(const mstring& key, double* val) const
+bool wxConfigBase::Read(const mstring& key, long* val, const long& defVal) const
+{
+    FT("wxConfigBase", (key, val, defVal));
+    mstring str, defStr;
+    defStr << defVal;
+    bool retval = Read(key, &str, defVal);
+    *val = atol(str);
+    RET(retval);
+}
+
+bool wxConfigBase::Read(const mstring& key, int* val) const
+{
+    FT("wxConfigBase::Read", (key, val));
+    mstring str;
+    if (Read(key, & str))
+    {
+        *val = atoi(str);
+        RET(true);
+    }
+    else
+        RET(false);
+}
+
+bool wxConfigBase::Read(const mstring& key, int* val, const int& defVal) const
+{
+    FT("wxConfigBase", (key, val, defVal));
+    mstring str, defStr;
+    defStr << defVal;
+    bool retval = Read(key, &str, defVal);
+    *val = atoi(str);
+    RET(retval);
+}
+
+bool wxConfigBase::Read(const mstring& key, float* val) const
 {
     FT("wxConfigBase::Read", (key, val));
     mstring str;
@@ -266,77 +300,46 @@ bool wxConfigBase::Read(const mstring& key, double* val) const
         RET(false);
 }
 
-bool wxConfigBase::Read(const mstring& key, double* val, double defVal) const
+bool wxConfigBase::Read(const mstring& key, float* val, const float& defVal) const
 {
     FT("wxConfigBase", (key, val, defVal));
-    if (!Read(key, val))
-    {
-        *val = defVal;
-        RET(false);
-    }
-    else
-        RET(true);
+    mstring str, defStr;
+    defStr << defVal;
+    bool retval = Read(key, &str, defVal);
+    *val = atof(str);
+    RET(retval);
+}
+
+static bool makebool(mstring intext)
+{
+  if (intext.CmpNoCase("true")==0 || intext.CmpNoCase("on")==0 || intext.CmpNoCase("yes")==0 ||
+      intext.CmpNoCase("y")==0 || intext.CmpNoCase("t")==0)
+    return true;
+  else
+    return false;
 }
 
 bool wxConfigBase::Read(const mstring& key, bool* val) const
 {
     FT("wxConfigBase::Read", (key, val));
-    long l;
-    if (Read(key, & l))
-    {
-        *val = (l != 0);
-        RET(true);
-    }
-    else
-        RET(false);
-}
-
-bool wxConfigBase::Read(const mstring& key, bool* val, bool defVal) const
-{
-    FT("wxConfigBase::Read", (key, val, defVal));
-    if (!Read(key, val))
-    {
-        *val = defVal;
-        RET(false);
-    }
-    else
-        RET(true);
-}
-
-// Convenience functions
-
-bool wxConfigBase::Read(const mstring& key, int *pi) const
-{
-    FT("wxConfigBase::Read", (key, pi));
-    long l;
-    bool ret = Read(key, &l);
-    if (ret)
-        *pi = (int) l;
-    RET(ret);
-}
-
-bool wxConfigBase::Read(const mstring& key, int *pi, int defVal) const
-{
-    FT("wxConfigBase::Read", (key, pi, defVal));
-    long l;
-    bool ret = Read(key, &l, (long) defVal);
-    *pi = (int) l;
-    RET(ret);
-}
-
-bool wxConfigBase::Write(const mstring& key, double val)
-{
-    FT("wxConfigBase::Write", (key, val));
     mstring str;
-    str.Format("%f", val);
-    RET(Write(key, str));
+    if (Read(key, & str))
+    {
+        *val = makebool(str);
+        RET(true);
+    }
+    else
+        RET(false);
 }
 
-bool wxConfigBase::Write(const mstring& key, bool value)
+bool wxConfigBase::Read(const mstring& key, bool* val, const bool& defVal) const
 {
-    FT("wxConfBase::Write", (key, value));
-    long l = (value ? 1 : 0);
-    RET(Write(key, l));
+    FT("wxConfigBase", (key, val, defVal));
+    mstring str, defStr;
+    defStr << (defVal ? "TRUE" : "FALSE");
+    bool retval = Read(key, &str, defVal);
+    *val = makebool(str);
+    RET(retval);
 }
 
 mstring wxConfigBase::ExpandEnvVars(const mstring& str) const
@@ -407,14 +410,6 @@ bool wxConfigBase::Exists(const mstring& strName) const
 {
     FT("wxConfigBase::Exists", (strName));
     RET(HasGroup(strName) || HasEntry(strName)); 
-}
-
-long wxConfigBase::Read(const mstring& strKey, long defVal) const 
-{
-    FT("wxConfigBase::Read", (strKey, defVal));
-    long l;
-    Read(strKey, &l, defVal);
-    RET(l); 
 }
 
 bool wxConfigBase::IsExpandingEnvVars() const 

@@ -133,41 +133,34 @@ public:
     // returns true if either a group or an entry with a given name exist
   bool Exists(const mstring& strName) const;
 
-  // key access: returns true if value was really read, false if default used
-  // (and if the key is not found the default value is returned.)
-    // read a string from the key
-  virtual bool Read(const mstring& key, mstring *pStr) const = 0;
-  virtual bool Read(const mstring& key, mstring *pStr, const mstring& defVal) const;
-
+  // read a string from the key
   virtual mstring Read(const mstring& key, const mstring& defVal= "") const;
 
+  // key access: returns true if value was really read, false if default used
+  // (and if the key is not found the default value is returned.)
 
-  virtual bool Read(const mstring& key, long *pl) const = 0;
-  virtual bool Read(const mstring& key, long *pl, long defVal) const;
+  // mstring
+  virtual bool Read(const mstring& key, mstring* pStr) const = 0;
+  virtual bool Read(const mstring& key, mstring* pStr, const mstring& defVal) const;
 
-  virtual long Read(const mstring& strKey, long defVal) const;
-
-  // Convenience functions that are built on other forms
+  // long
+  virtual bool Read(const mstring& key, long* val) const;
+  virtual bool Read(const mstring& key, long* val, const long& defVal) const;
 
   // int
-  virtual bool Read(const mstring& key, int *pi) const;
-  virtual bool Read(const mstring& key, int *pi, int defVal) const;
+  virtual bool Read(const mstring& key, int* val) const;
+  virtual bool Read(const mstring& key, int* val, const int& defVal) const;
 
-  // double
-  virtual bool Read(const mstring& key, double* val) const;
-  virtual bool Read(const mstring& key, double* val, double defVal) const;
+  // float
+  virtual bool Read(const mstring& key, float* val) const;
+  virtual bool Read(const mstring& key, float* val, const float& defVal) const;
 
   // bool
   virtual bool Read(const mstring& key, bool* val) const;
-  virtual bool Read(const mstring& key, bool* val, bool defVal) const;
+  virtual bool Read(const mstring& key, bool* val, const bool& defVal) const;
 
     // write the value (return true on success)
   virtual bool Write(const mstring& key, const mstring& value) = 0;
-  virtual bool Write(const mstring& key, long value) = 0;
-
-  // Convenience functions
-  virtual bool Write(const mstring& key, double value);
-  virtual bool Write(const mstring& key, bool value);
 
     // permanently writes all changes
   virtual bool Flush(bool bCurrentOnly = false) = 0;

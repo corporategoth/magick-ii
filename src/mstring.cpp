@@ -513,6 +513,13 @@ mstring& mstring::operator <<(int i)
 	return *this<<s;
 }
 
+mstring& mstring::operator <<(long l)
+{
+	mstring s;
+	s.Format("%l",l);
+	return *this<<s;
+}
+
 mstring& mstring::operator <<(float f)
 {
 	mstring s;

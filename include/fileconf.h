@@ -363,24 +363,17 @@ public:
   virtual bool HasEntry(const mstring& strName) const;
 
   virtual bool Read(const mstring& key, mstring *pStr) const;
-  virtual bool Read(const mstring& key, mstring *pStr, const mstring& defValue) const;
+  virtual bool Read(const mstring& key, mstring *pStr, const mstring &defValue) const;
   virtual bool Read(const mstring& key, long *pl) const;
-
-  // The following are necessary to satisfy the compiler
-  mstring Read(const mstring& key, const mstring& defVal) const;
-  bool Read(const mstring& key, long *pl, long defVal) const;
-  long Read(const mstring& key, long defVal) const;
-  bool Read(const mstring& key, int *pi, int defVal) const;
-  bool Read(const mstring& key, int *pi) const;
-  bool Read(const mstring& key, double* val) const;
-  bool Read(const mstring& key, double* val, double defVal) const;
-  bool Read(const mstring& key, bool* val) const;
-  bool Read(const mstring& key, bool* val, bool defVal) const;
+  virtual bool Read(const mstring& key, long *pl, const long &defVal) const;
+  virtual bool Read(const mstring& key, int *pi) const;
+  virtual bool Read(const mstring& key, int *pi, const int &defVal) const;
+  virtual bool Read(const mstring& key, float* val) const;
+  virtual bool Read(const mstring& key, float* val, const float &defVal) const;
+  virtual bool Read(const mstring& key, bool* val) const;
+  virtual bool Read(const mstring& key, bool* val, const bool &defVal) const;
 
   virtual bool Write(const mstring& key, const mstring& szValue);
-  virtual bool Write(const mstring& key, long lValue);
-  bool Write(const mstring& key, double value);
-  bool Write(const mstring& key, bool value);
 
   virtual bool Flush(bool bCurrentOnly = false);
 

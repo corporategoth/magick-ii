@@ -564,17 +564,52 @@ bool wxFileConfig::Read(const mstring& key,
   }
 }
 
-bool wxFileConfig::Read(const mstring& key, long *pl) const
+bool wxFileConfig::Read(const mstring& key, long *val) const
 {
-  FT("wxFileConfig::Read", (key, pl));
-  mstring str;
-  if ( Read(key, & str) ) {
-    *pl = atol(str);
-    RET(true);
-  }
-  else {
-    RET(false);
-  }
+  FT("wxFileConfig::Read", (key, val));
+  RET(wxConfigBase::Read(key, val));
+}
+
+bool wxFileConfig::Read(const mstring& key, long *val, const long& defVal) const
+{
+  FT("wxFileConfig::Read", (key, val, defVal));
+  RET(wxConfigBase::Read(key, val, defVal));
+}
+
+bool wxFileConfig::Read(const mstring& key, int *val) const
+{
+  FT("wxFileConfig::Read", (key, val));
+  RET(wxConfigBase::Read(key, val));
+}
+
+bool wxFileConfig::Read(const mstring& key, int *val, const int& defVal) const
+{
+  FT("wxFileConfig::Read", (key, val, defVal));
+  RET(wxConfigBase::Read(key, val, defVal));
+}
+
+bool wxFileConfig::Read(const mstring& key, float *val) const
+{
+  FT("wxFileConfig::Read", (key, val));
+  RET(wxConfigBase::Read(key, val));
+}
+
+bool wxFileConfig::Read(const mstring& key, float *val, const float& defVal) const
+{
+  FT("wxFileConfig::Read", (key, val, defVal));
+  RET(wxConfigBase::Read(key, val, defVal));
+}
+
+bool wxFileConfig::Read(const mstring& key, bool *val) const
+{
+  FT("wxFileConfig::Read", (key, val));
+  RET(wxConfigBase::Read(key, val));
+}
+
+bool wxFileConfig::Read(const mstring& key, bool *val, const bool& defVal) const
+{
+  FT("wxFileConfig::Read", (key, val, defVal));
+  RET(wxConfigBase::Read(key, val, defVal));
 }
 
 bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
@@ -619,15 +654,6 @@ bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
   }
 
   RET(true);
-}
-
-bool wxFileConfig::Write(const mstring& key, long lValue)
-{
-  FT("wxFileConfig::Write", (key, lValue));
-  // ltoa() is not ANSI :-(
-  mstring buf;
-  buf.Format("%ld", lValue);
-  RET(Write(key, buf));
 }
 
 bool wxFileConfig::Flush(bool bCurrentOnly)
@@ -1856,71 +1882,6 @@ const mstring& wxFileConfig::GetPath() const
     RET(m_strPath); 
 }
 
-mstring wxFileConfig::Read(const mstring& key, const mstring& defVal) const 
-{
-    FT("wxFileConfig::Read", (key, defVal));
-    RET(wxConfigBase::Read(key, defVal)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, long *pl, long defVal) const 
-{
-    FT("wxFileConfig::Read", (key, pl, defVal));
-    RET(wxConfigBase::Read(key, pl, defVal)); 
-}
-
-long wxFileConfig::Read(const mstring& key, long defVal) const 
-{
-    FT("wxFileConfig::Read", (key, defVal));
-    RET(wxConfigBase::Read(key, defVal)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, int *pi, int defVal) const 
-{
-    FT("wxFileConfig::Read", (key, pi, defVal));
-    RET(wxConfigBase::Read(key, pi, defVal)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, int *pi) const 
-{
-    FT("wxFileConfig::Read", (key, pi));
-    RET(wxConfigBase::Read(key, pi)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, double* val) const 
-{ 
-    FT("wxFileConfig::Read", (key, val));
-    RET(wxConfigBase::Read(key, val)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, double* val, double defVal) const 
-{
-    FT("wxFileConfig::Read", (key, val, defVal));
-    RET(wxConfigBase::Read(key, val, defVal)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, bool* val) const 
-{
-    FT("wxFileConfig::Read", (key, val));
-    RET(wxConfigBase::Read(key, val)); 
-}
-
-bool wxFileConfig::Read(const mstring& key, bool* val, bool defVal) const 
-{
-    FT("wxFileConfig::Read", (key, val, defVal));
-    RET(wxConfigBase::Read(key, val, defVal)); 
-}
-
-bool wxFileConfig::Write(const mstring& key, double value) 
-{
-    FT("wxFileConfig::Write", (key, value));
-    RET(wxConfigBase::Write(key, value)); 
-}
-
-bool wxFileConfig::Write(const mstring& key, bool value) 
-{
-    FT("wxFileConfig::Write", (key, value));
-    RET(wxConfigBase::Write(key, value)); 
-}
 
 const mstring& ConfigEntry::Name()        const 
 {

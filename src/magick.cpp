@@ -131,8 +131,10 @@ int Magick::Start()
     }
     //okay, need a function here to load all the ini file defalts
     get_config_values();
-    if(i_shutdown==true)
+    if(i_shutdown==true) {
+	wxLogError("CONFIG: [Startup] STOP code received.");
 	RET(MAGICK_RET_ERROR);
+    }
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
@@ -401,7 +403,7 @@ void Magick::LoadInternalMessages()
 #endif
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
-    mstring groupname,entryname;
+    mstring groupname,entryname,combined;
     bContGroup=fconf.GetFirstGroup(groupname,dummy1);
     // this code is fucked up and won't work. debug to find why it's not
     // finding the entries when it is actually loading them.
@@ -414,7 +416,8 @@ void Magick::LoadInternalMessages()
     	    MessageNamesLong.push_back(groupname+"/"+entryname);
 	    MessageNamesShort.push_back(entryname);
 	    bContEntries=fconf.GetNextEntry(entryname,dummy2);
-	    Messages[entryname]=fconf.Read(groupname+"/"+entryname,"");
+	    combined = groupname+"/"+entryname;
+	    Messages[entryname]=fconf.Read(combined,(mstring *) "");
 	}
 	bContGroup=fconf.GetNextGroup(groupname,dummy1);
     }
@@ -460,7 +463,7 @@ void Magick::LoadExternalMessages()
     // change this to not just update the internal defaults but also to
     // add new one's like loadinternal does.
     for(i=0;i<MessageNamesLong.size();i++)
-    	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],Messages[MessageNamesShort[i]]);
+    	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],&Messages[MessageNamesShort[i]]);
 }
 
 int Magick::doparamparse()
@@ -707,8 +710,8 @@ void Magick::get_config_values()
     mstring ts_Services=mstring("Services/");
     mstring ts_Files=mstring("Files/");
     mstring ts_Config=mstring("Config/");
-    mstring ts_ChanServ=mstring("NickServ/");
-    mstring ts_NickServ=mstring("ChanServ/");
+    mstring ts_ChanServ=mstring("ChanServ/");
+    mstring ts_NickServ=mstring("NickServ/");
     mstring ts_MemoServ=mstring("MemoServ/");
     mstring ts_OperServ=mstring("OperServ/");
     mstring ts_CommServ=mstring("CommServ/");
@@ -724,8 +727,8 @@ void Magick::get_config_values()
     in.Read(ts_Startup+"LEVEL",&Startup_LEVEL,1);
     in.Read(ts_Startup+"LAGTIME",&Startup_LAGTIME,10);
     in.Read(ts_Startup+"DEADTIME",&Startup_DEADTIME,30);
-    in.Read(ts_Startup+"GMT",&Startup_GMT,+10.0);
-    in.Read(ts_Startup+"STOP",&Startup_STOP,true);
+    in.Read(ts_Startup+"GMT",&Startup_GMT,0.0);
+    in.Read(ts_Startup+"STOP",&i_shutdown,true);
 
     in.Read(ts_Services+"NickServ",&nickserv.names,"NickServ");
     in.Read(ts_Services+"NickServ_Name",&nickserv.realname,"Nickname Service");

@@ -137,8 +137,7 @@ protected:
 	int Startup_LEVEL;
 	int Startup_LAGTIME;
 	int Startup_DEADTIME;
-	double Startup_GMT;
-	bool Startup_STOP;
+	float Startup_GMT;
 
 //	mstring Services_NickServ;
 //	mstring Services_NickServ_Name;
