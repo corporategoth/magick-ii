@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/12/29 14:00:40  prez
+** needed to include ace/Version.h
+**
 ** Revision 1.28  2000/12/29 13:55:09  prez
 ** Compiled with 5.1.11, some changes to accomodate (will work with older
 ** versions of ace still).
@@ -231,6 +234,7 @@
 /* Used with SGI's STL
 #undef ACE_LACKS_AUTO_PTR
 */
+#include <ace/Version.h>
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>
 #include <ace/Connector.h>
