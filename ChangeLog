@@ -1,3 +1,14 @@
+* 2002-11-23 14:49  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.313), src/commserv.cpp (1.134), src/memoserv.cpp
+  (1.130), src/operserv.cpp (1.168):
+  
+  Added checking for an empty list for all deletions.
+
+* 2002-11-18 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.58):
+  
+  Created version 2.0s20021118
+
 * 2002-11-11 03:00  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.57):
   
