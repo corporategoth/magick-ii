@@ -24,6 +24,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.39  2000/03/13 09:36:18  prez
 ** Completed help file, we now have full help text.
 **
@@ -105,17 +109,17 @@ restart:
     catch(exception &e)
     {
 	// new style STL exceptions
-	fprintf(stderr,"Unhandled exception: %s\n",e.what());
+	ACE_OS::fprintf(stderr,"Unhandled exception: %s\n",e.what());
     }
     catch(int i)
     {
 	// old style c exceptions
-	fprintf(stderr,"Unhandled exception: %d\n",i);
+	ACE_OS::fprintf(stderr,"Unhandled exception: %d\n",i);
     }
     catch(...)
     {
 	// even older style exceptions like SIGSEGV
-	fprintf(stderr,"Unhandled exception: Unknown\n");
+	ACE_OS::fprintf(stderr,"Unhandled exception: Unknown\n");
 	return -1;
     }
 #endif

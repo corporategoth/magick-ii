@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.81  2000/04/18 14:34:23  prez
 ** Fixed the HELP system, it now loads into memory, and can be unloaded
 ** with the OS unload command.  The stats however are inaccurate.
@@ -4098,7 +4102,7 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -4375,7 +4379,7 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -4514,7 +4518,7 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = atoi(hostmask.c_str());
+	unsigned int num = ACE_OS::atoi(hostmask.c_str());
 	if (num <= 0 || num > Parent->nickserv.stored[source.LowerCase()].Access())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -4662,7 +4666,7 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = atoi(target.c_str());
+	unsigned int num = ACE_OS::atoi(target.c_str());
 	if (num <= 0 || num > Parent->nickserv.stored[source.LowerCase()].Ignore())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),

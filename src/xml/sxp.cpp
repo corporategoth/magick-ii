@@ -1,4 +1,3 @@
-#include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
 #else
@@ -26,6 +25,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/04/30 03:48:30  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.2  2000/04/15 11:11:45  ungod
 ** starting xmlage of magick
 **

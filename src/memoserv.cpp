@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.49  2000/04/04 03:21:35  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -1112,7 +1116,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = atoi(what.c_str());
+	unsigned int num = ACE_OS::atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.channel[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1154,7 +1158,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = atoi(what.c_str());
+	unsigned int num = ACE_OS::atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.nick[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1287,7 +1291,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = atoi(what.c_str());
+	unsigned int num = ACE_OS::atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.channel[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1335,7 +1339,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	unsigned int num = atoi(what.c_str());
+	unsigned int num = ACE_OS::atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.nick[who.LowerCase()].size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),

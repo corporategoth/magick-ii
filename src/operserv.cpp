@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/04/30 03:48:30  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.73  2000/04/18 10:20:27  prez
 ** Made helpfiles load on usage, like language files.
 **
@@ -1265,11 +1269,7 @@ void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Shutdown", (mynick, source, params));
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SHUTDOWN"));
     announce(mynick, Parent->getMessage("MISC/SHUTDOWN"), source.c_str());
-#ifdef WIN32
-    Sleep(1000);
-#else
-    sleep(1);
-#endif
+    ACE_OS::sleep(1);
     Parent->Shutdown(true);
     Parent->Die();
 }
@@ -1789,7 +1789,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    unsigned int num = atoi(amount.c_str());
+    unsigned int num = ACE_OS::atoi(amount.c_str());
     if (num < 1 || num > Parent->operserv.Max_Clone())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -1886,7 +1886,7 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "Clone"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = atoi(host.c_str());
+	unsigned int i, num = ACE_OS::atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Clone_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -2178,7 +2178,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "Akill"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = atoi(host.c_str());
+	unsigned int i, num = ACE_OS::atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Akill_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -2391,7 +2391,7 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "OperDeny"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = atoi(host.c_str());
+	unsigned int i, num = ACE_OS::atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.OperDeny_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
@@ -2609,7 +2609,7 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     MLOCK(("OperServ", "Ignore"));
     if (host.IsNumber() && !host.Contains("."))
     {
-	unsigned int i, num = atoi(host.c_str());
+	unsigned int i, num = ACE_OS::atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Ignore_size())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),

@@ -24,6 +24,10 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2000/04/30 03:48:28  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.88  2000/04/26 11:34:12  prez
 ** *** empty log message ***
 **
@@ -63,7 +67,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 5;
+const int BUILD_NUMBER = 8;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 const unsigned short Magick_Major_Ver=2;

@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2000/04/30 03:48:30  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.91  2000/04/23 02:31:50  prez
 ** *** empty log message ***
 **
@@ -227,7 +231,7 @@ Protocol::Protocol()
 
 void Protocol::Set(unsigned int in)
 {
-    FT("Protocol::Set", (in)); fflush(stdout);
+    FT("Protocol::Set", (in));
     switch (in)
     {
     case 0: /* RFC */
@@ -2170,7 +2174,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
 			data.ExtractWord(2, ": ").LowerCase(),
-			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
+			ACE_OS::atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
 		wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(2, ": ").c_str(),
@@ -2183,7 +2187,7 @@ void NetworkServ::execute(const mstring & data)
 		    ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
 			data.ExtractWord(3, ": ").LowerCase(),
 			sourceL,
-			atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
+			ACE_OS::atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			data.After(":", 2));
 		    wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
@@ -2983,7 +2987,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     {
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
-        msgtype=atoi(data.ExtractWord(2,": "));
+        msgtype=ACE_OS::atoi(data.ExtractWord(2,": "));
 	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
 	{
 		KillUnknownUser(source);
@@ -2992,7 +2996,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     }
     else
     {
-        msgtype=atoi(data.ExtractWord(1,": "));
+        msgtype=ACE_OS::atoi(data.ExtractWord(1,": "));
     }
 
     // Numerics direct from RFC1459

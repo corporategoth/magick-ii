@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/04/30 03:48:30  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.33  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -110,11 +114,11 @@ mstring &wxGetHomeDir(mstring &pstr)
   FT("wxGetHomeDir", (pstr));
   mstring& strDir = pstr;
 
-  #ifdef WIN32
-      const char *szHome = getenv("HOMEDRIVE");
+#ifdef WIN32
+      const char *szHome = ACE_OS::getenv("HOMEDRIVE");
       if ( szHome != NULL )
         strDir << szHome;
-      szHome = getenv("HOMEPATH");
+      szHome = ACE_OS::getenv("HOMEPATH");
       if ( szHome != NULL ) {
         strDir << szHome;
 
@@ -124,13 +128,13 @@ mstring &wxGetHomeDir(mstring &pstr)
         // create it in our program's dir. However, if the user took care
         // to set HOMEPATH to something other than "\\", we suppose that he
         // knows what he is doing and use the supplied value.
-        if ( strcmp(szHome, "\\") != 0 )
+        if ( ACE_OS::strcmp(szHome, "\\") != 0 )
           RET(strDir);
       }
     // 260 was taken from windef.h
-    #ifndef MAX_PATH
-      #define MAX_PATH  260
-    #endif
+# ifndef MAX_PATH
+#   define MAX_PATH  260
+# endif
 
     mstring strPath;
 	char cstrPath[MAX_PATH+1];
@@ -141,12 +145,18 @@ mstring &wxGetHomeDir(mstring &pstr)
     // extract the dir name
     wxSplitPath(strPath, &strDir, NULL, NULL);
 
-  #else
-    const char *szHome = getenv("HOME");
+#else /* WIN32 */
+    const char *szHome = ACE_OS::getenv("HOME");
     if ( szHome == NULL ) {
-      // we're homeless...
-      wxLogWarning(Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
-      strDir = ".";
+      // we're homeless...try passwd
+      struct passwd *pwent = ACE_OS::getpwnam(ACE_OS::cuserid(NULL));
+      if (pwent == NULL || pwent->pw_dir == NULL)
+      {
+	wxLogWarning(Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
+	strDir = ".";
+      }
+      else
+	strDir = pwent->pw_dir;
     }
     else
        strDir = szHome;
@@ -154,7 +164,8 @@ mstring &wxGetHomeDir(mstring &pstr)
     // add a trailing slash if needed
     if ( strDir.Last() != '/' )
       strDir << '/';
-  #endif
+
+#endif /* WIN32 */
 
   RET(strDir);
 }
@@ -254,27 +265,6 @@ void TxnIds::Expire()
 	i_Ids.erase(kill[i]);
 }
 
-// Get current working directory.
-// If buf is NULL, allocates space using new, else
-// copies into buf.
-char *wxGetWorkingDirectory(char *buf, int sz)
-{
-  if (!buf)
-    buf = new char[sz+1];
-  ACE_OS::getcwd(buf,sz);
-  buf[sz]=0;
-  return buf;
-}
-
-mstring wxGetCwd()
-{
-    char buf[1024];
-
-    wxGetWorkingDirectory(buf, 1023);
-    mstring str(buf);
-    return str;
-}
-
 vector<int> ParseNumbers(mstring what)
 {
     FT("ParseNumbers", (what));
@@ -294,8 +284,8 @@ vector<int> ParseNumbers(mstring what)
 	else if (tmp.Contains("-"))
 	{
 	    int j, limit;
-	    j = atoi(tmp.Before("-").c_str());
-	    limit = atoi(tmp.After("-").c_str());
+	    j = ACE_OS::atoi(tmp.Before("-").c_str());
+	    limit = ACE_OS::atoi(tmp.After("-").c_str());
 	    if (limit >= j)
 	    {
 		for (; j<=limit; j++)
@@ -309,7 +299,7 @@ vector<int> ParseNumbers(mstring what)
 	}
 	else
 	{
-	    numbers.push_back(atoi(tmp.c_str()));
+	    numbers.push_back(ACE_OS::atoi(tmp.c_str()));
 	}
     }
     NRET(vector<int>, numbers);

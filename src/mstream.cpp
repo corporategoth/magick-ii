@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.56  2000/04/06 12:52:50  prez
 ** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
 **
@@ -232,7 +236,7 @@ size_t wxStreamBuffer::GetWBack(unsigned char *buf, size_t bsize)
 
   m_wbackcur += s_toget;
   if (m_wbackcur == m_wbacksize) {
-    free(m_wback);
+    ACE_OS::free(m_wback);
     m_wback = (unsigned char *)NULL;
     m_wbacksize = 0;
     m_wbackcur = 0;
@@ -1467,7 +1471,7 @@ bool wxFile::Access(const char *name, OpenMode mode)
     default:
       wxFAIL_MSG("bad wxFile::Access mode parameter.");
   }
-  FILE *tmpptr=fopen(name,how.c_str());
+  FILE *tmpptr=ACE_OS::fopen(name,how.c_str());
   if(tmpptr==NULL)
     return false;
   fclose(tmpptr);
@@ -1500,12 +1504,12 @@ bool wxFile::Create(const char *szFileName, bool bOverwrite)
   // otherwise we only create the new file and fail if it already exists
   FILE *fd=NULL;
   if(bOverwrite==true)
-	fd = fopen(szFileName, "wb");
+	fd = ACE_OS::fopen(szFileName, "wb");
   else
 	if(Exists(szFileName))
 	    return false;
 	else
-	    fd=fopen(szFileName, "wb");
+	    fd=ACE_OS::fopen(szFileName, "wb");
 
 
   if ( fd == NULL ) {
@@ -1541,7 +1545,7 @@ bool wxFile::Open(const char *szFileName, OpenMode mode)
       break;
   }
 
-  FILE *fd = fopen(szFileName, flags.c_str());
+  FILE *fd = ACE_OS::fopen(szFileName, flags.c_str());
 
   if ( fd == NULL ) {
     wxLogSysError("can't open file '%s'", szFileName);
@@ -1578,7 +1582,7 @@ off_t wxFile::Read(void *pBuf, off_t nCount)
 {
   wxCHECK( (pBuf != NULL) && IsOpened(), 0 );
 
-  size_t iRc = fread(pBuf, 1, nCount, m_fd);
+  size_t iRc = ACE_OS::fread(pBuf, 1, nCount, m_fd);
   if ( ferror(m_fd) ) {
     wxLogSysError("can't read from file: %p", m_fd);
     return -1;
@@ -1592,7 +1596,7 @@ size_t wxFile::Write(const void *pBuf, size_t nCount)
 {
   wxCHECK( (pBuf != NULL) && IsOpened(), 0 );
 
-  size_t iRc = fwrite(pBuf, 1, nCount, m_fd);
+  size_t iRc = ACE_OS::fwrite(pBuf, 1, nCount, m_fd);
   if ( ferror(m_fd) ) 
   {
     wxLogSysError("can't write to file: %p", m_fd);
@@ -1608,7 +1612,7 @@ bool wxFile::Flush()
 {
     if ( IsOpened() ) 
     {
-	if ( fflush(m_fd) != 0 )
+	if ( ACE_OS::fflush(m_fd) != 0 )
 	{
 	    wxLogSysError("can't flush file: %p", m_fd);
 	    return false;

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.29  2000/03/28 16:20:58  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -129,7 +133,7 @@ mstring wxExpandEnvVars(const mstring& str)
 
           mstring strVarName(str.c_str() + n + 1, m - n - 1);
 
-          const char *pszValue = getenv(strVarName);
+          const char *pszValue = ACE_OS::getenv(strVarName);
           if ( pszValue != NULL ) {
             strResult += pszValue;
           }
@@ -338,7 +342,7 @@ bool wxConfigBase::Read(const mstring& key, int* val) const
     mstring str;
     if (Read(key, & str))
     {
-        *val = atoi(str);
+        *val = ACE_OS::atoi(str);
         RET(true);
     }
     else
@@ -351,7 +355,7 @@ bool wxConfigBase::Read(const mstring& key, int* val, const int& defVal) const
     mstring str, defStr;
     defStr << defVal;
     bool retval = Read(key, &str, defVal);
-    *val = atoi(str);
+    *val = ACE_OS::atoi(str);
     RET(retval);
 }
 
@@ -361,7 +365,7 @@ bool wxConfigBase::Read(const mstring& key, unsigned int* val) const
     mstring str;
     if (Read(key, & str))
     {
-        *val = atoi(str);
+        *val = ACE_OS::atoi(str);
 	*val -= (int) 0;
         RET(true);
     }
@@ -375,7 +379,7 @@ bool wxConfigBase::Read(const mstring& key, unsigned int* val, const unsigned in
     mstring str, defStr;
     defStr << defVal;
     bool retval = Read(key, &str, defVal);
-    *val = atoi(str);
+    *val = ACE_OS::atoi(str);
     *val -= (int) 0;
     RET(retval);
 }

@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.219  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.218  2000/04/18 14:34:23  prez
 ** Fixed the HELP system, it now loads into memory, and can be unloaded
 ** with the OS unload command.  The stats however are inaccurate.
@@ -169,7 +173,9 @@ Magick::Magick(int inargc, char **inargv)
     Parent=this;
     FT("Magick::Magick", (inargc, "(char **) inargv"));
     i_shutdown = false;
-    i_services_dir=wxGetCwd();
+    char buf[1024];
+    ACE_OS::getcwd(buf, 1024);
+    i_services_dir=buf;
     i_config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
@@ -268,7 +274,7 @@ int Magick::Start()
 	}
     }
     NFT("Magick::Start");
-    if (chdir (Services_Dir()) < 0)
+    if (ACE_OS::chdir (Services_Dir()) < 0)
     {
         perror (Services_Dir());
 #ifdef WIN32
@@ -289,7 +295,7 @@ int Magick::Start()
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
-    FILE *logfile = fopen((files.Logfile()).c_str(), "a");
+    FILE *logfile = ACE_OS::fopen((files.Logfile()).c_str(), "a");
     logger->ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
@@ -478,11 +484,7 @@ int Magick::Start()
     mBase::shutdown();
     while (mThread::size() > 2)
     {
-#ifdef WIN32
-	Sleep(1000);
-#else
-	sleep(1);
-#endif
+	ACE_OS::sleep(1);
     }
 
     //todo work out some way to "ignore" signals
@@ -882,12 +884,11 @@ void Magick::LoadInternalMessages()
 
 	for(i=0;i<def_langent;i++)
 	{
-	    out.Write(def_lang[i], strlen(def_lang[i]));
+	    out.Write(def_lang[i], ACE_OS::strlen(def_lang[i]));
 	    out << wxEndL;
 	}
     }
 
-    // need to transfer wxGetWorkingDirectory() and prepend it to default.lng
     wxFileConfig fconf("magick","",files.TempDir()+DirSlash+"default.lng");
     remove((files.TempDir()+DirSlash+"default.lng").c_str());
     bool bContGroup, bContEntries;
@@ -995,12 +996,11 @@ bool Magick::LoadLogMessages(mstring language)
 
 	for(i=0;i<def_logent;i++)
 	{
-	    out.Write(def_log[i], strlen(def_log[i]));
+	    out.Write(def_log[i], ACE_OS::strlen(def_log[i]));
 	    out << wxEndL;
 	}
     }
 
-    // need to transfer wxGetWorkingDirectory() and prepend it to default.lfo
     wxFileConfig *fconf;
     bool bContGroup, bContEntries;
     long dummy1=0,dummy2=0;
@@ -1172,16 +1172,16 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<=0)
+	if(ACE_OS::atoi(second.c_str())<=0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	if (atoi(second.c_str()) != server.proto.Number())
+	if (ACE_OS::atoi(second.c_str()) != server.proto.Number())
 	{
-	    server.proto.Set(atoi(second.c_str()));
-	    if (atoi(second.c_str()) != server.proto.Number())
+	    server.proto.Set(ACE_OS::atoi(second.c_str()));
+	    if (ACE_OS::atoi(second.c_str()) != server.proto.Number())
 		wxLogWarning(getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
-			    atoi(second.c_str()), server.proto.Number());
+			    ACE_OS::atoi(second.c_str()), server.proto.Number());
 	}
 	RET(true);
     }
@@ -1191,11 +1191,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<=0)
+	if(ACE_OS::atoi(second.c_str())<=0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	startup.level=atoi(second.c_str());
+	startup.level=ACE_OS::atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--lagtime")
@@ -1268,15 +1268,15 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<0)
+	if(ACE_OS::atoi(second.c_str())<0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	if (atoi(second.c_str())>9)
+	if (ACE_OS::atoi(second.c_str())>9)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
 	}
-	files.compression=atoi(second.c_str());
+	files.compression=ACE_OS::atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--relink")
@@ -1285,7 +1285,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<0)
+	if(ACE_OS::atoi(second.c_str())<0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
@@ -1341,11 +1341,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<0)
+	if(ACE_OS::atoi(second.c_str())<0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	config.low_water_mark=atoi(second.c_str());
+	config.low_water_mark=ACE_OS::atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
 	RET(true);
@@ -1356,11 +1356,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<0)
+	if(ACE_OS::atoi(second.c_str())<0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	config.high_water_mark=atoi(second.c_str());
+	config.high_water_mark=ACE_OS::atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
 	RET(true);
@@ -1423,15 +1423,15 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(atoi(second.c_str())<0)
+	if(ACE_OS::atoi(second.c_str())<0)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
-	if (atoi(second.c_str())>9)
+	if (ACE_OS::atoi(second.c_str())>9)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
 	}
-	operserv.ignore_method=atoi(second.c_str());
+	operserv.ignore_method=ACE_OS::atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--convert")
@@ -1688,7 +1688,7 @@ bool Magick::get_config_values()
 
     {
 	FILE *TmpHand;
-	if ((TmpHand = fopen(errstring, "r")) == NULL)
+	if ((TmpHand = ACE_OS::fopen(errstring, "r")) == NULL)
 	{
 	    RET(false);
 	}
@@ -1762,7 +1762,7 @@ bool Magick::get_config_values()
 		tmp[2]=ent.ExtractWord(3, ":");
 		tmp[3]=ent.ExtractWord(4, ":");
 		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
-		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
+		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(ACE_OS::atoi(tmp[1]),tmp[2],ACE_OS::atoi(tmp[3]));
 		else
 		    wxLogWarning(getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str());
 	}
@@ -2615,7 +2615,7 @@ mstring Magick::GetKey()
 	{
 	    wxFile keyfile(files.KeyFile().c_str());
 	    char tmp[4096];
-	    memset(tmp, 0, 4096);
+	    ACE_OS::memset(tmp, 0, 4096);
 	    keyfile.Read(&tmp, 4096);
 	    retval = tmp;
 	}

@@ -24,6 +24,10 @@ static const char *ident_mstream_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/04/30 03:48:28  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.26  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -51,6 +55,7 @@ static const char *ident_mstream_h = "@(#) $Id$";
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
+#include <vector>
 #include "mstring.h"
 
 class wxStreamBase;

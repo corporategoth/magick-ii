@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.96  2000/04/04 03:13:50  prez
 ** Added support for masking hostnames.
 **
@@ -109,7 +113,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // might set this up to be an active object here.
     char data[513];
     int recvResult;
-    memset(data,0,513);
+    ACE_OS::memset(data,0,513);
     recvResult=peer().recv(data,512);
     if(recvResult<=0 || Parent->Shutdown())
     {
@@ -846,11 +850,7 @@ int EventTask::svc(void)
 	    last_ping = Now();
 	}
 	
-#ifdef WIN32
-	Sleep(1000);
-#else
-	sleep(1);
-#endif
+	ACE_OS::sleep(1);
     }
     mThread::Detach(tt_MAIN);
     RET(0);

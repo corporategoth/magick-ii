@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.13  2000/04/02 07:25:05  prez
 ** Fixed low watermarks with threads, it all works now!
 **
@@ -296,8 +300,8 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Filesize = i_File.Length();
 
     // Initialize Transfer
-    i_Transiant = (unsigned char *) malloc (sizeof(unsigned char) * (i_Blocksize + 1));
-    memset(i_Transiant, 0, i_Blocksize + 1);
+    i_Transiant = (unsigned char *) ACE_OS::malloc (sizeof(unsigned char) * (i_Blocksize + 1));
+    ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
@@ -350,8 +354,8 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Filesize = filesize;
 
     // Initialize Transfer
-    i_Transiant = (unsigned char *) malloc (sizeof(unsigned char) * (i_Blocksize + 1));
-    memset(i_Transiant, 0, i_Blocksize + 1);
+    i_Transiant = (unsigned char *) ACE_OS::malloc (sizeof(unsigned char) * (i_Blocksize + 1));
+    ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
@@ -363,7 +367,7 @@ DccXfer::~DccXfer()
     NFT("DccXfer::~DccXfer");
 
     if (i_Transiant != NULL)
-	free(i_Transiant);
+	ACE_OS::free(i_Transiant);
     i_Transiant = NULL;
 
     if (i_File.IsOpened())
@@ -451,11 +455,11 @@ void DccXfer::operator=(const DccXfer &in)
 	}
     }
     i_Transiant = NULL;
-    if (in.i_Transiant != NULL && strlen((const char *) in.i_Transiant))
+    if (in.i_Transiant != NULL && ACE_OS::strlen((const char *) in.i_Transiant))
     {
-	i_Transiant=(unsigned char *) malloc(sizeof(unsigned char) * i_Blocksize + 1);
-	memset(i_Transiant, 0, i_Blocksize + 1);
-	strcpy((char *) i_Transiant, (char *) in.i_Transiant);
+	i_Transiant=(unsigned char *) ACE_OS::malloc(sizeof(unsigned char) * i_Blocksize + 1);
+	ACE_OS::memset(i_Transiant, 0, i_Blocksize + 1);
+	ACE_OS::strcpy((char *) i_Transiant, (char *) in.i_Transiant);
     }
     i_LastData=in.i_LastData;
 }
@@ -485,7 +489,7 @@ void DccXfer::Action()
 		i_Total += i_XferTotal;
 		i_File.Write(i_Transiant, i_XferTotal);
 		i_XferTotal = 0;
-		memset(i_Transiant, 0, i_Blocksize);
+		ACE_OS::memset(i_Transiant, 0, i_Blocksize);
 		XferAmt = i_Socket->send_n((void *) htonl(i_Total), 4, &onesec);
 		merrno = errno;
 		COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
@@ -542,7 +546,7 @@ void DccXfer::Action()
 		}
 		return;
 	    }
-	    memset(i_Transiant, 0, i_Blocksize);
+	    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
 	    i_Total += i_XferTotal;
 	    i_XferTotal = 0;
 	    if (i_Total == i_Filesize)
@@ -561,7 +565,7 @@ void DccXfer::Action()
 		i_File.Read(i_Transiant, i_Blocksize);
 	}
 	XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
-			strlen((char *) i_Transiant) - i_XferTotal,
+			ACE_OS::strlen((char *) i_Transiant) - i_XferTotal,
 			&onesec);
 	merrno = errno;
 	COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
@@ -617,11 +621,7 @@ int DccMap::svc(void)
 	COM(("Active Size is %d", active.size()));
 	if (!active.size())
 	{
-#ifdef WIN32
-	    Sleep(1000);
-#else
-	    sleep(1);
-#endif
+	    ACE_OS::sleep(1);
 	    continue;
 	}
 
@@ -687,7 +687,6 @@ void *DccMap::Connect2(void *in)
 		active.push(WorkId);
 		found = true;
 		CP(("Created DCC entry #%d", WorkId));
-		break;
 	    }
 	}
 	if (!found)
@@ -730,7 +729,6 @@ void *DccMap::Accept2(void *in)
 		active.push(WorkId);
 		found = true;
 		CP(("Created DCC entry #%d", WorkId));
-		break;
 	    }
 	}
 	if (!found)

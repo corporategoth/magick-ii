@@ -24,6 +24,10 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/04/30 03:48:28  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.21  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -81,19 +85,6 @@ public:
 // Ensure subsequent IDs don't clash with this one
 extern void wxRegisterId(long id);
 #define RegisterId wxRegisterId
-
-// Return the current ID
-extern long wxGetCurrentId(void);
-
-// Get current working directory.
-// If buf is NULL, allocates space using new, else
-// copies into buf.
-// IMPORTANT NOTE getcwd is know not to work under some releases
-// of Win32s 1.3, according to MS release notes!
-char* wxGetWorkingDirectory(char *buf = (char *) NULL,int sz = 1000);
-// new and preferred version of wxGetWorkingDirectory
-// NB: can't have the same name because of overloading ambiguity
-mstring wxGetCwd();
 
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);

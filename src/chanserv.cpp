@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.163  2000/04/30 03:48:28  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.162  2000/04/16 14:29:43  prez
 ** Added stats for usage, and standardized grabbing paths, etc.
 **
@@ -935,7 +939,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		}
 		else
 		{
-		    i_Limit = atoi(in.ExtractWord(fwdargs, ": ").c_str());
+		    i_Limit = ACE_OS::atoi(in.ExtractWord(fwdargs, ": ").c_str());
 		}
 		fwdargs++;
 	    }
@@ -4265,7 +4269,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
@@ -5273,7 +5277,7 @@ void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -5960,7 +5964,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/POSWHOLENUMBER"));
 	    return;
 	}
-	unsigned int i, num = atoi(who);
+	unsigned int i, num = ACE_OS::atoi(who);
 
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
 	for (i=1, cstored->Access = cstored->Access_begin();
@@ -6216,7 +6220,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/POSWHOLENUMBER"));
 	    return;
 	}
-	unsigned int i, num = atoi(who);
+	unsigned int i, num = ACE_OS::atoi(who);
 
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
 	for (i=1, cstored->Akick = cstored->Akick_begin();
@@ -6661,7 +6665,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "LIST/POSWHOLENUMBER"));
 	return;
     }
-    int num = atoi(target);
+    int num = ACE_OS::atoi(target);
 
     if (!cstored->Message_size())
     {

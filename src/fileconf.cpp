@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.39  2000/03/28 16:20:58  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -99,8 +103,8 @@ static const char *ident = "@(#)$Id$";
 //     but _not_ ']' (group name delimiter)
 inline bool IsValid(char c) {
 //	FT("IsValid", (c));
-//	RET(isalnum(c) || strchr("@_/-!.*%", c));
-	return (isalnum(c) || strchr("@_/-!.*%", c));
+//	RET(isalnum(c) || ACE_OS::strchr("@_/-!.*%", c));
+	return (isalnum(c) || ACE_OS::strchr("@_/-!.*%", c));
 }
 
 // compare functions for sorting the arrays
@@ -160,7 +164,7 @@ mstring wxFileConfig::GetGlobalFileName(const char *szFile)
   mstring str = GetGlobalDir();
   str << szFile;
 
-  if ( strchr(szFile, '.') == NULL )
+  if ( ACE_OS::strchr(szFile, '.') == NULL )
   #ifdef WIN32
     str << ".ini";
   #else
@@ -182,7 +186,7 @@ mstring wxFileConfig::GetLocalFileName(const char *szFile)
   str << szFile;
 
   #ifdef __WXMSW__
-    if ( strchr(szFile, '.') == NULL )
+    if ( ACE_OS::strchr(szFile, '.') == NULL )
       str << ".ini";
   #endif
 
@@ -1173,7 +1177,7 @@ ConfigGroup::FindEntry(const char *szName) const
     i = (lo + hi)/2;
     pEntry = m_aEntries[i];
 
-      /* res = strcmp(pEntry->Name(), szName); */
+      /* res = ACE_OS::strcmp(pEntry->Name(), szName); */
       tmp = pEntry->Name();
       res = tmp.CmpNoCase(szName);
 
@@ -1203,7 +1207,7 @@ ConfigGroup::FindSubgroup(const char *szName) const
     i = (lo + hi)/2;
     pGroup = m_aSubgroups[i];
 
-      /* res = strcmp(pGroup->Name(), szName); */
+      /* res = ACE_OS::strcmp(pGroup->Name(), szName); */
       tmp = pGroup->Name();
       res = tmp.CmpNoCase(szName);
 
@@ -1655,7 +1659,7 @@ wxBaseArray::wxBaseArray(const wxBaseArray& src)
 
   if ( m_nSize != 0 ) {
     m_pItems = new long[m_nSize];
-    memcpy(m_pItems, src.m_pItems, m_nCount*sizeof(long));
+    ACE_OS::memcpy(m_pItems, src.m_pItems, m_nCount*sizeof(long));
   }
   else
     m_pItems = (long *) NULL;
@@ -1679,7 +1683,7 @@ wxBaseArray& wxBaseArray::operator=(const wxBaseArray& src)
 
   if ( m_nSize != 0 ) {
     m_pItems = new long[m_nSize];
-    memcpy(m_pItems, src.m_pItems, m_nCount*sizeof(long));
+    ACE_OS::memcpy(m_pItems, src.m_pItems, m_nCount*sizeof(long));
   }
   else
     m_pItems = (long *) NULL;
@@ -1709,7 +1713,7 @@ void wxBaseArray::Grow()
       long *pNew = new long[m_nSize];
 
       // copy data to new location
-      memcpy(pNew, m_pItems, m_nCount*sizeof(long));
+      ACE_OS::memcpy(pNew, m_pItems, m_nCount*sizeof(long));
       delete [] m_pItems;
       m_pItems = pNew;
     }
@@ -1759,7 +1763,7 @@ void wxBaseArray::Shrink()
     long *pNew = new long[m_nCount];
 
     // copy data to new location
-    memcpy(pNew, m_pItems, m_nCount*sizeof(long));
+    ACE_OS::memcpy(pNew, m_pItems, m_nCount*sizeof(long));
     delete [] m_pItems;
     m_pItems = pNew;
   }
@@ -1856,7 +1860,7 @@ void wxBaseArray::Insert(long lItem, size_t nIndex)
 
   Grow();
 
-  memmove(&m_pItems[nIndex + 1], &m_pItems[nIndex],
+  ACE_OS::memmove(&m_pItems[nIndex + 1], &m_pItems[nIndex],
           (m_nCount - nIndex)*sizeof(long));
   m_pItems[nIndex] = lItem;
   m_nCount++;
@@ -1868,7 +1872,7 @@ void wxBaseArray::Remove(size_t nIndex)
   FT("wxBaseArray::Remove", (nIndex));
   wxCHECK_RET( nIndex <= m_nCount, "bad index in wxArray::Remove" );
 
-  memmove(&m_pItems[nIndex], &m_pItems[nIndex + 1],
+  ACE_OS::memmove(&m_pItems[nIndex], &m_pItems[nIndex + 1],
           (m_nCount - nIndex - 1)*sizeof(long));
   m_nCount--;
 }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/04/30 03:48:29  prez
+** Replaced all system calls with ACE_OS equivilants,
+** also removed any dependancy on ACE from sxp (xml)
+**
 ** Revision 1.31  2000/03/19 08:50:55  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -120,7 +124,7 @@ void wxLogGeneric(wxLogLevel level, const char *szFormat, ...)
   {
     va_list argptr;
     va_start(argptr, szFormat);
-    vsprintf(s_szBuf, szFormat, argptr);
+    ACE_OS::vsprintf(s_szBuf, szFormat, argptr);
     va_end(argptr);
 
     wxLog::OnLog(level, s_szBuf);
@@ -134,7 +138,7 @@ void wxLogGeneric(wxLogLevel level, const char *szFormat, ...)
     if ( wxLog::GetActiveTarget() != NULL ) {                     \
       va_list argptr;                                             \
       va_start(argptr, szFormat);                                 \
-      vsprintf(s_szBuf, szFormat, argptr);                        \
+      ACE_OS::vsprintf(s_szBuf, szFormat, argptr);                        \
       va_end(argptr);                                             \
                                                                   \
       wxLog::OnLog(wxLOG_##level, s_szBuf);                       \
@@ -156,7 +160,7 @@ void wxLogVerbose(const char *szFormat, ...)
   {
     va_list argptr;
     va_start(argptr, szFormat);
-    vsprintf(s_szBuf, szFormat, argptr);
+    ACE_OS::vsprintf(s_szBuf, szFormat, argptr);
     va_end(argptr);
 
     wxLog::OnLog(wxLOG_Info, s_szBuf);
@@ -170,8 +174,8 @@ void wxLogVerbose(const char *szFormat, ...)
 void wxLogSysErrorHelper(long lErrCode)
 {
   char szErrMsg[LOG_BUFFER_SIZE / 2];
-  sprintf(szErrMsg, " (error %d: %s)", lErrCode, wxSysErrorMsg(lErrCode));
-  strncat(s_szBuf, szErrMsg, sizeof(s_szBuf) - strlen(s_szBuf));
+  ACE_OS::sprintf(szErrMsg, " (error %d: %s)", lErrCode, wxSysErrorMsg(lErrCode));
+  ACE_OS::strncat(s_szBuf, szErrMsg, sizeof(s_szBuf) - ACE_OS::strlen(s_szBuf));
 
   wxLog::OnLog(wxLOG_Error, s_szBuf);
 }
@@ -180,7 +184,7 @@ void wxLogSysError(const char *szFormat, ...)
 {
   va_list argptr;
   va_start(argptr, szFormat);
-  vsprintf(s_szBuf, szFormat, argptr);
+  ACE_OS::vsprintf(s_szBuf, szFormat, argptr);
   va_end(argptr);
 
   wxLogSysErrorHelper(wxSysErrorCode());
@@ -190,7 +194,7 @@ void wxLogSysError(long lErrCode, const char *szFormat, ...)
 {
   va_list argptr;
   va_start(argptr, szFormat);
-  vsprintf(s_szBuf, szFormat, argptr);
+  ACE_OS::vsprintf(s_szBuf, szFormat, argptr);
   va_end(argptr);
 
   wxLogSysErrorHelper(lErrCode);
@@ -335,9 +339,9 @@ void wxLogStderr::ChangeFile(FILE *fp)
 
 void wxLogStderr::DoLogString(const char *szString)
 {
-  fputs(szString, m_fp);
+  ACE_OS::fputs(szString, m_fp);
   fputc('\n', m_fp);
-  fflush(m_fp);
+  ACE_OS::fflush(m_fp);
 }
 
 wxLogStderr::~wxLogStderr()
@@ -370,8 +374,8 @@ bool        wxLog::ms_bAutoCreate  = true;
 static void wxLogWrap(FILE *f, const char *pszPrefix, const char *psz)
 {
   size_t nMax = 80; // @@@@
-  size_t nStart = strlen(pszPrefix);
-  fputs(pszPrefix, f);
+  size_t nStart = ACE_OS::strlen(pszPrefix);
+  ACE_OS::fputs(pszPrefix, f);
 
   size_t n;
   while ( *psz != '\0' ) {
@@ -426,13 +430,13 @@ const char *wxSysErrorMsg(unsigned long nErrCode)
                     0, NULL);
 
       // copy it to our buffer and free memory
-      strncpy(s_szBuf, (const char *)lpMsgBuf, sizeof(s_szBuf) - 1);
+      ACE_OS::strncpy(s_szBuf, (const char *)lpMsgBuf, sizeof(s_szBuf) - 1);
       s_szBuf[sizeof(s_szBuf) - 1] = '\0';
       LocalFree(lpMsgBuf);
 
       // returned string is capitalized and ended with '\r\n' - bad
       s_szBuf[0] = (char)tolower(s_szBuf[0]);
-      size_t len = strlen(s_szBuf);
+      size_t len = ACE_OS::strlen(s_szBuf);
       if ( len > 0 ) {
         // truncate string
         if ( s_szBuf[len - 2] == '\r' )
@@ -477,13 +481,13 @@ void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
   s_bInAssert = true;
 
   char szBuf[LOG_BUFFER_SIZE];
-  sprintf(szBuf, "Assert failed in file %s at line %d", szFile, nLine);
+  ACE_OS::sprintf(szBuf, "Assert failed in file %s at line %d", szFile, nLine);
   if ( szMsg != NULL ) {
-    strcat(szBuf, ": ");
-    strcat(szBuf, szMsg);
+    ACE_OS::strcat(szBuf, ": ");
+    ACE_OS::strcat(szBuf, szMsg);
   }
   else {
-    strcat(szBuf, ".");
+    ACE_OS::strcat(szBuf, ".");
   }
 
   if ( !s_bNoAsserts ) {
