@@ -29,6 +29,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#include "trace.h"
 
 #define CONST_CAST ((wxFileConfig *)this)->
 
@@ -629,9 +630,9 @@ bool wxFileConfig::Write(const mstring& key, long lValue)
   RET(Write(key, buf));
 }
 
-bool wxFileConfig::Flush(/* bool bCurrentOnly */)
+bool wxFileConfig::Flush(bool bCurrentOnly)
 {
-  NFT("wxFileConfig::Flush");
+  FT("wxFileConfig::Flush",(bCurrentOnly));
   if ( LineListIsEmpty() || !m_pRootGroup->IsDirty() )
     RET(TRUE);
 
@@ -992,7 +993,9 @@ mstring ConfigGroup::GetFullName() const
 {
   NFT("ConfigGroup::GetFullName");
   if ( Parent() )
+  {
     RET(Parent()->GetFullName() + wxCONFIG_PATH_SEPARATOR + Name());
+  }
   else
     RET("");
 }
@@ -1053,7 +1056,7 @@ ConfigGroup::FindSubgroup(const char *szName) const
       NRET(ConfigGroup, pGroup);
   }
 
-  RET(ConfigGroup, NULL);
+  RET(NULL);
 }
 
 // ----------------------------------------------------------------------------
@@ -1070,7 +1073,7 @@ ConfigGroup::AddEntry(const mstring& strName, int nLine)
   ConfigEntry *pEntry = new ConfigEntry(this, strName, nLine);
   m_aEntries.Add(pEntry);
 
-  RET(ConfigEntry, pEntry);
+  RET(pEntry);
 }
 
 // create a new group and add it to the current group
@@ -1083,7 +1086,7 @@ ConfigGroup::AddSubgroup(const mstring& strName)
   ConfigGroup *pGroup = new ConfigGroup(this, strName, m_pConfig);
   m_aSubgroups.Add(pGroup);
 
-  RET(ConfigGroup, pGroup);
+  RET(pGroup);
 }
 
 // ----------------------------------------------------------------------------

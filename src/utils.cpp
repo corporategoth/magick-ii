@@ -10,12 +10,13 @@
 // code must be clearly documented and labelled.
 //
 // ===================================================
-#include "utils.h"
-#include "log.h"
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#include "utils.h"
+#include "log.h"
+#include "trace.h"
 
 
 void wxSplitPath(const char *pszFileName,
@@ -143,14 +144,14 @@ wxNewId (void)
 long
 wxGetCurrentId(void)
 {
-  FC("wxGetCurrentId");
+  NFT("wxGetCurrentId");
   RET(wxCurrentId);
 }
 
 void
 wxRegisterId (long id)
 {
-  FC("wxRegisterId", (id));
+  FT("wxRegisterId", (id));
   if (id >= wxCurrentId)
     wxCurrentId = id + 1;
 }

@@ -12,6 +12,7 @@
 // ===================================================
 
 #include "ircsocket.h"
+#include "trace.h"
 
 int IrcSvcHandler::open(void *in)
 {

@@ -25,6 +25,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "textfile.h"
+#include "trace.h"
 
 // default type is the native one
 const wxTextFileType wxTextFile::typeDefault =
@@ -69,7 +70,7 @@ bool wxTextFile::Open()
 
   // open file in read-only mode
   if ( !m_file.Open(m_strFile) )
-    RET(FALSE);
+    RET(false);
 
   // read file into memory
   bool bRet = Read();
@@ -116,11 +117,13 @@ wxTextFileType wxTextFile::GuessType() const
   #undef   AnalyseLine
 
   // interpret the results (@@ far from being even 50% fool proof)
-  if ( nDos + nUnix + nMac == 0 ) {
+  if ( nDos + nUnix + nMac == 0 ) 
+  {
     // no newlines at all
     wxLogWarning(_("'%s' is probably a binary file."), m_strFile.c_str());
   }
-  else {
+  else 
+  {
     #define   GREATER_OF(t1, t2) n##t1 == n##t2 ? typeDefault               \
                                                 : n##t1 > n##t2             \
                                                     ? wxTextFileType_##t1     \
@@ -128,23 +131,27 @@ wxTextFileType wxTextFile::GuessType() const
 
 // Watcom C++ doesn't seem to be able to handle the macro
 #if defined(__WATCOMC__)
-    CRET(wxTextFileType, (int) typeDefault, typeDefault);
+    RET(typeDefault);
 #else
     if ( nDos > nUnix )
-      CRET(wxTextFileType, (int) GREATER_OF(Dos, Mac), GREATER_OF(Dos, Mac));
+    {
+      RET(GREATER_OF(Dos, Mac));
+    }
     else if ( nDos < nUnix )
-      CRET(wxTextFileType, (int) GREATER_OF(Unix, Mac), GREATER_OF(Unix, Mac));
-    else {
+    {
+      RET(GREATER_OF(Unix, Mac));
+    }
+    else 
+    {
       // nDos == nUnix
-      CRET(wxTextFileType, (int) (nMac > nDos ? wxTextFileType_Mac : typeDefault),
-             nMac > nDos ? wxTextFileType_Mac : typeDefault);
+      RET((nMac > nDos ? wxTextFileType_Mac : typeDefault));
     }
 #endif
 
     #undef    GREATER_OF
   }
 
-  CRET(wxTextFileType, (int) typeDefault, typeDefault);
+  RET(typeDefault);
 }
 
 bool wxTextFile::Read()
@@ -162,7 +169,7 @@ bool wxTextFile::Read()
     if ( nRead == -1 ) {
       // read error (error message already given in wxFile::Read)
       m_file.Close();
-      RET(FALSE);
+      RET(false);
     }
 
     for ( n = 0; n < nRead; n++ ) {
@@ -209,7 +216,7 @@ bool wxTextFile::Read()
     m_aLines.push_back(str);
   }
 
-  RET(TRUE);
+  RET(true);
 }
 
 bool wxTextFile::Write(wxTextFileType typeNew)
@@ -219,7 +226,7 @@ bool wxTextFile::Write(wxTextFileType typeNew)
 
   if ( !fileTmp.IsOpened() ) {
     wxLogError(_("can't write file '%s' to disk."), m_strFile.c_str());
-    RET(FALSE);
+    RET(false);
   }
 
   size_t nCount = m_aLines.size();

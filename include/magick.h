@@ -58,7 +58,8 @@ private:
 	int doparamparse();
 	SignalHandler *signalhandler;
 public:
-	operator mVariant() const { return mVariant("Magick object"); };
+        operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
+
 	void get_config_values();
 	bool check_config();
 	int ping_frequency;
@@ -100,6 +101,7 @@ public:
 	bool show_sync;
 	bool shutdown;
 	mstring password;
+
 
 protected:
 	int tz_offset;

@@ -12,10 +12,11 @@
 // ===================================================
 #ifndef _VARIANT_H
 #define _VARIANT_H
-#include "mstring.h"
-#include "datetime.h"
 #include <vector>
 using namespace std;
+#include "mstring.h"
+#include "datetime.h"
+#include "textfile.h"
 
 // based upon mechanisms prevalent in Delphi.
 
@@ -38,33 +39,33 @@ private:
 		unsigned int UIntValue;
 		void *PtrValue;
 	} value;
+	
 public:
-	enum typeenum { VarEmpty, VarShort, VarInt, VarChar, 
-		VarFloat, VarDouble, VarString, VarNull, VarDate, VarBool, VarUChar, VarUShort, VarUInt, VarPtr};
-private:
-	typeenum valuetype;
-public:
-	 mVariant(const mVariant& in);
-	 mVariant(void *in);
-	 mVariant(unsigned int in);
-	 mVariant(unsigned short in);
-	 mVariant(unsigned char in);
-	 mVariant(bool in);
-	 mVariant(const char *in);
-	 mVariant(double in);
-	 mVariant(float in);
-	 mVariant(char in);
-	 mVariant(int in);
-	 mVariant(short in);
-	 mVariant();
-	 mVariant(const mstring& in);
+	mstring valuetype;
+	mstring truevaluetype;
+	// gonna change this to a mstring so we can use custom defined types
+	mVariant(const mVariant& in);
+	mVariant(void *in);
+	mVariant(unsigned int in);
+	mVariant(unsigned short in);
+	mVariant(unsigned char in);
+	mVariant(bool in);
+	mVariant(const char *in);
+	mVariant(double in);
+	mVariant(float in);
+	mVariant(char in);
+	mVariant(int in);
+	mVariant(short in);
+	mVariant();
+	mVariant(const mstring& in);
+	mVariant(wxTextFileType in);
 
-	 mVariant& operator=(const mVariant& in);
-	 bool operator==(const mVariant& in)const;
-	 bool operator<(const mVariant& in)const;
+	mVariant& operator=(const mVariant& in);
+	bool operator==(const mVariant& in)const;
+	bool operator<(const mVariant& in)const;
 
-	 mstring AsString()const;
-	 mstring type()const;
+	mstring AsString()const;
+	mstring type()const;
 };
 
 class mVarArray

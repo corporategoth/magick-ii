@@ -24,7 +24,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "confbase.h"
 #include "fileconf.h"
-#include "log.h"
+#include "trace.h"
 
 mstring wxExpandEnvVars(const mstring& str)
 {
@@ -243,7 +243,7 @@ bool wxConfigBase::Read(const mstring& key, mstring *str, const mstring& defVal)
 
 bool wxConfigBase::Read(const mstring& key, long *pl, long defVal) const
 {
-    FT("wxConfigBase::Read", key, pl, defVal));
+    FT("wxConfigBase::Read", (key, pl, defVal));
     if (!Read(key, pl))
     {
         *pl = defVal;

@@ -185,7 +185,7 @@ int Magick::Start()
     IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
     //server.connect(??,addr);
     
-    // temporary placeholder
+    // not so temporary event handling mechanism
     while(shutdown!=true)
 	ACE_Reactor::instance()->handle_events();
 
@@ -204,7 +204,7 @@ mstring Magick::getMessage(const mstring & name)
 
 void Magick::dump_help(mstring & progname)
 {
-    FT("Magick::dump_help", progname);
+    FT("Magick::dump_help", (progname));
     cout<<"Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King.\n"
 	<<"    E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet,Prez@Effnet,Prez@DarkerNet\n"
 	<<"    E-mail: <ungod@magick.tm>   IRC: Notagod@Effnet,Ungod@DarkerNet\n"
@@ -373,7 +373,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-name");
 		    cerr<<temp<<endl;
-		    RER(MAGICK_RET_ERROR);
+		    RET(MAGICK_RET_ERROR);
 		}
 		server_name=argv[i];
 	    }
@@ -384,7 +384,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-desc");
 		    cerr<<temp<<endl;
-		    RER(MAGICK_RET_ERROR);
+		    RET(MAGICK_RET_ERROR);
 		}
 		server_desc=argv[i];
 	    }
