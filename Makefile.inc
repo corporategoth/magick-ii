@@ -5,7 +5,7 @@ CC=gcc
 CXX=g++
 
 # Compilation flags to give the compiler
-CFLAGS=-DDEBUG -O2 -I/usr/local/include -I$(TOPDIR)/include
+CFLAGS=-DDEBUG -O2 -pg -I/usr/local/include -I$(TOPDIR)/include
 
 # Linking flags to give the compiler
 LFLAGS=-L/usr/local/lib -lACE -lpthread -lgz

@@ -28,6 +28,7 @@ Magick::Magick(int inargc, char **inargv)
     FT("Magick::Magick", (inargc, "(char **) inargv"));
     services_dir=".";
     config_file="magick.ini";
+    lastmsgmax=256;
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
 
@@ -111,7 +112,7 @@ int Magick::Start()
     }
     //okay, need a function here to load all the ini file defalts
     get_config_values();
-    if(shutdown==true)
+    if(i_shutdown==true)
 	RET(MAGICK_RET_ERROR);
 
     // load the local messages database and internal "default messages"
@@ -723,7 +724,7 @@ void Magick::get_config_values()
     NFT("Magick::get_config_values");
     if(MagickIni==NULL)
     {
-	shutdown==true;
+	i_shutdown==true;
 	return;
     }
     wxFileConfig& in=*MagickIni;

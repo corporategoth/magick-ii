@@ -91,10 +91,11 @@ void ThreadID::WriteOut(const mstring &message)
     if (out==NULL||out->Ok()!=true) 
     {
         out=new wxFileOutputStream(logname(),true); // true sets append to true.
-        out->SeekO(0,wxFromEnd);
+	// Shouldnt need to goto end if its appending ...
+        //out->SeekO(0,wxFromEnd);
     }
-    wxASSERT(out==NULL);
-    wxASSERT(out->LastError()!=wxStream_NOERROR);
+    //wxASSERT(out==NULL);
+    //wxASSERT(out->LastError()!=wxStream_NOERROR);
 
     mstring finalout = "";
     for (int i=0; i<t_indent; i++)
@@ -102,6 +103,7 @@ void ThreadID::WriteOut(const mstring &message)
     finalout += message;
     *out << finalout << wxEndL;
     // note to prez. wxEndL == ("\n"+flush the stream),  "\n" == don't flush the stream.
+    // I know, its not supposed to, thats what endl is for.
 //    cout << finalout << endl;
 }
 
