@@ -1,3 +1,23 @@
+* 2002-01-31 13:51  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.186), src/ircsocket.cpp (1.204), src/mstring.cpp (1.129),
+  src/server.cpp (1.209), src/utils.cpp (1.81):
+  
+  Preliminary stuff required for extended numerics ...
+
+* 2002-01-31 13:42  Preston A. Elder <prez@magick.tm>
+  include/chanserv.h (1.79), include/commserv.h (1.67), include/filesys.h
+  (1.56), include/memoserv.h (1.61), include/mstring.h (1.95),
+  include/nickserv.h (1.83), include/server.h (1.82), include/utils.h
+  (1.53):
+  
+  Added validated flag so we dont delete non-new'd structures (where they
+  come from, I've no idea!)
+
+* 2002-01-28 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.20):
+  
+  Created version 2.0s20020128
+
 * 2002-01-26 23:59  Preston A. Elder <prez@magick.tm>
   include/ace_memory.h (1.12), include/base.h (1.108), include/chanserv.h
   (1.78), include/commserv.h (1.66), include/convert_epona.h (1.8),
