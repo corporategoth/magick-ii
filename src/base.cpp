@@ -24,8 +24,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.93  2000/02/15 10:11:14  prez
-** *** empty log message ***
+** Revision 1.94  2000/02/15 10:37:47  prez
+** Added standardized headers to ALL Magick source files, including
+** a #pragma ident, and history log.  ALL revisions of files from
+** now on should include what changes were made to the files involved.
 **
 **
 ** ========================================================== */

@@ -22,9 +22,34 @@ if [ -f include/language.h ]; then
 	DATE=`date`
 
 	cat >include/language.h <<EOF
-/* Magick IRC Services
- *
- * Automatically generated hard-coded language file.
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ==========================================================
+#pragma ident "\$Id\$"
+** ==========================================================
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <magick-devel@magick.tm>:
+**
+** \$Log\$
+**
+** ========================================================== */
+
+#ifndef _LANGUAGE_H
+#define _LANGUAGE_H
+
+/* Automatically generated hard-coded language file.
  * Based upon $LANG.
  * Created on $DATE
  */
@@ -35,6 +60,7 @@ EOF
 	sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" \
 		-e "s/$/\",/g" $LANG >>include/language.h
 	echo "\"\" };" >>include/language.h
+	echo "#endif" >>include/language.h
 	
 	echo "include/language.h created successfully."
 else

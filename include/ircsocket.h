@@ -1,3 +1,32 @@
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ==========================================================
+#pragma ident "$Id$"
+** ==========================================================
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <magick-devel@magick.tm>:
+**
+** $Log$
+** Revision 1.30  2000/02/15 10:37:47  prez
+** Added standardized headers to ALL Magick source files, including
+** a #pragma ident, and history log.  ALL revisions of files from
+** now on should include what changes were made to the files involved.
+**
+**
+** ========================================================== */
+
 #ifndef IRC_SOCKET_H
 #define IRC_SOCKET_H
 
