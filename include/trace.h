@@ -33,7 +33,10 @@ RCSID(trace_h, "@(#) $Id$");
 **
 ** ======================================================================= */
 
-#include "variant.h"
+#define JUST_MFILE 1
+#include "filesys.h"
+#undef JUST_MFILE
+#include "mexceptions.h"
 
 enum threadtype_enum
 { tt_LOST =
@@ -41,8 +44,6 @@ enum threadtype_enum
 };
 extern mstring threadname[tt_MAX];
 unsigned short makehex(const mstring & SLevel);
-enum locktype_enum
-{ L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
 enum socktype_enum
 { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
     S_Client, S_Services, S_Telnet
@@ -102,14 +103,21 @@ public:
     void Flush();
 };
 
-void LOG2(ACE_Log_Priority type, const mstring & msg);
+class Logger : public ACE_Log_Msg_Callback
+{
+    mFile fout;
 
-/*#define LOG2(X)	\
-	if (Magick::instance_exists() && \
-	    Magick::instance().ValidateLogger(ACE_LOG_MSG)) { \
-		ACE_DEBUG(X); \
-		Magick::instance().EndLogMessage(ACE_LOG_MSG); }
-*/
+public:
+    Logger();
+    ~Logger();
+
+    void log(ACE_Log_Record & log_record);
+    void close();
+    void open();
+    bool opened() const;
+};
+
+void LOG2(ACE_Log_Priority type, const mstring & msg);
 
 #define LOG(X, Y, Z) \
 	{ LOG2(X, parseMessage(Magick::instance().getLogMessage(Y), mVarArray Z)); }
@@ -119,21 +127,6 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 	{ LOG2(X, parseMessage(Y, mVarArray Z)); }
 #define NSLOG(X, Y) \
 	{ LOG2(X, parseMessage(Y)); }
-const char *ERR_DOTDOTDOTCAUGHT =
-    "Caught an unhandled exception in file $1:$2, this should be reported to the developers ASAP.";
-const char *ERR_EXCEPTIONCAUGHT =
-    "Caught an unhandled exception in file $1:$2, details: $3, this should be reported to the developers ASAP.";
-#define BTCB() try {
-#define ETCB() } catch(Exception &E) \
-        { \
-                SLOG(LM_ERROR, ERR_EXCEPTIONCAUGHT, (__FILE__,__LINE__,E.what())); \
-                throw; \
-        } \
-        catch(...) \
-        { \
-                SLOG(LM_ERROR, ERR_DOTDOTDOTCAUGHT, (__FILE__,__LINE__)); \
-                throw; \
-        }
 
 #ifndef MAGICK_TRACE_WORKS
 
@@ -164,6 +157,8 @@ const char *ERR_EXCEPTIONCAUGHT =
 #define MCB(x)
 #define MCE(x)
 #define CH(x,y)
+#define BTCB()
+#define ETCB()
 #define FLUSH()
 
 #else /* MAGICK_TRACE_WORKS */
@@ -174,45 +169,53 @@ const char *ERR_EXCEPTIONCAUGHT =
 // mDateTime
 
 // FunctionTrace -- FT("...", ());
-#define FT(x,y) mVarArray __ft_data y; T_Functions __ft(x, __ft_data)
-#define NFT(x) T_Functions __ft(x)
+#define FT(x,y) mVarArray __ft_data y; T_Function __ft(__FILE__, __LINE__, x, __ft_data)
+#define NFT(x) T_Function __ft(__FILE__, __LINE__, x)
 
 // Set return value -- RET()
 #define RET(x) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=mVariant(x); \
 	return (x); \
 	} while (0)
 #define NRET(x,y) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	return (y); \
 	} while (0)
 #define DRET(x) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=mVariant(x); \
 	mThread::Detach(); \
 	return (x); \
 	} while (0)
 #define NDRET(x,y) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	mThread::Detach(); \
 	return (y); \
 	} while (0)
 #define TRET(x) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=mVariant(x); \
 	ACE_Thread::exit(x); \
 	return (x); \
 	} while (0)
 #define NTRET(x,y) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	ACE_Thread::exit(y); \
 	return (y); \
 	} while (0)
 #define DTRET(x) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=mVariant(x); \
 	mThread::Detach(); \
 	ACE_Thread::exit(x); \
 	return (x); \
 	} while (0)
 #define NTDRET(x,y) do { \
+	__ft.return_line=__LINE__; \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	mThread::Detach(); \
 	ACE_Thread::exit(y); \
@@ -223,7 +226,7 @@ const char *ERR_EXCEPTIONCAUGHT =
 #define CP(x) do { T_CheckPoint __cp x; } while (0)
 
 // Comments definition -- COM(());
-#define COM(x) do { T_Comments __com x; } while (0)
+#define COM(x) do { T_Comment __com x; } while (0)
 
 // Config file load
 #define SRC(x) do { T_Source(x); } while (0)
@@ -252,6 +255,16 @@ const char *ERR_EXCEPTIONCAUGHT =
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) do { T_Chatter __ch(x,y); } while (0)
 
+// Exception catching ...
+#define BTCB() try {
+#define ETCB() } catch(exception &E) { \
+		T_Exception(__FILE__, __LINE__, E.what()); \
+                throw; \
+        } catch(...) { \
+		T_Exception(__FILE__, __LINE__, "NON-C++ EXCEPTION"); \
+                throw; \
+        }
+
 #define FLUSH() do { \
 	ThreadID *tid = mThread::find(); \
 	if (tid != NULL && !tid->InTrace()) tid->Flush(); \
@@ -279,16 +292,16 @@ const char *ERR_EXCEPTIONCAUGHT =
 // Trace::levelname is a struct translating level_enum enum's
 //
 // input[3] is first checked in reverse order against threadname,
-// then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
+// then against MAIN's thread levels (Locking, Function, SourceFiles, Stat)
 // then it gives a syntax error.
 
 extern list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 
 // Trace Codes
-//   \   Down Function (T_Functions)
-//   /   Up Function (T_Functions)
+//   \   Down Function (T_Function)
+//   /   Up Function (T_Function)
 //   **  CheckPoint (T_CheckPoint)
-//   ##  Comments (T_Comments)
+//   ##  Comment (T_Comment)
 //   $$  Config Load (T_Source)
 //   ->  Outbound Traffic (T_Chatter)
 //   <-  Inbound Traffic (T_Chatter)
@@ -296,14 +309,15 @@ extern list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 //   <<  Before Changes (T_Modify)
 //   >>  After Changes (T_Modify)
 //   ==  Value Changes (T_Changing)
+//   !!  Exception Thrown (T_Exception)
 //   :+  Read/Write Locking (T_Locking)
 //   :-  Read/Write UnLocking (T_Locking)
-//   %%  CPU/Memory Stats (T_Stats)
-//   |+  Socket Establish (T_Sockets)
-//   ||  Socket Failed Establish (T_Sockets)
-//   |=  Socket Definition (T_Sockets)
-//   |-  Socket Dropout (T_Sockets)
-//   !!  BOB Binds, Registrations (T_Bind)
+//   %%  CPU/Memory Stats (T_Stat)
+//   |+  Socket Establish (T_Socket)
+//   ||  Socket Failed Establish (T_Socket)
+//   |=  Socket Definition (T_Socket)
+//   |-  Socket Dropout (T_Socket)
+//   &&  BOB Binds, Registrations (T_Bind)
 //   ??  External commands (T_External)
 //   ()  Trace Level Changes.
 
@@ -312,29 +326,29 @@ extern list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 class Trace
 {
 public:
-    // For expansion -- 0x4C08
+    // For expansion -- 0x002C
     enum level_enum
     {
 	Off = 0x0000,
 
-	// Config/Stats
-	Stats = 0x0001,		// Cycle Statistics
-	Source = 0x0002,	// Config Files
-	Bind = 0x0004,		// Binding/Registering
-
 	// Code Tracing
-	CheckPoint = 0x0010,	// CP(()) entries
-	Comments = 0x0020,	// More verbose checkpoints
+	CheckPoint = 0x0001,	// CP(()) entries
+	Comment = 0x0002,	// More verbose checkpoints
+
+	Exception = 0x0010,	// Exceptions being thrown
 	Locking = 0x0040,	// READ/WRITE/MUTEX
-	Functions = 0x0080,	// Function Tracing
+	Function = 0x0080,	// Function Tracing
 
 	// Data Tracing
 	Changing = 0x0100,	// WHATS being changed
 	Modify = 0x0200,	// IN / OUT difference
+	Source = 0x0400,	// Config Files
+	Bind = 0x0800,		// Binding/Registering
 
 	// Live Tracing
-	Sockets = 0x1000,	// Inbound Connections
-	Chatter = 0x2000,	// All text IN/OUT
+	Stat = 0x1000,		// Cycle Statistics
+	Socket = 0x2000,	// Inbound Connections
+	Chatter = 0x4000,	// All text IN/OUT
 	External = 0x8000,	// External command/output
 
 	Full = 0xffff
@@ -415,21 +429,36 @@ extern Trace *TraceObject;
 
 // ===================================================
 
-class T_Functions : public Trace
+class T_Function : public Trace
 {
     mstring m_name;
     mstring i_prevfunc;
+    const char *file_name;
 
-    T_Functions()
+    T_Function()
     {
     }
 
 public:
     mVariant return_value;
-    T_Functions(const mstring & name);
-    T_Functions(const mstring & name, const mVarArray & args);
+    int return_line;
 
-    ~T_Functions();
+    T_Function(const char *file, int line, const mstring & name);
+    T_Function(const char *file, int line, const mstring & name, const mVarArray & args);
+
+    ~T_Function();
+};
+
+// ===================================================
+
+class T_Exception : public Trace
+{
+public:
+    T_Exception(const char *file, const int line, const char *what);
+
+    ~T_Exception()
+    {
+    }
 };
 
 // ===================================================
@@ -449,16 +478,16 @@ public:
 
 // ===================================================
 
-class T_Comments : public Trace
+class T_Comment : public Trace
 {
     void common(const mstring & input);
 
-    T_Comments();
+    T_Comment();
 
 public:
-    T_Comments(const char *fmt, ...);
+    T_Comment(const char *fmt, ...);
 
-    ~T_Comments()
+    ~T_Comment()
     {
     }
 };
@@ -548,11 +577,11 @@ public:
 
 // ===================================================
 
-// class T_Stats : public Trace {};
+// class T_Stat : public Trace {};
 
 // ===================================================
 
-class T_Sockets : public Trace
+class T_Socket : public Trace
 {
     unsigned long s_id;
 

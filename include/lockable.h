@@ -156,13 +156,13 @@ public:
     }
 #endif
 
-    void *operator        new(size_t size)
+    void *operator         new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator        delete(void *ptr)
+    void operator         delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -196,13 +196,13 @@ public:
     }
 #endif
 
-    void *operator        new(size_t size)
+    void *operator         new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator        delete(void *ptr)
+    void operator         delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -225,13 +225,13 @@ public:
     {
     }
 
-    void *operator        new(size_t size)
+    void *operator         new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator        delete(void *ptr)
+    void operator         delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -345,7 +345,7 @@ class mSocket
     bool DestroyMe;
 
 #ifdef MAGICK_TRACE_WORKS
-    T_Sockets trace;
+    T_Socket trace;
 #endif
 
     void init();

@@ -438,17 +438,20 @@ int levelname_count()
 // ===================================================
 
 //      \  function()
-T_Functions::T_Functions(const mstring & name) : m_name(name)
+T_Function::T_Function(const char *file, const int line, const mstring & name) : m_name(name)
 {
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
+    file_name = file;
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
-    if (IsOn(tid, Functions))
+    if (IsOn(tid, Function))
     {
-	mstring message = "\\  " + m_name + "()";
+	mstring message;
+
+	message << "\\  " << file_name << ":" << line << ": " << m_name << "()";
 
 	tid->WriteOut(message);
     }
@@ -456,32 +459,35 @@ T_Functions::T_Functions(const mstring & name) : m_name(name)
 }
 
 //      \  function( (char) T, (int) 5 )
-T_Functions::T_Functions(const mstring & name, const mVarArray & args) : m_name(name)
+T_Function::T_Function(const char *file, const int line, const mstring & name, const mVarArray & args) : m_name(name)
 {
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
+    file_name = file;
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
-    if (IsOn(tid, Functions))
+    if (IsOn(tid, Function))
     {
-	mstring message = "\\  " + m_name + "(";
+	mstring message;
+
+	message << "\\  " << file_name << ":" << line << ": " << m_name << "(";
 
 	for (int i = 0; i < args.count(); i++)
 	{
-	    message += " (" + args[i].type() + ") " + args[i].AsString();
+	    message << " (" << args[i].type() << ") " << args[i].AsString();
 	    if (i < args.count() - 1)
-		message += ", ";
+		message << ", ";
 	}
-	message += " )";
+	message << " )";
 	tid->WriteOut(message);
     }
     tid->indentup();
 }
 
 //      /  (char) Y
-T_Functions::~T_Functions()
+T_Function::~T_Function()
 {
     ThreadID *tid = mThread::find();
 
@@ -489,14 +495,14 @@ T_Functions::~T_Functions()
 	return;			// should throw an exception later
     tid->indentdown();
     tid->LastFunc(i_prevfunc);
-    if (IsOn(tid, Functions))
+    if (IsOn(tid, Function))
     {
 	mstring message;
 
+	message << "/  " << file_name << ":" << return_line;
+
 	if (!return_value.type().empty())
-	    message = "/  (" + return_value.type() + ") " + return_value.AsString();
-	else
-	    message = "/ ";
+	    message << ": (" << return_value.type() << ") " << return_value.AsString();
 	tid->WriteOut(message);
     }
 }
@@ -534,13 +540,32 @@ void T_CheckPoint::common(const mstring & input)
 
 // ===================================================
 
+//      ** file:line: details
+
+T_Exception::T_Exception(const char *file, const int line, const char *what)
+{
+    ThreadID *tid = mThread::find();
+
+    if (tid == NULL || tid->InTrace())
+	return;			// should throw an exception later
+    if (IsOn(tid, Exception))
+    {
+	mstring out;
+
+	out << "!! " << file << ":" << line << ": " << what;
+	tid->WriteOut(out);
+    }
+}
+
+// ===================================================
+
 //      ## Loading value blah ...
-T_Comments::T_Comments()
+T_Comment::T_Comment()
 {
     common("Comment Reached");
 }
 
-T_Comments::T_Comments(const char *fmt, ...)
+T_Comment::T_Comment(const char *fmt, ...)
 {
     va_list args;
     mstring output;
@@ -551,13 +576,13 @@ T_Comments::T_Comments(const char *fmt, ...)
     common(output);
 }
 
-void T_Comments::common(const mstring & input)
+void T_Comment::common(const mstring & input)
 {
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    if (IsOn(tid, Comments))
+    if (IsOn(tid, Comment))
     {
 	tid->WriteOut("## " + input);
     }
@@ -674,7 +699,7 @@ T_Chatter::T_Chatter(const dir_enum direction, const mstring & input)
 //      %% MAX     - CPU  5.7% | MEM     1.1% | REAL    8725 | SWAP       0 | USAGE      1526
 //      %% SYSTEM  - CPU  0.32 | AVAILABLE:     REAL    2672 | SWAP  121512 | SPACE   1578294
 
-// T_Stats::T_Stats() {}
+// T_Stat::T_Stat() {}
 
 // ===================================================
 
@@ -774,17 +799,17 @@ T_Source::T_Source(const mstring & section, const mstring & key, const mstring &
 //      |= 3: ServNet (2)
 //      |- 3: Socket Timeout
 
-// T_Sockets::T_Sockets() {}
+// T_Socket::T_Socket() {}
 
-void T_Sockets::Begin(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
-		      const dir_enum direction)
+void T_Socket::Begin(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
+		     const dir_enum direction)
 {
     s_id = id;
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    if (IsOn(tid, Sockets))
+    if (IsOn(tid, Socket))
     {
 	mstring message;
 
@@ -800,15 +825,15 @@ void T_Sockets::Begin(const unsigned long id, const unsigned short local, const 
     }
 }
 
-void T_Sockets::Failed(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
-		       const mstring & reason, const dir_enum direction)
+void T_Socket::Failed(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
+		      const mstring & reason, const dir_enum direction)
 {
     s_id = id;
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    if (IsOn(tid, Sockets))
+    if (IsOn(tid, Socket))
     {
 	mstring message;
 
@@ -824,13 +849,13 @@ void T_Sockets::Failed(const unsigned long id, const unsigned short local, const
     }
 }
 
-void T_Sockets::Resolve(const socktype_enum type, const mstring & info)
+void T_Socket::Resolve(const socktype_enum type, const mstring & info)
 {
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    if (IsOn(tid, Sockets))
+    if (IsOn(tid, Socket))
     {
 	mstring message;
 
@@ -862,13 +887,13 @@ void T_Sockets::Resolve(const socktype_enum type, const mstring & info)
     }
 }
 
-void T_Sockets::End(const mstring & reason)
+void T_Socket::End(const mstring & reason)
 {
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    if (IsOn(tid, Sockets))
+    if (IsOn(tid, Socket))
     {
 	mstring message;
 
@@ -879,14 +904,14 @@ void T_Sockets::End(const mstring & reason)
 
 // ===================================================
 
-//      !! VAR+ added_userinfo
-//      !! VAR- added_userinfo
-//      !! FUNC+ user_process( (char *) source, (char *) message )
-//      !! FUNC- user_process( (char *) source, (char *) message )
-//      !! BIND+ MSG "SET USERINFO" user_process
-//      !! BIND- MSG "SET USERINFO" user_process
-//      !! SERV+ new_service nick nick ...
-//      !! SERV- new_service
+//      && VAR+ added_userinfo
+//      && VAR- added_userinfo
+//      && FUNC+ user_process( (char *) source, (char *) message )
+//      && FUNC- user_process( (char *) source, (char *) message )
+//      && BIND+ MSG "SET USERINFO" user_process
+//      && BIND- MSG "SET USERINFO" user_process
+//      && SERV+ new_service nick nick ...
+//      && SERV- new_service
 
 // T_Bind::T_Bind() {}
 
@@ -901,11 +926,184 @@ void T_Sockets::End(const mstring & reason)
 
 #endif /* MAGICK_TRACE_WORKS */
 
+Logger::Logger()
+{
+    NFT("Logger::Logger");
+    ACE_Log_Msg::enable_debug_messages();
+
+#ifdef TEST_MODE
+    fout.Attach("STDERR", stderr, "a");
+#else
+    fout.Open(Magick::instance().files.Logfile(), "a");
+#endif
+}
+
+Logger::~Logger()
+{
+    NFT("Logger::~Logger");
+
+#ifdef TEST_MODE
+    if (fout.IsOpened())
+	fout.Detach();
+#else
+    if (fout.IsOpened())
+	fout.Close();
+#endif
+}
+
+void Logger::log(ACE_Log_Record & log_record)
+{
+    FT("Logger::log", ("(ACE_Log_Record &) log_record"));
+
+    if (!Magick::instance_exists())
+	return;
+
+    if (!fout.IsOpened())
+	return;
+
+    mstring text_priority;
+
+    switch (log_record.type())
+    {
+
+	// Stuff normal users dont wanna see
+    case LM_TRACE:
+#ifndef DEBUG
+	return;
+#endif
+	text_priority = "TRACE";
+	break;
+
+	// Stuff you have to turn VERBOSE on to see
+    case LM_DEBUG:
+	if (!Magick::instance().Verbose())
+	    return;
+	text_priority = "DEBUG";
+	break;
+
+	// Normal information that most users want
+    case LM_INFO:
+	text_priority = "INFO";
+	break;
+
+	// Still normal, but notable (eg. SOP commands)
+    case LM_NOTICE:
+	text_priority = "NOTICE";
+	break;
+
+	// An attempt at data corruption (denied) or recoverable error
+    case LM_WARNING:
+	text_priority = "WARNING";
+	break;
+
+	// Startup messages only (ie. boot)
+    case LM_STARTUP:
+	text_priority = "STARTUP";
+	break;
+
+	// A data corruption that we repaird
+    case LM_ERROR:
+	text_priority = "ERROR";
+	break;
+
+	// A data corruption we could not repair (left in system or
+	// more drastic action taken, eg. the record being removed)
+    case LM_CRITICAL:
+	text_priority = "CRITICAL";
+	break;
+
+	// A situation that caused us to hard abort, but did not kill
+	// us but may have caused a thread to die, etc.
+    case LM_ALERT:
+	text_priority = "ALERT";
+	break;
+
+	// A situation we could not reover from, we're outtahere.
+    case LM_EMERGENCY:
+	text_priority = "FATAL";
+	break;
+
+	// Should NEVER get this, but its there for completeness.
+    default:
+	text_priority = "UNKNOWN";
+	break;
+    }
+
+    /* Pulled directly from ACE ... */
+    time_t sec = log_record.time_stamp().sec();
+    struct tm *tmval = localtime(&sec);
+    char ctp[21];		// 21 is a magic number...
+
+    if (ACE_OS::strftime(ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
+	return;
+
+    mstring out;
+
+    out.Format("%s.%03ld | %-8s | ", ctp, log_record.time_stamp().usec() / 1000, text_priority.c_str());
+    mstring tmp(log_record.msg_data());
+
+    unsigned int i;
+
+    for (i = 1; i <= tmp.WordCount("\n\r"); i++)
+	fout.Write(out + tmp.ExtractWord(i, "\n\r"));
+
+    fout.Flush();
+
+    if (!Magick::instance().files.Logchan().empty() && Magick::instance().Connected())
+    {
+	{
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
+	    {
+		if (Magick::instance().chanserv.IsLive(Magick::instance().files.Logchan()))
+		{
+		    for (i = 1; i <= tmp.WordCount("\n\r"); i++)
+			Magick::instance().server.PRIVMSG(Magick::instance().operserv.FirstName(),
+							  Magick::instance().files.Logchan(), out + tmp.ExtractWord(i,
+														    "\n\r"));
+		}
+	    }
+	}
+    }
+
+    if (log_record.type() == LM_EMERGENCY)
+	exit(MAGICK_RET_ERROR);
+}
+
+void Logger::close()
+{
+    NFT("Logger::close");
+
+    if (fout.IsOpened())
+    {
+	fout.Close();
+    }
+}
+
+void Logger::open()
+{
+    NFT("Logger::open");
+
+    if (!fout.IsOpened())
+    {
+	fout.Open(Magick::instance().files.Logfile(), "a");
+    }
+}
+
+bool Logger::opened() const
+{
+    NFT("Logger::opened");
+    bool retval = fout.IsOpened();
+
+    RET(retval);
+}
+
 void LOG2(ACE_Log_Priority type, const mstring & msg)
 {
     if (Magick::instance_exists() && Magick::instance().ValidateLogger(ACE_LOG_MSG))
     {
 	ACE_DEBUG((type, (const ACE_TCHAR *) msg));
-	Magick::instance().EndLogMessage(ACE_LOG_MSG);
+	if (ACE_LOG_MSG != NULL && ACE_LOG_MSG->flags() & ACE_Log_Msg::STDERR)
+	    fprintf(stderr, "\n");
     }
 }

@@ -32,7 +32,8 @@ RCSID(mexceptions_h, "@(#) $Id$");
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 
-#include "trace.h"
+enum locktype_enum
+{ L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
 
 class E_NickServ_Stored : public exception
 {

@@ -75,20 +75,6 @@ public:
     int handle_signal(int signum, siginfo_t * siginfo, ucontext_t * ucontext);
 };
 
-class Logger : public ACE_Log_Msg_Callback
-{
-    mFile fout;
-
-public:
-    Logger();
-    ~Logger();
-
-    void log(ACE_Log_Record & log_record);
-    void close();
-    void open();
-    bool opened() const;
-};
-
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
@@ -494,7 +480,6 @@ public:
     bool ActivateLogger();
     void DeactivateLogger();
     bool ValidateLogger(ACE_Log_Msg * instance) const;
-    void EndLogMessage(ACE_Log_Msg * instance) const;
     bool Verbose() const
     {
 	return i_verbose;
@@ -649,7 +634,7 @@ public:
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator          mVariant() const
+    operator           mVariant() const
     {
 	mVariant locvar("Magick");
 
