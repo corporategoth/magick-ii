@@ -15,8 +15,6 @@
 
 class Trace
 {
-    map<pair<Thread,ShortType>,TraceTypes Type> tmap;
-    typedef pair<Thread,ShortType> levelpair;
 
     long TraceLevel;
     enum TraceTypes {
@@ -54,6 +52,9 @@ class Trace
 	BOB_Functions	= 0x40000000,	// BOB functions
 	BOB_External	= 0x80000000	// BOB external input/output
     };
+
+    map<pair<Thread,ShortType>,TraceTypes> tmap;
+    typedef pair<Thread,ShortType> levelpair;
 
     bool IsOnBig(TraceTypes level)
 	{ return (level & TraceLevel); }
