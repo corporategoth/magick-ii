@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.232  2001/03/27 07:49:10  prez
+** Fixed channels being added in case
+**
 ** Revision 1.231  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -5992,8 +5995,8 @@ void ChanServ::AddLive(Chan_Live_t *in)
     }
 
     WLOCK(("ChanServ", "live"));
-    /* live[in->Name()] = in; */
-    live[in->Name()] = *in;
+    /* live[in->Name().LowerCase()] = in; */
+    live[in->Name().LowerCase()] = *in;
 }
 
 
