@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.148  2000/12/31 12:00:32  prez
+** JOIN no longer uses PushMessage
+**
 ** Revision 1.147  2000/12/31 03:11:10  prez
 ** some changes to the flushing users, etc.
 **
@@ -1350,7 +1353,7 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
 
 void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
 {
-    FT("NetworkServ::PushUser", (nick, message));
+    FT("NetworkServ::PushUser", (nick, message, channel));
     // If the nick is reg'd and either a channel is not specified
     // or the channel exists and the user is in it, just do it,
     // else queue it.
@@ -2958,16 +2961,18 @@ void NetworkServ::execute(const mstring & data)
 	    // :source JOIN :#channel
 	    for (unsigned int i=3; i<=data.WordCount(":, "); i++)
 	    {
+		mstring chan(data.ExtractWord(i, ":, "));
 		// If we're IN channel, then we may be cycling ...
-		if (Parent->chanserv.IsLive(data.ExtractWord(i, ":, ")) &&
-		    Parent->chanserv.live[data.ExtractWord(i, ":, ").LowerCase()].IsIn(sourceL))
+		if (Parent->chanserv.IsLive(chan) &&
+		    Parent->chanserv.live[chan.LowerCase()].IsIn(sourceL) &&
+		    SeenMessage(data) < Parent->config.MSG_Seen_Act())
 		{
-		    PushUser(source, data, data.ExtractWord(i, ":, "));
+		    mBase::push_message(data.Before(" ", 2) + chan);
 		}
 		else
 		{
-		    MLOCK(("BlockChannel", data.ExtractWord(i, ":, ").LowerCase()));
-		    Parent->nickserv.live[sourceL].Join(data.ExtractWord(i, ":, "));
+		    MLOCK(("BlockChannel", chan.LowerCase()));
+		    Parent->nickserv.live[sourceL].Join(chan);
 		}
 	    }
 	}
