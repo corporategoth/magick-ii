@@ -1,3 +1,120 @@
+* 2002-09-14 13:11  Preston A. Elder <prez@magick.tm>
+  include/pch.h (1.61):
+  
+  Changed ace/Activation_Queue.h to ace/Message_Queue.h
+
+* 2002-09-14 07:15  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.203), src/ircsocket.cpp (1.236), src/server.cpp (1.250):
+  
+  Fixed 0 numeric for unreal.
+
+* 2002-09-14 06:25  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.235):
+  
+  Added some cleanup code to the MsgIdMap checking.
+
+* 2002-09-14 04:12  Preston A. Elder <prez@magick.tm>
+  include/pch.h (1.60):
+  
+  Fixed namespace stuff.
+
+* 2002-09-14 04:00  Preston A. Elder <prez@magick.tm>
+  include/pch.h (1.59):
+  
+  Made the extra GCC namespace based off the GCC version.
+
+* 2002-09-14 03:32  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.101):
+  
+  Forgot to add ifdef's for usage of STL_EXT_NAMESPACE.
+
+* 2002-09-14 00:21  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.94), ircd/ircd.aurora.ini (1.7),
+  ircd/ircd.bahamut.ini (1.7), ircd/ircd.dal.ini (1.6),
+  ircd/ircd.dal4.4.15.ini (1.7), ircd/ircd.hybrid5.ini (1.6),
+  ircd/ircd.hybrid7.ini (1.6), ircd/ircd.ircu.ini (1.6),
+  ircd/ircd.ircu2.10.ini (1.8), ircd/ircd.ircu2.10ext.ini (1.8),
+  ircd/ircd.rfc1459+ts8.ini (1.6), ircd/ircd.rfc1459.ini (1.6),
+  ircd/ircd.unreal.ini (1.10), src/chandata.cpp (1.16), src/chanserv.cpp
+  (1.303), src/server.cpp (1.249):
+  
+  Added TopicCurrent for ircd's like unreal who need the current time sent
+  when changing the topic.
+
+* 2002-09-13 22:54  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.unreal.ini (1.9):
+  
+  Turned off SJOIN for unreal.
+
+* 2002-09-13 22:54  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.248):
+  
+  Stopped SJOIN being set on by PROTOCTL line.
+
+* 2002-09-13 22:24  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.247):
+  
+  Fixed CHGHOST
+
+* 2002-09-13 22:20  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.302), src/nickserv.cpp (1.219):
+  
+  Re-bound LIVE to be an OPER/SOP command (instead of just SOP).
+
+* 2002-09-13 22:18  Preston A. Elder <prez@magick.tm>
+  lang/english.hlp (1.52):
+  
+  Adjusted LIVE help to include OPER committee members.
+
+* 2002-09-13 22:05  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.246):
+  
+  Fixed TKL.
+
+* 2002-09-13 18:51  Preston A. Elder <prez@magick.tm>
+  src/commserv.cpp (1.127):
+  
+  Fixed IsHead
+
+* 2002-09-13 15:46  Preston A. Elder <prez@magick.tm>
+  src/commserv.cpp (1.126):
+  
+  Forgot CommServ names are UpperCase!
+
+* 2002-09-12 23:13  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.117), include/ircsocket.h (1.72), include/mexceptions.h
+  (1.16), include/trace.h (1.97), src/base.cpp (1.202), src/ircsocket.cpp
+  (1.234):
+  
+  Re-worked the message handling to act more like one of the major lists,
+  meaning it is now accessed using a map_entry
+
+* 2002-09-12 14:21  Preston A. Elder <prez@magick.tm>
+  configure.in (1.67), include/chanserv.h (1.85), include/commserv.h
+  (1.71), include/config.h.in (1.30), include/mstring.h (1.100),
+  include/nickserv.h (1.87), include/pch.h (1.58), include/server.h (1.93),
+  include/utils.h (1.58), src/chanserv.cpp (1.301), src/commserv.cpp
+  (1.125), src/ircsocket.cpp (1.233), src/nickdata.cpp (1.13),
+  src/nickserv.cpp (1.218), src/operserv.cpp (1.158), src/server.cpp
+  (1.245), src/servmsg.cpp (1.108):
+  
+  Changed to use hash_map where available.
+
+* 2002-09-12 11:44  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.15):
+  
+  Fixed access level stuff
+
+* 2002-09-11 00:52  Preston A. Elder <prez@magick.tm>
+  src/memoserv.cpp (1.122):
+  
+  Fixed reply in MemoServ
+
+* 2002-09-09 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.48):
+  
+  Created version 2.0s20020909
+
 * 2002-09-06 12:42  Preston A. Elder <prez@magick.tm>
   COPYING (1.5):
   
