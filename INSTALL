@@ -240,15 +240,13 @@ Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
---with-scramble=number
-     This will change the amount of characters you scramble your keys to
-decrypt the keyfile by.  Magick encrypts the keyfile (which is used to
-decrypt the database) with two keys, however we also do not want these
-two keys in clear text either, so we scramble them by a simple rotation
-of characters, before putting them in the header, this ensures even if
-they search your resulting binary, they will not find out the keyfile
-encryption keys -- as they are scrambled.  It is recommended you use a
-different number here than the default.
+--enable-des
+--disable-des
+     This turns on or off encryption support in Magick.
+
+--with-keylen=size
+     This is the maximum size of the key file, and the input key that
+you may type in.  This defaults to 1024, and you should not need more.
 
 `configure' also accepts some other, not widely useful, options.
 
@@ -260,34 +258,25 @@ magick communications are kept secure and encrypted.  The main methods
 of facilitating this are:
      * Databases and inter-magick communication is encrypted with a
        key through 3DES.  This key resides in a keyfile.
-     * The keyfile itself is encrypted with two keys entered at the
-       configure time, to ensure the keyfile is never cleartext.
-     * The keyfile's keys themselves are scrambled, and not stored
-       as-is.  These keys are scrambled by a simple text rotation.
+     * The keyfile itself is encrypted with two keys generated at
+       compile time, to ensure the keyfile is never cleartext.
+     * EACH compile creates new keyfile keys, which means you must
+       re-generate the keyfile each time you compile, ensuring it
+       does not get stale (and becomes invalid if someone gets it!)
 
 To ensure the security of your databases and communication, you should
-     * Use the --with-scramble paramater (mentioned above) to alter
-       the amount of chars the keyfile key's are rotated by.  You should
-       chose a different number each full compile.
-     * Use different keyfile key's on different systems, and change
-       them often.  You will need to re-generate the keyfile each time
-       you change the keyfile key's, however this ensures your old key
-       files cant be used to get the current data.
      * Chose a long and complex database key, you must remember this
        somehow, incase you need to generate a new database key, however
        you wont need it often.  Also choose long and varied keyfile
-       keys, they can be up to 1024 bytes long!
+       keys, they can be up to 1024 bytes long (or longer with the
+       --with-keylen paramater to configure)!
+     * Recompile magick every so often.  This forces you to re-generate
+       the database keyfile with new keys, which is always a good idea!
 
-Windows users by default do not get prompted for the keyfile keys, and
-must edit the config.h file to type them in themselves, in clear text.
-To use scrambled keyfile keys, you must:
-     * Choose how much to scramble by, default is 13.
-     * Execute the scramble program with the paramater of how much to
-       scramble by (eg. scramble 10).
-     * Type in your password in clear text.
-     * Cut and paste the output into CRYPTO_KEY1 field in config.h
-     * Repeat the above three steps for CRYPTO_KEY2.
-     * Put how much have chosen to scramble by into CRYPTO_SCRAMBLE.
+REMEMBER:  If you forget your database password, then you had BETTER
+decrypt your databases (via. the config file) ASAP, as if you lose
+your key, and do not know the password to generate a new one, you
+may as well remove the file and start again.
 
-Pre-compiled binaries will not be able to change the keyfile scrambling
-settings.  This could be considered an advantage of compiling yourself.
+Pre-compiled binaries will not be able to change the keyfile keys.
+This could be considered an advantage of compiling yourself.

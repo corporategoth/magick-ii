@@ -25,6 +25,12 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/06/28 12:20:47  prez
+** Lots of encryption stuff, but essentially, we now have random
+** key generation for the keyfile keys, and we can actually encrypt
+** something, and get it back as we sent it in (specifically, the
+** keyfile itself).
+**
 ** Revision 1.25  2000/06/27 18:56:59  prez
 ** Added choosing of keys to configure, also created the keygen,
 ** and scrambler (so keys are not stored in clear text, even in
@@ -63,6 +69,9 @@ static const char *ident_utils_h = "@(#) $Id$";
 #include "mstring.h"
 #include "datetime.h"
 #include "lockable.h"
+#ifdef HASCRYPT
+#include "des/des_locl.h"
+#endif
 
 const char FILE_SEP_EXT = '.';
 const char FILE_SEP_DSK = ':';
@@ -109,9 +118,8 @@ mstring ToHumanTime(unsigned long in);
 mstring ToHumanNumber(unsigned long in);
 unsigned long FromHumanSpace(mstring in);
 mstring ToHumanSpace(unsigned long in);
-mstring GetRealKey(bool second);
-#define LOWER_CHAR 35
-#define UPPER_CHAR 126
+void mDES(unsigned char *in, unsigned char *out, size_t size,
+	des_key_schedule key1, des_key_schedule key2, int enc);
 
 // extrapolated from the ms's pair<T1,T2> template code
 

@@ -25,6 +25,12 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.135  2000/06/28 12:20:47  prez
+** Lots of encryption stuff, but essentially, we now have random
+** key generation for the keyfile keys, and we can actually encrypt
+** something, and get it back as we sent it in (specifically, the
+** keyfile itself).
+**
 ** Revision 1.134  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -146,8 +152,8 @@ static const char *ident_magick_h = "@(#) $Id$";
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
-#include "server.h"
 #include "utils.h"
+#include "server.h"
 #include "filesys.h"
 #include "nickserv.h"
 #include "chanserv.h"
@@ -158,7 +164,6 @@ static const char *ident_magick_h = "@(#) $Id$";
 #include "ircsocket.h"
 #include "variant.h"
 #include "version.h"
-#include "cryptstream.h"
 #include "xml/sxp.h"
 
 const int MAGICK_RET_NORMAL		    = 0;

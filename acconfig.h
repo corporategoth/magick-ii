@@ -42,3 +42,8 @@
 #ifndef CRYPTO_KEY2
 #define CRYPTO_KEY2 "Windows"
 #endif
+
+/* Length of database key */
+#ifndef KEYLEN
+#define KEYLEN 1024
+#endif

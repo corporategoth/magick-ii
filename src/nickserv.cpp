@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2000/06/28 12:20:48  prez
+** Lots of encryption stuff, but essentially, we now have random
+** key generation for the keyfile keys, and we can actually encrypt
+** something, and get it back as we sent it in (specifically, the
+** keyfile itself).
+**
 ** Revision 1.111  2000/06/25 11:58:03  prez
 ** Fixed problem where messages from nickserv about killing user would not
 ** be sent out (people would not know a nick was forbidden).
@@ -241,7 +247,6 @@ static const char *ident = "@(#)$Id$";
 #include "lockable.h"
 #include "nickserv.h"
 #include "magick.h"
-#include "cryptstream.h"
 
 void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
 {

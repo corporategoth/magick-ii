@@ -28,6 +28,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.250  2000/06/28 12:20:48  prez
+** Lots of encryption stuff, but essentially, we now have random
+** key generation for the keyfile keys, and we can actually encrypt
+** something, and get it back as we sent it in (specifically, the
+** keyfile itself).
+**
 ** Revision 1.249  2000/06/26 11:23:17  prez
 ** Added auto-akill on clone triggers
 **
@@ -642,6 +648,7 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     //load_databases();
+    Log(LM_ERROR, "Extracted key is %s", GetKey().c_str());
     { WLOCK(("i_ResetTime"));
     i_ResetTime=Now();
     }
@@ -2981,17 +2988,33 @@ mstring Magick::GetKey()
 {
     NFT("Magick::GetKey");
     mstring retval = "";
+#ifdef HASCRYPT
     if (files.Encryption())
     {
 	if (mFile::Exists(files.KeyFile()))
 	{
 	    mFile keyfile(files.KeyFile());
-	    char tmp[4096];
-	    ACE_OS::memset(tmp, 0, 4096);
-	    keyfile.Read(tmp, 4096);
-	    retval = tmp;
+	    unsigned char tmp[KEYLEN], key[KEYLEN];
+	    des_key_schedule key1, key2;
+	    des_cblock ckey1, ckey2;
+
+#include "crypt.h"
+	    ACE_OS::memset(tmp, 0, KEYLEN);
+	    keyfile.Read(tmp, KEYLEN);
+	    tmp[KEYLEN-1]=0;
+
+	    /* Unscramble keyfile keys */
+	    des_string_to_key(crypto_key1,&ckey1);
+	    des_set_key(&ckey1,key1);
+	    des_string_to_key(crypto_key2,&ckey2);
+	    des_set_key(&ckey2,key2);
+
+	    /* Use keyfile keys to get REAL key */
+	    mDES(tmp, key, KEYLEN, key1, key2, 0);
+	    retval = (char *) key;
 	}
     }
+#endif
     NRET(mstring, retval);
 }
 

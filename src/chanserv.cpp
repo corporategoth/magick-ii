@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.185  2000/06/28 12:20:47  prez
+** Lots of encryption stuff, but essentially, we now have random
+** key generation for the keyfile keys, and we can actually encrypt
+** something, and get it back as we sent it in (specifically, the
+** keyfile itself).
+**
 ** Revision 1.184  2000/06/25 10:32:41  prez
 ** Fixed channel forbid.
 **
@@ -203,7 +209,6 @@ static const char *ident = "@(#)$Id$";
 #include "chanserv.h"
 #include "lockable.h"
 #include "magick.h"
-#include "cryptstream.h"
 
 #ifdef __BORLAND__
 #pragma codeseg CODE2

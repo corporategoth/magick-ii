@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/06/28 12:20:50  prez
+** Lots of encryption stuff, but essentially, we now have random
+** key generation for the keyfile keys, and we can actually encrypt
+** something, and get it back as we sent it in (specifically, the
+** keyfile itself).
+**
 ** Revision 1.39  2000/06/27 18:56:59  prez
 ** Added choosing of keys to configure, also created the keygen,
 ** and scrambler (so keys are not stored in clear text, even in
@@ -557,30 +563,25 @@ unsigned long FromHumanSpace(mstring in)
     RET(total);
 }
 
-mstring GetRealKey(bool second)
+void mDES(unsigned char *in, unsigned char *out, size_t size,
+	des_key_schedule key1, des_key_schedule key2, int enc)
 {
-    FT("GetRealKey", (second));
-    mstring retval;
+#ifdef HASCRYPT
+    DES_LONG tuple[2], t0, t1;
+    unsigned char *iptr, *optr, tmp[8];
     int i;
-    char key[1024];
-    if (second)
-	strcpy(key, CRYPTO_KEY2);
-    else
-	strcpy(key, CRYPTO_KEY2);
-    for (i=0; i<strlen(key); i++)
+
+    ACE_OS::memset(out, 0, size);
+    for (iptr=in, optr=out, i=0; i<size; i+=8)
     {
-	if (key[i] < LOWER_CHAR || key[i] > UPPER_CHAR)
-	{
-	    retval += key[i];
-	}
-	else if (key[i] > UPPER_CHAR - CRYPTO_SCRAMBLE)
-	{
-	    retval += key[i] + CRYPTO_SCRAMBLE + LOWER_CHAR - UPPER_CHAR;
-	}
-	else
-	{
-	    retval += key[i] + CRYPTO_SCRAMBLE;
-	}
+	c2l(iptr, t0); tuple[0] = t0;
+	c2l(iptr, t1); tuple[1] = t1;
+	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
+	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
+	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
+	t0 = tuple[0]; l2c(t0, out);
+	t1 = tuple[1]; l2c(t1, out);
     }
-    NRET(mstring, retval);
+#endif
 }
+

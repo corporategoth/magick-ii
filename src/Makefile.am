@@ -1,6 +1,8 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
+noinst_PROGRAMS = genrankeys
 bin_PROGRAMS = magick magick_keygen
-magick_SOURCES = mconfig.cpp variant.cpp utils.cpp trace.cpp textfile.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp mstream.cpp memoserv.cpp main.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp fileconf.cpp dccengine.cpp datetime.cpp cryptstream.cpp convert.cpp confbase.cpp commserv.cpp chanserv.cpp base.cpp EscParser.cpp EscLexer.cpp 
+genrankeys_SOURCES = genrankeys.c
+magick_SOURCES = mconfig.cpp variant.cpp utils.cpp trace.cpp textfile.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp mstream.cpp memoserv.cpp main.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp fileconf.cpp dccengine.cpp datetime.cpp convert.cpp confbase.cpp commserv.cpp chanserv.cpp base.cpp EscParser.cpp EscLexer.cpp 
 magick_LDADD   = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a 
 magick_keygen_SOURCES = magick_keygen.c
 magick_keygen_LDADD   = ./des/libdes.a
@@ -8,19 +10,20 @@ magick_keygen_LDADD   = ./des/libdes.a
 
 SUBDIRS = antlr des xml 
 
-EXTRA_DIST = EscLexer.cpp EscLexer.hpp EscLexerTokenTypes.hpp EscParser.cpp EscParser.hpp base.cpp chanserv.cpp commserv.cpp confbase.cpp convert.cpp cryptstream.cpp datetime.cpp dccengine.cpp fileconf.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp main.cpp memoserv.cpp mstream.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp textfile.cpp trace.cpp utils.cpp variant.cpp mconfig.cpp keygen.c
+EXTRA_DIST = EscLexer.cpp EscLexer.hpp EscLexerTokenTypes.hpp EscParser.cpp EscParser.hpp base.cpp chanserv.cpp commserv.cpp confbase.cpp convert.cpp datetime.cpp dccengine.cpp fileconf.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp main.cpp memoserv.cpp mstream.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp textfile.cpp trace.cpp utils.cpp variant.cpp mconfig.cpp keygen.c genrandkeys.c
 
 ####### kdevelop will overwrite this part!!! (end)############
 
 mostlyclean-compile:
 	-rm -f *.o core *.core *.debug
 
-helper:
+helper: genrankeys
 	@echo ""
 	@echo "======================================================="
 	@echo "This will probably take a while ..."
 	@echo "May as well go grab your favourite caffiene supplement."
 	@echo "======================================================="
+	@$(srcdir)/genrankeys $(top_srcdir)/include/crypt.h
 	#$(top_srcdir)/helper/build-ver $(top_srcdir)
 
 magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
@@ -28,3 +31,6 @@ magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
 	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
 	cp magick magick.debug
 	strip magick
+
+all-am: Makefile $(PROGRAMS)
+	@rm -f $(top_srcdir)/include/crypt.h

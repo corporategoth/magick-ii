@@ -281,45 +281,8 @@ AC_CHECK_FUNCS(ltoa)
 AC_CHECK_FUNCS(ultoa)
 AC_CHECK_FUNCS(atoul)
 
-echo
-echo "======================================================"
-echo "We are about to setup your keyfile cryptography keys."
-echo "The keys you enter here are used only for one purpose,"
-echo "to encrypt the key file itself (so the REAL key is not"
-echo "stored in clear text at any stage).  The default keys"
-echo "are the system hostname and type for your system, it"
-echo "is recommended you change these to random text."
-echo
-echo "The keys you enter below will be scrambled by a simple"
-echo "character rotation scheme.  It is recommend you alter"
-echo "the amount of characters it is rotated by with the"
-echo "--with-scramble=x option, where x is a number."
-echo "======================================================"
-echo "Enter key 1 for keyfile encryption (`uname -n`):"
-read key1
-if test "x" = "x$key1"; then
-	key1=`uname -n`
-fi
-
-echo "Enter key 2 for keyfile encryption (`uname -s`):"
-read key2
-if test "x" = "x$key2"; then
-	key2=`uname -s`
-fi
-
-AC_ARG_WITH(scramble, [  --with-scramble=file    Amount of rotation for key scramble],
-	[SCRAMNUM=$withval], [SCRAMNUM=15])
-
-$CC -o scramble scramble.c >/dev/null 2>&1
-if test -x scramble; then
-    key1=`echo "$key1" | ./scramble $SCRAMNUM`
-    key2=`echo "$key2" | ./scramble $SCRAMNUM`
-else
-    SCRAMNUM=0
-fi
-
-AC_DEFINE_UNQUOTED(CRYPTO_SCRAMBLE, $SCRAMNUM)
-AC_DEFINE_UNQUOTED(CRYPTO_KEY1, "$key1")
-AC_DEFINE_UNQUOTED(CRYPTO_KEY2, "$key2")
+AC_ARG_WITH(keylen, [  --with-keylen=size        Maximum size of key (and keyfile)],
+	[AC_DEFINE_UNQUOTED(KEYLEN, $withval)],
+	[AC_DEFINE_UNQUOTED(KEYLEN, 1024)])
 
 AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/antlr/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/antlr/Makefile include/des/Makefile include/xml/Makefile )

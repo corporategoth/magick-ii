@@ -3,5 +3,6 @@ Makefile.in
 *.~?
 *~
 config.h
+crypt.h
 stamp-h*
 version.h
