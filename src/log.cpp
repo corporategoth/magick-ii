@@ -101,7 +101,7 @@ void wxLogGeneric(wxLogLevel level, const char *szFormat, ...)
     }                                                             \
   }
 
-IMPLEMENT_LOG_FUNCTION(FatalError)
+IMPLEMENT_LOG_FUNCTION(Fatal)
 IMPLEMENT_LOG_FUNCTION(Error)
 IMPLEMENT_LOG_FUNCTION(Warning)
 IMPLEMENT_LOG_FUNCTION(Notice)
@@ -228,7 +228,7 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
   mstring str = TimeStamp();
 
   switch ( level ) {
-    case wxLOG_FatalError:
+    case wxLOG_Fatal:
       DoLogString(str << "Fatal error: " << szString);
       DoLogString("Program aborted.");
       Flush();

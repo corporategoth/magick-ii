@@ -28,7 +28,7 @@
 // different standard log levels (you may also define your own)
 enum
 {
-  wxLOG_FatalError, // program can't continue, abort immediately
+  wxLOG_Fatal, // program can't continue, abort immediately
   wxLOG_Error,      // a serious error, user must be informed about it
   wxLOG_Warning,    // user is normally informed about it but may be ignored
   wxLOG_Notice,     // normal message (i.e. normal output of a non GUI app)
@@ -199,7 +199,7 @@ private:
 DECLARE_LOG_FUNCTION2(Generic, wxLogLevel level);
 
 // one function per each level
-DECLARE_LOG_FUNCTION(FatalError);
+DECLARE_LOG_FUNCTION(Fatal);
 DECLARE_LOG_FUNCTION(Error);
 DECLARE_LOG_FUNCTION(Warning);
 DECLARE_LOG_FUNCTION(Notice);

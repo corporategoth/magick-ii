@@ -55,7 +55,7 @@ int Magick::Start()
 
     CP(("Magick II has been started ..."));
     // We log to STDERR until we find our logfile...
-    logger=new wxLogStderr(logfile);
+    logger=new wxLogStderr();
 
     if(bob.StartBob("")==false)
     {
@@ -143,7 +143,7 @@ int Magick::Start()
 #else
     FILE *logfile = fopen((wxGetCwd()+"/"+Files_LOGFILE).c_str(), "w+");
 #endif
-    logger.ChangeFile(logfile);
+    logger->ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
