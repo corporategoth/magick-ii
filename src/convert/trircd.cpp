@@ -1970,7 +1970,7 @@ void trircd_reset_levels(trircd_ChanInfo *ci)
 	ci->levels[trircd_def_levels[i][0]] = trircd_def_levels[i][1];
 }
 
-mstring trircd_getmodes(short modes)
+mstring trircd_getmodes(int modes)
 {
     BTCB();
     mstring retval;
@@ -2532,7 +2532,7 @@ Nick_Stored_t *Convert::trircd_CreateNickEntry(trircd_NickInfo * ni)
     ETCB();
 }
 
-void Convert::trircd_UpdateNickEntry(trircd_NickExt * ne, char *name)
+void Convert::trircd_UpdateNickEntry(trircd_NickExt * ne, const char *name)
 {
     BTCB();
     int i;
@@ -2760,7 +2760,7 @@ Chan_Stored_t *Convert::Convert::trircd_CreateChanEntry(trircd_ChanInfo * ci)
     ETCB();
 }
 
-void Convert::trircd_UpdateChanEntry(trircd_ChanExt * ce, char *name)
+void Convert::trircd_UpdateChanEntry(trircd_ChanExt * ce, const char *name)
 {
     BTCB();
     static_cast<void>(ce);

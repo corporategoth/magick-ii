@@ -2106,7 +2106,7 @@ Nick_Stored_t *Convert::epona_CreateNickEntry(epona_NickAlias * na, epona_NickCo
     ETCB();
 }
 
-static mstring epona_getmodes(int16 modes)
+static mstring epona_getmodes(int32 modes)
 {
     BTCB();
     mstring retval;

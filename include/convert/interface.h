@@ -98,8 +98,11 @@ struct trircd_MemoInfo;
 struct trircd_NickExt;
 struct trircd_ChanExt;
 struct ircservices_NickInfo;
+struct ircservices_NickGroupInfo;
 struct ircservices_ChanInfo;
 struct ircservices_MemoInfo;
+struct ircservices_NickExt;
+struct ircservices_ChanExt;
 
 class Convert
 {
@@ -146,14 +149,16 @@ public:
     static MemoServ::channel_news_t ptlink_CreateNewsEntry(ptlink_MemoInfo *ml, const char *name);
 
     static Nick_Stored_t *trircd_CreateNickEntry(trircd_NickInfo *ni);
-    static void trircd_UpdateNickEntry(trircd_NickExt *ne, char *name);
+    static void trircd_UpdateNickEntry(trircd_NickExt *ne, const char *name);
     static Chan_Stored_t *trircd_CreateChanEntry(trircd_ChanInfo *ci);
-    static void trircd_UpdateChanEntry(trircd_ChanExt *ne, char *name);
+    static void trircd_UpdateChanEntry(trircd_ChanExt *ne, const char *name);
     static MemoServ::nick_memo_t trircd_CreateMemoEntry(trircd_MemoInfo *ml, const char *name);
     static MemoServ::channel_news_t trircd_CreateNewsEntry(trircd_MemoInfo *ml, const char *name);
 
-    static Nick_Stored_t *ircservices_CreateNickEntry(ircservices_NickInfo *ni);
+    static Nick_Stored_t *ircservices_CreateNickEntry(ircservices_NickInfo *ni, ircservices_NickGroupInfo *ngi);
+    static void ircservices_UpdateNickEntry(ircservices_NickExt *ne, const char *name);
     static Chan_Stored_t *ircservices_CreateChanEntry(ircservices_ChanInfo *ci);
+    static void ircservices_UpdateChanEntry(ircservices_ChanExt *ne, const char *name);
     static MemoServ::nick_memo_t ircservices_CreateMemoEntry(ircservices_MemoInfo *ml, const char *name);
     static MemoServ::channel_news_t ircservices_CreateNewsEntry(ircservices_MemoInfo *ml, const char *name);
 };

@@ -39,12 +39,12 @@ RCSID(convert_ircservices_h, "@(#) $Id$");
  * (c) 1996-2002 Andrew Church <achurch@dragonfire.net>
  */
 
-void trircd_load_nick();
-void trircd_load_chan();
-void trircd_load_news();
-void trircd_load_akill();
-void trircd_load_oper();
-void trircd_load_exception();
+void ircservices_load_nick();
+void ircservices_load_chan();
+void ircservices_load_news();
+void ircservices_load_akill();
+void ircservices_load_oper();
+void ircservices_load_exception();
 
 #endif /* CONVERT */
 #endif /* _CONVERT_IRCSERVICES_H */

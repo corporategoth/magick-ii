@@ -65,15 +65,12 @@ void convert_db(convert_t c)
 	magick_load_message();
 	break;
     case CONVERT_IRCSERVICES:
-/*
 	ircservices_load_nick();
 	ircservices_load_chan();
 	ircservices_load_news();
 	ircservices_load_akill();
 	ircservices_load_oper();
 	ircservices_load_exception();
-*/
-	LOG(LM_EMERGENCY, "COMMANDLINE/CANNOT_CONVERT", ("ircservices"));
 	break;
     case CONVERT_EPONA:
 	epona_load_nick();
