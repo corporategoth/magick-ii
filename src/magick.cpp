@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.254  2000/07/23 18:47:39  prez
+** Removed antlr, I dont think we need it, we dont use it!
+**
 ** Revision 1.253  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -269,8 +272,6 @@ static const char *ident = "@(#)$Id$";
 
 
 #include "magick.h"
-#include "EscLexer.hpp"
-#include "EscParser.hpp"
 #include "lockable.h"
 #include "utils.h"
 #include "mstream.h"
@@ -1131,27 +1132,6 @@ void Magick::LoadInternalMessages()
     }
     for (i=0; i<entries.size(); i++)
 	fconf.Read(entries[i], &Messages["DEFAULT"][entries[i]], mstring(""));
-}
-
-mstring Magick::parseEscapes(const mstring & in)
-{
-    FT("Magick::parseEscparse", (in));
-    // hmm doesn't *really* need a mutex here.
-    mstring Result;
-    strstream inputstream;
-    inputstream<<in;
-    EscLexer lexer(inputstream);
-    EscParser parser(lexer);
-    try
-    {
-	parser.expr();
-    }
-    catch(ParserException &E)
-    {
-	//todo
-	Log(LM_WARNING, getLogMessage("SYS_ERROR/EXCEPTION"),E.line,E.column,E.getMessage().c_str());
-    }
-    RET(lexer.retstring);
 }
 
 bool Magick::LoadExternalMessages(mstring language)
