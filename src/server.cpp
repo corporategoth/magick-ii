@@ -268,6 +268,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="AKILL")
 	{
+	    // We will ignore AKILLS because they're not relivant to us.
+	    // we will not be akilling our own clients ;P
 	}
 	else if (msgtype=="AWAY")
 	{
@@ -285,8 +287,19 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="CONNECT")
 	{
 	    // :source CONNECT some.server port :our.server
-	    Send("NOTICE " + source + " :Connect: Host " +
-		data.ExtractWord(3, ": ") + " not listed in irc.conf");
+	    if (IsServer(data.ExtractWord(3, ": "))
+	    {
+		// Already connected
+	    }
+	    else if (data.ExtractWord(3, ": ").LowerCase() == Parent->Setup_SERVER_NAME.LowerCase())
+	    {
+		// Look mom! its us!
+	    }
+	    else
+	    {
+		Send("NOTICE " + source + " :Connect: Host " +
+			data.ExtractWord(3, ": ") + " not listed in irc.conf");
+	    }
 	}
 	break;
     case 'D':
@@ -303,17 +316,22 @@ void NetworkServ::execute(const mstring & data)
     case 'G':
 	if (msgtype=="GLINE")
 	{
+	    // We will ignore GLINES because they're not relivant to us.
+	    // we will not be glining our own clients ;P
 	}
 	else if (msgtype=="GLOBOPS")
 	{
 	    // :source GLOBOPS :This message
+	    // useless chatter ... can be ignored.
 	}
 	else if (msgtype=="GNOTICE")
 	{
 	    // :server GNOTICE :This message
+	    wxLogInfo("SERVER MESSAGE: %s", data.After(":").c_str());
 	}
 	else if (msgtype=="GOPER")
 	{
+	    // useless chatter ... can be ignored.
 	}
 	break;
     case 'H':
@@ -322,8 +340,8 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="INFO")
 	{
 	    // :source INFO :server/nick
-	    for (int i=0; i<sizeof(credits)/sizeof(mstring); i++)
-		SendSVR("371 " + source + " :" + credits[i]);
+	    for (int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
+		SendSVR("371 " + source + " :" + contrib[i]);
 	    SendSVR("374 " + source + " :End of /INFO report");
 	}
 	else if (msgtype=="INVITE")
@@ -333,6 +351,8 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="ISON")
 	{
 	    // repl: :our.server 303 source :local.nick
+	    if (Parent->nickserv.IsLive(source))
+		SendSVR("303 " + source + " :" + data.ExtractWord(3, ": "));
 	}
 	break;
     case 'J':
@@ -372,6 +392,17 @@ void NetworkServ::execute(const mstring & data)
 	    //:ChanServ LINKS :temple.magick.tm
 	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
 	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
+	    SendSVR("364 " + source + " " + Parent->Setup_SERVER_NAME + " " +
+		Parent->Setup_SERVER_NAME + " :0 " + Parent->Setup_SERVER_DESC);
+
+	    map<mstring,Server>::iterator serv;
+	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
+	    {
+		SendSVR("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
+			+ " :" + serv->second.Hops() + " " + serv->second.Description());
+	    }
+
+	    SendSVR("365 " + source + " " + Parent->Setup_SERVER_NAME + " :End of /LINKS list.");
 
 	}
 	else if (msgtype=="LIST")
@@ -502,12 +533,16 @@ void NetworkServ::execute(const mstring & data)
     case 'R':
 	if (msgtype=="RAKILL")
 	{
+	    // We will ignore AKILLS because they're not relivant to us.
+	    // we will not be akilling our own clients ;P
 	}
 	else if (msgtype=="REHASH")
 	{
+	    // Will we ever get this via. net??
 	}
 	else if (msgtype=="RESTART")
 	{
+	    // Will we ever get this via. net??
 	}
 	break;
     case 'S':
@@ -540,6 +575,8 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="SQLINE")
 	{
+	    // We will ignore SQLINES because they're not relivant to us.
+	    // we will not be glining our own clients ;P
 	}
 	else if (msgtype=="SQUIT")
 	{
@@ -620,9 +657,13 @@ void NetworkServ::execute(const mstring & data)
     case 'U':
 	if (msgtype=="UNGLINE")
 	{
+	    // We will ignore GLINES because they're not relivant to us.
+	    // we will not be glining our own clients ;P
 	}
 	else if (msgtype=="UNSQLINE")
 	{
+	    // We will ignore SQLINES because they're not relivant to us.
+	    // we will not be glining our own clients ;P
 	}
 	else if (msgtype=="USER")
 	{
@@ -675,6 +716,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="WALLOPS")
 	{
 	    // :source WALLOPS :text
+	    // useless chatter ... can be ignored.
 	}
 	else if (msgtype=="WHO")
 	{
