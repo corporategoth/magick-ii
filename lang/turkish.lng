@@ -1,0 +1,759 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; English On-Line Language File
+; Translated By: Preston A. Elder <prez@magick.tm>
+; Please also edit the ERR_SYNTAX/TRANSLATED token to
+; reflect the above (this is displayed when someone
+; switches to your language).
+;
+; --------------------------------------------------------------
+;
+; This file is split up into sections.  These sections are so
+; that we can logically group responses together.  IF you change
+; the section names, or the response 'tags' within them, then
+; you will likely break Magick's responses.  IF you are a
+; developer and adding new sections, please note that they may
+; NOT have a '/' (forward-slash) or space in their name.
+;
+; Throughout this file there are various codes used for various
+; purposes, from making it look prettier on IRC, to replacing
+; the codes with a value direct from Magick.  There are three
+; tables listed below which outline the codes and their meanings.
+; All lines in this file starting with ';' are comments.  If your
+; response string has leading spaces, you MUST put a '\' in front
+; of the first space, else leading spaces are stripped.
+;
+; The C replacement codes are used to insert a value from Magick
+; into the string.  These should NEVER be removed, they must also
+; stay in the same ORDER as they are.  If they're removed or the
+; order in which they appear is changed, the results are undefined.
+; These are also known as 'live' or 'active' codes.
+;
+; The IRC beautifying codes are generally accepted codes that
+; have certain functions on ALL IRC clients.  The codes listed
+; are all 'control' codes, meaning you hold control then push
+; the key listed to insert the code.
+;
+; The mIRC colour codes are here for convenience, but it is NOT
+; recommended you use them, as there are a lot of IRC clients
+; (especially UNIX based) that will not be able to understand
+; them and make the output unreadable.  When using these codes,
+; to change just the foreground you use ^C# where # is the colour
+; code.  For foreground and background, you use ^C#,#.  To reset
+; the text back to 'no colour' you just use ^C.
+;
+; --------------------------------------------------------------
+;
+; C replacement codes:
+;   %s = String         %c = Single Character
+;   %d = Integer        %f = Numeric (with DP's)
+;   %o = Octal          %x = Hexadecimal
+;   %% = Literal %      %g = Like %f
+; Please see the manual page on C formatting characters
+; (included with Magick, or available with the command
+; 'man format' or 'man formats' depending on the system).
+; Briefly tho, if a number is specified in between the %
+; and the letter, then it indicates the LENGTH of the
+; field in question (usually its not recommended you change
+; these).  If the number is negative, it forces it to be
+; LEFT justified.  If the number has a decimal point, then
+; it specifies how many digits appear AFTER the DP.
+;
+; IRC beautifying codes:
+;   ^B () = BOLD       - Make text between look brighter
+;   ^_ () = UNDERLINE  - Underline text between
+;   ^V () = REVERSE    - Switch foreground and background
+;   ^O () = CANCEL     - Back to non-bold/underline/reverse
+;   ^C () = COLOUR     - See below
+;
+; mIRC colour codes:
+;   0 = White           8  = Yellow
+;   1 = Black           9  = Bright Green
+;   2 = Blue            10 = Cyan
+;   3 = Green           11 = Bright Cyan
+;   4 = Red             12 = Bright Blue
+;   5 = Orange          13 = Bright Magenta
+;   6 = Magenta         14 = Grey
+;   7 = Bright Red      15 = Bright Grey
+; 
+
+;
+; This section describes SYNTAX errors, ie. errors where you have
+; entered the wrong data, or amount of data.
+;
+[ERR_SYNTAX]
+TRANSLATED         =Okan Erdem <okaner@iname.com>
+UNKNOWN_COMMAND    =Bilinmeyen komut %s.  Yardim icin /MSG %s HELP yazin.
+UNKNOWN_OPTION     =Bilinmeyen secenek %s.  Yardim icin /MSG %s HELP yazin.
+NEED_PARAMS        =%s icin yetersiz parametre.  Yardim icin /MSG %s HELP yazin.
+MUSTCONTAIN        =%s girisi bir '%c' karakterine sahip olmali.
+MAYNOTCONTAIN      =%s girisi bir '%c' karakterine sahip olmayabilir.
+STARTHRESH         =%s girisi %d den daha fazla wildcard (? *) olmayan girise sahip olmalidir.
+MUSTBENUMBER       =%d ile %d arasinda bir sayi belirlemelisiniz.
+POSWHOLENUMBER     =Sadece bir pozitif tamsayi belirleyebilirsiniz.
+MUSTBEONOFF        =Sadece "ON" veya "OFF" belirleyebilirsiniz.
+NONNUMERIC         =Numerik olmayan giris belirlendi (goz ardi edildi).
+ABOVELIMIT         =%d ustundeki tum girisler goz ardi edildi.
+CHANFILEATTACH     =Kanallara dosya eklentisi yasaktir.
+MULTI_MODE         =Bircok +/-%c modu belirlendi (goz ardi edildi).
+NOKEY              =Gerekli anahtar belirlenmedi (goz ardi edildi).
+NOLIMIT            =Gerekli limit belirlenmedi (goz ardi edildi).
+ 
+;
+; This section describes SITUATION errors, ie. errors where you have
+; not fulfilled all the correct criteria to continue.
+;
+[ERR_SITUATION]
+ONYOURSELF         =Kendi uzerinizde sadece %s uygulayabilirsiniz.
+NOTONYOURSELF      =Kendi uzerinizde %s uygulayamazsiniz.
+ONCOMMITTEE        =%s i sadece bir %s komitesi uyesi uzerinde uygulayabilirsiniz.
+NOTONCOMMITTEE     =%s i bir %s komitesi uyesi uzerinde uygulayamazsiniz.
+ONPRIVCOMMITTEE    =%s i sadece bir oncelikli komite uyesi uzerinde uygulayabilirsiniz.
+NOTONPRIVCOMMITTEE =%s i bir oncelikli komite uyesinde uygulamazsiniz.
+ONDYNAMIC          =Sadece bir dinamik komite uzerinde %s uygulayabilirsiniz.
+NOTONDYNAMIC       =Bir dinamik komite uzerinde %s uygulayamazsiniz.
+NEED_NICK_IDENT    =%s icin tanimlanmalisiniz.  /MSG %s IDENTIFY <password> yazin ve yeniden deneyin.
+NEED_CHAN_IDENT    =%s icin tanimlanmalisiniz.  /MSG %s IDENTIFY <password> yazin ve yeniden deneyin.
+COMPLEX_PASS       =Lutfen daha karmasik bir password seciniz.
+NICK_WRONG_PASS    =Password yanlis. Denemeniz kaydedildi.
+CHAN_WRONG_PASS    =Password kanal %s icin yanlis.  Denemeniz kaydedildi.
+IGNORE_TRIGGER     =IGNORE servisini actiniz (%d mesaj %s saniyede).
+TEMP_IGNORE        =%s kere reddedildiniz (maksimum %d).  Servisler %s icin cevap vermeyecek.
+PERM_IGNORE        =maksimum olan %d kere reddedildiniz.  Servisler daha fazla cevap vermeyecek.
+PROTECTED          =Bu nick icin KILL savunmasi var.  Kendinizi tanimlamazsaniz baglantiniz kesilecek.
+DEFCOMMITTEE       =Varsayilan komiteler degistirilemez.
+AKILLTOOHIGH       =Maksimum %s icin AKILL zaman limiti belirleyebilirsiniz.
+NOFLUSH            =Dosya eklentili notlar silinemez.
+NOATTACH           =Kanallara dosya eklentisi yapilamaz.
+FILEINPROG         =Dosya transferi yapilirken yeni bir not veya dosya transferi yapilamaz.
+COFOUNDER          =CoFounder ile Founder ayni olamaz.
+NOACCESS           =Giris reddedildi.
+
+;
+; This section contains miscellaneous outputs from Magick.  eg.
+; kill and kick messages, announcements, and a generic dictionary.
+;
+[MISC]
+KILL_PASS_FAIL     =Cok fazla password hatasi
+KILL_GHOST         =GHOST komutu kullanildi
+KILL_RECOVER       =RECOVER komutu kullanildi
+KILL_OPERDENY      =Reddedilmisken /OPER kullanildi.
+KICK_RESTRICTED    =Kanal yasaklanmistir.
+
+NICK_GETPASS       =%s nick %s (%s) uzerinde GETPASS uyguladi.
+CHAN_GETPASS       =%s kanal %s (%s) uzerinde GETPASS uyguladi.
+GLOBAL_MSG         =%s tum kullanicilara mesaj gonderdi.
+FLOOD_TEMP         =%s servisleri FLOODliyor.  Gecici olarak reddediliyor.
+FLOOD_PERM         =%s servisleri FLOODliyor.  Suresiz olarak reddediliyor.
+CHAN_MODE          =%s mode degistirmesi (%s) uyguladi. Kanal: %s.
+NICK_MODE          =%s mode degistirmesi (%s) uyguladi. Nick: %s.
+QLINE              =%s %s ile ilintili nicklere karantina baslatti.
+NOOP               =%s %s IRC Operator karantinasini server %s icin baslatti.
+KILL               =%s gizlice kullanici %s oldurdu.
+SHUTDOWN           =SHUTDOWN komutu %s tarafindan kullanildi.
+RELOAD             =%s server konfigurasyonunu yeniden yukledi.
+JUPE               =%s JUPED server %s.
+ONOFF              =Servisler %s. Degistiren: %s.
+ONOFF_ONE          =Servis %s %s. Degistiren: %s.
+
+BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
+BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
+ON                 =ON
+OFF                =OFF
+
+;
+; This section contains the output of the STATS command.
+;
+[STATS]
+GEN_UPTIME         =Servisler acik. Sure: %s.
+GEN_RESET          =Servislerin son resetlenmesi: %s 
+GEN_MAXUSERS       =Maksimum Kullanici : %d
+GEN_USERS          =Su Andaki Kullanici : %d (%d ops)
+GEN_CLONES         =Su Andaki Clonlar: %d (%d hosts)
+
+NICK_REGD          =Su Anda Kayitli: %d (%d linked)
+NICK_DENIED        =Su Anda Yasakli : %d (%d forbidden)
+NICK_CMD           =Basarili Komut Kullanimi:
+NICK_CMD1          =REGISTER   %10d / DROP       %10d
+NICK_CMD2          =LINK       %10d / UNLINK     %10d
+NICK_CMD3          =HOST       %10d / IDENTIFY   %10d
+NICK_CMD4          =GHOST      %10d / RECOVER    %10d
+NICK_CMD5          =SUSPEND    %10d / UNSUSPEND  %10d
+NICK_CMD6          =FORBID     %10d / GETPASS    %10d
+NICK_CMD7          =ACCESS     %10d / IGNORE     %10d
+NICK_CMD8          =SET        %10d / NOEXPIRE   %10d
+NICK_CMD9          =LOCK       %10d / UNLOCK     %10d
+
+CHAN_REGD          =Su Anda Kayitli: %d
+CHAN_DENIED        =Su Anda Yasakli : %d (%d forbidden)
+CHAN_CMD           =Basarili Komut Kullanimi:
+CHAN_CMD1          =REGISTER   %10d / DROP       %10d
+CHAN_CMD2          =IDENTIFY   %10d
+CHAN_CMD3          =SUSPEND    %10d / UNSUSPEND  %10d
+CHAN_CMD4          =FORBID     %10d / GETPASS    %10d
+CHAN_CMD5          =MODE       %10d / TOPIC      %10d
+CHAN_CMD6          =OP         %10d / DEOP       %10d
+CHAN_CMD7          =VOICE      %10d / DEVOICE    %10d
+CHAN_CMD8          =KICK       %10d / ANONKICK   %10d
+CHAN_CMD9          =INVITE     %10d / UNBAN      %10d
+CHAN_CMD10         =CLEAR      %10d / AKICK      %10d
+CHAN_CMD11         =LEVEL      %10d / ACCESS     %10d
+CHAN_CMD12         =GREET      %10d / MESSAGE    %10d
+CHAN_CMD13         =SET        %10d / NOEXPIRE   %10d
+CHAN_CMD14         =LOCK       %10d / UNLOCK     %10d
+
+OTH_MEMO           =Notu olan kullanici sayisi : %d
+OTH_NEWS           =Haber olan kanal sayisi    : %d
+OTH_COMM           =Aktif Komiteler            : %d
+OTH_CLONE          =Clone Override girisi      : %d
+OTH_AKILL          =AutoKill girisi            : %d
+OTH_OPERDENY       =OperDeny girisi            : %d
+OTH_IGNORE         =Ignore girisi              : %d
+
+OTH_CMD            =Basarili %s Komut Kullanimi:
+OTH_CMD1           =READ       %10d / UNREAD     %10d
+OTH_CMD2           =SEND       %10d / FLUSH      %10d
+OTH_CMD3           =REPLY      %10d / FORWARD    %10d
+OTH_CMD4           =CANCEL     %10d / DEL        %10d
+OTH_CMD5           =CONTINUE   %10d / FILE       %10d
+
+OTH_CMD6           =NEW        %10d / KILL       %10d
+OTH_CMD7           =ADD/DEL    %10d / MEMO       %10d
+OTH_CMD8           =LOGON      %10d / SET        %10d
+
+OTH_CMD9           =GLOBAL     %10d / CREDITS    %10d
+
+OTH_CMD10          =TRACE      %10d / MODE       %10d
+OTH_CMD11          =QLINE      %10d / UNQLINE    %10d
+OTH_CMD12          =NOOP       %10d / KILL       %10d
+OTH_CMD13          =PING       %10d / UPDATE     %10d
+OTH_CMD14          =RELOAD     %10d / UNLOAD     %10d
+OTH_CMD15          =JUPE       %10d / ON/OFF     %10d
+OTH_CMD16          =CLONE      %10d / AKILL      %10d
+OTH_CMD17          =OPERDENY   %10d / IGNORE     %10d
+
+
+USE_NS_LIVE        =Canli Nick          %5d (%dkb)
+USE_CS_LIVE        =Canli Kanal         %5d (%dkb)
+USE_NS_STORED      =Kayitli Nick        %5d (%dkb)
+USE_CS_STORED      =Kayitli Kanal       %5d (%dkb)
+USE_MEMO           =Kullanici Notlari   %5d (%dkb)
+USE_NEWS           =Haberler            %5d (%dkb)
+USE_COMMITTEE      =Komiteler           %5d (%dkb)
+USE_OPERSERV       =OperServ Listeleri  %5d (%dkb)
+USE_OTHER          =Digerleri           %5d (%dkb)
+USE_TOTAL          =TOPLAM              %5d (%dkb)
+
+
+;
+; This section contains ALL output from list modifying commands.
+;
+[LIST]
+LASTMOD            =Son degistirme %s once. Degistiren: %s.
+MAXLIST            =Bir kerede sadece %d girdi listeleyebilirsiniz.
+NICK_LIST          =%s ile ilintili nickler gosteriliyor:
+CHAN_LIST          =%s ile ilintili kanallar gosteriliyor:
+DISPLAYED          =%d girdi (toplam:%d) gosteriliyor.
+
+DISPLAY            =%s listesindeki tum nickler gosteriliyor:
+DISPLAY_MATCH      =%s ile ilintili %s listesindeki tum girdiler gosteriliyor:
+ADD                =%s girdisi %s listesine eklendi.
+ADD_NUMBER         =#%d girdisi %s listesine eklendi.
+ADD_LEVEL          =%s girdisi %s listesine %d seviyesinde eklendi.
+ADD_TIME           =%s girdisi %s listesine %s icin eklendi.
+CHANGE_LEVEL       =%s girdisi %s listesinde %d seviyesine cevrildi.
+CHANGE_TIME        =%s girdisi %s listesinde %s degerine cevrildi.
+DEL                =%s girdisi %s listesinden silindi.
+DEL_MATCH          =%d girdi %s ile ilintili %s listesinden silindi.
+DEL_NUMBER         =#%s girdi %s listesinden silindi.
+EXISTS             =%s girdisi zaten var veya %s listesinde bulunuyor.
+NOTEXISTS          =%s ile ilintili %s listesinde girdi yok.
+NOTEXISTS_NUMBER   =#%d girdisi %s listesinde.
+EMPTY              =%s listesinde girdi yok.
+
+DISPLAY2           =%s %s listesindeki tum girdiler gosteriliyor:
+DISPLAY2_MATCH     =%s ile ilintili %s %s listesindeki girdiler gosteriliyor:
+ADD2               =%s girdisi %s %s listesine eklendi.
+ADD2_NUMBER        =#%d girdisi %s %s listesine eklendi.
+ADD2_LEVEL         =%s girdisi %s %s listesine %d seviyesinde eklendi.
+ADD2_TIME          =%s girdisi %s %s listesine %s icin eklendi.
+CHANGE2_LEVEL      =%s girdisi %s %s listesinde %d seviyesine cevrildi.
+CHANGE2_TIME       =%s girdisi %s %s listesinde %s degerine cevrildi.
+DEL2               =%s girdisi %s %s listesinden silindi.
+DEL2_MATCH         =%d girdi %s ile ilintili oldugundan %s %s listesinden silindi.
+DEL2_NUMBER        =#%s girdisi %s %s listesinden silindi.
+EXISTS2            =%s girdisi zaten var veya %s %s listesinde bulunuyor.
+NOTEXISTS2         =%s ile ilintili %s %s listesinde girdi yok.
+NOTEXISTS2_NUMBER  =#%d girdisi %s %s listesinde girdi yok.
+EMPTY2             =%s %s listesinde girdi yok.
+
+ACCESS             =giris
+IGNORE             =not reddedildi
+LEVEL              =giris seviyesi
+AKICK              =otomatik kick
+GREET              =kanal karsilamasi
+JOINMSG            =join mesajlari
+MEMBER             =uye
+MESSAGES           =signon mesajlari
+CLONE              =clone override
+AKILL              =otomatik kill
+OPERDENY           =IRC operator reddi
+SIGNORE            =servisler reddedildi
+
+;
+; This section defines STATUS responses about OTHER nicknames.
+;
+[NS_OTH_STATUS]
+ISSTORED           =Nick %s zaten kayitli veya bagli.
+ISREGD             =Nick %s zaten kayitli.
+ISLINKED           =Nick %s zaten bagli.
+ISNOTSTORED        =Nick %s kayitli veya bagli degil.
+ISNOTREGD          =Nick %s kayitli degil.
+ISNOTLINKED        =Nick %s bagli degil.
+ISFORBIDDEN        =Nick %s yasakli.
+ISSUSPENDED        =Nick %s askida.
+ISNOTSUSPENDED     =Nick %s serbest.
+ISHOST             =Nick %s bir host.
+ISNOTHOST          =Nick %s host degil.
+IDENTIFIED         =Zaten nick %s olarak tanimlisiniz.
+ISLOCKED           =%s secenegi %s nicki icin kilitli.
+ISNOTLOCKED        =%s secenegi %s nicki icin kilitli degil.
+
+ISNOTYOURS         =Nick %s size bagli degil.
+ISINUSE            =Nick %s su anda kullanimda.
+ISNOTINUSE         =Nick %s su anda kullanilmiyor.
+
+;
+; This section defines STATUS responses about YOUR nicknames.
+;
+[NS_YOU_STATUS]
+ISSTORED           =Nickiniz zaten kayitli veya bagli.
+ISREGD             =Nickiniz zaten kayitli.
+ISLINKED           =Nickiniz zaten bagli.
+ISNOTSTORED        =Nickiniz kayitli veya bagli degil.
+ISNOTREGD          =Nickiniz kayitli degil.
+ISNOTLINKED        =Nickiniz bagli degil.
+ISFORBIDDEN        =Nickiniz yasakli.
+ISSUSPENDED        =Nickiniz askida.
+ISNOTSUSPENDED     =Nickiniz askida degil.
+ISHOST             =Nickiniz bir host.
+ISNOTHOST          =Nickiniz bir host degil.
+IDENTIFIED         =Zaten tanimlisiniz.
+ISLOCKED           =%s secenegi kilitli.
+ISNOTLOCKED        =%s secenegi kilitli degil.
+
+PICDISABLED        =Resim saklama KAPALI.
+
+;
+; These responses are ONLY for the NickServ INFO command.
+;
+[NS_INFO]
+REALNAME           =%s aslinda %s.
+HOST               =\    Host Nicki: %s
+REGISTERED         =\       Kayitli: %s%s
+ONLINEAS           =\        Online: %s
+LASTALLMASK        =\ En Son T.Mask: %s
+LASTALLSEEN        =\Son Kez Online: %s
+LASTMASK           =\  En Son Maski: %s
+LASTSEEN           =\       Son Kez: %s
+QUITMSG            =\      Quit MSG: %s
+SUSPEND            =\        Askida: %s once %s tarafindan
+SUSPENDFOR         =\          Ýcin: %s
+EMAIL              =\        E-Mail: %s
+URL                =\   WWW Sayfasi: %s
+ICQ                =\         ICQ #: %s
+DESCRIPTION        =\      Aciklama: %s
+COMMENT            =\         Yorum: %s
+COMMITTEES         =\     Komiteler: %s
+OPTIONS            =\    Secenekler: %s
+HASPIC             =Bu kullanicinin bir resmi var. /MSG %s SEND %s yazarak bu resmi alabilirsiniz.
+ISONLINE           =Bu kullanici su an online.  Type /whois %s yazarak kullanici hakkinda daha detayli bilgi alabilirsiniz.
+NOEXPIRE           =bitmeyen
+
+;
+; Textural names for the available SET's (NickServ).
+;
+[NS_SET]
+PASSWORD           =Password
+EMAIL              =E-Mail adresi
+URL                =WWW Sayfasi
+ICQ                =ICQ numarasi
+DESCRIPTION        =Fiziksel Tanimi
+COMMENT            =Yorum
+PROTECT            =Kill Korumasi
+SECURE             =Guvenli
+NOEXPIRE           =Bitmeyen
+NOMEMO             =Notlari Reddediyor
+PRIVATE            =Ozel
+PRIVMSG            =OZELMSG
+LANGUAGE           =Dil
+
+;
+; This section contains the output used at the end of SUCCESSFULL
+; NickServ command performed on OTHER nicknames.
+;
+[NS_OTH_COMMAND]
+REGISTERED         =Nick %s su an host %s altinda kayitli.
+LINKED             =Nick %s su an %s ile baglantili.
+DROPPED            =Nick %s birikildi.
+UNLINKED           =Nick %s baglantisi koparildi.
+NEWHOST            =Nick %s artik host.
+IDENTIFIED         =Password dogru- artik nick %s icin tanimlisiniz.
+SET_TO             =%s nick %s icin %s olarak ayarli.
+UNSET              =%s nick %s icin ayarsiz.
+OPT_SET_TO         =%s secenegi nickname %s icin %s olarak ayarli.
+
+RELEASED           =%s nickine sahip araci su an hattan koparildi.
+HELD               =%s nicki servisler tarafindan tutuluyor.
+SUSPENDED          =%s nicki askida.
+UNSUSPENDED        =%s nicki serbest birakildi.
+FORBIDDEN          =%s nicki yasaklandi.
+GETPASS            =%s (%s) nickinin passwordu %s. 
+LOCKED             =%s %s nicki icin %s olarak KILITLENDI.
+UNLOCKED           =%s %s nicki icin ACILDI.
+OPT_LOCKED         =%s secenegi %s nicki icin %s olarak KILITLENDI.
+OPT_UNLOCKED       =%s secenegi %s nicki icin ACILDI.
+
+;
+; This section contains the output used at the end of SUCCESSFULL
+; NickServ command performed on YOUR nicknames.
+;
+[NS_YOU_COMMAND]
+REGISTERED         =Nickiniz %s hostu altinda kaydedildi.
+LINKED             =Nickiniz %s ile baglandi.
+DROPPED            =Nickiniz birakildi.
+UNLINKED           =Nickinizin baglantisi koparildi.
+NEWHOST            =Nickiniz artik host.
+IDENTIFIED         =Password dogru- artik tanimlisiniz.
+SET_TO             =%s iniz %s olarak ayarli.
+UNSET              =%s iniz ayarsiz.
+OPT_SET_TO         =%s secenegi %s olarak ayarlandi.
+
+PENDING            =Lutfen simdi resminizi yollayiniz.
+CANCEL             =Bekleyen dosya transferi iptal edildi.
+SAVED              =Resminiz kaydedildi.
+REMOVED            =Resminiz kaldirildi.
+
+
+;
+; Responses ONLY for the ChanServ INFO command.
+;
+[CS_INFO]
+IS                 =%s hakkinda bilgi:
+FOUNDER            =\    Founder: %s
+COFOUNDER          =\  CoFounder: %s
+DESCRIPTION        =Aciklama: %s
+REGISTERED         =\    Kayitli: %s%s
+INUSEBY            =\ Kullanimda: %s
+LASTUSED           =\SonKullanim: %s
+EMAIL              =\     E-Mail: %s
+URL                =\WWW Sayfasi: %s
+SUSPEND            =\     Askida: %s ago by %s
+SUSPENDFOR         =\       Icin: %s
+COMMENT            =\      Yorum: %s
+TOPIC              =\   Son Konu: %s
+TOPICBY            =\     Ayarli: %s ago by %s
+MLOCK              =\Mode Kiliti: %s
+REVENGE            =\    Intikam: %s
+BANTIME            =Yasak Iptal: %s
+OPTIONS            =\ Secenekler: %s
+
+NOEXPIRE           =bitmeyen
+OPS                =ops
+VOICES             =voices
+USERS              =kullanicilar
+SPLIT_USERS        =ayri kullanicilar
+
+
+;
+; Textural names for the available SET's (NickServ).
+;
+[CS_SET]
+FOUNDER            =Founder
+COFOUNDER          =CoFounder
+PASSWORD           =Password
+EMAIL              =E-Mail adresi
+URL                =WWW Sayfasi
+DESCRIPTION        =Aciklama
+COMMENT            =Yorum
+TOPIC              =Konu 
+MLOCK              =Mode Kiliti
+BANTIME            =Yasak Suresi
+KEEPTOPIC          =Konuyu Tut
+TOPICLOCK          =Konu Kilitli
+PRIVATE            =Ozel   
+SECUREOPS          =Guvenli Ops
+SECURE             =Guvenli
+NOEXPIRE           =Bitmeyen
+ANARCHY            =Anarsi
+RESTRICTED         =Sinirli
+JOIN               =Servisler Join
+REVENGE            =Imtikan seviyesi
+
+LVL_AUTODEOP       =Otomatik DeOp/Voice
+LVL_AUTOVOICE      =Otomatik Voice
+LVL_AUTOOP         =Otomatik Op
+LVL_READMEMO       =Haberleri oku
+LVL_WRITEMEMO      =Haberleri yaz
+LVL_DELMEMO        =Haberleri sil
+LVL_GREET          =Karsilama ayarla
+LVL_OVERGREET      =Karsilama kilitle
+LVL_MESSAGE        =On-Join Mesaji yaz
+LVL_AKICK          =AutoKick Ayarlari
+LVL_SUPER          =SuperOp
+LVL_UNBAN          =Unban Server Yasaklari
+LVL_ACCESS         =Giris List Ayarlari
+LVL_SET            =SET Ayarlanmasi
+LVL_VIEW           =Kanal Gorunumu
+LVL_CMDINVITE      =INVITE Komutu
+LVL_CMDUNBAN       =UNBAN Komutu
+LVL_CMDVOICE       =VOICE Komutu
+LVL_CMDOP          =OP Komutu
+LVL_CMDKICK        =KICK Komutu
+LVL_CMDMODE        =MODE Komutu
+LVL_CMDCLEAR       =CLEAR Komutu
+
+REV_NONE           =KAPALI
+REV_REVERSE        =Ters Aktivite
+REV_DEOP           =Sadece DeOp 
+REV_KICK           =Sadece Kick 
+REV_BAN1           =Nick (nick!*@*) Yasak
+REV_BAN2           =Mask (*!*user@*.host) Yasak
+REV_BAN3           =Port (*!*@port.host) Yasak
+REV_BAN4           =Host (*!*@*.host) Yasak
+REV_MIRROR         =Mirror Aktivitesi
+
+;
+; This section defines STATUS responses about channels.
+;
+[CS_STATUS]
+ISSTORED           =Kanal %s zaten tanimli.
+ISNOTSTORED        =Kanal %s tanimli degil.
+IN                 =Zaten %s kanalindasiniz.
+NOTIN              =%s kanalinda degilsiniz.
+OTH_IN             =%s nicki zaten %s kanalinda.
+OTH_NOTIN          =%s nicki %s kanalinda degil.
+OPPED              =%s kanalinda zaten opsunuz.
+NOTOPPED           =%s kanalinda op degilsiniz.
+OTH_OPPED          =%s nicki %s kanalinda zaten oplanmis.
+OTH_NOTOPPED       =%s nicki %s kanalinda oplanmamis.
+VOICED             =%s kanalinda voice almissiniz.
+NOTVOICED          =%s kanalinda voice almamissiniz.
+OTH_VOICED         =%s nicki %s kanalinda zaten voice almis.
+OTH_NOTVOICED      =%s nicki %s kanalinda voice almamis.
+BANNED             =%s kanalinda zaten banlisiniz.
+NOTBANNED          =%s kanalinda banli degilsiniz.
+OTH_BANNED         =%s nicki %s kanalinda zaten banli.
+OTH_NOTBANNED      =%s nicki %s kanalinda banli degil.
+IDENTIFIED         =%s kanali icin tanimlandiniz.
+ISFORBIDDEN        =%s kanali yasakli.
+ISNOTFORBIDDEN     =%s kanali yasakli degil.
+ISINUSE            =%s kanali su anda kullanimda.
+ISNOTINUSE         =%s kanali su anda kullanilmiyor.
+RESTRICT           =%s kanali kayitli ve %s ayarli.  Giris sinirlamalari uygulaniyor.
+HIGHERACCESS       =%s nicki %s giris listesinde oncelikli.
+LOCKGREET          =Kanal %s icin karsilamaniz kitlendi.
+NOTLOCKGREET       =Kanal %s icin karsilamaniz kitli degil.
+ISLOCKED           =%s kanal %s icin kilitli.
+ISNOTLOCKED        =%s kanal %s icin kilitli degil.
+NOREVENGE          =%s intikam seviyesi gecersiz.
+
+;
+; This section contains the output used at the end of SUCCESSFULL
+; ChanServ commands.
+;
+[CS_COMMAND]
+REGISTERED         =Kanal %s founder %s ile kaydedildi.
+DROPPED            =Kanal %s birakildi.
+IDENTIFIED         =Password dogru - kanal %s founderi olarak tanimlandiniz.
+SET_TO             =%s kanal %s icin %s olarak ayarlandi.
+UNSET              =%s kanal %s icin ayarsiz.
+LOCKED             =%s kanal %s icin %s olarak KILITLENDI.
+UNLOCKED           =%s kanal %s icin ACIK.
+MLOCK_REVERSED     =Mode kiliti cevrildi %s.
+MLOCK_FORCED       =Mode kiliti zorladi %s.
+MLOCK_SET          =Mode kiliti %s kanali icin %s olarak ayarlandi.
+MLOCK_UNSET        =Mode kiliti %s kanali icin kaldirildi.
+MLOCK_LOCK         =Mode kiliti %s kanali icin %s olarak KILITLENDI.
+MLOCK_UNLOCK       =Mode kiliti %s kanali icin acildi.
+SUSPENDED          =%s kanali askiya alindi.
+UNSUSPENDED        =%s kanali serbest birakildi.
+FORBIDDEN          =%s kanali yasakli.
+GETPASS            =%s (%s) kanali icin password %s.
+KICK               =%s (%s) istegi.
+INVITE             =%s kanalina davet edildiniz.
+OTH_INVITE         =%s kanalina %s tarafindan davet edildiniz.
+UNBANNED           =%s kanalinda BANiniz kaldirildi.
+OTH_UNBANNED       =%s nickinin %s kanalinda BANi kaldirildi.
+CLEAR              =%s komutu %s tarafindan %s kanali icin uygulandi.
+LEVEL_HEAD         =Level  TAG        Title (%s)
+LEVEL_LIST         =%5d  %-9s  %s
+LEVEL_HAVE         =%s giris seviyeniz %s kanali icin bulunmakta.
+
+;
+; This section contains the output used at the end of SUCCESSFULL
+; CommServ commands, as well as all status outputs..
+;
+[COMMSERV]
+ISSTORED           =%s komitesi zaten var.
+ISNOTSTORED        =%s komitesi yok.
+NOTMODIFY          =%s komitesi online degistirilemez.
+MULTI_HEAD         =%s komitesinin birden cok baskani var ve yeniden atanamaz.
+MEMBER             =%s komitesindesiniz.
+NOTMEMBER          =%s komitesinde degilsiniz.
+HEAD               =%s komitesinin baskanisiniz.
+NOTHEAD            =%s komitesinin baskani degilsiniz.
+OTH_MEMBER         =%s %s komitesinde.
+OTH_NOTMEMBER      =%s %s komiteside degil.
+OTH_HEAD           =%s %s komitesinin baskani.
+OTH_NOTHEAD        =%s %s komitesinin baskani degil.
+NEW                =%s komitesi %s baskanliginda yaratildi.
+KILL               =%s komitesi silindi.
+MEMO               =%s komitesinin tum uyelerine not gonderildi.
+SET_TO             =%s %s komitesi icin %s olarak ayarlandi.
+UNSET              =%s %s komitesi icin ayarlanmadi.
+DEFUNCT            =DEFUNCT
+
+;
+; These are the outputs for the CommServ INFO command ONLY.
+;
+[COMMSERV_INFO]
+DESCRIPTION        =%s is %s
+HEADCOM            =\  Baskan: %s
+HEAD               =\  Baskan: %s
+EMAIL              =\  E-Mail: %s
+URL                =WWW Sayfasi: %s
+STATS              =\   Stats: %s
+OPTIONS            =\Secenekler: %s
+MEMBERS            =uyeler
+MESSAGES           =mesajlar
+SET_HEAD           =Baskan
+SET_EMAIL          =E-Mail adresi
+SET_URL            =WWW Sayfasi
+SET_SECURE         =Guvenli
+SET_PRIVATE        =Ozel
+SET_OPENMEMOS      =Acik Notlar
+
+;
+; These are status output lines for OperServ
+;
+[OS_STATUS]
+INVALID_THREAD     =%s thread tipi gecersiz.
+INVALID_LEVEL      =%s izleme seviyesi gecersiz.
+ISLINKED           =Server %s zaten bagli.
+ISNOTLINKED        =Server %s bagli degil.
+ISLANG             =%s dili zaten yuklu.
+ISNOTLANG          =%s dili yuklu degil.
+NOLANG             =%s dili bulunmuyor.
+
+;
+; These are the output lines for the OperServ SETTINGS command ONLY.
+;
+[OS_SETTINGS]
+CFG_LEVEL          =Baz seviyesi %d, su anki seviye %d.
+CFG_LAG            =Lag %s duzeyinin ustune cikarsa kademe arttirilir.
+CFG_SERVERS        =Servisler %d servera baglanabilir.
+CFG_RELINK         =Servisler %s da yeniden baglanir (SQUIT durumunda).
+CFG_SQUIT1         =SQUIT korumasi %s kadar surer.
+CFG_SQUIT2         =Kullanicilar %s icinde yeniden baglanmalilar yada SQUIT korumasi aktiflesir.
+CFG_SYNC           =Bilgi bankasi her %s de kaydediliyor, ve her %s de senkronize oluyor.
+CFG_CYCLE          =Hiperaktif dongusu %s ve lag kontrolu %s.
+
+NICK_EXPIRE        =Nickler %s sonra iptal edilir.
+NICK_IDENT         =Kullanicilar %s icinde tanimlanmalilar.
+NICK_HOLD          =Tanimlanmadigi taktirde nickler %s kadar tutulur.
+NICK_PASS          =Kullanicilar %d kerede tanimlanamazsa atilirlar.
+NICK_OPTIONS       =Ayarli nick secenekleri: %s
+NICK_LANG          =Ayarli dil %s.
+NICK_PICSIZE       =Maksimum resim buyuklugu %d bytes.
+NICK_PICEXT        =Gecerli resim dosyalari: %s
+NICK_FILES         =Kullanicilarin %d dosyasi %d bytes herbiri icin olmak uzere yapilabilir.
+
+CHAN_EXPIRE        =Kanal %s sonra silinir.
+CHAN_IDENT         =Kullanicilar %d kerede tanimlanamazsa atilir.
+CHAN_KEEPTIME      =Kanallar son kullanicigi AKICKledikten %s kadar sonraya kadar tutulur.
+CHAN_BANTIME       =Ayarli ban tutma suresi %s.
+CHAN_MLOCK         =Ayarli mode kiliti "%s", "%s" modlari zorunlu.
+CHAN_OPTIONS       =Ayarli kanal secenekleri: %s
+CHAN_REVENGE       =Ayarli intikam seviyesi %s.
+CHAN_ACCESS        =Minimum giris seviyesi %d, maksimum %d.
+CHAN_NEWS          =Haberler %s kadar sonra silinir.
+
+MISC_INFLIGHT      =Notlar %s icin ucusta.
+MISC_AKILL1        =Ayarli AutoKill zamani %s.
+MISC_AKILL2        =Maksimum AutoKill zamanlari (komiteden):
+MISC_AKILL3        =    %s: %s
+MISC_CLONES        =Kullanicilar her host icin %d kadar clone a sahip olabilirler, %d kadara kadar override olur.
+MISC_FLOOD1        =Flood %d mesajla acildi. %s.
+MISC_FLOOD2        =Servisler %s kadar eski flood acilmalarini hatirlar.
+MISC_IGNORE        =Ignore %s kadar surer ve %d kerede surekli olur.
+MISC_COMM_OPT      =Ayarli komite secenekleri: %s
+
+;
+; This section contains the output used at the end of SUCCESSFULL
+; OperServ commands.
+;
+[OS_COMMAND]
+CHAN_MODE          =%s mode degisimi %s kanali icin gonderildi.
+NICK_MODE          =%s mode degisimi %s nicki icin gonderildi.
+QLINE              =%s ile ilintili nickler icin karantina %s.
+NOOP               =IRC Operator karantinasi %s ,server %s.
+KILL               =%s kullanicisi sessizce atildi.
+PING               =PING mesaji tum serverlara gonderildi.
+UPDATE             =Bilgi bankalari kaydedildi.
+SHUTDOWN           =Kapaniyor ...
+RELOAD             =Konfigurasyon dosyasi yeniden yuklendi.
+RELOAD_FAIL        =UYARI: Konfigurasyon dosyasi okunamadi.
+UNLOAD             =%s dili geri yuklendi.
+JUPE               =Server %s juplandi.
+ONOFF              =Servisler %s.
+ONOFF_ONE          =Servis %s %s.
+
+;
+; These are MemoServ status responses.
+;
+[MS_STATUS]
+CS_EMPTY           =%s kanalinda haber yok.
+CS_UNREAD          =%s kanalinda yeni %d haber var.  Gormek icin /MSG %s LIST %s yaziniz.
+CS_NOUNREAD        =%s kanalinda okunmamis haber yok.
+NS_EMPTY           =Notunuz yok.
+NS_UNREAD          =%d yeni notunuz var.  Gormek icin /MSG %s LIST yaziniz.
+NS_NOUNREAD        =Yeni haber notunuz yok.
+IGNORE             =%s nicki notlarinizi reddediyor.
+TRUNCATE           =Mesaj "...%s" noktasinda kesildi.  Devami icin /MSG %s CONTINUE <text> yaziniz.
+PENDING            =Gonderilmeyi bekleyen notlariniz var.
+NOPENDING          =Gonderilmeyi bekleyen notunuz yok.
+FILEDISABLED       =Notlari dosya eklentisi yapilmasi KAPALI.
+FORWARD            =[FORWARD: %s] %s
+FORWARD_ARG        =[FORWARD(%s): %s] %s
+REPLY              =[REPLY: "%s"] %s
+REPLY_ARG          =[REPLY(%s): "%s"] %s
+
+;
+; This section contains the output used at the end of SUCCESSFULL
+; MemoServ commands.
+;
+[MS_COMMAND]
+NEWS               =#%d %s dan %s a %s once gonderilmis.
+NEWS_LIST          =%c#%d %s dan %s a %s once - "%s"
+MEMO               =#%d %s dan %s once
+.
+MEMO_LIST          =%c#%d %s dan %s once gonderildi - "%s"
+CS_UNREAD          =%s haberleri %s kanalinda okunmamis hale getirildi.
+CS_UNREAD_ALL      =%s kanalindaki tum haberler okunmamis hale getirildi.
+NS_UNREAD          =%s notlariniz okunmamis hale getirildi.
+NS_UNREAD_ALL      =Tum notlariniz okunmamis hale getirildi.
+CS_NOTDEL          =%s heberleri %s kanali icin SILINMEDI.
+CS_DEL             =%s haberleri %s kanali icin silindi.
+CS_DEL_ALL         =%s kanali icin tum haberler silindi.
+NS_DEL             =%s notlariniz silindi.
+NS_DEL_ALL         =Tum notlariniz silindi.
+CANCEL             =Bekleyen notunuz iptal edildi.
+PENDING            =Not bekliyor.  Devam etmek icin %s e basin yada iptal edin.
+PENDING_FILE       =Not su an bekliyor.  Dosya transferine baslamak icin %s suresiniz var, devam edin yada iptal edin.
+CONTINUE           =Bekleyen notun suresi resetlendi.  Devam etmek icin %s e basin yada iptal edin.
+SENT               =Not gonderildi. Alici: %s (%s) .
+CS_NEW             =Yeni bir haber var (#%d) Kanal: %s Gonderen: %s.  Okumak icin /MSG %s READ %s %d yaziniz.
+NS_NEW             =Yani bir notunuz var (#%d).  Okumak icin /MSG %s READ %d yaziniz.
+
