@@ -7,6 +7,7 @@ Win32
 (c) msvc preferably v6 or above, or borland c++ builder v4
 (c) for compiling ace with borland on win9x, need an NT like cmd, (4nt for example)
 	also need to modify $ACE_ROOT\include\makeinclude\outputdir.bor and change mkdir to mkdir /s
+	also you need to use the -DPASCAL flag when making for magick to link to ace properly.
 (r) win32 (note not win32s)
 
 Note: bcc5.5 can now be obtained for free from 
