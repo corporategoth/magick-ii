@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2001/01/16 02:30:08  prez
+** Fixed the IsNumber so an IP address or +/- number matches
+**
 ** Revision 1.91  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -1033,14 +1036,36 @@ bool mstring::IsWord() const
 
 bool mstring::IsNumber() const
 {
-    bool retval = true;
+    bool retval = true, gotnum = false;
     lock_read();
+
+    // Accepts: [-|+]###.###  Must have at least one #
+    // Accepts multipal decimal places, so an IP address
+    // shows up as a number (easy way to say 'IsIp').
+
+    /* Required this way else will coredump on a blank
+     * string (ie. accessing i_str[i] of NULL) */
+    size_t i=0;
     if (i_str == NULL)
 	retval = false;
+    else if (i_str[i] == '-' || i_str[i] == '+')
+	i++;
 
-    for (size_t i=0; i<i_len; i++)
-	if (!isdigit(i_str[i]))
+    for (; i<i_len; i++)
+	if (i_str[i] == '.')
+	{
+	}
+	else if (isdigit(i_str[i]))
+	{
+	    gotnum = true;
+	}
+	else
+	{
 	    retval = false;
+	    break;
+	}
+    if (!gotnum)
+	retval = false;
 
     lock_rel();
     return retval;
