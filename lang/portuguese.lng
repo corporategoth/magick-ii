@@ -744,7 +744,7 @@ REPLY_ARG          =[REPLY(%s): "%s"] %s
 ;
 [MS_COMMAND]
 NEWS               =#%d de %s a %s emitiu %s há.
-NEWS_LIST          %c#%d de %s a %s emitiu %s há - " %s " # %d de %s %s emitido há.
+NEWS_LIST          =%c#%d de %s a %s emitiu %s há - " %s " # %d de %s %s emitido há.
 MEMO               =#%d from %s sent %s ago.
 MEMO_LIST          =%c#%d de %s %s emitido há
 CS_UNREAD          =os artigos %s da notícia de " %s " para a canaleta %s nao ta lido.

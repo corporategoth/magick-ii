@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/03/26 14:59:37  prez
+** LOADS of bugfixes due to testing in the real-time environment
+** Also enabled the SECURE OperServ option in the CFG file.
+**
 ** Revision 1.66  2000/03/15 15:02:47  prez
 ** Added checking for current ops matching an OPERDENY mask
 **
@@ -730,6 +734,10 @@ void OperServ::execute(const mstring & data)
 	    DccEngine::decodeRequest(mynick, source, message);
 	else
 	    DccEngine::decodeReply(mynick, source, message);
+    }
+    else if (Secure() && !Parent->nickserv.live[source.LowerCase()].HasMode("o"))
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
     }
     else if (!Parent->commands.DoCommand(mynick, source, command, message))
     {
@@ -2138,7 +2146,7 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	{
 	    if (Parent->server.proto.SVS())
 	    {
-		nlive->second.SendMode("-o");
+		nlive->second.SendMode("-oAa");
 	    }
 	    else
 	    {
@@ -2287,7 +2295,7 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 			    Parent->operserv.OperDeny->Last_Modify_Time().Ago().c_str(),
 			    Parent->operserv.OperDeny->Last_Modifier().c_str());
 	    ::send(mynick, source, "     %s",
-			    Parent->operserv.Akill->Value().second.c_str());
+			    Parent->operserv.OperDeny->Value().c_str());
 	    i++;
 	}
     }

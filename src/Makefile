@@ -15,7 +15,7 @@ OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) base.$(OBJ) chanserv.$(OBJ) \
 SUBDIRS=antlr des expat sxp
 
 OLDPWD=$(TOPDIR)/src
-all: SUBS RMLIB $(LIBNAME)
+all: SUBS $(LIBNAME)
 
 clean:
 	@for x in $(SUBDIRS); \
@@ -37,9 +37,6 @@ SUBS:
 		$(MAKE) $(PASSTHRU); \
 		cd $(OLDPWD); \
 	done
-
-RMLIB:
-	rm -f $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
 	@echo "Linking $@ ..."

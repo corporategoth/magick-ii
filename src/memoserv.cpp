@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/03/26 14:59:37  prez
+** LOADS of bugfixes due to testing in the real-time environment
+** Also enabled the SECURE OperServ option in the CFG file.
+**
 ** Revision 1.44  2000/03/23 10:22:25  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -377,7 +381,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		    {
 			iter->Read(whoami);
 			::send(mynick, source, Parent->getMessage("MS_COMMAND/NEWS"),
-				i, iter->Sender().c_str(), iter->Sender().c_str(),
+				j, iter->Sender().c_str(), iter->Sender().c_str(),
 				iter->Time().Ago().c_str());
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
@@ -496,7 +500,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		    {
 			iter->Read();
 			::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
-				i++, iter->Sender().c_str(),
+				j, iter->Sender().c_str(),
 				iter->Time().Ago().c_str());
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
@@ -883,9 +887,9 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	{
 	    output = "";
 	    if (iter->Text().size() > 20)
-		output << iter->Text().SubString(0, 19) << "...\"";
+		output << iter->Text().SubString(0, 19) << "...";
 	    else
-		output << iter->Text().SubString(0, iter->Text().size()-1) << "\"";
+		output << iter->Text().SubString(0, iter->Text().size()-1);
 
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NEWS_LIST"),
 		    iter->IsRead(whoami) ? ' ' : '*',
@@ -917,9 +921,9 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	{
 	    output = "";
 	    if (iter->Text().size() > 20)
-		output << iter->Text().SubString(0, 19) << "...\"";
+		output << iter->Text().SubString(0, 19) << "...";
 	    else
-		output << iter->Text().SubString(0, iter->Text().size()-1) << "\"";
+		output << iter->Text().SubString(0, iter->Text().size()-1);
 
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_LIST"),
 		    iter->IsRead() ? ' ' : '*',

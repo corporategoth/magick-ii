@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/03/26 14:59:37  prez
+** LOADS of bugfixes due to testing in the real-time environment
+** Also enabled the SECURE OperServ option in the CFG file.
+**
 ** Revision 1.69  2000/03/24 15:35:18  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -910,7 +914,7 @@ void Nick_Live_t::Mode(mstring in)
 		{
 		    if (Parent->server.proto.SVS())
 		    {
-			SendMode("-o");
+			SendMode("-oAa");
 		    }
 		    else
 		    {
@@ -3868,7 +3872,10 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     {
 	if (iter->second.Name().LowerCase().Matches(mask))
 	{
-	    if (i < listsize && iter->second.Host() == "" && (!iter->second.Private() ||
+	    if (iter->second.Host() != "")
+		continue;
+
+	    if (i < listsize && (!iter->second.Private() ||
 		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
 	    {
@@ -4075,14 +4082,14 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
     target = Parent->getSname(target);
     // If we are NOT a SADMIN, and target is a PRIV GROUP.
     if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	!Parent->commserv.list[Parent->commserv.SADMIN_Name().LowerCase()].IsIn(source) &&
-	(Parent->commserv.list[Parent->commserv.SADMIN_Name().LowerCase()].IsIn(target) ||
+	!Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(source) &&
+	(Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(target) ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(target)) ||
+	Parent->commserv.list[Parent->commserv.SOP_Name()].IsIn(target)) ||
 	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.ADMIN_Name().LowerCase()].IsIn(target)) ||
+	Parent->commserv.list[Parent->commserv.ADMIN_Name()].IsIn(target)) ||
 	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name().LowerCase()].IsIn(target))))
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(target))))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONPRIVCOMMITTEE"),
 						message.c_str());
@@ -5345,7 +5352,7 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/LOCKED"),
 			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
 			nickname.c_str(), mstring(lang + " (" +
-			Parent->getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
+			Parent->getMessageL(lang, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
 }
 
 void NickServ::do_unlock_Protect(mstring mynick, mstring source, mstring params)

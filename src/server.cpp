@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/03/26 14:59:37  prez
+** LOADS of bugfixes due to testing in the real-time environment
+** Also enabled the SECURE OperServ option in the CFG file.
+**
 ** Revision 1.81  2000/03/24 15:35:18  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -236,7 +240,19 @@ void Protocol::Set(unsigned int in)
 	i_SVS = true;
 	i_Akill = 1;
 	break;
-    case 50: /* Relic */
+    case 50: /* Relic 2.0 */
+	i_Tokens = true;
+	i_SVS = true;
+	i_Globops = true;
+	i_P12 = true;
+	i_Signon = 1001;
+	i_Akill = 1;
+	i_Modes = 6;
+	i_Server = "SERVER %s %d relic2.0 :%s";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	break;
+
+    case 51: /* Relic */
 	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
@@ -1916,10 +1932,9 @@ void NetworkServ::execute(const mstring & data)
 	    if (source.Contains(".") || source == "")
 		return;
 
-	    // OK, 4 words (always for squit), and both words in reason
-	    // are SERVERS, and one of them is the uplink of the other.
-	    if (data.WordCount(": ")==4 && IsServer(data.ExtractWord(3, ": ")) && IsServer(data.ExtractWord(4, ": ")))
-	    if (ServerList[data.ExtractWord(3, ": ").LowerCase()].Uplink() == data.ExtractWord(4, ": ").LowerCase() ||
+	    // OK, 4 words (always for squit), the 4nd word is a server
+	    // and the 3rd word is the uplink of the 4th word (a server)
+	    if (data.WordCount(": ")==4 && IsServer(data.ExtractWord(4, ": ")) &&
 		ServerList[data.ExtractWord(4, ": ").LowerCase()].Uplink() == data.ExtractWord(3, ": ").LowerCase())
 	    {
 		/* Suspected SQUIT
@@ -1943,15 +1958,18 @@ void NetworkServ::execute(const mstring & data)
 				new mstring(Parent->nickserv.live[sourceL].Server().LowerCase()),
 				ACE_Time_Value(10));
 		}
-		return; // Save else's, etc :)
 	    }
+	    else
+	    {
+		// Normal quit ...
 
-	    // Kind of illegal to do, but accomodate anyway, re-signon
-	    // services if someone quits them (how?!?)
-	    if (Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
-		sraw("ISON " + data.ExtractWord(3, ": "));
-	    Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
-	    Parent->nickserv.live.erase(sourceL);
+		// Kind of illegal to do, but accomodate anyway, re-signon
+		// services if someone quits them (how?!?)
+		if (Parent->nickserv.live[sourceL].IsServices())
+		    sraw("ISON " + sourceL);
+		Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
+		Parent->nickserv.live.erase(sourceL);
+	    }
 	}
 	else
 	{

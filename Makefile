@@ -30,13 +30,13 @@ SUBDIRS=$(ZDIR)
 # all libraries
 LIBS=$(SUBLIBS) $(LIBZ)
 
+EXEC=magick
+DBEXEC=$(EXEC).debug
+
 # --[ Dont edit below this line ]-----------------------------------------
 OLDPWD=$(TOPDIR)
 
 all: magick
-
-rmexec:
-	rm -f magick magick.debug
 
 magick: subdirs link
 
@@ -51,10 +51,12 @@ subdirs:
 		cd $(OLDPWD); \
 	done
 
-link:	rmexec
-	$(CC) $(LFLAGS) $(LIBS) -o magick
-	cp magick magick.debug
-	strip magick
+link:
+	$(CC) $(LFLAGS) $(LIBS) -o $(EXEC)
+	if [ -n "$(DBEXEC)" -a x$(EXEC) != x$(DBEXEC) ]; \
+	then	cp $(EXEC) $(DBEXEC); \
+	fi
+	strip $(EXEC)
 
 what:
 	$(CC) $(LFLAGS) -o what what.c
@@ -65,3 +67,4 @@ clean:
 		$(MAKE) clean TOPDIR=$(TOPDIR); \
 		cd $(OLDPWD); \
 	done
+	rm -f $(EXEC) $(DBEXEC)

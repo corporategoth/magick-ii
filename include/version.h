@@ -24,46 +24,24 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.76  2000/03/25 04:26:48  prez
+** Revision 1.77  2000/03/26 14:59:36  prez
+** LOADS of bugfixes due to testing in the real-time environment
+** Also enabled the SECURE OperServ option in the CFG file.
+**
+** Revision 1.11  2000/03/25 04:26:48  prez
 ** Added tracing into filesys for easier detection as to why it will not
 ** receive data.  Also put version number to a2 now, ready for release soon.
 **
-** Revision 1.75  2000/03/24 15:35:17  prez
-** Fixed establishment of DCC transfers, and some other misc stuff
-** (eg. small bug in trace, etc).  Still will not send or receive
-** any data through DCC tho (will time out, but not receive data,
-** error 14 - "Bad Access" -- to be investigated).
-**
-** Revision 1.74  2000/03/15 14:42:58  prez
-** Added variable AKILL types (including GLINE)
-**
-** Revision 1.73  2000/03/14 15:10:15  prez
-** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
-**
-** Revision 1.72  2000/03/14 13:37:35  prez
-** *** empty log message ***
-**
-** Revision 1.71  2000/03/14 10:02:48  prez
-** Added SJOIN and SNICK
-**
-** Revision 1.70  2000/03/08 23:38:36  prez
-** Added LIVE to nickserv/chanserv, added help funcitonality to all other
-** services, and a bunch of other small changes (token name changes, etc)
-**
-** Revision 1.69  2000/03/02 07:25:10  prez
-** Added stuff to do the chanserv greet timings (ie. only greet if a user has
-** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
-**
-** Revision 1.68  2000/02/27 03:58:39  prez
+** Revision 1.10  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
-** Revision 1.67  2000/02/23 12:21:02  prez
+** Revision 1.9  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
 ** that will be picked up by what or version, and we can now
 ** dump from a binary what versions of each file were used.
 **
-** Revision 1.66  2000/02/15 10:37:47  prez
+** Revision 1.8  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
 ** now on should include what changes were made to the files involved.
@@ -79,7 +57,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 249;
+const int BUILD_NUMBER = 13;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;
@@ -113,7 +91,7 @@ const mstring FULL_NAME		= "Magick IRC Services";
 const mstring FULL_EMAIL	= "magick@magick.tm";
 const mstring FULL_URL		= "http://www.magick.tm";
 const mstring PRODUCT		= "Magick";
-const mstring RELEASE		= "a2";
+const mstring RELEASE		= "pre-a2";
 const mstring PATCH1		= "";
 const mstring PATCH2		= "";
 const mstring PATCH3		= "";
@@ -129,7 +107,8 @@ const mstring credits[] = {
 "Magick IRC Services",
 "",
 "Magick is dedicated to the memory of PreZ's beloved",
-"sister, Stacey Louise Elder (Jan 1975 - Feb 1998).",
+"sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",
+"Ungod's brother Edward Kevin King (Aug 1982 - Nov 1997).",
 "",
 "The Magick home page can be found at:",
 "    http://www.magick.tm",
@@ -164,10 +143,10 @@ const mstring contrib[] = {
 "    Tschaicovski         If you dont understand ... you never will.",
 "",
 "Also Thanks To:",
-"    Kelly Hill, Emma Ellison, Marieke Bermon",
+"    Kelly Hill, Emma Ellison, Marieke Bermon, Matt Heckaman",
 "",
 "Library Creditations: ",
-"    ACE            http://www.cs.wustl.edu/~schmidt",
+"    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 "    wxWindows      http://web.ukonline.co.uk/julian.smart/wxwin",
 "    antlr          http://www.antlr.org",
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/03/26 14:59:36  prez
+** LOADS of bugfixes due to testing in the real-time environment
+** Also enabled the SECURE OperServ option in the CFG file.
+**
 ** Revision 1.44  2000/03/15 08:23:51  prez
 ** Added locking stuff for commserv options, and other stuff
 **
@@ -130,6 +134,8 @@ void Committee::operator=(const Committee &in)
     l_Secure = in.l_Secure;
     i_Private = in.i_Private;
     l_Private = in.l_Private;
+    i_Members = in.i_Members;
+    i_Messages = in.i_Messages;
 
     map<mstring, mstring>::const_iterator j;
     i_UserDef.clear();
@@ -2123,19 +2129,13 @@ void CommServ::save_database(wxOutputStream& out)
 {
     FT("CommServ::save_database", ("(wxOutputStream &) out"));
     size_t sz = list.size();
-    if (IsList(ALL_Name())) sz--;
-    if (IsList(REGD_Name())) sz--;
-    if (IsList(SADMIN_Name())) sz--;
 
     out<<sz;
     CP(("Saving COMMITTEE entries (%d) ...", sz));
     for(map<mstring,Committee>::iterator i=list.begin();i!=list.end();i++)
     {
-	if (!(i->first == ALL_Name() || i->first == REGD_Name() || i->first == SADMIN_Name()))
-	{
-	    out<<i->second;
-	    COM(("Entry COMMITTEE %s saved ...", i->second.Name().c_str()));
-	}
+	out<<i->second;
+	COM(("Entry COMMITTEE %s saved ...", i->second.Name().c_str()));
     }
 }
 
@@ -2143,9 +2143,21 @@ wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
 {
     out<<in.i_Name<<in.i_HeadCom<<in.i_Head<<in.i_Description;
 
-    out<<in.i_Members.size();
-    for(in.member=in.i_Members.begin();in.member!=in.i_Members.end();in.member++)
-	out<<(*in.member);
+    if (in.i_Name == Parent->commserv.ALL_Name()  ||
+	in.i_Name == Parent->commserv.REGD_Name() ||
+	in.i_Name == Parent->commserv.SADMIN_Name())
+    {
+	out<<(size_t) 0;
+    }
+    else
+    {
+	out<<in.i_Members.size();
+	for(in.member=in.i_Members.begin();in.member!=in.i_Members.end();in.member++)
+	{
+	    out<<(*in.member);
+	    COM(("Entry %s has been saved ...", in.member->Entry().c_str()));
+	}
+    }
 
     out<<in.i_OpenMemos<<in.i_Private<<in.i_Secure;
     out<<in.l_OpenMemos<<in.l_Private<<in.l_Secure;
@@ -2154,7 +2166,6 @@ wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
     for(in.message=in.i_Messages.begin();in.message!=in.i_Messages.end();in.message++)
 	out<<(*in.message);
 
-    COM(("Entry %s has been saved.", in.i_Name.c_str()));
     return out;
 }
 wxInputStream &operator>>(wxInputStream& in, Committee& out)
@@ -2167,10 +2178,22 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
 
     in>>locsize;
     out.i_Members.clear();
-    for(i=0;i<locsize;i++)
+    if (out.i_Name == Parent->commserv.SADMIN_Name())
     {
-	in>>locent;
-	out.i_Members.insert(locent);
+	for (int j=1; j<=Parent->operserv.Services_Admin.WordCount(", "); j++)
+	    out.i_Members.insert(entlist_t(
+		Parent->operserv.Services_Admin.ExtractWord(j, ", "),
+		Parent->operserv.FirstName()));
+    }
+    else if (!(out.i_Name == Parent->commserv.ALL_Name() ||
+		out.i_Name == Parent->commserv.REGD_Name()))
+    {
+	for(i=0;i<locsize;i++)
+	{
+	    in>>locent;
+	    out.i_Members.insert(locent);
+	    COM(("Entry %s has been loaded.", locent.Entry().c_str()));
+	}
     }
 
     in>>out.i_OpenMemos>>out.i_Private>>out.i_Secure;
@@ -2184,6 +2207,5 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
 	out.i_Messages.push_back(locent);
     }
 
-    COM(("Entry %s has been loaded.", out.i_Name.c_str()));
     return in;
 }

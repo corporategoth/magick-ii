@@ -1749,6 +1749,16 @@
 05 =REGD::also reset the pending timer to zero.  This is useful
 06 =REGD::if your memo was truncated when using the SEND command.
 
+[MEMOSERV/GET]
+01 =REGD::GET [NUM]
+02 =REGD::
+03 =REGD::This will retrieve file attachments from your memos.
+04 =REGD::You may specify a number, range of numbers (1-5), or
+05 =REGD::a list of numbers (1,3,5).  This command will cause
+06 =REGD::services to initiate a DCC SEND session with you.
+07 =REGD::The numbers specified may be obtained from the LIST
+08 =REGD::command.
+
 [MEMOSERV/FILE]
 01 =REGD::FILE <nickname> <filename> [message]
 02 =REGD::
@@ -2236,8 +2246,8 @@
 05 =OPER SOP::channel.  If modes are specified after the nick or
 06 =OPER SOP::channel, it will also attempt to set them.  You may
 07A=OPER:SOP:not set modes on a nickname.
-07B=SOP:OPER:set modes on a nickname as long as the IRC network
-08B=SOP:OPER:supports it (Please check with an IRC Admin).
+07B=SOP::set modes on a nickname as long as the IRC network
+08B=SOP::supports it (Please check with an IRC Admin).
 
 [OPERSERV/QLINE]
 01 =ADMIN::QLINE <mask>
@@ -2398,9 +2408,9 @@
 04 =OPER SOP::You may override that pre-defined number here.
 05 =OPER SOP::
 06A=OPER:SOP:You may view the clone override list with:
-06B=SOP:OPER:You may mainatin the clone override list with:
+06B=SOP::You may mainatin the clone override list with:
 07A=OPER:SOP:    LIST
-07B=SOP:OPER:    ADD          DEL          LIST
+07B=SOP::    ADD          DEL          LIST
 
 [OPERSERV/CLONE/ADD]
 01 =SOP::CLONE ADD <mask> <amount> <reason>
@@ -2477,9 +2487,9 @@
 04 =OPER SOP::until their admin can get online and deal with them.
 05 =OPER SOP::
 06A=OPER:SOP:You may view the oper deny list with:
-06B=SOP:OPER:You may mainatin the oper deny list with:
+06B=SOP::You may mainatin the oper deny list with:
 07A=OPER:SOP:    LIST
-07B=SOP:OPER:    ADD          DEL          LIST
+07B=SOP::    ADD          DEL          LIST
 
 [OPERSERV/OPERDENY/ADD]
 01 =SOP::OPERDENY ADD <mask>
@@ -2511,9 +2521,9 @@
 04 =OPER SOP::added to the permanent ignore list aswell.
 05 =OPER SOP::
 06A=OPER:SOP:You may view the permanent ignore list with:
-06B=SOP:OPER:You may mainatin the permanent ignore list with:
+06B=SOP::You may mainatin the permanent ignore list with:
 07A=OPER:SOP:    LIST
-07B=SOP:OPER:    ADD          DEL          LIST
+07B=SOP::    ADD          DEL          LIST
 
 [OPERSERV/IGNORE/ADD]
 01 =SOP::IGNORE ADD <mask>
