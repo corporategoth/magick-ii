@@ -768,7 +768,16 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
     RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
     MemoServ::nick_t::const_iterator iter = nick.find(in.LowerCase());
     if (iter != nick.end())
+    {
+#ifdef HAVE_MEM_REF_CONST
 	retval = count_if(iter->second.begin(), iter->second.end(), mem_fun_ref(&Memo_t::IsRead));
+#else
+	MemoServ::nick_memo_t::const_iterator i;
+	for (i=iter->second.begin(); i!=iter->second.end(); i++)
+	    if (i->IsRead())
+		retval++;
+#endif
+    }
     RET(retval);
     ETCB();
 }
@@ -1050,7 +1059,16 @@ size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, cons
     RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
     MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
+    {
+#ifdef HAVE_MEM_FUN_CONST
 	retval = count_if(iter->second.begin(), iter->second.end(), bind2nd(mem_fun1_ref(&News_t::IsRead), user));
+#else
+	MemoServ::channel_news_t::const_iterator i;
+	for (i = iter->second.begin(); i != iter->second.end(); i++)
+	    if (i->IsRead(user))
+		retval++;
+#endif
+    }
     RET(retval);
     ETCB();
 }

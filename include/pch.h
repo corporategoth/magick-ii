@@ -185,10 +185,6 @@ enum bool
 #  include <vector.h>
 #endif
 
-#ifndef HAVE_MEM_FUN1_REF
-#define mem_fun1_ref mem_fun_ref
-#endif
-
 /* ACE Extensions */
 #include <ace/Version.h>
 #include <ace/Reactor.h>
@@ -217,6 +213,13 @@ enum bool
 	ACE_BETA_VERSION >= 16))))
 typedef DIR ACE_DIR;
 typedef struct utsname ACE_utsname;
+#endif
+
+/* ACE_THR_FUNC_RETURN added in 5.2.4 */
+#if !(ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
+	(ACE_MINOR_VERSION > 2 || (ACE_MINOR_VERSION == 2 && \
+	ACE_BETA_VERSION >= 4))))
+#define ACE_THR_FUNC_RETURN void *
 #endif
 
 /* Alter this when it is intergrated */
@@ -283,6 +286,9 @@ using namespace STL_EXT_NAMESPACE;
 #endif /* __GNUC__ */
 
 using namespace std;
+
+// Ensure this is after 'using namespace std'
+#include "stl_fix.h"
 
 #else /* __cplusplus */
 

@@ -1069,7 +1069,7 @@ void Nick_Live_t::Quit(const mstring & reason)
 	joined_channels.clear();
     }
 
-    for_each(jc.begin(), jc.end(), CallMemberFunction<Nick_Live_t, void, mstring>(this, &Nick_Live_t::Part));
+    for_each(jc.begin(), jc.end(), CallMemberFunctionVoid<Nick_Live_t, void, mstring>(this, &Nick_Live_t::Part));
 
     if (IsServices())
 	return;
@@ -3578,7 +3578,7 @@ bool Nick_Stored_t::AccessAdd(const mstring & in)
 
 	// Already exists (or inclusive)
 	WLOCK((lck_NickServ, lck_stored, i_Name.LowerCase(), "i_access"));
-	set<mstring>::const_iterator iter = find_if(i_access.begin(), i_access.end(), Matches(in, true));
+	set<mstring>::iterator iter = find_if(i_access.begin(), i_access.end(), Matches(in, true));
 	if (iter != i_access.end())
 	    RET(false);
 

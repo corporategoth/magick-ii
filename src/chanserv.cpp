@@ -7972,23 +7972,23 @@ void ChanServ::PostLoad()
 	mstring lname = cstored->Name().LowerCase();
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Level"));
-	    for_each(cstored->Level_begin(), cstored->Level_end(), mem_fun_ref(&entlist_val_t<long>::PostLoad));
+	    for_each(cstored->Level_begin(), cstored->Level_end(), mem_fun_ref_void(&entlist_val_t<long>::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Access"));
-	    for_each(cstored->Access_begin(), cstored->Access_end(), mem_fun_ref(&entlist_val_t<long>::PostLoad));
+	    for_each(cstored->Access_begin(), cstored->Access_end(), mem_fun_ref_void(&entlist_val_t<long>::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Akick"));
-	    for_each(cstored->Akick_begin(), cstored->Akick_end(), mem_fun_ref(&entlist_val_t<mstring>::PostLoad));
+	    for_each(cstored->Akick_begin(), cstored->Akick_end(), mem_fun_ref_void(&entlist_val_t<mstring>::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Greet"));
-	    for_each(cstored->Greet_begin(), cstored->Greet_end(), mem_fun_ref(&entlist_t::PostLoad));
+	    for_each(cstored->Greet_begin(), cstored->Greet_end(), mem_fun_ref_void(&entlist_t::PostLoad));
 	}
 	{
 	    MLOCK((lck_ChanServ, lck_stored, lname, "Message"));
-	    for_each(cstored->Message_begin(), cstored->Message_end(), mem_fun_ref(&entlist_t::PostLoad));
+	    for_each(cstored->Message_begin(), cstored->Message_end(), mem_fun_ref_void(&entlist_t::PostLoad));
 	}
 
 	// Now, we're fully loaded, do sanity checks from CFG ...

@@ -1996,7 +1996,7 @@ vector < unsigned long > DccMap::GetList(const mstring & in)
     ETCB();
 }
 
-void *DccMap::Connect2(void *in)
+ACE_THR_FUNC_RETURN DccMap::Connect2(void *in)
 {
     BTCB();
     NewSocket *val = reinterpret_cast < NewSocket * > (in);
@@ -2043,11 +2043,12 @@ void *DccMap::Connect2(void *in)
 	delete val;
 
     Magick::deregister_instance();
+    
     DRET(0);
     ETCB();
 }
 
-void *DccMap::Accept2(void *in)
+ACE_THR_FUNC_RETURN DccMap::Accept2(void *in)
 {
     BTCB();
     NewSocket *val = reinterpret_cast < NewSocket * > (in);
@@ -2093,6 +2094,7 @@ void *DccMap::Accept2(void *in)
 	delete val;
 
     Magick::deregister_instance();
+
     DRET(0);
     ETCB();
 }

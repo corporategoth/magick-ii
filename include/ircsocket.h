@@ -147,7 +147,7 @@ class EventTask : public ACE_Task < ACE_MT_SYNCH >
     mDateTime last_check;
     mDateTime last_ping;
     mDateTime last_msgcheck;
-    static void *save_databases(void *in = NULL);
+    static ACE_THR_FUNC_RETURN save_databases(void *in = NULL);
     void do_expire(mDateTime & synctime);
     void do_check(mDateTime & synctime);
     void do_ping(mDateTime & synctime);
@@ -274,7 +274,7 @@ private:
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue;
     msgidmap_t MsgIdMap;
 
-    static void *worker(void *);
+    static ACE_THR_FUNC_RETURN worker(void *);
 
 public:
     int send(const mstring & data);

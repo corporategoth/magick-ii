@@ -247,8 +247,8 @@ class DccMap : public ACE_Task < ACE_MT_SYNCH >
 	unsigned int filenum;
     };
 
-    static void *Connect2(void *);
-    static void *Accept2(void *);
+    static ACE_THR_FUNC_RETURN Connect2(void *);
+    static ACE_THR_FUNC_RETURN Accept2(void *);
 
 public:
     typedef map < unsigned long, DccXfer * > xfers_t;

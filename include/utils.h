@@ -421,4 +421,22 @@ public:
     }
 };
 
+#ifndef HAVE_RETURN_CONST
+template<typename C, typename R, typename T>
+class CallMemberFunctionVoid
+{
+    C *obj;
+    R (C::*funcptr)(const T&);
+
+public:
+    CallMemberFunctionVoid(C *o, R (C::*fp)(const T&)) : obj(o), funcptr(fp) {}
+    R operator()(const T &in) const
+    {
+	(obj->*funcptr)(in);
+    }
+};
+#else
+#define CallMemberFunctionVoid CallMemberFunction
+#endif
+
 #endif

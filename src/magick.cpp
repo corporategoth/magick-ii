@@ -929,6 +929,45 @@ mstring Magick::getLogMessage(const mstring & name)
     ETCB();
 }
 
+vector<mstring> HelpText::get(const mstring &nick) const
+{
+    FT("HelpText::get", (nick));
+    vector<mstring> retval;
+
+    vector<triplet<mstring,mstring,mstring> >::const_iterator iter;
+    unsigned int i;
+    for (iter=lines.begin(); iter!=lines.end(); iter++)
+    {
+	bool sendline;
+	if (!iter->first.empty())
+	{
+	    sendline = false;
+	    for (i = 1; !sendline && i <= iter->first.WordCount(" "); i++)
+	    {
+		mstring comm = iter->first.ExtractWord(i, " ");
+		if (Magick::instance().commserv.IsList(comm) && Magick::instance().commserv.GetList(comm)->IsOn(nick))
+		    sendline = true;
+	    }
+	}
+	else
+	    sendline = true;
+
+	if (!iter->second.empty())
+	{
+	    for (i = 1; sendline && i <= iter->second.WordCount(" "); i++)
+	    {
+		mstring comm = iter->second.ExtractWord(i, " ");
+		if (Magick::instance().commserv.IsList(comm) && Magick::instance().commserv.GetList(comm)->IsOn(nick))
+		    sendline = false;
+	    }
+	}
+
+	if (sendline)
+	    retval.push_back(iter->third);
+    }
+    NRET(vector<mstring>, retval);
+}
+
 vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 {
     BTCB();
@@ -961,14 +1000,9 @@ StartGetLang:
 	for (i = tmp.begin(); i != tmp.end(); i++)
 	{
 	    section = i->first.RevBefore("/").UpperCase();
-	    entry =
-		triplet < mstring, mstring, mstring > (i->second.ExtractWord(1, ":", false),
-						       i->second.ExtractWord(2, ":", false), i->second.After(":", 2));
-
-	    if (entry.third.empty())
-		entry.third = " ";
-
-	    Help[language] [section].push_back(entry);
+	    Help[language][section].add(i->second.ExtractWord(1, ":", false),
+					i->second.ExtractWord(2, ":", false),
+					i->second.After(":", 2));
 	}
 	MCE(Help.size());
 	if (tmp.size())
@@ -978,40 +1012,11 @@ StartGetLang:
 	}
     }
 
-    mstring Uname(name.UpperCase());
-    unsigned int i, j;
-
     {
+	mstring Uname(name.UpperCase());
 	RLOCK(("Help", language, Uname));
 	if (Help.find(language) != Help.end() && Help[language].find(Uname) != Help[language].end())
-	{
-	    bool sendline;
-
-	    for (j = 0; j < Help[language] [Uname].size(); j++)
-	    {
-		sendline = false;
-		if (!Help[language] [Uname] [j].first.empty())
-		{
-		    for (i = 1; !sendline && i <= Help[language] [Uname] [j].first.WordCount(" "); i++)
-		    {
-			if (commserv.IsList(Help[language] [Uname] [j].first.ExtractWord(i, " ")) &&
-			    commserv.GetList(Help[language] [Uname] [j].first.ExtractWord(i, " "))->IsOn(nick))
-			    sendline = true;
-		    }
-		}
-		else
-		    sendline = true;
-		if (!Help[language] [Uname] [j].second.empty())
-		    for (i = 1; sendline && i <= Help[language] [Uname] [j].second.WordCount(" "); i++)
-		    {
-			if (commserv.IsList(Help[language] [Uname] [j].second.ExtractWord(i, " ")) &&
-			    commserv.GetList(Help[language] [Uname] [j].second.ExtractWord(i, " "))->IsOn(nick))
-			    sendline = false;
-		    }
-		if (sendline)
-		    helptext.push_back(Help[language] [Uname] [j].third);
-	    }
-	}
+	    helptext = Help[language][Uname].get(nick);
     }
 
     if (!helptext.size())
@@ -4019,7 +4024,7 @@ set < mstring > Magick::HLP_Loaded() const
 {
     BTCB();
     set < mstring > retval;
-    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
+    map < mstring, map < mstring, HelpText > >::const_iterator i;
     RLOCK(("Help"));
     for (i = Help.begin(); i != Help.end(); i++)
     {
@@ -4034,9 +4039,8 @@ size_t Magick::HLP_Usage(const mstring & lang) const
     BTCB();
     size_t retval = 0;
 
-    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
-    map < mstring, vector < triplet < mstring, mstring, mstring > > >::const_iterator j;
-    vector < triplet < mstring, mstring, mstring > >::const_iterator k;
+    map < mstring, map < mstring, HelpText > >::const_iterator i;
+    map < mstring, HelpText >::const_iterator j;
 
     RLOCK(("Help"));
     i = Help.find(lang.UpperCase());
@@ -4047,12 +4051,7 @@ size_t Magick::HLP_Usage(const mstring & lang) const
 	for (j = i->second.begin(); j != i->second.end(); j++)
 	{
 	    retval += j->first.capacity();
-	    for (k = j->second.begin(); k != j->second.end(); k++)
-	    {
-		retval += k->first.capacity();
-		retval += k->second.capacity();
-		retval += k->third.capacity();
-	    }
+	    retval += j->second.Usage();
 	}
     }
 

@@ -42,7 +42,7 @@ const char *Heartbeat_Handler::names[] =
 static const char *immediate_process[] =
 { "PROTOCTL", "CAPAB", NULL };
 
-void *IrcSvcHandler::worker(void *in)
+ACE_THR_FUNC_RETURN IrcSvcHandler::worker(void *in)
 {
     BTCB();
     Magick::register_instance(reinterpret_cast < Magick * > (in));
@@ -178,8 +178,8 @@ void *IrcSvcHandler::worker(void *in)
 
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
-    DTRET(static_cast < void * > (NULL));
 
+    DTRET(0);
     ETCB();
 }
 
@@ -1878,7 +1878,7 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     ETCB();
 }
 
-void *EventTask::save_databases(void *in)
+ACE_THR_FUNC_RETURN EventTask::save_databases(void *in)
 {
     BTCB();
     Magick::register_instance(reinterpret_cast < Magick * > (in));
@@ -1886,8 +1886,8 @@ void *EventTask::save_databases(void *in)
     FT("EventTask::save_databases", (in));
     Magick::instance().save_databases();
     Magick::deregister_instance();
-    DTRET(static_cast < void * > (NULL));
-
+    
+    DTRET(0);
     ETCB();
 }
 

@@ -75,6 +75,34 @@ public:
     int handle_signal(int signum, siginfo_t * siginfo, ucontext_t * ucontext);
 };
 
+class HelpText
+{
+    vector < triplet < mstring, mstring, mstring > > lines;
+public:
+    HelpText() {}
+    HelpText(const vector<triplet<mstring,mstring,mstring> > &in) { assign(in); }
+
+    void assign(const vector<triplet<mstring,mstring,mstring> > &in) { lines = in; }
+    void add(const mstring &yescom, const mstring &nocom, const mstring &line)
+    {
+	lines.push_back(triplet<mstring,mstring,mstring>(yescom,nocom,(line.empty() ? " " : line)));
+    }
+
+    vector<mstring> get(const mstring &nick) const;
+    size_t Usage() const
+    {
+	size_t retval;
+	vector<triplet<mstring,mstring,mstring> >::const_iterator i;
+	for (i = lines.begin(); i != lines.end(); i++)
+	{
+	    retval += i->first.capacity();
+	    retval += i->second.capacity();
+	    retval += i->third.capacity();
+	}
+	return retval;
+    }
+};
+
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
@@ -95,7 +123,7 @@ private:
     // Language, token, string
     map < mstring, map < mstring, mstring > > Messages;
     // Language, token, vector<yescom, nocom, string>
-    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > > Help;
+    map < mstring, map < mstring, HelpText> > Help;
     // Token, string
     map < mstring, mstring > LogMessages;
     int doparamparse();

@@ -3153,11 +3153,11 @@ void CommServ::PostLoad()
 	mstring uname = comm->Name().UpperCase();
 	{
 	    MLOCK((lck_CommServ, lck_list, uname, "member"));
-	    for_each(comm->begin(), comm->end(), mem_fun_ref(&entlist_t::PostLoad));
+	    for_each(comm->begin(), comm->end(), mem_fun_ref_void(&entlist_t::PostLoad));
 	}
 	{
 	    MLOCK((lck_CommServ, lck_list, uname, "message"));
-	    for_each(comm->MSG_begin(), comm->MSG_end(), mem_fun_ref(&entlist_t::PostLoad));
+	    for_each(comm->MSG_begin(), comm->MSG_end(), mem_fun_ref_void(&entlist_t::PostLoad));
 	}
 
 	// We must ensure certain settings in pre-defined committees ...

@@ -1821,7 +1821,7 @@ void Server::JOIN(const mstring & nick, const mstring & channel)
 	}
 
 	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
-	for_each(channels.begin(), channels.end(), CallMemberFunction<Nick_Live_t, void, mstring>(nlive, &Nick_Live_t::Join));
+	for_each(channels.begin(), channels.end(), CallMemberFunctionVoid<Nick_Live_t, void, mstring>(nlive, &Nick_Live_t::Join));
     }
     ETCB();
 }

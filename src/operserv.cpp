@@ -3688,10 +3688,10 @@ void OperServ::PostLoad()
     }
     i_array.clear();
 
-    for_each(Clone_begin(), Clone_end(), mem_fun_ref(&entlist_val_pair_t<unsigned int, mstring>::PostLoad));
-    for_each(Akill_begin(), Akill_end(), mem_fun_ref(&entlist_val_pair_t<unsigned long, mstring>::PostLoad));
-    for_each(OperDeny_begin(), OperDeny_end(), mem_fun_ref(&entlist_val_t<mstring>::PostLoad));
-    for_each(Ignore_begin(), Ignore_end(), mem_fun_ref(&entlist_val_t<mstring>::PostLoad));
+    for_each(Clone_begin(), Clone_end(), mem_fun_ref_void(&entlist_val_pair_t<unsigned int, mstring>::PostLoad));
+    for_each(Akill_begin(), Akill_end(), mem_fun_ref_void(&entlist_val_pair_t<unsigned long, mstring>::PostLoad));
+    for_each(OperDeny_begin(), OperDeny_end(), mem_fun_ref_void(&entlist_val_t<mstring>::PostLoad));
+    for_each(Ignore_begin(), Ignore_end(), mem_fun_ref_void(&entlist_val_t<mstring>::PostLoad));
 
     ETCB();
 }
