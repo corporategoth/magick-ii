@@ -41,6 +41,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return NS_Functions;
 		Modify:		return NS_Locking;
 	    }
+	    break;
 	case ChanServ:
 	    switch (level) {
 		Off:		return Off;
@@ -49,6 +50,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return CS_Functions;
 		Modify:		return CS_Locking;
 	    }
+	    break;
 	case MemoServ:
 	    switch (level) {
 		Off:		return Off;
@@ -57,6 +59,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return MS_Functions;
 		Modify:		return MS_Locking;
 	    }
+	    break;
 	case OperServ:
 	    switch (level) {
 		Off:		return Off;
@@ -65,6 +68,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return OS_Functions;
 		Modify:		return OS_Locking;
 	    }
+	    break;
 	case OtherServ:
 	    switch (level) {
 		Off:		return Off;
@@ -73,6 +77,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return XS_Functions;
 		Modify:		return XS_Locking;
 	    }
+	    break;
 	case ServNet:
 	    switch (level) {
 		Off:		return Off;
@@ -81,6 +86,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return NET_Functions;
 		Sockets:	return NET_Sockets;
 	    }
+	    break;
 	case BOB:
 	    switch (level) {
 		Off:		return Off;
@@ -89,6 +95,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Functions:	return BOB_Functions;
 		External:	return BOB_External;
 	    }
+	    break;
 	default:
 	    switch (level) {
 		Off:		return Off;
@@ -98,6 +105,7 @@ TraceTypes Trace::Resolve(short level, int threadid)
 		Locking:	return G_Locking;
 	    }
     }
+    return Off;
 }
 
 FuncTrace::FuncTrace(const mstring &name, mVarArray &args) {

@@ -11,6 +11,9 @@
 //
 // ===================================================
 
+#ifndef _TRACE_H
+#define _TRACE_H
+
 class Trace
 {
     long TraceLevel;
@@ -66,3 +69,5 @@ public:
     ~FuncTrace() { indent--; }
 
 }
+
+#endif /* _TRACE_H */
