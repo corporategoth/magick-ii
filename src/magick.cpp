@@ -891,7 +891,7 @@ void Magick::get_config_values()
     startup.services_user = value_mstring;
     startup.ownuser = value_bool;
 
-    in.Read(ts_Startup+"SERVICES_HOST",&startup.services_host,"magick.tm");
+    in.Read(ts_Startup+"SERVICES_HOST",&value_mstring,"magick.tm");
     if (value_mstring != startup.services_host)
 	reconnect_clients = true;
     startup.services_host = value_mstring;
@@ -955,7 +955,7 @@ void Magick::get_config_values()
 	}
     }
 
-    if (GotConnect)
+    if (!reconnect && GotConnect)
     {
 	for (i=0; i<nickserv.names.WordCount(" "); i++)
 	{
@@ -987,7 +987,7 @@ void Magick::get_config_values()
 	}
     }
 
-    if (GotConnect)
+    if (!reconnect && GotConnect)
     {
 	for (i=0; i<chanserv.names.WordCount(" "); i++)
 	{
@@ -1021,7 +1021,7 @@ void Magick::get_config_values()
 
     in.Read(ts_Services+"MEMO",&memoserv.memo,true);
     in.Read(ts_Services+"NEWS",&memoserv.news,true);
-    if (GotConnect && (memoserv.memo || memoserv.news))
+    if (!reconnect && GotConnect && (memoserv.memo || memoserv.news))
     {
 	for (i=0; i<memoserv.names.WordCount(" "); i++)
 	{
@@ -1053,7 +1053,7 @@ void Magick::get_config_values()
 	}
     }
 
-    if (GotConnect)
+    if (!reconnect && GotConnect)
     {
 	for (i=0; i<operserv.names.WordCount(" "); i++)
 	{
@@ -1089,7 +1089,7 @@ void Magick::get_config_values()
 	}
     }
 
-    if (GotConnect)
+    if (!reconnect && GotConnect)
     {
 	for (i=0; i<commserv.names.WordCount(" "); i++)
 	{
@@ -1121,7 +1121,7 @@ void Magick::get_config_values()
 	}
     }
 
-    if (GotConnect)
+    if (!reconnect && GotConnect)
     {
 	for (i=0; i<servmsg.names.WordCount(" "); i++)
 	{
@@ -1480,6 +1480,13 @@ void Magick::get_config_values()
 	Parent->commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
 	Parent->commserv.list[commserv.oper_name].Private(commserv.oper_private);
 	Parent->commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
+    }
+
+    if (reconnect && GotConnect)
+    {
+	server.raw("ERROR :Closing Link: Configuration reload required restart!");
+	ircsvchandler->shutdown();
+	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value(1));
     }
 
     CP(("%s read and loaded to live configuration.", config_file.c_str()));
