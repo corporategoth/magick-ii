@@ -19,6 +19,7 @@
 #include "EscLexer.hpp"
 #include "EscParser.hpp"
 #include "lockable.h"
+#include "utils.h"
 
 #include <algorithm>
 using namespace std;
@@ -106,7 +107,7 @@ int Magick::Start()
     }
 
     // need to transfer wxGetWorkingDirectory() and prepend it to config_file
-    MagickIni=new wxFileConfig("magick","",config_file);
+    MagickIni=new wxFileConfig("magick","",wxGetCwd()+config_file);
     if(MagickIni==NULL)
     {
 	wxLogError("Major fubar, couldn't allocate memory to read config file\nAborting");
@@ -367,13 +368,13 @@ void Magick::LoadInternalMessages()
     int i;
     remove("tmplang.lng");
 
-    wxFileOutputStream *fostream=new wxFileOutputStream("tmplang.lng");
+    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"tmplang.lng");
     for(i=0;i<def_langent;i++)
 	*fostream<<def_lang[i]<<"\n";
     fostream->Sync();
     delete fostream;
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
-    wxFileConfig fconf("magick","","tmplang.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"tmplang.lng");
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
     mstring groupname,entryname;
@@ -423,7 +424,7 @@ void Magick::LoadExternalMessages()
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
-    wxFileConfig fconf("magick","","english.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"english.lng");
     int i;
     for(i=0;i<MessageNamesLong.size();i++)
     	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],Messages[MessageNamesShort[i]]);

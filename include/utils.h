@@ -44,6 +44,16 @@ extern void wxRegisterId(long id);
 // Return the current ID
 extern long wxGetCurrentId(void);
 
+// Get current working directory.
+// If buf is NULL, allocates space using new, else
+// copies into buf.
+// IMPORTANT NOTE getcwd is know not to work under some releases
+// of Win32s 1.3, according to MS release notes!
+char* wxGetWorkingDirectory(char *buf = (char *) NULL,int sz = 1000);
+// new and preferred version of wxGetWorkingDirectory
+// NB: can't have the same name because of overloading ambiguity
+mstring wxGetCwd();
+
 // extrapolated from the ms's pair<T1,T2> template code
 
 template<class _T1, class _T2, class _T3> struct triplet 

@@ -156,3 +156,23 @@ wxRegisterId (long id)
     wxCurrentId = id + 1;
 }
 
+// Get current working directory.
+// If buf is NULL, allocates space using new, else
+// copies into buf.
+char *wxGetWorkingDirectory(char *buf, int sz)
+{
+  if (!buf)
+    buf = new char[sz+1];
+  ACE_OS::getcwd(buf,sz);
+  buf[sz]=0;
+  return buf;
+}
+
+mstring wxGetCwd()
+{
+    char buf[1024];
+
+    wxGetWorkingDirectory(buf, 1023);
+    mstring str(buf);
+    return str;
+}
