@@ -6,6 +6,7 @@ configure
 config.status
 config.cache
 .deps
+RC*
 magick.pid
 magick.mnd
 magick.key
@@ -23,6 +24,7 @@ config.h
 *.map
 *.exe
 *.ncb
+*.aps
 *.plg
 *.opt
 *.ilc
