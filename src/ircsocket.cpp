@@ -639,7 +639,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	    source.prepend(":");
     }
 
-    if (source[0u] == ':' || source[0u] == '@')
+    if (message[0u] == ':' || source[0u] == ':' || source[0u] == '@')
     {
 	msgtype = message.ExtractWord(2, ": ");
 	if (message.WordCount(" ") > 2)
