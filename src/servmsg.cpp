@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2001/07/02 03:39:30  prez
+** Fixed bug with users sending printf strings (mainly in memos).
+**
 ** Revision 1.90  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -535,7 +538,7 @@ void ServMsg::do_Credits(const mstring &mynick, const mstring &source, const mst
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
 	if (credits[i].length())
-	    ::send(mynick, source, credits[i], mynick.c_str());
+	    ::sendV(mynick, source, credits[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
 }
@@ -558,7 +561,7 @@ void ServMsg::do_Contrib(const mstring &mynick, const mstring &source, const mst
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
 	if (contrib[i].length())
-	    ::send(mynick, source, contrib[i], mynick.c_str());
+	    ::sendV(mynick, source, contrib[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
 }
@@ -647,7 +650,7 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
 		ServCounts[k->second.Server()].second++;
 	}
     }}
-    ::send(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
+    ::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0,
 	    ServCounts[""].first, ServCounts[""].second,
 	    100.0 * static_cast<float>(ServCounts[""].first) /
@@ -694,7 +697,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	    servername = Parent->server.GetList(downlinks[i]).AltName();
 	    if (i<downlinks.size()-1)
 	    {
-		::send(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
+		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "|-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
 			static_cast<float>(Parent->nickserv.LiveSize()));
@@ -702,7 +705,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	    }
 	    else
 	    {
-		::send(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
+		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "`-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
 			static_cast<float>(Parent->nickserv.LiveSize()));
@@ -1238,7 +1241,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     set<mstring>::iterator q;
     for (q=lang.begin(); q!=lang.end(); q++)
     {
-	::send(mynick, source, "%-20s %7s  %7s",
+	::sendV(mynick, source, "%-20s %7s  %7s",
 		q->c_str(), ToHumanSpace(Parent->LNG_Usage(*q)).c_str(),
 		ToHumanSpace(Parent->HLP_Usage(*q)).c_str());
 	
@@ -1385,7 +1388,7 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 	    if (i < listsize)
 	    {
 		if (issop)
-		    ::send(mynick, source, "%s (%s) [%s]",
+		    ::sendV(mynick, source, "%s (%s) [%s]",
 			Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
 			ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str(),
 			Parent->filesys.GetPriv(FileMap::Public, filelist[j]).c_str());
@@ -1406,7 +1409,7 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 			    }
 		    }
 		    if (display)
-			::send(mynick, source, "%s (%s)",
+			::sendV(mynick, source, "%s (%s)",
 				Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
 				ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str());
 		}
@@ -1679,7 +1682,7 @@ void ServMsg::do_file_Dcc(const mstring &mynick, const mstring &source, const ms
 	    // 00000001 S 000000000   0.0% xxxx.xX PreZ (blah.tgz)
 	    // 000000b2 S 000000000  48.2%         PreZ
 	    // 0000ac36 R 000000000 100.0%         PreZ
-	    ::send(mynick, source, "%08x %c %9d %5.1f%% %6.1f%c %s (%s)", iter->first,
+	    ::sendV(mynick, source, "%08x %c %9d %5.1f%% %6.1f%c %s (%s)", iter->first,
 		((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'),			
 		iter->second->Filesize(),
 		100.0 * static_cast<float>(iter->second->Total()) /

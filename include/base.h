@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2001/07/02 03:39:28  prez
+** Fixed bug with users sending printf strings (mainly in memos).
+**
 ** Revision 1.98  2001/07/01 05:02:46  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -319,15 +322,18 @@ public:
 
     virtual bool signon(const mstring& nickname) const;
     virtual bool signoff(const mstring& nickname) const;
-    virtual void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
-    virtual void privmsg(const mstring &dest, const char *pszFormat, ...) const;
-    virtual void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
-    virtual void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
-    virtual void notice(const mstring &dest, const char *pszFormat, ...) const;
-    virtual void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
-    virtual void send(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
-    virtual void send(const mstring &dest, const char *pszFormat, ...) const;
-    virtual void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
+    virtual void privmsgV(const mstring &dest, const char *pszFormat, ...) const;
+    virtual void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    virtual void privmsg(const mstring &dest, const mstring &message) const;
+    virtual void privmsg(const mstring &source, const mstring &dest, const mstring &message) const;
+    virtual void noticeV(const mstring &dest, const char *pszFormat, ...) const;
+    virtual void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    virtual void notice(const mstring &dest, const mstring &message) const;
+    virtual void notice(const mstring &source, const mstring &dest, const mstring &message) const;
+    virtual void sendV(const mstring &dest, const char *pszFormat, ...) const;
+    virtual void sendV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    virtual void send(const mstring &dest, const mstring &message) const;
+    virtual void send(const mstring &source, const mstring &dest, const mstring &message) const;
 
     virtual operator mVariant() const
     {
@@ -337,10 +343,14 @@ public:
     };
 };
 
-void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...);
-void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...);
-void send(const mstring &source, const mstring &dest, const char *pszFormat, ...);
-void announce(const mstring &source, const char *pszFormat, ...);
+void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+void privmsg(const mstring &source, const mstring &dest, const mstring &message);
+void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+void notice(const mstring &source, const mstring &dest, const mstring &message);
+void sendV(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+void send(const mstring &source, const mstring &dest, const mstring &message);
+void announceV(const mstring &source, const char *pszFormat, ...);
+void announce(const mstring &source, const mstring &message);
 
 #define SEND(W, X, Y, Z) \
 	::send(W, X, parseMessage(Parent->getMessage(X, Y), mVarArray Z))

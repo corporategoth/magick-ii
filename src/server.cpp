@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.183  2001/07/02 03:39:29  prez
+** Fixed bug with users sending printf strings (mainly in memos).
+**
 ** Revision 1.182  2001/07/01 05:02:45  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -1658,9 +1661,9 @@ void Server::Jupe(const mstring& server, const mstring& reason)
 }
 
 void Server::AKILL(const mstring& host, const mstring& reason,
-	const unsigned long time, const mstring& killer)
+	const unsigned long exptime, const mstring& killer)
 {
-    FT("Server::AKILL", (host, reason, time, killer));
+    FT("Server::AKILL", (host, reason, exptime, killer));
 
     if (!host.Contains("@"))
 	return;
@@ -1684,7 +1687,7 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	else
 	    line << "AKILL";
 	line << " " << host.After("@") << " " << host.Before("@") <<
-		" " << time << " " << ((!killer.empty()) ? killer :
+		" " << exptime << " " << ((!killer.empty()) ? killer :
 		Parent->operserv.FirstName()) << " " <<
 		static_cast<time_t>(mDateTime::CurrentDateTime()) <<
 		" :" << reason;
@@ -1694,21 +1697,21 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
-	line << " * +" << time << " " << host << " :" << reason;
+	line << " * +" << exptime << " " << host << " :" << reason;
 	break;
     case 2001:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
-	line << " * +" << host << " " << time << " :" << reason;
+	line << " * +" << host << " " << exptime << " :" << reason;
 	break;
     case 2002:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
 	    line << proto.GetNonToken("GLINE");
 	else
 	    line << "GLINE";
-	line << " +" << host << " " << time << " :" << reason;
+	line << " " << exptime << " +" << host << " " << exptime << " :" << reason;
 	break;
     }
 

@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.129  2001/07/02 03:39:29  prez
+** Fixed bug with users sending printf strings (mainly in memos).
+**
 ** Revision 1.128  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -2678,16 +2681,16 @@ void OperServ::do_settings_Other(const mstring &mynick, const mstring &source, c
 		    ToHumanTime(Parent->operserv.Def_Expire(), source),
 		    fmstring("%.2f", Parent->operserv.Akill_Reject())));
     NSEND(mynick, source, "OS_SETTINGS/MISC_AKILL2");
-    ::send(mynick, source, "%-20s: %s",
+    ::sendV(mynick, source, "%-20s: %s",
 		    Parent->commserv.SADMIN_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source).c_str());
-    ::send(mynick, source, "%-20s: %s",
+    ::sendV(mynick, source, "%-20s: %s",
 		    Parent->commserv.SOP_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Sop(), source).c_str());
-    ::send(mynick, source, "%-20s: %s",
+    ::sendV(mynick, source, "%-20s: %s",
 		    Parent->commserv.ADMIN_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Admin(), source).c_str());
-    ::send(mynick, source, "%-20s: %s",
+    ::sendV(mynick, source, "%-20s: %s",
 		    Parent->commserv.OPER_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Oper(), source).c_str());
     SEND(mynick, source, "OS_SETTINGS/MISC_CLONES", (
@@ -3015,12 +3018,12 @@ void OperServ::do_clone_List(const mstring &mynick, const mstring &source, const
     {
 	if (Parent->operserv.Clone->Entry().Matches(host, true))
 	{
-	    ::send(mynick, source, "%3d. %s (%s)",
+	    ::sendV(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.Clone->Entry().c_str(),
 			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 			    mVarArray(Parent->operserv.Clone->Last_Modify_Time().Ago(),
 			    Parent->operserv.Clone->Last_Modifier())).c_str());
-	    ::send(mynick, source, "     [%4d] %s",
+	    ::sendV(mynick, source, "     [%4d] %s",
 			    Parent->operserv.Clone->Value().first,
 			    Parent->operserv.Clone->Value().second.c_str());
 	    i++;
@@ -3341,12 +3344,12 @@ void OperServ::do_akill_List(const mstring &mynick, const mstring &source, const
     {
 	if (Parent->operserv.Akill->Entry().Matches(host, true))
 	{
-	    ::send(mynick, source, "%3d. %s (%s)",
+	    ::sendV(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.Akill->Entry().c_str(),
 			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 			    mVarArray(Parent->operserv.Akill->Last_Modify_Time().Ago(),
 			    Parent->operserv.Akill->Last_Modifier())).c_str());
-	    ::send(mynick, source, "     [%s] %s",
+	    ::sendV(mynick, source, "     [%s] %s",
 			    ToHumanTime(Parent->operserv.Akill->Value().first, source).c_str(),
 			    Parent->operserv.Akill->Value().second.c_str());
 	    i++;
@@ -3606,12 +3609,12 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
     {
 	if (Parent->operserv.OperDeny->Entry().Matches(host, true))
 	{
-	    ::send(mynick, source, "%3d. %s (%s)",
+	    ::sendV(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.OperDeny->Entry().c_str(),
 			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 			    mVarArray(Parent->operserv.OperDeny->Last_Modify_Time().Ago(),
 			    Parent->operserv.OperDeny->Last_Modifier())).c_str());
-	    ::send(mynick, source, "     %s",
+	    ::sendV(mynick, source, "     %s",
 			    Parent->operserv.OperDeny->Value().c_str());
 	    i++;
 	}
@@ -3842,7 +3845,7 @@ void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 			Parent->getMessage(source, "LIST/SIGNORE")));
 		head = true;
 	    }
-	    ::send(mynick, source, "%3d. %s (%s)",
+	    ::sendV(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.Ignore->Entry().c_str(),
 			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 			    mVarArray(Parent->operserv.Ignore->Last_Modify_Time().Ago(),

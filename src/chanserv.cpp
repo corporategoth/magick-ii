@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.254  2001/07/02 03:39:29  prez
+** Fixed bug with users sending printf strings (mainly in memos).
+**
 ** Revision 1.253  2001/07/01 05:02:45  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -6504,6 +6507,12 @@ void ChanServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
     }
 
     mstring founder = Parent->chanserv.GetStored(channel).Founder();
+    if (Parent->chanserv.GetStored(channel).Join() &&
+	Parent->chanserv.IsLive(channel) &&
+	Parent->chanserv.GetLive(channel).IsIn(Parent->chanserv.FirstName()))
+    {
+	Parent->server.PART(Parent->chanserv.FirstName(), channel);
+    }
     Parent->chanserv.RemStored(channel);
     Parent->nickserv.GetLive(source).UnChanIdentify(channel);
     Parent->chanserv.stats.i_Drop++;
@@ -8142,7 +8151,7 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	{
 	    if (i < listsize)
 	    {
-		::send(mynick, source, "%s (%du %do %dv %ds %db): +%s %s %d",
+		::sendV(mynick, source, "%s (%du %do %dv %ds %db): +%s %s %d",
 					iter->second.Name().c_str(),
 					iter->second.Users(),
 					iter->second.Ops(),
@@ -8892,7 +8901,7 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
 		value = Parent->getMessage(source, "VALS/LVL_FOUNDER");
 	    else
 		value = cstored.Level->Value();
-	    ::send(mynick, source, "%10s  %-15s  %s",
+	    ::sendV(mynick, source, "%10s  %-15s  %s",
 		    value.c_str(), cstored.Level->Entry().c_str(),
 		    Parent->getMessage(source, "CS_SET/LVL_" + cstored.Level->Entry()).c_str());
 	}
@@ -9212,7 +9221,7 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
     for (i=1, cstored.Access = cstored.Access_begin();
 	cstored.Access != cstored.Access_end(); cstored.Access++, i++)
     {
-	::send(mynick, source, "%4d. %3d %s (%s)", i, cstored.Access->Value(),
+	::sendV(mynick, source, "%4d. %3d %s (%s)", i, cstored.Access->Value(),
 		    Parent->getSname(cstored.Access->Entry()).c_str(),
 		    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 		    mVarArray(cstored.Access->Last_Modify_Time().Ago(),
@@ -9592,7 +9601,7 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
     for (i=1, cstored.Akick = cstored.Akick_begin();
 	cstored.Akick != cstored.Akick_end(); cstored.Akick++, i++)
     {
-	::send(mynick, source, "%4d. %s (%s)", i, cstored.Akick->Entry().c_str(),
+	::sendV(mynick, source, "%4d. %s (%s)", i, cstored.Akick->Entry().c_str(),
 		    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 		    mVarArray(cstored.Akick->Last_Modify_Time().Ago(),
 		    cstored.Akick->Last_Modifier())).c_str());
@@ -9881,7 +9890,7 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
     {
 	if (all || cstored.Greet->Last_Modifier().IsSameAs(target, true))
 	{
-	    ::send(mynick, source, "[%s] %s",
+	    ::sendV(mynick, source, "[%s] %s",
 				cstored.Greet->Last_Modifier().c_str(),
 				cstored.Greet->Entry().c_str());
 	    found = true;
@@ -10108,7 +10117,7 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
 				cstored.Message != cstored.Message_end();
 				cstored.Message++, i++)
     {
-        ::send(mynick, source, "%d. %s", i, cstored.Message->Entry().c_str());
+        ::sendV(mynick, source, "%d. %s", i, cstored.Message->Entry().c_str());
     }}
 }
 

@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2001/07/02 03:39:29  prez
+** Fixed bug with users sending printf strings (mainly in memos).
+**
 ** Revision 1.77  2001/06/17 05:22:12  prez
 ** Resolved compatability issues with ACE 5.1.17
 **
@@ -1407,7 +1410,7 @@ DccXfer::~DccXfer()
     {
 	LOG(LM_DEBUG, "OTHER/DCC_CLOSE", (fmstring("%08x", i_DccId)));
     }
-    else
+    else if (i_DccId)
     {
 	LOG(LM_DEBUG, "OTHER/DCC_CANCEL", (fmstring("%08x", i_DccId)));
     }
