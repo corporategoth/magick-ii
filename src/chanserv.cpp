@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.183  2000/06/25 07:58:49  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.182  2000/06/18 13:31:47  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -1323,6 +1326,28 @@ void Chan_Stored_t::Join(mstring nick)
 	return;
     }
 
+    if (Forbidden())
+    {
+	if (!nlive->HasMode("o"))
+	{
+	    if (users == 1)
+		clive->LockDown();
+
+	    if (Parent->nickserv.IsLive(Akick->Entry()))
+		clive->SendMode("+b " +
+		    nlive->AltMask(Nick_Live_t::P_H));
+	    else
+		clive->SendMode("+b " + Akick->Entry());
+
+	    // Can only insert with reason or default, so its safe.
+	    mstring reason;
+	    reason.Format(Parent->getMessage(nick, "CS_STATUS/ISFORBIDDEN"),
+		i_Name.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+		i_Name, reason);
+	}
+    }
+
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick_find(nick))
     {
@@ -1380,7 +1405,7 @@ void Chan_Stored_t::Join(mstring nick)
 	RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
 	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
 	mstring modes = i_Mlock_On;
-	if (i_Mlock_Key)
+	if (i_Mlock_Key != "")
 	    modes << "k";
 	if (i_Mlock_Limit)
 	    modes << "l";
@@ -1388,7 +1413,7 @@ void Chan_Stored_t::Join(mstring nick)
 	if (modes != "")
 	{
 	    clive->SendMode("+" + modes + " " + i_Mlock_Key + " " +
-			mstring(i_Mlock_Limit ? "" : itoa(i_Mlock_Limit)));
+			mstring(i_Mlock_Limit ? itoa(i_Mlock_Limit) : ""));
 	}}
 
 	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
@@ -5486,19 +5511,45 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].Suspend(source, reason);
-    if (Parent->chanserv.IsLive(channel))
-	Parent->server.TOPIC(mynick, mynick, channel, "[" + IRC_Bold +
-			Parent->getMessage("MISC/SUSPENDED") +
-			IRC_Off + "] " + reason + " [" + IRC_Bold +
-			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]",
-			Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time() -
-				(double) (1.0 / (60.0 * 60.0 * 24.0)));
     Parent->chanserv.stats.i_Suspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SUSPENDED"),
 	    channel.c_str());
     Log(LM_NOTICE, Parent->getLogMessage("CHANSERV/SUSPEND"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	channel.c_str(), reason.c_str());
+    if (Parent->chanserv.IsLive(channel))
+    {
+	Parent->server.TOPIC(mynick, mynick, channel, "[" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") +
+			IRC_Off + "] " + reason + " [" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]",
+			Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time() -
+				(double) (1.0 / (60.0 * 60.0 * 24.0)));
+
+	Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
+	Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+	clive->SendMode("-" + clive->Mode() + " " + clive->Key());
+	if (cstored->Mlock() != "")
+	    clive->SendMode(cstored->Mlock() + " " + cstored->Mlock_Key() + " " +
+		cstored->Mlock_Limit());
+
+	for (unsigned int i=0; i < clive->Users(); i++)
+	{
+	    
+	    if (clive->IsOp(clive->User(i)) &&
+		!(cstored->GetAccess(clive->User(i), "AUTOOP") ||
+		cstored->GetAccess(clive->User(i), "CMDOP")))
+	    {
+		clive->SendMode("-o " + clive->User(i));
+	    }
+	    if (clive->IsVoice(clive->User(i)) &&
+		!(cstored->GetAccess(clive->User(i), "AUTOVOICE") ||
+		cstored->GetAccess(clive->User(i), "CMDVOICE")))
+	    {
+		clive->SendMode("-v " + clive->User(i));
+	    }
+	}
+    }
 }
 
 void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
@@ -5560,6 +5611,24 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
     Log(LM_NOTICE, Parent->getLogMessage("CHANSERV/FORBID"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	channel.c_str());
+
+    if (Parent->chanserv.IsLive(channel))
+    {
+	mstring reason;
+	reason.Format(Parent->getMessage(source, "CS_STATUS/ISFORBIDDEN"),
+		channel.c_str());
+
+	Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
+	clive->LockDown();
+	clive->SendMode("+i");
+
+	// Kick everyone out, forbidden channel.
+	while (clive->Users())
+	{
+	    Parent->server.KICK(Parent->chanserv.FirstName(),
+		clive->User(0), channel, reason);
+	}
+    }
 }
 
 

@@ -25,6 +25,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/06/25 07:58:48  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.23  2000/06/21 09:00:05  prez
 ** Fixed bug in mFile
 **
@@ -153,6 +156,7 @@ public:
     static long Dump(list<mstring> sin, mstring sout, bool append = false, bool endline = true);
     static vector<mstring> UnDump( const mstring &sin);
     static size_t DirUsage(mstring directory);
+    static set<mstring> DirList(mstring directory, mstring filemask);
 };
 
 class FileMap : public SXP::IPersistObj

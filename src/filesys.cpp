@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/06/25 07:58:49  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.36  2000/06/21 09:00:05  prez
 ** Fixed bug in mFile
 **
@@ -314,7 +317,7 @@ long mFile::Length()
     MLOCK(("mFile", i_name));
     struct stat st;
     fstat(fileno(fd), &st);
-    RET(st.st_size);
+    RET((long) st.st_size);
 }
 
 bool mFile::Eof()
@@ -375,7 +378,7 @@ long mFile::Length(mstring name)
     MLOCK(("mFile", name));
     struct stat st;
     stat(name.c_str(), &st);
-    RET(st.st_size);
+    RET((long) st.st_size);
 }
 
 FILE *mFile::Detach()
@@ -483,15 +486,15 @@ vector<mstring> mFile::UnDump( const mstring &sin)
 size_t mFile::DirUsage(mstring directory)
 {
     FT("mFile::DirUsage", (directory));
-#ifdef WIN32
-    size_t retval = -1;
-    //todo: change over to findfirst/findnext (in io.h)
-#else
     size_t retval = 0;
-
     DIR *dir = NULL;
     struct dirent *entry = NULL;
     struct stat st;
+
+#ifdef WIN32
+    retval = -1;
+    //todo: change over to findfirst/findnext (in io.h)
+#else
 
     if (!directory.Len())
 	RET(0);
@@ -510,6 +513,38 @@ size_t mFile::DirUsage(mstring directory)
     }
 #endif
     RET(retval);
+}
+
+
+set<mstring> mFile::DirList(mstring directory, mstring filemask)
+{
+    FT("mFile::DirList", (directory, filemask));
+    set<mstring> retval;
+    DIR *dir = NULL;
+    struct dirent *entry = NULL;
+    struct stat st;
+
+#ifdef WIN32
+    //todo: change over to findfirst/findnext (in io.h)
+#else
+
+    if (!directory.Len())
+	NRET(set<mstring>, retval);
+
+    if ((dir = ACE_OS::opendir(directory.c_str())) != NULL)
+    {
+	while ((entry = ACE_OS::readdir(dir)) != NULL)
+	{
+	    if (strlen(entry->d_name) &&
+		mstring(entry->d_name).Matches(filemask))
+	    {
+		retval.insert(entry->d_name);
+	    }
+	}
+	ACE_OS::closedir(dir);
+    }
+#endif
+    NRET(set<mstring>, retval);
 }
 
 

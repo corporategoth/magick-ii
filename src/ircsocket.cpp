@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2000/06/25 07:58:50  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.111  2000/06/18 13:31:48  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -476,14 +479,20 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
 	Parent->i_localhost = localaddr.get_ip_address();
+	if (Parent->server.proto.TSora())
+	    Parent->server.raw("PASS " + details.second + " :TS");
+	else
+	    Parent->server.raw("PASS " + details.second);
 	if (Parent->server.proto.Protoctl() != "")
 	    Parent->server.raw(Parent->server.proto.Protoctl());
-	Parent->server.raw("PASS " + details.second);
 	mstring tmp;
 	tmp.Format(Parent->server.proto.Server().c_str(),
 	    Parent->startup.Server_Name().c_str(), 1,
 	    Parent->startup.Server_Desc().c_str());
 	Parent->server.raw(tmp);
+	if (Parent->server.proto.TSora())
+	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
+	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(itoa(time(NULL))));
 	Parent->Connected(true);
     }
     RET(0);

@@ -5,6 +5,7 @@ Suggest Document.
 This is a 'requested' feature list from other people, or ideas
 we've thought up ourselves.  With comments about other things
 that will need to be done in order to acomodate each feature.
+If 'approved' it will be moved to the main TODO.
 
 * Proposed suggestion
 + Being worked on
@@ -24,7 +25,6 @@ x Done
 = Ability to have logs go to a specified channel on the server
   eg (#services) (credit skold).
   > Scripted hook into 'LogOutput'?
-* More flood protection (eg. nickname flood, X nicks in X seconds = kill?)
 - Memo recall, ie, being able to delete unread memos you've sent to people.
 * If a misconfigured server fights with services (ie a missing uline) have
   services go into a sort of standby mode, requiring any ircop to re enable
@@ -32,5 +32,3 @@ x Done
   like jupe active if the servers admin isnt around)
   > Personally, I think this is a bad idea, squit the server.
 * Add a function to helpserv to forward messages to helpops
-* Secure Servers (Server cannot connect to network unless in services list of servers)
-* Per-Channel clone limits/override lists (for kicking out)

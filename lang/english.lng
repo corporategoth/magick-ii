@@ -213,9 +213,11 @@ ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.
 REVENGE            =REVENGE: Do not %s %s
 SYNC               =Databases will sync in %s.
+LANG_LIST          =Available languages are:
+LANG_NOLIST        =Error generating list of available languages.
 
-BREAKDOWN_HEAD     =SERVER                                        LAG  USERS (OPS)
-BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
+BREAKDOWN_HEAD     =SERVER                                   LAG  USERS (OPS)
+BREAKDOWN          ="%-35s  % 3.3fs  %5d (%3d)  %3.2f%%"
 ON                 =ON
 OFF                =OFF
 ONLINE             =ONLINE
@@ -534,10 +536,10 @@ PARTTIME           =\ Greet Delay: %s
 OPTIONS            =\     Options: %s
 
 NOEXPIRE           =non-expiring
-OPS                =ops
-VOICES             =voices
-USERS              =users
-SPLIT_USERS        =split users
+OPS                =op(s)
+VOICES             =voice(s)
+USERS              =user(s)
+SPLIT_USERS        =split user(s)
 
 
 ;

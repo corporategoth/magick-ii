@@ -139,11 +139,14 @@ fi
 
 if test 0$libace -eq 0; then
 	echo "
-ACE (Advanced Communications Environment) is an essential
+ACE (Adaptive Communications Environment) is an essential
 part of Magick II, and is therefore required to compile
 and run it.  ACE could not be found on your system.  If you
 have compiled it, please specify the library location with
-the option --with-acelib=<dir>
+the option --with-acelib=<lib>.  You may also have to specify
+where the includes are aswell, which you may do with the
+--with-aceinc=<dir> paramater (this should point to your
+ACE_wrappers directory, NOT ACE_wrappers/ace).
 
 You may obtain ACE from www.cs.wustl.edu/~schmidt/ACE.html"
 	exit 1
@@ -171,7 +174,9 @@ Magick II requires a threads library to exist (and work)
 before it will run.  You do not have any threads
 implementation on your system.  If you have, but it just
 could not be found, please specify the library location
-with the option --with-threadlib=<dir>
+with the option --with-threadlib=<dir>.  You may also
+have to specify specify where the includes are aswell,
+which you may do with the --with-threadinc=<dir> paramater.
 
 NOTE: BSD threads are internal to libc, and so must pass
       the '-pthread' argument to gcc.  To specify BSD
@@ -202,7 +207,9 @@ if test 0$libz -eq 0; then
 The Z compression library (zlib) is required to compile and
 run Magick II.  zlib could not be found on your system.  If
 you have compiled it, please specify the library location with
-the option --with-zlib=<dir>
+the option --with-zlib=<dir>.  You may also need to specify
+where the includes are aswell, you may do this with the
+--with-zinc=<dir> paramater.
 
 You may obtain zlib from www.cdrom.com/pub/infozip/zlib"
 	exit 1
@@ -210,14 +217,25 @@ fi
 
 dnl ====================================================
 
-dnl Static definition for now, will check for it later.
+AC_CHECK_HEADER(kenny, , [echo "Oh my god! you killed kenny!"])
 
+dnl ====================================================
+
+dnl Static definition for now, will check for it later.
+dnl Checking for the never_find function undefines.
+
+dnl WIN32 is only for windows machines.  If this script is
+dnl being run, then you probably shouldnt define this.
 AC_CHECK_HEADER(never_find, [AC_DEFINE(WIN32)])
 dnl AC_DEFINE(WIN32)
 
+dnl Later on, I will have to figure out hoe to test that
+dnl exceptions work, anyone have examples?
 dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])
 AC_DEFINE(MAGICK_HAS_EXCEPTIONS)
 
+dnl Again, I will have to figure out how to check if the
+dnl thread locking mechanism works, right now I assume.
 dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_LOCKS_WORK)])
 AC_DEFINE(MAGICK_LOCKS_WORK)
 
@@ -238,7 +256,7 @@ if test "$des" = "true"; then
 	AC_DEFINE(HASCRYPT)
 fi
 
-
+dnl Find out which to use for C++ headers ...
 AC_CHECK_HEADERS(iostream.h)
 AC_CHECK_HEADERS(istream.h)
 AC_CHECK_HEADERS(ostream.h)

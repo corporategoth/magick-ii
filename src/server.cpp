@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2000/06/25 07:58:50  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.106  2000/06/18 13:31:48  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -195,6 +198,7 @@ Protocol::Protocol()
     i_SVS = false;
     i_SVSHOST = false;
     i_P12 = false;
+    i_TSora = false;
     i_Akill = 0;
     i_Signon = 0000;
     i_Modes = 3;
@@ -313,6 +317,16 @@ void Protocol::Set(unsigned int in)
 	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	break;
+    case 12: /* Bahamut */
+	i_NickLen = 32;
+	i_Signon = 1004;
+	i_Globops = true;
+	i_SVS = true;
+	i_Akill = 1;
+	i_Modes = 6;
+	i_TSora = true;
+	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
 	break;
     case 20: /* UnderNet < 2.8.10  */
 	i_Signon = 1000;
@@ -1286,6 +1300,15 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		" " << user << " " << host << " " << host << " " <<
 		server << " 1 " << ":" << realname;
 	    break;
+	case 1004:
+	    if (proto.Tokens() && proto.GetNonToken("NICK") != "")
+		send << proto.GetNonToken("NICK");
+	    else
+		send << "NICK";
+	    send << " " << nick << " 1 " << Now().timetstring() <<
+		" + " << user << " " << host << host << " " <<
+		server << " :" << realname;
+	    break;
 	}
 	// Sign ourselves in ...
 	{ WLOCK(("NickServ", "live"));
@@ -1327,7 +1350,9 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 	raw(":" + oldnick + " " +
 		((proto.Tokens() && proto.GetNonToken("NICK") != "") ?
 			proto.GetNonToken("NICK") : mstring("NICK")) +
-		" " + newnick);
+		" " + newnick + (proto.TSora() ?
+			" :" + mstring(itoa(time(NULL))) :
+			mstring("")));
     }
 }
 
@@ -2005,7 +2030,13 @@ void NetworkServ::execute(const mstring & data)
 			data.c_str());
 	break;
     case 'C':
-	if (msgtype=="CONNECT")
+	if (msgtype=="CAPAB")
+	{
+	    // Bahamut version of the PROTOCTL line
+	    if ((data + " ").Contains(" TOKEN "))
+		proto.Tokens(true);
+	}
+	else if (msgtype=="CONNECT")
 	{
 	    // :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
 
@@ -2068,7 +2099,11 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="GNOTICE")
 	{
 	    // :server GNOTICE :This message
-	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
+	    if (source != "")
+		Log(LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
+		    msgtype.c_str(), data.After(":", 2).c_str());
+	    else
+		Log(LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
 		    msgtype.c_str(), data.After(":").c_str());
 	}
 	else if (msgtype=="GOPER")
@@ -2459,6 +2494,18 @@ void NetworkServ::execute(const mstring & data)
 			    data.After(":")
 			);
 		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
+		    break;
+		case 1004: // NICK nick hops time mode user host server :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(8, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.ExtractWord(7, ": "),
+			    data.After(":")
+			);
+		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
 		    break;
 		}}
 		{ WLOCK(("Server", "i_UserMax"));
@@ -2928,6 +2975,18 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
 		break;
+	    case 1004: // NICK nick hops time mode user host server :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(8, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.ExtractWord(7, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		break;
 	    }}
 	    { WLOCK(("Server", "i_UserMax"));
 	    if (i_UserMax < Parent->nickserv.live.size())
@@ -3037,6 +3096,10 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source SUMMON user our.server *
 	    sraw("445 " + source + " :SUMMON has been disabled");
+	}
+	else if (msgtype=="SVINFO")
+	{
+	    // Bahamut compatable - ignore.
 	}
 	else if (msgtype=="SVSHOST")
 	{
@@ -3263,6 +3326,7 @@ void NetworkServ::execute(const mstring & data)
 	    case 1001:
 	    case 1002:
 	    case 1003:
+	    case 1004:
 		break;
 	    }}
 	    { WLOCK(("Server", "i_UserMax"));

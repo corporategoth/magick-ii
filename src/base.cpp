@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.127  2000/06/25 07:58:48  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.126  2000/06/21 09:00:05  prez
 ** Fixed bug in mFile
 **
@@ -702,57 +705,57 @@ int mBaseTask::message_i(const mstring& message)
 
     CH(T_Chatter::From,data);	    
 
-    if (type == "PRIVMSG" || type == "NOTICE")
+    if ((type == "PRIVMSG" || type == "NOTICE") && !IsChan(target) &&
+    	Parent->nickserv.IsLive(source))
     {
-	RLOCK(("NickServ", "live", source.LowerCase()));
-	// Split stuff for NON-CHANNEL traffic.
-	if (!IsChan(target) && Parent->nickserv.IsLive(source))
+	if (target.Contains("@"))
 	{
-	    // Execute if we DONT (or havnt) trigger ignore
-	    if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
-	    {
-		// Find out if the target nick is one of the services 'clones'
-		// Pass the message to them if so.
-		// before even that, check if it's script overriden via
-		//     Parent->checkifhandled(servername,command)
-		// if so, Parent->doscripthandle(server,command,data);
-
-		if (Parent->operserv.IsName(target))
-		    Parent->operserv.execute(data);
-
-		else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
-		    Parent->nickserv.execute(data);
-
-		else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
-		    Parent->chanserv.execute(data);
-
-		else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
-		    Parent->memoserv.execute(data);
-
-		else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
-		    Parent->commserv.execute(data);
-
-		else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
-		    Parent->servmsg.execute(data);
-
-		// else check if it's script handled, might do up a list of script servers
-		// in the magick object to check against, else trash it.
-
-		else	// PRIVMSG or NOTICE to non-service
-		    Parent->server.execute(data);
-
-	    }
-	    else if (Parent->operserv.Log_Ignore())
-	    {
-		// Check if we're to log ignore messages, and log them here.
-		Log(LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
-			source.c_str(), data.After(" ").c_str());
-	    }
+	    target = target.Before("@");
+	    data = data.Before(" ", 2) + " " + target + " " + data.After(" ", 3);
+	    CP(("Target changed, new data: %s", data.c_str()));
 	}
-	else	// Channel messages
-	    Parent->server.execute(data);
+
+	if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
+	{
+	    // Find out if the target nick is one of the services 'clones'
+	    // Pass the message to them if so.
+	    // before even that, check if it's script overriden via
+	    //     Parent->checkifhandled(servername,command)
+	    // if so, Parent->doscripthandle(server,command,data);
+
+	    if (Parent->operserv.IsName(target))
+		Parent->operserv.execute(data);
+
+	    else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
+		Parent->nickserv.execute(data);
+
+	    else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
+		Parent->chanserv.execute(data);
+
+	    else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
+		Parent->memoserv.execute(data);
+
+	    else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
+		Parent->commserv.execute(data);
+
+	    else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
+		Parent->servmsg.execute(data);
+
+	    // else check if it's script handled, might do up a list of script servers
+	    // in the magick object to check against, else trash it.
+
+	    else	// PRIVMSG or NOTICE to non-service
+		Parent->server.execute(data);
+
+	}
+	else if (Parent->operserv.Log_Ignore())
+	{
+	    // Check if we're to log ignore messages, and log them here.
+	    Log(LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
+			source.c_str(), data.After(" ").c_str());
+	}
     }
-    else	// Non PRIVMSG and NOTICE
+    else
 	Parent->server.execute(data);
 
     {MLOCK(("MessageQueue"));

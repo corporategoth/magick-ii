@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/06/25 07:58:50  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.59  2000/06/18 12:49:28  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -177,6 +180,8 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CONTRIB*", Parent->commserv.ALL_Name(), ServMsg::do_Contrib);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LANG*", Parent->commserv.REGD_Name(), ServMsg::do_Languages);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
@@ -250,6 +255,8 @@ void ServMsg::RemCommands()
 	    "CRED*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CONTRIB*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LANG*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "BREAKD*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -405,6 +412,47 @@ void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, contrib[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
+}
+
+
+void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_Languages", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
+    set<mstring> langs = mFile::DirList(Parent->files.Langdir(), "*.lng");
+    mstring output, val;
+    if (langs.size())
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/LANG_LIST"));
+	set<mstring>::iterator i;
+	for (i=langs.begin(); i != langs.end(); i++)
+	{
+	    if (output.Len() > Parent->server.proto.MaxLine())
+	    {
+		::send(mynick, source, "    " + output);
+		output = "";
+	    }
+	    val = *i;
+	    val.Truncate(val.Find(".", true));
+	    if (output.Len())
+		output += ", ";
+	    output += val.UpperCase();
+	}
+	if (output.Len())
+	    ::send(mynick, source, "    " + output);
+    }
+    else
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/LANG_NOLIST"));
+    }
 }
 
 

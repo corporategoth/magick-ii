@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2000/06/25 07:58:50  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.94  2000/06/21 09:00:06  prez
 ** Fixed bug in mFile
 **
@@ -304,9 +307,9 @@ void ThreadID::Flush()
 		iter--;
 	} while (iter != ThreadMessageQueue.begin());
     }}
-    COM(("Trace transaction completed ..."));
     if (!messages.size())
 	return;
+    COM(("Trace transaction completed ..."));
 
     mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
     messages.clear();

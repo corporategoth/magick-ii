@@ -11,19 +11,21 @@ questions of us that are documented.
 
 The following documents are available for your reading:
 
-COPYING   The is the license agreement you are bound
-          to by downloading and/or using this product.
-INSTALL   Instructions on how to compile and install
-          this product, including pre-requisites.
-AUTHORS   All about the authors, who we owe a debt of
-          gratitude to, and who aided us all along.
-README    A basic guide on usage (not full manual)
-NEWS      This is a must read, it contains the latest
-          news that is important to ALL magick users.
-ChangeLog This is a detailed summary of all changes
-          that have been made over the history of
-          Magick.  This is where we came from.
-TODO      This is what we have planned for the future.
+COPYING    The is the license agreement you are bound
+           to by using this product.  READ IT!
+INSTALL    Instructions on how to compile and install
+           this product, including pre-requisites.
+AUTHORS    All about the authors, who we owe a debt of
+           gratitude to, and who aided us all along.
+README     A basic guide on usage (not full manual).
+NEWS       This is a must read, it contains the latest
+           news that is important to ALL magick users.
+ChangeLog  This is a detailed summary of all changes
+           that have been made over the history of
+           Magick.  This is where we came from.
+TODO       This is what we have planned for the future.
+KNOWN-BUGS This is a list of known issues or potential
+           issues at the time of release of Magick.
 
 Most help for this product is online (ie. /msg service
 help <command>), however there is a full user manual

@@ -13,6 +13,11 @@ mostlyclean-compile:
 	-rm -f *.o core *.core *.debug
 
 helper:
+	@echo ""
+	@echo "======================================================="
+	@echo "This will probably take a while ..."
+	@echo "May as well go grab your favourite caffiene supplement."
+	@echo "======================================================="
 	#$(top_srcdir)/helper/build-ver $(top_srcdir)
 
 magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)

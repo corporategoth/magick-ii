@@ -8,3 +8,6 @@ Known problems that exist in magick that should be fixed.
 
 - Probably should lock when doing list searches (iterator
   based operations).  Doesnt seem a problem right now.
+- Should probably lock when setting/getting CFG vals, just
+  incase one is set while another thread is accessing it
+  (though this possibility is VERY slim).

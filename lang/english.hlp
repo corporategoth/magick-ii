@@ -2050,7 +2050,7 @@
 04 =::This service allows you to use the following commands:
 05 =::    HELP         CREDITS      CONTRIB      BREAKDOWN
 06A=:REGD:    FILE
-06B=REGD::    STATS        FILE
+06B=REGD::    STATS        FILE         LANGUAGES
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
 09 =::You may also obtain help on the following:
@@ -2078,6 +2078,26 @@
 03 =ADMIN::This will send a message to all users on the network.
 04 =ADMIN::This should be used rarely, and for something that
 05 =ADMIN::the whole network needs to know.
+
+[SERVMSG/LANGUAGES]
+01 =REGD::LANGUAGES
+02 =REGD::
+03 =REGD::This will list the languages that you may ask services
+04 =REGD::to talk to you in with the LANGUAGE setting in your
+05 =REGD::nickname entry.
+
+[SERVMSG/CREDITS]
+01 =::CREDITS
+02 =::
+03 =::This will spit out a little text about services,
+04 =::including who the authors are, where to get it, etc.
+
+[SERVMSG/CONTRIB]
+01 =::CONTRIB
+02 =::
+03 =::This command is like CREDITS, however it gives more
+04 =::detail about the authors themselves, and all others
+05 =::who were a part of creating the services package.
 
 [SERVMSG/STATS]
 01A=REGD:OPER SOP:STATS

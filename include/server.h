@@ -25,6 +25,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/06/25 07:58:48  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.42  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -115,6 +118,7 @@ class Protocol
     bool i_SVS;
     bool i_SVSHOST;
     bool i_P12;
+    bool i_TSora;
 
     /* AKILL types
      *
@@ -139,6 +143,7 @@ class Protocol
      * 1001 = NICK nick hops signon-time user host server service :realname
      * 1002 = NICK nick hops signon-time user host server service althost :realname
      * 1003 - NICK nick hops signon-time user host althost server service :realname
+     * 1004 = NICK nick hops signon-time mode user host server :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */
@@ -169,6 +174,7 @@ public:
     bool SVS()		    { return i_SVS; }
     bool SVSHOST()	    { return i_SVSHOST; }
     bool P12()		    { return i_P12; }
+    bool TSora()	    { return i_TSora; }
     unsigned int Akill()    { return i_Akill; }
     unsigned int Signon()   { return i_Signon; }
     unsigned int Modes()    { return i_Modes; }

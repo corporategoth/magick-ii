@@ -25,6 +25,9 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/06/25 07:58:48  prez
+** Added Bahamut support, listing of languages, and fixed some minor bugs.
+**
 ** Revision 1.18  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -119,6 +122,7 @@ public:
     static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_Credits(mstring mynick, mstring source, mstring params);
     static void do_Contrib(mstring mynick, mstring source, mstring params);
+    static void do_Languages(mstring mynick, mstring source, mstring params);
     static void do_BreakDown(mstring mynick, mstring source, mstring params);
     static void do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCounts,
 	mstring mynick, mstring source, mstring previndent, mstring server);
