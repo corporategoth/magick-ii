@@ -1743,12 +1743,13 @@ void Magick::load_databases()
     wxFileInputStream finput(databasefile);
     if (finput.Ok())
     {
-	Parent->operserv.load_database(finput);
-	Parent->nickserv.load_database(finput);
-	Parent->chanserv.load_database(finput);
-	Parent->memoserv.load_database(finput);
-	Parent->commserv.load_database(finput);
-	Parent->servmsg.load_database(finput);
+	wxDataInputStream input(finput);
+	Parent->operserv.load_database(input);
+	Parent->nickserv.load_database(input);
+	Parent->chanserv.load_database(input);
+	Parent->memoserv.load_database(input);
+	Parent->commserv.load_database(input);
+	Parent->servmsg.load_database(input);
 	// Scripted services?
     }
 }
@@ -1780,13 +1781,17 @@ void Magick::save_databases()
 
     CP(("Database Filename being used: %s", databasefile.c_str()));
     wxFileOutputStream foutput(databasefile);
-    Parent->operserv.save_database(foutput);
-    Parent->nickserv.save_database(foutput);
-    Parent->chanserv.save_database(foutput);
-    Parent->memoserv.save_database(foutput);
-    Parent->commserv.save_database(foutput);
-    Parent->servmsg.save_database(foutput);
-    // Scripted services?
+    if (foutput.Ok())
+    {
+	wxDataOutputStream output(foutput);
+	Parent->operserv.save_database(output);
+	Parent->nickserv.save_database(output);
+	Parent->chanserv.save_database(output);
+	Parent->memoserv.save_database(output);
+	Parent->commserv.save_database(output);
+	Parent->servmsg.save_database(output);
+	// Scripted services?
+    }
 }
 
 wxInputStream *Magick::create_input_stream(wxMemoryStream &in)

@@ -269,6 +269,7 @@ public:
   double ReadDouble();
   mstring ReadLine();
   mstring ReadString();
+  wxDataInputStream& operator>>(mstring& line);
 };
 
 class wxDataOutputStream: public wxFilterOutputStream {
@@ -276,12 +277,14 @@ class wxDataOutputStream: public wxFilterOutputStream {
   wxDataOutputStream(wxOutputStream& s);
   virtual ~wxDataOutputStream();
 
-  void Write32(unsigned long i);
-  void Write16(unsigned short i);
-  void Write8(unsigned char i);
-  void WriteDouble(double d);
-  void WriteLine(const mstring& line);
-  void WriteString(const mstring& string);
+  wxOutputStream& Write32(unsigned long i);
+  wxOutputStream& Write16(unsigned short i);
+  wxOutputStream& Write8(unsigned char i);
+  wxOutputStream& WriteDouble(double d);
+  wxOutputStream& WriteLine(const mstring& line);
+  wxOutputStream& WriteString(const mstring& string);
+  wxOutputStream& operator<<(const char *string);
+  wxOutputStream& operator<<(const mstring& string);
 };
 
 class wxMemoryStream: public wxInputStream,public wxOutputStream

@@ -711,14 +711,14 @@ wxOutputStream& wxOutputStream::operator<<(const char *string)
 {
   size_t size = strlen(string);
   Write(&size, sizeof(size_t));
-  return Write(string, strlen(string));
+  return Write(&string, size);
 }
 
 wxOutputStream& wxOutputStream::operator<<(const mstring& string)
 {
   size_t size = string.length();
   Write(&size, sizeof(size_t));
-  return Write(string, string.length());
+  return Write(&string, size);
 }
 
 wxOutputStream& wxOutputStream::operator<<(char c)
@@ -921,6 +921,14 @@ mstring wxDataInputStream::ReadString()
   return wx_string;
 }
 
+wxDataInputStream& wxDataInputStream::operator>>(mstring& line)
+{
+  line = ReadString();
+
+  return *this;
+}
+
+
 // ---------------------------------------------------------------------------
 // wxDataOutputStream
 // ---------------------------------------------------------------------------
@@ -934,7 +942,7 @@ wxDataOutputStream::~wxDataOutputStream()
 {
 }
 
-void wxDataOutputStream::Write32(unsigned long i)
+wxOutputStream&  wxDataOutputStream::Write32(unsigned long i)
 {
   char buf[4];
 
@@ -942,24 +950,24 @@ void wxDataOutputStream::Write32(unsigned long i)
   buf[1] = (i >> 8) & 0xff;
   buf[2] = (i >> 16) & 0xff;
   buf[3] = (i >> 24) & 0xff;
-  Write(buf, 4);
+  return Write(buf, 4);
 }
 
-void wxDataOutputStream::Write16(unsigned short i)
+wxOutputStream&  wxDataOutputStream::Write16(unsigned short i)
 {
   char buf[2];
 
   buf[0] = i & 0xff;
   buf[1] = (i >> 8) & 0xff;
-  Write(buf, 2);
+  return Write(buf, 2);
 }
 
-void wxDataOutputStream::Write8(unsigned char i)
+wxOutputStream&  wxDataOutputStream::Write8(unsigned char i)
 {
-  Write(&i, 1);
+  return Write(&i, 1);
 }
 
-void wxDataOutputStream::WriteLine(const mstring& line)
+wxOutputStream&  wxDataOutputStream::WriteLine(const mstring& line)
 {
 #ifdef WIN32
   mstring tmp_string = line + "\r\n";
@@ -967,22 +975,33 @@ void wxDataOutputStream::WriteLine(const mstring& line)
   mstring tmp_string = line + '\n';
 #endif
 
-  Write(tmp_string.c_str(), tmp_string.length());
+  return Write(tmp_string.c_str(), tmp_string.length());
 }
 
-void wxDataOutputStream::WriteString(const mstring& string)
+wxOutputStream&  wxDataOutputStream::WriteString(const mstring& string)
 {
   Write32(string.length());
-  Write(string.c_str(), string.length());
+  return Write(string.c_str(), string.length());
 }
 
-void wxDataOutputStream::WriteDouble(double d)
+wxOutputStream&  wxDataOutputStream::WriteDouble(double d)
 {
   char buf[10];
 
   ConvertToIeeeExtended(d, (unsigned char *)buf);
-  Write(buf, 10);
+  return Write(buf, 10);
 }
+
+wxOutputStream& wxDataOutputStream::operator<<(const char *string)
+{
+  return WriteString(mstring(string));
+}
+
+wxOutputStream& wxDataOutputStream::operator<<(const mstring& string)
+{
+  return WriteString(string);
+}
+
 
 /*
  * C O N V E R T _ T O   I E E E   E X T E N D E D
