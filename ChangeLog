@@ -1,3 +1,172 @@
+* 2003-02-02 05:24  Preston A. Elder <prez@magick.tm>
+  ChangeLog.old (1.3):
+  
+  Fixed copyright
+
+* 2003-02-02 05:22  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.11), FAQ (1.12), INSTALL (1.28), KNOWN-BUGS (1.21), NEWS
+  (1.7), README (1.32), TODO (1.21), ace_uname.cpp (1.5), configure.in
+  (1.75), rtfm (1.8), what.c (1.11), docs/magick.ini (1.106),
+  docs/en/index.sgml (1.50), docs/man/magick.pod (1.17),
+  docs/man/magick_keygen.pod (1.13), docs/man/magick_stampkeys.pod (1.5),
+  gui/ChanServ.java (1.10), gui/CommServ.java (1.12), gui/Config.java
+  (1.10), gui/ConfigView.java (1.6), gui/Files.java (1.15),
+  gui/HexFormat.java (1.5), gui/IniParser.java (1.5),
+  gui/IpAddressFormat.java (1.6), gui/JMultiLineToolTip.java (1.4),
+  gui/MemoServ.java (1.9), gui/NickServ.java (1.9),
+  gui/NumberRangeFormat.java (1.5), gui/OctalFormat.java (1.5),
+  gui/OperServ.java (1.10), gui/PercentageFormat.java (1.5),
+  gui/ServMsg.java (1.8), gui/Services.java (1.7), gui/SpaceFormat.java
+  (1.5), gui/Startup.java (1.12), gui/TabbedPane.java (1.10),
+  gui/TimeFormat.java (1.5), gui/ToolTips.java (1.10), gui/config.html
+  (1.2), gui/mct.java (1.16), gui/myTableCellEditor.java (1.4),
+  helper/add-patch (1.9), helper/blank-patch (1.7), helper/build-ver
+  (1.10), helper/makelang (1.13), helper/makelog (1.9), helper/rem-patch
+  (1.9), helper/reset-ver (1.8), helper/run_gui.bat (1.8),
+  helper/run_magick.bat (1.9), helper/run_magick_keygen.bat (1.6),
+  helper/servicesbkup (1.4), helper/serviceschk (1.9), helper/servicescycle
+  (1.4), helper/uninstall.bat (1.7), helper/uninstall2.bat (1.3),
+  include/ace_memory.h (1.14), include/base.h (1.120), include/chanserv.h
+  (1.90), include/commserv.h (1.75), include/config.h.in (1.35),
+  include/config.h.top (1.7), include/config.h.win (1.27),
+  include/datetime.h (1.48), include/dccengine.h (1.24), include/filesys.h
+  (1.63), include/ircsocket.h (1.76), include/language.h (1.41),
+  include/lockable.h (1.79), include/logfile.h (1.31), include/magick.h
+  (1.197), include/mconfig.h (1.30), include/memoserv.h (1.69),
+  include/mexceptions.h (1.17), include/mstring.h (1.106),
+  include/nickserv.h (1.93), include/operserv.h (1.69), include/pch.h
+  (1.67), include/server.h (1.99), include/servmsg.h (1.39),
+  include/stages.h (1.13), include/stl_fix.h (1.4), include/trace.h
+  (1.100), include/utils.h (1.64), include/variant.h (1.46),
+  include/version.h (1.143), include/version.h-release (1.44),
+  include/convert/auspice.h (1.2), include/convert/bolivia.h (1.2),
+  include/convert/cygnus.h (1.2), include/convert/epona.h (1.2),
+  include/convert/hybserv.h (1.2), include/convert/interface.h (1.7),
+  include/convert/ircservices.h (1.4), include/convert/magick.h (1.2),
+  include/convert/ptlink.h (1.2), include/convert/sirv.h (1.4),
+  include/convert/trircd.h (1.3), include/convert/wrecked.h (1.2),
+  include/xml/sxp.h (1.38), ircd/ircd.aurora.ini (1.9),
+  ircd/ircd.bahamut.ini (1.9), ircd/ircd.dal.ini (1.8),
+  ircd/ircd.dal4.4.15.ini (1.9), ircd/ircd.hybrid5.ini (1.8),
+  ircd/ircd.hybrid7.ini (1.8), ircd/ircd.ircu.ini (1.8),
+  ircd/ircd.ircu2.10.ini (1.12), ircd/ircd.ircu2.10ext.ini (1.12),
+  ircd/ircd.rfc1459+ts8.ini (1.8), ircd/ircd.rfc1459.ini (1.8),
+  ircd/ircd.trircd.ini (1.3), ircd/ircd.trircd5.ini (1.3),
+  ircd/ircd.unreal.ini (1.13), lang/english.hlp (1.55), lang/english.lfo
+  (1.64), lang/english.lng (1.93), lang/example.lfo (1.8), lang/example.lng
+  (1.8), lang/french.lfo (1.8), lang/french.lng (1.10), lang/portuguese.lng
+  (1.13), lang/swedish.lfo (1.5), lang/turkish.lng (1.11), src/base.cpp
+  (1.211), src/chandata.cpp (1.31), src/chanserv.cpp (1.318),
+  src/commserv.cpp (1.138), src/datetime.cpp (1.84), src/dccengine.cpp
+  (1.60), src/filesys.cpp (1.110), src/ircsocket.cpp (1.247),
+  src/lockable.cpp (1.94), src/magick.cpp (1.391), src/magick_keygen.c
+  (1.27), src/magick_stampkeys.c (1.11), src/main.cpp (1.71),
+  src/mconfig.cpp (1.47), src/memoserv.cpp (1.134), src/mstring.cpp
+  (1.141), src/nickdata.cpp (1.27), src/nickserv.cpp (1.228),
+  src/operserv.cpp (1.171), src/server.cpp (1.267), src/servmsg.cpp
+  (1.113), src/stages.cpp (1.23), src/trace.cpp (1.133), src/utils.cpp
+  (1.91), src/variant.cpp (1.55), src/convert/auspice.cpp (1.5),
+  src/convert/bolivia.cpp (1.5), src/convert/cygnus.cpp (1.2),
+  src/convert/epona.cpp (1.5), src/convert/hybserv.cpp (1.3),
+  src/convert/interface.cpp (1.7), src/convert/ircservices.cpp (1.4),
+  src/convert/magick.cpp (1.3), src/convert/ptlink.cpp (1.6),
+  src/convert/sirv.cpp (1.7), src/convert/trircd.cpp (1.8),
+  src/convert/wrecked.cpp (1.3), src/xml/sxp.cpp (1.44):
+  
+  Updated copyrights on all files.
+
+* 2003-02-02 04:56  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.30), src/nickdata.cpp (1.26), src/server.cpp (1.266):
+  
+  Added ability for IDENT to also give access in all channels a user is in,
+  assuming either channel or nickname is secure, not recoginized, etc.
+
+* 2003-02-02 02:00  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.98), ircd/ircd.ircu2.10.ini (1.11),
+  ircd/ircd.ircu2.10ext.ini (1.11), src/base.cpp (1.210), src/chandata.cpp
+  (1.29), src/server.cpp (1.265):
+  
+  Fixed some code used to deal with networks with nickname numerics. 
+  Specifically, ircu2.10
+
+* 2003-02-01 08:00  Preston A. Elder <prez@magick.tm>
+  configure.in (1.74), lang/english.lfo (1.63), src/chandata.cpp (1.28),
+  src/nickdata.cpp (1.25), src/utils.cpp (1.90):
+  
+  Some patches to crypt() and JP2 routines.
+
+* 2003-02-01 07:21  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.27), src/nickdata.cpp (1.24):
+  
+  Replaced elsif with elif
+
+* 2003-02-01 04:24  Preston A. Elder <prez@magick.tm>
+  README (1.31), docs/en/index.sgml (1.49), include/magick.h (1.196),
+  src/main.cpp (1.70):
+  
+  Added ifdef around dependancy and user flowcontrol functions.
+
+* 2003-02-01 04:22  Preston A. Elder <prez@magick.tm>
+  src/convert/auspice.cpp (1.4), src/convert/bolivia.cpp (1.4),
+  src/convert/sirv.cpp (1.6):
+  
+  Got rid of unused variable warning.
+
+* 2003-02-01 04:13  Preston A. Elder <prez@magick.tm>
+  crypt.dsp (1.6), magick.dsp (1.78), magick.dsw (1.12), magick_keygen.dsp
+  (1.7), xml.dsp (1.7), include/magick.h (1.195), include/pch.h (1.66),
+  include/version.h (1.142), include/convert/interface.h (1.6),
+  src/magick.cpp (1.390), src/main.cpp (1.69), src/convert/auspice.cpp
+  (1.3), src/convert/bolivia.cpp (1.3), src/convert/epona.cpp (1.4),
+  src/convert/ircservices.cpp (1.3), src/convert/magick.cpp (1.2),
+  src/convert/ptlink.cpp (1.5), src/convert/sirv.cpp (1.5),
+  src/convert/trircd.cpp (1.7), src/convert/wrecked.cpp (1.2):
+  
+  Fixed conversion routines on windows machines.  Also expanded service
+  command to add the 'change' subcommand.
+
+* 2003-02-01 03:38  Preston A. Elder <prez@magick.tm>
+  lang/english.lfo (1.62):
+  
+  Fixed token.
+
+* 2003-02-01 02:55  Preston A. Elder <prez@magick.tm>
+  include/config.h.win (1.26):
+  
+  Updated config.win
+
+* 2003-01-31 22:39  Preston A. Elder <prez@magick.tm>
+  include/convert/interface.h (1.5), include/convert/ircservices.h (1.3),
+  src/convert/epona.cpp (1.3), src/convert/interface.cpp (1.6),
+  src/convert/ircservices.cpp (1.2), src/convert/trircd.cpp (1.6):
+  
+  Completed ircservices conversion.
+
+* 2003-01-31 01:21  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.26), src/convert/auspice.cpp (1.2),
+  src/convert/bolivia.cpp (1.2), src/convert/epona.cpp (1.2),
+  src/convert/ptlink.cpp (1.4), src/convert/sirv.cpp (1.4),
+  src/convert/trircd.cpp (1.5):
+  
+  Re-did epona, and made all the 'services_operator' entries to go the OPER
+  committee, keeping 'services_admin' entries going to SOP.
+
+* 2003-01-29 00:03  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.20), configure.in (1.73), include/config.h.in (1.34),
+  include/utils.h (1.63), include/convert/Makefile.am (1.2),
+  src/chandata.cpp (1.25), src/nickdata.cpp (1.23), src/utils.cpp (1.89),
+  src/convert/Makefile.am (1.2), src/convert/hybserv.cpp (1.2),
+  src/convert/interface.cpp (1.5), src/convert/ptlink.cpp (1.3),
+  src/convert/sirv.cpp (1.3), src/convert/trircd.cpp (1.4):
+  
+  
+  Stage 1 of getting other encryption schemes working with magick.
+
+* 2003-01-27 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.70):
+  
+  Created version 2.0s20030127
+
 * 2003-01-26 22:21  Preston A. Elder <prez@magick.tm>
   README (1.30), docs/en/index.sgml (1.48), include/convert/daylight.h
   (1.2), include/convert/interface.h (1.4), include/convert/ircs.h (1.2),
