@@ -46,9 +46,16 @@ dnl -dm   Output memory stats when compile is done
 OPTFLAGS=""
 
 dnl What warnings we will give off
-dnl REMOVED: -Wold-style-cast
-WARNFLAGS="-Wall -Wpointer-arith -Wstrict-prototypes \
-	-Wmissing-declarations -Wnested-externs -Woverloaded-virtual"
+dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wunused -Wold-style-cast
+WARNFLAGS="-Wall -W -Wbad-function-cast -Wcast-align \
+	-Wcomment -Wformat -Wimplicit -Wimplicit-int \
+	-Wimplicit-function-declarations -Wimport \
+	-Wmain -Wmissing-declarations -Wmissing-prototypes \
+	-Wnested-externs -Woverloaded-virtual -Wparentheses \
+        -Wpointer-arith -Wreorder -Wreturn-type -Wsynth \
+	-Wsign-compare -Wstrict-prototypes -Wswitch \
+	-Wtraditional -Wtrigraphs -Wuninitialized \
+	-Wwrite-strings"
 
 dnl Add -fno-default-inline else gcc spinlocks (not-nice)
 CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"

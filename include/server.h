@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.74  2001/11/03 21:02:51  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.

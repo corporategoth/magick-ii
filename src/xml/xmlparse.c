@@ -940,7 +940,7 @@ const XML_LChar *XML_ErrorString(int code)
     XML_T("error in processing external entity reference"),
     XML_T("document is not standalone")
   };
-  if (code > 0 && code < sizeof(message)/sizeof(message[0]))
+  if (code > 0 && code < (int) (sizeof(message)/sizeof(message[0])))
     return message[code];
   return 0;
 }
@@ -1902,14 +1902,14 @@ processXmlDecl(XML_Parser parser, int isGeneralTextEntity,
     }
     else if (encodingName) {
       enum XML_Error result;
-      const XML_Char *s = poolStoreString(&tempPool,
+      const XML_Char *str = poolStoreString(&tempPool,
 					  encoding,
 					  encodingName,
 					  encodingName
 					  + XmlNameLength(encoding, encodingName));
-      if (!s)
+      if (!str)
 	return XML_ERROR_NO_MEMORY;
-      result = handleUnknownEncoding(parser, s);
+      result = handleUnknownEncoding(parser, str);
       poolDiscard(&tempPool);
       if (result == XML_ERROR_UNKNOWN_ENCODING)
 	eventPtr = encodingName;

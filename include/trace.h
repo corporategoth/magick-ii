@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.77  2001/06/20 06:07:01  prez
 ** ome GCC 3.0 and solaris fixes
 **

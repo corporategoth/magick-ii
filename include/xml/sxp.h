@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.21  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -207,14 +210,14 @@ SXP_NS_BEGIN
 	template<class T>
 	class IFilePrint {
     public:
-		inline void Print(char *format, ...)
+		inline void Print(const char *format, ...)
 		{
 		    va_list argptr;
 		    va_start(argptr, format);
 		    static_cast<T *>(this)->PrintV(format, argptr);
 		    va_end(argptr);
 		}
-		inline void PrintV(char *format, va_list argptr)
+		inline void PrintV(const char *format, va_list argptr)
 		{
 		    static_cast<T *>(this)->PrintV(format, argptr);
 		}
@@ -635,8 +638,8 @@ SXP_NS_BEGIN
 
 		void ExpandBuf();
 	public:
-		void Print(char *format, ...);
-		void PrintV(char *format, va_list argptr);
+		void Print(const char *format, ...);
+		void PrintV(const char *format, va_list argptr);
 		void Indent();
 		MOutStream();
 		~MOutStream();

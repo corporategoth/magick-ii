@@ -7,14 +7,14 @@ magick_MANS = magick.pod magick_keygen.pod magick_stampkeys.pod
 POD2MANPARAM = --center="Magick Development Team" --release="$(PACKAGE) $(VERSION)"
 
 all-am:
-	if test -n "`which pod2man`" ;\
-	then	if test -r `which pod2man` ;\
-	then	if test -x `which pod2man` ;\
+	if test -n "`which pod2man 2>/dev/null`" ;\
+	then	if test -r `which pod2man 2>/dev/null` ;\
+	then	if test -x `which pod2man 2>/dev/null` ;\
 	then	rm -fr man1 ;\
 		mkdir man1 ;\
 		for x in $(magick_MANS) ;\
-		do	echo "`which pod2man` $(POD2MANPARAM) $$x >man1/`echo $$x | cut -f1 -d.`.1" ;\
-		`which pod2man` $(POD2MANPARAM) $$x >man1/`echo $$x | cut -f1 -d.`.1 ;\
+		do	echo "`which pod2man 2>/dev/null` $(POD2MANPARAM) $$x >man1/`echo $$x | cut -f1 -d.`.1" ;\
+		`which pod2man 2>/dev/null` $(POD2MANPARAM) $$x >man1/`echo $$x | cut -f1 -d.`.1 ;\
 		done ;\
 	fi; fi; fi
 

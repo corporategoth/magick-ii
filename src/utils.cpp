@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.71  2001/07/03 06:00:08  prez
 ** More deadlock fixes ... also cleared up the Signal #6 problem.
 **

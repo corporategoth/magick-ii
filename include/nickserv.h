@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.75  2001/11/04 23:43:14  prez
 ** Updates for MS Visual C++ compilation (it works now!).
 **
@@ -290,7 +293,7 @@ public:
     } InFlight;
 
     Nick_Live_t();
-    Nick_Live_t(const Nick_Live_t &in)
+    Nick_Live_t(const Nick_Live_t &in) : mUserDef(in)
 	{ *this = in; }
     Nick_Live_t(const mstring& name, const mDateTime& signon,
 	const mstring& server, const mstring& username,
@@ -463,7 +466,8 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 	tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
 public:
     Nick_Stored_t();
-    Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
+    Nick_Stored_t(const Nick_Stored_t &in) : mUserDef(in), SXP::IPersistObj(in)
+	{ *this = in; }
     Nick_Stored_t(const mstring& nick, const mstring& password);
     Nick_Stored_t(const mstring& nick); // Services Only (forbidden)
     ~Nick_Stored_t() {}

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.105  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -994,9 +997,9 @@ bool MemoServ::IsNickMemo(const mstring &in, const size_t num) const
 }
 
 
-size_t MemoServ::NickMemoCount(const mstring &in, const bool read) const
+size_t MemoServ::NickMemoCount(const mstring &in, const bool isread) const
 {
-    FT("MemoServ::NickMemoCount", (in, read));
+    FT("MemoServ::NickMemoCount", (in, isread));
 
     size_t retval = 0;
     RLOCK(("MemoServ", "nick", in.LowerCase()));
@@ -1006,7 +1009,7 @@ size_t MemoServ::NickMemoCount(const mstring &in, const bool read) const
 	MemoServ::nick_memo_t::const_iterator iter2;
 	for (iter2=iter->second.begin(); iter2 != iter->second.end(); iter2++)
 	{
-	    if (iter2->IsRead() == read)
+	    if (iter2->IsRead() == isread)
 		retval++;
 	}
     }
@@ -1270,9 +1273,9 @@ bool MemoServ::IsChannelNews(const mstring &in, const size_t num) const
     RET(false);
 }
 
-size_t MemoServ::ChannelNewsCount(const mstring &in, const mstring &user, const bool read)
+size_t MemoServ::ChannelNewsCount(const mstring &in, const mstring &user, const bool isread)
 {
-    FT("MemoServ::ChannelNewsCount", (in, user, read));
+    FT("MemoServ::ChannelNewsCount", (in, user, isread));
 
     size_t retval = 0;
     RLOCK(("MemoServ", "channel", in.LowerCase()));
@@ -1282,7 +1285,7 @@ size_t MemoServ::ChannelNewsCount(const mstring &in, const mstring &user, const 
 	MemoServ::channel_news_t::iterator iter2;
 	for (iter2=iter->second.begin(); iter2 != iter->second.end(); iter2++)
 	{
-	    if (iter2->IsRead(user) == read)
+	    if (iter2->IsRead(user) == isread)
 		retval++;
 	}
     }
@@ -1946,8 +1949,8 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 		}
 
 		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
-		size_t filesize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
-		if (filename.empty() || filesize <= 0)
+		size_t fsize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
+		if (filename.empty() || fsize <= 0)
 		{
 		    nonfiles = true;
 		    continue;
@@ -1961,13 +1964,13 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 		    return;
 		}
 
-		{ RLOCK(("DCC"));
+		{ RLOCK2(("DCC"));
 		if (Parent->dcc != NULL)
 		{
 		    unsigned short port = mSocket::FindAvailPort();
 		    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 			" " + mstring(Parent->LocalHost()) + " " +
-			mstring(port) + " " + mstring(filesize)));
+			mstring(port) + " " + mstring(fsize)));
 		    Parent->dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
 		}}
 	    }
@@ -3352,6 +3355,8 @@ SXP::Tag News_t::tag_UserDef("UserDef");
 
 void Memo_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Memo_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
     if( pElement->IsA(tag_UserDef) )
@@ -3364,6 +3369,8 @@ void Memo_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEleme
 
 void Memo_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Memo_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Nick) )		pElement->Retrieve(i_Nick);
@@ -3376,6 +3383,8 @@ void Memo_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement
 
 void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("Memo_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Memo_t);
@@ -3398,6 +3407,8 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void News_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("News_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
     if( pElement->IsA(tag_UserDef) )
@@ -3410,6 +3421,8 @@ void News_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEleme
 
 void News_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("News_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Channel) )	pElement->Retrieve(i_Channel);
@@ -3428,6 +3441,8 @@ void News_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement
 
 void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("News_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_News_t);
@@ -3483,12 +3498,17 @@ void MemoServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
 
 void MemoServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+    static_cast<void>(pElement);
+
     FT("MemoServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("MemoServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_MemoServ);

@@ -1,6 +1,6 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #endif
 
 /*  Magick IRC Services
@@ -25,6 +25,9 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.49  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.

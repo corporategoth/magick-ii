@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(dccengine_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.17  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=

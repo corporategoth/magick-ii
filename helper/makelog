@@ -72,8 +72,8 @@ RCSID(logfile_h, "@(#) \$Id\$");
  */
 
 EOF
-	echo "unsigned int def_logent = `cat $LANG | wc -l`;" >>include/logfile.h
-	echo "char *def_log[] = {" >>include/logfile.h
+	echo "const unsigned int def_logent = `cat $LANG | wc -l`;" >>include/logfile.h
+	echo "const char *def_log[] = {" >>include/logfile.h
 	sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" \
 		-e "s/$/\",/g" $LANG >>include/logfile.h
 	echo "\"\" };" >>include/logfile.h

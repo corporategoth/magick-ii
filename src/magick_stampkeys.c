@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.5  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -207,10 +210,12 @@ int mrandom(int upper)
 {
 #ifdef __BORLANDC__
 	return random(upper);
-#elif _MSC_VER
-	return rand() % upper;
 #else
+#  ifdef _MSC_VER
+	return rand() % upper;
+#  else
 	return random() % upper;
+#  endif
 #endif
 }
 

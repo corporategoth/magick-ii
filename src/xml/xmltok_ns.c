@@ -6,12 +6,14 @@ const ENCODING *NS(XmlGetUtf8InternalEncoding)()
 const ENCODING *NS(XmlGetUtf16InternalEncoding)()
 {
 #if XML_BYTE_ORDER == 12
-  return &ns(internal_little2_encoding).enc;
-#elif XML_BYTE_ORDER == 21
-  return &ns(internal_big2_encoding).enc;
+	return &ns(internal_little2_encoding).enc;
 #else
-  const short n = 1;
-  return *(const char *)&n ? &ns(internal_little2_encoding).enc : &ns(internal_big2_encoding).enc;
+#  if XML_BYTE_ORDER == 21
+	return &ns(internal_big2_encoding).enc;
+#  else
+	const short n = 1;
+	return *(const char *)&n ? &ns(internal_little2_encoding).enc : &ns(internal_big2_encoding).enc;
+#  endif
 #endif
 }
 

@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/11/12 01:05:00  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.68  2001/11/04 23:43:14  prez
 ** Updates for MS Visual C++ compilation (it works now!).
 **
@@ -223,7 +226,8 @@ class Chan_Live_t : public mUserDef
     void ChgNick(const mstring& nick, const mstring& newnick); // Called by Nick_Live_t
 public:
     Chan_Live_t() {}
-    Chan_Live_t(const Chan_Live_t& in) { *this = in; }
+    Chan_Live_t(const Chan_Live_t& in) : mUserDef(in)
+	{ *this = in; }
     Chan_Live_t(const mstring& name, const mstring& first_user);
     ~Chan_Live_t() {}
     void operator=(const Chan_Live_t &in);
@@ -402,7 +406,8 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     bool DoRevenge(const mstring& type, const mstring& target, const mstring& source);
 public:
     Chan_Stored_t() {}
-    Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
+    Chan_Stored_t(const Chan_Stored_t& in) : mUserDef(in), SXP::IPersistObj(in)
+	{ *this = in; }
     Chan_Stored_t(const mstring& name, const mstring& founder,
 	const mstring& password, const mstring& desc);
     Chan_Stored_t(const mstring& name); // Forbidden

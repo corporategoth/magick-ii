@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.8  2001/11/04 23:43:14  prez
 ** Updates for MS Visual C++ compilation (it works now!).
 **
@@ -324,13 +327,13 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
 	    if (!ni->last_realname)
 		ni->last_realname = strdup("");
 	    if (ni->accesscount) {
-		char **access, *s;
+		char **i_access, *s;
 		if (ni->accesscount > ESP_NSAccessMax)
 		    ni->accesscount = ESP_NSAccessMax;
-		access = (char **) malloc(sizeof(char *) * ni->accesscount);
-		ni->access = access;
-		for (j = 0; j < ni->accesscount; j++, access++)
-		    SAFE(ESP_read_string(access, f));
+		i_access = (char **) malloc(sizeof(char *) * ni->accesscount);
+		ni->access = i_access;
+		for (j = 0; j < ni->accesscount; j++, i_access++)
+		    SAFE(ESP_read_string(i_access, f));
 		while (j < old_nickinfo.accesscount) {
 		    SAFE(ESP_read_string(&s, f));
 		    if (s)
@@ -437,11 +440,11 @@ void ESP_load_ns_dbase(void)
 		    }
 		    SAFE(ESP_read_int16(&ni->accesscount, f));
 		    if (ni->accesscount) {
-			char **access;
-			access = (char **) malloc(sizeof(char *) * ni->accesscount);
-			ni->access = access;
-			for (j = 0; j < ni->accesscount; j++, access++)
-			    SAFE(ESP_read_string(access, f));
+			char **i_access;
+			i_access = (char **) malloc(sizeof(char *) * ni->accesscount);
+			ni->access = i_access;
+			for (j = 0; j < ni->accesscount; j++, i_access++)
+			    SAFE(ESP_read_string(i_access, f));
 		    }
 		    SAFE(ESP_read_int16(&ni->memos.memocount, f));
 		    SAFE(ESP_read_int16(&ni->memos.memomax, f));
@@ -669,27 +672,27 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 		SAFE(ESP_read_string(&ci->last_topic, f));
 
 	    if (ci->accesscount) {
-		ESP_ChanAccess *access;
+		ESP_ChanAccess *i_access;
 
-		access = (ESP_ChanAccess *) malloc(sizeof(ESP_ChanAccess) * ci->accesscount);
-		ci->access = access;
-		for (j = 0; j < ci->accesscount; j++, access++) {
+		i_access = (ESP_ChanAccess *) malloc(sizeof(ESP_ChanAccess) * ci->accesscount);
+		ci->access = i_access;
+		for (j = 0; j < ci->accesscount; j++, i_access++) {
 		    SAFE(ESP_read_variable(old_chanaccess, f));
 #ifdef COMPATIBILITY_V2
 		    if (old_chanaccess.is_nick < 0)
-			access->in_use = 0;
+			i_access->in_use = 0;
 		    else
-			access->in_use = old_chanaccess.is_nick;
+			i_access->in_use = old_chanaccess.is_nick;
 #else
-		    access->in_use = old_chanaccess.in_use;
+		    i_access->in_use = old_chanaccess.in_use;
 #endif
-		    access->level = old_chanaccess.level;
+		    i_access->level = old_chanaccess.level;
 		}
-		access = ci->access;
-		for (j = 0; j < ci->accesscount; j++, access++) {
-		    SAFE(ESP_read_string(&access->nick, f));
-		    if (access->nick == NULL)
-			access->in_use = 0;
+		i_access = ci->access;
+		for (j = 0; j < ci->accesscount; j++, i_access++) {
+		    SAFE(ESP_read_string(&i_access->nick, f));
+		    if (i_access->nick == NULL)
+			i_access->in_use = 0;
 		}
 	    } else {
 		ci->access = NULL;
@@ -1697,7 +1700,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
     }
     else
     {
-	ESP_ChanAccess *access;
+	ESP_ChanAccess *i_access;
 	ESP_AutoKick *akick;
 	int i;
 
@@ -1724,17 +1727,17 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 
 	long newlevel;
 	float mod = (float) Parent->chanserv.Level_Max() / (float) ESP_ACCESS_FOUNDER;
-	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
+	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
-	    if (access->nick == NULL)
+	    if (i_access->nick == NULL)
 		continue;
-	    if (access->level < 0)
+	    if (i_access->level < 0)
 		newlevel = -1;
 	    else
-		newlevel = (long) ((float) access->level * mod);
+		newlevel = (long) ((float) i_access->level * mod);
 	    if (newlevel == 0)
 		newlevel = 1;
-	    out.Access_insert(access->nick, newlevel,
+	    out.Access_insert(i_access->nick, newlevel,
 			Parent->chanserv.FirstName());
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)

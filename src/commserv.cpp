@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.106  2001/11/07 04:11:58  prez
 ** Added in better message trying to delete a member who is a head.
 **
@@ -559,13 +562,13 @@ bool Committee_t::IsIn(const mstring& nick) const
     // as a SLAVE since theres no way of online changing host.
     if (i_Name == Parent->commserv.SADMIN_Name())
     {
-	unsigned int i, j;
-	Nick_Stored_t nick = Parent->nickserv.GetStored(target);
-	for (i=0; i<nick.Siblings(); i++)
+	unsigned int j;
+	Nick_Stored_t snick = Parent->nickserv.GetStored(target);
+	for (i=0; i<snick.Siblings(); i++)
 	{
 	    for (j=0; j<members.size(); j++)
 	    {
-		if (nick.Sibling(i).IsSameAs(members[j], true))
+		if (snick.Sibling(i).IsSameAs(members[j], true))
 		{
 		    RET(true);
 		}
@@ -634,7 +637,7 @@ bool Committee_t::IsHead(const mstring& nick) const
     }
     else
     {
-	RLOCK_IF(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"),
+	RLOCK2_IF(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"),
 	    !i_HeadCom.empty() && Parent->commserv.IsList(i_HeadCom))
 	{
 	    if (Parent->commserv.GetList(i_HeadCom).IsIn(nick))
@@ -849,15 +852,15 @@ bool Committee_t::L_OpenMemos() const
 
 
 bool Committee_t::MSG_insert(const mstring& entry, const mstring& nick,
-	const mDateTime& time)
+	const mDateTime& addtime)
 {
-    FT("Committee_t::MSG_insert", (entry, nick, time));
+    FT("Committee_t::MSG_insert", (entry, nick, addtime));
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     if (IsHead(nick))
     {
 	MCB(i_Messages.size());
-	i_Messages.push_back(entlist_t(entry, nick, time));
+	i_Messages.push_back(entlist_t(entry, nick, addtime));
 	MCE(i_Messages.size());
 	message = i_Messages.end(); message--;
 	RET(true);
@@ -1733,7 +1736,7 @@ void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     }
 
     mstring output;
-    RLOCK(("CommServ", "list", committee.UpperCase()));
+    { RLOCK(("CommServ", "list", committee.UpperCase()));
     Committee_t &comm = Parent->commserv.GetList(committee);
     SEND(mynick, source, "COMMSERV_INFO/DESCRIPTION", (
 		committee, comm.Description()));
@@ -1813,7 +1816,8 @@ void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     if (output.size())
 	SEND(mynick, source, "COMMSERV_INFO/OPTIONS", (
 			output));
-    { RLOCK(("Events"));
+    }
+    { RLOCK2(("Events"));
     if (Parent->servmsg.ShowSync() && Parent->events != NULL)
 	SEND(mynick, source, "MISC/SYNC", (
 			Parent->events->SyncTime(source)));
@@ -3279,6 +3283,8 @@ void Committee_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * p
 
 void Committee_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Committee_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
@@ -3328,6 +3334,8 @@ void Committee_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pEl
 
 void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("Committee_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Committee_t);
@@ -3397,12 +3405,17 @@ void CommServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
 
 void CommServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+    static_cast<void>(pElement);
+
     FT("CommServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("CommServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_CommServ);
@@ -3481,7 +3494,7 @@ void CommServ::PostLoad()
 	    iter->second.i_Head.erase();
 	    iter->second.i_HeadCom.erase();
 	    iter->second.i_Members.clear();
-	    for (unsigned int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
+	    for (j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
 		iter->second.i_Members.insert(entlist_t(
 			Parent->operserv.Services_Admin().ExtractWord(j, ", "),
 			Parent->operserv.FirstName()));

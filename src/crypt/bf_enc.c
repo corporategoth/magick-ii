@@ -65,15 +65,14 @@
  */
 
 #if (BF_ROUNDS != 16) && (BF_ROUNDS != 20)
-#error If you set BF_ROUNDS to some value other than 16 or 20, you will have \
-to modify the code.
+  #error If you set BF_ROUNDS to some value other than 16 or 20, you will have to modify the code.
 #endif
 
 void BF_encrypt(BF_LONG *data, const BF_KEY *key)
 	{
 #ifndef BF_PTR2
 	register BF_LONG l,r;
-    const register BF_LONG *p,*s;
+        register const BF_LONG *p,*s;
 
 	p=key->P;
 	s= &(key->S[0]);
@@ -150,7 +149,7 @@ void BF_decrypt(BF_LONG *data, const BF_KEY *key)
 	{
 #ifndef BF_PTR2
 	register BF_LONG l,r;
-    const register BF_LONG *p,*s;
+        register const BF_LONG *p,*s;
 
 	p=key->P;
 	s= &(key->S[0]);

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.93  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -1137,7 +1140,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("ChanServ", "live"));
     for (j=Parent->chanserv.LiveBegin(); j!=Parent->chanserv.LiveEnd(); j++)
     {
-	RLOCK(("ChanServ", "live", j->first));
+	RLOCK2(("ChanServ", "live", j->first));
 	size += j->first.capacity();
 	size += j->second.Usage();
     }}

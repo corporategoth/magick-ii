@@ -72,8 +72,8 @@ RCSID(language_h, "@(#) \$Id\$");
  */
 
 EOF
-	echo "unsigned int def_langent = `cat $LANG | wc -l`;" >>include/language.h
-	echo "char *def_lang[] = {" >>include/language.h
+	echo "const unsigned int def_langent = `cat $LANG | wc -l`;" >>include/language.h
+	echo "const char *def_lang[] = {" >>include/language.h
 	sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" \
 		-e "s/$/\",/g" $LANG >>include/language.h
 	echo "\"\" };" >>include/language.h

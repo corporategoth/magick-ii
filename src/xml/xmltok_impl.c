@@ -29,13 +29,13 @@ your version of this file under either the MPL or the GPL.
 */
 
 #ifdef __BORLANDC__
-#pragma option -w-ccc
-#pragma option -w-par
-#pragma option -w-rch
+  #pragma option -w-ccc
+  #pragma option -w-par
+  #pragma option -w-rch
 #endif
 
 #ifndef IS_INVALID_CHAR
-#define IS_INVALID_CHAR(enc, ptr, n) (0)
+#  define IS_INVALID_CHAR(enc, ptr, n) (0)
 #endif
 
 #define INVALID_LEAD_CASE(n, ptr, nextTokPtr) \

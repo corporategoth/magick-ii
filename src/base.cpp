@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.175  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.174  2001/11/04 23:43:14  prez
 ** Updates for MS Visual C++ compilation (it works now!).
 **
@@ -380,6 +383,8 @@ SXP::Tag tag_Stupid("Stupid");
 
 void entlist_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
     if( pElement->IsA(tag_UserDef) )
@@ -392,6 +397,8 @@ void entlist_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEl
 
 void entlist_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
@@ -401,6 +408,8 @@ void entlist_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElem
 
 void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_entlist_t);
@@ -464,19 +473,20 @@ void entlist_t::DumpE() const
 
 // --------- end of entlist_t -----------------------------------
 
-mMessage::mMessage(const mstring& source, const mstring& msgtype, const mstring& params, const u_long priority)
-	: ACE_Method_Request(priority), source_(source), params_(params),
+mMessage::mMessage(const mstring& p_source, const mstring& p_msgtype,
+	const mstring& p_params, const u_long p_priority)
+	: ACE_Method_Request(p_priority), source_(p_source), params_(p_params),
 	  creation_(mDateTime::CurrentDateTime())
 {
-    if (source != " " && Parent->server.proto.Tokens())
+    if (source_ != " " && Parent->server.proto.Tokens())
     {
-	mstring tmp(Parent->server.proto.GetToken(msgtype));
+	mstring tmp(Parent->server.proto.GetToken(p_msgtype));
 	if (!tmp.empty())
 	    msgtype_ = tmp;
     }
 
     if (msgtype_.empty())
-	msgtype_ = msgtype;
+	msgtype_ = p_msgtype;
 }
 
 void mMessage::AddDependancies()
@@ -813,7 +823,8 @@ void mMessage::AddDependancies()
 	}
 	if (oldadded != added)
 	{
-	    CP(("(%d) Added dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
+	    CP(("(%d) Added dependancy on %d %s.", msgid_,
+			static_cast<int>(iter->first), iter->second.c_str()));
 	}
     }
 }
@@ -965,7 +976,8 @@ bool mMessage::RecheckDependancies()
 	}
 	if (resolved)
 	{
-	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
+	    CP(("(%d) Resolved dependancy on %d %s.", msgid_,
+			static_cast<int>(iter->first), iter->second.c_str()));
 	}
     }}
     if (!OutstandingDependancies())
@@ -1003,7 +1015,7 @@ bool mMessage::OutstandingDependancies()
 
 void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, const mstring& param2)
 {
-    FT("mMessage::CheckDependancies", ((int) type, param1, param2));
+    FT("mMessage::CheckDependancies", (static_cast<int>(type), param1, param2));
 
     if (param1.empty())
 	return;
@@ -1060,7 +1072,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 
 void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
 {
-    FT("mMessage::DependancySatisfied", ((int) type, param));
+    FT("mMessage::DependancySatisfied", (static_cast<int>(type), param));
 
     WLOCK(("Dependancies", this));
     list<triplet<type_t, mstring, bool> >::iterator iter;
@@ -1068,7 +1080,8 @@ void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
     {
 	if (iter->first == type && iter->second == param)
 	{
-	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
+	    CP(("(%d) Resolved dependancy on %d %s.", msgid_,
+			static_cast<int>(iter->first), iter->second.c_str()));
 	    iter->third = true;
 	    break;
 	}

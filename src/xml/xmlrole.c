@@ -32,7 +32,7 @@ your version of this file under either the MPL or the GPL.
 #include "xml/xmlrole.h"
 
 #ifdef __BORLANDC__
-#pragma option -w-par
+  #pragma option -w-par
 #endif
 
 /* Doesn't check:

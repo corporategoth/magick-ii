@@ -71,7 +71,7 @@
 #define c2ln(c,l1,l2,n)	{ \
 			c+=n; \
 			l1=l2=0; \
-			switch (n) { \
+			switch ((int) n) { \
 			case 8: l2 =((unsigned long)(*(--(c))))<<24L; \
 			case 7: l2|=((unsigned long)(*(--(c))))<<16L; \
 			case 6: l2|=((unsigned long)(*(--(c))))<< 8L; \
@@ -93,7 +93,7 @@
 #undef l2cn
 #define l2cn(l1,l2,c,n)	{ \
 			c+=n; \
-			switch (n) { \
+			switch ((int) n) { \
 			case 8: *(--(c))=(unsigned char)(((l2)>>24L)&0xff); \
 			case 7: *(--(c))=(unsigned char)(((l2)>>16L)&0xff); \
 			case 6: *(--(c))=(unsigned char)(((l2)>> 8L)&0xff); \
@@ -109,7 +109,7 @@
 #define n2ln(c,l1,l2,n)	{ \
 			c+=n; \
 			l1=l2=0; \
-			switch (n) { \
+			switch ((int) n) { \
 			case 8: l2 =((unsigned long)(*(--(c))))    ; \
 			case 7: l2|=((unsigned long)(*(--(c))))<< 8; \
 			case 6: l2|=((unsigned long)(*(--(c))))<<16; \
@@ -124,7 +124,7 @@
 /* NOTE - c is not incremented as per l2n */
 #define l2nn(l1,l2,c,n)	{ \
 			c+=n; \
-			switch (n) { \
+			switch ((int) n) { \
 			case 8: *(--(c))=(unsigned char)(((l2)    )&0xff); \
 			case 7: *(--(c))=(unsigned char)(((l2)>> 8)&0xff); \
 			case 6: *(--(c))=(unsigned char)(((l2)>>16)&0xff); \
@@ -170,16 +170,17 @@
 	LL^=t \
 	)
 
-#elif defined(BF_PTR)
+#else
+#  if defined(BF_PTR)
 
-#ifndef BF_LONG_LOG2
-#define BF_LONG_LOG2  2       /* default to BF_LONG being 32 bits */
-#endif
-#define BF_M  (0xFF<<BF_LONG_LOG2)
-#define BF_0  (24-BF_LONG_LOG2)
-#define BF_1  (16-BF_LONG_LOG2)
-#define BF_2  ( 8-BF_LONG_LOG2)
-#define BF_3  BF_LONG_LOG2 /* left shift */
+#  ifndef BF_LONG_LOG2
+#    define BF_LONG_LOG2  2       /* default to BF_LONG being 32 bits */
+#  endif
+#  define BF_M  (0xFF<<BF_LONG_LOG2)
+#  define BF_0  (24-BF_LONG_LOG2)
+#  define BF_1  (16-BF_LONG_LOG2)
+#  define BF_2  ( 8-BF_LONG_LOG2)
+#  define BF_3  BF_LONG_LOG2 /* left shift */
 
 /*
  * This is normally very good on RISC platforms where normally you
@@ -190,14 +191,14 @@
  * rlwinm. So let'em double-check if their compiler does it.
  */
 
-#define BF_ENC(LL,R,S,P) ( \
+#  define BF_ENC(LL,R,S,P) ( \
 	LL^=P, \
 	LL^= (((*(BF_LONG *)((unsigned char *)&(S[  0])+((R>>BF_0)&BF_M))+ \
 		*(BF_LONG *)((unsigned char *)&(S[256])+((R>>BF_1)&BF_M)))^ \
 		*(BF_LONG *)((unsigned char *)&(S[512])+((R>>BF_2)&BF_M)))+ \
 		*(BF_LONG *)((unsigned char *)&(S[768])+((R<<BF_3)&BF_M))) \
 	)
-#else
+#  else
 
 /*
  * This is a *generic* version. Seem to perform best on platforms that
@@ -207,13 +208,14 @@
  * extbl and s[48]addq instructions.
  */
 
-#define BF_ENC(LL,R,S,P) ( \
+#  define BF_ENC(LL,R,S,P) ( \
 	LL^=P, \
 	LL^=(((	S[       ((int)(R>>24)&0xff)] + \
 		S[0x0100+((int)(R>>16)&0xff)])^ \
 		S[0x0200+((int)(R>> 8)&0xff)])+ \
 		S[0x0300+((int)(R    )&0xff)])&0xffffffffL \
 	)
+#  endif
 #endif
 
 #endif

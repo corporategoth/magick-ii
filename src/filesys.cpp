@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.80  2001/11/07 03:09:29  prez
 ** Fixed coredump on windows on shutdown.
 **
@@ -517,13 +520,13 @@ size_t mFile::Read(void *buf, const size_t size)
     MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(0);
-    long read = ACE_OS::fread(buf, 1, size, fd);
+    long bytesread = ACE_OS::fread(buf, 1, size, fd);
     if (ferror(fd) && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
 			"fread", i_name, errno, strerror(errno)));
     }
-    RET(read);
+    RET(bytesread);
 }
 
 mstring mFile::ReadLine()
@@ -675,10 +678,10 @@ bool mFile::Exists(const mstring& name)
 {
     FT("mFile::Exists", (name));
     MLOCK(("mFile", name));
-    FILE *fd;
-    if ((fd = ACE_OS::fopen(name.c_str(), "r")) == NULL)
+    FILE *file;
+    if ((file = ACE_OS::fopen(name.c_str(), "r")) == NULL)
 	RET(false);
-    ACE_OS::fclose(fd);
+    ACE_OS::fclose(file);
     RET(true);
 }
 
@@ -745,52 +748,52 @@ mDateTime mFile::LastMod(const mstring& name)
     RET(retval);
 }
 
-long mFile::Copy(const mstring& sin, const mstring& sout, const bool append)
+long mFile::Copy(const mstring& infile, const mstring& outfile, const bool append)
 {
-    FT("mFile::Copy", (sin, sout, append));
+    FT("mFile::Copy", (infile, outfile, append));
     
-    if (sin.empty() || !Exists(sin) || sout.empty())
+    if (infile.empty() || !Exists(infile) || outfile.empty())
 	RET(0);
-    MLOCK(("mFile", sin));
-    MLOCK2(("mFile", sout));
-    mFile in(sin.c_str());
-    mFile out(sout.c_str(), append ? "a" : "w");
+    MLOCK(("mFile", infile));
+    MLOCK2(("mFile", outfile));
+    mFile in(infile.c_str());
+    mFile out(outfile.c_str(), append ? "a" : "w");
     if (!(in.IsOpened() && out.IsOpened()))
 	RET(0);
     
     unsigned char c[65535];
-    size_t read, total = 0;
+    size_t bytesread, total = 0;
     do {
-        read = in.Read(c, 65535);
-	total += out.Write(c, read);
-    } while (read == 65535);
+        bytesread = in.Read(c, 65535);
+	total += out.Write(c, bytesread);
+    } while (bytesread == 65535);
     in.Close();
     out.Close();
     RET(total);
 }
 
 // CANNOT trace this, it is used by TRACE code ...
-long mFile::Dump(const vector<mstring>& sin, const mstring& sout,
+long mFile::Dump(const vector<mstring>& invector, const mstring& outfile,
 	const bool append, const bool endline)
 {
-    FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
-    if (!sin.size() || sout.empty())
+    FT("mFile::Dump", ("(vector<mstring>) invector", outfile, append, endline));
+    if (!invector.size() || outfile.empty())
 	RET(0);
-    MLOCK(("mFile", sout));
-    mFile out(sout.c_str(), append ? "a" : "w");
+    MLOCK(("mFile", outfile));
+    mFile out(outfile.c_str(), append ? "a" : "w");
     if (!out.IsOpened())
 	RET(0);
 
     size_t i, total = 0;
-    for (i=0; i<sin.size(); i++)
+    for (i=0; i<invector.size(); i++)
     {
 	if (endline)
 	{
-	    total += out.Write((sin[i]+"\n").c_str(), sin[i].length()+1);
+	    total += out.Write((invector[i]+"\n").c_str(), invector[i].length()+1);
 	}
 	else
 	{
-	    total += out.Write(sin[i].c_str(), sin[i].length());
+	    total += out.Write(invector[i].c_str(), invector[i].length());
 	}
     }
     out.Close();
@@ -799,20 +802,20 @@ long mFile::Dump(const vector<mstring>& sin, const mstring& sout,
 
 
 // CANNOT trace this, it is used by TRACE code ...
-long mFile::Dump(const list<mstring>& sin, const mstring& sout,
+long mFile::Dump(const list<mstring>& inlist, const mstring& outfile,
 	const bool append, const bool endline)
 {
-    FT("mFile::Dump", ("(list<mstring>) sin", sout, append, endline));
-    if (!sin.size() || sout.empty())
+    FT("mFile::Dump", ("(list<mstring>) inlist", outfile, append, endline));
+    if (!inlist.size() || outfile.empty())
 	RET(0);
-    MLOCK(("mFile", sout));
-    mFile out(sout.c_str(), append ? "a" : "w");
+    MLOCK(("mFile", outfile));
+    mFile out(outfile.c_str(), append ? "a" : "w");
     if (!out.IsOpened())
 	RET(0);
 	
     size_t total = 0;
     list<mstring>::const_iterator iter;
-    for (iter=sin.begin(); iter!=sin.end(); iter++)
+    for (iter=inlist.begin(); iter!=inlist.end(); iter++)
     {
 	if (endline)
 	{
@@ -827,15 +830,15 @@ long mFile::Dump(const list<mstring>& sin, const mstring& sout,
     RET(total);
 }
 
-vector<mstring> mFile::UnDump(const mstring &sin)
+vector<mstring> mFile::UnDump(const mstring &infile)
 {
-    FT("mFile::UnDump", (sin));
+    FT("mFile::UnDump", (infile));
     vector<mstring> Result;
 
-    if(sin.empty() || !Exists(sin))
+    if(infile.empty() || !Exists(infile))
         NRET(vector<mstring>,Result);
-    MLOCK(("mFile", sin));
-    mFile in(sin.c_str(), "r");
+    MLOCK(("mFile", infile));
+    mFile in(infile.c_str(), "r");
     if(!in.IsOpened())
         NRET(vector<mstring>,Result);
 
@@ -1149,7 +1152,7 @@ vector<unsigned long> FileMap::GetList(const FileMap::FileType type, const mstri
 	    }
 	    else
 	    {
-		RLOCK(("FileMap", static_cast<int>(type), iter->first));
+		RLOCK2(("FileMap", static_cast<int>(type), iter->first));
 		if (iter->second.second.empty())
 		    retval.push_back(iter->first);
 		else
@@ -1180,7 +1183,7 @@ unsigned long FileMap::GetNum(const FileMap::FileType type, const mstring& name)
 	RLOCK(("FileMap", static_cast<int>(type)));
     	for (iter = fmi->second.begin(); iter != fmi->second.end(); iter++)
 	{
-	    RLOCK(("FileMap", static_cast<int>(type), iter->first));
+	    RLOCK2(("FileMap", static_cast<int>(type), iter->first));
 	    if (iter->second.first == name)
 	    {
 	    	if (Exists(type, iter->first))
@@ -1214,11 +1217,16 @@ SXP::Tag FileMap::tag_File("File");
 
 void FileMap::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+    static_cast<void>(pElement);
+
     FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
 void FileMap::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("FileMap::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 
@@ -1232,6 +1240,8 @@ void FileMap::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElemen
 
 void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("FileMap::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_FileMap);
@@ -1287,14 +1297,14 @@ void FileMap::PostLoad()
     fm_array.clear();
 }
 
-DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
+DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
 	const mstring& mynick, const mstring& source,
 	const FileMap::FileType filetype, const unsigned long filenum)
-	: i_Socket(socket), i_Source(source), i_Mynick(mynick),
+	: i_Socket(sock), i_Source(source), i_Mynick(mynick),
 	  i_Filename(Parent->filesys.GetName(filetype, filenum)),
 	  i_Blocksize(Parent->files.Blocksize()), i_Type(Send), i_DccId(dccid)
 {
-    FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
+    FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock",
 			mynick, source, static_cast<int>(filetype), filenum));
 
     // Setup Paramaters
@@ -1349,14 +1359,14 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
 }
 
 
-DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
+DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
 	const mstring& mynick, const mstring& source, const mstring& filename,
 	const size_t filesize, const size_t blocksize)
-	: i_Socket(socket), i_Source(source), i_Mynick(mynick),
+	: i_Socket(sock), i_Source(source), i_Mynick(mynick),
 	  i_Filename(filename), i_Blocksize(Parent->files.Blocksize()),
 	  i_Type(Get), i_DccId(dccid)	  
 {
-    FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
+    FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock",
 		mynick, source, filename, filesize, blocksize));
 
     // Setup Paramaters
@@ -1875,6 +1885,8 @@ void DccXfer::DumpE() const
 
 int DccMap::open(void *in)
 {
+    static_cast<void>(in);
+
     FT("DccMap::open", ("(void *) in"));
     int retval = activate();
     RET(retval);
@@ -2124,7 +2136,7 @@ vector<unsigned long> DccMap::GetList(const mstring& in)
     RLOCK(("DccMap", "xfers"));
     for (iter=xfers.begin(); iter!=xfers.end(); iter++)
     {
-	RLOCK(("DccMap", "xfers", iter->first));
+	RLOCK2(("DccMap", "xfers", iter->first));
 	if (iter->second == NULL)
 	{
 #ifdef MAGICK_HAS_EXCEPTIONS

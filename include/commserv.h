@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.58  2001/11/04 23:43:14  prez
 ** Updates for MS Visual C++ compilation (it works now!).
 **
@@ -195,7 +198,8 @@ class Committee_t : public mUserDef, public SXP::IPersistObj
 	tag_Messages, tag_UserDef, tag_RegTime;
 public:
     Committee_t() {}
-    Committee_t(const Committee_t &in) { *this = in; }
+    Committee_t(const Committee_t &in) : mUserDef(in), SXP::IPersistObj(in)
+	{ *this = in; }
     Committee_t(const mstring& name, const mstring& head, const mstring& description);
     Committee_t(const mstring& name, const Committee_t& head, const mstring& description);
     Committee_t(const mstring& name, const mstring& description);

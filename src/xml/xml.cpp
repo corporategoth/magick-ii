@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
-#pragma hdrstop
+  #pragma hdrstop
 USEUNIT("sxp.cpp");
 USEUNIT("hashtable.c");
 USEUNIT("xmlparse.c");

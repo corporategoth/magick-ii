@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.8  2001/11/03 21:02:55  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -62,7 +65,7 @@ long Stage::Consume()
     NFT("Stage::Consume");
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ConsumeWithoutInput);
+	RET(-1 * static_cast<long>(SE_ConsumeWithoutInput));
     }
 
     long res, total = 0;
@@ -120,7 +123,7 @@ long StringStage::Consume()
     NFT("StringStage::Consume");
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ConsumeWithoutInput);
+	RET(-1 * static_cast<long>(SE_ConsumeWithoutInput));
     }
 
     long res, total = 0;
@@ -156,7 +159,7 @@ long StringStage::Read(char *buf, size_t size)
     memset(buf, 0, size);
     if (input != NULL)
     {
-	RET(-1 * (long) SE_ReadWithInput);
+	RET(-1 * static_cast<long>(SE_ReadWithInput));
     }
 
     long retval = 0;
@@ -214,15 +217,15 @@ long FileStage::Consume()
     NFT("FileStage::Consume");
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ConsumeWithoutInput);
+	RET(-1 * static_cast<long>(SE_ConsumeWithoutInput));
     }
     if (!file.IsOpened())
     {
-	RET(-1 * (long) SE_FLE_NotOpened);
+	RET(-1 * static_cast<long>(SE_FLE_NotOpened));
     }
     if (!file.IsWritable())
     {
-	RET(-1 * (long) SE_FLE_NotWritable);
+	RET(-1 * static_cast<long>(SE_FLE_NotWritable));
     }
 
     char buffer[DEF_STAGE_BUFFER];
@@ -253,11 +256,11 @@ long FileStage::Read(char *buf, size_t size)
     memset(buf, 0, size);
     if (input != NULL)
     {
-	RET(-1 * (long) SE_ReadWithInput);
+	RET(-1 * static_cast<long>(SE_ReadWithInput));
     }
     if (!file.IsOpened())
     {
-	RET(-1 * (long) SE_FLE_NotOpened);
+	RET(-1 * static_cast<long>(SE_FLE_NotOpened));
     }
 
     long retval = file.Read(buf, size);
@@ -328,11 +331,11 @@ long CryptStage::Read(char *buf, size_t size)
     memset(buf, 0, size);
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ReadWithoutInput);
+	RET(-1 * static_cast<long>(SE_ReadWithoutInput));
     }
     if (!gotkeys)
     {
-	RET(-1 * (long) SE_CRY_NoKeys);
+	RET(-1 * static_cast<long>(SE_CRY_NoKeys));
     }
 
     unsigned int i=0;
@@ -468,7 +471,7 @@ long CompressStage::Read(char *buf, size_t size)
     memset(buf, 0, size);
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ReadWithoutInput);
+	RET(-1 * static_cast<long>(SE_ReadWithoutInput));
     }
 
     strm.next_out = reinterpret_cast<Bytef *>(buf);
@@ -574,15 +577,15 @@ long XMLStage::Consume()
     NFT("XMLStage::Consume");
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ConsumeWithoutInput);
+	RET(-1 * static_cast<long>(SE_ConsumeWithoutInput));
     }
     if (parser == NULL)
     {
-	RET(-1 * (long) SE_XML_NoParser);
+	RET(-1 * static_cast<long>(SE_XML_NoParser));
     }
     if (generator != NULL)
     {
-	RET(-1 * (long) SE_XML_HaveGenerator);
+	RET(-1 * static_cast<long>(SE_XML_HaveGenerator));
     }
 
     long res, xres = 1, total = 0;
@@ -605,7 +608,7 @@ long XMLStage::Consume()
     }
     else if (!xres)
     {
-	RET(-1 * (long) SE_XML_ParseError);
+	RET(-1 * static_cast<long>(SE_XML_ParseError));
     }
     else
     {
@@ -619,15 +622,15 @@ long XMLStage::Read(char *buf, size_t size)
     memset(buf, 0, size);
     if (input != NULL)
     {
-	RET(-1 * (long) SE_ReadWithInput);
+	RET(-1 * static_cast<long>(SE_ReadWithInput));
     }
     if (parser != NULL)
     {
-	RET(-1 * (long) SE_XML_HaveParser);
+	RET(-1 * static_cast<long>(SE_XML_HaveParser));
     }
     if (generator == NULL)
     {
-	RET(-1 * (long) SE_XML_NoGenerator);
+	RET(-1 * static_cast<long>(SE_XML_NoGenerator));
     }
 
     if (curpos >= generator->BufSize())
@@ -686,7 +689,7 @@ long VerifyStage::Read(char *buf, size_t size)
     memset(buf, 0, size);
     if (input == NULL)
     {
-	RET(-1 * (long) SE_ReadWithoutInput);
+	RET(-1 * static_cast<long>(SE_ReadWithoutInput));
     }
 
     size_t end, begin = total;
@@ -703,7 +706,7 @@ long VerifyStage::Read(char *buf, size_t size)
     // Check condition where we missed the boat!
     if (!verified && begin > offset+vsize)
     {
-	RET(-1 * (long) SE_VFY_Failed);
+	RET(-1 * static_cast<long>(SE_VFY_Failed));
     }
 
     // If the last byte ISNT below our first, and
@@ -721,7 +724,7 @@ long VerifyStage::Read(char *buf, size_t size)
 	curpos += end-begin;
 	if (cres != 0)
 	{
-	    RET(-1 * (long) SE_VFY_Failed);
+	    RET(-1 * static_cast<long>(SE_VFY_Failed));
 	}
 	if (curpos >= vsize)
 	    verified = true;

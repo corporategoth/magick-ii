@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,9 +25,8 @@ RCSID(logfile_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.22  2001/11/03 21:02:50  prez
-** Mammoth change, including ALL changes for beta12, and all stuff done during
-** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
+** Revision 1.23  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
 **
 **
 ** ========================================================== */
@@ -35,11 +34,11 @@ RCSID(logfile_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Mon Oct  8 14:57:32 EDT 2001
+ * Created on Sat Nov 10 20:26:13 EST 2001
  */
 
-unsigned int def_logent =     347;
-char *def_log[] = {
+const unsigned int def_logent =     365;
+const char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
 "; (c) 1998-2001 William King <ungod@magick.tm>",
@@ -58,6 +57,21 @@ char *def_log[] = {
 "; developer and adding new sections, please note that they may",
 "; NOT have a '/' (forward-slash) or space in their name.",
 ";",
+"; All lines starting with the '#' (hash) are considered comments.",
+"; All text after a ';' (semi-colon) character on a line is also",
+"; considered a comment (unless preceeded by a '\\' (backslash)",
+"; character, when it is taken as literal).",
+"; All entries (ie. text after the = (equals) sign) are trimmed of",
+"; spaces (and tabs) before and after it.  Using '\\ ' (backslash",
+"; space) will preserve spaces from the text to that point (ie.",
+"; if before the text, from the '\\ ' to the text, if after, from",
+"; the end of the text to the '\\ ').",
+"; A '\\' (backslash) at the end of a line will continue to the",
+"; next line and treated as one line, however lines that are blank",
+"; or only contain a comment will be skipped.",
+"; You may use '\\n' and '\\r' to split one entry of into two lines,",
+"; and '\\t' to insert a tab into the output.",
+"; ",
 "; Throughout this file there are various codes that are replaced",
 "; with a value direct from Magick.  See below for a table that",
 "; outlines the codes and their meanings.  All lines in this file",
@@ -102,6 +116,8 @@ char *def_log[] = {
 "START_CONVERT    =Converting and loading foreign databases ...",
 "START_LANG       =Loading default language file ...",
 "START_FORK       =Spawning into background ...",
+"START_NOFORK     =Cannot spawn into background, running in foreground.\\n\\",
+"                  Closing this window will terminate execution.",
 "START_EVENTS     =Starting events engine ...",
 "START_CALIBRATE  =Calibrating thread thresholds ...",
 "START_COMPLETE   =$1 $2 startup procedure complete.",
@@ -233,7 +249,8 @@ char *def_log[] = {
 "HIDE             =$1 has changed the hostname of nickname $2 to $3.",
 "PING             =$1 triggered server pings manually.",
 "UPDATE           =$1 triggered database update manually.",
-"SHUTDOWN         =$1 REQUESTED A SHUTDOWN OF SERVICES.",
+"SHUTDOWN         =$1 REQUESTED A SHUTDOWN OF SERVICES ($2)",
+"RESTART          =$1 REQUESTED A RESTART OF SERVICES ($2).",
 "RELOAD           =$1 reloaded the services configuration file.",
 "UNLOAD           =$1 unloaded language $2.",
 "JUPE             =$1 juped server $2 ($3).",

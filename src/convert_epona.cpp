@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.3  2001/11/05 16:23:02  ungod
 ** more borland goodness
 **
@@ -398,11 +401,11 @@ void EPO_load_old_ns_dbase(EPO_dbFILE *f, int ver)
 
 		SAFE(EPO_read_int16(&nc->accesscount, f));
 		if (nc->accesscount) {
-		    char **access;
-		    access = (char **) calloc(sizeof(char *), nc->accesscount);
-		    nc->access = access;
-		    for (j = 0; j < nc->accesscount; j++, access++)
-			SAFE(EPO_read_string(access, f));
+		    char **i_access;
+		    i_access = (char **) calloc(sizeof(char *), nc->accesscount);
+		    nc->access = i_access;
+		    for (j = 0; j < nc->accesscount; j++, i_access++)
+			SAFE(EPO_read_string(i_access, f));
 		}
 
 		SAFE(EPO_read_int16(&nc->memos.memocount, f));
@@ -526,11 +529,11 @@ void EPO_load_ns_dbase(void)
 
 	    SAFE(EPO_read_int16(&nc->accesscount, f));
 	    if (nc->accesscount) {
-		char **access;
-		access = (char **) calloc(sizeof(char *), nc->accesscount);
-		nc->access = access;
-		for (j = 0; j < nc->accesscount; j++, access++)
-		    SAFE(EPO_read_string(access, f));
+		char **i_access;
+		i_access = (char **) calloc(sizeof(char *), nc->accesscount);
+		nc->access = i_access;
+		for (j = 0; j < nc->accesscount; j++, i_access++)
+		    SAFE(EPO_read_string(i_access, f));
 	    }
 		    
 	    SAFE(EPO_read_int16(&nc->memos.memocount, f));
@@ -1288,7 +1291,6 @@ void EPO_load_os_dbase(void)
     }
 		
     if (ver >= 7) {
-	int32 tmp32;
 	SAFE(EPO_read_int32(&tmp32, f));
 	SAFE(EPO_read_int32(&tmp32, f));
     }
@@ -1721,7 +1723,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
     }
     else
     {
-	EPO_ChanAccess *access;
+	EPO_ChanAccess *i_access;
 	EPO_AutoKick *akick;
 	int i;
 
@@ -1749,17 +1751,17 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 
 	long newlevel;
 	float mod = (float) Parent->chanserv.Level_Max() / (float) EPO_ACCESS_FOUNDER;
-	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
+	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
-	    if (access->nick == NULL)
+	    if (i_access->nick == NULL)
 		continue;
-	    if (access->level < 0)
+	    if (i_access->level < 0)
 		newlevel = -1;
 	    else
-		newlevel = (long) ((float) access->level * mod);
+		newlevel = (long) ((float) i_access->level * mod);
 	    if (newlevel == 0)
 		newlevel = 1;
-	    out.Access_insert(access->nick, newlevel,
+	    out.Access_insert(i_access->nick, newlevel,
 			Parent->chanserv.FirstName());
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)

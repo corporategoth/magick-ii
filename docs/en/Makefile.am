@@ -10,43 +10,43 @@ SGML2TXTPARAM   =
 SGML2LATEXPARAM =
 
 all-am:
-	if test -n "`which sgml2html`" ;\
-	then	if test -r `which sgml2html` ;\
-	then	if test -x `which sgml2html` ;\
+	if test -n "`which sgml2html 2>/dev/null`" ;\
+	then	if test -r `which sgml2html 2>/dev/null` ;\
+	then	if test -x `which sgml2html 2>/dev/null` ;\
 	then	for x in $(magick_INFO) ;\
-		do	echo "`which sgml2html` $(SGML2HTMLPARAM) $$x" ;\
-		`which sgml2html` $(SGML2HTMLPARAM) $$x ;\
+		do	echo "`which sgml2html 2>/dev/null` $(SGML2HTMLPARAM) $$x" ;\
+		`which sgml2html 2>/dev/null` $(SGML2HTMLPARAM) $$x ;\
 		done ;\
 	fi; fi; fi
 
 
-	if test -n "`which sgml2latex`" ;\
-	then	if test -r `which sgml2latex` ;\
-	then	if test -x `which sgml2latex` ;\
-	then	if test -n "`which latex`" ;\
-	then	if test -r `which latex` ;\
-	then	if test -x `which latex` ;\
+	if test -n "`which sgml2latex 2>/dev/null`" ;\
+	then	if test -r `which sgml2latex 2>/dev/null` ;\
+	then	if test -x `which sgml2latex 2>/dev/null` ;\
+	then	if test -n "`which latex 2>/dev/null`" ;\
+	then	if test -r `which latex 2>/dev/null` ;\
+	then	if test -x `which latex 2>/dev/null` ;\
 	then	for x in $(magick_INFO) ;\
-		do	echo "`which sgml2latex` $(SGML2LATEXPARAM) $$x" ;\
-		`which sgml2latex` $(SGML2LATEXPARAM) $$x ;\
+		do	echo "`which sgml2latex 2>/dev/null` $(SGML2LATEXPARAM) $$x" ;\
+		`which sgml2latex 2>/dev/null` $(SGML2LATEXPARAM) $$x ;\
 		done ;\
 	fi; fi; fi; fi; fi; fi
 
-	if test -n "`which sgml2info`" ;\
-	then	if test -r `which sgml2info` ;\
-	then	if test -x `which sgml2info` ;\
+	if test -n "`which sgml2info 2>/dev/null`" ;\
+	then	if test -r `which sgml2info 2>/dev/null` ;\
+	then	if test -x `which sgml2info 2>/dev/null` ;\
 	then	for x in $(magick_INFO) ;\
-		do	echo "`which sgml2info` $(SGML2INFOPARAM) $$x" ;\
-		`which sgml2info` $(SGML2INFOPARAM) $$x ;\
+		do	echo "`which sgml2info 2>/dev/null` $(SGML2INFOPARAM) $$x" ;\
+		`which sgml2info 2>/dev/null` $(SGML2INFOPARAM) $$x ;\
 		done ;\
 	fi; fi; fi
 
-	if test -n "`which sgml2txt`" ;\
-	then	if test -r `which sgml2txt` ;\
-	then	if test -x `which sgml2txt` ;\
+	if test -n "`which sgml2txt 2>/dev/null`" ;\
+	then	if test -r `which sgml2txt 2>/dev/null` ;\
+	then	if test -x `which sgml2txt 2>/dev/null` ;\
 	then	for x in $(magick_INFO) ;\
-		do	echo "`which sgml2txt` $(SGML2TXTPARAM) $$x" ;\
-		`which sgml2info` $(SGML2TXTPARAM) $$x ;\
+		do	echo "`which sgml2txt 2>/dev/null` $(SGML2TXTPARAM) $$x" ;\
+		`which sgml2info 2>/dev/null` $(SGML2TXTPARAM) $$x ;\
 		done ;\
 	fi; fi; fi
 

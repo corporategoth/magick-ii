@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.63  2001/07/01 05:02:46  prez
 ** Added changes to dependancy system so it wouldnt just remove a dependancy
 ** after the first one was satisfied.
@@ -221,7 +224,8 @@ public:
 	int tryacquire()		{ return tryacquire_read(); }
 
 	void *operator new (size_t size)
-		{ return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
+		{ static_cast<void>(size);
+		return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
 	void operator delete (void *ptr)
 		{ mLOCK::memory_area.free(ptr); }
 };
@@ -237,7 +241,8 @@ public:
 	int tryacquire()		{ return tryacquire_write(); }
 
 	void *operator new (size_t size)
-		{ return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
+		{ static_cast<void>(size);
+		return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
 	void operator delete (void *ptr)
 		{ mLOCK::memory_area.free(ptr); }
 };
@@ -250,7 +255,8 @@ public:
 		: base(name) {}
 
 	void *operator new (size_t size)
-		{ return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
+		{ static_cast<void>(size);
+		return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
 	void operator delete (void *ptr)
 		{ mLOCK::memory_area.free(ptr); }
 };

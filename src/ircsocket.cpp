@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.180  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.179  2001/11/07 06:30:45  prez
 ** Fixing some indenting and an unused veriable.
 **
@@ -503,6 +506,8 @@ int IrcSvcHandler::open(void *in)
 
 int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 {
+    static_cast<void>(hin);
+
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
     //todo this is the sucker that get's data from the socket, so this is our main routine.
@@ -635,6 +640,9 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
 int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 {
+    static_cast<void>(h);
+    static_cast<void>(mask);
+
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
     CP(("IrcSvcHandler closed"));
@@ -925,12 +933,12 @@ void IrcSvcHandler::enqueue(mMessage *mm)
     message_queue.enqueue(mm);
 }
 
-void IrcSvcHandler::enqueue(const mstring &message, const u_long inpriority)
+void IrcSvcHandler::enqueue(const mstring &message, const u_long pri)
 {
-    FT("IrcSvcHandler::enqueue",(message, inpriority));
+    FT("IrcSvcHandler::enqueue",(message, pri));
     CH(D_From,message);
 
-    u_long priority(inpriority);
+    u_long p(pri);
     mstring source, msgtype, params;
     if (message[0u] == ':' || message[0u] == '@')
     {
@@ -950,10 +958,10 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long inpriority)
     // We dont want to end burst until everything else
     // is done ... sometimes this happens prematurely.
     if (msgtype == "303")
-	priority = P_Delay;
+	p = P_Delay;
 
     try {
-	mMessage *msg = new mMessage(source, msgtype, params, priority);
+	mMessage *msg = new mMessage(source, msgtype, params, p);
 	if (!msg->OutstandingDependancies())
 	    enqueue(msg);
     }
@@ -1108,6 +1116,9 @@ mstring Reconnect_Handler::FindNext(const mstring& i_server) {
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    static_cast<void>(tv);
+    static_cast<void>(arg);
+
     mThread::Attach(tt_MAIN);
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
@@ -1235,6 +1246,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     // We ONLY get here if we didnt receive a SQUIT message in <10s
     // after any QUIT message with 2 valid servers in it
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    static_cast<void>(tv);
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     { WLOCK(("Server", "ServerSquit"));
@@ -1322,6 +1334,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    static_cast<void>(tv);
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     { WLOCK(("Server", "ServerSquit"));
@@ -1401,6 +1414,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // Memo timed out, send it!
     // If its a file, and not inprogress, ignore.
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    static_cast<void>(tv);
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     if (Parent->nickserv.IsLiveAll(*tmp))
@@ -1431,6 +1445,7 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
     mThread::Attach(tt_MAIN);
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    static_cast<void>(tv);
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     // This is to part channels I'm not supposed to be
@@ -1537,6 +1552,7 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
 void *EventTask::save_databases(void *in)
 {
+    static_cast<void>(in);
     mThread::Attach(tt_MAIN);
     Parent->save_databases();
     mThread::Detach();
@@ -1600,6 +1616,7 @@ mstring EventTask::SyncTime(const mstring& source) const
 
 int EventTask::open(void *in)
 {
+    static_cast<void>(in);
     FT("EventTask::open", ("(void *) in"));
     int retval = activate();
     RET(retval);
@@ -1630,7 +1647,7 @@ int EventTask::svc(void)
     }
     DumpB();
 
-    ACE_Thread_Manager tm;
+    ACE_Thread_Manager thrmgr;
     mDateTime synctime;
     while(!Parent->Shutdown())
     {
@@ -1685,7 +1702,7 @@ int EventTask::svc(void)
 		last_save.SecondsSince() >= Parent->config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
-		tm.spawn(save_databases, NULL);
+		thrmgr.spawn(save_databases, NULL);
 
 		WLOCK(("Events", "last_save"));
 		MCB(last_save);
@@ -1941,7 +1958,7 @@ void EventTask::do_expire(mDateTime &synctime)
 {
     CP(("Starting EXPIRATION check ..."));
 
-    // Main routine -- when we end this, we're done!!
+    static_cast<void>(synctime);
     NickServ::stored_t::iterator nsi;
     ChanServ::stored_t::iterator csi;
     MemoServ::channel_t::iterator ni;
@@ -2116,7 +2133,7 @@ void EventTask::do_expire(mDateTime &synctime)
 	for (ni=Parent->memoserv.ChannelBegin();
 		ni!=Parent->memoserv.ChannelEnd(); ni++)
 	{
-	    size_t i, cnt = 0;
+	    size_t cnt = 0;
 	    RLOCK3(("MemoServ", "channel", ni->first));
 	    for (lni=ni->second.begin(), i=0; lni != ni->second.end(); lni++, i++)
 	    {
@@ -2189,7 +2206,7 @@ void EventTask::do_check(mDateTime &synctime)
 		bantime = Parent->chanserv.DEF_Bantime();
 	    if (bantime)
 	    {
-		vector<mstring> remove;
+		vector<mstring> rem;
 		vector<mstring>::iterator ri;
 		{ RLOCK4(("ChanServ", "live", cli->first, "bans"));
 		for (di=cli->second.bans.begin();
@@ -2197,10 +2214,10 @@ void EventTask::do_check(mDateTime &synctime)
 		{
 		    if (di->second.SecondsSince() > bantime)
 		    {
-			remove.push_back(di->first);
+			rem.push_back(di->first);
 		    }
 		}}
-		for (ri=remove.begin(); ri!=remove.end(); ri++)
+		for (ri=rem.begin(); ri!=rem.end(); ri++)
 		{
 		    LOG(LM_DEBUG, "EVENT/UNBAN", (*ri,
 			cli->second.Name(),
@@ -2315,6 +2332,8 @@ void EventTask::do_check(mDateTime &synctime)
 void EventTask::do_modes(mDateTime &synctime)
 {
     CP(("Starting PENDING MODES check ..."));
+
+    static_cast<void>(synctime);
     set<mstring> cmp;
     set<mstring>::iterator iter;
     unsigned int i;
@@ -2417,6 +2436,8 @@ void EventTask::do_modes(mDateTime &synctime)
 void EventTask::do_msgcheck(mDateTime &synctime)
 {
     CP(("Starting EXPIRED MESSAGE check ..."));
+
+    static_cast<void>(synctime);
     vector<mMessage *> Msgs;
     unsigned int i;
     vector<mstring> chunked;
@@ -2432,7 +2453,7 @@ void EventTask::do_msgcheck(mDateTime &synctime)
 	    set<unsigned long>::iterator l;
 	    for (l=k->second.begin(); l!=k->second.end(); l++)
 	    {
-		{ MLOCK(("MsgIdMap"));
+		{ MLOCK2(("MsgIdMap"));
 		map<unsigned long, mMessage *>::iterator m = mMessage::MsgIdMap.find(*l);
 		if (m != mMessage::MsgIdMap.end())
 		{
@@ -2477,6 +2498,7 @@ void EventTask::do_heartbeat(mDateTime &synctime)
 {
     CP(("Starting HEARTBEAT ..."));
 
+    static_cast<void>(synctime);
     vector<ACE_thread_t> dead;
     map<ACE_thread_t,mDateTime>::iterator iter;
     unsigned int i;
@@ -2500,7 +2522,7 @@ void EventTask::do_heartbeat(mDateTime &synctime)
 	for (i=0; i<dead.size(); i++)
 	{
 	    NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
-	    { RLOCK(("IrcSvcHandler"));
+	    { RLOCK2(("IrcSvcHandler"));
 	    if (Parent->ircsvchandler != NULL)
 		Parent->ircsvchandler->tm.cancel(dead[i]);
 	    }
@@ -2518,6 +2540,7 @@ void EventTask::do_ping(mDateTime &synctime)
 {
     CP(("Starting SERVER PING ..."));
 
+    static_cast<void>(synctime);
     Server::list_t::iterator si;
 
     double min = -1, max = 0, sum = 0, avg = 0, count = 0;

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.134  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.133  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -357,7 +360,7 @@ bool OperServ::AddHost(const mstring& host)
 
     CP(("Finding clone list, %s = %d", host.c_str(),
 		CloneList[host.LowerCase()].first));
-    { MLOCK(("OperServ","Clone"));
+    { MLOCK2(("OperServ","Clone"));
     if ((Clone_find(host) ?
 		(CloneList[host.LowerCase()].first > Clone->Value().first) :
 		(CloneList[host.LowerCase()].first > Clone_Limit())))
@@ -383,7 +386,7 @@ bool OperServ::AddHost(const mstring& host)
 	{
 	    CP(("Reached MAX clone kills, adding AKILL ..."));
 
-	    MLOCK2(("OperServ", "Akill"));
+	    MLOCK3(("OperServ", "Akill"));
 	    if (!Akill_find("*@" + host))
 	    {
 		NickServ::live_t::iterator nlive;
@@ -3155,9 +3158,9 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 
     mstring host   = params.ExtractWord(3, " ").LowerCase();
     mstring reason = params.After(" ", 3);
-    unsigned long time = FromHumanTime(reason.Before(" "));
+    unsigned long expire = FromHumanTime(reason.Before(" "));
 
-    if (time)
+    if (expire)
     {
 	if (params.WordCount(" ") < 5)
 	{
@@ -3169,12 +3172,12 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	reason = reason.After(" ");
     }
     else
-	time = Parent->operserv.Def_Expire();
+	expire = Parent->operserv.Def_Expire();
 
     if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
     {
-	if (time > Parent->operserv.Expire_SAdmin())
+	if (expire > Parent->operserv.Expire_SAdmin())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
 		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source)));
@@ -3184,7 +3187,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))
     {
-	if (time > Parent->operserv.Expire_Sop())
+	if (expire > Parent->operserv.Expire_Sop())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
 		    ToHumanTime(Parent->operserv.Expire_Sop(), source)));
@@ -3194,7 +3197,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     else if (Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).IsOn(source))
     {
-	if (time > Parent->operserv.Expire_Admin())
+	if (expire > Parent->operserv.Expire_Admin())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
 		    ToHumanTime(Parent->operserv.Expire_Admin(), source)));
@@ -3204,7 +3207,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
     {
-	if (time > Parent->operserv.Expire_Oper())
+	if (expire > Parent->operserv.Expire_Oper())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
 		    ToHumanTime(Parent->operserv.Expire_Oper(), source)));
@@ -3266,18 +3269,18 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     {
 	mstring entry = Parent->operserv.Akill->Entry();
 	Parent->operserv.Akill_erase();
-	Parent->operserv.Akill_insert(entry, time, reason, source);
+	Parent->operserv.Akill_insert(entry, expire, reason, source);
 	Parent->operserv.stats.i_Akill++;
 	SEND(mynick, source, "LIST/CHANGE_TIME", (
 		    entry,
 		    Parent->getMessage(source, "LIST/AKILL"),
-		    ToHumanTime(time, source)));
+		    ToHumanTime(expire, source)));
 	ANNOUNCE(mynick, "MISC/AKILL_EXTEND", (
 		    source, entry,
-		    ToHumanTime(time, source)));
+		    ToHumanTime(expire, source)));
 	LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
-		entry, ToHumanTime(time, source), reason));
+		entry, ToHumanTime(expire, source), reason));
     }
     else
     {
@@ -3301,20 +3304,20 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
 	else
 	{
-	    Parent->operserv.Akill_insert(host, time, reason, source);
-	    Parent->server.AKILL(host, reason, time, source);
+	    Parent->operserv.Akill_insert(host, expire, reason, source);
+	    Parent->server.AKILL(host, reason, expire, source);
 	    Parent->operserv.stats.i_Akill++;
 	    SEND(mynick, source, "LIST/ADD_TIME", (
 		    host,
 		    Parent->getMessage(source, "LIST/AKILL"),
-		    ToHumanTime(time, source)));
+		    ToHumanTime(expire, source)));
 	    ANNOUNCE(mynick, "MISC/AKILL_ADD", (
 		    source, host,
-		    ToHumanTime(time, source), reason,
+		    ToHumanTime(expire, source), reason,
 		    killusers.size(), fmstring("%.2f", percent)));
 	    LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
-		host, ToHumanTime(time, source), reason));
+		host, ToHumanTime(expire, source), reason));
 	}
     }}
 }
@@ -4010,11 +4013,16 @@ void OperServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
 
 void OperServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+    static_cast<void>(pElement);
+
     FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
 void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("OperServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     set<Clone_Type >::iterator i;
     set<Akill_Type >::iterator j;

@@ -1,9 +1,9 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
-#pragma implementation "version.h"
+  #pragma implementation
+  #pragma implementation "version.h"
 #endif
 
 /*  Magick IRC Services
@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.194  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.193  2001/11/03 21:02:54  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -2145,34 +2148,34 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
 	for (unsigned int i=1; i<=channel.WordCount(", "); i++)
 	    channels.push_back(channel.ExtractWord(i, ", "));
 
-	mstring send;
+	mstring out;
 
 	// If we have SJOIN ability, then we need to join each
 	// channel individually, else we do a standard JOIN.
 	if (proto.SJoin())
 	{
-	    send << ":" << nick << " " <<
+	    out << ":" << nick << " " <<
 		((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ?
 			proto.GetNonToken("SJOIN") : mstring("SJOIN"))
 		<< " " << mDateTime::CurrentDateTime().timetstring() << " ";
 
 	    for (ci=channels.begin(); ci!=channels.end(); ci++)
-		raw(send + *ci);
+		raw(out + *ci);
 	}
         else
         {
-	    send << ":" << nick << " " <<
+	    out << ":" << nick << " " <<
 		((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
 			proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
 
 	    bool firstchan = true;
 	    for (ci=channels.begin(); ci!=channels.end(); ci++)
 	    {
-		if (send.length() + ci->length() + 1 > proto.MaxLine())
+		if (out.length() + ci->length() + 1 > proto.MaxLine())
 		{
-		    raw(send);
-		    send.erase();
-		    send << ":" << nick << " " <<
+		    raw(out);
+		    out.erase();
+		    out << ":" << nick << " " <<
 			((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
 				proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
 		    firstchan = true;
@@ -2180,10 +2183,10 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
 		if (firstchan)
 		    firstchan = false;
 		else
-		    send << ',';
-		send << *ci;
+		    out << ',';
+		out << *ci;
 	    }
-	    raw(send);
+	    raw(out);
 	}
 
 	for (ci=channels.begin(); ci!=channels.end(); ci++)
@@ -2338,9 +2341,9 @@ void Server::MODE(const mstring& nick, const mstring& channel,
 
 
 void Server::NICK(const mstring& nick, const mstring& user,
-	const mstring& host, const mstring& server, const mstring& realname)
+	const mstring& host, const mstring& server, const mstring& name)
 {
-    FT("Server::NICK", (nick, user, host, server, realname));
+    FT("Server::NICK", (nick, user, host, server, name));
 
     if (Parent->nickserv.IsLive(nick))
     {
@@ -2349,134 +2352,134 @@ void Server::NICK(const mstring& nick, const mstring& user,
     }
     else
     {
-	mstring send, token;
+	mstring out, token;
 	switch (proto.Signon())
 	{
 	case 0000:
 	    token = "USER";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick  << " " << user << " " << host <<
-		" " << server << " :" << realname;
+		out << token;
+	    out << " " << nick  << " " << user << " " << host <<
+		" " << server << " :" << name;
 	    break;
 	case 0001:
 	    token = "USER";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick  << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick  << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server <<
-		" :" << realname;
+		" :" << name;
 	    break;
 	case 1000:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server;
 	    if (proto.P12())
-		send << " +" << Parent->startup.Setmode();
-	    send << " :" << realname;
+		out << " +" << Parent->startup.Setmode();
+	    out << " :" << name;
 	    break;
 	case 1001:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server << " 1";
 	    if (proto.P12())
-		send << " +" << Parent->startup.Setmode();
-	    send << " :" << realname;
+		out << " +" << Parent->startup.Setmode();
+	    out << " :" << name;
 	    break;
 	case 1002:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server << " 1 "
 		<< host;
 	    if (proto.P12())
-		send << " +" << Parent->startup.Setmode();
-	    send << " :" << realname;
+		out << " +" << Parent->startup.Setmode();
+	    out << " :" << name;
 	    break;
 	case 1003:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << host << " " <<
 		server << " 1";
 	    if (proto.P12())
-		send << " +" << Parent->startup.Setmode();
-	    send << " :" << realname;
+		out << " +" << Parent->startup.Setmode();
+	    out << " :" << name;
 	    break;
 	case 2000:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
-		" " << host << " " << server << " :" << realname;
+		" " << host << " " << server << " :" << name;
 	    break;
 	case 2001:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
-		" " << host << " " << server << " 1 :" << realname;
+		" " << host << " " << server << " 1 :" << name;
 	    break;
 	case 2002:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
 		" " << host << " " << host << " " << server << " 1 :" <<
-		realname;
+		name;
 	    break;
 	case 2003:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
-		send << proto.GetNonToken(token);
+		out << proto.GetNonToken(token);
 	    else
-		send << token;
-	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << user << " " << host << " " << server << " 1 +" <<
-		Parent->startup.Setmode() << " " << host << " :" << realname;
+		Parent->startup.Setmode() << " " << host << " :" << name;
 	    break;
 	}
 	// Sign ourselves in ...
@@ -2487,7 +2490,7 @@ void Server::NICK(const mstring& nick, const mstring& user,
 	    Parent->nickserv.RemLive(nick);
 	    mMessage::CheckDependancies(mMessage::NickNoExists, nick);
 	}
-	Nick_Live_t tmp(nick, user, host, realname);
+	Nick_Live_t tmp(nick, user, host, name);
 	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
 		tmp.Mode(Parent->startup.Setmode());
 	Parent->nickserv.AddLive(&tmp);
@@ -2498,7 +2501,7 @@ void Server::NICK(const mstring& nick, const mstring& user,
 	    i_UserMax = Parent->nickserv.LiveSize();
 	    MCE(i_UserMax);
 	}}
-	raw(send);
+	raw(out);
 	mMessage::CheckDependancies(mMessage::NickExists, nick);
     }
 }
@@ -3039,9 +3042,9 @@ void Server::SVSMODE(const mstring& mynick, const mstring& nick,
 
 
 void Server::TOPIC(const mstring& nick, const mstring& setter,
-	const mstring& channel, const mstring& topic, const mDateTime& time)
+	const mstring& channel, const mstring& topic, const mDateTime& settime)
 {
-    FT("Server::TOPIC", (nick, setter, channel, topic, time));
+    FT("Server::TOPIC", (nick, setter, channel, topic, settime));
 
     
     if (!Parent->nickserv.IsLive(nick))
@@ -3069,34 +3072,34 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
     {
 	CP(("%s is %s", nick.c_str(),
 		Parent->nickserv.GetLive(nick).Mask(Nick_Live_t::N_U_P_H).c_str()));
-	mstring send;
-	send << ":" << nick << " ";
+	mstring out;
+	out << ":" << nick << " ";
 	if (proto.Tokens() && !proto.GetNonToken("TOPIC").empty())
-	    send << proto.GetNonToken("TOPIC");
+	    out << proto.GetNonToken("TOPIC");
 	else
-	    send << "TOPIC";
+	    out << "TOPIC";
 	
-	send << " " << channel;
+	out << " " << channel;
 	if (proto.BigTopic())
-	    send << " " << setter;
+	    out << " " << setter;
 	if (!topic.empty())
 	{
 	    if (proto.BigTopic())
-		send << " " << time.timetstring();
-	    send << " :" << topic;
+		out << " " << settime.timetstring();
+	    out << " :" << topic;
 	}
 
 	bool dojoin = false;
 	{ 
 	Chan_Live_t &chan = Parent->chanserv.GetLive(channel);
-	chan.Topic(nick, topic, setter, time);
+	chan.Topic(nick, topic, setter, settime);
 	if (proto.TopicJoin() && !chan.IsIn(Parent->chanserv.FirstName()))
 	    dojoin = true;
 	}
 
 	if (dojoin)
 	    JOIN(Parent->chanserv.FirstName(), channel);
-	raw(send);
+	raw(out);
 	if (dojoin)
 	    PART(Parent->chanserv.FirstName(), channel);
     }
@@ -3820,10 +3823,10 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 		    Parent->startup.Server_Name() + " :0 " + Parent->startup.Server_Desc());
 
 		Server::list_t::iterator serv;
-		RLOCK(("Server", "list"));
+		RLOCK2(("Server", "list"));
 		for(serv=Parent->server.ListBegin(); serv!=Parent->server.ListEnd(); serv++)
 		{
-		    RLOCK2(("Server", "list", serv->first));
+		    RLOCK3(("Server", "list", serv->first));
 		    sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
 		}
@@ -3850,10 +3853,10 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 	    else
 	    {
 		ChanServ::live_t::iterator chan;
-		{ RLOCK(("ChanServ", "live"));
+		{ RLOCK2(("ChanServ", "live"));
 		for (chan=Parent->chanserv.LiveBegin(); chan!=Parent->chanserv.LiveEnd(); chan++)
 		{
-		    RLOCK2(("ChanServ", "live", chan->first));
+		    RLOCK3(("ChanServ", "live", chan->first));
 		    if (!(chan->second.HasMode("s") || chan->second.HasMode("p")))
 			sraw("322 " + source + " " + chan->first + " " +
 				mstring(chan->second.Users()) +  " :" +
@@ -6175,7 +6178,6 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else
 		{
-		    mstring target(params.ExtractWord(1, ": "));
 		    sraw("401 " + source + " " + target + " :No such nickname/channel.");
 		}
 	    }}
@@ -6324,15 +6326,15 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 			Chan_Live_t *clive;
 
 			// Should be fact finding ONLY ...
-			{ RLOCK(("ChanServ", "stored"));
+			{ RLOCK2(("ChanServ", "stored"));
 			for (iter=Parent->chanserv.StoredBegin(); iter!=Parent->chanserv.StoredEnd(); iter++)
 			{
-			    RLOCK2(("ChanServ", "live", iter->first));
+			    RLOCK3(("ChanServ", "live", iter->first));
 			    if (Parent->chanserv.IsLive(iter->first))
 				clive = &Parent->chanserv.GetLive(iter->first);
 			    else
 				clive = NULL;
-			    RLOCK3(("ChanServ", "stored", iter->first));
+			    RLOCK4(("ChanServ", "stored", iter->first));
 			    // If its live and got JOIN on || not live and mlock +k or +i
 			    if ((clive != NULL && iter->second.Join()) ||
 				(clive == NULL && !iter->second.Forbidden() &&

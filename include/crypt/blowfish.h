@@ -64,7 +64,7 @@ extern "C" {
 #endif
 
 #ifdef NO_BF
-#error BF is disabled.
+  #error BF is disabled.
 #endif
 
 #define BF_ENCRYPT	1
@@ -78,19 +78,21 @@ extern "C" {
  */
 
 #if defined(WIN16) || defined(__LP32__)
-#define BF_LONG unsigned long
-#elif defined(_CRAY) || defined(__ILP64__)
-#define BF_LONG unsigned long
-#define BF_LONG_LOG2 3
-/*
- * _CRAY note. I could declare short, but I have no idea what impact
- * does it have on performance on none-T3E machines. I could declare
- * int, but at least on C90 sizeof(int) can be chosen at compile time.
- * So I've chosen long...
- *					<appro@fy.chalmers.se>
- */
+#  define BF_LONG unsigned long
 #else
-#define BF_LONG unsigned int
+#  if defined(_CRAY) || defined(__ILP64__)
+    /*
+     * _CRAY note. I could declare short, but I have no idea what impact
+     * does it have on performance on none-T3E machines. I could declare
+     * int, but at least on C90 sizeof(int) can be chosen at compile time.
+     * So I've chosen long...
+     *					<appro@fy.chalmers.se>
+     */
+#    define BF_LONG unsigned long
+#    define BF_LONG_LOG2 3
+#  else
+#    define BF_LONG unsigned int
+#  endif
 #endif
 
 #define BF_ROUNDS	16

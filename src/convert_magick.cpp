@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.6  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -219,11 +222,11 @@ load_ns_dbase (void)
 	    ni->last_realname = read_string (f, nickserv_db);
 	    if (ni->accesscount)
 	    {
-		char **access;
-		access = (char **) malloc (sizeof (char *) * ni->accesscount);
-		ni->access = access;
-		for (j = 0; j < ni->accesscount; ++j, ++access)
-		    *access = read_string (f, nickserv_db);
+		char **i_access;
+		i_access = (char **) malloc (sizeof (char *) * ni->accesscount);
+		ni->access = i_access;
+		for (j = 0; j < ni->accesscount; ++j, ++i_access)
+		    *i_access = read_string (f, nickserv_db);
 	    }
 	    if (ni->ignorecount)
 	    {
@@ -292,11 +295,11 @@ load_ns_dbase (void)
 
 		if (ni->accesscount)
 		{
-		    char **access;
-		    access = (char **) malloc (sizeof (char *) * ni->accesscount);
-		    ni->access = access;
-		    for (j = 0; j < ni->accesscount; ++j, ++access)
-			*access = read_string (f, nickserv_db);
+		    char **i_access;
+		    i_access = (char **) malloc (sizeof (char *) * ni->accesscount);
+		    ni->access = i_access;
+		    for (j = 0; j < ni->accesscount; ++j, ++i_access)
+			*i_access = read_string (f, nickserv_db);
 		}
 
 		nick = CreateNickEntry(ni);
@@ -337,11 +340,11 @@ load_ns_dbase (void)
 
 		if (ni->accesscount)
 		{
-		    char **access;
-		    access = (char **) malloc (sizeof (char *) * ni->accesscount);
-		    ni->access = access;
-		    for (j = 0; j < ni->accesscount; ++j, ++access)
-			*access = read_string (f, nickserv_db);
+		    char **i_access;
+		    i_access = (char **) malloc (sizeof (char *) * ni->accesscount);
+		    ni->access = i_access;
+		    for (j = 0; j < ni->accesscount; ++j, ++i_access)
+			*i_access = read_string (f, nickserv_db);
 		}
 
 		nick = CreateNickEntry(ni);
@@ -505,33 +508,33 @@ load_cs_dbase (void)
 
 		if (ci->accesscount)
 		{
-		    ChanAccess *access;
-		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
-		    ci->access = access;
-		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
+		    ChanAccess *i_access;
+		    i_access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
+		    ci->access = i_access;
+		    if (ci->accesscount != (long) ACE_OS::fread (i_access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 		    {
 			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
-		    for (j = 0; j < ci->accesscount; ++j, ++access)
-			access->name = read_string (f, chanserv_db);
+		    for (j = 0; j < ci->accesscount; ++j, ++i_access)
+			i_access->name = read_string (f, chanserv_db);
 		    j = 0;
-		    access = ci->access;
+		    i_access = ci->access;
 		    /* Clear out unused entries */
 		    while (j < ci->accesscount)
 		    {
-			if (access->is_nick < 0)
+			if (i_access->is_nick < 0)
 			{
 			    --ci->accesscount;
-			    free (access->name);
+			    free (i_access->name);
 			    if (j < ci->accesscount)
-				memcpy (access, access + 1, sizeof (*access) *
+				memcpy (i_access, i_access + 1, sizeof (*i_access) *
 				       (ci->accesscount - j));
 			}
 			else
 			{
 			    ++j;
-			    ++access;
+			    ++i_access;
 			}
 		    }
 		    if (ci->accesscount)
@@ -685,33 +688,33 @@ load_cs_dbase (void)
 
 		if (ci->accesscount)
 		{
-		    ChanAccess *access;
-		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
-		    ci->access = access;
-		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
+		    ChanAccess *i_access;
+		    i_access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
+		    ci->access = i_access;
+		    if (ci->accesscount != (long) ACE_OS::fread (i_access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 		    {
 			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
-		    for (j = 0; j < ci->accesscount; ++j, ++access)
-			access->name = read_string (f, chanserv_db);
+		    for (j = 0; j < ci->accesscount; ++j, ++i_access)
+			i_access->name = read_string (f, chanserv_db);
 		    j = 0;
-		    access = ci->access;
+		    i_access = ci->access;
 		    /* Clear out unused entries */
 		    while (j < ci->accesscount)
 		    {
-			if (access->is_nick < 0)
+			if (i_access->is_nick < 0)
 			{
 			    --ci->accesscount;
-			    free (access->name);
+			    free (i_access->name);
 			    if (j < ci->accesscount)
-				memcpy (access, access + 1, sizeof (*access) *
+				memcpy (i_access, i_access + 1, sizeof (*i_access) *
 				       (ci->accesscount - j));
 			}
 			else
 			{
 			    ++j;
-			    ++access;
+			    ++i_access;
 			}
 		    }
 		    if (ci->accesscount)
@@ -853,33 +856,33 @@ load_cs_dbase (void)
 
 		if (ci->accesscount)
 		{
-		    ChanAccess *access;
-		    access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
-		    ci->access = access;
-		    if (ci->accesscount != (long) ACE_OS::fread (access, sizeof (ChanAccess),
+		    ChanAccess *i_access;
+		    i_access = (ChanAccess *) malloc (sizeof (ChanAccess) * ci->accesscount);
+		    ci->access = i_access;
+		    if (ci->accesscount != (long) ACE_OS::fread (i_access, sizeof (ChanAccess),
 						  ci->accesscount, f))
 		    {
 			SLOG(LM_EMERGENCY, "Read error on $1", ( chanserv_db));
 		    }
-		    for (j = 0; j < ci->accesscount; ++j, ++access)
-			access->name = read_string (f, chanserv_db);
+		    for (j = 0; j < ci->accesscount; ++j, ++i_access)
+			i_access->name = read_string (f, chanserv_db);
 		    j = 0;
-		    access = ci->access;
+		    i_access = ci->access;
 		    /* Clear out unused entries */
 		    while (j < ci->accesscount)
 		    {
-			if (access->is_nick < 0)
+			if (i_access->is_nick < 0)
 			{
 			    --ci->accesscount;
-			    free (access->name);
+			    free (i_access->name);
 			    if (j < ci->accesscount)
-				memcpy (access, access + 1, sizeof (*access) *
+				memcpy (i_access, i_access + 1, sizeof (*i_access) *
 				       (ci->accesscount - j));
 			}
 			else
 			{
 			    ++j;
-			    ++access;
+			    ++i_access;
 			}
 		    }
 		    if (ci->accesscount)
@@ -1034,7 +1037,7 @@ CreateChanEntry(ChanInfo_CUR *ci)
     }
     else
     {
-	ChanAccess *access;
+	ChanAccess *i_access;
 	AutoKick *akick;
 	int i;
 
@@ -1076,13 +1079,13 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	}
 	if (modelock.length())
 	    out.Mlock(Parent->chanserv.FirstName(), modelock);
-	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
+	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
-	    if (access->name == NULL)
+	    if (i_access->name == NULL)
 		continue;
-	    if (access->is_nick > 0)
+	    if (i_access->is_nick > 0)
 	    {
-		out.Access_insert(access->name, access->level,
+		out.Access_insert(i_access->name, i_access->level,
 			Parent->chanserv.FirstName());
 	    }
 	}

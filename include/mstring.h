@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.78  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -278,21 +281,21 @@ class mstring
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static char *alloc(const size_t size) throw(mstring_noalloc);
+    static char *alloc(const size_t sz) throw(mstring_noalloc);
     static void dealloc(char * & in) throw(mstring_nodealloc);
 #else
-    static char *alloc(const size_t size);
+    static char *alloc(const size_t sz);
     static void dealloc(char * & in);
 #endif
     void lock_read() const;
     void lock_write() const;
     void lock_rel() const;
     void init();
-    int occurances(const char *str, const size_t length) const;
+    int occurances(const char *str, const size_t len) const;
 
 public:
-    static int snprintf(char *buf, const size_t size, const char *fmt, ...);
-    static int vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
+    static int snprintf(char *buf, const size_t sz, const char *fmt, ...);
+    static int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap);
 
     mstring()
 	{ init(); }
@@ -300,8 +303,8 @@ public:
 	{ init(); copy(in); }
     mstring(const string &in)
 	{ init(); copy(in); }
-    mstring(const char *in, const size_t length)
-	{ init(); copy(in, length); }
+    mstring(const char *in, const size_t len)
+	{ init(); copy(in, len); }
     mstring(const char *in)
 	{ init(); copy(in); }
     mstring(const char in)
@@ -326,11 +329,11 @@ public:
 	{ init(); Assemble(in); }
     ~mstring();
 
-    void copy(const char *in, const size_t length);
-    void append(const char *in, const size_t length);
+    void copy(const char *in, const size_t len);
+    void append(const char *in, const size_t len);
     void erase(int begin = 0, int end = -1);
-    void insert(const size_t pos, const char *in, const size_t length);
-    int compare(const char *in, const size_t length) const;
+    void insert(const size_t pos, const char *in, const size_t len);
+    int compare(const char *in, const size_t len) const;
     void swap(mstring &in);
     const char *c_str() const;
     const unsigned char *uc_str() const;
@@ -391,10 +394,10 @@ public:
     // of the requested char/string.
 
     // str here is a list of delimiters
-    int find_first_of(const char *str, const size_t length) const;
-    int find_last_of(const char *str, const size_t length) const;
-    int find_first_not_of(const char *str, const size_t length) const;
-    int find_last_not_of(const char *str, const size_t length) const;
+    int find_first_of(const char *str, const size_t len) const;
+    int find_last_of(const char *str, const size_t len) const;
+    int find_first_not_of(const char *str, const size_t len) const;
+    int find_last_not_of(const char *str, const size_t len) const;
 
     int find_first_of(const mstring &in) const
 	{ return find_first_of(in.i_str, in.i_len); }
@@ -409,10 +412,10 @@ public:
     int find(const mstring &str, int occurance = 1) const;
     int rfind(const mstring &str, int occurance = 1) const;
     void replace(const mstring &i_find, const mstring &i_replace, const bool all = true);
-    void replace(const int begin, const int end, const char *i_replace, const size_t length)
+    void replace(const int begin, const int end, const char *i_replace, const size_t len)
 	{
 	    erase(begin, end);
-	    insert(begin, i_replace, length);
+	    insert(begin, i_replace, len);
 	}
     void replace(const int begin, const int end, const mstring &i_replace)
 	{ replace(begin, end, i_replace.i_str, i_replace.i_len); }

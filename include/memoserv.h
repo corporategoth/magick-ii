@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.53  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -181,7 +184,8 @@ class Memo_t : public mUserDef, public SXP::IPersistObj
 	tag_Text, tag_Read, tag_File, tag_UserDef;
 public:
     Memo_t() {}
-    Memo_t(const Memo_t &in) { *this = in; }
+    Memo_t(const Memo_t &in) : mUserDef(in), SXP::IPersistObj(in)
+	{ *this = in; }
     Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
 		const unsigned long file = 0);
     ~Memo_t() {}
@@ -233,7 +237,8 @@ class News_t : public mUserDef, public SXP::IPersistObj
 	tag_Text, tag_set_NoExpire, tag_Read, tag_UserDef;
 public:
     News_t() {}
-    News_t(const News_t &in) { *this = in; }
+    News_t(const News_t &in) : mUserDef(in), SXP::IPersistObj(in)
+	{ *this = in; }
     News_t(const mstring& channel, const mstring& sender, const mstring& text,
 	const bool noexpire = false);
     ~News_t() {}
@@ -360,7 +365,7 @@ public:
     nick_memo_t::const_iterator NickMemoBegin(const mstring &in) const { return GetNick(in).begin(); }
     nick_memo_t::const_iterator NickMemoEnd(const mstring &in)  const { return GetNick(in).end(); }
     size_t NickMemoSize(const mstring &in) const { return GetNick(in).size(); }
-    size_t NickMemoCount(const mstring &in, const bool read = false) const;
+    size_t NickMemoCount(const mstring &in, const bool isread = false) const;
     bool IsNick(const mstring &in) const;
     bool IsNickMemo(const mstring &in, const size_t num) const;
 
@@ -389,7 +394,7 @@ public:
     channel_news_t::const_iterator ChannelNewsBegin(const mstring &in) const { return GetChannel(in).begin(); }
     channel_news_t::const_iterator ChannelNewsEnd(const mstring &in)  const { return GetChannel(in).end(); }
     size_t ChannelNewsSize(const mstring &in) const { return GetChannel(in).size(); }
-    size_t ChannelNewsCount(const mstring &in, const mstring &user, const bool read = false);
+    size_t ChannelNewsCount(const mstring &in, const mstring &user, const bool isread = false);
     bool IsChannel(const mstring &in) const;
     bool IsChannelNews(const mstring &in, const size_t num) const;
 

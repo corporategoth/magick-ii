@@ -12,15 +12,15 @@
 ** ========================================================== */
 #ifndef _CONFIG_H
 #define _CONFIG_H
+/* Define if the C++ compiler supports BOOL */
+#undef HAVE_BOOL
 
-/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
-#undef STAT_MACROS_BROKEN
+#undef VERSION
 
-/* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
+#undef PACKAGE
 
-/* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#undef TIME_WITH_SYS_TIME
+/* Define if you need the GNU extensions to compile */
+#undef _GNU_SOURCE
 
 /* Define if you want to use encryption */
 #ifndef HASCRYPT
@@ -77,68 +77,77 @@
 #define CRYPTO_KEY2 ""
 #endif
 
-/* Define if you have the dtoa function.  */
+
+/* Define if you have the `dtoa' function. */
 #undef HAVE_DTOA
 
-/* Define if you have the ftoa function.  */
-#undef HAVE_FTOA
-
-/* Define if you have the itoa function.  */
-#undef HAVE_ITOA
-
-/* Define if you have the ltoa function.  */
-#undef HAVE_LTOA
-
-/* Define if you have the uitoa function.  */
-#undef HAVE_UITOA
-
-/* Define if you have the ultoa function.  */
-#undef HAVE_ULTOA
-
-/* Define if you have the vsnprintf function.  */
-#undef HAVE_VSNPRINTF
-
-/* Define if you have the <exception> header file.  */
+/* Define if you have the <exception> header file. */
 #undef HAVE_EXCEPTION
 
-/* Define if you have the <exception.h> header file.  */
+/* Define if you have the <exception.h> header file. */
 #undef HAVE_EXCEPTION_H
 
-/* Define if you have the <list> header file.  */
+/* Define if you have the `ftoa' function. */
+#undef HAVE_FTOA
+
+/* Define if you have the `itoa' function. */
+#undef HAVE_ITOA
+
+/* Define if you have the <list> header file. */
 #undef HAVE_LIST
 
-/* Define if you have the <map> header file.  */
+/* Define if you have the `ltoa' function. */
+#undef HAVE_LTOA
+
+/* Define if you have the <map> header file. */
 #undef HAVE_MAP
 
-/* Define if you have the <mpatrol.h> header file.  */
+/* Define if you have the <mpatrol.h> header file. */
 #undef HAVE_MPATROL_H
 
-/* Define if you have the <queue> header file.  */
+/* Define if you have the <queue> header file. */
 #undef HAVE_QUEUE
 
-/* Define if you have the <set> header file.  */
+/* Define if you have the <set> header file. */
 #undef HAVE_SET
 
-/* Define if you have the <stack> header file.  */
+/* Define if you have the <stack> header file. */
 #undef HAVE_STACK
 
-/* Define if you have the <string> header file.  */
+/* Define if you have the <string> header file. */
 #undef HAVE_STRING
 
-/* Define if you have the <termio.h> header file.  */
+/* Define if you have the <termio.h> header file. */
 #undef HAVE_TERMIO_H
 
-/* Define if you have the <utility> header file.  */
+/* Define if you have the `uitoa' function. */
+#undef HAVE_UITOA
+
+/* Define if you have the `ultoa' function. */
+#undef HAVE_ULTOA
+
+/* Define if you have the <utility> header file. */
 #undef HAVE_UTILITY
 
-/* Define if you have the <vector> header file.  */
+/* Define if you have the <vector> header file. */
 #undef HAVE_VECTOR
+
+/* Define if you have the `vsnprintf' function. */
+#undef HAVE_VSNPRINTF
 
 /* Name of package */
 #undef PACKAGE
 
+/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly. */
+#undef STAT_MACROS_BROKEN
+
+/* Define if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
 /* Version number of package */
 #undef VERSION
-
 
 #endif

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.26  2001/11/05 05:10:20  prez
 ** Removed winbase.h from sxp.h ;P
 **
@@ -194,7 +197,7 @@ void MOutStream::ExpandBuf()
 }
 
 
-void MOutStream::Print(char *format, ...)
+void MOutStream::Print(const char *format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -202,7 +205,7 @@ void MOutStream::Print(char *format, ...)
     va_end(argptr);
 }
 
-void MOutStream::PrintV(char *format, va_list argptr)
+void MOutStream::PrintV(const char *format, va_list argptr)
 {
     mstring tmp;
     tmp.FormatV(format, argptr);

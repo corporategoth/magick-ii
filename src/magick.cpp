@@ -1,10 +1,10 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
-#pragma implementation "language.h"
-#pragma implementation "logfile.h"
+  #pragma implementation
+  #pragma implementation "language.h"
+  #pragma implementation "logfile.h"
 #endif
 
 /*  Magick IRC Services
@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.325  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.324  2001/11/06 09:31:15  prez
 ** Changed to display a message on windows mode, informing of console state.
 **
@@ -589,7 +592,8 @@ Magick::Magick(int inargc, char **inargv)
 
 int Magick::Start(bool firstrun)
 {
-    unsigned int i;
+    unsigned int i = 0;
+    int j = 0;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 
@@ -656,9 +660,9 @@ int Magick::Start(bool firstrun)
 		    mstring type=argv[i].Before(":").UpperCase();
 		    if (type=="MAIN" || type=="ALL")
 			Trace::TurnSet(tt_MAIN, level);
-		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
-			if (type==threadname[i] || type=="ALL")
-			    Trace::TurnSet(static_cast<threadtype_enum>(i), level);
+		    for (j=tt_MAIN+1; j<tt_MAX; j++)
+			if (type==threadname[j] || type=="ALL")
+			    Trace::TurnSet(static_cast<threadtype_enum>(j), level);
 		}
 	    }
 #endif
@@ -671,8 +675,8 @@ int Magick::Start(bool firstrun)
 	}
     }
     NFT("Magick::Start");
-    i = ACE_OS::chdir(Services_Dir());
-    if (i < 0 && errno)
+    j = ACE_OS::chdir(Services_Dir());
+    if (j < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR",
 		("chdir", Services_Dir(), errno, strerror(errno)));
@@ -1312,13 +1316,13 @@ bool Magick::LoadLogMessages(const mstring& language)
     MCB(LogMessages.size());
     map<mstring,mstring>::iterator iter;
     {
-	vector<mstring> log;
+	vector<mstring> lfo;
 	unsigned int i;
 	for (i=0; i<def_logent; i++)
-	log.push_back(def_log[i]);
+	lfo.push_back(def_log[i]);
 
 	mConfigEngine fconf;
-	fconf.LoadFromArray(log);
+	fconf.LoadFromArray(lfo);
 
 	map<mstring,mstring> tmp = fconf.GetMap();
 	for (iter=tmp.begin(); iter!=tmp.end(); iter++)
@@ -2108,6 +2112,7 @@ bool Magick::get_config_values()
     bool reconnect = false;
     bool reconnect_clients = false;
     unsigned int i;
+    int j;
     mstring isonstr;
 
     if (!mFile::Exists(Config_File()))
@@ -2239,9 +2244,9 @@ bool Magick::get_config_values()
 		tmp[1] = value_mstring.ExtractWord(2, ":");
 		if (tmp[1].length() && tmp[1] != "*")
 		{
-		    for (unsigned int j=1; j<=tmp[1].WordCount(", "); j++)
+		    for (unsigned int k=1; k<=tmp[1].WordCount(", "); k++)
 		    {
-			startup.allows[tmp[0]].push_back(tmp[1].ExtractWord(j, ", "));
+			startup.allows[tmp[0]].push_back(tmp[1].ExtractWord(k, ", "));
 		    }
 		}
 		else
@@ -2551,8 +2556,8 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"KEYFILE",files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",files.memoattach,"files/memo");
-    i = ACE_OS::mkdir(files.memoattach.c_str());
-    if (i < 0 && errno)
+    j = ACE_OS::mkdir(files.memoattach.c_str());
+    if (j < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
 		"mkdir", files.memoattach, errno, strerror(errno)));
@@ -2564,8 +2569,8 @@ bool Magick::get_config_values()
     else
 	files.memoattachsize = FromHumanSpace("0");
     in.Read(ts_Files+"PICTURE",files.picture,"files/pic");
-    i = ACE_OS::mkdir(files.picture.c_str());
-    if (i < 0 && errno)
+    j = ACE_OS::mkdir(files.picture.c_str());
+    if (j < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
 		"mkdir", files.picture, errno, strerror(errno)));
@@ -2577,8 +2582,8 @@ bool Magick::get_config_values()
     else
 	files.picturesize = FromHumanSpace("0");
     in.Read(ts_Files+"PUBLIC",files.i_public,"files/public");
-    i = ACE_OS::mkdir(files.i_public.c_str());
-    if (i < 0 && errno)
+    j = ACE_OS::mkdir(files.i_public.c_str());
+    if (j < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
 		"mkdir", files.i_public, errno, strerror(errno)));
@@ -2590,8 +2595,8 @@ bool Magick::get_config_values()
     else
 	files.publicsize = FromHumanSpace("0");
     in.Read(ts_Files+"TEMPDIR",files.tempdir,"files/temp");
-    i = ACE_OS::mkdir(files.tempdir.c_str());
-    if (i < 0 && errno)
+    j = ACE_OS::mkdir(files.tempdir.c_str());
+    if (j < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
 		"mkdir", files.tempdir, errno, strerror(errno)));
@@ -3210,10 +3215,13 @@ bool Magick::get_config_values()
     RET(true);
 }
 
-int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
+int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 {
+    static_cast<void>(si);
+    static_cast<void>(uctx);
+
     // No trace, screws with LastFunc...
-    //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
+    //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) si", "(ucontext_t *) uctx"));
     ThreadID *tid;
 
     // todo: fill this sucker in
@@ -3559,25 +3567,25 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
 }
 */
 
-bool Magick::startup_t::IsServer(const mstring& server)const
+bool Magick::startup_t::IsServer(const mstring& svr)const
 {
-    FT("Magick::startup_t::IsServer", (server));
+    FT("Magick::startup_t::IsServer", (svr));
 
     RLOCK(("Startup", "Servers"));
-    if (servers.find(server.LowerCase()) != servers.end()) {
+    if (servers.find(svr.LowerCase()) != servers.end()) {
 	RET(true);
     }
     RET(false);
 }
 
-pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup_t::Server(const mstring& server)const
+pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup_t::Server(const mstring& svr)const
 {
-    FT("Magick::startup_t::Server", (server));
+    FT("Magick::startup_t::Server", (svr));
     pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > value(0, triplet<unsigned int,mstring,unsigned long>(0, "", 0));
 
     RLOCK(("Startup", "Servers"));
-    if (IsServer(server)) {
-	value = servers.find(server.LowerCase())->second;
+    if (IsServer(svr)) {
+	value = servers.find(svr.LowerCase())->second;
     }
     NRET(pair<unsigned int. triplet<unsigned int. mstring. unsigned long> >, value);
 }
@@ -3597,9 +3605,9 @@ vector<mstring> Magick::startup_t::PriorityList(const unsigned int pri) const
     NRET(vector<mstring>, list);
 }
 
-bool Magick::startup_t::IsAllowed(const mstring& server, const mstring& uplink)const
+bool Magick::startup_t::IsAllowed(const mstring& svr, const mstring& uplink)const
 {
-    FT("Magick::startup_t::IsAllowed", (server, uplink));
+    FT("Magick::startup_t::IsAllowed", (svr, uplink));
 
     map<mstring,vector<mstring> >::const_iterator i;
     RLOCK(("Startup", "Allows"));
@@ -3610,12 +3618,12 @@ bool Magick::startup_t::IsAllowed(const mstring& server, const mstring& uplink)c
 
     for (i=allows.begin(); i!=allows.end(); i++)
     {
-	if (server == i->first)
+	if (svr == i->first)
 	{
 	    if (i->second.size())
 	    {
 		vector<mstring>::const_iterator j;
-		RLOCK(("Startup", "Allows", i->first));
+		RLOCK2(("Startup", "Allows", i->first));
 		for (j=i->second.begin(); j!=i->second.end(); j++)
 		{
 		    if (uplink.Matches(*j))
@@ -3635,15 +3643,15 @@ bool Magick::startup_t::IsAllowed(const mstring& server, const mstring& uplink)c
     RET(false);
 }
 
-vector<mstring> Magick::startup_t::Allow(const mstring& server)const
+vector<mstring> Magick::startup_t::Allow(const mstring& svr)const
 {
-    FT("Magick::startup_t::Allow", (server));
+    FT("Magick::startup_t::Allow", (svr));
 
     map<mstring,vector<mstring> >::const_iterator i;
     RLOCK(("Startup", "Allows"));
     for (i=allows.begin(); i!=allows.end(); i++)
     {
-	if (server == i->first)
+	if (svr == i->first)
 	{
 	    NRET(vector<mstring>, i->second);
 	}
@@ -3776,6 +3784,8 @@ void Magick::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEleme
 
 void Magick::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
     if( pElement->IsA( tag_Magick ) )
@@ -3792,6 +3802,8 @@ void Magick::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
 
     // not sure if this is the right place to do this
@@ -4023,7 +4035,7 @@ size_t Magick::LNG_Usage(const mstring& lang) const
     if (i != Messages.end())
     {
 	retval += i->first.capacity();
-	RLOCK(("Messages", lang.UpperCase()));
+	RLOCK2(("Messages", lang.UpperCase()));
 	for (j = i->second.begin(); j != i->second.end(); j++)
 	{
 	    retval += j->first.capacity();
@@ -4059,7 +4071,7 @@ size_t Magick::HLP_Usage(const mstring& lang) const
     if (i != Help.end())
     {
 	retval += i->first.capacity();
-	RLOCK(("Help", lang.UpperCase()));
+	RLOCK2(("Help", lang.UpperCase()));
 	for (j=i->second.begin(); j != i->second.end(); j++)
 	{
 	    retval += j->first.capacity();

@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.39  2001/08/04 18:32:01  prez
 ** Made some changes for Hybrid 6 -- we now work with it ... mostly.
 **
@@ -410,7 +413,7 @@ public:
 	{ return (HoursSince() / 24); }
     unsigned long YearsSince() const
 	{ return static_cast<int>(static_cast<double>(DaysSince()) / 365.25); }
-    mstring Ago(const bool call = false, const mstring &source = "") const
+    mstring Ago(const mstring &source = "") const
 	{ return(DisectTime(SecondsSince(), source)); }
 
     friend bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Date);

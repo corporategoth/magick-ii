@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.45  2001/07/24 02:51:13  prez
 ** Added ability to do JOIN or SJOIN
 **
@@ -254,6 +257,9 @@ vector<mstring> DccEngine::ctcpExtract(const mstring& in)
 void DccEngine::decodeReply(const mstring& mynick, const mstring& source,
 		       const mstring& in)
 {
+    static_cast<void>(mynick);
+    static_cast<void>(source);
+
     FT("DccEngine::decodeReply", (in));
     vector<mstring> ResVector;
     mstring ResMid=lowDequote(in);
@@ -500,14 +506,14 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
     if (!strsize.empty())
 	size = atoul(strsize.c_str());
 
-    ACE_INET_Addr Server(port,address);
+    ACE_INET_Addr server(port,address);
     if(type.UpperCase()=="CHAT")
     {
-	DoDccChat(mynick, source, Server);
+	DoDccChat(mynick, source, server);
     }
     else if(type.UpperCase()=="SEND")
     {
-	DoDccSend(mynick, source, Server, argument, size);
+	DoDccSend(mynick, source, server, argument, size);
     }
     else
     {
@@ -535,6 +541,8 @@ void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
 
     SEND(mynick, source, "DCC/NOACCESS", (
 						"CHAT"));
+
+    static_cast<void>(addr);
 }
 
 // INBOUND DCC!!

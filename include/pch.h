@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.42  2001/06/20 06:07:01  prez
 ** ome GCC 3.0 and solaris fixes
 **
@@ -151,7 +154,7 @@
 
 
 #ifdef _MSC_VER
-#pragma warning(disable:4786)
+  #pragma warning(disable:4786)
 #endif
 
 #ifdef HAVE_CONFIG_H

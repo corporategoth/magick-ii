@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/11/12 01:05:02  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.71  2001/08/04 18:32:02  prez
 ** Made some changes for Hybrid 6 -- we now work with it ... mostly.
 **
@@ -174,20 +177,20 @@ static mDayTable DayTable2		= { 31, 29, 31, 30, 31, 30,
 mDateTime mDateTime::CurrentDate()
 {
     mDateTime Result;
-    int Day,Month,Year;
+    int iDay,iMonth,iYear;
     Result=mDateTime(time(NULL));
-    Result.DecodeDate(Year,Month,Day);
-    Result=mDateTime(Year,Month,Day);
+    Result.DecodeDate(iYear,iMonth,iDay);
+    Result=mDateTime(iYear,iMonth,iDay);
     return Result;
 }
 
 mDateTime mDateTime::CurrentTime()
 {
     mDateTime Result;
-    int Hour,Min,Sec,MSec;
+    int iHour,iMin,iSec,iMSec;
     Result=mDateTime(time(NULL));
-    Result.DecodeTime(Hour,Min,Sec,MSec);
-    Result=mDateTime(Hour,Min,Sec,MSec);
+    Result.DecodeTime(iHour,iMin,iSec,iMSec);
+    Result=mDateTime(iHour,iMin,iSec,iMSec);
     return Result;
 }
 
@@ -202,6 +205,9 @@ mDateTime::mDateTime(const mstring& src, const mDateTimeFlag flag)
 	*this=StringToTime(src);
     else if(flag=DateTime)
 	*this=StringToDateTime(src);
+#else
+    static_cast<void>(src);
+    static_cast<void>(flag);
 #endif
 }
 
@@ -213,21 +219,21 @@ static mDayTable &GetDayTable(int Year)
 	return DayTable1;
 }
 
-bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Date)
+bool DoEncodeDate(const int iYear, const int iMonth, const int iDay, mDateTime& Date)
 {
     int I;
     bool Result = false;
-    int tmpDay=Day-1;
+    int tmpDay=iDay-1;
 
-    mDayTable &DayTable = GetDayTable(Year);
-    if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) &&
-	(Day >= 1) && (Day <= DayTable[Month-1]))
+    mDayTable &DayTable = GetDayTable(iYear);
+    if ((iYear >= 1) && (iYear <= 9999) && (iMonth >= 1) && (iMonth <= 12) &&
+	(iDay >= 1) && (iDay <= DayTable[iMonth-1]))
     {
-	for(I = 1; I<Month;I++) 
+	for(I = 1; I<iMonth;I++) 
 	{
 	    tmpDay+=DayTable[I-1];
 	}
-	I = Year;
+	I = iYear;
 	tmpDay += ((I * 365) + (I / 4) - (I / 100) + (I / 400));
 	Date.Val = static_cast<double>(tmpDay);
 	Result = true;
@@ -235,15 +241,15 @@ bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Dat
     return Result;
 }
 
-bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, mDateTime& Time)
+bool DoEncodeTime(const int iHour, const int iMin, const int iSec, const int iMSec, mDateTime& Time)
 {
     bool Result = false;
-    if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
+    if ((iHour < 24) && (iMin < 60) && (iSec < 60) && (iMSec < 1000))
     {
-	Time.Val = (static_cast<double>(Hour) * 3600000.0 +
-		static_cast<double>(Min) * 60000.0 +
-		static_cast<double>(Sec) * 1000.0 +
-		static_cast<double>(MSec)) / static_cast<double>(MSecsPerDay);
+	Time.Val = (static_cast<double>(iHour) * 3600000.0 +
+		static_cast<double>(iMin) * 60000.0 +
+		static_cast<double>(iSec) * 1000.0 +
+		static_cast<double>(iMSec)) / static_cast<double>(MSecsPerDay);
 	Result = true;
     }
     return Result;
@@ -252,12 +258,12 @@ bool DoEncodeTime(const int Hour, const int Min, const int Sec, const int MSec, 
 mstring mDateTime::FormatString(const mstring& format)const
 {
 	mstring Result;
-	int Year, Month, Day, Hour, Min, Sec, MSec;
+	int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 	unsigned int i=0;
 	int count=0;
 	int ampmtype=0;
-	DecodeDate(Year,Month,Day);
-	DecodeTime(Hour,Min,Sec,MSec);
+	DecodeDate(iYear,iMonth,iDay);
+	DecodeTime(iHour,iMin,iSec,iMSec);
 
 	if(format.Find("a/p")!=-1)
 		ampmtype=1;
@@ -283,12 +289,12 @@ mstring mDateTime::FormatString(const mstring& format)const
 		switch(count)
 		{
 		case 1:
-		    Result += Day;
+		    Result += iDay;
 		    break;
 		case 2:
-		    if(Day<10)
+		    if(iDay<10)
 			Result += "0";
-		    Result += Day;
+		    Result += iDay;
 		    break;
 		case 3:
 		    Result += ShortDayNames[DayOfWeek()];
@@ -317,18 +323,18 @@ mstring mDateTime::FormatString(const mstring& format)const
 		switch(count)
 		{
 		case 1:
-		    Result += Month;
+		    Result += iMonth;
 		    break;
 		case 2:
-		    if(Month<10)
+		    if(iMonth<10)
 			Result += "0";
-		    Result += Month;
+		    Result += iMonth;
 		    break;
 		case 3:
-		    Result += ShortMonthNames[Month-1];
+		    Result += ShortMonthNames[iMonth-1];
 		    break;
 		case 4:
-		    Result += LongMonthNames[Month-1];
+		    Result += LongMonthNames[iMonth-1];
 		    break;
 		default:
 		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
@@ -345,10 +351,10 @@ mstring mDateTime::FormatString(const mstring& format)const
 		switch(count)
 		{
 		case 2:
-		    Result += Year%100;
+		    Result += iYear%100;
 		    break;
 		case 4:
-		    Result += Year;
+		    Result += iYear;
 		    break;
 		default:
 		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
@@ -361,37 +367,37 @@ mstring mDateTime::FormatString(const mstring& format)const
 		    i++;
 		    if(ampmtype>0)
 		    {
-			if(Hour%12<10)
+			if(iHour%12<10)
 			    Result += "0";
 		    }
 		    else
 		    {
-			if(Hour<10)
+			if(iHour<10)
 			    Result += "0";
 		    }
 		}
 		if(ampmtype>0)
-		    Result += Hour%12;
+		    Result += iHour%12;
 		else
-		    Result += Hour;
+		    Result += iHour;
 		break;
 	    case 'n':
 		if(i+1<format.size()&&tolower(format[i+1])=='n')
 		{
 		    i++;
-		    if(Min<10)
+		    if(iMin<10)
 			Result += "0";
 		}
-		Result += Min;
+		Result += iMin;
 		break;
 	    case 's':
 		if(i+1<format.size()&&tolower(format[i+1])=='s')
 		{
 		    i++;
-		    if(Sec<10)
+		    if(iSec<10)
 			Result += "0";
 		}
-		Result += Sec;
+		Result += iSec;
 		break;
 	    case 'u':
 		count=1;
@@ -405,16 +411,16 @@ mstring mDateTime::FormatString(const mstring& format)const
 		case 1:
 		    break;
 		case 3:
-		    if(MSec<100)
+		    if(iMSec<100)
 			Result += "0";
-		    if(MSec<10)
+		    if(iMSec<10)
 			Result += "0";
 		    break;
 		default:
 		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
 			count, format[i], format));
 		}
-		Result += MSec;
+		Result += iMSec;
 		break;
 	    case 't':
 		if(i+1<format.size()&&tolower(format[i+1])=='t')
@@ -430,7 +436,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 		{
 		    //found a/p
 		    i=i+2;
-		    if(Hour<12)
+		    if(iHour<12)
 			Result += "a";
 		    else
 			Result += "p";
@@ -439,7 +445,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 		{
 		    //found ampm
 		    i=i+3;
-		    if(Hour<12)
+		    if(iHour<12)
 			Result += TimeAMString;
 		    else
 			Result += TimePMString;
@@ -448,7 +454,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 		{
 		    //found am/pm
 		    i=i+2;
-		    if(Hour<12)
+		    if(iHour<12)
 			Result += "am";
 		    else
 			Result += "pm";
@@ -494,12 +500,12 @@ mstring mDateTime::FormatString(const mstring& format)const
 mstring mDateTime::DateTimeString()const
 {
 	mstring Result;
-	int Year,Month,Day,Hour,Min,Sec,MSec;
-	DecodeDate(Year,Month,Day);
-	DecodeTime(Hour,Min,Sec,MSec);
-	if(Year!=0||Month!=0||Day!=0)
+	int iYear,iMonth,iDay,iHour,iMin,iSec,iMSec;
+	DecodeDate(iYear,iMonth,iDay);
+	DecodeTime(iHour,iMin,iSec,iMSec);
+	if(iYear!=0||iMonth!=0||iDay!=0)
 		Result=FormatString(LongDateFormat);
-	if(Hour!=0||Min!=0||Sec!=0||MSec!=0)
+	if(iHour!=0||iMin!=0||iSec!=0||iMSec!=0)
 	{
 	    if(!Result.empty())
 		Result += " ";
@@ -511,19 +517,19 @@ mstring mDateTime::DateTimeString()const
 
 mDateTime::operator time_t() const
 {
-	int Year,Month,Day,Hour,Min,Sec,MSec;
-	DecodeDate(Year,Month,Day);
-	if (Year < 1900)
-	    return (time_t) -1;
+	int iYear,iMonth,iDay,iHour,iMin,iSec,iMSec;
+	DecodeDate(iYear,iMonth,iDay);
+	if (iYear < 1900)
+	    return static_cast<time_t>(-1);
 
-	DecodeTime(Hour,Min,Sec,MSec);
+	DecodeTime(iHour,iMin,iSec,iMSec);
 	tm localtm;
-	localtm.tm_year=Year-1900;
-	localtm.tm_mon=Month-1;
-	localtm.tm_mday=Day;
-	localtm.tm_hour=Hour;
-	localtm.tm_min=Min;
-	localtm.tm_sec=Sec;
+	localtm.tm_year=iYear-1900;
+	localtm.tm_mon=iMonth-1;
+	localtm.tm_mday=iDay;
+	localtm.tm_hour=iHour;
+	localtm.tm_min=iMin;
+	localtm.tm_sec=iSec;
 	localtm.tm_isdst=-1;
 	return mktime(&localtm);
 }
@@ -578,7 +584,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
 
 void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const
 {
-	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
+	//(iHour * 3600000 + iMin * 60000 + iSec * 1000 + iMSec) / MSecsPerDay;
 	int CurrentVal=static_cast<int>(fmod(Val,1.0)*static_cast<double>(MSecsPerDay));
 	int LeftOver;
 
@@ -658,18 +664,18 @@ mstring mDateTime::timetstring()const
 {
     mstring Result;
     time_t Res2;
-    int Year,Month,Day,Hour,Min,Sec,MSec;
-    DecodeDate(Year,Month,Day);
-    if (Year < 1900)
-	return (time_t) -1;
-    DecodeTime(Hour,Min,Sec,MSec);
+    int iYear,iMonth,iDay,iHour,iMin,iSec,iMSec;
+    DecodeDate(iYear,iMonth,iDay);
+    if (iYear < 1900)
+	return static_cast<time_t>(-1);
+    DecodeTime(iHour,iMin,iSec,iMSec);
     tm localtm;
-    localtm.tm_year=Year-1900;
-    localtm.tm_mon=Month-1;
-    localtm.tm_mday=Day;
-    localtm.tm_hour=Hour;
-    localtm.tm_min=Min;
-    localtm.tm_sec=Sec;
+    localtm.tm_year=iYear-1900;
+    localtm.tm_mon=iMonth-1;
+    localtm.tm_mday=iDay;
+    localtm.tm_hour=iHour;
+    localtm.tm_min=iMin;
+    localtm.tm_sec=iSec;
     localtm.tm_isdst=-1;
     Res2=mktime(&localtm);
     Result << static_cast<unsigned long>(Res2);
@@ -678,45 +684,45 @@ mstring mDateTime::timetstring()const
 
 int mDateTime::MSecond() const
 {
-    int Hours,Seconds,Minutes,Msecs;
-    DecodeTime(Hours,Seconds,Minutes,Msecs);
-    return Msecs;
+    int iHour,iSecond,iMinute,iMSec;
+    DecodeTime(iHour,iSecond,iMinute,iMSec);
+    return iMSec;
 }
 int mDateTime::Second() const
 {
-    int Hours,Seconds,Minutes,Msecs;
-    DecodeTime(Hours,Seconds,Minutes,Msecs);
-    return Seconds;
+    int iHour,iSecond,iMinute,iMSec;
+    DecodeTime(iHour,iSecond,iMinute,iMSec);
+    return iSecond;
 }
 int mDateTime::Minute() const
 {
-    int Hours,Seconds,Minutes,Msecs;
-    DecodeTime(Hours,Seconds,Minutes,Msecs);
-    return Minutes;
+    int iHour,iSecond,iMinute,iMSec;
+    DecodeTime(iHour,iSecond,iMinute,iMSec);
+    return iMinute;
 }
 int mDateTime::Hour() const
 {
-    int Hours,Seconds,Minutes,Msecs;
-    DecodeTime(Hours,Seconds,Minutes,Msecs);
-    return Hours;
+    int iHour,iSecond,iMinute,iMSec;
+    DecodeTime(iHour,iSecond,iMinute,iMSec);
+    return iHour;
 }
 int mDateTime::Day() const
 {
-    int Year,Month,Day;
-    DecodeDate(Year,Month,Day);
-    return Day;
+    int iYear,iMonth,iDay;
+    DecodeDate(iYear,iMonth,iDay);
+    return iDay;
 }
 int mDateTime::Month() const
 {
-    int Year,Month,Day;
-    DecodeDate(Year,Month,Day);
-    return Month;
+    int iYear,iMonth,iDay;
+    DecodeDate(iYear,iMonth,iDay);
+    return iMonth;
 }
 int mDateTime::Year() const
 {
-    int Year,Month,Day;
-    DecodeDate(Year,Month,Day);
-    return Year;
+    int iYear,iMonth,iDay;
+    DecodeDate(iYear,iMonth,iDay);
+    return iYear;
 }
 
 unsigned long mDateTime::MSecondsSince() const
@@ -748,7 +754,7 @@ mstring DisectTime(const long intime, const mstring &source)
 	Seconds = intime;
     }
 
-    negamt = (long)(60.0 * 60.0 * 24.0 * 365.25);
+    negamt = static_cast<long>(60.0 * 60.0 * 24.0 * 365.25);
     while (Seconds >= negamt)
     {
 	Years++;

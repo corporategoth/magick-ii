@@ -1,5 +1,5 @@
 #ifndef WIN32
-#pragma interface
+  #pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2001/11/12 01:05:00  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.100  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -380,7 +383,8 @@ protected:
 
 public:
     entlist_t () {}
-    entlist_t (const entlist_t& in) { *this = in; }
+    entlist_t (const entlist_t& in) : mUserDef(in), SXP::IPersistObj(in)
+	{ *this = in; }
     entlist_t(const mstring &entry, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime())
 	: i_Entry(entry), i_Last_Modify_Time(modtime), i_Last_Modifier(nick)
     {
@@ -425,7 +429,8 @@ protected:
 
 public:
     entlist_val_t () {}
-    entlist_val_t (const entlist_val_t& in) { *this = in; }
+    entlist_val_t (const entlist_val_t& in) : entlist_t(in)
+	{ *this = in; }
     entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
@@ -481,7 +486,7 @@ public:
     {
 	FT("entlist_val_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t);
-	entlist_t::WriteElement(pOut);
+	entlist_t::WriteElement(pOut, attribs);
 
 	pOut->WriteElement(tag_Value, i_Value);
 	pOut->WriteElement(tag_Stupid, i_Stupid);
@@ -529,7 +534,8 @@ protected:
 
 public:
     entlist_val_pair_t () {}
-    entlist_val_pair_t (const entlist_val_pair_t& in) { *this = in; }
+    entlist_val_pair_t (const entlist_val_pair_t& in) : entlist_t(in)
+	{ *this = in; }
     entlist_val_pair_t (const mstring &entry, const pair<X,Y> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
     {
@@ -586,7 +592,7 @@ public:
     {
 	FT("entlist_val_pairt< pair<X,Y> >::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t);
-	entlist_t::WriteElement(pOut);
+	entlist_t::WriteElement(pOut, attribs);
 
 	pOut->WriteElement(tag_ValueFirst, i_Value.first);
 	pOut->WriteElement(tag_ValueSecond, i_Value.second);

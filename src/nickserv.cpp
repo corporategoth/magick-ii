@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.190  2001/11/12 01:05:03  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.189  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -2398,7 +2401,7 @@ mstring Nick_Live_t::Identify(const mstring& password)
 	    failed_passwds++;
 	    MCE(failed_passwds);
 	    }
-	    RLOCK_IF(("NickServ", "live", i_Name.LowerCase(), "failed_passwds"),
+	    RLOCK2_IF(("NickServ", "live", i_Name.LowerCase(), "failed_passwds"),
 		failed_passwds >= Parent->nickserv.Passfail())
 	    {
 		LOG(LM_NOTICE, "OTHER/KILL_NICK_PASS", (
@@ -4709,6 +4712,8 @@ SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
 
 void Nick_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Nick_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
     if( pElement->IsA(tag_UserDef) )
@@ -4721,6 +4726,8 @@ void Nick_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement *
 
 void Nick_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Nick_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
@@ -4856,6 +4863,8 @@ void Nick_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * p
 
 void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Nick_Stored_t);
 
@@ -5823,19 +5832,19 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
 	}
 
 	RLOCK(("NickServ", "live", source.LowerCase()));
-	Nick_Live_t &live = Parent->nickserv.GetLive(source);
-	live.SetLastNickReg();
+	Nick_Live_t &nlive = Parent->nickserv.GetLive(source);
+	nlive.SetLastNickReg();
 	Nick_Stored_t tmp(source, password);
-	tmp.AccessAdd(live.Mask(Nick_Live_t::U_H).After("!"));
+	tmp.AccessAdd(nlive.Mask(Nick_Live_t::U_H).After("!"));
 	if (!email.empty())
 	    tmp.Email(email);
 	Parent->nickserv.AddStored(&tmp);
-	live.Identify(password);
+	nlive.Identify(password);
 	Parent->nickserv.stats.i_Register++;
 	SEND(mynick, source, "NS_YOU_COMMAND/REGISTERED", (
-		live.Mask(Nick_Live_t::U_H).After("!")));
+		nlive.Mask(Nick_Live_t::U_H).After("!")));
 	LOG(LM_INFO, "NICKSERV/REGISTER", (
-		live.Mask(Nick_Live_t::N_U_P_H),
+		nlive.Mask(Nick_Live_t::N_U_P_H),
 		source));
     }
 }
@@ -9007,12 +9016,17 @@ void NickServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
 
 void NickServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+    static_cast<void>(pElement);
+
     FT("NickServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("NickServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_NickServ);

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-#pragma hdrstop
+  #pragma hdrstop
 #else
-#pragma implementation
+  #pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.264  2001/11/12 01:05:01  prez
+** Added new warning flags, and changed code to reduce watnings ...
+**
 ** Revision 1.263  2001/11/07 06:30:43  prez
 ** Fixing some indenting and an unused veriable.
 **
@@ -515,7 +518,7 @@ static Chan_Live_t GLOB_Chan_Live_t;
 #endif
 
 #ifdef __BORLAND__
-#pragma codeseg CODE2
+  #pragma codeseg CODE2
 #endif
 
 // Private functions
@@ -588,7 +591,7 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
     }
     else
     {
-	RLOCK_IF(("ChanServ", "live", i_Name.LowerCase(), "squit"),
+	RLOCK2_IF(("ChanServ", "live", i_Name.LowerCase(), "squit"),
 	    squit.find(nick.LowerCase())!=squit.end())
 	{
 	    MCB(squit.size());
@@ -669,7 +672,7 @@ unsigned int Chan_Live_t::Kick(const mstring& nick, const mstring& kicker)
     }
     else
     {
-	RLOCK_IF(("ChanServ", "live", i_Name.LowerCase(), "squit"),
+	RLOCK2_IF(("ChanServ", "live", i_Name.LowerCase(), "squit"),
 		squit.find(nick.LowerCase())!=squit.end())
 	{
 	    MCB(squit.size());
@@ -708,7 +711,7 @@ void Chan_Live_t::ChgNick(const mstring& nick, const mstring& newnick)
     }
     else
     {
-	RLOCK_IF(("ChanServ", "live", i_Name.LowerCase(), "squit"),
+	RLOCK2_IF(("ChanServ", "live", i_Name.LowerCase(), "squit"),
 		squit.find(nick.LowerCase())!=squit.end())
 	{
 	    MCB(squit.size());
@@ -785,9 +788,9 @@ mDateTime Chan_Live_t::Creation_Time() const
 }
 
 
-void Chan_Live_t::Topic(const mstring& source, const mstring& topic, const mstring& setter, const mDateTime& time)
+void Chan_Live_t::Topic(const mstring& source, const mstring& topic, const mstring& setter, const mDateTime& settime)
 {
-    FT("Chan_Live_t::Topic", (source, topic, setter, time));
+    FT("Chan_Live_t::Topic", (source, topic, setter, settime));
     { WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Setter"));
     WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Set_Time"));
@@ -796,13 +799,13 @@ void Chan_Live_t::Topic(const mstring& source, const mstring& topic, const mstri
     CB(2, i_Topic_Set_Time);
     i_Topic = topic;
     i_Topic_Setter = setter;
-    i_Topic_Set_Time = time;
+    i_Topic_Set_Time = settime;
     CE(1, i_Topic_Setter);
     CE(2, i_Topic_Set_Time);
     MCE(i_Topic);
     }
     if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.GetStored(i_Name).Topic(source, topic, setter, time);
+	Parent->chanserv.GetStored(i_Name).Topic(source, topic, setter, settime);
 }
 
 
@@ -1924,7 +1927,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 	    }
 	    else
 	    {
-		RLOCK_IF(("ChanServ", "live", i_Name.LowerCase(), "modes"),
+		RLOCK2_IF(("ChanServ", "live", i_Name.LowerCase(), "modes"),
 			!add && modes.Contains(change[i]))
 		{
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "modes"));
@@ -2494,9 +2497,9 @@ void Chan_Stored_t::Quit(const mstring& nick)
 
 
 void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
-	const mstring& setter, const mDateTime& time)
+	const mstring& setter, const mDateTime& settime)
 {
-    FT("Chan_Stored_t::Topic", (source, topic, setter, time));
+    FT("Chan_Stored_t::Topic", (source, topic, setter, settime));
 
     bool burst = false;
     // Still in burst ...
@@ -2525,7 +2528,7 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
 			i_Comment + " [" + IRC_Bold +
 			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "]",
-			time - (1.0 / (60.0 * 60.0 * 24.0)));
+			settime - (1.0 / (60.0 * 60.0 * 24.0)));
 	return;
     }
 
@@ -2540,7 +2543,7 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
 	Parent->server.TOPIC(Parent->chanserv.FirstName(),
 			i_Topic_Setter, i_Name, i_Topic,
-			time - (1.0 / (60.0 * 60.0 * 24.0)));
+			settime - (1.0 / (60.0 * 60.0 * 24.0)));
     }
     else
     {
@@ -2552,7 +2555,7 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 	CB(2, i_Topic_Set_Time);
 	i_Topic = topic;
 	i_Topic_Setter = setter;
-	i_Topic_Set_Time = time;
+	i_Topic_Set_Time = settime;
 	CE(1, i_Topic_Setter);
 	CE(2, i_Topic_Set_Time);
 	MCE(i_Topic);
@@ -5396,6 +5399,8 @@ void Chan_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement *
 
 void Chan_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+
     FT("Chan_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
 	if( pElement->IsA(tag_Name) )			pElement->Retrieve(i_Name);
@@ -5584,6 +5589,8 @@ void Chan_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * p
 
 void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     set<entlist_val_t<long> >::iterator j;
     set<entlist_val_t<mstring> >::iterator k;
     entlist_i l;
@@ -13989,12 +13996,17 @@ void ChanServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
 
 void ChanServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
 {
+    static_cast<void>(pIn);
+    static_cast<void>(pElement);
+
     FT("ChanServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    static_cast<void>(attribs);
+
     FT("ChanServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_ChanServ);
