@@ -1,3 +1,23 @@
+* 2002-10-27 00:50  Preston A. Elder <prez@magick.tm>
+  lang/english.hlp (1.54), lang/english.lfo (1.59):
+  
+  Fixed mis-spelling of dropped.
+
+* 2002-10-27 00:49  Preston A. Elder <prez@magick.tm>
+  lang/english.lfo (1.58):
+  
+  Fixed typo
+
+* 2002-10-25 21:10  Preston A. Elder <prez@magick.tm>
+  src/dccengine.cpp (1.59), src/memoserv.cpp (1.129):
+  
+  Forgot to use the 'isread' flag in MemoServ count functions.
+
+* 2002-10-21 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.54):
+  
+  Created version 2.0s20021021
+
 * 2002-10-14 19:24  Preston A. Elder <prez@magick.tm>
   lang/english.lfo (1.57), lang/french.lfo (1.7), lang/swedish.lfo (1.4):
   
