@@ -271,13 +271,5 @@ SOURCE=.\src\utils.cpp
 
 SOURCE=.\include\utils.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\src\variant.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\variant.h
-# End Source File
 # End Target
 # End Project

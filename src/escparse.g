@@ -1,12 +1,18 @@
 
 header {
-/* Escape parsing subsystem
- *
- * Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King
- *     E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet
- * This program is free but copyrighted software; see the file COPYING for
- * details.
- */
+// $Id$
+//
+// Magick IRC Services
+// (c) 1997-1999 Preston A. Elder <prez@magick.tm>
+// (c) 1998-1999 W. King <ungod@magick.tm>
+//
+// The above copywright may not be removed under any
+// circumstances, however it may be added to if any
+// modifications are made to this file.  All modified
+// code must be clearly documented and labelled.
+//
+// ===================================================
+
 #include "mstring.h"
 }
 
