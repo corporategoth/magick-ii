@@ -75,8 +75,8 @@ private:
 	IrcSvcHandler *ircsvchandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 
-	static bool messages;		// Wether to process /MSG, /NOTICE.
-	static bool automation;		// Wether to do automatic tasks.
+	bool messages;		// Wether to process /MSG, /NOTICE.
+	bool automation;		// Wether to do automatic tasks.
 public:
 	void shutdown(bool in);
 	bool shutdown();
@@ -90,12 +90,10 @@ public:
 	// add a bob function to handle commands
 	void handle(const mstring& server, const mstring& command, const mstring& functionname);
 
-	static bool IsOnMSG() { return messages; }
-	static void TurnOnMSG() { messages = true; }
-	static void TurnOffMSG() { messages = false; }
-	static bool IsOnAUTO() { return automation; }
-	static void TurnOnAUTO() { automation = true; }
-	static void TurnOffAUTO() { automation = false; }
+	bool MSG() { return messages; }
+	void MSG(bool on) { messages = on; }
+	bool AUTO() { return automation; }
+	void AUTO(bool on) { automation = on; }
 
 	wxFileConfig* MagickIni;
 	long runflags;

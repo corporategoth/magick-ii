@@ -318,7 +318,7 @@ T_Locking::~T_Locking() {
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     if (IsOn(tid)) {
-	if (strlen(name)) {
+	if (name.IsEmpty()) {
     	    mstring message;
 	    if(locktype == Read)
 	        message << ":- " << "R " << name;
