@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.154  2001/01/16 15:47:40  prez
+** Fixed filesys not generating first entry in maps, fixed chanserv level
+** changes (could confuse set) and fixed idle times on whois user user
+**
 ** Revision 1.153  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -1786,16 +1790,15 @@ mstring Nick_Live_t::Away() const
     RET(i_away);
 }
 
-mDateTime Nick_Live_t::IdleTime() const
+mDateTime Nick_Live_t::LastAction() const
 {
-    NFT("Nick_Live_t::IdleTime");
-    mDateTime tmp;
+    NFT("Nick_Live_t::LastAction");
     if (IsServices())
     {
 	RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Last_Action"));
-	tmp = time(NULL) - (time_t) i_Last_Action;
+	RET(i_Last_Action);
     }
-    RET(tmp);
+    RET(Now());
 }
 
 

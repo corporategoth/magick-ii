@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.153  2001/01/16 15:47:40  prez
+** Fixed filesys not generating first entry in maps, fixed chanserv level
+** changes (could confuse set) and fixed idle times on whois user user
+**
 ** Revision 1.152  2001/01/16 12:47:37  prez
 ** Fixed mlock setting in live channels (also fixed helpop)
 **
@@ -4376,7 +4380,7 @@ void NetworkServ::execute(const mstring & data)
 		else
 		    out << "205 " << source << " User 1 ";
 		out << nlive->Name() << " [" << nlive->User() << "@"
-			<< nlive->Host() << "] :" << nlive->IdleTime().timetstring();
+			<< nlive->Host() << "] :" << nlive->LastAction().SecondsSince();
 		sraw(out);
 	    }
 	    else
@@ -4409,7 +4413,7 @@ void NetworkServ::execute(const mstring & data)
 			out << iter->second.Name() << " [" <<
 				iter->second.User() << "@" <<
 				iter->second.Host() << "] :" <<
-				iter->second.IdleTime().timetstring();
+				iter->second.LastAction().SecondsSince();
 			sraw(out);
 			
 		    }
@@ -4888,7 +4892,7 @@ void NetworkServ::execute(const mstring & data)
 		if (Parent->nickserv.live[targetL].IsServices())
 		{
     		    mstring signon_idletime;
-		    signon_idletime << Parent->nickserv.live[targetL].IdleTime().timetstring()
+		    signon_idletime << Parent->nickserv.live[targetL].LastAction().SecondsSince()
 			<< " " << Parent->nickserv.live[targetL].SignonTime().timetstring();
 		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
 		}

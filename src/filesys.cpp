@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/01/16 15:47:40  prez
+** Fixed filesys not generating first entry in maps, fixed chanserv level
+** changes (could confuse set) and fixed idle times on whois user user
+**
 ** Revision 1.59  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -681,23 +685,19 @@ unsigned short FindAvailPort()
     RET(retval);
 }
 
-unsigned long FileMap::FindAvail(FileMap::FileType type) const
+unsigned long FileMap::FindAvail(FileMap::FileType type)
 {
     FT("FileMap::FindAvail", ((int) type));
 
     unsigned long filenum = 1;
-    RLOCK(("FileMap", (int) type));
-    filemap_t::const_iterator fmi = i_FileMap.find(type);
-    if (fmi != i_FileMap.end())
+    WLOCK(("FileMap", (int) type));
+    while (filenum > 0) // Guarentee 8 digits
     {
-	while (filenum < 0xffffffff) // Guarentee 8 digits
+	if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
 	{
-	    if (fmi->second.find(filenum) == fmi->second.end())
-	    {
-		RET(filenum);
-	    }
-	    filenum++;
+	    RET(filenum);
 	}
+	filenum++;
     }
 
     LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
@@ -1741,7 +1741,7 @@ void *DccMap::Connect2(void *in)
 	bool found = false;
 	DCC_SOCK.Resolve(S_DCCFile, val->source);
 	RLOCK(("DccMap", "xfers"));
-	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
+	for (WorkId = 1; !found && WorkId > 0; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
@@ -1782,7 +1782,7 @@ void *DccMap::Accept2(void *in)
 	bool found = false;
 	DCC_SOCK.Resolve(S_DCCFile, val->source);
 	RLOCK(("DccMap", "xfers"));
-	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
+	for (WorkId = 1; !found && WorkId > 0; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {

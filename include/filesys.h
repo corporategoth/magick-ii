@@ -25,6 +25,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2001/01/16 15:47:39  prez
+** Fixed filesys not generating first entry in maps, fixed chanserv level
+** changes (could confuse set) and fixed idle times on whois user user
+**
 ** Revision 1.32  2001/01/01 05:32:43  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -201,7 +205,7 @@ public:
     enum FileType { MemoAttach, Picture, Public, Unknown };
     typedef map<FileType, map<unsigned long, pair<mstring, mstring> > > filemap_t;
 
-    unsigned long FindAvail(FileType type) const;
+    unsigned long FindAvail(FileType type);
     bool Exists(FileType type, unsigned long num);
     mstring GetName(FileType type, unsigned long num);
     mstring GetRealName(FileType type, unsigned long num);

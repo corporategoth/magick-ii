@@ -25,6 +25,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2001/01/16 15:47:39  prez
+** Fixed filesys not generating first entry in maps, fixed chanserv level
+** changes (could confuse set) and fixed idle times on whois user user
+**
 ** Revision 1.54  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -268,7 +272,7 @@ public:
     void Away(mstring in);
     mstring Away() const;
 
-    mDateTime IdleTime() const;
+    mDateTime LastAction() const;
     void Action();
 
     mDateTime SignonTime() const;

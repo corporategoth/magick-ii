@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.224  2001/01/16 15:47:39  prez
+** Fixed filesys not generating first entry in maps, fixed chanserv level
+** changes (could confuse set) and fixed idle times on whois user user
+**
 ** Revision 1.223  2001/01/16 12:47:36  prez
 ** Fixed mlock setting in live channels (also fixed helpop)
 **
@@ -4323,14 +4327,8 @@ bool Chan_Stored_t::Level_change(mstring entry, long value, mstring nick)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
     if (Level_find(entry))
     {
-	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
-	i_Access.erase(Level);
-	tmp = i_Level.insert(entlist_val_t<long>(
-			entry.UpperCase(), value, nick));
-	if (tmp.second)
-	    Level = tmp.first;
-	else
-	    Level = i_Level.end();
+	entlist_val_t<long> *ptr = (entlist_val_t<long> *) &(*Level);
+	ptr->Value(value, nick);
 	RET(true);
     }
     else
