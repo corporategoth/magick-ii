@@ -130,10 +130,8 @@ enum bool
 #endif
 #if defined(HAVE_EXT_HASH_MAP)
 #  include <ext/hash_map>
-#  define STL_EXT_NAMESPACE __gnu_cxx
 #elif defined(HAVE_EXT_HASH_MAP_H)
 #  include <ext/hash_map.h>
-#  define STL_EXT_NAMESPACE __gnu_cxx
 #elif defined(HAVE_HASH_MAP)
 #  include <hash_map>
 #elif defined(HAVE_HASH_MAP_H)
@@ -260,9 +258,14 @@ typedef struct utsname ACE_utsname;
 // # define bcmp        ACE_OS::bcmp
 #endif
 
-#ifdef STL_EXT_NAMESPACE
+// As of GCC 3.1, we need an extra namespace for hash_map stuff.
+#ifdef __GNUC__
+# if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+#  define STL_EXT_NAMESPACE __gnu_cxx
 using namespace STL_EXT_NAMESPACE;
-#endif
+# endif /* GCC >= 3.1 */
+#endif /* __GNUC__ */
+
 using namespace std;
 
 #else /* __cplusplus */
