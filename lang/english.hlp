@@ -775,8 +775,8 @@
 02 =::so that it may not be taken by anyone else.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =:REGD:    HELP         INFO         LIST
-05 =REGD::    HELP         INFO         LIST         IDENTIFY
+05a=:REGD:    HELP         INFO         LIST
+05b=REGD::    HELP         INFO         LIST         IDENTIFY
 06 =REGD::    REGISTER     DROP         USERS        INVITE
 07 =REGD::    OP           DEOP         HALFOP       DEHALFOP
 08 =REGD::    VOICE        DEVOICE      MODE         TOPIC
@@ -1865,18 +1865,18 @@
 02 =::user, or post a news article to a channel.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =:REGD:    HELP
-06 =REGD::    HELP         LIST         READ         UNREAD
-07 =REGD::    SEND         REPLY        FORWARD      FLUSH
-08 =REGD::    CONTINUE     CANCEL       DEL          FILE
-09 =REGD::    GET          PREVIEW      SET
-10 =::
-11 =::You may request help on the syntax and functionality
-12 =::of any and all of the above commands by specifying
-13 =::the command name after the HELP request.
-14 =::\bNOTE\b: Only commands you currently may use are listed
-15 =::      above, and things such as nickname registration
-16 =::      may change what is displayed above.
+05a=:REGD:    HELP
+05b=REGD::    HELP         LIST         READ         UNREAD
+06 =REGD::    SEND         REPLY        FORWARD      FLUSH
+07 =REGD::    CONTINUE     CANCEL       DEL          FILE
+08 =REGD::    GET          PREVIEW      SET
+09 =::
+10 =::You may request help on the syntax and functionality
+11 =::of any and all of the above commands by specifying
+12 =::the command name after the HELP request.
+13 =::\bNOTE\b: Only commands you currently may use are listed
+14 =::      above, and things such as nickname registration
+15 =::      may change what is displayed above.
 
 [MEMOSERV/READ]
 01 =REGD::READ [channel] <NUM|ALL|UNREAD>
@@ -2042,18 +2042,18 @@
 02 =::committees for various purposes.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =:REGD:    HELP         INFO         LIST
-06 =REGD::    HELP         INFO         LIST         MEMBER
-07 =REGD::    MEMO         LOGON        SET
-08 =SOP::And as a Services Operator, the following commands:
-09 =SOP::    ADD          DEL
-10 =::
-11 =::You may request help on the syntax and functionality
-12 =::of any and all of the above commands by specifying
-13 =::the command name after the HELP request.
-14 =::\bNOTE\b: Only commands you currently may use are listed
-15 =::      above, and things such as nickname registration
-16 =::      may change what is displayed above.
+05a=:REGD:    HELP         INFO         LIST
+05b=REGD::    HELP         INFO         LIST         MEMBER
+06 =REGD::    MEMO         LOGON        SET
+07 =SOP::And as a Services Operator, the following commands:
+08 =SOP::    ADD          DEL
+09 =::
+10 =::You may request help on the syntax and functionality
+11 =::of any and all of the above commands by specifying
+12 =::the command name after the HELP request.
+13 =::\bNOTE\b: Only commands you currently may use are listed
+14 =::      above, and things such as nickname registration
+15 =::      may change what is displayed above.
 
 [COMMSERV/ADD]
 01 =SOP::ADD <committee> <head|@headcom> <description>
