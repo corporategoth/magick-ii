@@ -40,8 +40,8 @@ int main(int argc, char **argv)
 
 	int Result;
 	StartTime=Now();
-	{
 restart:
+	{
 	    Magick internalobject(argc, argv);
 	    MagickObject=&internalobject;
 	    ResetTime=Now();

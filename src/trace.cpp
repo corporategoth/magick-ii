@@ -151,7 +151,7 @@ T_Functions::~T_Functions()
     tid->indentdown(); 
     if (IsOn(tid)) {
 	mstring message;
-	if (strlen(return_value.type()))
+	if (!return_value.type().IsEmpty())
 		message="/  (" + return_value.type() + ") " + return_value.AsString();
 	else
 		message="/ ";
