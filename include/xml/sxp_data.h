@@ -22,10 +22,10 @@ public:
 	Indent();
 	mstring param;
 
-	  dict::iterator iter;
+	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
-	      param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	  Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
+	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+	Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const int val, dict & attribs = blank_dict)
@@ -109,7 +109,7 @@ public:
 class IDataInput : public IData
 {
 public:
-    inline void Retrieve(bool &val) const
+    inline void Retrieve(bool & val) const
     {
 	val = (atoi(Data()) != 0);
     }
@@ -147,14 +147,16 @@ public:
     void Retrieve(mDateTime & val) const
     {
 	double temp;
-	  Retrieve(temp);
+
+	Retrieve(temp);
 	// If the dates are before 1900, we're probably
 	// converting an old database.  Just add 1900
 	// years, and be done with it.   Dont forget
 	// the leap years :)
 	if (temp < static_cast < double > (1900 * 365))
-	      temp += static_cast < double > ((1900 * 365) + (1900 / 4) - (1900 / 100) + (1900 / 400));
-	  val = GMT(mDateTime(temp), false);
+	    temp += static_cast < double > ((1900 * 365) + (1900 / 4) - (1900 / 100) + (1900 / 400));
+
+	val = GMT(mDateTime(temp), false);
     }
 
 };

@@ -62,6 +62,7 @@ typedef struct
 {
     KEY name;
 }
+
 NAMED;
 
 typedef struct
@@ -72,6 +73,7 @@ typedef struct
     size_t usedLim;
     XML_Memory_Handling_Suite *mem;
 }
+
 HASH_TABLE;
 
 typedef struct
@@ -79,6 +81,7 @@ typedef struct
     NAMED **p;
     NAMED **end;
 }
+
 HASH_TABLE_ITER;
 
 #define INIT_TAG_BUF_SIZE 32	/* must be a multiple of sizeof(XML_Char) */
@@ -99,6 +102,7 @@ typedef struct binding
     int uriLen;
     int uriAlloc;
 }
+
 BINDING;
 
 typedef struct prefix
@@ -106,6 +110,7 @@ typedef struct prefix
     const XML_Char *name;
     BINDING *binding;
 }
+
 PREFIX;
 
 typedef struct
@@ -114,6 +119,7 @@ typedef struct
     const XML_Char *localPart;
     int uriLen;
 }
+
 TAG_NAME;
 
 typedef struct tag
@@ -126,6 +132,7 @@ typedef struct tag
     char *bufEnd;
     BINDING *bindings;
 }
+
 TAG;
 
 typedef struct
@@ -140,6 +147,7 @@ typedef struct
     char open;
     char is_param;
 }
+
 ENTITY;
 
 typedef struct
@@ -152,6 +160,7 @@ typedef struct
     int childcnt;
     int nextsib;
 }
+
 CONTENT_SCAFFOLD;
 
 typedef struct block
@@ -160,6 +169,7 @@ typedef struct block
     int size;
     XML_Char s[1];
 }
+
 BLOCK;
 
 typedef struct
@@ -171,6 +181,7 @@ typedef struct
     XML_Char *start;
     XML_Memory_Handling_Suite *mem;
 }
+
 STRING_POOL;
 
 /* The XML_Char before the name is used to determine whether
@@ -182,6 +193,7 @@ typedef struct attribute_id
     char maybeTokenized;
     char xmlns;
 }
+
 ATTRIBUTE_ID;
 
 typedef struct
@@ -190,6 +202,7 @@ typedef struct
     char isCdata;
     const XML_Char *value;
 }
+
 DEFAULT_ATTRIBUTE;
 
 typedef struct
@@ -201,6 +214,7 @@ typedef struct
     int allocDefaultAtts;
     DEFAULT_ATTRIBUTE *defaultAtts;
 }
+
 ELEMENT_TYPE;
 
 typedef struct
@@ -212,10 +226,12 @@ typedef struct
     STRING_POOL pool;
     int complete;
     int standalone;
+
 #ifdef XML_DTD
     HASH_TABLE paramEntities;
-#endif				/* XML_DTD */
+#endif /* XML_DTD */
     PREFIX defaultPrefix;
+
     /* === scaffolding for building content model === */
     int in_eldecl;
     CONTENT_SCAFFOLD *scaffold;
@@ -225,6 +241,7 @@ typedef struct
     int scaffLevel;
     int *scaffIndex;
 }
+
 DTD;
 
 typedef struct open_internal_entity
@@ -234,6 +251,7 @@ typedef struct open_internal_entity
     struct open_internal_entity *next;
     ENTITY *entity;
 }
+
 OPEN_INTERNAL_ENTITY;
 
 typedef enum XML_Error Processor(XML_Parser parser, const char *start, const char *end, const char **endPtr);
@@ -343,10 +361,13 @@ typedef struct
     void *m_handlerArg;
     char *m_buffer;
     XML_Memory_Handling_Suite m_mem;
+
     /* first character to be parsed */
     const char *m_bufferPtr;
+
     /* past last character to be parsed */
     char *m_bufferEnd;
+
     /* allocated end of buffer */
     const char *m_bufferLim;
     long m_parseEndByteIndex;
@@ -422,11 +443,13 @@ typedef struct
     unsigned m_groupSize;
     int m_hadExternalDoctype;
     XML_Char m_namespaceSeparator;
+
 #ifdef XML_DTD
     enum XML_ParamEntityParsing m_paramEntityParsing;
     XML_Parser m_parentParser;
 #endif
 }
+
 Parser;
 
 #define MALLOC(s) (((Parser *)parser)->m_mem.malloc_fcn((s)))
@@ -553,18 +576,13 @@ XML_Parser XML_ParserCreate_MM(const XML_Char * encodingName, const XML_Memory_H
 {
 
     XML_Parser parser;
-    static const XML_Char implicitContext[] = {
-	XML_T('x'), XML_T('m'), XML_T('l'), XML_T('='),
-	XML_T('h'), XML_T('t'), XML_T('t'), XML_T('p'), XML_T(':'),
-	XML_T('/'), XML_T('/'), XML_T('w'), XML_T('w'), XML_T('w'),
-	XML_T('.'), XML_T('w'), XML_T('3'),
-	XML_T('.'), XML_T('o'), XML_T('r'), XML_T('g'),
-	XML_T('/'), XML_T('X'), XML_T('M'), XML_T('L'),
-	XML_T('/'), XML_T('1'), XML_T('9'), XML_T('9'), XML_T('8'),
-	XML_T('/'), XML_T('n'), XML_T('a'), XML_T('m'), XML_T('e'),
-	XML_T('s'), XML_T('p'), XML_T('a'), XML_T('c'), XML_T('e'),
-	XML_T('\0')
-    };
+    static const XML_Char implicitContext[] =
+    {
+    XML_T('x'), XML_T('m'), XML_T('l'), XML_T('='), XML_T('h'), XML_T('t'), XML_T('t'), XML_T('p'), XML_T(':'), XML_T('/'),
+	    XML_T('/'), XML_T('w'), XML_T('w'), XML_T('w'), XML_T('.'), XML_T('w'), XML_T('3'), XML_T('.'), XML_T('o'),
+	    XML_T('r'), XML_T('g'), XML_T('/'), XML_T('X'), XML_T('M'), XML_T('L'), XML_T('/'), XML_T('1'), XML_T('9'),
+	    XML_T('9'), XML_T('8'), XML_T('/'), XML_T('n'), XML_T('a'), XML_T('m'), XML_T('e'), XML_T('s'), XML_T('p'),
+	    XML_T('a'), XML_T('c'), XML_T('e'), XML_T('\0')};
 
     if (memsuite)
     {
@@ -1309,32 +1327,18 @@ void XML_DefaultCurrent(XML_Parser parser)
 
 const XML_LChar *XML_ErrorString(int code)
 {
-    static const XML_LChar *message[] = {
-	0,
-	XML_T("out of memory"),
-	XML_T("syntax error"),
-	XML_T("no element found"),
-	XML_T("not well-formed (invalid token)"),
-	XML_T("unclosed token"),
-	XML_T("unclosed token"),
-	XML_T("mismatched tag"),
-	XML_T("duplicate attribute"),
-	XML_T("junk after document element"),
-	XML_T("illegal parameter entity reference"),
-	XML_T("undefined entity"),
-	XML_T("recursive entity reference"),
-	XML_T("asynchronous entity"),
-	XML_T("reference to invalid character number"),
-	XML_T("reference to binary entity"),
-	XML_T("reference to external entity in attribute"),
-	XML_T("xml processing instruction not at start of external entity"),
-	XML_T("unknown encoding"),
-	XML_T("encoding specified in XML declaration is incorrect"),
-	XML_T("unclosed CDATA section"),
-	XML_T("error in processing external entity reference"),
-	XML_T("document is not standalone"),
-	XML_T("unexpected parser state - please send a bug report")
-    };
+    static const XML_LChar *message[] =
+    {
+    0, XML_T("out of memory"), XML_T("syntax error"), XML_T("no element found"), XML_T("not well-formed (invalid token)"),
+	    XML_T("unclosed token"), XML_T("unclosed token"), XML_T("mismatched tag"), XML_T("duplicate attribute"),
+	    XML_T("junk after document element"), XML_T("illegal parameter entity reference"), XML_T("undefined entity"),
+	    XML_T("recursive entity reference"), XML_T("asynchronous entity"),
+	    XML_T("reference to invalid character number"), XML_T("reference to binary entity"),
+	    XML_T("reference to external entity in attribute"),
+	    XML_T("xml processing instruction not at start of external entity"), XML_T("unknown encoding"),
+	    XML_T("encoding specified in XML declaration is incorrect"), XML_T("unclosed CDATA section"),
+	    XML_T("error in processing external entity reference"), XML_T("document is not standalone"),
+	    XML_T("unexpected parser state - please send a bug report")};
 
     if (code > 0 && code < (int) (sizeof(message) / sizeof(message[0])))
 	return message[code];
@@ -1526,9 +1530,7 @@ static enum XML_Error doContent(XML_Parser parser, int startTagLevel, const ENCO
 	    {
 		const XML_Char *name;
 		ENTITY *entity;
-		XML_Char ch = XmlPredefinedEntityName(enc,
-						      s + enc->minBytesPerChar,
-						      next - enc->minBytesPerChar);
+		XML_Char ch = XmlPredefinedEntityName(enc, s + enc->minBytesPerChar, next - enc->minBytesPerChar);
 
 		if (ch)
 		{
@@ -1975,8 +1977,7 @@ static enum XML_Error storeAtts(XML_Parser parser, const ENCODING * enc, const c
     for (i = 0; i < n; i++)
     {
 	/* add the name and value to the attribute list */
-	ATTRIBUTE_ID *attId = getAttributeId(parser, enc, atts[i].name,
-					     atts[i].name + XmlNameLength(enc, atts[i].name));
+	ATTRIBUTE_ID *attId = getAttributeId(parser, enc, atts[i].name, atts[i].name + XmlNameLength(enc, atts[i].name));
 
 	if (!attId)
 	    return XML_ERROR_NO_MEMORY;
@@ -2619,7 +2620,9 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 			       const char *next, const char **nextPtr)
 {
 #ifdef XML_DTD
-    static const XML_Char externalSubsetName[] = { '#', '\0' };
+    static const XML_Char externalSubsetName[] =
+    {
+    '#', '\0'};
 #endif /* XML_DTD */
 
     const char **eventPP;
@@ -2738,10 +2741,7 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 		return XML_ERROR_SYNTAX;
 	    if (declEntity)
 	    {
-		XML_Char *tem = poolStoreString(&dtd.pool,
-						enc,
-						s + enc->minBytesPerChar,
-						next - enc->minBytesPerChar);
+		XML_Char *tem = poolStoreString(&dtd.pool, enc, s + enc->minBytesPerChar, next - enc->minBytesPerChar);
 
 		if (!tem)
 		    return XML_ERROR_NO_MEMORY;
@@ -2762,9 +2762,7 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 #ifdef XML_DTD
 		if (paramEntityParsing && externalEntityRefHandler)
 		{
-		    ENTITY *entity = (ENTITY *) lookup(&dtd.paramEntities,
-						       externalSubsetName,
-						       0);
+		    ENTITY *entity = (ENTITY *) lookup(&dtd.paramEntities, externalSubsetName, 0);
 
 		    if (!externalEntityRefHandler
 			(externalEntityRefHandlerArg, 0, entity->base, entity->systemId, entity->publicId))
@@ -2866,10 +2864,9 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	case XML_ROLE_FIXED_ATTRIBUTE_VALUE:
 	    {
 		const XML_Char *attVal;
-		enum XML_Error result = storeAttributeValue(parser, enc, declAttributeIsCdata,
-							    s + enc->minBytesPerChar,
-							    next - enc->minBytesPerChar,
-							    &dtd.pool);
+		enum XML_Error result =
+		    storeAttributeValue(parser, enc, declAttributeIsCdata, s + enc->minBytesPerChar,
+					next - enc->minBytesPerChar, &dtd.pool);
 
 		if (result)
 		    return result;
@@ -2898,9 +2895,7 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	    }
 	case XML_ROLE_ENTITY_VALUE:
 	    {
-		enum XML_Error result = storeEntityValue(parser, enc,
-							 s + enc->minBytesPerChar,
-							 next - enc->minBytesPerChar);
+		enum XML_Error result = storeEntityValue(parser, enc, s + enc->minBytesPerChar, next - enc->minBytesPerChar);
 
 		if (declEntity)
 		{
@@ -3065,10 +3060,7 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 		return XML_ERROR_SYNTAX;
 	    if (declNotationName)
 	    {
-		XML_Char *tem = poolStoreString(&tempPool,
-						enc,
-						s + enc->minBytesPerChar,
-						next - enc->minBytesPerChar);
+		XML_Char *tem = poolStoreString(&tempPool, enc, s + enc->minBytesPerChar, next - enc->minBytesPerChar);
 
 		if (!tem)
 		    return XML_ERROR_NO_MEMORY;
@@ -3080,9 +3072,8 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	case XML_ROLE_NOTATION_SYSTEM_ID:
 	    if (declNotationName && notationDeclHandler)
 	    {
-		const XML_Char *systemId = poolStoreString(&tempPool, enc,
-							   s + enc->minBytesPerChar,
-							   next - enc->minBytesPerChar);
+		const XML_Char *systemId =
+		    poolStoreString(&tempPool, enc, s + enc->minBytesPerChar, next - enc->minBytesPerChar);
 
 		if (!systemId)
 		    return XML_ERROR_NO_MEMORY;
@@ -3274,7 +3265,7 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	    goto elementContent;
 	case XML_ROLE_CONTENT_ELEMENT_PLUS:
 	    quant = XML_CQUANT_PLUS;
-	  elementContent:
+	elementContent:
 	    if (dtd.in_eldecl)
 	    {
 		ELEMENT_TYPE *el;
@@ -3304,7 +3295,7 @@ static enum XML_Error doProlog(XML_Parser parser, const ENCODING * enc, const ch
 	    goto closeGroup;
 	case XML_ROLE_GROUP_CLOSE_PLUS:
 	    quant = XML_CQUANT_PLUS;
-	  closeGroup:
+	closeGroup:
 	    if (dtd.in_eldecl)
 	    {
 		dtd.scaffLevel--;
@@ -3539,9 +3530,7 @@ static enum XML_Error appendAttributeValue(XML_Parser parser, const ENCODING * e
 	    {
 		const XML_Char *name;
 		ENTITY *entity;
-		XML_Char ch = XmlPredefinedEntityName(enc,
-						      ptr + enc->minBytesPerChar,
-						      next - enc->minBytesPerChar);
+		XML_Char ch = XmlPredefinedEntityName(enc, ptr + enc->minBytesPerChar, next - enc->minBytesPerChar);
 
 		if (ch)
 		{

@@ -261,6 +261,7 @@ struct ESP_AutoKick
 {
     int16 in_use;
     int16 is_nick;		/* 1 if a regged nickname, 0 if a nick!user@host mask */
+
     /* Always 0 if not in use */
     union
     {

@@ -566,21 +566,49 @@ int ESP_delnick(ESP_NickInfo * ni)
     }							\
 } while (0)
 
-static int def_levels[] [2] = {
-    {ESP_CA_AUTOOP, 5},
-    {ESP_CA_AUTOVOICE, 3},
-    {ESP_CA_AUTODEOP, -1},
-    {ESP_CA_NOJOIN, -2},
-    {ESP_CA_INVITE, 5},
-    {ESP_CA_AKICK, 10},
-    {ESP_CA_SET, ESP_ACCESS_INVALID},
-    {ESP_CA_CLEAR, ESP_ACCESS_INVALID},
-    {ESP_CA_UNBAN, 5},
-    {ESP_CA_OPDEOP, 5},
-    {ESP_CA_ACCESS_LIST, 0},
-    {ESP_CA_ACCESS_CHANGE, 10},
-    {ESP_CA_MEMO, 10},
-    {-1}
+static int def_levels[] [2] =
+{
+    {
+    ESP_CA_AUTOOP, 5}
+    ,
+    {
+    ESP_CA_AUTOVOICE, 3}
+    ,
+    {
+    ESP_CA_AUTODEOP, -1}
+    ,
+    {
+    ESP_CA_NOJOIN, -2}
+    ,
+    {
+    ESP_CA_INVITE, 5}
+    ,
+    {
+    ESP_CA_AKICK, 10}
+    ,
+    {
+    ESP_CA_SET, ESP_ACCESS_INVALID}
+    ,
+    {
+    ESP_CA_CLEAR, ESP_ACCESS_INVALID}
+    ,
+    {
+    ESP_CA_UNBAN, 5}
+    ,
+    {
+    ESP_CA_OPDEOP, 5}
+    ,
+    {
+    ESP_CA_ACCESS_LIST, 0}
+    ,
+    {
+    ESP_CA_ACCESS_CHANGE, 10}
+    ,
+    {
+    ESP_CA_MEMO, 10}
+    ,
+    {
+    -1}
 };
 
 void ESP_reset_levels(ESP_ChannelInfo * ci)
@@ -607,6 +635,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE * f, int ver)
     struct
     {
 	short level;
+
 #ifdef COMPATIBILITY_V2
 	short is_nick;
 #else
@@ -1705,8 +1734,7 @@ Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo * ni)
     else if (ni->link != NULL && strlen(ni->link))
     {
 	Nick_Stored_t tmp(ni->link);
-	Nick_Stored_t *out = new Nick_Stored_t(ni->nick,
-					       mDateTime(ni->time_registered), tmp);
+	Nick_Stored_t *out = new Nick_Stored_t(ni->nick, mDateTime(ni->time_registered), tmp);
 
 	if (out == NULL)
 	    return NULL;
@@ -1850,9 +1878,8 @@ Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo * ci)
 	    return NULL;
 	}
 
-	Chan_Stored_t *out = new Chan_Stored_t(mstring(ci->name),
-					       mstring(ci->founder), mstring(ci->founderpass),
-					       mstring(ci->desc));
+	Chan_Stored_t *out =
+	    new Chan_Stored_t(mstring(ci->name), mstring(ci->founder), mstring(ci->founderpass), mstring(ci->desc));
 
 	if (out == NULL)
 	    return NULL;

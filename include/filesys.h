@@ -43,7 +43,7 @@ private:
     mstring i_mode;
 
 public:
-      mFile()
+    mFile()
     {
 	fd = NULL;
     }
@@ -110,7 +110,7 @@ public:
     FileMap()
     {
     }
-    virtual ~FileMap()
+    virtual ~ FileMap()
     {
     }
     enum FileType
@@ -140,7 +140,7 @@ public:
     void WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs = SXP::blank_dict);
     void PostLoad();
 
-  private:
+private:
     filemap_t i_FileMap;
     vector < mstring * > fm_array;
     static SXP::Tag tag_FileMap, tag_File;
@@ -171,6 +171,7 @@ private:
     unsigned long i_DccId;
     unsigned char *i_Transiant;
     mDateTime i_LastData;
+
     map < time_t, size_t > i_Traffic;
 
 public:
@@ -239,6 +240,7 @@ class DccMap : public ACE_Task < ACE_MT_SYNCH >
 
 	// Acceptor
 	unsigned short port;
+
 	FileMap::FileType filetype;
 	unsigned int filenum;
     };
@@ -266,11 +268,11 @@ public:
     }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static void AddXfers(DccXfer * in) throw (E_DccMap_Xfers);
-    static DccXfer &GetXfers(const unsigned long in) throw (E_DccMap_Xfers);
-    static void RemXfers(const unsigned long in) throw (E_DccMap_Xfers);
-    static bool IsXfers(const unsigned long in) throw (E_DccMap_Xfers);
-    static vector < unsigned long > GetList(const mstring & in) throw (E_DccMap_Xfers);
+    static void AddXfers(DccXfer * in) throw(E_DccMap_Xfers);
+    static DccXfer &GetXfers(const unsigned long in) throw(E_DccMap_Xfers);
+    static void RemXfers(const unsigned long in) throw(E_DccMap_Xfers);
+    static bool IsXfers(const unsigned long in) throw(E_DccMap_Xfers);
+    static vector < unsigned long > GetList(const mstring & in) throw(E_DccMap_Xfers);
 #else
     static void AddXfers(DccXfer * in);
     static DccXfer &GetXfers(const unsigned long in);

@@ -188,7 +188,7 @@ void mMessage::AddDependancies()
     {
 	if (source_[0u] == '@')
 	{
-	    mstring svr(str_to_base64(source_.After("@")));
+	    mstring svr(Magick::instance().server.proto.Numeric.str_to_base64(source_.After("@")));
 
 	    AddDepend(ServerExists, svr);
 	}
@@ -874,7 +874,7 @@ int mMessage::call()
 	    Magick::instance().server.execute(source_, msgtype_, params_);
 
     }
-    catch(E_NickServ_Stored & e)
+    catch (E_NickServ_Stored & e)
     {
 	switch (e.where())
 	{
@@ -896,7 +896,7 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_NickServ_Live & e)
+    catch (E_NickServ_Live & e)
     {
 	switch (e.where())
 	{
@@ -918,7 +918,7 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_NickServ_Recovered & e)
+    catch (E_NickServ_Recovered & e)
     {
 	switch (e.where())
 	{
@@ -940,7 +940,7 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_ChanServ_Stored & e)
+    catch (E_ChanServ_Stored & e)
     {
 	switch (e.where())
 	{
@@ -962,7 +962,7 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_ChanServ_Live & e)
+    catch (E_ChanServ_Live & e)
     {
 	switch (e.where())
 	{
@@ -984,7 +984,7 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_CommServ_List & e)
+    catch (E_CommServ_List & e)
     {
 	switch (e.where())
 	{
@@ -1006,7 +1006,7 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_Server_List & e)
+    catch (E_Server_List & e)
     {
 	switch (e.where())
 	{
@@ -1028,15 +1028,15 @@ int mMessage::call()
 	    break;
 	}
     }
-    catch(E_MemoServ_Nick & e)
+    catch (E_MemoServ_Nick & e)
     {
 	e.what();
     }
-    catch(E_MemoServ_Channel & e)
+    catch (E_MemoServ_Channel & e)
     {
 	e.what();
     }
-    catch(E_DccMap_Xfers & e)
+    catch (E_DccMap_Xfers & e)
     {
 	switch (e.where())
 	{

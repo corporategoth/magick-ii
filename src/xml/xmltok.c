@@ -116,13 +116,14 @@ struct normal_encoding
 {
     ENCODING enc;
     unsigned char type[256];
+
 #ifdef XML_MIN_SIZE
     int (*byteType) (const ENCODING *, const char *);
     int (*isNameMin) (const ENCODING *, const char *);
     int (*isNmstrtMin) (const ENCODING *, const char *);
     int (*byteToAscii) (const ENCODING *, const char *);
     int (*charMatches) (const ENCODING *, const char *, int);
-#endif				/* XML_MIN_SIZE */
+#endif /* XML_MIN_SIZE */
     int (*isName2) (const ENCODING *, const char *);
     int (*isName3) (const ENCODING *, const char *);
     int (*isName4) (const ENCODING *, const char *);
@@ -315,50 +316,58 @@ static void utf8_toUtf16(const ENCODING * enc, const char **fromP, const char *f
 }
 
 #ifdef XML_NS
-static const struct normal_encoding utf8_encoding_ns = {
-    {VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0},
+static const struct normal_encoding utf8_encoding_ns =
+{
+    {
+    VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0}
+    ,
     {
 #include "xml/asciitab.h"
 #include "xml/utf8tab.h"
-     },
-    STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)
-};
+    }
+, STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)};
 #endif
 
-static const struct normal_encoding utf8_encoding = {
-    {VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0},
+static const struct normal_encoding utf8_encoding =
+{
+    {
+    VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0}
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/asciitab.h"
 #undef BT_COLON
 #include "xml/utf8tab.h"
-     },
-    STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)
-};
+    }
+, STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)};
 
 #ifdef XML_NS
 
-static const struct normal_encoding internal_utf8_encoding_ns = {
-    {VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0},
+static const struct normal_encoding internal_utf8_encoding_ns =
+{
+    {
+    VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0}
+    ,
     {
 #include "xml/iasciitab.h"
 #include "xml/utf8tab.h"
-     },
-    STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)
-};
+    }
+, STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)};
 
 #endif
 
-static const struct normal_encoding internal_utf8_encoding = {
-    {VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0},
+static const struct normal_encoding internal_utf8_encoding =
+{
+    {
+    VTABLE1, utf8_toUtf8, utf8_toUtf16, 1, 1, 0}
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/iasciitab.h"
 #undef BT_COLON
 #include "xml/utf8tab.h"
-     },
-    STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)
-};
+    }
+, STANDARD_VTABLE(sb_) NORMAL_VTABLE(utf8_)};
 
 static void latin1_toUtf8(const ENCODING * enc, const char **fromP, const char *fromLim, char **toP, const char *toLim)
 {
@@ -395,27 +404,31 @@ static void latin1_toUtf16(const ENCODING * enc, const char **fromP, const char 
 
 #ifdef XML_NS
 
-static const struct normal_encoding latin1_encoding_ns = {
-    {VTABLE1, latin1_toUtf8, latin1_toUtf16, 1, 0, 0},
+static const struct normal_encoding latin1_encoding_ns =
+{
+    {
+    VTABLE1, latin1_toUtf8, latin1_toUtf16, 1, 0, 0}
+    ,
     {
 #include "xml/asciitab.h"
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(sb_)
-};
+    }
+, STANDARD_VTABLE(sb_)};
 
 #endif
 
-static const struct normal_encoding latin1_encoding = {
-    {VTABLE1, latin1_toUtf8, latin1_toUtf16, 1, 0, 0},
+static const struct normal_encoding latin1_encoding =
+{
+    {
+    VTABLE1, latin1_toUtf8, latin1_toUtf16, 1, 0, 0}
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/asciitab.h"
 #undef BT_COLON
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(sb_)
-};
+    }
+, STANDARD_VTABLE(sb_)};
 
 static void ascii_toUtf8(const ENCODING * enc, const char **fromP, const char *fromLim, char **toP, const char *toLim)
 {
@@ -425,29 +438,33 @@ static void ascii_toUtf8(const ENCODING * enc, const char **fromP, const char *f
 
 #ifdef XML_NS
 
-static const struct normal_encoding ascii_encoding_ns = {
-    {VTABLE1, ascii_toUtf8, latin1_toUtf16, 1, 1, 0},
+static const struct normal_encoding ascii_encoding_ns =
+{
+    {
+    VTABLE1, ascii_toUtf8, latin1_toUtf16, 1, 1, 0}
+    ,
     {
 #include "xml/asciitab.h"
 
 /* BT_NONXML == 0 */
-     },
-    STANDARD_VTABLE(sb_)
-};
+    }
+, STANDARD_VTABLE(sb_)};
 
 #endif
 
-static const struct normal_encoding ascii_encoding = {
-    {VTABLE1, ascii_toUtf8, latin1_toUtf16, 1, 1, 0},
+static const struct normal_encoding ascii_encoding =
+{
+    {
+    VTABLE1, ascii_toUtf8, latin1_toUtf16, 1, 1, 0}
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/asciitab.h"
 #undef BT_COLON
 
 /* BT_NONXML == 0 */
-     },
-    STANDARD_VTABLE(sb_)
-};
+    }
+, STANDARD_VTABLE(sb_)};
 
 static int unicode_byte_type(char hi, char lo)
 {
@@ -581,9 +598,9 @@ DEFINE_UTF16_TO_UTF8(little2_) DEFINE_UTF16_TO_UTF16(little2_)
   UCS2_GET_NAMING(nmstrtPages, (unsigned char)p[1], (unsigned char)p[0])
 #ifdef XML_MIN_SIZE
      static int little2_byteType(const ENCODING * enc, const char *p)
-{
-    return LITTLE2_BYTE_TYPE(enc, p);
-}
+     {
+	 return LITTLE2_BYTE_TYPE(enc, p);
+     }
 
 static int little2_byteToAscii(const ENCODING * enc, const char *p)
 {
@@ -633,65 +650,73 @@ static int little2_isNmstrtMin(const ENCODING * enc, const char *p)
 #undef IS_INVALID_CHAR
 #endif /* not XML_MIN_SIZE */
 #ifdef XML_NS
-     static const struct normal_encoding little2_encoding_ns = {
-	 {VTABLE, 2, 0,
+     static const struct normal_encoding little2_encoding_ns =
+     {
+	 {
+	     VTABLE, 2, 0,
 #if XML_BYTE_ORDER == 12
-	  1
+		 1
 #else
-	  0
+		 0
 #endif
-	  },
+	 }
+	 ,
 	 {
 #include "xml/asciitab.h"
 #include "xml/latin1tab.h"
-	  },
-	 STANDARD_VTABLE(little2_)
-     };
+	 }
+     , STANDARD_VTABLE(little2_)};
 
 #endif
 
-static const struct normal_encoding little2_encoding = {
-    {VTABLE, 2, 0,
+static const struct normal_encoding little2_encoding =
+{
+    {
+	VTABLE, 2, 0,
 #if XML_BYTE_ORDER == 12
-     1
+	    1
 #else
-     0
+	    0
 #endif
-     },
+    }
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/asciitab.h"
 #undef BT_COLON
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(little2_)
-};
+    }
+, STANDARD_VTABLE(little2_)};
 
 #if XML_BYTE_ORDER != 21
 
 #ifdef XML_NS
 
-static const struct normal_encoding internal_little2_encoding_ns = {
-    {VTABLE, 2, 0, 1},
+static const struct normal_encoding internal_little2_encoding_ns =
+{
+    {
+    VTABLE, 2, 0, 1}
+    ,
     {
 #include "xml/iasciitab.h"
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(little2_)
-};
+    }
+, STANDARD_VTABLE(little2_)};
 
 #endif
 
-static const struct normal_encoding internal_little2_encoding = {
-    {VTABLE, 2, 0, 1},
+static const struct normal_encoding internal_little2_encoding =
+{
+    {
+    VTABLE, 2, 0, 1}
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/iasciitab.h"
 #undef BT_COLON
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(little2_)
-};
+    }
+, STANDARD_VTABLE(little2_)};
 
 #endif
 
@@ -767,65 +792,73 @@ static int big2_isNmstrtMin(const ENCODING * enc, const char *p)
 
 #ifdef XML_NS
 
-static const struct normal_encoding big2_encoding_ns = {
-    {VTABLE, 2, 0,
+static const struct normal_encoding big2_encoding_ns =
+{
+    {
+	VTABLE, 2, 0,
 #if XML_BYTE_ORDER == 21
-     1
+	    1
 #else
-     0
+	    0
 #endif
-     },
+    }
+    ,
     {
 #include "xml/asciitab.h"
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(big2_)
-};
+    }
+, STANDARD_VTABLE(big2_)};
 
 #endif
 
-static const struct normal_encoding big2_encoding = {
-    {VTABLE, 2, 0,
+static const struct normal_encoding big2_encoding =
+{
+    {
+	VTABLE, 2, 0,
 #if XML_BYTE_ORDER == 21
-     1
+	    1
 #else
-     0
+	    0
 #endif
-     },
+    }
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/asciitab.h"
 #undef BT_COLON
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(big2_)
-};
+    }
+, STANDARD_VTABLE(big2_)};
 
 #if XML_BYTE_ORDER != 12
 
 #ifdef XML_NS
 
-static const struct normal_encoding internal_big2_encoding_ns = {
-    {VTABLE, 2, 0, 1},
+static const struct normal_encoding internal_big2_encoding_ns =
+{
+    {
+    VTABLE, 2, 0, 1}
+    ,
     {
 #include "xml/iasciitab.h"
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(big2_)
-};
+    }
+, STANDARD_VTABLE(big2_)};
 
 #endif
 
-static const struct normal_encoding internal_big2_encoding = {
-    {VTABLE, 2, 0, 1},
+static const struct normal_encoding internal_big2_encoding =
+{
+    {
+    VTABLE, 2, 0, 1}
+    ,
     {
 #define BT_COLON BT_NMSTRT
 #include "xml/iasciitab.h"
 #undef BT_COLON
 #include "xml/latin1tab.h"
-     },
-    STANDARD_VTABLE(big2_)
-};
+    }
+, STANDARD_VTABLE(big2_)};
 
 #endif
 
@@ -973,25 +1006,25 @@ static int parsePseudoAttribute(const ENCODING * enc, const char *ptr, const cha
     return 1;
 }
 
-static const char KW_version[] = {
-    ASCII_v, ASCII_e, ASCII_r, ASCII_s, ASCII_i, ASCII_o, ASCII_n, '\0'
-};
+static const char KW_version[] =
+{
+ASCII_v, ASCII_e, ASCII_r, ASCII_s, ASCII_i, ASCII_o, ASCII_n, '\0'};
 
-static const char KW_encoding[] = {
-    ASCII_e, ASCII_n, ASCII_c, ASCII_o, ASCII_d, ASCII_i, ASCII_n, ASCII_g, '\0'
-};
+static const char KW_encoding[] =
+{
+ASCII_e, ASCII_n, ASCII_c, ASCII_o, ASCII_d, ASCII_i, ASCII_n, ASCII_g, '\0'};
 
-static const char KW_standalone[] = {
-    ASCII_s, ASCII_t, ASCII_a, ASCII_n, ASCII_d, ASCII_a, ASCII_l, ASCII_o, ASCII_n, ASCII_e, '\0'
-};
+static const char KW_standalone[] =
+{
+ASCII_s, ASCII_t, ASCII_a, ASCII_n, ASCII_d, ASCII_a, ASCII_l, ASCII_o, ASCII_n, ASCII_e, '\0'};
 
-static const char KW_yes[] = {
-    ASCII_y, ASCII_e, ASCII_s, '\0'
-};
+static const char KW_yes[] =
+{
+ASCII_y, ASCII_e, ASCII_s, '\0'};
 
-static const char KW_no[] = {
-    ASCII_n, ASCII_o, '\0'
-};
+static const char KW_no[] =
+{
+ASCII_n, ASCII_o, '\0'};
 
 static int doParseXmlDecl(const ENCODING * (*encodingFinder) (const ENCODING *, const char *, const char *),
 			  int isGeneralTextEntity, const ENCODING * enc, const char *ptr, const char *end, const char **badPtr,
@@ -1368,35 +1401,30 @@ enum
     NO_ENC
 };
 
-static const char KW_ISO_8859_1[] = {
-    ASCII_I, ASCII_S, ASCII_O, ASCII_MINUS, ASCII_8, ASCII_8, ASCII_5, ASCII_9, ASCII_MINUS, ASCII_1, '\0'
-};
-static const char KW_US_ASCII[] = {
-    ASCII_U, ASCII_S, ASCII_MINUS, ASCII_A, ASCII_S, ASCII_C, ASCII_I, ASCII_I, '\0'
-};
-static const char KW_UTF_8[] = {
-    ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_8, '\0'
-};
-static const char KW_UTF_16[] = {
-    ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_1, ASCII_6, '\0'
-};
-static const char KW_UTF_16BE[] = {
-    ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_1, ASCII_6, ASCII_B, ASCII_E, '\0'
-};
-static const char KW_UTF_16LE[] = {
-    ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_1, ASCII_6, ASCII_L, ASCII_E, '\0'
-};
+static const char KW_ISO_8859_1[] =
+{
+ASCII_I, ASCII_S, ASCII_O, ASCII_MINUS, ASCII_8, ASCII_8, ASCII_5, ASCII_9, ASCII_MINUS, ASCII_1, '\0'};
+static const char KW_US_ASCII[] =
+{
+ASCII_U, ASCII_S, ASCII_MINUS, ASCII_A, ASCII_S, ASCII_C, ASCII_I, ASCII_I, '\0'};
+static const char KW_UTF_8[] =
+{
+ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_8, '\0'};
+static const char KW_UTF_16[] =
+{
+ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_1, ASCII_6, '\0'};
+static const char KW_UTF_16BE[] =
+{
+ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_1, ASCII_6, ASCII_B, ASCII_E, '\0'};
+static const char KW_UTF_16LE[] =
+{
+ASCII_U, ASCII_T, ASCII_F, ASCII_MINUS, ASCII_1, ASCII_6, ASCII_L, ASCII_E, '\0'};
 
 static int getEncodingIndex(const char *name)
 {
-    static const char *encodingNames[] = {
-	KW_ISO_8859_1,
-	KW_US_ASCII,
-	KW_UTF_8,
-	KW_UTF_16,
-	KW_UTF_16BE,
-	KW_UTF_16LE,
-    };
+    static const char *encodingNames[] =
+    {
+    KW_ISO_8859_1, KW_US_ASCII, KW_UTF_8, KW_UTF_16, KW_UTF_16BE, KW_UTF_16LE,};
     int i;
 
     if (name == 0)

@@ -42,8 +42,9 @@ class mUserDef
 protected:
     mutable vector < mstring * > ud_array;
     mutable map < mstring, mstring > i_UserDef;
+
 public:
-    virtual ~mUserDef()
+    virtual ~ mUserDef()
     {
     }
     mstring UserDef(const mstring & type) const
@@ -90,14 +91,14 @@ private:
     static map < unsigned long, mMessage * > MsgIdMap;
     static unsigned long LastMsgId;
 
-      list < triplet < type_t, mstring, bool > > dependancies;
+    list < triplet < type_t, mstring, bool > > dependancies;
     void AddDepend(const type_t type, const mstring & param)
     {
 	dependancies.push_back(triplet < type_t, mstring, bool > (type, param, false));
     }
     void AddDependancies();
 
-  public:
+public:
     mMessage(const mstring & source, const mstring & msgtype, const mstring & params, const u_long priority =
 	     static_cast < u_long > (P_Normal));
 
@@ -133,8 +134,9 @@ private:
 class mBase
 {
     friend class EventTask;
+
 protected:
-      mstring names;		// Names of service (space delimited)
+    mstring names;		// Names of service (space delimited)
     mstring realname;		// 'Real Name' of service
 
     bool messages;		// Wether to process /MSG, /NOTICE.
@@ -148,11 +150,11 @@ protected:
     {
     };
 
-  public:
+public:
     mBase()
     {
     }
-    virtual ~mBase()
+    virtual ~ mBase()
     {
     }
 
@@ -168,7 +170,8 @@ protected:
     virtual bool IsName(mstring in) const
     {
 	mstring tmp(" " + names.UpperCase() + " ");
-	  return tmp.Contains(" " + in.UpperCase() + " ");
+
+	return tmp.Contains(" " + in.UpperCase() + " ");
     };
 
     virtual threadtype_enum Get_TType() const = 0;
@@ -198,11 +201,12 @@ protected:
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator    mVariant() const
+    virtual operator      mVariant() const
     {
 	mVariant locvar(GetInternalName());
-	  locvar.truevaluetype = GetInternalName();
-	  return locvar;
+
+	locvar.truevaluetype = GetInternalName();
+	return locvar;
     };
 };
 
@@ -250,7 +254,7 @@ public:
 	FT("entlist_t::entlist_t", (entry, nick, modtime));
     }
 
-    virtual ~entlist_t()
+    virtual ~ entlist_t()
     {
     }
     entlist_t &operator=(const entlist_t & in);
@@ -319,7 +323,7 @@ public:
     {
 	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick, modtime, stupid));
     }
-    virtual ~entlist_val_t()
+    virtual ~ entlist_val_t()
     {
     }
     virtual entlist_val_t < T > & operator=(const entlist_val_t < T > & in)
@@ -384,6 +388,7 @@ public:
     virtual size_t Usage() const
     {
 	size_t retval = entlist_t::Usage();
+
 	retval += sizeof(i_Value);
 	retval += sizeof(i_Stupid);
 	return retval;
@@ -432,7 +437,7 @@ public:
     {
 	FT("entlist_val_pair_t< pair<X, Y> >::entlist_val_pair_t", (entry, "( pair<X,Y> ) value", nick, modtime, stupid));
     }
-    virtual ~entlist_val_pair_t()
+    virtual ~ entlist_val_pair_t()
     {
     }
     virtual entlist_val_pair_t < X, Y > & operator=(const entlist_val_pair_t < X, Y > & in)
@@ -500,6 +505,7 @@ public:
     virtual size_t Usage() const
     {
 	size_t retval = entlist_t::Usage();
+
 	retval += sizeof(i_Value.first);
 	retval += sizeof(i_Value.second);
 	retval += sizeof(i_Stupid);
@@ -522,6 +528,7 @@ public:
 class CommandMap
 {
     typedef void (*functor) (const mstring &, const mstring &, const mstring &);
+
     // map<service, map<command, pair<committees, functor> > >
     typedef list < triplet < mstring, mstring, functor > > cmdtype;
     typedef map < mstring, cmdtype > cmdmap;

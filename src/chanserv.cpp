@@ -259,14 +259,15 @@ void Chan_Live_t::ChgNick(const mstring & nick, const mstring & newnick)
     }
 }
 
-Chan_Live_t::Chan_Live_t() : i_Limit(0), ph_timer(0)
+Chan_Live_t::Chan_Live_t() : i_Numeric(0), i_Limit(0), ph_timer(0)
 {
     NFT("Chan_Live_t::Chan_Live_t");
     ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
     DumpB();
 }
 
-Chan_Live_t::Chan_Live_t(const mstring & name, const mstring & first_user) : i_Name(name), i_Limit(0), ph_timer(0)
+Chan_Live_t::Chan_Live_t(const mstring & name, const mstring & first_user) : i_Name(name), i_Numeric(0), i_Limit(0),
+ph_timer(0)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
@@ -281,6 +282,7 @@ Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
 
     i_Name = in.i_Name;
     ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
+    i_Numeric = in.i_Numeric;
     i_Creation_Time = in.i_Creation_Time;
     users.clear();
     map < mstring, triplet < bool, bool, bool > >::const_iterator k;
@@ -374,6 +376,22 @@ unsigned int Chan_Live_t::Squit() const
     unsigned int retval = squit.size();
 
     RET(retval);
+}
+
+void Chan_Live_t::Numeric(const unsigned long in)
+{
+    FT("Chan_Live_t::Numeric", (in));
+    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Numeric"));
+    MCB(i_Numeric);
+    i_Numeric = in;
+    MCE(i_Numeric);
+}
+
+unsigned long Chan_Live_t::Numeric() const
+{
+    NFT("Chan_Live_t::Numeric");
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Numeric"));
+    RET(i_Numeric);
 }
 
 mstring Chan_Live_t::Squit(const unsigned int num) const
@@ -1555,6 +1573,7 @@ size_t Chan_Live_t::Usage() const
 
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
     retval += i_Name.capacity();
+    retval += sizeof(i_Numeric);
     retval += sizeof(i_Creation_Time.Internal());
     map < mstring, triplet < bool, bool, bool > >::const_iterator i;
 
@@ -1611,19 +1630,17 @@ size_t Chan_Live_t::Usage() const
 void Chan_Live_t::DumpB() const
 {
     MB(0,
-       (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
-	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size(),
-	p_modes_off_params.size()));
-    MB(16, (ph_timer, recent_parts.size()));
+       (i_Name, i_Numeric, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
+	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size()));
+    MB(16, (p_modes_off_params.size(), ph_timer, recent_parts.size()));
 }
 
 void Chan_Live_t::DumpE() const
 {
     ME(0,
-       (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
-	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size(),
-	p_modes_off_params.size()));
-    ME(16, (ph_timer, recent_parts.size()));
+       (i_Name, i_Numeric, i_Creation_Time, squit.size(), users.size(), bans.size(), exempt.size(), i_Topic, i_Topic_Setter,
+	i_Topic_Set_Time, modes, i_Limit, i_Key, p_modes_on, p_modes_off, p_modes_on_params.size()));
+    ME(16, (p_modes_off_params.size(), ph_timer, recent_parts.size()));
 }
 
 // --------- end of Chan_Live_t -----------------------------------
@@ -1695,8 +1712,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	    }
 
 	    // Can only insert with reason or default, so its safe.
-	    mstring reason = parseMessage(Magick::instance().getMessage(nick, "CS_STATUS/ISFORBIDDEN"),
-					  mVarArray(i_Name));
+	    mstring reason = parseMessage(Magick::instance().getMessage(nick, "CS_STATUS/ISFORBIDDEN"), mVarArray(i_Name));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), nick, i_Name, reason);
 	    RET(false);
@@ -2506,7 +2522,7 @@ bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, co
 	}
 	else if (tmp == "DEOP")
 	{
-	  DoRevenge_DeOp:
+	DoRevenge_DeOp:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    clive->SendMode("-o " + target);
@@ -2514,55 +2530,60 @@ bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, co
 	}
 	else if (tmp == "KICK")
 	{
-	  DoRevenge_Kick:
+	DoRevenge_Kick:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
-					  mVarArray(type, Magick::instance().getLname(source)));
+	    mstring reason =
+		parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			     mVarArray(type, Magick::instance().getLname(source)));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), target, i_Name, reason);
 	}
 	else if (tmp == "BAN1")
 	{
-	  DoRevenge_Ban1:
+	DoRevenge_Ban1:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    clive->SendMode("-o+b " + target + " " + Magick::instance().nickserv.GetLive(target)->AltMask(Nick_Live_t::N));
-	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
-					  mVarArray(type, Magick::instance().getLname(source)));
+	    mstring reason =
+		parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			     mVarArray(type, Magick::instance().getLname(source)));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), target, i_Name, reason);
 	}
 	else if (tmp == "BAN2")
 	{
-	  DoRevenge_Ban2:
+	DoRevenge_Ban2:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    clive->SendMode("-o+b " + target + " " + Magick::instance().nickserv.GetLive(target)->AltMask(Nick_Live_t::U_H));
-	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
-					  mVarArray(type, Magick::instance().getLname(source)));
+	    mstring reason =
+		parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			     mVarArray(type, Magick::instance().getLname(source)));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), target, i_Name, reason);
 	}
 	else if (tmp == "BAN3")
 	{
-	  DoRevenge_Ban3:
+	DoRevenge_Ban3:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    clive->SendMode("-o+b " + target + " " + Magick::instance().nickserv.GetLive(target)->AltMask(Nick_Live_t::P_H));
-	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
-					  mVarArray(type, Magick::instance().getLname(source)));
+	    mstring reason =
+		parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			     mVarArray(type, Magick::instance().getLname(source)));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), target, i_Name, reason);
 	}
 	else if (tmp == "BAN4")
 	{
-	  DoRevenge_Ban4:
+	DoRevenge_Ban4:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
 	    clive->SendMode("-o+b " + target + " " + Magick::instance().nickserv.GetLive(target)->AltMask(Nick_Live_t::H));
-	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
-					  mVarArray(type, Magick::instance().getLname(source)));
+	    mstring reason =
+		parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			     mVarArray(type, Magick::instance().getLname(source)));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), target, i_Name, reason);
 	}
@@ -5859,7 +5880,7 @@ void ChanServ::RemCommands()
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void ChanServ::AddStored(Chan_Stored_t * in) throw(E_ChanServ_Stored)
+void ChanServ::AddStored(Chan_Stored_t * in) throw (E_ChanServ_Stored)
 #else
 void ChanServ::AddStored(Chan_Stored_t * in)
 #endif
@@ -5869,7 +5890,7 @@ void ChanServ::AddStored(Chan_Stored_t * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_Invalid));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Chan", "Stored", "Add", "Invalid"));
 	return;
@@ -5879,7 +5900,7 @@ void ChanServ::AddStored(Chan_Stored_t * in)
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_Blank));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Chan", "Stored", "Add", "Blank"));
 	return;
@@ -5889,7 +5910,7 @@ void ChanServ::AddStored(Chan_Stored_t * in)
     if (in->doDelete())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_NotFound));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Add, E_ChanServ_Stored::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Chan", "Stored", "Add", "NotFound"));
 	return;
@@ -5908,7 +5929,7 @@ void ChanServ::AddStored(Chan_Stored_t * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const throw(E_ChanServ_Stored)
+map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const throw (E_ChanServ_Stored)
 #else
 map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
 #endif
@@ -5920,7 +5941,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_NotFound, in.c_str()));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "NotFound", in));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
@@ -5929,7 +5950,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Invalid, in.c_str()));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Invalid, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "Invalid", in));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
@@ -5938,7 +5959,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
     if (iter->second->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Blank, in.c_str()));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "Blank", in));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
@@ -5949,7 +5970,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void ChanServ::RemStored(const mstring & in) throw(E_ChanServ_Stored)
+void ChanServ::RemStored(const mstring & in) throw (E_ChanServ_Stored)
 #else
 void ChanServ::RemStored(const mstring & in)
 #endif
@@ -5961,7 +5982,7 @@ void ChanServ::RemStored(const mstring & in)
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Stored(E_ChanServ_Stored::W_Rem, E_ChanServ_Stored::T_NotFound, in.c_str()));
+	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Rem, E_ChanServ_Stored::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Rem", "NotFound", in));
 	return;
@@ -5987,7 +6008,7 @@ bool ChanServ::IsStored(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void ChanServ::AddLive(Chan_Live_t * in) throw(E_ChanServ_Live)
+void ChanServ::AddLive(Chan_Live_t * in) throw (E_ChanServ_Live)
 #else
 void ChanServ::AddLive(Chan_Live_t * in)
 #endif
@@ -5997,7 +6018,7 @@ void ChanServ::AddLive(Chan_Live_t * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Add, E_ChanServ_Live::T_Invalid));
+	throw (E_ChanServ_Live(E_ChanServ_Live::W_Add, E_ChanServ_Live::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Chan", "Live", "Add", "Invalid"));
 	return;
@@ -6007,7 +6028,7 @@ void ChanServ::AddLive(Chan_Live_t * in)
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Add, E_ChanServ_Live::T_Blank));
+	throw (E_ChanServ_Live(E_ChanServ_Live::W_Add, E_ChanServ_Live::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Chan", "Live", "Add", "Blank"));
 	return;
@@ -6026,7 +6047,7 @@ void ChanServ::AddLive(Chan_Live_t * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const throw(E_ChanServ_Live)
+map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const throw (E_ChanServ_Live)
 #else
 map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 #endif
@@ -6038,7 +6059,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_NotFound, in.c_str()));
+	throw (E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "NotFound", in));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
@@ -6047,7 +6068,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Invalid, in.c_str()));
+	throw (E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Invalid, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "Invalid", in));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
@@ -6056,7 +6077,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
     if (iter->second->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Blank, in.c_str()));
+	throw (E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "Blank", in));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
@@ -6067,7 +6088,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void ChanServ::RemLive(const mstring & in) throw(E_ChanServ_Live)
+void ChanServ::RemLive(const mstring & in) throw (E_ChanServ_Live)
 #else
 void ChanServ::RemLive(const mstring & in)
 #endif
@@ -6079,7 +6100,7 @@ void ChanServ::RemLive(const mstring & in)
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_ChanServ_Live(E_ChanServ_Live::W_Rem, E_ChanServ_Live::T_NotFound, in.c_str()));
+	throw (E_ChanServ_Live(E_ChanServ_Live::W_Rem, E_ChanServ_Live::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Rem", "NotFound", in));
 	return;
@@ -6774,8 +6795,8 @@ void ChanServ::do_Forbid(const mstring & mynick, const mstring & source, const m
 	}
 	for (i = 0; i < kickees.size(); i++)
 	{
-	    mstring reason = parseMessage(Magick::instance().getMessage(kickees[i], "CS_STATUS/ISFORBIDDEN"),
-					  mVarArray(channel));
+	    mstring reason =
+		parseMessage(Magick::instance().getMessage(kickees[i], "CS_STATUS/ISFORBIDDEN"), mVarArray(channel));
 
 	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), kickees[i], channel, reason);
 	}
@@ -7620,8 +7641,7 @@ void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mst
 	return;
     }
 
-    mstring output = parseMessage(Magick::instance().getMessage(target, "CS_COMMAND/KICK"),
-				  mVarArray(source, reason));
+    mstring output = parseMessage(Magick::instance().getMessage(target, "CS_COMMAND/KICK"), mVarArray(source, reason));
 
     Magick::instance().chanserv.stats.i_Kick++;
     Magick::instance().server.KICK(mynick, target, channel, output);
@@ -8180,8 +8200,8 @@ void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, co
     }
     for (i = 0; i < kickees.size(); i++)
     {
-	mstring output = parseMessage(Magick::instance().getMessage(kickees[i], "CS_COMMAND/CLEAR"),
-				      mVarArray(message, source, channel));
+	mstring output =
+	    parseMessage(Magick::instance().getMessage(kickees[i], "CS_COMMAND/CLEAR"), mVarArray(message, source, channel));
 
 	Magick::instance().server.KICK(mynick, kickees[i], channel, output);
     }

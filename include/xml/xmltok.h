@@ -84,20 +84,20 @@ extern "C"
 
 #ifdef XML_DTD
 #define XML_TOK_IGNORE_SECT 42
-#endif				/* XML_DTD */
+#endif /* XML_DTD */
 
 #ifdef XML_DTD
 #define XML_N_STATES 4
-#else				/* not XML_DTD */
+#else /* not XML_DTD */
 #define XML_N_STATES 3
-#endif				/* not XML_DTD */
+#endif /* not XML_DTD */
 
 #define XML_PROLOG_STATE 0
 #define XML_CONTENT_STATE 1
 #define XML_CDATA_SECTION_STATE 2
 #ifdef XML_DTD
 #define XML_IGNORE_SECTION_STATE 3
-#endif				/* XML_DTD */
+#endif /* XML_DTD */
 
 #define XML_N_LITERAL_TYPES 2
 #define XML_ATTRIBUTE_VALUE_LITERAL 0
@@ -187,7 +187,7 @@ literals, comments and processing instructions.
 #define XmlIgnoreSectionTok(enc, ptr, end, nextTokPtr) \
    XmlTok(enc, XML_IGNORE_SECTION_STATE, ptr, end, nextTokPtr)
 
-#endif				/* XML_DTD */
+#endif /* XML_DTD */
 
 /* This is used for performing a 2nd-level tokenization on
 the content of a literal that has already been returned by XmlTok. */
@@ -260,8 +260,9 @@ the content of a literal that has already been returned by XmlTok. */
     const ENCODING *XmlGetUtf8InternalEncodingNS(void);
     const ENCODING *XmlGetUtf16InternalEncodingNS(void);
     ENCODING *XmlInitUnknownEncodingNS(void *mem, int *table, int (*conv) (void *userData, const char *p), void *userData);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif				/* not XmlTok_INCLUDED */
+#endif /* not XmlTok_INCLUDED */

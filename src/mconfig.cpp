@@ -517,7 +517,7 @@ bool mConfigEngine::Read(const mstring & key, mstring & outvar, const mstring & 
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring & key, bool & outvar, const bool Default) const
+bool mConfigEngine::Read(const mstring & key, bool &outvar, const bool Default) const
 {
     FT("mConfigEngine::Read", (key, "(bool &) outvar", Default));
     mstring tmp;

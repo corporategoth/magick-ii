@@ -41,6 +41,7 @@ class Protocol
     // Protocol number
     unsigned int i_Number;
     unsigned int i_NickLen;
+
     // Max length of line excluding nickname / comamnd.
     // ie. reasonable max length (def: 512 - 62 = 450).
     unsigned int i_MaxLine;
@@ -90,13 +91,16 @@ class Protocol
      * 2001 = NICK nick hops signon-time mode user host server service :realname
      * 2002 = NICK nick hops signon-time mode user host althost server helper :realname
      * 2003 = NICK nick hops signon-time user host server service mode althost :realname
+     *
+     * 3000 series gets its server from the SOURCE ... not part of the message
+     * NOTE: 3000 makes the mode OPTIONAL ... damn ircu ...
+     * 3000 = NICK nick hops signon-time user host [mode] ipaddress nicknumeric :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes;	/* Modes per line */
     mstring i_ChanModeArg;	/* Channel Modes that have arguments */
 
     mstring i_Server;		/* Should have %s %d %s in it (in order) */
-    int i_Numeric;		/* # paramater that is numeric! */
     mstring i_Burst;		/* Simply do we need to announce a flood? */
     mstring i_EndBurst;		/* and if we do, how do we tell em we're done */
 
@@ -142,17 +146,90 @@ class Protocol
 
     // This is a map of real commands -> tokenized commands
     // to save bandwidth.
-      map < mstring, mstring > tokens;
+    map < mstring, mstring > tokens;
     void SetTokens(unsigned int type);
 
 public:
-      Protocol();
-     ~Protocol()
+    Protocol();
+    ~Protocol()
     {
     }
     void Set(const unsigned int in);
     mstring GetToken(const mstring & in) const;
     mstring GetNonToken(const mstring & in) const;
+
+    class Numeric_t
+    {
+	friend class Protocol;
+	friend void mMessage::AddDependancies();
+
+	bool i_Trim:1;		/* Trim numeric results ... */
+	bool i_Server:1;	/* Uses server numerics ... */
+	bool i_ServerNumber:1;	/* Use decimal number (not base64) in SERVER line */
+	bool i_Nick:1;		/* Use nickname numerics ... */
+	bool i_Combine:1;	/* Combine server and nick numeric in messages */
+	bool i_Channel:1;	/* Use channel numerics ... */
+	int i_Field;		/* Field in SERVER line that contains numeric */
+
+	char base64_to_char[64], char_to_base64[256];
+	void SetBase64(unsigned int type);
+	unsigned long str_to_base64(const mstring & in) const;
+	mstring base64_to_str(unsigned long in) const;
+
+    public:
+
+	Numeric_t() : i_Trim(false), i_Server(false), i_ServerNumber(false), i_Nick(false), i_Combine(false), i_Channel(false),
+	    i_Field(0)
+	{
+	    memset(base64_to_char, 0, sizeof(base64_to_char));
+	    memset(char_to_base64, 0, sizeof(char_to_base64));
+	}
+	bool Trim() const
+	{
+	    return i_Trim;
+	}
+	bool Server() const
+	{
+	    return i_Server;
+	}
+	bool ServerNumber() const
+	{
+	    return i_ServerNumber;
+	}
+	bool Nick() const
+	{
+	    return i_Nick;
+	}
+	bool Combine() const
+	{
+	    return i_Combine;
+	}
+	bool Channel() const
+	{
+	    return i_Channel;
+	}
+	bool Field() const
+	{
+	    return i_Field;
+	}
+
+	mstring ServerToNumeric(const mstring & s) const;
+	mstring NumericToServer(const mstring & n) const;
+	unsigned long ServerToNumeric2(const mstring & s) const;
+	mstring NumericToServer2(unsigned long n) const;
+	mstring UserToNumeric(const mstring & u) const;
+	mstring NumericToUser(const mstring & n) const;
+	unsigned long UserToNumeric2(const mstring & u) const;
+	mstring NumericToUser2(unsigned long n) const;
+	mstring ChannelToNumeric(const mstring & c) const;
+	mstring NumericToChannel(const mstring & n) const;
+	unsigned long ChannelToNumeric2(const mstring & c) const;
+	mstring NumericToChannel2(unsigned long n) const;
+
+	mstring ServerLineNumeric(unsigned long n) const;
+	unsigned long ServerLineNumeric(const mstring & n) const;
+    }
+    Numeric;
 
     unsigned int Number() const
     {
@@ -230,10 +307,6 @@ public:
     {
 	return i_Server;
     }
-    int Numeric() const
-    {
-	return i_Numeric;
-    }
     mstring SVSNICK() const
     {
 	return i_SVSNICK;
@@ -292,9 +365,10 @@ class Server_t : public mUserDef, public ref_class
     bool i_Jupe;
 
     void defaults();
+
 public:
-      Server_t();
-      Server_t(const Server_t & in) : mUserDef(in), ref_class()
+    Server_t();
+    Server_t(const Server_t & in) : mUserDef(in), ref_class()
     {
 	*this = in;
     }
@@ -357,11 +431,13 @@ class Server : public mBase
 
     void raw(const mstring & send) const;
     void sraw(const mstring & send) const;
-      set < mstring > WaitIsOn;
+
+    set < mstring > WaitIsOn;
 
     size_t i_UserMax;
-      map < mstring, long > ServerSquit;
-      map < mstring, list < mstring > > ToBeSquit;
+    map < mstring, long > ServerSquit;
+
+    map < mstring, list < mstring > > ToBeSquit;
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;
@@ -372,7 +448,7 @@ class Server : public mBase
 	t_NOTICE, t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
 	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS
     };
-      map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > > ToBeSent;
+    map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > > ToBeSent;
     void FlushMsgs(const mstring & nick);
 
 public:
@@ -380,12 +456,13 @@ public:
 
 private:
 
-      list_t i_list;
+    list_t i_list;
 
     void OurUplink(const mstring & server);
+
 public:
-      Server();
-     ~Server()
+    Server();
+    ~Server()
     {
     }
     void SignOnAll();
@@ -394,17 +471,17 @@ public:
     size_t UserMax() const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddList(Server_t * in) throw (E_Server_List);
-    void AddList(const Server_t & in) throw (E_Server_List)
+    void AddList(Server_t * in) throw(E_Server_List);
+    void AddList(const Server_t & in) throw(E_Server_List)
     {
 	AddList(new Server_t(in));
     }
-    void AddList(const map_entry < Server_t > & in) throw (E_Server_List)
+    void AddList(const map_entry < Server_t > & in) throw(E_Server_List)
     {
 	AddList(in.entry());
     }
-    map_entry < Server_t > GetList(const mstring & in) const throw (E_Server_List);
-    void RemList(const mstring & in, bool downlinks = true) throw (E_Server_List);
+    map_entry < Server_t > GetList(const mstring & in) const throw(E_Server_List);
+    void RemList(const mstring & in, bool downlinks = true) throw(E_Server_List);
 #else
     void AddList(Server_t * in);
     void AddList(const Server_t & in)
@@ -439,11 +516,9 @@ public:
 	return i_list.size();
     }
     bool IsList(const mstring & server) const;
-    mstring ServerNumeric(const unsigned long num) const;
 
     mstring OurUplink() const;
     mstring GetServer(const mstring & server) const;
-    unsigned long GetOurNumeric() const;
 
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's

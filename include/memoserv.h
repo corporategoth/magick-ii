@@ -56,6 +56,7 @@ class Memo_t : public mUserDef, public SXP::IPersistObj
     unsigned long i_File;
 
     static SXP::Tag tag_Memo_t, tag_Nick, tag_Sender, tag_Time, tag_Text, tag_Read, tag_File, tag_UserDef;
+
 public:
     Memo_t()
     {
@@ -126,6 +127,7 @@ class News_t : public mUserDef, public SXP::IPersistObj
     set < mstring > i_Read;
 
     static SXP::Tag tag_News_t, tag_Channel, tag_Sender, tag_Time, tag_Text, tag_set_NoExpire, tag_Read, tag_UserDef;
+
 public:
     News_t()
     {
@@ -184,6 +186,7 @@ class MemoServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend class Nick_Stored_t;
+
 private:
     unsigned long news_expire;
     unsigned long inflight;
@@ -208,6 +211,7 @@ private:
     void NickMemoConvert(const mstring & source, const mstring & target);
     void AddCommands();
     void RemCommands();
+
 public:
     MemoServ();
     ~MemoServ()
@@ -230,7 +234,8 @@ public:
 	unsigned long i_Continue;
 	unsigned long i_File;
 	unsigned long i_Get;
-   public:
+
+    public:
 	stats_t()
 	{
 	    clear();
@@ -297,12 +302,12 @@ public:
     stats;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddNick(nick_memo_t in) throw (E_MemoServ_Nick);
-    void AddNickMemo(Memo_t * in) throw (E_MemoServ_Nick);
-    nick_memo_t &GetNick(const mstring & in) const throw (E_MemoServ_Nick);
-    Memo_t &GetNickMemo(const mstring & in, const size_t num) const throw (E_MemoServ_Nick);
-    void RemNick(const mstring & in) throw (E_MemoServ_Nick);
-    void RemNickMemo(const mstring & in, const size_t num) throw (E_MemoServ_Nick);
+    void AddNick(nick_memo_t in) throw(E_MemoServ_Nick);
+    void AddNickMemo(Memo_t * in) throw(E_MemoServ_Nick);
+    nick_memo_t &GetNick(const mstring & in) const throw(E_MemoServ_Nick);
+    Memo_t &GetNickMemo(const mstring & in, const size_t num) const throw(E_MemoServ_Nick);
+    void RemNick(const mstring & in) throw(E_MemoServ_Nick);
+    void RemNickMemo(const mstring & in, const size_t num) throw(E_MemoServ_Nick);
 #else
     void AddNick(nick_memo_t in);
     void AddNickMemo(Memo_t * in);
@@ -356,12 +361,12 @@ public:
     bool IsNickMemo(const mstring & in, const size_t num) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddChannel(channel_news_t in) throw (E_MemoServ_Channel);
-    void AddChannelNews(News_t * in) throw (E_MemoServ_Channel);
-    channel_news_t &GetChannel(const mstring & in) const throw (E_MemoServ_Channel);
-    News_t &GetChannelNews(const mstring & in, const size_t num) const throw (E_MemoServ_Channel);
-    void RemChannel(const mstring & in) throw (E_MemoServ_Channel);
-    void RemChannelNews(const mstring & in, const size_t num) throw (E_MemoServ_Channel);
+    void AddChannel(channel_news_t in) throw(E_MemoServ_Channel);
+    void AddChannelNews(News_t * in) throw(E_MemoServ_Channel);
+    channel_news_t &GetChannel(const mstring & in) const throw(E_MemoServ_Channel);
+    News_t &GetChannelNews(const mstring & in, const size_t num) const throw(E_MemoServ_Channel);
+    void RemChannel(const mstring & in) throw(E_MemoServ_Channel);
+    void RemChannelNews(const mstring & in, const size_t num) throw(E_MemoServ_Channel);
 #else
     void AddChannel(channel_news_t in);
     void AddChannelNews(News_t * in);

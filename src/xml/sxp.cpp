@@ -41,12 +41,13 @@ namespace SXP
 {
 
     dict blank_dict;
-      pair < mstring, mstring > blank_mstring_pair;
+
+    pair < mstring, mstring > blank_mstring_pair;
 
     TagHashtable *g_pHashTable = 0;
 
     // add the tag to the table right on construction
-      Tag::Tag(const char *name)
+    Tag::Tag(const char *name)
     {
 	ch = name;
 	dw = ~0;
@@ -390,7 +391,7 @@ namespace SXP
 	buf_sz += INIT_BUFSIZE;
 
 	if (buffer != NULL)
-	    delete[] buffer;
+	    delete [] buffer;
 	buffer = newbuf;
     }
 
@@ -432,7 +433,7 @@ namespace SXP
     MOutStream::~MOutStream()
     {
 	if (buffer != NULL)
-	    delete[] buffer;
+	    delete [] buffer;
     }
 
     void MOutStream::BeginXML(void)

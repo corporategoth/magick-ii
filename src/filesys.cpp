@@ -255,7 +255,7 @@ mstring mFile::ReadLine()
 	}
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
-    catch(...)
+    catch (...)
     {
 	// this catches any exceptions so that we free up the buffer
 	Result.erase();
@@ -1103,7 +1103,7 @@ DccXfer::~DccXfer()
     NFT("DccXfer::~DccXfer");
 
     if (i_Transiant != NULL)
-	delete[] i_Transiant;
+	delete [] i_Transiant;
     i_Transiant = NULL;
 
     if (i_File.IsOpened())
@@ -1627,7 +1627,7 @@ int DccMap::svc(void)
 		continue;
 #ifdef MAGICK_HAS_EXCEPTIONS
 	}
-	catch(E_DccMap_Xfers & e)
+	catch (E_DccMap_Xfers & e)
 	{
 	    switch (e.type())
 	    {
@@ -1674,7 +1674,7 @@ int DccMap::svc(void)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void DccMap::AddXfers(DccXfer * in) throw(E_DccMap_Xfers)
+void DccMap::AddXfers(DccXfer * in) throw (E_DccMap_Xfers)
 #else
 void DccMap::AddXfers(DccXfer * in)
 #endif
@@ -1684,7 +1684,7 @@ void DccMap::AddXfers(DccXfer * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Invalid));
+	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Xfers", "Add", "Invalid"));
 	return;
@@ -1693,7 +1693,7 @@ void DccMap::AddXfers(DccXfer * in)
     if (!in->DccId())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Blank));
+	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Xfers", "Add", "Blank"));
 	return;
@@ -1705,7 +1705,7 @@ void DccMap::AddXfers(DccXfer * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-DccXfer &DccMap::GetXfers(const unsigned long in) throw(E_DccMap_Xfers)
+DccXfer &DccMap::GetXfers(const unsigned long in) throw (E_DccMap_Xfers)
 #else
 DccXfer &DccMap::GetXfers(const unsigned long in)
 #endif
@@ -1717,7 +1717,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
     if (iter == xfers.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_NotFound));
+	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_NotFound));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "NotFound"));
 	NRET(DccXfer &, GLOB_DccXfer);
@@ -1726,7 +1726,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
+	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	NRET(DccXfer &, GLOB_DccXfer);
@@ -1735,7 +1735,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
     if (!iter->second->DccId())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
+	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	NRET(DccXfer &, GLOB_DccXfer);
@@ -1746,7 +1746,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void DccMap::RemXfers(const unsigned long in) throw(E_DccMap_Xfers)
+void DccMap::RemXfers(const unsigned long in) throw (E_DccMap_Xfers)
 #else
 void DccMap::RemXfers(const unsigned long in)
 #endif
@@ -1758,7 +1758,7 @@ void DccMap::RemXfers(const unsigned long in)
     if (iter == xfers.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Rem, E_DccMap_Xfers::T_NotFound));
+	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Rem, E_DccMap_Xfers::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Xfers", "Rem", "NotFound"));
 	return;
@@ -1773,7 +1773,7 @@ void DccMap::RemXfers(const unsigned long in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-bool DccMap::IsXfers(const unsigned long in) throw(E_DccMap_Xfers)
+bool DccMap::IsXfers(const unsigned long in) throw (E_DccMap_Xfers)
 #else
 bool DccMap::IsXfers(const unsigned long in)
 #endif
@@ -1787,7 +1787,7 @@ bool DccMap::IsXfers(const unsigned long in)
 	if (iter->second == NULL)
 	{
 #ifdef MAGICK_HAS_EXCEPTIONS
-	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
+	    throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
 	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	    RET(false);
@@ -1796,7 +1796,7 @@ bool DccMap::IsXfers(const unsigned long in)
 	if (!iter->second->DccId())
 	{
 #ifdef MAGICK_HAS_EXCEPTIONS
-	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
+	    throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
 	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	    RET(false);
@@ -1808,7 +1808,7 @@ bool DccMap::IsXfers(const unsigned long in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-vector < unsigned long > DccMap::GetList(const mstring & in) throw(E_DccMap_Xfers)
+vector < unsigned long > DccMap::GetList(const mstring & in) throw (E_DccMap_Xfers)
 #else
 vector < unsigned long > DccMap::GetList(const mstring & in)
 #endif
@@ -1824,7 +1824,7 @@ vector < unsigned long > DccMap::GetList(const mstring & in)
 	if (iter->second == NULL)
 	{
 #ifdef MAGICK_HAS_EXCEPTIONS
-	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
+	    throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
 	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	    continue;
@@ -1833,7 +1833,7 @@ vector < unsigned long > DccMap::GetList(const mstring & in)
 	if (!iter->second->DccId())
 	{
 #ifdef MAGICK_HAS_EXCEPTIONS
-	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
+	    throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
 	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	    continue;
@@ -1992,7 +1992,7 @@ void DccMap::Cancel(const unsigned long DccId, const bool silent)
 	}
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
-    catch(E_DccMap_Xfers & e)
+    catch (E_DccMap_Xfers & e)
     {
 	switch (e.type())
 	{

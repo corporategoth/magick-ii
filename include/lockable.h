@@ -50,7 +50,8 @@ class mLOCK
     static ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex > memory_area;
 
     bool islocked;
-      vector < mstring > locks;
+
+    vector < mstring > locks;
 #ifdef MAGICK_TRACE_WORKS
     T_Locking tlock[MAX_LOCKS];
 #endif
@@ -59,7 +60,7 @@ class mLOCK
     static bool ReleaseMapLock();
 
 public:
-      mLOCK()
+    mLOCK()
     {
     }
     mLOCK(const locktype_enum type, const mVarArray & args);
@@ -91,8 +92,9 @@ public:
 class mLock_Read : public ACE_RW_Thread_Mutex
 {
     typedef ACE_RW_Thread_Mutex base;
+
 public:
-      mLock_Read(const char *name = 0) : base(name)
+    mLock_Read(const char *name = 0) : base(name)
     {
     }
 
@@ -105,13 +107,13 @@ public:
 	return tryacquire_read();
     }
 
-    void *operator    new (size_t size)
+    void *operator      new(size_t size)
     {
 	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator    delete (void *ptr)
+    void operator      delete(void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -120,8 +122,9 @@ public:
 class mLock_Write : public ACE_RW_Thread_Mutex
 {
     typedef ACE_RW_Thread_Mutex base;
+
 public:
-      mLock_Write(const char *name = 0) : base(name)
+    mLock_Write(const char *name = 0) : base(name)
     {
     }
 
@@ -134,13 +137,13 @@ public:
 	return tryacquire_write();
     }
 
-    void *operator    new (size_t size)
+    void *operator      new(size_t size)
     {
 	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator    delete (void *ptr)
+    void operator      delete(void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -149,18 +152,19 @@ public:
 class mLock_Mutex : public ACE_Recursive_Thread_Mutex
 {
     typedef ACE_Recursive_Thread_Mutex base;
+
 public:
-      mLock_Mutex(const char *name = 0) : base(name)
+    mLock_Mutex(const char *name = 0) : base(name)
     {
     }
 
-    void *operator    new (size_t size)
+    void *operator      new(size_t size)
     {
 	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator    delete (void *ptr)
+    void operator      delete(void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -278,11 +282,12 @@ class mSocket
 #endif
 
     void init();
+
 public:
     static map < unsigned long, mSocket * > SockMap;
     static unsigned short FindAvailPort();
 
-      mSocket()
+    mSocket()
     {
 	init();
     }

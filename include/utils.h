@@ -52,8 +52,6 @@ mstring parseMessage(const mstring & message, const mVarArray & va = mVarArray::
 size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, const char *key2, const bool enc);
 void mHASH16(const char *in, const size_t size, char *out);
 void mHASH(const char *in, const size_t size, char *out);
-unsigned long str_to_base64(const mstring & in);
-mstring base64_to_str(unsigned long in);
 mstring sysinfo_node();
 mstring sysinfo_type();
 mstring sysinfo_rel();
@@ -66,8 +64,8 @@ class ref_class
     bool i_doDelete;
     mVarArray i_lockData;
 
-  public:
-      ref_class() : i_references(0), i_doDelete(false)
+public:
+    ref_class() : i_references(0), i_doDelete(false)
     {
     }
     ref_class(const mVarArray & l) : i_references(0), i_doDelete(false), i_lockData(l)
@@ -142,7 +140,7 @@ template < class T > class map_entry
 	}
     }
 
-  public:
+public:
     map_entry() : entry_ptr(NULL), lock(NULL)
     {
     }
@@ -201,7 +199,7 @@ template < class T > class map_entry
 // extrapolated from the ms's pair<T1,T2> template code
 template < class T1, class T2, class T3 > class triplet
 {
-  public:
+public:
     typedef T1 first_type;
     typedef T2 second_type;
     typedef T3 third_type;

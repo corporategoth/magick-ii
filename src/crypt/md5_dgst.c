@@ -395,7 +395,9 @@ void MD5_Final(md, c)
     register int i, j;
     register ULONG l;
     register ULONG *p;
-    static unsigned char end[4] = { 0x80, 0x00, 0x00, 0x00 };
+    static unsigned char end[4] =
+    {
+    0x80, 0x00, 0x00, 0x00};
     unsigned char *cp = end;
 
     /* c->num should definitly have room for at least one more byte. */

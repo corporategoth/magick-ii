@@ -36,7 +36,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-mstring threadname[tt_MAX] = { "LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE" };
+mstring threadname[tt_MAX] =
+{
+"LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE"};
 
 unsigned short makehex(const mstring & SLevel)
 {
@@ -421,7 +423,9 @@ void ThreadID::Flush()
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
-unsigned short Trace::traces[tt_MAX] = { 0 };
+unsigned short Trace::traces[tt_MAX] =
+{
+0};
 
 vector < Trace::levelname_struct > Trace::levelname;	// Initialised in main.cpp
 list < pair < threadtype_enum, mstring > > ThreadMessageQueue;

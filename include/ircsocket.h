@@ -101,7 +101,7 @@ class EventTask : public ACE_Task < ACE_MT_SYNCH >
 {
     typedef ACE_Task < ACE_MT_SYNCH > internal;
 
-      set < mstring > cmodes_pending;
+    set < mstring > cmodes_pending;
     Magick *magick_instance;
     mDateTime last_expire;
     mDateTime last_save;
@@ -116,7 +116,7 @@ class EventTask : public ACE_Task < ACE_MT_SYNCH >
     void do_modes(mDateTime & synctime);
 
 public:
-      EventTask(ACE_Thread_Manager * tm = 0) : internal(tm)
+    EventTask(ACE_Thread_Manager * tm = 0) : internal(tm)
     {
     }
     void AddChannelModePending(const mstring & in);
@@ -142,11 +142,12 @@ class IrcSvcHandler : public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
     friend class SignalHandler;
 
     typedef ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH > inherited;
+
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
     mstring flack;
 
-      map < time_t, size_t > traffic;
+    map < time_t, size_t > traffic;
     size_t in_traffic, out_traffic;
     mDateTime connect_time;
     mDateTime last_htm_check;
@@ -161,6 +162,7 @@ class IrcSvcHandler : public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
     ACE_Activation_Queue message_queue;
 
     static void *worker(void *);
+
 public:
     int send(const mstring & data);
     int open(void * = 0);

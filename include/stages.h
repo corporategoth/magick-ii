@@ -66,7 +66,7 @@ protected:
     Stage *input;
 
 public:
-    virtual ~Stage()
+    virtual ~ Stage()
     {
     }
 
@@ -84,11 +84,12 @@ class StringStage : public Stage
     mstring i_str;
     size_t offset;
 
-      StringStage();
+    StringStage();
 public:
-      StringStage(const mstring & in);
-      StringStage(Stage & PrevStage);
-    virtual ~StringStage();
+    StringStage(const mstring & in);
+
+    StringStage(Stage & PrevStage);
+    virtual ~ StringStage();
 
     virtual bool Validate();
     mstring Result();
@@ -100,11 +101,12 @@ class FileStage : public Stage
 {
     mFile file;
 
-      FileStage();
+    FileStage();
 public:
-      FileStage(const mstring & name);
-      FileStage(Stage & PrevStage, const mstring & name, const mstring & mode = "w");
-    virtual ~FileStage();
+    FileStage(const mstring & name);
+    FileStage(Stage & PrevStage, const mstring & name, const mstring & mode = "w");
+
+    virtual ~ FileStage();
 
     virtual bool Validate();
     virtual long Consume();
@@ -116,16 +118,18 @@ class CryptStage : public Stage
     char buffer[DEF_STAGE_BUFFER];
     unsigned char outbuf[8];
     size_t lastpos, bufsize, outbufsize;
+
 #ifdef HASCRYPT
     BF_KEY bfkey1, bfkey2;
     unsigned char ivec1[8], ivec2[8], ivec3[8];
 #endif
     bool encrypt, gotkeys;
 
-      CryptStage();
+    CryptStage();
 public:
-      CryptStage(Stage & PrevStage, const mstring & key1, const mstring & key2);
-    virtual ~CryptStage();
+    CryptStage(Stage & PrevStage, const mstring & key1, const mstring & key2);
+
+    virtual ~ CryptStage();
 
     virtual bool Validate();
     virtual long Read(char *buf, size_t size);
@@ -137,10 +141,11 @@ class CompressStage : public Stage
     z_stream strm;
     bool compress;
 
-      CompressStage();
+    CompressStage();
 public:
-      CompressStage(Stage & PrevStage, int level = 0);
-    virtual ~CompressStage();
+    CompressStage(Stage & PrevStage, int level = 0);
+
+    virtual ~ CompressStage();
 
     virtual bool Validate();
     virtual long Read(char *buf, size_t size);
@@ -152,11 +157,11 @@ class XMLStage : public Stage
     SXP::CParser * parser;
     size_t curpos;
 
-      XMLStage();
+    XMLStage();
 public:
-      XMLStage(SXP::IPersistObj * pRoot, SXP::dict & attribs = SXP::blank_dict);
-      XMLStage(Stage & PrevStage, SXP::IPersistObj * pRoot);
-    virtual ~XMLStage();
+    XMLStage(SXP::IPersistObj * pRoot, SXP::dict & attribs = SXP::blank_dict);
+    XMLStage(Stage & PrevStage, SXP::IPersistObj * pRoot);
+    virtual ~ XMLStage();
 
     virtual bool Validate();
     virtual long Consume();
@@ -169,10 +174,11 @@ class VerifyStage : public Stage
     size_t offset, total, vsize, curpos;
     bool verified;
 
-      VerifyStage();
+    VerifyStage();
 public:
-      VerifyStage(Stage & PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize);
-    virtual ~VerifyStage();
+    VerifyStage(Stage & PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize);
+
+    virtual ~ VerifyStage();
 
     virtual bool Validate();
     virtual long Read(char *buf, size_t size);

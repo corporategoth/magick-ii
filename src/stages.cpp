@@ -680,7 +680,7 @@ VerifyStage::~VerifyStage()
 {
     NFT("VerifyStage::~VerifyStage");
     if (text != NULL)
-	delete[] text;
+	delete [] text;
 }
 
 bool VerifyStage::Validate()

@@ -44,14 +44,15 @@ class Chan_Live_t : public mUserDef, public ref_class
     friend void EventTask::do_modes(mDateTime & synctime);
 
     mstring i_Name;
+    unsigned long i_Numeric;
     mDateTime i_Creation_Time;
 
     // below: .first == op .second == halfop .third == voice
-      map < mstring, triplet < bool, bool, bool > > squit;
-      map < mstring, triplet < bool, bool, bool > > users;
+    map < mstring, triplet < bool, bool, bool > > squit;
+    map < mstring, triplet < bool, bool, bool > > users;
 
-      map < mstring, mDateTime > bans;
-      map < mstring, mDateTime > exempt;
+    map < mstring, mDateTime > bans;
+    map < mstring, mDateTime > exempt;
     mstring i_Topic;
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
@@ -61,11 +62,11 @@ class Chan_Live_t : public mUserDef, public ref_class
     mstring p_modes_on;
     mstring p_modes_off;
 
-      vector < mstring > p_modes_on_params;
-      vector < mstring > p_modes_off_params;
+    vector < mstring > p_modes_on_params;
+    vector < mstring > p_modes_off_params;
     long ph_timer;
 
-      map < mstring, mDateTime > recent_parts;
+    map < mstring, mDateTime > recent_parts;
 
     static bool ModeExists(const mstring & mode, const vector < mstring > & mode_params, const bool change, const char reqmode,
 			   const mstring & reqparam = "");
@@ -80,8 +81,8 @@ class Chan_Live_t : public mUserDef, public ref_class
     void ChgNick(const mstring & nick, const mstring & newnick);	// Called by Nick_Live_t
 
 public:
-      Chan_Live_t();
-      Chan_Live_t(const Chan_Live_t & in) : mUserDef(in), ref_class()
+    Chan_Live_t();
+    Chan_Live_t(const Chan_Live_t & in) : mUserDef(in), ref_class()
     {
 	*this = in;
     }
@@ -115,6 +116,9 @@ public:
     mstring Topic() const;
     mstring Topic_Setter() const;
     mDateTime Topic_Set_Time() const;
+
+    unsigned long Numeric() const;
+    void Numeric(const unsigned long num);
 
     unsigned int Squit() const;
     mstring Squit(const unsigned int num) const;
@@ -243,12 +247,14 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 
     set < entlist_val_t < long > > i_Level;
     set < entlist_val_t < long > > i_Access;
+
     set < entlist_val_t < mstring > > i_Akick;
     list < entlist_t > i_Greet;
     list < entlist_t > i_Message;
 
     vector < entlist_val_t < long > * > level_array;
     vector < entlist_val_t < long > * > access_array;
+
     vector < entlist_val_t < mstring > * > akick_array;
     vector < entlist_t * > greet_array;
     vector < entlist_t * > message_array;
@@ -274,6 +280,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     void Mode(const mstring & setter, const mstring & mode);
     bool DoRevenge(const mstring & type, const mstring & target, const mstring & source);
     void defaults();
+
 public:
     Chan_Stored_t();
     Chan_Stored_t(const Chan_Stored_t & in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
@@ -535,6 +542,7 @@ class ChanServ : public mBase, public SXP::IPersistObj
     friend class Magick;
     friend int EventTask::svc();
     friend int IrcSvcHandler::handle_close(ACE_HANDLE, ACE_Reactor_Mask);
+
 private:
 
     set < mstring > Revenge_Levels;
@@ -649,7 +657,7 @@ public:
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
 
-   public:
+    public:
 	stats_t()
 	{
 	    clear();
@@ -947,17 +955,17 @@ public:
     Part_Handler ph;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddStored(Chan_Stored_t * in) throw (E_ChanServ_Stored);
-    void AddStored(const Chan_Stored_t & in) throw (E_ChanServ_Stored)
+    void AddStored(Chan_Stored_t * in) throw(E_ChanServ_Stored);
+    void AddStored(const Chan_Stored_t & in) throw(E_ChanServ_Stored)
     {
 	AddStored(new Chan_Stored_t(in));
     }
-    void AddStored(const map_entry < Chan_Stored_t > & in) throw (E_ChanServ_Stored)
+    void AddStored(const map_entry < Chan_Stored_t > & in) throw(E_ChanServ_Stored)
     {
 	AddStored(in.entry());
     }
-    map_entry < Chan_Stored_t > GetStored(const mstring & in) const throw (E_ChanServ_Stored);
-    void RemStored(const mstring & in) throw (E_ChanServ_Stored);
+    map_entry < Chan_Stored_t > GetStored(const mstring & in) const throw(E_ChanServ_Stored);
+    void RemStored(const mstring & in) throw(E_ChanServ_Stored);
 #else
     void AddStored(Chan_Stored_t * in);
     void AddStored(const Chan_Stored_t & in)
@@ -994,17 +1002,17 @@ public:
     bool IsStored(const mstring & in) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddLive(Chan_Live_t * in) throw (E_ChanServ_Live);
-    void AddLive(const Chan_Live_t & in) throw (E_ChanServ_Live)
+    void AddLive(Chan_Live_t * in) throw(E_ChanServ_Live);
+    void AddLive(const Chan_Live_t & in) throw(E_ChanServ_Live)
     {
 	AddLive(new Chan_Live_t(in));
     }
-    void AddLive(const map_entry < Chan_Live_t > & in) throw (E_ChanServ_Live)
+    void AddLive(const map_entry < Chan_Live_t > & in) throw(E_ChanServ_Live)
     {
 	AddLive(in.entry());
     }
-    map_entry < Chan_Live_t > GetLive(const mstring & in) const throw (E_ChanServ_Live);
-    void RemLive(const mstring & in) throw (E_ChanServ_Live);
+    map_entry < Chan_Live_t > GetLive(const mstring & in) const throw(E_ChanServ_Live);
+    void RemLive(const mstring & in) throw(E_ChanServ_Live);
 #else
     void AddLive(Chan_Live_t * in);
     void AddLive(const Chan_Live_t & in)

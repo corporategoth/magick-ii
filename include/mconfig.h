@@ -38,12 +38,13 @@ RCSID(mconfig_h, "@(#) $Id$");
 class ceNode
 {
     friend class mConfigEngine;
+
 private:
-      mstring i_Name;
-      map < mstring, mstring > i_keys;
-      map < mstring, ceNode * > i_children;
+    mstring i_Name;
+    map < mstring, mstring > i_keys;
+    map < mstring, ceNode * > i_children;
 public:
-      ceNode()
+    ceNode()
     {
     }
     ceNode(ceNode & in)
@@ -78,9 +79,10 @@ class mConfigEngine
 private:
     ceNode RootNode;
     mstring i_FileName;
-      vector < mstring > PreParse(const vector < mstring > & in);
+    vector < mstring > PreParse(const vector < mstring > & in);
+
 public:
-      mConfigEngine()
+    mConfigEngine()
     {
     }
     mConfigEngine(const mstring & FileName)
@@ -105,7 +107,7 @@ public:
     }
     mstring Read(const mstring & key, const mstring & Defailt = "") const;
     bool Read(const mstring & key, mstring & outvar, const mstring & Default = "") const;
-    bool Read(const mstring & key, bool &outvar, const bool Default = false) const;
+    bool Read(const mstring & key, bool & outvar, const bool Default = false) const;
     bool Read(const mstring & key, int &outvar, const int Default = 0) const;
     bool Read(const mstring & key, unsigned int &outvar, const unsigned int Default = 0) const;
     bool Read(const mstring & key, long &outvar, const long Default = 0) const;

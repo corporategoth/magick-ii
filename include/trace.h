@@ -59,12 +59,14 @@ private:
     short t_indent;
     bool t_intrace;
     mstring t_lastfunc;
-      list < mstring > messages;
+
+    list < mstring > messages;
 
 public:
-      ThreadID();
-      ThreadID(const threadtype_enum Type);
-     ~ThreadID();
+    ThreadID();
+    ThreadID(const threadtype_enum Type);
+
+    ~ThreadID();
     bool InTrace() const
     {
 	return t_intrace;
@@ -313,12 +315,13 @@ public:
     {
 	mstring name;
 	level_enum level;
-	  levelname_struct()
+
+	levelname_struct()
 	{
 	    name = "";
 	    level = Off;
 	};
-	  levelname_struct(const mstring & in, level_enum lin)
+	levelname_struct(const mstring & in, level_enum lin)
 	{
 	    name = in;
 	    level = lin;
@@ -384,12 +387,12 @@ class T_Functions : public Trace
     mstring m_name;
     mstring i_prevfunc;
 
-      T_Functions()
+    T_Functions()
     {
     }
 
 public:
-      mVariant return_value;
+    mVariant return_value;
     T_Functions(const mstring & name);
     T_Functions(const mstring & name, const mVarArray & args);
 
@@ -403,9 +406,10 @@ class T_CheckPoint : public Trace
     void common(const mstring & input);
 
 public:
-      T_CheckPoint();
-      T_CheckPoint(const char *fmt, ...);
-     ~T_CheckPoint()
+    T_CheckPoint();
+    T_CheckPoint(const char *fmt, ...);
+
+    ~T_CheckPoint()
     {
     }
 };
@@ -415,11 +419,13 @@ public:
 class T_Comments : public Trace
 {
     void common(const mstring & input);
-      T_Comments();
+
+    T_Comments();
 
 public:
-      T_Comments(const char *fmt, ...);
-     ~T_Comments()
+    T_Comments(const char *fmt, ...);
+
+    ~T_Comments()
     {
     }
 };
@@ -430,12 +436,13 @@ class T_Modify : public Trace
 {
     mVarArray i_args;
     unsigned int i_offset;
-      T_Modify()
+
+    T_Modify()
     {
     }
 public:
 
-      T_Modify(const mVarArray & args, unsigned int offset = 0);
+    T_Modify(const mVarArray & args, unsigned int offset = 0);
     void Begin();
     void End();
 
@@ -450,12 +457,13 @@ class T_Changing : public Trace
 {
     mstring i_name;
     mVariant i_arg;
-      T_Changing()
+
+    T_Changing()
     {
     }
 
 public:
-      T_Changing(const mstring & name, const mVariant & arg);
+    T_Changing(const mstring & name, const mVariant & arg);
     void End(const mVariant & arg);
 
     ~T_Changing()
@@ -472,7 +480,7 @@ class T_Chatter : public Trace
     }
 
 public:
-      T_Chatter(const dir_enum direction, const mstring & input);
+    T_Chatter(const dir_enum direction, const mstring & input);
 
     ~T_Chatter()
     {
@@ -487,7 +495,7 @@ class T_Locking : public Trace
     mstring name;
 
 public:
-      T_Locking()
+    T_Locking()
     {
     }
     void open(const locktype_enum ltype, const mstring & lockname);
@@ -502,7 +510,7 @@ class T_Source : public Trace
 {
 public:
     T_Source(const mstring & text);
-      T_Source(const mstring & section, const mstring & key, const mstring & value);
+    T_Source(const mstring & section, const mstring & key, const mstring & value);
 };
 
 // ===================================================

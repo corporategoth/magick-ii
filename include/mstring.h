@@ -106,15 +106,16 @@ RCSID(mstring_h, "@(#) $Id$");
 class mstring_noalloc : public exception
 {
     char i_reason[1024];
+
 public:
-      mstring_noalloc(const char *reason = "") throw ()
+    mstring_noalloc(const char *reason = "") throw()
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-     ~mstring_noalloc() throw ()
+    ~mstring_noalloc() throw()
     {
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     }
@@ -124,15 +125,16 @@ public:
 class mstring_nodealloc : public exception
 {
     char i_reason[1024];
+
 public:
-      mstring_nodealloc(const char *reason = "") throw ()
+    mstring_nodealloc(const char *reason = "") throw()
     {
 	ACE_OS::strncpy(i_reason, reason, 1024);
     }
-     ~mstring_nodealloc() throw ()
+    ~mstring_nodealloc() throw()
     {
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     }
@@ -201,7 +203,7 @@ inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
     {
 	iLen = ACE_OS::vsprintf(nbuf, fmt, ap);
 	strncpy(buf, nbuf, sz);
-	delete [] nbuf;
+	delete[] nbuf;
     }
     else
     {
@@ -338,8 +340,8 @@ class mstring
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static inline char *alloc(const size_t sz) throw (mstring_noalloc);
-    static inline void dealloc(char *&in) throw (mstring_nodealloc);
+    static inline char *alloc(const size_t sz) throw(mstring_noalloc);
+    static inline void dealloc(char *&in) throw(mstring_nodealloc);
 #else
     static inline char *alloc(const size_t sz);
     static inline void dealloc(char *&in);
@@ -352,21 +354,22 @@ class mstring
 #ifdef MSTRING_LOCKS_WORK
 	char lockname[32];
 	UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
-	  uniq_lock.acquire();
-	  next_lock_id++;
-	  snprintf(lockname, 32, "mstring_%08x%08x", time(NULL), next_lock_id);
-	  uniq_lock.release();
-	  i_lock = new LOCK_TYPE(lockname);
+
+	uniq_lock.acquire();
+	next_lock_id++;
+	snprintf(lockname, 32, "mstring_%08x%08x", time(NULL), next_lock_id);
+	uniq_lock.release();
+	i_lock = new LOCK_TYPE(lockname);
 #endif
 
-	  i_len = 0;
-	  i_res = 0;
-	  i_str = NULL;
+	i_len = 0;
+	i_res = 0;
+	i_str = NULL;
     }
 
     int occurances(const char *str, const size_t len) const;
 
-  public:
+public:
     //@{
 
     /** 
@@ -651,7 +654,7 @@ class mstring
      *    char *s = mystring;
      *  @see c_str()
      */
-    operator          const char *() const
+    operator            const char *() const
     {
 	return c_str();
     }
@@ -662,7 +665,7 @@ class mstring
      *  @return An STL string representation of current contents.
 		This will be "" if there is none.
      */
-    operator          const string() const
+    operator            const string() const
     {
 	return string(c_str());
     }

@@ -301,7 +301,9 @@ static int PREFIX(scanPi) (const ENCODING * enc, const char *ptr, const char *en
 
 static int PREFIX(scanCdataSection) (const ENCODING * enc, const char *ptr, const char *end, const char **nextTokPtr)
 {
-    static const char CDATA_LSQB[] = { ASCII_C, ASCII_D, ASCII_A, ASCII_T, ASCII_A, ASCII_LSQB };
+    static const char CDATA_LSQB[] =
+    {
+    ASCII_C, ASCII_D, ASCII_A, ASCII_T, ASCII_A, ASCII_LSQB};
     int i;
 
     /* CDATA[ */
@@ -695,11 +697,11 @@ static int PREFIX(scanAtts) (const ENCODING * enc, const char *ptr, const char *
 		    case BT_LF:
 			continue;
 		    case BT_GT:
-		      gt:
+		    gt:
 			*nextTokPtr = ptr + MINBPC(enc);
 			return XML_TOK_START_TAG_WITH_ATTS;
 		    case BT_SOL:
-		      sol:
+		    sol:
 			ptr += MINBPC(enc);
 			if (ptr == end)
 			    return XML_TOK_PARTIAL;
@@ -812,11 +814,11 @@ static int PREFIX(scanLt) (const ENCODING * enc, const char *ptr, const char *en
 		return XML_TOK_PARTIAL;
 	    }
 	case BT_GT:
-	  gt:
+	gt:
 	    *nextTokPtr = ptr + MINBPC(enc);
 	    return XML_TOK_START_TAG_NO_ATTS;
 	case BT_SOL:
-	  sol:
+	sol:
 	    ptr += MINBPC(enc);
 	    if (ptr == end)
 		return XML_TOK_PARTIAL;
@@ -1381,8 +1383,7 @@ static int PREFIX(entityValueTok) (const ENCODING * enc, const char *ptr, const 
 	case BT_PERCNT:
 	    if (ptr == start)
 	    {
-		int tok = PREFIX(scanPercent) (enc, ptr + MINBPC(enc),
-					       end, nextTokPtr);
+		int tok = PREFIX(scanPercent) (enc, ptr + MINBPC(enc), end, nextTokPtr);
 
 		return (tok == XML_TOK_PERCENT) ? XML_TOK_INVALID : tok;
 	    }

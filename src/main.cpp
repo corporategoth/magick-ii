@@ -132,25 +132,25 @@ int main(int argc, char **argv)
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
-    catch(exception & e)
+    catch (exception & e)
     {
 	// new style STL exceptions
 	ACE_OS::fprintf(stderr, "(EXC) Unhandled exception: %s\n", e.what());
 	ACE_OS::fflush(stderr);
     }
-    catch(char *str)
+    catch (char *str)
     {
 	// exceptions from memory management
 	ACE_OS::fprintf(stderr, "(STR) Unhandled exception: %s\n", str);
 	ACE_OS::fflush(stderr);
     }
-    catch(int i)
+    catch (int i)
     {
 	// old style c exceptions
 	ACE_OS::fprintf(stderr, "(INT) Unhandled exception: %d\n", i);
 	ACE_OS::fflush(stderr);
     }
-    catch(...)
+    catch (...)
     {
 	// even older style exceptions like SIGSEGV
 	ACE_OS::fprintf(stderr, "(OTH) Unhandled exception.\n");

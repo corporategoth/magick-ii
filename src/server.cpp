@@ -272,9 +272,106 @@ void Protocol::SetTokens(const unsigned int type)
     }
 }
 
+void Protocol::Numeric_t::SetBase64(unsigned int type)
+{
+    FT("Protocol::Numeric_t::SetBase64", (type));
+
+    memset(base64_to_char, 0, sizeof(base64_to_char));
+    memset(char_to_base64, 0, sizeof(char_to_base64));
+
+    static const char ircu_b2c[] =
+    {
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+	    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+	    'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '[', ']'};
+
+    static const char ircu_c2b[] =
+    {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
+	    9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 62, 0, 63, 0, 0, 0, 26, 27, 28, 29, 30, 31,
+	    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    static const char unreal_b2c[] =
+    {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+	    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+	    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}'};
+
+    static const char unreal_c2b[] =
+    {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+	    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 0, 0, 0, 0, 0, 0, 36, 37, 38, 39, 40, 41,
+	    42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 0, 63, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    switch (type)
+    {
+    case 0000:
+	break;
+    case 0001:
+	memcpy(base64_to_char, ircu_b2c, sizeof(base64_to_char));
+	memcpy(char_to_base64, ircu_c2b, sizeof(char_to_base64));
+	break;
+    case 0002:
+	memcpy(base64_to_char, unreal_b2c, sizeof(base64_to_char));
+	memcpy(char_to_base64, unreal_c2b, sizeof(char_to_base64));
+	break;
+    }
+}
+
+unsigned long Protocol::Numeric_t::str_to_base64(const mstring & in) const
+{
+    FT("Protocol::Numeric_t::str_to_base64", (in));
+
+    if (!in.length())
+	RET(0);
+
+    unsigned long i = 0, v = char_to_base64[static_cast < unsigned char > (in[static_cast < size_t > (i++)])];
+
+    while (i < in.length())
+    {
+	v <<= 6;
+	v += char_to_base64[static_cast < unsigned char > (in[static_cast < size_t > (i++)])];
+    }
+
+    RET(v);
+}
+
+mstring Protocol::Numeric_t::base64_to_str(unsigned long in) const
+{
+    FT("Protocol::Numeric_t::base64:to_str", (in));
+
+    // 32/6 == max 6 bytes for representation, +1 for the null
+    char base64buf[7];
+
+    memset(base64buf, base64_to_char[63], sizeof(base64buf));
+    unsigned long i = sizeof(base64buf) - 1;
+
+    base64buf[i] = '\0';
+
+    do
+    {
+	base64buf[--i] = base64_to_char[in & 63];
+    }
+    while ((i > 0) && (in >>= 6));
+
+    mstring retval = (base64buf + (Trim() ? i : 0));
+
+    RET(retval);
+}
+
 Protocol::Protocol() : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false), i_Helpops(false), i_Chatops(false),
 i_Tokens(false), i_P12(false), i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false), i_Akill(0), i_Signon(0),
-i_Modes(3), i_ChanModeArg("ovbkl"), i_Server("SERVER %s %d :%s"), i_Numeric(0)
+i_Modes(3), i_ChanModeArg("ovbkl"), i_Server("SERVER $1 $2 :$3")
 {
     NFT("Protocol::Protocol");
     DumpB();
@@ -293,12 +390,14 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 0000;
 	i_Akill = 2000;
 	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
     case 1:			// RFC with TS8
 	i_Signon = 0001;
 	i_Akill = 2000;
 	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
     case 10:			// DAL < 4.4.15
@@ -309,6 +408,7 @@ void Protocol::Set(const unsigned int in)
 	i_Akill = 1000;
 	i_Modes = 4;
 	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
     case 11:			// DAL >= 4.4.15
@@ -327,6 +427,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
+	Numeric.SetBase64(0000);
 	break;
 
     case 12:			// Bahamut
@@ -349,22 +450,44 @@ void Protocol::Set(const unsigned int in)
 	i_Burst = "BURST";
 	i_EndBurst = "BURST 0";
 	SetTokens(0001);
+	Numeric.SetBase64(0000);
 	break;
 
     case 20:			// UnderNet < 2.10.x
 	i_Signon = 1000;
 	i_Akill = 2000;
 	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
-    case 21:			// UnderNet >= 2.10.x
-	i_Signon = 1000;
-	i_Akill = 2000;
-	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
-	i_Numeric = 6;
+    case 21:			// UnderNet >= 2.10.00 && <= 2.10.04
+	i_Signon = 3000;
+	i_Akill = 2001;
+	i_Server = "SERVER $1 $2 0 0 P10 $4 :$3";
+	Numeric.i_Server = true;
+	Numeric.i_Nick = true;
+	Numeric.i_Combine = true;
+	Numeric.i_Field = 6;
 	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
+	i_Tokens = true;	// Nothing tells us to turn it on ...
 	SetTokens(1000);
+	Numeric.SetBase64(0001);
+	break;
+
+    case 22:			// UnderNet >= 2.10.05
+	i_Signon = 3000;
+	i_Akill = 2001;
+	i_Server = "SERVER $1 $2 0 0 P10 $4 0 :$3";
+	Numeric.i_Server = true;
+	Numeric.i_Nick = true;
+	Numeric.i_Combine = true;
+	Numeric.i_Field = 6;
+	i_Burst = "BURST";
+	i_EndBurst = "END_OF_BURST";
+	i_Tokens = true;	// Nothing tells us to turn it on ...
+	SetTokens(1000);
+	Numeric.SetBase64(0001);
 	break;
 
     case 30:			// Hybrid 5/6
@@ -373,9 +496,10 @@ void Protocol::Set(const unsigned int in)
 	i_TopicJoin = true;
 	i_Akill = 3000;
 	i_ChanModeArg = "ovbekld";
-	SetTokens(0000);
 	i_TSora = true;
 	i_Protoctl = "CAPAB QS EX CHW";
+	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
     case 31:			// Hybrid 7
@@ -384,9 +508,10 @@ void Protocol::Set(const unsigned int in)
 	i_TopicJoin = true;
 	i_Akill = 3001;
 	i_ChanModeArg = "ovbeklIh";
-	SetTokens(0000);
 	i_TSora = true;
 	i_Protoctl = "CAPAB QS EX CHW";
+	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
     case 40:			// Elite
@@ -403,6 +528,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
+	Numeric.SetBase64(0000);
 	break;
 
     case 50:			// Relic 2.0 (dreamforge based)
@@ -413,7 +539,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 1001;
 	i_Akill = 1000;
 	i_Modes = 6;
-	i_Server = "SERVER %s %d relic2.0 :%s";
+	i_Server = "SERVER $1 $2 relic2.0 :$3";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -422,6 +548,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
+	Numeric.SetBase64(0000);
 	break;
 
     case 51:			// Relic 2.1 (dreamforge based)
@@ -435,7 +562,7 @@ void Protocol::Set(const unsigned int in)
 	i_Akill = 2002;
 	i_Modes = 6;
 	i_ChanModeArg = "ovbekl";
-	i_Server = "SERVER %s %d relic2.1 :%s";
+	i_Server = "SERVER $1 $2 relic2.1 :$3";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -444,6 +571,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0002);
+	Numeric.SetBase64(0000);
 	break;
 
     case 53:			// Relic 4.0 (bahamut based)
@@ -464,6 +592,7 @@ void Protocol::Set(const unsigned int in)
 	i_Burst = "BURST";
 	i_EndBurst = "EOB";
 	SetTokens(0003);
+	Numeric.SetBase64(0000);
 	break;
 
     case 54:			// Relic 5.0 (hybrid based)
@@ -471,9 +600,10 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 2000;
 	i_Akill = 2003;
 	i_ChanModeArg = "ovbekld";
-	SetTokens(0000);
 	i_TSora = true;
 	i_Protoctl = "CAPAB QS EX";
+	SetTokens(0000);
+	Numeric.SetBase64(0000);
 	break;
 
     case 60:			// Aurora
@@ -493,6 +623,7 @@ void Protocol::Set(const unsigned int in)
 	i_UNSQLINE = "UNSQLINE";
 	i_SVSHOST = "SVSHOST";
 	SetTokens(0001);
+	Numeric.SetBase64(0000);
 	break;
 
     case 70:			// Unreal
@@ -505,8 +636,11 @@ void Protocol::Set(const unsigned int in)
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 VL SJ3 NS VHP";
 	// Check serveropts in s_debug.c for what the letters are
-	i_Server = "SERVER %s %d :U2301-CFhiIpnXS-%d %s";
-	i_Numeric = 3;
+	i_Server = "SERVER $1 $2 :U2301-CFhiIpnXS-$4 $3";
+	Numeric.i_Trim = true;
+	Numeric.i_Server = true;
+	Numeric.i_ServerNumber = true;
+	Numeric.i_Field = 3;
 	i_ChanModeArg = "ovbehklLf";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -515,6 +649,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0004);
+	Numeric.SetBase64(0002);
 	break;
 
     case 80:			// UltimateIRCD
@@ -533,6 +668,7 @@ void Protocol::Set(const unsigned int in)
 	i_SQLINE = "SQLINE";
 	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
+	Numeric.SetBase64(0000);
 	break;
 
     default:
@@ -575,8 +711,8 @@ void Protocol::DumpB() const
        (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
 	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
     MB(16,
-       (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
-	i_SVSHOST, tokens.size()));
+       (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
+	tokens.size()));
 }
 
 void Protocol::DumpE() const
@@ -585,8 +721,8 @@ void Protocol::DumpE() const
        (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
 	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
     ME(16,
-       (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
-	i_SVSHOST, tokens.size()));
+       (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
+	tokens.size()));
 }
 
 void Server_t::defaults()
@@ -875,6 +1011,212 @@ size_t Server_t::Usage() const
     return retval;
 }
 
+mstring Protocol::Numeric_t::ServerToNumeric(const mstring & s) const
+{
+    FT("Protocol::Numeric_t::ServerToNumeric", (s));
+
+    mstring retval = base64_to_str(ServerToNumeric2(s));
+
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::NumericToServer(const mstring & n) const
+{
+    FT("Protocol::Numeric_t::NumericToServer", (n));
+
+    mstring retval = NumericToServer2(str_to_base64(n));
+
+    RET(retval);
+}
+
+unsigned long Protocol::Numeric_t::ServerToNumeric2(const mstring & s) const
+{
+    FT("Protocol::Numeric_t::ServerToNumeric2", (s));
+
+    unsigned long retval = 0;
+
+    Server::list_t::const_iterator iter;
+
+    RLOCK(("Server", "list"));
+    for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
+    {
+	map_entry < Server_t > server(iter->second);
+	if (server->Name().IsSameAs(s))
+	{
+	    retval = server->Numeric();
+	    break;
+	}
+    }
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::NumericToServer2(unsigned long n) const
+{
+    FT("Protocol::Numeric_t::NumericToServer2", (n));
+
+    mstring retval;
+
+    Server::list_t::const_iterator iter;
+
+    RLOCK(("Server", "list"));
+    for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
+    {
+	map_entry < Server_t > server(iter->second);
+	if (server->Numeric() == n)
+	{
+	    retval = server->Name();
+	    break;
+	}
+    }
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::UserToNumeric(const mstring & u) const
+{
+    FT("Protocol::Numeric_t::UserToNumeric", (u));
+
+    mstring retval = base64_to_str(UserToNumeric2(u));
+
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::NumericToUser(const mstring & n) const
+{
+    FT("Protocol::Numeric_t::NumericToUser", (n));
+
+    mstring retval = NumericToUser2(str_to_base64(n));
+
+    RET(retval);
+}
+
+unsigned long Protocol::Numeric_t::UserToNumeric2(const mstring & u) const
+{
+    FT("Protocol::Numeric_t::UserToNumeric2", (u));
+
+    unsigned long retval = 0;
+
+    NickServ::live_t::const_iterator iter;
+
+    RLOCK(("NickServ", "live"));
+    for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
+    {
+	map_entry < Nick_Live_t > nlive(iter->second);
+	if (nlive->Name().IsSameAs(u))
+	{
+	    retval = nlive->Numeric();
+	    break;
+	}
+    }
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::NumericToUser2(unsigned long n) const
+{
+    FT("Protocol::Numeric_t::NumericToUser2", (n));
+
+    mstring retval;
+
+    NickServ::live_t::const_iterator iter;
+
+    RLOCK(("NickServ", "live"));
+    for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
+    {
+	map_entry < Nick_Live_t > nlive(iter->second);
+	if (nlive->Numeric() == n)
+	{
+	    retval = nlive->Name();
+	    break;
+	}
+    }
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::ChannelToNumeric(const mstring & c) const
+{
+    FT("Protocol::Numeric_t::ChannelToNumeric", (c));
+
+    mstring retval = base64_to_str(ChannelToNumeric2(c));
+
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::NumericToChannel(const mstring & n) const
+{
+    FT("Protocol::Numeric_t::NumericToChannel", (n));
+
+    mstring retval = NumericToChannel2(str_to_base64(n));
+
+    RET(retval);
+}
+
+unsigned long Protocol::Numeric_t::ChannelToNumeric2(const mstring & c) const
+{
+    FT("Protocol::Numeric_t::ChannelToNumeric2", (c));
+
+    unsigned long retval = 0;
+
+    ChanServ::live_t::const_iterator iter;
+
+    RLOCK(("ChanServ", "live"));
+    for (iter = Magick::instance().chanserv.LiveBegin(); iter != Magick::instance().chanserv.LiveEnd(); iter++)
+    {
+	map_entry < Chan_Live_t > clive(iter->second);
+	if (clive->Name().IsSameAs(c))
+	{
+	    retval = clive->Numeric();
+	    break;
+	}
+    }
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::NumericToChannel2(unsigned long n) const
+{
+    FT("Protocol::Numeric_t::NumericToChannel2", (n));
+
+    mstring retval;
+
+    ChanServ::live_t::const_iterator iter;
+
+    RLOCK(("ChanServ", "live"));
+    for (iter = Magick::instance().chanserv.LiveBegin(); iter != Magick::instance().chanserv.LiveEnd(); iter++)
+    {
+	map_entry < Chan_Live_t > clive(iter->second);
+	if (clive->Numeric() == n)
+	{
+	    retval = clive->Name();
+	    break;
+	}
+    }
+    RET(retval);
+}
+
+mstring Protocol::Numeric_t::ServerLineNumeric(unsigned long n) const
+{
+    FT("Protocol::Numeric_t::ServerLineNumeric", (n));
+    mstring retval;
+
+    if (ServerNumber())
+	retval = base64_to_str(n);
+    else
+	retval = n;
+
+    RET(retval);
+}
+
+unsigned long Protocol::Numeric_t::ServerLineNumeric(const mstring & n) const
+{
+    FT("Protocol::Numeric_t::ServerLineNumeric", (n));
+    unsigned long retval;
+
+    if (ServerNumber())
+	retval = str_to_base64(n);
+    else
+	retval = atoi(n.c_str());
+
+    RET(retval);
+}
+
 void Server_t::DumpB() const
 {
     MB(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description, i_Ping, i_Lag, i_Jupe));
@@ -895,10 +1237,7 @@ void Server::sraw(const mstring & text) const
 {
     mstring out;
 
-//  if (proto.Numeric())
-//      out << "@" << base64_to_str(GetOurNumeric()) << " ";
-//  else
-    if (!proto.Numeric())
+    if (!proto.Numeric.Server())
 	out << ":" << Magick::instance().startup.Server_Name() << " ";
     out << text;
     raw(out);
@@ -1120,7 +1459,7 @@ void Server::FlushMsgs(const mstring & nick)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Server::AddList(Server_t * in) throw(E_Server_List)
+void Server::AddList(Server_t * in) throw (E_Server_List)
 #else
 void Server::AddList(Server_t * in)
 #endif
@@ -1130,7 +1469,7 @@ void Server::AddList(Server_t * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Add, E_Server_List::T_Invalid));
+	throw (E_Server_List(E_Server_List::W_Add, E_Server_List::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Server", "List", "Add", "Invalid"));
 	return;
@@ -1140,7 +1479,7 @@ void Server::AddList(Server_t * in)
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Add, E_Server_List::T_Blank));
+	throw (E_Server_List(E_Server_List::W_Add, E_Server_List::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Server", "List", "Add", "Blank"));
 	return;
@@ -1150,7 +1489,7 @@ void Server::AddList(Server_t * in)
     if (in->doDelete())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Add, E_Server_List::T_NotFound));
+	throw (E_Server_List(E_Server_List::W_Add, E_Server_List::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Server", "List", "Add", "NotFound"));
 	return;
@@ -1169,7 +1508,7 @@ void Server::AddList(Server_t * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry < Server_t > Server::GetList(const mstring & in) const throw(E_Server_List)
+map_entry < Server_t > Server::GetList(const mstring & in) const throw (E_Server_List)
 #else
 map_entry < Server_t > Server::GetList(const mstring & in) const
 #endif
@@ -1181,7 +1520,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
     if (iter == i_list.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_NotFound, in.c_str()));
+	throw (E_Server_List(E_Server_List::W_Get, E_Server_List::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "NotFound", in));
 	NRET(Server_t &, GLOB_Server_t);
@@ -1190,7 +1529,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
+	throw (E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Invalid", in));
 	NRET(Server_t &, GLOB_Server_t);
@@ -1199,7 +1538,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
     if (iter->second->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Blank, in.c_str()));
+	throw (E_Server_List(E_Server_List::W_Get, E_Server_List::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Blank", in));
 	NRET(Server_t &, GLOB_Server_t);
@@ -1210,7 +1549,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Server::RemList(const mstring & in, bool downlinks) throw(E_Server_List)
+void Server::RemList(const mstring & in, bool downlinks) throw (E_Server_List)
 #else
 void Server::RemList(const mstring & in, bool downlinks)
 #endif
@@ -1222,7 +1561,7 @@ void Server::RemList(const mstring & in, bool downlinks)
     if (iter == i_list.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Server_List(E_Server_List::W_Rem, E_Server_List::T_NotFound, in.c_str()));
+	throw (E_Server_List(E_Server_List::W_Rem, E_Server_List::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Server", "List", "Rem", "NotFound", in));
 	return;
@@ -1274,50 +1613,20 @@ bool Server::IsList(const mstring & server) const
     RET(retval);
 }
 
-mstring Server::ServerNumeric(const unsigned long num) const
-{
-    FT("Server::ServerNumeric", (num));
-    mstring retval;
-
-    Server::list_t::const_iterator iter;
-
-    {
-	RLOCK(("Server", "list"));
-	for (iter = ListBegin(); iter != ListEnd(); iter++)
-	{
-	    map_entry < Server_t > server(iter->second);
-	    if (server->Numeric() == num)
-	    {
-		retval = server->Name();
-		break;
-	    }
-	}
-    }
-    RET(retval);
-}
-
 mstring Server::GetServer(const mstring & server) const
 {
     FT("Server::GetServer", (server));
     mstring retval;
 
     RLOCK(("Server", "list"));
-    if (proto.Numeric())
+    if (proto.Numeric.Server())
     {
-	retval = ServerNumeric(str_to_base64(server));
+	retval = proto.Numeric.NumericToServer(server);
 	if (retval.empty() && IsList(server))
 	    retval = server;
     }
     else if (IsList(server))
 	retval = server;
-    RET(retval);
-}
-
-unsigned long Server::GetOurNumeric() const
-{
-    NFT("Server::GetOurNumeric");
-    unsigned long retval = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
-
     RET(retval);
 }
 
@@ -1341,9 +1650,40 @@ void Server::Jupe(const mstring & server, const mstring & reason)
     // :uplink SERVER downlink hops :description
     mstring tmp;
 
-    tmp.Format(proto.Server().c_str(), server.LowerCase().c_str(), 2, ("JUPED (" + reason + ")").c_str());
-    raw(tmp);
-    map_entry < Server_t > jupe(new Server_t(server.LowerCase(), "JUPED (" + reason + ")"));
+    // Find an unused numeric ...
+    unsigned long numeric = 0;
+
+    if (proto.Numeric.Server())
+    {
+	unsigned long ournumeric = Magick::instance().startup.Server(OurUplink()).second.third;
+
+	for (unsigned long i = 1; i > 0; i++)
+	{
+	    if (i == ournumeric)
+		continue;
+
+	    Server::list_t::iterator iter;
+	    RLOCK(("Server", "list"));
+	    for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
+	    {
+		map_entry < Server_t > server(iter->second);
+		if (server->Numeric() == i)
+		    break;
+	    }
+	    if (iter == Magick::instance().server.ListEnd())
+	    {
+		numeric = i;
+		break;
+	    }
+	}
+    }
+
+    Magick::instance().server.
+	raw(parseMessage
+	    (Magick::instance().server.proto.Server(),
+	     mVarArray(server.LowerCase(), 2, "JUPED (" + reason + ")", proto.Numeric.ServerLineNumeric(numeric))));
+
+    map_entry < Server_t > jupe(new Server_t(server.LowerCase(), "JUPED (" + reason + ")", numeric));
     Magick::instance().server.AddList(jupe);
 }
 
@@ -1877,8 +2217,8 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
     {
 	mstring server(i_server);
 
-	if (proto.Numeric() && IsList(server))
-	    server = base64_to_str(GetList(server)->Numeric());
+	if (proto.Numeric.Server() && IsList(server))
+	    server = proto.Numeric.ServerToNumeric(server);
 	mstring out, token;
 
 	switch (proto.Signon())
@@ -2753,7 +3093,7 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_A", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -2772,8 +3112,7 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -2854,7 +3193,7 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -2877,7 +3216,7 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_C", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -2929,7 +3268,7 @@ void Server::parse_D(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -2945,7 +3284,7 @@ void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_E", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -2982,7 +3321,7 @@ void Server::parse_F(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -2998,7 +3337,7 @@ void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_G", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3038,7 +3377,7 @@ void Server::parse_H(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3065,7 +3404,7 @@ void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_I", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3081,8 +3420,7 @@ void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -3136,7 +3474,7 @@ void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_J", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3168,7 +3506,7 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_K", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3243,7 +3581,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3262,8 +3600,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -3297,8 +3634,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -3333,7 +3669,7 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_M", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3383,8 +3719,7 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 		RLOCK(("IrcSvcHandler"));
 		if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 		{
-		    mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					       mVarArray(msgtype));
+		    mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		    raw(((proto.Tokens() &&
 			  !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
@@ -3415,7 +3750,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_N", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3830,7 +4165,7 @@ void Server::parse_O(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3852,7 +4187,7 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_P", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -3968,7 +4303,7 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_Q", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -4044,7 +4379,7 @@ void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -4081,7 +4416,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_S", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -4125,7 +4460,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		//        Only this way for direct links --^^^^^^^
 		if (proto.Number() >= 70 && proto.Number() <= 79)
 		{
-		    numeric = atoi(params.After(":").ExtractWord(3, "-"));
+		    numeric = proto.Numeric.ServerLineNumeric(params.After(":").ExtractWord(3, "-"));
 		    map_entry < Server_t >
 			tmp(new
 			    Server_t(params.ExtractWord(1, ": ").LowerCase(),
@@ -4139,9 +4474,9 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			tmp(new
 			    Server_t(params.ExtractWord(1, ": ").LowerCase(),
 				     atoi(params.ExtractWord(2, ": ").LowerCase().c_str()), params.After(":")));
-		    if (proto.Numeric())
+		    if (proto.Numeric.Server())
 		    {
-			numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
+			numeric = proto.Numeric.ServerLineNumeric(params.ExtractWord(proto.Numeric.Field(), ": "));
 			tmp->Numeric(numeric);
 		    }
 		    AddList(tmp);
@@ -4151,8 +4486,9 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		Magick::instance().GotConnect(true);
 		SignOnAll();
 		mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
-		if (proto.Numeric())
-		    mMessage::CheckDependancies(mMessage::ServerExists, ultoa(numeric));
+		if (proto.Numeric.Server())
+		    mMessage::CheckDependancies(mMessage::ServerExists,
+						proto.Numeric.ServerToNumeric(params.ExtractWord(1, ": ")));
 	    }
 	    else
 	    {
@@ -4175,17 +4511,18 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			tmp(new
 			    Server_t(params.ExtractWord(1, ": ").LowerCase(), source,
 				     atoi(params.ExtractWord(2, ": ").LowerCase().c_str()), params.After(":")));
-		    if (proto.Numeric())
+		    if (proto.Numeric.Server())
 		    {
-			numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
+			numeric = proto.Numeric.ServerLineNumeric(params.ExtractWord(proto.Numeric.Field(), ": "));
 			tmp->Numeric(numeric);
 		    }
 		    AddList(tmp);
 		    LOG(LM_INFO, "OTHER/LINK", (params.ExtractWord(1, ": "), source));
 
 		    mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
-		    if (proto.Numeric())
-			mMessage::CheckDependancies(mMessage::ServerExists, ultoa(numeric));
+		    if (proto.Numeric.Server())
+			mMessage::CheckDependancies(mMessage::ServerExists,
+						    proto.Numeric.ServerToNumeric(params.ExtractWord(1, ": ")));
 		}
 		else
 		{
@@ -4848,7 +5185,7 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_T", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -4929,8 +5266,7 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -5018,7 +5354,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_U", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -5283,7 +5619,7 @@ void Server::parse_V(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -5367,7 +5703,7 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_W", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -5438,8 +5774,7 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -5467,8 +5802,7 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-					   mVarArray(msgtype));
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
 
 		raw(((proto.Tokens() &&
 		      !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
@@ -5579,7 +5913,7 @@ void Server::parse_X(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -5597,7 +5931,7 @@ void Server::parse_Y(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -5615,7 +5949,7 @@ void Server::parse_Z(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())
@@ -5639,7 +5973,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 {
     FT("Server::numeric_execute", (source, msgtype, params));
 
-    if (source[0u] == '@' && proto.Numeric())
+    if (source[0u] == '@')
 	source = GetServer(source.After("@"));
 
     if (source.empty())

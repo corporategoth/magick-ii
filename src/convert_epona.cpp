@@ -722,44 +722,118 @@ int EPO_delcore(EPO_NickCore * nc)
     }							\
 } while (0)
 
-static int def_levels[] [2] = {
-    {EPO_CA_AUTOOP, 5},
-    {EPO_CA_AUTOVOICE, 3},
-    {EPO_CA_AUTODEOP, -1},
-    {EPO_CA_NOJOIN, -2},
-    {EPO_CA_INVITE, 5},
-    {EPO_CA_AKICK, 10},
-    {EPO_CA_SET, EPO_ACCESS_INVALID},
-    {EPO_CA_CLEAR, EPO_ACCESS_INVALID},
-    {EPO_CA_UNBAN, 5},
-    {EPO_CA_OPDEOP, 5},
-    {EPO_CA_ACCESS_LIST, 1},
-    {EPO_CA_ACCESS_CHANGE, 10},
-    {EPO_CA_MEMO, 10},
-    {EPO_CA_ASSIGN, EPO_ACCESS_INVALID},
-    {EPO_CA_BADWORDS, 10},
-    {EPO_CA_NOKICK, 1},
-    {EPO_CA_FANTASIA, 3},
-    {EPO_CA_SAY, 5},
-    {EPO_CA_GREET, 5},
-    {EPO_CA_VOICEME, 3},
-    {EPO_CA_VOICE, 5},
-    {EPO_CA_GETKEY, 5},
-    {EPO_CA_AUTOHALFOP, 4},
-    {EPO_CA_AUTOPROTECT, 10},
-    {EPO_CA_OPDEOPME, 5},
-    {EPO_CA_HALFOPME, 4},
-    {EPO_CA_HALFOP, 5},
-    {EPO_CA_PROTECTME, 10},
-    {EPO_CA_PROTECT, EPO_ACCESS_INVALID},
-    {EPO_CA_KICKME, 5},
-    {EPO_CA_KICK, 5},
-    {EPO_CA_SIGNKICK, EPO_ACCESS_INVALID},
-    {EPO_CA_BANME, 5},
-    {EPO_CA_BAN, 5},
-    {EPO_CA_TOPIC, EPO_ACCESS_INVALID},
-    {EPO_CA_INFO, EPO_ACCESS_INVALID},
-    {-1}
+static int def_levels[] [2] =
+{
+    {
+    EPO_CA_AUTOOP, 5}
+    ,
+    {
+    EPO_CA_AUTOVOICE, 3}
+    ,
+    {
+    EPO_CA_AUTODEOP, -1}
+    ,
+    {
+    EPO_CA_NOJOIN, -2}
+    ,
+    {
+    EPO_CA_INVITE, 5}
+    ,
+    {
+    EPO_CA_AKICK, 10}
+    ,
+    {
+    EPO_CA_SET, EPO_ACCESS_INVALID}
+    ,
+    {
+    EPO_CA_CLEAR, EPO_ACCESS_INVALID}
+    ,
+    {
+    EPO_CA_UNBAN, 5}
+    ,
+    {
+    EPO_CA_OPDEOP, 5}
+    ,
+    {
+    EPO_CA_ACCESS_LIST, 1}
+    ,
+    {
+    EPO_CA_ACCESS_CHANGE, 10}
+    ,
+    {
+    EPO_CA_MEMO, 10}
+    ,
+    {
+    EPO_CA_ASSIGN, EPO_ACCESS_INVALID}
+    ,
+    {
+    EPO_CA_BADWORDS, 10}
+    ,
+    {
+    EPO_CA_NOKICK, 1}
+    ,
+    {
+    EPO_CA_FANTASIA, 3}
+    ,
+    {
+    EPO_CA_SAY, 5}
+    ,
+    {
+    EPO_CA_GREET, 5}
+    ,
+    {
+    EPO_CA_VOICEME, 3}
+    ,
+    {
+    EPO_CA_VOICE, 5}
+    ,
+    {
+    EPO_CA_GETKEY, 5}
+    ,
+    {
+    EPO_CA_AUTOHALFOP, 4}
+    ,
+    {
+    EPO_CA_AUTOPROTECT, 10}
+    ,
+    {
+    EPO_CA_OPDEOPME, 5}
+    ,
+    {
+    EPO_CA_HALFOPME, 4}
+    ,
+    {
+    EPO_CA_HALFOP, 5}
+    ,
+    {
+    EPO_CA_PROTECTME, 10}
+    ,
+    {
+    EPO_CA_PROTECT, EPO_ACCESS_INVALID}
+    ,
+    {
+    EPO_CA_KICKME, 5}
+    ,
+    {
+    EPO_CA_KICK, 5}
+    ,
+    {
+    EPO_CA_SIGNKICK, EPO_ACCESS_INVALID}
+    ,
+    {
+    EPO_CA_BANME, 5}
+    ,
+    {
+    EPO_CA_BAN, 5}
+    ,
+    {
+    EPO_CA_TOPIC, EPO_ACCESS_INVALID}
+    ,
+    {
+    EPO_CA_INFO, EPO_ACCESS_INVALID}
+    ,
+    {
+    -1}
 };
 
 void EPO_reset_levels(EPO_ChannelInfo * ci)
@@ -1615,8 +1689,7 @@ Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias * na, EPO_NickCore * nc)
     else if (nc == NULL && na->host && strlen(na->host))
     {
 	Nick_Stored_t tmp(na->host);
-	Nick_Stored_t *out = new Nick_Stored_t(na->nick,
-					       mDateTime(na->time_registered), tmp);
+	Nick_Stored_t *out = new Nick_Stored_t(na->nick, mDateTime(na->time_registered), tmp);
 
 	if (out == NULL)
 	    return NULL;
@@ -1841,9 +1914,8 @@ Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo * ci)
 	    return NULL;
 	}
 
-	Chan_Stored_t *out = new Chan_Stored_t(mstring(ci->name),
-					       mstring(ci->founder), mstring(ci->founderpass),
-					       mstring(ci->desc));
+	Chan_Stored_t *out =
+	    new Chan_Stored_t(mstring(ci->name), mstring(ci->founder), mstring(ci->founderpass), mstring(ci->desc));
 
 	if (out == NULL)
 	    return NULL;

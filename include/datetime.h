@@ -45,8 +45,9 @@ extern mDateTime StringToDateTime(const mstring & in);
 class mDateTime
 {
     double Val;
+
 public:
-      mstring timetstring() const;
+    mstring timetstring() const;
     enum mDateTimeFlag
     { Date, Time, DateTime };
 
@@ -176,50 +177,58 @@ public:
     mDateTime operator+(const mDateTime & in) const
     {
 	mDateTime retval(Val);
-	  retval += in;
-	  return retval;
+
+	retval += in;
+	return retval;
     }
     mDateTime operator+(const double in) const
     {
 	mDateTime retval(Val);
-	  retval += in;
-	  return retval;
+
+	retval += in;
+	return retval;
     }
     mDateTime operator+(const time_t in) const
     {
 	mDateTime retval(Val);
-	  retval += in;
-	  return retval;
+
+	retval += in;
+	return retval;
     }
     mDateTime operator+(const struct tm in) const
     {
 	mDateTime retval(Val);
-	  retval += in;
-	  return retval;
+
+	retval += in;
+	return retval;
     }
     mDateTime operator-(const mDateTime & in) const
     {
 	mDateTime retval(Val);
-	  retval -= in;
-	  return retval;
+
+	retval -= in;
+	return retval;
     }
     mDateTime operator-(const double in) const
     {
 	mDateTime retval(Val);
-	  retval -= in;
-	  return retval;
+
+	retval -= in;
+	return retval;
     }
     mDateTime operator-(const time_t in) const
     {
 	mDateTime retval(Val);
-	  retval -= in;
-	  return retval;
+
+	retval -= in;
+	return retval;
     }
     mDateTime operator-(const struct tm in) const
     {
 	mDateTime retval(Val);
-	  retval -= in;
-	  return retval;
+
+	retval -= in;
+	return retval;
     }
     bool operator==(const mDateTime & in) const
     {
@@ -246,12 +255,12 @@ public:
 	return (Val <= in.Val);
     }
 
-    operator    double () const
+    operator      double () const
     {
 	return Val;
     }
-    operator    time_t() const;
-    operator    mstring() const
+    operator      time_t() const;
+    operator      mstring() const
     {
 	return DateTimeString();
     }

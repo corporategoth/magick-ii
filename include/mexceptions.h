@@ -41,29 +41,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_NickServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-			"") throw () : i_where(p_where), i_type(p_type)
+    E_NickServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		      "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_NickServ_Stored(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_NickServ_Stored(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -78,29 +78,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_NickServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		      "") throw () : i_where(p_where), i_type(p_type)
+    E_NickServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		    "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_NickServ_Live(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_NickServ_Live(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -115,29 +115,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_NickServ_Recovered(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-			   "") throw () : i_where(p_where), i_type(p_type)
+    E_NickServ_Recovered(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+			 "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_NickServ_Recovered(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_NickServ_Recovered(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -152,29 +152,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_ChanServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-			"") throw () : i_where(p_where), i_type(p_type)
+    E_ChanServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		      "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_ChanServ_Stored(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_ChanServ_Stored(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -189,29 +189,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_ChanServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		      "") throw () : i_where(p_where), i_type(p_type)
+    E_ChanServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		    "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_ChanServ_Live(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_ChanServ_Live(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -226,29 +226,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_CommServ_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		      "") throw () : i_where(p_where), i_type(p_type)
+    E_CommServ_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		    "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_CommServ_List(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_CommServ_List(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -263,29 +263,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_Server_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		    "") throw () : i_where(p_where), i_type(p_type)
+    E_Server_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		  "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_Server_List(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_Server_List(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -300,34 +300,34 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
     size_t i_memo;
 
 public:
-      E_MemoServ_Nick(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		      "", size_t p_memo = 0) throw () : i_where(p_where), i_type(p_type), i_memo(p_memo)
+    E_MemoServ_Nick(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "", size_t p_memo =
+		    0) throw() : i_where(p_where), i_type(p_type), i_memo(p_memo)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_MemoServ_Nick(const char *p_reason, size_t p_memo = 0) throw () : i_where(W_Other), i_type(T_Other), i_memo(p_memo)
+    E_MemoServ_Nick(const char *p_reason, size_t p_memo = 0) throw() : i_where(W_Other), i_type(T_Other), i_memo(p_memo)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
-    const size_t memo() const throw ()
+    const size_t memo() const throw()
     {
 	return i_memo;
     }
@@ -342,34 +342,34 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
     size_t i_news;
 
 public:
-      E_MemoServ_Channel(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-			 "", size_t p_news = 0) throw () : i_where(p_where), i_type(p_type), i_news(p_news)
+    E_MemoServ_Channel(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		       "", size_t p_news = 0) throw() : i_where(p_where), i_type(p_type), i_news(p_news)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_MemoServ_Channel(const char *p_reason, size_t p_news = 0) throw () : i_where(W_Other), i_type(T_Other), i_news(p_news)
+    E_MemoServ_Channel(const char *p_reason, size_t p_news = 0) throw() : i_where(W_Other), i_type(T_Other), i_news(p_news)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
-    const size_t news() const throw ()
+    const size_t news() const throw()
     {
 	return i_news;
     }
@@ -384,29 +384,29 @@ public:
     { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
 private:
-      E_where i_where;
+    E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
 public:
-      E_DccMap_Xfers(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
-		     "") throw () : i_where(p_where), i_type(p_type)
+    E_DccMap_Xfers(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		   "") throw() : i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_DccMap_Xfers(const char *p_reason) throw () : i_where(W_Other), i_type(T_Other)
+    E_DccMap_Xfers(const char *p_reason) throw() : i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    const E_where where() const throw ()
+    const E_where where() const throw()
     {
 	return i_where;
     }
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -419,24 +419,24 @@ public:
     { T_NotProcessing, T_Other };
 
 private:
-      E_type i_type;
+    E_type i_type;
     char i_reason[1024];
 
 public:
-      E_Thread(const E_type p_type = T_Other, const char *p_reason = "") throw () : i_type(p_type)
+    E_Thread(const E_type p_type = T_Other, const char *p_reason = "") throw() : i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_Thread(const char *p_reason) throw () : i_type(T_Other)
+    E_Thread(const char *p_reason) throw() : i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
 
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };
@@ -449,24 +449,24 @@ public:
     { T_NotFound, T_Invalid, T_Other };
 
 private:
-      E_type i_type;
+    E_type i_type;
     char i_reason[1024];
 
 public:
-      E_Magick(const E_type p_type = T_Other, const char *p_reason = "") throw () : i_type(p_type)
+    E_Magick(const E_type p_type = T_Other, const char *p_reason = "") throw() : i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_Magick(const char *p_reason) throw () : i_type(T_Other)
+    E_Magick(const char *p_reason) throw() : i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
 
-    const E_type type() const throw ()
+    const E_type type() const throw()
     {
 	return i_type;
     }
-    const char *what() const throw ()
+    const char *what() const throw()
     {
 	return i_reason;
     };

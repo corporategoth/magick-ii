@@ -67,7 +67,7 @@ const mstring IRC_Color(static_cast < char > (3));	// ^C
 const mstring IRC_Off(static_cast < char > (15));	// ^O
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-inline char *mstring::alloc(const size_t sz) throw(mstring_noalloc)
+inline char *mstring::alloc(const size_t sz) throw (mstring_noalloc)
 #else
 inline char *mstring::alloc(const size_t sz)
 #endif
@@ -88,7 +88,7 @@ inline char *mstring::alloc(const size_t sz)
     {
 	out = new char [sz];
     }
-    catch(ACE_bad_alloc & e)
+    catch (ACE_bad_alloc & e)
     {
 	e.what();
 	errno = ENOMEM;
@@ -132,7 +132,7 @@ inline char *mstring::alloc(const size_t sz)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-inline void mstring::dealloc(char *&in) throw(mstring_nodealloc)
+inline void mstring::dealloc(char *&in) throw (mstring_nodealloc)
 #else
 inline void mstring::dealloc(char *&in)
 #endif
@@ -148,12 +148,12 @@ inline void mstring::dealloc(char *&in)
 #elif ALLOCTYPE == 3
 
     /* Duplicate ACE's new, but with no return's. */
-    delete[] in;
+    delete [] in;
 
 #elif ALLOCTYPE == 2
 
     /* Standard C++ Allocation */
-    delete[] in;
+    delete [] in;
 
 #else
 

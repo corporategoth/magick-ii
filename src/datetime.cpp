@@ -44,35 +44,29 @@ mstring mDateTime::TimeAMString = "am";
 mstring mDateTime::TimePMString = "pm";
 mstring mDateTime::ShortTimeFormat = "h:nn AMPM";
 mstring mDateTime::LongTimeFormat = "hh:nn:ss AMPM";
-mstring mDateTime::ShortMonthNames[12] = { "Jan", "Feb", "Mar",
-    "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep",
-    "Oct", "Nov", "Dec"
-};
-mstring mDateTime::LongMonthNames[12] = { "January", "February", "March",
-    "April", "May", "June",
-    "July", "August", "September",
-    "October", "November", "December"
-};
-mstring mDateTime::ShortDayNames[7] = { "Mon", "Tue", "Wed",
-    "Thu", "Fri", "Sat",
-    "Sun"
-};
-mstring mDateTime::LongDayNames[7] = { "Monday", "Tuesday", "Wednesday",
-    "Thursday", "Friday", "Saturday",
-    "Sunday"
-};
+mstring mDateTime::ShortMonthNames[12] =
+{
+"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+mstring mDateTime::LongMonthNames[12] =
+{
+"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+mstring mDateTime::ShortDayNames[7] =
+{
+"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+mstring mDateTime::LongDayNames[7] =
+{
+"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
 static const int SecsPerDay = 24 * 60 * 60;
 static const int MSecsPerDay = SecsPerDay * 1000;
 
 typedef int mDayTable[12];
-static mDayTable DayTable1 = { 31, 28, 31, 30, 31, 30,
-    31, 31, 30, 31, 30, 31
-};
-static mDayTable DayTable2 = { 31, 29, 31, 30, 31, 30,
-    31, 31, 30, 31, 30, 31
-};
+static mDayTable DayTable1 =
+{
+31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+static mDayTable DayTable2 =
+{
+31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 /* ---------------------------------------------------------- */
 
@@ -415,7 +409,7 @@ mstring mDateTime::DateTimeString() const
     return Result;
 }
 
-mDateTime::operator           time_t() const
+mDateTime::operator             time_t() const
 {
     int iYear, iMonth, iDay, iHour, iMin, iSec, iMSec;
 

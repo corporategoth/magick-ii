@@ -39,6 +39,7 @@ RCSID(nickserv_h, "@(#) $Id$");
 class Nick_Live_t : public mUserDef, public ref_class
 {
     mstring i_Name;
+    unsigned long i_Numeric;
     mDateTime i_Signon_Time;
     mDateTime i_My_Signon_Time;
     mDateTime i_Last_Action;
@@ -50,13 +51,15 @@ class Nick_Live_t : public mUserDef, public ref_class
     mstring i_squit;
     mstring i_away;
     mstring modes;
-      set < mstring > joined_channels;
-      vector < mDateTime > last_msg_times;
+
+    set < mstring > joined_channels;
+    vector < mDateTime > last_msg_times;
     unsigned int last_msg_entries;
     unsigned int flood_triggered_times;
     unsigned int failed_passwds;
-      set < mstring > chans_founder_identd;
-      vector < mstring > try_chan_ident;
+
+    set < mstring > chans_founder_identd;
+    vector < mstring > try_chan_ident;
     bool identified;
     bool services;
     mDateTime last_nick_reg, last_chan_reg, last_memo;
@@ -69,7 +72,8 @@ public:
 	friend class InFlight_Handler;
 
 	mstring nick;
-	  FileMap::FileType type;
+
+	FileMap::FileType type;
 	long timer;
 	bool fileattach;
 	bool fileinprog;
@@ -78,7 +82,7 @@ public:
 	mstring recipiant;
 	mstring text;
 
-	  InFlight_t(const mstring & name) : nick(name)
+	InFlight_t(const mstring & name) : nick(name)
 	{
 	    init();
 	}
@@ -86,7 +90,7 @@ public:
 	{
 	    init();
 	}
-	 ~InFlight_t();
+	~InFlight_t();
 
 	void ChgNick(const mstring & newnick);
 	InFlight_t &operator=(const InFlight_t & in);
@@ -99,7 +103,7 @@ public:
 	// Called upon start
 	void SetInProg();
 
-      public:
+    public:
 	void Memo(const bool file, const mstring & mynick, const mstring & recipiant, const mstring & message,
 		  const bool silent = false);
 	void Continue(const mstring & message);
@@ -169,6 +173,9 @@ public:
     void Mode(const mstring & in);
     mstring Mode() const;
     bool HasMode(const mstring & in) const;
+
+    void Numeric(const unsigned long in);
+    unsigned long Numeric() const;
 
     void Away(const mstring & in);
     mstring Away() const;
@@ -249,6 +256,7 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     mstring i_Description;
     mstring i_Comment;
     mstring i_Host;
+
     set < mstring > i_slaves;	// HOST only
     set < mstring > i_access;
     set < mstring > i_ignore;
@@ -516,6 +524,7 @@ private:
 
     void AddCommands();
     void RemCommands();
+
 public:
     NickServ();
     ~NickServ()
@@ -546,7 +555,8 @@ public:
 	unsigned long i_Unlock;
 	unsigned long i_SetPicture;
 	unsigned long i_Send;
-   public:
+
+    public:
 	stats_t()
 	{
 	    clear();
@@ -745,17 +755,17 @@ public:
     InFlight_Handler ifh;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddStored(Nick_Stored_t * in) throw (E_NickServ_Stored);
-    void AddStored(const Nick_Stored_t & in) throw (E_NickServ_Stored)
+    void AddStored(Nick_Stored_t * in) throw(E_NickServ_Stored);
+    void AddStored(const Nick_Stored_t & in) throw(E_NickServ_Stored)
     {
 	AddStored(new Nick_Stored_t(in));
     }
-    void AddStored(const map_entry < Nick_Stored_t > & in) throw (E_NickServ_Stored)
+    void AddStored(const map_entry < Nick_Stored_t > & in) throw(E_NickServ_Stored)
     {
 	AddStored(in.entry());
     }
-    map_entry < Nick_Stored_t > GetStored(const mstring & in) const throw (E_NickServ_Stored);
-    void RemStored(const mstring & in) throw (E_NickServ_Stored);
+    map_entry < Nick_Stored_t > GetStored(const mstring & in) const throw(E_NickServ_Stored);
+    void RemStored(const mstring & in) throw(E_NickServ_Stored);
 #else
     void AddStored(Nick_Stored_t * in);
     void AddStored(const Nick_Stored_t & in)
@@ -792,17 +802,17 @@ public:
     bool IsStored(const mstring & in) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddLive(Nick_Live_t * in) throw (E_NickServ_Live);
-    void AddLive(const Nick_Live_t & in) throw (E_NickServ_Live)
+    void AddLive(Nick_Live_t * in) throw(E_NickServ_Live);
+    void AddLive(const Nick_Live_t & in) throw(E_NickServ_Live)
     {
 	AddLive(new Nick_Live_t(in));
     }
-    void AddLive(const map_entry < Nick_Live_t > & in) throw (E_NickServ_Live)
+    void AddLive(const map_entry < Nick_Live_t > & in) throw(E_NickServ_Live)
     {
 	AddLive(in.entry());
     }
-    map_entry < Nick_Live_t > GetLive(const mstring & in) const throw (E_NickServ_Live);
-    void RemLive(const mstring & in) throw (E_NickServ_Live);
+    map_entry < Nick_Live_t > GetLive(const mstring & in) const throw(E_NickServ_Live);
+    void RemLive(const mstring & in) throw(E_NickServ_Live);
 #else
     void AddLive(Nick_Live_t * in);
     void AddLive(const Nick_Live_t & in)
@@ -840,9 +850,9 @@ public:
     bool IsLiveAll(const mstring & in) const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddRecovered(const mstring & name, const mDateTime & in) throw (E_NickServ_Recovered);
-    const mDateTime &GetRecovered(const mstring & in) const throw (E_NickServ_Recovered);
-    void RemRecovered(const mstring & in) throw (E_NickServ_Recovered);
+    void AddRecovered(const mstring & name, const mDateTime & in) throw(E_NickServ_Recovered);
+    const mDateTime &GetRecovered(const mstring & in) const throw(E_NickServ_Recovered);
+    void RemRecovered(const mstring & in) throw(E_NickServ_Recovered);
 #else
     void AddRecovered(const mstring & name, const mDateTime & in);
     const mDateTime &GetRecovered(const mstring & in) const;

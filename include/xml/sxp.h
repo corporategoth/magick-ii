@@ -93,7 +93,7 @@ namespace SXP
     interface IPersistObj;
     struct Tag;
 
-      template < class T > interface IFilePointer
+    template < class T > interface IFilePointer
     {
 	inline FILE *FP()
 	{
@@ -107,7 +107,7 @@ namespace SXP
 
     template < class T > class IFilePrint
     {
-      public:
+    public:
 	inline void Print(const char *format, ...)
 	{
 	    va_list argptr;
@@ -208,7 +208,7 @@ namespace SXP
     {
 	const char *ch;
 	unsigned long dw;
-	  Tag(const char *name);
+	Tag(const char *name);
     };
 
 // hashtable size
@@ -224,12 +224,12 @@ namespace SXP
 
     class TagHashtable
     {
-      private:
+    private:
 	TagHashtable()
 	{
 	}
-      public:
-	  inline static TagHashtable &TagHT()
+    public:
+	inline static TagHashtable &TagHT()
 	{
 	    if (g_pHashTable)
 	    {
@@ -307,14 +307,14 @@ namespace SXP
     // IOutStream to an stdio file.
     class CFileOutStream : public IOutStreamT < CFileOutStream >
     {
-      public:
+    public:
 	FILE * m_fp;
-      private:
+    private:
 	int m_nIndent;
 
 	// ugly...
-      public:
-	  inline FILE * FP()
+    public:
+	inline FILE * FP()
 	{
 	    return m_fp;
 	}
@@ -382,12 +382,14 @@ namespace SXP
 	char *buffer;
 
 	void ExpandBuf();
-      public:
-	  virtual void Print(const char *format, ...);
+
+    public:
+	virtual void Print(const char *format, ...);
 	virtual void PrintV(const char *format, va_list argptr);
 	virtual void Indent();
-	  MOutStream();
-	  virtual ~ MOutStream();
+
+	MOutStream();
+	virtual ~ MOutStream();
 	inline size_t BufSize()
 	{
 	    return buf_cnt;
@@ -413,11 +415,11 @@ namespace SXP
 	dict m_Attribs;
 	unsigned long m_dwTagHash;
 
-      public:
-	  CElement()
+    public:
+	CElement()
 	{
 	}
-	 ~CElement()
+	~CElement()
 	{
 	    m_strData.erase();
 	}
@@ -515,11 +517,11 @@ namespace SXP
 	int m_nErrorLine, m_nErrorCol;	// position of error as reported by expat
 	mstring m_strError;
 
-      public:
+    public:
 	// The parser begins feeding element events into a "root" object -
 	// typically an object factory of sorts
-	  CParser(IPersistObj * pRoot);
-	  virtual ~ CParser()
+	CParser(IPersistObj * pRoot);
+	virtual ~ CParser()
 	{
 	    DoShutdown();
 	}
@@ -573,7 +575,7 @@ namespace SXP
 
 	void DoShutdown();
 
-      private:
+    private:
 	// opening element tag encountered; push on element stack
 	// and send to current handler
 	inline void StartElement(const XML_Char * name, const char **atts)

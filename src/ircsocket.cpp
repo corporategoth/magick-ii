@@ -36,11 +36,13 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-const char *Heartbeat_Handler::names[] = { "invalid", "worker", "main",
-    "IRC server", "events", "DCC"
-};
+const char *Heartbeat_Handler::names[] =
+{
+"invalid", "worker", "main", "IRC server", "events", "DCC"};
 
-static const char *immediate_process[] = { "PROTOCTL", "CAPAB", NULL };
+static const char *immediate_process[] =
+{
+"PROTOCTL", "CAPAB", NULL};
 
 void *IrcSvcHandler::worker(void *in)
 {
@@ -103,7 +105,7 @@ void *IrcSvcHandler::worker(void *in)
 	    FLUSH();
 	}
     }
-    catch(E_Thread & e)
+    catch (E_Thread & e)
     {
 	e.what();
     }
@@ -657,7 +659,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	if (msg != NULL && !msg->OutstandingDependancies())
 	    enqueue(msg);
     }
-    catch(E_NickServ_Live & e)
+    catch (E_NickServ_Live & e)
     {
 	switch (e.where())
 	{
@@ -679,7 +681,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	    break;
 	}
     }
-    catch(E_ChanServ_Live & e)
+    catch (E_ChanServ_Live & e)
     {
 	switch (e.where())
 	{
@@ -701,7 +703,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	    break;
 	}
     }
-    catch(E_Server_List & e)
+    catch (E_Server_List & e)
     {
 	switch (e.where())
 	{
@@ -723,11 +725,11 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	    break;
 	}
     }
-    catch(exception & e)
+    catch (exception & e)
     {
 	LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
     }
-    catch(...)
+    catch (...)
     {
 	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
     }
@@ -1237,19 +1239,21 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	}
 	if (!Magick::instance().server.proto.Protoctl().empty())
 	    Magick::instance().server.raw(Magick::instance().server.proto.Protoctl());
-	if (Magick::instance().server.proto.TSora())
-	    Magick::instance().server.raw("PASS " + details.second.second + " :TS");
-	else
-	    Magick::instance().server.raw("PASS " + details.second.second);
-	mstring tmp;
 
-	if (Magick::instance().server.proto.Numeric())
-	    tmp.Format(Magick::instance().server.proto.Server().c_str(), Magick::instance().startup.Server_Name().c_str(), 1,
-		       details.second.third, Magick::instance().startup.Server_Desc().c_str());
-	else
-	    tmp.Format(Magick::instance().server.proto.Server().c_str(), Magick::instance().startup.Server_Name().c_str(), 1,
-		       Magick::instance().startup.Server_Desc().c_str());
+	mstring tmp = "PASS " + details.second.second;
+
+	if (Magick::instance().server.proto.TSora())
+	    tmp += " :TS";
 	Magick::instance().server.raw(tmp);
+
+	// 4 args - server name, hops, server desc and numeric (optional).
+
+	Magick::instance().server.
+	    raw(parseMessage
+		(Magick::instance().server.proto.Server(),
+		 mVarArray(Magick::instance().startup.Server_Name(), 1, Magick::instance().startup.Server_Desc(),
+			   Magick::instance().server.proto.Numeric.ServerLineNumeric(details.second.third))));
+
 	if (Magick::instance().server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
 	    Magick::instance().server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
@@ -1316,7 +1320,7 @@ int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
 	    }
 	}
-	catch(E_NickServ_Live & e)
+	catch (E_NickServ_Live & e)
 	{
 	    switch (e.where())
 	    {
@@ -1338,11 +1342,11 @@ int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 		break;
 	    }
 	}
-	catch(exception & e)
+	catch (exception & e)
 	{
 	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
 	}
-	catch(...)
+	catch (...)
 	{
 	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
 	}
@@ -1400,7 +1404,7 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
 	    }
 	}
-	catch(E_NickServ_Live & e)
+	catch (E_NickServ_Live & e)
 	{
 	    switch (e.where())
 	    {
@@ -1422,11 +1426,11 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 		break;
 	    }
 	}
-	catch(exception & e)
+	catch (exception & e)
 	{
 	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
 	}
-	catch(...)
+	catch (...)
 	{
 	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
 	}
@@ -1500,7 +1504,7 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	    }
 	}
     }
-    catch(E_NickServ_Live & e)
+    catch (E_NickServ_Live & e)
     {
 	switch (e.where())
 	{
@@ -1522,7 +1526,7 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	    break;
 	}
     }
-    catch(E_ChanServ_Stored & e)
+    catch (E_ChanServ_Stored & e)
     {
 	switch (e.where())
 	{
@@ -1544,7 +1548,7 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	    break;
 	}
     }
-    catch(E_ChanServ_Live & e)
+    catch (E_ChanServ_Live & e)
     {
 	switch (e.where())
 	{
@@ -1566,11 +1570,11 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	    break;
 	}
     }
-    catch(exception & e)
+    catch (exception & e)
     {
 	LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
     }
-    catch(...)
+    catch (...)
     {
 	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
     }
@@ -1763,7 +1767,7 @@ int EventTask::svc(void)
 		MCE(last_ping);
 	    }
 	}
-	catch(E_NickServ_Stored & e)
+	catch (E_NickServ_Stored & e)
 	{
 	    switch (e.where())
 	    {
@@ -1785,7 +1789,7 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_NickServ_Live & e)
+	catch (E_NickServ_Live & e)
 	{
 	    switch (e.where())
 	    {
@@ -1807,7 +1811,7 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_NickServ_Recovered & e)
+	catch (E_NickServ_Recovered & e)
 	{
 	    switch (e.where())
 	    {
@@ -1829,7 +1833,7 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_ChanServ_Stored & e)
+	catch (E_ChanServ_Stored & e)
 	{
 	    switch (e.where())
 	    {
@@ -1851,7 +1855,7 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_ChanServ_Live & e)
+	catch (E_ChanServ_Live & e)
 	{
 	    switch (e.where())
 	    {
@@ -1873,7 +1877,7 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_CommServ_List & e)
+	catch (E_CommServ_List & e)
 	{
 	    switch (e.where())
 	    {
@@ -1895,7 +1899,7 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_Server_List & e)
+	catch (E_Server_List & e)
 	{
 	    switch (e.where())
 	    {
@@ -1917,15 +1921,15 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(E_MemoServ_Nick & e)
+	catch (E_MemoServ_Nick & e)
 	{
 	    e.what();
 	}
-	catch(E_MemoServ_Channel & e)
+	catch (E_MemoServ_Channel & e)
 	{
 	    e.what();
 	}
-	catch(E_DccMap_Xfers & e)
+	catch (E_DccMap_Xfers & e)
 	{
 	    switch (e.where())
 	    {
@@ -1947,11 +1951,11 @@ int EventTask::svc(void)
 		break;
 	    }
 	}
-	catch(exception & e)
+	catch (exception & e)
 	{
 	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
 	}
-	catch(...)
+	catch (...)
 	{
 	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
 	}
@@ -2057,7 +2061,7 @@ void EventTask::do_expire(mDateTime & synctime)
 	    }
 	}
     }
-    catch(E_NickServ_Stored & e)
+    catch (E_NickServ_Stored & e)
     {
 	switch (e.where())
 	{
@@ -2105,7 +2109,7 @@ void EventTask::do_expire(mDateTime & synctime)
 	    }
 	}
     }
-    catch(E_ChanServ_Stored & e)
+    catch (E_ChanServ_Stored & e)
     {
 	switch (e.where())
 	{
@@ -2173,7 +2177,7 @@ void EventTask::do_expire(mDateTime & synctime)
 	    }
 	}
     }
-    catch(E_MemoServ_Channel & e)
+    catch (E_MemoServ_Channel & e)
     {
 	e.what();
     }

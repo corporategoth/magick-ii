@@ -317,8 +317,7 @@ Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni)
     else if (ni->flags & NI_SLAVE && ni->last_usermask != NULL)
     {
 	Nick_Stored_t tmp(mstring(ni->last_usermask));
-	Nick_Stored_t *out = new Nick_Stored_t(mstring(ni->nick),
-					       mDateTime(ni->time_registered), tmp);
+	Nick_Stored_t *out = new Nick_Stored_t(mstring(ni->nick), mDateTime(ni->time_registered), tmp);
 
 	if (out == NULL)
 	    return NULL;
@@ -962,9 +961,8 @@ Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci)
 	    return NULL;
 	}
 
-	Chan_Stored_t *out = new Chan_Stored_t(mstring(ci->name),
-					       mstring(ci->founder), mstring(ci->founderpass),
-					       mstring(ci->desc));
+	Chan_Stored_t *out =
+	    new Chan_Stored_t(mstring(ci->name), mstring(ci->founder), mstring(ci->founderpass), mstring(ci->desc));
 
 	if (out == NULL)
 	    return NULL;

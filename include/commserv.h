@@ -177,6 +177,7 @@ public:
 class CommServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
+
 private:
     unsigned int max_logon;
 
@@ -243,7 +244,8 @@ public:
 	unsigned long i_Set;
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
-   public:
+
+    public:
 	stats_t()
 	{
 	    clear();
@@ -470,17 +472,17 @@ public:
     }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddList(Committee_t * in) throw (E_CommServ_List);
-    void AddList(const Committee_t & in) throw (E_CommServ_List)
+    void AddList(Committee_t * in) throw(E_CommServ_List);
+    void AddList(const Committee_t & in) throw(E_CommServ_List)
     {
 	AddList(new Committee_t(in));
     }
-    void AddList(const map_entry < Committee_t > & in) throw (E_CommServ_List)
+    void AddList(const map_entry < Committee_t > & in) throw(E_CommServ_List)
     {
 	AddList(in.entry());
     }
-    map_entry < Committee_t > GetList(const mstring & in) const throw (E_CommServ_List);
-    void RemList(const mstring & in) throw (E_CommServ_List);
+    map_entry < Committee_t > GetList(const mstring & in) const throw(E_CommServ_List);
+    void RemList(const mstring & in) throw(E_CommServ_List);
 #else
     void AddList(Committee_t * in);
     void AddList(const Committee_t & in)

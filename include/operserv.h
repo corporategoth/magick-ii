@@ -42,6 +42,7 @@ class OperServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend class Nick_Live_t;
+
 private:
     mstring services_admin;
     bool secure;
@@ -99,11 +100,13 @@ private:
 
     void AddCommands();
     void RemCommands();
+
     // Returns TRUE if KILL
     bool AddHost(const mstring & host);
     void RemHost(const mstring & host);
 
     static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny, tag_Ignore;
+
 public:
     OperServ();
     ~OperServ()
@@ -132,7 +135,8 @@ public:
 	unsigned long i_Akill;
 	unsigned long i_OperDeny;
 	unsigned long i_Ignore;
-   public:
+
+    public:
 	stats_t()
 	{
 	    clear();

@@ -41,14 +41,16 @@ RCSID(servmsg_h, "@(#) $Id$");
 class ServMsg : public mBase
 {
     friend class Magick;
+
 private:
     bool showsync;
 
     void AddCommands();
     void RemCommands();
+
 public:
-      ServMsg();
-     ~ServMsg()
+    ServMsg();
+    ~ServMsg()
     {
     }
     class stats_t
@@ -66,8 +68,9 @@ public:
 	unsigned long i_file_Priv;
 	unsigned long i_file_Rename;
 	unsigned long i_file_Cancel;
-   public:
-	  stats_t()
+
+    public:
+	stats_t()
 	{
 	    clear();
 	}

@@ -71,8 +71,8 @@ class Logger : public ACE_Log_Msg_Callback
     mFile fout;
 
 public:
-      Logger();
-     ~Logger();
+    Logger();
+    ~Logger();
 
     void log(ACE_Log_Record & log_record);
     void close();
@@ -99,6 +99,7 @@ class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
     friend class Disconnect_Handler;
+
 private:
     enum
     { Unknown = 0, Constructed, Initialized, Started,
@@ -119,9 +120,11 @@ private:
     map < mstring, mstring > LogMessages;
     int doparamparse();
     SignalHandler *signalhandler;
+
     map < pair < mstring, mstring >, vector < mstring > > handlermap;
 
     Logger *logger;
+
     set < ACE_Log_Msg * > LogInstances;
     bool i_verbose;
 
@@ -144,6 +147,7 @@ private:
     bool i_saving;
 
     static SXP::Tag tag_Magick;
+
 public:
     EventTask * events;
     DccMap *dcc;
@@ -165,14 +169,15 @@ public:
     Server server;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static void register_instance(Magick * ins, ACE_thread_t id = ACE_Thread::self()) throw (E_Magick);
+    static void register_instance(Magick * ins, ACE_thread_t id = ACE_Thread::self()) throw(E_Magick);
 #else
     static void register_instance(Magick * ins, ACE_thread_t id = ACE_Thread::self());
 #endif
     static void deregister_instance(ACE_thread_t id = ACE_Thread::self());
     static bool instance_exists(ACE_thread_t id = ACE_Thread::self());
+
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static Magick &instance(ACE_thread_t id = ACE_Thread::self()) throw (E_Magick);
+    static Magick &instance(ACE_thread_t id = ACE_Thread::self()) throw(E_Magick);
 #else
     static Magick &instance(ACE_thread_t id = ACE_Thread::self());
 #endif
@@ -192,6 +197,7 @@ public:
 
 	// map<server name, pair<priority, triplet<port, password, numeric> > >
 	map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > > servers;
+
 	// map<server name, vector<allowed uplinks> >
 	map < mstring, vector < mstring > > allows;
 	mstring server_name;
@@ -204,7 +210,8 @@ public:
 	mstring bind;
 	unsigned int level;
 	unsigned long lagtime;
-   public:
+
+    public:
 	bool IsServer(const mstring & server) const;
 	pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Server(const mstring & server) const;
 	vector < mstring > PriorityList(const unsigned int pri) const;
@@ -291,7 +298,8 @@ public:
 	unsigned long min_speed;
 	unsigned long max_speed;
 	unsigned long sampletime;
-   public:
+
+    public:
 	mstring MakePath(const mstring & in) const
 	{
 #ifdef WIN32
@@ -422,7 +430,8 @@ public:
 	unsigned long heartbeat_time;
 	unsigned long msg_seen_time;
 	unsigned long msg_check_time;
-   public:
+
+    public:
 	unsigned long Server_Relink() const
 	{
 	    return server_relink;
@@ -518,7 +527,7 @@ public:
     // Current STATES, and switching between them.
     Magick(int inargc, char **inargv);
 
-    virtual ~Magick();
+    virtual ~ Magick();
 
     // Init and Finish are only EVER called once
     // Start should be called after Init or Stop
@@ -638,9 +647,10 @@ public:
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator    mVariant() const
+    operator      mVariant() const
     {
 	mVariant locvar("Magick");
+
 	locvar.truevaluetype = "Magick";
 	return locvar;
     }

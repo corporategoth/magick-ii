@@ -58,7 +58,7 @@ static Magick GLOB_Magick;
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Magick::register_instance(Magick * ins, ACE_thread_t id) throw(E_Magick)
+void Magick::register_instance(Magick * ins, ACE_thread_t id) throw (E_Magick)
 #else
 void Magick::register_instance(Magick * ins, ACE_thread_t id)
 #endif
@@ -86,7 +86,7 @@ bool Magick::instance_exists(ACE_thread_t id)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-Magick &Magick::instance(ACE_thread_t id) throw(E_Magick)
+Magick &Magick::instance(ACE_thread_t id) throw (E_Magick)
 #else
 Magick &Magick::instance(ACE_thread_t id)
 #endif
@@ -757,7 +757,7 @@ vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 	language = nickserv.GetStored(nick)->Language().UpperCase();
     }
 
-  StartGetLang:
+StartGetLang:
     if (Help.find(language) == Help.end() && mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".hlp"))
     {
 	WLOCK(("Help", language));
@@ -3752,7 +3752,7 @@ void Magick::save_databases()
 	if (ls != NULL)
 	    retval = ls->Consume();
 
-      CleanUp:
+    CleanUp:
 	if (fs != NULL)
 	    delete fs;
 
@@ -3866,7 +3866,7 @@ void Magick::load_databases()
 	    }
 	}
 
-      CleanUp:
+    CleanUp:
 	if (xs != NULL)
 	    delete xs;
 

@@ -714,7 +714,7 @@ CommServ::CommServ()
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void CommServ::AddList(Committee_t * in) throw(E_CommServ_List)
+void CommServ::AddList(Committee_t * in) throw (E_CommServ_List)
 #else
 void CommServ::AddList(Committee_t * in)
 #endif
@@ -724,7 +724,7 @@ void CommServ::AddList(Committee_t * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_Invalid));
+	throw (E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Comm", "List", "Add", "Invalid"));
 	return;
@@ -734,7 +734,7 @@ void CommServ::AddList(Committee_t * in)
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_Blank));
+	throw (E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Comm", "List", "Add", "Blank"));
 	return;
@@ -744,7 +744,7 @@ void CommServ::AddList(Committee_t * in)
     if (in->doDelete())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_NotFound));
+	throw (E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Comm", "List", "Add", "NotFound"));
 	LOG((LM_CRITICAL, "Exception - Comm:List:Add:NotFound"));
@@ -764,7 +764,7 @@ void CommServ::AddList(Committee_t * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry < Committee_t > CommServ::GetList(const mstring & in) const throw(E_CommServ_List)
+map_entry < Committee_t > CommServ::GetList(const mstring & in) const throw (E_CommServ_List)
 #else
 map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 #endif
@@ -776,7 +776,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
     if (iter == i_list.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_NotFound, in.c_str()));
+	throw (E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "NotFound", in));
 	NRET(Committee_t &, GLOB_Committee_t);
@@ -785,7 +785,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_Invalid, in.c_str()));
+	throw (E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_Invalid, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "Invalid", in));
 	NRET(Committee_t &, GLOB_Committee_t);
@@ -794,7 +794,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
     if (iter->second->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_Blank, in.c_str()));
+	throw (E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "Blank", in));
 	NRET(Committee_t &, GLOB_Committee_t);
@@ -805,7 +805,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void CommServ::RemList(const mstring & in) throw(E_CommServ_List)
+void CommServ::RemList(const mstring & in) throw (E_CommServ_List)
 #else
 void CommServ::RemList(const mstring & in)
 #endif
@@ -817,7 +817,7 @@ void CommServ::RemList(const mstring & in)
     if (iter == i_list.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_CommServ_List(E_CommServ_List::W_Rem, E_CommServ_List::T_NotFound, in.c_str()));
+	throw (E_CommServ_List(E_CommServ_List::W_Rem, E_CommServ_List::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Rem", "NotFound", in));
 	return;

@@ -737,7 +737,7 @@ void Nick_Live_t::InFlight_t::DumpE() const
     ME(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
 }
 
-Nick_Live_t::Nick_Live_t() : last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false),
+Nick_Live_t::Nick_Live_t() : i_Numeric(0), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false),
 services(true)
 {
     NFT("Nick_Live_t::Nick_Live_t");
@@ -746,10 +746,10 @@ services(true)
 }
 
 Nick_Live_t::Nick_Live_t(const mstring & name, const mDateTime & signon, const mstring & server, const mstring & username,
-			 const mstring & hostname, const mstring & realname) : i_Name(name), i_Signon_Time(signon),
-i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname),
-i_user(username), i_host(hostname), i_alt_host(hostname), i_server(server.LowerCase()), last_msg_entries(0),
-flood_triggered_times(0), failed_passwds(0), identified(false), services(false), InFlight(name)
+			 const mstring & hostname, const mstring & realname) : i_Name(name), i_Numeric(0),
+i_Signon_Time(signon), i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::CurrentDateTime()),
+i_realname(realname), i_user(username), i_host(hostname), i_alt_host(hostname), i_server(server.LowerCase()),
+last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false), services(false), InFlight(name)
 {
     FT("Nick_Live_t::Nick_Live_t", (name, signon, server, username, hostname, realname));
 
@@ -796,7 +796,7 @@ flood_triggered_times(0), failed_passwds(0), identified(false), services(false),
 }
 
 Nick_Live_t::Nick_Live_t(const mstring & name, const mstring & username, const mstring & hostname,
-			 const mstring & realname) : i_Name(name), i_Signon_Time(mDateTime::CurrentDateTime()),
+			 const mstring & realname) : i_Name(name), i_Numeric(0), i_Signon_Time(mDateTime::CurrentDateTime()),
 i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname),
 i_user(username), i_host(hostname), i_alt_host(hostname), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0),
 identified(true), services(true), InFlight(name)
@@ -812,6 +812,7 @@ Nick_Live_t &Nick_Live_t::operator=(const Nick_Live_t & in)
     NFT("Nick_Live_t::operator=");
     i_Name = in.i_Name;
     ref_class::lockData(mVarArray("NickServ", "live", i_Name.LowerCase()));
+    i_Numeric = in.i_Numeric;
     i_Signon_Time = in.i_Signon_Time;
     i_My_Signon_Time = in.i_My_Signon_Time;
     i_Last_Action = in.i_Last_Action;
@@ -820,6 +821,8 @@ Nick_Live_t &Nick_Live_t::operator=(const Nick_Live_t & in)
     i_host = in.i_host;
     i_alt_host = in.i_alt_host;
     i_server = in.i_server;
+    i_squit = in.i_squit;
+    i_away = in.i_away;
     modes = in.modes;
     set < mstring >::const_iterator i;
     joined_channels.clear();
@@ -1433,6 +1436,22 @@ bool Nick_Live_t::HasMode(const mstring & in) const
     FT("Nick_Live_t::HasMode", (in));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes.Contains(in));
+}
+
+void Nick_Live_t::Numeric(const unsigned long in)
+{
+    FT("Nick_Live_t::Numeric", (in));
+    WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Numeric"));
+    MCB(i_Numeric);
+    i_Numeric = in;
+    MCE(i_Numeric);
+}
+
+unsigned long Nick_Live_t::Numeric() const
+{
+    NFT("Nick_Live_t::Numeric");
+    RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Numeric"));
+    RET(i_Numeric);
 }
 
 void Nick_Live_t::Away(const mstring & in)
@@ -2073,6 +2092,7 @@ size_t Nick_Live_t::Usage() const
     // ensure the values are NOT going to change.
     WLOCK(("NickServ", "live", i_Name.LowerCase()));
     retval += i_Name.capacity();
+    retval += sizeof(i_Numeric);
     retval += InFlight.Usage();
     retval += sizeof(i_Signon_Time.Internal());
     retval += sizeof(i_My_Signon_Time.Internal());
@@ -2120,24 +2140,24 @@ void Nick_Live_t::DumpB() const
 {
     // 16 Elements
     MB(0,
-       (i_Name, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname, i_user, i_host, i_alt_host, i_server, i_squit,
-	i_away, modes, joined_channels.size(), last_msg_times.size(), last_msg_entries, flood_triggered_times));
-    // 8 Elements
+       (i_Name, i_Numeric, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname, i_user, i_host, i_alt_host, i_server,
+	i_squit, i_away, modes, joined_channels.size(), last_msg_times.size(), last_msg_entries));
+    // 9 Elements
     MB(16,
-       (failed_passwds, chans_founder_identd.size(), try_chan_ident.size(), identified, services, last_nick_reg, last_chan_reg,
-	last_memo));
+       (flood_triggered_times, failed_passwds, chans_founder_identd.size(), try_chan_ident.size(), identified, services,
+	last_nick_reg, last_chan_reg, last_memo));
 }
 
 void Nick_Live_t::DumpE() const
 {
     // 16 Elements
     ME(0,
-       (i_Name, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname, i_user, i_host, i_alt_host, i_server, i_squit,
-	i_away, modes, joined_channels.size(), last_msg_times.size(), last_msg_entries, flood_triggered_times));
-    // 8 Elements
+       (i_Name, i_Numeric, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname, i_user, i_host, i_alt_host, i_server,
+	i_squit, i_away, modes, joined_channels.size(), last_msg_times.size(), last_msg_entries));
+    // 9 Elements
     ME(16,
-       (failed_passwds, chans_founder_identd.size(), try_chan_ident.size(), identified, services, last_nick_reg, last_chan_reg,
-	last_memo));
+       (flood_triggered_times, failed_passwds, chans_founder_identd.size(), try_chan_ident.size(), identified, services,
+	last_nick_reg, last_chan_reg, last_memo));
 }
 
 // =======================================================================
@@ -4916,7 +4936,7 @@ void NickServ::RemCommands()
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void NickServ::AddStored(Nick_Stored_t * in) throw(E_NickServ_Stored)
+void NickServ::AddStored(Nick_Stored_t * in) throw (E_NickServ_Stored)
 #else
 void NickServ::AddStored(Nick_Stored_t * in)
 #endif
@@ -4926,7 +4946,7 @@ void NickServ::AddStored(Nick_Stored_t * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_Invalid));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Stored", "Add", "Invalid"));
 	return;
@@ -4936,7 +4956,7 @@ void NickServ::AddStored(Nick_Stored_t * in)
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_Blank));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Stored", "Add", "Blank"));
 	return;
@@ -4946,7 +4966,7 @@ void NickServ::AddStored(Nick_Stored_t * in)
     if (in->doDelete())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_NotFound));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Add, E_NickServ_Stored::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Stored", "Add", "NotFound"));
 	return;
@@ -4965,7 +4985,7 @@ void NickServ::AddStored(Nick_Stored_t * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const throw(E_NickServ_Stored)
+map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const throw (E_NickServ_Stored)
 #else
 map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
 #endif
@@ -4977,7 +4997,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_NotFound, in.c_str()));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "NotFound", in));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
@@ -4986,7 +5006,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Invalid, in.c_str()));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Invalid, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "Invalid", in));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
@@ -4995,7 +5015,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
     if (iter->second->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Blank, in.c_str()));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "Blank", in));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
@@ -5006,7 +5026,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void NickServ::RemStored(const mstring & in) throw(E_NickServ_Stored)
+void NickServ::RemStored(const mstring & in) throw (E_NickServ_Stored)
 #else
 void NickServ::RemStored(const mstring & in)
 #endif
@@ -5018,7 +5038,7 @@ void NickServ::RemStored(const mstring & in)
     if (iter == stored.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Stored(E_NickServ_Stored::W_Rem, E_NickServ_Stored::T_NotFound, in.c_str()));
+	throw (E_NickServ_Stored(E_NickServ_Stored::W_Rem, E_NickServ_Stored::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Rem", "NotFound", in));
 	return;
@@ -5044,7 +5064,7 @@ bool NickServ::IsStored(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void NickServ::AddLive(Nick_Live_t * in) throw(E_NickServ_Live)
+void NickServ::AddLive(Nick_Live_t * in) throw (E_NickServ_Live)
 #else
 void NickServ::AddLive(Nick_Live_t * in)
 #endif
@@ -5054,7 +5074,7 @@ void NickServ::AddLive(Nick_Live_t * in)
     if (in == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_Invalid));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_Invalid));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Live", "Add", "Invalid"));
 	return;
@@ -5064,7 +5084,7 @@ void NickServ::AddLive(Nick_Live_t * in)
     if (in->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_Blank));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Live", "Add", "Blank"));
 	return;
@@ -5074,7 +5094,7 @@ void NickServ::AddLive(Nick_Live_t * in)
     if (in->doDelete())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_NotFound));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Add, E_NickServ_Live::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Live", "Add", "NotFound"));
 	return;
@@ -5093,7 +5113,7 @@ void NickServ::AddLive(Nick_Live_t * in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const throw(E_NickServ_Live)
+map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const throw (E_NickServ_Live)
 #else
 map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
 #endif
@@ -5105,7 +5125,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_NotFound, in.c_str()));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "NotFound", in));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
@@ -5114,7 +5134,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
     if (iter->second == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Invalid, in.c_str()));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Invalid, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "Invalid", in));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
@@ -5123,7 +5143,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
     if (iter->second->Name().empty())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Blank, in.c_str()));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "Blank", in));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
@@ -5134,7 +5154,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void NickServ::RemLive(const mstring & in) throw(E_NickServ_Live)
+void NickServ::RemLive(const mstring & in) throw (E_NickServ_Live)
 #else
 void NickServ::RemLive(const mstring & in)
 #endif
@@ -5146,7 +5166,7 @@ void NickServ::RemLive(const mstring & in)
     if (iter == live.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Live(E_NickServ_Live::W_Rem, E_NickServ_Live::T_NotFound, in.c_str()));
+	throw (E_NickServ_Live(E_NickServ_Live::W_Rem, E_NickServ_Live::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Rem", "NotFound", in));
 	return;
@@ -5182,7 +5202,7 @@ bool NickServ::IsLiveAll(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void NickServ::AddRecovered(const mstring & name, const mDateTime & in) throw(E_NickServ_Recovered)
+void NickServ::AddRecovered(const mstring & name, const mDateTime & in) throw (E_NickServ_Recovered)
 #else
 void NickServ::AddRecovered(const mstring & name, const mDateTime & in)
 #endif
@@ -5192,7 +5212,7 @@ void NickServ::AddRecovered(const mstring & name, const mDateTime & in)
     if (name.empty() || in == mDateTime(0.0))
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Add, E_NickServ_Recovered::T_Blank));
+	throw (E_NickServ_Recovered(E_NickServ_Recovered::W_Add, E_NickServ_Recovered::T_Blank));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Recovered", "Add", "Blank"));
 	return;
@@ -5204,7 +5224,7 @@ void NickServ::AddRecovered(const mstring & name, const mDateTime & in)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-const mDateTime &NickServ::GetRecovered(const mstring & in) const throw(E_NickServ_Recovered)
+const mDateTime &NickServ::GetRecovered(const mstring & in) const throw (E_NickServ_Recovered)
 #else
 const mDateTime &NickServ::GetRecovered(const mstring & in) const
 #endif
@@ -5216,7 +5236,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const
     if (iter == recovered.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_NotFound, in.c_str()));
+	throw (E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_NotFound, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Get", "NotFound", in));
 	RET(mDateTime &, GLOB_mDateTime);
@@ -5225,7 +5245,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const
     if (iter->second == mDateTime(0.0))
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_Blank, in.c_str()));
+	throw (E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_Blank, in.c_str()));
 #else
 	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Get", "Blank", in));
 	RET(mDateTime &, GLOB_mDateTime);
@@ -5236,7 +5256,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void NickServ::RemRecovered(const mstring & in) throw(E_NickServ_Recovered)
+void NickServ::RemRecovered(const mstring & in) throw (E_NickServ_Recovered)
 #else
 void NickServ::RemRecovered(const mstring & in)
 #endif
@@ -5248,7 +5268,7 @@ void NickServ::RemRecovered(const mstring & in)
     if (iter == recovered.end())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_NickServ_Recovered(E_NickServ_Recovered::W_Rem, E_NickServ_Recovered::T_NotFound, in.c_str()));
+	throw (E_NickServ_Recovered(E_NickServ_Recovered::W_Rem, E_NickServ_Recovered::T_NotFound, in.c_str()));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Rem", "NotFound", in));
 	return;

@@ -67,10 +67,11 @@ class mVariant
     // Magick ONLY types ...
     mstring StringValue;
     mDateTime DateTimeValue;
+
 //    } value;
 
 public:
-      mVariant() : valuetype(EMPTY)
+    mVariant() : valuetype(EMPTY)
     {
     }
     mVariant(const mVariant & in)
