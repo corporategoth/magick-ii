@@ -43,6 +43,7 @@ static Committee_t GLOB_Committee_t;
 
 void Committee_t::defaults()
 {
+    BTCB();
     NFT("Committee_t::defaults");
 
     ref_class::lockData(mVarArray("CommServ", "list", i_Name.UpperCase()));
@@ -52,42 +53,52 @@ void Committee_t::defaults()
     lock.OpenMemos = false;
     setting.Secure = Magick::instance().commserv.DEF_Secure();
     lock.Secure = false;
+    ETCB();
 }
 
 Committee_t::Committee_t() : i_RegTime(mDateTime::CurrentDateTime())
 {
+    BTCB();
     NFT("Committee_t::Committee_t");
     defaults();
     DumpE();
+    ETCB();
 }
 
 Committee_t::Committee_t(const mstring & name, const mstring & head, const mstring & description) : i_Name(name.UpperCase()),
 i_RegTime(mDateTime::CurrentDateTime()), i_Head(head.LowerCase()), i_Description(description)
 {
+    BTCB();
     FT("Committee_t::Committee_t", (name, head, description));
     defaults();
     DumpE();
+    ETCB();
 }
 
 Committee_t::Committee_t(const mstring & name, const Committee_t & head,
 			 const mstring & description) : i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
 i_HeadCom(head.Name()), i_Description(description)
 {
+    BTCB();
     FT("Committee_t::Committee_t", (name, "(Committee_t *) head", description));
     defaults();
     DumpE();
+    ETCB();
 }
 
 Committee_t::Committee_t(const mstring & name, const mstring & description) : i_Name(name.UpperCase()),
 i_RegTime(mDateTime::CurrentDateTime()), i_Description(description)
 {
+    BTCB();
     FT("Committee_t::Committee_t", (name, description));
     defaults();
     DumpE();
+    ETCB();
 }
 
 Committee_t &Committee_t::operator=(const Committee_t & in)
 {
+    BTCB();
     FT("Committee_t::operator=", ("(const Committee_t &) in"));
 
     i_Name = in.i_Name;
@@ -112,17 +123,21 @@ Committee_t &Committee_t::operator=(const Committee_t & in)
     for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
 	i_UserDef.insert(*j);
     NRET(Committee_t &, *this);
+    ETCB();
 }
 
 mDateTime Committee_t::RegTime() const
 {
+    BTCB();
     NFT("Committee_t::RegTime");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_RegTime"));
     RET(i_RegTime);
+    ETCB();
 }
 
 unsigned long Committee_t::Drop()
 {
+    BTCB();
     unsigned long dropped = 1;
 
     {
@@ -157,17 +172,21 @@ unsigned long Committee_t::Drop()
 	}
     }
     return dropped;
+    ETCB();
 }
 
 mstring Committee_t::HeadCom() const
 {
+    BTCB();
     NFT("Committee_t::HeadCom");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     RET(i_HeadCom);
+    ETCB();
 }
 
 void Committee_t::HeadCom(const mstring & newhead)
 {
+    BTCB();
     FT("Committee_t::HeadCom", (newhead));
 
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
@@ -183,17 +202,21 @@ void Committee_t::HeadCom(const mstring & newhead)
     }
     i_HeadCom = newhead.LowerCase();
     MCE(i_HeadCom);
+    ETCB();
 }
 
 mstring Committee_t::Head() const
 {
+    BTCB();
     NFT("Committee_t::Head");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     RET(i_Head);
+    ETCB();
 }
 
 void Committee_t::Head(const mstring & newhead)
 {
+    BTCB();
     FT("Committee_t::Head", (newhead));
 
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
@@ -209,10 +232,12 @@ void Committee_t::Head(const mstring & newhead)
     }
     i_Head = newhead.LowerCase();
     MCE(i_Head);
+    ETCB();
 }
 
 bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDateTime & modtime)
 {
+    BTCB();
     FT("Committee_t::insert", (entry, nick, modtime));
 
     entlist_ui iter;
@@ -239,10 +264,12 @@ bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDat
     {
 	RET(false);
     }
+    ETCB();
 }
 
 bool Committee_t::erase()
 {
+    BTCB();
     NFT("Committee_t::erase");
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
@@ -258,10 +285,12 @@ bool Committee_t::erase()
     {
 	RET(false);
     }
+    ETCB();
 }
 
 bool Committee_t::find(const mstring & entry)
 {
+    BTCB();
     FT("Committee_t::find", (entry));
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
@@ -285,10 +314,12 @@ bool Committee_t::find(const mstring & entry)
 	member = i_Members.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Committee_t::IsIn(const mstring & nick) const
 {
+    BTCB();
     FT("Committee_t::IsIn", (nick));
 
     if (i_Name == Magick::instance().commserv.ALL_Name() && Magick::instance().nickserv.IsLive(nick))
@@ -369,10 +400,12 @@ bool Committee_t::IsIn(const mstring & nick) const
     }
 
     RET(false);
+    ETCB();
 }
 
 bool Committee_t::IsOn(const mstring & nick) const
 {
+    BTCB();
     FT("Committee_t::IsOn", (nick));
 
     // If we aint online, we aint in nothing.
@@ -409,10 +442,12 @@ bool Committee_t::IsOn(const mstring & nick) const
 	}
     }
     RET(false);
+    ETCB();
 }
 
 bool Committee_t::IsHead(const mstring & nick) const
 {
+    BTCB();
     FT("Committee_t::IsHead", (nick));
 
     if_RLOCK (("CommServ", "list", i_Name.UpperCase(), "i_Head"), !i_Head.empty() && i_Head.IsSameAs(nick, true))
@@ -437,58 +472,72 @@ bool Committee_t::IsHead(const mstring & nick) const
 	}
     }
     RET(false);
+    ETCB();
 }
 
 void Committee_t::Description(const mstring & in)
 {
+    BTCB();
     FT("Committee_t::Description", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
     MCB(i_Description);
     i_Description = in;
     MCE(i_Description);
+    ETCB();
 }
 
 mstring Committee_t::Description() const
 {
+    BTCB();
     NFT("Committee_t::Description");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
     RET(i_Description);
+    ETCB();
 }
 
 void Committee_t::Email(const mstring & in)
 {
+    BTCB();
     FT("Committee_t::Email", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
     MCB(i_Email);
     i_Email = in;
     MCE(i_Email);
+    ETCB();
 }
 
 mstring Committee_t::Email() const
 {
+    BTCB();
     NFT("Committee_t::Email");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
     RET(i_Email);
+    ETCB();
 }
 
 void Committee_t::URL(const mstring & in)
 {
+    BTCB();
     FT("Committee_t::URL", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
     MCB(i_URL);
     i_URL = in;
     MCE(i_URL);
+    ETCB();
 }
 
 mstring Committee_t::URL() const
 {
+    BTCB();
     NFT("Committee_t::URL");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
     RET(i_URL);
+    ETCB();
 }
 
 void Committee_t::Private(const bool in)
 {
+    BTCB();
     FT("Committee_t::Private", (in));
     if (!L_Private())
     {
@@ -497,10 +546,12 @@ void Committee_t::Private(const bool in)
 	setting.Private = in;
 	MCE(setting.Private);
     }
+    ETCB();
 }
 
 bool Committee_t::Private() const
 {
+    BTCB();
     NFT("Committee_t::Private");
     if (!Magick::instance().commserv.LCK_Private())
     {
@@ -508,10 +559,12 @@ bool Committee_t::Private() const
 	RET(setting.Private);
     }
     RET(Magick::instance().commserv.DEF_Private());
+    ETCB();
 }
 
 void Committee_t::L_Private(const bool in)
 {
+    BTCB();
     FT("Committee_t::L_Private", (in));
     if (!Magick::instance().commserv.LCK_Private())
     {
@@ -520,10 +573,12 @@ void Committee_t::L_Private(const bool in)
 	lock.Private = in;
 	MCE(lock.Private);
     }
+    ETCB();
 }
 
 bool Committee_t::L_Private() const
 {
+    BTCB();
     NFT("Committee_t::L_Private");
     if (!Magick::instance().commserv.LCK_Private())
     {
@@ -531,10 +586,12 @@ bool Committee_t::L_Private() const
 	RET(lock.Private);
     }
     RET(true);
+    ETCB();
 }
 
 void Committee_t::Secure(const bool in)
 {
+    BTCB();
     FT("Committee_t::Secure", (in));
     if (!L_Secure())
     {
@@ -543,10 +600,12 @@ void Committee_t::Secure(const bool in)
 	setting.Secure = in;
 	MCE(setting.Secure);
     }
+    ETCB();
 }
 
 bool Committee_t::Secure() const
 {
+    BTCB();
     NFT("Committee_t::Secure");
     if (!Magick::instance().commserv.LCK_Secure())
     {
@@ -554,10 +613,12 @@ bool Committee_t::Secure() const
 	RET(setting.Secure);
     }
     RET(Magick::instance().commserv.DEF_Secure());
+    ETCB();
 }
 
 void Committee_t::L_Secure(const bool in)
 {
+    BTCB();
     FT("Committee_t::L_Secure", (in));
     if (!Magick::instance().commserv.LCK_Secure())
     {
@@ -566,10 +627,12 @@ void Committee_t::L_Secure(const bool in)
 	lock.Secure = in;
 	MCE(lock.Secure);
     }
+    ETCB();
 }
 
 bool Committee_t::L_Secure() const
 {
+    BTCB();
     NFT("Committee_t::L_Secure");
     if (!Magick::instance().commserv.LCK_Secure())
     {
@@ -577,10 +640,12 @@ bool Committee_t::L_Secure() const
 	RET(lock.Secure);
     }
     RET(true);
+    ETCB();
 }
 
 void Committee_t::OpenMemos(const bool in)
 {
+    BTCB();
     FT("Committee_t::OpenMemos", (in));
     if (!L_OpenMemos())
     {
@@ -589,10 +654,12 @@ void Committee_t::OpenMemos(const bool in)
 	setting.OpenMemos = in;
 	MCE(setting.OpenMemos);
     }
+    ETCB();
 }
 
 bool Committee_t::OpenMemos() const
 {
+    BTCB();
     NFT("Committee_t::OpenMemos");
     if (!Magick::instance().commserv.LCK_OpenMemos())
     {
@@ -600,10 +667,12 @@ bool Committee_t::OpenMemos() const
 	RET(setting.OpenMemos);
     }
     RET(Magick::instance().commserv.DEF_OpenMemos());
+    ETCB();
 }
 
 void Committee_t::L_OpenMemos(const bool in)
 {
+    BTCB();
     FT("Committee_t::L_OpenMemos", (in));
     if (!Magick::instance().commserv.LCK_OpenMemos())
     {
@@ -612,10 +681,12 @@ void Committee_t::L_OpenMemos(const bool in)
 	lock.OpenMemos = in;
 	MCE(lock.OpenMemos);
     }
+    ETCB();
 }
 
 bool Committee_t::L_OpenMemos() const
 {
+    BTCB();
     NFT("Committee_t::L_OpenMemos");
     if (!Magick::instance().commserv.LCK_OpenMemos())
     {
@@ -623,10 +694,12 @@ bool Committee_t::L_OpenMemos() const
 	RET(lock.OpenMemos);
     }
     RET(true);
+    ETCB();
 }
 
 bool Committee_t::MSG_insert(const mstring & entry, const mstring & nick, const mDateTime & addtime)
 {
+    BTCB();
     FT("Committee_t::MSG_insert", (entry, nick, addtime));
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
@@ -644,10 +717,12 @@ bool Committee_t::MSG_insert(const mstring & entry, const mstring & nick, const 
 	message = i_Messages.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool Committee_t::MSG_erase()
 {
+    BTCB();
     NFT("Committee_t::MSG_erase");
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
@@ -663,10 +738,12 @@ bool Committee_t::MSG_erase()
     {
 	RET(false);
     }
+    ETCB();
 }
 
 bool Committee_t::MSG_find(const int number)
 {
+    BTCB();
     FT("Committee_t::MSG_find", (number));
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
@@ -689,10 +766,12 @@ bool Committee_t::MSG_find(const int number)
 	message = i_Messages.end();
 	RET(false);
     }
+    ETCB();
 }
 
 size_t Committee_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
@@ -729,26 +808,33 @@ size_t Committee_t::Usage() const
     }
 
     return retval;
+    ETCB();
 }
 
 void Committee_t::DumpB() const
 {
+    BTCB();
     MB(0,
        (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email, i_URL, i_Members.size(), setting.Private, lock.Private,
 	setting.OpenMemos, lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
+    ETCB();
 }
 
 void Committee_t::DumpE() const
 {
+    BTCB();
     ME(0,
        (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email, i_URL, i_Members.size(), setting.Private, lock.Private,
 	setting.OpenMemos, lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
+    ETCB();
 }
 
 CommServ::CommServ()
 {
+    BTCB();
     NFT("CommServ::CommServ");
     messages = true;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -757,6 +843,7 @@ void CommServ::AddList(Committee_t * in) throw (E_CommServ_List)
 void CommServ::AddList(Committee_t * in)
 #endif
 {
+    BTCB();
     FT("CommServ::AddList", ("(Committee_t *) in"));
 
     if (in == NULL)
@@ -799,6 +886,7 @@ void CommServ::AddList(Committee_t * in)
     }
     WLOCK(("CommServ", "list"));
     i_list[in->Name().UpperCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -807,6 +895,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const throw (E_C
 map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("CommServ::GetList", (in));
 
     RLOCK(("CommServ", "list", in.UpperCase()));
@@ -840,6 +929,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
     }
 
     NRET(map_entry < Committee_t >, map_entry < Committee_t > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -848,6 +938,7 @@ void CommServ::RemList(const mstring & in) throw (E_CommServ_List)
 void CommServ::RemList(const mstring & in)
 #endif
 {
+    BTCB();
     FT("CommServ::RemList", (in));
 
     RLOCK(("CommServ", "list"));
@@ -869,19 +960,23 @@ void CommServ::RemList(const mstring & in)
     }
     WLOCK(("CommServ", "list"));
     i_list.erase(iter);
+    ETCB();
 }
 
 bool CommServ::IsList(const mstring & in) const
 {
+    BTCB();
     FT("CommServ::IsList", (in));
     RLOCK(("CommServ", "list"));
     bool retval = (i_list.find(in.UpperCase()) != i_list.end());
 
     RET(retval);
+    ETCB();
 }
 
 void CommServ::AddCommands()
 {
+    BTCB();
     NFT("CommServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -981,10 +1076,12 @@ void CommServ::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.SOP_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.SOP_Name(),
 						 do_1_3param);
+    ETCB();
 }
 
 void CommServ::RemCommands()
 {
+    BTCB();
     NFT("CommServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -1042,10 +1139,12 @@ void CommServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.SOP_Name());
+    ETCB();
 }
 
 void CommServ::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     mThread::ReAttach(tt_OtherServ);
     FT("CommServ::execute", (source, msgtype, params));
     //okay this is the main commserv command switcher
@@ -1069,10 +1168,12 @@ void CommServ::execute(mstring & source, const mstring & msgtype, const mstring 
 
     mThread::ReAttach(tt_mBase);
 
+    ETCB();
 }
 
 void CommServ::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_Help", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1097,10 +1198,12 @@ void CommServ::do_Help(const mstring & mynick, const mstring & source, const mst
 
     for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
+    ETCB();
 }
 
 void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_Add", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1165,10 +1268,12 @@ void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstr
     Magick::instance().commserv.stats.i_Add++;
     SEND(mynick, source, "COMMSERV/ADD", (committee, head));
     LOG(LM_NOTICE, "COMMSERV/ADD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee, head));
+    ETCB();
 }
 
 void CommServ::do_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_Del", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1202,10 +1307,12 @@ void CommServ::do_Del(const mstring & mynick, const mstring & source, const mstr
     SEND(mynick, source, "COMMSERV/DEL", (committee));
     LOG(LM_NOTICE, "COMMSERV/DEL",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee, dropped - 1));
+    ETCB();
 }
 
 void CommServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_List", (mynick, source, params));
 
     unsigned int listsize, i, count;
@@ -1269,10 +1376,12 @@ void CommServ::do_List(const mstring & mynick, const mstring & source, const mst
 	}
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
+    ETCB();
 }
 
 void CommServ::do_Memo(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_Memo", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1327,10 +1436,12 @@ void CommServ::do_Memo(const mstring & mynick, const mstring & source, const mst
     Magick::instance().commserv.stats.i_Memo++;
     SEND(mynick, source, "COMMSERV/MEMO", (committee));
     LOG(LM_INFO, "COMMSERV/MEMO", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
+    ETCB();
 }
 
 void CommServ::do_Memo2(const mstring & source, const mstring & committee, const mstring & text)
 {
+    BTCB();
     FT("CommServ::do_Memo2", (source, committee, text));
 
     if (!Magick::instance().commserv.IsList(committee))
@@ -1423,10 +1534,12 @@ void CommServ::do_Memo2(const mstring & source, const mstring & committee, const
 	    }
 	}
     }
+    ETCB();
 }
 
 void CommServ::do_Info(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_Info", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1538,10 +1651,12 @@ void CommServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	    SEND(mynick, source, "MISC/SYNC", (Magick::instance().events->SyncTime(source)));
     }
+    ETCB();
 }
 
 void CommServ::do_member_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_member_Add", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -1604,10 +1719,12 @@ void CommServ::do_member_Add(const mstring & mynick, const mstring & source, con
     SEND(mynick, source, "LIST/ADD2", (member, committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
     LOG(LM_DEBUG, "COMMSERV/MEMBER_ADD",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), member, committee));
+    ETCB();
 }
 
 void CommServ::do_member_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_member_Del", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -1667,10 +1784,12 @@ void CommServ::do_member_Del(const mstring & mynick, const mstring & source, con
     {
 	SEND(mynick, source, "LIST/NOTEXISTS2", (member, committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
     }
+    ETCB();
 }
 
 void CommServ::do_member_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_member_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -1719,11 +1838,13 @@ void CommServ::do_member_List(const mstring & mynick, const mstring & source, co
 
     SEND(mynick, source, "LIST/DISPLAY2", (committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
     CommServ::do_member_List2(mynick, source, committee, true, 1);
+    ETCB();
 }
 
 int CommServ::do_member_List2(const mstring & mynick, const mstring & source, const mstring & committee, const bool first,
 			      const int number)
 {
+    BTCB();
     FT("CommServ::do_member_List2", (mynick, source, committee, first, number));
 
     int nextnum = number;
@@ -1772,10 +1893,12 @@ int CommServ::do_member_List2(const mstring & mynick, const mstring & source, co
 					       comm->member->Last_Modifier())));
     }
     RET(nextnum - number);
+    ETCB();
 }
 
 void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_logon_Add", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -1814,10 +1937,12 @@ void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, cons
     SEND(mynick, source, "LIST/ADD2_NUMBER",
 	 (comm->MSG_size(), committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
     LOG(LM_INFO, "COMMSERV/LOGON_ADD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
+    ETCB();
 }
 
 void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_logon_Del", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -1872,10 +1997,12 @@ void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, cons
 	SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER",
 	     (num, committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
     }
+    ETCB();
 }
 
 void CommServ::do_logon_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_logon_List", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -1934,10 +2061,12 @@ void CommServ::do_logon_List(const mstring & mynick, const mstring & source, con
 				     mVarArray(ToHumanTime(comm->message->Last_Modify_Time().SecondsSince(), source),
 					       comm->message->Last_Modifier())));
     }
+    ETCB();
 }
 
 void CommServ::do_set_Head(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_Head", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2024,10 +2153,12 @@ void CommServ::do_set_Head(const mstring & mynick, const mstring & source, const
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_HEAD"), committee, newhead));
+    ETCB();
 }
 
 void CommServ::do_set_Description(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_Description", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2070,10 +2201,12 @@ void CommServ::do_set_Description(const mstring & mynick, const mstring & source
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_DESCRIPTION"), committee, desc));
+    ETCB();
 }
 
 void CommServ::do_set_Email(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_Email", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2141,10 +2274,12 @@ void CommServ::do_set_Email(const mstring & mynick, const mstring & source, cons
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("COMMSERV_INFO/SET_EMAIL"), committee, email));
     }
+    ETCB();
 }
 
 void CommServ::do_set_URL(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_URL", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2205,10 +2340,12 @@ void CommServ::do_set_URL(const mstring & mynick, const mstring & source, const 
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	     Magick::instance().getMessage("COMMSERV_INFO/SET_URL"), committee, "http://" + url));
     }
+    ETCB();
 }
 
 void CommServ::do_set_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_Secure", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2276,10 +2413,12 @@ void CommServ::do_set_Secure(const mstring & mynick, const mstring & source, con
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void CommServ::do_set_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_Private", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2347,10 +2486,12 @@ void CommServ::do_set_Private(const mstring & mynick, const mstring & source, co
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void CommServ::do_set_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_set_OpenMemos", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2418,10 +2559,12 @@ void CommServ::do_set_OpenMemos(const mstring & mynick, const mstring & source, 
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void CommServ::do_lock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_lock_Secure", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2485,10 +2628,12 @@ void CommServ::do_lock_Secure(const mstring & mynick, const mstring & source, co
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void CommServ::do_lock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_lock_Private", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2552,10 +2697,12 @@ void CommServ::do_lock_Private(const mstring & mynick, const mstring & source, c
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void CommServ::do_lock_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_lock_OpenMemos", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2619,10 +2766,12 @@ void CommServ::do_lock_OpenMemos(const mstring & mynick, const mstring & source,
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
 	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
 	  getMessage(source, "VALS/OFF"))));
+    ETCB();
 }
 
 void CommServ::do_unlock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_unlock_Secure", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2662,10 +2811,12 @@ void CommServ::do_unlock_Secure(const mstring & mynick, const mstring & source, 
     LOG(LM_INFO, "COMMSERV/UNLOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee));
+    ETCB();
 }
 
 void CommServ::do_unlock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_unlock_Private", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2705,10 +2856,12 @@ void CommServ::do_unlock_Private(const mstring & mynick, const mstring & source,
     LOG(LM_INFO, "COMMSERV/UNLOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee));
+    ETCB();
 }
 
 void CommServ::do_unlock_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("CommServ::do_unlock_OpenMemos", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
@@ -2748,6 +2901,7 @@ void CommServ::do_unlock_OpenMemos(const mstring & mynick, const mstring & sourc
     LOG(LM_INFO, "COMMSERV/UNLOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee));
+    ETCB();
 }
 
 SXP::Tag Committee_t::tag_Committee_t("Committee_t");
@@ -2770,6 +2924,7 @@ SXP::Tag Committee_t::tag_UserDef("UserDef");
 
 void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("Committee_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if (!
 	(i_Name == Magick::instance().commserv.SADMIN_Name() || i_Name == Magick::instance().commserv.ALL_Name() ||
@@ -2799,10 +2954,12 @@ void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Committee_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -2866,10 +3023,12 @@ void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(tmp);
 	lock.Secure = tmp;
     }
+    ETCB();
 }
 
 void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("Committee_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -2921,12 +3080,14 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_Committee_t);
+    ETCB();
 }
 
 SXP::Tag CommServ::tag_CommServ("CommServ");
 
 void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("CommServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Committee_t *c = new Committee_t;
 
@@ -2939,19 +3100,23 @@ void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	delete c;
     }
+    ETCB();
 }
 
 void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
     static_cast < void > (pElement);
 
     FT("CommServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+    ETCB();
 }
 
 void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("CommServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -2969,10 +3134,12 @@ void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_CommServ);
+    ETCB();
 }
 
 void CommServ::PostLoad()
 {
+    BTCB();
     NFT("CommServ::PostLoad");
     // Linkage, etc
     unsigned int i, j;
@@ -3096,4 +3263,5 @@ void CommServ::PostLoad()
 	    comm->OpenMemos(false);
 	}
     }
+    ETCB();
 }
