@@ -60,10 +60,6 @@ public class ToolTips
 					"connect to the server(s) listed.  You may specify multipal\n" +
 					"uplink servers by separating them with a comma (,).  You may\n" +
 					"also use wildcards in this field." },
-	{ "Startup/PROTOCOL",		"This is the protocol (IRC language) that Magick will use to\n" +
-					"to the IRC server.  Each IRC server software implements the\n" +
-					"IRC protocol in a slightly different way, if this value is\n" +
-					"incorrectly set, Magick will not function properly." },
 	{ "Startup/LEVEL",		"As lag to the IRC network increases and decreases, the level\n" +
 					"services operate at will increase and decrease respectively,\n" +
 					"with this value as the minimum.  If a set of services with a\n" +
@@ -121,6 +117,11 @@ public class ToolTips
 					"files in the directory if it is a directory being created.\n" +
 					"Execute access only relates to the creation of directories, and\n" +
 					"gives access to enter the particular directory." },
+	{ "Files/PROTOCOL",		"The file that defines details about the IRC protocol (language)\n" +
+					"that Magick will use to talk to the IRC server.\n" +
+					"Each IRC server software implements the IRC protocol in a\n" +
+					"slightly different way, so if this value is incorrectly set,\n" +
+					"Magick will not function properly (and may not even sign on)." },
 	{ "Files/PIDFILE",		"The file that the process ID of Magick will be put into.\n" +
 					"If the path is not absolute, it will be put in a place relative\n" +
 					"to the services directory (ie. the value of the --dir commandline\n" +

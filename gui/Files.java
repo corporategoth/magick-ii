@@ -31,17 +31,22 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.filechooser.*;
+import java.io.File;
+
 public class Files extends TabbedPane
 {
 // private:
     private JFormattedTextField umask, picture_size, memoattach_size,
 		public_size, tempdir_size, blocksize, timeout,
 		min_speed, max_speed, sampletime;
-    private JTextField pidfile, logfile, logchan, motdfile, langdir,
+    private JTextField pidfile, protocol, logfile, logchan, motdfile, langdir,
 		database, keyfile, picture, memoattach, f_public, tempdir;
     private JCheckBox verbose, encryption;
     private JComboBox compression;
     private int def_compression;
+    private JButton b_logfile, b_pidfile, b_motdfile, b_keyfile, b_database,
+		b_protocol;
 
     public String name() { return "Files"; }
 
@@ -53,6 +58,7 @@ public class Files extends TabbedPane
 	encryption = createCheckBox("ENCRYPTION", false, true);
 
 	umask = createFormattedTextField("UMASK", 4, new OctalFormat(), "027", true);
+	protocol = createTextField("PROTOCOL", 30, "ircd" + File.separator + "ircd.rfc1459.ini", true);
 	pidfile = createTextField("PIDFILE", 30, "magick.pid", true);
 	logfile = createTextField("LOGFILE", 30, "magick.log", true);
 	logchan = createTextField("LOGCHAN", 10, "", true);
@@ -87,6 +93,14 @@ public class Files extends TabbedPane
 	compression.addItem(new String("8"));
 	compression.addItem(new String("9 - Maximum"));
 	compression.setSelectedIndex(def_compression);
+
+	b_logfile = createButton("B_LOGFILE", "Browse...", true);
+	b_database = createButton("B_DATABASE", "Browse...", true);
+	b_keyfile = createButton("B_KEYFILE", "Browse...", encryption.isSelected());
+	b_motdfile = createButton("B_MOTDFILE", "Browse...", true);
+	b_protocol = createButton("B_PROTOCOL", "Browse...", true);
+	b_pidfile = createButton("B_PIDFILE", "Browse...", true);
+
     }
 
     public void documentChanged(DocumentEvent e)
@@ -100,6 +114,43 @@ public class Files extends TabbedPane
 	{
 	    keyfile.setEditable(encryption.isSelected());
 	    keyfile.setEnabled(encryption.isSelected());
+	    b_keyfile.setEnabled(encryption.isSelected());
+	}
+	else if (e.getSource() == b_logfile)
+	{
+	    String rv = mct.showFileDialog(logfile.getText(), "Open", "Log Files (*.log)", ".log", false);
+	    if (rv != null)
+		logfile.setText(rv);
+	}
+	else if (e.getSource() == b_motdfile)
+	{
+	    String rv = mct.showFileDialog(motdfile.getText(), "Open", "MOTD Files (*.motd)", ".motd", false);
+	    if (rv != null)
+		motdfile.setText(rv);
+	}
+	else if (e.getSource() == b_database)
+	{
+	    String rv = mct.showFileDialog(database.getText(), "Open", "Magick New Database Files (*.mnd)", ".mnd", false);
+	    if (rv != null)
+		database.setText(rv);
+	}
+	else if (e.getSource() == b_keyfile)
+	{
+	    String rv = mct.showFileDialog(keyfile.getText(), "Open", "Key Files (*.key)", ".key", false);
+	    if (rv != null)
+		keyfile.setText(rv);
+	}
+	else if (e.getSource() == b_protocol)
+	{
+	    String rv = mct.showFileDialog(protocol.getText(), "Open", "Configuration Files (*.ini)", ".ini", true);
+	    if (rv != null)
+		protocol.setText(rv);
+	}
+	else if (e.getSource() == b_pidfile)
+	{
+	    String rv = mct.showFileDialog(pidfile.getText(), "Open", "Process ID Files (*.pid)", ".pid", false);
+	    if (rv != null)
+		pidfile.setText(rv);
 	}
     }
 
@@ -111,17 +162,30 @@ public class Files extends TabbedPane
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "File UMASK", umask);
-	addToGridBagLine(gb, gc, "Log File", logfile);
+	addToGridBag(gb, gc, "Log File", logfile);
+	addToGridBagAligned(gb, gc, b_logfile, gc.WEST);
+	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Log Channel", logchan);
 	addToGridBag(gb, gc, "Verbose", verbose);
 	addGridBagLine(gb, gc);
-	addToGridBagLine(gb, gc, "Database File", database);
+	addToGridBag(gb, gc, "Database File", database);
+	addToGridBagAligned(gb, gc, b_database, gc.WEST);
+	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Compression Level", compression);
 	addToGridBag(gb, gc, "Encryption", encryption);
 	addGridBagLine(gb, gc);
-	addToGridBagLine(gb, gc, "Key File", keyfile);
-	addToGridBagLine(gb, gc, "MOTD File", motdfile);
-	addToGridBagLine(gb, gc, "PID File", pidfile);
+	addToGridBag(gb, gc, "Key File", keyfile);
+	addToGridBagAligned(gb, gc, b_keyfile, gc.WEST);
+	addGridBagLine(gb, gc);
+	addToGridBag(gb, gc, "MOTD File", motdfile);
+	addToGridBagAligned(gb, gc, b_motdfile, gc.WEST);
+	addGridBagLine(gb, gc);
+	addToGridBag(gb, gc, "Protocol Definition", protocol);
+	addToGridBagAligned(gb, gc, b_protocol, gc.WEST);
+	addGridBagLine(gb, gc);
+	addToGridBag(gb, gc, "PID File", pidfile);
+	addToGridBagAligned(gb, gc, b_pidfile, gc.WEST);
+	addGridBagLine(gb, gc);
 
 	addToGridBagLine(gb, gc, "Language Dir", langdir);
 	addToGridBag(gb, gc, "Picture Dir", picture);
@@ -158,6 +222,7 @@ public class Files extends TabbedPane
 
 	rv += "[Files]\n";
 	rv += "UMASK = " + umask.getText() + "\n";
+	rv += "PROTOCOL = " + protocol.getText() + "\n";
 	rv += "PIDFILE = " + pidfile.getText() + "\n";
 	rv += "LOGFILE = " + logfile.getText() + "\n";
 	rv += "VERBOSE = " + (verbose.isSelected() ? "TRUE" : "FALSE") + "\n";
@@ -190,6 +255,7 @@ public class Files extends TabbedPane
 	int i;
 
 	umask.setText(data.getValue("Files/UMASK"));
+	protocol.setText(data.getValue("Files/PROTOCOL"));
 	pidfile.setText(data.getValue("Files/PIDFILE"));
 	logfile.setText(data.getValue("Files/LOGFILE"));
 	verbose.setSelected(IniParser.getBoolValue(data.getValue("Files/VERBOSE")));

@@ -112,11 +112,6 @@ which makes each service connect with their own nickname in lower
 case as the user in their user@host (making B<STARTUP/SERVICES_USER>
 useless).
 
-=item --protocol X, -P
-
-Override the B<STARTUP/PROTOCOL> value in the configuration file,
-which tells magick how to talk to the IRC server it links to.
-
 =item --level X, -l
 
 Override the B<STARTUP/LEVEL> value in the configuration file,
@@ -159,17 +154,22 @@ to nothing (ie. no channel output).
 Override the B<FILES/DBASE> value in the configuration file,
 which is Magick New Database file, this defaults to F<magick.mnd>.
 
+=item --protocol X, -P
+
+Override the B<FILES/PROTOCOL> value in the configuration file,
+which tells Magick while file defines how to talk to the IRC server.
+
 =item --langdir X, -S
 
 Override the B<FILES/LANGDIR> value in the configuration file,
-which is where magick will look for all F<*.lng>, F<*.lfo> and
+which is where Magick will look for all F<*.lng>, F<*.lfo> and
 F<*.hlp> files for language translation to IRC clients, this
 defaults to lang and is a I<DIRECTORY>, not a filename.
 
 =item --encrypt, -E
 
 Override the B<FILES/ENCRYPTION> value in the configuration file,
-setting it to true, which tells magick to encrypt the databases
+setting it to true, which tells Magick to encrypt the databases
 next time it saves (depends on the F<magick.key> file existing).
 
 I<NOTE>: if your F<magick.key> file was created with a
@@ -180,7 +180,7 @@ stamped with, you will essentially create corrupted databases.
 =item --decrypt, -e
 
 Override the B<FILES/ENCRYPTION> value in the configuration file,
-setting it to false, which tells magick to decrypt the databases
+setting it to false, which tells Magick to decrypt the databases
 on load, and not re-encrypt it when it saves them.  This requires
 your F<magick.key> file to have the correct keys to decrypt the
 databases (and to have been created with a version of
@@ -199,13 +199,13 @@ defaults to F<magick.key>.
 =item --compress X, -c
 
 Override the B<FILES/COMPRESSION> value in the configuration file,
-which tells magick how much (if at all) to compress the magick
+which tells Magick how much (if at all) to compress the Magick
 databases.  The values for this may be between 0 and 9.
 
 =item --relink X, -r
 
 Override the B<CONFIG/SERVER_RELINK> value in the configuration file,
-which tells magick how long to wait before trying to connect back
+which tells Magick how long to wait before trying to connect back
 to a server when it has been disconnected.
 
 =item --cycle X, -t
@@ -265,7 +265,7 @@ then spawn a new thread off and add it to the pool.
 =item --append, -a
 
 Override the B<CONFIG/APPEND_RENAME> value in the configuration file,
-setting it to true, which tells magick to, when renaming a user,
+setting it to true, which tells Magick to, when renaming a user,
 try to append one, then two, then three, etc until the maximum
 nickname length of each character (in order) of the CONFIG/SUFFIXES
 option.
@@ -276,7 +276,7 @@ find a successful match, it tries PreZ- then PreZ-- and so on.
 =item --rename, -A
 
 Override the B<CONFIG/APPEND_RENAME> value in the configuration file,
-setting it to false, which tells magick to, when renaming a user,
+setting it to false, which tells Magick to, when renaming a user,
 take the value of B<CONFIG/SUFFIXES>, add a random 5 digit number to
 it, and name the user that.
 
@@ -299,7 +299,7 @@ language by default when they register their nicknames.
 
 Override the B<NICKSERV/PICEXT> value setting it to a blank string
 and the B<MEMOSERV/FILES> value setting it to 0.
-This essentially disables ALL DCC transfers in magick except
+This essentially disables ALL DCC transfers in Magick except
 the Public FileSystem (which only SOP's can upload to, and they
 may specify who may download each file they upload).
 
@@ -313,14 +313,14 @@ it, or start a DCC transfer if they are attaching a file).
 =item --logignore, -i
 
 Override the B<OPERSERV/LOG_IGNORE> value in the configuration file,
-which tells magick to log all messages received by a user that is
+which tells Magick to log all messages received by a user that is
 ignored by services.  These messages are logged with a priority
 of DEBUG, so you will need B<FILES/VERBOSE> set to true to see them.
 
 =item --ignore X, -I
 
 Override the B<OPERSERV/IGNORE_METHOD> value in the configuration file,
-which is the default method magick will use to ignore users when
+which is the default method Magick will use to ignore users when
 an automatic ignore is set.  The available options are:
 
 =over 4
@@ -383,7 +383,7 @@ F<*.lng> Response files, which contain the responses to ALL commands
 executed by IRC clients.
 
 F<*.lfo> Log File Output files, which contain the text that will be
-logged to the magick log file.
+logged to the Magick log file.
 
 F<*.hlp> Help files, which contain ALL the text that is sent back as
 a reply to any HELP request.

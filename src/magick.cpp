@@ -1029,10 +1029,10 @@ void Magick::dump_help() const
 	"--user X           -U      Override [STARTUP/SERVICES_USER] to X.\n" <<
 	"--host X           -H      Override [STARTUP/SERVICES_HOST] to X.\n" <<
 	"--ownuser          -o      Override [STARTUP/OWNUSER] to true.\n" <<
-	"--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n" <<
 	"--level X          -l      Override [STARTUP/LEVEL] to X.\n" <<
 	"--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n" <<
 	"--umask            -u      Override [FILES/UMASK] to X.\n" <<
+	"--protocol X       -P      Override [FILES/PROTOCOL] to X.\n" <<
 	"--verbose          -V      Override [FILES/VERBOSE] to true.\n" <<
 	"--log X            -L      Override [FILES/LOGFILE] to X.\n" <<
 	"--logchan X        -C      Override [FILES/LOGCHAN] to X.\n" <<
@@ -1272,16 +1272,12 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if (atoi(second.c_str()) <= 0)
+	if (second.c_str() != files.protocol)
 	{
-	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
-	}
-	if (atoi(second.c_str()) != static_cast < int > (server.proto.Number()))
-	{
-	    server.proto.Set(atoi(second.c_str()));
-	    if (atoi(second.c_str()) != static_cast < int > (server.proto.Number()))
+	    files.protocol = second.c_str();
+	    if (!server.proto.Set(files.Protocol()))
 	    {
-		LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (second, server.proto.Number()));
+		LOG(LM_ERROR, "COMMANDLINE/UNKNOWN_PROTO", (second));
 	    }
 	}
 	RET(true);
@@ -2160,19 +2156,6 @@ bool Magick::get_config_values()
     if (CurrentServer().empty() || !startup.IsAllowed(CurrentServer(), startup.Server_Name()))
 	reconnect = true;
 
-    in.Read(ts_Startup + "PROTOCOL", value_uint, 0U);
-    if (value_uint != server.proto.Number())
-    {
-	server.proto.Set(value_uint);
-	if (value_uint == server.proto.Number())
-	    reconnect = true;
-	else
-	{
-	    LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (value_uint, server.proto.Number()));
-	    RET(false);
-	}
-    }
-
     in.Read(ts_Startup + "LEVEL", value_uint, 1U);
     if (value_uint > i_level)
 	i_level = value_uint;
@@ -2458,6 +2441,18 @@ bool Magick::get_config_values()
     }
     if (i != 3)
 	files.umask = 027;
+
+    in.Read(ts_Files + "PROTOCOL", value_mstring, "ircd.ini");
+    if (value_mstring != files.protocol)
+    {
+	files.protocol = value_mstring;
+	bool rv = server.proto.Set(files.Protocol());
+
+	if (!rv)
+	{
+	    RET(false);
+	}
+    }
 
     in.Read(ts_Files + "PIDFILE", files.pidfile, "magick.pid");
     in.Read(ts_Files + "LOGFILE", files.logfile, "magick.log");

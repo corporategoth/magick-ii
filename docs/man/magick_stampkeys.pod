@@ -25,8 +25,8 @@ recompile it, or at the minimum, relink it from its object files.
 
 =head1 EXAMPLE
 
-If you wish to re-stamp some original magick files, and you already
-have the compiled source in the original magick tree, you can simply
+If you wish to re-stamp some original Magick files, and you already
+have the compiled source in the original Magick tree, you can simply
 type "make relink" in the src directory, and it will then re-link
 all the binaries, and auto re-stamp them for you.
 

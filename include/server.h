@@ -38,8 +38,7 @@ RCSID(server_h, "@(#) $Id$");
 
 class Protocol
 {
-    // Protocol number
-    unsigned int i_Number;
+    // Max nickname length
     unsigned int i_NickLen;
 
     // Max length of line excluding nickname / comamnd.
@@ -156,14 +155,15 @@ class Protocol
     // This is a map of real commands -> tokenized commands
     // to save bandwidth.
     map < mstring, mstring > tokens;
-    void SetTokens(unsigned int type);
 
 public:
-    Protocol();
+    Protocol()
+    {
+    }
     ~Protocol()
     {
     }
-    void Set(const unsigned int in);
+    bool Set(const mstring & filename);
     mstring GetToken(const mstring & in) const;
     mstring GetNonToken(const mstring & in) const;
 
@@ -172,7 +172,6 @@ public:
 	friend class Protocol;
 
 	bool i_Trim:1;		/* Trim numeric results ... */
-	bool i_Extended:1;	/* 2 char server, 3 char nick */
 	bool i_ServerNumber:1;	/* Use decimal number (not base64) in SERVER line */
 	bool i_Combine:1;	/* Combine server and nick numeric in messages */
 	bool i_Prefix:1;	/* All messages are prefixed with the server numeric */
@@ -183,7 +182,6 @@ public:
 	int i_Channel;		/* Length of channel numerics ... */
 
 	char base64_to_char[64], char_to_base64[256];
-	void SetBase64(unsigned int type);
 
 	unsigned long str_to_base64(const mstring & in) const;
 	mstring base64_to_str(unsigned long in) const;
@@ -252,10 +250,6 @@ public:
     }
     Numeric;
 
-    unsigned int Number() const
-    {
-	return i_Number;
-    }
     unsigned int NickLen() const
     {
 	return i_NickLen;

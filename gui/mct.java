@@ -42,12 +42,18 @@ public class mct extends JApplet implements ActionListener
 {
 // private:
     private boolean command;
-    private JMenuItem open, save, quit, about, time_fmt, space_fmt, wildcards;
+    private JMenuItem cwd, open, save, quit, about, time_fmt, space_fmt, wildcards;
     private JCheckBoxMenuItem tooltips;
     private ButtonGroup theme;
     private Vector laf;
     private TabbedPane startup, services, files, config, nickserv, chanserv,
 		memoserv, operserv, commserv, servmsg;
+    private static String pwd;
+
+    public static String currentDirectory()
+    {
+	return pwd;
+    }
 
     public mct(boolean c)
     {
@@ -98,11 +104,11 @@ public class mct extends JApplet implements ActionListener
 
     public void actionPerformed(ActionEvent e)
     {
-	if (e.getSource() == open)
+	if (e.getSource() == cwd)
 	{
-	    JFileChooser open_file = new JFileChooser();
+	    JFileChooser select_dir = new JFileChooser(currentDirectory());
 
-	    if (open_file.getAccessibleContext() == null)
+	    if (select_dir.getAccessibleContext() == null)
 	    {
 		JOptionPane.showMessageDialog(null,
 			"Due to security concerns, we cannot perform any files-based\n" +
@@ -112,101 +118,82 @@ public class mct extends JApplet implements ActionListener
 	    }
 	    else
 	    {
-		FileFilter cfg_filter = new FileFilter()
-		{
-		    public boolean accept(File f)
-		    {
-			if (f.isDirectory())
-			    return true;
-			if (f.isFile() && f.getName().endsWith(".ini") && f.exists() && f.canRead())
-			    return true;
-			return false;
-		    }
-		    public String getDescription()
-		    {
-			return "Config Files (*.ini)";
-		    }
-		};
-
-		open_file.addChoosableFileFilter(cfg_filter);
-		open_file.setFileFilter(cfg_filter);
-		int rv = open_file.showOpenDialog(null);
+		select_dir.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int rv = select_dir.showDialog(null, "Select Working Directory");
 		if (rv == JFileChooser.APPROVE_OPTION)
 		{
-		    byte[] array = null;
 		    try
 		    {
-			File f = open_file.getSelectedFile();
-			FileInputStream is = new FileInputStream(f);
-			array = new byte[(int) f.length()];
-			is.read(array);
+			pwd = select_dir.getSelectedFile().getCanonicalPath();
 		    }
 		    catch (Exception ex)
 		    {
 			JOptionPane.showMessageDialog(null,
-			    "Could not read configuration file:\n" +
+			    "Could not open directory:\n" +
 			    ex.getMessage() + "\n",
 			    "Error",
 			    JOptionPane.ERROR_MESSAGE);
 			return;
 		    }
-		    setConfigData(new String(array));
 		}
+		else if (pwd == null)
+		{
+		    System.exit(0);
+		}
+	    }
+	}
+	else if (e.getSource() == open)
+	{
+	    String rv = showFileDialog("magick.ini", "Open", "Configuration Files (*.ini)", ".ini", true);
+	    if (rv != null)
+	    {
+		byte[] array = null;
+		try
+		{
+		   
+		    File f = new File(rv);
+		    if (!f.isAbsolute())
+			f = new File(currentDirectory() + "/" + rv);
+		    FileInputStream is = new FileInputStream(f);
+		    array = new byte[(int) f.length()];
+		    is.read(array);
+		}
+		catch (Exception ex)
+		{
+		    JOptionPane.showMessageDialog(null,
+			"Could not read configuration file:\n" +
+			ex.getMessage() + "\n",
+			"Error",
+			JOptionPane.ERROR_MESSAGE);
+		    return;
+		}
+		setConfigData(new String(array));
 	    }
 	}
 	else if (e.getSource() == save)
 	{
-	    JFileChooser save_file = new JFileChooser();
-
-	    if (save_file.getAccessibleContext() == null)
+	    String rv = showFileDialog("magick.ini", "Save", "Configuration Files (*.ini)", ".ini", false);
+	    if (rv != null)
 	    {
-		JOptionPane.showMessageDialog(null,
-			"Due to security concerns, we cannot perform any files-based\n" +
-			"actions on your system at this time.\n",
+		File f = new File(rv);
+		if (!f.isAbsolute())
+		    f = new File(currentDirectory() + "/" + rv);
+		String cfg = getConfigData();
+		byte[] array = cfg.getBytes();
+		try
+		{
+		    f.createNewFile();
+		    FileOutputStream os = new FileOutputStream(f);
+		    os.write(array);
+		}
+		catch (Exception ex)
+		{
+		    JOptionPane.showMessageDialog(null,
+			"Could not write configuration file:\n" +
+			ex.getMessage() + "\n",
 			"Error",
 			JOptionPane.ERROR_MESSAGE);
-	    }
-	    else
-	    {
-		FileFilter cfg_filter = new FileFilter()
-		{
-		    public boolean accept(File f)
-		    {
-			if (f.isDirectory())
-			    return true;
-			if (f.isFile() && f.getName().endsWith(".ini"))
-			    return true;
-			return false;
-		    }
-		    public String getDescription()
-		    {
-			return "Config Files (*.ini)";
-		    }
-		};
-
-		save_file.addChoosableFileFilter(cfg_filter);
-		save_file.setFileFilter(cfg_filter);
-		int rv = save_file.showSaveDialog(null);
-		if (rv == JFileChooser.APPROVE_OPTION)
-		{
-		    File f = save_file.getSelectedFile();
-		    String cfg = getConfigData();
-		    byte[] array = cfg.getBytes();
-		    try
-		    {
-			f.createNewFile();
-			FileOutputStream os = new FileOutputStream(f);
-			os.write(array);
-		    }
-		    catch (Exception ex)
-		    {
-			JOptionPane.showMessageDialog(null,
-			    "Could not write configuration file:\n" +
-			    ex.getMessage() + "\n",
-			    "Error",
-			    JOptionPane.ERROR_MESSAGE);
-			return;
-		    }
+		    return;
 		}
 	    }
 	}
@@ -346,6 +333,13 @@ public class mct extends JApplet implements ActionListener
 	{
 	    submenu = new JMenu("File");
 	    submenu.setMnemonic(KeyEvent.VK_F);
+
+	    cwd = new JMenuItem("Current Directory");
+	    cwd.setMnemonic(KeyEvent.VK_D);
+	    cwd.setAccelerator(KeyStroke.getKeyStroke(
+		KeyEvent.VK_D, ActionEvent.ALT_MASK));
+	    cwd.addActionListener(this);
+	    submenu.add(cwd);
 
 	    open = new JMenuItem("Open");
 	    open.setMnemonic(KeyEvent.VK_O);
@@ -493,6 +487,9 @@ public class mct extends JApplet implements ActionListener
 	cp.add(top, BorderLayout.NORTH);
 	cp.add(middle, BorderLayout.CENTER);
 	// cp.add(bottom, BorderLayout.SOUTH);
+
+	if (pwd == null)
+	    actionPerformed(new ActionEvent(cwd, 0, ""));
     }
 
     public static void main(String argv[])
@@ -504,6 +501,115 @@ public class mct extends JApplet implements ActionListener
 	frame.setSize(750, 500);
 	applet.init();
 	applet.start();
+	if (argv.length > 1)
+	    pwd = argv[1];
 	frame.setVisible(true);
+    }
+
+    public static String showFileDialog(String path, String approve, String filtname, String fileext, boolean readable)
+    {
+	String value = null;
+
+	String directory = null, selected = null;
+
+	if (path != null)
+	{
+	    try
+	    {
+		File f = new File(path);
+		if (!f.isAbsolute())
+		    f = new File(currentDirectory() + "/" + path);
+		if (f.isDirectory())
+		    directory = f.getCanonicalPath();
+		else
+		{
+		    selected = f.getName();
+		    directory = f.getParent();
+		    if (directory == null)
+			directory = currentDirectory();
+		    else
+		    {
+			f = new File(directory);
+			directory = null;
+			directory = f.getCanonicalPath();
+		    }
+		}
+	    }
+	    catch (Exception ex)
+	    {
+	    }
+	}
+	if (directory == null)
+	    directory = currentDirectory();
+
+	JFileChooser chooser = new JFileChooser(directory);
+
+	if (chooser.getAccessibleContext() == null)
+	{
+	    JOptionPane.showMessageDialog(null,
+		"Due to security concerns, we cannot perform any files-based\n" +
+		"actions on your system at this time.\n",
+		"Error",
+		JOptionPane.ERROR_MESSAGE);
+	}
+	else
+	{
+	    if (filtname != null && fileext != null)
+	    {
+		class MyFileFilter extends FileFilter
+		{
+		    private String name, ext;
+		    boolean read;
+
+		    public MyFileFilter(String filtname, String fileext, boolean readable)
+		    {
+			super();
+			name = filtname;
+			ext = fileext;
+			read = readable;
+		    }
+		    public boolean accept(File f)
+		    {
+			if (f.isDirectory())
+			    return true;
+			if (f.isFile() && f.getName().endsWith(ext))
+			    if (read)
+				return (f.exists() && f.canRead());
+			    else
+				return true;
+			return false;
+		    }
+		    public String getDescription()
+		    {
+			return name;
+		    }
+		};
+		MyFileFilter filt = new MyFileFilter(filtname, fileext, readable);
+
+		chooser.addChoosableFileFilter(filt);
+		chooser.setFileFilter(filt);
+	    }
+	    if (selected != null)
+		chooser.setSelectedFile(new File(directory + "/" + selected));
+	    int rv = chooser.showDialog(null, approve);
+	    if (rv == JFileChooser.APPROVE_OPTION)
+	    {
+		try
+		{
+		    value = chooser.getSelectedFile().getCanonicalPath();
+		    if (value.startsWith(currentDirectory()))
+			value = value.substring(currentDirectory().length() + 1);
+		}
+		catch (Exception ex)
+		{
+		    JOptionPane.showMessageDialog(null,
+			"Due to security concerns, we cannot perform any files-based\n" +
+			"actions on your system at this time.\n",
+			"Error",
+			JOptionPane.ERROR_MESSAGE);
+		}
+	    }
+	}
+	return value;
     }
 }

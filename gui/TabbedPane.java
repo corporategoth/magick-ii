@@ -102,6 +102,24 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
 	}
     }
 
+    protected JButton createButton(String tooltip, String text, boolean enabled)
+    {
+	JButton rv = new JButton(text)
+		{
+		    public JToolTip createToolTip()
+		    {
+			return new JMultiLineToolTip();
+		    }
+		};
+	String tip = tips.getTip(name() + "/" + tooltip);
+	if (tip.length() != 0)
+	    rv.setToolTipText(tip);
+	rv.addActionListener(this);
+	rv.setEnabled(enabled);
+	return rv;
+    }
+
+
     protected JTextField createTextField(String tooltip, int size, String def, boolean editable)
     {
 	JTextField rv = new JTextField(size)
@@ -253,6 +271,15 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
     {
 	p.add(c, gc);
 	gc.gridx++;
+    }
+
+    protected void addToGridBagAligned(JPanel p, GridBagConstraints gc, JComponent c, int align)
+    {
+	int oldalign = gc.anchor;
+	gc.anchor = align;
+	p.add(c, gc);
+	gc.gridx++;
+	gc.anchor = oldalign;
     }
 
     protected void addToGridBagLabel(JPanel p, GridBagConstraints gc, String name)

@@ -1227,14 +1227,18 @@ void mstring::Trim(const bool right, const mstring & delims)
     if (right)
     {
 	pos = find_last_not_of(delims.c_str());
-	if (pos > 0)
+	if (pos >= 0)
 	    erase(pos + 1);
+	else
+	    erase();
     }
     else
     {
 	pos = find_first_not_of(delims.c_str());
 	if (pos > 0)
 	    erase(0, pos - 1);
+	else if (pos < 0)
+	    erase();
     }
 }
 

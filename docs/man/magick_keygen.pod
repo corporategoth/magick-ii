@@ -66,7 +66,7 @@ or wish to change the plain text key, you must:
 
 =item *
 
-Set the B<Files/ENCRYPTION> option to FALSE, then load up magick
+Set the B<Files/ENCRYPTION> option to FALSE, then load up Magick
 (leaving the existing keyfile in the current directory).  Magick
 will detect the databases are encrypted, and decrypt them anyway.
 
@@ -77,9 +77,9 @@ remove the existing keyfile.
 
 =item *
 
-If you are upgrading your version of magick (ie. your new binaries
+If you are upgrading your version of Magick (ie. your new binaries
 are stamped with different keyfile keys than the current ones),
-then shut down magick, and copy in your new magick and magick_keygen
+then shut down Magick, and copy in your new magick and magick_keygen
 binaries.
 
 =item *
@@ -90,7 +90,7 @@ B<Files/ENCRYPTION> option back to TRUE.
 =item *
 
 Start up magick again if you shut it down before, or trigger a
-config RELOAD from within magick.  Next save, your databases will
+config RELOAD from within Magick.  Next save, your databases will
 be encrypted with the new key.
 
 =back

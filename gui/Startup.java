@@ -40,7 +40,6 @@ public class Startup extends TabbedPane
 // private:
     private JTextField server_name, server_desc, services_user, services_host, setmode;
     private JFormattedTextField bind, lagtime, level;
-    private JComboBox protocol;
     private JCheckBox ownuser, stop;
 
     private class RemotesTableModel extends AbstractTableModel
@@ -341,26 +340,6 @@ public class Startup extends TabbedPane
 	level = createFormattedTextField("LEVEL", 2, new NumberRangeFormat(1, -1), "1", true);
 	lagtime = createFormattedTextField("LAGTIME", 4, new TimeFormat(), "15s", true);
 
-	protocol = createComboBox("PROTOCOL", false, true);
-	protocol.addItem(new String("0 - RFC 1459"));
-	protocol.addItem(new String("1 - RFC 1459 + TS8"));
-	protocol.addItem(new String("10 - DALnet < 4.4.15"));
-	protocol.addItem(new String("11 - DALnet >= 4.4.15"));
-	protocol.addItem(new String("12 - Bahamut"));
-	protocol.addItem(new String("20 - UnderNet < 2.10.00"));
-	protocol.addItem(new String("21 - UnderNet > 2.10.00"));
-	protocol.addItem(new String("22 - UnderNet > 2.10.00 + Ext. Numerics"));
-	protocol.addItem(new String("30 - Hybrid 5-6"));
-	protocol.addItem(new String("31 - Hybrid 7"));
-	protocol.addItem(new String("40 - EliteIRCD"));
-	protocol.addItem(new String("50 - RelicNet 2"));
-	protocol.addItem(new String("51 - RelicNet 2.1"));
-	protocol.addItem(new String("53 - RelicNet 4.0"));
-	protocol.addItem(new String("54 - RelicNet 5.0"));
-	protocol.addItem(new String("60 - Aurora"));
-	protocol.addItem(new String("70 - Unreal"));
-	protocol.addItem(new String("80 - UltimateIRCD"));
-
 	RemotesTableModel remotesModel = new RemotesTableModel();
 	RemotesTableCellRenderer remotesRenderer = new RemotesTableCellRenderer();
 	remotes = createTable("REMOTES", remotesModel, remotesRenderer, true);
@@ -406,7 +385,6 @@ public class Startup extends TabbedPane
 	addGridBagLine(gb, gc);
 	addToGridBagTable(gb, gc, "Remote Connections", remotes);
 	addToGridBagTable(gb, gc, "Allowed Connections", allows);
-	addToGridBagLine(gb, gc, "Protocol", protocol);
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
@@ -454,8 +432,6 @@ public class Startup extends TabbedPane
 			allows.getValueAt(i, 1) + "\n";
 	}
 
-	rv += "PROTOCOL = " + ((String) protocol.getSelectedItem()).substring(0,
-			((String) protocol.getSelectedItem()).indexOf(" ")) + "\n";
 	rv += "LEVEL = " + level.getText() + "\n";
 	rv += "LAGTIME = " + lagtime.getText() + "\n";
 	rv += "STOP = " + (stop.isSelected() ? "TRUE" : "FALSE") + "\n";
@@ -520,20 +496,6 @@ public class Startup extends TabbedPane
 		allows.setValueAt(fields[1], i, 1);
 	    }
 	}
-
-	String sel_protocol = data.getValue("Startup/PROTOCOL");
-	for (i=0; i<protocol.getItemCount(); i++)
-	{
-	    String ri = ((String) protocol.getItemAt(i)).substring(0, 
-			((String) protocol.getItemAt(i)).indexOf(" "));
-	    if (ri.equalsIgnoreCase(sel_protocol))
-	    {
-		protocol.setSelectedItem(protocol.getItemAt(i));
-		break;
-	    }
-	}	
-	if (i == protocol.getItemCount())
-	    protocol.setSelectedIndex(0);
 
 	level.setText(data.getValue("Startup/LEVEL"));
 	lagtime.setText(data.getValue("Startup/LAGTIME"));

@@ -288,6 +288,7 @@ public:
 	friend class Magick;
 
 	mode_t umask;
+	mstring protocol;
 	mstring pidfile;
 	mstring logfile;
 	mstring logchan;
@@ -315,6 +316,10 @@ public:
 	mode_t Umask() const
 	{
 	    return umask;
+	}
+	mstring Protocol() const
+	{
+	    return Magick::instance().MakePath(protocol);
 	}
 	mstring Pidfile() const
 	{
@@ -659,7 +664,7 @@ public:
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator        mVariant() const
+    operator         mVariant() const
     {
 	mVariant locvar("Magick");
 

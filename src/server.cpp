@@ -37,296 +37,11 @@ RCSID(server_cpp, "@(#)$Id$");
 
 #include "magick.h"
 #include "dccengine.h"
+#include "mconfig.h"
 
 #ifndef MAGICK_HAS_EXCEPTIONS
 static Server_t GLOB_Server_t;
 #endif
-
-void Protocol::SetTokens(const unsigned int type)
-{
-    FT("Protocol::SetTokens", (type));
-
-    tokens.clear();
-    switch (type)
-    {
-    case 1000:			// ircu >= 2.10.x
-	tokens["AB"] = "ADMIN";
-	tokens["A"] = "AWAY";
-	tokens["CN"] = "CNOTICE";
-	tokens["CO"] = "CONNECT";
-	tokens["CP"] = "CPRIVMSG";
-	tokens["C"] = "CREATE";
-	tokens["DE"] = "DESTRUCT";
-	tokens["DS"] = "DESYNCH";
-	tokens["EB"] = "END_OF_BURST";
-	tokens["EA"] = "EOB_ACK";
-	tokens["Y"] = "ERROR";
-	tokens["GL"] = "GLINE";
-	tokens["F"] = "INFO";
-	tokens["I"] = "INVITE";
-	tokens["J"] = "JOIN";
-	tokens["K"] = "KICK";
-	tokens["D"] = "KILL";
-	tokens["LI"] = "LINKS";
-	tokens["LU"] = "LUSERS";
-	tokens["M"] = "MODE";
-	tokens["MO"] = "MOTD";
-	tokens["E"] = "NAMES";
-	tokens["N"] = "NICK";
-	tokens["O"] = "NOTICE";
-	tokens["L"] = "PART";
-	tokens["G"] = "PING";
-	tokens["Z"] = "PONG";
-	tokens["P"] = "PRIVMSG";
-	tokens["Q"] = "QUIT";
-	tokens["RI"] = "RPING";
-	tokens["RO"] = "RPONG";
-	tokens["SE"] = "SETTIME";
-	tokens["U"] = "SILENCE";
-	tokens["SQ"] = "SQUIT";
-	tokens["R"] = "STATS";
-	tokens["TI"] = "TIME";
-	tokens["TR"] = "TOPIC";
-	tokens["V"] = "VERSION";
-	tokens["WC"] = "WALLCHOPS";
-	tokens["WA"] = "WALLOPS";
-	tokens["H"] = "WHO";
-	tokens["W"] = "WHOIS";
-	tokens["X"] = "WHOWAS";
-//      tokens["ACTION"] = CTCP_DELIM_CHAR + "ACTION";
-//      tokens["VERSION"] = CTCP_DELIM_CHAR + "VERSION";
-//      tokens["PING"] = CTCP_DELIM_CHAR + "PING";
-//      tokens["PONG"] = CTCP_DELIM_CHAR + "PONG";
-//      tokens["CLIENTINFO"] = CTCP_DELIM_CHAR + "CLIENTINFO";
-//      tokens["USERINFO"] = CTCP_DELIM_CHAR + "USERINFO";
-//      tokens["TIME"] = CTCP_DELIM_CHAR + "TIME";
-//      tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG";
-	break;
-
-    case 0001:			// DAL >= 4.4.15
-	tokens["!"] = "PRIVMSG";
-	tokens["\\"] = "WHO";
-	tokens["#"] = "WHOIS";
-	tokens["$"] = "WHOWAS";
-	tokens["%"] = "USER";
-	tokens["&"] = "NICK";
-	tokens["'"] = "SERVER";
-	tokens["("] = "LIST";
-	tokens[")"] = "TOPIC";
-	tokens["*"] = "INVITE";
-	tokens["+"] = "VERSION";
-	tokens[","] = "QUIT";
-	tokens["-"] = "SQUIT";
-	tokens["."] = "KILL";
-	tokens["/"] = "INFO";
-	tokens["0"] = "LINKS";
-	tokens["1"] = "SUMMON";
-	tokens["2"] = "STATS";
-	tokens["3"] = "USERS";
-	tokens["4"] = "HELP";
-	tokens["5"] = "ERROR";
-	tokens["6"] = "AWAY";
-	tokens["7"] = "CONNECT";
-	tokens["8"] = "PING";
-	tokens["9"] = "PONG";
-	tokens[";"] = "OPER";
-	tokens["<"] = "PASS";
-	tokens[">"] = "TIME";
-	tokens["="] = "WALLOPS";
-	tokens["?"] = "NAMES";
-	tokens["@"] = "ADMIN";
-	tokens["B"] = "NOTICE";
-	tokens["C"] = "JOIN";
-	tokens["D"] = "PART";
-	tokens["E"] = "LUSERS";
-	tokens["F"] = "MOTD";
-	tokens["G"] = "MODE";
-	tokens["H"] = "KICK";
-	tokens["I"] = "SERVICE";
-	tokens["J"] = "USERHOST";
-	tokens["K"] = "ISON";
-	tokens["L"] = "SQUERY";
-	tokens["M"] = "SERVLIST";
-	tokens["N"] = "SERVSET";
-	tokens["O"] = "REHASH";
-	tokens["P"] = "RESTART";
-	tokens["Q"] = "CLOSE";
-	tokens["R"] = "DIE";
-	tokens["S"] = "HASH";
-	tokens["T"] = "DNS";
-	tokens["U"] = "SILENCE";
-	tokens["V"] = "AKILL";
-	tokens["W"] = "KLINE";
-	tokens["X"] = "UNKLINE";
-	tokens["Y"] = "RAKILL";
-	tokens["Z"] = "GNOTICE";
-	tokens["["] = "GOPER";
-	tokens["]"] = "GLOBOPS";
-	tokens["^"] = "LOCOPS";
-	tokens["_"] = "PROTOCTL";
-	tokens["`"] = "WATCH";
-	tokens["b"] = "TRACE";
-	tokens["c"] = "SQLINE";
-	tokens["d"] = "UNSQLINE";
-	tokens["e"] = "SVSNICK";
-	tokens["f"] = "SVSNOOP";
-	tokens["g"] = "PRIVMSG NickServ :IDENTIFY";
-	tokens["h"] = "SVSKILL";
-	tokens["i"] = "PRIVMSG NickServ";
-	tokens["j"] = "PRIVMSG ChanServ";
-	tokens["k"] = "PRIVMSG OperServ";
-	tokens["l"] = "PRIVMSG MemoServ";
-	tokens["m"] = "SERVICES";
-	tokens["n"] = "SVSMODE";
-	tokens["o"] = "SAMODE";
-	tokens["p"] = "CHATOPS";
-	tokens["q"] = "ZLINE";
-	tokens["r"] = "UNZLINE";
-	tokens["s"] = "PRIVMSG HelpServ";
-	break;
-
-    case 0002:			// Relic >= 2.1
-	SetTokens(0001);
-	tokens.erase("1");
-	tokens.erase("3");
-	tokens.erase("=");
-	tokens["^"] = "WALLOPS";
-	tokens["LO"] = "LOCOPS";
-	tokens.erase("c");
-	tokens.erase("d");
-	tokens["QL"] = "SQLINE";
-	tokens["Uq"] = "UNSQLINE";
-	tokens["o"] = "OMODE";
-	tokens.erase("p");
-	tokens["s"] = "OPERMOTD";
-	tokens["v"] = "RPING";
-	tokens["w"] = "RPONG";
-	tokens["{"] = "MAP";
-	tokens["|"] = "SJOIN";
-	tokens["}"] = "SNICK";
-	tokens["~"] = "GLINE";
-	tokens["y"] = "SETTIME";
-	tokens["HM"] = "HTM";
-	tokens["z"] = "ADCHAT";
-	tokens["Rz"] = "RW";
-	break;
-
-    case 0003:			// Relic 4.0
-	SetTokens(0001);
-	tokens["e"] = "MODNICK";
-	break;
-
-    case 0004:			// Unreal
-	SetTokens(0001);
-	tokens["t"] = "RULES";
-	tokens["u"] = "MAP";
-	tokens["v"] = "SVS2MODE";
-	tokens["w"] = "DALINFO";
-	tokens["x"] = "ADCHAT";
-	tokens["y"] = "MKPASSWD";
-	tokens["z"] = "ADDLINE";
-	tokens["}"] = "GLINE";
-	tokens["~"] = "SJOIN";
-	tokens["AA"] = "SETHOST";
-	tokens["AB"] = "TECHAT";
-	tokens["AC"] = "NACHAT";
-	tokens["AD"] = "SETIDENT";
-	tokens["AE"] = "SETNAME";
-	tokens["AF"] = "LAG";
-	tokens["AG"] = "SDESC";
-	tokens["AH"] = "PRIVMSG StatServ";
-	tokens["AI"] = "KNOCK";
-	tokens["AJ"] = "CREDITS";
-	tokens["AK"] = "LICENSE";
-	tokens["AL"] = "CHGHOST";
-	tokens["AM"] = "RPING";
-	tokens["AN"] = "RPONG";
-	tokens["AO"] = "NETINFO";
-	tokens["AP"] = "SENDUMODE";
-	tokens["AQ"] = "ADDMOTD";
-	tokens["AR"] = "ADDOMOTD";
-	tokens["AS"] = "SVSMOTD";
-	tokens["AU"] = "SMO";
-	tokens["AV"] = "OPERMOTD";
-	tokens["AW"] = "TSCTL";
-	tokens["AX"] = "SVSJOIN";
-	tokens["AY"] = "SVSPART";
-	tokens["AZ"] = "CHGIDENT";
-	tokens["BA"] = "SWHOIS";
-	tokens["BB"] = "SVSO";
-	tokens["BC"] = "SVSFLINE";
-	tokens["BD"] = "TKL";
-	tokens["BE"] = "VHOST";
-	tokens["BF"] = "BOTMOTD";
-	tokens["BG"] = "REMGLINE";
-	tokens["BH"] = "HTM";
-	tokens["|"] = "UMODE2";
-	tokens["BI"] = "DCCDENY";
-	tokens["BJ"] = "UNDCCDENY";
-	tokens["BK"] = "CHGNAME";
-	tokens["BL"] = "SHUN";
-	tokens["BM"] = "CRYPTO";
-	tokens["BN"] = "POST";
-	tokens["BO"] = "PRIVMSG InfoServ";
-	break;
-    }
-}
-
-void Protocol::Numeric_t::SetBase64(unsigned int type)
-{
-    FT("Protocol::Numeric_t::SetBase64", (type));
-
-    memset(base64_to_char, 0, sizeof(base64_to_char));
-    memset(char_to_base64, 0, sizeof(char_to_base64));
-
-    static const char ircu_b2c[] =
-    {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-	    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-	    'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '[', ']'};
-
-    static const char ircu_c2b[] =
-    {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
-	    9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 62, 0, 63, 0, 0, 0, 26, 27, 28, 29, 30, 31,
-	    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    static const char unreal_b2c[] =
-    {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-	    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-	    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}'};
-
-    static const char unreal_c2b[] =
-    {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-	    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 0, 0, 0, 0, 0, 0, 36, 37, 38, 39, 40, 41,
-	    42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 0, 63, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    switch (type)
-    {
-    case 0000:
-	break;
-    case 0001:
-	memcpy(base64_to_char, ircu_b2c, sizeof(base64_to_char));
-	memcpy(char_to_base64, ircu_c2b, sizeof(char_to_base64));
-	break;
-    case 0002:
-	memcpy(base64_to_char, unreal_b2c, sizeof(base64_to_char));
-	memcpy(char_to_base64, unreal_c2b, sizeof(char_to_base64));
-	break;
-    }
-}
 
 unsigned long Protocol::Numeric_t::str_to_base64(const mstring & in) const
 {
@@ -417,323 +132,152 @@ mstring Protocol::Numeric_t::ChannelNumeric(unsigned long in) const
     RET(rv);
 }
 
-Protocol::Protocol() : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false), i_Helpops(false), i_Chatops(false),
-i_Tokens(false), i_P12(false), i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false), i_ServerModes(false),
-i_Akill(0), i_Signon(0), i_Modes(3), i_ChanModeArg("ovbkl"), i_Server("SERVER $1 $2 :$3")
+bool Protocol::Set(const mstring & filename)
 {
-    NFT("Protocol::Protocol");
-    DumpB();
-}
-
-void Protocol::Set(const unsigned int in)
-{
-    FT("Protocol::Set", (in));
-
-    // WE NEVER set 'i_Tokens', thats set with the PROTCTL line.
+    FT("Protocol::Set", (filename));
 
     DumpB();
-    switch (in)
+    set < unsigned int > AkillTypes, SignonTypes;
+
+    AkillTypes.insert(0000);
+    AkillTypes.insert(1000);
+    AkillTypes.insert(1001);
+    AkillTypes.insert(2000);
+    AkillTypes.insert(2001);
+    AkillTypes.insert(2002);
+    AkillTypes.insert(3000);
+    AkillTypes.insert(3001);
+    SignonTypes.insert(0000);
+    SignonTypes.insert(0001);
+    SignonTypes.insert(1000);
+    SignonTypes.insert(1001);
+    SignonTypes.insert(1002);
+    SignonTypes.insert(1003);
+    SignonTypes.insert(2000);
+    SignonTypes.insert(2001);
+    SignonTypes.insert(2002);
+    SignonTypes.insert(2003);
+    SignonTypes.insert(3000);
+
+    if (!mFile::Exists(filename))
     {
-    case 0:			// RFC
-	i_Signon = 0000;
-	i_Akill = 2000;
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 1:			// RFC with TS8
-	i_Signon = 0001;
-	i_Akill = 2000;
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 10:			// DAL < 4.4.15
-	i_BigTopic = true;
-	i_NickLen = 32;
-	i_Signon = 1000;
-	i_Globops = true;
-	i_Akill = 1000;
-	i_Modes = 4;
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 11:			// DAL >= 4.4.15
-	i_NickLen = 32;
-	i_Signon = 1001;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_Akill = 1000;
-	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0001);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 12:			// Bahamut
-	i_NickLen = 32;
-	i_Signon = 2001;
-	i_Globops = true;
-	i_Chatops = true;
-	i_BigTopic = true;
-	i_Akill = 1001;
-	i_Modes = 6;
-	i_TSora = true;
-	i_SJoin = true;
-	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	i_Burst = "BURST";
-	i_EndBurst = "BURST 0";
-	SetTokens(0001);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 20:			// UnderNet < 2.10.x
-	i_Signon = 1000;
-	i_Akill = 2000;
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 21:			// UnderNet >= 2.10.00
-	i_Signon = 3000;
-	i_Akill = 2001;
-	Numeric.i_Server = 1;
-	Numeric.i_User = 2;
-	Numeric.i_Combine = true;
-	Numeric.i_Field = 6;
-	Numeric.i_Prefix = true;
-	i_EndBurst = "END_OF_BURST";
-	i_ServicesModes = "k";
-	i_Tokens = true;	// Nothing tells us to turn it on ...
-	i_ServerModes = true;
-	i_TSora = true;
-	SetTokens(1000);
-	Numeric.SetBase64(0001);
-	i_Server = "SERVER $1 $2 $6 $5 J10 $4 :$3";
-	break;
-
-    case 22:			// UnderNet >= 2.10.00 w/Extended
-	i_Signon = 3000;
-	i_Akill = 2001;
-	Numeric.i_Server = 2;
-	Numeric.i_User = 2;
-	Numeric.i_Combine = true;
-	Numeric.i_Field = 6;
-	Numeric.i_Prefix = true;
-	i_EndBurst = "END_OF_BURST";
-	i_ServicesModes = "k";
-	i_Tokens = true;	// Nothing tells us to turn it on ...
-	i_ServerModes = true;
-	i_TSora = true;
-	SetTokens(1000);
-	Numeric.SetBase64(0001);
-	i_Server = "SERVER $1 $2 $6 $5 J10 $4 0 :$3";
-	break;
-
-    case 30:			// Hybrid 5/6
-	i_NickLen = 9;
-	i_Signon = 2000;
-	i_TopicJoin = true;
-	i_Akill = 3000;
-	i_ChanModeArg = "ovbekld";
-	i_TSora = true;
-	i_Protoctl = "CAPAB QS EX CHW";
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 31:			// Hybrid 7
-	i_NickLen = 9;
-	i_Signon = 2000;
-	i_TopicJoin = true;
-	i_Akill = 3001;
-	i_ChanModeArg = "ovbeklIh";
-	i_TSora = true;
-	i_Protoctl = "CAPAB QS EX CHW";
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 40:			// Elite
-	i_NickLen = 32;
-	i_Signon = 1001;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_Akill = 1000;
-	i_ChanModeArg = "ovbehklqa";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0001);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 50:			// Relic 2.0 (dreamforge based)
-	i_NickLen = 32;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_Signon = 1001;
-	i_Akill = 1000;
-	i_Modes = 6;
-	i_Server = "SERVER $1 $2 relic2.0 :$3";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0001);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 51:			// Relic 2.1 (dreamforge based)
-	i_NickLen = 32;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_P12 = true;
-	i_SJoin = true;
-	i_Signon = 1003;
-	i_Akill = 2002;
-	i_Modes = 6;
-	i_ChanModeArg = "ovbekl";
-	i_Server = "SERVER $1 $2 relic2.1 :$3";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0002);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 53:			// Relic 4.0 (bahamut based)
-	i_NickLen = 32;
-	i_Signon = 2002;
-	i_Globops = true;
-	i_BigTopic = true;
-	i_Akill = 2002;
-	i_Modes = 6;
-	i_TSora = true;
-	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
-	i_SVSNICK = "MODNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	i_Burst = "BURST";
-	i_EndBurst = "EOB";
-	SetTokens(0003);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 54:			// Relic 5.0 (hybrid based)
-	i_NickLen = 32;
-	i_Signon = 2000;
-	i_Akill = 2003;
-	i_ChanModeArg = "ovbekld";
-	i_TSora = true;
-	i_Protoctl = "CAPAB QS EX";
-	SetTokens(0000);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 60:			// Aurora
-	i_NickLen = 32;
-	i_Signon = 1002;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_Akill = 1000;
-	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	i_SVSHOST = "SVSHOST";
-	SetTokens(0001);
-	Numeric.SetBase64(0000);
-	break;
-
-    case 70:			// Unreal
-	i_NickLen = 32;
-	i_Signon = 2003;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_Akill = 1000;
-	i_Modes = 6;
-	i_ServicesModes = "S";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 VL SJ3 NS VHP";
-	// Check serveropts in s_debug.c for what the letters are
-	i_Server = "SERVER $1 $2 :U2303-CFhiIpnXS-$4 $3";
-	Numeric.i_Trim = true;
-	Numeric.i_Server = 6;
-	Numeric.i_ServerNumber = true;
-	Numeric.i_Field = 3;
-	Numeric.i_UnrealNumeric = true;
-	i_ChanModeArg = "ovbehklLfqa";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0004);
-	Numeric.SetBase64(0002);
-	break;
-
-    case 80:			// UltimateIRCD
-	i_NickLen = 32;
-	i_Signon = 1001;
-	i_Globops = true;
-	i_Helpops = true;
-	i_BigTopic = true;
-	i_Akill = 1000;
-	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
-	i_SVSNICK = "SVSNICK";
-	i_SVSMODE = "SVSMODE";
-	i_SVSKILL = "SVSKILL";
-	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "SQLINE";
-	i_UNSQLINE = "UNSQLINE";
-	SetTokens(0001);
-	Numeric.SetBase64(0000);
-	break;
-
-    default:
-	DumpE();
-	return;
+	RET(false);
     }
-    i_Number = in;
+    mConfigEngine cfg(filename);
+
+    unsigned int value_uint;
+    mstring value_mstring;
+    bool value_bool;
+
+    mstring ts_Protocol = "Protocol/";
+    mstring ts_Numeric = "Numeric/";
+    mstring ts_Tokens = "Tokens/";
+
+    cfg.Read(ts_Protocol + "NICKLEN", value_uint, 9);
+    if (value_uint < 1)
+    {
+	LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Protocol + "NICKLEN"));
+	RET(false);
+    }
+    i_NickLen = value_uint;
+
+    cfg.Read(ts_Protocol + "MAXLINE", value_uint, 450);
+    if (value_uint < 64)
+    {
+	LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Protocol + "MAXLINE"));
+	RET(false);
+    }
+    i_MaxLine = value_uint;
+
+    cfg.Read(ts_Protocol + "GLOBOPS", i_Globops, false);
+    cfg.Read(ts_Protocol + "HELPOPS", i_Helpops, false);
+    cfg.Read(ts_Protocol + "CHATOPS", i_Chatops, false);
+    cfg.Read(ts_Protocol + "TOKENS", i_Tokens, false);
+    cfg.Read(ts_Protocol + "P12", i_P12, false);
+    cfg.Read(ts_Protocol + "TSORA", i_TSora, false);
+    cfg.Read(ts_Protocol + "SJOIN", i_SJoin, false);
+    cfg.Read(ts_Protocol + "BIGTOPIC", i_BigTopic, false);
+    cfg.Read(ts_Protocol + "TOPICJOIN", i_TopicJoin, false);
+    cfg.Read(ts_Protocol + "SERVERMODES", i_TopicJoin, false);
+
+    cfg.Read(ts_Protocol + "AKILL", value_uint, 0000);
+    if (AkillTypes.find(value_uint) == AkillTypes.end())
+    {
+	NLOG(LM_WARNING, "COMMANDLINE/UNKNOWN_AKILL");
+	RET(false);
+    }
+    i_Akill = value_uint;
+
+    cfg.Read(ts_Protocol + "SIGNON", value_uint, 0000);
+    if (SignonTypes.find(value_uint) == SignonTypes.end())
+    {
+	NLOG(LM_WARNING, "COMMANDLINE/UNKNOWN_SIGNON");
+	RET(false);
+    }
+    i_Signon = value_uint;
+
+    cfg.Read(ts_Protocol + "MODES", value_uint, 3);
+    if (value_uint < 1)
+    {
+	LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Protocol + "MODES"));
+	RET(false);
+    }
+    i_Modes = value_uint;
+
+    cfg.Read(ts_Protocol + "SERVICESMODES", i_ServicesModes, "");
+    cfg.Read(ts_Protocol + "CHANMODEARG", i_ChanModeArg, "ovbkl");
+    cfg.Read(ts_Protocol + "SERVER", i_Server, "SERVER $1 $2 :$3");
+    cfg.Read(ts_Protocol + "BURST", i_Burst, "");
+    cfg.Read(ts_Protocol + "ENDBURST", i_EndBurst, "");
+    cfg.Read(ts_Protocol + "PROTOCTL", i_Protoctl, "");
+
+    cfg.Read(ts_Protocol + "SVSNICK", i_SVSNICK, "");
+    cfg.Read(ts_Protocol + "SVSMODE", i_SVSMODE, "");
+    cfg.Read(ts_Protocol + "SVSKILL", i_SVSKILL, "");
+    cfg.Read(ts_Protocol + "SVSNOOP", i_SVSNOOP, "");
+    cfg.Read(ts_Protocol + "SQLINE", i_SQLINE, "");
+    cfg.Read(ts_Protocol + "UNSQLINE", i_UNSQLINE, "");
+    cfg.Read(ts_Protocol + "SVSHOST", i_SVSHOST, "");
+
+    cfg.Read(ts_Numeric + "TRIM", value_bool, false);
+    Numeric.i_Trim = value_bool;
+    cfg.Read(ts_Numeric + "SERVERNUMBER", value_bool, false);
+    Numeric.i_ServerNumber = value_bool;
+    cfg.Read(ts_Numeric + "COMBINE", value_bool, false);
+    Numeric.i_Combine = value_bool;
+    cfg.Read(ts_Numeric + "PREFIX", value_bool, false);
+    Numeric.i_Prefix = value_bool;
+    cfg.Read(ts_Numeric + "UNREALNUMERIC", value_bool, false);
+    Numeric.i_UnrealNumeric = value_bool;
+    cfg.Read(ts_Numeric + "SERVER", Numeric.i_Server, 0);
+    cfg.Read(ts_Numeric + "FIELD", Numeric.i_Field, 0);
+    cfg.Read(ts_Numeric + "USER", Numeric.i_User, 0);
+    cfg.Read(ts_Numeric + "CHANNEL", Numeric.i_Channel, 0);
+
+    cfg.Read(ts_Numeric + "BASE64", value_mstring, 0);
+    vector < mstring > characters = value_mstring.Vector(" ,:");
+    memset(Numeric.base64_to_char, 0, sizeof(Numeric.base64_to_char));
+    memset(Numeric.char_to_base64, 0, sizeof(Numeric.char_to_base64));
+
+    for (unsigned int i = 0; i < characters.size(); i++)
+    {
+	Numeric.base64_to_char[i] = characters[i] [0U];
+	Numeric.char_to_base64[characters[i] [0U]] = (char) i;
+    }
+
+    map < mstring, mstring > file = cfg.GetMap();
+    map < mstring, mstring >::iterator iter;
+    for (iter = file.begin(); iter != file.end(); iter++)
+    {
+	if (iter->first.Left(ts_Tokens.length()).IsSameAs(ts_Tokens, true))
+	{
+	    tokens[iter->first.SubString(ts_Tokens.length())] = iter->second;
+	}
+    }
+
     DumpE();
+
+    RET(true);
 }
 
 mstring Protocol::GetToken(const mstring & in) const
@@ -765,20 +309,20 @@ mstring Protocol::GetNonToken(const mstring & in) const
 void Protocol::DumpB() const
 {
     MB(0,
-       (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
-	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
+       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
+	i_Akill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
     MB(16,
-       (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
+       (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
 	tokens.size()));
 }
 
 void Protocol::DumpE() const
 {
     ME(0,
-       (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
-	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
+       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
+	i_Akill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
     ME(16,
-       (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
+       (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
 	tokens.size()));
 }
 
