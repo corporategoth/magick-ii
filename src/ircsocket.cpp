@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.191  2001/12/31 07:49:46  prez
+** Found out stl_config.h didnt get included by default .. fixed that.
+**
 ** Revision 1.190  2001/12/30 21:27:29  prez
 ** Some trace code beautification, and added ACE_Thread::exit() to worker
 ** and save_databases threads ..
@@ -1922,7 +1925,6 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
 void *EventTask::save_databases(void *in)
 {
-    static_cast<void>(in);
     mThread::Attach(tt_MAIN);
     FT("EventTask::save_databases", (in));
     Magick::register_instance((Magick *) in);

@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2001/12/31 07:49:46  prez
+** Found out stl_config.h didnt get included by default .. fixed that.
+**
 ** Revision 1.46  2001/12/30 11:53:08  prez
 ** Added thread safety for STL to pch.h, and started using ACE to do it.
 **
@@ -190,6 +193,13 @@
 #endif
 #ifdef ACE_HAS_WTHREADS
 #  define __STL_WIN32THREADS
+#endif
+#ifdef HAVE_BITS_STL_CONFIG_H
+#  include <bits/stl_config.h>
+#else
+#  ifdef HAVE_STL_CONFIG_H
+#    include <stl_config.h>
+#  endif
 #endif
 #endif /* __cplusplus */
 

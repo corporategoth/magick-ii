@@ -496,6 +496,8 @@ fi
 dnl Find out which to use for C headers ...
 AC_CHECK_HEADERS(mpatrol.h)
 AC_CHECK_HEADERS(termio.h)
+AC_CHECK_HEADERS(stl_config.h)
+AC_CHECK_HEADERS(bits/stl_config.h)
 
 dnl Find out which to use for C++ headers ...
 AC_CHECK_HEADERS(exception)

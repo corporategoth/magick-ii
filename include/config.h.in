@@ -63,6 +63,9 @@
 #endif
 
 
+/* Define if you have the <bits/stl_config.h> header file. */
+#undef HAVE_BITS_STL_CONFIG_H
+
 /* Define if the system has the type `bool'. */
 #undef HAVE_BOOL
 
@@ -113,6 +116,9 @@
 
 /* Define if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
+
+/* Define if you have the <stl_config.h> header file. */
+#undef HAVE_STL_CONFIG_H
 
 /* Define if you have the <string> header file. */
 #undef HAVE_STRING
