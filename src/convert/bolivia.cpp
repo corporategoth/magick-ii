@@ -370,6 +370,7 @@ FILE *bolivia_open_db(const char *service, const char *filename, const char *mod
 
 void bolivia_close_db(FILE *dbfile, const char *filename)
 {
+    static_cast<void>(filename);
     fclose(dbfile);
 }
 

@@ -361,6 +361,7 @@ FILE *sirv_open_db(const char *service, const char *filename, const char *mode)
 
 void sirv_close_db(FILE *dbfile, const char *filename)
 {
+    static_cast<void>(filename);
     fclose(dbfile);
 }
 
