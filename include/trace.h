@@ -160,6 +160,7 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 #define BTCB()
 #define ETCB()
 #define FLUSH()
+#define MASSERT(truth,message)
 
 #else /* MAGICK_TRACE_WORKS */
 
@@ -259,11 +260,16 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 #define BTCB() try {
 #define ETCB() } catch(exception &E) { \
 		T_Exception __tcb(__FILE__, __LINE__, typeid(E).name(), E.what()); \
+		FLUSH(); \
                 throw; \
         } catch(...) { \
 		T_Exception __tcb(__FILE__, __LINE__, NULL, NULL); \
+		FLUSH(); \
                 throw; \
         }
+
+#define MASSERT(truth,message) if((truth)==false) \
+	throw new exception("Assertion in file "__FILE__" at line "__LINE__": "message);
 
 #define FLUSH() do { \
 	ThreadID *tid = mThread::find(); \
