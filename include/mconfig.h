@@ -25,6 +25,9 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/06/23 12:49:13  ungod
+** completion of the ceNode class
+**
 ** Revision 1.7  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -63,7 +66,7 @@ class ceNode
 private:
     mstring i_Name;
     map<mstring,mstring> i_keys;
-    map<mstring,auto_ptr<ceNode> > i_children;
+    map<mstring,ceNode * > i_children;
 public:
     ceNode();
     ceNode(ceNode &in);

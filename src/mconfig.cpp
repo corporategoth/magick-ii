@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/06/23 12:49:44  ungod
+** completion of the ceNode class
+**
 ** Revision 1.10  2000/06/11 09:30:21  prez
 ** Added propper MaxLine length, no more hard-coded constants.
 **
@@ -78,6 +81,12 @@ ceNode::~ceNode()
 {
     NFT("ceNode::~cdNode");
     // probably not needed, but for safety's sake anyway
+    for(map<mstring,ceNode * >::iterator i=i_children.begin();i!=i_children.end();i++)
+        if(i->second!=NULL)
+        {
+            delete i->second;
+            i->second=NULL;
+        }
     i_children.clear();
     i_keys.clear();
 }
@@ -85,30 +94,110 @@ ceNode::~ceNode()
 ceNode& ceNode::operator=(const ceNode &in)
 {
     FT("ceNode::operator=", ("(const ceNode &) in"));
+    map<mstring,ceNode * >::iterator i;
+    i_Name=in.i_Name;
+    i_keys.clear();
+    i_keys=in.i_keys;
+    for(map<mstring,ceNode * >::iterator i=i_children.begin();i!=i_children.end();i++)
+        if(i->second!=NULL)
+        {
+            delete i->second;
+            i->second=NULL;
+        }
+    i_children.clear();
+    for(map<mstring,ceNode * >::const_iterator j=in.i_children.begin();j!=in.i_children.end();j++)
+    {
+        i_children[j->first]=new ceNode;
+        // the below line *will* recursively copy it's children
+        *(i_children[j->first])=*(j->second);
+    }
+    return *this;
 }
 
 bool ceNode::operator==(const ceNode &in)const
 {
     FT("ceNode::operator==", ("(const ceNode &) in"));
-    RET(false);
+    bool Result=false;
+    if(i_keys==in.i_keys)
+    {
+        map<mstring,ceNode * >::const_iterator i;
+        for(i=in.i_children.begin();i!=in.i_children.end();i++)
+        {
+            if(i_children.find(i->first)==i_children.end())
+                RET(false);
+            // the below line *will* recursively check it's children
+            if(!(*(i_children.find(i->first)->second)==*(i->second)))
+                RET(false);
+        }
+        Result=true;
+    }
+    RET(Result);
 }
 
 bool ceNode::operator<(const ceNode &in)const
 {
     FT("ceNode::operator<", ("(const ceNode &) in"));
-    RET(false);
+    RET(i_Name<in.i_Name);
 }
 
 bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
 {
     FT("ceNode::SetKey", (KeyName, Value));
+    mstring temppath;
+    if(KeyName[0]=='/')
+        temppath=KeyName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_keys.find(temppath)==i_keys.end())
+        {
+            i_keys[temppath]=Value;
+        }
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        {
+            i_children[temppath]=new ceNode;
+        }
+        i_children[temppath]->SetKey(rest,Value);
+    }
+    // todo set up the return values, true if it actually sets it, false if it doesn't
     RET(false);
 }
 
 bool ceNode::DeleteKey(const mstring &KeyName)
 {
     FT("ceNode::DeleteKey", (KeyName));
-    RET(false);
+    mstring temppath;
+    bool Result=false;
+    if(KeyName[0]=='/')
+        temppath=KeyName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_keys.find(temppath)==i_keys.end())
+        {
+            i_keys.erase(temppath);
+            Result=true;
+        }
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+            Result=false;
+        else
+            Result=i_children[temppath]->DeleteKey(rest);
+    }
+    RET(Result);
 }
 
 bool ceNode::CreateNode(const mstring &NodeName)
@@ -116,14 +205,64 @@ bool ceNode::CreateNode(const mstring &NodeName)
     // strip off the first bit of the path, if not exists, create the node, and pass
     // the rest of the path to it, so it can do the same itself.
     // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
-    FT("ceNode::CreateNode", (NodeName));
-    RET(false);
+    FT("ceNode::CreateNode",(NodeName));
+    mstring temppath;
+    if(NodeName[0]=='/')
+        temppath=NodeName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_children.find(temppath)==i_children.end())
+        {
+            i_children[temppath]=new ceNode;
+            i_children[temppath]->i_Name=temppath;
+        }
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        {
+            i_children[temppath]=new ceNode;
+        }
+        i_children[temppath]->CreateNode(rest);
+    }
+    // todo set up the return values, true if it actually creates it, false if it doesn't
+    RET(true);
 }
 
 bool ceNode::DeleteNode(const mstring &NodeName)
 {
-    FT("ceNode::DeleteNode", (NodeName));
-    RET(false);
+    FT("ceNode::DeleteNode",(NodeName));
+    mstring temppath;
+    if(NodeName[0]=='/')
+        temppath=NodeName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_children.find(temppath)!=i_children.end())
+        {
+            if(i_children[temppath]!=NULL)
+                delete i_children[temppath];
+            i_children.erase(temppath);
+        }
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        {
+            i_children[temppath]->DeleteNode(rest);
+        }
+    }
+    // todo set up the return values, true if it actually deletes it, false if it doesn't
+    RET(true);
 }
 
 bool ceNode::NodeExists(const mstring &NodeName)
@@ -132,6 +271,27 @@ bool ceNode::NodeExists(const mstring &NodeName)
     // the rest of the path to it, so it can do the same itself.
     // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
     FT("ceNode::NodeExists", (NodeName));
+    mstring temppath;
+    bool Result=false;
+    if(NodeName[0]=='/')
+        temppath=NodeName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_children.find(temppath)!=i_children.end()&&(i_children[temppath]!=NULL))
+            Result=true;
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        {
+            Result=i_children[temppath]->NodeExists(rest);
+        }
+    }
     RET(false);
 }
 
@@ -272,7 +432,7 @@ auto_ptr<ceNode> mConfigEngine::GetNode(const mstring& NodeName)
 bool mConfigEngine::DeleteNode(const mstring& NodeName)
 {
     FT("mConfigEngine::DeleteNode", (NodeName));
-    bool retval = RootNode.DeleteNode(NodeName);
+    bool retval=RootNode.DeleteNode(NodeName);
     RET(retval);
 }
 
