@@ -25,6 +25,10 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2001/12/21 05:02:29  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.53  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -163,7 +167,6 @@ int main(int argc, char **argv)
 	{
 	    Magick instance(argc, argv);
 	    Magick::register_instance(&instance);
-	    ACE_Reactor::close_singleton();
 
 	    Result = instance.Init();
 	    if (Result != MAGICK_RET_NORMAL)

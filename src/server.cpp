@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.201  2001/12/21 05:02:29  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.200  2001/12/20 08:02:33  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -4606,7 +4610,7 @@ void Server::parse_Q(mstring &source, const mstring &msgtype, const mstring &par
 		    while (Magick::instance().Pause())
 			ACE_OS::sleep(1);
 		    ServerSquit[Magick::instance().nickserv.GetLive(sourceL).Server()] =
-			ACE_Reactor::instance()->schedule_timer(&tobesquit,
+			Magick::instance().reactor().schedule_timer(&tobesquit,
 				new mstring(Magick::instance().nickserv.GetLive(sourceL).Server()),
 				ACE_Time_Value(10));
 		    CE(1, ServerSquit.size());
@@ -5366,7 +5370,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    if (ServerSquit.find(tlist[i]) != ServerSquit.end())
 		    {
 			mstring *arg = NULL;
-			if (ACE_Reactor::instance()->cancel_timer(
+			if (Magick::instance().reactor().cancel_timer(
 				ServerSquit[tlist[i]], reinterpret_cast<const void **>(arg))
 				&& arg != NULL)
 			    delete arg;
@@ -5374,7 +5378,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    while (Magick::instance().Pause())
 			ACE_OS::sleep(1);
 		    ServerSquit[tlist[i]] =
-			ACE_Reactor::instance()->schedule_timer(&squit,
+			Magick::instance().reactor().schedule_timer(&squit,
 			new mstring(tlist[i]),
 			ACE_Time_Value(Magick::instance().config.Squit_Protect()));
 		}

@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.188  2001/12/21 05:02:29  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.187  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -734,7 +738,7 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 	if (Magick::instance().server.ServerSquit.find(si->first) != Magick::instance().server.ServerSquit.end())
 	{
 	    mstring *arg = NULL;
-	    if (ACE_Reactor::instance()->cancel_timer(
+	    if (Magick::instance().reactor().cancel_timer(
 		Magick::instance().server.ServerSquit[si->first], reinterpret_cast<const void **>(arg))
 		&& arg != NULL)
 		delete arg;
@@ -746,7 +750,7 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 
 	    CP(("Scheduling SQUIT protect timer..."));
 	    Magick::instance().server.ServerSquit[si->first] =
-		ACE_Reactor::instance()->schedule_timer(&Magick::instance().server.squit,
+		Magick::instance().reactor().schedule_timer(&Magick::instance().server.squit,
 		new mstring(si->first),
 		ACE_Time_Value(Magick::instance().config.Squit_Protect()));
 	}
@@ -814,7 +818,7 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
 
-	ACE_Reactor::instance()->schedule_timer(&(Magick::instance().rh), NULL, 
+	Magick::instance().reactor().schedule_timer(&(Magick::instance().rh), NULL, 
 		ACE_Time_Value(Magick::instance().config.Server_Relink()));
     }
 
@@ -1311,7 +1315,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
 
-    ACE_Reactor::instance()->schedule_timer(this, 0,
+    Magick::instance().reactor().schedule_timer(this, 0,
 		ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
     DRET(0);
 }
@@ -1511,7 +1515,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
 
-    IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
+    IrcConnector C_server(&Magick::instance().reactor(),ACE_NONBLOCK);
 
     unsigned int i;
     for (i=1; i<5; i++)
@@ -1542,7 +1546,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
 	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
-	ACE_Reactor::instance()->schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value(Magick::instance().config.Server_Relink()));
+	Magick::instance().reactor().schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value(Magick::instance().config.Server_Relink()));
     }
     else
     {
@@ -2001,8 +2005,8 @@ int EventTask::svc(void)
 
 	CP(("TIMERS:  Current time: %ld,  Earliest Timer: %ld",
 		ACE_OS::gettimeofday().sec(),
-		ACE_Reactor::instance()->timer_queue()->is_empty() ? 0 :
-		ACE_Reactor::instance()->timer_queue()->earliest_time().sec()));
+		Magick::instance().reactor().timer_queue()->is_empty() ? 0 :
+		Magick::instance().reactor().timer_queue()->earliest_time().sec()));
 
 	try
         {

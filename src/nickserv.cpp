@@ -27,6 +27,10 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.193  2001/12/21 05:02:29  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.192  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -570,7 +574,7 @@ void Nick_Live_t::InFlight_t::ChgNick(const mstring& newnick)
     {
 	CB(1, timer);
 	mstring *arg = NULL;
-	if (ACE_Reactor::instance()->cancel_timer(timer,
+	if (Magick::instance().reactor().cancel_timer(timer,
 		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
@@ -612,7 +616,7 @@ Nick_Live_t::InFlight_t::~InFlight_t()
     mstring *arg = NULL;
     if (timer)
     {
-	if (ACE_Reactor::instance()->cancel_timer(timer,
+	if (Magick::instance().reactor().cancel_timer(timer,
 		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
@@ -668,7 +672,7 @@ void Nick_Live_t::InFlight_t::SetInProg()
     if (timer)
     {
 	CB(1, timer);
-	if (ACE_Reactor::instance()->cancel_timer(timer,
+	if (Magick::instance().reactor().cancel_timer(timer,
 		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
@@ -768,7 +772,7 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
+    timer = Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
@@ -805,7 +809,7 @@ void Nick_Live_t::InFlight_t::Continue(const mstring& message)
     if (timer)
     {
 	CB(1, timer);
-	if (ACE_Reactor::instance()->cancel_timer(timer,
+	if (Magick::instance().reactor().cancel_timer(timer,
 		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
@@ -813,7 +817,7 @@ void Nick_Live_t::InFlight_t::Continue(const mstring& message)
 	}
 	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
-	timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
+	timer = Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
 	CE(1, timer);
@@ -834,7 +838,7 @@ void Nick_Live_t::InFlight_t::Cancel()
     if (timer)
     {
 	MCB(timer);
-	if (ACE_Reactor::instance()->cancel_timer(timer,
+	if (Magick::instance().reactor().cancel_timer(timer,
 		reinterpret_cast<const void **>(arg)) &&
 	    arg != NULL)
 	{
@@ -874,7 +878,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	if (timer)
 	{
 	    MCB(timer);
-	    if (ACE_Reactor::instance()->cancel_timer(timer,
+	    if (Magick::instance().reactor().cancel_timer(timer,
 		reinterpret_cast<const void **>(arg)) &&
 		arg != NULL)
 	    {
@@ -1109,7 +1113,7 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
+    timer = Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
@@ -1165,7 +1169,7 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
+    timer = Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }

@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.336  2001/12/21 05:02:29  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.335  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -825,7 +829,7 @@ int Magick::Start()
     int Result;
 
     ACE_OS::umask(files.umask);
-    ACE_Reactor::reset_event_loop();
+    reactor().reset_reactor_event_loop();
 
 #ifndef WIN32
     mFile pidfile;
@@ -905,62 +909,62 @@ int Magick::Start()
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
-    ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
+    reactor().register_handler(SIGINT,signalhandler);
 #if defined(SIGTERM) && (SIGTERM != 0)
-    ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
+    reactor().register_handler(SIGTERM,signalhandler);
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
-    ACE_Reactor::instance()->register_handler(SIGPIPE,signalhandler);
+    reactor().register_handler(SIGPIPE,signalhandler);
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
-    ACE_Reactor::instance()->register_handler(SIGQUIT,signalhandler);
+    reactor().register_handler(SIGQUIT,signalhandler);
 #endif
-    ACE_Reactor::instance()->register_handler(SIGSEGV,signalhandler);
+    reactor().register_handler(SIGSEGV,signalhandler);
 #ifdef SIGBUS
-    ACE_Reactor::instance()->register_handler(SIGBUS,signalhandler);
+    reactor().register_handler(SIGBUS,signalhandler);
 #endif
 #ifdef SIGHUP
-    ACE_Reactor::instance()->register_handler(SIGHUP,signalhandler);
+    reactor().register_handler(SIGHUP,signalhandler);
 #endif
-    ACE_Reactor::instance()->register_handler(SIGILL,signalhandler);
+    reactor().register_handler(SIGILL,signalhandler);
 #ifdef SIGTRAP
-    ACE_Reactor::instance()->register_handler(SIGTRAP,signalhandler);
+    reactor().register_handler(SIGTRAP,signalhandler);
 #endif
 #ifdef SIGIOT
-    ACE_Reactor::instance()->register_handler(SIGIOT,signalhandler);
+    reactor().register_handler(SIGIOT,signalhandler);
 #endif
 #ifdef SIGFPE
-    ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
+    reactor().register_handler(SIGFPE,signalhandler);
 #endif
 #ifdef SIGWINCH
-    ACE_Reactor::instance()->register_handler(SIGWINCH,signalhandler);
+    reactor().register_handler(SIGWINCH,signalhandler);
 #endif
 #ifdef SIGTTIN
-    ACE_Reactor::instance()->register_handler(SIGTTIN,signalhandler);
+    reactor().register_handler(SIGTTIN,signalhandler);
 #endif
 #ifdef SIGTTOU
-    ACE_Reactor::instance()->register_handler(SIGTTOU,signalhandler);
+    reactor().register_handler(SIGTTOU,signalhandler);
 #endif
 #ifdef SIGTSTP
-    ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
+    reactor().register_handler(SIGTSTP,signalhandler);
 #endif
 
 #if 0
 
 // Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
+    reactor().register_handler(SIGUSR1,signalhandler);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
+    reactor().register_handler(SIGUSR2,signalhandler);
 #endif
 
 // AIX uses this for zombie protection ...
 #if defined(SIGALRM) && (SIGALRM != 0)
-    ACE_Reactor::instance()->register_handler(SIGALRM,signalhandler);
+    reactor().register_handler(SIGALRM,signalhandler);
 #endif
 #ifdef SIGCHLD
-    ACE_Reactor::instance()->register_handler(SIGCHLD,signalhandler);
+    reactor().register_handler(SIGCHLD,signalhandler);
 #endif
 
 #endif /* 0 */
@@ -1025,9 +1029,9 @@ int Magick::Run()
 	dcc->open((void *) this);
     }
 
-    ACE_Reactor::instance()->schedule_timer(&Magick::instance().hh, 0,
+    reactor().schedule_timer(&Magick::instance().hh, 0,
 		ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
-    ACE_Reactor::instance()->schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value::zero);
+    reactor().schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value::zero);
     AUTO(true); // Activate events from here.
 
     // next thing to be done here is set up the acceptor mechanism to listen
@@ -1039,7 +1043,7 @@ int Magick::Run()
 
     DumpB();
     CurrentState = Running;
-    ACE_Reactor::run_event_loop();
+    reactor().run_reactor_event_loop();
     DumpE();
     FLUSH();
 
@@ -1058,7 +1062,7 @@ int Magick::Stop()
 
     if (CurrentState == Running)
     {
-	ACE_Reactor::end_event_loop();
+	reactor().end_reactor_event_loop();
 	RET(MAGICK_RET_NORMAL);
     }
 
@@ -1075,62 +1079,62 @@ int Magick::Stop()
     NLOG(LM_STARTUP, "COMMANDLINE/STOP_EVENTS");
 
     //todo work out some way to "ignore" signals
-    ACE_Reactor::instance()->remove_handler(SIGINT);
+    reactor().remove_handler(SIGINT);
 #if defined(SIGTERM) && (SIGTERM != 0)
-    ACE_Reactor::instance()->remove_handler(SIGTERM);
+    reactor().remove_handler(SIGTERM);
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
-    ACE_Reactor::instance()->remove_handler(SIGPIPE);
+    reactor().remove_handler(SIGPIPE);
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
-    ACE_Reactor::instance()->remove_handler(SIGQUIT);
+    reactor().remove_handler(SIGQUIT);
 #endif
-    ACE_Reactor::instance()->remove_handler(SIGSEGV);
+    reactor().remove_handler(SIGSEGV);
 #ifdef SIGBUS
-    ACE_Reactor::instance()->remove_handler(SIGBUS);
+    reactor().remove_handler(SIGBUS);
 #endif
 #ifdef SIGHUP
-    ACE_Reactor::instance()->remove_handler(SIGHUP);
+    reactor().remove_handler(SIGHUP);
 #endif
-    ACE_Reactor::instance()->remove_handler(SIGILL);
+    reactor().remove_handler(SIGILL);
 #ifdef SIGTRAP
-    ACE_Reactor::instance()->remove_handler(SIGTRAP);
+    reactor().remove_handler(SIGTRAP);
 #endif
 #ifdef SIGIOT
-    ACE_Reactor::instance()->remove_handler(SIGIOT);
+    reactor().remove_handler(SIGIOT);
 #endif
 #ifdef SIGFPE
-    ACE_Reactor::instance()->remove_handler(SIGFPE);
+    reactor().remove_handler(SIGFPE);
 #endif
 #ifdef SIGWINCH
-    ACE_Reactor::instance()->remove_handler(SIGWINCH);
+    reactor().remove_handler(SIGWINCH);
 #endif
 #ifdef SIGTTIN
-    ACE_Reactor::instance()->remove_handler(SIGTTIN);
+    reactor().remove_handler(SIGTTIN);
 #endif
 #ifdef SIGTTOU
-    ACE_Reactor::instance()->remove_handler(SIGTTOU);
+    reactor().remove_handler(SIGTTOU);
 #endif
 #ifdef SIGTSTP
-    ACE_Reactor::instance()->remove_handler(SIGTSTP);
+    reactor().remove_handler(SIGTSTP);
 #endif
 
 #if 0
 
 // Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->remove_handler(SIGUSR1);
+    reactor().remove_handler(SIGUSR1);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Reactor::instance()->remove_handler(SIGUSR2);
+    reactor().remove_handler(SIGUSR2);
 #endif
 
 // AIX uses this for zombie protection ...
 #if defined(SIGALRM) && (SIGALRM != 0)
-    ACE_Reactor::instance()->remove_handler(SIGALRM);
+    reactor().remove_handler(SIGALRM);
 #endif
 #ifdef SIGCHLD
-    ACE_Reactor::instance()->remove_handler(SIGCHLD);
+    reactor().remove_handler(SIGCHLD);
 #endif
 
 #endif /* 0 */
@@ -3526,7 +3530,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 		thr_mgr = ACE_Thread_Manager::instance();
 	    Magick::instance().Disconnect();
 	    if (Magick::instance().dh_timer > 0)
-		ACE_Reactor::instance()->cancel_timer(Magick::instance().dh_timer);
+		Magick::instance().reactor().cancel_timer(Magick::instance().dh_timer);
 	    Magick::instance().dh_timer = 0;
 	    break;
 	case Heartbeat_Handler::H_Events:
@@ -4073,7 +4077,7 @@ void Magick::Disconnect(const bool reconnect)
 #endif
 		while (Magick::instance().Pause())
 		    ACE_OS::sleep(1);
-		dh_timer = ACE_Reactor::instance()->schedule_timer(&dh,
+		dh_timer = reactor().schedule_timer(&dh,
 					NULL, ACE_Time_Value(10));
 	    }
 	    else if (dh_timer < 0)

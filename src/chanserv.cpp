@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.268  2001/12/21 05:02:28  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.267  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -1201,7 +1205,7 @@ void Chan_Live_t::LockDown()
     MCB(ph_timer);
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    ph_timer = ACE_Reactor::instance()->schedule_timer(&(Magick::instance().chanserv.ph),
+    ph_timer = Magick::instance().reactor().schedule_timer(&(Magick::instance().chanserv.ph),
 			    new mstring(i_Name),
 			    ACE_Time_Value(Magick::instance().chanserv.ChanKeep()));
     MCE(ph_timer);
@@ -1221,7 +1225,7 @@ void Chan_Live_t::UnLock()
     MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
     MCB(ph_timer);
     if (ph_timer &&
-	ACE_Reactor::instance()->cancel_timer(ph_timer,
+	Magick::instance().reactor().cancel_timer(ph_timer,
 		reinterpret_cast<const void **>(arg)) &&
 	arg != NULL)
     {

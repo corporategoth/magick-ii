@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.172  2001/12/21 05:02:28  prez
+** Changed over from using a global ACE_Reactor to using an instance inside
+** of the Magick instance.
+**
 ** Revision 1.171  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -347,6 +351,7 @@ private:
 		Running, RunCompleted, Stopped, Finished } CurrentState;
 
     static map<ACE_thread_t, Magick *> InstanceMap;
+    ACE_Reactor i_reactor;
 
     vector<mstring> argv;
     // Language, token, string
@@ -414,6 +419,7 @@ public:
 #else
     static Magick &instance(ACE_thread_t id = ACE_Thread::self());
 #endif
+    ACE_Reactor &reactor() { return i_reactor; }
 
     // Config Values
     class startup_t {
@@ -612,7 +618,7 @@ public:
 	servmsg.MSG(on);
 	commserv.MSG(on);
     }
-    void Die()	    { ACE_Reactor::instance()->end_event_loop(); }
+    void Die()	    { reactor().end_reactor_event_loop(); }
     void Shutdown(const bool in)    { i_shutdown = in; }
     bool Shutdown()const	{ return i_shutdown; }
 
