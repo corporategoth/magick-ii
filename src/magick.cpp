@@ -681,7 +681,7 @@ bool Magick::check_config()
         wxLogError("CONFIG: Cannot set Startup_LAGTIME < 1.");
         RET(false);
     }
-    if (nickserv.passfail_max < 1)
+    if (nickserv.passfail < 1)
     {
 	// change this to the logging mechanism
         wxLogError("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
@@ -768,7 +768,7 @@ void Magick::get_config_values()
 
     in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
     in.Read(ts_NickServ+"RELEASE",&nickserv.release,60);
-    in.Read(ts_NickServ+"PASSFAIL",&nickserv.passfail_max,5);
+    in.Read(ts_NickServ+"PASSFAIL",&nickserv.passfail,5);
     in.Read(ts_NickServ+"DEF_KILL",&nickserv.def_kill,true);
     in.Read(ts_NickServ+"LCK_KILL",&nickserv.lck_kill,false);
     in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
