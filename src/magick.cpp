@@ -71,7 +71,6 @@ int Magick::Start()
 		{
 		    // use static errors here because conf directory is not known yet
 		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
-		    RET(MAGICK_RET_ERROR);
 		}
 		services_dir=argv[i];
 	    }
@@ -82,11 +81,21 @@ int Magick::Start()
 		{
 		    // use static errors here because conf directory is not known yet
 		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
-		    RET(MAGICK_RET_ERROR);
 		}
 		config_file=argv[i];
 	    }
-	    else if(argv[i]=="--help" || argv[i]=="-?" || argv[i]=="-h")
+	    else if(argv[i]=="--trace")
+	    {
+		i++;
+		if(i==argc||argv[i][0U]=='-')
+		{
+		    // use static errors here because conf directory is not known yet
+		    wxLogFatal("%s requires a paramter.",argv[i-1].c_str());
+		}
+		config_file=argv[i];
+	    }
+	    else if(argv[i]=="--help" ||
+		(argv[i][1U]!='-' && argv[i].Find("?")))
     	    {
 		dump_help(argv[0]);
 		RET(MAGICK_RET_NORMAL);
@@ -102,8 +111,13 @@ int Magick::Start()
         RET(MAGICK_RET_INVALID_SERVICES_DIR);
     }
 
-    // need to transfer wxGetWorkingDirectory() and prepend it to config_file
-    MagickIni=new wxFileConfig("magick","",services_dir+DirSlash+config_file);
+    // Check for \ or / or ?: in first chars.
+    if ((errstring = config_file[0u]) == DirSlash || config_file[1u] == ':')
+	MagickIni=new wxFileConfig("magick","",config_file);
+    else
+	MagickIni=new wxFileConfig("magick","",services_dir+DirSlash+config_file);
+    errstring = "";
+
     if(MagickIni==NULL)
     {
 	wxLogFatal("Major fubar, couldn't allocate memory to read config file\nAborting");
@@ -451,260 +465,277 @@ int Magick::doparamparse()
 {
     NFT("Magick::doparamparse");
     mstring temp;
-    int argc=argv.size(),i, fwdargs;
+    int argc=argv.size(),i;
+    bool ArgUsed = false;
     for(i=1;i<argc;i++)
     {
 	if(argv[i][0U]=='-')
 	{
-	    argv[i].MakeLower();
+	    /*	COMMAND		SHORT	ALIASES
+		--connect X	-c	--remote
+		--name X	-n
+		--desc X	-d
+		--user X	-u
+		--ownuser	-o
+		--host X	-h
+		--dir X
+		--config X
+		--trace X
+		--verbose	-v	--debug
+		--fg	   	-f	--live, --nofork
+		--relink X	-r
+		--norelink
+		--level X	-l
+		--gmt X		-g
+		--save X	-s	--update
+		--help		-?
+	    */
 
-
-
-#if 0
-	    // This is put on hold until we can find a REASONABLE
-	    // way to do this without writing everything twice.
-	    fwdargs=0;
 	    if (argv[i][1U]=='-')
-	    {	// Long Arguments
-		switch(argv[i])
-		{
-		case "--remote":    // -r
-		    break;
-		case "--name":	    // -n
-		    break;
-		case "--desc":	    // -d
-		    break;
-		case "--user":	    // -u
-		    break;
-		case "--host":	    // -h
-		    break;
-		case "--log":	    // -l
-		    break;
-		case "--live":	    // -b
-		case "--nofork":
-		    break;
-		case "--relink":    // -c
-		    break;
-		case "--gmt":	    // -g
-		    break;
-		case "--update":    // -w
-		    break;
-		case "--dir":
-		    i++;
-		    break;
-		case "--config":
-		    i++;
-		    break;
-		}
-
-	    }
+		ArgUsed=paramlong(argv[i], (i-1 < argc) ? argv[i+1] : "");
 	    else
-	    {			// Short Arguments
-		// This will use the fwdargs veriable to determine
-		// how many arguments to skip forward for the paramater
-		// required (ie. so -uhcg is valid, and you have a
-		// user host gmt  paramater following it).
-		int j;
-		for(j=1; j<argv[i].Len(); j++)
-		{
-		    switch(argv[i][j])
-		    {
-		    case 'r':	    // --remote
-			break;
-		    case 'n':	    // --name
-			break;
-		    case 'd':	    // --desc
-			break;
-		    case 'u':	    // --user
-			break;
-		    case 'h':	    // --host
-			break;
-		    case 'l':	    // --log
-			break;
-		    case 'b':	    // --live / --nofork
-			break;
-		    case 'c':	    // --relink
-			break;
-		    case 'g':	    // --gmt
-			break;   
-		    case 'w':	    // --update
-			break;
-		    }
-		}
-	    }
-#endif
-
-
-
-	    if(argv[i]=="-remote")
-	    {
+		ArgUsed=paramshort(argv[i], (i-1 < argc) ? argv[i+1] : "");
+	    
+	    if (ArgUsed)
 		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal("-remote requires a hostname[:port]");
-		    RET(MAGICK_RET_ERROR);
-		}
-		if(argv[i].Contains(":"))
-		{
-		    if(argv[i].After(':').IsNumber())
-		    {
-			if(atoi(argv[i].After(':').c_str())<0)
-			    wxLogError("port must be a positive number (ignoring)");
-			else
-			    Startup_REMOTE_PORT=atoi(argv[i].After(':').c_str());
-		    }
-		    Startup_REMOTE_SERVER=argv[i].Before(':');
-		}
-	    }
-	    else if(argv[i]=="-name")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-name");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Startup_SERVER_NAME=argv[i];
-	    }
-	    else if(argv[i]=="-desc")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-desc");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Startup_SERVER_DESC=argv[i];
-	    }
-	    else if(argv[i]=="-user")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-user");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Startup_SERVICES_USER=argv[i];
-	    }
-	    else if(argv[i]=="-host")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-host");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Startup_SERVICES_HOST=argv[i];
-	    }
-	    else if(argv[i]=="-dir")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-dir");
-		    RET(MAGICK_RET_ERROR);
-		}
-		// already handled, but we needed to i++
-	    }
-	    else if(argv[i]=="-config")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-config");
-		    RET(MAGICK_RET_ERROR);
-		}
-		// already handled, but we needed to i++
-	    }
-	    else if(argv[i]=="-log")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-log");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Files_LOGFILE=argv[i];
-	    }
-	    else if(argv[i]=="-debug")
-		debug=true;
-	    else if(argv[i]=="-live"||argv[i]=="nofork")
-		live=true;
-	    else if(argv[i]=="-relink")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-relink");
-		    RET(MAGICK_RET_ERROR);
-		}
-		if(atoi(argv[i].c_str())<0)
-		{
-		    wxLogFatal("-relink parameter must be positive");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Config_SERVER_RELINK=atoi(argv[i].c_str());
-	    }
-	    else if(argv[i]=="-norelink")
-		Config_SERVER_RELINK=-1;
-	    else if(argv[i]=="-level")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-level");
-		    RET(MAGICK_RET_ERROR);
-		}
-		if(atoi(argv[i].c_str())<0)
-		{
-		    wxLogFatal("-level paramater must be positive");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Startup_LEVEL=atoi(argv[i].c_str());
-	    }
-	    else if(argv[i]=="-gmt")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-gmt");
-		    RET(MAGICK_RET_ERROR);
-		}
-		if(abs(atoi(argv[i].c_str()))>12)
-		{
-		    wxLogFatal("-offset must be between -12 and 12");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Startup_GMT=atoi(argv[i].c_str());
-	    }
-	    else if(argv[i]=="-update")
-	    {
-		i++;
-		if(i==argc||argv[i][0U]=='-')
-		{
-		    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"-update");
-		    RET(MAGICK_RET_ERROR);
-		}
-		if(atoi(argv[i].c_str())<0)
-		{
-		    wxLogFatal("-update: number of seconds must be positive");
-		    RET(MAGICK_RET_ERROR);
-		}
-		Config_CYCLETIME=atoi(argv[i].c_str());
-	    }
-	    else
-	    {
-    		wxLogFatal("Unknown option %s.",argv[i].c_str());
-		RET(MAGICK_RET_ERROR);
-	    }
 	}
 	else
 	{
 	    wxLogFatal("Non-option arguments not allowed");
-	    RET(MAGICK_RET_ERROR);
 	}
     }
     RET(MAGICK_RET_NORMAL);
+}
+
+
+bool Magick::paramlong(mstring first, mstring second)
+{
+    FT("Magick::paramlong", (first, second));
+    if(first=="--dir" || first=="--config" || first=="--trace")
+    {
+	// already handled, but we needed to i++
+    }
+    else if(first=="--connect" || first=="--remote")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal("--connect requires a hostname[:port]");
+	}
+	if(second.After(':').IsNumber())
+	{
+	    if(atoi(second.After(':').c_str())<=0)
+		wxLogError("port must be a positive number (ignoring)");
+	    else
+		Startup_REMOTE_PORT=atoi(second.After(':').c_str());
+	} else
+	    wxLogError("port must be a number");
+	Startup_REMOTE_SERVER=second.Before(':');
+	RET(true);
+    }
+    else if(first=="--name")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--name");
+	}
+	Startup_SERVER_NAME=second;
+	RET(true);
+    }
+    else if(first=="--desc")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--desc");
+	}
+	Startup_SERVER_DESC=second;
+	RET(true);
+    }
+    else if(first=="--user")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--user");
+	}
+	Startup_SERVICES_USER=second;
+	RET(true);
+    }
+    else if(first=="--ownuser")
+    {
+	Startup_OWNUSER=true;
+    }
+    else if(first=="--host")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--host");
+	}
+	Startup_SERVICES_HOST=second;
+    }
+    else if(first=="--log")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--log");
+	}
+	Files_LOGFILE=second;
+	RET(true);
+    }
+    else if(first=="--verbose" || first=="--debug")
+	debug=true;
+    else if(first=="--fg" || first=="--foreground"
+	    || first=="--live" || first=="--nofork")
+	live=true;
+    else if(first=="--relink")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--relink");
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    wxLogFatal("--relink parameter must be positive");
+	}
+	Config_SERVER_RELINK=atoi(first.c_str());
+	RET(true);
+    }
+    else if(first=="--norelink")
+	Config_SERVER_RELINK=0;
+    else if(first=="--level")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--level");
+	}
+	if(atoi(second.c_str())<=0)
+	{
+	    wxLogFatal("--level paramater must be positive");
+	}
+	Startup_LEVEL=atoi(second.c_str());
+	RET(true);
+    }
+    else if(first=="--gmt")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--gmt");
+	}
+	if(abs(atoi(second.c_str()))>=12)
+	{
+	    wxLogFatal("--gmt must be between -12 and 12");
+	}
+	Startup_GMT=atoi(second.c_str());
+	RET(true);
+    }
+    else if(first=="--save" || first=="--update")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--save");
+	}
+	if(atoi(second.c_str())<=0)
+	{
+	    wxLogFatal("--save: number of seconds must be positive");
+	}
+	Config_CYCLETIME=atoi(second.c_str());
+	RET(true);
+    }
+    else
+    {
+   	wxLogError("Unknown option %s, ignoring.",first.c_str());
+    }
+    RET(false);
+}
+
+bool Magick::paramshort(mstring first, mstring second)
+{
+    FT("Magick::paramshort", (first, second));
+    bool ArgUsed = false;
+    for (unsigned int i=1; i<first.Len(); i++) {
+	if (first[i]=='?')
+	{
+	    // Already handled
+	}
+	else if (first[i]=='c')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--connect", second);
+	}
+	else if(first[i]=='n')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--name", second);
+	}
+	else if(first[i]=='d')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--desc", second);
+	}
+	else if(first[i]=='u')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--user", second);
+	}
+	else if(first[i]=='o')
+	{
+	    ArgUsed = paramlong ("--ownuser", second);
+	}
+	else if(first[i]=='h')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--host", second);
+	}
+	else if(first[i]=='v')
+	{
+	    ArgUsed = paramlong ("--verbose", second);
+	}
+	else if(first[i]=='f')
+	{
+	    ArgUsed = paramlong ("--fg", second);
+	}
+	else if(first[i]=='r')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--relink", second);
+	}
+	else if(first[i]=='l')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--level", second);
+	}
+	else if(first[i]=='g')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--gmt", second);
+	}
+	else if(first[i]=='s')
+	{
+	    if (ArgUsed)
+		wxLogFatal("Paramater may only be used once");
+	    else
+		ArgUsed = paramlong ("--save", second);
+	}
+	else
+	{
+	    wxLogError("Unknown option -%c, ignoring.",first[i]);
+	}
+    }
+    RET(ArgUsed);
 }
 
 bool Magick::check_config()
@@ -721,31 +752,26 @@ bool Magick::check_config()
     {
 	// change this to the logging mechanism
 	wxLogFatal("CONFIG: Cannot set [Startup] LEVEL < 1");
-        RET(false);
     }
     if (Startup_GMT >= 12 || Startup_GMT <= -12)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: [Startup] GMT must fall between -12 and 12.");
-        RET(false);
     }
     if (Config_CYCLETIME < 30)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [Config] CYCLETIME < 30.");
-        RET(false);
     }
     if (Startup_LAGTIME < 1)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [Startup] LAGTIME < 1.");
-        RET(false);
     }
     if (nickserv.passfail < 1)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
-        RET(false);
     }
     RET(true);
 
@@ -780,6 +806,7 @@ void Magick::get_config_values()
     in.Read(ts_Startup+"SERVER_DESC",&Startup_SERVER_DESC,"Magick IRC Services");
     in.Read(ts_Startup+"SERVICES_USER",&Startup_SERVICES_USER,"services");
     in.Read(ts_Startup+"SERVICES_HOST",&Startup_SERVICES_HOST,"magick.tm");
+    in.Read(ts_Startup+"OWNUSER",&Startup_OWNUSER,false);
     in.Read(ts_Startup+"LEVEL",&Startup_LEVEL,1);
     in.Read(ts_Startup+"LAGTIME",&Startup_LAGTIME,10);
     in.Read(ts_Startup+"DEADTIME",&Startup_DEADTIME,30);

@@ -110,6 +110,8 @@ public:
 	int server_relink;
 	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);
+	bool paramlong(mstring first, mstring second);
+	bool paramshort(mstring first, mstring second);
 	void LoadInternalMessages();
 	void dump_help(mstring& progname);
 	mstring getMessage(const mstring& name);
@@ -132,6 +134,7 @@ protected:
 	mstring Startup_SERVER_DESC;
 	mstring Startup_SERVICES_USER;
 	mstring Startup_SERVICES_HOST;
+	bool Startup_OWNUSER;
 	int Startup_LEVEL;
 	int Startup_LAGTIME;
 	int Startup_DEADTIME;
