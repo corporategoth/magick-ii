@@ -873,7 +873,7 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
 	unsigned int i;
 	for (i=0; i<Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "); i++)
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
-		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
+		Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
 		break;
 	if (!Magick::instance().chanserv.Ovr_Per_Nick().size() ||
 	    i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
@@ -4840,7 +4840,7 @@ void ChanServ::do_message_Add(const mstring & mynick, const mstring & source, co
 	unsigned int i;
 	for (i=0; i<Magick::instance().chanserv.Ovr_Messages().WordCount(" "); i++)
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " ")) &&
-		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " "))->IsOn(source))
+		Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " "))->IsOn(source))
 		break;
 	if (!Magick::instance().chanserv.Ovr_Messages().size() ||
 	    i == Magick::instance().chanserv.Ovr_Messages().WordCount(" "))
@@ -5049,7 +5049,7 @@ void ChanServ::do_set_Founder(const mstring & mynick, const mstring & source, co
 	unsigned int i;
 	for (i=0; i<Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "); i++)
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
-		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
+		Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
 		break;
 	if (!Magick::instance().chanserv.Ovr_Per_Nick().size() ||
 	    i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
@@ -5131,7 +5131,7 @@ void ChanServ::do_set_CoFounder(const mstring & mynick, const mstring & source, 
 	unsigned int i;
 	for (i=0; i<Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "); i++)
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
-		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
+		Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
 		break;
 	if (!Magick::instance().chanserv.Ovr_Per_Nick().size() ||
 	    i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))

@@ -1918,7 +1918,7 @@ void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, cons
 	unsigned int i;
 	for (i=0; i<Magick::instance().commserv.Ovr_Logon().WordCount(" "); i++)
 	    if (Magick::instance().commserv.IsList(Magick::instance().commserv.Ovr_Logon().ExtractWord(i, " ")) &&
-		i<Magick::instance().commserv.GetList(Magick::instance().commserv.Ovr_Logon().ExtractWord(i, " "))->IsOn(source))
+		Magick::instance().commserv.GetList(Magick::instance().commserv.Ovr_Logon().ExtractWord(i, " "))->IsOn(source))
 		break;
 	if (!Magick::instance().commserv.Ovr_Logon().size() ||
 	    i == Magick::instance().commserv.Ovr_Logon().WordCount(" "))
