@@ -948,21 +948,29 @@ void Chan_Live_t::RemoveMode(mstring & mode, vector < mstring > & mode_params, c
     {
 	if (Magick::instance().server.proto.ChanModeArg().Contains(mode[i]))
 	{
-	    if (reqmode == mode[i] && param < mode_params.size())
+	    if (reqmode == mode[i])
 	    {
-		if ((!reqparam.empty() && mode_params[param] == reqparam) || reqparam.empty())
-		{
-		    // Do nothing ... we want to delete it!
-		}
-		else
+		// Treat -l like a standard mode ...
+		if (mode[i] == 'l' && !change)
+		    continue;
+
+ 		if (param < mode_params.size() && !reqparam.empty() && mode_params[param] != reqparam)
 		{
 		    new_mode += mode[i];
-		    if (mode[i] != 'l' || change)
-			new_params.push_back(mode_params[param]);
+		    new_params.push_back(mode_params[param]);
+		    param++;
 		}
 	    }
-	    if (mode[i] != 'l' || !change)
-		param++;
+	    else
+	    {
+
+		new_mode += mode[i];
+		if (mode[i] != 'l' || change)
+		{
+		    new_params.push_back(mode_params[param]);
+		    param++;
+		}
+	    }
 	}
 	else
 	{
