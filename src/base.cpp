@@ -138,6 +138,9 @@ void mBaseTask::message(const mstring& message)
 
 void mBaseTask::message_i(const mstring& message)
 {
+    // NOTE: No need to handle 'non-user messages' here, because
+    // anything that is not a user PRIVMSG/NOTICE goes directly
+    // to the server routine anyway.
     mstring tmp[2];
     tmp[0]=message.ExtractWord(2,": ").UpperCase();
     tmp[1]=message.ExtractWord(3,": ").UpperCase();
@@ -147,6 +150,7 @@ void mBaseTask::message_i(const mstring& message)
 
     if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE") {
 	mstring names;
+	Parent->nickserv.live[message.ExtractWord(1, ": ").LowerCase()].FloodTrigger();
 
     // Find out if the target nick is one of the services 'clones'
     // (and if it is, which one?)  Pass the message to them if so.
@@ -213,8 +217,16 @@ void NetworkServ::execute(const mstring & data)
     mThread::Detach(tt_mBase);
     mThread::Attach(Parent, tt_ServNet);
 
-    mstring source=data.ExtractWord(1,": ");
-    mstring msgtype=data.ExtractWord(2,": ").UpperCase();
+    mstring source, msgtype;
+    if (data[0u]==':')
+    {
+        source=data.ExtractWord(1,": ");
+        msgtype=data.ExtractWord(2,": ").UpperCase();
+    }
+    else
+    {
+        msgtype=data.ExtractWord(1,": ").UpperCase();
+    }
 
     // Message names direct from RFC1459, with DAL4.4.15+
     // extensions.  Will add to for other ircd's.
@@ -265,6 +277,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	}
 	else if (msgtype=="GLOBOPS")
+	{
+	}
+	else if (msgtype=="GNOTICE")
 	{
 	}
 	else if (msgtype=="GOPER")
@@ -332,15 +347,34 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="PASS")
 	{
+	    if (source.IsEmpty())
+	    {
+		if (data.ExtractWord(2, ": ") != Parent->Startup_PASSWORD)
+		{
+		    // Close socket, we're out.
+		}
+	    }
 	}
 	else if (msgtype=="PING")
 	{
+	    if (source.IsEmpty())
+	    {
+		Parent->ircsvchandler->send("PONG :" + data.ExtractWord(2, ": "));
+	    }
+	    else    // Can this ever happen??
+	    {
+		Parent->ircsvchandler->send("PONG :" + source);
+	    }
 	}
 	else if (msgtype=="PONG")
 	{
 	}
 	else if (msgtype=="PRIVMSG")
 	{
+	    /*
+	    if (!IsChan(data.ExtractWord(3, ": ")) 
+		wxLogWarning("Received message for unknown user" + data.ExtractWord(3, ": "));
+	    */
 	}
 	break;
     case 'Q':
@@ -459,8 +493,17 @@ void NetworkServ::numeric_execute(const mstring & data)
 {
     FT("NetworkServ::numeric_execute", (data));
 
-    mstring source=data.ExtractWord(1,": ");
-    unsigned int msgtype=atoi(data.ExtractWord(2,": "));
+    mstring source;
+    unsigned int msgtype;
+    if (data[0u]==':')
+    {
+        source=data.ExtractWord(1,": ");
+        msgtype=atoi(data.ExtractWord(2,": "));
+    }
+    else
+    {
+        msgtype=atoi(data.ExtractWord(1,": "));
+    }
 
     // Numerics direct from RFC1459
     // MOST we can (and will) ignore.
