@@ -731,8 +731,8 @@ void ChanServ::RemLive(const mstring & in)
 	map_entry < Chan_Live_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK((lck_ChanServ, lck_live));
     live.erase(iter);
+    WLOCK((lck_ChanServ, lck_live));
     ETCB();
 }
 
