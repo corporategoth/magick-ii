@@ -47,6 +47,9 @@ class BrokenFunc
 {
     void (T::*pm)();
 public:
+	typedef T first_argument_type;
+	typedef int result_type;
+
     BrokenFunc(void (T::*p)()) : pm(p) {}
     int operator()(const T *in) const
     {
@@ -74,6 +77,9 @@ class BrokenFunc_ref
 {
     void (T::*pm)();
 public:
+	typedef T first_argument_type;
+	typedef int result_type;
+
     BrokenFunc_ref(void (T::*p)()) : pm(p) {}
     int operator()(const T &in) const
     {
@@ -103,6 +109,10 @@ class BrokenFunc1
 {
     void (T::*pm)(P);
 public:
+	typedef T first_argument_type;
+	typedef P second_argument_type;
+	typedef int result_type;
+
     BrokenFunc1(void (T::*p)(P)) : pm(p) {}
     int operator()(const T *in, const P &arg) const
     {
@@ -111,16 +121,28 @@ public:
     }
 };
 
-template<class T, class P>
-BrokenFunc1<T,P> mem_fun1_void(void (T::*pm)(P) const)
+template<class R, class T, class P>
+BrokenFunc1<T,P> mem_fun1_void(R (T::*pm)(P) const)
 {
-    return mem_fun1_void((void (T::*)(P))pm);
+    return mem_fun1_void((R (T::*)(P))pm);
 }
 
-template<class T, class P>
-BrokenFunc1<T,P> mem_fun1_void(void (T::*pm)(P))
+template<class R, class T, class P>
+BrokenFunc1<T,P> mem_fun1_void(R (T::*pm)(P))
 {
     return BrokenFunc1<T,P>(pm);
+}
+
+template<class R, class T, class P>
+BrokenFunc1<T,const P> mem_fun1_void(R (T::*pm)(const P) const)
+{
+    return mem_fun1_void((R (T::*)(const P))pm);
+}
+
+template<class R, class T, class P>
+BrokenFunc1<T,const P> mem_fun1_void(R (T::*pm)(const P))
+{
+    return BrokenFunc1<T,const P>(pm);
 }
 
 // VOID version of mem_fun1_ref and mem_fun1_ref (const)
@@ -130,6 +152,10 @@ class BrokenFunc1_ref
 {
     void (T::*pm)(P);
 public:
+	typedef T first_argument_type;
+	typedef P second_argument_type;
+	typedef int result_type;
+	
     BrokenFunc1_ref(void (T::*p)(P)) : pm(p) {}
     int operator()(const T &in, const P &arg) const
     {
@@ -138,16 +164,28 @@ public:
     }
 };
 
-template<class T, class P>
-BrokenFunc1<T,P> mem_fun1_ref_void(void (T::*pm)(P) const)
+template<class R, class T, class P>
+BrokenFunc1<T,P> mem_fun1_ref_void(R (T::*pm)(P) const)
 {
-    return mem_fun1_ref_void((void (T::*)(P))pm);
+    return mem_fun1_ref_void((R (T::*)(P))pm);
 }
 
-template<class T, class P>
-BrokenFunc1_ref<T,P> mem_fun1_ref_void(void (T::*pm)(P))
+template<class R, class T, class P>
+BrokenFunc1_ref<T,P> mem_fun1_ref_void(R (T::*pm)(P))
 {
     return BrokenFunc1_ref<T,P>(pm);
+}
+
+template<class R, class T, class P>
+BrokenFunc1<T,const P> mem_fun1_ref_void(R (T::*pm)(const P) const)
+{
+    return mem_fun1_ref_void((R (T::*)(const P))pm);
+}
+
+template<class R, class T, class P>
+BrokenFunc1_ref<T,const P> mem_fun1_ref_void(R (T::*pm)(const P))
+{
+    return BrokenFunc1_ref<T,const P>(pm);
 }
 
 #endif /* HAVE_MEM_FUN1 */

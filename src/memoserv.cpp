@@ -1508,7 +1508,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	if (what.IsSameAs("all", true))
 	{
 	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
-	    for_each(Magick::instance().memoserv.ChannelNewsBegin(who), Magick::instance().memoserv.ChannelNewsEnd(who), bind2nd(mem_fun1_ref(&News_t::Unread), whoami));
+		for_each(Magick::instance().memoserv.ChannelNewsBegin(who), Magick::instance().memoserv.ChannelNewsEnd(who), bind2nd(mem_fun1_ref_void(&News_t::Unread), whoami));
 	    SEND(mynick, source, "MS_COMMAND/UNREAD_ALL", (who.LowerCase()));
 	}
 	else
@@ -1581,8 +1581,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	if (what.IsSameAs("all", true))
 	{
 	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
-	    for_each(Magick::instance().memoserv.NickMemoBegin(who), Magick::instance().memoserv.NickMemoEnd(who),
-		mem_fun_ref(&Memo_t::Unread));
+	    for_each(Magick::instance().memoserv.NickMemoBegin(who), Magick::instance().memoserv.NickMemoEnd(who), mem_fun_ref_void(&Memo_t::Unread));
 	    NSEND(mynick, source, "MS_COMMAND/NS_UNREAD_ALL");
 	}
 	else
@@ -2875,7 +2874,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    {
 		bool val = onoff.GetBool();
 		WLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
-		for_each(Magick::instance().memoserv.ChannelNewsBegin(who), Magick::instance().memoserv.ChannelNewsEnd(who), bind2nd(mem_fun1_ref<void,News_t,bool>(&News_t::NoExpire), val));
+		for_each(Magick::instance().memoserv.ChannelNewsBegin(who), Magick::instance().memoserv.ChannelNewsEnd(who), bind2nd(mem_fun1_ref_void<void, News_t, bool>(&News_t::NoExpire), val));
 	    }
 	    SEND(mynick, source, "MS_COMMAND/CS_SET_ALL",
 		 (Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), who,
