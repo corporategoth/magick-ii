@@ -13,19 +13,19 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = include\Debug\magickbcc.exe
+PROJECT = src\Debug\magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
   Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
   Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
   Debug\lockable.obj Debug\log.obj Debug\magick.obj Debug\main.obj \
   Debug\memoserv.obj Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj \
   Debug\operserv.obj Debug\server.obj Debug\servmsg.obj Debug\textfile.obj \
-  Debug\trace.obj Debug\utils.obj Debug\variant.obj
+  Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES = src\des\Debug\crypto.lib src\rx-1.5\rx\rx\Debug\rxbcc.lib \
-  src\antlr\Debug\antlr.lib ..\support\ACE_wrappers\bin\Dynamic\Release\ace_b.lib \
-  ..\support\zlib\zlib.LIB
+  src\antlr\Debug\antlr.lib ..\support\zlib\zlib.LIB \
+  ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib
 IDLGENFILES =
 IDLFILES =
 LIBRARIES = VCL40.lib
@@ -65,7 +65,7 @@ AFLAGS = /isrc /i$(BCB)\include /i$(BCB)\include\ATL /iinclude\bob /iinclude \
 LFLAGS = -Lsrc;$(BCB)\lib;$(RELEASELIBPATH) -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
-ALLOBJ = c0x32.obj $(OBJFILES)
+ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)
 ALLRES = $(RESFILES)
 ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib
 # ---------------------------------------------------------------------------
