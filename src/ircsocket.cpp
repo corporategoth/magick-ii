@@ -62,12 +62,24 @@ int IrcSvcHandler::open(void *in)
     CP(("Socket opened"));
     activate(THR_NEW_LWP | THR_JOINABLE,1);
     CP(("SvcHandler activated"));
+#if 0
     // do we do the server command here?
     mstring passcmd="PASS "+Parent->Startup_PASSWORD;
-    send(passcmd.c_str());
+    send(passcmd);
     mstring servercmd="SERVER "+Parent->Startup_SERVER_NAME+" 1 :["+Parent->Startup_SERVER_DESC+"]";
-    send(servercmd.c_str());
+    send(servercmd);
+#endif
     RET(0);
+}
+
+int IrcSvcHandler::handle_output(ACE_HANDLE handle)
+{
+    int Result=inherited::handle_output(handle);
+    mstring passcmd="PASS "+Parent->Startup_PASSWORD+"\n";
+    peer().send(passcmd.c_str(),passcmd.Len());
+    mstring servercmd="SERVER "+Parent->Startup_SERVER_NAME+" 1 :["+Parent->Startup_SERVER_DESC+"]\n";
+    peer().send(servercmd.c_str(),servercmd.Len());
+    return Result;
 }
 
 int IrcSvcHandler::handle_input(ACE_HANDLE hin)
