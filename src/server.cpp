@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/03/14 13:36:46  prez
+** Finished P12 compliance (SJOIN, etc).
+**
 ** Revision 1.75  2000/03/14 10:05:17  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -70,17 +73,97 @@ static const char *ident = "@(#)$Id$";
 #include "lockable.h"
 #include "magick.h"
 
-void Protocol::Protocol()
+Protocol::Protocol()
 {
     i_Number = 0;
     i_Globops = false;
     i_Tokens = false;
     i_SVS = false;
     i_SVSHOST = false;
-    i_D12 = false;
+    i_P12 = false;
     i_Signon = 0000;
     i_Server = "SERVER %s %d :%s";
     i_Protoctl = "";
+
+    tokens["!"] = "PRIVMSG";
+    tokens["\\"] = "WHO";
+    tokens["#"] = "WHOIS";
+    tokens["$"] = "WHOWAS";
+    tokens["%"] = "USER";
+    tokens["&"] = "NICK";
+    tokens["'"] = "SERVER";
+    tokens["("] = "LIST";
+    tokens[")"] = "TOPIC";
+    tokens["*"] = "INVITE";
+    tokens["+"] = "VERSION";
+    tokens[","] = "QUIT";
+    tokens["-"] = "SQUIT";
+    tokens["."] = "KILL";
+    tokens["/"] = "INFO";
+    tokens["0"] = "LINKS";
+    tokens["1"] = "SUMMON";
+    tokens["2"] = "STATS";
+    tokens["3"] = "USERS";
+    tokens["4"] = "HELP";
+    tokens["5"] = "ERROR";
+    tokens["6"] = "AWAY";
+    tokens["7"] = "CONNECT";
+    tokens["8"] = "PING";
+    tokens["9"] = "PONG";
+    tokens[";"] = "OPER";
+    tokens["<"] = "PASS";
+    tokens[">"] = "TIME";
+    tokens["="] = "WALLOPS";
+    tokens["?"] = "NAMES";
+    tokens["@"] = "ADMIN";
+    tokens["B"] = "NOTICE";
+    tokens["C"] = "JOIN";
+    tokens["D"] = "PART";
+    tokens["E"] = "LUSERS";
+    tokens["F"] = "MOTD";
+    tokens["G"] = "MODE";
+    tokens["H"] = "KICK";
+    tokens["I"] = "SERVICE";
+    tokens["J"] = "USERHOST";
+    tokens["K"] = "ISON";
+    tokens["L"] = "SQUERY";
+    tokens["M"] = "SERVLIST";
+    tokens["N"] = "SERVSET";
+    tokens["O"] = "REHASH";
+    tokens["P"] = "RESTART";
+    tokens["Q"] = "CLOSE";
+    tokens["R"] = "DIE";
+    tokens["S"] = "HASH";
+    tokens["T"] = "DNS";
+    tokens["U"] = "SILENCE";
+    tokens["V"] = "AKILL";
+    tokens["W"] = "KLINE";
+    tokens["X"] = "UNKLINE";
+    tokens["Y"] = "RAKILL";
+    tokens["Z"] = "GNOTICE";
+    tokens["["] = "GOPER";
+    tokens["]"] = "GLOBOPS";
+    tokens["^"] = "LOCOPS";
+    tokens["_"] = "PROTOCTL";
+    tokens["`"] = "WATCH";
+    tokens["b"] = "TRACE";
+    tokens["c"] = "SQLINE";
+    tokens["d"] = "UNSQLINE";
+    tokens["e"] = "SVSNICK";
+    tokens["f"] = "SVSNOOP";
+    tokens["g"] = "PRIVMSG NickServ :IDENTIFY";	// IDENTIFY
+    tokens["h"] = "SVSKILL";
+    tokens["i"] = "PRIVMSG NickServ";		// NICKSERV
+    tokens["j"] = "PRIVMSG ChanServ";		// CHANSERV
+    tokens["k"] = "PRIVMSG OperServ";		// OPERSERV
+    tokens["l"] = "PRIVMSG MemoServ";		// MEMOSERV
+    tokens["m"] = "SERVICES";
+    tokens["n"] = "SVSMODE";
+    tokens["o"] = "SAMODE";
+    tokens["p"] = "CHATOPS";
+    tokens["q"] = "ZLINE";
+    tokens["r"] = "UNZLINE";
+    tokens["s"] = "PRIVMSG HelpServ";		// HELPSERV
 }
 
 void Protocol::Set(unsigned int in)
@@ -100,7 +183,9 @@ void Protocol::Set(unsigned int in)
     case 11: /* DAL >= 4.4.15 */
 	i_Signon = 1001;
 	i_Globops = true;
+	i_Tokens = true;
 	i_SVS = true;
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
     case 20: /* UnderNet < 2.8.10  */
 	i_Signon = 1000;
@@ -110,6 +195,8 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_SVS = true;
 	i_SVSHOST = true;
+	i_Tokens = true;
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
     case 40: /* Elite */
 	i_Signon = 1001;
@@ -120,10 +207,34 @@ void Protocol::Set(unsigned int in)
 	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
-	i_D12 = true;
+	i_P12 = true;
 	i_Signon = 1001;
 	i_Server = "SERVER %s %d relic2.1 :%s";
-	i_Protoctl = "PROTOCTL TOKEN";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+
+	tokens.erase("1");
+	tokens.erase("3");
+	tokens.erase("=");
+	tokens["^"] = "WALLOPS";
+	tokens["LO"] = "LOCOPS";
+	tokens.erase("c");
+	tokens.erase("d");
+	tokens["QL"] = "QLINE";
+	tokens["Uq"] = "UNQLINE";
+	tokens["o"] = "OMODE";
+	tokens.erase("p");
+	tokens["s"] = "OPERMOTD";
+	tokens["v"] = "RPING";
+	tokens["w"] = "RPONG";
+	tokens["{"] = "MAP";
+	tokens["|"] = "SJOIN";
+	tokens["}"] = "SNICK";
+	tokens["~"] = "GLINE";
+	tokens["y"] = "SETTIME";
+	tokens["HM"] = "HTM";
+	tokens["z"] = "ADCHAT";
+	tokens["Rz"] = "RW";
+
 	break;
     default:
 	return;
@@ -131,6 +242,12 @@ void Protocol::Set(unsigned int in)
     i_Number = in;
 }
 
+mstring Protocol::GetToken(mstring in)
+{
+    if (tokens.find(in) == tokens.end())
+	return "";
+    return tokens[in];
+}
 
 Server::Server(mstring name, mstring description)
 {
@@ -1780,7 +1897,7 @@ void NetworkServ::execute(const mstring & data)
 			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
 		wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
-			data.ExtractWord(3, ": ").c_str(),
+			data.ExtractWord(2, ": ").c_str(),
 			Parent->startup.Server_Name().c_str());
 	    }
 	    else
@@ -1808,26 +1925,40 @@ void NetworkServ::execute(const mstring & data)
 	    unsigned int i;
 
 	    vector<mstring> users;
-	    mstring modes;
-	    mstring mode_params;
-	    modes = data.ExtractWord(5, ": ");
-	    mode_params = data.Before(":").After(" ", 5);
+	    mstring modes = data.ExtractWord(5, ": ");
+	    mstring mode_params = "", nick;
+	    bool oped, voiced;
+	    if (modes.Contains("l") || modes.Contains("k"))
+		mode_params = data.Before(":").After(" ", 5);
 	    for (i=0; i < data.After(":", 2).WordCount(" "); i++)
 	    {
-		if (Parent->nickserv.IsLive(users[i]))
+		nick = data.After(":", 2).ExtractWord(i+1, " ");
+		if (nick != "")
 		{
-		    users[i] = data.After(":", 2).ExtractWord(i+1, " ");
-		    if (users[i][0u] == '@')
+		    oped = voiced = false;
+		    if (nick[0u] == '@')
 		    {
-			modes += "o";
-			mode_params += " " + users[i];
-			users[i].Replace("@", "");
+			oped = true;
+			nick.Replace("@", "");
 		    }
-		    if (users[i][0u] == '+')
+		    if (nick[0u] == '+')
 		    {
-			modes += "v";
-			mode_params += " " + users[i];
-			users[i].Replace("+", "");
+			voiced = true;
+			nick.Replace("+", "");
+		    }
+		    if (Parent->nickserv.IsLive(nick))
+		    {
+			if (oped)
+			{
+			    modes += "o";
+			    mode_params += " " + nick;
+			}
+			if (voiced)
+			{
+			    modes += "v";
+			    mode_params += " " + nick;
+			}
+			users.push_back(nick);
 		    }
 		}
 	    }

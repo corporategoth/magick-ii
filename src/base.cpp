@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2000/03/14 13:36:46  prez
+** Finished P12 compliance (SJOIN, etc).
+**
 ** Revision 1.102  2000/03/14 10:05:16  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -498,96 +501,6 @@ void mBase::shutdown()
 	BaseTask.i_shutdown();
 }
 
-mBaseTask::mBaseTask() : activation_queue_(&message_queue_)
-{
-    tokens["!"] = "PRIVMSG";
-    tokens["\\"] = "WHO";
-    tokens["#"] = "WHOIS";
-    tokens["$"] = "WHOWAS";
-    tokens["%"] = "USER";
-    tokens["&"] = "NICK";
-    tokens["'"] = "SERVER";
-    tokens["("] = "LIST";
-    tokens[")"] = "TOPIC";
-    tokens["*"] = "INVITE";
-    tokens["+"] = "VERSION";
-    tokens[","] = "QUIT";
-    tokens["-"] = "SQUIT";
-    tokens["."] = "KILL";
-    tokens["/"] = "INFO";
-    tokens["0"] = "LINKS";
-    tokens["2"] = "STATS";
-    tokens["4"] = "HELP";
-    tokens["5"] = "ERROR";
-    tokens["6"] = "AWAY";
-    tokens["7"] = "CONNECT";
-    tokens["8"] = "PING";
-    tokens["9"] = "PONG";
-    tokens[";"] = "OPER";
-    tokens["<"] = "PASS";
-    tokens[">"] = "TIME";
-    tokens["?"] = "NAMES";
-    tokens["@"] = "ADMIN";
-    tokens["B"] = "NOTICE";
-    tokens["C"] = "JOIN";
-    tokens["D"] = "PART";
-    tokens["E"] = "LUSERS";
-    tokens["F"] = "MOTD";
-    tokens["G"] = "MODE";
-    tokens["H"] = "KICK";
-    tokens["I"] = "SERVICE";
-    tokens["J"] = "USERHOST";
-    tokens["K"] = "ISON";
-    tokens["L"] = "SQUERY";
-    tokens["M"] = "SERVLIST";
-    tokens["N"] = "SERVSET";
-    tokens["O"] = "REHASH";
-    tokens["P"] = "RESTART";
-    tokens["Q"] = "CLOSE";
-    tokens["R"] = "DIE";
-    tokens["S"] = "HASH";
-    tokens["T"] = "DNS";
-    tokens["U"] = "SILENCE";
-    tokens["V"] = "AKILL";
-    tokens["W"] = "KLINE";
-    tokens["X"] = "UNKLINE";
-    tokens["Y"] = "RAKILL";
-    tokens["Z"] = "GNOTICE";
-    tokens["["] = "GOPER";
-    tokens["]"] = "GLOBOPS";
-    tokens["LO"] = "LOCOPS";
-    tokens["_"] = "PROTOCTL";
-    tokens["`"] = "WATCH";
-    tokens["b"] = "TRACE";
-    tokens["QL"] = "QLINE";
-    tokens["Uq"] = "UNQLINE";
-    tokens["e"] = "SVSNICK";
-    tokens["f"] = "SVSNOOP";
-    tokens["g"] = "PRIVMSG NickServ :IDENTIFY";	// IDENTIFY
-    tokens["h"] = "SVSKILL";
-    tokens["i"] = "PRIVMSG NickServ";		// NICKSERV
-    tokens["j"] = "PRIVMSG ChanServ";		// CHANSERV
-    tokens["k"] = "PRIVMSG OperServ";		// OPERSERV
-    tokens["l"] = "PRIVMSG MemoServ";		// MEMOSERV
-    tokens["m"] = "SERVICES";
-    tokens["n"] = "SVSMODE";
-    tokens["o"] = "OMODE";
-    tokens["q"] = "ZLINE";
-    tokens["s"] = "OPERMOTD";
-    tokens["v"] = "RPING";
-    tokens["w"] = "RPONG";
-    tokens["{"] = "MAP";
-    tokens["|"] = "SJOIN";
-    tokens["}"] = "SNICK";
-    tokens["~"] = "GLINE";
-    tokens["^"] = "WALLOPS";
-    tokens["y"] = "SETTIME";
-    tokens["HM"] = "HTM";
-    tokens["z"] = "ADCHAT";
-    tokens["UP"] = "UPING";
-    tokens["Rz"] = "RW";
-}
-
 int mBaseTask::open(void *in)
 {
     NFT("mBaseTask::open");
@@ -732,19 +645,19 @@ mstring mBaseTask::PreParse(const mstring& message)
 
     if (Parent->server.proto.Tokens())
     {
-	if (message[0u] == ':' && 
-	    tokens.find(message.ExtractWord(2, " ")) != tokens.end())
+	if (message[0u] == ':' &&
+	   Parent->server.proto.GetToken(message.ExtractWord(2, " ")) != "")
 	{
 	    data = "";
 	    data << message.ExtractWord(1, " ") << " " <<
-		tokens[message.ExtractWord(2, " ") << " " <<
-		message.After("  ", 2);
+		Parent->server.proto.GetToken(message.ExtractWord(2, " ")) <<
+		" " << message.After(" ", 2);
 	}
-	else if (tokens.find(message.ExtractWord(1, " ")) != tokens.end())
+	else if (Parent->server.proto.GetToken(message.ExtractWord(1, " ")) != "")
 	{
 	    data = "";
-	    data << tokens[message.ExtractWord(1, " ") << " " <<
-		message.After("  ", 1);
+	    data << Parent->server.proto.GetToken(message.ExtractWord(1, " ")) <<
+		" " << message.After(" ", 1);
 	}
     }
     RET(data);

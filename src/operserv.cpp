@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/03/14 13:36:46  prez
+** Finished P12 compliance (SJOIN, etc).
+**
 ** Revision 1.63  2000/03/14 10:05:17  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -1294,7 +1297,7 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 		    ToHumanTime(Parent->config.Server_Relink()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT1"),
 		    ToHumanTime(Parent->config.Squit_Protect()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT1"),
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT2"),
 		    ToHumanTime(Parent->config.Squit_Cancel()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
 		    ToHumanTime(Parent->config.Cycletime()).c_str(),

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/03/14 13:36:46  prez
+** Finished P12 compliance (SJOIN, etc).
+**
 ** Revision 1.42  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -1209,7 +1212,9 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!Parent->commserv.list[committee].IsHead(source))
+    if (!(Parent->commserv.list[committee].IsHead(source) ||
+	(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	 Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());
@@ -1243,7 +1248,7 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     }
 
     newhead = Parent->getSname(newhead);
-    if (newhead.LowerCase() == source.LowerCase())
+    if (newhead.LowerCase() == Parent->commserv.list[committee].Head().LowerCase())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
 				message.c_str());
