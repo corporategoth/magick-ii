@@ -182,6 +182,7 @@ enum bool
 #if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
 	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
 	ACE_BETA_VERSION >= 11)))
+#include <ace/Log_Record.h>
 #include <ace/Log_Msg_Callback.h>
 #endif
 
