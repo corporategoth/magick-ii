@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/03/15 14:42:59  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.64  2000/03/14 10:05:17  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -498,6 +501,10 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     { MLOCK(("OperServ", "Akill"));
     if (Parent->operserv.Akill_find(i_user + "@" + i_host))
     {
+	Parent->server.AKILL(Parent->operserv.Akill->Entry(),
+			Parent->operserv.Akill->Value().second,
+			Parent->operserv.Akill->Value().first -
+				Parent->operserv.Akill->Last_Modify_Time().SecondsSince());
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
 	    new mstring(i_Name + ":" + Parent->operserv.Akill->Value().second),
 	    ACE_Time_Value(1));
@@ -3790,7 +3797,7 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
 				Parent->startup.Services_User()),
 				Parent->startup.Services_Host(),
 				Parent->startup.Server_Name(),
-				"Nickname Enforcer");
+				Parent->nickserv.Enforcer_Name());
     Parent->nickserv.recovered[nick.LowerCase()] = Now();
     Parent->nickserv.stats.i_Recover++;
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/HELD"),

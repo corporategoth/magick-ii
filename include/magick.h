@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/03/15 14:42:58  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.110  2000/02/27 02:43:50  prez
 ** More FileSystem additions, plus created 'what' tool
 **
@@ -141,6 +144,7 @@ public:
 		mstring services_user;
 		mstring services_host;
 		bool ownuser;
+		mstring setmode;
 		unsigned int level;
 		unsigned long lagtime;
 	public:
@@ -154,6 +158,7 @@ public:
 		mstring Services_User()const	{ return services_user; }
 		mstring Services_Host()const	{ return services_host; }
 		bool Ownuser()const		{ return ownuser; }
+		mstring Setmode()const		{ return setmode; }
 		unsigned int Level()const	{ return level; }
 		unsigned long Lagtime()const	{ return lagtime; }
 	} startup;

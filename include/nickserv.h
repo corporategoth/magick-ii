@@ -24,6 +24,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/03/15 14:42:58  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.28  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -361,6 +364,7 @@ class NickServ : public mBase
     friend class Magick;
 private:
     // Config Entries ...
+    mstring enforcer_name;	// Realname of enforcer
     unsigned int maxlen;	// Maximum length of a nickname
     mstring suffixes;		// What to add to unidentified nicks
     unsigned long expire;	// How long to keep nicknames
@@ -436,6 +440,7 @@ public:
 	unsigned long Unlock()	    { return i_Unlock; }
     } stats;
 
+    mstring Enforcer_Name()	{ return enforcer_name; }
     unsigned int Maxlen()	{ return maxlen; }
     mstring Suffixes()		{ return suffixes; }
     unsigned long Expire()	{ return expire; }

@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/03/15 14:42:58  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.73  2000/03/14 15:10:15  prez
 ** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
 **
@@ -66,7 +69,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 154;
+const int BUILD_NUMBER = 165;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

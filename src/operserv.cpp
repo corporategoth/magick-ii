@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/03/15 14:42:59  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.64  2000/03/14 13:36:46  prez
 ** Finished P12 compliance (SJOIN, etc).
 **
@@ -1944,6 +1947,14 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
 		    ToHumanTime(time).c_str());
     }
+
+    Parent->server.AKILL(host, reason, time);
+    map<mstring,Nick_Live_t>::iterator nlive;
+    for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+    {
+	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host))
+	    Parent->server.KILL(mynick, nlive->second.Name(), reason);
+    }
 }
 
 void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
@@ -1984,6 +1995,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 	if (Parent->operserv.Akill != Parent->operserv.Akill_end())
 	{
 	    Parent->operserv.stats.i_Akill++;
+	    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
 			Parent->operserv.Akill->Entry().c_str(),
 			Parent->getMessage(source, "LIST/AKILL").c_str());
@@ -1999,7 +2011,10 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
     {
 	int count = 0;
 	while (Parent->operserv.Akill_find(host))
+	{
+	    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 	    Parent->operserv.Akill_erase();
+	}
 
 	if (count)
 	{

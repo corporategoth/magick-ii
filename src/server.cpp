@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2000/03/15 14:42:59  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.78  2000/03/15 08:23:52  prez
 ** Added locking stuff for commserv options, and other stuff
 **
@@ -87,6 +90,7 @@ Protocol::Protocol()
     i_SVS = false;
     i_SVSHOST = false;
     i_P12 = false;
+    i_Akill = 0;
     i_Signon = 0000;
     i_Modes = 3;
     i_Server = "SERVER %s %d :%s";
@@ -158,19 +162,19 @@ Protocol::Protocol()
     tokens["d"] = "UNSQLINE";
     tokens["e"] = "SVSNICK";
     tokens["f"] = "SVSNOOP";
-    tokens["g"] = "PRIVMSG " + Parent->nickserv.FirstName() + " :IDENTIFY";
+    tokens["g"] = "PRIVMSG NickServ :IDENTIFY";
     tokens["h"] = "SVSKILL";
-    tokens["i"] = "PRIVMSG " + Parent->nickserv.FirstName() + " NickServ";
-    tokens["j"] = "PRIVMSG " + Parent->chanserv.FirstName() + " ChanServ";
-    tokens["k"] = "PRIVMSG " + Parent->operserv.FirstName() + " OperServ";
-    tokens["l"] = "PRIVMSG " + Parent->memoserv.FirstName() + " MemoServ";
+    tokens["i"] = "PRIVMSG NickServ";
+    tokens["j"] = "PRIVMSG ChanServ";
+    tokens["k"] = "PRIVMSG OperServ";
+    tokens["l"] = "PRIVMSG MemoServ";
     tokens["m"] = "SERVICES";
     tokens["n"] = "SVSMODE";
     tokens["o"] = "SAMODE";
     tokens["p"] = "CHATOPS";
     tokens["q"] = "ZLINE";
     tokens["r"] = "UNZLINE";
-    tokens["s"] = "PRIVMSG " + Parent->servmsg.FirstName() + " HelpServ";
+    tokens["s"] = "PRIVMSG HelpServ";
 }
 
 void Protocol::Set(unsigned int in)
@@ -179,13 +183,16 @@ void Protocol::Set(unsigned int in)
     {
     case 0: /* RFC */
 	i_Signon = 0000;
+	i_Akill = 2;
 	break;
     case 1: /* RFC with TS8 */
 	i_Signon = 0001;
+	i_Akill = 2;
 	break;
     case 10: /* DAL < 4.4.15 */
 	i_Signon = 1000;
 	i_Globops = true;
+	i_Akill = 1;
 	i_Modes = 4;
 	break;
     case 11: /* DAL >= 4.4.15 */
@@ -193,11 +200,13 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_Tokens = true;
 	i_SVS = true;
+	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
     case 20: /* UnderNet < 2.8.10  */
 	i_Signon = 1000;
+	i_Akill = 3;
 	break;
     case 30: /* Aurora */
 	i_Signon = 1002;
@@ -205,6 +214,7 @@ void Protocol::Set(unsigned int in)
 	i_SVS = true;
 	i_SVSHOST = true;
 	i_Tokens = true;
+	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
@@ -212,6 +222,7 @@ void Protocol::Set(unsigned int in)
 	i_Signon = 1001;
 	i_Globops = true;
 	i_SVS = true;
+	i_Akill = 1;
 	break;
     case 50: /* Relic */
 	i_Tokens = true;
@@ -219,6 +230,7 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_P12 = true;
 	i_Signon = 1001;
+	i_Akill = 4;
 	i_Modes = 6;
 	i_Server = "SERVER %s %d relic2.1 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
@@ -590,6 +602,64 @@ void NetworkServ::Jupe(mstring server, mstring reason)
     raw(tmp);
     Parent->server.ServerList[server.LowerCase()] =
 		    Server(server.LowerCase(), "JUPED (" + reason + ")");
+}
+
+void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time)
+{
+    FT("NetworkServ::AKILL", (host, reason, time));
+
+    if (!host.Contains("@"))
+	return;
+
+    mstring line;
+    switch (proto.Akill())
+    {
+    case 0:
+	break;
+    case 1:
+	line << "AKILL " << host.After("@") << " " << host.Before("@") << " :" << reason;
+	break;
+    case 2:
+	line << "GLINE * +" << time << " " << host << " :" << reason;
+	break;
+    case 3:
+	line << "GLINE * +" << host << " " << time << " :" << reason;
+	break;
+    case 4:
+	line << "GLINE +" << host << " " << time << " :" << reason;
+	break;
+    }
+    if (line != "")
+	sraw(line);
+}
+
+void NetworkServ::RAKILL(mstring host)
+{
+    FT("NetworkServ::RAKILL", (host));
+
+    if (!host.Contains("@"))
+	return;
+
+    mstring line;
+    switch (proto.Akill())
+    {
+    case 0:
+	break;
+    case 1:
+	line << "RAKILL " << host.After("@") << " " << host.Before("@");
+	break;
+    case 2:
+	line << "UNGLINE * " << host;
+	break;
+    case 3:
+	line << "GLINE * -" << host;
+	break;
+    case 4:
+	line << "GLINE -" << host;
+	break;
+    }
+    if (line != "")
+	sraw(line);
 }
 
 void NetworkServ::AWAY(mstring nick, mstring reason)
@@ -2806,6 +2876,8 @@ void NetworkServ::numeric_execute(const mstring & data)
 		    if (Parent->servmsg.FirstName() == *k)
 			Parent->server.MODE(*k, "+o");
 		}
+		if (Parent->nickserv.IsLive(*k) && Parent->startup.Setmode() != "")
+		    Parent->server.MODE(*k, "+" + Parent->startup.Setmode());
 		FlushMsgs(*k);
 	    }
 	}

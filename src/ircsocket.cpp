@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2000/03/15 14:42:58  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.90  2000/03/15 08:23:51  prez
 ** Added locking stuff for commserv options, and other stuff
 **
@@ -437,7 +440,14 @@ int EventTask::svc(void)
 		    {
 			if (Parent->operserv.Akill == Parent->operserv.Akill_begin())
 			{
+			    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 			    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+				    Parent->operserv.Akill->Entry().c_str(),
+				    Parent->operserv.Akill->Value().second.c_str(),
+				    Parent->operserv.Akill->Last_Modifier().c_str(),
+				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
+			    announce(Parent->operserv.FirstName(),
+				    Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				    Parent->operserv.Akill->Entry().c_str(),
 				    Parent->operserv.Akill->Value().second.c_str(),
 				    Parent->operserv.Akill->Last_Modifier().c_str(),
@@ -449,7 +459,14 @@ int EventTask::svc(void)
 			{
 			    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
 			    LastEnt--;
+			    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 			    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+				    Parent->operserv.Akill->Entry().c_str(),
+				    Parent->operserv.Akill->Value().second.c_str(),
+				    Parent->operserv.Akill->Last_Modifier().c_str(),
+				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
+			    announce(Parent->operserv.FirstName(),
+				    Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				    Parent->operserv.Akill->Entry().c_str(),
 				    Parent->operserv.Akill->Value().second.c_str(),
 				    Parent->operserv.Akill->Last_Modifier().c_str(),
@@ -740,7 +757,7 @@ int EventTask::svc(void)
 				    Parent->startup.Services_User()),
 				    Parent->startup.Services_Host(),
 				    Parent->startup.Server_Name(),
-				    "Nickname Enforcer");
+				    Parent->nickserv.Enforcer_Name());
 		}
 		Parent->nickserv.recovered[oldnick.LowerCase()] = Now();
 	    }

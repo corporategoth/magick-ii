@@ -24,6 +24,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/03/15 14:42:58  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.31  2000/03/15 08:23:51  prez
 ** Added locking stuff for commserv options, and other stuff
 **
@@ -64,6 +67,20 @@ class Protocol
     bool i_SVS;
     bool i_SVSHOST;
     bool i_P12;
+    
+    /* AKILL types
+     *
+     * 0 = none
+     * 1 = AKILL host user :reason
+     *     RAKILL host user
+     * 2 = GLINE * +time user@host :reason
+     *     UNGLINE * user@host
+     * 3 = GLINE * +user@host time :reason
+     *     GLINE * -user@host
+     * 4 = GLINE +user@host time :reason
+     *     GLINE -user@host
+     */
+    unsigned int i_Akill;
 
     /* Signon Types
      * 
@@ -99,6 +116,7 @@ public:
     bool SVS()		    { return i_SVS; }
     bool SVSHOST()	    { return i_SVSHOST; }
     bool P12()		    { return i_P12; }
+    unsigned int Akill()    { return i_Akill; }
     unsigned int Signon()   { return i_Signon; }
     unsigned int Modes()    { return i_Modes; }
     mstring Server()	    { return i_Server; }
@@ -184,6 +202,9 @@ public:
     // squit, REGARDLESS of wether it is currently connected or not.
     bool IsSquit(mstring server);
     void Jupe(mstring server, mstring reason);
+
+    void AKILL(mstring host, mstring reason = "", unsigned long time = 0);
+    void RAKILL(mstring host);
 
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);

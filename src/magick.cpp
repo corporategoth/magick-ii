@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.204  2000/03/15 14:42:58  prez
+** Added variable AKILL types (including GLINE)
+**
 ** Revision 1.203  2000/03/14 10:05:16  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -1295,6 +1298,10 @@ bool Magick::get_config_values()
 	reconnect_clients = true;
     startup.services_user = value_mstring;
     startup.ownuser = value_bool;
+    in.Read(ts_Startup+"SETMODE",&value_mstring, "");
+    if (value_mstring != startup.setmode)
+	reconnect_clients = true;
+    startup.setmode = value_mstring;
 
     in.Read(ts_Startup+"SERVICES_HOST",&value_mstring,"magick.tm");
     if (value_mstring != startup.services_host)
@@ -1386,6 +1393,8 @@ bool Magick::get_config_values()
 	    }
 	}
     }
+
+    in.Read(ts_Services+"Enforcer_Name",&nickserv.enforcer_name,"Nickname Enforcer");
 
     in.Read(ts_Services+"ChanServ",&value_mstring,"ChanServ");
     for (i=0; i<chanserv.names.WordCount(" "); i++)
