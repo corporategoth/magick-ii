@@ -415,6 +415,46 @@ public:
     };
 };
 
+class E_IrcSvcHandler_Message : public exception
+{
+public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+
+private:
+    E_where i_where;
+    E_type i_type;
+    char i_reason[1024];
+
+public:
+    E_IrcSvcHandler_Message(const E_where p_where = W_Other, const E_type p_type = T_Other, unsigned long msgid = 0) throw()
+			: i_where(p_where), i_type(p_type)
+    {
+	ACE_OS::memcpy(i_reason, reinterpret_cast<void *>(msgid), sizeof(msgid));
+	i_reason[sizeof(msgid)] = 0;
+    }
+    E_IrcSvcHandler_Message(unsigned long msgid) throw() : i_where(W_Other), i_type(T_Other)
+    {
+	ACE_OS::memcpy(i_reason, reinterpret_cast<void *>(msgid), sizeof(msgid));
+	i_reason[sizeof(msgid)] = 0;
+    }
+    const E_where where() const throw()
+    {
+	return i_where;
+    }
+    const E_type type() const throw()
+    {
+	return i_type;
+    }
+    const char *what() const throw()
+    {
+	return i_reason;
+    };
+};
+
+
 class E_Thread : public exception
 {
 public:

@@ -38,7 +38,6 @@ RCSID(base_cpp, "@(#)$Id$");
 
 bool mBase::TaskOpened;
 map < mMessage::type_t, map < mstring, set < unsigned long > > > mMessage::AllDependancies;
-map < unsigned long, mMessage * > mMessage::MsgIdMap;
 unsigned long mMessage::LastMsgId = 0;
 
 entlist_t &entlist_t::operator=(const entlist_t & in)
@@ -171,12 +170,12 @@ void entlist_t::DumpE() const
 
 // --------- end of entlist_t -----------------------------------
 
-mMessage::mMessage(const mstring & p_source, const mstring & p_msgtype, const mstring & p_params,
-		   const unsigned long p_priority) : ACE_Method_Request(p_priority), msgid_(0), sourceToken_(false),
-source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
+mMessage::mMessage(const mstring & p_source, const mstring & p_msgtype, const mstring & p_params)
+: msgid_(0), sourceToken_(false), source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
     BTCB();
-    FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
+    FT("mMessage::mMessage", (p_source, p_msgtype, p_params));
+
 
     if (source_ != " " && Magick::instance().server.proto.Tokens())
     {
@@ -190,6 +189,15 @@ source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
 	msgtype_ = p_msgtype;
 
     msgtype_.MakeUpper();
+
+    {
+	RLOCK((lck_IrcSvcHandler));
+	if (Magick::instance().ircsvchandler != NULL)
+	    msgid_ = Magick::instance().ircsvchandler->GetNewMsgid();
+    }
+
+    lockData(mVarArray("Message", msgid_));
+
     ETCB();
 }
 
@@ -477,13 +485,6 @@ void mMessage::AddDependancies()
 	    AddDepend(ChanExists, chan);
     }
 
-    {
-	MLOCK((lck_MsgIdMap));
-	msgid_ = LastMsgId++;
-	while (MsgIdMap.find(msgid_) != MsgIdMap.end())
-	    msgid_ = LastMsgId++;
-    }
-
     list < triplet < type_t, mstring, bool > >::iterator iter;
 
     for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
@@ -497,11 +498,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -514,11 +510,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -531,11 +522,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -548,11 +534,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -565,11 +546,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -582,11 +558,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -602,11 +573,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    else
@@ -626,11 +592,6 @@ void mMessage::AddDependancies()
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
-		if (added == 1)
-		{
-		    MLOCK((lck_MsgIdMap));
-		    MsgIdMap[msgid_] = this;
-		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
 	    }
 	    break;
@@ -798,13 +759,6 @@ bool mMessage::RecheckDependancies()
     if (!OutstandingDependancies())
     {
 	CP(("No more dependancies for %d.", msgid_));
-	{
-	    MLOCK((lck_MsgIdMap));
-	    map < unsigned long, mMessage * >::iterator k = MsgIdMap.find(msgid_);
-
-	    if (k != MsgIdMap.end())
-		MsgIdMap.erase(k);
-	}
 	RET(false);
     }
     RET(true);
@@ -908,35 +862,23 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 
     for (k = mydep.begin(); k != mydep.end(); k++)
     {
-	mMessage *msg = NULL;
+	map_entry<mMessage> msg;
 
 	{
-	    MLOCK((lck_MsgIdMap));
-	    map < unsigned long, mMessage * >::iterator iter = MsgIdMap.find(*k);
-
-	    if (iter != MsgIdMap.end())
-	    {
-		msg = iter->second;
-		if (msg->validated())
-		{
-		    msg->DependancySatisfied(type, target);
-		    if (!msg->OutstandingDependancies())
-			MsgIdMap.erase(iter);
-		    else
-			msg = NULL;
-		}
-		else
-		    msg = NULL;
-	    }
-	}
-	if (msg != NULL && msg->validated())
-	{
-	    CP(("No more dependancies for %d.", msg->msgid()));
-	    msg->priority(static_cast < unsigned long > (P_DepFilled));
-
 	    RLOCK((lck_IrcSvcHandler));
-	    if (Magick::instance().ircsvchandler != NULL)
-		Magick::instance().ircsvchandler->enqueue(msg);
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->IsMessage(*k))
+		msg = Magick::instance().ircsvchandler->GetMessage(*k);
+	}
+
+	if (msg.entry() != NULL)
+	{
+	    msg->DependancySatisfied(type, target);
+	    if (!msg->OutstandingDependancies())
+	    {
+		RLOCK((lck_IrcSvcHandler));
+		if (Magick::instance().ircsvchandler != NULL)
+		    Magick::instance().ircsvchandler->enqueue(msg->msgid(), P_DepFilled);
+	    }
 	}
     }
     ETCB();
@@ -967,44 +909,25 @@ int mMessage::call()
     BTCB();
     NFT("mMessage::call");
 
-    if (source_ == " ")
-    {
-	if (msgtype_.IsSameAs("SHUTDOWN", false))
-	{
-	    RET(-1);
-	}
-	else if (msgtype_.IsSameAs("SLEEP", false))
-	{
-	    ACE_OS::sleep(FromHumanTime(params_) ? FromHumanTime(params_) : 1);
-	}
-	else if (msgtype_.IsSameAs("TEST", false))
-	{
-	    // Make sure we dont take any more test messages ...
-	    ACE_Thread::yield();
-	}
-	RET(0);
-    }
-
-    mstring src;
-
-    if (source_[0u] == '!')
-	src = Magick::instance().server.GetUser(source_);
-    else if (source_[0u] == '@')
-	src = Magick::instance().server.GetServer(source_);
-    else if (source_.empty())
-    {
-	if (Magick::instance().server.OurUplink().empty())
-	    src = Magick::instance().startup.Server_Name();
-	else
-	    src = Magick::instance().server.OurUplink();
-    }
-    else
-	src = source_;
-
-    CP(("Processing message (%s) %s %s", src.c_str(), msgtype_.c_str(), params_.c_str()));
-
     try
     {
+	mstring src;
+
+	if (source_[0u] == '!')
+	    src = Magick::instance().server.GetUser(source_);
+	else if (source_[0u] == '@')
+	    src = Magick::instance().server.GetServer(source_);
+	else if (source_.empty())
+	{
+	    if (Magick::instance().server.OurUplink().empty())
+		src = Magick::instance().startup.Server_Name();
+	    else
+		src = Magick::instance().server.OurUplink();
+	}
+	else
+	    src = source_;
+
+	CP(("Processing message (%s) %s %s", src.c_str(), msgtype_.c_str(), params_.c_str()));
 
 	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(src) &&
 	    !IsChan(IrcParam(params_, 1)))

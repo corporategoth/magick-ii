@@ -48,7 +48,6 @@ void *IrcSvcHandler::worker(void *in)
     Magick::register_instance(reinterpret_cast < Magick * > (in));
     mThread::Attach(tt_mBase);
     FT("IrcSvcHandler::worker", (in));
-    mMessage *msg = NULL;
     bool active = true;
 
     Magick::instance().hh.AddThread(Heartbeat_Handler::H_Worker);
@@ -58,39 +57,90 @@ void *IrcSvcHandler::worker(void *in)
 	{
 	    Magick::instance().hh.Heartbeat();
 
-	    msg = NULL;
+	    ACE_Message_Block *block = NULL;
 	    {
 		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler == NULL)
 		    break;
-		msg = dynamic_cast < mMessage * > (Magick::instance().ircsvchandler->message_queue.dequeue());
+		
+		if (Magick::instance().ircsvchandler->message_queue.dequeue(block) < 0)
+		    continue;
 	    }
 	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
-	    if (msg != NULL && msg->validated() && !msg->OutstandingDependancies())
+	    if (block != NULL)
 	    {
-		try
+		switch (block->msg_type())
 		{
-		    int rv = msg->call();
-
-		    delete msg;
-
-		    if (rv < 0)
-			break;
-		}
-		catch (E_Lock & e)
+		case ACE_Message_Block::MB_DATA:
 		{
-		    static_cast < void > (e);
-
-		    // We got a locking exception, re-queue the message (at the top of the list).
-		    if (msg != NULL && msg->validated())
+		    if (block->base() == NULL)
 		    {
-			msg->priority(static_cast < u_long > (P_Retry));
+			delete block;
+			break;
+		    }
+
+		    unsigned long msgid = 0;
+		    memcpy(&msgid, block->base(), sizeof(unsigned long));
+		    delete block->base();
+		    delete block;
+
+		    map_entry<mMessage> msg;
+		    // Lookup msg and do call ...
+		    {
 			RLOCK((lck_IrcSvcHandler));
 			if (Magick::instance().ircsvchandler == NULL)
 			    break;
-			Magick::instance().ircsvchandler->enqueue(msg);
+
+			if (Magick::instance().ircsvchandler->IsMessage(msgid))
+			{
+			    msg = Magick::instance().ircsvchandler->GetMessage(msgid);
+			    if (msg->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time() || !msg->OutstandingDependancies())
+				Magick::instance().ircsvchandler->RemMessage(msgid);
+			    else
+				break;
+			}
 		    }
+		    if (msg.entry() != NULL)
+		    {
+			try
+			{
+			    if (msg->call() < 0)
+				active = false;
+			}
+			catch (E_Lock & e)
+			{
+			    static_cast < void > (e);
+
+			    RLOCK((lck_IrcSvcHandler));
+			    if (Magick::instance().ircsvchandler == NULL)
+				break;
+			    Magick::instance().ircsvchandler->enqueue(msgid, P_Retry);
+			}
+		    }
+
+		    break;
+		}
+		case ACE_Message_Block::MB_PROTO:
+		{
+		    ACE_Message_Block::Message_Flags flags = block->flags();
+		    delete block;
+		    if (flags & (ACE_Message_Block::USER_FLAGS + IrcSvcHandler::FLAG_SLEEP))
+		    {
+			ACE_OS::sleep(1);
+		    }
+		    if (flags & (ACE_Message_Block::USER_FLAGS + IrcSvcHandler::FLAG_YIELD))
+		    {
+			ACE_Thread::yield();
+		    }
+		    break;
+		}
+		case ACE_Message_Block::MB_HANGUP:
+		    delete block;
+		    active = false;
+		    break;
+		default:
+		    delete block;
 		}
 	    }
 
@@ -100,7 +150,7 @@ void *IrcSvcHandler::worker(void *in)
 		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL)
 		{
-		    msgcnt = Magick::instance().ircsvchandler->message_queue.method_count();
+		    msgcnt = Magick::instance().ircsvchandler->message_queue.message_count();
 		    thrcnt = Magick::instance().ircsvchandler->tm.count_threads();
 		}
 	    }
@@ -342,13 +392,9 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     while (!message_queue.is_empty())
     {
-	mMessage *msg = dynamic_cast < mMessage * > (message_queue.dequeue(&tv));
-
-	if (msg != NULL)
-	{
-	    delete msg;
-	    msg = NULL;
-	}
+	ACE_Message_Block *block;
+	if (message_queue.dequeue(block) >= 0 && block != NULL)
+	    delete block;
     }
     for (i = 0; i < static_cast < unsigned int > (tm.count_threads()); i++)
 	enqueue_shutdown();
@@ -358,13 +404,13 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 	mMessage::AllDependancies.clear();
     }
     {
-	MLOCK((lck_MsgIdMap));
-	map < unsigned long, mMessage * >::iterator mi;
+	MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+	msgidmap_t::iterator mi;
 
-	for (mi = mMessage::MsgIdMap.begin(); mi != mMessage::MsgIdMap.end(); mi++)
+	for (mi = MsgIdMap.begin(); mi != MsgIdMap.end(); mi++)
 	    delete mi->second;
 
-	mMessage::MsgIdMap.clear();
+	MsgIdMap.clear();
     }
 
     // Should I do this with SQUIT protection ...?
@@ -649,66 +695,60 @@ int IrcSvcHandler::send(const mstring & data)
     ETCB();
 }
 
-void IrcSvcHandler::enqueue(mMessage * mm)
+void IrcSvcHandler::enqueue(unsigned long msgid, unsigned long priority)
 {
     BTCB();
-    FT("IrcSvcHandler::enqueue", (mm));
+    FT("IrcSvcHandler::enqueue", (msgid));
 
-    if (mm == NULL)
-	return;
-
-    if (mm->priority() == static_cast < u_long > (P_Highest))
+    // Make sure we have at LEAST our minimum ...
+    while (static_cast < unsigned int > (tm.count_threads()) < Magick::instance().config.Min_Threads())
     {
-	mm->call();
-	delete mm;
-    }
-    else
-    {
-	// Make sure we have at LEAST our minimum ...
-	while (static_cast < unsigned int > (tm.count_threads()) < Magick::instance().config.Min_Threads())
-	{
-	    if (tm.spawn(IrcSvcHandler::worker, reinterpret_cast < void * > (&Magick::instance()),
+	if (tm.spawn(IrcSvcHandler::worker, reinterpret_cast < void * > (&Magick::instance()),
 			 THR_NEW_LWP | THR_DETACHED) != -1)
+	{
+	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+	}
+	else
+	    CP(("Could not start new thread (below thread threshold)!"));
+    }
+
+    // Only spawn if we are less than our maximum ... and need it :)
+    if (static_cast<unsigned int>(message_queue.message_count()) > tm.count_threads() * Magick::instance().config.High_Water_Mark())
+    {
+	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
+	if (static_cast < unsigned int > (tm.count_threads()) >= Magick::instance().config.Max_Threads())
+	{
+	    NLOG(LM_WARNING, "EVENT/MAX_THREADS");
+	}
+	else
+	{
+	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) < 0)
+	    {
+		NLOG(LM_CRITICAL, "EVENT/NEW_THREAD_FAIL");
+	    }
+	    else
 	    {
 		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	    }
-	    else
-		CP(("Could not start new thread (below thread threshold)!"));
 	}
-
-	// Only spawn if we are less than our maximum ... and need it :)
-	if (message_queue.method_count() > tm.count_threads() * Magick::instance().config.High_Water_Mark())
-	{
-	    CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	    if (static_cast < unsigned int > (tm.count_threads()) >= Magick::instance().config.Max_Threads())
-	    {
-		NLOG(LM_WARNING, "EVENT/MAX_THREADS");
-	    }
-	    else
-	    {
-		if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) < 0)
-		{
-		    NLOG(LM_CRITICAL, "EVENT/NEW_THREAD_FAIL");
-		}
-		else
-		{
-		    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
-		}
-	    }
-	}
-
-	message_queue.enqueue(mm);
     }
+
+    char *data = new char[sizeof(unsigned long)];
+    memcpy(data, reinterpret_cast<void *>(&msgid), sizeof(unsigned long));
+    ACE_Message_Block *block = new ACE_Message_Block(data);
+    block->msg_priority(priority);
+
+    message_queue.enqueue_prio(block);
+
     ETCB();
 }
 
-void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
+void IrcSvcHandler::enqueue(const mstring & message, unsigned long priority)
 {
     BTCB();
-    FT("IrcSvcHandler::enqueue", (message, pri));
+    FT("IrcSvcHandler::enqueue", (message, priority));
     CH(D_From, message);
 
-    u_long p(pri);
     mstring source, msgtype, params;
 
     source = IrcParam(message, 1);
@@ -752,21 +792,30 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
     // We dont want to end burst until everything else
     // is done ... sometimes this happens prematurely.
     if (msgtype == "303")
-	p = P_Delay;
+	priority = P_Delay;
 
     try
     {
-	mMessage *msg = new mMessage(source, msgtype, params, p);
-
+	mMessage *msg = new mMessage(source, msgtype, params);
 	if (msg != NULL && msg->validated())
 	{
 	    for (int i = 0; immediate_process[i] != NULL; i++)
 		if (msg->msgtype().IsSameAs(immediate_process[i], true))
 		{
-		    msg->priority(static_cast < u_long > (P_Highest));
-		    break;
+		    map_entry<mMessage> tmp(msg);
+		    tmp->setDelete();
+		    tmp->call();
+		    return;
 		}
-	    enqueue(msg);
+	    unsigned long msgid = msg->msgid();
+	    if (msgid == 0)
+		return;
+
+	    {
+		MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+		MsgIdMap[msgid] = msg;
+	    }
+	    enqueue(msgid, priority);
 	}
     }
     catch (E_NickServ_Live & e)
@@ -850,19 +899,24 @@ void IrcSvcHandler::enqueue_shutdown()
 {
     BTCB();
     NFT("IrcSvcHandler::enqueue_shutdown");
-    mMessage *msg = new mMessage(" ", "SHUTDOWN", "", P_System);
 
-    message_queue.enqueue(msg);
+    ACE_Message_Block *block = new ACE_Message_Block(0, ACE_Message_Block::MB_HANGUP);
+    block->msg_priority(P_System);
+    message_queue.enqueue_prio(block);
+
     ETCB();
 }
 
-void IrcSvcHandler::enqueue_sleep(const mstring & in)
+void IrcSvcHandler::enqueue_sleep()
 {
     BTCB();
     NFT("IrcSvcHandler::enqueue_sleep");
-    mMessage *msg = new mMessage(" ", "SLEEP", in, P_System);
 
-    message_queue.enqueue(msg);
+    ACE_Message_Block *block = new ACE_Message_Block(0, ACE_Message_Block::MB_PROTO);
+    block->set_flags(ACE_Message_Block::USER_FLAGS + FLAG_SLEEP);
+    block->msg_priority(P_System);
+    message_queue.enqueue_prio(block);
+
     ETCB();
 }
 
@@ -870,9 +924,113 @@ void IrcSvcHandler::enqueue_test()
 {
     BTCB();
     NFT("IrcSvcHandler::enqueue_test");
-    mMessage *msg = new mMessage(" ", "TEST", "", P_System);
 
-    message_queue.enqueue(msg);
+    ACE_Message_Block *block = new ACE_Message_Block(0, ACE_Message_Block::MB_PROTO);
+    block->set_flags(ACE_Message_Block::USER_FLAGS + FLAG_YIELD);
+    block->msg_priority(P_System);
+    message_queue.enqueue_prio(block);
+
+    ETCB();
+}
+
+unsigned long IrcSvcHandler::GetNewMsgid()
+{
+    BTCB();
+    NFT("IrcSvcHandler::GetNewMsgid");
+    unsigned long msgid = 0;
+    {
+	MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+	msgid = mMessage::LastMsgId++;
+	while (msgid == 0 || MsgIdMap.find(msgid) != MsgIdMap.end())
+	    msgid = mMessage::LastMsgId++;
+    }
+    RET(msgid);
+    ETCB();
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+map_entry < mMessage > IrcSvcHandler::GetMessage(unsigned long in) const throw (E_IrcSvcHandler_Message)
+#else
+map_entry < mMessage > IrcSvcHandler::GetMessage(unsigned long in) const
+#endif
+{
+    BTCB();
+    FT("IrcSvcHandler::GetMessage", (in));
+
+    MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+    IrcSvcHandler::msgidmap_t::const_iterator iter = MsgIdMap.find(in);
+    if (iter == MsgIdMap.end())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_IrcSvcHandler_Message(E_IrcSvcHandler_Message::W_Get, E_IrcSvcHandler_Message::T_NotFound, in));
+#else
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("IrcSvcHandler", "Message", "Get", "NotFound", in));
+	RET(mMessage &, GLOB_mMessage);
+#endif
+    }
+    if (iter->second == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_IrcSvcHandler_Message(E_IrcSvcHandler_Message::W_Get, E_IrcSvcHandler_Message::T_Invalid, in));
+#else
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("IrcSvcHandler", "Message", "Get", "Invalid", in));
+	RET(mMessage &, GLOB_mMessage);
+#endif
+    }
+    if (!iter->second->validated())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_IrcSvcHandler_Message(E_IrcSvcHandler_Message::W_Get, E_IrcSvcHandler_Message::T_Blank, in));
+#else
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("IrcSvcHandler", "Message", "Get", "Blank", in));
+	RET(mMessage &, GLOB_mMessage);
+#endif
+    }
+
+    NRET(map_entry < mMessage >, map_entry < mMessage > (iter->second));
+    ETCB();
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+void IrcSvcHandler::RemMessage(unsigned long in) throw (E_IrcSvcHandler_Message)
+#else
+void IrcSvcHandler::RemMessage(unsigned long in)
+#endif
+{
+    BTCB();
+    FT("IrcSvcHandler::RemMessage", (in));
+
+    MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+    IrcSvcHandler::msgidmap_t::iterator iter = MsgIdMap.find(in);
+    if (iter == MsgIdMap.end())
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_IrcSvcHandler_Message(E_IrcSvcHandler_Message::W_Rem, E_IrcSvcHandler_Message::T_NotFound, in));
+#else
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("IrcSvcHandler", "Message", "Rem", "NotFound", in));
+	return;
+#endif
+    }
+
+    if (iter->second != NULL)
+    {
+	map_entry < mMessage > entry(iter->second);
+	entry->setDelete();
+    }
+    MsgIdMap.erase(iter);
+    ETCB();
+}
+
+
+bool IrcSvcHandler::IsMessage(unsigned long in) const
+{
+    BTCB();
+    FT("IrcSvcHandler::IsMessage", (in));
+    MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+    msgidmap_t::const_iterator iter = MsgIdMap.find(in);
+    if (iter != MsgIdMap.end() && iter->second != NULL)
+	RET(true);
+    RET(false);
     ETCB();
 }
 
@@ -2643,71 +2801,48 @@ void EventTask::do_msgcheck(mDateTime & synctime)
     CP(("Starting EXPIRED MESSAGE check ..."));
 
     static_cast < void > (synctime);
-
-    vector < mMessage * > Msgs;
-    unsigned int i;
-
-    vector < mstring > chunked;
+    vector<unsigned long> chunked;
 
     {
+	MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
+	if (Magick::instance().ircsvchandler != NULL)
+	{
+	    IrcSvcHandler::msgidmap_t::iterator iter;
+	    for (iter=Magick::instance().ircsvchandler->MsgIdMap.begin(); iter!=Magick::instance().ircsvchandler->MsgIdMap.end(); iter++)
+	    {
+		map_entry<mMessage> msg(iter->second);
+		if (msg.entry() != NULL && msg->references() < 2 && 
+		    msg->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
+		{
+		    chunked.push_back(msg->msgid());
+		    Magick::instance().ircsvchandler->enqueue(msg->msgid(), P_Old);
+		}
+	    }
+	}
+    }
+
+    if (chunked.size())
+    {
 	MLOCK((lck_AllDeps));
+	unsigned int i;
 	map < mMessage::type_t, map < mstring, set < unsigned long > > >::iterator j;
 
 	for (j = mMessage::AllDependancies.begin(); j != mMessage::AllDependancies.end(); j++)
 	{
 	    map < mstring, set < unsigned long > >::iterator k;
-
+	    vector<mstring> chunked2;
 	    for (k = j->second.begin(); k != j->second.end(); k++)
 	    {
-		set < unsigned long > Ids;
-		set < unsigned long >::iterator l;
-
-		for (l = k->second.begin(); l != k->second.end(); l++)
+		for (i=0; i<chunked.size(); i++)
 		{
-		    {
-			MLOCK2((lck_MsgIdMap));
-			map < unsigned long, mMessage * >::iterator m = mMessage::MsgIdMap.find(*l);
-
-			if (m != mMessage::MsgIdMap.end())
-			{
-			    if (m->second == NULL ||
-				m->second->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
-			    {
-				Ids.insert(m->first);
-				if (m->second != NULL)
-				    Msgs.push_back(m->second);
-				mMessage::MsgIdMap.erase(m);
-			    }
-			}
-		    }
+		    if (k->second.find(chunked[i]) != k->second.end())
+			k->second.erase(chunked[i]);
 		}
-		for (l = Ids.begin(); l != Ids.end(); l++)
-		    k->second.erase(*l);
 		if (!k->second.size())
-		    chunked.push_back(k->first);
+		    chunked2.push_back(k->first);
 	    }
-	    for (i = 0; i < chunked.size(); i++)
-		j->second.erase(chunked[i]);
-	    chunked.clear();
-	}
-    }
-    vector < mMessage * >::iterator m;
-    for (m = Msgs.begin(); m != Msgs.end(); m++)
-    {
-	if (*m != NULL)
-	{
-	    RLOCK((lck_IrcSvcHandler));
-	    if (Magick::instance().ircsvchandler != NULL)
-	    {
-		COM(("(%d) Requing without filled dependancies\n", (*m)->msgid()));
-		(*m)->priority(static_cast < u_long > (P_DepFilled));
-		Magick::instance().ircsvchandler->enqueue(*m);
-	    }
-	    else
-	    {
-		COM(("(%d) Deleting obsolete message\n", (*m)->msgid()));
-		delete *m;
-	    }
+	    for (i=0; i<chunked2.size(); i++)
+		j->second.erase(chunked2[i]);
 	}
     }
     ETCB();

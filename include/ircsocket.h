@@ -135,11 +135,75 @@ public:
     void DumpE() const;
 };
 
-class mMessage;
+class mMessage : public ref_class
+{
+    friend class EventTask;
+    friend class IrcSvcHandler;
+
+    unsigned long msgid_;
+    bool sourceToken_;
+    mstring source_, msgtype_, params_;
+    mDateTime creation_;
+
+public:
+    enum type_t
+    { ServerExists, ServerNoExists, NickExists, NickNoExists,
+	ChanExists, ChanNoExists, UserInChan, UserNoInChan
+    };
+
+private:
+    static map < type_t, map < mstring, set < unsigned long > > > AllDependancies;
+    static unsigned long LastMsgId;
+
+    list < triplet < type_t, mstring, bool > > dependancies;
+    void AddDepend(const type_t type, const mstring & param)
+    {
+	dependancies.push_back(triplet < type_t, mstring, bool > (type, param, false));
+    }
+    void AddDependancies();
+
+public:
+    mMessage(const mstring & source, const mstring & msgtype, const mstring & params);
+    virtual ~mMessage() {}
+
+    bool OutstandingDependancies();
+    static void CheckDependancies(type_t type, const mstring & param1, const mstring & param2 = "");
+    bool RecheckDependancies();
+    void DependancySatisfied(type_t type, const mstring & param);
+
+    bool validated() const
+    {
+	return (msgtype_.length() && msgtype_.validated());
+    }
+    unsigned long msgid()
+    {
+	return msgid_;
+    }
+    mstring source()
+    {
+	return source_;
+    }
+    mstring msgtype()
+    {
+	return msgtype_;
+    }
+    mstring params()
+    {
+	return params_;
+    }
+    mDateTime creation()
+    {
+	return creation_;
+    }
+
+    virtual int call();
+};
+
 class IrcSvcHandler : public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
 {
     friend int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg);
     friend class SignalHandler;
+    friend void EventTask::do_msgcheck(mDateTime & synctime);
 
     typedef ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH > inherited;
 
@@ -158,8 +222,18 @@ class IrcSvcHandler : public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
     bool i_burst;
     mDateTime i_synctime;
 
+public:
+    enum msg_flags { FLAG_SLEEP = 0x01, FLAG_YIELD = 0x02 };
+#ifdef NO_HASH_MAP
+    typedef map<int, mMessage *> msgidmap_t;
+#else
+    typedef hash_map<int, mMessage *> msgidmap_t;
+#endif
+private:
+
     ACE_Thread_Manager tm;
-    ACE_Activation_Queue message_queue;
+    ACE_Message_Queue<ACE_MT_SYNCH> message_queue;
+    msgidmap_t MsgIdMap;
 
     static void *worker(void *);
 
@@ -202,11 +276,21 @@ public:
 	return tm.count_threads();
     }
 
-    void enqueue(mMessage * mm);
-    void enqueue(const mstring & message, const u_long priority = static_cast < u_long > (P_Normal));
+    void enqueue(unsigned long msgid, unsigned long priority = static_cast < unsigned long > (P_Normal));
+    void enqueue(const mstring & message, unsigned long priority = static_cast < unsigned long > (P_Normal));
     void enqueue_shutdown();
-    void enqueue_sleep(const mstring & time = "1s");
+    void enqueue_sleep();
     void enqueue_test();
+
+    unsigned long GetNewMsgid();
+#ifdef MAGICK_HAS_EXCEPTIONS
+    map_entry < mMessage > GetMessage(unsigned long in) const throw (E_IrcSvcHandler_Message);
+    void RemMessage(unsigned long in) throw (E_IrcSvcHandler_Message);
+#else
+    map_entry < mMessage > GetMessage(unsigned long in) const;
+    void RemMessage(unsigned long in);
+#endif
+    bool IsMessage(unsigned long in) const;
 
     void DumpB() const;
     void DumpE() const;
