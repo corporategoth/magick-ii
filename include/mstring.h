@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2001/12/12 15:40:21  prez
+** Made *toa functions guarentee the result is terminated.
+**
 ** Revision 1.85  2001/12/12 07:43:52  prez
 ** Some more platform changes.  Made it look for _snprintf and _vsnprintf
 ** aswell (is the case on windows).  Also updated windows config.h.win.
@@ -361,7 +364,7 @@ inline const char *itoa(int i)
 {
     static char sv[16];
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv), "%d", i);
+    snprintf(sv, sizeof(sv)-1, "%d", i);
     return sv;
 }
 #endif
@@ -372,7 +375,7 @@ inline const char *ltoa(long l)
 {
     static char sv[16];
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv), "%ld", l);
+    snprintf(sv, sizeof(sv)-1, "%ld", l);
     return sv;
 }
 #endif
@@ -383,7 +386,7 @@ inline const char *ftoa(float f)
 {
     static char sv[64];
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv), "%f", f);
+    snprintf(sv, sizeof(sv)-1, "%f", f);
     return sv;
 }
 #endif
@@ -394,7 +397,7 @@ inline const char *dtoa(double d)
 {
     static char sv[512];
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv), "%g", d);
+    snprintf(sv, sizeof(sv)-1, "%g", d);
     return sv;
 }
 #endif
@@ -405,7 +408,7 @@ inline const char *ultoa(unsigned long ul)
 {
     static char sv[16];
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv), "%lu", ul);
+    snprintf(sv, sizeof(sv)-1, "%lu", ul);
     return sv;
 }
 #endif
@@ -416,7 +419,7 @@ inline const char *uitoa(unsigned int ui)
 {
     static char sv[16];
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv), "%u", ui);
+    snprintf(sv, sizeof(sv)-1, "%u", ui);
     return sv;
 }
 #endif
