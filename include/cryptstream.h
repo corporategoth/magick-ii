@@ -16,7 +16,7 @@
 #include "mstring.h"
 extern "C"
 {
-#include "des_locl.h"
+#include "des/des_locl.h"
 };
 
 class mDecryptStream : public wxFilterInputStream

@@ -98,9 +98,9 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "include\bob" /I "..\cryptlib21" /I\
- "include" /I "..\ace_wrappers" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS"\
- /D "DES_UNROLL" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "include\bob" /I "include" /I\
+ "..\ace_wrappers" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D\
+ "DES_UNROLL" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 CPP_OBJS=.\Release/
 CPP_SBRS=.
 BSC32=bscmake.exe
@@ -277,10 +277,9 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I\
- "..\cryptlib21" /I "include" /I "..\ace_wrappers" /D "_DEBUG" /D "DEBUG" /D\
- "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr"$(INTDIR)\\"\
- /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include"\
+ /I "..\ace_wrappers" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS"\
+ /D "DES_UNROLL" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 CPP_OBJS=.\Debug/
 CPP_SBRS=.\Debug/
 BSC32=bscmake.exe
@@ -865,15 +864,13 @@ DEP_CPP_BOB_C=\
 !ENDIF 
 
 SOURCE=.\src\des\cbc_cksm.c
+DEP_CPP_CBC_C=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_CBC_C=\
-	"..\cryptlib21\capi.h"\
-	"..\cryptlib21\crypt.h"\
-	"..\cryptlib21\des\des.h"\
-	"..\cryptlib21\des\des_locl.h"\
-	
 
 "$(INTDIR)\cbc_cksm.obj" : $(SOURCE) $(DEP_CPP_CBC_C) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -881,10 +878,6 @@ DEP_CPP_CBC_C=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_CBC_C=\
-	".\include\des\des.h"\
-	".\include\des\des_locl.h"\
-	
 
 "$(INTDIR)\cbc_cksm.obj"	"$(INTDIR)\cbc_cksm.sbr" : $(SOURCE) $(DEP_CPP_CBC_C)\
  "$(INTDIR)"
@@ -894,15 +887,13 @@ DEP_CPP_CBC_C=\
 !ENDIF 
 
 SOURCE=.\src\des\cfb_enc.c
+DEP_CPP_CFB_E=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_CFB_E=\
-	"..\cryptlib21\capi.h"\
-	"..\cryptlib21\crypt.h"\
-	"..\cryptlib21\des\des.h"\
-	"..\cryptlib21\des\des_locl.h"\
-	
 
 "$(INTDIR)\cfb_enc.obj" : $(SOURCE) $(DEP_CPP_CFB_E) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -910,10 +901,6 @@ DEP_CPP_CFB_E=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_CFB_E=\
-	".\include\des\des.h"\
-	".\include\des\des_locl.h"\
-	
 
 "$(INTDIR)\cfb_enc.obj"	"$(INTDIR)\cfb_enc.sbr" : $(SOURCE) $(DEP_CPP_CFB_E)\
  "$(INTDIR)"
@@ -1477,14 +1464,13 @@ DEP_CPP_CRYPT=\
 	"..\ace_wrappers\ace\streams.h"\
 	"..\ace_wrappers\ace\Trace.h"\
 	"..\ace_wrappers\ace\ws2tcpip.h"\
-	"..\cryptlib21\des\spr.h"\
 	".\include\cryptstream.h"\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	".\include\des\spr.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
-	
-NODEP_CPP_CRYPT=\
-	".\include\des_locl.h"\
 	
 
 "$(INTDIR)\cryptstream.obj" : $(SOURCE) $(DEP_CPP_CRYPT) "$(INTDIR)"
@@ -1610,15 +1596,13 @@ DEP_CPP_DATET=\
 !ENDIF 
 
 SOURCE=.\src\des\des_enc.c
+DEP_CPP_DES_E=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_DES_E=\
-	"..\cryptlib21\capi.h"\
-	"..\cryptlib21\crypt.h"\
-	"..\cryptlib21\des\des.h"\
-	"..\cryptlib21\des\des_locl.h"\
-	
 
 "$(INTDIR)\des_enc.obj" : $(SOURCE) $(DEP_CPP_DES_E) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -1626,10 +1610,6 @@ DEP_CPP_DES_E=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_DES_E=\
-	".\include\des\des.h"\
-	".\include\des\des_locl.h"\
-	
 
 "$(INTDIR)\des_enc.obj"	"$(INTDIR)\des_enc.sbr" : $(SOURCE) $(DEP_CPP_DES_E)\
  "$(INTDIR)"
@@ -3380,12 +3360,10 @@ SOURCE=.\src\des\set_key.c
 !IF  "$(CFG)" == "magick - Win32 Release"
 
 DEP_CPP_SET_K=\
-	"..\cryptlib21\capi.h"\
-	"..\cryptlib21\crypt.h"\
-	"..\cryptlib21\des\des.h"\
-	"..\cryptlib21\des\des_locl.h"\
-	"..\cryptlib21\des\podd.h"\
-	"..\cryptlib21\des\sk.h"\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	".\include\des\podd.h"\
+	".\include\des\sk.h"\
 	
 
 "$(INTDIR)\set_key.obj" : $(SOURCE) $(DEP_CPP_SET_K) "$(INTDIR)"
@@ -3409,15 +3387,13 @@ DEP_CPP_SET_K=\
 !ENDIF 
 
 SOURCE=.\src\des\str2key.c
+DEP_CPP_STR2K=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_STR2K=\
-	"..\cryptlib21\capi.h"\
-	"..\cryptlib21\crypt.h"\
-	"..\cryptlib21\des\des.h"\
-	"..\cryptlib21\des\des_locl.h"\
-	
 
 "$(INTDIR)\str2key.obj" : $(SOURCE) $(DEP_CPP_STR2K) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -3425,10 +3401,6 @@ DEP_CPP_STR2K=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_STR2K=\
-	".\include\des\des.h"\
-	".\include\des\des_locl.h"\
-	
 
 "$(INTDIR)\str2key.obj"	"$(INTDIR)\str2key.sbr" : $(SOURCE) $(DEP_CPP_STR2K)\
  "$(INTDIR)"
