@@ -21,7 +21,7 @@
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 170;
+const int BUILD_NUMBER = 171;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

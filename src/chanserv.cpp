@@ -3653,7 +3653,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
     int listsize, i, count;
     mstring mask;
 
-    mstring message  = params.Before(" ").UpperCase().UpperCase();
+    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
@@ -4639,7 +4639,7 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_clear_Users", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -4691,7 +4691,7 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_clear_Ops", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -4743,7 +4743,7 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_clear_Voices", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -4802,7 +4802,7 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_clear_Modes", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -4855,7 +4855,7 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_clear_Bans", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -4911,7 +4911,7 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_clear_All", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -4961,7 +4961,7 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_level_Set", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 5)
@@ -5022,7 +5022,7 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_level_Reset", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5073,7 +5073,7 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_level_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -5131,7 +5131,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_access_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 5)
@@ -5202,7 +5202,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_access_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5281,7 +5281,7 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_access_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -5336,7 +5336,7 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_akick_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5440,7 +5440,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_akick_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5529,7 +5529,7 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_akick_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -5584,7 +5584,7 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_greet_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5676,7 +5676,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_greet_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -5766,7 +5766,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_greet_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -5824,7 +5824,7 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_message_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5863,7 +5863,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_message_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -5920,7 +5920,7 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_message_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -5962,7 +5962,7 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Founder", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6013,7 +6013,7 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_CoFounder", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6070,7 +6070,7 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
 {
     FT("ChanServ::do_set_Description", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6109,7 +6109,7 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Password", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6155,7 +6155,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Email", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6200,7 +6200,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_URL", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6245,7 +6245,7 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Comment", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6283,7 +6283,7 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Mlock", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6327,7 +6327,7 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_BanTime", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6378,7 +6378,7 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_KeepTopic", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6437,7 +6437,7 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_TopicLock", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6496,7 +6496,7 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6555,7 +6555,7 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_SecureOps", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6614,7 +6614,7 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6673,7 +6673,7 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_NoExpire", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6725,7 +6725,7 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Anarchy", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6784,7 +6784,7 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Restricted", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6843,7 +6843,7 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Join", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6915,7 +6915,7 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Revenge", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -6967,7 +6967,7 @@ void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Mlock", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7004,7 +7004,7 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_BanTime", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7050,7 +7050,7 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_KeepTopic", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7104,7 +7104,7 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_TopicLock", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7158,7 +7158,7 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7212,7 +7212,7 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_SecureOps", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7266,7 +7266,7 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7320,7 +7320,7 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Anarchy", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7374,7 +7374,7 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 {
     FT("ChanServ::do_lock_Restricted", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7428,7 +7428,7 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Join", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7482,7 +7482,7 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Revenge", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 4)
@@ -7531,7 +7531,7 @@ void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_Mlock", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7562,7 +7562,7 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_BanTime", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7599,7 +7599,7 @@ void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring param
 {
     FT("ChanServ::do_unlock_KeepTopic", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7636,7 +7636,7 @@ void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring param
 {
     FT("ChanServ::do_unlock_TopicLock", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7674,7 +7674,7 @@ void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7711,7 +7711,7 @@ void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring param
 {
     FT("ChanServ::do_unlock_SecureOps", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7748,7 +7748,7 @@ void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7785,7 +7785,7 @@ void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_Anarchy", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7822,7 +7822,7 @@ void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring para
 {
     FT("ChanServ::do_unlock_Restricted", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7859,7 +7859,7 @@ void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_Join", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)
@@ -7896,7 +7896,7 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_unlock_Revenge", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
     if (params.WordCount(" ") < 3)

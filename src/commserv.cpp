@@ -979,7 +979,7 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_logon_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1018,7 +1018,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_logon_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1079,7 +1079,7 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_logon_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -1136,7 +1136,7 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_set_Head", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1207,7 +1207,7 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_set_Email", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1256,7 +1256,7 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_set_URL", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1305,7 +1305,7 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_set_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1370,7 +1370,7 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_set_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
@@ -1435,7 +1435,7 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_set_OpenMemos", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") +
+    mstring message = mstring(params.Before(" ") + " "
 		params.ExtractWord(3, " ")).UpperCase();
     if (params.WordCount(" ") < 4)
     {
