@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.137  2000/12/10 12:27:57  prez
+** Added SETHOST, and fixed possibility of servers being processed out
+** of order (causing a server to be missing!)
+**
 ** Revision 1.136  2000/12/09 10:17:14  prez
 ** Added +h to unreal IRCD profile, and made variant more efficiant
 ** string wise by cutting out many operator= calls.
@@ -3456,6 +3460,15 @@ void NetworkServ::execute(const mstring & data)
 	}
 	break;
     case 'S':
+	if (msgtype=="SETHOST")
+	{
+	    // From UnrealIRCD
+	    // :source SVSHOST newhost
+	    if (Parent->nickserv.IsLive(sourceL))
+	    {
+		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(3, ": "));
+	    }
+	}
 	if (msgtype=="SETTIME")
 	{
 	    // RWORLDism -- ignore.
@@ -3496,9 +3509,11 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
-			"SERVER", data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
-		    // Uplink (source) does not exist, WTF?!?
+		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
+				"SERVER", data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
+		    else
+			mBase::push_message(data);
 		}
 	    }
 	}
