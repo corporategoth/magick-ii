@@ -5,6 +5,7 @@
 #include <algorithm>
 using namespace std;
 #include "trace.h"
+#include "ace/INET_Addr.h"
 
 const char CTCP_DELIM_CHAR='\001';
 const char CTCP_QUOTE_CHAR='\\';
@@ -214,22 +215,78 @@ Using
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
 	{
+/*
+with the reply
+	\001USERINFO :#\001
+where the # is the value of the string the client's user has set.
+*/
 	    CP(("Got USERINFO ctcp request, ignoring till codebase has more bits to it"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
 	{
+/*
+The query is the word CLIENTINFO in a "privmsg" optionally followed by
+a colon and one or more specifying words delimited by spaces, where
+the word CLIENTINFO by itself,
+	\001CLIENTINFO\001
+should be replied to by giving a list of known tags (see above in
+section TAGGED DATA). This is only intended to be read by humans.
+With one argument, the reply should be a description of how to use
+that tag. With two arguments, a description of how to use that
+tag's subcommand. And so on.
+*/
 	    CP(("Got CLIENTINFO ctcp request, ignoring till codebase has more bits to it"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="ERRMSG")
 	{
+/*
+This is used as a reply whenever an unknown query is seen. Also, when
+used as a query, the reply should echo back the text in the query,
+together with an indication that no error has happened. Should the
+query form be used, it is
+	\001ERRMSG #\001
+where # is a string containing any character, with the reply
+	\001ERRMSG # :#\001
+where the first # is the same string as in the query and the second #
+a short text notifying the user that no error has occurred.
+A normal ERRMSG reply which is sent when a corrupted query or some
+corrupted extended data is received, looks like
+	\001ERRMSG # :#\001
+where the first # is the the failed query or corrupted extended data
+and the second # a text explaining what the problem is, like "unknown
+query" or "failed decrypting text".
+*/
 	    CP(("Got ERRMSG ctcp request, ignoring till codebase has more bits to it"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="PING")
 	{
+/*
+Ping is used to measure the time delay between clients on the IRC
+network. A ping query is encoded in a privmsg, and has the form:
+    \001PING timestamp\001
+where `timestamp' is the current time encoded in any form the querying
+client finds convienent. The replying client sends back an identical
+message inside a notice:
+    \001PING timestamp\001
+The querying client can then subtract the recieved timestamp from the
+current time to obtain the delay between clients over the IRC network
+*/
 	    CP(("Got PING ctcp request, ignoring till codebase has more bits to it"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="TIME")
 	{
+/*
+Time queries are used to determine what time it is where another
+user's client is running. This can be useful to determine if someone
+is probably awake or not, or what timezone they are in. A time query
+has the form:
+    \001TIME\001
+On reciept of such a query in a privmsg, clients should reply with a
+notice of the form:
+    \001TIME :human-readable-time-string\001
+For example:
+    \001TIME :Thu Aug 11 22:52:51 1994 CST\001
+*/
 	    CP(("Got TIME ctcp request, ignoring till codebase has more bits to it"));
 	}
 	else
@@ -251,5 +308,28 @@ mstring DccEngine::encode(mstring & in)
 
 void DccEngine::GotDCC(const mstring & in)
 {
-
-}
+    mstring type,argument,straddress,strport,strsize;
+    unsigned short port;
+    unsigned long address,size,longport;
+    type=in.Before(" ");
+    argument=in.After(" ").Before(" ");
+    straddress=in.After(" ").After(" ").Before(" ");
+    if(count(strport.begin(),strport.end(),' ')>=1)
+    {
+	strport=in.After(" ").After(" ").After(" ").Before(" ");
+	strsize=in.After(" ").After(" ").After(" ").After(" ");
+    }
+    else
+    {
+	strport=in.After(" ").After(" ").After(" ");
+	strsize="";
+    }
+    sscanf(straddress.c_str(),"%u",&address);
+    sscanf(strport.c_str(),"%u",&longport);
+    port=(unsigned short)longport;
+    if(strsize!="")
+	sscanf(strsize.c_str(),"%u",&size);
+    else
+	size=0;
+    ACE_INET_Addr Client(port,address);
+}   
