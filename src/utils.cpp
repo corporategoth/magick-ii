@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2001/12/09 11:25:52  prez
+** Some windows compilation fixes ...
+**
 ** Revision 1.73  2001/11/17 03:16:02  prez
 ** Extra logging, actually made DCC identify as a DCC thread, and fixed some
 ** mkdir failures ...
@@ -279,7 +282,7 @@ bool MakeDirectory(const mstring &in)
 	else if (pos == 0)
 	    path = DirSlash;
 #ifdef WIN32
-	else if (pos == 2 && path[1] == ':')
+	else if (pos == 2 && path[1u] == ':')
 	{
 	    // We got X:\ (for windows), handle it.
 	    path.Truncate(3);

@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2001/12/09 11:25:52  prez
+** Some windows compilation fixes ...
+**
 ** Revision 1.22  2001/12/05 00:13:04  prez
 ** Got rid of a warning in magick_keygen
 **
@@ -117,9 +120,10 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 
 #include <stdio.h>
 #include <string.h>
-#ifndef _WIN32
+#ifndef WIN32
 #include <unistd.h>
 #else
+#include <io.h>
 #define W_OK 0x02
 #endif
 #include "config.h"
