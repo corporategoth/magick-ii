@@ -999,10 +999,6 @@ void Chan_Live_t::SendMode(const mstring & in)
 		    {
 			mstring arg = in.ExtractWord(param, " ");
 
-			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
-			    arg = Magick::instance().server.proto.Numeric.UserNumeric(
-								Magick::instance().nickserv.GetLive(arg)->Numeric());
-
 			if (add)
 			{
 			    if (!IsOp(in.ExtractWord(param, " ")))
@@ -1038,10 +1034,6 @@ void Chan_Live_t::SendMode(const mstring & in)
 		    {
 			mstring arg = in.ExtractWord(param, " ");
 
-			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
-			    arg = Magick::instance().server.proto.Numeric.UserNumeric(
-								Magick::instance().nickserv.GetLive(arg)->Numeric());
-
 			if (add)
 			{
 			    if (!IsHalfOp(in.ExtractWord(param, " ")))
@@ -1076,10 +1068,6 @@ void Chan_Live_t::SendMode(const mstring & in)
 		    if (in.WordCount(" ") >= param)
 		    {
 			mstring arg = in.ExtractWord(param, " ");
-
-			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
-			    arg = Magick::instance().server.proto.Numeric.UserNumeric(
-								Magick::instance().nickserv.GetLive(arg)->Numeric());
 
 			if (add)
 			{
@@ -1809,10 +1797,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 
     if (nlive->IsServices() && Magick::instance().chanserv.FirstName().IsSameAs(nick, true))
     {
-	mstring realnick(nick);
-	if (Magick::instance().server.proto.Numeric.User())
-	    realnick = Magick::instance().server.proto.Numeric.UserNumeric(nlive->Numeric());
-	Magick::instance().server.MODE(Magick::instance().operserv.FirstName(), i_Name, "+o " + realnick);
+	Magick::instance().server.MODE(Magick::instance().operserv.FirstName(), i_Name, "+o " + nick);
 	RET(true);
     }
 

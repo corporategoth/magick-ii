@@ -49,6 +49,7 @@ class Protocol
     bool i_Helpops;		// HELPOPS supported
     bool i_Chatops;		// CHATOPS supported
     bool i_Tokens;		// Tokenized messages supported
+    bool l_Tokens;		// Tokens are locked, don't turn them off.
     unsigned int i_TSora;	// TS version
     bool i_BigTopic;		// Topic includes setter and timestamp
     bool i_TopicJoin;		// ChanServ must join to set topic
@@ -292,7 +293,8 @@ public:
     }
     void Tokens(const bool in)
     {
-	i_Tokens = in;
+	if (!l_Tokens)
+	    i_Tokens = in;
     }
     unsigned int TSora() const
     {
