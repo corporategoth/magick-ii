@@ -3193,8 +3193,8 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	// Bahamut version of the PROTOCTL line
 	if (tmp.Contains(" TOKEN "))
 	    proto.Tokens(true);
-	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
-	    proto.SJoin(true);
+//	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
+//	    proto.SJoin(true);
     }
     else if (msgtype == "CHATOPS")
     {
@@ -4334,8 +4334,8 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	// Bahamut version of the PROTOCTL line
 	if (tmp.Contains(" TOKEN "))
 	    proto.Tokens(true);
-	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
-	    proto.SJoin(true);
+//	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
+//	    proto.SJoin(true);
     }
     else
     {
