@@ -83,6 +83,9 @@
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.3  2002/08/01 01:03:16  prez
+			<br />Fixed the font of items in <ul> lists
+			<br />
 			<br />Revision 1.2  2002/08/01 00:48:57  prez
 			<br />Added the index link.
 			<br />
@@ -134,22 +137,22 @@
 			The scripting language will first have to be implemented into Mantra first.  The interface to
 			the scripting language should only expose an API consisting of:
 			<ul>
-			<li>	Starting and stopping the interpereter.
-			</li>
-			<li>	Loading (or re-loading) a script file.
-			</li>
-			<li>	Unloading a file and its functions (if possible).
-			</li>
-			<li>	Exposing a function (including return codes and parameters), variables, and functions
+			<li><p>	Starting and stopping the interpereter.
+			</p></li>
+			<li><p>	Loading (or re-loading) a script file.
+			</p></li>
+			<li><p>	Unloading a file and its functions (if possible).
+			</p></li>
+			<li><p>	Exposing a function (including return codes and parameters), variables, and functions
 				from the API user to the scripting language for use in scripts.
-			</li>
-			<li>	Exposing an object (and functions, and data items) to the scripting language from the
-			<li>	Checking whether a subroutine exists in the script.
-			</li>
-			<li>	Running a specific subroutine from one of the files that has been loaded with optional
+			</p></li>
+			<li><p>	Exposing an object (and functions, and data items) to the scripting language from the
+			<li><p>	Checking whether a subroutine exists in the script.
+			</p></li>
+			<li><p>	Running a specific subroutine from one of the files that has been loaded with optional
 				arguments.  This should return an integer return value from the subroutine.  An exception
 				should be raised if the function fails to execute for any reason.
-			</li>
+			</p></li>
 			</ul>
             </p><p>
 			Once the scripting language is implemented into Mantra, it should be reasonably easy to implement

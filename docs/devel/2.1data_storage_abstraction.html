@@ -83,6 +83,9 @@
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.5  2002/08/01 01:03:16  prez
+			<br />Fixed the font of items in <ul> lists
+			<br />
 			<br />Revision 1.4  2002/08/01 00:48:57  prez
 			<br />Added the index link.
 			<br />
@@ -141,41 +144,41 @@
 			layer.  A standard 'Storage API' will have to be implemented, which all data storage drivers must
 			implement.  The Storage API will consist of:
 			<ul>
-			<li>	A constructor and destructor to establish the relevant data handles (eg. connect to
+			<li><p>	A constructor and destructor to establish the relevant data handles (eg. connect to
 				the SQL database, or store the database file name, etc), and clean up those handles
 				respectively.
-			</li>
-			<li>	A method for discovering what data (including type information) is valid from the
+			</p></li>
+			<li><p>	A method for discovering what data (including type information) is valid from the
 				underlying storage mechanism.  This will probably have to be supplied via. some form
 				of customized DTD from the application.
-			</li>
-			<li>	A method for retrieving data (and its type) from the underlying storage mechanism, and
+			</p></li>
+			<li><p>	A method for retrieving data (and its type) from the underlying storage mechanism, and
 				passing that on to the properties system.  If the storage mechanism is not a 'live'
 				storage mechanism, it must store this data itself for retrieval.
-			</li>
-			<li>	A method for accepting data (and its type) from the properties system for updating on
+			</p></li>
+			<li><p>	A method for accepting data (and its type) from the properties system for updating on
 				the storage medium.  If the storage mechanism is not a 'live' storage mechanism, this
 				will mean updating the internal data storage for saving later on.
-			</li>
-			<li>	A method for retrieving ALL data/type pairs (at once) from the underlying storage
+			</p></li>
+			<li><p>	A method for retrieving ALL data/type pairs (at once) from the underlying storage
 				mechanism and passing it to the properties system.
-			</li>
-			<li>	A method for accepting ALL data/type pairs (at once) from the properties system, and
+			</p></li>
+			<li><p>	A method for accepting ALL data/type pairs (at once) from the properties system, and
 				storing a complete record into the storage mechanism.
-			</li>
-			<li>	A method for retrieving a list of all record keys currently in the storage mechanism
+			</p></li>
+			<li><p>	A method for retrieving a list of all record keys currently in the storage mechanism
 				for a particular record type.
-			</li>
-			<li>	A method for triggering a save of data.  For a 'live' storage mechanism, this does not
+			</p></li>
+			<li><p>	A method for triggering a save of data.  For a 'live' storage mechanism, this does not
 				need to be implemented, as the default action is a no-op.  This will be called when the
 				application wishes to ensure the database is saved.
-			</li>
-			<li>	A method for triggering a retrieve of data.  Once again, for 'live' storage mechanisms,
+			</p></li>
+			<li><p>	A method for triggering a retrieve of data.  Once again, for 'live' storage mechanisms,
 				this does not need to be implemented, as it is a no-op.  This will be called when the
 				application wishes to dump all data currently known, and have it re-loaded from the
 				physical storage medium (presumably because the application has either just started, or
 				the data itself has been manually changed).
-			</li>
+			</p></li>
 			</ul>
             </p><p>
 			Magick will have to be changed to have all the veriables currently used to store the data for

@@ -83,6 +83,9 @@
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.4  2002/08/01 01:03:16  prez
+			<br />Fixed the font of items in <ul> lists
+			<br />
 			<br />Revision 1.3  2002/08/01 00:48:57  prez
 			<br />Added the index link.
 			<br />
@@ -150,36 +153,36 @@
 			to retrieve a log file from another server, and should get an error if it tries).  The actual
 			protocol should contain:
 			<ul>
-			<li>	A form of keepalive message (PING/PONG) that will be used during periods of little activity
+			<li><p>	A form of keepalive message (PING/PONG) that will be used during periods of little activity
 				to ensure that the connection is still alive.
-			</li>
-			<li>	A method to send type-specific messages, that will be interpereted by the other end to
+			</p></li>
+			<li><p>	A method to send type-specific messages, that will be interpereted by the other end to
 				perform a specific task.  For example a "RELOAD" message might be sent to a Magick server to
 				tell it to reload its configuration file.  A status message should be returned in response
 				to this, with either the result of the operation, or an error that the operation is invalid.
-			</li>
-			<li>	A method to send and recieve complete files, including information of how big the file in
+			</p></li>
+			<li><p>	A method to send and recieve complete files, including information of how big the file in
 				transit is, the file name, and what kind of file it is.  File transfers should occur on a
 				different port to the main 'command' port.
-			</li>
-			<li>	A method to send a continually updating file.  The request should include the maximum number
+			</p></li>
+			<li><p>	A method to send a continually updating file.  The request should include the maximum number
 				of lines from the end of the file to send (or 0 for the whole file), what file type and name.
 				The file transfer should occur on a different port than the main 'command' port, however
 				this session should not close until a message is sent ording the tail to stop, or the main
 				'command' port is closed.
-			</li>
-			<li>	A method to indicate an update in data of some kind.  This message should include the record
+			</p></li>
+			<li><p>	A method to indicate an update in data of some kind.  This message should include the record
 				type being updated, the key of the record being updated, the data type being updated, and
 				the data item itself.
-			</li>
-			<li>	A method to retrieve data of some kind.  Like updating, this should include the record type,
+			</p></li>
+			<li><p>	A method to retrieve data of some kind.  Like updating, this should include the record type,
 				key of the record, and the data type being retrieved.
-			</li>
-			<li>	A method update or retrieve an entire record, using a series of key/value pairs.
-			</li>
-			<li>	A method to be able to report how much average lag and the current services level a magick
+			</p></li>
+			<li><p>	A method update or retrieve an entire record, using a series of key/value pairs.
+			</p></li>
+			<li><p>	A method to be able to report how much average lag and the current services level a magick
 				server has (this is only valid for Magick servers).
-			</li>
+			</p></li>
 			</ul>
             </p><p>
 			Eventually, Magick will also be moving to being able to run in two modes, 'backup' and 'distributed'.

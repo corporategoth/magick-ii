@@ -83,6 +83,9 @@
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.4  2002/08/01 01:03:16  prez
+			<br />Fixed the font of items in <ul> lists
+			<br />
 			<br />Revision 1.3  2002/08/01 00:48:57  prez
 			<br />Added the index link.
 			<br />
@@ -145,40 +148,40 @@
 			much more secure than just a nickserv registered nickname and password.  The Magick client will
 			have several screens, including:
 			<ul>
-			<li>	The server screen.  This will have multiple tabs, that either allow the user to perform
+			<li><p>	The server screen.  This will have multiple tabs, that either allow the user to perform
 				operations on the server (eg. force a database save, config reload, etc), or show various
 				statistics about the server (including those available with the STATS ServMsg command,
 				and other stats not available otherwise).  This will also show information about the
 				server we are currently connected to, such as its name, the protocol being spoken, the
 				software version string, and statistics like amount of messages sent/received, etc.
-			</li>
-			<li>	The configuration screen.  This will display the current configuration of Magick (and
+			</p></li>
+			<li><p>	The configuration screen.  This will display the current configuration of Magick (and
 				feature an 'update' button to refresh the current config), and allow the user to modify
 				the configuration, and send it back and get the Magick server to reload that configuration.
 				This screen, like the current configuration GUI, will have various tabs.  It will also be
 				able to generate a configuration file without being connected for use with initial creation.
-			</li>
-			<li>	The log tail screen.  This will display the current log file, and allow the user to scroll
+			</p></li>
+			<li><p>	The log tail screen.  This will display the current log file, and allow the user to scroll
 				through and view it.  This display will keep growing, and the user will be able to always
 				scroll to the bottom and see the most recent log output.
-			</li>
-			<li>	The data edit screen.  This, like the configuration screen will have many tabs of its own,
+			</p></li>
+			<li><p>	The data edit screen.  This, like the configuration screen will have many tabs of its own,
 				representing each record type.  This will allow direct viewing and/or modification of the
 				Magick database.  It will (obviously) have to perform all consistency checks (such as
 				ensuring that if they change the founder of a channel, the nickname they choose is valid,
 				etc).  There will be a preferences item to disable editing of values.
-			</li>
-			<li>	The reports screen.  This will allow a user to run queries on the database, showing, for
+			</p></li>
+			<li><p>	The reports screen.  This will allow a user to run queries on the database, showing, for
 				example a display of all users who have the PRIVMSG setting on, or whatever.  This screen
 				should allow the user to first select the type of records to do queries on, second the
 				data values that should be in the query, and third the fields to shown in the results.
 				The resulting report should allow all columns to be resized at will, and should allow
 				hovering over a specific field to obtain the full text of the data within.
-			</li>
-			<li>	The magick interface screen.  This is equivalent to a telnet or DCC session, and will have
+			</p></li>
+			<li><p>	The magick interface screen.  This is equivalent to a telnet or DCC session, and will have
 				an input box for the user to type commands, and will scroll the output that would be seen
 				on a DCC or telnet session by.
-			</li>
+			</p></li>
 			</ul>
             </p><p>
 			Connections will be established and disconnected by an option in a drop down menu.  The Magick
