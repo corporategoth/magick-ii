@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/12/09 20:16:41  prez
+** Fixed SubString and Left to have correct count/end possitions.  Also
+** adjusted rest of source to follow suit.
+**
 ** Revision 1.20  2000/11/09 10:58:19  prez
 ** THINK I have it working again ... with the free list.
 ** Will check, still thinking of sorting free list by size.
@@ -836,11 +840,8 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
                     founddelim=true;
 		}
             }
-            Result.push_back(tmp.SubString(0, j));
+            Result.push_back(tmp.SubString(0, j-1));
         }
     }
     NRET(vector<mstring>, Result);
 }
-
-
-

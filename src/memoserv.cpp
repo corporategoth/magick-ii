@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2000/12/09 20:16:41  prez
+** Fixed SubString and Left to have correct count/end possitions.  Also
+** adjusted rest of source to follow suit.
+**
 ** Revision 1.79  2000/10/10 11:47:52  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -1819,7 +1823,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 		iter->Sender().c_str(),
 		(iter->Text().size() < 21) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().SubString(0, iter->Text().size()).c_str(),
+		    iter->Text().SubString(0, iter->Text().size()-1).c_str(),
 		text.c_str());
 	}
 
@@ -1904,13 +1908,13 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 		"filename",
 		(iter->Text().size() < 21) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().SubString(0, iter->Text().size()).c_str(),
+		    iter->Text().SubString(0, iter->Text().size()-1).c_str(),
 		text.c_str());
 	else
 	    output.Format(Parent->getMessage("MS_STATUS/REPLY").c_str(),
 		(iter->Text().size() < 21) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().SubString(0, iter->Text().size()).c_str(),
+		    iter->Text().SubString(0, iter->Text().size()-1).c_str(),
 		text.c_str());
 	}
 

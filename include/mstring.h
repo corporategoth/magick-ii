@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/12/09 20:16:41  prez
+** Fixed SubString and Left to have correct count/end possitions.  Also
+** adjusted rest of source to follow suit.
+**
 ** Revision 1.58  2000/12/09 16:45:37  prez
 ** Fixed rfind in mstring.
 **
@@ -606,9 +610,9 @@ public:
     mstring RevAfter(const mstring &in, int occurance = 1) const;
     mstring SubString(int from = 0, int to = -1) const;
     mstring Left(int pos) const
-	{ return SubString(0, pos); }
+	{ return SubString(0, pos-1); }
     mstring Right(int pos) const
-	{ return SubString(pos, i_len); }
+	{ return SubString(pos); }
     unsigned int WordCount(const mstring &delim, bool assemble = true) const;
     mstring ExtractWord(unsigned int count, const mstring &delim,
 						bool assemble = true) const;

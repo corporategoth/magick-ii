@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2000/12/09 20:16:41  prez
+** Fixed SubString and Left to have correct count/end possitions.  Also
+** adjusted rest of source to follow suit.
+**
 ** Revision 1.85  2000/12/09 16:45:37  prez
 ** Fixed rfind in mstring.
 **
@@ -208,6 +212,12 @@ void mstring::append(const char *in, size_t length)
 {
     if (length == 0)
 	return;
+    if (i_str == NULL)
+    {
+	copy(in, length);
+	return;
+    }
+
     size_t oldres = i_res;
     char *tmp = NULL;
 
@@ -289,6 +299,8 @@ void mstring::erase(int begin, int end)
 	    i_len -= (end-begin);
 	    memset(&tmp[i_len], 0, i_res-i_len);
 	}
+	else
+	    i_len -= end-begin;
     }
     if (tmp != i_str)
     {
@@ -917,13 +929,15 @@ mstring mstring::RevAfter(const mstring &in, int occurance) const
 
 mstring mstring::SubString(int from, int to) const
 {
+    if (to < 0)
+	to = i_len-1;
     if (to < from)
     {
 	int i = from;
 	from = to;
 	to = i;
     }
-    return substr(from, to-from);
+    return substr(from, to-from+1);
 }
 
 
@@ -955,7 +969,7 @@ mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
 	while(i < (int) i_len && !delim.Contains(i_str[(unsigned int) i]))
 	    i++;
 	if (i!=begin)
-	    return SubString(begin, i);
+	    return SubString(begin, i-1);
     }
     return Result;
 }
