@@ -98,25 +98,4 @@ public:
 
 };
 
-inline mstring operator+(const mstring& string, char ch)
-{
-	mstring Result=string+mstring(ch);
-	return Result;
-}
-inline mstring operator+(char ch, const mstring& string)
-{
-	mstring Result=mstring(ch)+string;
-	return Result;
-}
-inline mstring operator+(const mstring& string, const char *psz)
-{
-	mstring Result=string+mstring(psz);
-	return Result;
-}
-inline mstring operator+(const char *psz, const mstring& string)
-{
-	mstring Result=mstring(psz)+string;
-	return Result;
-}
-
 #endif

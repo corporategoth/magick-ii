@@ -2,7 +2,10 @@
 #include "magick.h"
 #include "log.h"
 #include <iostream>
+#include <strstream>
 using namespace std;
+#include "EscLexer.hpp"
+#include "EscParser.hpp"
 
 Magick::Magick(int inargc, char **inargv)
 {
@@ -66,15 +69,18 @@ int Magick::Start()
 			}
 		}
 	}
+#if 0
 	MagickIni=new wxFileConfig("magick","",config_file,"");
 	if(MagickIni==NULL)
 	{
 		cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
 		return MAGICK_RET_ERROR;
 	}
+#endif
 	// load the local messages database and internal "default messages"
 
-
+	// below is just a dummy to link in the code to be taken out when the messages section is done
+		parseEscapes("\\2");
 	if(logfile!=NULL)
 		fclose(logfile);
 	return MAGICK_RET_TERMINATE;
@@ -117,7 +123,9 @@ void Magick::dump_help(mstring & progname)
 void Magick::LoadLocalMessages()
 {
 	mstring tempstor=
-	"ERR_READ_DB=Error reading %s database."+
+	// initial mstring needed here to convert it from char *'s to
+	// mstring operator+'s
+	mstring("ERR_READ_DB=Error reading %s database.")+
 	"ERR_WRITE_DB=Error writing %s database."+
 	"ERR_UNKNOWN_SERVMSG=Unknown message from server (%s).";
 
@@ -132,4 +140,22 @@ void Magick::LoadLocalMessages()
 		value=currentword.After('=');
 		Messages[name]=value;
 	}
+}
+
+mstring Magick::parseEscapes(mstring & in)
+{
+	mstring Result;
+	strstream inputstream;
+	inputstream<<in.c_str();
+	EscLexer lexer(inputstream);
+	EscParser parser(lexer);
+	try
+	{
+		parser.expr();
+	}
+	catch(ParserException &E)
+	{
+		//todo
+	}
+	return lexer.retstring;
 }

@@ -85,11 +85,39 @@ LINK32=link.exe
 # Name "magick - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\src\antlr\ANTLRException.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\AST.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\ASTFactory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\BitSet.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\bob.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\bob.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\CharBuffer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\CharScanner.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\CommonToken.cpp
 # End Source File
 # Begin Source File
 
@@ -101,11 +129,35 @@ SOURCE=.\include\confbase.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\EscLexer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\EscLexer.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\escparse.g
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\EscParser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\EscParser.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\fileconf.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\fileconf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\LLkParser.cpp
 # End Source File
 # Begin Source File
 
@@ -137,6 +189,10 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\antlr\MismatchedTokenException.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\mstream.cpp
 # End Source File
 # Begin Source File
@@ -153,6 +209,26 @@ SOURCE=.\include\mstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\antlr\NoViableAltException.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\Parser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\ParserException.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\ScannerException.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\String.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\textfile.cpp
 # End Source File
 # Begin Source File
@@ -162,6 +238,18 @@ SOURCE=.\include\textfile.h
 # Begin Source File
 
 SOURCE=.\docs\todo.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\Token.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\TokenBuffer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\antlr\TreeParser.cpp
 # End Source File
 # Begin Source File
 

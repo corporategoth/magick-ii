@@ -23,9 +23,10 @@ typedef map<mstring,mstring> mapstringstring;
 class Magick
 {
 	vector<mstring> argv;
-	wxFileConfig* MagickIni;
+	//wxFileConfig* MagickIni;
 	mapstringstring Messages;
 public:
+	mstring parseEscapes(mstring& in);
 	void LoadLocalMessages();
 	void dump_help(mstring& progname);
 	mstring getMessage(const mstring& name);
