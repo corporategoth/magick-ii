@@ -108,7 +108,7 @@ bool ceNode::SetKey(const mstring & KeyName, const mstring & Value)
 	temppath = KeyName.After("/");
     else
 	temppath = KeyName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
 
     if (!temppath.Contains("/"))
     {
@@ -142,7 +142,7 @@ bool ceNode::DeleteKey(const mstring & KeyName)
 	temppath = KeyName.After("/");
     else
 	temppath = KeyName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -181,7 +181,7 @@ bool ceNode::CreateNode(const mstring & NodeName)
 	temppath = NodeName.After("/");
     else
 	temppath = NodeName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -220,7 +220,7 @@ bool ceNode::DeleteNode(const mstring & NodeName)
 	temppath = NodeName.After("/");
     else
 	temppath = NodeName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -262,7 +262,7 @@ bool ceNode::NodeExists(const mstring & NodeName) const
 	temppath = NodeName.After("/");
     else
 	temppath = NodeName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -295,7 +295,7 @@ bool ceNode::KeyExists(const mstring & KeyName) const
 	temppath = KeyName.After("/");
     else
 	temppath = KeyName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -328,7 +328,7 @@ mstring ceNode::GetKey(const mstring & KeyName, const mstring & DefValue) const
 	temppath = KeyName.After("/");
     else
 	temppath = KeyName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -361,7 +361,7 @@ ceNode *ceNode::GetNode(const mstring & NodeName)
 	temppath = NodeName.After("/");
     else
 	temppath = NodeName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line
@@ -402,7 +402,7 @@ mstring ceNode::Write(const mstring & KeyName, const mstring & Value)
 	temppath = KeyName.After("/");
     else
 	temppath = KeyName;
-    temppath.MakeUpper();
+//    temppath.MakeUpper();
     if (!temppath.Contains("/"))
     {
 	// end of the line

@@ -1086,7 +1086,9 @@ void Magick::LoadInternalMessages()
     {
 	MCB(Messages.size());
 	Messages.erase("DEFAULT");
-	Messages["DEFAULT"] = tmp;
+	map < mstring, mstring >::iterator iter;
+	for (iter = tmp.begin(); iter != tmp.end(); iter++)
+	    Messages["DEFAULT"] [iter->first.UpperCase()] = iter->second;
 	MCE(Messages.size());
     }
 }
@@ -1111,7 +1113,9 @@ bool Magick::LoadExternalMessages(const mstring & language)
 	{
 	    MCB(Messages.size());
 	    Messages.erase(language.UpperCase());
-	    Messages[language.UpperCase()] = tmp;
+	    map < mstring, mstring >::iterator iter;
+	    for (iter = tmp.begin(); iter != tmp.end(); iter++)
+		Messages[language.UpperCase()] [iter->first.UpperCase()] = iter->second;
 	    MCE(Messages.size());
 	    RET(true);
 	}
@@ -1141,7 +1145,7 @@ bool Magick::LoadLogMessages(const mstring & language)
 
 	map < mstring, mstring > tmp = fconf.GetMap();
 	for (iter = tmp.begin(); iter != tmp.end(); iter++)
-	    LogMessages[iter->first] = iter->second;
+	    LogMessages[iter->first.UpperCase()] = iter->second;
 	CP(("After DEFAULT - LogMessages = %d", LogMessages.size()));
     }
     if (language != "DEFAULT" && mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".lfo"))
@@ -1150,7 +1154,7 @@ bool Magick::LoadLogMessages(const mstring & language)
 
 	map < mstring, mstring > tmp = fconf.GetMap();
 	for (iter = tmp.begin(); iter != tmp.end(); iter++)
-	    LogMessages[iter->first] = iter->second;
+	    LogMessages[iter->first.UpperCase()] = iter->second;
     }
     MCE(LogMessages.size());
 
