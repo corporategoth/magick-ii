@@ -6,7 +6,6 @@ USEUNIT("hashtable.c");
 USEUNIT("xmlparse.c");
 USEUNIT("xmlrole.c");
 USEUNIT("xmltok.c");
-USEFILE("..\..\include\xml\sxp.h");
 //---------------------------------------------------------------------------
 #define Library
 

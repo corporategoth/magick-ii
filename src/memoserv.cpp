@@ -27,6 +27,10 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2001/04/13 03:10:02  ungod
+** more changes to make borland compilable
+** (still not so in ide, but command line compile works)
+**
 ** Revision 1.94  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -453,7 +457,7 @@ void News_t::NoExpire(const bool in)
     MCE(i_NoExpire);
 }
 
-bool News_t::IsRead(const mstring& name) const
+bool News_t::IsRead(const mstring& name)
 {
     FT("News_t::IsRead", (name));
     mstring target(name);
@@ -714,15 +718,17 @@ void MemoServ::AddNick(nick_memo_t in)
 #endif
     }
 
-    if (in.begin() == NULL)
-    {
+#if 0
+	if (in.begin() == NULL)
+	{
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Invalid));
 #else
 	LOG((LM_CRITICAL, "Exception - Memo:Nick:Add:Invalid"));
 	return;
 #endif
-    }
+	}
+#endif
 
     if (in.begin()->Nick().empty())
     {
@@ -989,15 +995,17 @@ void MemoServ::AddChannel(channel_news_t in)
 #endif
     }
 
-    if (in.begin() == NULL)
-    {
+#if 0
+	if (in.begin() == NULL)
+	{
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Invalid));
 #else
 	LOG((LM_CRITICAL, "Exception - News:Channel:Add:Invalid"));
 	return;
 #endif
-    }
+	}
+#endif	
 
     if (in.begin()->Channel().empty())
     {

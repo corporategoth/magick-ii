@@ -25,6 +25,10 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2001/04/13 03:10:02  ungod
+** more changes to make borland compilable
+** (still not so in ide, but command line compile works)
+**
 ** Revision 1.47  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -226,7 +230,7 @@ public:
 
     bool NoExpire() const;
     void NoExpire(const bool in);
-    bool IsRead(const mstring& name) const;
+    bool IsRead(const mstring& name);
     void Read(const mstring& name);
     void Unread(const mstring& name);
 

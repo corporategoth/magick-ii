@@ -25,6 +25,10 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/04/13 03:10:02  ungod
+** more changes to make borland compilable
+** (still not so in ide, but command line compile works)
+**
 ** Revision 1.60  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -689,7 +693,7 @@ public:
 	unsigned long Unlock()const	    { return i_Unlock; }
     } stats;
 
-    bool IsRevengeLevel(const mstring& level) const
+    bool IsRevengeLevel(const mstring& level)
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }
     bool Hide()const			{ return hide; }
