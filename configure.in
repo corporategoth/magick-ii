@@ -358,7 +358,7 @@ AC_ARG_ENABLE(quick, [  --enable-quick          Do not increment build number
   esac], [quick=false])
 AM_CONDITIONAL(INCREMENT, test x$quick = xfalse)
 
-AC_ARG_ENABLE(quick, [  --enable-test           Enable test mode (no IRC connectivity)
+AC_ARG_ENABLE(test, [  --enable-test           Enable test mode (no IRC connectivity)
   --disable-test          Disable test mode (default)],
   [case "${enableval}" in
     yes) testmode=true;;
