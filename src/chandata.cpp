@@ -2474,7 +2474,7 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 					out_mode += "-b";
 					out_param += " " + arg;
 				    }
-				    else
+				    else if (!nlive->IsServices())
 					tobekicked.push_back(clive->User(j));
 				}
 			    }
