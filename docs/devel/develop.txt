@@ -153,7 +153,7 @@ x Language files setup (with a default language set in the ini)
 	We will write english ones, and send a call to others to
 	translate it to other languages and make 'funky' versions).
  
-x ini loading mechanism, allows for local and global ini files. (local
++ ini loading mechanism, allows for local and global ini files. (local
 	overrides global ini values but global values are unmodifiable)
 
 x All messages from IRCD read into main thread, which pushes them to "parser" thread,
@@ -256,7 +256,7 @@ x Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mD
 
 * Redo the locking with some macros to setup/emulate  a try..finally type
 	scenario on gcc, msvc and bcb . Note Function macros only, so that we don't get
-	that damn triplet argument fuckup again.
+	that damn triplet argument fubar again.
 
 Scripting
 ---------
@@ -274,21 +274,21 @@ Scripting
 
 Databases
 ---------
-x bytesex independant data storage (research on xml based storage in progress)
++ bytesex independant data storage (research on xml based storage in progress)
 
-x compressed iostream filters
+* compressed iostream filters
 
-x encrypted iostream filters
+* encrypted iostream filters
 
-- storage mechanism that stores data in the format (type, name, value)
++ storage mechanism that stores data in the format (type, name, value)
 	strings are stored with 4 byte long value of length prefix
 	also begin block and end block types (asc of '{'/'}' maybe?) so
 	that we can have nested objects. ala chanserv is the main object
 	with nested channel objects which in turn have nested akicks and
 	nested bans etc.
-  + Note: this may be forgotten about and standard "dump the object" format used.
+  + Note: see above about xml.
 
-x Method to determine (wether encrypted, compressed, or plain) what
+* Method to determine (wether encrypted, compressed, or plain) what
 	flags are set on the datafile (including compression level,
 	possibly encryption type, magick internal version). (flags?!!!)
 
