@@ -636,7 +636,7 @@ int Magick::Run()
 	    dcc->open(reinterpret_cast < void * > (this));
     }
 
-    reactor().schedule_timer(&Magick::instance().hh, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
+//    reactor().schedule_timer(&Magick::instance().hh, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
     if (startup.Server_size())
 	reactor().schedule_timer(&(Magick::instance().rh), 0, ACE_Time_Value::zero);
 #ifdef TEST_MODE
