@@ -580,6 +580,18 @@ bool wxFileConfig::Read(const mstring& key, long *val, const long& defVal) const
   RET(wxConfigBase::Read(key, val, defVal));
 }
 
+bool wxFileConfig::Read(const mstring& key, unsigned long *val) const
+{
+  FT("wxFileConfig::Read", (key, val));
+  RET(wxConfigBase::Read(key, val));
+}
+
+bool wxFileConfig::Read(const mstring& key, unsigned long *val, const unsigned long& defVal) const
+{
+  FT("wxFileConfig::Read", (key, val, defVal));
+  RET(wxConfigBase::Read(key, val, defVal));
+}
+
 bool wxFileConfig::Read(const mstring& key, int *val) const
 {
   FT("wxFileConfig::Read", (key, val));
@@ -587,6 +599,18 @@ bool wxFileConfig::Read(const mstring& key, int *val) const
 }
 
 bool wxFileConfig::Read(const mstring& key, int *val, const int& defVal) const
+{
+  FT("wxFileConfig::Read", (key, val, defVal));
+  RET(wxConfigBase::Read(key, val, defVal));
+}
+
+bool wxFileConfig::Read(const mstring& key, unsigned int *val) const
+{
+  FT("wxFileConfig::Read", (key, val));
+  RET(wxConfigBase::Read(key, val));
+}
+
+bool wxFileConfig::Read(const mstring& key, unsigned int *val, const unsigned int& defVal) const
 {
   FT("wxFileConfig::Read", (key, val, defVal));
   RET(wxConfigBase::Read(key, val, defVal));

@@ -363,8 +363,12 @@ public:
   virtual bool Read(const mstring& key, mstring *pStr, const mstring &defValue) const;
   virtual bool Read(const mstring& key, long *pl) const;
   virtual bool Read(const mstring& key, long *pl, const long &defVal) const;
+  virtual bool Read(const mstring& key, unsigned long *pl) const;
+  virtual bool Read(const mstring& key, unsigned long *pl, const unsigned long &defVal) const;
   virtual bool Read(const mstring& key, int *pi) const;
   virtual bool Read(const mstring& key, int *pi, const int &defVal) const;
+  virtual bool Read(const mstring& key, unsigned int *pi) const;
+  virtual bool Read(const mstring& key, unsigned int *pi, const unsigned int &defVal) const;
   virtual bool Read(const mstring& key, float* val) const;
   virtual bool Read(const mstring& key, float* val, const float &defVal) const;
   virtual bool Read(const mstring& key, bool* val) const;

@@ -839,6 +839,7 @@ bool Magick::check_config()
 void Magick::get_config_values()
 {
     NFT("Magick::get_config_values");
+    bool verbose;
     if(MagickIni==NULL)
     {
 	i_shutdown==true;
@@ -910,6 +911,8 @@ void Magick::get_config_values()
 
     in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
+    in.Read(ts_Files+"VERBOSE", &verbose, false);
+    logger->SetVerbose(verbose);
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"LANGUAGE",&files.language,"english");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
@@ -952,6 +955,8 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"CHANKEEP",&chanserv.chankeep,15);
     in.Read(ts_ChanServ+"DEF_MLOCK",&chanserv.def_mlock,"+nt");
     in.Read(ts_ChanServ+"LCK_MLOCK",&chanserv.lck_mlock,"+");
+    in.Read(ts_ChanServ+"DEF_BANTIME",&chanserv.def_bantime,0);
+    in.Read(ts_ChanServ+"LCK_BANTIME",&chanserv.lck_bantime,false);
     in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&chanserv.def_keeptopic,true);
     in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&chanserv.lck_keeptopic,false);
     in.Read(ts_ChanServ+"DEF_TOPICLOCK",&chanserv.def_topiclock,false);

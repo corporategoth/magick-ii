@@ -25,7 +25,7 @@ class Chan_Live_t : public mUserDef
     // below: .first == op .second==voice
     map<mstring, pair<bool, bool> > squit;
     map<mstring, pair<bool, bool> > users;
-    set<mstring> bans;
+    map<mstring, mDateTime> bans;
     mstring i_Topic;
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
@@ -115,6 +115,8 @@ class Chan_Stored_t : public mUserDef
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
     
+    unsigned long i_Bantime;
+    bool l_Bantime;
     bool i_Keeptopic;
     bool l_Keeptopic;
     bool i_Topiclock;
@@ -188,6 +190,10 @@ public:
     mstring Mlock_Key()			{ return i_Mlock_Key; }
     int Mlock_Limit()			{ return i_Mlock_Limit; }
 
+    unsigned long Bantime();
+    void Bantime(unsigned long in);
+    bool L_Bantime();
+    void L_Bantime(bool in);
     bool Keeptopic();
     void Keeptopic(bool in);
     bool L_Keeptopic();
@@ -313,6 +319,8 @@ private:
     int chankeep;		// Time to keep channel after AKICK
     mstring def_mlock;		// Default MLOCK string
     mstring lck_mlock;		// Locked MLOCK modes
+    unsigned long def_bantime;	// Default time to keep bans (minutes)
+    bool lck_bantime;		// BANTIME is locked?
     bool def_keeptopic;		// Default val of KEEPTOPIC
     bool lck_keeptopic;		// KEEPTOPIC is locked?
     bool def_topiclock;		// Default val of TOPICLOCK
@@ -357,6 +365,8 @@ public:
     int	ChanKeep()		{ return chankeep; }
     mstring DEF_MLock()		{ return def_mlock; }
     mstring LCK_MLock()		{ return lck_mlock; }
+    unsigned long DEF_Bantime()	{ return def_bantime; }
+    bool LCK_Bantime()	        { return lck_bantime; }
     bool DEF_Keeptopic()	{ return def_keeptopic; }
     bool LCK_Keeptopic()	{ return lck_keeptopic; }
     bool DEF_Topiclock()	{ return def_topiclock; }

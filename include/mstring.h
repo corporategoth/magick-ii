@@ -35,16 +35,54 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
-	char Last() const;
-	size_t Len() const;
+	mstring(const mstring& in);
+	mstring(const mstring& in, inherited::size_type pos, inherited::size_type n);
+	mstring(const char *in);
+	mstring(const char *in, inherited::size_type pos);
+	mstring(char c); 
+/*	mstring(double d); 
+	mstring(float f); 
+	mstring(long l); 
+	mstring(unsigned long l); 
+	mstring(int i); 
+	mstring(unsigned int i);
+*/
+	mstring(inherited::size_type n, char c);
+	mstring(inherited::const_iterator first, inherited::const_iterator last);
+	mstring();
+
 	// below are fast convert_to_string+append functions
+	mstring& operator <<(char ch);
+	mstring& operator <<(const char *psz);
+	mstring& operator <<(const mstring& s);
 	mstring& operator <<(double d);
 	mstring& operator <<(float f);
 	mstring& operator <<(long l);
 	mstring& operator <<(unsigned long l);
 	mstring& operator <<(int i);
 	mstring& operator <<(unsigned int i);
+	// non-destructive operators
+	friend mstring operator+(const mstring& string, char ch);
+	friend mstring operator+(char ch, const mstring& string);
+	friend mstring operator+(const mstring& string, const char *psz);
+	friend mstring operator+(const char *psz, const mstring& string);
+	/* friend mstring operator+(const mstring& string, const mstring& s);
+	friend mstring operator+(const mstring& s, const mstring& string); */
+	friend mstring operator+(const mstring& string, double d);
+	friend mstring operator+(double d, const mstring& string);
+	friend mstring operator+(const mstring& string, float f);
+	friend mstring operator+(float f, const mstring& string);
+	friend mstring operator+(const mstring& string, long l);
+	friend mstring operator+(long l, const mstring& string);
+	friend mstring operator+(const mstring& string, unsigned long l);
+	friend mstring operator+(unsigned long l, const mstring& string);
+	friend mstring operator+(const mstring& string, int i);
+	friend mstring operator+(int i, const mstring& string);
+	friend mstring operator+(const mstring& string, unsigned int i);
+	friend mstring operator+(unsigned int i, const mstring& string);
 	mstring operator()(size_t start,size_t len);
+	operator const char *() const { return c_str(); }
+
 	mstring UpperCase() const;
     // values for first parameter of Strip function
 	enum stripType {stLeading, stTrailing , stBoth };
@@ -59,6 +97,8 @@ public:
 	bool IsNumber() const;
 	bool IsNull() const;
 	bool IsEmpty() const;
+	char Last() const;
+	size_t Len() const;
 	bool IsAscii() const;
 	size_t Index(const mstring& in, bool caseSensitive=true, bool fromEnd=false)const;
 	size_t Index(char ch, int startpos=0)const;
@@ -92,40 +132,16 @@ public:
 	mstring Before(const mstring& in,int count=1) const;
 	mstring Right(size_t nCount)const;
 	mstring Left(size_t nCount)const;
-	 mstring(const string& in);
+	mstring(const string& in);
 	mstring SubString(size_t from, size_t to)const;
 	mstring Mid(size_t nFirst, size_t nCount=npos)const;
 	bool IsSameAs(const mstring& in, bool bCase=true);
 	int CmpNoCase(const mstring& in);
 	int Cmp(const mstring& in);
-	mstring& operator<<(char ch);
-	mstring& operator<<(const char *psz);
-	mstring& operator<<(const mstring& s);
-	mstring(const mstring& in);
-	mstring(const mstring& in, inherited::size_type pos, inherited::size_type n);
-	mstring(const char *in);
-	mstring(const char *in, inherited::size_type pos);
-	mstring(char c); 
-	mstring(inherited::size_type n, char c);
-	mstring(inherited::const_iterator first, inherited::const_iterator last);
-	mstring();
 	int WordCount(const mstring &separators)const;
 	mstring ExtractWord(int count,const mstring& separators)const;
 	int WordPosition(int count,const mstring& separators)const;
 	pair<int,int> RegFind(const mstring& pattern)const;
-
-	operator const char *() const { return c_str(); }
-
-    // non-destructive concatenation
-      //
-  friend mstring operator+(const mstring& string, char ch);
-      //
-  friend mstring operator+(char ch, const mstring& string);
-      //
-  friend mstring operator+(const mstring& string, const char *psz);
-      //
-  friend mstring operator+(const char *psz, const mstring& string);
-
 };
 
 extern const mstring DirSlash;

@@ -141,10 +141,14 @@ public:
   // long
   virtual bool Read(const mstring& key, long* val) const;
   virtual bool Read(const mstring& key, long* val, const long& defVal) const;
+  virtual bool Read(const mstring& key, unsigned long* val) const;
+  virtual bool Read(const mstring& key, unsigned long* val, const unsigned long& defVal) const;
 
   // int
   virtual bool Read(const mstring& key, int* val) const;
   virtual bool Read(const mstring& key, int* val, const int& defVal) const;
+  virtual bool Read(const mstring& key, unsigned int* val) const;
+  virtual bool Read(const mstring& key, unsigned int* val, const unsigned int& defVal) const;
 
   // float
   virtual bool Read(const mstring& key, float* val) const;

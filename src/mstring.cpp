@@ -70,24 +70,6 @@ mstring::mstring()
 {
 }
 
-mstring& mstring::operator <<(const mstring & s)
-{
-	*this=*this+s;
-	return *this;
-}
-
-mstring& mstring::operator <<(const char * psz)
-{
-	*this=*this+psz;
-	return *this;
-}
-
-mstring& mstring::operator <<(char ch)
-{
-	*this=*this+mstring(ch);
-	return *this;
-}
-
 int mstring::Cmp(const mstring & in)
 {
 	return ACE_OS::strcmp(c_str(),in.c_str());
@@ -549,6 +531,24 @@ mstring mstring::operator ( )(size_t start, size_t len)
 	return Mid(start,len);
 }
 
+mstring& mstring::operator <<(const mstring & s)
+{
+	*this=*this+s;
+	return *this;
+}
+
+mstring& mstring::operator <<(const char * psz)
+{
+	*this=*this+psz;
+	return *this;
+}
+
+mstring& mstring::operator <<(char ch)
+{
+	*this=*this+mstring(ch);
+	return *this;
+}
+
 mstring& mstring::operator <<(int i)
 {
 	mstring s;
@@ -625,6 +625,115 @@ mstring operator+(const char *psz, const mstring& string)
 	mstring Result=mstring(psz)+string;
 	return Result;
 }
+
+/* mstring operator+(const mstring& string, const mstring& s)
+{
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(const mstring& s, const mstring& string)
+{
+	mstring Result=s+string;
+	return Result;
+}*/
+
+mstring operator+(const mstring& string, double d)
+{
+	mstring s;
+	s << d;
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(double d, const mstring& string)
+{
+	mstring s;
+	s << d;
+	mstring Result=s+string;
+	return Result;
+}
+
+mstring operator+(const mstring& string, float f)
+{
+	mstring s;
+	s << f;
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(float f, const mstring& string)
+{
+	mstring s;
+	s << f;
+	mstring Result=s+string;
+	return Result;
+}
+
+mstring operator+(const mstring& string, long l)
+{
+	mstring s;
+	s << l;
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(long l, const mstring& string)
+{
+	mstring s;
+	s << l;
+	mstring Result=s+string;
+	return Result;
+}
+
+mstring operator+(const mstring& string, unsigned long l)
+{
+	mstring s;
+	s << l;
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(unsigned long l, const mstring& string)
+{
+	mstring s;
+	s << l;
+	mstring Result=s+string;
+	return Result;
+}
+
+mstring operator+(const mstring& string, int i)
+{
+	mstring s;
+	s << i;
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(int i, const mstring& string)
+{
+	mstring s;
+	s << i;
+	mstring Result=s+string;
+	return Result;
+}
+
+mstring operator+(const mstring& string, unsigned int i)
+{
+	mstring s;
+	s << i;
+	mstring Result=string+s;
+	return Result;
+}
+
+mstring operator+(unsigned int i, const mstring& string)
+{
+	mstring s;
+	s << i;
+	mstring Result=s+string;
+	return Result;
+}
+
 int mstring::WordCount(const mstring &separators)const
 {
     //

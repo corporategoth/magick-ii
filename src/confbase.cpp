@@ -268,6 +268,31 @@ bool wxConfigBase::Read(const mstring& key, long* val, const long& defVal) const
     RET(retval);
 }
 
+bool wxConfigBase::Read(const mstring& key, unsigned long* val) const
+{
+    FT("wxConfigBase::Read", (key, val));
+    mstring str;
+    if (Read(key, & str))
+    {
+        *val = atol(str);
+	*val -= (long) 0;
+        RET(true);
+    }
+    else
+        RET(false);
+}
+
+bool wxConfigBase::Read(const mstring& key, unsigned long* val, const unsigned long& defVal) const
+{
+    FT("wxConfigBase", (key, val, defVal));
+    mstring str, defStr;
+    defStr << defVal;
+    bool retval = Read(key, &str, defVal);
+    *val = atol(str);
+    *val -= (long) 0;
+    RET(retval);
+}
+
 bool wxConfigBase::Read(const mstring& key, int* val) const
 {
     FT("wxConfigBase::Read", (key, val));
@@ -288,6 +313,31 @@ bool wxConfigBase::Read(const mstring& key, int* val, const int& defVal) const
     defStr << defVal;
     bool retval = Read(key, &str, defVal);
     *val = atoi(str);
+    RET(retval);
+}
+
+bool wxConfigBase::Read(const mstring& key, unsigned int* val) const
+{
+    FT("wxConfigBase::Read", (key, val));
+    mstring str;
+    if (Read(key, & str))
+    {
+        *val = atoi(str);
+	*val -= (int) 0;
+        RET(true);
+    }
+    else
+        RET(false);
+}
+
+bool wxConfigBase::Read(const mstring& key, unsigned int* val, const unsigned int& defVal) const
+{
+    FT("wxConfigBase", (key, val, defVal));
+    mstring str, defStr;
+    defStr << defVal;
+    bool retval = Read(key, &str, defVal);
+    *val = atoi(str);
+    *val -= (int) 0;
     RET(retval);
 }
 

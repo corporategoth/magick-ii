@@ -130,7 +130,7 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
     NFT("Chan_Live_t::operator=");
     bans.clear();
-    set<mstring>::const_iterator i;
+    map<mstring, mDateTime>::const_iterator i;
     for(i=in.bans.begin();i!=in.bans.end();i++)
 	bans.insert(*i);
     i_Creation_Time=in.i_Creation_Time;
@@ -149,6 +149,8 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
     map<mstring, pair<bool, bool> >::const_iterator k;
     for(k=in.users.begin();k!=in.users.end();k++)
 	users.insert(*k);
+    for(k=in.squit.begin();k!=in.squit.end();k++)
+	squit.insert(*k);
 }
 
 
@@ -393,7 +395,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case 'b':
 	    if (add)
 	    {
-		bans.insert(in.ExtractWord(fwdargs, ": ").LowerCase());
+		bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
 	    }
 	    else
 	    {
@@ -845,6 +847,8 @@ void Chan_Stored_t::defaults()
     NFT("Chan_Stored_t::defaults");
 
     l_Mlock_On = l_Mlock_Off = "";
+    i_Bantime = Parent->chanserv.DEF_Bantime();
+    l_Bantime = false;
     i_Keeptopic = Parent->chanserv.DEF_Keeptopic();
     l_Keeptopic = false;
     i_Topiclock = Parent->chanserv.DEF_Topiclock();
@@ -1016,6 +1020,8 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
 
+    i_Bantime=in.i_Bantime;
+    l_Bantime=in.l_Bantime;
     i_Keeptopic=in.i_Keeptopic;
     l_Keeptopic=in.l_Keeptopic;
     i_Topiclock=in.i_Topiclock;
@@ -1522,9 +1528,47 @@ mstring Chan_Stored_t::L_Mlock(mstring mode)
 }
 
 
+void Chan_Stored_t::Bantime(unsigned long in)
+{
+    FT("Chan_Stored_t::Bantime", (in));
+    if (!(Parent->chanserv.LCK_Bantime() || l_Bantime))
+	i_Bantime = in;
+}
+
+
+unsigned long Chan_Stored_t::Bantime()
+{
+    NFT("Chan_Stored_t::Bantime");
+    if (!Parent->chanserv.LCK_Bantime())
+    {
+	RET(i_Bantime);
+    }
+    RET(Parent->chanserv.DEF_Bantime());
+}
+
+
+void Chan_Stored_t::L_Bantime(bool in)
+{
+    FT("Chan_Stored_t::L_Bantime", (in));
+    if (!Parent->chanserv.LCK_Bantime())
+	l_Bantime = in;
+}
+
+
+bool Chan_Stored_t::L_Bantime()
+{
+    NFT("Chan_Stored_t::L_Bantime");
+    if (!Parent->chanserv.LCK_Bantime())
+    {
+	RET(l_Bantime);
+    }
+    RET(true);
+}
+
+
 void Chan_Stored_t::Keeptopic(bool in)
 {
-    FT("Chan_Stored_t::KeepTopic", (in));
+    FT("Chan_Stored_t::Keeptopic", (in));
     if (!(Parent->chanserv.LCK_Keeptopic() || l_Keeptopic))
 	i_Keeptopic = in;
 }
@@ -1532,7 +1576,7 @@ void Chan_Stored_t::Keeptopic(bool in)
 
 bool Chan_Stored_t::Keeptopic()
 {
-    NFT("Chan_Stored_t::KeepTopic");
+    NFT("Chan_Stored_t::Keeptopic");
     if (!Parent->chanserv.LCK_Keeptopic())
     {
 	RET(i_Keeptopic);
@@ -1543,7 +1587,7 @@ bool Chan_Stored_t::Keeptopic()
 
 void Chan_Stored_t::L_Keeptopic(bool in)
 {
-    FT("Chan_Stored_t::L_KeepTopic", (in));
+    FT("Chan_Stored_t::L_Keeptopic", (in));
     if (!Parent->chanserv.LCK_Keeptopic())
 	l_Keeptopic = in;
 }
@@ -1551,7 +1595,7 @@ void Chan_Stored_t::L_Keeptopic(bool in)
 
 bool Chan_Stored_t::L_Keeptopic()
 {
-    NFT("Chan_Stored_t::L_KeepTopic");
+    NFT("Chan_Stored_t::L_Keeptopic");
     if (!Parent->chanserv.LCK_Keeptopic())
     {
 	RET(l_Keeptopic);
@@ -2203,9 +2247,9 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
     out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
-    out<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
+    out<<in.i_Bantime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
 	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
-    out<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops<<
+    out<<in.l_Bantime<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops<<
 	in.l_Secure<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
@@ -2247,9 +2291,9 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     entlist_val_t<mstring> esdummy;
     in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
-    in>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
+    in>>out.i_Bantime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
 	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
-    in>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops>>
+    in>>out.l_Bantime>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops>>
 	out.l_Secure>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
