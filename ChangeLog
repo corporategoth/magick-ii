@@ -1,3 +1,140 @@
+* 2002-01-14 02:19  Preston A. Elder <prez@magick.tm>
+  src/xml/sxp.cpp (1.35):
+  
+  Fixed delete[] calls
+
+* 2002-01-14 02:19  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.95), src/mstring.cpp (1.126), src/stages.cpp (1.17):
+  
+  Fixed delete calls
+
+* 2002-01-14 02:16  Preston A. Elder <prez@magick.tm>
+  include/ace_memory.h (1.10), include/base.h (1.106), include/chanserv.h
+  (1.76), include/commserv.h (1.64), include/convert_epona.h (1.6),
+  include/convert_esper.h (1.8), include/convert_magick.h (1.6),
+  include/datetime.h (1.42), include/dccengine.h (1.20), include/filesys.h
+  (1.53), include/ircsocket.h (1.65), include/language.h (1.36),
+  include/lockable.h (1.69), include/logfile.h (1.26), include/magick.h
+  (1.178), include/mconfig.h (1.25), include/memoserv.h (1.58),
+  include/mexceptions.h (1.9), include/mstring.h (1.92), include/nickserv.h
+  (1.80), include/operserv.h (1.64), include/pch.h (1.49), include/server.h
+  (1.79), include/servmsg.h (1.35), include/stages.h (1.8), include/trace.h
+  (1.83), include/utils.h (1.49), include/variant.h (1.42),
+  include/version.h (1.131), include/crypt/blowfish.h (1.4),
+  include/crypt/md5_locl.h (1.3), include/xml/ascii.h (1.3),
+  include/xml/expat.h (1.3), include/xml/sxp.h (1.29),
+  include/xml/sxp_data.h (1.23), include/xml/utf8tab.h (1.4),
+  include/xml/xmltok.h (1.6), src/base.cpp (1.183), src/chanserv.cpp
+  (1.280), src/commserv.cpp (1.114), src/convert_epona.cpp (1.11),
+  src/convert_esper.cpp (1.15), src/datetime.cpp (1.76), src/dccengine.cpp
+  (1.52), src/filesys.cpp (1.94), src/ircsocket.cpp (1.201),
+  src/lockable.cpp (1.81), src/magick.cpp (1.345), src/main.cpp (1.56),
+  src/mconfig.cpp (1.40), src/memoserv.cpp (1.112), src/mstring.cpp
+  (1.125), src/nickserv.cpp (1.200), src/operserv.cpp (1.143),
+  src/server.cpp (1.206), src/servmsg.cpp (1.99), src/stages.cpp (1.16),
+  src/trace.cpp (1.117), src/utils.cpp (1.78), src/variant.cpp (1.52),
+  src/crypt/bf_enc.c (1.4), src/crypt/bf_skey.c (1.5), src/xml/sxp.cpp
+  (1.34), src/xml/xmlparse.c (1.13), src/xml/xmltok.c (1.9),
+  src/xml/xmltok_impl.c (1.10), src/xml/xmltok_ns.c (1.6):
+  
+  More pretty printing with a newer indent with C++ fixes (not totally
+  done)
+
+* 2002-01-13 00:18  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.182), src/chanserv.cpp (1.279), src/commserv.cpp (1.113),
+  src/convert_epona.cpp (1.10), src/convert_esper.cpp (1.14),
+  src/convert_magick.cpp (1.11), src/datetime.cpp (1.75), src/dccengine.cpp
+  (1.51), src/filesys.cpp (1.93), src/ircsocket.cpp (1.200),
+  src/lockable.cpp (1.80), src/magick.cpp (1.344), src/mconfig.cpp (1.39),
+  src/memoserv.cpp (1.111), src/mstring.cpp (1.124), src/nickserv.cpp
+  (1.199), src/operserv.cpp (1.142), src/server.cpp (1.205),
+  src/servmsg.cpp (1.98), src/trace.cpp (1.116), src/utils.cpp (1.77),
+  src/variant.cpp (1.51), src/crypt/bf_skey.c (1.4), src/xml/sxp.cpp
+  (1.33), src/xml/xmlparse.c (1.12), src/xml/xmlrole.c (1.6),
+  src/xml/xmltok.c (1.8), src/xml/xmltok_impl.c (1.9), src/xml/xmltok_ns.c
+  (1.5):
+  
+  More formatting, changed style slightly
+
+* 2002-01-12 09:42  Preston A. Elder <prez@magick.tm>
+  ace_uname.cpp (1.3), what.c (1.8), include/ace_memory.h (1.9),
+  include/base.h (1.105), include/chanserv.h (1.75), include/commserv.h
+  (1.63), include/convert_epona.h (1.5), include/convert_esper.h (1.7),
+  include/convert_magick.h (1.5), include/datetime.h (1.41),
+  include/dccengine.h (1.19), include/filesys.h (1.52), include/ircsocket.h
+  (1.64), include/language.h (1.35), include/lockable.h (1.68),
+  include/logfile.h (1.25), include/magick.h (1.177), include/mconfig.h
+  (1.24), include/memoserv.h (1.57), include/mexceptions.h (1.8),
+  include/mstring.h (1.91), include/nickserv.h (1.79), include/operserv.h
+  (1.63), include/pch.h (1.48), include/server.h (1.78), include/servmsg.h
+  (1.34), include/stages.h (1.7), include/trace.h (1.82), include/utils.h
+  (1.48), include/variant.h (1.41), include/version.h (1.130),
+  include/crypt/bf_locl.h (1.3), include/crypt/bf_pi.h (1.2),
+  include/crypt/blowfish.h (1.3), include/crypt/md5.h (1.2),
+  include/crypt/md5_locl.h (1.2), include/xml/ascii.h (1.2),
+  include/xml/asciitab.h (1.3), include/xml/expat.h (1.2),
+  include/xml/iasciitab.h (1.3), include/xml/latin1tab.h (1.3),
+  include/xml/nametab.h (1.2), include/xml/sxp.h (1.28),
+  include/xml/sxp_data.h (1.22), include/xml/utf8tab.h (1.3),
+  include/xml/xmlconfig.h (1.2), include/xml/xmlrole.h (1.3),
+  include/xml/xmltok.h (1.5), include/xml/xmltok_impl.h (1.3), src/base.cpp
+  (1.181), src/chanserv.cpp (1.278), src/commserv.cpp (1.112),
+  src/convert_epona.cpp (1.9), src/convert_esper.cpp (1.13),
+  src/convert_magick.cpp (1.10), src/datetime.cpp (1.74), src/dccengine.cpp
+  (1.50), src/filesys.cpp (1.92), src/ircsocket.cpp (1.199),
+  src/lockable.cpp (1.79), src/magick.cpp (1.343), src/magick_keygen.c
+  (1.24), src/magick_stampkeys.c (1.8), src/main.cpp (1.55),
+  src/mconfig.cpp (1.38), src/memoserv.cpp (1.110), src/mstring.cpp
+  (1.123), src/nickserv.cpp (1.198), src/operserv.cpp (1.141),
+  src/server.cpp (1.204), src/servmsg.cpp (1.97), src/stages.cpp (1.15),
+  src/trace.cpp (1.115), src/utils.cpp (1.76), src/variant.cpp (1.50),
+  src/crypt/bf_enc.c (1.3), src/crypt/bf_skey.c (1.3), src/crypt/md5_dgst.c
+  (1.3), src/xml/sxp.cpp (1.32), src/xml/xml.cpp (1.5), src/xml/xmlparse.c
+  (1.11), src/xml/xmlrole.c (1.5), src/xml/xmltok.c (1.7),
+  src/xml/xmltok_impl.c (1.8), src/xml/xmltok_ns.c (1.4):
+  
+  Pretty-printed all code ... looking at implementing an auto-prettyprint.
+
+* 2002-01-11 11:48  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.198):
+  
+  Added fixes for coredumps
+
+* 2002-01-11 11:47  Preston A. Elder <prez@magick.tm>
+  TODO (1.19), docs/oper.txt (1.3), include/chanserv.h (1.74),
+  lang/english.hlp (1.45), lang/english.lng (1.86), src/chanserv.cpp
+  (1.277), src/ircsocket.cpp (1.197):
+  
+  Added ChanServ DETAIL command.  Also hopefully added some fixes for
+  coredumps.
+
+* 2002-01-10 14:30  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.104), include/chanserv.h (1.73), include/commserv.h
+  (1.62), include/convert_epona.h (1.4), include/convert_esper.h (1.6),
+  include/convert_magick.h (1.4), include/filesys.h (1.51),
+  include/lockable.h (1.67), include/magick.h (1.176), include/memoserv.h
+  (1.56), include/nickserv.h (1.78), include/server.h (1.77),
+  include/utils.h (1.47), src/base.cpp (1.180), src/chanserv.cpp (1.276),
+  src/commserv.cpp (1.111), src/convert_epona.cpp (1.8),
+  src/convert_esper.cpp (1.12), src/convert_magick.cpp (1.9),
+  src/dccengine.cpp (1.49), src/filesys.cpp (1.91), src/ircsocket.cpp
+  (1.196), src/lockable.cpp (1.78), src/magick.cpp (1.342),
+  src/memoserv.cpp (1.109), src/nickserv.cpp (1.197), src/operserv.cpp
+  (1.140), src/server.cpp (1.203), src/servmsg.cpp (1.96):
+  
+  FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+  ensures that data being used cannot be deleted while still being used.
+
+* 2002-01-08 15:52  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.17), ChangeLog.2001 (1.2):
+  
+  Fixed changelogs for 2002.
+
+* 2002-01-07 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.16):
+  
+  Created version 2.0s20020107
+
 * 2002-01-03 10:49  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.15), ChangeLog.2001 (1.1), src/ircsocket.cpp (1.195):
   
