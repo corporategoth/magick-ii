@@ -41,9 +41,17 @@ relink:
 	$(MAKE) $(STAMPED_PROGS)
 if STAMPED
 	$(srcdir)/stampkeys $(STAMPED_PROGS)
+else
+	@echo "Creating 'open host' binaries has disabled stamping of the keyfile keys."
+	@echo "To stamp these binaries, run:"
+	@echo "    $(srcdir)/stampkeys $(STAMPED_PROGS)"
 endif
 
 all-am: Makefile $(PROGRAMS)
 if STAMPED
 	$(srcdir)/stampkeys $(STAMPED_PROGS)
+else
+	@echo "Creating 'open host' binaries has disabled stamping of the keyfile keys."
+	@echo "To stamp these binaries, run:"
+	@echo "    $(srcdir)/stampkeys $(STAMPED_PROGS)"
 endif

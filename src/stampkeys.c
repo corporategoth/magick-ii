@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/04/13 07:42:49  prez
+** Fixed the stampkeys program
+**
 ** Revision 1.1  2001/04/13 07:12:49  prez
 ** Changed genrankeys style random key generation to binary stamping
 ** (allowing people to stamp the binary AFTER it has been created, and
@@ -102,7 +105,7 @@ int main(int argc, char **argv)
 		memset(buf, 0, KEYLEN+1);
 		buf[0] = '|';
 		read = fread(&buf[1], 1, KEYLEN-1, fout);
-		if (read < 0)
+		if (read < KEYLEN-1)
 		    break;
 
 		if (memcmp(buf, CRYPTO_KEY1, KEYLEN) == 0)
@@ -110,7 +113,6 @@ int main(int argc, char **argv)
 		    // Matched the first 
 		    fseek(fout, -1 * KEYLEN, SEEK_CUR);
 		    fwrite(k1, KEYLEN, 1, fout);
-		    fseek(fout, -1, SEEK_CUR);
 		}
 		else if (memcmp(buf, CRYPTO_KEY2, KEYLEN) == 0)
 		{
@@ -121,7 +123,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-		    fseek(fout, KEYLEN-1, SEEK_CUR);
+		    fseek(fout, -1 * (KEYLEN-1), SEEK_CUR);
 		}
 	    }
 	}

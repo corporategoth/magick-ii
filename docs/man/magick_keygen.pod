@@ -55,7 +55,7 @@ Specified in program.
 
 =head1 SEE ALSO
 
-L<magick(1)> L<stampkeys(1)>
+L<magick(1)>, L<stampkeys(1)>
 
 =head1 BUGS
 
