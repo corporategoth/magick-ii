@@ -25,6 +25,11 @@ static const char *ident_variant_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.30  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -152,6 +157,11 @@ public:
 	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
 	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
 	const mVariant& thirteen, const mVariant& fourteen, const mVariant& fifteen);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen, const mVariant& fourteen, const mVariant& fifteen,
+	const mVariant& sixteen);
     // if we need any more, you get the drift
     int count()const{return values.size();};
     const mVariant &operator[](int position)const{return values[position];};

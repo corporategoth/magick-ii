@@ -25,6 +25,11 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.64  2000/08/31 06:25:08  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -127,9 +132,14 @@ inline int do_nothing() { return 1; }
 #define NDRET(x,y) return y
 #define CP(x) do_nothing()
 #define COM(x) do_nothing()
+#define SRC(x) do_nothing()
 #define CSRC(x, y, z) do_nothing()
-#define MB(x) do_nothing()
-#define ME(x) do_nothing()
+#define MB(x, y) do_nothing()
+#define ME(x, y) do_nothing()
+#define CB(x, y) do_nothing()
+#define CE(x, y) do_nothing()
+#define MCB(x) do_nothing()
+#define MCE(x) do_nothing()
 #define CH(x,y) do_nothing()
 #define FLUSH() do_nothing()
 
@@ -141,7 +151,7 @@ inline int do_nothing() { return 1; }
 // mDateTime
 
 // FunctionTrace -- FT("...", ());
-#define FT(x,y)  mVarArray __ft_VarArray y; T_Functions __ft(x, __ft_VarArray)
+#define FT(x,y) T_Functions __ft(x, mVarArray y)
 #define NFT(x) T_Functions __ft(x)
 
 // Set return value -- RET()
@@ -149,11 +159,6 @@ inline int do_nothing() { return 1; }
 #define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
 #define DRET(x) {__ft.return_value=mVariant(x); mThread::Detach(); return (x);}
 #define NDRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); mThread::Detach(); return y;}
-#if 0
-// this is a good idea but in practice is majorly fubar'ed
-#define CRET(x,y,z) {mstring __ft_val; __ft_val << y; \
-    __ft.return_value=("(" + mstring(#x) + ") " + y).c_str(); return z;}
-#endif
 
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
@@ -162,13 +167,22 @@ inline int do_nothing() { return 1; }
 #define COM(x) { T_Comments __com x; }
 
 // Config file load
+#define SRC(x) { T_Source(x); }
 #define CSRC(x, y, z) { T_Source(x, y, z); }
 
-// Modify begin -- MB(AOC());
-#define MB(x) mVarArray __mb_VarArray x; T_Modify __mod(__mb_VarArray)
-
+// Modify begin -- MB((), offs = 0);
 // Modify end -- ME(());
-#define ME(x) mVarArray __me_VarArray x; __mod.End(__me_VarArray)
+#define MB(x, y) { T_Modify __mod(mVarArray y, x); __mod.Begin(); }
+#define ME(x, y) { T_Modify __mod(mVarArray y, x); __mod.End(); }
+
+// Changing begin -- CB(item, stuff);
+// Changing end -- CE(item, stuff);
+#define CB(x, y) T_Changing __chg_ ## x (mstring(#y), mVariant(y))
+#define CE(x, y) __chg_ ## x ## .End(mVariant(y))
+
+// Changing with DumpE/B calls
+#define MCB(x) DumpB(); CB(0, x)
+#define MCE(x) CE(0, x); DumpE()
 
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) { T_Chatter __ch(x,y); }
@@ -207,12 +221,13 @@ extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 //   /   Up Function (T_Functions)
 //   **  CheckPoint (T_CheckPoint)
 //   ##  Comments (T_Comments)
-//   ==  Config Load (T_Source)
+//   $$  Config Load (T_Source)
 //   ->  Outbound Traffic (T_Chatter)
 //   <-  Inbound Traffic (T_Chatter)
 //   --  Unknown Traffic (T_Chatter)
-//   <<  Before changes (T_Modify)
+//   <<  Before Changes (T_Modify)
 //   >>  After Changes (T_Modify)
+//   ==  Value Changes (T_Changing)
 //   :+  Read/Write Locking (T_Locking)
 //   :-  Read/Write UnLocking (T_Locking)
 //   %%  CPU/Memory Stats (T_Stats)
@@ -360,12 +375,30 @@ public:
 class T_Modify : public Trace
 {
     ThreadID *tid;
+    mVarArray i_args;
+    unsigned int i_offset;
     T_Modify() {}
+public:
+
+    T_Modify(const mVarArray &args, unsigned int offset = 0);
+    void Begin();
+    void End();
+    ~T_Modify() {}
+};
+
+// ===================================================
+
+class T_Changing : public Trace
+{
+    ThreadID *tid;
+    mstring i_name;
+    mVariant i_arg;
+    T_Changing() {}
 
 public:
-    T_Modify(const mVarArray &args);
-    void End(const mVarArray &args);
-    ~T_Modify() {}
+    T_Changing(const mstring &name, const mVariant &arg);
+    void End(const mVariant &arg);
+    ~T_Changing() {}
 };
 
 // ===================================================
@@ -400,6 +433,7 @@ class T_Source : public Trace
 {
     ThreadID *tid;
 public:
+    T_Source(mstring text);
     T_Source(mstring section, mstring key, mstring value);
 };
 

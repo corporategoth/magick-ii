@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2000/09/01 10:54:39  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.99  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -475,16 +480,22 @@ void T_Comments::common(const char *input)
 //      << DE1(PreZ)
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
-T_Modify::T_Modify(const mVarArray &args)
+T_Modify::T_Modify(const mVarArray &args, unsigned int offset)
+{
+    i_args = args;
+    i_offset = offset;
+}
+
+void T_Modify::Begin()
 {
     tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
-	for (int i=0; i<args.count(); i++) {
+	for (int i=0; i<i_args.count(); i++) {
 	    mstring message;
-	    message << "<< " << "DE" << i+1 << "(" << args[i].AsString() << ")";
+	    message << "<< " << "DE" << i+i_offset+1 << "(" << i_args[i].AsString() << ")";
 	    tid->WriteOut(message);
 	}
     }
@@ -493,18 +504,48 @@ T_Modify::T_Modify(const mVarArray &args)
 //      >> DE1(PreZ)
 //      >> DE2(prez)
 //      >> DE3(corewars.net)
-void T_Modify::End(const mVarArray &args)
+void T_Modify::End()
 {
     tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
-	for (int i=0; i<args.count(); i++) {
+	for (int i=0; i<i_args.count(); i++) {
 	    mstring message;
-	    message << ">> " << "DE" << i+1 << "(" << args[i].AsString() << ")";
+	    message << ">> " << "DE" << i+i_offset+1 << "(" << i_args[i].AsString() << ")";
 	    tid->WriteOut(message);
 	}
+    }
+}
+
+// ===================================================
+
+//      << DE1(PreZ)
+//      << DE2(prez)
+//      << DE3(srealm.net.au)
+T_Changing::T_Changing(const mstring &name, const mVariant &arg)
+{
+    i_name = name;
+    i_arg = arg;
+}
+
+//      >> DE1(PreZ)
+//      >> DE2(prez)
+//      >> DE3(corewars.net)
+void T_Changing::End(const mVariant &arg)
+{
+    if (i_name == "")
+	return;
+    tid = mThread::find();
+    if (tid == NULL || tid->InTrace())
+	return; // should throw an exception later
+    ShortLevel(Changing);
+    if (IsOn(tid)) {
+	mstring message;
+	message << "== " << i_name << " = " << i_arg.AsString() << " -> " <<
+			arg.AsString();
+	tid->WriteOut(message);
     }
 }
 
@@ -599,6 +640,19 @@ T_Locking::~T_Locking()
 
 // ===================================================
 
+T_Source::T_Source(mstring text)
+{
+    tid = mThread::find();
+    if (tid == NULL || tid->InTrace())
+	return; // should throw an exception later
+    ShortLevel(Source);
+    if (IsOn(tid)) {
+	mstring message;
+	message << "$$ " << text;
+	tid->WriteOut(message);
+    }
+}
+
 T_Source::T_Source(mstring section, mstring key, mstring value)
 {
     tid = mThread::find();
@@ -607,7 +661,7 @@ T_Source::T_Source(mstring section, mstring key, mstring value)
     ShortLevel(Source);
     if (IsOn(tid)) {
 	mstring message;
-	message << "== [" << section << "] " << key << " = " << value;
+	message << "$$ [" << section << "] " << key << " = " << value;
 	tid->WriteOut(message);
     }
 }

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.133  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.132  2000/08/31 06:25:08  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -277,8 +282,9 @@ int mBaseTask::svc(void)
     NFT("mBaseTask::svc");
     ACE_Message_Block *mblock;
     char *transit;
+    int retval = 0;
     
-    while(!Parent->Shutdown())
+    while(!Parent->Shutdown() && retval >= 0)
     {
 	mblock = NULL;
 	transit = NULL;
@@ -294,13 +300,12 @@ int mBaseTask::svc(void)
 		transit = mblock->base();
 		if (transit != NULL)
 		{
-		    message_i(mstring(transit));
+		    retval = message_i(mstring(transit));
 		    delete transit;
 		}
 		break;
 	    case ACE_Message_Block::MB_HANGUP:
-		delete mblock;
-		DRET(-1);
+		retval = -1;
 		break;
 	    default:
 		Log(LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
@@ -309,7 +314,7 @@ int mBaseTask::svc(void)
 	    delete mblock;
 	}
     }
-    DRET(0);
+    DRET(retval);
 }
 
 void mBaseTask::message(const mstring& message)
@@ -358,6 +363,7 @@ int mBaseTask::message_i(const mstring& message)
     mstring source, type, target;
     if (data == "")
 	RET(0);
+
     source=data.ExtractWord(1,": ");
     type  =data.ExtractWord(2,": ").UpperCase();
     target=data.ExtractWord(3,": ");
@@ -424,14 +430,14 @@ int mBaseTask::message_i(const mstring& message)
     size_t msgcnt = message_queue_.message_count();
     if (thread_count > 1)
     {
-	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+	CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
 		thread_count, msgcnt,
 		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thread_count-2)),
 		thread_count * Parent->config.High_Water_Mark()));
     }
     else
     {
-	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+	CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
 		thread_count, msgcnt, 0,
 		thread_count * Parent->config.High_Water_Mark()));
     }
@@ -440,11 +446,11 @@ int mBaseTask::message_i(const mstring& message)
 		(Parent->config.High_Water_Mark() * (thread_count-2)))
     {
 	    COM(("Low water mark reached, killing thread."));
+	    thread_count--;
 	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
-		(thread_count-1) * Parent->server.proto.MaxLine());
+		thread_count * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
-	    thread_count--;
 	    FLUSH();
 	    RET(-1);
     }}

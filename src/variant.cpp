@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/09/01 10:54:39  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.40  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -651,4 +656,27 @@ mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& t
     values.push_back(thirteen);
     values.push_back(fourteen);
     values.push_back(fifteen);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen, const mVariant& fourteen, const mVariant& fifteen,
+	const mVariant& sixteen)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+    values.push_back(eleven);
+    values.push_back(twelve);
+    values.push_back(thirteen);
+    values.push_back(fourteen);
+    values.push_back(fifteen);
+    values.push_back(sixteen);
 }

@@ -25,6 +25,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.40  2000/08/31 06:25:08  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -93,7 +98,7 @@ static const char *ident_lockable_h = "@(#) $Id$";
 
 #ifdef MAGICK_LOCKS_WORK
 
-#define MAX_LOCKS 15 /* Max variants */
+#define MAX_LOCKS 16 /* Max variants */
 class mLOCK
 {
     static map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > LockMap;

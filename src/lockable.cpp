@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.45  2000/08/31 06:25:09  prez
 ** Added our own socket class (wrapper around ACE_SOCK_Stream,
 ** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
@@ -491,6 +496,7 @@ mSocket::~mSocket()
     MLOCK(("mSocket", sockid));
     if (sock != NULL)
 	close();
+    MLOCK2(("SockMap"));
     SockMap.erase(sockid);
 }
 
@@ -508,6 +514,7 @@ void mSocket::operator=(const mSocket &in)
     mSocket *tmp = (mSocket *) &in;
     tmp->sock = NULL;
 
+    MLOCK2(("SockMap"));
     SockMap[sockid] = this;
 }
 

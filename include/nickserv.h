@@ -25,6 +25,11 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.48  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -199,6 +204,8 @@ public:
 	bool File();
 	bool InProg();
 	size_t Usage();
+	void DumpB();
+	void DumpE();
     } InFlight;
 
     Nick_Live_t();
@@ -287,6 +294,8 @@ public:
     mDateTime LastMemo();
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 struct NickInfo;
@@ -466,6 +475,8 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
     size_t Usage();
+    void DumpB();
+    void DumpE();
 };
 
 // todo: move this over to a ACE_TASK style architecture

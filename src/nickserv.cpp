@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.129  2000/09/01 10:54:38  prez
+** Added Changing and implemented Modify tracing, now just need to create
+** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
+** (or MB() / ME() or CB() / CE() where MCB() / MCE() not appropriate) in.
+**
 ** Revision 1.128  2000/08/28 10:51:38  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -935,6 +940,18 @@ size_t Nick_Live_t::InFlight_t::Usage()
     retval += text.capacity();
 
     return retval;
+}
+
+void Nick_Live_t::InFlight_t::DumpB()
+{
+    // 8 Elements
+    MB(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
+}
+
+void Nick_Live_t::InFlight_t::DumpE()
+{
+    // 8 Elements
+    ME(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
 }
 
 
@@ -2150,8 +2167,35 @@ size_t Nick_Live_t::Usage()
     }
     retval += sizeof(identified);
     retval += sizeof(services);
+    retval += sizeof(last_nick_reg.Internal());
+    retval += sizeof(last_chan_reg.Internal());
+    retval += sizeof(last_memo.Internal());
 
     return retval;
+}
+
+void Nick_Live_t::DumpB()
+{
+    // 16 Elements
+    MB(0, (i_Name, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname,
+	i_user, i_host, i_alt_host, i_server, i_squit, i_away, modes,
+	joined_channels.size(), last_msg_times.size(), last_msg_entries,
+	flood_triggered_times));
+    // 8 Elements
+    MB(16, (failed_passwds, chans_founder_identd.size(), try_chan_ident.size(),
+	identified, services, last_nick_reg, last_chan_reg, last_memo));
+}
+
+void Nick_Live_t::DumpE()
+{
+    // 16 Elements
+    ME(0, (i_Name, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname,
+	i_user, i_host, i_alt_host, i_server, i_squit, i_away, modes,
+	joined_channels.size(), last_msg_times.size(), last_msg_entries,
+	flood_triggered_times));
+    // 8 Elements
+    ME(16, (failed_passwds, chans_founder_identd.size(), try_chan_ident.size(),
+	identified, services, last_nick_reg, last_chan_reg, last_memo));
 }
 
 // =======================================================================
@@ -2401,7 +2445,9 @@ void Nick_Stored_t::Email(mstring in)
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Email"));
+	MCB(i_Email);
 	i_Email = in;
+	MCE(i_Email);
     }
     else
     {
@@ -2432,7 +2478,9 @@ void Nick_Stored_t::URL(mstring in)
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_URL"));
+	MCB(i_URL);
 	i_URL = in;
+	MCE(i_URL);
     }
     else
     {
@@ -2463,7 +2511,9 @@ void Nick_Stored_t::ICQ(mstring in)
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ICQ"));
+	MCB(i_ICQ);
 	i_ICQ = in;
+	MCE(i_ICQ);
     }
     else
     {
@@ -2494,7 +2544,9 @@ void Nick_Stored_t::Description(mstring in)
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Description"));
+	MCB(i_Description);
 	i_Description = in;
+	MCE(i_Description);
     }
     else
     {
@@ -2525,7 +2577,9 @@ void Nick_Stored_t::Comment(mstring in)
     if (Host() == "")
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Comment"));
+	MCB(i_Comment);
 	i_Comment = in;
+	MCE(i_Comment);
     }
     else
     {
@@ -4280,6 +4334,28 @@ size_t Nick_Stored_t::Usage()
     }
 
     return retval;
+}
+
+void Nick_Stored_t::DumpB()
+{
+    MB(0, (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ,
+	i_Description, i_Comment, i_Host, i_slaves.size(), i_access.size(),
+	i_ignore.size(), i_Protect, l_Protect, i_Secure, l_Secure));
+    MB(16, (i_NoExpire, l_NoExpire, i_NoMemo, l_NoMemo, i_Private, l_Private,
+	i_PRIVMSG, l_PRIVMSG, i_Language, l_Language, i_Forbidden, i_Picture,
+	i_Suspend_By, i_Suspend_Time, i_LastSeenTime, i_LastRealName));
+    MB(32, (i_LastMask, i_LastQuit, i_UserDef.size()));
+}
+
+void Nick_Stored_t::DumpE()
+{
+    ME(0, (i_Name, i_RegTime, i_Password, i_Email, i_URL, i_ICQ,
+	i_Description, i_Comment, i_Host, i_slaves.size(), i_access.size(),
+	i_ignore.size(), i_Protect, l_Protect, i_Secure, l_Secure));
+    ME(16, (i_NoExpire, l_NoExpire, i_NoMemo, l_NoMemo, i_Private, l_Private,
+	i_PRIVMSG, l_PRIVMSG, i_Language, l_Language, i_Forbidden, i_Picture,
+	i_Suspend_By, i_Suspend_Time, i_LastSeenTime, i_LastRealName));
+    ME(32, (i_LastMask, i_LastQuit, i_UserDef.size()));
 }
 
 // =======================================================================

@@ -70,7 +70,14 @@ Stats		0x0001
     <TBA> should be used to print out vital statistics before
 	and after a process.
 Source		0x0002
-    <TBA> should be used to record the contents of input files.
+    CSRC(sect, opt, val) should be used when loading INI
+	style source files, and passed 3 options, first
+	the section name, second the option being set, and
+	third the value of that option.
+	This tracing is automatic when you use mConfigEngine.
+    SRC(text) should be used when loading a generic source
+	file of some kind (non-ini style), and simply dumps
+	the text out.
 Bind		0x0004
     <TBA> should be used when a scripted command is BOUND
     <TBA> should be used when a scripted command is UNBOUND
@@ -93,21 +100,37 @@ Functions	0x0080
     RET(val) or NRET(type, val) at the END of every function
 	that does not return VOID.  NRET is used when the
 	return type is NOT a standard data type (see variant.h).
+    DRET(val) or NDRET(type, val) is the same as the above,
+	but will detach the thread (call mThread::Detach)
+	before exiting -- also causing a flush.
 
 Changing	0x0100
-    <TBA>
+    CB(uniq, arg) should be used BEFORE changing a value of
+	some kind.  The name passed, and the value of this
+	name is dumped in the trace.  uniq should be an
+	individual non-zero posetive number (to be able to
+	use them in a row).
+    CE(uniq, arg) should be used AFTER changing a vaule, with
+	the same uniq as the CB, and will actually do the
+	dump to the trace file.
 Modify		0x0200
-    MB((args)) should be used at the BEGINNING of any data
-	modification (formatting is automatic).  Usually the
-	arguments are identifying markers (eg. nickname) and
-	the veriables being changed.
-    ME((args)) should be called with the same args as MB, and
-	used at the END of any data modification.
+    MB(offset, (args)) should be used BEFORE any data modification
+	(formatting is automatic).  This will essentially dump all
+	the arguments as data elements starting at 1 + offset.
+    ME(offset, (args)) should be called with the same args as MB,
+	and used at the END of any data modification.
+
+    MCB(arg) will call the DumpB() function (which you must
+	write to use this), which is expected to have any MB()
+	calls in it to dump your current object, it will then
+	call CB() with your argument as the second paramater.
+    MCE(arg) does the same as MCB, but calling DumpE, and CE().
+	The argument should be the same, and this should be
+	called after the data has been modified.  These two
+	options essentially implement Modify + Changing.
 
 Sockets		0x1000
-    <TBA> should be used when creating sockets.
-    <TBA> should be used when quantifying sockets.
-    <TBA> shoulc be used when closing sockets.
+    This tracing is automatic when you use the mSocket class.
 Chatter 	0x2000
     CH(direction, str) should be used when receiving OR sending
 	data to or from clients.
