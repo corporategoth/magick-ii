@@ -25,6 +25,9 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2001/06/20 06:07:01  prez
+** ome GCC 3.0 and solaris fixes
+**
 ** Revision 1.76  2001/06/11 03:44:45  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -215,8 +218,8 @@ public:
 
 // Changing begin -- CB(item, stuff);
 // Changing end -- CE(item, stuff);
-#define CB(x,y) T_Changing __chg_ ## x (mstring(#y), mVariant(y))
-#define CE(x,y) __chg_ ## x ## .End(mVariant(y))
+#define CB(x,y) T_Changing __chg_ ## x ## _ (mstring(#y), mVariant(y))
+#define CE(x,y) __chg_ ## x ## _.End(mVariant(y))
 
 // Changing with DumpE/B calls
 #define MCB(x) DumpB(); CB(0, x)

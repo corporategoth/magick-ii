@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2001/06/20 06:07:01  prez
+** ome GCC 3.0 and solaris fixes
+**
 ** Revision 1.76  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -222,22 +225,22 @@ class mstring_noalloc : public exception
 {
     char i_reason[1024];
 public:
-    mstring_noalloc(const char *reason = "")
+    mstring_noalloc(const char *reason = "") throw()
 	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    ~mstring_noalloc() {}
-    const char *what() const
-	{ return i_reason; };
+    ~mstring_noalloc() throw() {}
+    const char *what() const throw()
+	{ return i_reason; }
 };
 
 class mstring_nodealloc : public exception
 {
     char i_reason[1024];
 public:
-    mstring_nodealloc(const char *reason = "")
+    mstring_nodealloc(const char *reason = "") throw() 
 	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    ~mstring_nodealloc() {}
-    const char *what() const
-	{ return i_reason; };
+    ~mstring_nodealloc() throw() {}
+    const char *what() const throw()
+	{ return i_reason; }
 };
 #endif
 

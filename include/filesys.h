@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2001/06/20 06:07:01  prez
+** ome GCC 3.0 and solaris fixes
+**
 ** Revision 1.42  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -327,7 +330,8 @@ public:
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>
 {
-    static queue<unsigned long> active;
+    // Damn solaris already HAS a 'queue'
+    static std::queue<unsigned long> active;
 
     ACE_Thread_Manager tm;
     struct NewSocket

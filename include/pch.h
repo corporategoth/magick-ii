@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2001/06/20 06:07:01  prez
+** ome GCC 3.0 and solaris fixes
+**
 ** Revision 1.41  2001/06/17 19:29:53  prez
 ** Fixed pch again to support 5.1.0 aswell as 5.1.17 ACE
 **
@@ -243,11 +246,6 @@
 #  include <vector>
 #else
 #  include <vector.h>
-#endif
-#ifdef HAVE_IOSTREAM
-#  include <iostream>
-#else
-#  include <iostream.h>
 #endif
 
 /* ACE Extensions */

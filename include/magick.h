@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.165  2001/06/20 06:07:01  prez
+** ome GCC 3.0 and solaris fixes
+**
 ** Revision 1.164  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -369,7 +372,7 @@ public:
 
     // Config Values
     class startup_t {
-	friend Magick;
+	friend class Magick;
 
 	// map<server name, pair<priority, triplet<port, password, numeric> > >
 	map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > > servers;
@@ -407,7 +410,7 @@ public:
     } startup;
 
     class files_t {
-	friend Magick;
+	friend class Magick;
 
 	mstring pidfile;
 	mstring logfile;
@@ -471,7 +474,7 @@ public:
     } files;
 
     class config_t {
-	friend Magick;
+	friend class Magick;
 
 	unsigned long server_relink;
 	unsigned long squit_protect;
