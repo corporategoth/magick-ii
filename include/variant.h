@@ -70,9 +70,47 @@ class mVarArray
 {
 	vector<mVariant> values;
 public:
-	int count()const{return values.size();};
-	const mVariant &operator[](int position)const{return values[position];};
-	mVariant &operator[](int position){return values[position];};
+    mVarArray() { };
+    mVarArray(const mVariant& one);
+    mVarArray(const mVariant& one, const mVariant& two);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen, const mVariant& fourteen);
+    mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen, const mVariant& fourteen, const mVariant& fifteen);
+    // if we need any more, you get the drift
+    int count()const{return values.size();};
+    const mVariant &operator[](int position)const{return values[position];};
+    mVariant &operator[](int position){return values[position];};
 };
 
 // todo

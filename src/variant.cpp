@@ -322,3 +322,191 @@ mstring mVariant::type()const
     // fall through, if it get's here major fubar, so put in logging mechanism when it's done
     return mstring("Error");
 }
+
+mVarArray::mVarArray(const mVariant& one)
+{
+    values.push_back(one);
+}
+
+mVarArray::mVarArray(const mVariant & one, const mVariant & two)
+{
+    values.push_back(one);
+    values.push_back(two);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+    values.push_back(eleven);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+    values.push_back(eleven);
+    values.push_back(twelve);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+    values.push_back(eleven);
+    values.push_back(twelve);
+    values.push_back(thirteen);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen, const mVariant& fourteen)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+    values.push_back(eleven);
+    values.push_back(twelve);
+    values.push_back(thirteen);
+    values.push_back(fourteen);
+}
+mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three, const mVariant& four,
+	const mVariant& five, const mVariant& six, const mVariant& seven, const mVariant& eight,
+	const mVariant& nine, const mVariant& ten, const mVariant& eleven, const mVariant& twelve,
+	const mVariant& thirteen, const mVariant& fourteen, const mVariant& fifteen)
+{
+    values.push_back(one);
+    values.push_back(two);
+    values.push_back(three);
+    values.push_back(four);
+    values.push_back(five);
+    values.push_back(six);
+    values.push_back(seven);
+    values.push_back(eight);
+    values.push_back(nine);
+    values.push_back(ten);
+    values.push_back(eleven);
+    values.push_back(twelve);
+    values.push_back(thirteen);
+    values.push_back(fourteen);
+    values.push_back(fifteen);
+}
