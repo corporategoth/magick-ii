@@ -436,22 +436,31 @@ public class mct extends JApplet implements ActionListener
 
 	JTabbedPane middle = new JTabbedPane();
 
+	Color background = new Color(0x40, 0x40, 0x40);
+	Color foreground = new Color(0xA2, 0xA2, 0xA2);
+
 	JPanel gb = new JPanel();
 	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
+	gb.setBackground(background);
 	gc.gridx=0;
 	gc.gridy=0;
 	gc.gridwidth = gc.REMAINDER;
 	gc.anchor = gc.CENTER;
-	URL url = mct.class.getResource("MagickMain.jpg");
-	Image img=Toolkit.getDefaultToolkit().getImage(url); 
+	URL url = mct.class.getResource("splash.jpg");
+	Image img = Toolkit.getDefaultToolkit().getImage(url).getScaledInstance(-1, 300, Image.SCALE_DEFAULT);
 	JButton icon = new JButton("", new ImageIcon(img));
 	icon.setBorderPainted(false);
+	icon.setBackground(background);
 	gb.add(icon, gc);
 	gc.gridy++;
-	gb.add(new JLabel("(c) 1997-2002 Preston A. Elder <prez@magick.tm>"), gc);
+	JLabel lab = new JLabel("(c) 1997-2002 Preston A. Elder <prez@magick.tm>");
+	lab.setForeground(foreground);
+	gb.add(lab, gc);
 	gc.gridy++;
-	gb.add(new JLabel("(c) 1997-2002 William King <ungod@magick.tm>"), gc);
+	lab = new JLabel("(c) 1997-2002 William King <ungod@magick.tm>");
+	lab.setForeground(foreground);
+	gb.add(lab, gc);
 	gc.gridy++;
 	gc.gridwidth = 1;
 
