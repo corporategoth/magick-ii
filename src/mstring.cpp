@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2001/05/14 04:46:32  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.104  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -239,17 +242,17 @@ static unsigned long next_lock_id = 0;
 #endif
 
 #ifdef WIN32
-mstring const DirSlash="\\";
+const mstring DirSlash("\\");
 #else
-mstring const DirSlash="/";
+const mstring DirSlash("/");
 #endif
-mstring const Blank;
-mstring const IRC_CTCP(static_cast<char>(1));		// ^A
-mstring const IRC_Bold(static_cast<char>(2));		// ^B
-mstring const IRC_Underline(static_cast<char>(31));	// ^_
-mstring const IRC_Reverse(static_cast<char>(21));	// ^V
-mstring const IRC_Color(static_cast<char>(3));		// ^C
-mstring const IRC_Off(static_cast<char>(15));		// ^O
+const mstring Blank;
+const mstring IRC_CTCP(static_cast<char>(1));		// ^A
+const mstring IRC_Bold(static_cast<char>(2));		// ^B
+const mstring IRC_Underline(static_cast<char>(31));	// ^_
+const mstring IRC_Reverse(static_cast<char>(21));	// ^V
+const mstring IRC_Color(static_cast<char>(3));		// ^C
+const mstring IRC_Off(static_cast<char>(15));		// ^O
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 char *mstring::alloc(const size_t size) throw(mstring_noalloc)

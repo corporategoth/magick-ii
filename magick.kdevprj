@@ -16,7 +16,7 @@ type=SOURCE
 [include/Makefile.am]
 files=include/base.h,include/chanserv.h,include/commserv.h,include/convert_magick.h,include/convert_esper.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/mexceptions.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
 type=normal
-sub_dirs=des,xml,
+sub_dirs=crypt,xml,
 [include/variant.h]
 install_location=
 dist=true
@@ -57,7 +57,7 @@ install_location=
 dist=true
 install=false
 type=SOURCE
-[src/des/cbc_cksm.c]
+[src/crypt/bf_enc.c]
 install_location=
 dist=true
 install=false
@@ -106,7 +106,7 @@ install_location=
 dist=true
 install=false
 type=HEADER
-[include/des/spr.h]
+[include/crypt/blowfish.h]
 install_location=
 dist=true
 install=false
@@ -136,8 +136,8 @@ install_location=
 dist=true
 install=false
 type=HEADER
-[include/des/Makefile.am]
-files=include/des/des.h,include/des/des_locl.h,include/des/md5.h,include/des/md5_locl.h,include/des/podd.h,include/des/sk.h,include/des/spr.h,
+[include/crypt/Makefile.am]
+files=include/crypt/blowfish.h,include/crypt/bf_locl.h,include/crypt/md5.h,include/crypt/md5_locl.h,include/crypt/bf_pi.h,
 type=normal
 sub_dirs=
 [src/xml/xmlparse.c]
@@ -176,12 +176,12 @@ Others=*,
 groups=Headers,Sources,GNU,Others,
 Sources=*.cpp,*.c,*.cc,*.C,*.cxx,*.ec,*.ecpp,*.lxx,*.l++,*.ll,*.l,
 Headers=*.h,*.hxx,*.hpp,*.H,
-[include/des/des.h]
+[include/crypt/bf_locl.h]
 install_location=
 dist=true
 install=false
 type=HEADER
-[include/des/md5.h]
+[include/crypt/md5.h]
 install_location=
 dist=true
 install=false
@@ -236,8 +236,8 @@ install_location=
 dist=true
 install=false
 type=DATA
-[src/des/Makefile.am]
-files=src/des/cbc_cksm.c,src/des/des_enc.c,src/des/md5_dgst.c,src/des/set_key.c,src/des/str2key.c,
+[src/crypt/Makefile.am]
+files=src/crypt/bf_enc.c,src/crypt/bf_skey.c,src/crypt/md5_dgst.c,
 type=static_library
 sub_dirs=
 [include/utils.h]
@@ -284,7 +284,7 @@ install_location=
 dist=true
 install=false
 type=SOURCE
-[include/des/podd.h]
+[include/crypt/bf_pi.h]
 install_location=
 dist=true
 install=false
@@ -342,7 +342,7 @@ type=SOURCE
 [src/Makefile.am]
 files=src/base.cpp,src/chanserv.cpp,src/commserv.cpp,src/convert_magick.cpp,src/convert_esper.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
 type=prog_main
-sub_dirs=des,xml,
+sub_dirs=crypt,xml,
 [include/base.h]
 install_location=
 dist=true
@@ -398,14 +398,9 @@ install_location=
 dist=true
 install=false
 type=HEADER
-[include/des/sk.h]
-install_location=
-dist=true
-install=false
-type=HEADER
 [General]
 make_options=-k -w -j1
-makefiles=Makefile.am,src/Makefile.am,docs/Makefile.am,docs/en/Makefile.am,src/des/Makefile.am,src/xml/Makefile.am,include/Makefile.am,include/des/Makefile.am,include/xml/Makefile.am,docs/man/Makefile.am,docs/devel/Makefile.am,
+makefiles=Makefile.am,src/Makefile.am,docs/Makefile.am,docs/en/Makefile.am,src/crypt/Makefile.am,src/xml/Makefile.am,include/Makefile.am,include/crypt/Makefile.am,include/xml/Makefile.am,docs/man/Makefile.am,docs/devel/Makefile.am,
 version_control=CVS
 project_type=normal_cpp
 author=Magick Development Team
@@ -421,7 +416,12 @@ email=devel@magick.tm
 kdevprj_version=1.1 beta1
 configure_args=
 modifyMakefiles=true
-[src/des/md5_dgst.c]
+[src/crypt/md5_dgst.c]
+install_location=
+dist=true
+install=false
+type=SOURCE
+[src/crypt/bf_skey.c]
 install_location=
 dist=true
 install=false
@@ -466,7 +466,7 @@ install_location=
 dist=true
 install=false
 type=HEADER
-[include/des/md5_locl.h]
+[include/crypt/md5_locl.h]
 install_location=
 dist=true
 install=false
@@ -542,11 +542,6 @@ install_location=
 dist=true
 install=false
 type=HEADER
-[include/des/des_locl.h]
-install_location=
-dist=true
-install=false
-type=HEADER
 [src/mconfig.cpp]
 install_location=
 dist=true
@@ -566,16 +561,6 @@ install_location=
 dist=true
 install=false
 type=DATA
-[src/des/str2key.c]
-install_location=
-dist=true
-install=false
-type=SOURCE
-[src/des/set_key.c]
-install_location=
-dist=true
-install=false
-type=SOURCE
 [src/xml/gennmtab.c]
 install_location=
 dist=true
@@ -606,11 +591,6 @@ dist=true
 install=false
 type=SOURCE
 [src/variant.cpp]
-install_location=
-dist=true
-install=false
-type=SOURCE
-[src/des/des_enc.c]
 install_location=
 dist=true
 install=false

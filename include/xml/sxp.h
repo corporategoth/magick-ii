@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2001/05/14 04:46:31  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.17  2001/04/08 18:53:09  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -107,6 +110,7 @@ const int INIT_BUFSIZE = 32 * 1024;
 const unsigned int SXP_TAG = 0x01;	// Required to force write.
 const unsigned int SXP_COMPRESS	= 0x02;
 const unsigned int SXP_ENCRYPT = 0x04;
+const pair<mstring,mstring> blank_mstring_pair("","");
 
 // configuration -- assume dos/win32 don't have GNU autoconf.
 // Don't touch any of this unless you know what you're doing.
@@ -619,15 +623,16 @@ SXP_NS_BEGIN
 		size_t buf_sz;
 		size_t buf_cnt;
 		char *buffer;
-		mstring key;
+		mstring key1;
+		mstring key2;
 
 		void ExpandBuf();
 	public:
 		void Print(char *format, ...);
 		void PrintV(char *format, va_list argptr);
 		void Indent();
-		MFileOutStream(mstring chFilename, int comp = 0, mstring ikey = "");
-		MFileOutStream(mstring chFilename, FILE *fp, int comp = 0, mstring ikey = "");
+		MFileOutStream(const mstring &chFilename, int comp = 0, const pair<mstring,mstring> ikey = blank_mstring_pair);
+		MFileOutStream(const mstring &chFilename, FILE *fp, int comp = 0, const pair<mstring,mstring> ikey = blank_mstring_pair);
 		~MFileOutStream();
 		void BeginXML(void);
 		void BeginObject(Tag& t, dict& attribs);
@@ -757,7 +762,7 @@ SXP_NS_BEGIN
 		}
 
 		// give the parser a food for thought the lazy way
-		int FeedFile(mstring chFilename, mstring ikey = "");
+		int FeedFile(const mstring &chFilename, const pair<mstring,mstring> ikey = blank_mstring_pair);
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
 		inline void ReadTo( IPersistObj *pPI ) {

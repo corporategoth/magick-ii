@@ -18,7 +18,7 @@ default: $(PROJECTS)
 magickbcc.exe: magickbcc.bpr
   $(MAKE)
 
-crypto.lib: src\des\crypto.bpr
+crypto.lib: src\crypt\crypto.bpr
   $(MAKE)
 
 whatbcc.exe: whatbcc.bpr

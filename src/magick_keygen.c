@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2001/05/14 04:46:32  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.14  2001/05/13 18:59:17  prez
 ** Fixed adding of 8 extra bytes when we align to 8 byte boundaries
 **
@@ -90,26 +93,25 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** ========================================================== */
 
 #include <stdio.h>
-#include <stdarg.h>
 #include "config.h"
 #ifdef HASCRYPT
-#include "des/des_locl.h"
-#include "des/spr.h"
-#endif
+#include <stdarg.h>
+#include "crypt/blowfish.h"
 #ifdef HAVE_TERMIO_H
 #include <termio.h>
 #endif
 
-#ifdef HASCRYPT
-#define TUPLE_SIZE	(2 * sizeof(DES_LONG))
-#endif
+#define VERIFY_SIZE	128
 #define MIN_KEYLEN	16
+#define MAX_KEYLEN	((BF_ROUNDS+2)*4)
 #define DEF_KEYNAME	"magick.key"
 
-void mDES(unsigned char *in, unsigned char *out, size_t size,
-	des_key_schedule key1, des_key_schedule key2, int enc);
+size_t mCRYPT(const char *in, char *out, const size_t size,
+	const char *key1, const char *key2, const int enc);
 int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...);
 int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
+
+#endif /* HASCRYPT */
 
 int main(int argc, char **argv)
 {
@@ -120,13 +122,11 @@ int main(int argc, char **argv)
 
     fprintf(stderr, "You do not have encryption support.\n");
 
-#else
+#else /* !HASCRYPT */
     size_t i, key_size;
-    unsigned char inkey[KEYLEN], outkey[KEYLEN], filename[512];
-    unsigned char instr[128], outstr[128];
-    FILE *infile, *outfile, *tty;
-    des_key_schedule key1, key2;
-    des_cblock ckey1, ckey2;
+    char key1[MAX_KEYLEN+1], key2[MAX_KEYLEN+1], verify[MAX_KEYLEN+1], filename[512];
+    char instr[VERIFY_SIZE], outstr[VERIFY_SIZE];
+    FILE *outfile, *tty;
 #ifdef HAVE_TERMIO_H
     struct termio tty_new, tty_orig;
 #endif
@@ -136,8 +136,6 @@ int main(int argc, char **argv)
     printf("    (c) 1998-2001 William King <ungod@magick.tm>\n\n");
 
     memset(filename, 0, 512);
-    memset(inkey, 0, KEYLEN);
-    memset(outkey, 0, KEYLEN);
 
     if (argc>1)
     {
@@ -166,132 +164,132 @@ int main(int argc, char **argv)
 	return 1;
     }
 
-    memset(filename, 0, 512);
-    if (argc>2)
-    {
-	strcpy(filename, argv[2]);
-	filename[511]=0;
-	if ((infile = fopen(filename, "r")) == NULL)
-	{
-	    fprintf(stderr, "Could not open plain-text keyfile.\n");
-	    return 2;
-	}
-	key_size = fread(inkey, sizeof(char), KEYLEN, infile);
-    }
-    else
-    {
-
-	/* This crap is needed to turn of echoing password */
+    /* This crap is needed to turn of echoing password */
 #ifdef HAVE_TERMIO_H
-	if ((tty = fopen("/dev/tty", "r")) == NULL)
-	    tty = stdin;
-	ioctl(fileno(tty), TCGETA,&tty_orig);
-	memcpy(&tty_new, &tty_orig, sizeof(tty_orig));
-	tty_new.c_lflag &= ~ECHO;
-	ioctl(fileno(tty), TCSETA, &tty_new);
-#else
+    if ((tty = fopen("/dev/tty", "r")) == NULL)
 	tty = stdin;
+    ioctl(fileno(tty), TCGETA,&tty_orig);
+    memcpy(&tty_new, &tty_orig, sizeof(tty_orig));
+    tty_new.c_lflag &= ~ECHO;
+    ioctl(fileno(tty), TCSETA, &tty_new);
+#else
+    tty = stdin;
 #endif
 
-	printf("Enter database key: ");
-	fgets(inkey, KEYLEN, tty);
-	inkey[KEYLEN-1]=0;
-	key_size = strlen(inkey);
-	if (key_size != KEYLEN-1)
-	    inkey[--key_size]=0;
-	printf("\n");
-	if (key_size < MIN_KEYLEN)
-	{
-	    fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
-#ifdef HAVE_TERMIO_H
-	    ioctl(fileno(tty), TCSETA, &tty_orig);
-#endif
-	    return 3;
-	}
-
-	printf("Re-Enter database key: ");
-	fgets(outkey, KEYLEN, tty);
-	outkey[KEYLEN-1]=0;
-	key_size = strlen(outkey);
-	if (key_size != KEYLEN-1)
-	    outkey[--key_size]=0;
-	printf("\n");
-	if (memcmp(inkey, outkey, KEYLEN)!=0)
-	{
-	    fprintf(stderr, "Key mismatch, aborting key generation.\n");
-#ifdef HAVE_TERMIO_H
-	    ioctl(fileno(tty), TCSETA, &tty_orig);
-#endif
-	    return 4;
-	}
-
-	memset(outkey, 0, KEYLEN);
+    memset(key1, 0, MAX_KEYLEN+1);
+    printf("NOTE: A key must be at least %d bytes long and may be up to %d bytes long.\n", MIN_KEYLEN, MAX_KEYLEN);
+    printf("Enter database key 1: ");
+    fgets(key1, MAX_KEYLEN, tty);
+    key_size = strlen(key1);
+    printf("\n");
+    if (key_size < MIN_KEYLEN)
+    {
+	fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
 #ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
+	return 3;
     }
 
-    des_string_to_key(CRYPTO_KEY1,&ckey1);
-    des_set_key(&ckey1,key1);
-    des_string_to_key(CRYPTO_KEY2,&ckey2);
-    des_set_key(&ckey2,key2);
+    memset(verify, 0, MAX_KEYLEN+1);
+    printf("Re-Enter database key 1: ");
+    fgets(verify, MAX_KEYLEN, tty);
+    printf("\n");
+    if (memcmp(key1, verify, MAX_KEYLEN)!=0)
+    {
+	fprintf(stderr, "Key mismatch, aborting key generation.\n");
+#ifdef HAVE_TERMIO_H
+	ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+	return 4;
+    }
 
-    memset(instr, 0, 128);
+    memset(key2, 0, MAX_KEYLEN+1);
+    printf("Enter database key 2: ");
+    fgets(key2, MAX_KEYLEN, tty);
+    key_size = strlen(key2);
+    printf("\n");
+    if (key_size < MIN_KEYLEN)
+    {
+	fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
+#ifdef HAVE_TERMIO_H
+	ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+	return 3;
+    }
+
+    memset(verify, 0, MAX_KEYLEN+1);
+    printf("Re-Enter database key 2: ");
+    fgets(verify, MAX_KEYLEN, tty);
+    printf("\n");
+    if (memcmp(key2, verify, MAX_KEYLEN)!=0)
+    {
+	fprintf(stderr, "Key mismatch, aborting key generation.\n");
+#ifdef HAVE_TERMIO_H
+	ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+	return 4;
+    }
+
+#ifdef HAVE_TERMIO_H
+    ioctl(fileno(tty), TCSETA, &tty_orig);
+#endif
+
+    memset(instr, 0, VERIFY_SIZE);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
-    mstring_snprintf(instr, 128, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
+    mstring_snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
 #else
-    mstring_snprintf(instr, 128, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
+    mstring_snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
-    mDES(instr, outstr, 128, key1, key2, 1);
-    fwrite(outstr, sizeof(unsigned char), 128, outfile);
+    mCRYPT(instr, outstr, VERIFY_SIZE, key1, key2, 1);
+    fwrite(outstr, sizeof(unsigned char), VERIFY_SIZE, outfile);
 
-    // normalize to a derivitive of sizeof(unsigned long) * 2
-    if (key_size % TUPLE_SIZE)
-	key_size += (TUPLE_SIZE - (key_size % TUPLE_SIZE));
-    mDES(inkey, outkey, key_size, key1, key2, 1);
-    fwrite(outkey, sizeof(unsigned char), key_size, outfile);
+    memset(verify, 0, MAX_KEYLEN+1);
+    mCRYPT(key1, verify, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
+    fwrite(verify, sizeof(unsigned char), MAX_KEYLEN, outfile);
+    memset(verify, 0, MAX_KEYLEN+1);
+    mCRYPT(key2, verify, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
+    fwrite(verify, sizeof(unsigned char), MAX_KEYLEN, outfile);
     fclose(outfile);
-    printf("Created %d byte keyfile.\n", key_size);
+    printf("Created %d byte keyfile.\n", VERIFY_SIZE + (2*MAX_KEYLEN));
 
-#endif
+#endif /* !HASCRYPT */
     return 0;
 }
 
-void mDES(unsigned char *in, unsigned char *out, size_t size,
-	des_key_schedule key1, des_key_schedule key2, int enc)
-{
 #ifdef HASCRYPT
-    DES_LONG tuple[2], t0, t1;
-    unsigned char *iptr, *optr, tmp[8];
-    unsigned int i;
+size_t mCRYPT(const char *in, char *out, const size_t size,
+	const char *key1, const char *key2, const int enc)
+{
+    BF_KEY bfkey1, bfkey2;
+    unsigned char ivec1[8], ivec2[8], ivec3[8], buf1[8], buf2[8];
+    unsigned int i, j;
 
-    memset(out, 0, size);
-    for (iptr=in, optr=out, i=0; i+7<size; i+=8)
+    BF_set_key(&bfkey1, strlen(key1), (const unsigned char *) key1);
+    BF_set_key(&bfkey2, strlen(key2), (const unsigned char *) key2);
+    memset(ivec1, 0, 8);
+    memset(ivec2, 0, 8);
+    memset(ivec3, 0, 8);
+
+    for (i=0; i<size; i+=8)
     {
-	c2l(iptr, t0); tuple[0] = t0;
-	c2l(iptr, t1); tuple[1] = t1;
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	t0 = tuple[0]; l2c(t0, out);
-	t1 = tuple[1]; l2c(t1, out);
+	memset(buf1, 0, 8);
+	memset(buf2, 0, 8);
+
+	if (i+8 < size)
+	    memcpy(buf1, &in[i], 8);
+	else
+	    for (j=0; j<8 && i+j < size; j++)
+		buf1[j] = in[i+j];
+
+	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec1, enc ? BF_ENCRYPT : BF_DECRYPT);
+	BF_cbc_encrypt(buf2, buf1, 8, &bfkey2, ivec2, enc ? BF_DECRYPT : BF_ENCRYPT);
+	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec3, enc ? BF_ENCRYPT : BF_DECRYPT);
+
+	memcpy(out, buf2, 8);
     }
-    if (i<size)
-    {
-	memset(tmp, 0, 8);
-	size -= i;
-	for (i=0; i<size; i++)
-	    tmp[i] = iptr[i];
-	iptr = tmp;
-	c2l(iptr, t0); tuple[0] = t0;
-	c2l(iptr, t1); tuple[1] = t1;
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	t0 = tuple[0]; l2c(t0, out);
-	t1 = tuple[1]; l2c(t1, out);
-    }
-#endif
+
+    return i;
 }
 
 int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...)
@@ -316,3 +314,5 @@ int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap)
 #endif
     return iLen;
 }
+
+#endif /* HASCRYPT */

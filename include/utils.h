@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2001/05/14 04:46:31  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.41  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -118,9 +121,6 @@ RCSID(utils_h, "@(#) $Id$");
 ** ========================================================== */
 
 #include "variant.h"
-#ifdef HASCRYPT
-#include "des/des_locl.h"
-#endif
 
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(const mstring &in);
@@ -129,8 +129,8 @@ mstring ToHumanNumber(const unsigned long in);
 unsigned long FromHumanSpace(const mstring &in);
 mstring ToHumanSpace(const unsigned long in);
 mstring parseMessage(const mstring & message, const mVarArray& va = mVarArray::EmptyArray());
-void mDES(unsigned char *in, unsigned char *out, size_t size,
-	des_key_schedule key1, des_key_schedule key2, const int enc);
+size_t mCRYPT(const char *in, char *out, const size_t size,
+	const char *key1, const char *key2, const bool enc);
 void mHASH(unsigned char *in, const size_t size, unsigned char *out);
 unsigned long str_to_base64(const mstring &in);
 mstring base64_to_str(unsigned long in);

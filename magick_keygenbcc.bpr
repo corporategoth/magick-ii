@@ -10,7 +10,7 @@
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="src\des\crypto.lib"/>
+    <LIBFILES value="src\crypt\crypto.lib"/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
     <PACKAGES value="vcl50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi ibsmp50.bpi 

@@ -1,0 +1,12 @@
+Debug
+Release
+crypto.plg
+*~
+*.~??
+crypto.dsk
+crypto$$$
+vctobpr.log
+Makefile
+Makefile.in
+.deps
+crypto.lib

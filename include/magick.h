@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.160  2001/05/14 04:46:31  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.159  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -542,7 +545,7 @@ public:
     bool Saving()const	{ return i_saving; }
     void Disconnect(const bool reconnect=true);
     void send(const mstring& text)const;
-    mstring GetKey()const;
+    pair<mstring,mstring> GetKeys()const;
     void save_databases();
     void load_databases();
     Reconnect_Handler rh;

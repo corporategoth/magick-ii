@@ -13,57 +13,45 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.05.03
 # ---------------------------------------------------------------------------
-PROJECT = magickbcc.exe
-OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
-    Debug\datetime.obj Debug\dccengine.obj Debug\ircsocket.obj \
-    Debug\lockable.obj Debug\magick.obj Debug\main.obj Debug\memoserv.obj \
-    Debug\mstring.obj Debug\nickserv.obj Debug\operserv.obj Debug\server.obj \
-    Debug\servmsg.obj Debug\trace.obj Debug\utils.obj Debug\variant.obj \
-    Debug\filesys.obj Debug\mconfig.obj Debug\convert_magick.obj \
-    Debug\convert_esper.obj
+PROJECT = crypto.lib
+OBJFILES = debug\crypto.obj debug\bf_enc.obj debug\bf_skey.obj debug\md5_dgst.obj
 RESFILES = 
-MAINSOURCE = magickbcc.cpp
+MAINSOURCE = crypto.cpp
 RESDEPEN = $(RESFILES)
-LIBFILES = ..\support\zlib\zlib.LIB \
-    ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib \
-    src\crypt\crypto.lib src\xml\xml.lib
+LIBFILES = 
 IDLFILES = 
 IDLGENFILES = 
-LIBRARIES = vcl50.lib
-PACKAGES = vcl50.bpi vcljpg50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi \
-    ibsmp50.bpi vcldbx50.bpi qrpt50.bpi teeui50.bpi teedb50.bpi tee50.bpi \
-    dss50.bpi vclmid50.bpi nmfast50.bpi inetdb50.bpi inet50.bpi dclocx50.bpi \
-    RXCTL4.bpi RXDB4.bpi Icsbcb40.bpi DragDropC4.bpi KBMMEMC4.bpi ABC45.bpi \
-    ABCDB45.bpi A258_R41.bpi O305_R41.bpi O305BR41.bpi S204_R41.bpi S204BR41.bpi
-SPARELIBS = vcl50.lib
+LIBRARIES = 
+PACKAGES = 
+SPARELIBS = 
 DEFFILE = 
 # ---------------------------------------------------------------------------
-PATHCPP = .;src
+PATHCPP = .;
 PATHASM = .;
 PATHPAS = .;
 PATHRC = .;
+LINKER = TLib
 DEBUGLIBPATH = $(BCB)\lib\debug
 RELEASELIBPATH = $(BCB)\lib\release
-USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H
-SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL;_VIS_NOLIB
-INCLUDEPATH = src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include
-LIBPATH = src;$(BCB)\lib
-WARNINGS= -wstv -wstu -w-rvl -wpin -w-par -wnod -wnak -wdef -wamb
+USERDEFINES = WIN32;_DEBUG;_WINDOWS
+SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_VIS_NOLIB
+INCLUDEPATH = $(BCB)\include;$(BCB)\include\ATL;..\..\include;..\..\..\support\zlib
+LIBPATH = 
+WARNINGS = 
+LISTFILE = 
 # ---------------------------------------------------------------------------
-CFLAG1 = -vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -Vmp \
-    -Tkh30000 -X- -r- -a8 -b -d -k -y -v -vi- -q -tWR -tWM -c
-IDLCFLAGS = -Isrc -Iinclude -I..\support\ace_wrappers -I..\support\zlib \
-    -I..\include\sxp -I..\include\expat -I$(BCB)\include -src_suffix cpp \
-    -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 \
-    -DACE_USE_RCSID=0 -DHAVE_CONFIG_H -boa
-PFLAGS = -N2Debug -N0Debug -$YD -$W -$O-
-RFLAGS = /l 0xc09 /d "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
+CFLAG1 = -vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w \
+    -Tkh30000 -X- -r- -a8 -6 -b -d -k -y -v -vi- -q -tWR -tWM -c
+IDLCFLAGS = -I$(BCB)\include -I$(BCB)\include\ATL -I..\..\include \
+    -I..\..\..\support\zlib -src_suffix cpp -DWIN32 -D_DEBUG -D_WINDOWS -boa
+PFLAGS = -N2debug -N0debug -$YD -$W -$O-
+RFLAGS = /i$(BCB)\include;$(BCB)\include\mfc
 AFLAGS = /mx /w2 /zi
-LFLAGS = -IDebug -D"" -H:0x1000000 -S:0x1000000 -ap -Tpe -GD -s -v -q
+LFLAGS = /E
 # ---------------------------------------------------------------------------
-ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)
+ALLOBJ = $(OBJFILES)
 ALLRES = $(RESFILES)
-ALLLIB = cg32.lib $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib
+ALLLIB = cg32.lib $(LIBFILES) $(LIBRARIES)
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 
@@ -133,7 +121,7 @@ TASM32 = tasm32
 !endif
 
 !if !$d(LINKER)
-LINKER = ilink32
+LINKER = TLib
 !endif
 
 !if !$d(BRCC32)
@@ -159,14 +147,16 @@ BRCC32 = brcc32
 .PATH.RC  = $(PATHRC)
 !endif
 # ---------------------------------------------------------------------------
+!if "$(LISTFILE)" ==  ""
+COMMA =
+!else
+COMMA = ,
+!endif
+
 $(PROJECT): $(IDLGENFILES) $(OBJFILES) $(RESDEPEN) $(DEFFILE)
-    $(BCB)\BIN\$(LINKER) @&&!
-    $(LFLAGS) -L$(LIBPATH) +
-    $(ALLOBJ), +
-    $(PROJECT),, +
-    $(ALLLIB), +
-    $(DEFFILE), +
-    $(ALLRES)
+    $(BCB)\BIN\$(LINKER) /u $@ @&&!
+    $(LFLAGS) $? $(COMMA) $(LISTFILE)
+
 !
 # ---------------------------------------------------------------------------
 .pas.hpp:

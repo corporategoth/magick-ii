@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/05/14 04:46:32  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.1  2001/04/15 03:10:51  prez
 ** Changed stampkeys -> magick_stampkeys and updated the RPM spec
 **
@@ -38,6 +41,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** ========================================================== */
 
 #include <stdio.h>
+#include "config.h"
+
+#ifdef HASCRYPT
 #include <stdlib.h>
 #ifndef WIN32
 #include <unistd.h>
@@ -45,13 +51,19 @@ RCSID(genrankeys_c, "@(#)$Id$");
 #include <windows.h>
 #endif
 #include <time.h>
-#include "config.h"
+#include "crypt/blowfish.h"
+#define MAX_KEYLEN	((BF_ROUNDS+2)*4)
 
 int mrandom(int upper);
 
+#endif /* HASCRYPT */
+
 int main(int argc, char **argv)
 {
-    unsigned char k1[KEYLEN], k2[KEYLEN];
+#ifndef HASCRYPT
+    fprintf(stderr, "You do not have encryption support.\n");
+#else
+    unsigned char k1[MAX_KEYLEN], k2[MAX_KEYLEN];
     int i;
     FILE *fout;
 
@@ -60,7 +72,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Usage: %s [files to stamp]\n\n", argv[0]);
 	fprintf(stderr, "ALL files you intend to have the same keys stamped into them\n");
 	fprintf(stderr, "should be specified on the commandline.  Each time this program\n");
-	fprintf(stderr, "is run, it will generate DIFFERENT keys of %d bytes.\n", KEYLEN);
+	fprintf(stderr, "is run, it will generate DIFFERENT keys of %d bytes.\n", MAX_KEYLEN);
 	return 1;
     }
 
@@ -69,7 +81,7 @@ int main(int argc, char **argv)
 #else
     srand(time(NULL) * getpid());
 #endif
-    for (i=0; i<KEYLEN; i++)
+    for (i=0; i<MAX_KEYLEN; i++)
     {
 	k1[i] = mrandom(256) * 100;
 	if (k1[i] == 0)
@@ -81,7 +93,7 @@ int main(int argc, char **argv)
 #else
     srand(time(NULL) * getpid());
 #endif
-    for (i=0; i<KEYLEN; i++)
+    for (i=0; i<MAX_KEYLEN; i++)
     {
 	k2[i] = mrandom(256) * 100;
 	if (k2[i] == 0)
@@ -104,37 +116,40 @@ int main(int argc, char **argv)
 	    if (c == '|')
 	    {
 		int read;
-		char buf[KEYLEN+1];
-		memset(buf, 0, KEYLEN+1);
+		char buf[MAX_KEYLEN+1];
+		memset(buf, 0, MAX_KEYLEN+1);
 		buf[0] = '|';
-		read = fread(&buf[1], 1, KEYLEN-1, fout);
-		if (read < KEYLEN-1)
+		read = fread(&buf[1], 1, MAX_KEYLEN-1, fout);
+		if (read < MAX_KEYLEN-1)
 		    break;
 
-		if (memcmp(buf, CRYPTO_KEY1, KEYLEN) == 0)
+		if (memcmp(buf, CRYPTO_KEY1, MAX_KEYLEN) == 0)
 		{
 		    // Matched the first 
-		    fseek(fout, -1 * KEYLEN, SEEK_CUR);
-		    fwrite(k1, KEYLEN, 1, fout);
+		    fseek(fout, -1 * MAX_KEYLEN, SEEK_CUR);
+		    fwrite(k1, MAX_KEYLEN, 1, fout);
 		}
-		else if (memcmp(buf, CRYPTO_KEY2, KEYLEN) == 0)
+		else if (memcmp(buf, CRYPTO_KEY2, MAX_KEYLEN) == 0)
 		{
 		    // Matched the second
-		    fseek(fout, -1 * KEYLEN, SEEK_CUR);
-		    fwrite(k2, KEYLEN, 1, fout);
+		    fseek(fout, -1 * MAX_KEYLEN, SEEK_CUR);
+		    fwrite(k2, MAX_KEYLEN, 1, fout);
 		    fseek(fout, -1, SEEK_CUR);
 		}
 		else
 		{
-		    fseek(fout, -1 * (KEYLEN-1), SEEK_CUR);
+		    fseek(fout, -1 * (MAX_KEYLEN-1), SEEK_CUR);
 		}
 	    }
 	}
 
 	fclose(fout);
     }
+#endif /* !HASCRYPT */
     return 0;
 }
+
+#ifdef HASCRYPT
 
 int mrandom(int upper)
 {
@@ -145,4 +160,6 @@ int mrandom(int upper)
 #else
 	return random() % upper;
 #endif
-};
+}
+
+#endif /* HASCRYPT */

@@ -18,7 +18,7 @@
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value="..\support\zlib\zlib.LIB 
       ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib 
-      src\des\crypto.lib src\xml\xml.lib"/>
+      src\crypt\crypto.lib src\xml\xml.lib"/>
     <LIBRARIES value="vcl50.lib"/>
     <SPARELIBS value="vcl50.lib"/>
     <PACKAGES value="vcl50.bpi vcljpg50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi 

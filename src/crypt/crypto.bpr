@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="crypto.lib"/>
+    <OBJFILES value="debug\crypto.obj debug\bf_enc.obj debug\bf_skey.obj debug\md5_dgst.obj"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value=""/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="TLib"/>
+    <USERDEFINES value="WIN32;_DEBUG;_WINDOWS"/>
+    <SYSDEFINES value="_NO_VCL;_ASSERTE;NO_STRICT;_VIS_NOLIB"/>
+    <MAINSOURCE value="crypto.cpp"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\ATL;..\..\include;..\..\..\support\zlib"/>
+    <LIBPATH value=""/>
+    <WARNINGS value=""/>
+    <WARNOPTSTR value=""/>
+    <LISTFILE value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I$(BCB)\include -I$(BCB)\include\ATL -I..\..\include 
+      -I..\..\..\support\zlib -src_suffix cpp -DWIN32 -D_DEBUG -D_WINDOWS -boa"/>
+    <CFLAG1 value="-vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w 
+      -Tkh30000 -X- -r- -a8 -6 -b -d -k -y -v -vi- -q -tWR -tWM -c"/>
+    <PFLAGS value="-N2debug -N0debug -$YD -$W -$O-"/>
+    <RFLAGS value="/i$(BCB)\include;$(BCB)\include\mfc"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="/E"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="$(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="cg32.lib $(LIBFILES) $(LIBRARIES)"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=3
+Item0=$(BCB)\include;$(BCB)\include\ATL;..\..\include;..\..\..\support\zlib
+Item1=$(BCB)\include;$(BCB)\include\ATL;..\..\include;D:\working\support\zlib
+Item2=$(BCB)\include;$(BCB)\include\ATL;..\..\include
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=WIN32;_DEBUG;_WINDOWS
+
+[HistoryLists\hlIntOutputDir]
+Count=2
+Item0=debug
+Item1=D:\working\Magick-II\src\crypt\debug
+
+[HistoryLists\hlFinalOutputDir]
+Count=4
+Item0=Debug
+Item1=..\..\DebugItem1=DebugItem1=Debug
+Item2=
+Item3=
+
+[HistoryLists\hIBPIOutputDir]
+Count=2
+Item0=C:\working\Magick-II\src\crypt\DebugItem1=Debug
+Item1=
+
+[HistoryLists\hlTlibPageSize]
+Count=1
+Item0=0x0010
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=1
+LinkCGLIB=1
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

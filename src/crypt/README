@@ -1,0 +1,8 @@
+This is an EXTREMELY cut down version of the Blowfish
+encryption package, which is part of openssl.  Please
+do not use this implementation in your own product.
+
+If you wish to use these in your own software, please
+download the original copies of them at:
+
+http://www.openssl.com

@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/05/14 04:46:32  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.62  2001/05/06 03:03:08  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -188,9 +191,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 
 #include "magick.h"
 #ifdef HASCRYPT
-#include "des/spr.h"
+#include "crypt/blowfish.h"
 #endif
-#include "des/md5_locl.h"
+#include "crypt/md5_locl.h"
 
 vector<int> ParseNumbers(mstring what)
 {
@@ -528,45 +531,46 @@ mstring parseMessage(const mstring & message, const mVarArray& va)
 }
 
 
-void mDES(unsigned char *in, unsigned char *out, size_t size,
-	des_key_schedule key1, des_key_schedule key2, const int enc)
+size_t mCRYPT(const char *in, char *out, const size_t size,
+	const char *key1, const char *key2, const bool enc)
 {
-    FT("mDES", ("(unsigned char *) in", "(unsigned char *) out", size,
-	"(des_key_schedule) key1", "(des_key_schedule) key2", enc));
+    FT("mCRYPT", ("(const char *) in", "(char *) out", size,
+	"(const char *) key1", "(const char *) key2", enc));
+
 #ifndef HASCRYPT
     memset(out, 0, size);
     memcpy(out, in, size);
+    return size;
 #else
-    DES_LONG tuple[2], t0, t1;
-    unsigned char *iptr, *optr, tmp[8];
-    unsigned int i;
+    BF_KEY bfkey1, bfkey2;
+    unsigned char ivec1[8], ivec2[8], ivec3[8], buf1[8], buf2[8];
+    unsigned int i, j;
 
-    memset(out, 0, size);
-    for (iptr=in, optr=out, i=0; i+7<size; i+=8)
+    BF_set_key(&bfkey1, strlen(key1), reinterpret_cast<const unsigned char *>(key1));
+    BF_set_key(&bfkey2, strlen(key2), reinterpret_cast<const unsigned char *>(key2));
+    memset(ivec1, 0, 8);
+    memset(ivec2, 0, 8);
+    memset(ivec3, 0, 8);
+
+    for (i=0; i<size; i+=8)
     {
-	c2l(iptr, t0); tuple[0] = t0;
-	c2l(iptr, t1); tuple[1] = t1;
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	t0 = tuple[0]; l2c(t0, out);
-	t1 = tuple[1]; l2c(t1, out);
+	memset(buf1, 0, 8);
+	memset(buf2, 0, 8);
+
+	if (i+8 < size)
+	    memcpy(buf1, &in[i], 8);
+	else
+	    for (j=0; j<8 && i+j < size; j++)
+		buf1[j] = in[i+j];
+
+	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec1, enc ? BF_ENCRYPT : BF_DECRYPT);
+	BF_cbc_encrypt(buf2, buf1, 8, &bfkey2, ivec2, enc ? BF_DECRYPT : BF_ENCRYPT);
+	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec3, enc ? BF_ENCRYPT : BF_DECRYPT);
+
+	memcpy(out, buf2, 8);
     }
-    if (i<size)
-    {
-	memset(tmp, 0, 8);
-	size -= i;
-	for (i=0; i<size; i++)
-	    tmp[i] = iptr[i];
-	iptr = tmp;
-	c2l(iptr, t0); tuple[0] = t0;
-	c2l(iptr, t1); tuple[1] = t1;
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	des_encrypt(tuple, key2, enc ? DES_DECRYPT : DES_ENCRYPT);
-	des_encrypt(tuple, key1, enc ? DES_ENCRYPT : DES_DECRYPT);
-	t0 = tuple[0]; l2c(t0, out);
-	t1 = tuple[1]; l2c(t1, out);
-    }
+
+    return i;
 #endif
 }
 

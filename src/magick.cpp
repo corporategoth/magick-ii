@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.309  2001/05/14 04:46:32  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.308  2001/05/13 18:45:15  prez
 ** Fixed up the keyfile validation bug, and added more error reporting to
 ** the db load (also made sure it did not hang on certain circumstances).
@@ -495,6 +498,11 @@ RCSID(magick_cpp, "@(#)$Id$");
 #ifdef CONVERT
 #include "convert_magick.h"
 #include "convert_esper.h"
+#endif
+#ifdef HASCRYPT
+#include "crypt/blowfish.h"
+#define VERIFY_SIZE	128
+#define MAX_KEYLEN	((BF_ROUNDS+2)*4)
 #endif
 
 static bool nofork = false;
@@ -3518,50 +3526,44 @@ vector<mstring> Magick::startup_t::AllowList()const
     NRET(vector<mstring>, list);
 }
 
-mstring Magick::GetKey()const
+pair<mstring,mstring> Magick::GetKeys()const
 {
-    NFT("Magick::GetKey");
-    mstring retval;
+    NFT("Magick::GetKeys");
+    pair<mstring,mstring> retval;
 #ifdef HASCRYPT
     if (!files.KeyFile().empty() &&
 	mFile::Exists(files.KeyFile()))
     {
 	mFile keyfile(files.KeyFile());
-	unsigned char tmp[KEYLEN], key[KEYLEN];
-	unsigned char instr[128], outstr[128];
-	size_t key_size;
-	des_key_schedule key1, key2;
-	des_cblock ckey1, ckey2;
-
-	/* Unscramble keyfile keys */
-	des_string_to_key(CRYPTO_KEY1,&ckey1);
-	des_set_key(&ckey1,key1);
-	des_string_to_key(CRYPTO_KEY2,&ckey2);
-	des_set_key(&ckey2,key2);
+	char key1[MAX_KEYLEN], key2[MAX_KEYLEN], tmp[MAX_KEYLEN];
+	char instr[VERIFY_SIZE], outstr[VERIFY_SIZE];
 
 	// First verify syntax is correct!
-	keyfile.Read(instr, 128);
-	mDES(instr, outstr, 128, key1, key2, 0);
-	memset(instr, 0, 128);
+	memset(instr, 0, VERIFY_SIZE);
+	keyfile.Read(instr, VERIFY_SIZE);
+	mCRYPT(instr, outstr, VERIFY_SIZE, CRYPTO_KEY1, CRYPTO_KEY2, 0);
+	memset(instr, 0, VERIFY_SIZE);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
-	mstring::snprintf(reinterpret_cast<char *>(instr), 128, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
+	mstring::snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
 #else
-	mstring::snprintf(reinterpret_cast<char *>(instr), 128, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
+	mstring::snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
-	if (memcmp(instr, outstr, 128) == 0)
+	if (memcmp(instr, outstr, VERIFY_SIZE) == 0)
 	{
 	    /* Use keyfile keys to get REAL key */
-	    memset(tmp, 0, KEYLEN);
-	    memset(key, 0, KEYLEN);
-	    key_size = keyfile.Read(tmp, KEYLEN);
-	    mDES(tmp, key, key_size, key1, key2, 0);
-	    retval = reinterpret_cast<char *>(key);
+	    memset(tmp, 0, MAX_KEYLEN);
+	    keyfile.Read(tmp, MAX_KEYLEN);
+	    mCRYPT(tmp, key1, MAX_KEYLEN, key1, key2, 0);
+	    memset(tmp, 0, MAX_KEYLEN);
+	    keyfile.Read(tmp, MAX_KEYLEN);
+	    mCRYPT(tmp, key2, MAX_KEYLEN, key1, key2, 0);
+	    retval = pair<mstring,mstring>(key1,key2);
 	}
 	else
 	    LOG(LM_CRITICAL, "ERROR/KEY_CORRUPT", (files.KeyFile()));
     }
 #endif
-    NRET(mstring, retval);
+    NRET(pair<mstring_mstring>, retval);
 }
 
 
@@ -3672,8 +3674,10 @@ void Magick::save_databases()
 	mFile::Copy(files.Database(), files.Database()+".old");
     {
 	//SXP::CFileOutStream o(files.Database()+".new");
-	SXP::MFileOutStream o(files.Database()+".new", files.Compression(),
-				(files.Encryption() ? GetKey() : mstring("")));
+	pair<mstring,mstring> keys;
+	if (files.Encryption())
+	    keys = GetKeys();
+	SXP::MFileOutStream o(files.Database()+".new", files.Compression(), keys);
 	o.BeginXML();
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
@@ -3695,7 +3699,7 @@ void Magick::load_databases()
     {
 	NLOG(LM_STARTUP, "EVENT/LOAD");
    	SXP::CParser p( this ); // let the parser know which is the object
-	int retval = p.FeedFile(files.Database(), GetKey());
+	int retval = p.FeedFile(files.Database(), GetKeys());
 	switch (retval)
 	{
 	case  0: // Load did not run

@@ -7,6 +7,12 @@ $Id$
 Requirements
 ============
 
+To compile Magick, you will need a GOOD C++ compiler.  Ones that
+have been tested and found to work are:
+    gcc 2.95 and above
+    Borland C++ Builder 4.0 and above
+Others may work, but have NOT been tested.
+
 Before you begin compilation of Magick, you must have a fully compiled
 version of the Adaptive Communications Environment (ACE), the ZLIB
 compression library, and a threads library such as pthreads.
@@ -363,11 +369,32 @@ and libdir should both be directories where to find the include files
 or libraries, where lib should be the library name with the lib prefix
 and the .so or .a postfix truncated.  eg. libpthread.so becomes pthread.
 
-`--enable-des'
-`--disable-des'
+`--enable-static'
+`--disable-static'
+     This determines weather the resulting Magick binaries will be
+linked statically or dynamically.  Static binaries are larger than
+dynamic, but may be taken across differing releases (of the same
+operating system) without regard for what specific version of things
+such as the C libraries are installed.  Static binaries require that
+a static ACE, threads and zlib library exist to link with.  Dynamic
+binaries may only be used on systems that have the same library
+setup as the one they were compiled on, and because they dont include
+all the extra stuff needed to statically link, are much smaller.
+
+`--enable-quick'
+`--disable-quick'
+     This turns off the call to 'helper/build-ver' which increments
+the build number displayed in Magick's version reply.  This is only
+useful if you plan to compile alot, and dont want to have to re-
+compile the entire program each time you make a change, however it
+means you will not have an accurate build number indication.
+
+`--enable-crypt'
+`--disable-crypt'
      This turns on or off encryption support in Magick.  Some versions
-of Magick may not be distributed with DES encryption, in which case you
-will have to download it and enable it to use it.
+of Magick may not be distributed with encryption, in which case you
+will have to download it and enable it to use it.  The encryption of
+choice right now is 3BF (3 * blowfish).
 
 `--enable-trace'
 `--disable-trace'
@@ -399,6 +426,11 @@ default, however if you want to create a portable binary (that can be
 used anywhere) disable this option.  This is a security feature to protect
 against people copying your services directory (binaries and all) and
 stealing the databases.  This is not infallable, however it does help.
+Disabling this will also disable automatic binary 'stamping' (ie.
+putting random keys for keyfile encryption at compile time).  It is
+assumed that you are making a binary ment to be portable and/or
+distributed, in which case, the binaries should be stamped by the
+end-user (or on each system it is deployed).
 
 `--enable-mpatrol'
 `--disable-mpatrol'
@@ -432,7 +464,7 @@ Security Tips
 magick communications are kept secure and encrypted.  The main methods
 of facilitating this are:
      * Databases and inter-magick communication is encrypted with a
-       key through 3DES.  This key resides in a key file.
+       key through 3BF.  This key resides in a key file.
      * The key file itself is encrypted with two keys generated at
        compile time, to ensure the key file is never clear text.
      * EACH compile creates new key file keys, which means you must

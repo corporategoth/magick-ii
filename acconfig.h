@@ -8,7 +8,7 @@
 /* Define if you need the GNU extensions to compile */
 #undef _GNU_SOURCE
 
-/* Define if you want to use DES encryption */
+/* Define if you want to use encryption */
 #ifndef HASCRYPT
 #undef HASCRYPT
 #endif
@@ -46,11 +46,6 @@
 /* Define if we are on a windows system */
 #ifndef WIN32
 #undef WIN32
-#endif
-
-/* Length of database key */
-#ifndef KEYLEN
-#define KEYLEN 0
 #endif
 
 /* Crypto key 1 placeholder */

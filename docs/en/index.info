@@ -1,46 +1,46 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index4866.info.2.
+/tmp/sgmltmp.index19723.info.2.
 
    \input texinfo
 
 
 Indirect:
-index.info-1: 109
-index.info-2: 44372
+index.info-1: 110
+index.info-2: 45994
 
 Tag Table:
 (Indirect)
-Node: Top109
-Node: Introduction463
-Node: Dedication1510
-Node: Authors2126
-Node: Changes4340
-Node: Magick II4503
-Node: Magick I6795
-Node: Services 3-010572
-Node: Pre-Services 3-014963
-Node: Installation15236
-Node: How to obtain Magick15650
-Node: Requirements16037
-Node: ACE Installation17874
-Node: Basic Installation21730
-Node: Compilers and Options24280
-Node: Compiling For Multiple Architectures24927
-Node: Installation Names25918
-Node: Optional Features27101
-Node: Specifying the System Type27871
-Node: Sharing Defaults28894
-Node: Operation Controls29540
-Node: Security Tips36716
-Node: Usage39428
-Node: Support files39600
-Node: General Usage44372
-Node: Functionality51502
-Node: Questions and Answers55309
-Node: What is the Home Site of Magick?55588
-Node: My IRCD isn't supported what can I do?56587
-Node: I like these services and want to pay the author!57387
-Node: License58157
-Node: Copyright73649
+Node: Top110
+Node: Introduction464
+Node: Dedication1511
+Node: Authors2127
+Node: Changes4341
+Node: Magick II4504
+Node: Magick I6796
+Node: Services 3-010573
+Node: Pre-Services 3-014964
+Node: Installation15237
+Node: How to obtain Magick15651
+Node: Requirements16038
+Node: ACE Installation18095
+Node: Basic Installation21951
+Node: Compilers and Options24501
+Node: Compiling For Multiple Architectures25148
+Node: Installation Names26139
+Node: Optional Features27322
+Node: Specifying the System Type28092
+Node: Sharing Defaults29115
+Node: Operation Controls29761
+Node: Security Tips38338
+Node: Usage41050
+Node: Support files41222
+Node: General Usage45994
+Node: Functionality53124
+Node: Questions and Answers56931
+Node: What is the Home Site of Magick?57210
+Node: My IRCD isn't supported what can I do?58209
+Node: I like these services and want to pay the author!59009
+Node: License59779
+Node: Copyright75271
 
 End Tag Table

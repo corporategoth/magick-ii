@@ -1,6 +1,6 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
-SUBDIRS = des xml 
+SUBDIRS = crypt xml 
 
 EXTRA_DIST = base.h chanserv.h commserv.h convert_magick.h convert_esper.h datetime.h dccengine.h filesys.h ircsocket.h language.h lockable.h logfile.h magick.h memoserv.h mstring.h nickserv.h operserv.h pch.h server.h servmsg.h trace.h utils.h variant.h mconfig.h mexceptions.h version.h-release config.h.win 
 

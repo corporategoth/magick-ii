@@ -21,7 +21,7 @@ USEUNIT("src\variant.cpp");
 USELIB("..\support\zlib\zlib.LIB");
 USELIB("..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib");
 USEUNIT("src\filesys.cpp");
-USELIB("src\des\crypto.lib");
+USELIB("src\crypt\crypto.lib");
 USELIB("src\xml\xml.lib");
 USEUNIT("src\mconfig.cpp");
 USEUNIT("src\convert_magick.cpp");

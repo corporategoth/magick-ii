@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2001/05/14 04:46:32  prez
+** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
+**
 ** Revision 1.20  2001/05/13 23:46:28  prez
 ** got rid of temp veriable, and revised decryption failure condition
 **
@@ -202,28 +205,20 @@ void MFileOutStream::Indent()
 	}
 }
 
-MFileOutStream::MFileOutStream(mstring chFilename, int comp, mstring ikey)
+MFileOutStream::MFileOutStream(const mstring &chFilename, int comp, const pair<mstring,mstring> ikey)
+	: filename(chFilename), m_nIndent(0), compress(comp), buf_sz(INIT_BUFSIZE),
+	buf_cnt(0), key1(ikey.first), key2(ikey.second)
 {
-	out.Open(chFilename, "w");
-	filename = chFilename;
-	m_nIndent = 0;
-	compress = comp;
-	key = ikey;
-	buf_sz = INIT_BUFSIZE;
-	buf_cnt = 0;
+	out.Open(filename, "w");
 	buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
-MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring ikey)
+MFileOutStream::MFileOutStream(const mstring &chFilename, FILE *fp, int comp, const pair<mstring,mstring> ikey)
+	: filename(chFilename), m_nIndent(0), compress(comp), buf_sz(INIT_BUFSIZE),
+	buf_cnt(0), key1(ikey.first), key2(ikey.second)
 {
-	out.Attach(chFilename, fp);
-	filename = chFilename;
-	m_nIndent = 0;
-	compress = comp;
-	key = ikey;
-	buf_sz = INIT_BUFSIZE;
-	buf_cnt = 0;
+	out.Attach(filename, fp);
 	buffer = static_cast<char *>(malloc(sizeof(char) * buf_sz));
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
@@ -289,28 +284,16 @@ MFileOutStream::~MFileOutStream()
 	    outbuf = NULL;
 	    
 	}
-	if (!key.empty())
+	if (!key1.empty() && !key2.empty())
 	{
-	    des_key_schedule key1, key2;
-	    des_cblock ckey1, ckey2;
-
 	    new_sz = length + 8;
 	    outbuf = static_cast<char *>(malloc(sizeof(char) * new_sz));
 	    memset(outbuf, 0, sizeof(char) * new_sz);
 
-	    des_string_to_2keys(const_cast<char *>(key.c_str()), &ckey1, &ckey2);
-	    des_set_key(&ckey1, key1);
-	    des_set_key(&ckey2, key2);
-
-	    mDES(reinterpret_cast<unsigned char *>(buffer),
-				reinterpret_cast<unsigned char *>(outbuf),
-	    			length, key1, key2, 1);
+	    length = mCRYPT(buffer, outbuf, length, key1.c_str(), key2.c_str(), true);
 
 	    if (outbuf != NULL)
 	    {
-		length = new_sz;
-		while (outbuf[length-1]==0)
-		    length--;
 		if (buffer != NULL)
 		    free(buffer);
 		buffer = outbuf;
@@ -385,7 +368,7 @@ void MFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 }
 
 
-int CParser::FeedFile(mstring chFilename, mstring ikey)
+int CParser::FeedFile(const mstring &chFilename, const pair<mstring,mstring> ikey)
 {
     int retval = 0;
     mFile in(chFilename);
@@ -405,26 +388,18 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 	{
 	    if (tag & SXP_ENCRYPT)
 	    {
-		if (ikey.empty())
+		if (ikey.first.empty() || ikey.second.empty())
 		    return -1;
-		des_key_schedule key1, key2;
-		des_cblock ckey1, ckey2;
 
 		new_sz += 8;
 		tmpbuf = static_cast<char *>(malloc(new_sz * sizeof(char)));
 		memset(tmpbuf, 0, new_sz * sizeof(char));
-		des_string_to_2keys(const_cast<char *>(ikey.c_str()), &ckey1, &ckey2);
-		des_set_key(&ckey1, key1);
-		des_set_key(&ckey2, key2);
 
-		mDES(reinterpret_cast<unsigned char *>(buffer),
-					reinterpret_cast<unsigned char *>(tmpbuf),
-	    				filesize-1, key1, key2, 0);
+		new_sz = mCRYPT(buffer, tmpbuf, filesize-1,
+			ikey.first.c_str(), ikey.second.c_str(), false);
 
 		if (tmpbuf != NULL && tmpbuf[filesize-1] == 0)
 		{
-		    while (tmpbuf[new_sz-1] == 0)
-			new_sz--;
 		    if (buffer != NULL)
 			free(buffer);
 		    buffer = tmpbuf;
