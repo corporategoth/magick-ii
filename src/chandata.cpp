@@ -3064,7 +3064,7 @@ void Chan_Stored_t::Password(const mstring & in)
 #if defined(JP2CRYPT)
     char *newpass = new char[(in.length() * 2) + 1];
     mJP2HASH(in.c_str(). in.length(), newpass);
-#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+#elif defined(DESCRYPT) || defined(MD5CRYPT)
     char newpass[35];
     mCRYPTHASH(in.c_str(), newpass, NULL);
 #else
@@ -3162,7 +3162,7 @@ unsigned int Chan_Stored_t::CheckPass(const mstring & nick, const mstring & pass
 #if defined(JP2CRYPT)
     char *newpass = new char[(password.length() * 2) + 1];
     mJP2HASH(password.c_str(). password.length(), newpass);
-#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+#elif defined(DESCRYPT) || defined(MD5CRYPT)
     char newpass[35];
     mCRYPTHASH(password.c_str(), newpass, i_Password.empty() ? NULL : i_Password.c_str());
 #else
@@ -5413,7 +5413,7 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 #if defined(JP2CRYPT)
 	    char *newpass = new char[(clearpass.length() * 2) + 1];
 	    mJP2HASH(clearpass.c_str(). clearpass.length(), newpass);
-#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+#elif defined(DESCRYPT) || defined(MD5CRYPT)
 	    char newpass[35];
 	    mCRYPTHASH(clearpass.c_str(), newpass, NULL);
 #else
@@ -5430,7 +5430,7 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	{
 	    NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
 	}
-#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+#elif defined(DESCRYPT) || defined(MD5CRYPT)
 	else if (hash != 3)
 	{
 	    NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
@@ -5665,7 +5665,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 #else
 #if defined(JP2CRYPT)
 	attr["hash"] = "2";
-#elsif defined(DESCRYPT) || defined(MD5CRYPT)
+#elif defined(DESCRYPT) || defined(MD5CRYPT)
 	attr["hash"] = "3";
 #else
 	attr["hash"] = "1";
