@@ -92,6 +92,7 @@ ACE_THR_FUNC_RETURN IrcSvcHandler::worker(void *in)
 			if (Magick::instance().ircsvchandler == NULL)
 			    break;
 
+			MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
 			if (Magick::instance().ircsvchandler->IsMessage(msgid))
 			{
 			    msg = Magick::instance().ircsvchandler->GetMessage(msgid);
@@ -1468,8 +1469,11 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     LOG(LM_INFO, "OTHER/CONNECTING", (server.Name(), server.Port()));
 
 #ifdef TEST_MODE
-    Magick::instance().ircsvchandler = new IrcSvcHandler();
-    Magick::instance().ircsvchandler->open(NULL);
+    {
+	WLOCK((lck_IrcSvcHandler));
+	Magick::instance().ircsvchandler = new IrcSvcHandler();
+	Magick::instance().ircsvchandler->open(NULL);
+    }
 #else
     IrcConnector C_server(&Magick::instance().reactor(), ACE_NONBLOCK);
 

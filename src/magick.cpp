@@ -1041,31 +1041,32 @@ void Magick::dump_help() const
 {
     BTCB();
     // This needs to be re-written.
-    cout << "\n" << FULLNAME + " - " + HOMEPAGE +
-	"\n" << "    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n" << "    (c) 1998-2002 William King <ungod@magick.tm>\n"
-	<< "\n" << "Syntax: " << i_programname << " [options]\n" << "\n" <<
+    cout << "\n" << FULLNAME + " - " + HOMEPAGE + "\n" <<
+	"    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n" <<
+	"    (c) 1998-2002 William King <ungod@magick.tm>\n" << "\n" <<
+	"Syntax: " << i_programname << " [options]\n" << "\n" <<
 	"--help             -h      Help output (summary of the below).\n" <<
 	"--version          -v      Display the Magick version string.\n" <<
 	"--dir X                    Set the initial services directory.\n" <<
 	"--config X                 Set the name of the config file.\n" <<
-	"--nofork                   Do not become a daemon/service process.\n"
+	"--nofork                   Do not become a daemon/service process.\n" <<
 #ifdef WIN32
-	 << "--service X                Manipulate Magick's NT Service settings.\n" <<
-	"                               Values are: insert, start, stop, remove.\n"
+	"--service X                Manipulate Magick's NT Service settings.\n" <<
+	"                               Values are: insert, start, stop, remove.\n" <<
 #endif
 #ifdef CONVERT
-	 << "--convert X                Convert another version of services databases\n" <<
+	"--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
 	"                           database to convert.  Currently recognized:\n" <<
-	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n"
+	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n" <<
 #endif
 #ifdef MAGICK_TRACE_WORKS
-	 << "--trace X:Y                Set the trace level on startup, equivilant of\n" <<
+	"--trace X:Y                Set the trace level on startup, equivilant of\n" <<
 	"                           using the OperServ TRACE SET command while\n" <<
 	"                           running, where X is the trace type (or ALL),\n" <<
-	"                           and Y is the trace level in hex.\n"
+	"                           and Y is the trace level in hex.\n" <<
 #endif
-	 << "--name X           -N      Override [STARTUP/SERVER_NAME] to X.\n" <<
+	"--name X           -N      Override [STARTUP/SERVER_NAME] to X.\n" <<
 	"--desc X           -D      Override [STARTUP/SERVER_DESC] to X.\n" <<
 	"--user X           -U      Override [STARTUP/SERVICES_USER] to X.\n" <<
 	"--host X           -H      Override [STARTUP/SERVICES_HOST] to X.\n" <<
@@ -1101,10 +1102,10 @@ void Magick::dump_help() const
 	"                           Override [MEMOSERV/FILES] to 0.\n" <<
 	"--inflight X       -f      Override [MEMOSERV/INFLIGHT] to X.\n" <<
 	"--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n" <<
-	"--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n" << "\n" << "For more help on the usage of " +
-	mstring(PACKAGE) +
-	", please browse the docs directory.\n" << "This released under the Artistic License v2.0 or better.  Please see the\n"
-	<< "\"COPYING\" file for more details.\n\n";
+	"--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n" << "\n" <<
+	"For more help on the usage of " + mstring(PACKAGE) + ", please browse the docs directory.\n" <<
+	"This released under the Artistic License v2.0 or better.  Please see the\n" <<
+	"\"COPYING\" file for more details.\n\n";
 
     ETCB();
 }

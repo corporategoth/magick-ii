@@ -209,9 +209,6 @@ public:
     class startup_t
     {
 	friend class Magick;
-
-    public:
-    private:
 	vector<Connection_t> servers;
 	// map<server name, vector<allowed uplinks> >
 	map < mstring, vector < mstring > > allows;

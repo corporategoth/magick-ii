@@ -2234,7 +2234,7 @@ void NickServ::do_access_Del(const mstring & mynick, const mstring & source, con
 
     map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(source);
 
-    if (!nstored->Access_size())
+    if (!nstored->Access())
     {
 	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/ACCESS")));
 	return;
@@ -2414,7 +2414,7 @@ void NickServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
 
     map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(source);
 
-    if (!nstored->Access_size())
+    if (!nstored->Ignore())
     {
 	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/IGNORE")));
 	return;
