@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/05/10 11:46:59  prez
+** added back memo timers
+**
 ** Revision 1.51  2000/05/09 09:11:59  prez
 ** Added XMLisation to non-mapped structures ... still need to
 ** do the saving stuff ...
@@ -2287,7 +2290,7 @@ void CommServ::save_database(wxOutputStream& out)
 
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
 {
-    out<<in.i_Name<<in.i_HeadCom<<in.i_Head<<in.i_Description<<in.i_Email<<in.i_URL;
+    out<<in.i_Name<<in.i_RegTime<<in.i_HeadCom<<in.i_Head<<in.i_Description<<in.i_Email<<in.i_URL;
 
     if (in.i_Name == Parent->commserv.ALL_Name()  ||
 	in.i_Name == Parent->commserv.REGD_Name() ||
@@ -2320,7 +2323,7 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
     entlist_t locent;
     // need to write lock out.
 
-    in>>out.i_Name>>out.i_HeadCom>>out.i_Head>>out.i_Description>>out.i_Email>>out.i_URL;
+    in>>out.i_Name>>out.i_RegTime>>out.i_HeadCom>>out.i_Head>>out.i_Description>>out.i_Email>>out.i_URL;
 
     in>>locsize;
     out.i_Members.clear();

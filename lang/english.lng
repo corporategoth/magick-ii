@@ -99,6 +99,7 @@ CHANFILEATTACH     =File attachments are not allowed to channels.
 MULTI_MODE         =Multiple +/-%c modes specified (ignored).
 NOKEY              =No key specified, but required (ignored).
 NOLIMIT            =No limit specified, but required (ignored).
+MUSTBEHEX          =You may only specify characters 0-f, %d digits long.
 
 ;
 ; This section describes SITUATION errors, ie. errors where you have
@@ -153,6 +154,7 @@ LOOKUP_PUBLIC      =Public file %08e is %s, available for %s.
 NLOOKUP_MEMOATTACH =Memo Attachment %80e does not exist.
 NLOOKUP_PICTURE    =Picture %08e does not exist.
 NLOOKUP_PUBLIC     =Public file %08e does not exist.
+NLOOKUP_OTHER      =Unknown file catagory %s.
 
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.
@@ -672,12 +674,12 @@ DEFUNCT            =DEFUNCT
 [COMMSERV_INFO]
 DESCRIPTION        =%s is %s
 REGISTERED         =Registered: %s
-HEADCOM            =\      Head: %s
-HEAD               =\      Head: %s
-EMAIL              =\    E-Mail: %s
-URL                =\  WWW Page: %s
-STATS              =\     Stats: %s
-OPTIONS            =\   Options: %s
+HEADCOM            =\       Head: %s
+HEAD               =\       Head: %s
+EMAIL              =\     E-Mail: %s
+URL                =\   WWW Page: %s
+STATS              =\      Stats: %s
+OPTIONS            =\    Options: %s
 MEMBERS            =members
 MESSAGES           =messages
 SET_HEAD           =Head

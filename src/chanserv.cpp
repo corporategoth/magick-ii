@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.165  2000/05/10 11:46:59  prez
+** added back memo timers
+**
 ** Revision 1.164  2000/05/08 14:42:01  prez
 ** More on xmlisation of nickserv and chanserv
 **
@@ -515,14 +518,14 @@ void Chan_Live_t::UnLock()
 	    SendMode("-s");
     }
 
-/*
-    mstring *arg;
-    if (ACE_Reactor::instance()->cancel_timer(timer,
-					    (const void **) arg))
+    mstring *arg = NULL;
+    if (ph_timer &&
+	ACE_Reactor::instance()->cancel_timer(ph_timer,
+		(const void **) arg) &&
+	arg != NULL)
     {
 	    delete arg;
     }
-*/
     ph_timer = 0;
 }
 

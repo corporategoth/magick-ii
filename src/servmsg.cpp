@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/05/10 11:47:00  prez
+** added back memo timers
+**
 ** Revision 1.42  2000/05/09 09:11:59  prez
 ** Added XMLisation to non-mapped structures ... still need to
 ** do the saving stuff ...
@@ -754,9 +757,17 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 	{
 	    if (i < listsize)
 	    {
-		::send(mynick, source, "%s (%d kb)",
-				Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
-				Parent->filesys.GetSize(FileMap::Picture, filelist[j]));
+		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+			Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+		    ::send(mynick, source, "%s (%d kb) [%s]",
+			Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
+			Parent->filesys.GetSize(FileMap::Picture, filelist[j])/1024,
+			Parent->filesys.GetPriv(FileMap::Picture, filelist[j]).c_str());
+		else
+		    ::send(mynick, source, "%s (%d kb)",
+			Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
+			Parent->filesys.GetSize(FileMap::Picture, filelist[j])/1024);
+		
 		i++;
 	    }
 	    count++;
@@ -926,12 +937,13 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mstring type   = params.ExtractWord(3, " ");
+    mstring type   = params.ExtractWord(3, " ").UpperCase();
     mstring hexstr = params.ExtractWord(4, " ");
 
     if (hexstr.Len() != 8 || hexstr.WordCount("1234567890abcdefABCDEF") > 1)
     {
-        // Invalid char or length ...
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	return;
     }
 
     unsigned long number;
@@ -942,7 +954,8 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 
     if (number == 0)
     {
-	// invalid filenum.
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	return;
     }
 
     if (type.Matches("M*A*"))
@@ -1000,7 +1013,8 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	// no such catagory
+	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_OTHER"),
+			type.c_str());
     }
 }
 

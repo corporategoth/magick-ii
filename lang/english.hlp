@@ -2048,8 +2048,8 @@
 03 =::
 04 =::This service allows you to use the following commands:
 05 =::    HELP         CREDITS      CONTRIB      BREAKDOWN
-06 =:REGD:    FILE
-06 =REGD::    STATS        FILE
+06A=:REGD:    FILE
+06B=REGD::    STATS        FILE
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
 09 =::You may also obtain help on the following:

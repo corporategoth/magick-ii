@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2000/05/10 11:47:00  prez
+** added back memo timers
+**
 ** Revision 1.92  2000/04/30 03:48:30  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -2266,9 +2269,8 @@ void NetworkServ::execute(const mstring & data)
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {
-			list<mstring>::iterator j = k;  j--;
 			i->second.erase(k);
-			k=j;
+			break;
 		    }
 	    }
 
@@ -2410,7 +2412,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		mstring *arg = NULL;
 		if (ACE_Reactor::instance()->cancel_timer(
-		    ServerSquit[target], (const void **) arg)
+			ServerSquit[target], (const void **) arg)
 		    && arg != NULL)
 		    delete arg;
 		ServerSquit[target] =

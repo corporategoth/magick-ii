@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2000/05/10 11:46:59  prez
+** added back memo timers
+**
 ** Revision 1.84  2000/05/08 14:42:02  prez
 ** More on xmlisation of nickserv and chanserv
 **
@@ -153,14 +156,13 @@ void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
     nick = newnick;
     if (timer)
     {
-/*
-	mstring *arg;
+	mstring *arg = NULL;
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-					    (const void **) arg))
+		(const void **) arg) &&
+	    arg != NULL)
 	{
 	    delete arg;
 	}
-*/
 	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -190,15 +192,14 @@ Nick_Live_t::InFlight_t::~InFlight_t()
     NFT("Nick_Live_t::InFlight_t::~InFlight_t");
     if (Exists())
 	End(0u);
-/*
-    mstring *arg;
+    mstring *arg = NULL;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-						(const void **) arg))
+		(const void **) arg) &&
+	    arg != NULL)
 	{
 	    delete arg;
 	}
-*/
 }
 
 
@@ -236,15 +237,14 @@ void Nick_Live_t::InFlight_t::SetInProg()
 {
     NFT("Nick_Live_t::InFlight_t::SetInProg");
     fileinprog = true;
-/*
-    mstring *arg;
+    mstring *arg = NULL;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-						(const void **) arg))
+		(const void **) arg) &&
+	    arg != NULL)
 	{
 	    delete arg;
 	}
-*/
 }
 
 
@@ -338,18 +338,17 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
 	return;
     }
     text += message;
-/*
-    mstring *arg;
+    mstring *arg = NULL;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-					    (const void **) arg))
+		(const void **) arg) &&
+	    arg != NULL)
 	{
 	    delete arg;
 	}
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
-*/
     send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CONTINUE"),
 	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
 }
@@ -360,15 +359,14 @@ void Nick_Live_t::InFlight_t::Cancel()
 {
     NFT("Nick_Live_t::InFlight_t::Cancel");
 
-/*
-    mstring *arg;
+    mstring *arg = NULL;
     if (timer)
 	if (ACE_Reactor::instance()->cancel_timer(timer,
-					    (const void **) arg))
+		(const void **) arg) &&
+	    arg != NULL)
 	{
 	    delete arg;
 	}
-*/
     if (fileattach)
 	send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "SEND");
     else
@@ -395,15 +393,14 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
     }
     else
     {
-/*
-	mstring *arg;
+	mstring *arg = NULL;
 	if (timer)
 	    if (ACE_Reactor::instance()->cancel_timer(timer,
-						(const void **) arg))
+		(const void **) arg) &&
+		arg != NULL)
 	    {
 		delete arg;
 	    }
-*/
 	if (Parent->nickserv.IsStored(sender))
 	{
 	    if (Parent->nickserv.stored[sender.LowerCase()].Host() != "" &&
