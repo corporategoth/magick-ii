@@ -61,9 +61,15 @@ bytevector DccEngine::ctcpDequote(bytevector& in)
 
 bytevector DccEngine::ctcpExtract(bytevector& in)
 {
+    // pull out /001...../001 pairs
     bytevector Result;
-    bytevector::iterator delim;
-    delim=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
-    Result.assign(in.begin(),delim-1);
+    bytevector::iterator start,end;
+    start=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
+    if(start==in.end())
+	return Result;
+    end=find(start+1,in.end(),CTCP_DELIM_CHAR);
+    if(end==in.end())
+	return Result;
+    Result.assign(start,end);
     return Result;
 }
