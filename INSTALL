@@ -439,8 +439,8 @@ of facilitating this are:
        re-generate the key file each time you compile, ensuring it
        does not get stale (and becomes invalid if someone gets it!)
      * You may manually replace the key file keys by using the
-       stampkey utility that comes with magick (you will have to
-       regenerate your key file after this).
+       magick_stampkeys utility that comes with magick (you will
+       have to regenerate your key file after this).
 
 To ensure the security of your databases and communication, you should
      * Chose a long and complex database key, you must remember this
@@ -448,21 +448,22 @@ To ensure the security of your databases and communication, you should
        you wont need it often.  Also choose long and varied key file
        keys, they can be up to 1024 bytes long (or longer with the
        --with-keylen parameter to configure)!
-     * Use the stampkey utility on all your binaries at once and
-       regenerate your keys every so often, so stop them becoming
+     * Use the magick_stampkeys utility on all your binaries at once
+       and regenerate your keys every so often, so stop them becoming
        stale.
 
 Windows users will not automatically generate a new keyset with each
-compile.  It is recommended you create your own using the stampkey
-utility supplied if you intend to use encryption.  This must be
-done some time before the database encryption key is generated.
+compile.  It is recommended you create your own using the
+magick_stampkeys utility supplied if you intend to use encryption.
+This must be done some time before the database encryption key is
+generated.
 
-Syntax for the stampkey utility is:
-     stampkey <all binaries to be stamped>
+Syntax for the magick_stampkeys utility is:
+     magick_stampkeys <all binaries to be stamped>
 
 You MUST do all executable files at once, so an example is:
-     (UNIX) stampkey magick magick.debug magick_keygen
-     (WIN ) stampkey magick.exe magick_keygen.exe
+     (UNIX) magick_stampkeys magick magick.debug magick_keygen
+     (WIN ) magick_stampkeys magick.exe magick_keygen.exe
 
 Keep in mind that to be able to stamp a binary, it must NOT have been
 previously stamped, so you will need a 'freshly linked' file.  All

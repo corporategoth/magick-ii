@@ -442,8 +442,8 @@ compile time, to ensure the key file is never clear text.</LI>
 re-generate the key file each time you compile, ensuring it
 does not get stale (and becomes invalid if someone gets it!)</LI>
 <LI>You may manually replace the key file keys by using the
-stampkey utility that comes with magick (you will have to
-regenerate your key file after this).</LI>
+magick_stampkeys utility that comes with magick (you will have
+to regenerate your key file after this).</LI>
 </UL>
 <P>To ensure the security of your databases and communication, you should
 <UL>
@@ -452,25 +452,25 @@ somehow, incase you need to generate a new database key, however
 you wont need it often.  Also choose long and varied key file
 keys, they can be up to 1024 bytes long (or longer with the
 --with-keylen parameter to configure)!</LI>
-<LI>Use the stampkeys utility on all your binaries at once and
-regenerate your keys every so often, so stop them becoming
+<LI>Use the magick_stampkeys utility on all your binaries at once
+and regenerate your keys every so often, so stop them becoming
 stale.</LI>
 </UL>
 <P>Windows users will not automatically generate a new keyset with each
-compile.  It is recommended you create your own using the stampkey
+compile.  It is recommended you create your own using the magick_stampkeys
 utility supplied if you intend to use encryption.  This must be
 done some time before the database encryption key is generated.
-<P>Syntax for the stampkey utility is:
+<P>Syntax for the magick_stampkeys utility is:
 <BLOCKQUOTE><CODE>
 <PRE>
-     stampkey &lt;all binaries to be stamped>
+     magick_stampkeys &lt;all binaries to be stamped>
 </PRE>
 </CODE></BLOCKQUOTE>
 <P>You MUST do all executable files at once, so an example is:
 <BLOCKQUOTE><CODE>
 <PRE>
-     (UNIX) stampkey magick magick.debug magick_keygen
-     (WIN ) stampkey magick.exe magick_keygen.exe
+     (UNIX) magick_stampkeys magick magick.debug magick_keygen
+     (WIN ) magick_stampkeys magick.exe magick_keygen.exe
 </PRE>
 </CODE></BLOCKQUOTE>
 <P>Keep in mind that to be able to stamp a binary, it must NOT have been

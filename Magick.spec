@@ -20,7 +20,7 @@ and many other things.
 %setup
 
 %build
-configure --prefix=/usr --sysconfdir=/etc
+configure --prefix=/usr --sysconfdir=/etc --disable-hostlock
 helper/build-ver .
 make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
 
@@ -35,7 +35,9 @@ rm -Rf /usr/info/magick
 
 /usr/bin/magick
 /usr/bin/magick_keygen
+/usr/bin/magick_stampkeys
 /usr/share/magick
 /usr/man/man1/magick.1
 /usr/man/man1/magick_keygen.1
+/usr/man/man1/magick_stampkeys.1
 

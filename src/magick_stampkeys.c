@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.1  2001/04/15 03:10:51  prez
+** Changed stampkeys -> magick_stampkeys and updated the RPM spec
+**
 ** Revision 1.2  2001/04/13 07:42:49  prez
 ** Fixed the stampkeys program
 **

@@ -8,4 +8,4 @@ Makefile.in
 magick
 magick.debug
 magick_keygen
-stampkeys
+magick_stampkeys

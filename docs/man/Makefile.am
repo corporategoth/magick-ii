@@ -1,8 +1,8 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
 
-EXTRA_DIST = magick.pod magick_keygen.pod stampkeys.pod
-magick_MANS = magick.pod magick_keygen.pod stampkeys.pod
+EXTRA_DIST = magick.pod magick_keygen.pod magick_stampkeys.pod
+magick_MANS = magick.pod magick_keygen.pod magick_stampkeys.pod
 
 POD2MANPARAM = --center="Magick Development Team" --release="$(PACKAGE) $(VERSION)"
 
