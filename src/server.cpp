@@ -689,6 +689,7 @@ void Protocol::Set(const unsigned int in)
 	i_BigTopic = true;
 	i_Akill = 1000;
 	i_Modes = 6;
+	i_ServicesModes = "S";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 VL SJ3 NS VHP";
 	// Check serveropts in s_debug.c for what the letters are
 	i_Server = "SERVER $1 $2 :U2303-CFhiIpnXS-$4 $3";
@@ -696,6 +697,7 @@ void Protocol::Set(const unsigned int in)
 	Numeric.i_Server = 6;
 	Numeric.i_ServerNumber = true;
 	Numeric.i_Field = 3;
+	Numeric.i_UnrealNumeric = true;
 	i_ChanModeArg = "ovbehklLfqa";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -4651,7 +4653,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		// unreal puts the numeric in the desctiption, ie.
 		// SERVER downlink hops :Uversion-servopts-numeric description
 		//        Only this way for direct links --^^^^^^^
-		if (proto.Number() >= 70 && proto.Number() <= 79)
+		if (proto.UnrealNumeric())
 		{
 		    numeric = proto.Numeric.ServerLineNumeric(params.After(":").ExtractWord(3, "-"));
 		    map_entry < Server_t >

@@ -175,11 +175,12 @@ public:
 	bool i_Extended:1;	/* 2 char server, 3 char nick */
 	bool i_ServerNumber:1;	/* Use decimal number (not base64) in SERVER line */
 	bool i_Combine:1;	/* Combine server and nick numeric in messages */
-	bool i_Prefix:1;	/* When sending messages as server, prefix with '@' */
-	int i_Server;		/* Uses server numerics ... */
+	bool i_Prefix:1;	/* All messages are prefixed with the server numeric */
+	bool i_UnrealNumeric:1;	/* The numeric for our neighbour is in the description */
+	int i_Server;		/* Length of server numerics ... */
 	int i_Field;		/* Field in SERVER line that contains numeric */
-	int i_User;		/* Use nickname numerics ... */
-	int i_Channel;		/* Use channel numerics ... */
+	int i_User;		/* Length of nickname numerics ... */
+	int i_Channel;		/* Length of channel numerics ... */
 
 	char base64_to_char[64], char_to_base64[256];
 	void SetBase64(unsigned int type);
@@ -188,8 +189,8 @@ public:
 	mstring base64_to_str(unsigned long in) const;
 
     public:
-	Numeric_t() : i_Trim(false), i_ServerNumber(false), i_Combine(false), i_Prefix(false), i_Server(0), i_Field(0),
-	    i_User(0), i_Channel(false)
+	Numeric_t() : i_Trim(false), i_ServerNumber(false), i_Combine(false), i_Prefix(false), i_UnrealNumeric(false),
+	    i_Server(0), i_Field(0), i_User(0), i_Channel(false)
 	{
 	    memset(base64_to_char, 0, sizeof(base64_to_char));
 	    memset(char_to_base64, 0, sizeof(char_to_base64));
@@ -209,6 +210,10 @@ public:
 	bool Prefix() const
 	{
 	    return i_Prefix;
+	}
+	bool UnrealNumeric() const
+	{
+	    return i_UnrealNumeric;
 	}
 	int Server() const
 	{
