@@ -26,6 +26,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/02/27 02:43:50  prez
+** More FileSystem additions, plus created 'what' tool
+**
 ** Revision 1.3  2000/02/23 21:01:25  prez
 ** Fixing CVS tags again ...
 **
@@ -178,3 +181,57 @@ void FileMap::load_database(wxInputStream& in)
 	COM(("Entry FILE MAP %d loaded ...", (int) val1));
     }
 }
+
+DccXfer::DccXfer(DccXfer::XferType type, ACE_INET_Addr addr, mstring source,
+		 mstring filename, FileMap::FileType filetype)
+{
+    FT("DccXfer::DccXfer", ((int) type, "(ACE_INET_Addr) addr", source,
+					filename, (int) filetype));
+    i_type = type;
+    i_addr = addr;
+    i_filename = filename;
+    i_filetype = filetype;
+    tmpfile = Parent->files.TempDir() + DirSlash + source;
+    blocksize = Parent->files.Blocksize();
+    open();
+}
+
+DccXfer::~DccXfer()
+{
+    NFT("DccXfer::~DccXfer");
+    remove(tmpfile.c_str());
+    close(0);
+}
+
+int DccXfer::close(unsigned long in)
+{
+    FT("DccXfer::close", (in));
+    RET(0);
+}
+
+int DccXfer::open(void *in)
+{
+    FT("DccXfer::open", (in));
+    if (i_type == Get)
+    {
+	// We let handle_input handle most of this...
+    }
+    else if (i_type = Send)
+    {
+	
+    }
+    else
+    {
+	wxLogWarning("Unknown DCC Transfer Type!  Aborting DCC");
+	close(0);
+    }
+
+    RET(0);
+}
+
+int DccXfer::handle_input(ACE_HANDLE handle)
+{
+    FT("DccXfer::handle_input", ("ACE_HANDLE handle"));
+    RET(0);
+}
+

@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/02/27 02:43:50  prez
+** More FileSystem additions, plus created 'what' tool
+**
 ** Revision 1.3  2000/02/23 21:01:25  prez
 ** Fixing CVS tags again ...
 **
@@ -40,7 +43,6 @@ static const char *ident_filesys_h = "@(#) $Id$";
 class FileMap
 {
 public:
-
     enum FileType { MemoAttach, Picture };
 
     unsigned long FindAvail(FileType type);
@@ -55,21 +57,35 @@ private:
     map<FileType, map<unsigned long, mstring> > i_FileMap;
 };
 
-class DccFileXfer : public ACE_Task<ACE_MT_SYNCH>
+class DccXfer : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
+    typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
 public:
     enum XferType { Send, Get };
+    DccXfer(XferType type, ACE_INET_Addr addr, mstring source,
+	    mstring filename, FileMap::FileType filetype);
+    ~DccXfer();
 
     virtual int close(unsigned long in);
-    int send(const mstring& data);
     virtual int open(void *);
     virtual int handle_input(ACE_HANDLE handle);
+    bool Established();
 
 private:
-    XferType type;
-    ACE_INET_Addr addr;
-    mstring filename;
-    FileMap::FileType filetype;
+    XferType i_type;
+    ACE_INET_Addr i_addr;
+    mstring i_filename;
+    FileMap::FileType i_filetype;
+    mstring tmpfile;
+    mstring buffer;
+    unsigned long blocksize;
+
+    // Timers to wait for confirmation and/or data,
+    // and the connection to be established.
+    unsigned long T_Confirmation, T_Established;
+
+    // Did we get correct checksum packet ...
+    bool confirmation;
 };
 
 #endif

@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2000/02/27 02:43:50  prez
+** More FileSystem additions, plus created 'what' tool
+**
 ** Revision 1.109  2000/02/23 14:29:05  prez
 ** Added beginnings of a File Map for stored files.
 ** Also updated Help files (finished nickserv).
@@ -113,7 +116,7 @@ public:
 	
 	// Stuff that NEEDS to be there first
 	CommandMap commands;
-	FileMap filemap;
+	FileMap filesys;
 
 	// Services ...
 	OperServ operserv;
@@ -168,6 +171,10 @@ public:
 		bool encryption;
 		mstring memoattach;
 		mstring picture;
+		mstring tempdir;
+		unsigned long blocksize;
+		unsigned long timeout;
+		unsigned long throughput;
 	public:
 		mstring Pidfile()const		    { return pidfile; }
 		mstring Logfile()const		    { return logfile; }
@@ -179,6 +186,10 @@ public:
 		bool Encryption()const		    { return encryption; }
 		mstring MemoAttach()const	    { return memoattach; }
 		mstring Picture()const		    { return picture; }
+		mstring TempDir()const		    { return tempdir; }
+		unsigned long Blocksize()const	    { return blocksize; }
+		unsigned long Timeout()const	    { return timeout; }
+		unsigned long Throughput()const	    { return throughput; }
 	} files;
 
 	class config_t {

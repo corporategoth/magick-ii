@@ -28,6 +28,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.198  2000/02/27 02:43:50  prez
+** More FileSystem additions, plus created 'what' tool
+**
 ** Revision 1.197  2000/02/23 14:29:05  prez
 ** Added beginnings of a File Map for stored files.
 ** Also updated Help files (finished nickserv).
@@ -209,7 +212,7 @@ int Magick::Start()
 #ifndef WIN32
     if ((i = fork ()) < 0)
     {
-	wxLogFatal(Parent->getMessage("ERROR/FAILED_FORK"), i);
+	wxLogFatal(getMessage("ERROR/FAILED_FORK"), i);
 	RET(1);
     }
     else if (i != 0)
@@ -218,7 +221,7 @@ int Magick::Start()
     }
     if ((i = setpgid (0, 0)) < 0)
     {
-	wxLogFatal(Parent->getMessage("ERROR/FAILED_SETPGID"), i);
+	wxLogFatal(getMessage("ERROR/FAILED_SETPGID"), i);
 	RET(1);
     }
 #endif
@@ -319,10 +322,10 @@ int Magick::Start()
     // incoming data and pushes it out to the appropriate service.
 
     // Grabs the FIRST entry of PRIORITY 1.
-    mstring tmp = Parent->startup.PriorityList(1)[0];
+    mstring tmp = startup.PriorityList(1)[0];
     if (tmp == "")
 	RET(MAGICK_RET_TERMINATE);
-    ACE_INET_Addr addr(Parent->startup.Server(tmp).first, tmp);
+    ACE_INET_Addr addr(startup.Server(tmp).first, tmp);
 
 //  ACE_INET_Addr addr(startup.Remote_Port(),startup.Remote_Server());
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
@@ -476,7 +479,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.find(lang.UpperCase()) == Messages.end())
     {
 	LoadExternalMessages(lang);
-	wxLogInfo(Parent->getLogMessage("OTHER/LOAD_LANGUAGE"),
+	wxLogInfo(getLogMessage("OTHER/LOAD_LANGUAGE"),
 		lang.c_str());
 	CP(("Language %s was loaded into memory.", lang.c_str()));
     }
@@ -497,7 +500,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.end())
     {
 	LoadExternalMessages(nickserv.DEF_Language());
-	wxLogInfo(Parent->getLogMessage("OTHER/LOAD_LANGUAGE"),
+	wxLogInfo(getLogMessage("OTHER/LOAD_LANGUAGE"),
 		lang.c_str());
 	CP(("Language %s was loaded into memory.", nickserv.DEF_Language().c_str()));
     }
@@ -583,15 +586,15 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		if (yescom != "")
 		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
 		    {
-			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
-			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			if (commserv.IsList(yescom.ExtractWord(i, " ")) &&
+			    !commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (nocom != "")
 		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
-			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
-			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			if (commserv.IsList(nocom.ExtractWord(i, " ")) &&
+			    commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (sendline)
@@ -637,15 +640,15 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		if (yescom != "")
 		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
 		    {
-			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
-			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			if (commserv.IsList(yescom.ExtractWord(i, " ")) &&
+			    !commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (nocom != "")
 		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
-			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
-			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			if (commserv.IsList(nocom.ExtractWord(i, " ")) &&
+			    commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (sendline)
@@ -662,7 +665,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	mstring tmpstr, tmpstr2;
 	tmpstr2 = name;
 	tmpstr2.Replace(mstring("/"), mstring(" "));
-	tmpstr.Format(Parent->getMessage(nick, "ERR_SITUATION/NOHELP"),
+	tmpstr.Format(getMessage(nick, "ERR_SITUATION/NOHELP"),
 	    tmpstr2.After(" ").c_str());
 	helptext.push_back(tmpstr);
     }
@@ -1549,6 +1552,14 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",&files.memoattach,"files/memo");
     in.Read(ts_Files+"PICTURE",&files.picture,"files/pic");
+    in.Read(ts_Files+"TEMPDIR",&files.tempdir,"files/temp");
+    in.Read(ts_Files+"BLOCKSIZE",&files.blocksize,1024);
+    in.Read(ts_Files+"TIMEOUT",&value_mstring,"2m");
+    if (FromHumanTime(value_mstring))
+	files.timeout = FromHumanTime(value_mstring);
+    else
+	files.timeout = FromHumanTime("2m");
+    in.Read(ts_Files+"THROUGHPUT",&files.throughput,0);
 
     in.Read(ts_Config+"SERVER_RELINK",&value_mstring,"5s");
     if (FromHumanTime(value_mstring))
@@ -1650,9 +1661,9 @@ bool Magick::get_config_values()
 	if (nickserv.IsLive(chanserv.FirstName()))
 	{
 	    if (chanserv.hide)
-		Parent->server.MODE(chanserv.FirstName(), "+s");
+		server.MODE(chanserv.FirstName(), "+s");
 	    else
-		Parent->server.MODE(chanserv.FirstName(), "-s");
+		server.MODE(chanserv.FirstName(), "-s");
 	}
     }
 
@@ -1837,83 +1848,83 @@ bool Magick::get_config_values()
     commserv.oper_name.MakeUpper();
     AddCommands();
 
-    if (Parent->commserv.IsList(commserv.all_name))
-	while (i<Parent->commserv.list[commserv.all_name].size())
+    if (commserv.IsList(commserv.all_name))
+	while (i<commserv.list[commserv.all_name].size())
 	{
-	    Parent->commserv.list[commserv.all_name].member =
-			Parent->commserv.list[commserv.all_name].begin();
-	    Parent->commserv.list[commserv.all_name].erase();
+	    commserv.list[commserv.all_name].member =
+			commserv.list[commserv.all_name].begin();
+	    commserv.list[commserv.all_name].erase();
 	}
     else
     {
-	Parent->commserv.list[commserv.all_name] = Committee(commserv.all_name, 
+	commserv.list[commserv.all_name] = Committee(commserv.all_name, 
 					    "All Users");
-	Parent->commserv.list[commserv.all_name].Secure(false);
-	Parent->commserv.list[commserv.all_name].Private(true);
-	Parent->commserv.list[commserv.all_name].OpenMemos(false);
+	commserv.list[commserv.all_name].Secure(false);
+	commserv.list[commserv.all_name].Private(true);
+	commserv.list[commserv.all_name].OpenMemos(false);
     }
 
-    if (Parent->commserv.IsList(commserv.regd_name))
-	while (i<Parent->commserv.list[commserv.regd_name].size())
+    if (commserv.IsList(commserv.regd_name))
+	while (i<commserv.list[commserv.regd_name].size())
 	{
-	    Parent->commserv.list[commserv.regd_name].member =
-			Parent->commserv.list[commserv.regd_name].begin();
-	    Parent->commserv.list[commserv.regd_name].erase();
+	    commserv.list[commserv.regd_name].member =
+			commserv.list[commserv.regd_name].begin();
+	    commserv.list[commserv.regd_name].erase();
 	}
     else
     {
-	Parent->commserv.list[commserv.regd_name] = Committee(commserv.regd_name, 
+	commserv.list[commserv.regd_name] = Committee(commserv.regd_name, 
 					    "Registered Users");
-	Parent->commserv.list[commserv.regd_name].Secure(false);
-	Parent->commserv.list[commserv.regd_name].Private(true);
-	Parent->commserv.list[commserv.regd_name].OpenMemos(false);
+	commserv.list[commserv.regd_name].Secure(false);
+	commserv.list[commserv.regd_name].Private(true);
+	commserv.list[commserv.regd_name].OpenMemos(false);
     }
 
-    if (Parent->commserv.IsList(commserv.sadmin_name))
-	while (i<Parent->commserv.list[commserv.sadmin_name].size())
+    if (commserv.IsList(commserv.sadmin_name))
+	while (i<commserv.list[commserv.sadmin_name].size())
 	{
-	    Parent->commserv.list[commserv.sadmin_name].member =
-			Parent->commserv.list[commserv.sadmin_name].begin();
-	    Parent->commserv.list[commserv.sadmin_name].erase();
+	    commserv.list[commserv.sadmin_name].member =
+			commserv.list[commserv.sadmin_name].begin();
+	    commserv.list[commserv.sadmin_name].erase();
 	}
     else
     {
-	Parent->commserv.list[commserv.sadmin_name] = Committee(commserv.sadmin_name, 
+	commserv.list[commserv.sadmin_name] = Committee(commserv.sadmin_name, 
 					    "Services Administrators");
-	Parent->commserv.list[commserv.sadmin_name].Secure(commserv.sadmin_secure);
-	Parent->commserv.list[commserv.sadmin_name].Private(commserv.sadmin_private);
-	Parent->commserv.list[commserv.sadmin_name].OpenMemos(commserv.sadmin_openmemos);
+	commserv.list[commserv.sadmin_name].Secure(commserv.sadmin_secure);
+	commserv.list[commserv.sadmin_name].Private(commserv.sadmin_private);
+	commserv.list[commserv.sadmin_name].OpenMemos(commserv.sadmin_openmemos);
     }
-    for (i=1; i<=Parent->operserv.services_admin.WordCount(", "); i++)
-	Parent->commserv.list[commserv.sadmin_name].insert(
-	    Parent->operserv.services_admin.ExtractWord(i, ", "),
-	    Parent->operserv.FirstName());
-    if (!Parent->commserv.IsList(commserv.sop_name))
+    for (i=1; i<=operserv.services_admin.WordCount(", "); i++)
+	commserv.list[commserv.sadmin_name].insert(
+	    operserv.services_admin.ExtractWord(i, ", "),
+	    operserv.FirstName());
+    if (!commserv.IsList(commserv.sop_name))
     {
-	Parent->commserv.list[commserv.sop_name] = Committee(commserv.sop_name,
-				    &Parent->commserv.list[commserv.sadmin_name],
+	commserv.list[commserv.sop_name] = Committee(commserv.sop_name,
+				    &commserv.list[commserv.sadmin_name],
 				    "Services Operators");
-	Parent->commserv.list[commserv.sop_name].Secure(commserv.sop_secure);
-	Parent->commserv.list[commserv.sop_name].Private(commserv.sop_private);
-	Parent->commserv.list[commserv.sop_name].OpenMemos(commserv.sop_openmemos);
+	commserv.list[commserv.sop_name].Secure(commserv.sop_secure);
+	commserv.list[commserv.sop_name].Private(commserv.sop_private);
+	commserv.list[commserv.sop_name].OpenMemos(commserv.sop_openmemos);
     }
-    if (!Parent->commserv.IsList(commserv.admin_name))
+    if (!commserv.IsList(commserv.admin_name))
     {
-	Parent->commserv.list[commserv.admin_name] = Committee(commserv.admin_name, 
-				    &Parent->commserv.list[commserv.sadmin_name],
+	commserv.list[commserv.admin_name] = Committee(commserv.admin_name, 
+				    &commserv.list[commserv.sadmin_name],
 				    "Server Administrators");
-	Parent->commserv.list[commserv.admin_name].Secure(commserv.admin_secure);
-	Parent->commserv.list[commserv.admin_name].Private(commserv.admin_private);
-	Parent->commserv.list[commserv.admin_name].OpenMemos(commserv.admin_openmemos);
+	commserv.list[commserv.admin_name].Secure(commserv.admin_secure);
+	commserv.list[commserv.admin_name].Private(commserv.admin_private);
+	commserv.list[commserv.admin_name].OpenMemos(commserv.admin_openmemos);
     }
-    if (!Parent->commserv.IsList(commserv.oper_name))
+    if (!commserv.IsList(commserv.oper_name))
     {
-	Parent->commserv.list[commserv.oper_name] = Committee(commserv.oper_name, 
-				    &Parent->commserv.list[commserv.admin_name],
+	commserv.list[commserv.oper_name] = Committee(commserv.oper_name, 
+				    &commserv.list[commserv.admin_name],
 				    "Server Operators");
-	Parent->commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
-	Parent->commserv.list[commserv.oper_name].Private(commserv.oper_private);
-	Parent->commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
+	commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
+	commserv.list[commserv.oper_name].Private(commserv.oper_private);
+	commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
     }
 
     if (reconnect && Connected())
@@ -2112,11 +2123,11 @@ void Magick::load_databases()
     NFT("Magick::load_databases");
 
     mstring databasefile;
-    if (mstring(Parent->files.Database()[0u]) == DirSlash ||
-	Parent->files.Database()[1u] == ':')
-	databasefile = Parent->files.Database();
+    if (mstring(files.Database()[0u]) == DirSlash ||
+	files.Database()[1u] == ':')
+	databasefile = files.Database();
     else
-	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
+	databasefile = wxGetCwd()+DirSlash+files.Database();
 
     mstring tag;
     unsigned long ver;
@@ -2160,12 +2171,13 @@ CP(("Compressed datastream active ..."));
 	dinput = new wxDataInputStream(*input);
 	input = dinput;
 
-	Parent->operserv.load_database(*input);
-	Parent->nickserv.load_database(*input);
-	Parent->chanserv.load_database(*input);
-	Parent->memoserv.load_database(*input);
-	Parent->commserv.load_database(*input);
-	Parent->servmsg.load_database(*input);
+	operserv.load_database(*input);
+	nickserv.load_database(*input);
+	chanserv.load_database(*input);
+	memoserv.load_database(*input);
+	commserv.load_database(*input);
+	servmsg.load_database(*input);
+	filesys.load_database(*input);
 	// Scripted services?
 
 	// Clean up ..
@@ -2190,11 +2202,11 @@ void Magick::save_databases()
     NFT("Magick::save_databases");
 
     mstring databasefile;
-    if (mstring(Parent->files.Database()[0u]) == DirSlash ||
-	Parent->files.Database()[1u] == ':')
-	databasefile = Parent->files.Database();
+    if (mstring(files.Database()[0u]) == DirSlash ||
+	files.Database()[1u] == ':')
+	databasefile = files.Database();
     else
-	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
+	databasefile = wxGetCwd()+DirSlash+files.Database();
 
     CP(("Database Filename being used: %s", databasefile.c_str()));
     wxFileOutputStream foutput(databasefile);
@@ -2230,12 +2242,13 @@ CP(("Compressed datastream active ..."));
 	doutput = new wxDataOutputStream(*output);
 	output = doutput;
 
-	Parent->operserv.save_database(*output);
-	Parent->nickserv.save_database(*output);
-	Parent->chanserv.save_database(*output);
-	Parent->memoserv.save_database(*output);
-	Parent->commserv.save_database(*output);
-	Parent->servmsg.save_database(*output);
+	operserv.save_database(*output);
+	nickserv.save_database(*output);
+	chanserv.save_database(*output);
+	memoserv.save_database(*output);
+	commserv.save_database(*output);
+	servmsg.save_database(*output);
+	filesys.save_database(*output);
 	// Scripted services?
 
 	// clean up ...
