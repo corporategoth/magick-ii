@@ -84,6 +84,10 @@ public:
 	return (i_Time < in.i_Time);
     }
 
+    bool validated() const
+    {
+	return (i_Nick.length() != 0);
+    }
     void ChgNick(const mstring & in);
     mstring Nick() const
     {
@@ -155,6 +159,10 @@ public:
 	return (i_Time < in.i_Time);
     }
 
+    bool validated() const
+    {
+	return (i_Channel.length() != 0);
+    }
     mstring Channel() const
     {
 	return i_Channel;

@@ -654,7 +654,7 @@ public:
      *    char *s = mystring;
      *  @see c_str()
      */
-    operator            const char *() const
+    operator             const char *() const
     {
 	return c_str();
     }
@@ -665,7 +665,7 @@ public:
      *  @return An STL string representation of current contents.
 		This will be "" if there is none.
      */
-    operator            const string() const
+    operator             const string() const
     {
 	return string(c_str());
     }
@@ -1091,7 +1091,11 @@ public:
      */
     mstring Right(const int pos) const
     {
-	return SubString(pos);
+	int rpos = length() - pos;
+
+	if (rpos < 0)
+	    rpos = 0;
+	return SubString(rpos);
     }
 
     /** Count how many 'words' given a delimiter

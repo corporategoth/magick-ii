@@ -150,7 +150,7 @@ class DccXfer
 {
 public:
     enum XF_Type
-    { Get, Send };
+    { Invalid, Get, Send };
 
 private:
 
@@ -175,9 +175,8 @@ private:
     map < time_t, size_t > i_Traffic;
 
 public:
-    DccXfer()
+    DccXfer() : i_Type(Invalid), i_DccId(0), i_Transiant(NULL)
     {
-	i_Transiant = NULL;
     }
     DccXfer(const unsigned long dccid, const mSocket & socket, const mstring & mynick, const mstring & source,
 	    const FileMap::FileType filetype, const unsigned long filenum);
@@ -191,6 +190,10 @@ public:
 
     ~DccXfer();
 
+    bool validated() const
+    {
+	return (i_DccId != 0);
+    }
     unsigned long DccId() const
     {
 	return i_DccId;

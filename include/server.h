@@ -161,25 +161,25 @@ public:
     class Numeric_t
     {
 	friend class Protocol;
-	friend void mMessage::AddDependancies();
 
 	bool i_Trim:1;		/* Trim numeric results ... */
+	bool i_Extended:1;	/* 2 char server, 3 char nick */
 	bool i_Server:1;	/* Uses server numerics ... */
 	bool i_ServerNumber:1;	/* Use decimal number (not base64) in SERVER line */
-	bool i_Nick:1;		/* Use nickname numerics ... */
+	bool i_User:1;		/* Use nickname numerics ... */
 	bool i_Combine:1;	/* Combine server and nick numeric in messages */
 	bool i_Channel:1;	/* Use channel numerics ... */
 	int i_Field;		/* Field in SERVER line that contains numeric */
 
 	char base64_to_char[64], char_to_base64[256];
 	void SetBase64(unsigned int type);
+
+    public:
 	unsigned long str_to_base64(const mstring & in) const;
 	mstring base64_to_str(unsigned long in) const;
 
-    public:
-
-	Numeric_t() : i_Trim(false), i_Server(false), i_ServerNumber(false), i_Nick(false), i_Combine(false), i_Channel(false),
-	    i_Field(0)
+	Numeric_t() : i_Trim(false), i_Extended(false), i_Server(false), i_ServerNumber(false), i_User(false),
+	    i_Combine(false), i_Channel(false), i_Field(0)
 	{
 	    memset(base64_to_char, 0, sizeof(base64_to_char));
 	    memset(char_to_base64, 0, sizeof(char_to_base64));
@@ -187,6 +187,10 @@ public:
 	bool Trim() const
 	{
 	    return i_Trim;
+	}
+	bool Extended() const
+	{
+	    return i_Extended;
 	}
 	bool Server() const
 	{
@@ -196,9 +200,9 @@ public:
 	{
 	    return i_ServerNumber;
 	}
-	bool Nick() const
+	bool User() const
 	{
-	    return i_Nick;
+	    return i_User;
 	}
 	bool Combine() const
 	{
@@ -225,6 +229,10 @@ public:
 	mstring NumericToChannel(const mstring & n) const;
 	unsigned long ChannelToNumeric2(const mstring & c) const;
 	mstring NumericToChannel2(unsigned long n) const;
+
+	unsigned long FindServerNumeric() const;
+	unsigned long FindUserNumeric() const;
+	unsigned long FindChannelNumeric() const;
 
 	mstring ServerLineNumeric(unsigned long n) const;
 	unsigned long ServerLineNumeric(const mstring & n) const;
@@ -519,6 +527,8 @@ public:
 
     mstring OurUplink() const;
     mstring GetServer(const mstring & server) const;
+    mstring GetUser(const mstring & user) const;
+    mstring GetChannel(const mstring & channel) const;
 
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's

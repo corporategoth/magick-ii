@@ -151,6 +151,11 @@ public:
 	return (i_Name < in.i_Name);
     }
 
+    bool validated() const
+    {
+	return (i_Name.length() != 0);
+    }
+
     // channel maintinance
     void Join(const mstring & channel);
     void Part(const mstring & channel);
@@ -338,6 +343,10 @@ public:
 	return (i_Name < in.i_Name);
     }
 
+    bool validated() const
+    {
+	return (i_Name.length() != 0);
+    }
     mstring Name() const
     {
 	return i_Name;

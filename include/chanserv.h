@@ -81,6 +81,7 @@ class Chan_Live_t : public mUserDef, public ref_class
     void ChgNick(const mstring & nick, const mstring & newnick);	// Called by Nick_Live_t
 
 public:
+
     Chan_Live_t();
     Chan_Live_t(const Chan_Live_t & in) : mUserDef(in), ref_class()
     {
@@ -105,6 +106,10 @@ public:
 	return (i_Name < in.i_Name);
     }
 
+    bool validated() const
+    {
+	return (i_Name.length() != 0);
+    }
     mstring Name() const
     {
 	return i_Name;
@@ -307,6 +312,10 @@ public:
 	return (i_Name < in.i_Name);
     }
 
+    bool validated() const
+    {
+	return (i_Name.length() != 0);
+    }
     mstring Name() const
     {
 	return i_Name;

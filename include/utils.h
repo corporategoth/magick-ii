@@ -88,6 +88,10 @@ public:
     {
 	return i_references;
     }
+    virtual bool validated() const
+    {
+	return false;
+    }
     virtual void setDelete(bool in = true)
     {
 	i_doDelete = in;
@@ -127,7 +131,7 @@ template < class T > class map_entry
 	if (entry_ptr != NULL)
 	{
 	    entry_ptr->remRef();
-	    if (entry_ptr->doDelete() && entry_ptr->references() == 0)
+	    if (entry_ptr->validated() && entry_ptr->doDelete() && entry_ptr->references() == 0)
 		delete entry_ptr;
 
 	    entry_ptr = NULL;
