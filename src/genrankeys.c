@@ -4,11 +4,12 @@
 #include <time.h>
 #include "config.h"
 
+unsigned char k1[KEYLEN], k2[KEYLEN];
+int i;
+FILE *fout;
+
 int main(int argc, char **argv)
 {
-    unsigned char k1[KEYLEN], k2[KEYLEN];
-    int i;
-    FILE *fout;
 
     if (argc != 2)
     {
