@@ -85,18 +85,6 @@ public:
 			Print("<%s%s/>\n", t.ch, param.c_str());
 	}
 
-	inline void WriteElement(Tag& t, const wstring& val, dict& attribs = blank_dict) {
-		Indent();
-		mstring param;
-		dict::iterator iter;
-		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
-		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-		if( !val.empty() )
-			Print("<%s%s>%s</%s>\n", t.ch, param.c_str(), XMLEscapeW(val.c_str()).c_str(), t.ch);
-		else
-			Print("<%s%s/>\n", t.ch, param.c_str());
-	}
-
 	inline void WriteElement(Tag& t, const mDateTime& val, dict& attribs = blank_dict) {
 		WriteElement(t,static_cast<double>(GMT(val, true)), attribs);
 	}
