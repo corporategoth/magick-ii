@@ -10,7 +10,7 @@ maint:
 	autoheader
 # use --include-deps, if you want to release the stuff. Don't use it for
 # yourself
-	automake --add-missing --include-deps
+	automake --add-missing --include-deps; true
 	#perl automoc
 	autoconf
 	touch stamp-h.in
