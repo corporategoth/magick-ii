@@ -25,6 +25,9 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/08/19 15:17:39  ungod
+** no message
+**
 ** Revision 1.10  2000/08/08 09:58:55  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -80,11 +83,11 @@ static const char *ident_sxp_h = "@(#) $Id$";
 #include "utils.h"
 #undef JUST_MFILE
 
-#define XML_STRING	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-#define INIT_BUFSIZE	32 * 1024
-#define SXP_TAG		0x01	// Required to force write.
-#define SXP_COMPRESS	0x02
-#define SXP_ENCRYPT	0x04
+const char XML_STRING[]="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+const int INIT_BUFSIZE = 32 * 1024;
+const unsigned int SXP_TAG = 0x01;	// Required to force write.
+const unsigned int SXP_COMPRESS	= 0x02;
+const unsigned int SXP_ENCRYPT = 0x04;
 
 // configuration -- assume dos/win32 don't have GNU autoconf.
 // Don't touch any of this unless you know what you're doing.

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/08/19 15:17:40  ungod
+** no message
+**
 ** Revision 1.15  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -691,7 +694,7 @@ long mConfigEngine::Write(const mstring &key,long value)
     mstring tmp;
     tmp<<value;
     long Result;
-    Read(key,Result,0);
+    Read(key,Result,0L);
     Write(key,tmp);
     RET(Result);
 }
@@ -702,7 +705,7 @@ unsigned long mConfigEngine::Write(const mstring &key,unsigned long value)
     mstring tmp;
     tmp<<value;
     unsigned long Result;
-    Read(key,Result,0U);
+    Read(key,Result,0UL);
     Write(key,tmp);
     RET(Result);
 }
@@ -817,4 +820,6 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
     }
     NRET(vector<mstring>, Result);
 }
+
+
 

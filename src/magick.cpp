@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.264  2000/08/19 15:17:39  ungod
+** no message
+**
 ** Revision 1.263  2000/08/19 10:59:47  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -1913,7 +1916,7 @@ bool Magick::get_config_values()
     if (Server() == "" || !startup.IsServer(Server()))
 	reconnect = true;
 
-    in.Read(ts_Startup+"PROTOCOL",value_uint,0);
+    in.Read(ts_Startup+"PROTOCOL",value_uint,0U);
     if (value_uint != server.proto.Number())
     {
 	server.proto.Set(value_uint);
@@ -1924,7 +1927,7 @@ bool Magick::get_config_values()
 			    value_uint, server.proto.Number());
     }
 
-    in.Read(ts_Startup+"LEVEL",value_uint,1);
+    in.Read(ts_Startup+"LEVEL",value_uint,1U);
     if (value_uint > i_level)
 	i_level = value_uint;
     startup.level = value_uint;
@@ -2192,7 +2195,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"MOTDFILE",files.motdfile,"magick.motd");
     in.Read(ts_Files+"LANGDIR",files.langdir,"lang");
     in.Read(ts_Files+"DATABASE",files.database,"magick.mnd");
-    in.Read(ts_Files+"COMPRESSION",files.compression,6);
+    in.Read(ts_Files+"COMPRESSION",files.compression,6U);
     if (files.compression > 9)
 	files.compression = 9;
     in.Read(ts_Files+"KEYFILE",files.keyfile,"magick.key");
@@ -2293,18 +2296,18 @@ bool Magick::get_config_values()
     else
 	config.ping_frequency = FromHumanTime("30s");
 
-    in.Read(ts_Config+"STARTHRESH",config.starthresh, 4);
-    in.Read(ts_Config+"LISTSIZE",config.listsize, 50);
-    in.Read(ts_Config+"MAXLIST",value_uint, 250);
+    in.Read(ts_Config+"STARTHRESH",config.starthresh, 4U);
+    in.Read(ts_Config+"LISTSIZE",config.listsize, 50U);
+    in.Read(ts_Config+"MAXLIST",value_uint, 250U);
     if (value_uint < config.listsize)
 	value_uint = config.listsize;
     config.maxlist = value_uint;
 
-    in.Read(ts_Config+"MIN_THREADS",config.min_threads, 2);
+    in.Read(ts_Config+"MIN_THREADS",config.min_threads, 2U);
     if (config.min_threads < 1)
 	config.min_threads = 1;
-    in.Read(ts_Config+"LOW_WATER_MARK",config.low_water_mark, 10);
-    in.Read(ts_Config+"HIGH_WATER_MARK",config.high_water_mark, 15);
+    in.Read(ts_Config+"LOW_WATER_MARK",config.low_water_mark, 10U);
+    in.Read(ts_Config+"HIGH_WATER_MARK",config.high_water_mark, 15U);
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
     in.Read(ts_Config+"MSG_SEEN_TIME",value_mstring,"30s");
@@ -2312,7 +2315,7 @@ bool Magick::get_config_values()
 	config.msg_seen_time = FromHumanTime(value_mstring);
     else
 	config.msg_seen_time = FromHumanTime("30s");
-    in.Read(ts_Config+"MSG_SEEN_ACT",config.msg_seen_act, 10);
+    in.Read(ts_Config+"MSG_SEEN_ACT",config.msg_seen_act, 10U);
 
     in.Read(ts_NickServ+"APPEND_RENAME",nickserv.append_rename, true);
     in.Read(ts_NickServ+"SUFFIXES",nickserv.suffixes,"_-^`");
@@ -2340,7 +2343,7 @@ bool Magick::get_config_values()
     else
 	nickserv.release = FromHumanTime("1m");
 
-    in.Read(ts_NickServ+"PASSFAIL",nickserv.passfail,5);
+    in.Read(ts_NickServ+"PASSFAIL",nickserv.passfail,5U);
     in.Read(ts_NickServ+"DEF_PROTECT",nickserv.def_protect,true);
     in.Read(ts_NickServ+"LCK_PROTECT",nickserv.lck_protect,false);
     in.Read(ts_NickServ+"DEF_SECURE",nickserv.def_secure,false);
@@ -2394,9 +2397,9 @@ bool Magick::get_config_values()
     else
 	chanserv.delay = FromHumanTime("30s");
 
-    in.Read(ts_ChanServ+"MAX_PER_NICK",chanserv.max_per_nick,15);
+    in.Read(ts_ChanServ+"MAX_PER_NICK",chanserv.max_per_nick,15U);
     in.Read(ts_ChanServ+"DEF_AKICK",chanserv.def_akick_reason,"You have been banned from channel");
-    in.Read(ts_ChanServ+"PASSFAIL",chanserv.passfail,5);
+    in.Read(ts_ChanServ+"PASSFAIL",chanserv.passfail,5U);
     in.Read(ts_ChanServ+"CHANKEEP",value_mstring,"15s");
     if (FromHumanTime(value_mstring))
 	chanserv.chankeep = FromHumanTime(value_mstring);
@@ -2446,30 +2449,30 @@ bool Magick::get_config_values()
 	chanserv.def_revenge = "NONE";
 
     in.Read(ts_ChanServ+"LCK_REVENGE",chanserv.lck_revenge,false);
-    in.Read(ts_ChanServ+"LEVEL_MIN",chanserv.level_min,-1);
-    in.Read(ts_ChanServ+"LEVEL_MAX",chanserv.level_max,30);
-    in.Read(ts_ChanServ+"LVL_AUTODEOP",chanserv.lvl["AUTODEOP"],-1);
-    in.Read(ts_ChanServ+"LVL_AUTOVOICE",chanserv.lvl["AUTOVOICE"],5);
-    in.Read(ts_ChanServ+"LVL_AUTOOP",chanserv.lvl["AUTOOP"],10);
-    in.Read(ts_ChanServ+"LVL_READMEMO",chanserv.lvl["READMEMO"],0);
-    in.Read(ts_ChanServ+"LVL_WRITEMEMO",chanserv.lvl["WRITEMEMO"],15);
-    in.Read(ts_ChanServ+"LVL_DELMEMO",chanserv.lvl["DELMEMO"],25);
-    in.Read(ts_ChanServ+"LVL_GREET",chanserv.lvl["GREET"],1);
-    in.Read(ts_ChanServ+"LVL_OVERGREET",chanserv.lvl["OVERGREET"],25);
-    in.Read(ts_ChanServ+"LVL_MESSAGE",chanserv.lvl["MESSAGE"],20);
-    in.Read(ts_ChanServ+"LVL_AKICK",chanserv.lvl["AKICK"],20);
-    in.Read(ts_ChanServ+"LVL_SUPER",chanserv.lvl["SUPER"],25);
-    in.Read(ts_ChanServ+"LVL_UNBAN",chanserv.lvl["UNBAN"],10);
-    in.Read(ts_ChanServ+"LVL_ACCESS",chanserv.lvl["ACCESS"],5);
-    in.Read(ts_ChanServ+"LVL_SET",chanserv.lvl["SET"],25);
-    in.Read(ts_ChanServ+"LVL_VIEW",chanserv.lvl["VIEW"],1);
-    in.Read(ts_ChanServ+"LVL_CMDINVITE",chanserv.lvl["CMDINVITE"],5);
-    in.Read(ts_ChanServ+"LVL_CMDUNBAN",chanserv.lvl["CMDUNBAN"],10);
-    in.Read(ts_ChanServ+"LVL_CMDVOICE",chanserv.lvl["CMDVOICE"],5);
-    in.Read(ts_ChanServ+"LVL_CMDOP",chanserv.lvl["CMDOP"],10);
-    in.Read(ts_ChanServ+"LVL_CMDKICK",chanserv.lvl["CMDKICK"],15);
-    in.Read(ts_ChanServ+"LVL_CMDMODE",chanserv.lvl["CMDMODE"],15);
-    in.Read(ts_ChanServ+"LVL_CMDCLEAR",chanserv.lvl["CMDCLEAR"],20);
+    in.Read(ts_ChanServ+"LEVEL_MIN",chanserv.level_min,-1L);
+    in.Read(ts_ChanServ+"LEVEL_MAX",chanserv.level_max,30L);
+    in.Read(ts_ChanServ+"LVL_AUTODEOP",chanserv.lvl["AUTODEOP"],-1L);
+    in.Read(ts_ChanServ+"LVL_AUTOVOICE",chanserv.lvl["AUTOVOICE"],5L);
+    in.Read(ts_ChanServ+"LVL_AUTOOP",chanserv.lvl["AUTOOP"],10L);
+    in.Read(ts_ChanServ+"LVL_READMEMO",chanserv.lvl["READMEMO"],0L);
+    in.Read(ts_ChanServ+"LVL_WRITEMEMO",chanserv.lvl["WRITEMEMO"],15L);
+    in.Read(ts_ChanServ+"LVL_DELMEMO",chanserv.lvl["DELMEMO"],25L);
+    in.Read(ts_ChanServ+"LVL_GREET",chanserv.lvl["GREET"],1L);
+    in.Read(ts_ChanServ+"LVL_OVERGREET",chanserv.lvl["OVERGREET"],25L);
+    in.Read(ts_ChanServ+"LVL_MESSAGE",chanserv.lvl["MESSAGE"],20L);
+    in.Read(ts_ChanServ+"LVL_AKICK",chanserv.lvl["AKICK"],20L);
+    in.Read(ts_ChanServ+"LVL_SUPER",chanserv.lvl["SUPER"],25L);
+    in.Read(ts_ChanServ+"LVL_UNBAN",chanserv.lvl["UNBAN"],10L);
+    in.Read(ts_ChanServ+"LVL_ACCESS",chanserv.lvl["ACCESS"],5L);
+    in.Read(ts_ChanServ+"LVL_SET",chanserv.lvl["SET"],25L);
+    in.Read(ts_ChanServ+"LVL_VIEW",chanserv.lvl["VIEW"],1L);
+    in.Read(ts_ChanServ+"LVL_CMDINVITE",chanserv.lvl["CMDINVITE"],5L);
+    in.Read(ts_ChanServ+"LVL_CMDUNBAN",chanserv.lvl["CMDUNBAN"],10L);
+    in.Read(ts_ChanServ+"LVL_CMDVOICE",chanserv.lvl["CMDVOICE"],5L);
+    in.Read(ts_ChanServ+"LVL_CMDOP",chanserv.lvl["CMDOP"],10L);
+    in.Read(ts_ChanServ+"LVL_CMDKICK",chanserv.lvl["CMDKICK"],15L);
+    in.Read(ts_ChanServ+"LVL_CMDMODE",chanserv.lvl["CMDMODE"],15L);
+    in.Read(ts_ChanServ+"LVL_CMDCLEAR",chanserv.lvl["CMDCLEAR"],20L);
 
     in.Read(ts_MemoServ+"NEWS_EXPIRE",value_mstring,"3w");
     if (FromHumanTime(value_mstring))
@@ -2489,7 +2492,7 @@ bool Magick::get_config_values()
     else
 	memoserv.delay = FromHumanTime("10s");
 
-    in.Read(ts_MemoServ+"FILES",memoserv.files,0);
+    in.Read(ts_MemoServ+"FILES",memoserv.files,0U);
     in.Read(ts_MemoServ+"FILESIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
 	memoserv.filesize = FromHumanSpace(value_mstring);
@@ -2529,10 +2532,10 @@ bool Magick::get_config_values()
     else
 	operserv.expire_sadmin = FromHumanTime("1y");
 
-    in.Read(ts_OperServ+"MAX_CLONE",operserv.max_clone,50);
-    in.Read(ts_OperServ+"CLONE_LIMIT",operserv.clone_limit,2);
+    in.Read(ts_OperServ+"MAX_CLONE",operserv.max_clone,50U);
+    in.Read(ts_OperServ+"CLONE_LIMIT",operserv.clone_limit,2U);
     in.Read(ts_OperServ+"DEF_CLONE",operserv.def_clone,"Maximum connections from one host exceeded");
-    in.Read(ts_OperServ+"CLONE_TRIGGER",operserv.clone_trigger,10);
+    in.Read(ts_OperServ+"CLONE_TRIGGER",operserv.clone_trigger,10U);
     in.Read(ts_OperServ+"CLONE_TIME",value_mstring,"3h");
     if (FromHumanTime(value_mstring))
 	operserv.clone_time = FromHumanTime(value_mstring);
@@ -2551,7 +2554,7 @@ bool Magick::get_config_values()
     else
 	operserv.flood_time = FromHumanTime("10s");
 
-    in.Read(ts_OperServ+"FLOOD_MSGS",operserv.flood_msgs,5);
+    in.Read(ts_OperServ+"FLOOD_MSGS",operserv.flood_msgs,5U);
 
     in.Read(ts_OperServ+"IGNORE_TIME",value_mstring,"20s");
     if (FromHumanTime(value_mstring))
@@ -2559,14 +2562,14 @@ bool Magick::get_config_values()
     else
 	operserv.ignore_time = FromHumanTime("20s");
 
-    in.Read(ts_OperServ+"IGNORE_LIMIT",operserv.ignore_limit,5);
+    in.Read(ts_OperServ+"IGNORE_LIMIT",operserv.ignore_limit,5U);
     in.Read(ts_OperServ+"IGNORE_REMOVE",value_mstring,"5m");
     if (FromHumanTime(value_mstring))
 	operserv.ignore_remove = FromHumanTime(value_mstring);
     else
 	operserv.ignore_remove = FromHumanTime("5m");
 
-    in.Read(ts_OperServ+"IGNORE_METHOD",operserv.ignore_method,8);
+    in.Read(ts_OperServ+"IGNORE_METHOD",operserv.ignore_method,8U);
     in.Read(ts_OperServ+"LOG_IGNORE",operserv.log_ignore,false);
     in.Read(ts_OperServ+"INIT_HTM_GAP",value_mstring,"5s");
     if (FromHumanTime(value_mstring))
@@ -2746,8 +2749,8 @@ bool Magick::get_config_values()
 	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value::zero);
     }
 
-    RET(true);
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
+    RET(true);
 }
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
