@@ -94,13 +94,15 @@ public class Files extends TabbedPane
 	compression.addItem(new String("9 - Maximum"));
 	compression.setSelectedIndex(def_compression);
 
-	b_logfile = createButton("B_LOGFILE", "Browse...", true);
-	b_database = createButton("B_DATABASE", "Browse...", true);
-	b_keyfile = createButton("B_KEYFILE", "Browse...", encryption.isSelected());
-	b_motdfile = createButton("B_MOTDFILE", "Browse...", true);
-	b_protocol = createButton("B_PROTOCOL", "Browse...", true);
-	b_pidfile = createButton("B_PIDFILE", "Browse...", true);
-
+	if (mct.currentDirectory() != null)
+	{
+	    b_logfile = createButton("B_LOGFILE", "Browse...", true);
+	    b_database = createButton("B_DATABASE", "Browse...", true);
+	    b_keyfile = createButton("B_KEYFILE", "Browse...", encryption.isSelected());
+	    b_motdfile = createButton("B_MOTDFILE", "Browse...", true);
+	    b_protocol = createButton("B_PROTOCOL", "Browse...", true);
+	    b_pidfile = createButton("B_PIDFILE", "Browse...", true);
+	}
     }
 
     public void documentChanged(DocumentEvent e)
@@ -163,28 +165,34 @@ public class Files extends TabbedPane
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "File UMASK", umask);
 	addToGridBag(gb, gc, "Log File", logfile);
-	addToGridBagAligned(gb, gc, b_logfile, gc.WEST);
+	if (mct.currentDirectory() != null)
+	    addToGridBagAligned(gb, gc, b_logfile, gc.WEST);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Log Channel", logchan);
 	addToGridBag(gb, gc, "Verbose", verbose);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Database File", database);
-	addToGridBagAligned(gb, gc, b_database, gc.WEST);
+	if (mct.currentDirectory() != null)
+	    addToGridBagAligned(gb, gc, b_database, gc.WEST);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Compression Level", compression);
 	addToGridBag(gb, gc, "Encryption", encryption);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Key File", keyfile);
-	addToGridBagAligned(gb, gc, b_keyfile, gc.WEST);
+	if (mct.currentDirectory() != null)
+	    addToGridBagAligned(gb, gc, b_keyfile, gc.WEST);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "MOTD File", motdfile);
-	addToGridBagAligned(gb, gc, b_motdfile, gc.WEST);
+	if (mct.currentDirectory() != null)
+	    addToGridBagAligned(gb, gc, b_motdfile, gc.WEST);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Protocol Definition", protocol);
-	addToGridBagAligned(gb, gc, b_protocol, gc.WEST);
+	if (mct.currentDirectory() != null)
+	    addToGridBagAligned(gb, gc, b_protocol, gc.WEST);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "PID File", pidfile);
-	addToGridBagAligned(gb, gc, b_pidfile, gc.WEST);
+	if (mct.currentDirectory() != null)
+	    addToGridBagAligned(gb, gc, b_pidfile, gc.WEST);
 	addGridBagLine(gb, gc);
 
 	addToGridBagLine(gb, gc, "Language Dir", langdir);

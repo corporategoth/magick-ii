@@ -41,7 +41,6 @@ import java.io.FileOutputStream;
 public class mct extends JApplet implements ActionListener
 {
 // private:
-    private boolean command;
     private JMenuItem cwd, open, save, quit, about, time_fmt, space_fmt, wildcards;
     private JCheckBoxMenuItem tooltips;
     private ButtonGroup theme;
@@ -55,15 +54,30 @@ public class mct extends JApplet implements ActionListener
 	return pwd;
     }
 
-    public mct(boolean c)
+    public mct(String argv[])
     {
 	super();
-	command = c;
+	if (argv != null && argv.length > 0)
+	{
+	    File f = new File(argv[0]);
+	    if (f.exists() && f.isDirectory())
+	    {
+		try
+		{
+		    pwd = f.getCanonicalPath();
+		}
+		catch (Exception ex)
+		{
+		}
+	    }
+	}
+	if (pwd == null)
+	    actionPerformed(new ActionEvent(cwd, 0, ""));
     }
 
     public mct()
     {
-	this(false);
+	this(null);
     }
 
     public String getConfigData()
@@ -283,6 +297,11 @@ public class mct extends JApplet implements ActionListener
 
     public void init()
     {
+	init(null);
+    }
+
+    public void init(String dir)
+    {
 	// Ground work ... (Look and Feel)
 	laf = new Vector();
 	UIManager.LookAndFeelInfo[] feels = UIManager.getInstalledLookAndFeels();
@@ -329,7 +348,7 @@ public class mct extends JApplet implements ActionListener
 	mb.setBorderPainted(false);
 	JMenu submenu;
 
-	if (command)
+	if (currentDirectory() != null)
 	{
 	    submenu = new JMenu("File");
 	    submenu.setMnemonic(KeyEvent.VK_F);
@@ -488,21 +507,34 @@ public class mct extends JApplet implements ActionListener
 	cp.add(middle, BorderLayout.CENTER);
 	// cp.add(bottom, BorderLayout.SOUTH);
 
-	if (pwd == null)
-	    actionPerformed(new ActionEvent(cwd, 0, ""));
+	if (currentDirectory() != null)
+	{
+	    File f = new File(currentDirectory() + "/magick.ini");
+	    if (f.exists() && f.canRead())
+	    {
+		try
+		{
+		    FileInputStream is = new FileInputStream(f);
+		    byte[] array = new byte[(int) f.length()];
+		    is.read(array);
+		    setConfigData(new String(array));
+		}
+		catch (Exception ex)
+		{
+		}
+	    }
+	}
     }
 
     public static void main(String argv[])
     {
-	JApplet applet = new mct(true);
+	JApplet applet = new mct(argv);
 	JFrame frame = new JFrame("Magick Configuration Tool");
 	frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
 	frame.getContentPane().add(applet);
 	frame.setSize(750, 500);
 	applet.init();
 	applet.start();
-	if (argv.length > 1)
-	    pwd = argv[1];
 	frame.setVisible(true);
     }
 
