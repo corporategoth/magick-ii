@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.198  2000/08/19 14:45:02  prez
+** Fixed mode settings upon commitee recognitition syntax checking
+**
 ** Revision 1.197  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -1024,6 +1027,9 @@ void Chan_Live_t::SendMode(mstring in)
 		    param++;
 		}
 		break;
+	    default:
+		if (in.WordCount(" ") >= param)
+		    param++;
 	    }
 	}
 	else
@@ -1253,7 +1259,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
 		}
 		break;
-
+	    default:
+		fwdargs++;
 	    }
 	}
 	else
@@ -2015,6 +2022,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 
 		fwdargs++;
 		break;
+	    default:
+		fwdargs++;
 	    }
 	}
 	else
@@ -2683,6 +2692,8 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 		    fwdargs++;
 		}
 		break;
+	    default:
+		fwdargs++;
 	    }
 	}
     }

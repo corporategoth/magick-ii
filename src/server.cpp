@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2000/08/19 14:45:03  prez
+** Fixed mode settings upon commitee recognitition syntax checking
+**
 ** Revision 1.119  2000/08/19 10:59:47  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -2695,10 +2698,12 @@ void NetworkServ::execute(const mstring & data)
 			mstring setmode2;
 			for (int j=0; j<setmode.size(); j++)
 			{
-			    if (!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
+			    if (setmode[j] != '+' && setmode[j] != '-' &&
+				setmode[j] != ' ' &&
+				!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
 			        setmode2 += setmode[j];
 			}
-			SVSMODE(Parent->nickserv.FirstName(), sourceL, setmode2);
+			SVSMODE(Parent->nickserv.FirstName(), sourceL, "+" + setmode2);
 		    }
 		    if (Parent->nickserv.IsStored(sourceL))
 		    {
@@ -3239,10 +3244,12 @@ void NetworkServ::execute(const mstring & data)
 		    mstring setmode2;
 		    for (int j=0; j<setmode.size(); j++)
 		    {
-			if (!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
+			if (setmode[j] != '+' && setmode[j] != '-' &&
+			    setmode[j] != ' ' &&
+			    !Parent->nickserv.live[sourceL].HasMode(setmode[j]))
 			    setmode2 += setmode[j];
 		    }
-		    SVSMODE(Parent->nickserv.FirstName(), sourceL, setmode2);
+		    SVSMODE(Parent->nickserv.FirstName(), sourceL, "+" + setmode2);
 		}
 		if (Parent->nickserv.IsStored(sourceL))
 		{
@@ -3615,10 +3622,12 @@ void NetworkServ::execute(const mstring & data)
 		    mstring setmode2;
 		    for (int j=0; j<setmode.size(); j++)
 		    {
-			if (!Parent->nickserv.live[sourceL].HasMode(setmode[j]))
+			if (setmode[j] != '+' && setmode[j] != '-' &&
+			    setmode[j] != ' ' &&
+			    !Parent->nickserv.live[sourceL].HasMode(setmode[j]))
 			    setmode2 += setmode[j];
 		    }
-		    SVSMODE(Parent->nickserv.FirstName(), sourceL, setmode2);
+		    SVSMODE(Parent->nickserv.FirstName(), sourceL, "+" + setmode2);
 		}
 		if (Parent->nickserv.IsStored(sourceL))
 		{

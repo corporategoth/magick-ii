@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.127  2000/08/19 14:45:03  prez
+** Fixed mode settings upon commitee recognitition syntax checking
+**
 ** Revision 1.126  2000/08/19 10:59:47  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
@@ -1046,6 +1049,9 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
 	chans_founder_identd.insert(*i);
     identified=in.identified;
     services=in.services;
+    last_nick_reg=in.last_nick_reg;
+    last_chan_reg=in.last_chan_reg;
+    last_memo=in.last_memo;
     map<mstring, mstring>::const_iterator j;
     i_UserDef.clear();
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
@@ -1390,10 +1396,11 @@ void Nick_Live_t::Name(mstring in)
 	mstring setmode2;
 	for (i=0; i<setmode.size(); i++)
 	{
-	    if (!HasMode(setmode[i]))
+	    if (setmode[i] != '+' && setmode[i] != '-' &&
+		setmode[i] != ' ' && !HasMode(setmode[i]))
 	        setmode2 += setmode[i];
 	}
-	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, setmode2);
+	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, "+" + setmode2);
     }
 }
 
@@ -1513,10 +1520,11 @@ void Nick_Live_t::Mode(mstring in)
 			mstring setmode2;
 			for (i=0; i<setmode.size(); i++)
 			{
-			    if (!HasMode(setmode[i]))
+			    if (setmode[i] != '+' && setmode[i] != '-' &&
+				setmode[i] != ' ' && !HasMode(setmode[i]))
 			        setmode2 += setmode[i];
 			}
-			Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, setmode2);
+			Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, "+" + setmode2);
 		    }
 		}
 	    }
