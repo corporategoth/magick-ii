@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.140  2000/12/12 06:01:59  prez
+** Typos
+**
 ** Revision 1.139  2000/12/10 13:06:12  prez
 ** Ditched alot of the *toa's since mstring can do it internally now.
 **
@@ -3032,6 +3035,10 @@ void NetworkServ::execute(const mstring & data)
 	    sraw("366 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
 
 	}
+	else if (msgtype=="NETINFO")
+	{
+	    // Ignore -- unrealism
+	}
 	else if (msgtype=="NICK")
 	{
 	    if (source.Contains("."))
@@ -3475,11 +3482,11 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(3, ": "));
 	    }
 	}
-	if (msgtype=="SETTIME")
+	else if (msgtype=="SETTIME")
 	{
 	    // RWORLDism -- ignore.
 	}
-	if (msgtype=="SERVER")
+	else if (msgtype=="SERVER")
 	{
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
