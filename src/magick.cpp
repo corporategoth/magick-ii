@@ -1723,18 +1723,7 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri)
 
 void Magick::load_databases()
 {
-    // to buggered to think about it tonight, maybe tommorow night.
-    // files.Main_DB() == output filename
-    // todo: mlock the load/save structures.
-
-    // the below is megaly fucked up, need to do load from file to memory stream, 
-    // then pass that stream on down to the load_database code
-
     NFT("Magick::load_databases");
-/*    wxMemoryStream chanservstrm;
-    wxInputStream *strm=create_input_stream(chanservstrm);
-    chanserv.load_database(*strm);
-    destroy_input_stream();*/
 
     mstring databasefile;
     if (mstring(Parent->files.Database()[0u]) == DirSlash ||
@@ -1743,9 +1732,41 @@ void Magick::load_databases()
     else
 	databasefile = wxGetCwd()+DirSlash+Parent->files.Database();
 
+    mstring tag;
+    unsigned long ver;
+    bool compressed;
+    bool encrypted;
     wxFileInputStream finput(databasefile);
+
     if (finput.Ok())
     {
+	finput >> tag >> ver >> compressed >> encrypted;
+	if (tag != FileIdentificationTag)
+	    wxLogFatal("Invalid data file (not Magick II)");
+	if (ver != FileVersionNumber)
+	    wxLogFatal("Version numbers do not match.");
+
+	if (compressed && encrypted)
+	{
+	    //wxCryptInputStream cinput(finput);
+	    //wxZlibInputStream zinput(cinput);
+	    wxZlibInputStream zinput(finput);
+	    wxDataInputStream input(zinput);
+	}
+	else if (compressed)
+	{
+	    wxZlibInputStream zinput(finput);
+	    wxDataInputStream input(zinput);
+	}
+	else if (encrypted)
+	{
+	    //wxCryptInputStream cinput(finput);
+	    //wxDataInputStream input(cinput);
+	}
+	else
+	{	
+	    wxDataInputStream input(finput);
+	}
 	wxDataInputStream input(finput);
 	Parent->operserv.load_database(input);
 	Parent->nickserv.load_database(input);
@@ -1761,19 +1782,6 @@ void Magick::save_databases()
 {
     // to buggered to think about it tonight, maybe tommorow night.
     NFT("Magick::save_databases");
-/*    wxOutputStream *strm;
-
-    wxMemoryStream chanservstream;
-    strm=create_output_stream(chanservstrm);
-    chaserv.save_database(*strm);
-    destroy_output_stream();
-
-    wxMemoryStream nickservstream;
-    strm=create_output_stream(chanservstrm);
-    nickserv.save_database(*strm);
-    destroy_output_stream();
-
-    wxFileOutputStream */
 
     mstring databasefile;
     if (mstring(Parent->files.Database()[0u]) == DirSlash ||
@@ -1784,9 +1792,33 @@ void Magick::save_databases()
 
     CP(("Database Filename being used: %s", databasefile.c_str()));
     wxFileOutputStream foutput(databasefile);
+	
     if (foutput.Ok())
     {
-	wxDataOutputStream output(foutput);
+	foutput << FileIdentificationTag << FileVersionNumber <<
+		(bool) files.Compression() << files.Encryption();
+
+	if (files.Compression() && files.Encryption())
+	{
+	    //wxCryptOutputStream coutput(foutput);
+	    //wxZlibOutputStream zoutput(coutput, files.Compression());
+	    wxZlibOutputStream zoutput(foutput, files.Compression());
+	    wxDataOutputStream output(zoutput);
+	}
+	else if (files.Compression())
+	{
+	    wxZlibOutputStream zoutput(foutput, files.Compression());
+	    wxDataOutputStream output(zoutput);
+	}
+	else if (files.Encryption())
+	{
+	    //wxCryptOutputStream coutput(foutput);
+	    //wxDataOutputStream output(coutput);
+	}
+	else
+	{	
+	    wxDataOutputStream output(foutput);
+	}
 	Parent->operserv.save_database(output);
 	Parent->nickserv.save_database(output);
 	Parent->chanserv.save_database(output);

@@ -911,6 +911,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
     FT("Nick_Live_t::Mask", ((int) type));
 
     mstring retval;
+    mstring user = i_user;
     switch (type)
     {
     case N:		// nick!*@*
@@ -918,11 +919,10 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 	break;
 
     case N_U_P_H:	// nick!user@port.host
-	retval = i_Name + "!" + i_user + "@" + i_host;
+	retval = i_Name + "!" + user + "@" + i_host;
 	break;
 
     case N_U_H:		// nick!*user@*.host
-	mstring user = i_user;
 	if (user[0u] == '~')
 	    user = user.After("~");
 	if (i_host.IsNumber())
@@ -947,11 +947,10 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 	break;
 
     case U_P_H:		// *!user@port.host
-	retval = "*!" + i_user + "@" + i_host;
+	retval = "*!" + user + "@" + i_host;
 	break;
 
     case U_H:		// *!*user@*.host
-	mstring user = i_user;
 	if (user[0u] == '~')
 	    user = user.After("~");
 	if (i_host.IsNumber())
