@@ -3389,7 +3389,9 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 	    CP(("MODE TO %s: %s", chan.LowerCase().c_str(), (modes + " " + mode_params).c_str()));
 	    if (Magick::instance().chanserv.IsLive(chan))
 	    {
-		Magick::instance().chanserv.GetLive(chan)->Mode(source, modes + " " + mode_params);
+		map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(chan);
+		clive->Creation_Time(static_cast < time_t > (atoul(params.ExtractWord(2, ": "))));
+		clive->Mode(source, modes + " " + mode_params);
 	    }
 	    else if (modes.length() > 1)
 	    {
@@ -4818,7 +4820,9 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    CP(("MODE TO %s: %s", chan.LowerCase().c_str(), (modes + " " + mode_params).c_str()));
 	    if (Magick::instance().chanserv.IsLive(chan))
 	    {
-		Magick::instance().chanserv.GetLive(chan)->Mode(source, modes + " " + mode_params);
+		map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(chan);
+		clive->Creation_Time(static_cast < time_t > (atoul(params.ExtractWord(1, ": "))));
+		clive->Mode(source, modes + " " + mode_params);
 	    }
 	    else if (modes.length() > 1)
 	    {

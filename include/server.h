@@ -46,15 +46,16 @@ class Protocol
     // ie. reasonable max length (def: 512 - 62 = 450).
     unsigned int i_MaxLine;
 
-    bool i_Globops;
-    bool i_Helpops;
-    bool i_Chatops;
-    bool i_Tokens;
-    bool i_P12;
-    bool i_TSora;
-    bool i_SJoin;
-    bool i_BigTopic;
-    bool i_TopicJoin;
+    bool i_Globops;		// GLOBOPS supported
+    bool i_Helpops;		// HELPOPS supported
+    bool i_Chatops;		// CHATOPS supported
+    bool i_Tokens;		// Tokenized messages supported
+    bool i_P12;			// P12 (SNICK) support
+    bool i_TSora;		// Extra timestamping (and SVINFO line)
+    bool i_SJoin;		// Use SJOIN instead of JOIN
+    bool i_BigTopic;		// Topic includes setter and timestamp
+    bool i_TopicJoin;		// ChanServ must join to set topic
+    bool i_ServerModes;		// Server must set modes, not ChanServ
 
     /* AKILL types
      *
@@ -97,12 +98,20 @@ class Protocol
      * 3000 = NICK nick hops signon-time user host [mode] ipaddress nicknumeric :realname
      */
     unsigned int i_Signon;
-    unsigned int i_Modes;	/* Modes per line */
-    mstring i_ChanModeArg;	/* Channel Modes that have arguments */
 
-    mstring i_Server;		/* Should have %s %d %s in it (in order) */
-    mstring i_Burst;		/* Simply do we need to announce a flood? */
-    mstring i_EndBurst;		/* and if we do, how do we tell em we're done */
+    unsigned int i_Modes;	// Modes per line
+    mstring i_ServicesModes;	// Modes services MUST set to be services
+    mstring i_ChanModeArg;	// Channel Modes that have arguments (def. ovbkl)
+
+    /* The server line will have 6 replacements ($1 ... $6) done.
+     * $1 = Server name              $2 = hop count
+     * $3 = Server description       $4 = Server numeric
+     * $5 = Current time (time_t)    $6 = Services start time (time_t)
+     */
+    mstring i_Server;
+
+    mstring i_Burst;		// How do we announce a flood (if at all)
+    mstring i_EndBurst;		// How do we announce end of a flood (if at all)
 
     /* PROTOCTL and CAPAB identifiers
      *
@@ -294,6 +303,10 @@ public:
     {
 	return i_TopicJoin;
     }
+    bool ServerModes() const
+    {
+	return i_ServerModes;
+    }
     unsigned int Akill() const
     {
 	return i_Akill;
@@ -305,6 +318,10 @@ public:
     unsigned int Modes() const
     {
 	return i_Modes;
+    }
+    mstring ServicesModes() const
+    {
+	return i_ServicesModes;
     }
     mstring ChanModeArg() const
     {

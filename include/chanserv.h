@@ -87,7 +87,7 @@ public:
     {
 	*this = in;
     }
-    Chan_Live_t(const mstring & name, const mstring & first_user);
+    Chan_Live_t(const mstring & name, const mstring & first_user, const mDateTime & creation = mDateTime::CurrentDateTime());
 
     ~Chan_Live_t()
     {
@@ -114,6 +114,7 @@ public:
     {
 	return i_Name;
     }
+    void Creation_Time(const mDatetime & in);
     mDateTime Creation_Time() const;
 
     void Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & time =

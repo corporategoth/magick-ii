@@ -266,8 +266,8 @@ Chan_Live_t::Chan_Live_t() : i_Numeric(0), i_Limit(0), ph_timer(0)
     DumpB();
 }
 
-Chan_Live_t::Chan_Live_t(const mstring & name, const mstring & first_user) : i_Name(name), i_Numeric(0), i_Limit(0),
-ph_timer(0)
+Chan_Live_t::Chan_Live_t(const mstring & name, const mstring & first_user, const mDateTime & creation) : i_Name(name),
+i_Numeric(0), i_Creation_Time(creation), i_Limit(0), ph_timer(0)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
@@ -326,6 +326,13 @@ mDateTime Chan_Live_t::Creation_Time() const
     NFT("Chan_Live_t::Creation_Time");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
     RET(i_Creation_Time);
+}
+
+void Chan_Live_t::Creation_Time(const mDateTime & in)
+{
+    FT("Chan_Live_t::Creation_Time", (in));
+    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
+    i_Creation_Time = in;
 }
 
 void Chan_Live_t::Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & settime)
