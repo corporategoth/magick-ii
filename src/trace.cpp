@@ -236,7 +236,7 @@ void ThreadID::WriteOut(const mstring &message)
     finalout += message;
 
     if(t_internaltype!=tt_MAIN&&Parent!=NULL)
-	Parent->loggertask.logmessage(out,finalout);
+	Parent->loggertask.logmessage(this,finalout);
     else
     {
 	*out << finalout << wxEndL;
@@ -530,14 +530,18 @@ void LoggerTask::i_shutdown()
     activation_queue_.enqueue(new shutdown_MO);
 }
 
-void LoggerTask::logmessage(wxOutputStream *out,const mstring& data)
+void LoggerTask::logmessage(ThreadID *out,const mstring& data)
 {
     activation_queue_.enqueue(new LoggerTask_logmessage_MO(this,out,data));
 }
 
-void LoggerTask::logmessage_i(wxOutputStream *out,const mstring& data)
+void LoggerTask::logmessage_i(ThreadID *out,const mstring& data)
 {
-    //
-    *out << data.c_str() << wxEndL;
-    out->Sync();
+    out->WriteOut2(data);
+}
+
+void ThreadID::WriteOut2(const mstring & message)
+{
+	*out << message.c_str() << wxEndL;
+	out->Sync();
 }

@@ -104,6 +104,7 @@ extern short makehex(mstring SLevel);
 //   ??  External commands (T_External)
 
 // ===================================================
+class ThreadID;
 class LoggerTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class LoggerTask_logmessage_MO;
@@ -111,13 +112,13 @@ private:
     ACE_Activation_Queue activation_queue_;
     //map<threadtype_enum, queue<mstring> > buffers;
     // todo later buffer these up until a dump is done.
-    void logmessage_i(wxOutputStream *out,const mstring& data);
+    void logmessage_i(ThreadID *out,const mstring& data);
 public:
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);
     void i_shutdown();
-    void logmessage(wxOutputStream *out,const mstring& data);
+    void logmessage(ThreadID *out,const mstring& data);
 };
 
 class shutdown_MO : public ACE_Method_Object
@@ -133,13 +134,14 @@ class LoggerTask_logmessage_MO : public ACE_Method_Object
 {
 private:
     LoggerTask *i_loggertask;
-    wxOutputStream *i_out;
+    ThreadID *i_out;
     mstring i_data;
 public:
-    LoggerTask_logmessage_MO(LoggerTask *loggertask, wxOutputStream *out,const mstring& data)
+    LoggerTask_logmessage_MO(LoggerTask *loggertask, ThreadID *out,const mstring& data)
     {
-	i_out;
-	i_data;
+	i_out=out;
+	i_data=data;
+	i_loggertask=loggertask;
     }
     virtual int call()
     {
@@ -166,6 +168,7 @@ private:
     mstring logname();
 
 public:
+    void WriteOut2(const mstring& message);
     ThreadID();
     ThreadID(threadtype_enum Type);
     ~ThreadID() { if(out!=NULL) delete out;}
