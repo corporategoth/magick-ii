@@ -42,81 +42,87 @@ bool OperServ::AddHost(const mstring & host)
     BTCB();
     FT("OperServ::AddHost", (host));
     bool retval = false;
+    bool setAkill = false;
 
-    MLOCK((lck_OperServ, "CloneList"));
-    MCB(CloneList.size());
-    map < mstring, pair < unsigned int, list < mDateTime > > >::iterator iter = CloneList.find(host.LowerCase());
-    if (iter == CloneList.end())
     {
-	CloneList[host.LowerCase()].first = 0;
-	iter = CloneList.find(host.LowerCase());
-    }
-    iter->second.first++;
-
-    CP(("Finding clone list, %s = %d", host.c_str(), CloneList[host.LowerCase()].first));
-    {
-	MLOCK2((lck_OperServ, "Clone"));
-	if (iter->second.first > (Clone_find(host) ? Clone->Value().first : Clone_Limit()))
+	MLOCK((lck_OperServ, "CloneList"));
+	MCB(CloneList.size());
+	map < mstring, pair < unsigned int, list < mDateTime > > >::iterator iter = CloneList.find(host.LowerCase());
+	if (iter == CloneList.end())
 	{
-	    // Get rid of entries from the beginning...
-	    mDateTime thr(static_cast<time_t>(time(NULL) - Magick::instance().operserv.Clone_Time()));
-	    list<mDateTime>::iterator iter2 = lower_bound(iter->second.second.begin(), iter->second.second.end(), thr);
-	    iter->second.second.erase(iter->second.second.begin(), iter2);
+	    CloneList[host.LowerCase()].first = 0;
+	    iter = CloneList.find(host.LowerCase());
+	}
+	iter->second.first++;
 
-	    CP(("Event Size after purge is %d", iter->second.second.size()));
-
-	    iter->second.second.push_back(mDateTime::CurrentDateTime());
-	    bool burst = false;
-
+	CP(("Finding clone list, %s = %d", host.c_str(), CloneList[host.LowerCase()].first));
+	{
+	    MLOCK2((lck_OperServ, "Clone"));
+	    if (iter->second.first > (Clone_find(host) ? Clone->Value().first : Clone_Limit()))
 	    {
-		RLOCK((lck_IrcSvcHandler));
-		if (Magick::instance().ircsvchandler != NULL)
-		    burst = Magick::instance().ircsvchandler->Burst();
-	    }
+		// Get rid of entries from the beginning...
+		mDateTime thr(static_cast<time_t>(time(NULL) - Magick::instance().operserv.Clone_Time()));
+		list<mDateTime>::iterator iter2 = lower_bound(iter->second.second.begin(), iter->second.second.end(), thr);
+		iter->second.second.erase(iter->second.second.begin(), iter2);
 
-	    if (!burst && iter->second.second.size() > Magick::instance().operserv.Clone_Trigger())
-	    {
-		CP(("Reached MAX clone kills, adding AKILL ..."));
+		CP(("Event Size after purge is %d", iter->second.second.size()));
 
-		MLOCK3((lck_OperServ, "Akill"));
-		if (!Akill_find("*@" + host))
+		iter->second.second.push_back(mDateTime::CurrentDateTime());
+		bool burst = false;
+
 		{
-		    NickServ::live_t::iterator iter;
-		    vector < mstring > killusers;
-		    {
-			RLOCK((lck_NickServ, lck_live));
-			for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd();
-			     iter++)
-			{
-			    map_entry < Nick_Live_t > nlive(iter->second);
-			    if (nlive->Host().IsSameAs(host, true))
-				killusers.push_back(nlive->Name());
-			}
-		    }
+		    RLOCK((lck_IrcSvcHandler));
+		    if (Magick::instance().ircsvchandler != NULL)
+			burst = Magick::instance().ircsvchandler->Burst();
+		}
 
-		    float percent =
-			100.0 * static_cast < float > (killusers.size()) / static_cast < float >
-			(Magick::instance().nickserv.LiveSize());
+		if (!burst && iter->second.second.size() > Magick::instance().operserv.Clone_Trigger())
+		    setAkill = true;
+		retval = true;
+	    }
+	}
 
-		    Magick::instance().server.AKILL("*@" + host, Magick::instance().operserv.Clone_Akill(),
-						    Magick::instance().operserv.Clone_AkillTime(),
-						    Magick::instance().nickserv.FirstName());
+	MCE(CloneList.size());
+    }
 
-		    Akill_insert("*@" + host, Magick::instance().operserv.Clone_AkillTime(),
-				 Magick::instance().operserv.Clone_Akill(), FirstName());
-		    ANNOUNCE(FirstName(), "MISC/AKILL_ADD",
-			     (FirstName(), host, ToHumanTime(Magick::instance().operserv.Clone_AkillTime()),
-			      Magick::instance().operserv.Clone_Akill(), killusers.size(), fmstring("%.2f", percent)));
-		    LOG(LM_INFO, "OPERSERV/AKILL_ADD",
-			(FirstName(), host, ToHumanTime(Magick::instance().operserv.Clone_AkillTime()),
-			 Magick::instance().operserv.Clone_Akill()));
+    if (setAkill)
+    {
+	CP(("Reached MAX clone kills, adding AKILL ..."));
+
+	MLOCK((lck_OperServ, "Akill"));
+	if (!Akill_find("*@" + host))
+	{
+	    NickServ::live_t::iterator iter;
+	    vector < mstring > killusers;
+	    {
+		RLOCK((lck_NickServ, lck_live));
+		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd();
+		     iter++)
+		{
+		    map_entry < Nick_Live_t > nlive(iter->second);
+		    if (nlive->Host().IsSameAs(host, true))
+			killusers.push_back(nlive->Name());
 		}
 	    }
-	    retval = true;
+
+	    float percent =
+		100.0 * static_cast < float > (killusers.size()) / static_cast < float >
+		(Magick::instance().nickserv.LiveSize());
+
+	    Akill_insert("*@" + host, Magick::instance().operserv.Clone_AkillTime(),
+			 Magick::instance().operserv.Clone_Akill(), FirstName());
+	    Magick::instance().server.AKILL("*@" + host, Magick::instance().operserv.Clone_Akill(),
+					    Magick::instance().operserv.Clone_AkillTime(),
+					    Magick::instance().nickserv.FirstName());
+	    ANNOUNCE(FirstName(), "MISC/AKILL_ADD",
+		     (FirstName(), host, ToHumanTime(Magick::instance().operserv.Clone_AkillTime()),
+		      Magick::instance().operserv.Clone_Akill(), killusers.size(), fmstring("%.2f", percent)));
+	    LOG(LM_INFO, "OPERSERV/AKILL_ADD",
+		(FirstName(), host, ToHumanTime(Magick::instance().operserv.Clone_AkillTime()),
+		 Magick::instance().operserv.Clone_Akill()));
 	}
     }
 
-    MCE(CloneList.size());
     RET(retval);
     ETCB();
 }

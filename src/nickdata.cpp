@@ -805,6 +805,7 @@ services(false), InFlight(name)
     ref_class::lockData(mVarArray(lck_NickServ, lck_live, i_Name.LowerCase()));
     InFlight.init();
 
+    bool isKilled = false;
     // User is on AKILL, add the mask, and No server will kill
     {
 	MLOCK((lck_OperServ, "Akill"));
@@ -814,24 +815,27 @@ services(false), InFlight(name)
 
 	    // Do this cos it will be removed when we KILL,
 	    // and we dont wanna get out of touch.
-	    Magick::instance().operserv.AddHost(i_host);
-	    i_server.erase();
 	    i_realname = reason;
 	    LOG(LM_INFO, "OTHER/KILL_AKILL", (Mask(N_U_P_H), Magick::instance().operserv.Akill->Entry(), reason));
 	    Magick::instance().server.AKILL(Magick::instance().operserv.Akill->Entry(), reason,
 					    Magick::instance().operserv.Akill->Value().first -
 					    Magick::instance().operserv.Akill->Last_Modify_Time().SecondsSince(),
 					    Magick::instance().operserv.Akill->Last_Modifier());
-	    return;
+	    isKilled = true;
 	}
     }
 
     // User triggered CLONE protection, No server will kill
-    if (Magick::instance().operserv.AddHost(i_host))
+    if (Magick::instance().operserv.AddHost(i_host) && !isKilled)
     {
 	LOG(LM_INFO, "OTHER/KILL_CLONE", (Mask(N_U_P_H)));
-	i_server.erase();
 	i_realname = Magick::instance().operserv.Def_Clone();
+	isKilled = true;
+    }
+
+    if (isKilled)
+    {
+	i_server.erase();
 	return;
     }
 

@@ -91,7 +91,7 @@ public:
     vector<mstring> get(const mstring &nick) const;
     size_t Usage() const
     {
-	size_t retval;
+	size_t retval = 0;
 	vector<triplet<mstring,mstring,mstring> >::const_iterator i;
 	for (i = lines.begin(); i != lines.end(); i++)
 	{
