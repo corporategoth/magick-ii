@@ -73,8 +73,13 @@ typedef set<entlist_t>::const_iterator entlist_cui;
 template<class T>
 class entlist_val_t : public mUserDef
 {
+#ifdef WIN32
     friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
     friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
+#else
+    friend wxOutputStream &operator<<<T>(wxOutputStream& out,const entlist_val_t<T>& in);
+    friend wxInputStream &operator>><T>(wxInputStream& in, entlist_val_t<T>& out);
+#endif
     mstring i_Entry;
     T i_Value;
     mDateTime i_Last_Modify_Time;

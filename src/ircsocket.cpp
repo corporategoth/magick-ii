@@ -130,6 +130,12 @@ int ServerPing_Handler::handle_timeout (const ACE_Time_Value &tv, const void *ar
 
 int KillOnSignon_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    // If nickserv isnt online yet, wait 1s
+    if (!Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
+    {
+        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),arg,ACE_Time_Value(1));
+	return 0;
+    }
     FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     // Nick and Reason
     mstring *tmp = (mstring *) arg;
