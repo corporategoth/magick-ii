@@ -1,3 +1,23 @@
+* 2003-06-15 20:41  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.172.2.1), src/operserv.cpp (1.173):
+  
+  Fixed CLONE DEL issue.
+
+* 2003-06-15 19:55  Preston A. Elder <prez@magick.tm>
+  include/stages.h (1.13.2.1), src/filesys.cpp (1.110.2.1):
+  
+  Stopped declaring 64k stack variables, caused core on fbsd.
+
+* 2003-06-15 19:54  Preston A. Elder <prez@magick.tm>
+  include/stages.h (1.14), src/filesys.cpp (1.111):
+  
+  Stopped declaring stack variables 64k in size, now back down to 32k
+
+* 2003-06-09 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.91):
+  
+  Created version 2.0s20030609
+
 * 2003-06-02 03:01  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.90):
   
