@@ -194,7 +194,7 @@ BrokenFunc1_ref<T,const P> mem_fun1_ref_void(R (T::*pm)(const P))
 
 #define mem_fun_void mem_fun
 #define mem_fun_ref_void mem_fun_ref
-#ifdef HAVE_MEM_FUN1
+#ifndef HAVE_MEM_FUN1
 #define mem_fun1_void mem_fun1
 #define mem_fun1_ref_void mem_fun1_ref
 #endif /* HAVE_MEM_FUN1 */
