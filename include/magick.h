@@ -18,7 +18,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include "bob.hpp"
 #include "mstring.h"
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
