@@ -1879,7 +1879,7 @@ void NetworkServ::execute(const mstring & data)
 	    else
 		tmp+="y";
 	    tmp << Parent->startup.Level() << "] Build #" << BUILD_NUMBER <<
-		" (" << BUILD_TIME << ").";
+		" (" << BUILD_TIME << ") " << BUILD_SYS << "/" << BUILD_TYPE << ".";
 	    sraw("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() + " :" + tmp);
 	}
 	else

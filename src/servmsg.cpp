@@ -111,7 +111,7 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
 	if (credits[i].Len())
-	    ::send(mynick, source, credits[i]);
+	    ::send(mynick, source, credits[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
 }
@@ -124,7 +124,7 @@ void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
 	if (contrib[i].Len())
-	    ::send(mynick, source, contrib[i]);
+	    ::send(mynick, source, contrib[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
 }
@@ -491,9 +491,10 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    mDateTime tmp = StartTime;
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_UPTIME"),
 		StartTime.Ago().c_str());
-    if ((StartTime - Parent->ResetTime()).Minute() >= 1)
+    if ((tmp - Parent->ResetTime()).Minute() >= 1)
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_RESET"),
 		Parent->ResetTime().Ago().c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_MAXUSERS"),

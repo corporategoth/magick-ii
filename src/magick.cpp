@@ -392,6 +392,8 @@ int Magick::Start()
     if(logfile!=NULL)
 	fclose(logfile);
 
+    remove(files.Pidfile().Strip(mstring::stBoth));
+
     RET(MAGICK_RET_TERMINATE);
 }
 

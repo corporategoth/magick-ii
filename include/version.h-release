@@ -84,7 +84,7 @@ const mstring credits[] = {
 "To subscribe, email majordomo@magick.tm with 'subscribe",
 "magick' (no quotes) in the text of the message.",
 "",
-"Please type /MSG HelpServ CONTRIB for full credits (flood).",
+"Please type /MSG %s CONTRIB for full credits (flood).",
 "---EOM---"
 };
 
