@@ -25,10 +25,44 @@ REM N/A
 REM
 REM =======================================================================
 
-IF NOT EXIST "%*\files\pic" mkdir "%*\files\pic"
-IF NOT EXIST "%*\files\memo" mkdir "%*\files\memo"
-IF NOT EXIST "%*\files\public" mkdir "%*\files\public"
-IF NOT EXIST "%*\files\temp" mkdir "%*\files\temp"
+REM This is needed for win95/98/me
+if "%9" == "" GOTO args_8
+set ALL_ARGS=%ALL_ARGS% %9
+:args_8
+if "%8" == "" GOTO args_7
+set ALL_ARGS=%ALL_ARGS% %8
+:args_7
+if "%7" == "" GOTO args_6
+set ALL_ARGS=%ALL_ARGS% %7
+:args_6
+if "%6" == "" GOTO args_5
+set ALL_ARGS=%ALL_ARGS% %6
+:args_5
+if "%5" == "" GOTO args_4
+set ALL_ARGS=%ALL_ARGS% %5
+:args_4
+if "%4" == "" GOTO args_3
+set ALL_ARGS=%ALL_ARGS% %4
+:args_3
+if "%3" == "" GOTO args_2
+set ALL_ARGS=%ALL_ARGS% %3
+:args_2
+if "%2" == "" GOTO args_1
+set ALL_ARGS=%ALL_ARGS% %2
+:args_1
+if "%1" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %1
+:start
+
+IF NOT "%OS%" == "Windows_NT" GOTO CommonStartup
+TITLE Magick IRC Services - Configuration GUI
+set ALL_ARGS=%*
+
+:CommonStartup
+IF NOT EXIST "%ALL_ARGS%\files\pic" mkdir "%ALL_ARGS%\files\pic"
+IF NOT EXIST "%ALL_ARGS%\files\memo" mkdir "%ALL_ARGS%\files\memo"
+IF NOT EXIST "%ALL_ARGS%\files\public" mkdir "%ALL_ARGS%\files\public"
+IF NOT EXIST "%ALL_ARGS%\files\temp" mkdir "%ALL_ARGS%\files\temp"
 
 REM
 REM Test if we have java installed ...
@@ -46,7 +80,7 @@ REM
 REM Otherwise, run in local mode, its much nicer :)
 REM
 :have_java
-java -jar mct.jar "%*"
+java -jar mct.jar "%ALL_ARGS%"
 goto end
 
 REM
