@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.136  2000/12/09 10:17:14  prez
+** Added +h to unreal IRCD profile, and made variant more efficiant
+** string wise by cutting out many operator= calls.
+**
 ** Revision 1.135  2000/10/10 11:47:52  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -628,6 +632,7 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_SVS = true;
 	i_Akill = 1;
+	i_ChanModeArg = "ovbehkl";
 	SetTokens(0001);
 	break;
 

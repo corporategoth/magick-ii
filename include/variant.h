@@ -25,6 +25,10 @@ static const char *ident_variant_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/12/09 10:17:14  prez
+** Added +h to unreal IRCD profile, and made variant more efficiant
+** string wise by cutting out many operator= calls.
+**
 ** Revision 1.31  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -84,27 +88,28 @@ private:
 	//} value;
 	
 public:
-	 mVariant(const char *in);
 	mstring valuetype;
 	mstring truevaluetype;
 	// gonna change this to a mstring so we can use custom defined types
 	mVariant(const mVariant& in);
+	mVariant(const char *in);
+	mVariant(const string& in);
 	mVariant(void *in);
-	mVariant(unsigned int in);
-	mVariant(unsigned long in);
-	mVariant(unsigned short in);
-	mVariant(unsigned char in);
-	mVariant(bool in);
-	mVariant(double in);
-	mVariant(float in);
-	mVariant(char in);
-	mVariant(int in);
-	mVariant(long in);
-	mVariant(short in);
+	mVariant(const unsigned int in);
+	mVariant(const unsigned long in);
+	mVariant(const unsigned short in);
+	mVariant(const unsigned char in);
+	mVariant(const bool in);
+	mVariant(const double in);
+	mVariant(const float in);
+	mVariant(const char in);
+	mVariant(const int in);
+	mVariant(const long in);
+	mVariant(const short in);
 	mVariant();
 	// Magick Only stuff
 	mVariant(const mstring& in);
-	mVariant(mDateTime in);
+	mVariant(const mDateTime in);
 
 	mVariant& operator=(const mVariant& in);
 	bool operator==(const mVariant& in)const;

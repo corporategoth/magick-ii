@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/12/09 10:17:14  prez
+** Added +h to unreal IRCD profile, and made variant more efficiant
+** string wise by cutting out many operator= calls.
+**
 ** Revision 1.41  2000/09/01 10:54:39  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -79,115 +83,116 @@ const mVarArray EmptyArray;
 
 // tracing taken out of mVariant now that we know it works so that we don't get infinite recursion.
 mVariant::mVariant()
-{
-    truevaluetype=valuetype="";
-}
+{}
 
-mVariant::mVariant(short in)
-{
-    truevaluetype=valuetype="short";
-    ShortValue=in;
-}
+mVariant::mVariant(const short in)
+	: truevaluetype("short"),
+	  valuetype("short"),
+	  ShortValue(in)
+{}
 
-mVariant::mVariant(int in)
-{
-    truevaluetype=valuetype="int";
-    IntValue=in;
-}
+mVariant::mVariant(const int in)
+	: truevaluetype("int"),
+	  valuetype("int"),
+	  IntValue(in)
+{}
 
-mVariant::mVariant(long in)
-{
-    truevaluetype=valuetype="long";
-    LongValue=in;
-}
+mVariant::mVariant(const long in)
+	: truevaluetype("long"),
+	  valuetype("long"),
+	  LongValue(in)
+{}
 
-mVariant::mVariant(char in)
-{
-    truevaluetype=valuetype="char";
-    CharValue=in;
-}
+mVariant::mVariant(const char in)
+	: truevaluetype("char"),
+	  valuetype("char"),
+	  CharValue(in)
+{}
 
-mVariant::mVariant(float in)
-{
-    truevaluetype=valuetype="float";
-    FloatValue=in;
-}
+mVariant::mVariant(const float in)
+	: truevaluetype("float"),
+	  valuetype("float"),
+	  FloatValue(in)
+{}
 
-mVariant::mVariant(double in)
-{
-    truevaluetype=valuetype="double";
-    DoubleValue=in;
-}
+mVariant::mVariant(const double in)
+	: truevaluetype("double"),
+	  valuetype("double"),
+	  DoubleValue(in)
+{}
 
 mVariant::mVariant(const char * in)
-{
-	truevaluetype="char *";
-	valuetype="mstring";
-	StringValue=mstring(in);
-}
+	: truevaluetype("char *"),
+	  valuetype("mstring"),
+	  StringValue(in)
+{}
+
+mVariant::mVariant(const string& in)
+	: truevaluetype("string"),
+	  valuetype("mstring"),
+	  StringValue(in)
+{}
 
 mVariant::mVariant(const mstring& in)
-{
-	truevaluetype="mstring";
-	valuetype="mstring";
-	StringValue=in;
-}
+	: truevaluetype("mstring"),
+	  valuetype("mstring"),
+	  StringValue(in)
+{}
 
-mVariant::mVariant(mDateTime in)
-{
-	truevaluetype="mDateTime";
-	valuetype="mstring";
-	StringValue=in.DateTimeString();
-}
+mVariant::mVariant(const mDateTime in)
+	: truevaluetype("mDateTime"),
+	  valuetype("mstring"),
+	  StringValue(in.DateTimeString())
+{}
 
-mVariant::mVariant(bool in)
-{
-	truevaluetype=valuetype="bool";
-	BoolValue=in;
-}
+mVariant::mVariant(const bool in)
+	: truevaluetype("bool"),
+	  valuetype("bool"),
+	  BoolValue(in)
+{}
 
-mVariant::mVariant(unsigned char in)
-{
-	truevaluetype=valuetype="unsigned char";
-	UCharValue=in;
-}
+mVariant::mVariant(const unsigned char in)
+	: truevaluetype("unsigned char"),
+	  valuetype("unsigned char"),
+	  UCharValue(in)
+{}
 
-mVariant::mVariant(unsigned short in)
-{
-	truevaluetype=valuetype="unsigned short";
-	UShortValue=in;
-}
+mVariant::mVariant(const unsigned short in)
+	: truevaluetype("unsigned short"),
+	  valuetype("unsigned short"),
+	  UShortValue(in)
+{}
 
-mVariant::mVariant(unsigned int in)
-{
-	truevaluetype=valuetype="unsigned int";
-	UIntValue=in;
-}
+mVariant::mVariant(const unsigned int in)
+	: truevaluetype("unsigned int"),
+	  valuetype("unsigned int"),
+	  UIntValue(in)
+{}
 
-mVariant::mVariant(unsigned long in)
-{
-	truevaluetype=valuetype="unsigned long";
-	ULongValue=in;
-}
+mVariant::mVariant(const unsigned long in)
+	: truevaluetype("unsigned long"),
+	  valuetype("unsigned long"),
+	  ULongValue(in)
+{}
 
 mVariant::mVariant(void * in)
+	: truevaluetype("void *")
 {
 	if(in!=NULL)
 	{
-		truevaluetype=valuetype="void *";
-		PtrValue=in;
+		valuetype="void *";
 	}
 	else
 	{
 		truevaluetype="void *";
 		valuetype="NULL";
 	}
+	PtrValue=in;
 }
 
 mVariant::mVariant(const mVariant & in)
 {
 	*this=in;
-
 }
 
 mVariant& mVariant::operator=(const mVariant& in)
