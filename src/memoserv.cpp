@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_memoserv_cpp_ ## x () { return y; }
+RCSID(memoserv_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2001/02/03 02:21:34  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.87  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -241,17 +246,15 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "lockable.h"
-#include "memoserv.h"
 #include "magick.h"
+#include "dccengine.h"
 
 Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
     i_Nick = nick;
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
-    i_Time = Now();
+    i_Time = mDateTime::CurrentDateTime();
     i_Sender = sender;
     i_Text = text;
     i_File = file;
@@ -369,7 +372,7 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
     FT("News_t::News_t", (channel, sender, text));
     i_Channel = channel;
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
-    i_Time = Now();
+    i_Time = mDateTime::CurrentDateTime();
     i_Sender = sender;
     i_Text = text;
     DumpE();

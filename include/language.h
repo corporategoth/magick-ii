@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -14,19 +14,25 @@
 ** ========================================================== */
 #ifndef _LANGUAGE_H
 #define _LANGUAGE_H
-static const char *ident_language_h = "@(#) $Id$";
+#include "pch.h"
+RCSID(language_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.25  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.26  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
+** Revision 1.24  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
 **
 **
 ** ========================================================== */
@@ -34,14 +40,13 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Mon Jan  1 13:10:13 EST 2001
+ * Created on Tue Dec 19 09:16:14 EST 2000
  */
 
-unsigned int def_langent =     896;
+unsigned int def_langent =     890;
 char *def_lang[] = {
 "; Magick IRC Services",
-"; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
-"; (c) 1998-2001 William King <ungod@magick.tm>",
+"; (c) 1996-1999 Preston A. Elder, W. King",
 ";",
 "; English On-Line Language File",
 "; Translated By: Preston A. Elder <prez@magick.tm>",
@@ -115,9 +120,9 @@ char *def_lang[] = {
 ";   2 = Blue            10 = Cyan",
 ";   3 = Green           11 = Bright Cyan",
 ";   4 = Red             12 = Bright Blue",
-";   5 = Bright Red      13 = Bright Magenta",
+";   5 = Orange          13 = Bright Magenta",
 ";   6 = Magenta         14 = Grey",
-";   7 = Orange          15 = Bright Grey",
+";   7 = Bright Red      15 = Bright Grey",
 "; ",
 "",
 ";",
@@ -233,7 +238,6 @@ char *def_lang[] = {
 "OFF                =OFF",
 "ONLINE             =ONLINE",
 "SUSPENDED          =SUSPENDED",
-"FORBIDDEN          =FORBIDDEN",
 "SVC_AUTO           =Automatic",
 "SVC_MSG            =Message",
 "SVC_LOG            =Logging",
@@ -304,7 +308,7 @@ char *def_lang[] = {
 "",
 "NICK_REGD          =Currently Registered: %d (%d linked)",
 "NICK_DENIED        =Currently Suspended : %d (%d forbidden)",
-"NICK_CMD           =Successful Command Usage (%s):",
+"NICK_CMD           =Successful Command Usage:",
 "NICK_CMD1          =REGISTER      %10d / DROP          %10d",
 "NICK_CMD2          =LINK          %10d / UNLINK        %10d",
 "NICK_CMD3          =HOST          %10d / IDENTIFY      %10d",
@@ -317,7 +321,7 @@ char *def_lang[] = {
 "",
 "CHAN_REGD          =Currently Registered: %d",
 "CHAN_DENIED        =Currently Suspended : %d (%d forbidden)",
-"CHAN_CMD           =Successful Command Usage (%s):",
+"CHAN_CMD           =Successful Command Usage:",
 "CHAN_CMD1          =REGISTER      %10d / DROP          %10d",
 "CHAN_CMD2          =IDENTIFY      %10d",
 "CHAN_CMD3          =SUSPEND       %10d / UNSUSPEND     %10d",
@@ -337,7 +341,7 @@ char *def_lang[] = {
 "OPER_AKILL         =Auto Kill entries          : %d",
 "OPER_OPERDENY      =Oper Deny entries          : %d",
 "OPER_IGNORE        =Ignore entries             : %d",
-"OPER_CMD           =Successful Command Usage (%s):",
+"OPER_CMD           =Successful Command Usage:",
 "OPER_CMD1          =TRACE         %10d / MODE          %10d",
 "OPER_CMD2          =QLINE         %10d / UNQLINE       %10d",
 "OPER_CMD3          =NOOP          %10d / KILL          %10d",
@@ -352,7 +356,7 @@ char *def_lang[] = {
 "OTH_NEWS           =Channels with news articles: %d",
 "OTH_COMM           =Active Committees          : %d",
 "",
-"OTH_CMD            =Successful %s Command Usage (%s):",
+"OTH_CMD            =Successful %s Command Usage:",
 "OTH_CMD1           =READ          %10d / UNREAD        %10d",
 "OTH_CMD2           =SEND          %10d / FLUSH         %10d",
 "OTH_CMD3           =REPLY         %10d / FORWARD       %10d",
@@ -697,12 +701,9 @@ char *def_lang[] = {
 "OTH_NOTBANNED      =Nickname %s is not banned from channel %s.",
 "TOOMANY            =You are Founder or Co-Founder of too many channels.",
 "OTH_TOOMANY        =Nickname %s is Founder or Co-Founder of too many channels.",
-"MAX_MESSAGES       =Maximum amount of on-join messages for %s reached.",
 "IDENTIFIED         =You are already identified for channel %s.",
 "ISFORBIDDEN        =Channel %s is forbidden.",
 "ISNOTFORBIDDEN     =Channel %s is not forbidden.",
-"ISSUSPENDED        =Channel %s is suspended.",
-"ISNOTSUSPENDED     =Channel %s is not suspended.",
 "ISINUSE            =Channel %s is currently in use.",
 "ISNOTINUSE         =Channel %s is not currently in use.",
 "RESTRICT           =Channel %s is registered and has %s set.  Access restrictions apply.",
@@ -760,7 +761,6 @@ char *def_lang[] = {
 "NOTMEMBER          =You are not on the %s committee.",
 "HEAD               =You are head of the %s committee.",
 "NOTHEAD            =You are not head of the %s committee.",
-"MAX_MESSAGES       =Maximum amount of logon messages for %s reached.",
 "OTH_MEMBER         =%s is on the %s committee.",
 "OTH_NOTMEMBER      =%s is not on the %s committee.",
 "OTH_HEAD           =%s is head of the %s committee.",
@@ -791,7 +791,7 @@ char *def_lang[] = {
 "MEMBERS            =members",
 "MESSAGES           =messages",
 "SET_HEAD           =Head",
-"SET_DESCRIPTION    =Description",
+"SET_EMAIL          =Description",
 "SET_EMAIL          =E-Mail Address",
 "SET_URL            =WWW Page",
 "SET_SECURE         =Secure",

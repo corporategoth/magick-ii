@@ -209,6 +209,7 @@ KILL_OPERDENY      =Tried to /OPER when DENIED
 KICK_RESTRICTED    =This channel is restricted.
 RENAMED_IDENT      =You have been renamed for failure to identify.
 RENAMED_FORBID     =You have been renamed as your nickname was forbidden.
+MAYNOTLINK         =You may not link to this IRC Network.
 
 NICK_GETPASS       =%s just performed a GETPASS on nickname %s (%s).
 CHAN_GETPASS       =%s just performed a GETPASS on channel %s (%s).
@@ -229,6 +230,7 @@ RELOAD             =%s just reloaded the server configuration file.
 JUPE               =%s just JUPED server %s.
 ONOFF              =%s services have been turned %s by %s.
 ONOFF_ONE          =%s services for %s have been turned %s by %s.
+INVALIDLINK        =Server %s has been SQUIT from %s as it is not allowed!
 HTM_ON             =Entering high-traffic mode - (%.1fKb/s > %.1fKb/s)
 HTM_STILL          =Still high-traffic mode %d (%d delay): %.1fKb/s
 HTM_TURBO          =Still high-traffic mode %d (TURBO) (%d delay): %.1fKb/s

@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,19 +15,19 @@
 #ifndef _MEMOSERV_H
 #define _MEMOSERV_H
 #include "pch.h"
-static const char *ident_memoserv_h = "@(#) $Id$";
+RCSID(memoserv_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.37  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.38  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.36  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -111,12 +111,14 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 
 #include "base.h"
 
-struct MemoList;
-struct NewsList;
+struct MemoList_CUR;
+struct NewsList_CUR;
+struct ESP_MemoInfo;
 
 class Memo_t : public mUserDef, public SXP::IPersistObj
 {
-    friend list<Memo_t> CreateMemoEntry(MemoList *ml);
+    friend list<Memo_t> CreateMemoEntry(MemoList_CUR *ml);
+    friend list<Memo_t> ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick);
     friend class MemoServ;
 
     mstring i_Nick;
@@ -133,6 +135,7 @@ public:
     Memo_t() {}
     Memo_t(const Memo_t &in) { *this = in; }
     Memo_t(mstring nick, mstring sender, mstring text, unsigned long file = 0);
+    ~Memo_t() {}
     void operator=(const Memo_t &in);
     bool operator==(const Memo_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
@@ -164,7 +167,8 @@ public:
 
 class News_t : public mUserDef, public SXP::IPersistObj
 {
-    friend list<News_t> CreateNewsEntry(NewsList *nl);
+    friend list<News_t> CreateNewsEntry(NewsList_CUR *nl);
+    friend list<News_t> ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan);
     friend class MemoServ;
 
     mstring i_Channel;
@@ -180,6 +184,7 @@ public:
     News_t() {}
     News_t(const News_t &in) { *this = in; }
     News_t(mstring channel, mstring sender, mstring text);
+    ~News_t() {}
     void operator=(const News_t &in);
     bool operator==(const News_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
@@ -227,6 +232,7 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    ~MemoServ() {}
     class stats_t
     {
 	friend class MemoServ;

@@ -2,7 +2,7 @@
 <!doctype linuxdoc system>
 <article>
 <title>The Magick Handbook
-<author>Magick Development Team <tt>magick-devel@magick.tm</tt>
+<author>Magick Development Team <tt>devel@magick.tm</tt>
 <date>Version 2.0, Mon Jan  1 13:15:02 EST 2001
 <abstract>
 This Handbook describes Magick Version 2.0
@@ -49,14 +49,14 @@ who knew him forget him.
 <p>
 
 Magick is designed and developed by the Magick Development
-Team <htmlurl url="mailto:magick-devel@magick.tm" name="magick-devel@magick.tm">.  Any bugs, feature requests,
+Team <htmlurl url="mailto:devel@magick.tm" name="devel@magick.tm">.  Any bugs, feature requests,
 comments, etc should be directed at this mailing list.  The
 development team is an OPEN team, however certain skills
 are required to join, not the least of which is the ability
 to program in C and C++, and to use CVS.  To join this team,
 please e-mail <htmlurl url="mailto:prez@magick.tm" name="prez@magick.tm"> for further details.
 
-The Magick Alpha Team <htmlurl url="mailto:magick-alpha@magick.tm" name="magick-alpha@magick.tm"> test current
+The Magick Alpha Team <htmlurl url="mailto:alpha@magick.tm" name="alpha@magick.tm"> test current
 development versions of Magick, finding not only bugs, but
 also making sure it is a user friendly and understandable
 product, so it may be changed at the same time its being
@@ -66,9 +66,9 @@ join it by first downloading and installing/setting up the
 current alpha version of Magick (if you cannot do this on
 your own, its recommended you do not join the alpha team),
 and then e-mailing <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with "subscribe
-magick-alpha" (no quotes, on one line).
+alpha" (no quotes, on one line).
 
-The Magick Beta Team <htmlurl url="mailto:magick-beta@magick.tm" name="magick-beta@magick.tm"> test versions
+The Magick Beta Team <htmlurl url="mailto:beta@magick.tm" name="beta@magick.tm"> test versions
 of magick that have been through alpha testing, and are in
 the final phase of development.  The beta team's main goal
 is to find bugs before Magick is released, so they do not
@@ -76,7 +76,7 @@ get out into the release version of Magick.  The beta team
 is an OPEN testing team, and you may join it by first down-
 loading and installing/setting up the current beta version
 of Magick, and then e-mailing <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with
-"subscribe magick-beta" (no quotes, on one line).
+"subscribe beta" (no quotes, on one line).
 
 The following people have contributed to the final product
 of Magick II (testers not included):
@@ -152,6 +152,11 @@ Total re-write in C++, so version .0 is merely a 'new feature' list.
 		<item>Limits placed on time between registrations and amount
 		    of channels a user may own.
 		<item>Clone prot will auto-akill for too many triggers.
+		<item>Added the ability to output logfile to a channel.
+		<item>Expanded ON/OFF command to allow turning off of one
+		    service only, just log files or the events engine.
+		<item>Added Secure Server listing ability (ie. if we dont
+		    have a listing for the server, squit it!).
 		<item>MANY, MANY, MANY more enhancements.
 		</itemize>
 </itemize>
@@ -377,16 +382,25 @@ If you are missing any of the above, you may obtain them as follows:
 	<item><htmlurl url="http://www.gnu.org/pth" name="PTH">
 	</itemize>
 
-BSD USERS - BSD has inbuilt its threads library into its default
-operating system, and you do not need a separate threads library,
-however all versions before 3.4 with the threads patch applied, or
-4.0 will not work, due to a badly implemented threads library.
+FreeBSD USERS - FreeBSD has inbuilt its threads library into its
+default operating system, and you do not need a separate threads
+library, however all versions before 3.4 with the standard libc_r
+patch from FreeBSD dated 02-02-2000, or 4.0 will not work, due to
+a badly implemented threads library.
 
 You must compile each of the above products before attempting to
 build Magick.  Magick will look for them in the configure phase.
 
 <sect1>ACE Installation
 <p>
+
+Please note:  If you do not want to compile ACE yourself, or you
+are having troubles compiling it, pre-compiled binaries of ACE are
+available from ftp://ftp.magick.tm/pub/magick.tm/ace.  It is
+recommended you get the 'shared' version first, and 'static' only
+if the shared does not work.  If your OS is not listed, please
+contact the <htmlurl url="mailto:devel@magick.tm" name="Magick Development Team">.
+Above and beyong this help file, we will not help you compile ACE.
 
 I've included this section now because people seem to have troubles
 installing the ACE library obtained above.  One special note for
@@ -408,6 +422,13 @@ ln -s platform_your_system.GNU platform_macros.GNU
 cd ../..
 make
 </verb></tscreen>
+
+<itemize>
+<item>Linux Note: All linux systems with kernel versions 2.2.0 and beyond
+should use the lxpthread linux configuration.
+<item>FreeBSD Note: You should use the pthread version of this library
+if you hope to use it with Magick.  Please read FreeBSD note above.
+</itemize>
 
 Note on the above.  The `export ACE_ROOT=' command may not work on
 your shell.  csh and tcsh users will have to use `set ACE_ROOT=',
@@ -689,7 +710,14 @@ will have to download it and enable it to use it.
 --disable-trace/
      This turns on or off the internal tracing functions of Magick.  This
 can cause problems right now with large databases.  It is therefore by
-default disabled.
+default disabled.  It does however allow debugging of Magick without
+the need or use of core file analysis.
+
+<tag/--enable-convert
+--disable-convert/
+     This enables or disables the --convert commandline paramater that
+can be used to convert older versions of Magick DB's or other services
+databases.  Not needed for normal running of magick.
 
 <tag/--enable-locks
 --disable-locks/
@@ -816,6 +844,10 @@ may not be used by more than one set of services (unless the binaries
 are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 
+<tag/lang/ This directory is where all language files (*.lng, *.lfo and
+*.hlp) will be stored.  The path name actually used is a setting
+in the magick.ini file.
+
 <tag/lang\*.lng/ These files contain the responses Magick will send back
 to users for any command, or output from any procedure.  These files
 are 'tokenised', and are substituted with actual values.  The default
@@ -871,11 +903,13 @@ again at runtime, the settings in the config file will be used.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:
-			magick
+			magick (1.4)   esper (4.4.8)
+		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 --trace X:Y	Set the trace level on startup, equivalent of
 		using the OperServ TRACE SET command while
 		running, where X is the trace type (or ALL), and
 		Y is the trace level in hex.
+		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 </verb></tscreen>
 
 All other command line options just override the configuration
@@ -897,6 +931,7 @@ PARAMATER	SHORT	GROUP		OPTION
 --lagtime X	-g	STARTUP		LAGTIME
 --verbose	-v	FILES		VERBOSE=true
 --log X		-L	FILES		LOGFILE
+--logchan X	-C	FILES		LOGCHAN
 --dbase X	-D	FILES		DATABASE
 --langdir X	-S	FILES		LANGDIR
 --encrypt	-E	FILES		ENCRYPTION=true
@@ -940,7 +975,9 @@ SIGNAL	NUMBER	EQUIVALENT	DESCRIPTION
 ------	------	----------	-----------
 SIGHUP	1	OS RELOAD	Re-loads the config file.
 SIGINT	2	OS SIGNON	Attempts to sign on all clients.
+SIGPIPE	13	IGNORE		Flushes trace output immediately.
 SIGTERM	15	OS UPDATE	Saves the databases.
+SIGCHLD	17	IGNORE		Check to see if we're alive.
 </verb></tscreen>
 
 Some have queried me on why SIGTERM saves the databases.  During
@@ -988,6 +1025,21 @@ Magick IRC Services - http://www.magick.tm
 
 Created 1024 byte keyfile.
 </verb></tscreen>
+
+Tip:  Its usually a good idea to find a random file that doesnt
+change, or that you have a version of, and choose a random point
+somewhere in the middle (remember the starting point), and cut
+from that point on into a seperate file, then feed that as the
+plain magick key, and then remove your plain key file.  This way
+you will not have to remember a whole big key, just where the
+key is from, and the beginning point in the file (ensure it is
+a big file and dont tell anyone what file it is, where to get it
+or the starting point for security.  This is usually the easiest
+way to create a big key and remember it all without having to
+tax your brain, or worry about forgetting it.  NEVER EVER leave
+a plain key file (ie. your file with everything before the start
+point truncated) lying around -- and do not use a file that may
+change from version to version of wherever you got it.
 
 <sect1>Functionality
 <p>
@@ -1064,12 +1116,32 @@ will be sent to all users on the network, and services operators
 to offer files to users through the public file system.
 
 <sect>Questions and Answers<p>
+
+<sect1>What is the Home Site of Magick?<p>
+The Product home site is <htmlurl url="http://www.magick.tm">
+
+The Project home site is <htmlurl url="http://sourceforge.net/projects/magick">
+
+Whats the difference?  The Product site only really deals with telling
+people about Magick, and giving them a place to download it.  There is
+help on the site, and links, but most of the content is static (not
+changing) unless there is a new version.  There IS a news section, but
+this is more general news.
+
+The Project site is where all bug tracking is done -- the newest (alpha
+and beta) versions of the program are available from here, Forums for
+which to discuss magick are hosted here, and a task list of what is to
+be done in Magick is also contained on this site.  This site is very
+dynamic and where you should go if you have questions, or problems
+with magick -- or want to see whats coming up, or who is who.
+
+
 <sect1>My IRCD isn't supported, what can I do?<p>
    If this is the case, and none of the pre-defined IRCD's are
 compatible with it, please find out exactly (at a server to server
 protocol level) how your IRCD is different to the ones Magick supports
 (or ask the IRCD's author) and email the list of differences to the
-Magick Development Team <htmlurl url="mailto:magick-devel@magick.tm" name="magick-devel@magick.tm">.
+Magick Development Team <htmlurl url="mailto:devel@magick.tm" name="devel@magick.tm">.
 
 Here are some of the IRCD's we know are compatible with ones supported:
 <tscreen><verb>
@@ -1380,7 +1452,7 @@ Public License instead of this License.
 
 <sect>Copyright<p>
 
-Magick Copyright 2000 Magick Development Team, <htmlurl url="mailto:magick-devel@magick.tm" name="magick-devel@magick.tm">
+Magick Copyright 2000 Magick Development Team, <htmlurl url="mailto:devel@magick.tm" name="devel@magick.tm">
 
 
 This program is free software; you can redistribute it and/or modify

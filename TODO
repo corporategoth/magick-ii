@@ -9,8 +9,6 @@ development team to be worked on, and are coming:
 
 - Expanded flood protection (eg. nick flood = kill, etc)
 
-- Optional secure server list (auto squit if not listed)
-
 - Per-channel clone override lists (kick if cloning)
 
 - Add new AKILL funcitons for 3 new types:

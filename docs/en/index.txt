@@ -1,6 +1,6 @@
   The Magick Handbook
-  Magick Development Team magick-devel@magick.tm
-  Version 2.0 , Wed Apr 26 21:23:35 EST 2000
+  Magick Development Team devel@magick.tm
+  Version 2.0, Mon Jan  1 13:15:02 EST 2001
 
   This Handbook describes Magick Version 2.0
   ______________________________________________________________________
@@ -41,7 +41,9 @@
 
   4. Questions and Answers
 
-     4.1 My IRCD isnt supported, what can I do?
+     4.1 What is the Home Site of Magick?
+     4.2 My IRCD isn't supported, what can I do?
+     4.3 I like these services and want to pay the author!
 
   5. License
 
@@ -62,12 +64,10 @@
   may not be taken over, the ability to leave offline messages for other
   users, and many network control mechanisms to stop things like
   flooding, abusive users, and many other things.
-
-
   Magick services adhere to RFC 1459, and many variants of it.  The
   changes to the base protocol will not be discussed in this document,
-  as there are too many of them, and so many different destinct
-  protocols around nowdays, however Magick has been designed to cope
+  as there are too many of them, and so many different distinct
+  protocols around nowadays, however Magick has been designed to cope
   with them all, with a minimum of fuss (as long as they support
   services of this nature).
 
@@ -90,13 +90,13 @@
 
 
   Magick is designed and developed by the Magick Development Team
-  magick-devel@magick.tm.  Any bugs, feature requests, comments, etc
-  should be directed at this mailing list.  The development team is an
-  OPEN team, however certain skills are required to join, not the least
-  of which is the ability to program in C and C++, and to use CVS.  To
-  join this team, please e-mail prez@magick.tm for further details.
+  devel@magick.tm.  Any bugs, feature requests, comments, etc should be
+  directed at this mailing list.  The development team is an OPEN team,
+  however certain skills are required to join, not the least of which is
+  the ability to program in C and C++, and to use CVS.  To join this
+  team, please e-mail prez@magick.tm for further details.
 
-  The Magick Alpha Team magick-alpha@magick.tm test current development
+  The Magick Alpha Team alpha@magick.tm test current development
   versions of Magick, finding not only bugs, but also making sure it is
   a user friendly and understandable product, so it may be changed at
   the same time its being designed if needs be (rather than going back
@@ -104,17 +104,16 @@
   may join it by first downloading and installing/setting up the current
   alpha version of Magick (if you cannot do this on your own, its
   recommended you do not join the alpha team), and then e-mailing
-  majordomo@magick.tm with "subscribe magick-alpha" (no quotes, on one
-  line).
+  majordomo@magick.tm with "subscribe alpha" (no quotes, on one line).
 
-  The Magick Beta Team magick-beta@magick.tm test versions of magick
-  that have been through alpha testing, and are in the final phase of
-  development.  The beta team's main goal is to find bugs before Magick
-  is released, so they do not get out into the release version of
-  Magick.  The beta team is an OPEN testing team, and you may join it by
-  first down- loading and installing/setting up the current beta version
-  of Magick, and then e-mailing majordomo@magick.tm with "subscribe
-  magick-beta" (no quotes, on one line).
+  The Magick Beta Team beta@magick.tm test versions of magick that have
+  been through alpha testing, and are in the final phase of development.
+  The beta team's main goal is to find bugs before Magick is released,
+  so they do not get out into the release version of Magick.  The beta
+  team is an OPEN testing team, and you may join it by first down-
+  loading and installing/setting up the current beta version of Magick,
+  and then e-mailing majordomo@magick.tm with "subscribe beta" (no
+  quotes, on one line).
 
   The following people have contributed to the final product of Magick
   II (testers not included):
@@ -129,9 +128,7 @@
 
      DDeessiiggnneerrss ((ssoommee ccooddiinngg))
 
-
      +o  Patrick Prins
-
 
      SSuuppppoorrtteerrss
 
@@ -146,13 +143,13 @@
      +o  Matt Heckaman
 
 
-     SSuuppppoorrtteerrss WWhhoo DDoonntt KKnnooww IItt
+     SSuuppppoorrtteerrss WWhhoo DDoonn''tt KKnnooww IItt
 
      +o  Coca-Cola Amatil        - Life Support *bleep ... bleep*
 
-     +o  Nescafe Blend 43        - See above (any kind of caffiene!)
+     +o  Nescafe Blend 43        - See above (any kind of caffeine!)
 
-     +o  Tschaicovski    - If you dont understand, you never will...
+     +o  Tschaicovski    - If you don't understand, you never will...
 
 
   11..33..  CChhaannggeess
@@ -161,6 +158,76 @@
 
   11..33..11..  MMaaggiicckk IIII
 
+
+  Total re-write in C++, so version .0 is merely a 'new feature' list.
+
+
+  +o  2000/??/?? .0
+
+  +o  Fully multi-threaded (can do >1 thing at once)
+
+  +o  Database saves in XML and supports compression and encryption. Is
+     also no longer endian specific.
+
+  +o  Works on most *NIX and all Win32 platforms.
+
+  +o  Fully multi-lingual (log files, help, etc).
+
+  +o  Supports DCC file transfers and a filesystem (memo attachments,
+     nickserv pictures or public FS).
+
+  +o  Times saved in GMT, so timezone inspecific.
+
+  +o  Committee-based, can also add new committees.
+
+  +o  Can now lock any SET option (except text fields).
+
+  +o  Supports HTM (High Traffic Mode).
+
+  +o  Supports ALOT more IRC protocols (and alot of their more
+     specialised features) and can switch irc protocols without need to
+     recompile.
+
+  +o  Can now set time limits on akills.
+
+  +o  Supports IRC Operator Deny (ensures mask cant oper).
+
+  +o  Services ignore now ignores by mask, not nickname.
+
+  +o  Supports TRACING, for on-line debugging.
+
+  +o  Has SQUIT protection (to save on IDENT's).
+
+  +o  Many new ChanServ features like Kick On Ban, timed ban removal,
+     channel greetings, on-join messages.
+
+  +o  Nicknames & Channels now have a NoExpire flag.
+
+  +o  Time delay on memo sending to allow continuance or cancellation of
+     memos, or DCC of file attachments.
+
+  +o
+
+  +o  Supports multiple connection entries (aka. C/N's).
+
+  +o  Can bind to a single IP address.
+
+  +o  Supports multiple nicknames for same service.
+
+  +o  Limits placed on time between registrations and amount of channels
+     a user may own.
+
+  +o  Clone prot will auto-akill for too many triggers.
+
+  +o  Added the ability to output logfile to a channel.
+
+  +o  Expanded ON/OFF command to allow turning off of one service only,
+     just log files or the events engine.
+
+  +o  Added Secure Server listing ability (ie. if we dont have a listing
+     for the server, squit it!).
+
+  +o  MANY, MANY, MANY more enhancements.
 
 
   11..33..22..  MMaaggiicckk II
@@ -172,14 +239,14 @@
 
   +o  1999/02/20 .4
 
-  +o  Added copyrights back from espernet, so they would stop bitching at
+  +o  Added copyrights back from EsperNet, so they would stop bitching at
      me for removing them (even though I DID modify the code to an
      extent they no longer resemble their services).  *shrug* some
      people.
 
   +o  Added configuration file (see DOC dir) (Ungod)
 
-  +o  Added messages.h to customize Magick output.
+  +o  Added messages.h to customise Magick output.
 
   +o  Added SYNC_TIME (dbase save) showing option
 
@@ -195,17 +262,16 @@
 
   +o  Added MS REPLY, NS ACCESS CURRENT and NS SLAVES functions.
 
-
   +o  1998/01/20 .3
 
-  +o  Added MLOCK +i and +k support (ChanServ will keep channel if noone
+  +o  Added MLOCK +i and +k support (ChanServ will keep channel if no one
      in it!).
 
   +o  doc/Distribution -- READ it (and all files in that DIR!) :)
 
   +o  Removed time_zone and added the "X time ago" formats
 
-  +o  Fixed lots and lots of bugs, and optimized alot of code!
+  +o  Fixed lots and lots of bugs, and optimised alot of code!
 
   +o  Replaced IRCOP_OVERRIDE with OVERRIDE_LEVEL (6 levels)
 
@@ -458,7 +524,7 @@
   Magick is freely downloadable from:
 
   The Magick public mailing list is magick@magick.tm To subscribe, email
-  majordomo@magick.tm with 'subscribe magick' (no quotes) in the text of
+  majordomo@magick.tm with `subscribe magick' (no quotes) in the text of
   the message.
   22..22..  RReeqquuiirreemmeennttss
 
@@ -475,10 +541,11 @@
 
   +o  PTH
 
-  BSD USERS - BSD has inbuilt its threads library into its default
-  operating system, and you do not need a separate threads library,
-  however all versions before 3.4 with the threads patch applied, or 4.0
-  will not work, due to a badly implemented threads library.
+  FreeBSD USERS - FreeBSD has inbuilt its threads library into its
+  default operating system, and you do not need a separate threads
+  library, however all versions before 3.4 with the standard libc_r
+  patch from FreeBSD dated 02-02-2000, or 4.0 will not work, due to a
+  badly implemented threads library.
 
   You must compile each of the above products before attempting to build
   Magick.  Magick will look for them in the configure phase.
@@ -486,6 +553,14 @@
 
   22..33..  AACCEE IInnssttaallllaattiioonn
 
+
+  Please note:  If you do not want to compile ACE yourself, or you are
+  having troubles compiling it, pre-compiled binaries of ACE are
+  available from ftp://ftp.magick.tm/pub/magick.tm/ace.  It is
+  recommended you get the 'shared' version first, and 'static' only if
+  the shared does not work.  If your OS is not listed, please contact
+  the Magick Development Team.  Above and beyong this help file, we will
+  not help you compile ACE.
 
   I've included this section now because people seem to have troubles
   installing the ACE library obtained above.  One special note for
@@ -496,52 +571,52 @@
   ACE-INSTALL file, which is simply (from the ACE_wrappers directory):
 
 
-  +o  export ACE_ROOT=$PWD
 
-  +o  cd ace
+       export ACE_ROOT=$PWD
+       cd ace
+       ls config*    (find the one for your system)
+       ln -s config-your-system.h config.h
+       cd ..
+       cd include/makeinclude
+       ls platform*    (find the one for your system)
+       ln -s platform_your_system.GNU platform_macros.GNU
+       cd ../..
+       make
 
-  +o  ls config*     (find the one for your system)
 
-  +o  ln -s config-your-system.h config.h
 
-  +o  cd ..
 
-  +o  cd include/makeinclude
 
-  +o  ls platform*     (find the one for your system)
+  +o  Linux Note: All linux systems with kernel versions 2.2.0 and beyond
+     should use the lxpthread linux configuration.
 
-  +o  ln -s platform_your_system.GNU platform_macros.GNU
-
-  +o  cd ../..
-
-  +o  make
-
-  Note on the above.  The 'export ACE_ROOT=' command may not work on
-  your shell.  csh and tcsh users will have to se 'set ACE_ROOT=', and
-  on some other weird shells, just 'ACE_ROOT='.  Try them until you get
-  one that doesnt error.  Once you have one that doesnt have an error,
-  just type 'echo $ACE_ROOT' to ensure it gives you your current
+  +o  FreeBSD Note: You should use the pthread version of this library if
+     you hope to use it with Magick.  Please read FreeBSD note above.
+  Note on the above.  The `export ACE_ROOT=' command may not work on
+  your shell.  csh and tcsh users will have to use `set ACE_ROOT=', and
+  on some other weird shells, just `ACE_ROOT='.  Try them until you get
+  one that doesn't error.  Once you have one that doesn't have an error,
+  just type `echo $ACE_ROOT' to ensure it gives you your current
   directory, if not, keep trying.  I love unix standards :)
 
-  Note, If you get problems in the make with erorrs like:
+  Note, If you get problems in the make with errors like:
 
-
-  ACE_wrappers/include/makeinclude/wrapper_macros.GNU", line 135:
-  Missing dependency operator
+  ACE_wrappers/include/makeinclude/wrapper_macros.GNU, line 135: Missing
+  dependency operator
 
   Your version of make is either old or not GNU standard.  ACE requires
   a GNU standard make program to compile.  First see if the program
-  `gmake' exists, and if so try it, if not, or it doesnt work, please
+  `gmake' exists, and if so try it, if not, or it doesn't work, please
   download it by going to http://www.gnu.org/software/make/make.html and
   downloading it from one of their mirror sites.  Incase your wondering
-  'do I need root for this?'  No, you dont.  Just download it, compile
+  `do I need root for this?'  No, you don't.  Just download it, compile
   it, and then type:
 
   alias make=/path/to/make-x.y/make
 
   Where /path/to are replaced with the full path before the make
   directory (eg. /home/myuser), and the x and y in the make-x.y
-  directory are subtituted for the version of make you have.  Once you
+  directory are substituted for the version of make you have.  Once you
   have aliased make, then try and build ACE again.
 
   After ACE has been made, you have two options:
@@ -550,10 +625,10 @@
   +o  As root, you can copy *.so in the ace directory to /usr/local/lib
      and then copy *.h, *.i and *.cpp in the ace directory to
      /usr/local/include/ace, which you will have to create.  On linux
-     systems you will have to type 'ldconfig' after this.  Dont forget
+     systems you will have to type 'ldconfig' after this.  Don't forget
      to make the libs chmod 755, and the includes chmod 644.
 
-  +o  When you dont have root, use the --with-acelib and --with-aceinc
+  +o  When you don't have root, use the --with-acelib and --with-aceinc
      options to Magick's configure script to tell it where ACE is.
      Please note however, you will have to type the following line
      before you will be able to execute Magick:
@@ -562,7 +637,7 @@
 
   Obviously the /path/to should be replaced with the full path leading
   up to the ACE_wrappers directory (eg. /home/myuser).  The same note
-  above about 'export ACE_ROOT=' applies to the above export.
+  above about `export ACE_ROOT=' applies to the above export.
 
 
   22..44..  BBaassiicc IInnssttaallllaattiioonn
@@ -583,13 +658,11 @@
   diffs or instructions to the address given in the `README' so they can
   be considered for the next release.  If at some point `config.cache'
   contains results you don't want to keep, you may remove or edit it.
-
   The file `configure.in' is used to create `configure' by a program
   called `autoconf'.  You only need `configure.in' if you want to change
   it or regenerate `configure' using a newer version of `autoconf'.
 
   The simplest way to compile this package is:
-
 
 
   +o  `cd' to the directory containing the package's source code and type
@@ -650,6 +723,7 @@
   reconfiguring for another architecture.
 
 
+
   22..77..  IInnssttaallllaattiioonn NNaammeess
 
 
@@ -682,7 +756,7 @@
   They may also pay attention to `--with-PACKAGE' options, where PACKAGE
   is something like `gnu-as' or `x' (for the X Window System).  The
   `README' should mention any `--enable-' and `--with-' options that the
-  package recognizes.
+  package recognises.
 
   For packages that use the X Window System, `configure' can usually
   find the X include and library files automatically, but if it doesn't,
@@ -723,11 +797,10 @@
   A warning: not all `configure' scripts look for a site script.
 
 
-
   22..1111..  OOppeerraattiioonn CCoonnttrroollss
 
 
-  `configure' recognizes the following options to control how it
+  `configure' recognises the following options to control how it
   operates.
 
 
@@ -761,7 +834,7 @@
         --with-aceinc=path" This specifies where the makefile should
         look for the ACE library file, and its includes respectively.
         You must specify full pathnames.  Verification on what you have
-        entered is minimal (ie. will only verify the existance of the
+        entered is minimal (ie. will only verify the existence of the
         library file, and OS.h in the include directory).  This should
         only be used if Magick does not detect the ACE library.
 
@@ -770,7 +843,7 @@
         --with-zinc=path" This specifies where the makefile should look
         for the ZLIB library file, and its includes respectively.  You
         must specify full pathnames.  Verification on what you have
-        entered is minimal (ie. will only verify the existance of the
+        entered is minimal (ie. will only verify the existence of the
         library file, and zlib.h in the include directory).  This should
         only be used if Magick does not detect the ZLIB library.
 
@@ -787,12 +860,74 @@
         --with-threadinc=path" This specifies where the makefile should
         look for a threads library file, and its includes respectively.
         You must specify full pathnames.  Verification on what you have
-        entered is minimal (ie. will only verify the existance of the
+        entered is minimal (ie. will only verify the existence of the
         library file, and the include directory exists).  This should
         only be used if Magick does not detect a threads library.
+
+
+     ----wwiitthh--iinncclluuddee==ppaatthh
+        --with-libdir=path --with-lib=lib" These will add -I, -L and -l
+        options to the compile/link options.  If you find Magick wont
+        compile on your system due to missing symbols, or undefined
+        references, it may not have been able to find a header it
+        needed, or it may not have included a required library.  The
+        include and libdir should both be directories where to find the
+        include files or libraries, where lib should be the library name
+        with the lib prefix and the .so or .a postfix truncated.  eg.
+        libpthread.so becomes pthread.
+
+
      ----eennaabbllee--ddeess
         --disable-des" This turns on or off encryption support in
-        Magick.
+        Magick.  Some versions of Magick may not be distributed with DES
+        encryption, in which case you will have to download it and
+        enable it to use it.
+
+
+     ----eennaabbllee--ttrraaccee
+        --disable-trace" This turns on or off the internal tracing
+        functions of Magick.  This can cause problems right now with
+        large databases.  It is therefore by default disabled.  It does
+        however allow debugging of Magick without the need or use of
+        core file analysis.
+
+
+     ----eennaabbllee--ccoonnvveerrtt
+        --disable-convert" This enables or disables the --convert
+        commandline paramater that can be used to convert older versions
+        of Magick DB's or other services databases.  Not needed for
+        normal running of magick.
+
+
+     ----eennaabbllee--lloocckkss
+        --disable-locks" This turns on or off thread locking.  Thread
+        locking is essential for ensuring only one thread can access a
+        bit of data at once.  On some bad thread implementations, this
+        will stop segfaults, however it is a big target asking for data
+        corruption turning this off.
+
+
+     ----eennaabbllee--mmppaattrrooll
+        --disable-mpatrol" This turns on or off the usage of the memory
+        error checking and profiling software mpatrol
+        (http://www.cbmamiga.demon.co.uk/mpatrol).  This software is
+        useful in the fact it looks for memory access errors (eg.
+        accessing unitialised memory, exceeding memory bounds, not
+        freeing memory, etc).  However it slows the program down
+        dramatically.  Turning this on causes a new log file
+        (mpatrol.log) to be created.
+
+
+     ----eennaabbllee--eeffeennccee
+        --disable-efence" This turns on or off the usage of the memory
+        error checking and profiling software Electric Fence
+        (http://ftp://ftp.perens.com/pub/ElectricFence).  This software
+        is useful in the fact it looks for memory access errors (eg.
+        accessing unitialised memory, exceeding memory bounds, not
+        freeing memory, etc).  However it slows the program down
+        dramatically.  Turning this on causes the program to stop at the
+        first memory problem (so it is recommended you run this in a
+        debugger).
 
 
      ----wwiitthh--kkeeyylleenn==ssiizzee
@@ -811,25 +946,25 @@
   of facilitating this are:
 
   +o  Databases and inter-magick communication is encrypted with a key
-     through 3DES.  This key resides in a keyfile.
+     through 3DES.  This key resides in a key file.
 
-  +o  The keyfile itself is encrypted with two keys generated at compile
-     time, to ensure the keyfile is never cleartext.
+  +o  The key file itself is encrypted with two keys generated at compile
+     time, to ensure the key file is never clear text.
 
-  +o  EACH compile creates new keyfile keys, which means you must re-
-     generate the keyfile each time you compile, ensuring it does not
+  +o  EACH compile creates new key file keys, which means you must re-
+     generate the key file each time you compile, ensuring it does not
      get stale (and becomes invalid if someone gets it!)
 
   To ensure the security of your databases and communication, you should
 
   +o  Chose a long and complex database key, you must remember this
      somehow, incase you need to generate a new database key, however
-     you wont need it often.  Also choose long and varied keyfile keys,
+     you wont need it often.  Also choose long and varied key file keys,
      they can be up to 1024 bytes long (or longer with the --with-keylen
-     paramater to configure)!
+     parameter to configure)!
 
   +o  Recompile magick every so often.  This forces you to re-generate
-     the database keyfile with new keys, which is always a good idea!
+     the database key file with new keys, which is always a good idea!
 
   Windows users will not automatically generate a new keyset with each
   compile.  A default (generic, consider it hacked) keyset is supplied
@@ -845,7 +980,7 @@
   your key, and do not know the password to generate a new one, you may
   as well remove the file and start again.
 
-  Pre-compiled binaries will not be able to change the keyfile keys.
+  Pre-compiled binaries will not be able to change the key file keys.
   This could be considered an advantage of compiling yourself.
 
 
@@ -853,23 +988,20 @@
 
 
 
-
-
-
   33..11..  SSuuppppoorrtt ffiilleess
 
 
   All files and directories listed are relative to the current --dir
-  commandline option. If none is specified, it will default to the
+  command line option. If none is specified, it will default to the
   current directory.
 
 
      mmaaggiicckk..iinnii
         This file is included with your Magick distribution in the docs
-        directory.  This file must either be specified on the
-        commandline with the --config option, or in the services
-        directory.  This file contains all settings that Magick II will
-        use throughout its execution (these can be changed and reloaded
+        directory.  This file must either be specified on the command
+        line with the --config option, or in the services directory.
+        This file contains all settings that Magick II will use
+        throughout its execution (these can be changed and reloaded
         online).
 
 
@@ -882,13 +1014,13 @@
 
 
      mmaaggiicckk..lloogg
-        This is the logfile which logs all activity of note that happens
-        inside Magick.  The verbosity of this log file can vary
+        This is the log file which logs all activity of note that
+        happens inside Magick.  The verbosity of this log file can vary
         depending on the --debug option, or the VERBOSE config option.
-        This file may be zero'd without any detremental effects, or if
+        This file may be zeroed without any decremental effects, or if
         it is removed, the OFF and ON online commands will re-establish
         the filehandle. This filename is a setting in the magick.ini
-        file, and may be changed.  This file is created if it doesnt
+        file, and may be changed.  This file is created if it doesn't
         exist.
 
 
@@ -916,31 +1048,37 @@
         changed.
 
 
+     llaanngg
+        This directory is where all language files (*.lng, *.lfo and
+        *.hlp) will be stored.  The path name actually used is a setting
+        in the magick.ini file.
+
+
      llaanngg\\**..llnngg
         These files contain the responses Magick will send back to users
         for any command, or output from any procedure.  These files are
-        'tokenized', and are substituted with actual values.  The
+        'tokenised', and are substituted with actual values.  The
         default language file to used is set by the DEF_LANGUAGE
-        paramater in the magick.ini file, however languages may be set
+        parameter in the magick.ini file, however languages may be set
         per-user.
 
 
      llaanngg\\**..llffoo
         These files contain the log file outputs Magick will use for all
         messages going to the magick.log file.  These files are is used
-        is set by the DEF_LANGUAGE paramater in the magick.ini file.
+        is set by the DEF_LANGUAGE parameter in the magick.ini file.
 
 
      llaanngg\\**..hhllpp
         These files contain the help text that Magick uses to respond to
         all HELP commands.  The default help file used is set by the
-        DEF_LANGUAGE paramater in the magick.ini file, however languages
+        DEF_LANGUAGE parameter in the magick.ini file, however languages
         may be set per-user.
 
 
      ffiilleess\\ppiicc
         This directory is where all user's pictures are stored.  The
-        files themselves are stored as hexidecimal numbers, with no
+        files themselves are stored as hexadecimal numbers, with no
         extension -- the map to real filenames is stored in the
         database.  The path name actually used is a setting in the
         magick.ini file.
@@ -948,14 +1086,14 @@
 
      ffiilleess\\mmeemmoo
         This directory is where all attachments are stored.  The files
-        themselves are stored as hexidecimal numbers, with no extension
+        themselves are stored as hexadecimal numbers, with no extension
         -- the map to real filenames is stored in the database.  The
         path name actually used is a setting in the magick.ini file.
 
 
      ffiilleess\\ppuubblliicc
         This directory is where all files in the public filesystem are
-        stored.  The files themselves are stored as hexidecimal numbers,
+        stored.  The files themselves are stored as hexadecimal numbers,
         with no extension -- the map to real filenames is stored in the
         database.  The path name actually used is a setting in the
         magick.ini file.
@@ -965,7 +1103,7 @@
         This directory is where all files involved in DCC transfers
         (sending or receiving) are stored.  These files are considered
         volatile, and if Magick is not running, can safely be removed.
-        The files themselves are stored as hexidecimal numbers, with no
+        The files themselves are stored as hexadecimal numbers, with no
         extension. The path name actually used is a setting in the
         magick.ini file.
 
@@ -975,14 +1113,8 @@
 
   Magick once started, becomes a background process.  It accepts a
   number of command-line options that override the settings of their
-  equivilants on load.  NOTE: If the config file is loaded again at
+  equivalents on load.  NOTE: If the config file is loaded again at
   runtime, the settings in the config file will be used.
-
-
-
-
-
-
 
 
 
@@ -993,12 +1125,14 @@
   --config X      Set the name of the config file.
   --convert X     Convert another version of services databases
                   to Magick II format, where X is the type of
-                  database to convert.  Currently recognized:
-                          magick
-  --trace X:Y     Set the trace level on startup, equivilant of
+                  database to convert.  Currently recognised:
+                          magick (1.4)   esper (4.4.8)
+                  MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
+  --trace X:Y     Set the trace level on startup, equivalent of
                   using the OperServ TRACE SET command while
                   running, where X is the trace type (or ALL), and
                   Y is the trace level in hex.
+                  MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 
 
 
@@ -1023,6 +1157,7 @@
        --lagtime X     -g      STARTUP         LAGTIME
        --verbose       -v      FILES           VERBOSE=true
        --log X         -L      FILES           LOGFILE
+       --logchan X     -C      FILES           LOGCHAN
        --dbase X       -D      FILES           DATABASE
        --langdir X     -S      FILES           LANGDIR
        --encrypt       -E      FILES           ENCRYPTION=true
@@ -1050,14 +1185,42 @@
 
 
 
+
   Example:
 
 
 
-  ./magick --config /etc/magick.ini
+       ./magick --config /etc/magick.ini
 
 
 
+
+  After Magick is running, it should be totally driven through the on-
+  line clients (NickServ, ChanServ, OperServ, etc).  However, in certain
+  cases, events happen and these interfaces are either not available,
+  not responding, too slow, or don't recognise you.  For this
+  eventuality, all UNIX SIGNALS have been trapped, and some perform
+  extra functions that 'originally' intended.
+
+
+
+       SIGNAL  NUMBER  EQUIVALENT      DESCRIPTION
+       ------  ------  ----------      -----------
+       SIGHUP  1       OS RELOAD       Re-loads the config file.
+       SIGINT  2       OS SIGNON       Attempts to sign on all clients.
+       SIGPIPE 13      IGNORE          Flushes trace output immediately.
+       SIGTERM 15      OS UPDATE       Saves the databases.
+       SIGCHLD 17      IGNORE          Check to see if we're alive.
+
+
+
+
+  Some have queried me on why SIGTERM saves the databases.  During
+  shutdown of many systems, the shutdown scripts will send a SIGTERM to
+  all running processes, wait a while, then send a SIGKILL (9).  This
+  gives us a chance to save our databases before we're killed.  This
+  also means that you must use kill -KILL (kill -9) to kill Magick once
+  it has been started.
 
   To use encryption, you must generate a key file with the program
   magick_keygen.  This program accepts a maximum of two arguments, being
@@ -1066,7 +1229,7 @@
   you to enter the data interactively.
 
   On unix terminals that support it, the text entered at the key prompts
-  will be hidden, however to not bank on this, and always ensure noone
+  will be hidden, however to not bank on this, and always ensure no one
   can look over your shoulder of sniff your network traffic to find out
   what the clear-text password is.  The maximum size of a key is
   specified at compile time, and may be changed with a configure option
@@ -1078,8 +1241,8 @@
 
        ./magick_keygen
        Magick IRC Services - http://www.magick.tm
-           (c) 1997-2000 Preston A. Elder <prez@magick.tm>
-           (c) 1998-2000 William King <ungod@magick.tm>
+           (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+           (c) 1998-2001 William King <ungod@magick.tm>
 
        Enter filename to output to [magick.key]:
        Enter database key:
@@ -1089,20 +1252,34 @@
 
 
 
-
   Example 2:
 
 
 
        ./magick_keygen magick.key magick.plain
        Magick IRC Services - http://www.magick.tm
-           (c) 1997-2000 Preston A. Elder <prez@magick.tm>
-           (c) 1998-2000 William King <ungod@magick.tm>
+           (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+           (c) 1998-2001 William King <ungod@magick.tm>
 
        Created 1024 byte keyfile.
 
 
 
+
+  Tip:  Its usually a good idea to find a random file that doesnt
+  change, or that you have a version of, and choose a random point
+  somewhere in the middle (remember the starting point), and cut from
+  that point on into a seperate file, then feed that as the plain magick
+  key, and then remove your plain key file.  This way you will not have
+  to remember a whole big key, just where the key is from, and the
+  beginning point in the file (ensure it is a big file and dont tell
+  anyone what file it is, where to get it or the starting point for
+  security.  This is usually the easiest way to create a big key and
+  remember it all without having to tax your brain, or worry about
+  forgetting it.  NEVER EVER leave a plain key file (ie. your file with
+  everything before the start point truncated) lying around -- and do
+  not use a file that may change from version to version of wherever you
+  got it.
 
 
   33..33..  FFuunnccttiioonnaalliittyy
@@ -1116,11 +1293,11 @@
   services may be different on each network.
 
   NickServ is a services that allows users to register their IRC
-  nicknames so that noone else may take them.  Users may then set
+  nicknames so that no one else may take them.  Users may then set
   various options on their nickname record, such as privacy mode, kill
   protection, etc that affect the way their nickname is treated, and how
   services respond to them.  They may also set purely informational
-  fields in their nickname record thay is displayed on an INFO request.
+  fields in their nickname record they is displayed on an INFO request.
   NickName registration is required to execute many other commands in
   services, be added to a channel access list, or receive memos from
   other users.
@@ -1128,10 +1305,10 @@
   ChanServ is a service that allows users to register a channel on the
   IRC network, so that they may specify who has access to them, and who
   shall be automatically kicked from them.  This not only prevents such
-  things as channel takeovers, but establishes a definate 'seniority'
+  things as channel takeovers, but establishes a definite 'seniority'
   system in the channel.  ChanServ also allows users to set various
   options on their channel records, from the purely informational that
-  is displayed in an INFO request, to options that change the behavior
+  is displayed in an INFO request, to options that change the behaviour
   of services, and how users are treated in a channel.  This service
   also offers such features as on-join greetings, user-based greetings,
   etc.
@@ -1139,9 +1316,9 @@
   MemoServ is a service that allows users to send memos to other users,
   or post news articles to channels.  This service also allows such
   features as forwarding, or replying to memos, and even attaching files
-  via. DCC to memos (to other users only).  This service also
-  intergrates with NickServ's ignore list, and ChanServ's access list to
-  vary the ability to send, or read memos or news articles.
+  via. DCC to memos (to other users only).  This service also integrates
+  with NickServ's ignore list, and ChanServ's access list to vary the
+  ability to send, or read memos or news articles.
 
   CommServ is a service that maintains 'committees' or groups of users.
   These groups can be simply a list of users who have a common interest,
@@ -1151,7 +1328,7 @@
   'default' committees:
 
      SSAADDMMIINN
-        Services Adminstrators - Members of this committee are hard-
+        Services Administrators - Members of this committee are hard-
         coded into the Magick configuration file.
 
      SSOOPP
@@ -1177,24 +1354,72 @@
   OperServ is a services that allows IRC Operators to keep control on
   the network.  This service offers functions like an Automatic Kill
   list, Clone Protection (and overriding), Services Ignore, IRC Operator
-  Denying, aswell as the ability to JUPE (fake-link) a server, change a
-  user or channels modes, and many more funcitons.
+  Denying, as well as the ability to JUPE (fake-link) a server, change a
+  user or channels modes, and many more functions.
 
   ServMsg is mainly an informational service, users may get help,
   statistics and information about services, and the network they are
   connected to from this service.  This service also offers the ability
   for Server Administrators to send a global message that will be sent
   to all users on the network, and services operators to offer files to
-  users throuh the public file system.
+  users through the public file system.
+
+
   44..  QQuueessttiioonnss aanndd AAnnsswweerrss
 
 
-  44..11..  MMyy IIRRCCDD iissnntt ssuuppppoorrtteedd,, wwhhaatt ccaann II ddoo??
 
-  If this is the case, and none of the pre-defined IRCD's are compatable
-  with it, please find out exactly (at a protocol level) how your IRCD
-  is different to the ones Magick supports (or ask the IRCD's author)
-  and email the list of differences to the Magick Development Team.
+  44..11..  WWhhaatt iiss tthhee HHoommee SSiittee ooff MMaaggiicckk??
+
+  The Product home site is
+
+  The Project home site is
+
+  Whats the difference?  The Product site only really deals with telling
+  people about Magick, and giving them a place to download it.  There is
+  help on the site, and links, but most of the content is static (not
+  changing) unless there is a new version.  There IS a news section, but
+  this is more general news.
+
+  The Project site is where all bug tracking is done -- the newest
+  (alpha and beta) versions of the program are available from here,
+  Forums for which to discuss magick are hosted here, and a task list of
+  what is to be done in Magick is also contained on this site.  This
+  site is very dynamic and where you should go if you have questions, or
+  problems with magick -- or want to see whats coming up, or who is who.
+
+
+
+  44..22..  MMyy IIRRCCDD iissnn''tt ssuuppppoorrtteedd,, wwhhaatt ccaann II ddoo??
+
+  If this is the case, and none of the pre-defined IRCD's are compatible
+  with it, please find out exactly (at a server to server protocol
+  level) how your IRCD is different to the ones Magick supports (or ask
+  the IRCD's author) and email the list of differences to the Magick
+  Development Team devel@magick.tm.
+
+  Here are some of the IRCD's we know are compatible with ones
+  supported:
+
+
+       IRCD                    COMPATIBLE
+       ------------------------------------------------
+       Wrecked IRCD            DALNet >= 4.4.15
+
+
+
+
+
+  44..33..  II lliikkee tthheessee sseerrvviicceess aanndd wwaanntt ttoo ppaayy tthhee aauutthhoorr!!
+
+  OK, so this isn't something I hear, but a little wishful thinking
+  never hurts.  If you want to send me something by snail mail, then
+  feel free to do so to PO BOX 893, SUTHERLAND, NSW, 2232, Australia.  I
+  always like tokens of appreciation, puts a smile on my face and makes
+  the whole thing worth while (no, not necessarily money, but that is
+  always nice!).  Remember tho, if you ARE going to send me money, don't
+  send cash, and ensure it is cashable in Australia (an international
+  postal order is usually best).
 
 
   55..  LLiicceennssee
@@ -1225,7 +1450,6 @@
   this service if you wish), that you receive source code or can get it
   if you want it, that you can change the software or use pieces of it
   in new free programs; and that you know you can do these things.
-
   To protect your rights, we need to make restrictions that forbid
   anyone to deny you these rights or to ask you to surrender the rights.
   These restrictions translate to certain responsibilities for you if
@@ -1352,7 +1576,7 @@
 
   c) Accompany it with the information you received as to the offer to
   distribute corresponding source code.  (This alternative is allowed
-  only for noncommercial distribution and only if you received the
+  only for non-commercial distribution and only if you received the
   program in object code or executable form with such an offer, in
   accord with Subsection b above.)
 
@@ -1398,7 +1622,7 @@
   You are not responsible for enforcing compliance by third parties to
   this License.
 
-  7. If, as a consequence of a court judgment or allegation of patent
+  7. If, as a consequence of a court judgement or allegation of patent
   infringement or for any other reason (not limited to patent issues),
   conditions are imposed on you (whether by court order, agreement or
   otherwise) that contradict the conditions of this License, they do not
@@ -1450,6 +1674,7 @@
   the Free Software Foundation.  If the Program does not specify a
   version number of this License, you may choose any version ever
   published by the Free Software Foundation.
+
   10. If you wish to incorporate parts of the Program into other free
   programs whose distribution conditions are different, write to the
   author to ask for permission.  For software which is copyrighted by
@@ -1489,12 +1714,10 @@
   you may consider it more useful to permit linking proprietary
   applications with the library.  If this is what you want to do, use
   the GNU Library General Public License instead of this License.
-
-
   66..  CCooppyyrriigghhtt
 
 
-  Magick Copyright 2000 Magick Development Team, magick-devel@magick.tm
+  Magick Copyright 2000 Magick Development Team, devel@magick.tm
 
 
   This program is free software; you can redistribute it and/or modify
@@ -1510,6 +1733,47 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -15,16 +15,20 @@
 #ifndef _TRACE_H
 #define _TRACE_H
 #include "pch.h"
-static const char *ident_trace_h = "@(#) $Id$";
+RCSID(trace_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.68  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -96,7 +100,6 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** ========================================================== */
 
 #include "variant.h"
-#include "mstring.h"
 
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
@@ -139,18 +142,18 @@ public:
 #define NRET(x,y) return y
 #define DRET(x) return x
 #define NDRET(x,y) return y
-#define CP(x) do_nothing()
-#define COM(x) do_nothing()
-#define SRC(x) do_nothing()
-#define CSRC(x, y, z) do_nothing()
-#define MB(x, y) do_nothing()
-#define ME(x, y) do_nothing()
-#define CB(x, y) do_nothing()
-#define CE(x, y) do_nothing()
-#define MCB(x) do_nothing()
-#define MCE(x) do_nothing()
-#define CH(x,y) do_nothing()
-#define FLUSH() do_nothing()
+#define CP(x)
+#define COM(x)
+#define SRC(x)
+#define CSRC(x,y,z)
+#define MB(x,y)
+#define ME(x,y)
+#define CB(x,y)
+#define CE(x,y)
+#define MCB(x)
+#define MCE(x)
+#define CH(x,y)
+#define FLUSH()
 
 #else /* MAGICK_TRACE_WORKS */
 
@@ -164,9 +167,9 @@ public:
 #define NFT(x) T_Functions __ft(x)
 
 // Set return value -- RET()
-#define RET(x) {__ft.return_value=mVariant(x); return (x);}
+#define RET(x) {__ft.return_value=mVariant(x); return x;}
 #define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
-#define DRET(x) {__ft.return_value=mVariant(x); mThread::Detach(); return (x);}
+#define DRET(x) {__ft.return_value=mVariant(x); mThread::Detach(); return x;}
 #define NDRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); mThread::Detach(); return y;}
 
 // CheckPoint definition -- CP(());
@@ -177,17 +180,17 @@ public:
 
 // Config file load
 #define SRC(x) { T_Source(x); }
-#define CSRC(x, y, z) { T_Source(x, y, z); }
+#define CSRC(x,y,z) { T_Source(x, y, z); }
 
 // Modify begin -- MB((), offs = 0);
 // Modify end -- ME(());
-#define MB(x, y) { T_Modify __mod(mVarArray y, x); __mod.Begin(); }
-#define ME(x, y) { T_Modify __mod(mVarArray y, x); __mod.End(); }
+#define MB(x,y) { T_Modify __mod(mVarArray y, x); __mod.Begin(); }
+#define ME(x,y) { T_Modify __mod(mVarArray y, x); __mod.End(); }
 
 // Changing begin -- CB(item, stuff);
 // Changing end -- CE(item, stuff);
-#define CB(x, y) T_Changing __chg_ ## x (mstring(#y), mVariant(y))
-#define CE(x, y) __chg_ ## x ## .End(mVariant(y))
+#define CB(x,y) T_Changing __chg_ ## x (mstring(#y), mVariant(y))
+#define CE(x,y) __chg_ ## x ## .End(mVariant(y))
 
 // Changing with DumpE/B calls
 #define MCB(x) DumpB(); CB(0, x)
@@ -282,7 +285,6 @@ public:
 
 private:
     static unsigned short traces[tt_MAX];
-    static level_enum SLevel;
 
 public:
     struct levelname_struct {
@@ -298,9 +300,6 @@ public:
     Trace() {};
     ~Trace() {};
     
-    static level_enum ShortLevel(level_enum level) { return (SLevel = level); }
-    static level_enum ShortLevel() { return SLevel; }
-
     static unsigned short TraceLevel(threadtype_enum type)
 	{ return traces[type]; }
     static bool IsOn(threadtype_enum type, level_enum level)
@@ -312,26 +311,12 @@ public:
     static void TurnSet(threadtype_enum type, unsigned short param)
 	{ traces[type] = param; }
 
-    static bool IsOn(threadtype_enum type)
-	{ return IsOn(type, SLevel); }
     static bool IsOn(ThreadID *tid, level_enum level)
 	{ return IsOn(tid->type(), level); }
-    static bool IsOn(ThreadID *tid)
-	{ return IsOn(tid->type(), SLevel); }
-
-    static void TurnUp(threadtype_enum type)
-	{ TurnUp(type, SLevel); }
     static void TurnUp(ThreadID *tid, level_enum level)
 	{ TurnUp(tid->type(), level); }
-    static void TurnUp(ThreadID *tid)
-	{ TurnUp(tid->type(), SLevel); }
-
-    static void TurnDown(threadtype_enum type)
-	{ TurnDown(type, SLevel); }
     static void TurnDown(ThreadID *tid, level_enum level)
 	{ TurnDown(tid->type(), level); }
-    static void TurnDown(ThreadID *tid)
-	{ TurnDown(tid->type(), SLevel); }
 };
 
 extern Trace *TraceObject;

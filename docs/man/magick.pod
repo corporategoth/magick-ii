@@ -46,6 +46,8 @@ will be used, and looked for in the services directory.
 
 =item --convert X
 
+THIS OPTION WILL ONLY APPEAR IF COMPILED INTO THE BINARY!
+
 Convert another version of services databases to Magick II format,
 where X is the type of database to convert.  Currently recognised:
 
@@ -53,11 +55,17 @@ where X is the type of database to convert.  Currently recognised:
 
 =item *
 
-magick
+magick (1.4)
+
+=item *
+
+esper (4.4.8)
 
 =back
 
 =item --trace X:Y
+
+THIS OPTION WILL ONLY APPEAR IF COMPILED INTO THE BINARY!
 
 Set the trace level on startup, equivalent of using the OperServ
 TRACE SET command while running, where X is the trace type (or ALL),
@@ -119,6 +127,12 @@ logging all successful commands to services.
 Override the B<FILES/LOG> value in the configuration file,
 which is the file to output all log output to, this defaults to
 f<magick.log>.
+
+=item --logchan X, -C
+
+Override the B<FILES/LOGCHAN> value in the configuration file,
+which is the channel to output all log output to, this defaults
+to nothing (ie. no channel output).
 
 =item --dbase X, -D
 

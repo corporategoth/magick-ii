@@ -63,6 +63,10 @@ may not be used by more than one set of services (unless the binaries
 are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 <P>
+<DT><B>lang</B><DD><P>This directory is where all language files (*.lng, *.lfo and
+*.hlp) will be stored.  The path name actually used is a setting
+in the magick.ini file.
+<P>
 <DT><B>lang\*.lng</B><DD><P>These files contain the responses Magick will send back
 to users for any command, or output from any procedure.  These files
 are 'tokenised', and are substituted with actual values.  The default
@@ -120,11 +124,13 @@ again at runtime, the settings in the config file will be used.
 --convert X     Convert another version of services databases
                 to Magick II format, where X is the type of
                 database to convert.  Currently recognised:
-                        magick
+                        magick (1.4)   esper (4.4.8)
+                MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 --trace X:Y     Set the trace level on startup, equivalent of
                 using the OperServ TRACE SET command while
                 running, where X is the trace type (or ALL), and
                 Y is the trace level in hex.
+                MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 </PRE>
 </CODE></BLOCKQUOTE>
 <P>All other command line options just override the configuration
@@ -147,6 +153,7 @@ PARAMATER       SHORT   GROUP           OPTION
 --lagtime X     -g      STARTUP         LAGTIME
 --verbose       -v      FILES           VERBOSE=true
 --log X         -L      FILES           LOGFILE
+--logchan X     -C      FILES           LOGCHAN
 --dbase X       -D      FILES           DATABASE
 --langdir X     -S      FILES           LANGDIR
 --encrypt       -E      FILES           ENCRYPTION=true
@@ -192,7 +199,9 @@ SIGNAL  NUMBER  EQUIVALENT      DESCRIPTION
 ------  ------  ----------      -----------
 SIGHUP  1       OS RELOAD       Re-loads the config file.
 SIGINT  2       OS SIGNON       Attempts to sign on all clients.
+SIGPIPE 13      IGNORE          Flushes trace output immediately.
 SIGTERM 15      OS UPDATE       Saves the databases.
+SIGCHLD 17      IGNORE          Check to see if we're alive.
 </PRE>
 </CODE></BLOCKQUOTE>
 <P>Some have queried me on why SIGTERM saves the databases.  During
@@ -240,6 +249,20 @@ Magick IRC Services - http://www.magick.tm
 Created 1024 byte keyfile.
 </PRE>
 </CODE></BLOCKQUOTE>
+<P>Tip:  Its usually a good idea to find a random file that doesnt
+change, or that you have a version of, and choose a random point
+somewhere in the middle (remember the starting point), and cut
+from that point on into a seperate file, then feed that as the
+plain magick key, and then remove your plain key file.  This way
+you will not have to remember a whole big key, just where the
+key is from, and the beginning point in the file (ensure it is
+a big file and dont tell anyone what file it is, where to get it
+or the starting point for security.  This is usually the easiest
+way to create a big key and remember it all without having to
+tax your brain, or worry about forgetting it.  NEVER EVER leave
+a plain key file (ie. your file with everything before the start
+point truncated) lying around -- and do not use a file that may
+change from version to version of wherever you got it.
 <P>
 <H2><A NAME="ss3.3">3.3 Functionality</A>
 </H2>

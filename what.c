@@ -9,16 +9,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_what_c_ ## x () { return y; }
+RCSID(what_c, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/02/03 02:21:30  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.5  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **

@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copyright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -14,27 +14,22 @@
 ** ========================================================== */
 #ifndef _VERSION_H
 #define _VERSION_H
-static const char *ident_version_h = "@(#) $Id$";
+#include "pch.h"
+RCSID(version_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.113  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.114  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
-** Revision 1.112  2001/01/01 00:45:53  prez
-** Upped to b7, release of which is imminant.
-**
-** Revision 1.111  2000/12/10 07:49:48  prez
-** Upped to b6
-**
-** Revision 1.110  2000/12/10 07:49:26  prez
+** Revision 1.24  2000/12/10 07:49:26  prez
 ** *** empty log message ***
 **
 ** Revision 1.23  2000/10/03 05:36:27  prez
@@ -112,9 +107,9 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 1;
-const mstring BUILD_TYPE = "Linux 2.2.16 i686 unknown";
-const mstring BUILD_SYS = "haven";
+const int BUILD_NUMBER = 0;
+const mstring BUILD_TYPE = "Windows 95/98/NT";
+const mstring BUILD_SYS = "localhost";
 
 /* Versioning Information
  *
@@ -145,7 +140,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b7";
+const mstring RELEASE			= "b6";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
@@ -159,8 +154,8 @@ const mstring PATCH9			= "";
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
 FULLNAME+" - "+SLOGAN,
-"  (c) 1997-2001 Preston Elder <prez@magick.tm>",
-"  (c) 1998-2001 William King <ungod@magick.tm>",
+"  (c) 1997-2000 Preston Elder <prez@magick.tm>",
+"  (c) 1998-2000 William King <ungod@magick.tm>",
 "",
 mstring(PACKAGE)+" is dedicated to the memory of PreZ's beloved",
 "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",

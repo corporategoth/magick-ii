@@ -1,5 +1,18 @@
 #!/bin/sh
 #
+#  Magick IRC Services
+#
+# $Id$
+# (c) 1997-2001 Preston Elder <prez@magick.tm>
+# (c) 1998-2001 William King <ungod@magick.tm>
+#
+# The above copywright may not be removed under any
+# circumstances, however it may be added to if any
+# modifications are made to this file.  All modified
+# code must be clearly documented and labelled.
+#
+# ==========================================================
+#
 # Blank PATCH file for application with Magick.
 # First, change the PATCHNAME to the short name
 # of your patch (one word).  Then put the output
@@ -19,7 +32,7 @@ PATCHNAME="blank"
 PATCHAUTHOR="Preston Elder <prez@magick.tm>"
 PATCHDESC="do nothing"
 
-# --------------------------------------------------------------
+# ==========================================================
 
 echo "Magick IRC Services - http://www.magick.tm"
 echo "    (c) 1997-2001 Preston Elder <prez@magick.tm>"
@@ -65,13 +78,13 @@ fi
 
 cp include/version.h include/version.h~
 
-# --------------------------------------------------------------
+# ==========================================================
 # PUT YOUR DIFF IN BETWEEN THE END_OF_PATCH TOKENS HERE!
 # ENSURE TO LEAVE END_OF_PATCH ON A BLANK LINE ON ITS OWN!
 #
 patch $REVERSE -p0 >$0.log <<END_OF_PATCH
 END_OF_PATCH
-# --------------------------------------------------------------
+# ==========================================================
 RETVAL=$?
 
 cp include/version.h include/version.h~

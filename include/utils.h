@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,19 +15,19 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 #include "pch.h"
-static const char *ident_utils_h = "@(#) $Id$";
+RCSID(utils_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.33  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.34  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.32  2000/10/04 07:39:45  prez
 ** Added MemCluster to speed up lockable, but it cores when we start
@@ -96,36 +96,10 @@ static const char *ident_utils_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-#include "mstring.h"
-#include "datetime.h"
-#include "lockable.h"
-#include "filesys.h"
-#include "xml/sxp.h"
+#include "variant.h"
 #ifdef HASCRYPT
 #include "des/des_locl.h"
 #endif
-
-// These are TRANSACTION ID's used for guarenteeing no
-// duplicate messages between Magick instances.  They are
-// always 10 digits, and with a 4-byte unsigned long,
-// you have 3294967295 possible TxnIds.
-class TxnIds
-{
-    static const unsigned long min;
-    static const unsigned long keeptime;
-
-    static map<unsigned long, mDateTime> i_Ids;
-    static unsigned long i_Current;
-
-public:
-    static unsigned long Create();
-    static unsigned long Current();
-    static bool Register(unsigned long id);
-    static void Expire();
-
-};
-
 
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);

@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,19 +15,19 @@
 #ifndef _MSTRING_H
 #define _MSTRING_H
 #include "pch.h"
-static const char *ident_mstring_h = "@(#) $Id$";
+RCSID(mstring_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.63  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.64  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.62  2000/12/25 06:36:14  prez
 ** Added locking around the threadtoself map, and removed a bunch of
@@ -122,6 +122,27 @@ static const char *ident_mstring_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
+/* This class is totally written by Preston A. Elder <prez@magick.tm>.
+ * Primerily this was written for Magick IRC Services (and by default,
+ * the ACE library).  It is totally portable with 2 or 3 steps:
+ *   1. Either choose ALLOCTYPE 1, 2 or 4 or modify the mstring::malloc
+ *      function to not use ACE_bad_alloc in ALLOCTYPE 3.  If you use
+ *      ALLOCTYPE 4, you must write your own memory allocation scheme,
+ *      change the MEMORY_AREA #define, and include your own header.
+ *   2. Replace all instances of 'ACE_OS::' with nothing throughout
+ *      the mstring.cpp file -- to force the use of the OS calls,
+ *      rather than ACE's version of the OS calls.
+ *   3. (optional) Change the contents of the mstring::lock_*() and
+ *      init() funcitons so they use some other locking mechanism
+ *      rather than ACE's (eg. pthreads).  You must also change the
+ *      LOCK_TYPE and UNIQ_LOCK_TYPE #define's to reflect this. This
+ *      only needs to be done if you activate per-mstring locking, by
+ *      #defining MSTRING_LOCKS_WORK.
+ *
+ * If you use this library in your program, please let me know!
+ *
+ */
+
 /* Memory Allocation Scheme
  *
  * 1. C: malloc/free
@@ -159,13 +180,34 @@ static const char *ident_mstring_h = "@(#) $Id$";
 
 #endif
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+class mstring_noalloc : public exception
+{
+    char i_reason[1024];
+public:
+    mstring_noalloc(const char *reason)
+	{ ACE_OS::strncpy(i_reason, reason, 1024); }
+    mstring_noalloc() {}
+    const char *what() const
+	{ return i_reason; };
+};
+
+class mstring_nodealloc : public exception
+{
+    char i_reason[1024];
+public:
+    mstring_nodealloc(const char *reason)
+	{ ACE_OS::strncpy(i_reason, reason, 1024); }
+    mstring_nodealloc() {}
+    const char *what() const
+	{ return i_reason; };
+};
+#endif
 
 /* This would have to be the most interoperable class
  * in the existance of C++ ;P */
 
 class mstring;
-
-inline int do_nothing() { return 1; }
 
 #ifndef HAVE_ITOA
 const char *itoa(int i);
@@ -295,8 +337,13 @@ class mstring
     LOCK_TYPE *i_lock;
 #endif
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static char *alloc(size_t size) throw(mstring_noalloc);
+    static void dealloc(char * & in) throw(mstring_nodealloc);
+#else
     static char *alloc(size_t size);
     static void dealloc(char * & in);
+#endif
     void lock_read() const;
     void lock_write() const;
     void lock_rel() const;

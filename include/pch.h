@@ -1,7 +1,7 @@
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -11,26 +11,19 @@
 ** ========================================================== */
 #ifndef _PCH_H
 #define _PCH_H
-// static const char *ident_pch_h = "@(#) $Id$";
+//RCSID(pch_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.30  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.29  2000/12/29 14:00:40  prez
-** needed to include ace/Version.h
-**
-** Revision 1.28  2000/12/29 13:55:09  prez
-** Compiled with 5.1.11, some changes to accomodate (will work with older
-** versions of ace still).
+** Revision 1.31  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.27  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
@@ -126,6 +119,7 @@
 #include <math.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #if TIME_WITH_SYS_TIME
@@ -238,7 +232,6 @@
 /* Used with SGI's STL
 #undef ACE_LACKS_AUTO_PTR
 */
-#include <ace/Version.h>
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>
 #include <ace/Connector.h>
@@ -246,12 +239,6 @@
 #include <ace/INET_Addr.h>
 #include <ace/Local_Tokens.h>
 #include <ace/Log_Msg.h>
-/* Added in 5.1.11, so accomodate it ... */
-#if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
-	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
-	ACE_BETA_VERSION >= 11)))
-#include <ace/Log_Msg_Callback.h>
-#endif
 #include <ace/Message_Queue.h>
 #include <ace/Method_Object.h>
 #include <ace/OS.h>

@@ -5,7 +5,6 @@
 #pragma implementation
 #pragma implementation "language.h"
 #pragma implementation "logfile.h"
-#pragma implementation "crypt.h"
 #endif
 
 /*  Magick IRC Services
@@ -19,16 +18,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_magick_cpp_ ## x () { return y; }
+RCSID(magick_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.287  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.286  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -405,12 +409,14 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
 #include "magick.h"
 #include "mconfig.h"
-#include "lockable.h"
-#include "utils.h"
-#include "convert.h"
+#include "language.h"
+#include "logfile.h"
+#ifdef CONVERT
+#include "convert_magick.h"
+#include "convert_esper.h"
+#endif
 
 //#define LOGGING
 
@@ -547,11 +553,13 @@ int Magick::Start()
     if (!get_config_values())
     {
 	LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_CFG_FILE"), i_config_file.c_str()));
+	RET(MAGICK_RET_TERMINATE);
     }
 
     if(i_shutdown==true)
     {
 	LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/STOP")));
+	RET(MAGICK_RET_TERMINATE);
     }
 
     Result=doparamparse();
@@ -570,6 +578,7 @@ int Magick::Start()
 	    {
 		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ACTIVE"),
 			i_programname.c_str()));
+		RET(MAGICK_RET_ERROR);
 	    }
 	    pidfile.Close();
 	    mFile::Erase(files.Pidfile());
@@ -587,24 +596,24 @@ int Magick::Start()
 /*    if (Result < 0)
     {
 	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETSID"), Result));
-	RET(1);
+	RET(MAGICK_RET_ERROR);
     } */
     Result = ACE::fork(i_programname);
     if (Result < 0)
     {
 	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_FORK"), Result));
-	RET(1);
+	RET(MAGICK_RET_ERROR);
     }
     else if (Result != 0)
     {
-	RET(0);
+	RET(MAGICK_RET_NORMAL);
     }
     ACE_LOG_MSG->sync(i_programname.c_str());
     Result = ACE_OS::setpgid (0, 0);
 /*    if (Result < 0)
     {
 	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result));
-	RET(1);
+	RET(MAGICK_RET_ERROR);
     } */
     Result = ACE_OS::getuid();
     if (Result == 0)
@@ -720,7 +729,7 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     { WLOCK(("i_ResetTime"));
-    i_ResetTime=Now();
+    i_ResetTime=mDateTime::CurrentDateTime();
     }
 
     // Use the reconnect handler to get a connection
@@ -1054,17 +1063,21 @@ void Magick::dump_help() const
 	 << "\n"
 	 << "Syntax: " << i_programname << " [options]\n"
 	 << "\n"
-	 << "--help             -?     	Help output (summary of the below).\n"
+	 << "--help             -?      Help output (summary of the below).\n"
 	 << "--dir X                    Set the initial services directory.\n"
 	 << "--config X                 Set the name of the config file.\n"
+#ifdef CONVERT
 	 << "--convert X                Convert another version of services databases\n"
 	 << "                           to Magick II format, where X is the type of\n"
 	 << "                           database to convert.  Currently recognized:\n"
-	 << "                               magick\n"
+	 << "                               magick (1.4), esper (4.4.8)\n"
+#endif
+#ifdef MAGICK_TRACE_WORKS
 	 << "--trace X:Y                Set the trace level on startup, equivilant of\n"
 	 << "                           using the OperServ TRACE SET command while\n"
 	 << "                           running, where X is the trace type (or ALL),\n"
 	 << "                           and Y is the trace level in hex.\n"
+#endif
 	 << "--name X           -n      Override [STARTUP/SERVER_NAME] to X.\n"
 	 << "--desc X           -d      Override [STARTUP/SERVER_DESC] to X.\n"
 	 << "--user X           -u      Override [STARTUP/SERVICES_USER] to X.\n"
@@ -1075,6 +1088,7 @@ void Magick::dump_help() const
 	 << "--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n"
 	 << "--verbose          -v      Override [FILES/VERBOSE] to X.\n"
 	 << "--log X            -L      Override [FILES/LOGFILE] to X.\n"
+	 << "--logchan X        -C      Override [FILES/LOGCHAN] to X.\n"
 	 << "--dbase X          -D      Override [FILES/DATABASE] to X.\n"
 	 << "--langdir X        -S      Override [FILES/LANGDIR] to X.\n"
 	 << "--encrypt          -E      Override [FILES/ENCRYPTION] to true.\n"
@@ -1109,9 +1123,7 @@ void Magick::LoadInternalMessages()
 {
     NFT("Magick::LoadInternalMessages");
 
-#include "language.h"
     WLOCK(("Messages", "DEFAULT"));
-
     vector<mstring> lang;
     unsigned int i;
     for (i=0; i<def_langent; i++)
@@ -1166,7 +1178,6 @@ bool Magick::LoadLogMessages(mstring language)
     LogMessages.clear();
     MCB(LogMessages.size());
     {
-#include "logfile.h"
 	vector<mstring> log;
 	unsigned int i;
 	for (i=0; i<def_logent; i++)
@@ -1358,6 +1369,15 @@ bool Magick::paramlong(mstring first, mstring second)
 	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	files.logfile=second;
+	RET(true);
+    }
+    else if(first=="--logchan")
+    {
+	if(second.empty() || second[0U]=='-')
+	{
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
+	}
+	files.logchan=second;
 	RET(true);
     }
     else if(first=="--dbase" || first=="--database")
@@ -1599,6 +1619,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	operserv.ignore_method=atoi(second.c_str());
 	RET(true);
     }
+#ifdef CONVERT
     else if(first=="--convert")
     {
 	if(second.empty() || second[0U]=='-')
@@ -1616,12 +1637,22 @@ bool Magick::paramlong(mstring first, mstring second)
 	    load_sop();
 	    load_message();
 	}
+	else if (second.IsSameAs("esper", true))
+	{
+	    ESP_load_ns_dbase();
+	    ESP_load_cs_dbase();
+	    ESP_load_os_dbase();
+	    ESP_load_akill();
+	    ESP_load_news();
+	    ESP_load_exceptions();
+	}
 	else
 	{
 	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/CANNOT_CONVERT"), second.c_str()));
 	}
 	RET(true);
     }
+#endif
     else
     {
 	LOG((LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str()));
@@ -1717,6 +1748,15 @@ bool Magick::paramshort(mstring first, mstring second)
 	    }
 	    else
 		ArgUsed = paramlong ("--log", second);
+	}
+	else if(first[i]=='C')
+	{
+	    if (ArgUsed)
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
+	    else
+		ArgUsed = paramlong ("--logchan", second);
 	}
 	else if(first[i]=='D')
 	{
@@ -1978,32 +2018,90 @@ bool Magick::get_config_values()
     startup.services_host = value_mstring;
 
     // REMOTE entries
-    mstring ent="";
+    value_mstring.erase();
     i=1;
     { WLOCK(("Startup", "Servers"));
+    int min_level = 0;
     startup.servers.clear();
     do {
-	mstring rem = "REMOTE_";
-	rem << i;
-	in.Read(ts_Startup+rem,ent,"");
-	if (!ent.empty()) {
-		mstring tmp[4];
-		tmp[0]=ent.ExtractWord(1, ":");
-		tmp[1]=ent.ExtractWord(2, ":");
-		tmp[2]=ent.ExtractWord(3, ":");
-		tmp[3]=ent.ExtractWord(4, ":");
-		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
-		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
-		else
-		{
-		    LOG((LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str()));
-		}
-		ent = "";
+	mstring lookfor = "REMOTE_";
+	lookfor << i;
+	in.Read(ts_Startup+lookfor,value_mstring,"");
+	if (!value_mstring.empty()) {
+	    mstring tmp[5];
+	    tmp[0]=value_mstring.ExtractWord(1, ":");
+	    tmp[1]=value_mstring.ExtractWord(2, ":");
+	    tmp[2]=value_mstring.ExtractWord(3, ":");
+	    tmp[3]=value_mstring.ExtractWord(4, ":");
+	    tmp[4]=value_mstring.ExtractWord(5, ":");
+	    if (value_mstring.WordCount(":") == 5 && tmp[1].IsNumber() &&
+		tmp[3].IsNumber() && tmp[4].IsNumber() && atoi(tmp[1]) > 0 &&
+		atoi(tmp[3]) > 0 && atoi(tmp[4]) > 0)
+	    {
+		// startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
+		startup.servers[tmp[0].LowerCase()] = pair<unsigned int,
+			triplet<unsigned int,mstring,unsigned int> >(atoi(tmp[3]),
+			triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[4])));
+		if (min_level < 1 || atoi(tmp[3]) < min_level)
+		    min_level = atoi(tmp[3]);
+	    }
+	    else
+	    {
+		LOG((LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+lookfor).c_str()));
+		RET(false);
+	    }
 	}
 	i++;
-    } while (!ent.empty());
-    }
+    } while (!value_mstring.empty());
+    if (min_level > 1)
+    {
+	// We NEED the lowest priority to be 1
+	map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > >::iterator iter;
+	for (iter=startup.servers.begin(); iter!=startup.servers.end(); iter++)
+	{
+	    iter->second.first -= (min_level-1);
+	}
+    }}
     if (Server().empty() || !startup.IsServer(Server()))
+	reconnect = true;
+
+    // REMOTE entries
+    value_mstring.erase();
+    i=1;
+    { WLOCK(("Startup", "Allows"));
+    startup.allows.clear();
+    do {
+	mstring lookfor = "ALLOW_";
+	lookfor << i;
+	in.Read(ts_Startup+lookfor,value_mstring,"");
+	if (!value_mstring.empty()) {
+	    if (value_mstring.Contains(":"))
+	    {
+		mstring tmp[2];
+		tmp[0] = value_mstring.ExtractWord(1, ":");
+		tmp[1] = value_mstring.ExtractWord(2, ":");
+		if (tmp[1].length() && tmp[1] != "*")
+		{
+		    for (unsigned int j=1; j<=tmp[1].WordCount(", "); j++)
+		    {
+			startup.allows[tmp[0]].push_back(tmp[1].ExtractWord(j, ", "));
+		    }
+		}
+		else
+		{
+		    startup.allows[tmp[0]];
+		}
+	    }
+	    else
+	    {
+		LOG((LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+lookfor).c_str()));
+		RET(false);
+	    }
+	}
+	i++;
+    } while (!value_mstring.empty());
+    }
+    if (Server().empty() || !startup.IsAllowed(Server(), startup.Server_Name()))
 	reconnect = true;
 
     in.Read(ts_Startup+"PROTOCOL",value_uint,0U);
@@ -2016,6 +2114,7 @@ bool Magick::get_config_values()
 	{
 	    LOG((LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
 			    value_uint, server.proto.Number()));
+	    RET(false);
 	}
     }
 
@@ -2883,6 +2982,11 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGCHLD:
 	break;
 #endif
+#ifdef SIGPIPE
+    case SIGPIPE:
+	FLUSH();
+	break;
+#endif
 
     case SIGINT:	// Re-signon all clients
 	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SIGNON"), signum));
@@ -3089,14 +3193,9 @@ void Logger::log(ACE_Log_Record &log_record)
     if (ACE_OS::strftime (ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
 	return;
 
-    /* 01234567890123456789012345 */
-    /* 18 Oct 2000 14:25:36  */
-    /*            ^        ^ */
-    ctp[11] = '\0'; // NUL-terminate after the date.
-
     mstring out;
-    out.Format("%s %s.%03ld | %-8s | %s",
-	ctp, ctp + 12, log_record.time_stamp().usec() / 1000,
+    out.Format("%s.%03ld | %-8s | %s",
+	ctp, log_record.time_stamp().usec() / 1000,
 	text_priority.c_str(), log_record.msg_data ());
     MLOCK(("LogFile"));
     fprintf(fout, "%s\n", out.c_str());
@@ -3195,16 +3294,16 @@ bool Magick::startup_t::IsServer(mstring server)const
     RET(false);
 }
 
-triplet<unsigned int,mstring,unsigned int> Magick::startup_t::Server(mstring server)const
+pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > Magick::startup_t::Server(mstring server)const
 {
     FT("Magick::startup_t::Server", (server));
-    triplet<unsigned int,mstring,unsigned int> value(0, "", 0);
+    pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > value(0, triplet<unsigned int,mstring,unsigned int>(0, "", 0));
 
     RLOCK(("Startup", "Servers"));
     if (IsServer(server)) {
 	value = servers.find(server.LowerCase())->second;
     }
-    NRET(triplet<unsigned int.mstring.unsigned int>, value);
+    NRET(pair<unsigned int. triplet<unsigned int. mstring. unsigned int> >, value);
 }
 
 vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
@@ -3212,13 +3311,84 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
     FT("Magick::startup_t::PriorityList", (pri));
     vector<mstring> list;
 
-    map<mstring,triplet<unsigned int,mstring,unsigned int> >::const_iterator iter;
+    map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > >::const_iterator iter;
 
     RLOCK(("Startup", "Servers"));
     for (iter=servers.begin(); iter!=servers.end(); iter++) {
-	if (iter->second.third == pri)
+	if (iter->second.first == pri)
 	    list.push_back(iter->first);
     }
+    NRET(vector<mstring>, list);
+}
+
+bool Magick::startup_t::IsAllowed(mstring server, mstring uplink)const
+{
+    FT("Magick::startup_t::IsAllowed", (server, uplink));
+
+    map<mstring,vector<mstring> >::const_iterator i;
+    RLOCK(("Startup", "Allows"));
+    if (!allows.size())
+    {
+	RET(true);
+    }
+
+    for (i=allows.begin(); i!=allows.end(); i++)
+    {
+	if (server == i->first)
+	{
+	    if (i->second.size())
+	    {
+		vector<mstring>::const_iterator j;
+		RLOCK(("Startup", "Allows", i->first));
+		for (j=i->second.begin(); j!=i->second.end(); j++)
+		{
+		    if (uplink.Matches(*j))
+		    {
+			RET(true);
+		    }
+		}
+	    }
+	    else
+	    {
+		RET(true);
+	    }
+	    break;
+	}
+    }
+
+    RET(false);
+}
+
+vector<mstring> Magick::startup_t::Allow(mstring server)const
+{
+    FT("Magick::startup_t::Allow", (server));
+
+    map<mstring,vector<mstring> >::const_iterator i;
+    RLOCK(("Startup", "Allows"));
+    for (i=allows.begin(); i!=allows.end(); i++)
+    {
+	if (server == i->first)
+	{
+	    NRET(vector<mstring>, i->second);
+	}
+    }
+
+    vector<mstring> blank;
+    NRET(vector<mstring>, blank);
+}
+
+vector<mstring> Magick::startup_t::AllowList()const
+{
+    NFT("Magick::startup_t::AllowList");
+    vector<mstring> list;
+
+    map<mstring,vector<mstring> >::const_iterator i;
+    RLOCK(("Startup", "Allows"));
+    for (i=allows.begin(); i!=allows.end(); i++)
+    {
+	list.push_back(i->first);
+    }
+
     NRET(vector<mstring>, list);
 }
 
@@ -3256,12 +3426,12 @@ mstring Magick::GetKey()const
 }
 
 
-void Magick::Disconnect()
+void Magick::Disconnect(bool reconnect)
 {
-    NFT("Magick::Disconnect");
+    FT("Magick::Disconnect", (reconnect));
     MCB(i_connected);
     CB(1, i_reconnect);
-    i_reconnect = false;
+    i_reconnect = reconnect;
     i_connected = false;
     CE(1, i_reconnect);
     MCE(i_connected);

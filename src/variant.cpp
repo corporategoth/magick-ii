@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_variant_cpp_ ## x () { return y; }
+RCSID(variant_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2001/02/03 02:21:35  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.43  2001/01/01 05:32:45  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -81,7 +86,6 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 
 #include "variant.h"
-#include "trace.h"
 
 const mVarArray EmptyArray;
 

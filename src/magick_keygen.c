@@ -9,16 +9,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_magick_keygen_c_ ## x () { return y; }
+RCSID(magick_keygen_c, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2001/02/03 02:21:34  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.8  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).

@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,19 +15,19 @@
 #ifndef _CHANSERV_H
 #define _CHANSERV_H
 #include "pch.h"
-static const char *ident_chanserv_h = "@(#) $Id$";
+RCSID(chanserv_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.51  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.52  2001/02/03 02:21:30  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.50  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -174,6 +174,7 @@ public:
     Chan_Live_t() {}
     Chan_Live_t(const Chan_Live_t& in) { *this = in; }
     Chan_Live_t(mstring name, mstring first_user);
+    ~Chan_Live_t() {}
     void operator=(const Chan_Live_t &in);
     bool operator==(const Chan_Live_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -229,14 +230,16 @@ public:
     void DumpE() const;
 };
 
-struct ChanInfo;
+struct ChanInfo_CUR;
+struct ESP_ChannelInfo;
 
 class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend class Nick_Live_t;
     friend class Chan_Live_t;
     friend class ChanServ;
-    friend Chan_Stored_t CreateChanEntry(ChanInfo *ci);
+    friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
+    friend Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -331,6 +334,7 @@ public:
     Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
     Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc);
     Chan_Stored_t(mstring name); // Forbidden
+    ~Chan_Stored_t() {}
     void operator=(const Chan_Stored_t &in);
     bool operator==(const Chan_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -569,9 +573,9 @@ private:
 
     void AddCommands();
     void RemCommands();
-protected:
 
 public:
+    ~ChanServ() {}
     class stats_t
     {
 	friend class ChanServ;

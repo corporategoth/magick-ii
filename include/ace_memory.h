@@ -1,7 +1,7 @@
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -11,19 +11,19 @@
 ** ========================================================== */
 #ifndef _ACE_MEMORY_H
 #define _ACE_MEMORY_H
-static const char *ident_ace_memory_h = "@(#) $Id$";
+//RCSID(ace_memory_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.5  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.6  2001/02/03 02:21:30  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.4  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -79,15 +79,15 @@ public:
   size_t used() const { return (pool_.size() * n_chunks_) - free_list_.size(); }
 
 private:
-  ACE_Array_Base<char *> pool_;
-  // remember how we allocate the memory in the first place so
-  // we can clear things up later.
-  
   size_t n_chunks_;
   // how many chunks per segment.
   
   ACE_Locked_Free_List<ACE_Cached_Mem_Pool_Node<T>, ACE_LOCK> free_list_;
   // Maintain a cached memory free list.
+
+  ACE_Array_Base<char *> pool_;
+  // remember how we allocate the memory in the first place so
+  // we can clear things up later.
 };
 
 template <class T, class ACE_LOCK> ACE_INLINE void
@@ -210,10 +210,6 @@ public:
   // Amount of used chunks so far
 
 private:
-  char *pool_;
-  // remember how we allocate the memory in the first place so
-  // we can clear things up later.
-
   size_t n_size_;
   // Size of each element
   
@@ -222,6 +218,10 @@ private:
 
   ACE_Locked_Free_List<ACE_Cached_Mem_Pool_Node<void *>, ACE_LOCK> free_list_;
   // Maintain a cached memory free list.
+
+  char *pool_;
+  // remember how we allocate the memory in the first place so
+  // we can clear things up later.
 };
 
 
@@ -335,10 +335,6 @@ public:
   // Amount of used chunks so far
 
 private:
-  ACE_Array_Base<char *> pool_;
-  // remember how we allocate the memory in the first place so
-  // we can clear things up later.
-
   size_t n_size_;
   // Size of each element
   
@@ -347,6 +343,10 @@ private:
 
   ACE_Locked_Free_List<ACE_Cached_Mem_Pool_Node<void *>, ACE_LOCK> free_list_;
   // Maintain a cached memory free list.
+
+  ACE_Array_Base<char *> pool_;
+  // remember how we allocate the memory in the first place so
+  // we can clear things up later.
 };
 
 

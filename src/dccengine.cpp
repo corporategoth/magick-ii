@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_dccengine_cpp_ ## x () { return y; }
+RCSID(dccengine_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.38  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -113,10 +118,8 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "dccengine.h"
-#include "trace.h"
 #include "magick.h"
+#include "dccengine.h"
 
 mstring DccEngine::lowQuote(mstring& in)
 {
@@ -214,12 +217,12 @@ vector<mstring> DccEngine::ctcpExtract(mstring& in)
     End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     if (End<0)
 	return Result;
-    while(Start<in.length() && End<in.length())
+    while(Start < (int) in.length() && End < (int) in.length())
     {
 	// the +1,-1 removes the '\001' markers off front and back
 	Result.push_back(in.SubString(Start+1,End-1));
 	Start=End;
-	if(Start<in.length())
+	if(Start < (int) in.length())
 	    End=in.find(mstring(CTCP_DELIM_CHAR).c_str(), occ++);
     }
     return Result;
@@ -431,7 +434,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 		\001TIME :Thu Aug 11 22:52:51 1994 CST\001
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode("TIME", Now().DateTimeString()));
+	    Parent->server.NOTICE(mynick, source, encode("TIME", mDateTime::CurrentDateTime().DateTimeString()));
 	}
 	else
 	{

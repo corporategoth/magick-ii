@@ -44,10 +44,11 @@ compression library, and a threads library such as pthreads.
 <LI>
 <A HREF="http://www.gnu.org/pth">PTH</A></LI>
 </UL>
-<P>BSD USERS - BSD has inbuilt its threads library into its default
-operating system, and you do not need a separate threads library,
-however all versions before 3.4 with the threads patch applied, or
-4.0 will not work, due to a badly implemented threads library.
+<P>FreeBSD USERS - FreeBSD has inbuilt its threads library into its
+default operating system, and you do not need a separate threads
+library, however all versions before 3.4 with the standard libc_r
+patch from FreeBSD dated 02-02-2000, or 4.0 will not work, due to
+a badly implemented threads library.
 <P>You must compile each of the above products before attempting to
 build Magick.  Magick will look for them in the configure phase.
 <P>
@@ -55,6 +56,14 @@ build Magick.  Magick will look for them in the configure phase.
 </H2>
 
 <P>
+<P>Please note:  If you do not want to compile ACE yourself, or you
+are having troubles compiling it, pre-compiled binaries of ACE are
+available from ftp://ftp.magick.tm/pub/magick.tm/ace.  It is
+recommended you get the 'shared' version first, and 'static' only
+if the shared does not work.  If your OS is not listed, please
+contact the 
+<A HREF="mailto:devel@magick.tm">Magick Development Team</A>.
+Above and beyong this help file, we will not help you compile ACE.
 <P>I've included this section now because people seem to have troubles
 installing the ACE library obtained above.  One special note for
 people wanting to install ACE.  Do NOT use the `configure' utility.
@@ -76,6 +85,13 @@ cd ../..
 make
 </PRE>
 </CODE></BLOCKQUOTE>
+<P>
+<UL>
+<LI>Linux Note: All linux systems with kernel versions 2.2.0 and beyond
+should use the lxpthread linux configuration.</LI>
+<LI>FreeBSD Note: You should use the pthread version of this library
+if you hope to use it with Magick.  Please read FreeBSD note above.</LI>
+</UL>
 <P>Note on the above.  The `export ACE_ROOT=' command may not work on
 your shell.  csh and tcsh users will have to use `set ACE_ROOT=',
 and on some other weird shells, just `ACE_ROOT='.  Try them until
@@ -333,7 +349,13 @@ will have to download it and enable it to use it.
 <DT><B>--enable-trace
 --disable-trace</B><DD><P>This turns on or off the internal tracing functions of Magick.  This
 can cause problems right now with large databases.  It is therefore by
-default disabled.
+default disabled.  It does however allow debugging of Magick without
+the need or use of core file analysis.
+<P>
+<DT><B>--enable-convert
+--disable-convert</B><DD><P>This enables or disables the --convert commandline paramater that
+can be used to convert older versions of Magick DB's or other services
+databases.  Not needed for normal running of magick.
 <P>
 <DT><B>--enable-locks
 --disable-locks</B><DD><P>This turns on or off thread locking.  Thread locking is essential

@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_servmsg_cpp_ ## x () { return y; }
+RCSID(servmsg_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2001/02/03 02:21:35  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.78  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -235,17 +240,14 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "lockable.h"
-#include "servmsg.h"
 #include "magick.h"
+#include "dccengine.h"
 
 ServMsg::ServMsg()
 {
     NFT("ServMsg::ServMsg");
     messages = true;
 }
-
 
 void ServMsg::AddCommands()
 {

@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_utils_cpp_ ## x () { return y; }
+RCSID(utils_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2001/02/03 02:21:35  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.56  2001/01/01 05:32:45  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -159,90 +164,11 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include "utils.h"
-#include "trace.h"
 #include "magick.h"
 #ifdef HASCRYPT
 #include "des/spr.h"
 #endif
 #include "des/md5_locl.h"
-
-const unsigned long TxnIds::min = 1000000000;
-const unsigned long TxnIds::keeptime = 60 * 60 * 24;
-map<unsigned long, mDateTime> TxnIds::i_Ids;
-unsigned long TxnIds::i_Current = TxnIds::min;
-
-unsigned long TxnIds::Create()
-{
-    NFT("TxnIds::Create");
-
-    WLOCK(("TxnIds"));
-    i_Current++;
-    while (i_Current >= min && i_Ids.find(i_Current) != i_Ids.end())
-	i_Current++;
-
-    if (i_Current >= min)
-    {
-	i_Ids[i_Current] = Now();
-	RET(i_Current);
-    }
-    else
-    {
-	i_Current = min;
-	while (i_Current >= min && i_Ids.find(i_Current) != i_Ids.end())
-	    i_Current++;
-    }
-
-    if (i_Current >= min)
-    {
-	i_Ids[i_Current] = Now();
-	RET(i_Current);
-    }
-    else
-    {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/OUTOFTXNIDS")));
-	RET(0);
-    }
-}
-
-unsigned long TxnIds::Current()
-{
-    NFT("TxnIds::Current");
-    RET(i_Current);
-}
-
-bool TxnIds::Register(unsigned long id)
-{
-    FT("TxnIds::Register", (id));
-
-    WLOCK(("TxnIds"));
-    if (i_Ids.find(id) != i_Ids.end())
-	RET(false);
-
-    i_Ids[id] = Now();
-    if (i_Current < id)
-	i_Current = id;
-
-    RET(true);
-}
-
-void TxnIds::Expire()
-{
-    NFT("TxnIds::Expire");
-
-    WLOCK(("TxnIds"));
-    map<unsigned long, mDateTime>::iterator iter;
-    vector<unsigned long> kill;
-    for (iter=i_Ids.begin(); iter != i_Ids.end(); iter++)
-    {
-	if (iter->second.SecondsSince() > keeptime)
-	    kill.push_back(iter->first);
-    }
-    for (unsigned int i=0; i<kill.size(); i++)
-	i_Ids.erase(kill[i]);
-}
-
-
 
 vector<int> ParseNumbers(mstring what)
 {

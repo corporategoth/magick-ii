@@ -8,6 +8,26 @@ $Id$
 | FREQUENTLY ASKED QUESTIONS |
 +----------------------------+
 
+What is the Home Site of Magick?
+================================
+
+The Product home site is http://www.magick.tm
+The Project home site is http://sourceforge.net/projects/magick
+
+Whats the difference?  The Product site only really deals with telling
+people about Magick, and giving them a place to download it.  There is
+help on the site, and links, but most of the content is static (not
+changing) unless there is a new version.  There IS a news section, but
+this is more general news.
+
+The Project site is where all bug tracking is done -- the newest (alpha
+and beta) versions of the program are available from here, Forums for
+which to discuss magick are hosted here, and a task list of what is to
+be done in Magick is also contained on this site.  This site is very
+dynamic and where you should go if you have questions, or problems
+with magick -- or want to see whats coming up, or who is who.
+
+
 My IRCD isn't supported what can I do?
 ======================================
 
@@ -15,7 +35,7 @@ My IRCD isn't supported what can I do?
 compatible with it, please find out exactly (at a server to server
 protocol level) how your IRCD is different to the ones Magick supports
 (or ask the IRCD's author) and email the list of differences to the
-Magick Development Team <magick-devel@magick.tm>.
+Magick Development Team <devel@magick.tm>.
 
 Here are some of the IRCD's we know are compatible with ones supported:
 

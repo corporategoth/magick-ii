@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -14,19 +14,25 @@
 ** ========================================================== */
 #ifndef _LOGFILE_H
 #define _LOGFILE_H
-static const char *ident_logfile_h = "@(#) $Id$";
+#include "pch.h"
+RCSID(logfile_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.15  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.16  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
+** Revision 1.14  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
 **
 **
 ** ========================================================== */
@@ -34,14 +40,13 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Mon Jan  1 13:10:16 EST 2001
+ * Created on Mon Dec 18 20:23:25 EST 2000
  */
 
-unsigned int def_logent =     326;
+unsigned int def_logent =     323;
 char *def_log[] = {
 "; Magick IRC Services",
-"; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
-"; (c) 1998-2001 William King <ungod@magick.tm>",
+"; (c) 1996-1999 Preston A. Elder, W. King",
 ";",
 "; English Log Output Language File",
 "; Translated By: Preston A. Elder <prez@magick.tm>",
@@ -128,7 +133,6 @@ char *def_log[] = {
 "UNLINK           =%s unlinked nickname %s from %s.",
 "HOST             =%s changed their host nickname from %s to %s.",
 "IDENTIFY         =%s identified for nickname %s.",
-"IDENTIFY_FAILED  =%s failed identification for nickname %s.",
 "GHOST            =%s killed nickname %s with the ghost command.",
 "RECOVER          =%s requested services to recover nickname %s.",
 "SUSPEND          =%s suspended nickname %s for %s.",
@@ -154,7 +158,6 @@ char *def_log[] = {
 "REGISTER         =%s registered channel %s.",
 "DROP             =%s droped channel %s (%s).",
 "IDENTIFY         =%s identified as founder for channel %s.",
-"IDENTIFY_FAILED  =%s failed identification for channel %s.",
 "SUSPEND          =%s suspended channel %s for %s.",
 "UNSUSPEND        =%s unsuspended channel %s.",
 "FORBID           =%s forbade channel %s from being registered.",

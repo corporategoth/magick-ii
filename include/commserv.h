@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,19 +15,19 @@
 #ifndef _COMMSERV_H
 #define _COMMSERV_H
 #include "pch.h"
-static const char *ident_commserv_h = "@(#) $Id$";
+RCSID(commserv_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.44  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.45  2001/02/03 02:21:30  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.43  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -120,7 +120,6 @@ static const char *ident_commserv_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
 #include "base.h"
 
 class Committee : public mUserDef, public SXP::IPersistObj
@@ -158,6 +157,7 @@ public:
     Committee(mstring name, mstring head, mstring description);
     Committee(mstring name, Committee *head, mstring description);
     Committee(mstring name, mstring description);
+    ~Committee() {}
     void operator=(const Committee &in);
     bool operator==(const Committee &in) const
     	{ return (i_Name == in.i_Name); }
@@ -203,7 +203,7 @@ public:
     void L_Secure(bool in);
     bool L_Secure() const;
 
-    bool MSG_insert(mstring entry, mstring nick);
+    bool MSG_insert(mstring entry, mstring nick, mDateTime time = Now());
     bool MSG_erase();
     entlist_i MSG_begin()	{ return i_Messages.begin(); }
     entlist_i MSG_end()		{ return i_Messages.end(); }
@@ -275,6 +275,7 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    ~CommServ() {}
     class stats_t
     {
 	friend class CommServ;

@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_nickserv_cpp_ ## x () { return y; }
+RCSID(nickserv_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.155  2001/02/03 02:21:34  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.154  2001/01/16 15:47:40  prez
 ** Fixed filesys not generating first entry in maps, fixed chanserv level
 ** changes (could confuse set) and fixed idle times on whois user user
@@ -413,10 +418,8 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "lockable.h"
-#include "nickserv.h"
 #include "magick.h"
+#include "dccengine.h"
 
 void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
 {
@@ -1110,7 +1113,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     i_Name = name;
     WLOCK(("NickServ", "live", name.LowerCase()));
     i_Signon_Time = signon;
-    i_My_Signon_Time = i_Last_Action = Now();
+    i_My_Signon_Time = i_Last_Action = mDateTime::CurrentDateTime();
     i_server = server;
     i_user = username;
     i_host = hostname;
@@ -1167,7 +1170,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     FT("Nick_Live_t::Nick_Live_t",(name, username, hostname, realname));
     i_Name = name;
     WLOCK(("NickServ", "live", name.LowerCase()));
-    i_Signon_Time = i_My_Signon_Time = Now();
+    i_Signon_Time = i_My_Signon_Time = mDateTime::CurrentDateTime();
     i_Last_Action = time(NULL);
     i_user = username;
     i_host = hostname;
@@ -1403,7 +1406,7 @@ bool Nick_Live_t::FloodTrigger()
     MCB(last_msg_times.size());
     while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Parent->operserv.Flood_Time())
 	last_msg_times.erase(last_msg_times.begin());
-    last_msg_times.push_back(Now());
+    last_msg_times.push_back(mDateTime::CurrentDateTime());
 
     // Check if we just triggered ignore.
     if (last_msg_times.size() > Parent->operserv.Flood_Msgs())
@@ -1518,7 +1521,7 @@ void Nick_Live_t::Name(mstring in)
 
     // WooHoo, we have a new nick!
     i_Name = in;
-    i_My_Signon_Time = Now();
+    i_My_Signon_Time = mDateTime::CurrentDateTime();
 
     // Rename ourselves in all channels ...
     for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
@@ -1798,7 +1801,7 @@ mDateTime Nick_Live_t::LastAction() const
 	RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Last_Action"));
 	RET(i_Last_Action);
     }
-    RET(Now());
+    RET(mDateTime::CurrentDateTime());
 }
 
 
@@ -1809,7 +1812,7 @@ void Nick_Live_t::Action()
     {
 	WLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Last_Action"));
 	MCB(i_Last_Action);
-	i_Last_Action = Now();
+	i_Last_Action = mDateTime::CurrentDateTime();
 	MCE(i_Last_Action);
     }
 }
@@ -2302,7 +2305,7 @@ void Nick_Live_t::SetLastNickReg()
     NFT("Nick_Live_t::SetLastNickReg");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_nick_reg"));
     MCB(last_nick_reg);
-    last_nick_reg = Now();
+    last_nick_reg = mDateTime::CurrentDateTime();
     MCE(last_nick_reg);
 }
 
@@ -2318,7 +2321,7 @@ void Nick_Live_t::SetLastChanReg()
     NFT("Nick_Live_t::SetLastChanReg");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_chan_reg"));
     MCB(last_chan_reg);
-    last_chan_reg = Now();
+    last_chan_reg = mDateTime::CurrentDateTime();
     MCE(last_chan_reg);
 }
 
@@ -2334,7 +2337,7 @@ void Nick_Live_t::SetLastMemo()
     NFT("Nick_Live_t::SetLastMemo");
     WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_memo"));
     MCB(last_memo);
-    last_memo = Now();
+    last_memo = mDateTime::CurrentDateTime();
     MCE(last_memo);
 }
 
@@ -2463,7 +2466,7 @@ void Nick_Stored_t::ChgNick(mstring nick)
     MCB(i_LastQuit);
     CB(1, i_LastSeenTime);
     i_LastQuit = "NICK CHANGE -> " + nick;
-    i_LastSeenTime = Now();
+    i_LastSeenTime = mDateTime::CurrentDateTime();
     CE(1, i_LastSeenTime);
     MCE(i_LastQuit);
 }
@@ -2481,7 +2484,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mstring password)
     i_Name = nick;
     WLOCK(("NickServ", "stored", i_Name.LowerCase()));
     i_Password = password;
-    i_RegTime = Now();
+    i_RegTime = mDateTime::CurrentDateTime();
     i_Protect = Parent->nickserv.DEF_Protect();
     l_Protect = false;
     i_Secure = Parent->nickserv.DEF_Secure();
@@ -2516,7 +2519,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick)
     WLOCK(("NickServ", "stored", i_Name.LowerCase()));
     i_Forbidden = true;
     i_Picture = 0;
-    i_RegTime = Now();
+    i_RegTime = mDateTime::CurrentDateTime();
     DumpE();
 } 
 
@@ -2831,7 +2834,7 @@ void Nick_Stored_t::Suspend(mstring name)
 	MCB(i_Suspend_By);
 	CB(1, i_Suspend_Time);
 	i_Suspend_By = name;
-	i_Suspend_Time = Now();
+	i_Suspend_Time = mDateTime::CurrentDateTime();
 	CE(1, i_Suspend_Time);
 	MCE(i_Suspend_By);
     }
@@ -4254,8 +4257,8 @@ bool Nick_Stored_t::IsOnline()
     {
 	// Not secure and recognized
 	// or not suspended and identified
-	if ((!Secure() && Parent->nickserv.live[i_Name.LowerCase()].IsRecognized()) ||
-	    (!Suspended() && Parent->nickserv.live[i_Name.LowerCase()].IsIdentified()))
+	if ((!Suspended() && Parent->nickserv.live[i_Name.LowerCase()].IsIdentified()) ||
+	    (!Secure() && Parent->nickserv.live[i_Name.LowerCase()].IsRecognized()))
 	{
 	    RET(true);
 	}
@@ -4269,7 +4272,7 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     NFT("Nick_Stored_t::LastAllSeenTime");
     if (IsOnline())
     {
-	RET(Now());
+	RET(mDateTime::CurrentDateTime());
     }
     else if (Host().empty())
     {
@@ -4296,7 +4299,7 @@ mDateTime Nick_Stored_t::LastSeenTime()
     NFT("Nick_Stored_t::LastSeenTime");
     if (IsOnline())
     {
-	RET(Now());
+	RET(mDateTime::CurrentDateTime());
     }
     else
     {
@@ -4400,7 +4403,7 @@ void Nick_Stored_t::Quit(mstring message)
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_LastQuit"));
 	MCB(i_LastSeenTime);
 	CB(1, i_LastQuit);
-	i_LastSeenTime = Now();
+	i_LastSeenTime = mDateTime::CurrentDateTime();
 	i_LastQuit = message;
 	CE(1, i_LastQuit);
 	MCE(i_LastSeenTime);
@@ -5292,7 +5295,7 @@ void NickServ::do_Link(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mDateTime regtime = Now();
+    mDateTime regtime = mDateTime::CurrentDateTime();
     if (Parent->nickserv.IsStored(source))
     {
 	if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
@@ -5924,7 +5927,7 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
 				Parent->startup.Server_Name(),
 				Parent->nickserv.Enforcer_Name());
     { MLOCK(("NickServ", "recovered"));
-    Parent->nickserv.recovered[nick.LowerCase()] = Now();
+    Parent->nickserv.recovered[nick.LowerCase()] = mDateTime::CurrentDateTime();
     }
     Parent->nickserv.stats.i_Recover++;
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/HELD"),

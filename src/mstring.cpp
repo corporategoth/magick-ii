@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_mstring_cpp_ ## x () { return y; }
+RCSID(mstring_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2001/02/03 02:21:34  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.92  2001/01/16 02:30:08  prez
 ** Fixed the IsNumber so an IP address or +/- number matches
 **
@@ -179,6 +184,11 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 #include "mstring.h"
 
+/* This class is totally written by Preston A. Elder <prez@magick.tm>.
+ * Primerily this was written for Magick IRC Services (and by default,
+ * the ACE library).  Read mstring.h for portability notes.
+ */
+
 #if ALLOCTYPE == 4
 // This defaults to 8192 chunks.  Use init(size) before
 // any use of it, or pass size as a 2nd param to the first
@@ -186,8 +196,10 @@ static const char *ident = "@(#)$Id$";
 MEMORY_AREA mstring::memory_area;
 #endif
 
+#ifdef MSTRING_LOCKS_WORK
 static unsigned long next_lock_id = 0;
 /* static set<unsigned long> lock_id_array; */
+#endif
 
 #ifdef WIN32
 mstring const DirSlash="\\";
@@ -202,19 +214,11 @@ mstring const IRC_Reverse((char) 21);	// ^V
 mstring const IRC_Color((char) 3);	// ^C
 mstring const IRC_Off((char) 15);	// ^O
 
-#define NOMEM { \
-	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
-	ACE_OS::fflush(stderr); \
-	lock_rel(); \
-	return; }
-
-#define NOMEMR(X) { \
-	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
-	ACE_OS::fflush(stderr); \
-	lock_rel(); \
-	return X; }
-
+#ifdef MAGICK_HAS_EXCEPTIONS
+char *mstring::alloc(size_t size) throw(mstring_noalloc)
+#else
 char *mstring::alloc(size_t size)
+#endif
 {
     char *out = NULL;
 
@@ -225,7 +229,7 @@ char *mstring::alloc(size_t size)
 
 #elif ALLOCTYPE == 3
 
-    /* Duplicate ACE's new, but with no return's.
+    /* Duplicate ACE's new, but with no return's. */
 # ifdef MAGICK_HAS_EXCEPTIONS
     try
     {
@@ -255,10 +259,29 @@ char *mstring::alloc(size_t size)
 
 #endif
 
+    if (out == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	char reason[1024];
+	ACE_OS::sprintf(reason, "Could not allocate mstring %d: %s",
+						errno, strerror(errno));
+	reason[1023]=0;
+	throw mstring_noalloc(reason);
+#else
+	ACE_OS::fprintf(stderr, "Could not allocate mstring %d: %s",
+						errno, strerror(errno));
+	ACE_OS::fflush(stderr);
+#endif
+    }
+
     return out;
 }
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+void mstring::dealloc(char * & in) throw(mstring_nodealloc)
+#else
 void mstring::dealloc(char * & in)
+#endif
 {
     if (in == NULL)
 	return;
@@ -371,7 +394,10 @@ void mstring::copy(const char *in, size_t length)
 	    i_res *= 2;
 	i_str = alloc(i_res);
 	if (i_str == NULL)
-	    NOMEM;
+	{
+	    lock_rel();
+	    return;
+	}
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
     }
@@ -409,7 +435,10 @@ void mstring::append(const char *in, size_t length)
     {
 	tmp = alloc(i_res);
 	if (tmp == NULL)
-	    NOMEM;
+	{
+	    lock_rel();
+	    return;
+	}
 	memset(tmp, 0, i_res);
 	if (i_str != NULL)
 	    memcpy(tmp, i_str, i_len);
@@ -442,8 +471,8 @@ void mstring::erase(int begin, int end)
 	return;
     }
 
-    if (end < 0 || end >= i_len)
-	if (begin >= i_len)
+    if (end < 0 || end >= (int) i_len)
+	if (begin >= (int) i_len)
 	{
 	    lock_rel();
 	    return;
@@ -459,7 +488,7 @@ void mstring::erase(int begin, int end)
 	end = i;
     }
 
-    if (begin > 0 || end+1 < i_len)
+    if (begin > 0 || end+1 < (int) i_len)
     {
 	i=0;
 	if (i_res==0)
@@ -470,7 +499,10 @@ void mstring::erase(int begin, int end)
 	{
 	    tmp = alloc(i_res);
 	    if (tmp == NULL)
-		NOMEM;
+	    {
+		lock_rel();
+		return;
+	    }
 	    memset(tmp, 0, i_res);
 	    if (begin > 0)
 	    {
@@ -484,7 +516,7 @@ void mstring::erase(int begin, int end)
 	    tmp = i_str;
 	}
 
-	if (end+1 < i_len)
+	if (end+1 < (int) i_len)
 	{
 	    memcpy(&tmp[i], &i_str[end+1], i_len-(end+1));
 	}
@@ -530,7 +562,10 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	i_res *= 2;
     tmp = alloc(i_res);
     if(tmp == NULL)
-	NOMEM;
+    {
+	lock_rel();
+	return;
+    }
     memset(tmp, 0, i_res);
 
     i=0;
@@ -706,8 +741,8 @@ int mstring::find_first_of(const char *str, size_t length) const
 {
     lock_read();
 
-    int i, retval = i_len + 1;
-    char *ptr;
+    unsigned int i;
+    int retval = i_len + 1;
 
     if (i_str == NULL || str == NULL || length == 0)
     {
@@ -715,13 +750,13 @@ int mstring::find_first_of(const char *str, size_t length) const
 	return -1;
     }
 
-    for (i=0; i<length; i++)
+    for (i=0; i < length; i++)
     {
 	char *ptr = index(i_str, str[i]);
 	if (ptr != NULL && ptr - i_str < retval)
 	    retval = ptr - i_str;
     }
-    if (retval > i_len)
+    if (retval > (int) i_len)
 	retval = -1;
 
     lock_rel();
@@ -731,8 +766,8 @@ int mstring::find_first_of(const char *str, size_t length) const
 // Reverse Index value of any of these chars
 int mstring::find_last_of(const char *str, size_t length) const
 {
-    int i, retval = -1;
-    char *ptr;
+    unsigned int i;
+    int retval = -1;
 
     lock_read();
     if (i_str == NULL || str == NULL || length == 0)
@@ -755,7 +790,8 @@ int mstring::find_last_of(const char *str, size_t length) const
 // Opposite to index for any of these chars
 int mstring::find_first_not_of(const char *str, size_t length) const
 {
-    int i, retval = -1;
+    unsigned int i;
+    int retval = -1;
 
     lock_read();
     if (i_str == NULL || str == NULL || length == 0)
@@ -767,7 +803,10 @@ int mstring::find_first_not_of(const char *str, size_t length) const
     char *tmp;
     tmp = alloc(length+1);
     if (tmp == NULL)
-	NOMEMR(-1);
+    {
+	lock_rel();
+	return -1;
+    }
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
@@ -800,7 +839,10 @@ int mstring::find_last_not_of(const char *str, size_t length) const
     char *tmp;
     tmp = alloc(length+1);
     if (tmp == NULL)
-	NOMEMR(-1);
+    {
+	lock_rel();
+	return -1;
+    }
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
@@ -957,7 +999,10 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	i_res /= 2;
     tmp = alloc(i_res);
     if (tmp == NULL)
-	NOMEM;
+    {
+	lock_rel();
+	return;
+    }
     memset(tmp, 0, i_res);
 
     i = j = 0;
@@ -1000,7 +1045,7 @@ mstring mstring::substr(int nFirst, int nCount) const
 	    nFirst = 0;
 	if (nCount < 0)
 	    nCount = i_len - nFirst;
-	if ((nCount + nFirst) > i_len)
+	if ((nCount + nFirst) > (int) i_len)
 	    nCount = i_len - nFirst;
 	lock_rel();
 	if (nCount > 0)
@@ -1256,11 +1301,14 @@ int mstring::Format(const char *fmt, ...)
 
 int mstring::FormatV(const char *fmt, va_list argptr)
 {
-    int length, size = 1024;
+    int length = -1, size = 1024;
     char *buffer;
     buffer = alloc(size);
     if (buffer == NULL)
-	NOMEMR(-1);
+    {
+	lock_rel();
+	return -1;
+    }
     while (buffer != NULL)
     {
 	length = vsnprintf(buffer, size-1, fmt, argptr);
@@ -1270,7 +1318,10 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	size *= 2;
 	buffer = alloc(size);
 	if (buffer == NULL)
-	    NOMEMR(-1);
+	{
+	    lock_rel();
+	    return -1;
+	}
     }
     if (buffer && length < 1)
     {
@@ -1348,7 +1399,7 @@ mstring mstring::SubString(int from, int to) const
     if (to < 0)
     {
 	lock_read();
-	if (from < i_len)
+	if (from < (int) i_len)
 	    to = i_len-1;
 	else
 	{

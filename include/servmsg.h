@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,23 +15,19 @@
 #ifndef _SERVMSG_H
 #define _SERVMSG_H
 #include "pch.h"
-static const char *ident_servmsg_h = "@(#) $Id$";
+RCSID(servmsg_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.23  2001/01/15 23:31:38  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.22  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.24  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.21  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
@@ -93,10 +89,8 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
+
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
@@ -109,15 +103,16 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    ~ServMsg() {}
     class stats_t
     {
 	friend class ServMsg;
 
 	mDateTime i_ClearTime;
 	unsigned long i_Global;
-	unsigned long i_Credits;
 	unsigned long i_Ask;
 	unsigned long i_Stats;
+	unsigned long i_Credits;
 	unsigned long i_file_AddDel;
 	unsigned long i_file_Send;
 	unsigned long i_file_Change;
@@ -126,13 +121,13 @@ public:
 	stats_t() { clear(); }
 	void clear() {
 	    i_ClearTime = Now();
-	    i_Global = i_Credits = i_Ask = i_Stats = i_file_AddDel =
+	    i_Global = i_Ask = i_Stats = i_Credits = i_file_AddDel =
 	    i_file_Send = i_file_Change = i_file_Cancel = 0; }
 	mDateTime ClearTime()const		{ return i_ClearTime; }
 	unsigned long Global()const		{ return i_Global; }
-	unsigned long Credits()const		{ return i_Credits; }
 	unsigned long Ask()const		{ return i_Ask; }
 	unsigned long Stats()const		{ return i_Stats; }
+	unsigned long Credits()const		{ return i_Credits; }
 	unsigned long File_AddDel()const	{ return i_file_AddDel; }
 	unsigned long File_Send()const		{ return i_file_Send; }
 	unsigned long File_Change()const	{ return i_file_Change; }

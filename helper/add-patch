@@ -1,6 +1,20 @@
 #!/bin/sh
 #
+#  Magick IRC Services
+#
+# $Id$
+# (c) 1997-2001 Preston Elder <prez@magick.tm>
+# (c) 1998-2001 William King <ungod@magick.tm>
+#
+# The above copywright may not be removed under any
+# circumstances, however it may be added to if any
+# modifications are made to this file.  All modified
+# code must be clearly documented and labelled.
+#
+# ==========================================================
+#
 # Add a patch version
+#
 
 if [ -z "$*" ]; then
 	echo "Must specify patch name"

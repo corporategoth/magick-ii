@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,23 +15,19 @@
 #ifndef _SERVER_H
 #define _SERVER_H
 #include "pch.h"
-static const char *ident_server_h = "@(#) $Id$";
+RCSID(server_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.57  2001/01/15 23:31:38  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.56  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.58  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.55  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -153,9 +149,6 @@ static const char *ident_server_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
 #include "ircsocket.h"
 
@@ -349,8 +342,8 @@ class NetworkServ : public mBase
     
     enum send_type {
 	t_GLOBOPS, t_HELPOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
-	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK, t_SVSKILL,
-	t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
+	t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
+	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(mstring nick);
 
@@ -358,6 +351,7 @@ class NetworkServ : public mBase
 
     void OurUplink(mstring server);
 public:
+    ~NetworkServ() {}
     void FlushUser(mstring nick, mstring channel = "");
     void PushUser(mstring nick, mstring message, mstring channel = "");
     void PopUser(mstring nick, mstring channel = "");

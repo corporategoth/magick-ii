@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_datetime_cpp_ ## x () { return y; }
+RCSID(datetime_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.62  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -105,26 +110,43 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "datetime.h"
 #include "magick.h"
 
-mstring DateSeparator="/";
-mstring ShortDateFormat="d/m/yyyy";
-mstring LongDateFormat="mmmm d',' yyyy";
-mstring TimeSeparator=":";
-mstring TimeAMString="am";
-mstring TimePMString="pm";
-mstring ShortTimeFormat="h:nn AMPM";
-mstring LongTimeFormat="hh:nn:ss AMPM";
-mstring ShortMonthNames[12] =
-{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-mstring LongMonthNames[12] =
-{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-mstring ShortDayNames[7] =
-{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-mstring LongDayNames[7] =
-{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+mstring mDateTime::DateSeparator	= "/";
+mstring mDateTime::ShortDateFormat	= "d/m/yyyy";
+mstring mDateTime::LongDateFormat	= "mmmm d',' yyyy";
+mstring mDateTime::TimeSeparator	= ":";
+mstring mDateTime::TimeAMString		= "am";
+mstring mDateTime::TimePMString		= "pm";
+mstring mDateTime::ShortTimeFormat	= "h:nn AMPM";
+mstring mDateTime::LongTimeFormat	= "hh:nn:ss AMPM";
+mstring mDateTime::ShortMonthNames[12]	= { "Jan", "Feb", "Mar",
+					    "Apr", "May", "Jun",
+					    "Jul", "Aug", "Sep",
+					    "Oct", "Nov", "Dec"  };
+mstring mDateTime::LongMonthNames[12]	= { "January", "February", "March",
+					    "April", "May", "June",
+					    "July", "August", "September",
+					    "October", "November", "December" };
+mstring mDateTime::ShortDayNames[7]	= { "Mon", "Tue", "Wed",
+					    "Thu", "Fri", "Sat",
+					    "Sun" };
+mstring mDateTime::LongDayNames[7]	= { "Monday", "Tuesday", "Wednesday",
+					    "Thursday", "Friday", "Saturday",
+					    "Sunday" };
+
+static const int SecsPerDay		= 24 * 60 * 60;
+static const int MSecsPerDay		= SecsPerDay * 1000;
+//Days between 1/1/0001 and 12/31/1899
+static const int DateDelta		= 693594;
+
+typedef int mDayTable[12];
+static const mDayTable DayTable1	= { 31, 28, 31, 30, 31, 30,
+					    31, 31, 30, 31, 30, 31 };
+static const mDayTable DayTable2	= { 31, 29, 31, 30, 31, 30,
+					    31, 31, 30, 31, 30, 31 };
+
+/* ---------------------------------------------------------- */
 
 mDateTime mDateTime::CurrentDate()
 {
@@ -155,6 +177,7 @@ mDateTime::mDateTime(time_t src)
 {
 	*this=src;
 }
+
 mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
 {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
@@ -169,30 +192,15 @@ mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
 #endif
 }
 
-const int SecsPerDay = 24 * 60 * 60;
-const int MSecsPerDay = SecsPerDay * 1000;
-//Days between 1/1/0001 and 12/31/1899
-const int DateDelta = 693594;
-
-
-bool IsLeapYear(int Year)
+static mDayTable &GetDayTable(int Year)
 {
-  return ((Year%4 == 0) && ((Year%100 != 0) || (Year%400 == 0)));
-}
-
-typedef int mDayTable[12];
-mDayTable DayTable1={31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-mDayTable DayTable2={31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-mDayTable &GetDayTable(int Year)
-{
-  if(IsLeapYear(Year))
+  if((Year % 4 == 0) && ((Year % 100 != 0) || (Year % 400 == 0)))
 	  return DayTable2;
   else 
 	  return DayTable1;
 }
 
-bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
+static bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
 {
   int I;
   bool Result = false;
@@ -219,7 +227,7 @@ mDateTime::mDateTime(unsigned int year, unsigned int month, unsigned int day)
 	*this=tmp;
 }
 
-bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
+static bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
 {
   bool Result = false;
   if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
@@ -715,19 +723,6 @@ void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const
 	msec=LeftOver;
 }
 
-mDateTime Now()
-{
-	return mDateTime::CurrentDateTime();
-}
-mDateTime Date()
-{
-	return mDateTime::CurrentDate();
-}
-mDateTime Time()
-{
-	return mDateTime::CurrentTime();
-}
-
 mDateTime StringToDate(const mstring& in)
 {
 	int year=0,month=0,day=0;
@@ -744,10 +739,10 @@ mDateTime StringToDate(const mstring& in)
 	else if(shortdateformat.Before(DateSeparator)=="yyyy")
 		year=first;
 	else if(shortdateformat.Before(DateSeparator)=="yy")
-		if(first+100 <= Now().Year2() + 150)
-			year=first+Now().Century();
+		if(first+100 <= mDateTime::CurrentDateTime().Year2() + 150)
+			year=first+mDateTime::CurrentDateTime().Century();
 		else
-			year=first+Now().Century()-100;
+			year=first+mDateTime::CurrentDateTime().Century()-100;
 	if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="m")
 		month=second;
 	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="d")
@@ -755,10 +750,10 @@ mDateTime StringToDate(const mstring& in)
 	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yyyy")
 		year=second;
 	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yy")
-		if(second+100 <= Now().Year2() + 150)
-			year=second+Now().Century();
+		if(second+100 <= mDateTime::CurrentDateTime().Year2() + 150)
+			year=second+mDateTime::CurrentDateTime().Century();
 		else
-			year=second+Now().Century()-100;
+			year=second+mDateTime::CurrentDateTime().Century()-100;
 	if(shortdateformat.After(DateSeparator).After(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).After(DateSeparator)=="m")
 		month=third;
 	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).After(DateSeparator)=="d")
@@ -766,10 +761,10 @@ mDateTime StringToDate(const mstring& in)
 	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yyyy")
 		year=third;
 	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yy")
-		if(third+100 <= Now().Year2() + 150)
-			year=third+Now().Century();
+		if(third+100 <= mDateTime::CurrentDateTime().Year2() + 150)
+			year=third+mDateTime::CurrentDateTime().Century();
 		else
-			year=third+Now().Century()-100;
+			year=third+mDateTime::CurrentDateTime().Century()-100;
 	return mDateTime(year,month,day);
 }
 
@@ -778,7 +773,11 @@ mDateTime StringToTime(const mstring& in)
 {
 
 }
-mDateTime StringToDateTime(const mstring& in);
+
+mDateTime StringToDateTime(const mstring& in)
+{
+
+}
 
 #endif
 
@@ -856,7 +855,7 @@ int mDateTime::Century() const
 }
 unsigned long mDateTime::MSecondsSince() const
 {
-    mDateTime dummyvar=Now()-(*this);
+    mDateTime dummyvar=mDateTime::CurrentDateTime()-(*this);
     unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)MSecsPerDay);
     return CurrentVal;
 }
@@ -869,7 +868,7 @@ mstring mDateTime::Ago(bool gmt, mstring source) const
 
 unsigned long mDateTime::SecondsSince() const
 {
-    mDateTime dummyvar=Now()-(*this);
+    mDateTime dummyvar=mDateTime::CurrentDateTime()-(*this);
     unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)SecsPerDay);
     return CurrentVal;
 }

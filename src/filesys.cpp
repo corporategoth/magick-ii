@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_filesys_cpp_ ## x () { return y; }
+RCSID(filesys_cpp, "@(#)$Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.60  2001/01/16 15:47:40  prez
 ** Fixed filesys not generating first entry in maps, fixed chanserv level
 ** changes (could confuse set) and fixed idle times on whois user user
@@ -269,7 +274,6 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include "lockable.h"
 #include "magick.h"
 
 queue<unsigned long> DccMap::active;
@@ -404,7 +408,7 @@ mstring mFile::ReadLine()
     catch(...)
     {
         // this catches any exceptions so that we free up the buffer
-        Result="";
+        Result.erase();
     }
 #endif
 
@@ -544,10 +548,10 @@ long mFile::Copy(mstring sin, mstring sout, bool append)
 long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 {
     FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
-    if (sout.empty())
+    if (!sin.size() || sout.empty())
 	RET(0);
     mFile out(sout.c_str(), append ? "a" : "w");
-    if (!(sin.size() && out.IsOpened()))
+    if (!out.IsOpened())
 	RET(0);
 
     MLOCK(("mFile", sout));
@@ -567,10 +571,10 @@ long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 long mFile::Dump(list<mstring> sin, mstring sout, bool append, bool endline)
 {
     FT("mFile::Dump", ("(list<mstring>) sin", sout, append, endline));
-    if (sout.empty())
+    if (!sin.size() || sout.empty())
 	RET(0);
     mFile out(sout.c_str(), append ? "a" : "w");
-    if (!(sin.size() && out.IsOpened()))
+    if (!out.IsOpened())
 	RET(0);
 	
     MLOCK(("mFile", sout));
@@ -1091,7 +1095,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
-    i_LastData = Now();
+    i_LastData = mDateTime::CurrentDateTime();
     DumpE();
     LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
 		i_DccId, i_Source.c_str(), "SEND"));
@@ -1149,7 +1153,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     memset(i_Transiant, 0, i_Blocksize + 1);
     i_Total = 0;
     i_XferTotal = 0;
-    i_LastData = Now();
+    i_LastData = mDateTime::CurrentDateTime();
     DumpE();
     LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
 		i_DccId, i_Source.c_str(), "GET"));
@@ -1396,7 +1400,7 @@ void DccXfer::Action()
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
-	    i_LastData = Now();
+	    i_LastData = mDateTime::CurrentDateTime();
 	    if ((i_Filesize > 0 &&
 		i_Filesize == i_Total + i_XferTotal) ||
 		i_XferTotal == i_Blocksize)
@@ -1523,7 +1527,7 @@ void DccXfer::Action()
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
-	    i_LastData = Now();
+	    i_LastData = mDateTime::CurrentDateTime();
 	    if (i_Filesize == i_Total + i_XferTotal)
 	    {
 		i_Total += i_XferTotal;

@@ -15,19 +15,19 @@
 #ifndef _VARIANT_H
 #define _VARIANT_H
 #include "pch.h"
-static const char *ident_variant_h = "@(#) $Id$";
+RCSID(variant_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.33  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.34  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.32  2000/12/09 10:17:14  prez
 ** Added +h to unreal IRCD profile, and made variant more efficiant
@@ -62,72 +62,71 @@ static const char *ident_variant_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-#include "mstring.h"
 #include "datetime.h"
 
 // based upon mechanisms prevalent in Delphi.
-
-
 class mVariant
 {
+public:
+    mstring truevaluetype;
+    mstring valuetype;
+
 private:
-	//union value_union_t {
-		short ShortValue;
-		int IntValue;
-		long LongValue;
-		char CharValue;
-		float FloatValue;
-		double DoubleValue;
-		//const char *StringValue;
-		mstring StringValue;
-		// this will use the raw datatype
-		mDateTime DateValue;
-		bool BoolValue;
-		unsigned char UCharValue;
-		unsigned short UShortValue;
-		unsigned int UIntValue;
-		unsigned long ULongValue;
-		void *PtrValue;
-	//} value;
+    //union value_union_t {
+	bool BoolValue;
+	short ShortValue;
+	int IntValue;
+	long LongValue;
+	char CharValue;
+	float FloatValue;
+	double DoubleValue;
+	unsigned char UCharValue;
+	unsigned short UShortValue;
+	unsigned int UIntValue;
+	unsigned long ULongValue;
+	void *PtrValue;
+
+	// Magick only
+	mstring StringValue;
+	mDateTime DateValue;
+    //} value;
 	
 public:
-	mstring valuetype;
-	mstring truevaluetype;
-	// gonna change this to a mstring so we can use custom defined types
-	mVariant(const mVariant& in);
-	mVariant(const char *in);
-	mVariant(const string& in);
-	mVariant(void *in);
-	mVariant(const unsigned int in);
-	mVariant(const unsigned long in);
-	mVariant(const unsigned short in);
-	mVariant(const unsigned char in);
-	mVariant(const bool in);
-	mVariant(const double in);
-	mVariant(const float in);
-	mVariant(const char in);
-	mVariant(const int in);
-	mVariant(const long in);
-	mVariant(const short in);
-	mVariant();
-	// Magick Only stuff
-	mVariant(const mstring& in);
-	mVariant(const mDateTime& in);
+    mVariant();
+    virtual ~mVariant() {}
+    mVariant(const mVariant& in);
+    mVariant(const bool in);
+    mVariant(const char in);
+    mVariant(const short in);
+    mVariant(const int in);
+    mVariant(const long in);
+    mVariant(const float in);
+    mVariant(const double in);
+    mVariant(const unsigned char in);
+    mVariant(const unsigned short in);
+    mVariant(const unsigned int in);
+    mVariant(const unsigned long in);
+    mVariant(void *in);
+    mVariant(const char *in);		// Stored as mstring
+    mVariant(const string& in);		// Stored as mstring
 
-	mVariant& operator=(const mVariant& in);
-	bool operator==(const mVariant& in)const;
-	bool operator!=(const mVariant& in)const
-		{ return !operator==(in); }
-	bool operator<(const mVariant& in)const;
+    // Magick Only stuff
+    mVariant(const mstring& in);
+    mVariant(const mDateTime& in);
 
-	mstring AsString()const;
-	mstring type()const;
+    mVariant& operator=(const mVariant& in);
+    bool operator==(const mVariant& in)const;
+    bool operator!=(const mVariant& in)const
+	{ return !operator==(in); }
+    bool operator<(const mVariant& in)const;
+
+    mstring AsString()const;
+    mstring type()const;
 };
 
 class mVarArray
 {
-	vector<mVariant> values;
+    vector<mVariant> values;
 public:
     mVarArray() { };
     mVarArray(const mVariant& one);

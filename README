@@ -87,15 +87,16 @@ magick.log - This is the logfile which logs all activity of note
 that happens inside Magick.  The verbosity of this log file can
 vary depending on the --debug option, or the VERBOSE config option.
 This file may be zeroed without any detrimental effects, or if
-it is removed, the OFF and ON online commands will re-establish
-the filehandle. This filename is a setting in the magick.ini file,
+it is removed, the OFF LOG and ON LOG online commands (OperSerV)
+will re-establish the filehandle (ie. close and re-open the file
+respectively). This filename is a setting in the magick.ini file,
 and may be changed.  This file is created if it doesn't exist.
 
 magick.pid - This file indicates the process ID of the currently
 running Magick on UNIX-based systems.  This may be used to easily
 determine if Magick is running, and to kill a running copy. This
 filename is a setting in the magick.ini file, and may be changed.
-This file is overwritten on Magick startup.
+This file is overwritten on Magick startup and removed on shutdown.
 
 magick.motd - This contains the text of the server motd that will
 be displayed to any user who types /MOTD services.server in their
@@ -108,6 +109,10 @@ may not be used by more than one set of services (unless the binaries
 are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 
+lang - This directory is where all language files (*.lng, *.lfo and
+*.hlp) will be stored.  The path name actually used is a setting
+in the magick.ini file.
+
 lang/*.lng - These files contain the responses Magick will send back
 to users for any command, or output from any procedure.  These files
 are 'tokenised', and are substituted with actual values.  The default
@@ -118,7 +123,7 @@ lang/*.lfo - These files contain the log file outputs Magick will
 use for all messages going to the magick.log file.  These files are
 'tokenised', and are substituted with actual values.  The file that
 is used is set by the DEF_LANGUAGE parameter in the magick.ini file.
-
+ 
 lang/*.hlp - These files contain the help text that Magick uses to
 respond to all HELP commands.  The default help file used is set by
 the DEF_LANGUAGE parameter in the magick.ini file, however languages
@@ -135,7 +140,7 @@ extension -- the map to real filenames is stored in the database.
 The path name actually used is a setting in the magick.ini file.
 
 files/public - This directory is where all files in the public
-filesystem (uploaded by SOPS only)are stored. The files themselves
+filesystem (uploaded by SOPS) are stored. The files themselves
 are stored as hexadecimal numbers, with no extension -- the map to
 real filenames is stored in the database. The path name actually
 used is a setting in the magick.ini file.
@@ -161,11 +166,13 @@ again at runtime, the settings in the config file will be used.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:
-			magick
+			magick (1.4)   esper (4.4.8)
+		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 --trace X:Y	Set the trace level on startup, equivalents of
 		using the OperServ TRACE SET command while
 		running, where X is the trace type (or ALL), and
 		Y is the trace level in hex.
+		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 
 All other command line options just override the configuration
 file settings.  Below is a list of the overrides available, and
@@ -185,6 +192,7 @@ PARAMETER	SHORT	GROUP		OPTION
 --lagtime X	-g	STARTUP		LAGTIME
 --verbose	-v	FILES		VERBOSE=true
 --log X		-L	FILES		LOGFILE
+--logchan X	-C	FILES		LOGCHAN
 --dbase X	-D	FILES		DATABASE
 --langdir X	-S	FILES		LANGDIR
 --encrypt	-E	FILES		ENCRYPTION=true
@@ -218,13 +226,15 @@ on-line clients (NickServ, ChanServ, OperServ, etc).  However,
 in certain cases, events happen and these interfaces are either
 not available, not responding, too slow, or don't recognise you.
 For this eventuality, all UNIX SIGNALS have been trapped, and
-some perform extra functions that 'originally' intended.
+some perform extra functions than 'originally' intended.
 
 SIGNAL	NUMBER	EQUIVALENT	DESCRIPTION
 ------	------	----------	-----------
 SIGHUP	1	OS RELOAD	Re-loads the config file.
 SIGINT	2	OS SIGNON	Attempts to sign on all clients.
+SIGPIPE	13	IGNORE		Flushes trace output immediately.
 SIGTERM	15	OS UPDATE	Saves the databases.
+SIGCHLD	17	IGNORE		Check to see if we're alive.
 
 Some have queried me on why SIGTERM saves the databases.  During
 shutdown of many systems, the shutdown scripts will send a SIGTERM
@@ -244,7 +254,8 @@ prompts will be hidden, however to not bank on this, and always
 ensure no one can look over your shoulder of sniff your network
 traffic to find out what the clear-text password is.  The maximum
 size of a key is specified at compile time, and may be changed
-with a configure option (see INSTALL for further details).
+with a configure option (see INSTALL for further details), however
+it defaults to 1024 bytes.
 
 Example 1:
 
@@ -269,6 +280,20 @@ Magick IRC Services - http://www.magick.tm
 
 Created 1024 byte keyfile.
 
+Tip:  Its usually a good idea to find a random file that doesnt
+change, or that you have a version of, and choose a random point
+somewhere in the middle (remember the starting point), and cut
+from that point on into a seperate file, then feed that as the
+plain magick key, and then remove your plain key file.  This way
+you will not have to remember a whole big key, just where the
+key is from, and the beginning point in the file (ensure it is
+a big file and dont tell anyone what file it is, where to get it
+or the starting point for security.  This is usually the easiest
+way to create a big key and remember it all without having to
+tax your brain, or worry about forgetting it.  NEVER EVER leave
+a plain key file (ie. your file with everything before the start
+point truncated) lying around -- and do not use a file that may
+change from version to version of wherever you got it.
 
 5. FUNCTIONALITY
 ================
@@ -329,7 +354,7 @@ on signon.  Services has 6 'default' committees:
 	ALL	- All Users - This committee may not be modified,
 		  and its members are dynamic.
 
-OperServ is a services that allows IRC Operators to keep control
+OperServ is a service that allows IRC Operators to keep control
 on the network.  This service offers functions like an Automatic
 Kill list, Clone Protection (and overriding), Services Ignore,
 IRC Operator Denying, as well as the ability to JUPE (fake-link)

@@ -5,14 +5,14 @@ $Id$
 (c) 1998-2001 William King <ungod@magick.tm>
 
 Magick is designed and developed by the Magick Development
-Team <magick-devel@magick.tm>.  Any bugs, feature requests,
+Team <devel@magick.tm>.  Any bugs, feature requests,
 comments, etc should be directed at this mailing list.  The
 development team is an OPEN team, however certain skills
 are required to join, not the least of which is the ability
 to program in C and C++, and to use CVS.  To join this team,
 please e-mail prez@magick.tm for further details.
 
-The Magick Alpha Team <magick-alpha@magick.tm> test current
+The Magick Alpha Team <alpha@magick.tm> test current
 development versions of Magick, finding not only bugs, but
 also making sure it is a user friendly and understandable
 product, so it may be changed at the same time its being
@@ -22,9 +22,9 @@ join it by first downloading and installing/setting up the
 current alpha version of Magick (if you cannot do this on
 your own, its recommended you do not join the alpha team),
 and then e-mailing majordomo@magick.tm with "subscribe
-magick-alpha" (no quotes, on one line).
+alpha" (no quotes, on one line).
 
-The Magick Beta Team <magick-beta@magick.tm> test versions
+The Magick Beta Team <beta@magick.tm> test versions
 of magick that have been through alpha testing, and are in
 the final phase of development.  The beta team's main goal
 is to find bugs before Magick is released, so they do not
@@ -32,7 +32,7 @@ get out into the release version of Magick.  The beta team
 is an OPEN testing team, and you may join it by first down-
 loading and installing/setting up the current beta version
 of Magick, and then e-mailing majordomo@magick.tm with
-"subscribe magick-beta" (no quotes, on one line).
+"subscribe beta" (no quotes, on one line).
 
 The following people have contributed to the final product
 of Magick II (testers not included):

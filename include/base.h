@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,19 +15,19 @@
 #ifndef _BASE_H
 #define _BASE_H
 #include "pch.h"
-static const char *ident_base_h = "@(#) $Id$";
+RCSID(base_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.77  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.78  2001/02/03 02:21:30  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.76  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -141,9 +141,7 @@ static const char *ident_base_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-#include "mstring.h"
-#include "trace.h"
-#include "dccengine.h"
+#include "lockable.h"
 #include "utils.h"
 #include "xml/sxp.h"
 
@@ -153,8 +151,9 @@ protected:
     vector<mstring *> ud_array;
     map<mstring,mstring> i_UserDef;
 public:
-    mstring UserDef(mstring type) const;
-    void UserDef(mstring type, mstring val);
+    virtual ~mUserDef() {}
+    virtual mstring UserDef(mstring type) const;
+    virtual void UserDef(mstring type, mstring val);
 };
 
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
@@ -168,8 +167,9 @@ protected:
     int message_i(const mstring& message);
 public:
     mBaseTask() {}
+    virtual ~mBaseTask() {}
     virtual int open(void *in=0);
-    virtual int close(void *in=0);
+    virtual int close(unsigned long flags=0);
     virtual int svc(void);
     void message(const mstring& message);
     void i_shutdown();
@@ -178,7 +178,6 @@ public:
 class mBase
 {
     friend mBaseTask;
-
 protected:
     mstring names;		// Names of service (space delimited)
     mstring realname;		// 'Real Name' of service
@@ -193,6 +192,7 @@ protected:
 
 public:
     mBase() {}
+    virtual ~mBase() {}
     static void init();
     static void shutdown();
 
@@ -200,11 +200,11 @@ public:
     static void push_message_immediately(const mstring& message);
     virtual void execute(const mstring& message) =0;
 
-    mstring FirstName() const { return names.Before(" "); }
-    mstring GetNames() const { return names; }
-    bool IsName(mstring in) const
+    virtual mstring FirstName() const { return names.Before(" "); }
+    virtual mstring GetNames() const { return names; }
+    virtual bool IsName(mstring in) const
     {
-        mstring tmp = " "+names.UpperCase()+" ";
+	mstring tmp = " "+names.UpperCase()+" ";
 	return tmp.Contains(" "+in.UpperCase()+" ");
     };
 
@@ -226,7 +226,7 @@ public:
     void send(const mstring &dest, const char *pszFormat, ...) const;
     void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
 
-    operator mVariant() const
+    virtual operator mVariant() const
     {
 	mVariant locvar(GetInternalName());
 	locvar.truevaluetype=GetInternalName();
@@ -256,6 +256,7 @@ public:
     entlist_t () {}
     entlist_t (const entlist_t& in) { *this = in; }
     entlist_t (mstring entry, mstring nick, mDateTime modtime = Now());
+    virtual ~entlist_t () {}
     void operator=(const entlist_t &in);
     bool operator==(const entlist_t &in) const
 	{ return (i_Entry == in.i_Entry); }
@@ -264,20 +265,20 @@ public:
     bool operator<(const entlist_t &in) const
 	{ return (i_Entry < in.i_Entry); }
 
-    mstring Entry()const		{ return i_Entry; }
-    mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
-    mstring Last_Modifier()const	{ return i_Last_Modifier; }
+    virtual mstring Entry()const		{ return i_Entry; }
+    virtual mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
+    virtual mstring Last_Modifier()const	{ return i_Last_Modifier; }
 
     // XML handling section
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-    void PostLoad();
+    virtual void PostLoad();
 
-    size_t Usage() const;
-    void DumpB() const;
-    void DumpE() const;
+    virtual size_t Usage() const;
+    virtual void DumpB() const;
+    virtual void DumpE() const;
 };
 typedef list<entlist_t>::iterator entlist_i;
 typedef list<entlist_t>::const_iterator entlist_ci;
@@ -293,45 +294,46 @@ protected:
 
 public:
     entlist_val_t () {}
+    virtual ~entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
     entlist_val_t (mstring entry, T value, mstring nick, mDateTime modtime = Now(), bool stupid = false)
-        : entlist_t(entry,nick,modtime)
+	: entlist_t(entry,nick,modtime)
     {
-        FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
-    							modtime, stupid));
-        i_Value = value;
-        i_Stupid = stupid;
+	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
+							modtime, stupid));
+	i_Value = value;
+	i_Stupid = stupid;
     }
     void operator=(const entlist_val_t &in)
     {
-        FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
-        i_Entry=in.i_Entry;
-        i_Value=in.i_Value;
-        i_Last_Modify_Time=in.i_Last_Modify_Time;
-        i_Last_Modifier=in.i_Last_Modifier;
-        i_Stupid = in.i_Stupid;
-        map<mstring,mstring>::const_iterator i;
-        i_UserDef.clear();
-        for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-    	i_UserDef[i->first]=i->second;
+	FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
+	i_Entry=in.i_Entry;
+	i_Value=in.i_Value;
+	i_Last_Modify_Time=in.i_Last_Modify_Time;
+	i_Last_Modifier=in.i_Last_Modifier;
+	i_Stupid = in.i_Stupid;
+	map<mstring,mstring>::const_iterator i;
+	i_UserDef.clear();
+	for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	    i_UserDef[i->first]=i->second;
     }
 
-    bool Value(T value, mstring nick)
+    virtual bool Value(T value, mstring nick)
     {
-        FT("entlist_val_t<T>::Change", ("(T) value", nick));
-        if (i_Stupid)
-        {
-    	    RET(false);
-        }
-        else
-        {
-        	i_Value = value;
-        	i_Last_Modify_Time = Now();
-        	i_Last_Modifier = nick;
-        	RET(true);
-        }
+	FT("entlist_val_t<T>::Change", ("(T) value", nick));
+	if (i_Stupid)
+	{
+	    RET(false);
+	}
+	else
+	{
+	    i_Value = value;
+	    i_Last_Modify_Time = Now();
+	    i_Last_Modifier = nick;
+	    RET(true);
+	}
     }
-    T Value()const			{ return i_Value; }
+    virtual T Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; };
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
@@ -340,22 +342,22 @@ public:
     }
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
-        entlist_t::EndElement(pIn,pElement);
-    	if( pElement->IsA(tag_Value) )    pElement->Retrieve(i_Value);
+	entlist_t::EndElement(pIn,pElement);
+	if( pElement->IsA(tag_Value) )    pElement->Retrieve(i_Value);
 	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     {
-	    pOut->BeginObject(tag_entlist_val_t, attribs);
-        entlist_t::WriteElement(pOut,attribs);
+	pOut->BeginObject(tag_entlist_val_t, attribs);
+	entlist_t::WriteElement(pOut,attribs);
 
-	    pOut->WriteElement(tag_Value, i_Value);
-    	pOut->WriteElement(tag_Stupid, i_Stupid);
+	pOut->WriteElement(tag_Value, i_Value);
+	pOut->WriteElement(tag_Stupid, i_Stupid);
 
-	    pOut->EndObject(tag_entlist_val_t);
+	pOut->EndObject(tag_entlist_val_t);
     }
 
-    size_t Usage() const
+    virtual size_t Usage() const
     {
 	size_t retval = entlist_t::Usage();
 	retval += sizeof(i_Value);
@@ -363,15 +365,15 @@ public:
 	return retval;
     }
 
-    void DumpB() const
+    virtual void DumpB() const
     {
 	entlist_t::DumpB();
-	WB(4, (i_Stupid));
+	//MB(4, (i_Stupid));
     }
-    void DumpE() const
+    virtual void DumpE() const
     {
 	entlist_t::DumpE();
-	WE(4, (i_Stupid));
+	//ME(4, (i_Stupid));
     }
 };
 
@@ -395,43 +397,44 @@ protected:
 
 public:
     entlist_val_t () {}
+    virtual ~entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
     entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false)
-        : entlist_t(entry,nick,modtime)
+	: entlist_t(entry,nick,modtime)
     {
-        FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
-    							modtime, stupid));
-        i_Value = value;
-        i_Stupid = stupid;
+	FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
+							modtime, stupid));
+	i_Value = value;
+	i_Stupid = stupid;
     }
     void operator=(const entlist_val_t &in)
     {
-        FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t< pair<T1,T2> > &) in"));
-        i_Entry=in.i_Entry;
-        i_Value=in.i_Value;
-        i_Last_Modify_Time=in.i_Last_Modify_Time;
-        i_Last_Modifier=in.i_Last_Modifier;
-        i_Stupid = in.i_Stupid;
-        map<mstring,mstring>::const_iterator i;
-        i_UserDef.clear();
-        for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-    	i_UserDef[i->first]=i->second;
+	FT("entlist_val_t< pair<T1, T2> >::operator=", ("(const entlist_val_t< pair<T1,T2> > &) in"));
+	i_Entry=in.i_Entry;
+	i_Value=in.i_Value;
+	i_Last_Modify_Time=in.i_Last_Modify_Time;
+	i_Last_Modifier=in.i_Last_Modifier;
+	i_Stupid = in.i_Stupid;
+	map<mstring,mstring>::const_iterator i;
+	i_UserDef.clear();
+	for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	    i_UserDef[i->first]=i->second;
     }
 
-    bool Value(pair<T1,T2> value, mstring nick)
+    virtual bool Value(pair<T1,T2> value, mstring nick)
     {
-        FT("entlist_val_t< pair<T1,T2> >::Change", ("(pair<T1,T2>) value", nick));
-        if (i_Stupid)
-        {
-    	    RET(false);
-        }
-        else
-        {
-        	i_Value = value;
-        	i_Last_Modify_Time = Now();
-        	i_Last_Modifier = nick;
-        	RET(true);
-        }
+	FT("entlist_val_t< pair<T1,T2> >::Change", ("(pair<T1,T2>) value", nick));
+	if (i_Stupid)
+	{
+	    RET(false);
+	}
+	else
+	{
+	    i_Value = value;
+	    i_Last_Modify_Time = Now();
+	    i_Last_Modifier = nick;
+	    RET(true);
+	}
     }
     pair<T1,T2> Value()const			{ return i_Value; }
 
@@ -439,24 +442,24 @@ public:
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
-        entlist_t::EndElement(pIn,pElement);
-    	if( pElement->IsA(tag_ValueFirst) )   pElement->Retrieve(i_Value.first);
+	entlist_t::EndElement(pIn,pElement);
+	if( pElement->IsA(tag_ValueFirst) )   pElement->Retrieve(i_Value.first);
 	    if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
-    	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
+	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     {
-	    pOut->BeginObject(tag_entlist_val_t, attribs);
-        entlist_t::WriteElement(pOut,attribs);
+	pOut->BeginObject(tag_entlist_val_t, attribs);
+	entlist_t::WriteElement(pOut,attribs);
 
-	    pOut->WriteElement(tag_ValueFirst, i_Value.first);
-    	pOut->WriteElement(tag_ValueSecond, i_Value.second);
-	    pOut->WriteElement(tag_Stupid, i_Stupid);
+	pOut->WriteElement(tag_ValueFirst, i_Value.first);
+	pOut->WriteElement(tag_ValueSecond, i_Value.second);
+	pOut->WriteElement(tag_Stupid, i_Stupid);
 
-    	pOut->EndObject(tag_entlist_val_t);
+	pOut->EndObject(tag_entlist_val_t);
     }
 
-    size_t Usage() const
+    virtual size_t Usage() const
     {
 	size_t retval = entlist_t::Usage();
 	retval += sizeof(i_Value.first);
@@ -465,15 +468,15 @@ public:
 	return retval;
     }
 
-    void DumpB() const
+    virtual void DumpB() const
     {
 	entlist_t::DumpB();
-	WB(4, (i_Stupid));
+	//MB(4, (i_Stupid));
     }
-    void DumpE() const
+    virtual void DumpE() const
     {
 	entlist_t::DumpE();
-	WE(4, (i_Stupid));
+	//ME(4, (i_Stupid));
     }
 
 };

@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,23 +15,19 @@
 #ifndef _NICKSERV_H
 #define _NICKSERV_H
 #include "pch.h"
-static const char *ident_nickserv_h = "@(#) $Id$";
+RCSID(nickserv_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.55  2001/01/16 15:47:39  prez
-** Fixed filesys not generating first entry in maps, fixed chanserv level
-** changes (could confuse set) and fixed idle times on whois user user
-**
-** Revision 1.54  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.56  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.53  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -157,11 +153,8 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
 #include "base.h"
 #include "ircsocket.h"
-#include "filesys.h"
-#include "lockable.h"
 
 class Nick_Live_t : public mUserDef
 {
@@ -189,7 +182,7 @@ class Nick_Live_t : public mUserDef
     mDateTime last_nick_reg, last_chan_reg, last_memo;
 
 public:
-
+    ~Nick_Live_t() {}
     class InFlight_t {
 	friend class Nick_Live_t;
 	friend class DccXfer;
@@ -324,13 +317,15 @@ public:
     void DumpE() const;
 };
 
-struct NickInfo;
+struct NickInfo_CUR;
+struct ESP_NickInfo;
 
 class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend class Nick_Live_t;
     friend class NickServ;
-    friend Nick_Stored_t CreateNickEntry(NickInfo *ni);
+    friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
+    friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -390,6 +385,7 @@ public:
     Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
     Nick_Stored_t(mstring nick, mstring password);
     Nick_Stored_t(mstring nick); // Services Only (forbidden)
+    ~Nick_Stored_t() {}
     void operator=(const Nick_Stored_t &in);
     bool operator==(const Nick_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -544,6 +540,7 @@ private:
     void AddCommands();
     void RemCommands();
 public:
+    ~NickServ() {}
     class stats_t
     {
 	friend class NickServ;

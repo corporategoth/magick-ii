@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_lockable_cpp_ ## x () { return y; }
+RCSID(lockable_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.60  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -163,8 +168,6 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 
 #include "magick.h"
-#include "lockable.h"
-#include "utils.h"
 
 #ifdef MAGICK_LOCKS_WORK
 
@@ -180,7 +183,10 @@ map<unsigned long, mSocket *> mSocket::SockMap;
 
 mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 {
-    int i, count = 0;
+    int i;
+#ifdef MAGICK_TRACE_WORKS
+    int count = 0;
+#endif
     map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
     mstring lockname;
     unsigned char hash[ACE_MAXTOKENNAMELEN];
@@ -974,12 +980,23 @@ void mThread::ReAttach(threadtype_enum ttype)
 {
     FT("mThread::ReAttach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=find();
+#ifdef MAGICK_TRACE_WORKS	// Get rid of 'unused veriable' warning
     threadtype_enum oldtype = tmpid->type();
+#endif
     if(tmpid==NULL)
     {
 	// ReAttach does an attach if it wasnt there
 	CP(("mThread::ReAttach without valid mThread::Attach... type: %s",threadname[ttype].c_str()));
+	mLock_Mutex lock("SelfToThreadMap");
+	if (lock.acquire() < 0)
+	{
+	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "SelfToThreadMap"));
+	    return;
+	}
 	tmpid=new ThreadID();
+	selftothreadidmap[ACE_Thread::self()]=tmpid;
+	lock.release();
     }
     COM(("Thread ID has been re-attached to %s.", threadname[ttype].c_str()));
     tmpid->assign(ttype);

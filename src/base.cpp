@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_base_cpp_ ## x () { return y; }
+RCSID(base_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.148  2001/02/03 02:21:32  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.147  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -247,8 +252,6 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include "base.h"
-#include "lockable.h"
 #include "magick.h"
 
 bool mBase::TaskOpened;
@@ -346,9 +349,9 @@ int mBaseTask::open(void *in)
     RET(retval);
 }
 
-int mBaseTask::close(void *in)
+int mBaseTask::close(unsigned long flags)
 {
-    NFT("mBaseTask::close");
+    FT("mBaseTask::close", (flags));
     RET(0);
 }
 

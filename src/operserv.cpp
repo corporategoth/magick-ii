@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_operserv_cpp_ ## x () { return y; }
+RCSID(operserv_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2001/02/03 02:21:34  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.113  2001/01/15 23:31:39  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -266,10 +271,8 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "lockable.h"
-#include "operserv.h"
 #include "magick.h"
+#include "dccengine.h"
 
 bool OperServ::AddHost(mstring host)
 {
@@ -298,7 +301,7 @@ bool OperServ::AddHost(mstring host)
 	CP(("Event Size after purge is %d",
 				CloneList[host.LowerCase()].second.size()));
 
-	CloneList[host.LowerCase()].second.push_back(Now());
+	CloneList[host.LowerCase()].second.push_back(mDateTime::CurrentDateTime());
 	if (CloneList[host.LowerCase()].second.size() >
 			Parent->operserv.Clone_Trigger())
 	{
@@ -464,7 +467,6 @@ size_t OperServ::Clone_Usage() const
     size_t retval = 0;
     set<Clone_Type>::const_iterator i;
     MLOCK(("OperServ", "Clone"));
-    Clone_Type *tmp;
     for (i=i_Clone.begin(); i!=i_Clone.end(); i++)
     {
 	retval += i->Usage();
@@ -572,7 +574,6 @@ size_t OperServ::Akill_Usage() const
     size_t retval = 0;
     set<Akill_Type>::const_iterator i;
     MLOCK(("OperServ", "Akill"));
-    Akill_Type *tmp;
     for (i=i_Akill.begin(); i!=i_Akill.end(); i++)
     {
 	retval += i->Usage();
@@ -693,7 +694,6 @@ size_t OperServ::OperDeny_Usage() const
     size_t retval = 0;
     set<OperDeny_Type>::const_iterator i;
     MLOCK(("OperServ", "OperDeny"));
-    OperDeny_Type *tmp;
     for (i=i_OperDeny.begin(); i!=i_OperDeny.end(); i++)
     {
 	retval += i->Usage();
@@ -815,7 +815,6 @@ size_t OperServ::Ignore_Usage() const
     size_t retval = 0;
     set<Ignore_Type>::const_iterator i;
     MLOCK(("OperServ", "Ignore"));
-    entlist_val_t<bool> *tmp;
     for (i=i_Ignore.begin(); i!=i_Ignore.end(); i++)
     {
 	retval += i->Usage();
@@ -1329,7 +1328,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		{
 		    Trace::TurnSet((threadtype_enum) i, makehex(levels[0U]));
 		    output.Format("%s SET: Trace level set to %#06x.",
-			Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) i));
+			mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) i));
 		    { MLOCK(("ThreadMessageQueue"));
 		    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) i, output));
 		    }
@@ -1339,7 +1338,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 	    {
 		Trace::TurnSet(type, makehex(levels[0U]));
 		output.Format("%s SET: Trace level set to %#06x.",
-		    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+		    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel(type));
 		{ MLOCK(("ThreadMessageQueue"));
 		ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
 		}
@@ -1365,7 +1364,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 				}
 				Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
-				    Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
 				{ MLOCK(("ThreadMessageQueue"));
 				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
 				}
@@ -1380,7 +1379,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 				}
 				Trace::TurnUp(type, Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
-				    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+				    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel(type));
 				{ MLOCK(("ThreadMessageQueue"));
 				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
 				}
@@ -1408,7 +1407,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			{
 			    Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
 			    output.Format("%s UP: Trace level set to %#06x.",
-				Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
 			    { MLOCK(("ThreadMessageQueue"));
 			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
 			    }
@@ -1418,7 +1417,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    {
 			Trace::TurnUp(type, Trace::levelname[j].level);
 			output.Format("%s UP: Trace level set to %#06x.",
-			    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+			    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel(type));
 			{ MLOCK(("ThreadMessageQueue"));
 			ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
 			}
@@ -1445,7 +1444,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			{
 			    Trace::TurnDown((threadtype_enum) k, Trace::levelname[j].level);
 			    output.Format("%s DOWN: Trace level set to %#06x.",
-				Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
 			    { MLOCK(("ThreadMessageQueue"));
 			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
 			    }
@@ -1455,7 +1454,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    {
 			Trace::TurnDown(type, Trace::levelname[j].level);
 			output.Format("%s DOWN: Trace level set to %#06x.",
-			    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+			    mDateTime::CurrentDateTime().DateTimeString().c_str(), Trace::TraceLevel(type));
 			{ MLOCK(("ThreadMessageQueue"));
 			ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
 			}

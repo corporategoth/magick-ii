@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_chanserv_cpp_ ## x () { return y; }
+RCSID(chanserv_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.225  2001/02/03 02:21:32  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.224  2001/01/16 15:47:39  prez
 ** Fixed filesys not generating first entry in maps, fixed chanserv level
 ** changes (could confuse set) and fixed idle times on whois user user
@@ -368,10 +373,8 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "chanserv.h"
-#include "lockable.h"
 #include "magick.h"
+#include "dccengine.h"
 
 #ifdef __BORLAND__
 #pragma codeseg CODE2
@@ -413,7 +416,7 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    target = Parent->nickserv.stored[nick.LowerCase()].Host().LowerCase();
 	MCB(users.size());
 	CB(1, recent_parts.size());
-	recent_parts[target] = Now();
+	recent_parts[target] = mDateTime::CurrentDateTime();
 	users.erase(nick.LowerCase());
 	if (!users.size())
 	{
@@ -1493,7 +1496,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		CB(5, bans.size());
 		if (add)
 		{
-		    bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
+		    bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = mDateTime::CurrentDateTime();
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": "));
 		}
@@ -1517,7 +1520,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		CB(5, exempt.size());
 		if (add)
 		{
-		    exempt[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
+		    exempt[in.ExtractWord(fwdargs, ": ").LowerCase()] = mDateTime::CurrentDateTime();
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(fwdargs, ": "));
 		}
@@ -1961,7 +1964,7 @@ bool Chan_Stored_t::Join(mstring nick)
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
 	MCB(i_LastUsed);
-	i_LastUsed = Now();
+	i_LastUsed = mDateTime::CurrentDateTime();
 	MCE(i_LastUsed);
     }
 
@@ -2045,7 +2048,7 @@ void Chan_Stored_t::Part(mstring nick)
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
 	MCB(i_LastUsed);
-	i_LastUsed = Now();
+	i_LastUsed = mDateTime::CurrentDateTime();
 	MCE(i_LastUsed);
     }
 
@@ -2256,7 +2259,7 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
     CB(2, i_Topic_Set_Time);
     i_Topic = topic;
     i_Topic_Setter = setter;
-    i_Topic_Set_Time = Now();
+    i_Topic_Set_Time = mDateTime::CurrentDateTime();
     CE(1, i_Topic_Setter);
     CE(2, i_Topic_Set_Time);
     MCE(i_Topic);
@@ -2711,7 +2714,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, ms
     i_Name = name;
     WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
     defaults();
-    i_RegTime = i_LastUsed = Now();
+    i_RegTime = i_LastUsed = mDateTime::CurrentDateTime();
     i_Founder = founder;
     i_Password = password;
     i_Description = desc;
@@ -2727,7 +2730,7 @@ Chan_Stored_t::Chan_Stored_t(mstring name)
     WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
     defaults();
     i_Mlock_On = "nits";
-    i_RegTime = i_LastUsed = Now();
+    i_RegTime = i_LastUsed = mDateTime::CurrentDateTime();
     i_Forbidden = true;
     DumpE();
 }
@@ -2825,7 +2828,7 @@ mDateTime Chan_Stored_t::LastUsed()
 	{
 	    if (GetAccess(Parent->chanserv.live[i_Name.LowerCase()].User(i)) > 0)
 	    {
-		RET(Now());
+		RET(mDateTime::CurrentDateTime());
 	    }
 	}
     }
@@ -3009,7 +3012,7 @@ void Chan_Stored_t::Suspend(mstring name)
     MCB(i_Suspend_By);
     CB(1, i_Suspend_Time);
     i_Suspend_By = name;
-    i_Suspend_Time = Now();
+    i_Suspend_Time = mDateTime::CurrentDateTime();
     CE(1, i_Suspend_Time);
     MCE(i_Suspend_By);
 }

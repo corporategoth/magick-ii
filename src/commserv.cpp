@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_commserv_cpp_ ## x () { return y; }
+RCSID(commserv_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.87  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -238,9 +243,8 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include "lockable.h"
-#include "commserv.h"
 #include "magick.h"
+#include "dccengine.h"
 
 Committee::Committee(mstring name, mstring head, mstring description)
 {
@@ -248,7 +252,7 @@ Committee::Committee(mstring name, mstring head, mstring description)
 
     i_Name = name.UpperCase();
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
-    i_RegTime = Now();
+    i_RegTime = mDateTime::CurrentDateTime();
     i_Head = head.LowerCase();
     i_HeadCom = "";
     i_Description = description;
@@ -267,7 +271,7 @@ Committee::Committee(mstring name, Committee *head, mstring description)
     FT("Committee::Committee", (name, "(Committee *) head", description));
     i_Name = name.UpperCase();
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
-    i_RegTime = Now();
+    i_RegTime = mDateTime::CurrentDateTime();
     i_Head = "";
     i_HeadCom = head->Name();
     i_Description = description;
@@ -286,7 +290,7 @@ Committee::Committee(mstring name, mstring description)
     FT("Committee::Committee", (name, description));
     i_Name = name.UpperCase();
     WLOCK(("CommServ", "list", i_Name.UpperCase()));
-    i_RegTime = Now();
+    i_RegTime = mDateTime::CurrentDateTime();
     i_Head = "";
     i_HeadCom = "";
     i_Description = description;
@@ -776,15 +780,15 @@ bool Committee::L_OpenMemos() const
 }
 
 
-bool Committee::MSG_insert(mstring entry, mstring nick)
+bool Committee::MSG_insert(mstring entry, mstring nick, mDateTime time)
 {
-    FT("Committee::MSG_insert", (entry, nick));
+    FT("Committee::MSG_insert", (entry, nick, time));
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     if (IsHead(nick))
     {
 	MCB(i_Messages.size());
-	i_Messages.push_back(entlist_t(entry, nick));
+	i_Messages.push_back(entlist_t(entry, nick, time));
 	MCE(i_Messages.size());
 	message = i_Messages.end(); message--;
 	RET(true);

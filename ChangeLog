@@ -7,7 +7,7 @@ $Id$
 Please note, this document only has FULL releases in it.
 ALPHA and BETA releases are not listed, nor are patches.
 
-Magick II (Magick Development Team <magick-devel@magick.tm>)
+Magick II (Magick Development Team <devel@magick.tm>)
 ---------
 
 Total re-write in C++, so version .0 is merely a 'new feature' list.
@@ -43,6 +43,11 @@ Total re-write in C++, so version .0 is merely a 'new feature' list.
 		Limits placed on time between registrations and amount
 		    of channels a user may own.
 		Clone prot will auto-akill for too many triggers.
+		Added the ability to output logfile to a channel.
+		Expanded ON/OFF command to allow turning off of one
+		    service only, just log files or the events engine.
+		Added Secure Server listing ability (ie. if we dont
+		    have a listing for the server, squit it!).
 		MANY, MANY, MANY more enhancements.
 		
 

@@ -12,19 +12,23 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#if !defined(__SXP__H)
-#define __SXP__H
-static const char *ident_sxp_h = "@(#) $Id$";
+#ifndef _SXP_H
+#define _SXP_H
 #include "pch.h"
+RCSID(sxp_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.13  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -89,6 +93,7 @@ static const char *ident_sxp_h = "@(#) $Id$";
 
 #define JUST_MFILE 1
 #include "utils.h"
+#include "filesys.h"
 #undef JUST_MFILE
 
 const char XML_STRING[]="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -688,6 +693,8 @@ SXP_NS_BEGIN
 	// it contains both reading and writing functionality
 	class IPersistObj {
     public:
+		virtual ~IPersistObj() {}
+
 		// this should return the identifier used for the elements
 		// describing objects of the user class; this should be a
 		// function used also by the IPersistObj::WriteElement implementation
@@ -838,4 +845,4 @@ SXP_NS_BEGIN
 SXP_NS_END
 using namespace std;
 
-#endif // __SXP__H
+#endif // _SXP_H

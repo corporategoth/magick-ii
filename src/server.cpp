@@ -17,16 +17,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_server_cpp_ ## x () { return y; }
+RCSID(server_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.154  2001/02/03 02:21:35  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.153  2001/01/16 15:47:40  prez
 ** Fixed filesys not generating first entry in maps, fixed chanserv level
 ** changes (could confuse set) and fixed idle times on whois user user
@@ -355,9 +360,8 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include "server.h"
-#include "lockable.h"
 #include "magick.h"
+#include "dccengine.h"
 
 void Protocol::SetTokens(unsigned int type)
 {
@@ -410,14 +414,14 @@ void Protocol::SetTokens(unsigned int type)
 	tokens["H"]  = "WHO";
 	tokens["W"]  = "WHOIS";
 	tokens["X"]  = "WHOWAS";
-/*	tokens["ACTION"] = "CTCP ACTION";
-	tokens["VERSION"] = "CTCP VERSION";
-	tokens["PING"] = "CTCP PING";
-	tokens["PONG"] = "CTCP PONG";
-	tokens["CLIENTINFO"] = "CTCP CLIENTINFO";
-	tokens["USERINFO"] = "CTCP USERINFO";
-	tokens["TIME"] = "CTCP TIME";
-	tokens["ERRMSG"] = "CTCP ERRMSG"; */
+/*	tokens["ACTION"] = CTCP_DELIM_CHAR + "ACTION";
+	tokens["VERSION"] = CTCP_DELIM_CHAR + "VERSION";
+	tokens["PING"] = CTCP_DELIM_CHAR + "PING";
+	tokens["PONG"] = CTCP_DELIM_CHAR + "PONG";
+	tokens["CLIENTINFO"] = CTCP_DELIM_CHAR + "CLIENTINFO";
+	tokens["USERINFO"] = CTCP_DELIM_CHAR + "USERINFO";
+	tokens["TIME"] = CTCP_DELIM_CHAR + "TIME";
+	tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG"; */
 	break;
 
     case 0003:
@@ -643,8 +647,7 @@ void Protocol::Set(unsigned int in)
     case 21: /* UnderNet >= 2.10.x */
 	i_Signon = 1000;
 	i_Akill = 2000;
-	i_Server = "";
-	i_Server << "SERVER %s %d 0 0 P10 " << Parent->startup.Level() << " :%s";
+	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
 	i_Numeric = true;
 	i_Burst = "BURST";
 	i_EndBurst = "END_OF_BURST";
@@ -754,6 +757,8 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_Helpops = true;
 	i_Akill = 1000;
+	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
+	i_Numeric = true;
 	i_ChanModeArg = "ovbehkl";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -1131,7 +1136,7 @@ void NetworkServ::sraw(mstring text) const
     mstring out;
     out << ":";
     if (proto.Numeric())
-	out << Parent->startup.Level();
+	out << Parent->startup.Server(Parent->Server()).second.third;
     else
 	out << Parent->startup.Server_Name();
     out << " " << text;
@@ -1396,11 +1401,11 @@ void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
     else
     {
 	WLOCK(("Server", "ToBeDone", nick.LowerCase()));
-	WLOCK(("Server", "ToBeDone"));
+	WLOCK2(("Server", "ToBeDone"));
 	MCB(ToBeDone.size());
 	ToBeDone[nick.LowerCase()].push_back(
 		triplet<mDateTime, mstring, mstring>(
-		Now(), message, channel.LowerCase()));
+		mDateTime::CurrentDateTime(), message, channel.LowerCase()));
 	MCE(ToBeDone.size());
     }
 }
@@ -1481,7 +1486,13 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
     mstring tmp;
-    tmp.Format(proto.Server().c_str(),
+    if (proto.Numeric())
+	tmp.Format(proto.Server().c_str(),
+	    server.LowerCase().c_str(), 2,
+	    Parent->startup.Server(Parent->Server()).second.third,
+	    ("JUPED (" + reason + ")").c_str());
+    else
+	tmp.Format(proto.Server().c_str(),
 	    server.LowerCase().c_str(), 2,
 	    ("JUPED (" + reason + ")").c_str());
     raw(tmp);
@@ -1518,7 +1529,7 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstrin
 	line << " " << host.After("@") << " " << host.Before("@") <<
 		" " << time << " " << ((!killer.empty()) ? killer :
 		Parent->operserv.FirstName()) << " " <<
-		(time_t) Now() << " :" << reason;
+		(time_t) mDateTime::CurrentDateTime() << " :" << reason;
 	break;
     case 2000:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
@@ -1574,7 +1585,7 @@ void NetworkServ::ANONKILL(mstring nick, mstring dest, mstring reason)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_KILL, Now(), triplet<mstring, mstring, mstring>(
+		t_KILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, reason, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -1642,7 +1653,7 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_GLOBOPS, Now(), triplet<mstring, mstring, mstring>(
+		t_GLOBOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		message, "", "")));
 	MCE(ToBeSent.size());
 	return;
@@ -1679,7 +1690,7 @@ void NetworkServ::HELPOPS(mstring nick, mstring message)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_HELPOPS, Now(), triplet<mstring, mstring, mstring>(
+		t_HELPOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		message, "", "")));
 	MCE(ToBeSent.size());
 	return;
@@ -1711,7 +1722,7 @@ void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_INVITE, Now(), triplet<mstring, mstring, mstring>(
+		t_INVITE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, channel, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -1777,7 +1788,7 @@ void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reas
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_KICK, Now(), triplet<mstring, mstring, mstring>(
+		t_KICK, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, channel, reason)));
 	MCE(ToBeSent.size());
 	return;
@@ -1823,7 +1834,7 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_KILL, Now(), triplet<mstring, mstring, mstring>(
+		t_KILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, reason, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -1939,7 +1950,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick  << Now().timetstring() <<
+	    send << " " << nick  << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" :" << realname;
 	    break;
@@ -1951,7 +1962,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server;
 	    if (proto.P12())
 		send << " +" << Parent->startup.Setmode();
@@ -1965,7 +1976,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server << " 1";
 	    if (proto.P12())
 		send << " +" << Parent->startup.Setmode();
@@ -1979,7 +1990,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << server << " 1 "
 		<< host;
 	    if (proto.P12())
@@ -1994,7 +2005,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" " << user << " " << host << " " << host << " " <<
 		server << " 1";
 	    if (proto.P12())
@@ -2009,7 +2020,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
 		" " << host << " " << server << " :" << realname;
 	    break;
@@ -2021,7 +2032,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
 		" " << host << " " << server << " 1 :" << realname;
 	    break;
@@ -2033,7 +2044,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << proto.GetNonToken(token);
 	    else
 		send << token;
-	    send << " " << nick << " 1 " << Now().timetstring() <<
+	    send << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
 		" +" << Parent->startup.Setmode() << " " << user <<
 		" " << host << " " << host << " " << server << " 0 :" <<
 		realname;
@@ -2096,7 +2107,7 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 		((proto.Tokens() && !proto.GetNonToken("NICK").empty()) ?
 			proto.GetNonToken("NICK") : mstring("NICK")) +
 		" " + newnick + (proto.TSora() ?
-			" :" + Now().timetstring() :
+			" :" + mDateTime::CurrentDateTime().timetstring() :
 			mstring("")));
     }
 }
@@ -2112,7 +2123,7 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_NOTICE, Now(), triplet<mstring, mstring, mstring>(
+		t_NOTICE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, text, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2198,7 +2209,7 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_PRIVMSG, Now(), triplet<mstring, mstring, mstring>(
+		t_PRIVMSG, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, text, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2247,7 +2258,7 @@ void NetworkServ::SQLINE(mstring nick, mstring target, mstring reason)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SQLINE, Now(), triplet<mstring, mstring, mstring>(
+		t_SQLINE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		target, reason, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2363,7 +2374,7 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSHOST, Now(), triplet<mstring, mstring, mstring>(
+		t_SVSHOST, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, newhost, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2387,7 +2398,7 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 	    output << proto.GetNonToken(proto.SVSHOST());
 	else
 	    output << proto.SVSHOST();
-	output << " " << nick << " " << newhost << " :" << Now().timetstring();
+	output << " " << nick << " " << newhost << " :" << mDateTime::CurrentDateTime().timetstring();
 	raw(output);
     }
 }
@@ -2406,7 +2417,7 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSKILL, Now(), triplet<mstring, mstring, mstring>(
+		t_SVSKILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, reason, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2451,7 +2462,7 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSNICK, Now(), triplet<mstring, mstring, mstring>(
+		t_SVSNICK, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, newnick, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2535,7 +2546,7 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSMODE, Now(), triplet<mstring, mstring, mstring>(
+		t_SVSMODE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, mode, "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2576,7 +2587,7 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_TOPIC, Now(), triplet<mstring, mstring, mstring>(
+		t_TOPIC, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		setter, channel, topic)));
 	MCE(ToBeSent.size());
 	return;
@@ -2626,7 +2637,7 @@ void NetworkServ::UNSQLINE(mstring nick, mstring target)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_UNSQLINE, Now(), triplet<mstring, mstring, mstring>(
+		t_UNSQLINE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		target, "", "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2660,7 +2671,7 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_WALLOPS, Now(), triplet<mstring, mstring, mstring>(
+		t_WALLOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		message, "", "")));
 	MCE(ToBeSent.size());
 	return;
@@ -2717,7 +2728,7 @@ unsigned int NetworkServ::SeenMessage(mstring data)
 	times++;
     }
 
-    ReDoMessages[data] = pair<unsigned int,mDateTime>(times, Now());
+    ReDoMessages[data] = pair<unsigned int,mDateTime>(times, mDateTime::CurrentDateTime());
 
     RET(times);
 }
@@ -3593,7 +3604,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PASS")
 	{
 	    // PASS :password
-	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server()).second)
+	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server()).second.second)
 	    {
 		LOG((LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
 			Parent->Server().c_str()));
@@ -3604,7 +3615,7 @@ void NetworkServ::execute(const mstring & data)
 		raw(((proto.Tokens() && !proto.GetNonToken("ERROR").empty()) ?
 			proto.GetNonToken("ERROR") : mstring("ERROR")) +
 			" :Closing Link: [" + Parent->Server() + "] (Bad Password)");
-
+		sraw("464 " + Parent->Server() + " :" + "Password Incorrect");
 		Parent->Disconnect();
 	    }
             else
@@ -3770,45 +3781,80 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
+
+	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
+	    // SQUIT lifestone.darker.net :Ping timeout
+	    // :PreZ SQUIT server :reason
+
 	    if (source.empty())
 	    {
-		WLOCK(("Server", "ServerList"));
-		ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
+		if (Parent->startup.IsAllowed(data.ExtractWord(2, ": "),
+			Parent->startup.Server_Name()))
+		{
+		    WLOCK(("Server", "ServerList"));
+		    ServerList[data.ExtractWord(2, ": ").LowerCase()] = Server(
 			data.ExtractWord(2, ": ").LowerCase(),
 			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
-		if (proto.Numeric())
-		    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
-			atoi(data.ExtractWord(7, ": ").c_str()));
-		LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
-			data.ExtractWord(2, ": ").c_str(),
-			Parent->startup.Server_Name().c_str()));
-	    }
-	    else
-	    {
-		if (IsServer(sourceL))
-		{
-		    WLOCK(("Server", "ServerList"));
-		    ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
-			data.ExtractWord(3, ": ").LowerCase(),
-			sourceL,
-			atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
-			data.After(":", 2));
 		    if (proto.Numeric())
 			ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
-			   atoi(data.ExtractWord(8, ": ").c_str()));
+			    atoi(data.ExtractWord(7, ": ").c_str()));
 		    LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
-			data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
+			data.ExtractWord(2, ": ").c_str(),
+			Parent->startup.Server_Name().c_str()));
 		}
 		else
 		{
-		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+		    /* announce(Parent->operserv.FirstName(),
+			Parent->getMessage("MISC/INVALIDLINK"),
+			data.ExtractWord(2, ": ").c_str(),
+			Parent->startup.Server_Name().c_str()); */
+		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
+			data.ExtractWord(2, ": ").c_str(),
+			Parent->startup.Server_Name().c_str()));
+		    raw("SQUIT " + data.ExtractWord(2, ": ") + " :" +
+			Parent->getMessage("MISC/MAYNOTLINK"));
+		    Parent->Disconnect();
+		}
+	    }
+	    else
+	    {
+		if (Parent->startup.IsAllowed(data.ExtractWord(3, ": "), source))
+		{
+		    if (IsServer(sourceL))
 		    {
-			LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
-				"SERVER", data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
+			WLOCK(("Server", "ServerList"));
+			ServerList[data.ExtractWord(3, ": ").LowerCase()] = Server(
+			    data.ExtractWord(3, ": ").LowerCase(),
+			    sourceL,
+			    atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
+			    data.After(":", 2));
+			if (proto.Numeric())
+			    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
+				atoi(data.ExtractWord(8, ": ").c_str()));
+			LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
+			    data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
 		    }
 		    else
-			mBase::push_message(data);
+		    {
+			if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			{
+			    LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
+				"SERVER", data.ExtractWord(3, ": ").c_str(), sourceL.c_str()));
+			}
+		        else
+			    mBase::push_message(data);
+		    }
+		}
+		else
+		{
+		    announce(Parent->operserv.FirstName(),
+			Parent->getMessage("MISC/INVALIDLINK"),
+			data.ExtractWord(3, ": ").c_str(), source.c_str());
+		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
+			data.ExtractWord(3, ": ").c_str(), source.c_str()));
+		    sraw("SQUIT " + data.ExtractWord(3, ": ") + " :" +
+			Parent->getMessage("MISC/MAYNOTLINK"));
 		}
 	    }
 	}
@@ -4276,6 +4322,10 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // Deny all OPERS on server, ignore.
 	}
+	else if (msgtype=="SZLINE")
+	{
+	    // Services ZLINE, ignore
+	}
 	else
 	{
 	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
@@ -4286,7 +4336,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="TIME")
 	{
 	    // :source TIME :our.server
-	    sraw("391 " + source + " :" + Now().DateTimeString());
+	    sraw("391 " + source + " :" + mDateTime::CurrentDateTime().DateTimeString());
 	}
 	else if (msgtype=="TOPIC")
 	{

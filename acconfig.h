@@ -38,6 +38,11 @@
 #undef MAGICK_USE_EFENCE
 #endif
 
+/* Compile in the db conversion ability */
+#ifndef CONVERT
+#undef CONVERT
+#endif
+
 /* Define if we are on a windows system */
 #ifndef WIN32
 #undef WIN32

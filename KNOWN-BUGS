@@ -5,8 +5,16 @@ $Id$
 (c) 1998-2001 William King <ungod@magick.tm>
 
 Known problems that exist in magick that should be fixed.
+This is devided into 3 sections.
+- Possible bugs (ie. ones that are theoretically bugs but
+  have not shown any impact or bugs that could not be
+  reproduced or verified).
+- Universal bugs (ie. ones that affect all implementations
+  of magick, not just on one system, etc).
+- System Specific bugs (ie. ones that only occur on certain
+  systems, be it due to the OS, processor(s), memory, etc).
 
-UNVERSAL
+POSSIBLE (not proven)
 --------
 
 - Probably should lock when doing list searches (iterator
@@ -14,12 +22,16 @@ UNVERSAL
 - Should probably lock when setting/getting CFG vals, just
   incase one is set while another thread is accessing it
   (though this possibility is VERY slim).
+- Might later want to enable the mstring locking (tho now
+  it doesnt seem to be causing a problem).
+
+UNVERSAL
+--------
+
 - If you add someone to a committee that is head of one they
   are already on (eg. adding to ADMIN when they're already
   on OPER) it will not remove them from the subcommittee,
   and they will appear twice.
-- Might later want to enable the mstring locking (tho now
-  it doesnt seem to be causing a problem).
 
 SYSTEM SPECIFIC
 ---------------

@@ -16,16 +16,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_ircsocket_cpp_ ## x () { return y; }
+RCSID(ircsocket_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.146  2001/02/03 02:21:33  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.145  2001/01/15 23:31:38  prez
 ** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
 ** !string.empty() to save processing.
@@ -284,10 +289,7 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
-#include "ircsocket.h"
 #include "magick.h"
-#include "lockable.h"
 
 int IrcSvcHandler::open(void *in)
 {
@@ -298,11 +300,11 @@ int IrcSvcHandler::open(void *in)
     sock.Resolve(S_IrcServer, Parent->Server());
 
     in_traffic = out_traffic = 0;
-    connect_time = Now();
+    connect_time = mDateTime::CurrentDateTime();
     htm_level = 0;
     htm_gap = Parent->operserv.Init_HTM_Gap();
     htm_threshold = Parent->operserv.Init_HTM_Thresh();
-    last_htm_check = Now();
+    last_htm_check = mDateTime::CurrentDateTime();
     i_burst = true;
     i_synctime = mDateTime(0.0);
 
@@ -352,7 +354,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     WLOCK3(("IrcSvcHandler", "last_htm_check"));
     if ((time_t) last_htm_check.SecondsSince() > htm_gap)
     {
-	last_htm_check = Now();
+	last_htm_check = mDateTime::CurrentDateTime();
 	size_t total = 0;
 	time_t i;
 	{ RLOCK(("IrcSvcHandler", "traffic"));
@@ -523,7 +525,7 @@ void IrcSvcHandler::HTM(bool in)
     MCB(last_htm_check);
     CB(1, htm_level);
     CB(2, htm_gap);
-    last_htm_check = Now();
+    last_htm_check = mDateTime::CurrentDateTime();
     if (in)
     {
 	htm_level = 4;
@@ -583,7 +585,7 @@ void IrcSvcHandler::EndBurst()
     MCB(i_burst);
     CB(1, i_synctime);
     i_burst = false;
-    i_synctime = Now();
+    i_synctime = mDateTime::CurrentDateTime();
     CE(1, i_synctime);
     MCE(i_burst);
 }
@@ -626,7 +628,7 @@ mstring Reconnect_Handler::FindNext(mstring server) {
     // ELSE return NULL
 
     if (Parent->startup.IsServer(server)) {
-	vector<mstring> serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).third);
+	vector<mstring> serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).first);
 	vector<mstring>::iterator iter;
 	for (iter=serverlist.begin(); iter!=serverlist.end(); iter++)
 	    if (*iter == server)
@@ -635,7 +637,7 @@ mstring Reconnect_Handler::FindNext(mstring server) {
 	if (iter != serverlist.end()) iter++;
 
 	if (iter == serverlist.end()) {
-	    serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).third+1);
+	    serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).first+1);
 
 	    if (serverlist.size()) {
 		RET(*serverlist.begin());
@@ -663,20 +665,43 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	DRET(0);
 
     mstring server;
-    triplet<unsigned int,mstring,unsigned int> details;
-    if (Parent->GotConnect()) {
-	server = Parent->startup.PriorityList(1)[0];
-    } else {
-	if (!Parent->Server().empty())
-	    server = FindNext(Parent->Server());
-	if (server.empty()) {
+    if (Parent->startup.Server_size())
+    {
+	if (Parent->GotConnect())
+	{
 	    server = Parent->startup.PriorityList(1)[0];
+	    while (!server.empty() && !Parent->startup.IsAllowed(server, Parent->startup.Server_Name()))
+	    {
+		server = FindNext(server);
+	    }
+	} else {
+	    server = Parent->Server();
+	    if (!server.empty())
+	    {
+		server = FindNext(server);
+		while (!server.empty() && !Parent->startup.IsAllowed(server, Parent->startup.Server_Name()))
+		{
+		    server = FindNext(server);
+		}
+	    }
+	    if (server.empty())
+	    {
+		server = Parent->startup.PriorityList(1)[0];
+		while (!server.empty() && !Parent->startup.IsAllowed(server, Parent->startup.Server_Name()))
+		{
+		    server = FindNext(server);
+		}
+	    }
 	}
     }
-    if (!server.empty())
-	details = Parent->startup.Server(server);
+    if (server.empty())
+    {
+	LOG((LM_EMERGENCY, Parent->getLogMessage("OTHER/NOVALIDSERVERS")));
+    }
 
-    ACE_INET_Addr addr(details.first, server);
+    pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > details = Parent->startup.Server(server);
+
+    ACE_INET_Addr addr(details.second.first, server);
 
     Parent->DumpB();
     CB(1, Parent->i_server);
@@ -691,7 +716,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
     Parent->Connected(false);
     LOG((LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
-		server.c_str(), details.first));
+		server.c_str(), details.second.first));
 
     IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
 
@@ -715,7 +740,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     {
 	Parent->ircsvchandler = NULL;
 	LOG((LM_ERROR, Parent->getLogMessage("OTHER/REFUSED"),
-		server.c_str(), details.first));
+		server.c_str(), details.second.first));
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
@@ -729,19 +754,24 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    CE(2, Parent->i_localhost);
 	}
 	if (Parent->server.proto.TSora())
-	    Parent->server.raw("PASS " + details.second + " :TS");
+	    Parent->server.raw("PASS " + details.second.second + " :TS");
 	else
-	    Parent->server.raw("PASS " + details.second);
+	    Parent->server.raw("PASS " + details.second.second);
 	if (!Parent->server.proto.Protoctl().empty())
 	    Parent->server.raw(Parent->server.proto.Protoctl());
 	mstring tmp;
-	tmp.Format(Parent->server.proto.Server().c_str(),
-	    Parent->startup.Server_Name().c_str(), 1,
-	    Parent->startup.Server_Desc().c_str());
+	if (Parent->server.proto.Numeric())
+	    tmp.Format(Parent->server.proto.Server().c_str(),
+		Parent->startup.Server_Name().c_str(), 1,
+		details.second.third, Parent->startup.Server_Desc().c_str());
+	else
+	    tmp.Format(Parent->server.proto.Server().c_str(),
+		Parent->startup.Server_Name().c_str(), 1,
+		Parent->startup.Server_Desc().c_str());
 	Parent->server.raw(tmp);
 	if (Parent->server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	    Parent->server.raw("SVINFO 3 1 0 :" + Now().timetstring());
+	    Parent->server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
 	Parent->Connected(true);
     }
     CE(1, Parent->i_server);
@@ -965,7 +995,7 @@ int EventTask::svc(void)
     WLOCK2(("Events", "last_save"));
     WLOCK3(("Events", "last_check"));
     WLOCK4(("Events", "last_ping"));
-    last_expire = last_save = last_check = last_ping = Now();
+    last_expire = last_save = last_check = last_ping = mDateTime::CurrentDateTime();
     }
     DumpB();
 
@@ -1001,7 +1031,7 @@ int EventTask::svc(void)
 	if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
 	    synctime = Parent->ircsvchandler->SyncTime();
 	else
-	    synctime = Now();
+	    synctime = mDateTime::CurrentDateTime();
 	}
 
 	{ RLOCK(("Events", "last_expire"));
@@ -1149,18 +1179,15 @@ int EventTask::svc(void)
 		}}
 	    }
 
-	    // transaction ID's (for inter-magick)
-	    TxnIds::Expire();
-
 	    WLOCK(("Events", "last_expire"));
 	    MCB(last_expire);
-	    last_expire = Now();
+	    last_expire = mDateTime::CurrentDateTime();
 	    MCE(last_expire);
 	}}
 
 	{ RLOCK(("Events", "last_save"));
 	if (Parent->Saving())
-	    last_save = Now();
+	    last_save = mDateTime::CurrentDateTime();
 	if (last_save.SecondsSince() >= Parent->config.Savetime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
@@ -1168,7 +1195,7 @@ int EventTask::svc(void)
 
 	    WLOCK(("Events", "last_save"));
 	    MCB(last_save);
-	    last_save = Now();
+	    last_save = mDateTime::CurrentDateTime();
 	    MCE(last_save);
 	}}
 
@@ -1362,7 +1389,7 @@ int EventTask::svc(void)
 				    Parent->nickserv.Enforcer_Name());
 		}
 		WLOCK(("NickServ", "recovered"));
-		Parent->nickserv.recovered[oldnick.LowerCase()] = Now();
+		Parent->nickserv.recovered[oldnick.LowerCase()] = mDateTime::CurrentDateTime();
 	    }
 
 	    // Sign off clients we've decided to take.
@@ -1387,7 +1414,7 @@ int EventTask::svc(void)
 	    }}
 	    WLOCK(("Events", "last_check"));
 	    MCB(last_check);
-	    last_check = Now();
+	    last_check = mDateTime::CurrentDateTime();
 	    MCE(last_check);
 	}}
 
@@ -1441,7 +1468,7 @@ int EventTask::svc(void)
 	    }
 	    WLOCK(("Events", "last_ping"));
 	    MCB(last_ping);
-	    last_ping = Now();
+	    last_ping = mDateTime::CurrentDateTime();
 	    MCE(last_ping);
 	}}}
 	

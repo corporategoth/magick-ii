@@ -2,14 +2,15 @@
 noinst_PROGRAMS = genrankeys
 bin_PROGRAMS = magick magick_keygen
 genrankeys_SOURCES = genrankeys.c
-magick_SOURCES = variant.cpp utils.cpp trace.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp memoserv.cpp main.cpp mconfig.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp dccengine.cpp datetime.cpp convert.cpp commserv.cpp chanserv.cpp base.cpp 
+magick_SOURCES = variant.cpp utils.cpp trace.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp memoserv.cpp main.cpp mconfig.cpp magick.cpp lockable.cpp ircsocket.cpp filesys.cpp dccengine.cpp datetime.cpp convert_magick.cpp convert_esper.cpp commserv.cpp chanserv.cpp base.cpp 
 magick_LDADD   = ./xml/libxml.a ./des/libdes.a
 magick_keygen_SOURCES = magick_keygen.c
 magick_keygen_LDADD   = ./des/libdes.a
 
+
 SUBDIRS = des xml 
 
-EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp convert.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp trace.cpp utils.cpp variant.cpp mconfig.cpp magick_keygen.c genrankeys.c 
+EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp convert_magick.cpp convert_esper.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp mconfig.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp trace.cpp utils.cpp variant.cpp magick_keygen.c genrankeys.c
 
 ####### kdevelop will overwrite this part!!! (end)############
 
@@ -20,7 +21,7 @@ helper: genrankeys
 	@echo ""
 	@echo "======================================================="
 	@echo "This will probably take a while ..."
-	@echo "May as well go grab your favourite caffeine supplement."
+	@echo "May as well go grab your favourite caffiene supplement."
 	@echo "======================================================="
 	@$(srcdir)/genrankeys $(top_srcdir)/include/crypt.h
 	#$(top_srcdir)/helper/build-ver $(top_srcdir)
@@ -28,6 +29,13 @@ helper: genrankeys
 magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
 	@rm -f magick
 	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
+	cp magick magick.debug
+	strip magick
+
+link:
+	@rm -f magick
+	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
+	@mv link magick
 	cp magick magick.debug
 	strip magick
 

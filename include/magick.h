@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,26 +15,19 @@
 #ifndef _MAGICK_H
 #define _MAGICK_H
 #include "pch.h"
-static const char *ident_magick_h = "@(#) $Id$";
+RCSID(magick_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.146  2001/01/15 23:31:38  prez
-** Added LogChan, HelpOp from helpserv, and changed all string != ""'s to
-** !string.empty() to save processing.
-**
-** Revision 1.145  2001/01/01 05:32:44  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.144  2000/12/29 15:46:13  prez
-** fixed up log validation
+** Revision 1.147  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.143  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -195,14 +188,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-
-#include "mstring.h"
-#include "datetime.h"	// Added by ClassView
-#include "trace.h"
+#include "filesys.h"
 #include "utils.h"
 #include "server.h"
-#include "filesys.h"
 #include "nickserv.h"
 #include "chanserv.h"
 #include "operserv.h"
@@ -210,9 +198,7 @@ static const char *ident_magick_h = "@(#) $Id$";
 #include "servmsg.h"
 #include "commserv.h"
 #include "ircsocket.h"
-#include "variant.h"
 #include "version.h"
-#include "xml/sxp.h"
 
 const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;
@@ -233,8 +219,8 @@ public:
 
 
 #define LOG(X)	\
-	if (Parent->ValidateLogger(ACE_LOG_MSG)) \
-		ACE_DEBUG(X);
+	Parent->ValidateLogger(ACE_LOG_MSG); \
+	ACE_DEBUG(X);
 
 class Logger : public ACE_Log_Msg_Callback
 {
@@ -311,8 +297,10 @@ public:
 	class startup_t {
 		friend Magick;
 
-		// map<server name, triplet<port, password, priority> >
-		map<mstring,triplet<unsigned int,mstring,unsigned int> > servers;
+		// map<server name, pair<priority, triplet<port, password, numeric> > >
+		map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > > servers;
+		// map<server name, vector<allowed uplinks> >
+		map<mstring,vector<mstring> > allows;
 		mstring server_name;
 		mstring server_desc;
 		mstring services_user;
@@ -324,9 +312,14 @@ public:
 		unsigned long lagtime;
 	public:
 		bool IsServer(mstring server)const;
-		triplet<unsigned int,mstring,unsigned int> Server(mstring server)const;
+		pair<unsigned int, triplet<unsigned int,mstring,unsigned int> > Server(mstring server)const;
 		vector<mstring> PriorityList(unsigned int pri)const;
 		size_t Server_size()const { return servers.size(); }
+
+		bool IsAllowed(mstring server, mstring uplink)const;
+		vector<mstring> Allow(mstring server)const;
+		vector<mstring> AllowList()const;
+		size_t Allow_size()const { return allows.size(); }
 
 		mstring Server_Name()const	{ return server_name; }
 		mstring Server_Desc()const	{ return server_desc; }
@@ -473,7 +466,7 @@ public:
 	bool Connected()const		{ return i_connected; }
 	void Connected(bool in)		{ i_connected = in; }
 	bool Saving()const		{ return i_saving; }
-	void Disconnect();
+	void Disconnect(bool reconnect=true);
 	void send(mstring text)const;
 	mstring GetKey()const;
 	void save_databases();

@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -15,23 +15,19 @@
 #ifndef _LOCKABLE_H
 #define _LOCKABLE_H
 #include "pch.h"
-static const char *ident_lockable_h = "@(#) $Id$";
+RCSID(lockable_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.51  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
-**
-** Revision 1.50  2000/12/29 13:55:09  prez
-** Compiled with 5.1.11, some changes to accomodate (will work with older
-** versions of ace still).
+** Revision 1.52  2001/02/03 02:21:31  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
 **
 ** Revision 1.49  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
@@ -134,7 +130,6 @@ static const char *ident_lockable_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-#include "mstring.h"
 #include "trace.h"
 
 #ifdef MAGICK_LOCKS_WORK
@@ -175,8 +170,8 @@ class mLock_Read : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
 public:
-	mLock_Read (const char *name = 0)
-		: base(name) {}
+	mLock_Read (LPCTSTR name = 0, void *arg = 0)
+		: base(name, arg) {}
 
 	int acquire()		{ return acquire_read(); }
 	int tryacquire()	{ return tryacquire_read(); }
@@ -191,8 +186,8 @@ class mLock_Write : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
 public:
-	mLock_Write (const char *name = 0)
-		: base(name) {}
+	mLock_Write (LPCTSTR name = 0, void *arg = 0)
+		: base(name, arg) {}
 
 	int acquire()		{ return acquire_write(); }
 	int tryacquire()	{ return tryacquire_write(); }
@@ -207,8 +202,8 @@ class mLock_Mutex : public ACE_Thread_Mutex
 {
 	typedef ACE_Thread_Mutex base;
 public:
-	mLock_Mutex (const char *name = 0)
-		: base(name) {}
+	mLock_Mutex (LPCTSTR name = 0, void *arg = 0)
+		: base(name, arg) {}
 
 	void *operator new (size_t size)
 		{ return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
@@ -216,7 +211,7 @@ public:
 		{ mLOCK::memory_area.free(ptr); }
 };
 
-/* I hate having to do this ... but *shrug*
+/* I hate having to do this ... but *shrug* */
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
 #define new ::new(MP_FUNCNAME, __FILE__, __LINE__)
 #define delete __mp_pushdelstack(MP_FUNCNAME, __FILE__, __LINE__), ::delete
@@ -254,30 +249,30 @@ public:
 #define MLOCK8(y)  mVarArray __lockM8_VarArray y; mLOCK __lockM8(L_Mutex, __lockM8_VarArray)
 
 #else /* MAGICK_LOCKS_WORK */
-#define RLOCK(y)   do_nothing()
-#define RLOCK2(y)  do_nothing()
-#define RLOCK3(y)  do_nothing()
-#define RLOCK4(y)  do_nothing()
-#define RLOCK5(y)  do_nothing()
-#define RLOCK6(y)  do_nothing()
-#define RLOCK7(y)  do_nothing()
-#define RLOCK8(y)  do_nothing()
-#define WLOCK(y)   do_nothing()
-#define WLOCK2(y)  do_nothing()
-#define WLOCK3(y)  do_nothing()
-#define WLOCK4(y)  do_nothing()
-#define WLOCK5(y)  do_nothing()
-#define WLOCK6(y)  do_nothing()
-#define WLOCK7(y)  do_nothing()
-#define WLOCK8(y)  do_nothing()
-#define MLOCK(y)   do_nothing()
-#define MLOCK2(y)  do_nothing()
-#define MLOCK3(y)  do_nothing()
-#define MLOCK4(y)  do_nothing()
-#define MLOCK5(y)  do_nothing()
-#define MLOCK6(y)  do_nothing()
-#define MLOCK7(y)  do_nothing()
-#define MLOCK8(y)  do_nothing()
+#define RLOCK(y)
+#define RLOCK2(y)
+#define RLOCK3(y)
+#define RLOCK4(y)
+#define RLOCK5(y)
+#define RLOCK6(y)
+#define RLOCK7(y)
+#define RLOCK8(y)
+#define WLOCK(y)
+#define WLOCK2(y)
+#define WLOCK3(y)
+#define WLOCK4(y)
+#define WLOCK5(y)
+#define WLOCK6(y)
+#define WLOCK7(y)
+#define WLOCK8(y)
+#define MLOCK(y)
+#define MLOCK2(y)
+#define MLOCK3(y)
+#define MLOCK4(y)
+#define MLOCK5(y)
+#define MLOCK6(y)
+#define MLOCK7(y)
+#define MLOCK8(y)
 
 #endif /* MAGICK_LOCKS_WORK */
 

@@ -14,16 +14,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_main_cpp_ ## x () { return y; }
+RCSID(main_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/02/03 02:21:34  prez
+** Loads of changes, including adding ALLOW to ini file, cleaning up
+** the includes, RCSID, and much more.  Also cleaned up most warnings.
+**
 ** Revision 1.45  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -74,19 +79,13 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
 #include "magick.h"
-#include "datetime.h"
-#include "lockable.h"
-
-mDateTime Start_Time, Reset_Time;
-
-//Magick *MagickObject;
 
 int main(int argc, char **argv)
 {
 #ifdef MAGICK_TRACE_WORKS
     Trace::levelname.push_back(Trace::levelname_struct( "OFF", Trace::Off ));
+    Trace::levelname.push_back(Trace::levelname_struct( "NONE", Trace::Off ));
     Trace::levelname.push_back(Trace::levelname_struct( "FULL", Trace::Full ));
     Trace::levelname.push_back(Trace::levelname_struct( "ALL", Trace::Full ));
     Trace::levelname.push_back(Trace::levelname_struct( "STAT*", Trace::Stats ));
@@ -104,7 +103,7 @@ int main(int argc, char **argv)
     Trace::levelname.push_back(Trace::levelname_struct( "COM*", Trace::Comments ));
     Trace::levelname.push_back(Trace::levelname_struct( "F*NC*", Trace::Functions ));
     Trace::levelname.push_back(Trace::levelname_struct( "MOD*", Trace::Modify ));
-    Trace::levelname.push_back(Trace::levelname_struct( "CHANG*", Trace::Changing ));
+    Trace::levelname.push_back(Trace::levelname_struct( "CH*G*", Trace::Changing ));
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -112,19 +111,21 @@ int main(int argc, char **argv)
     {
 #endif
 
-	int Result;
+	int Result = MAGICK_RET_RESTART;
         mThread::Attach(tt_MAIN);
-	StartTime=Now();
-restart:
+	StartTime = mDateTime::CurrentDateTime();
+	while (Result == MAGICK_RET_RESTART)
 	{
 	    Magick internalobject(argc, argv);
 	    Parent = &internalobject;
-	    Result=internalobject.Start();
+	    Result = internalobject.Start();
+	    FLUSH();
 	}
-	if(Result==MAGICK_RET_RESTART) {
-	    mThread::Detach();
-	    goto restart;
+	if (Result != MAGICK_RET_NORMAL)
+	{
+	    ACE_OS::fprintf(stderr, "\n");
 	}
+	mThread::Detach();
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }

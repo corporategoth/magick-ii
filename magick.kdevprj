@@ -14,7 +14,7 @@ dist=true
 install=false
 type=SOURCE
 [include/Makefile.am]
-files=include/base.h,include/chanserv.h,include/commserv.h,include/convert.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
+files=include/base.h,include/chanserv.h,include/commserv.h,include/convert_magick.h,include/convert_esper.h,include/datetime.h,include/dccengine.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/trace.h,include/utils.h,include/variant.h,include/mconfig.h,include/version.h-release,include/config.h.win,
 type=normal
 sub_dirs=des,xml,
 [include/variant.h]
@@ -66,7 +66,7 @@ ldflags=
 addcxxflags=
 ldadd=
 bin_program=magick
-cxxflags=-O3 -g3 -Wtraditional
+cxxflags= -O3 -g3 -pg -Wall -Wtraditional -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -Woverloaded-virtual
 [include/lockable.h]
 install_location=
 dist=true
@@ -221,7 +221,12 @@ install_location=
 dist=true
 install=false
 type=DATA
-[src/convert.cpp]
+[src/convert_magick.cpp]
+install_location=
+dist=true
+install=false
+type=SOURCE
+[src/convert_esper.cpp]
 install_location=
 dist=true
 install=false
@@ -284,7 +289,12 @@ install_location=
 dist=true
 install=false
 type=DATA
-[include/convert.h]
+[include/convert_magick.h]
+install_location=
+dist=true
+install=false
+type=HEADER
+[include/convert_esper.h]
 install_location=
 dist=true
 install=false
@@ -330,7 +340,7 @@ dist=true
 install=false
 type=SOURCE
 [src/Makefile.am]
-files=src/base.cpp,src/chanserv.cpp,src/commserv.cpp,src/convert.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
+files=src/base.cpp,src/chanserv.cpp,src/commserv.cpp,src/convert_magick.cpp,src/convert_esper.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
 type=prog_main
 sub_dirs=des,xml,
 [include/base.h]
@@ -394,22 +404,22 @@ dist=true
 install=false
 type=HEADER
 [General]
-make_options=-k -w -j1
+make_options= -k -w -j1
 makefiles=Makefile.am,src/Makefile.am,docs/Makefile.am,docs/en/Makefile.am,src/des/Makefile.am,src/xml/Makefile.am,include/Makefile.am,include/des/Makefile.am,include/xml/Makefile.am,docs/man/Makefile.am,docs/devel/Makefile.am,
 version_control=CVS
 project_type=normal_cpp
 author=Magick Development Team
 sub_dir=src/
-lfv_open_groups=Headers,
+lfv_open_groups=Sources,
 workspace=1
 project_name=Magick
 version=2.0
 AMChanged=true
 sgml_file=/home/prez/projects/Magick/Magick-II/docs/en/index.sgml
 short_info=,
-email=magick-devel@magick.tm
+email=devel@magick.tm
 kdevprj_version=1.1 beta1
-configure_args=--with-acelib=`pwd`/../support/ACE_wrappers/ace/libACE.so --with-aceinc=`pwd`/../support/ACE_wrappers
+configure_args=
 modifyMakefiles=true
 [src/des/md5_dgst.c]
 install_location=
@@ -543,7 +553,7 @@ type=SOURCE
 [Makefile.am]
 files=magick.kdevprj,AUTHORS,COPYING,ChangeLog,INSTALL,README,TODO,magick.lsm,FAQ,NEWS,acconfig.h,KNOWN-BUGS,rtfm,Magick.spec,
 type=normal
-sub_dirs=magick,docs,src,include,lang,
+sub_dirs=docs,src,include,lang,
 [include/xml/hashtable.h]
 install_location=
 dist=true
