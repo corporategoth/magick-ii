@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.147  2000/12/31 03:11:10  prez
+** some changes to the flushing users, etc.
+**
 ** Revision 1.146  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -1285,7 +1288,7 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
     map<mstring, list<triplet<mDateTime, mstring, mstring> > >::iterator i;
 
     list<triplet<mDateTime, mstring, mstring> >::iterator j;
-    list<triplet<mDateTime, mstring, mstring> > WorkList;
+    list<triplet<mDateTime, mstring, mstring> > WorkList, WorkList2;
     vector<mstring> LastProc;
 
     // Dont report this, thats the point of the queue...
@@ -1293,13 +1296,14 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
 	Parent->nickserv.live[nick.LowerCase()].IsServices())
 	return;
 
-    RLOCK(("Server", "ToBeDone", nick.LowerCase()));
+    WLOCK(("Server", "ToBeDone", nick.LowerCase()));
     MCB(ToBeDone.size());
     if ((i = ToBeDone.find(nick.LowerCase())) != ToBeDone.end())
     {
-	WLOCK(("Server", "ToBeDone", i->first));
 	WorkList = i->second;
-	ToBeDone.erase(i->first);
+	{ WLOCK(("Server", "ToBeDone"));
+	ToBeDone.erase(i);
+	}
 	for (j=WorkList.begin(); j!=WorkList.end(); j++)
 	{
 	    if (j->first.SecondsSince() > Parent->config.Squit_Protect())
@@ -1324,8 +1328,13 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
 	    }
 	    else
 	    {
-		ToBeDone[nick.LowerCase()].push_back(*j);
+		WorkList2.push_back(*j);
 	    }
+	}
+	if (WorkList2.size())
+	{
+	    WLOCK(("Server", "ToBeDone"));
+	    ToBeDone[nick.LowerCase()] = WorkList2;
 	}
 	if (LastProc.size())
 	{
@@ -1342,7 +1351,6 @@ void NetworkServ::FlushUser(mstring nick, mstring channel)
 void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
 {
     FT("NetworkServ::PushUser", (nick, message));
-    WLOCK(("Server", "ToBeSent", nick.LowerCase()));
     // If the nick is reg'd and either a channel is not specified
     // or the channel exists and the user is in it, just do it,
     // else queue it.
@@ -1354,6 +1362,8 @@ void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
     }
     else
     {
+	WLOCK(("Server", "ToBeDone", nick.LowerCase()));
+	WLOCK(("Server", "ToBeDone"));
 	MCB(ToBeDone.size());
 	ToBeDone[nick.LowerCase()].push_back(
 		triplet<mDateTime, mstring, mstring>(
@@ -1370,19 +1380,25 @@ void NetworkServ::PopUser(mstring nick, mstring channel)
     map<mstring, list<triplet<mDateTime, mstring, mstring> > >::iterator i;
 
     list<triplet<mDateTime, mstring, mstring> >::iterator j;
-    list<triplet<mDateTime, mstring, mstring> > WorkList;
+    list<triplet<mDateTime, mstring, mstring> > WorkList, WorkList2;
 
-    WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+    WLOCK(("Server", "ToBeDone", nick.LowerCase()));
     MCB(ToBeDone.size());
     if ((i = ToBeDone.find(nick.LowerCase())) != ToBeDone.end())
     {
-	WLOCK(("Server", "ToBeDone", i->first));
 	WorkList = i->second;
+	{ WLOCK(("Server", "ToBeDone"));
 	ToBeDone.erase(i->first);
+	}
 	for (j=WorkList.begin(); j!=WorkList.end(); j++)
 	{
 	    if (j->third != channel.LowerCase())
-		ToBeDone[nick.LowerCase()].push_back(*j);
+		WorkList2.push_back(*j);
+	}
+	if (WorkList2.size())
+	{
+	    WLOCK(("Server", "ToBeDone"));
+	    ToBeDone[nick.LowerCase()] = WorkList2;
 	}
     }
     MCE(ToBeDone.size());
@@ -5042,12 +5058,12 @@ void NetworkServ::numeric_execute(const mstring & data)
 void NetworkServ::DumpB() const
 {
     MB(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
-	i_OurUplink,ToBeSent.size()));
+	i_OurUplink, ToBeSent.size(), ToBeDone.size()));
 }
 
 void NetworkServ::DumpE() const
 {
     ME(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
-	i_OurUplink,ToBeSent.size()));
+	i_OurUplink, ToBeSent.size(), ToBeDone.size()));
 }
 
