@@ -253,12 +253,23 @@ void NetworkServ::execute(const mstring & data)
     case 'A':
 	if (msgtype=="ADMIN")
 	{
+	    // :source ADMIN
+	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 256 " +
+		source + " Administrative info about " + Parent->Startup_SERVER_NAME);
+	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 257 " +
+		source + " " + Parent->Startup_SERVER_DESC);
+	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 258 " +
+		source + " Admins - " + Parent->OperServ_SERVICES_ADMIN);
+	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 259 " +
+		source + " Magick IRC Services - magick@magick.tm");
 	}
 	else if (msgtype=="AKILL")
 	{
 	}
 	else if (msgtype=="AWAY")
 	{
+	    // :source AWAY
+	    // :source AWAY :This is my reason
 	}
 	break;
     case 'B':
@@ -266,6 +277,9 @@ void NetworkServ::execute(const mstring & data)
     case 'C':
 	if (msgtype=="CONNECT")
 	{
+	    // :source CONNECT some.server port :our.server
+	    Parent->ircsvchandler->send("NOTICE " + source +
+		" :Connect: Host " + data.ExtractWord(2, ": ") + " not listed in irc.conf");
 	}
 	break;
     case 'D':
@@ -273,6 +287,7 @@ void NetworkServ::execute(const mstring & data)
     case 'E':
 	if (msgtype=="ERROR")
 	{
+	    // ERROR :This is my error
 	}
 	break;
     case 'F':
@@ -283,9 +298,11 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="GLOBOPS")
 	{
+	    // :source GLOBOPS :This message
 	}
 	else if (msgtype=="GNOTICE")
 	{
+	    // :server GNOTICE :This message
 	}
 	else if (msgtype=="GOPER")
 	{
@@ -296,9 +313,13 @@ void NetworkServ::execute(const mstring & data)
     case 'I':
 	if (msgtype=="INFO")
 	{
+	    // :source INFO :server/nick
+
+	    // Basically, dump credits.
 	}
 	else if (msgtype=="INVITE")
 	{
+	    // :source INVITE target :channel
 	}
 	else if (msgtype=="ISON")
 	{
@@ -307,14 +328,19 @@ void NetworkServ::execute(const mstring & data)
     case 'J':
 	if (msgtype=="JOIN")
 	{
+	    // :source JOIN :#channel
 	}
 	break;
     case 'K':
 	if (msgtype=="KICK")
 	{
+	    // :source KICK #channel target :reason
+	    // FOLLOWED BY A PART!
 	}
 	else if (msgtype=="KILL")
 	{
+	    // :source/server KILL target :reason
+	    // LOCAL clients ONLY (remotes are a QUIT).
 	}
 	break;
     case 'L':
@@ -328,17 +354,26 @@ void NetworkServ::execute(const mstring & data)
     case 'M':
 	if (msgtype=="MODE")
 	{
+	    // :source MODE source :mode
+	    // :source MODE #channel mode params...
+	    // :server MODE #channel mode params... creationtime
 	}
 	break;
     case 'N':
 	if (msgtype=="NAMES")
 	{
+	    // :source NAMES #channel our.server
 	}
 	else if (msgtype=="NICK")
 	{
+	    // hops = servers from us
+	    // services = 1 for service, 0 for user
+	    // NICK name hops time user host server services :real name
 	}
 	else if (msgtype=="NOTICE")
 	{
+	    // :source NOTICE target/#channel :message
+	    // NOTICE target :message
 	}
 	break;
     case 'O':
@@ -349,33 +384,30 @@ void NetworkServ::execute(const mstring & data)
     case 'P':
 	if (msgtype=="PART")
 	{
+	    // :source PART #channel
 	}
 	else if (msgtype=="PASS")
 	{
-	    if (source.IsEmpty())
+	    // PASS :password
+	    if (data.ExtractWord(2, ": ") != Parent->Startup_PASSWORD)
 	    {
-		if (data.ExtractWord(2, ": ") != Parent->Startup_PASSWORD)
-		{
-		    // Close socket, we're out.
-		}
+		CP(("Server password mismatch.  Closing socket."));
+		Parent->ircsvchandler->shutdown();
 	    }
 	}
 	else if (msgtype=="PING")
 	{
-	    if (source.IsEmpty())
-	    {
-		Parent->ircsvchandler->send("PONG :" + data.ExtractWord(2, ": "));
-	    }
-	    else    // Can this ever happen??
-	    {
-		Parent->ircsvchandler->send("PONG :" + source);
-	    }
+	    // PING :some.server
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " PONG " +
+		Parent->Startup_SERVER_NAME + " :" + data.ExtractWord(2, ": "));
 	}
 	else if (msgtype=="PONG")
 	{
+	    // :server PONG server :our.server
 	}
 	else if (msgtype=="PRIVMSG")
 	{
+	    // :source PRIVMSG target/#channel :message
 	    /*
 	    if (!IsChan(data.ExtractWord(3, ": ")) 
 		wxLogWarning("Received message for unknown user" + data.ExtractWord(3, ": "));
@@ -385,6 +417,7 @@ void NetworkServ::execute(const mstring & data)
     case 'Q':
 	if (msgtype=="QUIT")
 	{
+	    // :source QUIT :reason
 	}
 	break;
     case 'R':
@@ -401,6 +434,7 @@ void NetworkServ::execute(const mstring & data)
     case 'S':
 	if (msgtype=="SERVER")
 	{
+	    // SERVER server hops :description
 	}
 	else if (msgtype=="SQLINE")
 	{
@@ -410,10 +444,13 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="STATS")
 	{
+	    // :source STATS type :our.server
 	}
 	else if (msgtype=="SUMMON")
 	{
-	    // Return 445.
+	    // :source SUMMON user our.server *
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 445 " +
+		source + " :SUMMON has been disabled");
 	}
 	else if (msgtype=="SVSKILL")
 	{
@@ -434,12 +471,15 @@ void NetworkServ::execute(const mstring & data)
     case 'T':
 	if (msgtype=="TIME")
 	{
+	    // :source TIME :our.server
 	}
 	else if (msgtype=="TOPIC")
 	{
+	    // :server/user TOPIC #channel setter time :topic
 	}
 	else if (msgtype=="TRACE")
 	{
+	    // :source TRACE :server/target
 	}
 	break;
     case 'U':
@@ -457,23 +497,28 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="USERS")
 	{
-	    // Return 446.
+	    // :source USERS :our.server
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 446 " +
+		source + " :USERS has been disabled");
 	}
 	break;
     case 'V':
 	if (msgtype=="VERSION")
 	{
+	    // :source VERSION :our.server
 	}
 	break;
     case 'W':
 	if (msgtype=="WALLOPS")
 	{
+	    // :source WALLOPS :text
 	}
 	else if (msgtype=="WHO")
 	{
 	}
 	else if (msgtype=="WHOIS")
 	{
+	    // :source WHOIS target :our.server
 	}
 	else if (msgtype=="WHOWAS")
 	{

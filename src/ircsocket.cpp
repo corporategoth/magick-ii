@@ -70,9 +70,9 @@ int IrcSvcHandler::send(const mstring & data)
     //activation_queue_.enqueue(new send_MO(this,mstring(data)));
     int recvResult;
     if(data.Last()!='\n')
-	recvResult=peer().send((data+"\n").c_str(),data.Len()+1);
+	recvResult=peer().send_n((data+"\n").c_str(),data.Len()+1);
     else
-	recvResult=peer().send(data.c_str(),data.Len());
+	recvResult=peer().send_n(data.c_str(),data.Len());
     CH(T_Chatter::To,data);
     RET(recvResult);
 }
