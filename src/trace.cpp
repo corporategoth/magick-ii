@@ -103,9 +103,7 @@ void ThreadID::WriteOut(const mstring &message)
         finalout += ".  ";
     finalout += message;
     *out << finalout << wxEndL;
-    // note to prez. wxEndL == ("\n"+flush the stream),  "\n" == don't flush the stream.
-    // I know, its not supposed to, thats what endl is for.
-//    cout << finalout << endl;
+    out->Sync();
 }
 
 // ===================================================
