@@ -28,6 +28,7 @@ class Magick
 	mapstringstring Messages;
 	ACE_Thread_Mutex mutex;
 public:
+	void LoadExternalMessages();
 	mstring parseEscapes(const mstring& in);
 	void LoadInternalMessages();
 	void dump_help(mstring& progname);

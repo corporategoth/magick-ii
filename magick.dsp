@@ -129,6 +129,10 @@ SOURCE=.\include\confbase.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\docs\develop
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\EscLexer.cpp
 # End Source File
 # Begin Source File
