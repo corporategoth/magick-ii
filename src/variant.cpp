@@ -92,3 +92,74 @@ mVariant::mVariant(void * in)
 	else
 		valuetype=VarNull;
 }
+
+mVariant::mVariant(const mVariant & in)
+{
+	*this=in;
+}
+
+mVariant& mVariant::operator=(const mVariant& in)
+{
+	return *this;
+}
+bool mVariant::operator==(const mVariant& in)const
+{
+	if(valuetype!=in.valuetype)
+		return false;
+	switch(valuetype)
+	{
+	case VarBool:
+		if(value.BoolValue==in.value.BoolValue)
+			return true;
+		else 
+			return false;
+	case VarChar:
+		if(value.CharValue==in.value.CharValue)
+			return true;
+		else 
+			return false;
+	case VarDouble:
+		if(value.DoubleValue==in.value.DoubleValue)
+			return true;
+		else 
+			return false;
+	case VarFloat:
+		if(value.FloatValue==in.value.FloatValue)
+			return true;
+		else 
+			return false;
+	case VarInt:
+		if(value.IntValue==in.value.IntValue)
+			return true;
+		else 
+			return false;
+	case VarPtr:
+		if(value.PtrValue==in.value.PtrValue)
+			return true;
+		else 
+			return false;
+	case VarShort:
+		if(value.ShortValue==in.value.ShortValue)
+			return true;
+		else 
+			return false;
+	case VarString:
+		if(mstring(value)==mstring(in.value))
+			return true;
+		else 
+			return false;
+	case VarUChar:
+		if(value.UCharValue==in.value.UCharValue)
+			return true;
+		else 
+			return false;
+	}
+}
+bool mVariant::operator<(const mVariant& in)const
+{
+	if(in.valuetype!=valuetype)
+		return false;
+	switch(valuetype)
+	{
+	}
+}

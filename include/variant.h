@@ -44,6 +44,7 @@ public:
 private:
 	typeenum valuetype;
 public:
+	 mVariant(const mVariant& in);
 	 mVariant(void *in);
 	 mVariant(unsigned int in);
 	 mVariant(unsigned short in);
@@ -55,13 +56,22 @@ public:
 	 mVariant(char in);
 	 mVariant(int in);
 	 mVariant(short in);
-	mVariant();
+	 mVariant();
+
+	 mVariant& operator=(const mVariant& in);
+	 bool operator==(const mVariant& in)const;
+	 bool operator<(const mVariant& in)const;
+	 mstring &AsString();
 	
+	 mstring &type();
 };
 
 class mVarArray
 {
-	//vector<mVariant> values;
+	vector<mVariant> values;
+public:
+	int count()const;
+	mVariant &operator[](int position)const;
 };
 
 // todo

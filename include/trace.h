@@ -13,12 +13,28 @@
 #ifndef _TRACE_H
 #define _TRACE_H
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+#include <map>
+#include <utility>
+using namespace std;
+#include "mstream.h"
+#include "string.h"
+#include "variant.h"
+
+// forward declarations till we get them done
+class Thread;
+class ThreadID;
+
+enum threadtype_enum{ MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
+
 class Trace
 {
 
     long TraceLevel;
     enum TraceTypes {
-	Off		= 0,
+	TT_Off		= 0,
 	G_Stats		= 0x00000001,	// CPU/Memory and Global Flags
 	G_SourceFiles	= 0x00000002,	// Config / Language / Bob Script
 	G_Functions	= 0x00000004,	// Functions not covered below
@@ -53,45 +69,48 @@ class Trace
 	BOB_External	= 0x80000000	// BOB external input/output
     };
 
-    map<pair<Thread,ShortType>,TraceTypes> tmap;
-    typedef pair<Thread,ShortType> levelpair;
-
-    bool IsOnBig(TraceTypes level)
-	{ return (level & TraceLevel); }
-    TraceTypes Resolve(short level, ThreadID *tid)
-	{ return tmap[levelpair(level, tid.type())]; }
-
 public:
-    enum { Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2,
+    enum level_enum{ LT_Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2,
 	External = 4, Chatter = 1, CheckPoint = 2, Functions = 3, Modify = 4 };
 
+	// Thread* for now till we get it done
+private:
+
+    map<pair<threadtype_enum,level_enum>,TraceTypes> tmap;
+    typedef pair<threadtype_enum,level_enum> levelpair;
+
+    bool IsOnBig(TraceTypes level)
+	{ return (level & TraceLevel!=0); }
+	Trace::TraceTypes Resolve(Trace::level_enum level, ThreadID *tid);
+
+public:
     Trace();
     ~Trace();
 
-    bool IsOn(short level, ThreadID *tid)
+    bool IsOn(level_enum level, ThreadID *tid)
 	{ return IsOnBig(Resolve(level, tid)); }
 };
 
 class ThreadID : public Trace {
-    enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
-    short type;
+private:
+    threadtype_enum internaltype;
     int number;
     short indent;
-    ofstream out;
+    wxOutputStream out;
     mstring logtext[MAX];
     
     mstring logname();
-    init();
+    void init();
 
 public:
     ThreadID();
-    ThreadID(short Type, int Number);
+    ThreadID(threadtype_enum Type, int Number);
     ~ThreadID();
-    ThreadID assign(short Type, int Number);
-    short type() { return type; }
+    ThreadID assign(threadtype_enum Type, int Number);
+    threadtype_enum type() { return internaltype; }
     void indentup() { indent++; }
     void indentdown() { indent--; }
-    void WriteOut (short level, mstring &message);
+    void WriteOut (Trace::level_enum level, mstring &message);
 };
 
 class FuncTrace : public Trace
@@ -99,8 +118,8 @@ class FuncTrace : public Trace
     ThreadID *tid;
     FuncTrace() {} 
 public:
-    FuncTrace(const mstring name, const mVarArray &args);
-    ~FuncTrace() { tid.indentdown(); }
+    FuncTrace(const mstring &name, const mVarArray &args);
+    ~FuncTrace() { tid->indentdown(); }
 
 };
 
