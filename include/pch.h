@@ -263,6 +263,8 @@ typedef struct utsname ACE_utsname;
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
 #  define STL_EXT_NAMESPACE __gnu_cxx
 using namespace STL_EXT_NAMESPACE;
+#else
+#  define STL_EXT_NAMESPACE std
 # endif /* GCC >= 3.1 */
 #endif /* __GNUC__ */
 
