@@ -1001,6 +1001,16 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 }
 
 
+void Nick_Live_t::UnChanIdentify(mstring channel)
+{
+    FT("Nick_Live_t::UnChanIdentify", (channel));
+
+    if (IsChanIdentified(channel))
+    {
+	chans_founder_identd.erase(channel.LowerCase());
+    }
+}
+
 bool Nick_Live_t::IsChanIdentified(mstring channel)
 {
     FT("Nick_Live_t::IsChanIdentified", (channel));
@@ -1068,6 +1078,11 @@ mstring Nick_Live_t::Identify(mstring password)
     }
 }
 
+void Nick_Live_t::UnIdentify()
+{
+    NFT("Nick_Live_t::UnIdentify");
+    identified = false;
+}
 
 bool Nick_Live_t::IsRecognized()
 {
@@ -3498,7 +3513,8 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
 	Parent->nickserv.stored[source.LowerCase()].AccessAdd("*" + 
 	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!"));
 	Parent->nickserv.live[source.LowerCase()].Identify(password);
-	::send(mynick, source, "Your nickname has been registered.");
+	::send(mynick, source, Parent->getMessage(source, "NS_COMMAND/REGISTERED"),
+		mstring("*" + Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!")).c_str());
     }
 }
 
@@ -3517,6 +3533,7 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    Parent->nickserv.stored.erase(source.LowerCase());
+	    Parent->nickserv.live[source.LowerCase()].UnIdentify();
 	    ::send(mynick, source, "Your nickname has been dropped.");
 	}
     }

@@ -238,15 +238,15 @@ public:
 
     bool signon(const mstring& nickname);
     bool signoff(const mstring& nickname);
-    void privmsg(const mstring& source, const mstring &dest, const mstring &message);
-    void privmsg(const mstring &dest, const mstring &message)
-    		{ privmsg(FirstName(), dest, message); }
-    void notice(const mstring& source, const mstring &dest, const mstring &message);
-    void notice(const mstring &dest, const mstring &message)
-    		{ notice(FirstName(), dest, message); }
-    void send(const mstring& source, const mstring &dest, const mstring &message);
-    void send(const mstring &dest, const mstring &message)
-    		{ send(FirstName(), dest, message); }
+    void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+    void privmsg(const mstring &dest, const mstring &pszFormat, ...);
+    void privmsgV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
+    void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+    void notice(const mstring &dest, const mstring &pszFormat, ...);
+    void noticeV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
+    void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+    void send(const mstring &dest, const mstring &pszFormat, ...);
+    void sendV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
 
     operator mVariant() const
     {
@@ -256,10 +256,10 @@ public:
     };
 };
 
-void privmsg(const mstring &source, const mstring &dest, const mstring &message);
-void notice(const mstring &source, const mstring &dest, const mstring &message);
-void send(const mstring &source, const mstring &dest, const mstring &message);
-void announce(const mstring &source, const mstring &message);
+void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
+void announce(const mstring &source, const mstring &pszFormat, ...);
 
 class CommandMap
 {

@@ -177,27 +177,95 @@ bool mBase::signoff(const mstring &nickname)
 }
 
 
-void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &message)
+void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...)
 {
-    FT("mBase::privmsg", (source, dest, message));
+    FT("mBase::privmsg", (source, dest, pszFormat));
 
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    privmsgV(source, dest, pszFormat, argptr);
+    va_end(argptr);
+}
+
+
+void mBase::privmsg(const mstring &dest, const mstring &pszFormat, ...)
+{
+    FT("mBase::privmsg", (dest, pszFormat));
+
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    privmsgV(FirstName(), dest, pszFormat, argptr);
+    va_end(argptr);
+}
+
+
+void mBase::privmsgV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr)
+{
+    FT("mBase::privmsgV", (source, dest, pszFormat));
+
+    mstring message;
+    message.FormatV(pszFormat.c_str(), argptr);
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
 	Parent->server.PRIVMSG(source, dest, message);
 }
 
 
-void mBase::notice(const mstring &source, const mstring &dest, const mstring &message)
+void mBase::notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...)
 {
-    FT("mBase::notice", (source, dest, message));
+    FT("mBase::notice", (source, dest, pszFormat));
 
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    noticeV(source, dest, pszFormat, argptr);
+    va_end(argptr);
+}
+
+
+void mBase::notice(const mstring &dest, const mstring &pszFormat, ...)
+{
+    FT("mBase::notice", (dest, pszFormat));
+
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    privmsgV(FirstName(), dest, pszFormat, argptr);
+    va_end(argptr);
+}
+
+
+void mBase::noticeV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr)
+{
+    FT("mBase::noticeV", (source, dest, pszFormat));
+
+    mstring message;
+    message.FormatV(pszFormat.c_str(), argptr);
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
 	Parent->server.NOTICE(source, dest, message);
 }
 
 
-void mBase::send(const mstring &source, const mstring &dest, const mstring &message)
+void mBase::send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...)
 {
-    FT("mBase::send", (source, dest, message));
+    FT("mBase::send", (source, dest, pszFormat));
+
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    sendV(source, dest, pszFormat, argptr);
+    va_end(argptr);
+}
+
+void mBase::send(const mstring &dest, const mstring &pszFormat, ...)
+{
+    FT("mBase::send", (dest, pszFormat));
+
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    sendV(FirstName(), dest, pszFormat, argptr);
+    va_end(argptr);
+}
+
+void mBase::sendV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr)
+{
+    FT("mBase::sendV", (source, dest, pszFormat));
 
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
@@ -205,125 +273,144 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &mess
 		Parent->nickserv.stored[dest.LowerCase()].IsOnline())
 	{
 	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
-		privmsg(source, dest, message);
+		privmsgV(source, dest, pszFormat, argptr);
 	    }
 	    else
 	    {
-		notice(source, dest, message);
+		noticeV(source, dest, pszFormat, argptr);
 	    }
 	}
 	else
 	{
 	    if (Parent->nickserv.DEF_PRIVMSG())
 	    {
-		privmsg(source, dest, message);
+		privmsgV(source, dest, pszFormat, argptr);
 	    }
 	    else
 	    {
-		notice(source, dest, message);
+		noticeV(source, dest, pszFormat, argptr);
 	    }
 	}
     }
 }
 
 
-void privmsg(const mstring& source, const mstring &dest, const mstring &message)
+void privmsg(const mstring& source, const mstring &dest, const mstring &pszFormat, ...)
 {
-    FT("privmsg", (source, dest, message));
-    if (Parent->nickserv.IsLive(source) &&
-	Parent->nickserv.live[source.LowerCase()].IsServices())
-    {
-	if (Parent->operserv.IsName(source))
-	    Parent->operserv.privmsg(source, dest, message);
+    FT("privmsg", (source, dest, pszFormat));
 
-	else if (Parent->nickserv.IsName(source))
-	    Parent->nickserv.privmsg(source, dest, message);
-
-	else if (Parent->chanserv.IsName(source))
-	    Parent->chanserv.privmsg(source, dest, message);
-
-	else if (Parent->memoserv.IsName(source))
-	    Parent->memoserv.privmsg(source, dest, message);
-
-	else if (Parent->commserv.IsName(source))
-	    Parent->commserv.privmsg(source, dest, message);
-
-	else if (Parent->servmsg.IsName(source))
-	    Parent->servmsg.privmsg(source, dest, message);
-
-	// scripted hosts ...
-	// else
-    }
-}
-
-
-void notice(const mstring& source, const mstring &dest, const mstring &message)
-{
-    FT("notice", (source, dest, message));
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
 
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
 	if (Parent->operserv.IsName(source))
-	    Parent->operserv.notice(source, dest, message);
+	    Parent->operserv.privmsgV(source, dest, pszFormat, argptr);
 
 	else if (Parent->nickserv.IsName(source))
-	    Parent->nickserv.notice(source, dest, message);
+	    Parent->nickserv.privmsgV(source, dest, pszFormat, argptr);
 
 	else if (Parent->chanserv.IsName(source))
-	    Parent->chanserv.notice(source, dest, message);
+	    Parent->chanserv.privmsgV(source, dest, pszFormat, argptr);
 
 	else if (Parent->memoserv.IsName(source))
-	    Parent->memoserv.notice(source, dest, message);
+	    Parent->memoserv.privmsgV(source, dest, pszFormat, argptr);
 
 	else if (Parent->commserv.IsName(source))
-	    Parent->commserv.notice(source, dest, message);
+	    Parent->commserv.privmsgV(source, dest, pszFormat, argptr);
 
 	else if (Parent->servmsg.IsName(source))
-	    Parent->servmsg.notice(source, dest, message);
+	    Parent->servmsg.privmsgV(source, dest, pszFormat, argptr);
 
 	// scripted hosts ...
 	// else
     }
+    va_end(argptr);
 }
 
 
-void send(const mstring& source, const mstring &dest, const mstring &message)
+void notice(const mstring& source, const mstring &dest, const mstring &pszFormat, ...)
 {
-    FT("send", (source, dest, message));
+    FT("notice", (source, dest, pszFormat));
 
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
 	if (Parent->operserv.IsName(source))
-	    Parent->operserv.send(source, dest, message);
+	    Parent->operserv.noticeV(source, dest, pszFormat, argptr);
 
 	else if (Parent->nickserv.IsName(source))
-	    Parent->nickserv.send(source, dest, message);
+	    Parent->nickserv.noticeV(source, dest, pszFormat, argptr);
 
 	else if (Parent->chanserv.IsName(source))
-	    Parent->chanserv.send(source, dest, message);
+	    Parent->chanserv.noticeV(source, dest, pszFormat, argptr);
 
 	else if (Parent->memoserv.IsName(source))
-	    Parent->memoserv.send(source, dest, message);
+	    Parent->memoserv.noticeV(source, dest, pszFormat, argptr);
 
 	else if (Parent->commserv.IsName(source))
-	    Parent->commserv.send(source, dest, message);
+	    Parent->commserv.noticeV(source, dest, pszFormat, argptr);
 
 	else if (Parent->servmsg.IsName(source))
-	    Parent->servmsg.send(source, dest, message);
+	    Parent->servmsg.noticeV(source, dest, pszFormat, argptr);
 
 	// scripted hosts ...
 	// else
     }
+    va_end(argptr);
 }
 
-void announce(const mstring& source, const mstring &message)
+
+void send(const mstring& source, const mstring &dest, const mstring &pszFormat, ...)
 {
-    FT("announce", (source, message));
+    FT("send", (source, dest, pszFormat));
+
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    if (Parent->nickserv.IsLive(source) &&
+	Parent->nickserv.live[source.LowerCase()].IsServices())
+    {
+	if (Parent->operserv.IsName(source))
+	    Parent->operserv.sendV(source, dest, pszFormat, argptr);
+
+	else if (Parent->nickserv.IsName(source))
+	    Parent->nickserv.sendV(source, dest, pszFormat, argptr);
+
+	else if (Parent->chanserv.IsName(source))
+	    Parent->chanserv.sendV(source, dest, pszFormat, argptr);
+
+	else if (Parent->memoserv.IsName(source))
+	    Parent->memoserv.sendV(source, dest, pszFormat, argptr);
+
+	else if (Parent->commserv.IsName(source))
+	    Parent->commserv.sendV(source, dest, pszFormat, argptr);
+
+	else if (Parent->servmsg.IsName(source))
+	    Parent->servmsg.sendV(source, dest, pszFormat, argptr);
+
+	// scripted hosts ...
+	// else
+    }
+
+    va_end(argptr);
+}
+
+void announce(const mstring& source, const mstring &pszFormat, ...)
+{
+    FT("announce", (source, pszFormat));
+
+    va_list argptr;
+    va_start(argptr, pszFormat.c_str());
+    mstring message;
+    message.FormatV(pszFormat.c_str(), argptr);
 
     // Put logic in here to choose GLOBOP or WALLOP
     Parent->server.GLOBOPS(source, message);
+
+    va_end(argptr);
 }
 
 void mBase::shutdown()
@@ -685,6 +772,8 @@ bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
     {
 	RET(true);
     }
+    send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_COMMAND"),
+			command.c_str(), mynick.c_str());
     RET(false);
 }
 
@@ -700,7 +789,8 @@ bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
 	if (cmd.second != NULL)
 	    (*cmd.second)(mynick, user, params);
 	else
-	    send(mynick, user, "Invalid Command.");
+	    send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_COMMAND"),
+			command.c_str(), mynick.c_str());
 	RET(true);
     }
     RET(false);
@@ -718,7 +808,8 @@ bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
 	if (cmd.second != NULL)
 	    (*cmd.second)(mynick, user, params);
 	else
-	    send(mynick, user, "Invalid Command.");
+	    send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_COMMAND"),
+			command.c_str(), mynick.c_str());
 	RET(true);
     }
     RET(false);
@@ -730,13 +821,17 @@ void do_1_2param(mstring mynick, mstring source, mstring params)
     FT("do_1_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Not enough paramaters");
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").c_str(), mynick.c_str(),
+			params.Before(" ").c_str());
 	return;
     }
     mstring command = params.Before(" ", 2);
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
-	::send(mynick, source, "Invalid command.");
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+			command.c_str(), mynick.c_str(),
+			command.Before(" ").c_str());
     }
 
 }
@@ -746,13 +841,17 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
     FT("do_1_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, "Not enough paramaters");
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").c_str(), mynick.c_str(),
+			params.Before(" ").c_str());
 	return;
     }
     mstring command = params.Before(" ") + " " + params.ExtractWord(3, " ");
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
-	::send(mynick, source, "Invalid command.");
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+			command.c_str(), mynick.c_str(),
+			command.Before(" ").c_str());
     }
 
 }

@@ -59,9 +59,10 @@
 ; 
 
 ; Command syntax errors.
-[ERR/SYNTAX]
+[ERR_SYNTAX]
 UNKNOWN_COMMAND    =Unrecognized command %s.  Type /msg %s HELP for help.
 UNKNOWN_OPTION     =Unrecognized option %s.  Type /msg %s HELP %s for help.
+NEED_PARAMS        =Insufficiant paramaters specified for %s.  Type /msg %s HELP %s for help.
 MORE_INFO          =Type /msg %s HELP %s for more information.
 NOHELP             =No help available for command %s.
 STARTHRESH         =Entry must have at least %d non-*, ? or . characters.
@@ -74,7 +75,7 @@ MAY_NOT_HAVE       =You may not use a %c character.
 MUST_HAVE          =You must include a %c character.
 
 ; Access denied, for some reason
-[ERR/DENIED]
+[ERR_DENIED]
 WRONG_PASSWORD     =Password incorrect.
 ACCESS_DENIED      =Access denied.
 SUSPENDED_NICK     =Access denied for SUSPENDED nicknames.
@@ -88,7 +89,7 @@ CHAN_NOTVALID      =%s is not a valid channel name.
 READ_ONLY          =WARNING: Services are in read-only mode, changes will not be saved.
 
 ; Need more confirmation user is who they say they are.
-[ERR/VERIFY]
+[ERR_VERIFY]
 NEED_PASSWORD      =Password identification required for %s.
 NEED_OPS           =You must be a channel operator for %s.
 IDENT_NICK_FIRST   =Please retry after typing /MSG %s IDENTIFY password.
@@ -100,7 +101,7 @@ NICK_IDENTIFY      =If this is your nick, type /MSG %s IDENTIFY password.
 WILL_KILL_YOU      =If you do not change within one minute, you will be disconnected.
 
 ; They are (or the target is) the wrong kind of person.
-[ERR/PERSON]
+[ERR_PERSON]
 MUST_BE_HOST       =%s must be done as the HOST nickname.
 CANT_BE_HOST       =%s may not be done as the HOST nickname.
 MUST_BE_LINK       =%s must be done as a LINKED nickname.
@@ -115,9 +116,9 @@ ONLY_ON_IRCOP      =%s may only be performed on an IRC Operator.
 MUST_BE_IRCOP      =You must have the IRC Operator flag set to %s.
 
 ; Displayed on SET's and LIST's
-[DISPLAY/INFO]
+[DISPLAY_INFO]
 SYNC_TIME          =Databases will sync in %s.
-LIST_MATCH         =List of entries matching %s:
+LIST_MATCH         =List of %s entries matching %s:
 END_OF_LIST        =End of list - %d/%d matches shown.
 EMAIL              =E-Mail
 URL                =WWW Page (URL)
@@ -127,7 +128,7 @@ MLOCK              =Mode Lock
 JOIN               =ChanServ Join
 
 ; Generic list modification
-[DISPLAY/LISTS]
+[DISPLAY_LISTS]
 THERE              =%s is already present (or inclusive) on %s %s list.
 NOT_THERE          =%s not found on %s %s list.
 NOT_FOUND          =No such entry #%d on %s %s list.
@@ -142,7 +143,7 @@ CHANGED            =%s changed on %s %s list to %s.
 LIMIT              =Sorry, you may only have %d entries on %s %s list.
 
 ; Command displays that are relivant for more than one command
-[DISPLAY/COMMAND]
+[DISPLAY_COMMAND]
 GETPASS            =Password for %s (%s) is %s.
 GETPASS_WALLOP     =%s used GETPASS on %s (%s).
 FORBID             =%s has been FORBIDDEN.
@@ -150,7 +151,7 @@ SUSPEND            =%s (%s) has been SUSPENDED.
 UNSUSPEND          =%s (%s) has been UNSUSPENDED.
 
 ; Global messages (GLOBOPS or GLOBAL) for change in circumstances
-[DISPLAY/GLOBAL]
+[DISPLAY_GLOBAL]
 FLOODING           =%s is FLOODING services (placed on %s ignore).
 TEMP_FLOOD         =Services FLOOD triggered (>%d messages in %d seconds).  You are being ignored for %d seconds.
 PERM_FLOOD         =Services FLOOD triggered >%d times in one connection.  You are now on perminant ignore.
@@ -161,7 +162,7 @@ SERVICES_ON        =Services have now been switched back ON - Please use them 
 ONOFF_NOTIFY       =Services switched %s by request of %s.
 
 ; NickServ INFO display
-[NS/INFO]
+[NS_INFO]
 INTRO              =%s is %s
 HOST               =        Host Nick: %s
 EMAIL              =   E-Mail Address: %s
@@ -178,7 +179,7 @@ COUNT              =%d nicknames currently registered.
 ONLINE             =This user is currently online, type /whois %s for more information.
 
 ; Flags a nick can have set
-[NS/FLAGS]
+[NS_FLAGS]
 SUSPENDED          =SUSPENDED USER
 KILLPROTECT        =Kill Protection
 SECURE             =Security
@@ -203,7 +204,7 @@ IDENTIFIED         =Password accepted - you are now recognized.
 FORBID_WALLOP      =%s used FORBID on nickname %s (%d slave nicks dropped).
 
 ; Ownership and staus issues.
-[NS/OWNER]
+[NS_OWNER]
 NOT_YOURS          =Nickname %s does not belong to you.
 IN_USE             =Nickname %s is currently in use.
 NOT_IN_USE         =Nickname %s is not currently in use.
@@ -220,7 +221,7 @@ IS_SUSPENDED       =Nickname %s is SUSPENDED.
 IS_NOT_SUSPENDED   =Nickname %s is not SUSPENDED.
 
 ; ChanServ INFO display
-[CS/INFO]
+[CS_INFO]
 INTRO              =Information on channel %s
 FOUNDER            =       Founder: %s%s%s%s
 DESC               =   Description: %s
@@ -238,7 +239,7 @@ MLOCK              =     Mode Lock: %s
 COUNT              =%d channels currently registered.
 
 ; Flags a channel can have set
-[CS/FLAGS]
+[CS_FLAGS]
 SUSPENDED          =SUSPENDED CHANNEL
 PRIVATE            =Private
 KEEPTOPIC          =Topic Retention
@@ -249,7 +250,7 @@ RESTRICTED         =Restricted
 NONE               =None
 
 ; ChanServ REVENGE and other bitchy functions
-[CS/BITCH]
+[CS_BITCH]
 REV_LEVEL          =Revenge level for %s currently at %s (%s).
 REV_SET            =Revenge level for %s set to %s (%s).
 REV_DEOP           =REVENGE - Do not deop %s.
@@ -259,7 +260,7 @@ SUSPENDED_TOPIC    =[SUSPENDED] %s [SUSPENDED]
 FORBID_WALLOP      =%s used FORBID on channel %s.
 
 ; Access and Level function displays
-[CS/ACCESS]
+[CS_ACCESS]
 LEVEL_YOU          =You can %s.
 LEVEL_LIST         =Level required for commands on %s:
 LEVEL_LOW          =Cannot change levels below %d.
@@ -275,7 +276,7 @@ ACCESS_HIGHER      =Sorry, %s is higher or equal on access list.
 ACCESS_HIGHER_MATCH=Sorry, %s matches %s (higher or equal on access list).
 
 ; Output from ChanServ commands
-[CS/COMMAND]
+[CS_COMMAND]
 REGISTERED         =Channel %s has been registered under your nickname %s.
 DROPPED            =Channel %s has been dropped.
 CHANGE_PASSWORD    =Channel %s password is now %s - Please remember this for later use.
@@ -286,7 +287,7 @@ CLEARED            =%s have been cleared from channel %s.
 CLEAR_KICK         =CLEAR USERS command from %s
 
 ; Ownership and status issues
-[CS/OWNER]
+[CS_OWNER]
 SUSPENDED          =Channel %s is currently SUSPENDED, no ops/voices will be allowed.
 REGISTERED         =Channel %s is a registered channel, access privilages apply.
 IN_USE             =Channel %s is currently in use.
@@ -339,7 +340,7 @@ DELETE             =News article %d for %s has been deleted.
 DELETE_ALL         =All news articles for %s have been deleted.
 
 ; OperServ SETTINGS display
-[OS/SETTINGS]
+[OS_SETTINGS]
 EXP                =Expiries (days):
 EXP_CHAN           =    Channels : %d
 EXP_NICK           =    Nicknames: %d
@@ -357,7 +358,7 @@ UPDATE             =Databases saved every %d seconds.
 ADMINS             =Services Admins: %s
 
 ; Output from OperServ commands
-[OS/COMMAND]
+[OS_COMMAND]
 GLOBAL_WALLOP      =%s just sent a message to ALL users.
 QLINE              =%s activated QUARENTINE on nick %s.
 UNQLINE            =%s removed QUARENTINE on nick %s.

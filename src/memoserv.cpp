@@ -84,6 +84,12 @@ void News_t::Unread(mstring name)
     i_Read.erase(name.LowerCase());
 }
 
+MemoServ::MemoServ()
+{
+    NFT("MemoServ::MemoServ");
+    messages = true;
+}
+
 void MemoServ::AddCommands()
 {
     NFT("MemoServ::AddCommands");

@@ -324,6 +324,11 @@ bool Committee::MSG_find(int number)
     }
 }
 
+CommServ::CommServ()
+{
+    NFT("CommServ::CommServ");
+    messages = true;
+}
 
 bool CommServ::IsList(mstring in)
 {

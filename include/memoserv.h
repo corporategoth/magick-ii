@@ -117,7 +117,7 @@ public:
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);
-    MemoServ() {}
+    MemoServ();
     virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
     virtual mstring GetInternalName() const { return "MemoServ"; }
     virtual void execute(const mstring & message);

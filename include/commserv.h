@@ -163,7 +163,7 @@ public:
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);
 
-    CommServ() {}
+    CommServ();
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; };
     virtual mstring GetInternalName() const { return "CommServ"; };
     virtual void execute(const mstring & message);

@@ -39,7 +39,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     int recvResult;
     memset(data,0,513);
     recvResult=peer().recv(data,512);
-    if(recvResult==0)
+    if(recvResult==0 || Parent->Shutdown())
     {
 	// sleep and then reconnect
 	CP(("No data, scheduling reconnect, then closing down"));
@@ -658,15 +658,15 @@ int EventTask::svc(void)
 		sum += si->second.Lag();
 	    }
 	    if (pingtimes.size() >= 3)
-		avg = (sum - min - max) / (pingtimes.size() - 2);
+		avg = (sum - min - max) / (double)(pingtimes.size() - 2);
 	    else
-		avg = sum / pingtimes.size();
+		avg = sum / (double) pingtimes.size();
 
-	    if (avg > (Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+	    if (avg > (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
 		Parent->LevelUp();
-	    if (Parent->Level() > Parent->startup.Level() &&
-		avg <= (Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
-		Parent->LevelDown();		
+	    else if (Parent->Level() > Parent->startup.Level() &&
+		avg <= (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
+		Parent->LevelDown();
 
 	    for (si=Parent->server.ServerList.begin();
 		    si!=Parent->server.ServerList.end();si++)

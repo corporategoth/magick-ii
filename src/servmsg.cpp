@@ -21,6 +21,8 @@
 
 ServMsg::ServMsg()
 {
+    NFT("ServMsg::ServMsg");
+    messages = true;
 }
 
 

@@ -384,7 +384,7 @@ int Magick::Start()
     RET(MAGICK_RET_TERMINATE);
 }
 
-const char *Magick::getMessage(const mstring & nick, const mstring & name)
+mstring Magick::getMessage(const mstring & nick, const mstring & name)
 {
     FT("Magick::getMessage", (nick, name));
 
@@ -401,43 +401,51 @@ const char *Magick::getMessage(const mstring & nick, const mstring & name)
     }
 }
 
-const char *Magick::getMessageL(const mstring & lang, const mstring & name)
+mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 {
     FT("Magick::getMessageL", (lang, name));
 
     // Load requested language if its NOT loaded.
     // and then look for the message of THAT type.
-    if (Messages.find(lang.UpperCase()) == Messages.end())
+    if (lang != "" &&
+	Messages.find(lang.UpperCase()) == Messages.end())
+    {
 	LoadExternalMessages(lang);
-    if (Messages.find(lang.UpperCase()) != Messages.end() &&
+    }
+    if (lang != "" &&
+	Messages.find(lang.UpperCase()) != Messages.end() &&
 	Messages[lang.UpperCase()].find(name.UpperCase()) !=
 		Messages[lang.UpperCase()].end())
     {
-	RET(Messages[lang.UpperCase()][name.UpperCase()].c_str());
+	RET(Messages[lang.UpperCase()][name.UpperCase()]);
     }
 
     // Load nickserv default language if its NOT loaded.
     // and then look for the message of THAT type.
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
+	nickserv.DEF_Language() != "" &&
 	Messages.find(nickserv.DEF_Language().UpperCase()) ==
 	Messages.end())
+    {
 	LoadExternalMessages(nickserv.DEF_Language());
+    }
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
+	nickserv.DEF_Language() != "" &&
 	Messages.find(nickserv.DEF_Language().UpperCase()) !=
 	Messages.end() &&
 	Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
 	Messages[nickserv.DEF_Language().UpperCase()].end())
     {
-	RET(Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()].c_str());
+	RET(Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()]);
     }
 
     // Otherwise just try and find it in the DEFAULTs.
     if (Messages["DEFAULT"].find(name.UpperCase()) !=
 		Messages["DEFAULT"].end())
     {
-	RET(Messages["DEFAULT"][name.UpperCase()].c_str());
+	RET(Messages["DEFAULT"][name.UpperCase()]);
     }
-    RET("");
+    RET("Could not find message token \"" + name.UpperCase() + "\", please report this to your Services Admins.");
 }
 
 void Magick::dump_help(mstring & progname)
@@ -491,25 +499,30 @@ void Magick::LoadInternalMessages()
 
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
     wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"tmplang.lng");
+    remove("tmplang.lng");
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
     mstring groupname,entryname,combined;
+    vector<mstring> entries;
+
     bContGroup=fconf.GetFirstGroup(groupname,dummy1);
     // this code is fucked up and won't work. debug to find why it's not
     // finding the entries when it is actually loading them.
     // *sigh* spent an hour so far with no luck.
     while(bContGroup)
     {
+	fconf.SetPath(groupname);
 	bContEntries=fconf.GetFirstEntry(entryname,dummy2);
 	while(bContEntries)
 	{
 	    bContEntries=fconf.GetNextEntry(entryname,dummy2);
-	    combined = groupname+"/"+entryname;
-	    fconf.Read(combined, &Messages["DEFAULT"][combined.UpperCase()], mstring(""));
+	    entries.push_back(groupname.UpperCase()+"/"+entryname.UpperCase());
 	}
+	fconf.SetPath("..");
 	bContGroup=fconf.GetNextGroup(groupname,dummy1);
     }
-    remove("tmplang.lng");
+    for (i=0; i<entries.size(); i++)
+	fconf.Read(entries[i], &Messages["DEFAULT"][entries[i]], mstring(""));
 }
 
 mstring Magick::parseEscapes(const mstring & in)
@@ -551,29 +564,46 @@ bool Magick::LoadExternalMessages(mstring language)
     {
 	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lng");
 
-	bool bContGroup, bContEntries, found;
+	bool bContGroup, bContEntries;
 	long dummy1,dummy2;
+	int i;
 	mstring groupname,entryname,combined;
+	vector<mstring> entries;
 	bContGroup=fconf.GetFirstGroup(groupname,dummy1);
 	// this code is fucked up and won't work. debug to find why it's not
 	// finding the entries when it is actually loading them.
 	// *sigh* spent an hour so far with no luck.
 	while(bContGroup)
 	{
+	    fconf.SetPath(groupname);
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy2);
 	    while(bContEntries)
 	    {
 		bContEntries=fconf.GetNextEntry(entryname,dummy2);
-		combined = groupname+"/"+entryname;
-		fconf.Read(combined, &Messages[language.UpperCase()][combined.UpperCase()], mstring(""));
-		found = true;
+		entries.push_back(groupname.UpperCase()+"/"+entryname.UpperCase());
 	    }
+	    fconf.SetPath("..");
 	    bContGroup=fconf.GetNextGroup(groupname,dummy1);
 	}
-	if (found)
+	for (i=0; i<entries.size(); i++)
+	    fconf.Read(entries[i], &Messages[language.UpperCase()][entries[i]], mstring(""));
+	if (Messages.find(language.UpperCase()) != Messages.end())
 	{
 	    RET(true);
 	}
+    }
+    RET(false);
+}
+
+bool Magick::UnloadExternalMessages(mstring language)
+{
+    FT("Magick::UnloadExternalMessages", (language));
+
+    if (language != "" &&
+	Messages.find(language.UpperCase()) != Messages.end())
+    {
+	Messages.erase(language.UpperCase());
+	RET(true);
     }
     RET(false);
 }
@@ -1237,6 +1267,8 @@ bool Magick::get_config_values()
     in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
     in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
     in.Read(ts_NickServ+"LCK_PRIVMSG",&nickserv.lck_privmsg,false);
+    in.Read(ts_NickServ+"DEF_LANGUAGE",&nickserv.def_language,"english");
+    in.Read(ts_NickServ+"LCK_LANGUAGE",&nickserv.lck_language,false);
     in.Read(ts_NickServ+"PICSIZE",&nickserv.picsize,0);
     in.Read(ts_NickServ+"PICEXT",&nickserv.picext,"jpg gif bmp tif");
 

@@ -1405,24 +1405,30 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="SQUIT")
 	{
 	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
-	    // SQUIT lifestone.darker.net :Ping timeout
-	    ServerList.erase(data.ExtractWord(2, ": ").LowerCase());
-	    if (ServerSquit.find(data.ExtractWord(2, ": ").LowerCase()) != ServerSquit.end())
+	    // SQUIT lifestone.darker.net :Ping timeout\
+	    // :PreZ SQUIT server :reason
+	    mstring target;
+	    if (source.IsEmpty())
+		target = data.ExtractWord(2, ": ").LowerCase();
+	    else
+		target = data.ExtractWord(3, ": ").LowerCase();
+	    ServerList.erase(target);
+	    if (ServerSquit.find(target) != ServerSquit.end())
 	    {
 		mstring *arg;
 		if (ACE_Reactor::instance()->cancel_timer(
-		    ServerSquit[data.ExtractWord(2, ": ").LowerCase()], (const void **) arg))
+		    ServerSquit[target], (const void **) arg))
 		    delete arg;
-		ServerSquit[data.ExtractWord(2, ": ").LowerCase()] =
+		ServerSquit[target] =
 		    ACE_Reactor::instance()->schedule_timer(&squit,
-			new mstring(data.ExtractWord(2, ": ").LowerCase()),
+			new mstring(target),
 			ACE_Time_Value(Parent->config.Squit_Protect()));
 	    }
-	    ToBeSquit.erase(data.ExtractWord(2, ": ").LowerCase());
+	    ToBeSquit.erase(target);
 	    map<mstring,Nick_Live_t>::iterator iter;
 	    for (iter=Parent->nickserv.live.begin(); iter != Parent->nickserv.live.end(); iter++)
 	    {
-		if (iter->second.Server() == data.ExtractWord(2, ": ").LowerCase())
+		if (iter->second.Server() == target)
 		    iter->second.SetSquit();
 	    }
 	}

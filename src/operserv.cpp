@@ -453,6 +453,8 @@ bool OperServ::Ignore_value(mstring entry)
 
 OperServ::OperServ()
 {
+    NFT("OperServ::OperServ");
+    messages = true;
 }
 
 void OperServ::AddCommands()
@@ -484,6 +486,8 @@ void OperServ::AddCommands()
 	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "RELOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Reload);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Unload);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "JUPE*", Parent->commserv.ADMIN_Name(), OperServ::do_Jupe);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1046,6 +1050,30 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     {
 	wxLogError("Could not read magick config file %s.", Parent->Config_File().c_str());
 	::send(mynick, source, "WARNING: Could not read config file.");
+    }
+}
+
+
+void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Unload", (mynick, source, params));
+    mstring message = params.Before(" ").UpperCase();
+
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring language = params.ExtractWord(2, " ");
+
+    if (Parent->UnloadExternalMessages(language))
+    {
+	::send(mynick, source, "Language " + language.UpperCase() + " unloaded.");
+    }
+    else
+    {
+	::send(mynick, source, "Language " + language.UpperCase() + " was not loaded.");
     }
 }
 

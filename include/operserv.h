@@ -152,6 +152,7 @@ public:
     static void do_Update(mstring mynick, mstring source, mstring params);
     static void do_Shutdown(mstring mynick, mstring source, mstring params);
     static void do_Reload(mstring mynick, mstring source, mstring params);
+    static void do_Unload(mstring mynick, mstring source, mstring params);
     static void do_Jupe(mstring mynick, mstring source, mstring params);
     static void do_On(mstring mynick, mstring source, mstring params);
     static void do_Off(mstring mynick, mstring source, mstring params);

@@ -3386,6 +3386,7 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
     }
 
     Parent->chanserv.stored.erase(channel.LowerCase());
+    Parent->nickserv.live[source.LowerCase()].UnChanIdentify(channel);
     ::send(mynick, source, "Channel " + channel + " has been dropped.");
 }
 

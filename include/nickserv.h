@@ -150,8 +150,10 @@ public:
 
     // Will KILL user if >PassFailMax
     mstring ChanIdentify(mstring channel, mstring password);
+    void UnChanIdentify(mstring channel);
     bool IsChanIdentified(mstring channel);
     mstring Identify(mstring password);
+    void UnIdentify();
     bool IsIdentified()		{ return identified; }
     bool IsRecognized();
     bool IsServices()		{ return (i_server == ""); }
@@ -370,8 +372,8 @@ public:
     bool LCK_Private()		{ return lck_private; }
     bool DEF_PRIVMSG()		{ return def_privmsg; }
     bool LCK_PRIVMSG()		{ return lck_privmsg; }
-    mstring DEF_Language()	{ return def_privmsg; }
-    bool LCK_Language()		{ return lck_privmsg; }
+    mstring DEF_Language()	{ return def_language; }
+    bool LCK_Language()		{ return lck_language; }
     unsigned long PicSize()	{ return picsize; }
     mstring PicExt()		{ return picext; }
 
