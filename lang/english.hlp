@@ -1826,7 +1826,7 @@
 06 =SOP::head carefully, as will be able to add and remove
 07 =SOP::people to that committee at will, or transfer it to
 08 =SOP::another head, etc. without any way to intervene except
-09 =SOP::to KILL the committee.
+09 =SOP::to DEL the committee.
 
 [COMMSERV/DEL]
 01 =SOP::DEL <committee>

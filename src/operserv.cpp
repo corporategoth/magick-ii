@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.83  2000/06/06 08:57:57  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -1737,6 +1740,13 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
 		    ToHumanTime(Parent->config.Checktime()).c_str(),
 		    ToHumanTime(Parent->config.Ping_Frequency()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC1"),
+		    ToHumanSpace(Parent->files.Blocksize()).c_str(),
+		    ToHumanTime(Parent->files.Timeout()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC2"),
+		    ToHumanSpace(Parent->files.Min_Speed()).c_str(),
+		    ToHumanSpace(Parent->files.Max_Speed()).c_str(),
+		    ToHumanTime(Parent->files.Sampletime()).c_str());
 }
     
 void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
@@ -1841,12 +1851,12 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 			output.c_str());
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PICSIZE"),
-		    Parent->nickserv.PicSize());
+		    ToHumanSpace(Parent->nickserv.PicSize()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PICEXT"),
 		    Parent->nickserv.PicExt().c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_FILES"),
 		    Parent->memoserv.Files(),
-		    Parent->memoserv.FileSize());
+		    ToHumanSpace(Parent->memoserv.FileSize()).c_str());
 }
 
 
@@ -2150,7 +2160,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 
     if (!amount.IsNumber() || amount.Contains("."))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	return;
     }
 

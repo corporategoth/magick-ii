@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.101  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -307,23 +310,6 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 				    mstring who, mstring message)
 {
     FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message));
-    if (File())
-    {
-	if (InProg())
-	{
-	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
-	    return;
-	}
-	else
-	{
-	    Cancel();
-	}
-    }
-    else if (Exists())
-    {
-	End(0u);
-    }
-
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -367,6 +353,23 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
 	return;
+    }
+
+    if (File())
+    {
+	if (InProg())
+	{
+	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    return;
+	}
+	else
+	{
+	    Cancel();
+	}
+    }
+    else if (Exists())
+    {
+	End(0u);
     }
 
     type = FileMap::MemoAttach;
@@ -427,12 +430,7 @@ void Nick_Live_t::InFlight_t::Cancel()
 	{
 	    delete arg;
 	}
-    if (File())
-	if (InProg())
-	    send(service, nick, Parent->getMessage(nick, "DCC/TIMEOUT"), "GET");
-	else
-	    send(service, nick, Parent->getMessage(nick, "DCC/NOCONNECT"), "GET");
-    else
+    if (Memo() && !File())
 	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
     init();
 }
@@ -599,7 +597,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		}
 		else
 		{
-		    send(service, nick, Parent->getMessage(nick, "DCC/ABORTED"), "GET");
+		    send(service, nick, Parent->getMessage(nick, "DCC/FAILED"), "GET");
 		}
 	    }
 	    else if (Public())
@@ -625,7 +623,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		}
 		else
 		{
-		    send(service, nick, Parent->getMessage(nick, "DCC/ABORTED"), "GET");
+		    send(service, nick, Parent->getMessage(nick, "DCC/FAILED"), "GET");
 		}
 	    }
 	}
@@ -637,23 +635,6 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 {
     FT("Nick_Live_t::InFlight_t::Picture", (mynick));
-    if (File())
-    {
-	if (InProg())
-	{
-	    send(mynick, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
-	    return;
-	}
-	else
-	{
-	    Cancel();
-	}
-    }
-    else if (Exists())
-    {
-	End(0u);
-    }
-
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -673,20 +654,6 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 	return;
     }
 
-    type = FileMap::Picture;
-    fileattach = true;
-    sender = nick;
-    service = mynick;
-    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
-			new mstring(sender.LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
-    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
-}
-
-
-void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
-{
-    FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
     if (File())
     {
 	if (InProg())
@@ -704,6 +671,20 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
 	End(0u);
     }
 
+    type = FileMap::Picture;
+    fileattach = true;
+    sender = nick;
+    service = mynick;
+    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(sender.LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
+}
+
+
+void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
+{
+    FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -716,6 +697,23 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     {
 	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
 	return;
+    }
+
+    if (File())
+    {
+	if (InProg())
+	{
+	    send(mynick, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    return;
+	}
+	else
+	{
+	    Cancel();
+	}
+    }
+    else if (Exists())
+    {
+	End(0u);
     }
 
     type = FileMap::Public;
@@ -929,7 +927,7 @@ void Nick_Live_t::Quit(mstring reason)
     unsigned long i;
     vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
     for (i=0; i<dccs.size(); i++)
-	Parent->dcc->Close(dccs[i]);
+	Parent->dcc->Cancel(dccs[i], true);
     if (InFlight.Exists())
 	InFlight.End(0u);
 
@@ -4561,7 +4559,7 @@ void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
     }
 
     nick = Parent->getLname(nick);
-    Parent->server.KILL(mynick, nick, source + " (" +
+    Parent->server.ANONKILL(mynick, nick, source + " (" +
 				Parent->getMessage(nick, "MISC/KILL_GHOST") + ")");
     if (Parent->nickserv.recovered.find(nick.LowerCase()) !=
 				Parent->nickserv.recovered.end())
@@ -4736,8 +4734,8 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
     if (!Parent->filesys.Exists(FileMap::Picture, picnum))
     {
 	Parent->nickserv.stored[target.LowerCase()].GotPic(0);
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
-							target.c_str());
+	::send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
+							"SEND");
 	return;
     }
 
@@ -5100,7 +5098,7 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
     {
 	if (hostmask.Contains(".") || hostmask.Contains("-"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	    return;
 	}
 
@@ -5261,7 +5259,7 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     {
 	if (target.Contains(".") || target.Contains("-"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	    return;
 	}
 
@@ -5632,6 +5630,7 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
 	if (Parent->nickserv.stored[source.LowerCase()].PicNum())
 	    Parent->filesys.EraseFile(FileMap::Picture,
 		Parent->nickserv.stored[source.LowerCase()].PicNum());
+	Parent->nickserv.stored[source.LowerCase()].GotPic(0u);
 	Parent->nickserv.live[source.LowerCase()].InFlight.Picture(mynick);
     }
 }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.31  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -548,15 +551,9 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 
     if (Parent->nickserv.live[source.LowerCase()].InFlight.Picture())
     {
-	if (Parent->nickserv.PicExt() == "")
+	if (size && Parent->nickserv.PicSize() && size > Parent->nickserv.PicSize())
 	{
-	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
-	    return;
-	}
-
-	if (size && size > Parent->nickserv.PicSize())
-	{
-	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/TOOBIG"));
+	    send(mynick, source, Parent->getMessage(source, "DCC/TOOBIG"), "GET");
 	    return;
 	}
 	
@@ -565,6 +562,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	    (" " + Parent->nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
 	{
 	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/INVALIDEXT"));
+	    Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
 	    return;
 	}
 	else
@@ -573,12 +571,13 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	}
     }
 
-    if (Parent->nickserv.live[source.LowerCase()].InFlight.Picture() &&
-	size && size > Parent->memoserv.FileSize())
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
     {
-	send(mynick, source, Parent->getMessage(source, "MS_COMMAND/TOOBIG"));
-	Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
-	return;
+	if (size && Parent->memoserv.FileSize() && size > Parent->memoserv.FileSize())
+	{
+	    send(mynick, source, Parent->getMessage(source, "DCC/TOOBIG"), "GET");
+	    return;
+	}
     }
 
     // Spawn this in a new thread, and we're done, it takes over.

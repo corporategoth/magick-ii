@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.61  2000/06/06 08:57:57  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -950,13 +953,8 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 	    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
 	    {
 		unsigned long filenum = iter->File();
-		if (!filenum)
-		{
-		    nonfiles = true;
-		    continue;
-		}
-
-		if (!Parent->filesys.Exists(FileMap::MemoAttach, filenum))
+		if (!(filenum &&
+		    Parent->filesys.Exists(FileMap::MemoAttach, filenum)))
 		{
 		    nonfiles = true;
 		    continue;
@@ -1272,7 +1270,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	    return;
 	}
 
@@ -1314,7 +1312,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	    return;
 	}
 
@@ -1455,7 +1453,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	    return;
 	}
 
@@ -1503,7 +1501,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	    return;
 	}
 
@@ -1566,6 +1564,9 @@ void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
     if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
     {
 	Parent->memoserv.stats.i_Cancel++;
+	if (Parent->nickserv.live[source.LowerCase()].InFlight.File())
+	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CANCEL"));
+	    
 	Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
     }
     else

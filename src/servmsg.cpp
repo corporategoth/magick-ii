@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/06/10 07:01:04  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.55  2000/06/09 13:57:00  prez
 ** Added tracing to mconfig
 **
@@ -1247,7 +1250,7 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 	    // 00000001 S 000000000   0.0% xxxx.xX PreZ (blah.tgz)
 	    // 000000b2 S 000000000  48.2%         PreZ
 	    // 0000ac36 R 000000000 100.0%         PreZ
-	    ::send("%08x %c %9d %3.1f%% %4.1f%c %s (%s)", iter->first,
+	    ::send(mynick, source, Parent->getMessage(source, "DCC/LIST"), iter->first,
 		((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'),			
 		iter->second->Filesize(),
 		((float) iter->second->Total() /
@@ -1311,9 +1314,7 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	DccMap::xfers[number]->Cancel();
-	delete DccMap::xfers[number];
-	DccMap::xfers.erase(number);
+	Parent->dcc->Cancel(number);
 	Parent->servmsg.stats.i_file_Cancel++;
 	::send(mynick, source, Parent->getMessage(source, "DCC/CANCEL"),
 		number);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.64  2000/05/28 05:05:14  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -422,6 +425,8 @@ bool mstring::IsNumber() const
 	const char *s=c_str();
 	if(IsEmpty())
 	    return false;
+	if (*s == '-')
+	   s++;
 	while(*s)
 	{
 		if(!(isdigit(*s) || *s == '.'))

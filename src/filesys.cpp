@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.32  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -1030,18 +1033,27 @@ void DccXfer::Action()
 		i_XferTotal == i_Blocksize)
 	    {
 		i_Total += i_XferTotal;
-		i_File.Write(i_Transiant, i_XferTotal);
-		i_XferTotal = 0;
-		ACE_OS::memset(i_Transiant, 0, i_Blocksize);
-		verify = htonl(i_Total);
-		XferAmt = i_Socket->send_n((void *) &verify, 4, &onesec);
-		merrno = errno;
-		COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
-		if (i_Filesize == i_Total)
+		if (!i_File.IsOpened())
+		    return;
+		if (i_File.Write(i_Transiant, i_XferTotal) < 1)
 		{
-		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
-					"GET", i_Total);
+		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/FAILED"), "GET");
 		    i_File.Close();
+		}
+		else
+		{
+		    i_XferTotal = 0;
+		    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
+		    verify = htonl(i_Total);
+		    XferAmt = i_Socket->send_n((void *) &verify, 4, &onesec);
+		    merrno = errno;
+		    COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
+		    if (i_Filesize == i_Total)
+		    {
+			send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
+					"GET", i_Total);
+			i_File.Close();
+		    }
 		}
 	    }
 	}
@@ -1108,10 +1120,18 @@ void DccXfer::Action()
 	    if (!i_XferTotal && i_Total < i_Filesize)
 	    {
 		ACE_OS::memset(i_Transiant, 0, i_Blocksize);
+		if (!i_File.IsOpened())
+		    return;
 		if (i_Total + i_Blocksize > i_Filesize)
 		    TranSz = i_File.Read(i_Transiant, i_Filesize - i_Total);
 		else
-		TranSz = i_File.Read(i_Transiant, i_Blocksize);
+		    TranSz = i_File.Read(i_Transiant, i_Blocksize);
+		if (TranSz < 0)
+		{
+		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/FAILED"), "SEND");
+		    i_File.Close();
+		    return;
+		}
 		i_XferTotal = 0;
 	    }
 	    CP(("Going to send %d bytes ...", TranSz));
@@ -1205,7 +1225,12 @@ int DccMap::close(unsigned long in)
     // dump all and close open file handles.
     map<unsigned long, DccXfer *>::iterator iter;
     for (iter=xfers.begin(); iter != xfers.end(); iter++)
+    {
+	send(iter->second->Mynick(), iter->second->Source(),
+		Parent->getMessage(iter->second->Source(), "DCC/FAILED"),
+		((iter->second->Type() == DccXfer::Get) ? "GET" : "SEND"));
 	iter->second->Cancel();
+    }
     RET(0);
 }
 
@@ -1229,6 +1254,11 @@ int DccMap::svc(void)
 
 	if (xfers.find(WorkId) == xfers.end())
 	    continue;
+	if (xfers[WorkId] == NULL)
+	{
+	    xfers.erase(WorkId);
+	    continue;
+	}
 	if (!(*xfers[WorkId]).Ready())
 	{
 	    delete xfers[WorkId];
@@ -1243,6 +1273,9 @@ int DccMap::svc(void)
 	// No data in X seconds...
 	if (xfers[WorkId]->LastData().SecondsSince() > Parent->files.Timeout())
 	{
+	    send(xfers[WorkId]->Mynick(), xfers[WorkId]->Source(),
+		Parent->getMessage(xfers[WorkId]->Source(), "DCC/TIMEOUT"),
+		((xfers[WorkId]->Type() == DccXfer::Get) ? "GET" : "SEND"));
 	    xfers[WorkId]->Cancel();
 	    delete xfers[WorkId];
 	    xfers.erase(WorkId);
@@ -1382,14 +1415,16 @@ void DccMap::Accept(unsigned short port, mstring mynick,
     tm.spawn(Accept2, (void *) tmp);
 }
 
-void DccMap::Close(unsigned long DccId)
+void DccMap::Cancel(unsigned long DccId, bool silent)
 {
-    FT("DccMap::Close", (DccId));
+    FT("DccMap::Cancel", (DccId, silent));
     if (xfers.find(DccId) != xfers.end())
     {
+	if (!silent)
+	    send(xfers[DccId]->Mynick(), xfers[DccId]->Source(),
+		Parent->getMessage(xfers[DccId]->Source(), "DCC/FAILED"),
+		((xfers[DccId]->Type() == DccXfer::Get) ? "GET" : "SEND"));
 	xfers[DccId]->Cancel();
-	delete xfers[DccId];
-	xfers.erase(DccId);
     }
     tm.cancel_all();
 }

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2000/06/10 07:01:04  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.101  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -785,6 +788,41 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time)
     if (line != "")
 	sraw(line);
 }
+
+void NetworkServ::ANONKILL(mstring nick, mstring dest, mstring reason)
+{
+    FT("NetworkServ::ANONKILL", (nick, dest, reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	ToBeSent[nick.LowerCase()].push_back(
+		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
+		t_KILL, Now(), triplet<mstring, mstring, mstring>(
+		dest, reason, "")));
+	return;
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"KILL", nick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(dest))
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		"KILL", nick.c_str(), dest.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[dest.LowerCase()].Quit(
+		"Killed (" + reason + ")");
+	Parent->nickserv.live.erase(dest.LowerCase());
+	raw(":" + nick + " " +
+		((proto.Tokens() && proto.GetNonToken("KILL") != "") ?
+			proto.GetNonToken("KILL") : mstring("KILL")) +
+		" " + dest + " :" + reason);
+    }
+}
+
 
 void NetworkServ::AWAY(mstring nick, mstring reason)
 {

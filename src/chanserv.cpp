@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.174  2000/06/10 07:01:02  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.173  2000/06/06 08:57:55  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -1446,68 +1449,64 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    break;
 
 	case 'b':
+	    if (add)
 	    {
-	    long SetAccess = GetAccess(setter);
-	    vector<mstring> tobekicked;
-	    bool DidRevenge = false;
-	    mstring bantype = "BAN1";
-	    int j;
+		long SetAccess = GetAccess(setter);
+		vector<mstring> tobekicked;
+		bool DidRevenge = false;
+		mstring bantype = "BAN1";
+		int j;
 
-	    mstring nick = mode.ExtractWord(fwdargs, ": ").Before("!");
-	    mstring user = mode.ExtractWord(fwdargs, ": ").After("!").Before("@");
-	    mstring host = mode.ExtractWord(fwdargs, ": ").After("!").After("@");
+		mstring nick = mode.ExtractWord(fwdargs, ": ").Before("!");
+		mstring user = mode.ExtractWord(fwdargs, ": ").After("!").Before("@");
+		mstring host = mode.ExtractWord(fwdargs, ": ").After("!").After("@");
 
-	    if (host.Contains("*") || host.Contains("?"))
-		bantype = "BAN4";
-	    else
-		bantype = "BAN3";
+		if (host.Contains("*") || host.Contains("?"))
+		    bantype = "BAN4";
+		else
+		    bantype = "BAN3";
 
-	    for (j=0; bantype != "BAN2" && j<user.size(); j++)
-		switch (user[j])
-		{
-		case '*':
-		case '?':
-		    break;
-		default:
-		    bantype = "BAN2";
-		    break;
-		}
-
-	    for (j=0; bantype != "BAN1" && j<nick.size(); j++)
-		switch (nick[j])
-		{
-		case '*':
-		case '?':
-		    break;
-		default:
-		    bantype = "BAN1";
-		    break;
-		}
-
-	    for (j=0; !DidRevenge && j<clive->Users(); j++)
-	    {
-		if (Parent->nickserv.IsLive(clive->User(j)) &&
-		    (Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")) ||
-		     Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "))))
-		{
-		    if (DoRevenge(bantype, setter, clive->User(j)))
+		for (j=0; bantype != "BAN2" && j<user.size(); j++)
+		    switch (user[j])
 		    {
-			clive->SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
+		    case '*':
+		    case '?':
+			break;
+		    default:
+			bantype = "BAN2";
+			break;
 		    }
-		    else
+
+		for (j=0; bantype != "BAN1" && j<nick.size(); j++)
+		    switch (nick[j])
 		    {
-			tobekicked.push_back(clive->User(j));
+		    case '*':
+		    case '?':
+			break;
+		    default:
+			bantype = "BAN1";
+			break;
+		    }
+
+		for (j=0; !DidRevenge && j<clive->Users(); j++)
+		{
+		    if (Parent->nickserv.IsLive(clive->User(j)) &&
+			(Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")) ||
+			Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "))))
+		    {
+			if (DoRevenge(bantype, setter, clive->User(j)))
+			    clive->SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
+			else
+			    tobekicked.push_back(clive->User(j));
 		    }
 		}
-	    }
-	    if (!DidRevenge && KickOnBan())
-	    {
-		for (j=0; j<tobekicked.size(); j++)
+		if (!DidRevenge && KickOnBan())
 		{
-		    Parent->server.KICK(Parent->chanserv.FirstName(), tobekicked[j], i_Name, Parent->chanserv.DEF_Akick_Reason());
+		    for (j=0; j<tobekicked.size(); j++)
+		    {
+			Parent->server.KICK(Parent->chanserv.FirstName(), tobekicked[j], i_Name, Parent->chanserv.DEF_Akick_Reason());
+		    }
 		}
-	    }
-
 	    }
 	    fwdargs++;
 	    break;
@@ -2071,7 +2070,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 			mode.ExtractWord(fwdargs, ": ").Contains("."))
 		{
 		    output = "";
-		    output.Format(Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER").c_str());
+		    output.Format(Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER").c_str());
 		    retval.push_back(output);
 		}
 		else if (atol(mode.ExtractWord(fwdargs, ": ")) < 1)
@@ -5656,7 +5655,7 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
     {
-	target = params.ExtractWord(2, " ");
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
@@ -5734,7 +5733,7 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
     {
-	target = params.ExtractWord(2, " ");
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
@@ -6299,7 +6298,7 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 
     if (!level.IsNumber() || level.Contains("."))
     {
-        ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+        ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	return;
     }
     long num = atol(level.c_str());
@@ -6504,7 +6503,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 
     if (!level.IsNumber() || level.Contains("."))
     {
-        ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+        ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	return;
     }
     long num = atol(level.c_str());
@@ -6515,6 +6514,12 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 		Parent->chanserv.Level_Min(),
 		Parent->chanserv.Level_Max());
+	return;
+    }
+
+    if (num == 0)
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTZERO"));
 	return;
     }
 
@@ -6537,8 +6542,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 		    num);
 	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_CHANGE"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Level->Entry().c_str(), channel.c_str(),
-		cstored->Level->Value());
+		cstored->Access->Entry().c_str(), channel.c_str(), num);
     }
     else
     {
@@ -6550,8 +6554,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 		    num);
 	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_ADD"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Level->Entry().c_str(), channel.c_str(),
-		cstored->Level->Value());
+		cstored->Access->Entry().c_str(), channel.c_str(), num);
     }
 }
 
@@ -6591,12 +6594,18 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 
     if (who.IsNumber())
     {
-	if (who.Contains(".") || who.Contains("-"))
+	if (who.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/WHOLENUMBER"));
 	    return;
 	}
 	unsigned int i, num = ACE_OS::atoi(who);
+	if (i < 1 || i > cstored->Access_size())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+		1, cstored->Access_size());
+	    return;
+	}
 
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
 	for (i=1, cstored->Access = cstored->Access_begin();
@@ -6610,7 +6619,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Level->Entry().c_str(), channel.c_str());
+		cstored->Access->Entry().c_str(), channel.c_str());
 	    cstored->Access_erase();
 	}
 	else
@@ -6631,7 +6640,7 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Level->Entry().c_str(), channel.c_str());
+		cstored->Access->Entry().c_str(), channel.c_str());
 	    cstored->Access_erase();
 	}
 	else
@@ -6863,12 +6872,19 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 
     if (who.IsNumber())
     {
-	if (who.Contains(".") || who.Contains("-"))
+	if (who.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/POSWHOLENUMBER"));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/WHOLENUMBER"));
 	    return;
 	}
 	unsigned int i, num = ACE_OS::atoi(who);
+	if (i < 1 || i > cstored->Akick_size())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+		1, cstored->Akick_size());
+	    return;
+	}
+
 
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
 	for (i=1, cstored->Akick = cstored->Akick_begin();
@@ -7339,10 +7355,17 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 
     if (!target.IsNumber() || target.Contains("."))
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/POSWHOLENUMBER"));
+	::send(mynick, source, Parent->getMessage(source, "LIST/WHOLENUMBER"));
 	return;
     }
     int num = ACE_OS::atoi(target);
+    if (num < 1 || num > cstored->Message_size())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+		1, cstored->Message_size());
+	return;
+    }
+
 
     if (!cstored->Message_size())
     {

@@ -126,8 +126,8 @@ INVITE           =%s invited %s to channel %s with the INVITE command.
 UNBAN            =%s unbanned %s from channel %s with the UNBAN command.
 COMMAND          =%s executed the %s command for channel %s.
 LEVEL            =%s set the level of %s to %d for channel %s.
-ACCESS_ADD       =%s added %s to the access list for channel %s at level %s.
-ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %s.
+ACCESS_ADD       =%s added %s to the access list for channel %s at level %d.
+ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %d.
 ACCESS_DEL       =%s removed %s from the access list for channel %s.
 AKICK_ADD        =%s added %s to the autokick list for channel %s.
 AKICK_DEL        =%s removed %s from the autokick list for channel %s.
@@ -298,9 +298,9 @@ KILL_CHAN_PASS   =Killing user %s for password failures on channel %s.
 LOAD_LANGUAGE    =Loaded %s language file.
 LOAD_HELP        =Loaded %s help file.
 REVENGE          =Taking revenge on user %s in channel %s for %s on %s.
-DCC_INIT         =DCC ID %u initialized with %s (%s).
-DCC_CLOSE        =DCC ID %u completed successfully.
-DCC_CANCEL       =DCC ID %u failed to complete successfully.
+DCC_INIT         =DCC ID %08x initialized with %s (%s).
+DCC_CLOSE        =DCC ID %08x completed successfully.
+DCC_CANCEL       =DCC ID %08x failed to complete successfully.
 
 ;
 ; These are errors (of varying severity) that we may encounter.

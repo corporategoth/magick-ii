@@ -35,11 +35,11 @@ if [ -f include/language.h ]; then
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ========================================================== **
+** ========================================================== */
 #ifndef _LANGUAGE_H
 #define _LANGUAGE_H
-static const char *ident = "@(#) \$Id\$";
-** ========================================================== **
+static const char *ident_language_h = "@(#) \$Id\$";
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **

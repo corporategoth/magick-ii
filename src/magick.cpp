@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.243  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.242  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -2322,7 +2325,11 @@ bool Magick::get_config_values()
 	LoadLogMessages(nickserv.def_language);
     }
     in.Read(ts_NickServ+"LCK_LANGUAGE",&nickserv.lck_language,false);
-    in.Read(ts_NickServ+"PICSIZE",&nickserv.picsize,0);
+    in.Read(ts_NickServ+"PICSIZE",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	nickserv.picsize = FromHumanSpace(value_mstring);
+    else
+	nickserv.picsize = FromHumanSpace("0");
     in.Read(ts_NickServ+"PICEXT",&nickserv.picext,"jpg gif bmp tif");
 
     in.Read(ts_ChanServ+"HIDE",&value_bool,false);
@@ -2434,7 +2441,11 @@ bool Magick::get_config_values()
 	memoserv.inflight = FromHumanTime("3m");
 
     in.Read(ts_MemoServ+"FILES",&memoserv.files,0);
-    in.Read(ts_MemoServ+"FILESIZE",&memoserv.filesize,0);
+    in.Read(ts_MemoServ+"FILESIZE",&value_mstring,"0");
+    if (FromHumanSpace(value_mstring))
+	memoserv.filesize = FromHumanSpace(value_mstring);
+    else
+	memoserv.filesize = FromHumanSpace("0");
 
     in.Read(ts_OperServ+"SERVICES_ADMIN",&operserv.services_admin,"");
     in.Read(ts_OperServ+"SECURE",&operserv.secure,false);
@@ -2669,6 +2680,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	// LastSEGV is < 5 seconds ...
 	if(((time_t) LastSEGV != 0) && ((time_t) (Now() - LastSEGV) < 5))
 	{
+	    FLUSH();
 	    Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	    CP(("Got second sigsegv call, giving magick the boot"));
 	    Parent->Shutdown(true);
@@ -2677,6 +2689,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	}
 	else
 	{
+	    FLUSH();
 	    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/SIGNAL_RETRY"), signum);
 	    LastSEGV = Now();
 	    CP(("Got first sigsegv call, giving it another chance"));
@@ -2684,6 +2697,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #ifdef SIGBUS
     case SIGBUS:	// BUS error (fatal)
+	FLUSH();
 	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	Parent->Shutdown(true);
 	Parent->Die();
@@ -2701,6 +2715,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
+	FLUSH();
 	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	Parent->Shutdown(true);
 	Parent->Die();
@@ -2713,6 +2728,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
 #ifdef SIGIOT
     case SIGIOT:	// abort(), exit immediately!
+	FLUSH();
 	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum);
 	Parent->Shutdown(true);
 	Parent->Die();

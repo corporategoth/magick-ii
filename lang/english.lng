@@ -91,7 +91,7 @@ MUSTCONTAIN        =Specified %s entry must contain a '%c' character.
 MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.
 STARTHRESH         =Specified %s entry must have more than %d non-wildcard characters.
 MUSTBENUMBER       =You must specify a number between %d and %d.
-POSWHOLENUMBER     =You may only specify a positive whole number.
+WHOLENUMBER        =You may only specify a whole number.
 MUSTBEONOFF        =You may only specify "ON" or "OFF".
 NONNUMERIC         =Non-numeric arguments specified (ignored).
 ABOVELIMIT         =All entries above %d have been ignored.
@@ -149,7 +149,6 @@ FAILED             =DCC %s failed (internal server error).
 TIMEOUT            =DCC %s aborted (timeout).
 SOCKERR            =DCC %s aborted (socket error %d).
 TOOSLOW            =DCC %s aborted (transfer too slow).
-ABORTED            =DCC %s aborted (internal server error).
 
 LOOKUP_MEMOATTACH  =Memo Attachment %08x is %s and belongs to %s, memo #%d (sent by %s, %s ago).
 LOOKUP_PICTURE     =Picture %08x belongs to %s.
@@ -163,6 +162,7 @@ NOSPACE2           =Not enough space for temporary file, please try again later.
 
 LIST_HEAD          =ID       D      Size   Prog Speed/s User (File Name)
 ;                   >      < | >       < >    < >     < >
+LIST               =%08x %c %9d %5.1f%% %6.1f%c %s (%s)
 NOACTIVE           =No DCC file transfers active.
 NODCCID            =No DCC transfer with ID %08x active.
 CANCEL             =DCC ID %08x has been cancelled.
@@ -629,7 +629,8 @@ ISINUSE            =Channel %s is currently in use.
 ISNOTINUSE         =Channel %s is not currently in use.
 RESTRICT           =Channel %s is registered and has %s set.  Access restrictions apply.
 HIGHERACCESS       =Nickname %s is higher than you are on the %s access list.
-ONLYBELOW          =You may only add people to the access at a lower level than yourself.
+NOTZERO            =You may not add people to the access list at level zero.
+ONLYBELOW          =You may only add people to the access list at a lower level than yourself.
 LOCKGREET          =Your greeting for channel %s is locked.
 NOTLOCKGREET       =Your greeting for channel %s is not locked.
 ISLOCKED           =%s for channel %s is locked.
@@ -743,6 +744,8 @@ CFG_SQUIT1         =SQUIT protection lasts %s.
 CFG_SQUIT2         =Users have %s to reconnect before SQUIT protection activates.
 CFG_SYNC           =Databases save every %s, and sync in %s.
 CFG_CYCLE          =Hyperactive cycle is %s, and lag check is %s.
+CFG_DCC1           =DCC block size is %s and will time out in %s.
+CFG_DCC2           =Minimum DCC speed is %s and maximum is %s over %s.
 
 NICK_EXPIRE        =Nicknames will expire after %s.
 NICK_IDENT         =Users have %s to identify.
@@ -750,9 +753,9 @@ NICK_HOLD          =Nicknames are held for %s on failure to identify.
 NICK_PASS          =Users will be killed if they fail to identify %d time(s).
 NICK_OPTIONS       =Default nickname options are: %s
 NICK_LANG          =Default language is %s.
-NICK_PICSIZE       =Maximum picture size is %d bytes.
+NICK_PICSIZE       =Maximum picture size is %s.
 NICK_PICEXT        =Valid picture extensions are: %s
-NICK_FILES         =Users may have up to %d file(s) of up to %d bytes each.
+NICK_FILES         =Users may have up to %d file(s) of up to %s each.
 
 CHAN_EXPIRE        =Channels will expire after %s.
 CHAN_IDENT         =Users will be killed if they fail to identify %d time(s).
@@ -774,6 +777,7 @@ MISC_FLOOD1        =Flood is triggered with %d message(s) is %s.
 MISC_FLOOD2        =Services remember old flood triggers for %s.
 MISC_IGNORE        =Ignore lasts for %s, and is made permanent if triggered %d time(s).
 MISC_COMM_OPT      =Default committee options are: %s
+
 
 ;
 ; This section contains the output used at the end of SUCCESSFULL

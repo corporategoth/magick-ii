@@ -25,6 +25,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/06/10 07:01:02  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.20  2000/06/08 13:07:33  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -213,6 +216,7 @@ public:
     bool Ready()		{ return i_File.IsOpened(); }
     unsigned long DccId()	{ return i_DccId; }
     XF_Type Type()		{ return i_Type; }
+    mstring Mynick()		{ return i_Mynick; }
     mstring Source()		{ return i_Source; }
     mstring Filename()		{ return i_Filename; }
     size_t Filesize()		{ return i_Filesize; }
@@ -266,7 +270,7 @@ public:
     void Accept(unsigned short port, mstring mynick,
 	mstring source, FileMap::FileType filetype,
 	unsigned long filenum);
-    void Close(unsigned long DccId);
+    void Cancel(unsigned long DccId, bool silent = false);
 };
 
 #endif

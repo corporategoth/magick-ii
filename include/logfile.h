@@ -14,7 +14,6 @@
 ** ========================================================== */
 #ifndef _LOGFILE_H
 #define _LOGFILE_H
-#include "pch.h"
 static const char *ident_logfile_h = "@(#) $Id$";
 /* ========================================================== **
 **
@@ -25,26 +24,8 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.6  2000/05/28 05:05:13  prez
-** More makefile stuff ... Now we should work on all platforms.
-** Added alot of checking for different .h files, functions, etc.
-** So now all #define's are config.h based (also added a default
-** windows config.h, which will need to be copied on these systems).
-**
-** Revision 1.5  2000/03/19 08:50:53  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.4  2000/02/23 12:21:01  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.3  2000/02/15 10:37:47  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
+** Revision 1.7  2000/06/10 07:01:02  prez
+** Fixed a bunch of little bugs ...
 **
 **
 ** ========================================================== */
@@ -52,10 +33,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Tuesday February 15 21:35:58 EST 2000
+ * Created on Sat Jun 10 15:31:36 EST 2000
  */
 
-unsigned int def_logent =      281;
+unsigned int def_logent =     338;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -113,6 +94,8 @@ char *def_log[] = {
 "UNKNOWN_OPTION   =Unknown option %s, ignored.",
 "NEEDPARAM        =Option %s requires a paramater.",
 "MUSTBENUMBER     =Paramater for %s must be a positive number.",
+"TIMEORZERO	 =Time value specified is invalid or zero, on value %s.",
+"VALUETOOHIGH	 =Value specified for %s must be below or equal to %d.",
 "NO_CFG_FILE      =Could not read config file %s, aborting.",
 "STOP             =CONFIG: [Startup] STOP code received.",
 "RECONNECT        =Reconnecting to server due to configuration change.",
@@ -123,8 +106,14 @@ char *def_log[] = {
 "TRACE_SYNTAX     =Paramater for --trace must be in the format of TYPE:LEVEL",
 "ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.",
 "CFG_SYNTAX       =Configuration token \"%s\" contains a syntax error or invalid data.",
-"DBASE_ID         =Identification tag for database not valid.",
-"DBASE_VER        =Version of database is not recognized.",
+"UNKNOWN_PROTO    =Unknown protocol identifier %d, default (%d) used.",
+"START_LANG       =Loading default language file ...",
+"START_FORK       =Spawning into background ...",
+"START_EVENTS     =Starting events engine ...",
+"START_CALIBRATE  =Calibrating thread thresholds ...",
+"START_COMPLETE   =%s %s startup procedure complete.",
+"STOP_EVENTS      =Stopping events engine ...",
+"STOP_COMPLETE    =%s %s shutdown procedure complete.",
 "",
 ";",
 "; These are used when a command is executed from NickServ.",
@@ -141,13 +130,16 @@ char *def_log[] = {
 "SUSPEND          =%s suspended nickname %s for %s.",
 "UNSUSPEND        =%s unsuspended nickname %s.",
 "FORBID           =%s forbade nickname %s from being registered.",
-"GETPASS          =%s retrieved the password for nickname %s.",
+"GETPASS          =%s retrieved the password for nickname %s (%s).",
 "ACCESS_ADD       =%s added hostmask %s to nickname %s.",
 "ACCESS_DEL       =%s removed hostmask %s from nickname %s.",
 "IGNORE_ADD       =%s added nickname %s to the ignore list for nickname %s.",
 "IGNORE_DEL       =%s removed nickname %s from the ignore list for nickname %s.",
+"PICTURE_ADD      =%s set a picture for nickname %s (%08x - %s).",
+"PICTURE_DEL      =%s removed a picture from nickname %s.",
 "SET_PASSWORD     =%s changed the password for nickname %s.",
 "SET              =%s set the value of %s for nickname %s to %s.",
+"UNSET            =%s unset the value of %s for nickname %s.",
 "LOCK             =%s locked the value of %s for nickname %s to %s.",
 "UNLOCK           =%s unlocked the value of %s for nickname %s.",
 "",
@@ -156,11 +148,12 @@ char *def_log[] = {
 ";",
 "[CHANSERV]",
 "REGISTER         =%s registered channel %s.",
-"DROP             =%s dropped channel %s.",
+"DROP             =%s dropped channel %s (%s).",
+"IDENTIFY         =%s identified as founder for channel %s.",
 "SUSPEND          =%s suspended channel %s for %s.",
 "UNSUSPEND        =%s unsuspended channel %s.",
 "FORBID           =%s forbade channel %s from being registered.",
-"GETPASS          =%s retrieved the password for channel %s.",
+"GETPASS          =%s retrieved the password for channel %s (%s).",
 "MODE             =%s changed mode \"%s\" on channel %s with the MODE command.",
 "OP               =%s opped %s in channel %s with the OP command.",
 "DEOP             =%s deopped %s in channel %s with the DEOP command.",
@@ -168,11 +161,11 @@ char *def_log[] = {
 "DEVOICE          =%s devoiced %s in channel %s with the DEVOICE command.",
 "TOPIC            =%s set the topic on %s with the TOPIC command.",
 "KICK             =%s kicked %s from channel %s with the KICK command.",
-"ANONKICK         =%s anonymously kicked %s from channel %s with the ANONKICK command.",
+"ANONKICK         =%s anonymously kicked %s from channel %s with the REMOVE command.",
 "INVITE           =%s invited %s to channel %s with the INVITE command.",
 "UNBAN            =%s unbanned %s from channel %s with the UNBAN command.",
 "COMMAND          =%s executed the %s command for channel %s.",
-"LEVEL            =%s set the level of %s to %s.",
+"LEVEL            =%s set the level of %s to %d for channel %s.",
 "ACCESS_ADD       =%s added %s to the access list for channel %s at level %s.",
 "ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %s.",
 "ACCESS_DEL       =%s removed %s from the access list for channel %s.",
@@ -184,6 +177,7 @@ char *def_log[] = {
 "MESSAGE_DEL      =%s removed a on-join message from channel %s.",
 "SET_PASSWORD     =%s changed the password for channel %s.",
 "SET              =%s set the value of %s for channel %s to %s.",
+"UNSET            =%s unset the value of %s for channel %s.",
 "LOCK             =%s locked the value of %s for channel %s to %s.",
 "UNLOCK           =%s unlocked the value of %s for channel %s.",
 "",
@@ -191,42 +185,50 @@ char *def_log[] = {
 "; These are used when a command is executed from MemoServ.",
 ";",
 "[MEMOSERV]",
-"SEND             =%s sent a memo to %s.",
-"FILE             =%s sent a file attachment (%s / %d) to %s.",
-"DEL              =%s removed a memo from the %s list.",
-"PICTURE_ADD      =%s set a picture for nickname %s (%d).",
-"PICTURE_DEL      =%s removed a picture from nickname %s.",
+"SEND             =%s sent a news article to %s.",
+"DEL              =%s removed %d news article(s) from %s.",
+"DEL_ALL          =%s removed all news articles from %s.",
+"FILE             =%s sent a file attachment (%s / %08x - %s) to %s.",
+"GET              =%s received a file attachment (%s / %08x - %s) from %s.",
 "",
 ";",
 "; These are used when a command is executed from CommServ.",
 ";",
 "[COMMSERV]",
-"NEW              =%s created a new committee called %s with %s as its head.",
-"KILL             =%s deleted committee %s.",
-"ADD              =%s added nickname %s to committee %s.",
-"DEL              =%s removed nickname %s from committee %s.",
+"ADD              =%s created a new committee called %s with %s as its head.",
+"DEL              =%s deleted committee %s.",
 "MEMO             =%s sent a memo to all members of committee %s.",
+"MEMBER_ADD       =%s added nickname %s to committee %s.",
+"MEMBER_DEL       =%s removed nickname %s from committee %s.",
 "LOGON_ADD        =%s added a new logon message to committee %s.",
 "LOGON_DEL        =%s removed a logon message from committee %s.",
 "SET              =%s set the value of %s for committee %s to %s.",
+"UNSET            =%s unset the value of %s for committee %s.",
+"LOCK             =%s locked the value of %s for committee %s to %s.",
+"UNLOCK           =%s unlocked the value of %s for committee %s.",
 "",
 ";",
 "; These are used when a command is executed from ServMsg.",
 ";",
 "[SERVMSG]",
 "GLOBAL           =%s sent message \"%s\" to all users.",
+"FILE_ADD         =%s added file %s (%08x - %s) at privilage %s to public filesystem.",
+"FILE_DEL         =%s has removed file %s (%08x) from the public filesystem.",
+"FILE_RENAME      =%s has renamed file %s to %s in the public filesystem.",
+"FILE_PRIV        =%s has resecured file %s to %s in the public filesystem.",
+"FILE_SEND        =%s has downloaded the file %s from the public filesystem.",
+"FILE_LOOKUP      =%s looked up file %08x of type %s.",
 "",
 ";",
 "; These are used when a command is executed from OperServ.",
 ";",
 "[OPERSERV]",
-"TRACE            =%s set the trace level of %s to %s.",
 "MODE             =%s set mode \"%s\" for %s with the MODE command.",
 "QLINE            =%s quarentined nickname %s.",
 "UNQLINE          =%s unquarentined nickname %s.",
-"NOOP_ON          =%s quarentined all ircops on server %s.",
-"NOOP_OFF         =%s unquarentined all ircops on server %s.",
+"NOOP             =%s has turned quarentine all ircops on server %s %s.",
 "KILL             =%s silently killed nickname %s with \"%s\".",
+"HIDE             =%s has changed the hostname of nickname %s to %s.",
 "PING             =%s triggered server pings manually.",
 "UPDATE           =%s triggered database update manually.",
 "SHUTDOWN         =%s REQUESTED A SHUTDOWN OF SERVICES.",
@@ -237,13 +239,18 @@ char *def_log[] = {
 "ONOFF_SERVICE    =%s TURNED SERVICE %s %s.",
 "CLONE_ADD        =%s added host %s to the clone override list with %d clones.",
 "CLONE_DEL        =%s removed host %s from the clone override list.",
-"AKILL_ADD        =%s added mask %s to the autokill list for %s for \"%s\".",
+"AKILL_ADD        =%s added mask %s to the autokill list (%s) for \"%s\".",
 "AKILL_DEL        =%s removed mask %s from the autokill list.",
 "OPERDENY_ADD     =%s added mask %s to the operdeny list (%s).",
-"OPERDENY_DEL     =%s removed mask %s fro mthe operdeny list (%s).",
+"OPERDENY_DEL     =%s removed mask %s fro mthe operdeny list.",
 "IGNORE_ADD       =%s added mask %s to the services permanent ignore list.",
 "IGNORE_DEL       =%s removed mask %s from the services permanent ignore list.",
 "IGNORED          =Ignored message from %s: %s",
+"HTM_FORCE        =%s has forced HTM mode %s.",
+"HTM_ON           =HTM mode %d (%d delay) activated (%.1fKb/s > %.1fKb/s).",
+"HTM_OFF          =HTM mode deactivated.",
+"HTM_SET          =%s has set the HTM threshold to %s/s.",
+"HTM_IGNORE       =Ignored message from %s (HTM mode): %s",
 "",
 ";",
 "; These are used when an automated event kicks off.",
@@ -251,16 +258,20 @@ char *def_log[] = {
 "[EVENT]",
 "STARTUP          =MAGICK II HAS STARTED UP SUCCESSFULLY.",
 "EXPIRE_AKILL     =Expiring akill for %s (%s) set by %s for %s.",
-"EXPIRE_NICK      =Expiring nickname %s.",
-"EXPIRE_CHANNEL   =Expiring channel %s.",
+"EXPIRE_NICK      =Expiring nickname %s (%s).",
+"EXPIRE_CHAN      =Expiring channel %s (%s).",
 "EXPIRE_NEWS      =Expiring news article for channel %s.",
-"LOAD             =Database version %d.%d has been loaded.",
+"LOAD             =Database version %u.%u has been loaded.",
 "SAVE             =Database saved.",
 "UNBAN            =Removed ban %s from channel %s due to timeout (%s).",
 "KILLPROTECT      =Killed/renamed nickname %s for failure to identify.",
 "PING             =Pinged all servers.",
-"LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE.",
-"LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE.",
+"LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE (%.3f average lag).",
+"LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE (%.3f average lag).",
+"AKICK            =Kicked user %s from channel %s for triggering AKICK (%s).",
+"RESTRICTED       =Kicked user %s from restricted channel %s.",
+"NEW_THREAD       =Starting new thread to handle excess load.",
+"KILL_THREAD      =Killing thread, not enough work to warent it.",
 "",
 ";",
 "; These are errors that come from wx routines.",
@@ -287,6 +298,21 @@ char *def_log[] = {
 "CANTWRITE        =Can't write file '%s' to disk.",
 "OUTOFTXNIDS      =Cannot create any more Transaction ID's",
 "",
+"[SYS_ERRORS]",
+"COULDNOTOPEN     =Could not open file %s (%s).",
+"FILEMAPFULL      =Could not find an available file number for type %d!",
+"MISSING_FILE1    =Removed physical file type %d, #%08x that did not have a file map entry.",
+"MISSING_FILE2    =Removed file map entry type %d, #%08x that did not have a physical file.",
+"SIGNAL_IGNORE    =Caught signal #%d, ignoring.",
+"SIGNAL_SAVE      =Caught signal #%d, saving databases.",
+"SIGNAL_LOAD      =Caught signal #%d, loading configuration file.",
+"SIGNAL_RETRY     =Caught signal #%d, attempting to retry.",
+"SIGNAL_KILL      =Caught signal #%d, attempting to shutdown.",
+"SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.",
+"NOT_IMPLEMENTED  =Entered %s, which is not implemented.",
+"INVALID_FORMAT   =Invalid date format char %d%c in %s.",
+"NOT_LITERAL      =Chatacter %c should be in quotes, taken as literal in %s.",
+"",
 ";",
 "; This is a section for miscellaneous other occurances.",
 ";",
@@ -295,7 +321,8 @@ char *def_log[] = {
 "SQUIT_CANCEL     =Suspected SQUIT of servers %s and %s was fake.",
 "SQUIT_SECOND     =SQUIT of servers %s and %s confirmed, taking appropriate action.",
 "KILL_CLONE       =Clone protection triggered for %s, killing user.",
-"KILL_AKILL       =Killing user %s on autokill list (%s).",
+"KILL_AKILL       =Killing user %s on autokill list %s (%s).",
+"KILL_UNKNOWN     =Killed unknown user %s.",
 "CONNECTING       =Connecting to server %s:%d ...",
 "CONNECTED        =Connection established and authenticated to server %s.",
 "WRONGPASS        =Password mismatch connecting to server %s, skipping.",
@@ -309,6 +336,11 @@ char *def_log[] = {
 "KILL_NICK_PASS   =Killing user %s for password failures on nickname %s.",
 "KILL_CHAN_PASS   =Killing user %s for password failures on channel %s.",
 "LOAD_LANGUAGE    =Loaded %s language file.",
+"LOAD_HELP        =Loaded %s help file.",
+"REVENGE          =Taking revenge on user %s in channel %s for %s on %s.",
+"DCC_INIT         =DCC ID %08x initialized with %s (%s).",
+"DCC_CLOSE        =DCC ID %08x completed successfully.",
+"DCC_CANCEL       =DCC ID %08x failed to complete successfully.",
 "",
 ";",
 "; These are errors (of varying severity) that we may encounter.",
@@ -318,10 +350,11 @@ char *def_log[] = {
 "REQ_BYNONUSER    =%s command requested by non-existant user %s.",
 "REQ_BYNONSERVICE =%s command requested by non-service %s.",
 "REQ_FORNONUSER   =%s command requested by %s for non-existant user %s.",
-"REQ_TONONUSER    =%s command requested by %s to non-existant user %s.",
+"REQ_TOUSER       =%s command requested by %s to existing user %s.",
 "REQ_FORNONCHAN   =%s command requested by %s for non-existant channel %s.",
 "REQ_FORNONSERVER =%s command requested by %s for non-existant server %s.",
 "REQ_NOTINCHAN    =%s command requested by %s for %s who is not in channel %s.",
+"REQ_UNKNOWN      =Command type %d for %s (%s/%s/%s) queued %s ago, but unhandled (unknown type).",
 "UNKNOWN_MSG      =Unknown message from server: %s",
 "REC_FORNONUSER   =Received %s from %s for non-existant user %s.",
 "REC_FORNONCHAN   =Received %s from %s for non-existant channel %s.",
@@ -330,6 +363,7 @@ char *def_log[] = {
 "DUP_CHAN         =Duplicate %s received from %s for channel %s.",
 "MODE_INEFFECT    =MODE change %c%c received from %s for %s that is already in effect.",
 "MODE_NOTINCHAN   =MODE change %c%c received from %s for %s who is not in channel %s.",
+"FOUNDER_NOTREGD  =Channel %s has a founder of %s who is not registered (channel dropped).",
 "HOST_NOTREGD     =Nickname %s was listed as the host of %s, but does not exist (rectified)!",
 "SLAVE_NOTREGD    =Nickname %s was listed as a slave of %s, but does not exist (rectified)!",
 "KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.",
@@ -337,6 +371,10 @@ char *def_log[] = {
 "NOLANGTOKEN      =Invalid token %s for language %s used, error returned.",
 "FAILED_FORK      =Failed to fork new process with %d, terminating.",
 "FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.",
+"LOCK_OPEN        =Fialed to open %s lock for %s.",
+"LOCK_ACQUIRE     =Failed to acquire %s lock for %s.",
+"LOCK_RELEASE     =Failed to release %s lock for %s.",
 "EXCEPTION        =Exception thrown on line %d, column %d of %s.",
+"BADSET           =Tried to set BAD data (%s) for %s on %s.",
 "" };
 #endif

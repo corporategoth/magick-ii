@@ -25,6 +25,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/06/10 07:01:02  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.38  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -237,8 +240,7 @@ public:
     void Jupe(mstring server, mstring reason);
 
     void AKILL(mstring host, mstring reason = "", unsigned long time = 0);
-    void RAKILL(mstring host);
-
+    void ANONKILL(mstring nick, mstring dest, mstring reason);
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);
     void INVITE(mstring nick, mstring dest, mstring channel);
@@ -256,6 +258,7 @@ public:
     void PRIVMSG(mstring nick, mstring dest, mstring text);
     void QUIT(mstring nick, mstring reason = "");
     void QLINE(mstring nick, mstring target, mstring reason = "");
+    void RAKILL(mstring host);
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
     void SVSNICK(mstring mynick, mstring nick, mstring newnick);
     void SVSKILL(mstring mynick, mstring nick, mstring reason);

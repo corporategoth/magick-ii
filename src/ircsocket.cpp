@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2000/06/10 07:01:03  prez
+** Fixed a bunch of little bugs ...
+**
 ** Revision 1.108  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -520,7 +523,11 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	if (entry->InFlight.File())
 	{
 	    if (!entry->InFlight.InProg())
+	    {
+		send(entry->InFlight.service, entry->Name(),
+			Parent->getMessage(entry->Name(), "DCC/NOCONNECT"), "GET");
 		entry->InFlight.Cancel();
+	    }
 	}
 	else
 	{

@@ -1,10 +1,10 @@
-"#!/bin/sh
+#!/bin/sh
 #
 # Re-create logfile.h
 #
 
 if [ -z "$1" ]; then
-	echo "You must specify a language file to convert."
+	echo "You must specify a log output file to convert."
 	echo "Syntax: $0 langfile"
 	exit 1
 elif [ ! -f lang/$1 -a ! -f lang/$1.lfo ]; then
@@ -35,11 +35,11 @@ if [ -f include/logfile.h ]; then
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ========================================================== **
+** ========================================================== */
 #ifndef _LOGFILE_H
 #define _LOGFILE_H
-static const char *ident = "@(#) \$Id\$";
-** ========================================================== **
+static const char *ident_logfile_h = "@(#) \$Id\$";
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
