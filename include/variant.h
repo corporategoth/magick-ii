@@ -74,6 +74,8 @@ public:
 
 	mVariant& operator=(const mVariant& in);
 	bool operator==(const mVariant& in)const;
+	bool operator!=(const mVariant& in)const
+		{ return !operator==(in); }
 	bool operator<(const mVariant& in)const;
 
 	mstring AsString()const;

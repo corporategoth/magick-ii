@@ -40,6 +40,74 @@ public:
     void i_shutdown();
 };
 
+class entlist_t : public mUserDef
+{
+    friend wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, entlist_t& out);
+    mstring i_Entry;
+    mDateTime i_Last_Modify_Time;
+    mstring i_Last_Modifier;
+    bool i_Stupid;	// if TRUE, Change() does nothing.
+public:
+    entlist_t () {}
+    entlist_t (const entlist_t& in) { *this = in; }
+    entlist_t (mstring entry, mstring nick, bool stupid = false);
+    void operator=(const entlist_t &in);
+    bool operator==(const entlist_t &in) const
+	{ return (i_Entry == in.i_Entry); }
+    bool operator!=(const entlist_t &in) const
+	{ return (i_Entry != in.i_Entry); }
+    bool operator<(const entlist_t &in) const
+	{ return (i_Entry < in.i_Entry); }
+
+    bool Change(mstring entry, mstring nick);
+    mstring Entry()			{ return i_Entry; }
+    mDateTime Last_Modify_Time()	{ return i_Last_Modify_Time; }
+    mstring Last_Modifier()		{ return i_Last_Modifier; }
+};
+wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in);
+wxInputStream &operator>>(wxInputStream& in, entlist_t& out);
+typedef list<entlist_t>::iterator entlist_i;
+typedef list<entlist_t>::const_iterator entlist_ci;
+typedef set<entlist_t>::iterator entlist_ui;
+typedef set<entlist_t>::const_iterator entlist_cui;
+
+class entlist_val_t : public mUserDef
+{
+    friend wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out);
+    mstring i_Entry;
+    long i_Value;
+    mDateTime i_Last_Modify_Time;
+    mstring i_Last_Modifier;
+    bool i_Stupid;	// if TRUE, Change() does nothing.
+public:
+    entlist_val_t () {}
+    entlist_val_t (const entlist_val_t& in) { *this = in; }
+    entlist_val_t (mstring entry, long value, mstring nick, bool stupid = false);
+    void operator=(const entlist_val_t &in);
+    bool operator==(const entlist_val_t &in) const
+	{ return (i_Entry == in.i_Entry); }
+    bool operator!=(const entlist_val_t &in) const
+	{ return (i_Entry != in.i_Entry); }
+    bool operator<(const entlist_val_t &in) const
+	{ return (i_Entry < in.i_Entry); }
+
+    bool Change(mstring entry, mstring nick);
+    bool Change(long value, mstring nick);
+    bool Change(mstring newent, long value, mstring nick);
+    mstring Entry()			{ return i_Entry; }
+    long Value()			{ return i_Value; }
+    mDateTime Last_Modify_Time()	{ return i_Last_Modify_Time; }
+    mstring Last_Modifier()		{ return i_Last_Modifier; }
+};
+
+wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in);
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out);
+typedef list<entlist_val_t>::iterator entlist_val_i;
+typedef list<entlist_val_t>::const_iterator entlist_val_ci;
+typedef set<entlist_val_t>::iterator entlist_val_ui;
+typedef set<entlist_val_t>::const_iterator entlist_val_cui;
 
 class mBase
 {

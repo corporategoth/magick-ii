@@ -402,155 +402,6 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
 
 // --------- end of Chan_Live_t -----------------------------------
 
-entlist_t::entlist_t(mstring entry, mstring nick)
-{
-    FT("entlist_t::entlist_t", (entry, nick));
-    i_Entry = entry;
-    i_Last_Modify_Time = Now();
-    i_Last_Modifier = nick;
-}
-
-
-void entlist_t::operator=(const entlist_t &in)
-{
-    FT("entlist_t::operator=", ("(const entlist_t &) in"));
-    i_Entry=in.i_Entry;
-    i_Last_Modify_Time=in.i_Last_Modify_Time;
-    i_Last_Modifier=in.i_Last_Modifier;
-    map<mstring,mstring>::const_iterator i;
-    i_UserDef.clear();
-    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	i_UserDef[i->first]=i->second;
-}
-
-
-bool entlist_t::Change(mstring entry, mstring nick)
-{
-    FT("entlist_t::Change", (entry, nick));
-    i_Entry = entry;
-    i_Last_Modify_Time = Now();
-    i_Last_Modifier = nick;
-    RET(true);
-}
-
-
-wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
-{
-    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
-
-    map<mstring,mstring>::iterator j;
-    out<<in.i_UserDef.size();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
-    return out;
-}
-
-
-wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
-{
-    unsigned int i,count;
-    mstring dummy,dummy2;
-
-    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
-
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-    return in;
-}
-
-// --------- end of entlist_val_t -----------------------------------
-
-entlist_val_t::entlist_val_t(mstring entry, long value, mstring nick)
-{
-    FT("entlist_val_t::entlist_val_t", (entry, value, nick));
-    i_Entry = entry;
-    i_Value = value;
-    i_Last_Modify_Time = Now();
-    i_Last_Modifier = nick;
-}
-
-
-void entlist_val_t::operator=(const entlist_val_t &in)
-{
-    FT("entlist_val_t::operator=", ("(const entlist_val_t &) in"));
-    i_Entry=in.i_Entry;
-    i_Value=in.i_Value;
-    i_Last_Modify_Time=in.i_Last_Modify_Time;
-    i_Last_Modifier=in.i_Last_Modifier;
-    map<mstring,mstring>::const_iterator i;
-    i_UserDef.clear();
-    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	i_UserDef[i->first]=i->second;
-}
-
-
-bool entlist_val_t::Change(mstring entry, mstring nick)
-{
-    FT("entlist_val_t::Change", (entry, nick));
-    i_Entry = entry;
-    i_Last_Modify_Time = Now();
-    i_Last_Modifier = nick;
-    RET(true);
-}
-
-
-bool entlist_val_t::Change(long value, mstring nick)
-{
-    FT("entlist_val_t::Change", (value, nick));
-    i_Value = value;
-    i_Last_Modify_Time = Now();
-    i_Last_Modifier = nick;
-    RET(true);
-}
-
-
-bool entlist_val_t::Change(mstring entry, long value, mstring nick)
-{
-    FT("entlist_val_t::Change", (entry, value, nick));
-    i_Entry = entry;
-    i_Value = value;
-    i_Last_Modify_Time = Now();
-    i_Last_Modifier = nick;
-    RET(true);
-}
-
-
-wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
-{
-    out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
-
-    map<mstring,mstring>::iterator j;
-    out<<in.i_UserDef.size();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
-    return out;
-}
-
-
-wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
-{
-    unsigned int i,count;
-    mstring dummy,dummy2;
-
-    in>>out.i_Entry>>out.i_Value>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
-
-    out.i_UserDef.clear();
-    in>>count;
-    for(i=0;i<count;i++)
-    {
-	in>>dummy>>dummy2;
-	out.i_UserDef[dummy]=dummy2;
-    }
-    return in;
-}
-
-// --------- end of entlist_val_t -----------------------------------
-
 ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
@@ -572,21 +423,24 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
 
-    list<entlist_val_t>::const_iterator j;
+    entlist_val_cui j;
     i_Access_Level.clear();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
-	i_Access_Level.push_back(*j);
+	i_Access_Level.insert(*j);
+
     i_Access.clear();
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
-	i_Access.push_back(*j);
+	i_Access.insert(*j);
 
-    list<entlist_t>::const_iterator k;
+    entlist_cui k;
     i_Akick.clear();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
-	i_Akick.push_back(*k);
+	i_Akick.insert(*k);
+
+    entlist_ci l;
     i_Greet.clear();
-    for(k=in.i_Greet.begin();k!=in.i_Greet.end();k++)
-	i_Greet.push_back(*k);
+    for(l=in.i_Greet.begin();l!=in.i_Greet.end();l++)
+	i_Greet.push_back(*l);
 
     i_UserDef.clear();
     map<mstring, mstring>::const_iterator i;
@@ -626,20 +480,23 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     out<<in.i_Name<<in.i_RegTime<<in.i_Description<<in.i_Password<<in.i_URL;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Limit;
 
-    list<entlist_val_t>::iterator j;
+    entlist_val_cui j;
     out<<in.i_Access_Level.size();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	out<<*j;
+
     out<<in.i_Access.size();
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	out<<*j;
 
-    list<entlist_t>::iterator k;
+    entlist_cui k;
     out<<in.i_Akick.size();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	out<<*k;
+
+    entlist_ci l;
     out<<in.i_Greet.size();
-    for(k=in.i_Greet.begin();k!=in.i_Greet.end();k++)
+    for(l=in.i_Greet.begin();l!=in.i_Greet.end();l++)
 	out<<*k;
 
     map<mstring,mstring>::iterator i;
@@ -663,22 +520,25 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     for(i=0;i<count;i++)
     {
 	in>>evdummy;
-	out.i_Access_Level.push_back(evdummy);
+	out.i_Access_Level.insert(evdummy);
     }
+
     out.i_Access.clear();
     in>>count;
     for(i=0;i<count;i++)
     {
 	in>>edummy;
-	out.i_Access.push_back(evdummy);
+	out.i_Access.insert(evdummy);
     }
+
     out.i_Akick.clear();
     in>>count;
     for(i=0;i<count;i++)
     {
 	in>>edummy;
-	out.i_Akick.push_back(edummy);
+	out.i_Akick.insert(edummy);
     }
+
     out.i_Greet.clear();
     in>>count;
     for(i=0;i<count;i++)

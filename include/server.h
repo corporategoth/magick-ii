@@ -34,6 +34,8 @@ public:
     void operator=(const Server &in);
     bool operator==(const Server &in) const
 	{ return (i_Name == in.i_Name); }
+    bool operator!=(const Server &in) const
+	{ return (i_Name == in.i_Name); }
     bool operator<(const Server &in) const
 	{ return (i_Name < in.i_Name); }
 
