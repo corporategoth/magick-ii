@@ -335,3 +335,4 @@ DB_NODECOMPRESS  =Decompression of databases failed (usually because the wrong k
 DB_NOSANITY      =Database failed sanity check (usually because the wrong database version is used).
 DB_NOPARSE       =Failed to parse databases (internal data structure is incorrect!).
 KEY_CORRUPT      =Keyfile magick.ini failed validation checks (requires regeneration) - NOT USED!
+EXCEPTION_CAUGHTUNHANDLED = Caught an unhandled exception in file $1 line $2, this should be reported to the developers ASAP.
