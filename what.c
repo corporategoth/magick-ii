@@ -19,6 +19,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/04/06 15:09:11  prez
+** More makefile changes...
+**
 ** Revision 1.3  2000/02/27 11:06:34  prez
 ** Added standard header...
 **
@@ -26,7 +29,7 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 #include <stdio.h>
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     unsigned char c;
     int i, sequence;

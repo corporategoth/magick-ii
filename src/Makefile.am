@@ -1,6 +1,6 @@
 SUBDIRS = antlr des xml
 LDADD = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
-
+INCLUDES = -I$(top_srcdir)/include
 bin_PROGRAMS = magick
 magick_SOURCES = \
 base.cpp         convert.cpp      EscLexer.cpp     ircsocket.cpp    main.cpp         nickserv.cpp     textfile.cpp \
