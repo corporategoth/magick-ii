@@ -37,8 +37,7 @@ RCSID(convert_interface_h, "@(#) $Id$");
 
 enum convert_t { CONVERT_MAGICK, CONVERT_IRCSERVICES, CONVERT_EPONA,
 	CONVERT_HYBSERV, CONVERT_AUSPICE, CONVERT_PTLINK, CONVERT_SIRV,
-	CONVERT_WRECKED, CONVERT_TRIRCD, CONVERT_CYGNUS, CONVERT_SRVX,
-	CONVERT_DAYLIGHT, CONVERT_IRCS, CONVERT_BOLIVIA };
+	CONVERT_WRECKED, CONVERT_TRIRCD, CONVERT_CYGNUS, CONVERT_BOLIVIA };
 
 struct convert_name_t
 {
@@ -57,9 +56,6 @@ const convert_name_t convert_names[] = {
     { CONVERT_WRECKED, "wrecked" },
     { CONVERT_TRIRCD, "trircd" },
     { CONVERT_CYGNUS, "cygnus" },
-    { CONVERT_SRVX, "srvx" },
-    { CONVERT_DAYLIGHT, "daylight" },
-    { CONVERT_IRCS, "ircs" },
     { CONVERT_BOLIVIA, "bolivia" },
     { (convert_t) -1, NULL }
 };
@@ -101,6 +97,9 @@ struct trircd_ChanInfo;
 struct trircd_MemoInfo;
 struct trircd_NickExt;
 struct trircd_ChanExt;
+struct ircservices_NickInfo;
+struct ircservices_ChanInfo;
+struct ircservices_MemoInfo;
 
 class Convert
 {
@@ -153,6 +152,10 @@ public:
     static MemoServ::nick_memo_t trircd_CreateMemoEntry(trircd_MemoInfo *ml, const char *name);
     static MemoServ::channel_news_t trircd_CreateNewsEntry(trircd_MemoInfo *ml, const char *name);
 
+    static Nick_Stored_t *ircservices_CreateNickEntry(ircservices_NickInfo *ni);
+    static Chan_Stored_t *ircservices_CreateChanEntry(ircservices_ChanInfo *ci);
+    static MemoServ::nick_memo_t ircservices_CreateMemoEntry(ircservices_MemoInfo *ml, const char *name);
+    static MemoServ::channel_news_t ircservices_CreateNewsEntry(ircservices_MemoInfo *ml, const char *name);
 };
 
 #endif /* CONVERT */

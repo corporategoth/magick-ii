@@ -1065,8 +1065,7 @@ void Magick::dump_help() const
 	"                               magick (1.4), ircservices (5.0.6), epona (1.4.14),\n" <<
 	"                               hybserv (1.9.0), auspice (2.8), ptlink (2.22.3),\n" <<
 	"                               sirv (2.9.0), wrecked (1.2.0), trircd (4.26),\n" <<
-	"                               cygnus (0.1.1), srvx (1.2), daylight (12),\n" <<
-	"                               ircs (1.3), bolivia (1.2.0).\n" <<
+	"                               cygnus (0.1.1), bolivia (1.2.0).\n" <<
 #endif
 #ifdef MAGICK_TRACE_WORKS
 	"--trace X:Y                Set the trace level on startup, equivilant of\n" <<

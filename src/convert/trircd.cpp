@@ -2153,7 +2153,7 @@ void trircd_load_oper()
     }							\
 } while (0)
 
-void trircd_load_exceptions()
+void trircd_load_exception()
 {
     trircd_dbFILE *f;
     int i, nexceptions;
