@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Add a patch version
+# Remove a patch version
 
 if [ -z "$*" ]; then
 	echo "Must specify patch name"

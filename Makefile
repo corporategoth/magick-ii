@@ -43,6 +43,7 @@ magick:
 		cd $${OLDPWD}; \
 		$(MAKE) -C $$x TOPDIR=$(TOPDIR); \
 	done
+	helper/build-ver
 	$(CC) $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
 	strip magick
