@@ -77,10 +77,13 @@
 	   <td><table border="0" class="medium">
             <tr><td><p>Project Number	</td><td><p>	1				</p></td></tr>
             <tr><td><p>Slated Release	</td><td><p>	2.1				</p></td></tr>
-            <tr><td><p>Author		</td><td><p>	Preston A. Elder		</p></td></tr>
+            <tr><td><p>Author		</td><td><p>	<a href="mailto:prez@magick.tm">Preston A. Elder</a		</p></td></tr>
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.2  2002/07/31 20:50:53  prez
+			<br />Added a little more to the implementation, and made the email a link.
+			<br />
 			<br />Revision 1.1  2002/07/31 20:09:57  prez
 			<br />Added Mantra spec.
 			<br />
@@ -140,6 +143,13 @@
             </p><p>
 			4. We must create a new cohesive API that we will expose to anyone using Mantra.  This API should
 			interact with one of the External Intergration Layers, but should not expose it directly.
+            </p><p>
+			Mantra must handle all system-specific operations Magick does, including threading, locking,
+			signal handling, etc.  Mantra should also handle anything currently being handled by ACE,
+			including things like events, timers, etc.  Finally, Mantra will also take over many functions
+			implemented in Magick itself, such as tracing, the tokenized locking system, etc.
+            </p><p>
+			<b>This spec should be updated with more speicific information as deeper analysis is done.</b>
             </p><br />
 
             <h2><a name="5">Potential Problems</a></h2>
