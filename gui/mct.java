@@ -50,6 +50,7 @@ public class mct extends JApplet implements ActionListener
     private TabbedPane startup, services, files, config, nickserv, chanserv,
 		memoserv, operserv, commserv, servmsg;
     private boolean command;
+    private boolean security;
     private static String pwd;
 
     public static String currentDirectory()
@@ -61,7 +62,22 @@ public class mct extends JApplet implements ActionListener
     {
 	super();
 	command = true;
-	if (argv != null && argv.length > 0)
+
+	try
+	{
+	    File f = new File(".");
+	    f.getCanonicalPath();
+	    security = true;
+	}
+	catch (java.security.AccessControlException e1)
+	{
+	    security = false;
+	}
+	catch (Exception e2)
+	{
+	}
+
+	if (security && argv != null && argv.length > 0)
 	{
 	    File f = new File(argv[0]);
 	    if (f.exists() && f.isDirectory())
@@ -143,7 +159,10 @@ public class mct extends JApplet implements ActionListener
 	    }
 	    else if (pwd == null)
 	    {
-		System.exit(0);
+		JOptionPane.showMessageDialog(null,
+			"Working directory not entered, filesystem operations disabled.\n",
+			"Error",
+			JOptionPane.ERROR_MESSAGE);
 	    }
 	}
 	else if (e.getSource() == open)
@@ -336,7 +355,7 @@ public class mct extends JApplet implements ActionListener
 	mb.setBorderPainted(false);
 	JMenu submenu;
 
-	if (command)
+	if (security)
 	{
 	    submenu = new JMenu("File");
 	    submenu.setMnemonic(KeyEvent.VK_F);
@@ -362,17 +381,21 @@ public class mct extends JApplet implements ActionListener
 	    save.addActionListener(this);
 	    submenu.add(save);
 
-	    quit = new JMenuItem("Exit");
-	    quit.setMnemonic(KeyEvent.VK_X);
-	    quit.setAccelerator(KeyStroke.getKeyStroke(
-		KeyEvent.VK_X, ActionEvent.ALT_MASK));
-	    quit.addActionListener(this);
-	    submenu.add(quit);
-
-	    mb.add(submenu);
+	    if (command)
+	    {
+		quit = new JMenuItem("Exit");
+		quit.setMnemonic(KeyEvent.VK_X);
+		quit.setAccelerator(KeyStroke.getKeyStroke(
+			KeyEvent.VK_X, ActionEvent.ALT_MASK));
+		quit.addActionListener(this);
+		submenu.add(quit);
+	    }
 
 	    if (currentDirectory() == null)
 		actionPerformed(new ActionEvent(cwd, 0, ""));
+
+	    if (currentDirectory() != null)
+		mb.add(submenu);
 	}
 
 	submenu = new JMenu("Look and Feel");
