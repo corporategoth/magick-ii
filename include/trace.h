@@ -255,13 +255,15 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) do { T_Chatter __ch(x,y); } while (0)
 
+const char *strNonC__Exception = "NON-C++ EXCEPTION";
+
 // Exception catching ...
 #define BTCB() try {
 #define ETCB() } catch(exception &E) { \
 		T_Exception __tcb(__FILE__, __LINE__, E.what()); \
                 throw; \
         } catch(...) { \
-		T_Exception __tcb(__FILE__, __LINE__, "NON-C++ EXCEPTION"); \
+		T_Exception __tcb(__FILE__, __LINE__, strNonC__Exception); \
                 throw; \
         }
 
