@@ -116,10 +116,10 @@ public:
     enum level_enum { Off = 0, Stats = 1, Source = 2, Locking = 8, Sockets = 8, Bind = 2,
 	External = 8, Chatter = 1, CheckPoint = 2, Functions = 4, Modify = 8 };
     struct levelname_struct {
-	mstring name;
+	const mstring name;
 	level_enum level;
     };
-    struct levelname_struct levelname;
+    const static struct levelname_struct levelname[];
 
 	// Thread* for now till we get it done
 private:
@@ -187,10 +187,8 @@ private:
     int number;
     short indent;
     wxOutputStream out;
-    mstring logtext[MAX];
     
     mstring logname();
-    void init();
 
 public:
     ThreadID();

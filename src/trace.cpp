@@ -68,7 +68,10 @@ Trace::Trace()
 	tmap[levelpair(BOB,Functions)]		= BOB_Functions;
 	tmap[levelpair(BOB,External)]		= BOB_External;
 
-	levelname = {{ "OFF", Off },
+}
+
+const struct Trace::levelname_struct Trace::levelname[] = {
+		{ "OFF", Off },
 		{ "STAT*", Stats },
 		{ "SOUR*", Source },
 		{ "SRC*", Source },
@@ -82,12 +85,10 @@ Trace::Trace()
 		{ "CHE*", CheckPoint },
 		{ "C*P*", CheckPoint },
 		{ "F*NC*", Functions },
-		{ "MOD*", Modify }};
+		{ "MOD*", Modify },
+		NULL };
 
-}
-
-Trace::~Trace()
-{}
+Trace::~Trace() {}
 
 Trace::TraceTypes Trace::resolve(Trace::level_enum level, threadtype_enum type)
 { 
@@ -111,27 +112,14 @@ Trace::TraceTypes Trace::resolve(ThreadID *tid)
 
 ThreadID::ThreadID()
 {
-    init();
+    indent = 0;
 }
 
 ThreadID::ThreadID(threadtype_enum Type, int Number)
 {
-    init();
+    indent = 0;
     internaltype = Type;
     number = Number;
-}
-
-void ThreadID::init()
-{
-    indent = 0;
-    logtext[MAIN]	= "";
-    logtext[NickServ]	= "_NS_";
-    logtext[ChanServ]	= "_CS_";
-    logtext[MemoServ]	= "_MS_";
-    logtext[OperServ]	= "_OS_";
-    logtext[OtherServ]	= "_XS_";
-    logtext[ServNet]	= "_NET_";
-    logtext[BOB]	= "_BOB_";
 }
 
 ThreadID ThreadID::assign(threadtype_enum Type, int Number)
@@ -144,7 +132,10 @@ ThreadID ThreadID::assign(threadtype_enum Type, int Number)
 mstring ThreadID::logname()
 {
     mstring name;
-    name << "trace" << logtext[internaltype] << number << ".log";
+	if (internaltype)
+	    name << "trace_" << threadname[internaltype] << "_" << number << ".log";
+	else
+	    name << "trace.log";
     return name;
 }
 
