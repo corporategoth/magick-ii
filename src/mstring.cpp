@@ -359,12 +359,13 @@ int mstring::Find(char ch, bool bFromEnd) const
 int mstring::Find(const mstring & in, int count) const
 {
 	//const char *psz=ACE_OS::strstr(c_str(),in);
-	const_iterator i;
-	i=search(begin(),end(),in.begin(),in.end());
-	if(i==end())
-		return -1;
-	else
-		return i-begin();
+    unsigned int i=find(in,0),j;
+    for(j=0;j<count-1;j++)
+	i=find(in,i+1);
+    if(i==npos)
+	return -1;
+    else
+	return i;
 }
 
 size_t mstring::First(char c) const

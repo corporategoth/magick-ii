@@ -79,7 +79,7 @@ int IrcSvcHandler::close(unsigned long in)
 {
     FT("IrcSvcHandler::close",(in));
     CP(("Socket closed"));
-    RET(this->handle_close());
+    RET(handle_close());
 }
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
