@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.168  2001/06/11 06:47:49  prez
+** Fixed an undefined symbol
+**
 ** Revision 1.167  2001/06/11 03:44:45  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -328,7 +331,7 @@ RCSID(base_cpp, "@(#)$Id$");
 bool mBase::TaskOpened;
 map<mMessage::type_t, map<mstring, set<unsigned long> > > mMessage::AllDependancies;
 map<unsigned long, mMessage *> mMessage::MsgIdMap;
-unsigned long LastMsgId = 0;
+unsigned long mMessage::LastMsgId = 0;
 
 
 void entlist_t::operator=(const entlist_t &in)
