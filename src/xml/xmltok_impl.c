@@ -1711,14 +1711,18 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
     case 2:
 	switch (BYTE_TO_ASCII(enc, ptr))
 	{
-	case ASCII_t:
+	case ASCII_g:
 	    ptr += MINBPC(enc);
-	    switch (BYTE_TO_ASCII(enc, ptr))
+	    if (CHAR_MATCHES(enc, ptr, ASCII_t))
 	    {
-	    case ASCII_l:
-		return ASCII_LT;
-	    case ASCII_g:
 		return ASCII_GT;
+	    }
+	    break;
+	case ASCII_l:
+	    ptr += MINBPC(enc);
+	    if (CHAR_MATCHES(enc, ptr, ASCII_t))
+	    {
+		return ASCII_LT;
 	    }
 	    break;
 	case ASCII_POUND:
@@ -1778,8 +1782,9 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 	    break;
 	case ASCII_a:
 	    ptr += MINBPC(enc);
-	    if (CHAR_MATCHES(enc, ptr, ASCII_p))
+	    switch (BYTE_TO_ASCII(enc, ptr))
 	    {
+	    case ASCII_p:
 		ptr += MINBPC(enc);
 		if (CHAR_MATCHES(enc, ptr, ASCII_o))
 		{
@@ -1787,9 +1792,8 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 		    if (CHAR_MATCHES(enc, ptr, ASCII_s))
 			return ASCII_APOS;
 		}
-	    }
-	    else if (CHAR_MATCHES(enc, ptr, ASCII_s))
-	    {
+		break;
+	    case ASCII_s:
 		ptr += MINBPC(enc);
 		if (CHAR_MATCHES(enc, ptr, ASCII_c))
 		{
@@ -1803,6 +1807,7 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 			return atoi(num);
 		    }
 		}
+		break;
 	    }
 	    break;
 	case ASCII_POUND:
@@ -1825,10 +1830,10 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 	    }
 	    break;
 	}
+	break;
     case 5:
-	switch (BYTE_TO_ASCII(enc, ptr))
+	if (CHAR_MATCHES(enc, ptr, ASCII_a))
 	{
-	case ASCII_a:
 	    ptr += MINBPC(enc);
 	    if (CHAR_MATCHES(enc, ptr, ASCII_s))
 	    {
@@ -1851,12 +1856,11 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 		    }
 		}
 	    }
-	    break;
 	}
+	break;
     case 6:
-	switch (BYTE_TO_ASCII(enc, ptr))
+	if (CHAR_MATCHES(enc, ptr, ASCII_a))
 	{
-	case ASCII_a:
 	    ptr += MINBPC(enc);
 	    if (CHAR_MATCHES(enc, ptr, ASCII_s))
 	    {
@@ -1884,8 +1888,8 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 		    }
 		}
 	    }
-	    break;
 	}
+	break;
     }
     return 0;
 }

@@ -208,6 +208,17 @@ namespace SXP
 		    p += 5;
 		    ret.append('"');
 		}
+		else if (strncmp(p + 1, "asc", 3) == 0)
+		{
+		    p += 4;
+		    char tmp[4];
+
+		    memset(tmp, 0, 4);
+		    for (short i = 0; *p != ';' && i < 4; p++, i++)
+			tmp[i] = * p;
+		    if (strlen(tmp))
+			ret.append(static_cast < char > (atoi(tmp)));
+		}
 		else if (strncmp(p + 1, "#", 1) == 0)
 		{
 		    p += 2;
