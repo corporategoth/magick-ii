@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2000/08/06 05:55:55  prez
+** Added rudimentary UnderNet 2.8.10 support.
+**
 ** Revision 1.114  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -360,8 +363,13 @@ void Protocol::Set(unsigned int in)
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
 	break;
     case 20: /* UnderNet < 2.8.10  */
-	i_Signon = 0001;
-	i_Akill = 3;
+	i_Signon = 1000;
+	i_Akill = 2;
+	break;
+    case 21:
+	i_Signon = 1000;
+	i_Akill = 2;
+	i_Server = "SERVER %s %d 0 0 P09 :%s";
 	break;
     case 30: /* Aurora */
 	i_NickLen = 32;
@@ -3615,7 +3623,28 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="+"+PATCH8;
 	    if(PATCH9!="")
 		tmp+="+"+PATCH9;
-	    tmp << " Build #" << BUILD_NUMBER << " (" << BUILD_TIME <<
+	    tmp << " [";
+#ifdef HASCRYPT
+	    tmp << "C";
+#else
+	    tmp << "c";
+#endif
+#ifdef MAGICK_TRACE_WORKS
+	    tmp << "T";
+#else
+	    tmp << "t";
+#endif
+#ifdef MAGICK_LOCKS_WORK
+	    tmp << "L";
+#else
+	    tmp << "l";
+#endif
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    tmp << "E";
+#else
+	    tmp << "e";
+#endif
+	    tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME <<
 		") " << BUILD_SYS << "/" << BUILD_TYPE << ".";
 	    sraw("351 " + source + " " + PACKAGE + " " + Parent->startup.Server_Name() + " :" + tmp);
 	}
