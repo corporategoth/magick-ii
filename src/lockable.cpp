@@ -64,16 +64,18 @@ bool mLOCK::AcquireMapLock()
 	maplock = new mLock_Mutex("LockMap");
     if (maplock == NULL)
     {
-
-/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
-		"MUTEX", "LockMap")); */
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", "LockMap"));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_Lock(L_Mutex, E_Lock::T_Create, "LockMap"));
+#endif
 	return false;
     }
     if (maplock->acquire() < 0)
     {
-
-/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		"MUTEX", "LockMap")); */
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("MUTEX", "LockMap"));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_Lock(L_Mutex, E_Lock::T_Acquire, "LockMap"));
+#endif
 	return false;
     }
     return true;
@@ -89,9 +91,10 @@ bool mLOCK::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-
-/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-		"MUTEX", "LockMap")); */
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("MUTEX", "LockMap"));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_Lock(L_Mutex, E_Lock::T_Release, "LockMap"));
+#endif
 	return false;
     }
     return true;
@@ -344,8 +347,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", lockname));
 #ifdef MAGICK_HAS_EXCEPTIONS
-		// Dont bother throwing, we'll write lock in a second.  We should be recursive, so it shouldnt matter.
-		//throw(E_Lock(L_Read, E_Lock::T_Release, lockname.c_str()));
+		throw (E_Lock(L_Read, E_Lock::T_Release, lockname.c_str()));
 #endif
 	    }
 	    read_lock = NULL;
@@ -507,8 +509,9 @@ mLOCK::~mLOCK()
 		case L_Read:
 		    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
 		    break;
-		case L_Write:
 		case L_WriteUpgrade:
+		    iter->second = L_Read;
+		case L_Write:
 		    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
 		    break;
 		case L_Mutex:
@@ -518,15 +521,15 @@ mLOCK::~mLOCK()
 		    break;
 		}
 
-		if (iter->second == L_WriteUpgrade)
-		    lockiter->second.second[ACE_Thread::self()] = L_Read;
-		else
+		if (iter->second != L_WriteUpgrade)
+		{
 		    lockiter->second.second.erase(ACE_Thread::self());
 
-		if (!lockiter->second.second.size())
-		{
-		    killit = true;
-		    LockMap.erase(lockiter);
+		    if (!lockiter->second.second.size())
+		    {
+			killit = true;
+			LockMap.erase(lockiter);
+		    }
 		}
 	    }
 	    ReleaseMapLock();
@@ -587,10 +590,10 @@ mLOCK::~mLOCK()
 		return;
 	    if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
 	    {
-		if ((iter = lockiter->second.second.find(ACE_Thread::self())) != lockiter->second.second.end())
+		iter = lockiter->second.second.find(ACE_Thread::self());
+		if (iter != lockiter->second.second.end())
 		{
-		    // We're still here, must have been an upgraded lock,
-		    // time to downgrade it ...
+		    // We're still here, must have been an upgraded lock, time to downgrade it ...
 		    if (iter->second == L_Read)
 		    {
 			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
@@ -1029,16 +1032,18 @@ bool mThread::AcquireMapLock()
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
     if (maplock == NULL)
     {
-
-/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
-		"MUTEX", "SelfToThreadIdMap")); */
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", "SelfToThreadIdMap"));
 	return false;
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_Lock(L_Mutex, E_Lock::T_Create, "SelfToThreadIdMap"));
+#endif
     }
     if (maplock->acquire() < 0)
     {
-
-/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		"MUTEX", "SelfToThreadIdMap")); */
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("MUTEX", "SelfToThreadIdMap"));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_Lock(L_Mutex, E_Lock::T_Acquire, "SelfToThreadIdMap"));
+#endif
 	return false;
     }
     return true;
@@ -1054,9 +1059,10 @@ bool mThread::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-
-/*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-		"MUTEX", "SelfToThreadIdMap")); */
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("MUTEX", "SelfToThreadIdMap"));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw (E_Lock(L_Mutex, E_Lock::T_Release, "SelfToThreadIdMap"));
+#endif
 	return false;
     }
     return true;

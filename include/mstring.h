@@ -536,6 +536,9 @@ public:
     /** Amount of reserved bytes we currently have for current contents */
     size_t capacity() const;
 
+    /** What we have makes sense ... */
+    bool validated() const;
+
     /** Check to see if the current contents are empty
      *  @return true if the current contents are empty
      */
@@ -654,7 +657,7 @@ public:
      *    char *s = mystring;
      *  @see c_str()
      */
-    operator              const char *() const
+    operator               const char *() const
     {
 	return c_str();
     }
@@ -665,7 +668,7 @@ public:
      *  @return An STL string representation of current contents.
 		This will be "" if there is none.
      */
-    operator              const string() const
+    operator               const string() const
     {
 	return string(c_str());
     }

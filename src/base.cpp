@@ -769,14 +769,19 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 	    if (iter != MsgIdMap.end())
 	    {
 		msg = iter->second;
-		msg->DependancySatisfied(type, target);
-		if (!msg->OutstandingDependancies())
-		    MsgIdMap.erase(iter);
+		if (msg->validated())
+		{
+		    msg->DependancySatisfied(type, target);
+		    if (!msg->OutstandingDependancies())
+			MsgIdMap.erase(iter);
+		    else
+			msg = NULL;
+		}
 		else
 		    msg = NULL;
 	    }
 	}
-	if (msg != NULL)
+	if (msg != NULL && msg->validated())
 	{
 	    CP(("No more dependancies for %d.", msg->msgid()));
 	    msg->priority(static_cast < unsigned long > (P_DepFilled));

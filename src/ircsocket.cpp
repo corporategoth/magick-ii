@@ -68,7 +68,7 @@ void *IrcSvcHandler::worker(void *in)
 	    }
 	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
-	    if (msg != NULL)
+	    if (msg != NULL && msg->validated())
 	    {
 		try
 		{
@@ -82,11 +82,14 @@ void *IrcSvcHandler::worker(void *in)
 		catch (E_Lock & e)
 		{
 		    // We got a locking exception, re-queue the message (at the top of the list).
-		    msg->priority(static_cast < u_long > (P_Retry));
-		    RLOCK(("IrcSvcHandler"));
-		    if (Magick::instance().ircsvchandler == NULL)
-			break;
-		    Magick::instance().ircsvchandler->enqueue(msg);
+		    if (msg != NULL && msg->validated())
+		    {
+			msg->priority(static_cast < u_long > (P_Retry));
+			RLOCK(("IrcSvcHandler"));
+			if (Magick::instance().ircsvchandler == NULL)
+			    break;
+			Magick::instance().ircsvchandler->enqueue(msg);
+		    }
 		}
 	    }
 
@@ -680,7 +683,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
     {
 	mMessage *msg = new mMessage(source, msgtype, params, p);
 
-	if (msg != NULL)
+	if (msg != NULL && msg->validated())
 	{
 	    for (int i = 0; immediate_process[i] != NULL; i++)
 		if (msg->msgtype().IsSameAs(immediate_process[i], true))
@@ -688,7 +691,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 		    msg->priority(static_cast < u_long > (P_Highest));
 		    break;
 		}
-	    if (msg != NULL && !msg->OutstandingDependancies())
+	    if (!msg->OutstandingDependancies())
 		enqueue(msg);
 	}
     }

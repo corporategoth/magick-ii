@@ -108,6 +108,10 @@ public:
     bool RecheckDependancies();
     void DependancySatisfied(type_t type, const mstring & param);
 
+    bool validated() const
+    {
+	return (msgtype_.length() && msgtype_.validated());
+    }
     unsigned long msgid()
     {
 	return msgid_;
@@ -202,7 +206,7 @@ public:
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator        mVariant() const
+    virtual operator         mVariant() const
     {
 	mVariant locvar(GetInternalName());
 

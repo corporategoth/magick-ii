@@ -86,7 +86,7 @@ public:
 
     bool validated() const
     {
-	return (i_Nick.length() != 0);
+	return (i_Nick.length() != 0 && i_Nick.validated());
     }
     void ChgNick(const mstring & in);
     mstring Nick() const
@@ -161,7 +161,7 @@ public:
 
     bool validated() const
     {
-	return (i_Channel.length() != 0);
+	return (i_Channel.length() != 0 && i_Channel.validated());
     }
     mstring Channel() const
     {

@@ -3200,10 +3200,11 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 
 bool Magick::ValidateLogger(ACE_Log_Msg * instance) const
 {
-    FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
+    // Removed so it stops appearing as LastFunction
+    // FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
     if (instance == NULL)
-	RET(false);
+	return false;
 
     if (instance->msg_callback() != logger)
     {
@@ -3227,7 +3228,7 @@ bool Magick::ValidateLogger(ACE_Log_Msg * instance) const
 	    instance->clr_flags(ACE_Log_Msg::MSG_CALLBACK);
 	}
     }
-    RET(true);
+    return true;
 }
 
 bool Magick::ActivateLogger()
@@ -3257,7 +3258,8 @@ void Magick::DeactivateLogger()
 
 void Magick::EndLogMessage(ACE_Log_Msg * instance) const
 {
-    FT("Magick::EndLogMessage", ("(ACE_Log_Msg *) instance"));
+    // Removed so it stops appearing as LastFunction
+    // FT("Magick::EndLogMessage", ("(ACE_Log_Msg *) instance"));
 
     if (instance == NULL)
 	return;

@@ -119,7 +119,7 @@ template < class T > class map_entry
 
     void Start()
     {
-	if (entry_ptr != NULL)
+	if (entry_ptr != NULL && entry_ptr->validated())
 	{
 	    lock = new mLOCK(L_Read, entry_ptr->lockData());
 	    entry_ptr->addRef();
@@ -128,20 +128,17 @@ template < class T > class map_entry
 
     void End()
     {
-	if (entry_ptr != NULL)
+	if (entry_ptr != NULL && entry_ptr->validated())
 	{
 	    entry_ptr->remRef();
-	    if (entry_ptr->validated() && entry_ptr->doDelete() && entry_ptr->references() == 0)
+	    if (entry_ptr->doDelete() && entry_ptr->references() == 0)
 		delete entry_ptr;
-
-	    entry_ptr = NULL;
 	}
+	entry_ptr = NULL;
 	if (lock != NULL)
-	{
 	    delete lock;
 
-	    lock = NULL;
-	}
+	lock = NULL;
     }
 
 public:
@@ -157,18 +154,12 @@ public:
 	if (iter == map_ptr.end())
 	    return;
 
-	if (iter->second == NULL)
-	    return;
-
 	entry_ptr = iter->second;
 	Start();
     }
 
     map_entry(T * e) : entry_ptr(NULL), lock(NULL)
     {
-	if (e == NULL)
-	    return;
-
 	entry_ptr = e;
 	Start();
     }

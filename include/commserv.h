@@ -96,7 +96,7 @@ public:
 
     bool validated() const
     {
-	return (i_Name.length() != 0);
+	return (i_Name.length() != 0 && i_Name.validated());
     }
     mstring Name() const
     {

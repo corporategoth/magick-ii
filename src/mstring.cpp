@@ -554,6 +554,34 @@ size_t mstring::capacity() const
     return retval;
 }
 
+bool mstring::validated() const
+{
+    lock_read();
+
+    bool retval = false;
+
+    if (i_str == NULL)
+    {
+	// If we have no string, we shouldnt have reserve or length either
+	if (i_len == 0 && i_res == 0)
+	    retval = true;
+    }
+    else
+    {
+	// We should be able to reach the minimum if we keep deviding by 2
+	size_t res = i_res;
+	while (res > sizeof(int))
+	    res /= 2;
+	// We DID reach sizeof(int), and res is greater than length, and
+	// res is the minimum, or half of res is less than or equal to length
+	if (res == sizeof(int) && i_res > i_len && (i_res == sizeof(int) || i_res / 2 <= i_len))
+	    retval = true;
+    }
+
+    lock_rel();
+    return retval;
+}
+
 bool mstring::empty() const
 {
     lock_read();
