@@ -267,5 +267,5 @@ ServMsg is mainly an informational service, users may get help,
 statistics and information about services, and the network they
 are connected to from this service.  This service also offers the
 ability for Server Administrators to send a global message that
-will be sent to all users on the network.
-
+will be sent to all users on the network, and services operators
+to offer files to users throuh the public file system.

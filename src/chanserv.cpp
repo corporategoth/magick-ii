@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.179  2000/06/15 13:41:11  prez
+** Added my tasks to develop *grin*
+** Also did all the chanserv live locking (stored to be done).
+** Also made magick check if its running, and kill on startup if so.
+**
 ** Revision 1.178  2000/06/13 14:11:53  prez
 ** Locking system has been re-written, it doent core anymore.
 ** So I have set 'MAGICK_LOCKS_WORK' define active :)
@@ -191,6 +196,7 @@ bool Chan_Live_t::Join(mstring nick)
 {
     FT("Chan_Live_t::Join", (nick));
 
+    WLOCK(("ChanServ", "live", i_Name, "users"));
     if (users.find(nick.LowerCase())!=users.end())
     {
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/DUP_CHAN"),
@@ -207,6 +213,8 @@ bool Chan_Live_t::Join(mstring nick)
 unsigned int Chan_Live_t::Part(mstring nick)
 {
     FT("Chan_Live_t::Part", (nick));
+    WLOCK(("ChanServ", "live", i_Name, "users"));
+    WLOCK2(("ChanServ", "live", i_Name, "squit"));
     if (users.find(nick.LowerCase())!=users.end())
     {
 	mstring target = nick.LowerCase();
@@ -236,6 +244,8 @@ unsigned int Chan_Live_t::Part(mstring nick)
 void Chan_Live_t::Squit(mstring nick)
 {
     FT("Chan_Live_t::Squit", (nick));
+    WLOCK(("ChanServ", "live", i_Name, "users"));
+    WLOCK2(("ChanServ", "live", i_Name, "squit"));
     if (users.find(nick.LowerCase())!=users.end())
     {
 	squit[nick.LowerCase()] = users[nick.LowerCase()];
@@ -248,9 +258,11 @@ void Chan_Live_t::UnSquit(mstring nick)
     FT("Chan_Live_t::UnSquit", (nick));
 
     // We'll get ALL modes if all users are squit
+    WLOCK(("ChanServ", "live", i_Name, "modes"));
     if (!users.size())
 	modes = "";
 
+    RLOCK(("ChanServ", "live", i_Name, "squit"));
     if (squit.find(nick.LowerCase())==squit.end())
     {
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
@@ -263,32 +275,49 @@ void Chan_Live_t::UnSquit(mstring nick)
 unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Live_t::Kick", (nick, kicker));
-    if (users.find(nick.LowerCase())==users.end())
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_NOTINCHAN"),
-		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str());
-    else
+    WLOCK(("ChanServ", "live", i_Name, "users"));
+    WLOCK2(("ChanServ", "live", i_Name, "squit"));
+    if (users.find(nick.LowerCase())!=users.end())
     {
 	users.erase(nick.LowerCase());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Kick(nick, kicker);
     }
+    else if (squit.find(nick.LowerCase())!=squit.end())
+    {
+	squit.erase(nick.LowerCase());
+	if (Parent->chanserv.IsStored(i_Name))
+	    Parent->chanserv.stored[i_Name.LowerCase()].Kick(nick, kicker);
+    }
+    else
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_NOTINCHAN"),
+		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str());
+    }
 
-    unsigned int retval = users.size();
+    unsigned int retval = users.size() + squit.size();
     RET(retval);
 }
 
 void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
 {
     FT("Chan_Live_t::ChgNick", (nick, newnick));
-    if (users.find(nick.LowerCase())==users.end())
-    {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
-		"NICK", nick.c_str(), i_Name.c_str());
-    }
-    else
+    WLOCK(("ChanServ", "live", i_Name, "users"));
+    WLOCK2(("ChanServ", "live", i_Name, "squit"));
+    if (users.find(nick.LowerCase())!=users.end())
     {
 	users[newnick.LowerCase()] = users[nick.LowerCase()];
 	users.erase(nick.LowerCase());
+    }
+    else if (squit.find(nick.LowerCase())!=squit.end())
+    {
+	squit[newnick.LowerCase()] = squit[nick.LowerCase()];
+	squit.erase(nick.LowerCase());
+    }
+    else
+    {
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
+		"NICK", nick.c_str(), i_Name.c_str());
     }
 }
 
@@ -296,6 +325,7 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
 Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
+    WLOCK(("ChanServ", "live", i_Name));
     i_Name = name;
     i_Limit = 0;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
@@ -305,6 +335,7 @@ Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
 void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
     NFT("Chan_Live_t::operator=");
+    WLOCK(("ChanServ", "live", in.i_Name));
     bans.clear();
     map<mstring, mDateTime>::const_iterator i;
     for(i=in.bans.begin();i!=in.bans.end();i++)
@@ -329,15 +360,47 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 	squit.insert(*k);
 }
 
+mDateTime Chan_Live_t::Creation_Time()
+{
+    NFT("Chan_Live_t::Creation_Time");
+    RLOCK(("ChanServ", "live", i_Name, "i_Creation_Time"));
+    RET(i_Creation_Time);
+}
+
 
 void Chan_Live_t::Topic(mstring source, mstring topic, mstring setter, mDateTime time)
 {
     FT("Chan_Live_t::Topic", (source, topic, setter, time));
+    WLOCK(("ChanServ", "live", i_Name, "i_Topic"));
+    WLOCK2(("ChanServ", "live", i_Name, "i_Topic_Setter"));
+    WLOCK3(("ChanServ", "live", i_Name, "i_Topic_Set_Time"));
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = time;
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Topic(source, i_Topic, i_Topic_Setter, i_Topic_Set_Time);
+}
+
+
+mstring Chan_Live_t::Topic()
+{
+    NFT(("Chan_Live_t::Topic"));
+    RLOCK(("ChanServ", "live", i_Name, "i_Topic"));
+    RET(i_Topic);
+}
+
+mstring Chan_Live_t::Topic_Setter()
+{
+    NFT(("Chan_Live_t::Topic_Setter"));
+    RLOCK(("ChanServ", "live", i_Name, "i_Topic_Setter"));
+    RET(i_Topic_Setter);
+}
+
+mDateTime Chan_Live_t::Topic_Set_Time()
+{
+    NFT(("Chan_Live_t::Topic_Set_Time"));
+    RLOCK(("ChanServ", "live", i_Name, "i_Topic_Set_Time"));
+    RET(i_Topic_Set_Time);
 }
 
 
@@ -354,6 +417,7 @@ mstring Chan_Live_t::Squit(unsigned int num)
     FT("Chan_Live_t::Squit", (num));
     unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
+    RLOCK(("ChanServ", "live", i_Name, "squit"));
     for(i=0, k=squit.begin();k!=squit.end();k++, i++)
 	if (i==num)
 	{
@@ -377,6 +441,7 @@ mstring Chan_Live_t::User(unsigned int num)
     FT("Chan_Live_t::User", (num));
     unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
+    RLOCK(("ChanServ", "live", i_Name, "users"));
     for(i=0, k=users.begin();k!=users.end();k++, i++)
 	if (i==num)
 	{
@@ -390,6 +455,7 @@ mstring Chan_Live_t::User(unsigned int num)
 unsigned int Chan_Live_t::Ops()
 {
     NFT("Chan_Live_t::Ops");
+    RLOCK(("ChanServ", "live", i_Name, "users"));
     unsigned int retval = count_if(users.begin(),users.end(),checkops);
     RET(retval);
 }
@@ -400,6 +466,7 @@ mstring Chan_Live_t::Op(unsigned int num)
     FT("Chan_Live_t::Op", (num));
     unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
+    RLOCK(("ChanServ", "live", i_Name, "users"));
     for(i=0, k=users.begin();k!=users.end();k++)
 	if (IsOp(k->first))
 	{
@@ -417,6 +484,7 @@ mstring Chan_Live_t::Op(unsigned int num)
 unsigned int Chan_Live_t::Voices()
 {
     NFT("Chan_Live_t::Voices");
+    RLOCK(("ChanServ", "live", i_Name, "users"));
     unsigned int retval = count_if(users.begin(),users.end(),checkvoices);
     RET(retval);
 }
@@ -427,6 +495,7 @@ mstring Chan_Live_t::Voice(unsigned int num)
     FT("Chan_Live_t::Voice", (num));
     unsigned int i;
     map<mstring, pair<bool, bool> >::const_iterator k;
+    RLOCK(("ChanServ", "live", i_Name, "users"));
     for(i=0, k=users.begin();k!=users.end();k++)
 	if (IsVoice(k->first))
 	{
@@ -443,16 +512,17 @@ mstring Chan_Live_t::Voice(unsigned int num)
 
 pair<bool,bool> Chan_Live_t::User(mstring name)
 {
-   FT("Chan_Live_t::User", (name));
-   if (IsIn(name))
-   {
+    FT("Chan_Live_t::User", (name));
+    if (IsIn(name))
+    {
+	RLOCK(("ChanServ", "live", i_Name, "users"));
 	NRET(pair<bool.bool>, users[name.LowerCase()]);
-   }
-   else
-   {
+    }
+    else
+    {
 	pair<bool,bool> tmp(false,false);
 	NRET(pair<bool.bool>, tmp);
-   }
+    }
 }
 
 
@@ -469,6 +539,7 @@ mstring Chan_Live_t::Ban(unsigned int num)
     FT("Chan_Live_t::Ban", (num));
     unsigned int i;
     map<mstring, mDateTime>::const_iterator k;
+    RLOCK(("ChanServ", "live", i_Name, "bans"));
     for(i=0, k=bans.begin();k!=bans.end();k++, i++)
 	if (i==num)
 	{
@@ -481,19 +552,21 @@ mstring Chan_Live_t::Ban(unsigned int num)
 
 mDateTime Chan_Live_t::Ban(mstring mask)
 {
-   FT("Chan_Live_t::Ban", (mask));
-   mDateTime retval(0.0);
-   if (IsBan(mask))
-   {
+    FT("Chan_Live_t::Ban", (mask));
+    mDateTime retval(0.0);
+    if (IsBan(mask))
+    {
+	RLOCK(("ChanServ", "live", i_Name, "bans"));
 	retval = bans[mask.LowerCase()];
-   }
-   RET(retval);
+    }
+    RET(retval);
 }
 
 
 bool Chan_Live_t::IsSquit(mstring nick)
 {
     FT("Chan_Live_t::IsSquit", (nick));
+    RLOCK(("ChanServ", "live", i_Name, "squit"));
     bool retval = (squit.find(nick.LowerCase()) != squit.end());
     RET(retval)
 }
@@ -502,6 +575,7 @@ bool Chan_Live_t::IsSquit(mstring nick)
 bool Chan_Live_t::IsIn(mstring nick)
 {
     FT("Chan_Live_t::IsIn", (nick));
+    RLOCK(("ChanServ", "live", i_Name, "users"));
     bool retval = (users.find(nick.LowerCase()) != users.end());
     RET(retval);
 }
@@ -512,10 +586,13 @@ bool Chan_Live_t::IsOp(mstring nick)
     FT("Chan_Live_t::IsOp", (nick));
 
     if (IsIn(nick))
+    {
+	RLOCK(("ChanServ", "live", i_Name, "users"));
 	if (users[nick.LowerCase()].first == true)
 	{
 	    RET(true);
 	}
+    }
     RET(false);
 }
 
@@ -525,10 +602,13 @@ bool Chan_Live_t::IsVoice(mstring nick)
     FT("Chan_Live_t::IsVoice", (nick));
 
     if (IsIn(nick))
+    {
+	RLOCK(("ChanServ", "live", i_Name, "users"));
 	if (users[nick.LowerCase()].second == true)
 	{
 	    RET(true);
 	}
+    }
     RET(false);
 
 }
@@ -537,6 +617,7 @@ bool Chan_Live_t::IsVoice(mstring nick)
 bool Chan_Live_t::IsBan(mstring mask)
 {
     FT("Chan_Live_t::IsBan", (mask));
+    RLOCK(("ChanServ", "live", i_Name, "bans"));
     bool retval = (bans.find(mask.LowerCase()) != bans.end());
     RET(retval);
 }
@@ -548,6 +629,7 @@ void Chan_Live_t::LockDown()
     Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
     // Override the MLOCK checking.
     Parent->server.MODE(Parent->chanserv.FirstName(), i_Name, "+s");
+    MLOCK(("ChanServ", "live", i_Name, "ph_timer"));
     ph_timer = ACE_Reactor::instance()->schedule_timer(&(Parent->chanserv.ph),
 			    new mstring(i_Name),
 			    ACE_Time_Value(Parent->chanserv.ChanKeep()));
@@ -565,6 +647,7 @@ void Chan_Live_t::UnLock()
     }
 
     mstring *arg = NULL;
+    MLOCK(("ChanServ", "live", i_Name, "ph_timer"));
     if (ph_timer &&
 	ACE_Reactor::instance()->cancel_timer(ph_timer,
 		(const void **) arg) &&
@@ -700,6 +783,11 @@ void Chan_Live_t::SendMode(mstring in)
 
     bool add = true;
 
+    RLOCK(("ChanServ", "live", i_Name, "modes"));
+    WLOCK(("ChanServ", "live", i_Name, "p_modes_on"));
+    WLOCK2(("ChanServ", "live", i_Name, "p_modes_on_params"));
+    WLOCK3(("ChanServ", "live", i_Name, "p_modes_off"));
+    WLOCK4(("ChanServ", "live", i_Name, "p_modes_off_params"));
     for (i=0; i<mode.size(); i++)
     {
 	switch (mode[i])
@@ -900,6 +988,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     unsigned int fwdargs = 2, i;
     bool add = true;
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
+    WLOCK(("ChanServ", "live", i_Name, "modes"));
     for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
@@ -915,6 +1004,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case 'o':
 	    if (IsIn(in.ExtractWord(fwdargs, ": ")))
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "users"));
 		if (add)
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
 		else
@@ -931,6 +1021,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case 'v':
 	    if (IsIn(in.ExtractWord(fwdargs, ": ")))
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "users"));
 		if (add)
 		    users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
 		else
@@ -947,10 +1038,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case 'b':
 	    if (add)
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "bans"));
 		bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = Now();
 	    }
 	    else
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "bans"));
 		bans.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
 	    }
 	    fwdargs++;
@@ -959,10 +1052,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case 'k':
 	    if (add && i_Key == "")
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "i_Key"));
 		i_Key = in.ExtractWord(fwdargs, ": ");
 	    }
 	    else if (!add && in.ExtractWord(fwdargs, ": ") == i_Key)
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "i_Key"));
 		i_Key = "";
 	    }
 	    else
@@ -977,6 +1072,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	case 'l':
 	    if (add)
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "i_Limit"));
 		if (fwdargs > in.WordCount(": "))
 		{
 		    Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
@@ -997,6 +1093,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
+		WLOCK2(("ChanServ", "live", i_Name, "i_Limit"));
 		i_Limit = 0;
 	    }
 	    break;
@@ -1047,11 +1144,39 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source, in);
 }
 
+bool Chan_Live_t::HasMode(mstring in)
+{
+    FT("Chan_Live_t::HasMode", (in));
+    RLOCK(("ChanServ", "live", i_Name, "modes"));
+    RET(modes.Contains(in));
+}
+
+mstring Chan_Live_t::Mode()
+{
+    NFT("Chan_Live_t::Mode");
+    RLOCK(("ChanServ", "live", i_Name, "modes"));
+    RET(modes);
+}
+
+mstring Chan_Live_t::Key()
+{
+    NFT("Chan_Live_t::Key");
+    RLOCK(("ChanServ", "live", i_Name, "i_Key"));
+    RET(i_Key);
+}
+
+unsigned int Chan_Live_t::Limit()
+{
+    NFT("Chan_Live_t::Limit");
+    RLOCK(("ChanServ", "live", i_Name, "i_Limit"));
+    RET(i_Limit);
+}
 
 mDateTime Chan_Live_t::PartTime(mstring nick)
 {
     FT("Chan_Live_t::PartTime", (nick));
     mDateTime retval((time_t) 0);
+    RLOCK(("ChanServ", "live", i_Name, "recent_parts"));
     if (recent_parts.find(nick.LowerCase()) != recent_parts.end())
     {
 	retval = recent_parts[nick.LowerCase()];
@@ -1064,6 +1189,7 @@ size_t Chan_Live_t::Usage()
 {
     size_t retval = 0;
 
+    WLOCK(("ChanServ", "live", i_Name));
     retval += i_Name.capacity();
     retval += sizeof(i_Creation_Time.Internal());
     map<mstring, pair<bool,bool> >::iterator i;
@@ -1116,28 +1242,14 @@ size_t Chan_Live_t::Usage()
 bool checkops(pair<const mstring, pair<bool,bool> > &in)
 {
     FT("checkops",(in.first,in.second.first,in.second.second));
-    if(in.second.first==true)
-    {
-	RET(true);
-    }
-    else
-    {
-	RET(false);
-    }
+    RET(in.second.first);
 }
 
 
 bool checkvoices(pair<const mstring, pair<bool,bool> > &in)
 {
     FT("checkvoices",(in.first,in.second.first,in.second.second));
-    if(in.second.second==true)
-    {
-	RET(true);
-    }
-    else
-    {
-	RET(false);
-    }
+    RET(in.second.second);
 }
 
 // --------- end of Chan_Live_t -----------------------------------
@@ -1979,6 +2091,12 @@ mDateTime Chan_Stored_t::LastUsed()
     RET(i_LastUsed);
 }
 
+mDateTime Chan_Stored_t::RegTime()
+{
+    NFT("Chan_Stored_t::RegTime");
+    RET(i_RegTime);
+}
+
 void Chan_Stored_t::Founder(mstring in)
 {
     FT("Chan_Stored_t::Founder", (in));
@@ -2014,6 +2132,78 @@ void Chan_Stored_t::CoFounder(mstring in)
     i_CoFounder = in;
 }
 
+mstring Chan_Stored_t::Founder()
+{
+    NFT("Chan_Stored_t::Founder");
+    RET(i_Founder);
+}
+
+mstring Chan_Stored_t::CoFounder()
+{
+    NFT("Chan_Stored_t::CoFounder");
+    RET(i_CoFounder);
+}
+
+void Chan_Stored_t::Description(mstring in)
+{
+    FT("Chan_Stored_t::Description", (in));
+    i_Description = in;
+}
+
+mstring Chan_Stored_t::Description()
+{
+    NFT("Description(mstring in)	{ i_Description = in;");
+    RET(i_Description);
+}
+
+void Chan_Stored_t::Password(mstring in)
+{
+    FT("Chan_Stored_t::Password", (in));
+    i_Password = in;
+}
+
+mstring Chan_Stored_t::Password()
+{
+    NFT("Chan_Stored_t::Password");
+    RET(i_Password);
+}
+
+void Chan_Stored_t::Email(mstring in)
+{
+    FT("Chan_Stored_t::Email", (in));
+    i_Email = in;
+}
+
+mstring Chan_Stored_t::Email()
+{
+    NFT("Chan_Stored_t::Email");
+    RET(i_Email);
+}
+
+void Chan_Stored_t::URL(mstring in)
+{
+    FT("Chan_Stored_t::URL", (in));
+    i_URL = in;
+}
+
+mstring Chan_Stored_t::URL()
+{
+    NFT("Chan_Stored_t::URL");
+    RET(i_URL);
+}
+
+void Chan_Stored_t::Comment(mstring in)
+{
+    FT("Chan_Stored_t::Comment", (in));
+    i_Comment = in;
+}
+	
+mstring Chan_Stored_t::Comment()
+{
+    NFT("Chan_Stored_t::Comment");
+    RET(i_Comment);
+}
+
 
 unsigned int Chan_Stored_t::CheckPass(mstring nick, mstring password)
 {
@@ -2045,6 +2235,18 @@ void Chan_Stored_t::UnSuspend()
     i_Suspend_By = "";
 }
 
+
+mstring Chan_Stored_t::Mlock_Off()
+{
+    NFT("Chan_Stored_t::Mlock_Off");
+    RET(i_Mlock_Off);
+}
+
+mstring Chan_Stored_t::Mlock_On()
+{
+    NFT("Chan_Stored_t::Mlock_On");
+    RET(i_Mlock_On);
+}
 
 mstring Chan_Stored_t::Mlock()
 {
@@ -2540,6 +2742,35 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     NRET(vector<mstring>, retval);
 }
 
+mstring Chan_Stored_t::Mlock_Key()
+{
+    NFT("Chan_Stored_t::Mlock_Key");
+    RET(i_Mlock_Key);
+}
+
+unsigned int Chan_Stored_t::Mlock_Limit()
+{
+    NFT("Chan_Stored_t::Mlock_Limit");
+    RET(i_Mlock_Limit);
+}
+
+mstring Chan_Stored_t::Last_Topic()
+{
+    NFT("Chan_Stored_t::i_Topic");
+    RET(i_Topic);
+}
+
+mstring Chan_Stored_t::Last_Topic_Setter()
+{
+    NFT("Chan_Stored_t::i_Topic_Setter");
+    RET(i_Topic_Setter);
+}
+
+mDateTime Chan_Stored_t::Last_Topic_Set_Time()
+{
+    NFT("Chan_Stored_t::i_Topic_Set_Time");
+    RET(i_Topic_Set_Time);
+}
 
 void Chan_Stored_t::Bantime(unsigned long in)
 {
@@ -3037,6 +3268,30 @@ bool Chan_Stored_t::L_Revenge()
 	RET(l_Revenge);
     }
     RET(true);
+}
+
+bool Chan_Stored_t::Suspended()
+{
+    NFT("Chan_Stored_t::Suspended");
+    RET(i_Suspend_By != "");
+}
+
+mstring Chan_Stored_t::Suspend_By()
+{
+    NFT("Chan_Stored_t::Suspend_By");
+    RET(i_Suspend_By);
+}
+
+mDateTime Chan_Stored_t::Suspend_Time()
+{
+    NFT("Chan_Stored_t::Suspend_Time");
+    RET(i_Suspend_Time);
+}
+
+bool Chan_Stored_t::Forbidden()
+{
+    NFT("Chan_Stored_t::Forbidden");
+    RET(i_Forbidden);
 }
 
 
@@ -3859,6 +4114,7 @@ size_t Chan_Stored_t::Usage()
 {
     size_t retval = 0;
 
+    WLOCK(("ChanServ", "stored", i_Name));
     retval += i_Name.capacity();
     retval += sizeof(i_RegTime.Internal());
     retval += sizeof(i_LastUsed.Internal());

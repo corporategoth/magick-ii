@@ -28,6 +28,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.247  2000/06/15 13:41:11  prez
+** Added my tasks to develop *grin*
+** Also did all the chanserv live locking (stored to be done).
+** Also made magick check if its running, and kill on startup if so.
+**
 ** Revision 1.246  2000/06/12 08:15:36  prez
 ** Added 'minimum threads' option to config (set to 2)
 **
@@ -483,6 +488,24 @@ int Magick::Start()
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
+    mFile pidfile;
+    if (mFile::Exists(files.Pidfile().Strip(mstring::stBoth)))
+    {
+	pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"r");
+	if (pidfile.IsOpened())
+	{
+	    mstring dummystring = pidfile.ReadLine();
+	    pid_t pid = atoi(dummystring.c_str());
+	    if (ACE::process_active(pid) > 0)
+	    {
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ACTIVE"),
+			i_programname.c_str());
+	    }
+	    pidfile.Close();
+	    remove(files.Pidfile().Strip(mstring::stBoth).c_str());
+	}
+    }
+
     // Re-direct log output to this file (log output is to STDERR)
     freopen((files.Logfile()).c_str(), "a", stderr);
 
@@ -495,7 +518,7 @@ int Magick::Start()
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK"));
-    Result = ACE_OS::fork();
+    Result = ACE::fork(i_programname);
     if (Result < 0)
     {
 	Log(LM_EMERGENCY, getLogMessage("ERROR/FAILED_FORK"), Result);
@@ -523,7 +546,6 @@ int Magick::Start()
     dcc = new DccMap;
     dcc->open();
 
-    mFile pidfile;
     pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"w");
     if(pidfile.IsOpened())
     {
@@ -989,7 +1011,7 @@ void Magick::dump_help()
 	 << "--desc X           -d      Override [STARTUP/SERVER_DESC] to X.\n"
 	 << "--user X           -u      Override [STARTUP/SERVICES_USER] to X.\n"
 	 << "--host X           -h      Override [STARTUP/SERVICES_HOST] to X.\n"
-	 << "--ownuser          -o      Override [STARTUP/OWNUSER] to X.\n"
+	 << "--ownuser          -o      Override [STARTUP/OWNUSER] to true.\n"
 	 << "--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n"
 	 << "--level X          -l      Override [STARTUP/LEVEL] to X.\n"
 	 << "--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n"
@@ -1011,7 +1033,7 @@ void Magick::dump_help()
 	 << "--rename           -A      Override [NICKSERV/APPEND_RENAME] to false.\n"
 	 << "--ident X          -R      Override [NICKSERV/IDENT] to X.\n"
 	 << "--language X       -s      Override [NICKSERV/DEF_LANGUAGE] to X.\n"
-	 << "--nodcc            -x      Override [NICKSERV/PICEXT] to "" and\n"
+	 << "--nodcc            -x      Override [NICKSERV/PICEXT] to \"\" and\n"
 	 << "                           Override [MEMOSERV/FILES] to 0.\n"
 	 << "--inflight X       -f      Override [MEMOSERV/INFLIGHT] to X.\n"
 	 << "--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n"

@@ -58,6 +58,7 @@ TIMEORZERO	 =Time value specified is invalid or zero, on value %s.
 VALUETOOHIGH	 =Value specified for %s must be below or equal to %d.
 NO_CFG_FILE      =Could not read config file %s, aborting.
 STOP             =CONFIG: [Startup] STOP code received.
+ACTIVE           =%s is already active or stale PID file exists, please kill (or remove) it before restarting.
 RECONNECT        =Reconnecting to server due to configuration change.
 CANNOT_CONVERT   =Database type %s invalid (aborting).
 NO_KEYFILE       =Keyfile %s does not exist.

@@ -25,6 +25,11 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/06/15 13:41:10  prez
+** Added my tasks to develop *grin*
+** Also did all the chanserv live locking (stored to be done).
+** Also made magick check if its running, and kill on startup if so.
+**
 ** Revision 1.42  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -105,6 +110,7 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 #include "mstream.h"
 #include "ircsocket.h"
 #include "filesys.h"
+#include "lockable.h"
 
 class Nick_Live_t : public mUserDef
 {
@@ -165,13 +171,12 @@ public:
 	void End(unsigned long filenum);
 	void Picture (mstring mynick);
 	void Public (mstring mynick, mstring committees = "");
-	bool Memo()	{ return (recipiant != ""); }
-	bool Picture()	{ return (type == FileMap::Picture); }
-	bool Public()	{ return (type == FileMap::Public); }
-	bool Exists()	{ return (recipiant != "" || type != FileMap::MemoAttach); }
-	bool File()	{ return fileattach; }
-	bool InProg()	{ return fileinprog; }
-
+	bool Memo();
+	bool Picture();
+	bool Public();
+	bool Exists();
+	bool File();
+	bool InProg();
 	size_t Usage();
     } InFlight;
 
@@ -196,37 +201,37 @@ public:
     void Kick(mstring kicker, mstring channel);
     void Quit(mstring reason);
     bool IsInChan(mstring channel);
-    set<mstring> Channels() { return joined_channels; }
+    set<mstring> Channels();
 
     // true if user ignored
     bool FloodTrigger();
 
     // Data maintinance
     void Name(mstring in);
-    mstring Name() { return i_Name; }
+    mstring Name()		{ return i_Name; }
 
     void SendMode(mstring in);
     void Mode(mstring in);
-    mstring Mode() { return modes; }
-    bool HasMode(mstring in) { return modes.Contains(in); }
+    mstring Mode();
+    bool HasMode(mstring in);
 
-    void Away(mstring in)	{ i_away = in; };
-    mstring Away()		{ return i_away; };
+    void Away(mstring in);
+    mstring Away();
 
     mDateTime IdleTime();
     void Action();
 
-    mDateTime SignonTime()	{ return i_Signon_Time; }
-    mDateTime MySignonTime()	{ return i_My_Signon_Time; }
-    mstring RealName()		{ return i_realname; }
-    mstring User()		{ return i_user; }
-    mstring Host()		{ return i_host; }
-    mstring AltHost()		{ return i_alt_host; }
-    void AltHost(mstring in)	{ i_alt_host = in; }
-    mstring Server()		{ return i_server; } 
+    mDateTime SignonTime();
+    mDateTime MySignonTime();
+    mstring RealName();
+    mstring User();
+    mstring Host();
+    mstring AltHost();
+    void AltHost(mstring in);
+    mstring Server();
     void SetSquit();
     void ClearSquit();
-    mstring Squit()		{ return i_squit; }
+    mstring Squit();
 
     enum styles {
     	N = 1,		// nick!*@*
@@ -249,9 +254,9 @@ public:
     bool IsChanIdentified(mstring channel);
     mstring Identify(mstring password);
     void UnIdentify();
-    bool IsIdentified()		{ return identified; }
+    bool IsIdentified();
     bool IsRecognized();
-    bool IsServices()		{ return (i_server == ""); }
+    bool IsServices();
 
     size_t Usage();
 };
@@ -330,8 +335,8 @@ public:
     bool operator<(const Nick_Stored_t &in) const
 	{ return (i_Name < in.i_Name); }
 
-    mstring Name() { return i_Name; }
-    mDateTime RegTime() { return i_RegTime; }
+    mstring Name()		{ return i_Name; }
+    mDateTime RegTime();
 
     unsigned long Drop();
     mstring Password();
@@ -408,7 +413,7 @@ public:
     bool Suspended();
     mstring Suspend_By();
     mDateTime Suspend_Time();
-    bool Forbidden() { return i_Forbidden; }
+    bool Forbidden();
     void SendPic(mstring nick);
     unsigned long PicNum();
     void GotPic(unsigned long picnum);

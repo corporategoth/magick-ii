@@ -25,6 +25,11 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/06/15 13:41:10  prez
+** Added my tasks to develop *grin*
+** Also did all the chanserv live locking (stored to be done).
+** Also made magick check if its running, and kill on startup if so.
+**
 ** Revision 1.40  2000/06/12 06:07:49  prez
 ** Added Usage() functions to get ACCURATE usage stats from various
 ** parts of services.  However bare in mind DONT use this too much
@@ -137,12 +142,12 @@ public:
 	{ return (i_Name < in.i_Name); }
 
     mstring Name()		{ return i_Name; }
-    mDateTime Creation_Time()	{ return i_Creation_Time; }
+    mDateTime Creation_Time();
 
     void Topic(mstring source, mstring topic, mstring setter, mDateTime time = Now());
-    mstring Topic()		{ return i_Topic; }
-    mstring Topic_Setter()	{ return i_Topic_Setter; }
-    mDateTime Topic_Set_Time()	{ return i_Topic_Set_Time; }
+    mstring Topic();
+    mstring Topic_Setter();
+    mDateTime Topic_Set_Time();
 
     unsigned int Squit();
     mstring Squit(unsigned int num);
@@ -166,10 +171,10 @@ public:
     void UnLock();
     void SendMode(mstring in);			// out
     void Mode(mstring source, mstring in);	// in
-    bool HasMode(mstring in)	{ return modes.Contains(in); }
-    mstring Mode()		{ return modes; }
-    mstring Key()		{ return i_Key; }
-    unsigned int Limit()	{ return i_Limit; }
+    bool HasMode(mstring in);
+    mstring Mode();
+    mstring Key();
+    unsigned int Limit();
     mDateTime PartTime(mstring nick);
 
     size_t Usage();
@@ -279,41 +284,41 @@ public:
 	{ return (i_Name < in.i_Name); }
 
     mstring Name()			{ return i_Name; }
-    mDateTime RegTime()			{ return i_RegTime; }
+    mDateTime RegTime();
     mDateTime LastUsed();
     void SetTopic(mstring mynick, mstring topic, mstring setter);
     void Founder(mstring in);
     void CoFounder(mstring in);
-    mstring Founder()			{ return i_Founder; }
-    mstring CoFounder()			{ return i_CoFounder; }
-    void Description(mstring in)	{ i_Description = in; }
-    mstring Description()		{ return i_Description; }
-    void Password(mstring in)		{ i_Password = in; }
-    mstring Password()			{ return i_Password; }
+    mstring Founder();
+    mstring CoFounder();
+    void Description(mstring in);
+    mstring Description();
+    void Password(mstring in);
+    mstring Password();
     unsigned int CheckPass(mstring nick, mstring pass);
-    void Email(mstring in)		{ i_Email = in; }
-    mstring Email()			{ return i_Email; }
-    void URL(mstring in)		{ i_URL = in; }
-    mstring URL()			{ return i_URL; }
-    void Comment(mstring in)		{ i_Comment = in; }
-    mstring Comment()			{ return i_Comment; }
+    void Email(mstring in);
+    mstring Email();
+    void URL(mstring in);
+    mstring URL();
+    void Comment(mstring in);
+    mstring Comment();
 
     void Suspend(mstring name, mstring reason)
 	{ Comment(reason); Suspend(name); }
     void Suspend(mstring name);
     void UnSuspend();
 
-    mstring Mlock_Off()			{ return i_Mlock_Off + l_Mlock_Off; }
-    mstring Mlock_On()			{ return i_Mlock_On + l_Mlock_On; }
+    mstring Mlock_Off();
+    mstring Mlock_On();
     mstring Mlock();
     vector<mstring> Mlock(mstring source, mstring mode);
     mstring L_Mlock();
     vector<mstring> L_Mlock(mstring source, mstring mode);
-    mstring Mlock_Key()			{ return i_Mlock_Key; }
-    unsigned int Mlock_Limit()		{ return i_Mlock_Limit; }
-    mstring Last_Topic()		{ return i_Topic; }
-    mstring Last_Topic_Setter()		{ return i_Topic_Setter; }
-    mDateTime Last_Topic_Set_Time()	{ return i_Topic_Set_Time; }
+    mstring Mlock_Key()	;
+    unsigned int Mlock_Limit();
+    mstring Last_Topic();
+    mstring Last_Topic_Setter();
+    mDateTime Last_Topic_Set_Time();
 
     unsigned long Bantime();
     void Bantime(unsigned long in);
@@ -368,10 +373,10 @@ public:
     bool L_Revenge();
     void L_Revenge(bool in);
 
-    bool Suspended()			{ return (i_Suspend_By != ""); }
-    mstring Suspend_By()		{ return i_Suspend_By; }
-    mDateTime Suspend_Time()		{ return i_Suspend_Time; }
-    bool Forbidden()			{ return i_Forbidden; }
+    bool Suspended();
+    mstring Suspend_By();
+    mDateTime Suspend_Time();
+    bool Forbidden();
 
     // FIND: Looks for EXACT MATCH of passed entry.
 //  bool Level_insert(mstring entry, long value, mstring nick);

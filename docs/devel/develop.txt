@@ -1,9 +1,5 @@
 RCS-ID:      $Id$
 
-PreZ = FrontEnd -> BackEnd linkage, and automated logic
-Ungod = Lowlevel ace-interface code and bugfixing.
-Striker = Writing dummy functions based on .h files.
-
 Design Document.
 ================
 
@@ -19,6 +15,7 @@ things are done.
 + Being done
 x Done
 - Totally Unfeasable
+| Not required
 
 Guidelines
 ==========
@@ -220,7 +217,7 @@ x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
 - Custom thread class: unfeasible, ACE_Tasks used, note: Attach and Detach must
 	be used (see chanserv::execute for an example)
 
-* Priority Enqueing in mbase dependant upon service. include time-in value when
+| Priority Enqueing in mbase dependant upon service. include time-in value when
 	enqueueing message, when dequeueing, check now-timeout<time-in. if ! then
 	dump message.
 
@@ -236,7 +233,11 @@ x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
 	'path' with the message ID, so it wont send to servers in the path.
 	(probably 'if I've seen this, dont pass it on' method)
 
-* Keyfile for encryption. pass hostname throught hash as password to encrypt keyfile.
+* Keyfile for encryption.  It should be encrypted with 3des just like the
+  databases, however we use the uname -n and uname -s as keys, so they have
+  to re-generate the keyfile if they move or change OS's.  They keyfile
+  itself will create 2 keys (once decrypted) to be used for databased and
+  inter-magick communication encryption.
 
 x Add to mDateTime a 'Difference' function that will output the difference
 	of the stored value to the current time (Now()).  It should output
@@ -257,6 +258,13 @@ x Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mD
 * Redo the locking with some macros to setup/emulate  a try..finally type
 	scenario on gcc, msvc and bcb . Note Function macros only, so that we don't get
 	that damn triplet argument fubar again.
+
++ Add 'paranoid' locking to all code, so on ANY read request, we lock the
+	veriable for that user READ, for any WRITE request, we do the same
+	WRITE.  MUTEX locks also supported, but NOT to be used in conjunction
+	with READ and WRITE.
+  + Locking mechanism is done (mLOCK) with #define'd aliases completed.
+    just need to go through code and use them.  Need to STRESS TEST.
 
 Scripting
 ---------

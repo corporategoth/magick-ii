@@ -10,3 +10,5 @@ Known problems that exist in magick that should be fixed.
   - MLOCK and RLOCK/WLOCK are incompatable.  Use one or
     the other.  Mainly coz these are implemeted differently
     depending on thread library used, and revision of it.
+  - Probably should lock when doing list searches (iterator
+    baed operations).
