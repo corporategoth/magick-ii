@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/05/03 14:12:23  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.82  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -162,7 +168,7 @@ void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
 {
     NFT("Nick_Live_t::InFlight_t::operator=");
     nick        = in.nick;
-    memo	= in.memo;
+    type	= in.type;
     fileattach	= in.fileattach;
     fileinprog	= in.fileinprog;
     service	= in.service;
@@ -197,7 +203,7 @@ Nick_Live_t::InFlight_t::~InFlight_t()
 void Nick_Live_t::InFlight_t::init()
 {
     NFT("Nick_Live_t::InFlight_t::init");
-    memo = false;
+    type = FileMap::MemoAttach;
     timer = 0u;
     fileattach = false;
     fileinprog = false;
@@ -300,7 +306,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     }
 
 
-    memo = true;
+    type = FileMap::MemoAttach;
     fileattach = file;
     service = mynick;
     sender = nick;
@@ -323,7 +329,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 void Nick_Live_t::InFlight_t::Continue(mstring message)
 {
     FT("Nick_Live_t::InFlight_t::Continue", (message));
-    if (!memo)
+    if (!Memo())
     {
 	send(service, nick, Parent->getMessage(nick, "MS_STATUS/NOPENDING"));
 	return;
@@ -402,7 +408,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    {
 		sender = Parent->nickserv.stored[Parent->nickserv.stored[sender.LowerCase()].Host()].Name();
 	    }
-	    if (memo)
+	    if (Memo())
 	    {
 		if (IsChan(recipiant))
 		{
@@ -477,7 +483,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		    }
 		}
 	    }
-	    else
+	    else if (Picture())
 	    {
 		if (Parent->nickserv.PicSize())
 		{
@@ -488,6 +494,19 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		{
 		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
 		}
+	    }
+	    else if (Public())
+	    {
+/*		if (Parent->nickserv.FileSys())
+		{ */
+		    send(service, nick, Parent->getMessage(nick, "DCC/ADDED"),
+		    	Parent->filesys.GetName(FileMap::Public, filenum).c_str());
+		    Parent->filesys.SetPriv(FileMap::Public, filenum, text);
+/*		}
+		else
+		{
+		    Parent->filesys.EraseFile(FileMap::Public, filenum);
+		} */
 	    }
 	}
 	init();
@@ -525,10 +544,52 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
     }
 
-    memo = false;
+    type = FileMap::Picture;
     fileattach = true;
     sender = nick;
     service = mynick;
+    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(sender.LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
+}
+
+
+void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
+{
+    FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
+    if (File())
+    {
+	if (InProg())
+	{
+	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    return;
+	}
+	else
+	{
+	    Cancel();
+	}
+    }
+    else if (Exists())
+    {
+	End(0u);
+    }
+
+    if (Parent->nickserv.IsStored(nick))
+    {
+	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
+	return;
+    }
+/*    else if (!Parent->nickserv.)
+    {
+	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
+    } */
+
+    type = FileMap::Public;
+    fileattach = true;
+    sender = nick;
+    service = mynick;
+    text = committees;
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -4169,8 +4230,7 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
-    if (filename == "")
+    if (!Parent->filesys.Exists(FileMap::Picture, picnum))
     {
 	Parent->nickserv.stored[target.LowerCase()].GotPic(0);
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
@@ -4178,21 +4238,8 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mstring sourcefile;
-    sourcefile.Format("%s%s%08x", Parent->files.Picture().c_str(),
-					DirSlash.c_str(), picnum);
-    if (!wxFile::Exists(sourcefile.c_str()))
-    {
-	Parent->filesys.EraseFile(FileMap::Picture, picnum);
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
-							target.c_str());
-	return;
-    }
-
-    size_t filesize;
-    wxFile file(sourcefile.c_str());
-    filesize = file.Length();
-    file.Close();
+    mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
+    size_t filesize = Parent->filesys.GetSize(FileMap::Picture, picnum);
 
     short port = FindAvailPort();
     ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +

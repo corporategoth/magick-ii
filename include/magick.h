@@ -24,6 +24,12 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.119  2000/04/18 10:20:26  prez
 ** Made helpfiles load on usage, like language files.
 **
@@ -212,6 +218,7 @@ public:
 		bool encryption;
 		mstring memoattach;
 		mstring picture;
+		mstring i_public;
 		mstring tempdir;
 		unsigned long filesyssize;
 		unsigned long blocksize;
@@ -230,6 +237,7 @@ public:
 		bool Encryption()const		    { return encryption; }
 		mstring MemoAttach()		    { return MakePath(memoattach); }
 		mstring Picture()		    { return MakePath(picture); }
+		mstring Public()		    { return MakePath(i_public); }
 		mstring TempDir()		    { return MakePath(tempdir); }
 		unsigned long Filesyssize()const    { return filesyssize; }
 		unsigned long Blocksize()const	    { return blocksize; }

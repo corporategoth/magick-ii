@@ -24,6 +24,12 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.9  2000/03/30 11:24:53  prez
 ** Added threads to the filesys establishment.
 **
@@ -64,19 +70,25 @@ unsigned short FindAvailPort();
 class FileMap
 {
 public:
-    enum FileType { MemoAttach, Picture };
+    enum FileType { MemoAttach, Picture, Public };
 
     unsigned long FindAvail(FileType type);
     bool Exists(FileType type, unsigned long num);
     mstring GetName(FileType type, unsigned long num);
+    mstring GetPriv(FileType type, unsigned long num);
+    bool SetPriv(FileType type, unsigned long num, mstring priv);
+    bool Rename(FileType type, unsigned long num, mstring newname);
     bool GetFile(FileType type, unsigned long num, mstring recipiant);
-    unsigned long NewFile(FileType type, mstring filename);
+    size_t GetSize(FileType type, unsigned long num);
+    unsigned long NewFile(FileType type, mstring filename, mstring priv = "");
     void EraseFile(FileType type, unsigned long num);
+    vector<unsigned long> GetList(FileType type, mstring source);
+    unsigned long GetNum(FileType type, mstring name);
 
     void load_database(wxInputStream& in);
     void save_database(wxOutputStream& in);
 private:
-    map<FileType, map<unsigned long, mstring> > i_FileMap;
+    map<FileType, map<unsigned long, pair<mstring, mstring> > > i_FileMap;
 };
 
 class DccXfer

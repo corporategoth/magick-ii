@@ -24,6 +24,12 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.12  2000/04/04 03:21:34  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -92,6 +98,13 @@ public:
     static void do_stats_Usage(mstring mynick, mstring source, mstring params);
     static void do_stats_All(mstring mynick, mstring source, mstring params);
     static void do_Stats(mstring mynick, mstring source, mstring params);
+    static void do_file_List(mstring mynick, mstring source, mstring params);
+    static void do_file_Add(mstring mynick, mstring source, mstring params);
+    static void do_file_Del(mstring mynick, mstring source, mstring params);
+    static void do_file_Rename(mstring mynick, mstring source, mstring params);
+    static void do_file_Priv(mstring mynick, mstring source, mstring params);
+    static void do_file_Send(mstring mynick, mstring source, mstring params);
+    static void do_file_Lookup(mstring mynick, mstring source, mstring params);
 };
 
 #endif

@@ -28,6 +28,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.220  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.219  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -2039,6 +2045,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",&files.memoattach,"files/memo");
     in.Read(ts_Files+"PICTURE",&files.picture,"files/pic");
+    in.Read(ts_Files+"PUBLIC",&files.i_public,"files/public");
     in.Read(ts_Files+"TEMPDIR",&files.tempdir,"files/temp");
     in.Read(ts_Files+"FILESYSSIZE",&files.filesyssize,0);
     in.Read(ts_Files+"BLOCKSIZE",&files.blocksize,1024);

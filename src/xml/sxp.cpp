@@ -1,3 +1,4 @@
+#include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
 #else
@@ -25,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/05/03 14:12:23  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.4  2000/04/30 05:05:32  ungod
 ** fix prez's well meaning fuckup. ie *leave pch.h in there*,
 ** we need it for mdatetime support.
@@ -75,7 +82,6 @@ static const char *ident = "@(#)$Id$";
 **
 **
 ** ========================================================== */
-#include "pch.h"
 #include "xml/sxp.h"
 
 SXP_NS_BEGIN

@@ -24,6 +24,12 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.34  2000/04/04 03:21:34  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -69,6 +75,7 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 #include "base.h"
 #include "mstream.h"
 #include "ircsocket.h"
+#include "filesys.h"
 
 class Nick_Live_t : public mUserDef
 {
@@ -102,7 +109,7 @@ public:
 	friend class InFlight_Handler;
 
 	mstring nick;
-	bool memo;
+	FileMap::FileType type;
 	long timer;
 	bool fileattach;
 	bool fileinprog;
@@ -128,8 +135,11 @@ public:
 	void Cancel();
 	void End(unsigned long filenum);
 	void Picture (mstring mynick);
-	bool IsMemo()	{ return memo; }
-	bool Exists()	{ return (memo || fileattach); }
+	void Public (mstring mynick, mstring committees = "");
+	bool Memo()	{ return (recipiant != ""); }
+	bool Picture()	{ return (type == FileMap::Picture); }
+	bool Public()	{ return (type == FileMap::Public); }
+	bool Exists()	{ return (recipiant != "" || type != FileMap::MemoAttach); }
 	bool File()	{ return fileattach; }
 	bool InProg()	{ return fileinprog; }
 

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/05/03 14:12:23  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.50  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -1042,7 +1048,7 @@ void MemoServ::do_Flush(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
     {
 	if (Parent->nickserv.live[source.LowerCase()].InFlight.File())
 	{
@@ -1395,7 +1401,7 @@ void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
     {
 	Parent->memoserv.stats.i_Cancel++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
@@ -1673,7 +1679,7 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 		    text.SubString(430, 450).c_str(), mynick.c_str());
     }
 
-    if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
     {
 	Parent->memoserv.stats.i_Continue++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Continue(text);

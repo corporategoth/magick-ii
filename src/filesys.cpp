@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.14  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -103,7 +109,7 @@ unsigned long FileMap::FindAvail(FileMap::FileType type)
     unsigned long filenum = 1;
     if (i_FileMap.find(type) != i_FileMap.end())
     {
-	while (filenum <= 0xffffffff) // Guarentee 8 digits
+	while (filenum < 0xffffffff) // Guarentee 8 digits
 	{
 	    if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
 	    {
@@ -128,12 +134,30 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	filename.Prepend(Parent->files.MemoAttach() + DirSlash);
     else if (type == Picture)
 	filename.Prepend(Parent->files.Picture() + DirSlash);
+    else if (type == Public)
+    	filename.Prepend(Parent->files.Public() + DirSlash);
 
     if (wxFile::Exists(filename.c_str()))
     {
-	RET(true);
+	if (i_FileMap.find(type) != i_FileMap.end())
+	{
+	    if (i_FileMap[type].find(num) != i_FileMap[type].end())
+	    {
+		RET(true);
+	    }
+	}
+	remove(filename.c_str());
     }
-
+    else
+    {
+	if (i_FileMap.find(type) != i_FileMap.end())
+	{
+	    if (i_FileMap[type].find(num) != i_FileMap[type].end())
+	    {
+	    	i_FileMap[type].erase(num);
+	    }
+	}
+    }
     RET(false);
 }
 
@@ -142,26 +166,89 @@ mstring FileMap::GetName(FileMap::FileType type, unsigned long num)
 {
     FT("FileMap::GetName", ((int) type, num));
 
-    if (i_FileMap.find(type) != i_FileMap.end())
+    if (Exists(type, num))
     {
-	if (i_FileMap[type].find(num) != i_FileMap[type].end())
-	{
-	    RET(i_FileMap[type][num]);
-	}
+	RET(i_FileMap[type][num].first);
     }
     RET("");
 }
 
 
-unsigned long FileMap::NewFile(FileMap::FileType type, mstring filename)
+mstring FileMap::GetPriv(FileMap::FileType type, unsigned long num)
 {
-    FT("FileMap::NewFile", ((int) type, filename));
+    FT("FileMap::GetPriv", ((int) type, num));
+
+    if (Exists(type, num))
+    {
+	RET(i_FileMap[type][num].second);
+    }
+    RET("");
+}
+
+
+bool FileMap::SetPriv(FileMap::FileType type, unsigned long num, mstring priv)
+{
+    FT("FileMap::SetPriv", ((int) type, num, priv));
+
+    if (Exists(type, num))
+    {
+	i_FileMap[type][num] = pair<mstring,mstring>(
+	    			i_FileMap[type][num].first, priv);
+	RET(true);
+    }
+    RET(false);
+}
+
+
+bool FileMap::Rename(FileMap::FileType type, unsigned long num, mstring newname)
+{
+    FT("FileMap::SetPriv", ((int) type, num, newname));
+
+    if (type != Picture && Exists(type, num))
+    {
+	i_FileMap[type][num] = pair<mstring,mstring>(newname,
+	    			i_FileMap[type][num].second);
+	RET(true);
+    }
+    RET(false);
+}
+
+
+size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
+{
+    FT("FileMap::GetSize", ((int) type, num));
+    if (Exists(type, num))
+    {
+	mstring filename;
+	filename.Format("%08x", num);
+
+	if (type == MemoAttach)
+	    filename.Prepend(Parent->files.MemoAttach() + DirSlash);
+	else if (type == Picture)
+	    filename.Prepend(Parent->files.Picture() + DirSlash);
+	else if (type == Public)
+	    filename.Prepend(Parent->files.Public() + DirSlash);
+
+	wxFile tmp(filename);
+	size_t retval = tmp.Length();
+	RET(retval);
+    }
+    RET(0);
+}
+
+
+unsigned long FileMap::NewFile(FileMap::FileType type, mstring filename, mstring priv)
+{
+    FT("FileMap::NewFile", ((int) type, filename, priv));
 
     unsigned long filenum = 0;
     if (i_FileMap.find(type) != i_FileMap.end())
     {
-	filenum = FindAvail(type);
-	i_FileMap[type][filenum] = filename;
+    	if (!GetNum(type, filename))
+    	{
+	    filenum = FindAvail(type);
+	    i_FileMap[type][filenum] = pair<mstring,mstring>(filename, priv);
+	}
     }
 
     RET(filenum);
@@ -171,30 +258,89 @@ void FileMap::EraseFile(FileType type, unsigned long num)
 {
     FT("FileMap::EraseFile", (type, num));
 
-    if (i_FileMap.find(type) != i_FileMap.end())
-	if (i_FileMap[type].find(num) != i_FileMap[type].end())
-	{
-	    mstring sourcefile;
-	    if (type == MemoAttach)
-		sourcefile.Format("%s%s%08x",
+    if (Exists(type, num))
+    {
+	mstring sourcefile;
+	if (type == MemoAttach)
+	    sourcefile.Format("%s%s%08x",
 			Parent->files.MemoAttach().c_str(),
 			DirSlash.c_str(), num);
-	    else if (type == Picture)
-		sourcefile.Format("%s%s%08x",
+	else if (type == Picture)
+	    sourcefile.Format("%s%s%08x",
 			Parent->files.Picture().c_str(),
 			DirSlash.c_str(), num);
-	    if (sourcefile != "" && wxFile::Exists(sourcefile.c_str()))
-		remove(sourcefile.c_str());
-	    i_FileMap[type].erase(num);
+	else if (type == Public)
+	    sourcefile.Format("%s%s%08x",
+			Parent->files.Public().c_str(),
+			DirSlash.c_str(), num);
+	if (sourcefile != "")
+	    remove(sourcefile.c_str());
+	i_FileMap[type].erase(num);
+    }
+}
+
+
+vector<unsigned long> FileMap::GetList(FileMap::FileType type, mstring source)
+{
+    FT("FileMap::GetList", ((int) type, source));
+    vector<unsigned long> retval, chunked;
+    map<unsigned long, pair<mstring, mstring> >::iterator iter;
+    int i;
+
+    if (i_FileMap.find(type) != i_FileMap.end())
+    {
+    	for (iter = i_FileMap[type].begin(); iter != i_FileMap[type].end(); iter++)
+	{
+	    if (!Exists(type, iter->first))
+	    	chunked.push_back(iter->first);
+	    else if (iter->second.second == "")
+	    	retval.push_back(iter->first);
+	    else
+	    	for (i=1; i<=iter->second.second.WordCount(" "); i++)
+	    	{
+	    	    if (Parent->commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
+	    	    	Parent->commserv.list[iter->second.second.ExtractWord(i, " ").UpperCase()].IsOn(source))
+	    	    {
+	    	    	retval.push_back(iter->first);
+	    	    	break;
+	    	    }
+	    	}
 	}
+	for (i=0; i<chunked.size(); i++)
+	    i_FileMap[type].erase(chunked[i]);
+    }
+    NRET(vector<unsigned long>, retval);
+}
+
+
+unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
+{
+    FT("FileMap::GetNum", ((int) type, name));
+    map<unsigned long, pair<mstring, mstring> >::iterator iter;
+    int i;
+
+    if (i_FileMap.find(type) != i_FileMap.end())
+    {
+    	for (iter = i_FileMap[type].begin(); iter != i_FileMap[type].end(); iter++)
+	{
+	    if (iter->second.first == name)
+	    {
+	    	if (Exists(type, iter->first))
+	    	{
+	    	    RET(iter->first);
+	    	}
+	    }
+	}
+    }
+    RET(0);
 }
 
 
 void FileMap::save_database(wxOutputStream& out)
 {
     FT("FileMap::save_database", ("(wxOutputStream &) out"));
-    map<FileType, map <unsigned long, mstring> >::iterator i;
-    map <unsigned long, mstring>::iterator j;
+    map<FileType, map <unsigned long, pair<mstring, mstring> > >::iterator i;
+    map <unsigned long, pair<mstring, mstring> >::iterator j;
 
     CP(("Saving FILE TYPE entries (%d) ...", i_FileMap.size()));
     out<<i_FileMap.size();
@@ -209,7 +355,7 @@ void FileMap::save_database(wxOutputStream& out)
 	{
 	    out<<j->first<<j->second;
 	    COM(("Entry FILE %08x (%s) saved ...",
-				j->first, j->second.c_str()));
+				j->first, j->second.first.c_str()));
 	}
     }
 }
@@ -219,12 +365,12 @@ void FileMap::load_database(wxInputStream& in)
 {
     FT("FileMap::load_database", ("(wxInputStream &) in"));
 
-    map<FileType, map <unsigned long, mstring> >::size_type cnt1, i;
-    map <unsigned long, mstring>::size_type cnt2, j;
+    map<FileType, map <unsigned long, pair<mstring, mstring> > >::size_type cnt1, i;
+    map <unsigned long, pair<mstring, mstring> >::size_type cnt2, j;
 
     int val1;
     unsigned long val2;
-    mstring val3;
+    pair<mstring, mstring> val3;
 
     in>>cnt1;
     CP(("Loading FILE TYPE entries (%d) ...", cnt1));
@@ -241,7 +387,7 @@ void FileMap::load_database(wxInputStream& in)
 	    COM(("Loading FILE entry %d ...", j));
 	    in>>val2>>val3;
 	    i_FileMap[(FileType) val1][val2] = val3;
-	    COM(("Entry FILE %08x (%s) loaded ...", val2, val3.c_str()));
+	    COM(("Entry FILE %08x (%s) loaded ...", val2, val3.first.c_str()));
 	}
 	COM(("Entry FILE MAP %d loaded ...", (int) val1));
     }
@@ -283,6 +429,9 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
 			DirSlash.c_str(), filenum);
     else if (filetype == FileMap::Picture)
 	tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
+			DirSlash.c_str(), filenum);
+    else if (filetype == FileMap::Public)
+	tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
 			DirSlash.c_str(), filenum);
     if (!wxFile::Exists(tmp.c_str()))
     {
@@ -389,16 +538,21 @@ DccXfer::~DccXfer()
 	{
 	    mstring tmp;
 	    FileMap::FileType filetype;
-	    if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.IsMemo())
+	    if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Memo())
 		filetype = FileMap::MemoAttach;
-	    else
+	    else if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Picture())
 		filetype = FileMap::Picture;
+	    else if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Public())
+		filetype = FileMap::Public;
 	    unsigned long filenum = Parent->filesys.NewFile(filetype, i_Filename);
 	    if (filetype == FileMap::MemoAttach)
 		tmp.Format("%s%s%08x", Parent->files.MemoAttach().c_str(),
 			DirSlash.c_str(), filenum);
 	    else if (filetype == FileMap::Picture)
 		tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
+			DirSlash.c_str(), filenum);
+	    else if (filetype == FileMap::Public)
+		tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
 			DirSlash.c_str(), filenum);
 	    if (wxFile::Exists(i_Tempfile.c_str()))
 	    {
@@ -678,7 +832,7 @@ void *DccMap::Connect2(void *in)
     {
 	unsigned long WorkId;
 	bool found = false;
-	for (WorkId = 1; !found && WorkId > 0; WorkId++)
+	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
@@ -720,7 +874,7 @@ void *DccMap::Accept2(void *in)
     {
 	unsigned long WorkId;
 	bool found = false;
-	for (WorkId = 1; !found && WorkId > 0; WorkId++)
+	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {

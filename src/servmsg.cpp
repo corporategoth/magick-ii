@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/05/03 14:12:23  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.40  2000/04/18 14:34:23  prez
 ** Fixed the HELP system, it now loads into memory, and can be unloaded
 ** with the OS unload command.  The stats however are inaccurate.
@@ -128,12 +134,38 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), ServMsg::do_stats_All);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* LIST*", Parent->commserv.ALL_Name(), ServMsg::do_file_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* VIEW*", Parent->commserv.ALL_Name(), ServMsg::do_file_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* ADD*", Parent->commserv.SOP_Name(), ServMsg::do_file_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* DEL*", Parent->commserv.SOP_Name(), ServMsg::do_file_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* REM*", Parent->commserv.SOP_Name(), ServMsg::do_file_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* REN*", Parent->commserv.SOP_Name(), ServMsg::do_file_Rename);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* PRIV*", Parent->commserv.SOP_Name(), ServMsg::do_file_Priv);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* SEC*", Parent->commserv.SOP_Name(), ServMsg::do_file_Priv);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* SEND*", Parent->commserv.ALL_Name(), ServMsg::do_file_Send);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* LOOK*", Parent->commserv.ALL_Name(), ServMsg::do_file_Lookup);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* RES*", Parent->commserv.ALL_Name(), ServMsg::do_file_Lookup);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* *", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT*", Parent->commserv.REGD_Name(), do_Stats);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* *", Parent->commserv.ALL_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE*", Parent->commserv.ALL_Name(), do_1_2param);
 }
 
 void ServMsg::RemCommands()
@@ -666,6 +698,306 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
 		Parent->operserv.CloneList_sum() - Parent->operserv.CloneList_size(),
 		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1u));
+}
+
+
+void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_List", (mynick, source, params));
+
+    unsigned int listsize, i, j, count;
+    mstring mask;
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	mask = "*";
+	listsize = Parent->config.Listsize();
+    }
+    else if (params.WordCount(" ") < 3)
+    {
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = Parent->config.Listsize();
+    }
+    else
+    {
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
+	if (listsize > Parent->config.Maxlist())
+	{
+	    mstring output;
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
+					Parent->config.Maxlist());
+	    return;
+	}
+    }
+
+    vector<unsigned long> filelist = Parent->filesys.GetList(FileMap::Public, source);
+
+    if (!filelist.size())
+    {
+ 	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
+ 			Parent->getMessage(source, "LIST/FILES").c_str());
+ 	return;
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
+    		mask.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+
+    for (j=0, i=0, count = 0; j < filelist.size(); j++)
+    {
+	if (Parent->filesys.GetName(FileMap::Picture, filelist[j]).LowerCase().Matches(mask))
+	{
+	    if (i < listsize)
+	    {
+		::send(mynick, source, "%s (%d kb)",
+				Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
+				Parent->filesys.GetSize(FileMap::Picture, filelist[j]));
+		i++;
+	    }
+	    count++;
+	}
+    }
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
+							i, count);
+}
+
+
+void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Add", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring priv;
+    if (params.WordCount(" ") > 2)
+	priv = params.After(" ", 2);
+
+    Parent->nickserv.live[source.LowerCase()].InFlight.Public(mynick, priv);
+}
+
+
+void ServMsg::do_file_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Del", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring file = params.ExtractWord(3, " ");
+    unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
+
+    if (!num)
+    {
+ 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+ 		file.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+ 	return;
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
+    		Parent->filesys.GetName(FileMap::Public, num).c_str(),
+    		Parent->getMessage(source,"LIST/FILES").c_str());
+    Parent->filesys.EraseFile(FileMap::Public, num);
+}
+
+
+void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Rename", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring file    = params.ExtractWord(3, " ");
+    mstring newfile = params.ExtractWord(4, " ");
+    unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
+
+    if (!num)
+    {
+ 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+ 		file.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+ 	return;
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
+    		Parent->filesys.GetName(FileMap::Public, num).c_str(),
+    		Parent->getMessage(source, "LIST/FILES").c_str(),
+    		newfile.c_str());
+    Parent->filesys.Rename(FileMap::Public, num, newfile);
+}
+
+
+void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Priv", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring file = params.ExtractWord(3, " ");
+    mstring priv;
+    if (params.WordCount(" ") > 3)
+	priv = params.After(" ", 3);
+    unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
+
+    if (!num)
+    {
+ 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+ 		file.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+ 	return;
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME2"),
+    		Parent->filesys.GetName(FileMap::Public, num).c_str(),
+    		Parent->getMessage(source, "LIST/FILES").c_str(),
+    		Parent->getMessage(source, "LIST/ACCESS").c_str(),
+    		priv.c_str());
+    Parent->filesys.SetPriv(FileMap::Public, num, priv);
+}
+
+
+void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Send", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring filename = params.ExtractWord(3, " ");
+    unsigned long filenum = Parent->filesys.GetNum(FileMap::Public, filename);
+
+    if (!filenum)
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+		filename.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+	return;
+    }
+
+    filename = Parent->filesys.GetName(FileMap::Public, filenum);
+    size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
+
+    short port = FindAvailPort();
+    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
+		" " + mstring(ltoa(Parent->LocalHost())) + " " +
+		mstring(itoa(port)) + " " + mstring(ltoa(filesize))));
+    Parent->dcc->Accept(port, mynick, source, FileMap::Public, filenum);
+}
+
+
+void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_file_Lookup", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring type   = params.ExtractWord(3, " ");
+    mstring hexstr = params.ExtractWord(4, " ");
+
+    if (hexstr.Len() != 8 || hexstr.WordCount("1234567890abcdefABCDEF") > 1)
+    {
+        // Invalid char or length ...
+    }
+
+    unsigned long number;
+    unsigned short high, low, k;
+    high = makehex("0x" + hexstr.SubString(1, 4));
+    low = makehex("0x" + hexstr.SubString(5, 8));
+    number = (high * 0x00010000) + low;
+
+    if (number == 0)
+    {
+	// invalid filenum.
+    }
+
+    if (type.Matches("M*A*"))
+    {
+    	if (Parent->filesys.Exists(FileMap::MemoAttach, number))
+    	{
+    	    map<mstring, list<Memo_t> >::iterator i;
+    	    list<Memo_t>::iterator j;
+	    for (i=Parent->memoserv.nick.begin(); i!=Parent->memoserv.nick.end(); i++)
+	    {
+	    	for(k=0, j=i->second.begin(); j!=i->second.end(); j++, k++)
+	    	{
+	    	    if (j->File() == number)
+	    	    {
+			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
+	  			number, j->Nick().c_str(), k, j->Sender().c_str(),
+	  			j->Time().Ago().c_str());
+	  		return;
+	    	    }
+	    	}
+	    }
+	}
+	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_MEMOATTACH"),
+	    		number);
+    }
+    else if (type.Matches("PIC*"))
+    {
+    	if (Parent->filesys.Exists(FileMap::Picture, number))
+    	{
+    	    map<mstring, Nick_Stored_t >::iterator i;
+	    for (i=Parent->nickserv.stored.begin(); i!=Parent->nickserv.stored.end(); i++)
+	    {
+	    	if (i->second.PicNum() == number)
+	    	{
+		    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PICTURE"),
+	  			number, i->second.Name().c_str());
+	  	    return;
+	    	}
+	    }
+	}
+	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PICTURE"),
+	    		number);
+    }
+    else if (type.Matches("PUB*"))
+    {
+    	if (Parent->filesys.Exists(FileMap::Public, number))
+    	{
+	    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PUBLIC"),
+	  		number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
+	  		Parent->filesys.GetPriv(FileMap::Public, number).c_str());
+	    return;
+    	}
+	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PUBLIC"),
+	    		number);
+    }
+    else
+    {
+	// no such catagory
+    }
 }
 
 

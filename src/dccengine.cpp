@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.25  2000/04/03 09:45:23  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -526,7 +532,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     }
 
 
-    if (!Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.Picture())
     {
 	if (Parent->nickserv.PicExt() == "")
 	{

@@ -147,6 +147,13 @@ TIMEOUT            =DCC %s aborted (timeout).
 SOCKERR            =DCC %s aborted (socket error %d).
 ABORTED            =DCC %s aborted (internal server error).
 
+LOOKUP_MEMOATTACH  =Memo Attachment %08e belongs to %s, memo #%d (sent by %s, %s ago).
+LOOKUP_PICTURE     =Picture %08e belongs to %s.
+LOOKUP_PUBLIC      =Public file %08e is %s, available for %s.
+NLOOKUP_MEMOATTACH =Memo Attachment %80e does not exist.
+NLOOKUP_PICTURE    =Picture %08e does not exist.
+NLOOKUP_PUBLIC     =Public file %08e does not exist.
+
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.
 ; kill and kick messages, announcements, and a generic dictionary.
@@ -334,6 +341,7 @@ OPERDENY           =IRC operator deny
 SIGNORE            =services ignore
 CHANNEL            =channel
 NICKNAME           =nicknams
+FILES              =available files
 
 ;
 ; This section defines STATUS responses about OTHER nicknames.

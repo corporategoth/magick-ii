@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2000/05/03 14:12:22  prez
+** Added 'public' filesystem, ie. the ability to add
+** arbitary files for download via. servmsg (sops may
+** upload/download, and set the committees who can
+** grab the file).
+**
 ** Revision 1.113  2000/05/01 03:11:40  ungod
 ** xmlisation of entlist_t done
 **
@@ -1063,7 +1069,7 @@ void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
         mstring tmpUserDef;
         pElement->Retrieve(tmpUserDef);
-        i_UserDef[tmpUserDef.Before("\n"))=tmpUserDef.After("\n");
+        i_UserDef[tmpUserDef.Before("\n")]=tmpUserDef.After("\n");
     }
 }
 
@@ -1076,13 +1082,12 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 		pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
 		pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
 
-        int i;
         map<mstring,mstring>::const_iterator iter;
-        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++,i++)
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
         {
-            pOut->WriteElement(tag_UserDef,i->first+"\n"+i->second);
+            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
         }
 
-		pOut->EndObject(tag_entlist_t);
+	pOut->EndObject(tag_entlist_t);
 }
 
