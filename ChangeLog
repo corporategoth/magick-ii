@@ -1,3 +1,58 @@
+* 2003-01-19 21:50  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.trircd5.ini (1.2), src/server.cpp (1.263):
+  
+  Fixed trircd to work with the full v5, not the RC.
+
+* 2003-01-19 20:23  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.trircd.ini (1.2):
+  
+  Forgot about foundermode.
+
+* 2003-01-19 20:21  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.trircd.ini (1.1), ircd/ircd.trircd5.ini (1.1), src/base.cpp
+  (1.209), src/ircsocket.cpp (1.246), src/server.cpp (1.262):
+  
+  Added support for trircd.
+
+* 2003-01-19 06:03  Preston A. Elder <prez@magick.tm>
+  include/memoserv.h (1.67), src/memoserv.cpp (1.133), src/nickdata.cpp
+  (1.21), src/server.cpp (1.261):
+  
+  Fixed memoserv telling me I've got new memos when I don't.
+
+* 2003-01-19 05:39  Preston A. Elder <prez@magick.tm>
+  include/ircsocket.h (1.75), include/nickserv.h (1.91), src/base.cpp
+  (1.208), src/nickdata.cpp (1.20), src/server.cpp (1.260):
+  
+  Made changes to make sure message to identify gets sent before other
+  messages.  Also made the whole 'post signon' process cleaner (more
+  centralized).
+
+* 2003-01-16 20:50  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.67), ChangeLog.2002 (1.1), docs/en/index.sgml (1.46),
+  src/magick.cpp (1.387):
+  
+  Changed ChangeLog's, added ChangeLog.2002
+
+* 2003-01-16 19:57  Preston A. Elder <prez@magick.tm>
+  include/convert_hybserv.h (1.2), src/convert_hybserv.cpp (1.2):
+  
+  Tested hybserv conversion routines.
+
+* 2003-01-16 01:45  Preston A. Elder <prez@magick.tm>
+  INSTALL (1.27), configure.in (1.71), magick.kdevprj (1.33),
+  include/Makefile.am (1.15), include/chanserv.h (1.88), include/memoserv.h
+  (1.66), include/nickserv.h (1.90), include/pch.h (1.65), src/Makefile.am
+  (1.35), src/magick.cpp (1.386), include/convert_hybserv.h (1.1),
+  src/convert_hybserv.cpp (1.1):
+  
+  Added hybserv conversion routines, untested.
+
+* 2003-01-13 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.66):
+  
+  Created version 2.0s20030113
+
 * 2003-01-06 03:00  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.65):
   
