@@ -3334,7 +3334,7 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISSTORED"),
 		    channel.c_str());
-	return;
+ 	return;
     }
 
     if (!Parent->chanserv.IsLive(channel))
