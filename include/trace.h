@@ -27,7 +27,7 @@ using namespace std;
 // FunctionTrace -- FT("...", AOC(()));
 #define FT(x,y) T_Functions __ft(x,y);
 // Set return value -- RET();
-#define RET(x) { __ft.return_value(x); return x; }
+#define RET(x) __ft.return_value(x); return x;
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
 // Modify begin -- MB(AOC(()));
@@ -313,10 +313,20 @@ public:
 
 // ===================================================
 
-// TODO: State when you get a read, and a write lock.
-// ALSO state what class its on, and the class.id()
+class T_Locking : public Trace {
+public:
+    enum type_enum { Read, Write, Mutex };
 
-// class T_Locking : public Trace {};
+private:
+    ThreadID *tid;
+    type_enum locktype;
+    mstring name;
+
+public:
+    T_Locking() {}
+    void open(type_enum, mstring lockname);
+    ~T_Locking();
+};
 
 // ===================================================
 

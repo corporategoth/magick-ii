@@ -75,21 +75,22 @@ Trace::Trace()
 }
 //todo change this to a vector< >
 const struct Trace::levelname_struct Trace::levelname[] = {
-		levelname_struct( "OFF", Off ),
-		levelname_struct( "STAT*", Stats ),
-		levelname_struct( "SOUR*", Source ),
-		levelname_struct( "SRC*", Source ),
-		levelname_struct( "L*CK*", Locking ),
-		levelname_struct( "S*CK*", Sockets ),
-		levelname_struct( "BIND*", Bind ),
-		levelname_struct( "REG*", Bind ),
-		levelname_struct( "HOOK*", Bind ),
-		levelname_struct( "EXT*", External ),
-		levelname_struct( "CHAT*", Chatter ),
-		levelname_struct( "CHE*", CheckPoint ),
-		levelname_struct( "C*P*", CheckPoint ),
-		levelname_struct( "F*NC*", Functions ),
-		levelname_struct( "MOD*", Modify ) };
+	levelname_struct( "OFF", Off ),
+	levelname_struct( "STAT*", Stats ),
+	levelname_struct( "SOUR*", Source ),
+	levelname_struct( "SRC*", Source ),
+	levelname_struct( "L*CK*", Locking ),
+	levelname_struct( "S*CK*", Sockets ),
+	levelname_struct( "BIND*", Bind ),
+	levelname_struct( "REG*", Bind ),
+	levelname_struct( "HOOK*", Bind ),
+	levelname_struct( "EXT*", External ),
+	levelname_struct( "CHAT*", Chatter ),
+	levelname_struct( "CHE*", CheckPoint ),
+	levelname_struct( "C*P*", CheckPoint ),
+	levelname_struct( "F*NC*", Functions ),
+	levelname_struct( "MOD*", Modify ) };
+
 int levelname_count()
 {
     return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
@@ -185,9 +186,12 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 //      // (char) Y
 T_Functions::~T_Functions()
 { 
+    ShortLevel(Functions);
     tid->indentdown(); 
-    mstring message="// (" + return_value.type() + ") " + return_value.AsString();
-    tid->WriteOut(message);
+    if (IsOn(tid)) {
+	mstring message="// (" + return_value.type() + ") " + return_value.AsString();
+	tid->WriteOut(message);
+    }
 }
 
 // ===================================================
@@ -195,7 +199,7 @@ T_Functions::~T_Functions()
 //      ** This is an important part!
 T_CheckPoint::T_CheckPoint()
 {
-    common("T_CheckPoint Reached");
+    common("CheckPoint Reached");
 }
 
 T_CheckPoint::T_CheckPoint(const char *fmt, ...)
@@ -210,7 +214,7 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 
 void T_CheckPoint::common(const char *input)
 {
-    ShortLevel(Trace::CheckPoint);
+    ShortLevel(CheckPoint);
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -225,7 +229,7 @@ void T_CheckPoint::common(const char *input)
 //      << DE3(srealm.net.au)
 T_Modify::T_Modify(const mVarArray &args)
 {
-    ShortLevel(Trace::Modify);
+    ShortLevel(Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -240,7 +244,7 @@ T_Modify::T_Modify(const mVarArray &args)
 //      >> DE3(corewars.net)
 void T_Modify::End(const mVarArray &args)
 {
-    ShortLevel(Trace::Modify);
+    ShortLevel(Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -257,7 +261,7 @@ void T_Modify::End(const mVarArray &args)
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
-    ShortLevel(Trace::Chatter);
+    ShortLevel(Chatter);
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
@@ -275,20 +279,51 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 // real, swap and usage/space are in kb (1024 byte blocks)
 
 //      %% Magick v2.0 -- Up 1 month, 6 days, 13:47:26 (13:26m CPU).
-//      %% CURRENT - CPU  2.6% . MEM     0.2% . REAL    2560 . SWAP       0 . USAGE       213
-//      %% MAX     - CPU  5.7% . MEM     1.1% . REAL    8725 . SWAP       0 . USAGE      1526
-//      %% SYSTEM  - CPU  0.32 . AVAILABLE:     REAL    2672 . SWAP  121512 . SPACE   1578294
+//      %% CURRENT - CPU  2.6% | MEM     0.2% | REAL    2560 | SWAP       0 | USAGE       213
+//      %% MAX     - CPU  5.7% | MEM     1.1% | REAL    8725 | SWAP       0 | USAGE      1526
+//      %% SYSTEM  - CPU  0.32 | AVAILABLE:     REAL    2672 | SWAP  121512 | SPACE   1578294
 
 // T_Stats::T_Stats() {}
 
 // ===================================================
 
-//      :+ R (ChanInfo) #Magick
-//      :- R (ChanInfo) #Magick
-//      :+ W (NickInfo) PreZ
-//      :- W (NickInfo) PreZ
+//      :+ R ChanInfo::#Magick
+//      :+ W NickInfo::PreZ::Flags
+//      :+ M Magick::LoadMessages
+T_Locking::open(T_Locking::type_enum ltype, mstring lockname) {
+    ShortLevel(Locking);
+    if (IsOn(tid)) {
+	locktype = ltype;
+	name = lockname;
+	mstring message;
+	if(locktype == Read)
+	    message << ":+ " << "R " << name;
+	else if(locktype == Write)
+	    message << ":+ " << "W " << name;
+	else
+	    message << ":+ " << "M " << name;
+	tid->WriteOut(message);
+    }
+}
 
-// T_Locking::T_Locking() {}
+//      :- R ChanInfo::#Magick
+//      :- W NickInfo::PreZ::Flags
+//      :- M Magick::LoadMessages
+T_Locking::~T_Locking() {
+    ShortLevel(Locking);
+    if (IsOn(tid)) {
+	if (name) {
+    	    mstring message;
+	    if(locktype == Read)
+	        message << ":- " << "R " << name;
+	    else if(locktype == Write)
+		message << ":- " << "W " << name;
+	    else
+		message << ":- " << "M " << name;
+	    tid->WriteOut(message);
+	}
+    }
+}
 
 // ===================================================
 
