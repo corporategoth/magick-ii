@@ -42,6 +42,7 @@ private:
     bool akill;
     bool operdeny;
 
+    void DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server);
 public:
     mstring Services_Admin()	{ return services_admin; }
     mstring Expire_Oper()	{ return expire_oper; }

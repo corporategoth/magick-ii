@@ -480,49 +480,61 @@ void mBaseTask::message_i(const mstring& message)
     // NOTE: No need to handle 'non-user messages' here, because
     // anything that is not a user PRIVMSG/NOTICE goes directly
     // to the server routine anyway.
-    mstring tmp[2];
-    tmp[0]=message.ExtractWord(2,": ").UpperCase();
-    tmp[1]=message.ExtractWord(3,": ").UpperCase();
+    mstring source, type, target;
+    source=message.ExtractWord(1,": ");
+    type  =message.ExtractWord(2,": ").UpperCase();
+    target=message.ExtractWord(3,": ");
 
     CH(T_Chatter::From,message);	    
-    // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
-    // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
 
-    if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE")
+    if (type == "PRIVMSG" || type == "NOTICE")
     {
-	if (Parent->nickserv.IsLive(message.ExtractWord(1, ": ")))
-	    Parent->nickserv.live[message.ExtractWord(1, ": ")].FloodTrigger();
+	// Split stuff for NON-CHANNEL traffic.
+	if (!IsChan(target))
+	{
+	    // Execute if we DONT (or havnt) trigger ignore
+	    if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
+	    {
 
-	// Find out if the target nick is one of the services 'clones'
-	// Pass the message to them if so.
-	// before even that, check if it's script overriden via
-	//     Parent->checkifhandled(servername,command)
-	// if so, Parent->doscripthandle(server,command,data);
-	if (Parent->operserv.IsName(tmp[1]))
-	    Parent->operserv.execute(message);
+		// Find out if the target nick is one of the services 'clones'
+		// Pass the message to them if so.
+		// before even that, check if it's script overriden via
+		//     Parent->checkifhandled(servername,command)
+		// if so, Parent->doscripthandle(server,command,data);
 
-	else if (Parent->nickserv.IsName(tmp[1]))
-	    Parent->nickserv.execute(message);
+		if (Parent->operserv.IsName(target))
+		    Parent->operserv.execute(message);
 
-	else if (Parent->chanserv.IsName(tmp[1]))
-	    Parent->chanserv.execute(message);
+		else if (Parent->nickserv.IsName(target))
+		    Parent->nickserv.execute(message);
 
-	else if (Parent->memoserv.IsName(tmp[1]))
-	    Parent->memoserv.execute(message);
+		else if (Parent->chanserv.IsName(target))
+		    Parent->chanserv.execute(message);
 
-	else if (Parent->servmsg.IsName(tmp[1]))
-	    Parent->servmsg.execute(message);
+		else if (Parent->memoserv.IsName(target))
+		    Parent->memoserv.execute(message);
 
-	// else check if it's script handled, might do up a list of script servers
-	// in the magick object to check against, else trash it.
+		else if (Parent->servmsg.IsName(target))
+		    Parent->servmsg.execute(message);
 
-	// Not a MSG/NOTICE to services, fall through
-	// (it could be to a channel, or unrecognised nick).
-	else
-	    Parent->server.execute (message);
+		// else check if it's script handled, might do up a list of script servers
+		// in the magick object to check against, else trash it.
+
+		else	// PRIVMSG or NOTICE to non-service
+		    Parent->server.execute(message);
+	    }
+	    else
+	    {
+		// Check if we're to log ignore messages, and log them here.
+		//if Parent->operserv.LogIgnored())
+		//    wxLogInfo("IGNORED: ", message.c_str());
+	    }
+	}
+	else	// Channel messages
+	    Parent->server.execute(message);
     } 
-    else    // This handles all non-msgs/notices.
-	Parent->server.execute (message);
+    else	// Non PRIVMSG and NOTICE
+	Parent->server.execute(message);
 
     if(thr_count()>1&&message_queue_.message_count()<
 	    Parent->high_water_mark*(thr_count()-2)+Parent->low_water_mark)

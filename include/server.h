@@ -45,7 +45,9 @@ public:
     mstring Description()	{ return i_Description; }
     void Ping();
     void Pong();
-    double Lag()		{ return i_Lag / 1000.0; }
+    float Lag()			{ return i_Lag / 1000.0; }
+    unsigned int Users();
+    unsigned int Opers();
 
     vector<mstring> Downlinks();
     vector<mstring> AllDownlinks();
@@ -62,9 +64,14 @@ private:
     void raw(mstring send);
     void sraw(mstring send);
     void SignOnAll();
+    set<mstring> WaitIsOn;
+    mstring i_OurUplink;
+
+    void OurUplink(mstring in) { i_OurUplink = in; }
 public:
     map<mstring,Server> ServerList;
     bool IsServer(mstring server);
+    mstring OurUplink() { return i_OurUplink; }
 
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);

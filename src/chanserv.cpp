@@ -1884,10 +1884,10 @@ void ChanServ::execute(const mstring & data)
     //okay this is the main chanserv command switcher
 
     mstring source, msgtype, mynick, message;
-    source  = data.Before(" ");
-    msgtype = data.After(" ").Before(" ");
-    mynick  = data.After(" ").After(" ").Before(" ");
-    message = data.After(":");
+    source  = data.ExtractWord(1, ": ");
+    msgtype = data.ExtractWord(2, ": ").UpperCase();
+    mynick  = data.ExtractWord(3, ": ");
+    message = data.After(":", 2);
 
 
     mThread::ReAttach(tt_mBase);

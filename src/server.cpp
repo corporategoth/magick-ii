@@ -25,6 +25,8 @@ Server::Server(mstring name, int hops, mstring description)
     i_Uplink = Parent->startup.Server_Name().LowerCase();
     i_Hops = hops;
     i_Description = description;
+    i_Ping = i_Lag = 0;
+    Parent->server.OurUplink(i_Name);
 }
 
 Server::Server(mstring name, mstring uplink, int hops, mstring description)
@@ -34,6 +36,7 @@ Server::Server(mstring name, mstring uplink, int hops, mstring description)
     i_Uplink = uplink.LowerCase();
     i_Hops = hops;
     i_Description = description;
+    i_Ping = i_Lag = 0;
 }
 
 void Server::operator=(const Server &in)
@@ -50,6 +53,7 @@ void Server::operator=(const Server &in)
 void Server::Ping()
 {
     NFT("Server::Ping");
+
     if (!i_Ping)
     {
         Parent->server.sraw("PING " + Parent->startup.Server_Name() + " :" + i_Name);
@@ -66,6 +70,28 @@ void Server::Pong()
 	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag / 1000.0));
 	i_Ping = 0;
     }
+}
+
+unsigned int Server::Users()
+{
+    NFT("Server::Users");
+
+    unsigned int count = 0;
+    map<mstring,Nick_Live_t>::iterator k;
+    for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
+	if (k->second.Server() == i_Name) count++;
+    return count;
+}
+
+unsigned int Server::Opers()
+{
+    NFT("Server::Opers");
+
+    unsigned int count = 0;
+    map<mstring,Nick_Live_t>::iterator k;
+    for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
+	if (k->second.Server() == i_Name && k->second.HasMode("o")) count++;
+    return count;
 }
 
 vector<mstring> Server::Downlinks()
@@ -149,29 +175,41 @@ void NetworkServ::SignOnAll()
 {
     NFT("NetworkServ::SignOnAll");
 
+    mstring doison;
     int i;
-    for (i=0; i<Parent->operserv.GetNames().WordCount(" "); i++)
-	Parent->operserv.signon(Parent->operserv.GetNames().ExtractWord(i, " "));
-    for (i=0; i<Parent->nickserv.GetNames().WordCount(" "); i++)
-	Parent->nickserv.signon(Parent->nickserv.GetNames().ExtractWord(i, " "));
-    for (i=0; i<Parent->chanserv.GetNames().WordCount(" "); i++)
-	Parent->chanserv.signon(Parent->chanserv.GetNames().ExtractWord(i, " "));
-    for (i=0; i<Parent->memoserv.GetNames().WordCount(" "); i++)
-	Parent->memoserv.signon(Parent->memoserv.GetNames().ExtractWord(i, " "));
-    for (i=0; i<Parent->commserv.GetNames().WordCount(" "); i++)
-	Parent->commserv.signon(Parent->commserv.GetNames().ExtractWord(i, " "));
-    for (i=0; i<Parent->servmsg.GetNames().WordCount(" "); i++)
-	Parent->servmsg.signon(Parent->servmsg.GetNames().ExtractWord(i, " "));
-
-    map<mstring,Chan_Stored_t>::iterator iter;
-    for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
+    for (i=1; i<=Parent->operserv.GetNames().WordCount(" "); i++)
     {
-	// If its live and got JOIN on || not live and mlock +k or +i
-	if ((Parent->chanserv.IsLive(iter->first) && iter->second.Join()) ||
-		(!Parent->chanserv.IsLive(iter->first) &&
-		(iter->second.Mlock_Key() || iter->second.Mlock().Contains("i"))))
-	    JOIN(Parent->chanserv.FirstName(), iter->first);
+	doison += " " + Parent->operserv.GetNames().ExtractWord(i, " ");
+	WaitIsOn.insert(Parent->operserv.GetNames().ExtractWord(i, " "));
     }
+    for (i=1; i<=Parent->nickserv.GetNames().WordCount(" "); i++)
+    {
+	doison += " " + Parent->nickserv.GetNames().ExtractWord(i, " ");
+	WaitIsOn.insert(Parent->nickserv.GetNames().ExtractWord(i, " "));
+    }
+    for (i=1; i<=Parent->chanserv.GetNames().WordCount(" "); i++)
+    {
+	doison += " " + Parent->chanserv.GetNames().ExtractWord(i, " ");
+	WaitIsOn.insert(Parent->chanserv.GetNames().ExtractWord(i, " "));
+    }
+    for (i=1; i<=Parent->memoserv.GetNames().WordCount(" "); i++)
+    {
+	doison += " " + Parent->memoserv.GetNames().ExtractWord(i, " ");
+	WaitIsOn.insert(Parent->memoserv.GetNames().ExtractWord(i, " "));
+    }
+    for (i=1; i<=Parent->commserv.GetNames().WordCount(" "); i++)
+    {
+	doison += " " + Parent->commserv.GetNames().ExtractWord(i, " ");
+	WaitIsOn.insert(Parent->commserv.GetNames().ExtractWord(i, " "));
+    }
+    for (i=1; i<=Parent->servmsg.GetNames().WordCount(" "); i++)
+    {
+	doison += " " + Parent->servmsg.GetNames().ExtractWord(i, " ");
+	WaitIsOn.insert(Parent->servmsg.GetNames().ExtractWord(i, " "));
+    }
+
+    if (doison != "")
+	sraw("ISON" + doison);
 }
 
 NetworkServ::NetworkServ()
@@ -354,17 +392,19 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
     else
     {
 	mstring send;
+/*
 	send << "NICK " << nick << " 1 " << (time_t) Now() <<
 		" " << user << " " << host << " " << server << " 1 " <<
 		host << " :" << realname;
-	CP((send.c_str()));
+*/
+	send << "NICK " << nick << " 1 " << "934023496" <<
+		" " << user << " " << host << " " << server << " 1 " <<
+		host << " :" << realname;
 
 	// Sign ourselves in ...
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
-	CP(("Added NICK"));
 	raw(send);
-	CP(("Signed on..."));
     }
 }
 
@@ -684,6 +724,11 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="ISON")
 	{
+	    // :heaven.darker.net ISON ChanServ
+	    // :soul.darker.net 303 heaven.darker.net :ChanServ
+	    // :heaven.darker.net ISON zBlerk
+	    // :soul.darker.net 303 heaven.darker.net :
+
 	    // repl: :our.server 303 source :local.nick
 	    if (Parent->nickserv.IsLive(source))
 		sraw("303 " + source + " :" + data.ExtractWord(3, ": "));
@@ -909,10 +954,6 @@ void NetworkServ::execute(const mstring & data)
 		Parent->reconnect=false;
 		Parent->ircsvchandler->shutdown();
 	    }
-	    else
-	    {
-		// Start timer to SignOnAll();
-	    }
 	}
 	else if (msgtype=="PING")
 	{
@@ -991,6 +1032,7 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(2, ": ").LowerCase(),
 			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
+		SignOnAll();
 	    }
 	    else
 	    {
@@ -1346,10 +1388,10 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		mstring target = data.ExtractWord(3, ": ");
 		mstring targetL = target.LowerCase();
-
 		sraw("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
 			" " + Parent->nickserv.live[targetL].Host() + " * :" +
 			Parent->nickserv.live[targetL].RealName());
+
 		if (Parent->nickserv.live[targetL].IsRecognized())
 		{
 		    sraw("307 " + source + " " + target + " : is a registered nick");
@@ -1383,12 +1425,16 @@ void NetworkServ::execute(const mstring & data)
 		    else
 			outline += *iter + " ";
 		}
-		if (outline.After(":").size() > 0)
+		if (outline.After(":").Len() > 0)
 		    sraw(outline);
 
-		if (IsServer(Parent->nickserv.live[targetL].Server()))
-		    sraw("312 " + source + " " + target + Parent->nickserv.live[targetL].Server() +
+		if (Parent->nickserv.live[targetL].IsServices())
+		    sraw("312 " + source + " " + target + " " + Parent->startup.Server_Name() +
+			" :" + Parent->startup.Server_Desc());
+		else if (IsServer(Parent->nickserv.live[targetL].Server()))
+		    sraw("312 " + source + " " + target + " " + Parent->nickserv.live[targetL].Server() +
 			" :" + ServerList[Parent->nickserv.live[targetL].Server()].Description());
+
 
 		if (Parent->nickserv.live[targetL].Away() != "")
 		    sraw("301 " + source + " " + target + " :" + Parent->nickserv.live[targetL].Away());
@@ -1398,14 +1444,16 @@ void NetworkServ::execute(const mstring & data)
 
 		if (Parent->nickserv.live[targetL].HasMode("h"))
 		    sraw("310 " + source + " " + target + " :looks very helpful.");
+
 		if (Parent->nickserv.live[targetL].IsServices())
 		{
     		    mstring signon_idletime;
-		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<(time_t)Parent->nickserv.live[targetL].SignonTime();
-		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
+//		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<(time_t)Parent->nickserv.live[targetL].SignonTime();
+//		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<"934023496";
+//		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
 		}
 
-		sraw("313 " + source + " " + target + " :End of /WHOIS list.");
+		sraw("318 " + source + " " + target + " :End of /WHOIS list.");
 
 	    }
 	    else
@@ -1450,8 +1498,11 @@ void NetworkServ::numeric_execute(const mstring & data)
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
         msgtype=atoi(data.ExtractWord(2,": "));
-	if (!Parent->nickserv.IsLive(source))
-	    KillUnknownUser(source);
+	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
+	{
+		KillUnknownUser(source);
+		return;
+	}
     }
     else
     {
@@ -1532,6 +1583,50 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 302:     // RPL_USERHOST
 	break;
     case 303:     // RPL_ISON
+	for (int i=4; i<=data.WordCount(": "); i++)
+	{
+	    if (WaitIsOn.find(data.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
+		WaitIsOn.erase(data.ExtractWord(i, ": "));
+	}
+
+	if (WaitIsOn.size())
+	{
+	    set<mstring>::iterator k;
+	    for (k=WaitIsOn.begin(); k!=WaitIsOn.end(); k++)
+	    {
+		if (Parent->operserv.IsName(*k))
+		    Parent->operserv.signon(*k);
+		else if (Parent->nickserv.IsName(*k))
+		    Parent->nickserv.signon(*k);
+		else if (Parent->chanserv.IsName(*k))
+		{
+		    Parent->chanserv.signon(*k);
+
+		    if (Parent->chanserv.FirstName() == *k)
+		    {
+			map<mstring,Chan_Stored_t>::iterator iter;
+			for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
+			{
+			    // If its live and got JOIN on || not live and mlock +k or +i
+			    if ((Parent->chanserv.IsLive(iter->first) && iter->second.Join()) ||
+				(!Parent->chanserv.IsLive(iter->first) &&
+				(iter->second.Mlock_Key() || iter->second.Mlock().Contains("i"))))
+				JOIN(Parent->chanserv.FirstName(), iter->first);
+			}
+		    }
+
+		}
+		else if (Parent->memoserv.IsName(*k))
+		    Parent->memoserv.signon(*k);
+		else if (Parent->commserv.IsName(*k))
+		    Parent->commserv.signon(*k);
+		else if (Parent->servmsg.IsName(*k))
+		    Parent->servmsg.signon(*k);
+	    }
+	}
+
+	WaitIsOn.clear();
+
 	break;
     case 305:     // RPL_UNAWAY
 	break;

@@ -34,7 +34,7 @@ void ServMsg::execute(const mstring & data)
 
     mstring source, msgtype, mynick, message;
     source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ");
+    msgtype = data.ExtractWord(2, ": ").UpperCase();
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
 
