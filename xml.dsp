@@ -85,18 +85,6 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\src\xml\dllmain.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\xml\gennmtab.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\xml\hashtable.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\xml\sxp.cpp
 # End Source File
 # Begin Source File
@@ -117,19 +105,15 @@ SOURCE=.\src\xml\xmltok.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\include\xml\ascii.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\xml\asciitab.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\xml\codepage.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\xml\filemap.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\xml\hashtable.h
+SOURCE=.\include\xml\expat.h
 # End Source File
 # Begin Source File
 
@@ -157,19 +141,11 @@ SOURCE=.\include\xml\utf8tab.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\xml\xmlfile.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\xml\xmlparse.h
+SOURCE=.\include\xml\xmlconfig.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\xml\xmlrole.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\xml\xmltchar.h
 # End Source File
 # Begin Source File
 
