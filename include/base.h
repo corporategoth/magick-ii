@@ -60,7 +60,6 @@ public:
     bool operator<(const entlist_t &in) const
 	{ return (i_Entry < in.i_Entry); }
 
-    bool Change(mstring entry, mstring nick);
     mstring Entry()const		{ return i_Entry; }
     mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
     mstring Last_Modifier()const	{ return i_Last_Modifier; }
@@ -72,19 +71,22 @@ typedef list<entlist_t>::const_iterator entlist_ci;
 typedef set<entlist_t>::iterator entlist_ui;
 typedef set<entlist_t>::const_iterator entlist_cui;
 
+template<class T>
 class entlist_val_t : public mUserDef
 {
-    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out);
+    template<T>
+    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
+    template<T>
+    friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
     mstring i_Entry;
-    long i_Value;
+    T i_Value;
     mDateTime i_Last_Modify_Time;
     mstring i_Last_Modifier;
     bool i_Stupid;	// if TRUE, Change() does nothing.
 public:
     entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, long value, mstring nick, bool stupid = false);
+    entlist_val_t (mstring entry, T value, mstring nick, bool stupid = false);
     void operator=(const entlist_val_t &in);
     bool operator==(const entlist_val_t &in) const
 	{ return (i_Entry == in.i_Entry); }
@@ -93,58 +95,27 @@ public:
     bool operator<(const entlist_val_t &in) const
 	{ return (i_Entry < in.i_Entry); }
 
-    bool Change(mstring entry, mstring nick);
-    bool Change(long value, mstring nick);
-    bool Change(mstring newent, long value, mstring nick);
-    mstring Entry()const			{ return i_Entry; }
-    long Value()const			{ return i_Value; }
-    mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
-    mstring Last_Modifier()const	{ return i_Last_Modifier; }
-};
-
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t& in);
-wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out);
-typedef list<entlist_val_t>::iterator entlist_val_i;
-typedef list<entlist_val_t>::const_iterator entlist_val_ci;
-typedef set<entlist_val_t>::iterator entlist_val_ui;
-typedef set<entlist_val_t>::const_iterator entlist_val_cui;
-
-class entlist_str_t : public mUserDef
-{
-    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_str_t& in);
-    friend wxInputStream &operator>>(wxInputStream& in, entlist_str_t& out);
-    mstring i_Entry;
-    mstring i_Value;
-    mDateTime i_Last_Modify_Time;
-    mstring i_Last_Modifier;
-    bool i_Stupid;	// if TRUE, Change() does nothing.
-public:
-    entlist_str_t () {}
-    entlist_str_t (const entlist_str_t& in) { *this = in; }
-    entlist_str_t (mstring entry, mstring value, mstring nick, bool stupid = false);
-    void operator=(const entlist_str_t &in);
-    bool operator==(const entlist_str_t &in) const
-	{ return (i_Entry == in.i_Entry); }
-    bool operator!=(const entlist_str_t &in) const
-	{ return (i_Entry != in.i_Entry); }
-    bool operator<(const entlist_str_t &in) const
-	{ return (i_Entry < in.i_Entry); }
-
-    bool ChangeEnt(mstring entry, mstring nick);
-    bool ChangeStr(mstring value, mstring nick);
-    bool Change(mstring newent, mstring value, mstring nick);
+    bool Value(T value, mstring nick);
     mstring Entry()const		{ return i_Entry; }
-    mstring String()const		{ return i_Value; }
+    T Value()const			{ return i_Value; }
     mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
     mstring Last_Modifier()const	{ return i_Last_Modifier; }
 };
 
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_str_t& in);
-wxInputStream &operator>>(wxInputStream& in, entlist_str_t& out);
-typedef list<entlist_str_t>::iterator entlist_str_i;
-typedef list<entlist_str_t>::const_iterator entlist_str_ci;
-typedef set<entlist_str_t>::iterator entlist_str_ui;
-typedef set<entlist_str_t>::const_iterator entlist_str_cui;
+template<class T>
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
+template<class T>
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
+/*  These dont work with templates
+template<class T>
+typedef list<entlist_val_t<T> >::iterator entlist_val_i;
+template<class T>
+typedef list<entlist_val_t<T> >::const_iterator entlist_val_ci;
+template<class T>
+typedef set<entlist_val_t<T> >::iterator entlist_val_ui;
+template<class T>
+typedef set<entlist_val_t<T> >::const_iterator entlist_val_cui;
+*/
 
 class mBase
 {

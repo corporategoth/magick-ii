@@ -865,22 +865,38 @@ void Chan_Stored_t::defaults()
 	}
     }
 
-    i_Access_Level.insert(entlist_val_t("AUTODEOP",	Parent->chanserv.LVL_Autodeop(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("AUTOVOICE",	Parent->chanserv.LVL_Autovoice(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("AUTOOP",	Parent->chanserv.LVL_Autoop(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("READMEMO",	Parent->chanserv.LVL_Readmemo(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("WRITEMEMO",	Parent->chanserv.LVL_Writememo(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("DELMEMO",	Parent->chanserv.LVL_Delmemo(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("AKICK",	Parent->chanserv.LVL_Akick(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("STARAKICK",	Parent->chanserv.LVL_Starakick(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("UNBAN",	Parent->chanserv.LVL_Unban(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("ACCESS",	Parent->chanserv.LVL_Access(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("SET",		Parent->chanserv.LVL_Set(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("CMDINVITE",	Parent->chanserv.LVL_Cmdinvite(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("CMDUNBAN",	Parent->chanserv.LVL_Cmdunban(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("CMDVOICE",	Parent->chanserv.LVL_Cmdvoice(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("CMDOP",	Parent->chanserv.LVL_Cmdop(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t("CMDCLEAR",	Parent->chanserv.LVL_Cmdclear(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("AUTODEOP",
+	Parent->chanserv.LVL_Autodeop(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("AUTOVOICE",
+	Parent->chanserv.LVL_Autovoice(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("AUTOOP",
+	Parent->chanserv.LVL_Autoop(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("READMEMO",
+	Parent->chanserv.LVL_Readmemo(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("WRITEMEMO",
+	Parent->chanserv.LVL_Writememo(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("DELMEMO",
+	Parent->chanserv.LVL_Delmemo(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("AKICK",
+	Parent->chanserv.LVL_Akick(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("STARAKICK",
+	Parent->chanserv.LVL_Starakick(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("UNBAN",
+	Parent->chanserv.LVL_Unban(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("ACCESS",
+	Parent->chanserv.LVL_Access(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("SET",
+	Parent->chanserv.LVL_Set(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("CMDINVITE",
+	Parent->chanserv.LVL_Cmdinvite(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("CMDUNBAN",
+	Parent->chanserv.LVL_Cmdunban(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("CMDVOICE",
+	Parent->chanserv.LVL_Cmdvoice(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("CMDOP",
+	Parent->chanserv.LVL_Cmdop(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t<long>("CMDCLEAR",
+	Parent->chanserv.LVL_Cmdclear(),	Parent->chanserv.FirstName()));
     
 }
 
@@ -936,7 +952,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Suspend_Time=in.i_Suspend_Time;
     i_Forbidden=in.i_Forbidden;
 
-    entlist_val_cui j;
+    entlist_val_cui<long> j;
     i_Access_Level.clear();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	i_Access_Level.insert(*j);
@@ -945,7 +961,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	i_Access.insert(*j);
 
-    entlist_str_cui k;
+    entlist_val_cui<mstring> k;
     i_Akick.clear();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	i_Akick.insert(*k);
@@ -1407,7 +1423,7 @@ bool Chan_Stored_t::Access_Level_find(mstring entry)
 {
     FT("Chan_Stored_t::Access_Level_find", (entry));
 
-    entlist_val_ui iter = i_Access_Level.end();
+    entlist_val_ui<long> iter = i_Access_Level.end();
     if (!i_Access_Level.empty())
 	for (iter=i_Access_Level.begin(); iter!=i_Access_Level.end(); iter++)
 	    if (iter->Entry().LowerCase() == entry.LowerCase())
@@ -1431,7 +1447,7 @@ long Chan_Stored_t::Access_Level_value(mstring entry)
     FT("Chan_Stored_t::Access_Level_value", (entry));
 
     long retval = 0;
-    entlist_val_ui iter = Access_Level;
+    entlist_val_ui<long> iter = Access_Level;
 
     if (Access_Level_find(entry))
 	retval=Access_Level->Value();
@@ -1474,7 +1490,7 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick)
 
     if (!Access_find(entry))
     {
-	entlist_val_t tmp(entry, value, nick);
+	entlist_val_t<long> tmp(entry, value, nick);
 	Access = i_Access.insert(i_Access.end(), tmp);
 	RET(true);
     }
@@ -1512,7 +1528,7 @@ bool Chan_Stored_t::Access_find(mstring entry)
     if (Parent->nickserv.IsLive(entry))
 	mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
 
-    entlist_val_ui iter = i_Access.end();
+    entlist_val_ui<long> iter = i_Access.end();
     if (!i_Access.empty())
     {
 	// FIND exact nickname
@@ -1562,7 +1578,7 @@ long Chan_Stored_t::Access_value(mstring entry)
     FT("Chan_Stored_t::Access_value", (entry));
 
     long retval = 0;
-    entlist_val_ui iter = Access;
+    entlist_val_ui<long> iter = Access;
 
     if (Access_find(entry))
 	retval=Access->Value();
@@ -1605,7 +1621,7 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick)
 
     if (!Akick_find(entry))
     {
-	entlist_str_t tmp(entry, value, nick);
+	entlist_val_t<mstring> tmp(entry, value, nick);
 	Akick = i_Akick.insert(i_Akick.end(), tmp);
 	RET(true);
     }
@@ -1647,7 +1663,7 @@ bool Chan_Stored_t::Akick_find(mstring entry)
     if (Parent->nickserv.IsLive(entry))
 	mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
 
-    entlist_str_ui iter = i_Akick.end();
+    entlist_val_ui<mstring> iter = i_Akick.end();
     if (!i_Akick.empty())
     {
 	// FIND exact nickname
@@ -1697,7 +1713,7 @@ mstring Chan_Stored_t::Akick_string(mstring entry)
     FT("Chan_Stored_t::Akick_string", (entry));
 
     mstring retval;
-    entlist_str_ui iter = Akick;
+    entlist_val_ui<mstring> iter = Akick;
 
     if (Akick_find(entry))
 	retval=Akick->String();
@@ -1773,7 +1789,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
-    entlist_val_cui j;
+    entlist_val_cui<long> j;
     out<<in.i_Access_Level.size();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	out<<*j;
@@ -1782,7 +1798,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	out<<*j;
 
-    entlist_str_cui k;
+    entlist_val_cui<mstring> k;
     out<<in.i_Akick.size();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	out<<*k;
@@ -1802,11 +1818,11 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 
 wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 {
-    set<entlist_val_t>::size_type i,count;
+    set<entlist_val_t<long> >::size_type i,count;
     mstring dummy,dummy2;
     entlist_t edummy;
-    entlist_val_t evdummy;
-    entlist_str_t esdummy;
+    entlist_val_t<long> eldummy;
+    entlist_val_t<mstring> esdummy;
     in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
@@ -1817,8 +1833,8 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>count;
     for(i=0;i<count;i++)
     {
-	in>>evdummy;
-	out.i_Access_Level.insert(evdummy);
+	in>>eldummy;
+	out.i_Access_Level.insert(eldummy);
     }
 
     out.i_Access.clear();
@@ -1826,7 +1842,7 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     for(i=0;i<count;i++)
     {
 	in>>edummy;
-	out.i_Access.insert(evdummy);
+	out.i_Access.insert(eldummy);
     }
 
     out.i_Akick.clear();
