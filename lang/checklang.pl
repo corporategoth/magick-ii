@@ -44,12 +44,12 @@ close(FH);
 
 for ($i=0, $j=0; $i < $#sorted1 || $j < $#sorted2; )
 {
-	if ($sorted1[$i] lt $sorted2[$j])
+	if ($j >= $#sorted2 || $sorted1[$i] lt $sorted2[$j])
 	{
 		push(@missing2, $sorted1[$i]);
 		$i++;
 	}
-	elsif ($sorted1[$i] gt $sorted2[$j])
+	elsif ($i >= $#sorted1 || $sorted1[$i] gt $sorted2[$j])
 	{
 		push(@missing1, $sorted2[$j]);
 		$j++;
