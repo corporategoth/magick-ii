@@ -22,6 +22,7 @@ dist:
 	rm -f config.* *.ini *.log *.key *.mnd *.pid magick
 	rm -f `find . -type f -name "*~"`
 	rm -f `find . -type f -name ".#*"`
+	rm -f `find . -type f -name "*.bak"`
 	rm -f `find . -type f -name .cvsignore`
 	rm -f `find . -type f -name DEADJOE`
 	rm -rf `find . -type d -name CVS`
