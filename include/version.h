@@ -24,7 +24,11 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.91  2000/05/22 13:00:08  prez
+** Revision 1.92  2000/05/27 15:10:10  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
+** Revision 1.13  2000/05/22 13:00:08  prez
 ** Updated version.h and some other stuff
 **
 ** Revision 1.12  2000/03/26 14:59:36  prez
@@ -60,9 +64,9 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
-const mstring BUILD_TYPE = "Windows 95/98/NT";
-const mstring BUILD_SYS = "localhost";
+const int BUILD_NUMBER = 1;
+const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
+const mstring BUILD_SYS = "haven";
 
 /* Versioning Information
  *

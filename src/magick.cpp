@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.239  2000/05/27 15:10:12  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.238  2000/05/26 11:21:28  prez
 ** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
 **
@@ -693,7 +697,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     {
 	LoadExternalMessages(lang);
 	Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
-		lang.c_str());
+		lang.UpperCase().c_str());
 	CP(("Language %s was loaded into memory.", lang.c_str()));
     }
     if (lang != "" &&
@@ -715,7 +719,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     {
 	LoadExternalMessages(nickserv.DEF_Language());
 	Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
-		lang.c_str());
+		lang.UpperCase().c_str());
 	CP(("Language %s was loaded into memory.", nickserv.DEF_Language().c_str()));
     }
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&

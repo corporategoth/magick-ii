@@ -714,7 +714,7 @@ ISLANG             =Language %s is already loaded.
 ISNOTLANG          =Language %s is not loaded.
 NOLANG             =Language %s does not exist.
 ISOPERDENY         =You may not set mode +o, you are on OperDeny.
-HTM                =HTM will trigger at %s, Current average traffic is %.1fKb.
+HTM                =HTM will trigger at %s/s, Current average traffic is %.1fKb/s.
 
 ;
 ; These are the output lines for the OperServ SETTINGS command ONLY.

@@ -147,7 +147,7 @@ install=false
 type=DATA
 type=HEADER
 [src/xml/Makefile.am]
-files=src/xml/dllmain.c,src/xml/gennmtab.c,src/xml/hashtable.c,src/xml/xmlparse.c,src/xml/xmlrole.c,src/xml/xmltok.c,src/xml/xmltok_impl.c,src/xml/xmltok_ns.c,
+files=srx/xml/sxp.cpp,src/xml/hashtable.c,src/xml/xmlparse.c,src/xml/xmlrole.c,src/xml/xmltok.c,
 type=static_library
 sub_dirs=
 [include/datetime.h]
@@ -904,6 +904,11 @@ dist=true
 install=false
 type=SOURCE
 [src/xml/gennmtab.c]
+install_location=
+dist=true
+install=false
+type=SOURCE
+[src/xml/sxp.cpp]
 install_location=
 dist=true
 install=false

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2000/05/27 15:10:12  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.105  2000/05/27 07:06:01  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -387,6 +391,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
         ACE_INET_Addr localaddr;
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
+	Parent->i_localhost = localaddr.get_ip_address();
 	if (Parent->server.proto.Protoctl() != "")
 	    Parent->server.raw(Parent->server.proto.Protoctl());
 	Parent->server.raw("PASS " + details.second);
@@ -984,7 +989,7 @@ int EventTask::svc(void)
 		for (si=Parent->server.ServerList.begin();
 			si!=Parent->server.ServerList.end();si++)
 		    si->second.Ping();
-		Log(LM_DEBUG, Parent->getLogMessage("EVENT/PING"));
+		Log(LM_TRACE, Parent->getLogMessage("EVENT/PING"));
 	    }
 	    last_ping = Now();
 	}

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/05/27 15:10:12  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.29  2000/05/22 13:00:09  prez
 ** Updated version.h and some other stuff
 **
@@ -554,6 +558,10 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	{
 	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/INVALIDEXT"));
 	    return;
+	}
+	else
+	{
+	    filename = source.LowerCase() + "." + extension;
 	}
     }
 

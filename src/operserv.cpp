@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/05/27 15:10:12  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.81  2000/05/27 07:06:03  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -1532,7 +1536,7 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    mstring language = params.ExtractWord(2, " ");
+    mstring language = params.ExtractWord(2, " ").UpperCase();
 
     bool unload1, unload2;
     unload1 = Parent->UnloadExternalMessages(language);

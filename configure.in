@@ -1,18 +1,46 @@
-AC_INIT(Makefile)
+dnl  Magick IRC Services
+dnl
+dnl (c) 1997-2000 Preston Elder <prez@magick.tm>
+dnl (c) 1998-2000 William King <ungod@magick.tm>
+dnl
+dnl The above copywright may not be removed under any
+dnl circumstances, however it may be added to if any
+dnl modifications are made to this file.  All modified
+dnl code must be clearly documented and labelled.
+
+dnl
+dnl Standard stuff
+dnl ==============
+
+AC_INIT(include/config.h)
 
 PACKAGE=magick
 VERSION=2.0
 
-CFLAGS="$CFLAGS -fno-default-inline"
-CPPFLAGS="$CPPFLAGS -fno-default-inline"
-
 AC_PROG_MAKE_SET(make)
 AC_PROG_INSTALL(install-sh)
+AM_CONFIG_HEADER(include/config.h)
 AC_ARG_PROGRAM
 
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
+
+dnl
+dnl Required stuff
+dnl ==============
+
+dnl These flags are needed because it will cause GCC to
+dnl go into an infinate loop unless you use them.
+
+CFLAGS="$CFLAGS -fno-default-inline"
+CPPFLAGS="$CPPFLAGS -fno-default-inline"
+
+dnl ====================================================
+
+dnl First we check if we were GIVEN the location of ACE.
+dnl If we were (ie. acelib) we need to add -L<directory>
+dnl and -l<file> to the LIBS paramater.
 
 AC_ARG_WITH(acelib, [  --with-acelib=file      Location of ACE library file],
 	[if test -f ${withval}; then
@@ -25,14 +53,31 @@ AC_ARG_WITH(acelib, [  --with-acelib=file      Location of ACE library file],
 			LIBS="$LIBS -l$libfile"
 		fi
 		libace=1
+		echo "checking for $libfile ... (specified) yes"
 	fi])
+
+dnl Same deal with includes, and adding a -I to the
+dnl C/CPP flags
+
 AC_ARG_WITH(aceinc, [  --with-aceinc=dir       Location of ACE include files],
 	[CFLAGS="$CFLAGS -I${withval}"
 	CPPFLAGS="$CPPFLAGS -I${withval}"])
 
+dnl ====================================================
+
+dnl First we check to see if we're going to use BSD
+dnl threads, because if we are, we need an special
+dnl paramater in $LIBS.
+
 AC_ARG_ENABLE(bsdthread, [  --enable-bsdthread      Use BSD-style pthreads],
 	[LIBS="$LIBS -pthread"
 	libthread=1])
+
+dnl Second we check if we were GIVEN the location of any.
+dnl threads implementation.
+dnl If we were (ie. threadlib) we need to add -L<directory>
+dnl and -l<file> to the LIBS paramater.
+
 AC_ARG_WITH(threadlib, [  --with-threadlib=file   Location of threads library file],
 	[if test -f ${withval}; then
 		libdir="`echo ${withval} | sed -e s,/\`basename ${withval}\`$,,`"
@@ -44,10 +89,21 @@ AC_ARG_WITH(threadlib, [  --with-threadlib=file   Location of threads library fi
 			LIBS="$LIBS -l$libfile"
 		fi
 		libthread=1
+		echo "checking for $libfile ... (specified) yes"
 	fi])
+
+dnl Same deal with includes, and adding a -I to the
+dnl C/CPP flags
+
 AC_ARG_WITH(threadinc, [  --with-threadinc=dir    Location of threads include files],
 	[CFLAGS="$CFLAGS -I${withval}"
 	CPPFLAGS="$CPPFLAGS -I${withval}"])
+
+dnl ====================================================
+
+dnl First we check if we were GIVEN the location of ZLIB.
+dnl If we were (ie. zlib) we need to add -L<directory>
+dnl and -l<file> to the LIBS paramater.
 
 AC_ARG_WITH(zlib, [  --with-zlib=file        Location of compression library file],
 	[if test -f ${withval}; then
@@ -60,11 +116,20 @@ AC_ARG_WITH(zlib, [  --with-zlib=file        Location of compression library fil
 			LIBS="$LIBS -l$libfile"
 		fi
 		libz=1
+		echo "checking for $libfile ... (specified) yes"
 	fi])
+
+dnl Same deal with includes, and adding a -I to the
+dnl C/CPP flags
+
 AC_ARG_WITH(zinc, [  --with-zinc=dir         Location of compression include files],
 	[CFLAGS="$CFLAGS -I${withval}"
 	CPPFLAGS="$CPPFLAGS -I${withval}"])
 
+dnl ====================================================
+
+dnl OK, ACE wasnt specified.  See if we can find
+dnl it in the LD_LIBRARY_PATH, if not, error out.
 
 if test 0$libace -eq 0; then
 AC_CHECK_LIB(ACE,	_make_ACE_Naming_Context,
@@ -84,13 +149,20 @@ You may obtain ACE from www.cs.wustl.edu/~schmidt/ACE.html"
 	exit 1
 fi
 
+dnl ====================================================
+
+dnl OK, a threads lib wasnt specified.  See if we can
+dnl find one in the LD_LIBRARY_PATH, if not, error out.
+
 if test 0$libthread -eq 0; then
 AC_CHECK_LIB(pthread,	pthread_create,	
 	[LIBS="$LIBS -lpthread"
 	libthread=1])
+if test 0$libthread -eq 0; then
 AC_CHECK_LIB(pth,	pthread_create,	
 	[LIBS="$LIBS -lpth"
 	libthread=1])
+fi
 fi
 
 if test 0$libthread -eq 0; then
@@ -109,14 +181,20 @@ You may obtain GNU pth from www.gnu.org/software/pth"
 	exit 1
 fi
 
+dnl ====================================================
+
+dnl OK, ZLIB wasnt specified.  See if we can find
+dnl it in the LD_LIBRARY_PATH, if not, error out.
 
 if test 0$libz -eq 0; then
 AC_CHECK_LIB(z,		inflate,
 	[LIBS="$LIBS -lz"
 	libz=1])
+if test 0$libz -eq 0; then
 AC_CHECK_LIB(gz,	inflate,
 	[LIBS="$LIBS -lgz"
 	libz=1])
+fi
 fi
 
 if test 0$libz -eq 0; then
@@ -130,20 +208,27 @@ You may obtain zlib from www.cdrom.com/pub/infozip/zlib"
 	exit 1
 fi
 
+dnl ====================================================
+
+dnl Static definition for now, will check for it later.
+
 AC_DEFINE(MAGICK_HAS_EXCEPTIONS)
 
+dnl ====================================================
+
+dnl Now we check to see if they want encryption.
+dnl DES is included with Magick, and enabled by
+dnl default, but here is where they can disable it.
 
 AC_ARG_ENABLE(des, [  --enable-des            Add DES encryption to Magick (default)
   --disable-des           Remove DES encryption from Magick],
 	[case "${enablevel}" in
-		yes) des=false;;
-		no) des=true;;
+		yes) des=true;;
+		no) des=false;;
 		*) AC_MSG_ERROR(bad value ${enablevel} for DES option);;
 	 esac], [des=true])
 if test "$des" = "true"; then
 	AC_DEFINE(HASCRYPT)
 fi
-
-AC_CHECK_FILE(helper/build-ver, [helper/build-ver])
 
 AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/antlr/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/antlr/Makefile include/des/Makefile include/xml/Makefile )

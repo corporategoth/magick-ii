@@ -9,6 +9,10 @@
 #undef _GNU_SOURCE
 
 /* Magick specific extensions */
+#ifndef HASCRYPT
 #undef HASCRYPT
+#endif
 
+#ifndef MAGICK_HAS_EXCEPTIONS
 #undef MAGICK_HAS_EXCEPTIONS
+#endif

@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/05/27 15:10:10  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.16  2000/05/21 04:49:38  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -108,6 +112,7 @@
 using namespace std;
 
 #include <zlib.h>
+#include "config.h"
 
 extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
 extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);

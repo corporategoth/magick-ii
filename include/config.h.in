@@ -1,0 +1,10 @@
+/* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Magick specific extensions */
+#ifndef HASCRYPT
+#undef HASCRYPT
+#endif
+
+#ifndef MAGICK_HAS_EXCEPTIONS
+#undef MAGICK_HAS_EXCEPTIONS
+#endif

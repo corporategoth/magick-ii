@@ -1,6 +1,0 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
-
-/* Magick specific extensions */
-#undef HASCRYPT
-
-#undef MAGICK_HAS_EXCEPTIONS

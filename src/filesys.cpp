@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/05/27 15:10:12  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.28  2000/05/21 04:49:40  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -980,12 +984,12 @@ void DccXfer::Action()
 		    return;
 		}
 	    }
-	    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
 	    i_Total += i_XferTotal;
 	    i_XferTotal = 0;
 	}
 	if (!i_XferTotal && i_Total < i_Filesize)
 	{
+	    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
 	    if (i_Total + i_Blocksize > i_Filesize)
 		TranSz = i_File.Read(i_Transiant, i_Filesize - i_Total);
 	    else

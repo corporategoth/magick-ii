@@ -2,12 +2,17 @@
 #
 # Gather and increment BUILD VERSION stuff
 
-if [ ! -f include/version.h ]; then
+if [ -z "$1" ]; then
+	echo "You must specify the TOPDIR for the Magick tree ..."
+	exit 1
+fi
+
+if [ ! -f $1/include/version.h ]; then
 	echo "This must be run from the MAIN COMPILE directory"
 	exit 1
 fi
 
-cd include
+cd $1/include
 
 for x in `ls -1 *.h`; do
     mv $x $x~

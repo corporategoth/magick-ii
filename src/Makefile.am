@@ -9,4 +9,15 @@ EXTRA_DIST = EscLexer.cpp EscLexer.hpp EscLexerTokenTypes.hpp EscParser.cpp EscP
 
 ####### kdevelop will overwrite this part!!! (end)############
 SUBDIRS = antlr des xml
-INCLUDES = -I$(top_srcdir)/include
+
+mostlyclean-compile:
+	-rm -f *.o core *.core *.debug
+
+helper:
+	../helper/build-ver $(top_srcdir)
+
+magick: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
+	@rm -f magick
+	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
+	cp magick magick.debug
+	strip magick

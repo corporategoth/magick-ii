@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.172  2000/05/27 15:10:11  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.171  2000/05/27 07:06:01  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -1023,7 +1027,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 mDateTime Chan_Live_t::PartTime(mstring nick)
 {
     FT("Chan_Live_t::PartTime", (nick));
-    mDateTime retval(0.0);
+    mDateTime retval((time_t) 0);
     if (recent_parts.find(nick.LowerCase()) != recent_parts.end())
     {
 	retval = recent_parts[nick.LowerCase()];

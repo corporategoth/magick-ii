@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/05/27 15:10:12  prez
+** Misc changes, mainly re-did the makefile system, makes more sense.
+** Also added a config.h file.
+**
 ** Revision 1.51  2000/05/27 07:06:03  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -1216,12 +1220,12 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
     	    list<Memo_t>::iterator j;
 	    for (i=Parent->memoserv.nick.begin(); i!=Parent->memoserv.nick.end(); i++)
 	    {
-	    	for(k=0, j=i->second.begin(); j!=i->second.end(); j++, k++)
+	    	for(k=1, j=i->second.begin(); j!=i->second.end(); j++, k++)
 	    	{
 	    	    if (j->File() == number)
 	    	    {
 			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
-				number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
+				number, Parent->filesys.GetName(FileMap::MemoAttach, number).c_str(),
 				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
 			Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
 				Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
