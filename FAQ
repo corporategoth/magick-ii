@@ -79,6 +79,19 @@ Hybrid says 'I am going to make sure its not only syntactically
 correct, but that it adheres to all the rules I place on it'.
 
 
+Do these services support IPv6?
+===============================
+
+Yes, they do, as long as you compile against a version of ACE that
+supports IPv6.  To enable IPV6 in ACE, you will need at lease ACE
+version 5.2.4 and above, and you will need to add the following
+line to your config.h file:
+
+#define ACE_HAS_IPV6
+
+Then compile and install your version of ACE.
+
+
 I like these services and want to pay the author!
 =================================================
 
