@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.151  2001/01/01 00:43:25  prez
+** Make services realise when they're +o
+**
 ** Revision 1.150  2000/12/31 17:54:29  prez
 ** Added checking to see if 'http://' was entered in the SET URL commands.
 **
@@ -1646,7 +1649,7 @@ void Nick_Live_t::Mode(mstring in)
 		// IF we are SecureOper and NOT (on oper list && recoznized)
 		// OR user is on OperDeny and NOT (on sadmin list && recognized)
 		// Yeah, one UUUUUUGLY if.
-		if (!IsServices() && (Parent->operserv.SecureOper() &&
+		if ((Parent->operserv.SecureOper() &&
 		    !(Parent->nickserv.IsStored(i_Name) &&
 		    Parent->nickserv.stored[i_Name.LowerCase()].IsOnline() &&
 		    Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
@@ -1711,14 +1714,18 @@ void Nick_Live_t::Mode(mstring in)
 			Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, "+" + setmode2);
 		    }
 		}
+		// Break here for non-services ...
+		break;
 	    }
 	    else if (modes.Contains(in[i]) && !IsServices())
 	    {
 		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
 		Parent->operserv.AddHost(i_host);
 		modes.Remove((mstring) in[i]);
+		// Break here for non-services ...
+		break;
 	    }
-	    break;
+	    // WE dont break here coz services will fall through.
 
 	default:
 	    if (add && !modes.Contains(in[i]))
