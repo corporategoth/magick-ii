@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/04/02 07:25:05  prez
+** Fixed low watermarks with threads, it all works now!
+**
 ** Revision 1.12  2000/03/30 11:24:53  prez
 ** Added threads to the filesys establishment.
 **
@@ -335,7 +338,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     }
     else
     {
-	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
+	send(mynick, source, Parent->getMessage(source, "DCC/NOREQ0UEST"),
 						"GET");
 	return;
     }
@@ -662,6 +665,7 @@ vector<unsigned long> DccMap::GetList(mstring in)
 
 void *DccMap::Connect2(void *in)
 {
+    mThread::Attach(tt_MAIN);
     FT("DccMap::Connect2", ("(void *) in"));
 
     NewSocket *val = (NewSocket *) in;
@@ -673,17 +677,21 @@ void *DccMap::Connect2(void *in)
     if (errno != ETIME)
     {
 	unsigned long WorkId;
-	for (WorkId = 1; WorkId > 0; WorkId++)
+	bool found = false;
+	for (WorkId = 1; !found && WorkId > 0; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
 		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, val->mynick,
 			val->source, val->filename, val->filesize, val->blocksize);
 		active.push(WorkId);
+		found = true;
 		CP(("Created DCC entry #%d", WorkId));
+		break;
 	    }
 	}
-	send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
+	if (!found)
+	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"GET");
     }
     else
@@ -691,11 +699,14 @@ void *DccMap::Connect2(void *in)
 						"GET");
     if (val != NULL)
 	delete val;
-    RET(NULL);
+
+    mThread::Detach(tt_MAIN);
+    RET(0);
 }
 
 void *DccMap::Accept2(void *in)
 {
+    mThread::Attach(tt_MAIN);
     FT("DccMap::Accept2", ("(void *) in"));
 
     NewSocket *val = (NewSocket *) in;
@@ -709,17 +720,21 @@ void *DccMap::Accept2(void *in)
     if (errno != ETIME)
     {
 	unsigned long WorkId;
-	for (WorkId = 1; WorkId > 0; WorkId++)
+	bool found = false;
+	for (WorkId = 1; !found && WorkId > 0; WorkId++)
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
 		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, val->mynick,
 			val->source, val->filetype, val->filenum);
 		active.push(WorkId);
+		found = true;
 		CP(("Created DCC entry #%d", WorkId));
+		break;
 	    }
 	}
-	send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
+	if (!found)
+	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"SEND");
     }
     else
@@ -727,7 +742,9 @@ void *DccMap::Accept2(void *in)
 						"SEND");
     if (val != NULL)
 	delete val;
-    RET(NULL);
+
+    mThread::Detach(tt_MAIN);
+    RET(0);
 }
 
 void DccMap::Connect(ACE_INET_Addr address,

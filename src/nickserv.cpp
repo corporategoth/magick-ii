@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/04/02 07:25:05  prez
+** Fixed low watermarks with threads, it all works now!
+**
 ** Revision 1.73  2000/03/29 09:41:19  prez
 ** Attempting to fix thread problem with mBase, and added notification
 ** of new memos on join of channel or signon to network.
@@ -387,7 +390,8 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			    unsigned int i;
 			    for(i=0; i<chan->Users(); i++)
 			    {
-				if (Parent->chanserv.stored[recipiant.LowerCase()].GetAccess(chan->User(i), "READMEMO"))
+				if (Parent->nickserv.IsStored(chan->User(i)) &&
+				    Parent->chanserv.stored[recipiant.LowerCase()].GetAccess(chan->User(i), "READMEMO"))
 				{
 				    send(service, chan->User(i), Parent->getMessage(chan->User(i), "MS_COMMAND/CS_NEW"),
 					    Parent->memoserv.channel[recipiant.LowerCase()].size(),

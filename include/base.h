@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/04/02 07:25:05  prez
+** Fixed low watermarks with threads, it all works now!
+**
 ** Revision 1.56  2000/03/29 09:41:17  prez
 ** Attempting to fix thread problem with mBase, and added notification
 ** of new memos on join of channel or signon to network.
@@ -78,7 +81,7 @@ class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 protected:
     ACE_Activation_Queue activation_queue_;
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
-    void message_i(const mstring& message);
+    int message_i(const mstring& message);
 public:
     mBaseTask() :  activation_queue_(&message_queue_) {}
     virtual int open(void *in=0);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/04/02 07:25:05  prez
+** Fixed low watermarks with threads, it all works now!
+**
 ** Revision 1.110  2000/03/29 14:03:00  prez
 ** Fixed the failure to create thread condition ...
 **
@@ -225,7 +228,7 @@ void mBase::init()
 	}
     }
     BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (sizeof(ACE_Method_Object *) * 2));
-    BaseTask.message_queue_.low_water_mark(0);
+    BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
 
 bool mBase::signon(const mstring &nickname)
@@ -568,8 +571,8 @@ public:
     virtual int call()
     {
 	NFT("mBaseTaskmessage_MO::call");
-	i_parent->message_i(i_data);
-	RET(0);
+	int retval = i_parent->message_i(i_data);
+	RET(retval);
     }
 private:
     mBaseTask *i_parent;
@@ -590,15 +593,14 @@ void mBaseTask::message(const mstring& message)
 	else
 	{
 	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()) * (sizeof(ACE_Method_Object *) * 2));
-	    message_queue_.low_water_mark(((Parent->config.High_Water_Mark() * (thr_count()-2)) +
-					Parent->config.Low_Water_Mark()) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	}
     }
     MLOCK2(("ActivationQueue"));
     activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
 }
 
-void mBaseTask::message_i(const mstring& message)
+int mBaseTask::message_i(const mstring& message)
 {
     FT("mBaseTask::message_i",(message));
     // NOTE: No need to handle 'non-user messages' here, because
@@ -609,7 +611,7 @@ void mBaseTask::message_i(const mstring& message)
 
     mstring source, type, target;
     if (data == "")
-	return;
+	RET(0);
     source=data.ExtractWord(1,": ");
     type  =data.ExtractWord(2,": ").UpperCase();
     target=data.ExtractWord(3,": ");
@@ -670,17 +672,19 @@ void mBaseTask::message_i(const mstring& message)
 	Parent->server.execute(data);
 
     MLOCK(("MessageQueue"));
-    if(message_queue_.message_count() < (message_queue_.low_water_mark() / (sizeof(ACE_Method_Object *) * 2)))
+    CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
+		thr_count(), message_queue_.message_count(),
+		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thr_count()-2)),
+		Parent->config.Low_Water_Mark() * Parent->config.High_Water_Mark()));
+    if(thr_count() > 1 && message_queue_.message_count() < Parent->config.Low_Water_Mark() + 
+					(Parent->config.High_Water_Mark() * (thr_count()-2)))
     {
 	COM(("Low water mark reached, killing thread."));
 	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()-1) * (sizeof(ACE_Method_Object *) * 2));
-	if (thr_count() <= 2)
-	    message_queue_.low_water_mark(0);
-	else
-	    message_queue_.low_water_mark(((Parent->config.High_Water_Mark() * (thr_count()-3)) +
-					Parent->config.Low_Water_Mark()) * (sizeof(ACE_Method_Object *) * 2));
-	i_shutdown();
+	message_queue_.low_water_mark(message_queue_.high_water_mark());
+	RET(-1);
     }
+    RET(0);
 }
 
 mstring mBaseTask::PreParse(const mstring& message)
