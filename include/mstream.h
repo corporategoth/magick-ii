@@ -390,7 +390,7 @@ public:
   // open/close
     // create a new file (with the default value of bOverwrite, it will fail if
     // the file already exists, otherwise it will overwrite it and succeed)
-  bool Create(const char *szFileName, bool bOverwrite = FALSE,
+  bool Create(const char *szFileName, bool bOverwrite = false,
               int access = wxS_DEFAULT);
   bool Open(const char *szFileName, OpenMode mode = read,
             int access = wxS_DEFAULT);

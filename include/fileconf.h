@@ -92,7 +92,7 @@
   in the entries it reads: for example, if you have an entry
     score_file = $HOME/.score
   a call to Read(&str, "score_file") will return a complete path to .score file
-  unless the expansion was previousle disabled with SetExpandEnvVars(FALSE) call
+  unless the expansion was previousle disabled with SetExpandEnvVars(false) call
   (it's on by default, the current status can be retrieved with
    IsExpandingEnvVars function).
 */
@@ -182,11 +182,11 @@ protected:
   //@{
     /**
       Search the element in the array, starting from the either side
-      @param bFromEnd if TRUE, start from the end
+      @param bFromEnd if true, start from the end
       @return index of the first item matched or -1
       @see -1
      */
-  int Index(long lItem, bool bFromEnd = FALSE) const;
+  int Index(long lItem, bool bFromEnd = false) const;
     /// search for an item using binary search in a sorted array
   int Index(long lItem, CMPFUNC fnCompare) const;
     /// add new element at the end
@@ -328,7 +328,7 @@ public:
     // the names of local and global (if not disabled) config files are
     // constructed using Get{Local|Global}FileName functions described above
     // (szAppName is just the (short) name of your application)
-  wxFileConfig(const char *szAppName, bool bLocalOnly = FALSE);
+  wxFileConfig(const char *szAppName, bool bLocalOnly = false);
     // this ctor allows you to specify custom names for both files (if strGlobal
     // isn't a full path, it's considered to be relative to the standard
     // directory, i.e. /etc under Unix and %windir% under Windows, if strLocal
@@ -356,8 +356,8 @@ public:
   virtual bool GetFirstEntry(mstring& str, long& lIndex) const;
   virtual bool GetNextEntry (mstring& str, long& lIndex) const;
 
-  virtual size_t GetNumberOfEntries(bool bRecursive = FALSE) const;
-  virtual size_t GetNumberOfGroups(bool bRecursive = FALSE) const;
+  virtual size_t GetNumberOfEntries(bool bRecursive = false) const;
+  virtual size_t GetNumberOfGroups(bool bRecursive = false) const;
 
   virtual bool HasGroup(const mstring& strName) const;
   virtual bool HasEntry(const mstring& strName) const;
@@ -382,7 +382,7 @@ public:
   bool Write(const mstring& key, double value);
   bool Write(const mstring& key, bool value);
 
-  virtual bool Flush(bool bCurrentOnly = FALSE);
+  virtual bool Flush(bool bCurrentOnly = false);
 
   virtual bool RenameEntry(const mstring& oldName, const mstring& newName);
   virtual bool RenameGroup(const mstring& oldName, const mstring& newName);
@@ -460,7 +460,7 @@ public:
   LineList       *GetLine()     const;
 
   // modify entry attributes
-  void SetValue(const mstring& strValue, bool bUser = TRUE);
+  void SetValue(const mstring& strValue, bool bUser = true);
   void SetDirty();
   void SetLine(LineList *pLine);
 };
@@ -473,7 +473,7 @@ private:
   wxFileConfig::ArrayEntries  m_aEntries;       // entries in this group
   wxFileConfig::ArrayGroups   m_aSubgroups;     // subgroups
   mstring      m_strName;        // group's name
-  bool          m_bDirty;         // if FALSE => all subgroups are not dirty
+  bool          m_bDirty;         // if false => all subgroups are not dirty
   LineList     *m_pLine;          // pointer to our line in the linked list
   ConfigEntry  *m_pLastEntry;     // last entry/subgroup of this group in the
   ConfigGroup  *m_pLastGroup;     // local file (we insert new ones after it)
@@ -502,7 +502,7 @@ public:
   ConfigGroup *FindSubgroup(const char *szName) const;
   ConfigEntry *FindEntry   (const char *szName) const;
 
-  // delete entry/subgroup, return FALSE if doesn't exist
+  // delete entry/subgroup, return false if doesn't exist
   bool DeleteSubgroupByName(const char *szName);
   bool DeleteEntry(const char *szName);
 

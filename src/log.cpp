@@ -358,8 +358,8 @@ wxLogStderr::~wxLogStderr()
 // static variables
 // ----------------------------------------------------------------------------
 wxLog      *wxLog::ms_pLogger      = (wxLog *) NULL;
-bool        wxLog::ms_doLog        = TRUE;
-bool        wxLog::ms_bAutoCreate  = TRUE;
+bool        wxLog::ms_doLog        = true;
+bool        wxLog::ms_bAutoCreate  = true;
 wxTraceMask wxLog::ms_ulTraceMask  = (wxTraceMask)0;
 
 // ----------------------------------------------------------------------------
@@ -469,8 +469,8 @@ void Trap()
 void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
 {
   // this variable can be set to true to suppress "assert failure" messages
-  static bool s_bNoAsserts = FALSE;
-  static bool s_bInAssert = FALSE;
+  static bool s_bNoAsserts = false;
+  static bool s_bInAssert = false;
 
   if ( s_bInAssert ) {
     // He-e-e-e-elp!! we're trapped in endless loop
@@ -479,7 +479,7 @@ void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
     return;
   }
 
-  s_bInAssert = TRUE;
+  s_bInAssert = true;
 
   char szBuf[LOG_BUFFER_SIZE];
   sprintf(szBuf, _("Assert failed in file %s at line %d"), szFile, nLine);
@@ -498,7 +498,7 @@ void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
       Trap();
   }
 
-  s_bInAssert = FALSE;
+  s_bInAssert = false;
 }
 
 #endif  //DEBUG

@@ -152,7 +152,7 @@ void wxSplitPath(mArrayString& aParts, const mstring &sz)
       else if ( strCurrent == ".." ) {
         // go up one level
         if ( aParts.size()==0 )
-          wxLogWarning(_("'%s' has extra '..', ignored."), sz);
+          wxLogWarning(_("'%s' has extra '..', ignored."), sz.c_str());
         else
           aParts.erase(aParts.end() - 1);
 

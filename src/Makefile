@@ -4,7 +4,7 @@
 .SUFFIXES:	.o .obj .c .cpp
 
 # UNIX compilers will be o, windows obj
-LIBNAME=magick.a
+EXECNAME=magick
 OBJS = bob.$(OBJ) confbase.$(OBJ) fileconf.$(OBJ) lockable.$(OBJ) log.$(OBJ) \
        magick.$(OBJ) main.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) textfile.$(OBJ) \
        trace.$(OBJ) utils.$(OBJ)
@@ -15,12 +15,12 @@ LIBS=antlr/antlr.a bob/bob.a
 CFLAGS=-O2 -I.././include
 PASSTHRU=CC=$(CC) CFLAG=$(CFLAG) LFLAG=$(LFLAG) .SUFFIXES=$(.SUFFIXES) OBJ=$(OBJ)
 
-all: $(LIBNAME)
+all: $(EXECNAME)
 
 clean:
-	rm -f *.$(OBJ) $(LIBNAME)
+	rm -f *.$(OBJ) $(EXECNAME)
 
-$(LIBNAME): $(OBJS)
+$(EXECNAME): $(OBJS)
 	@for x in $(SUBDIRS); \
 	do	cd $$x; \
 		if [ -f ./configure ]; \
@@ -29,10 +29,7 @@ $(LIBNAME): $(OBJS)
 		cd $${OLDPWD}; \
 		$(MAKE) $(PASSTHRU) -C $$x; \
 	done
-
-	@ar rcs $@ $(OBJS) $(LIBS) || \
-	( ar rc $@ $(OBJS) $(LIBS) && \
-	  ranlib $@ )
+	gcc -o $(EXECNAME) $(OBJS) $(LIBS)
 
 .cpp.$(OBJ):
 	$(CC) $(CFLAGS) -c $<

@@ -17,7 +17,7 @@ CRYPTDIR=../support/cryptlib21
 LIBCRYPT=$(CRYPTDIR)/libcrypt.a
 
 # Z (compression) Library
-#ZDIR=../support/zlib
+ZDIR=../support/zlib-1.1.3
 #LIBZ=$(ZDIR)/libz.a
 
 ##########################################################################
@@ -29,7 +29,8 @@ LIBCRYPT=$(CRYPTDIR)/libcrypt.a
 CC=gcc
 
 # What directories to enter and compile.
-SUBDIRS=$(ACEDIR) $(CRYPTDIR)
+#SUBDIRS=$(ACEDIR) $(CRYPTDIR)
+SUBDIRS=
 
 # Compilation flags to give the compiler
 CFLAGS=-O2 -I$${PWD}/./include -I$${PWD}/../support/bob -I$${PWD}/../support/ACE_wrappers/include
@@ -53,8 +54,9 @@ PASSTHRU=CC=$(CC) CFLAG=$(CFLAG) LFLAG=$(LFLAG) .SUFFIXES=$(.SUFFIXES) OBJ=$(OBJ
 all: magick
 
 magick:
-	rm -f ./include/bob
+	rm -f ./include/ace ./include/zlib
 	ln -s $${PWD}/$(ACEDIR)/ace ./include/ace
+	ln -s $${PWD}/$(ZDIR) ./include/zlib
 	@for x in $(SUBDIRS) ./src; \
 	do	cd $$x; \
 		if [ -f ./configure ]; \

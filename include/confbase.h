@@ -88,7 +88,7 @@ public:
 
   // ctor & virtual dtor
     // environment variable expansion is on by default
-//  wxConfigBase() { m_bExpandEnvVars = TRUE; m_bRecordDefaults = FALSE; }
+//  wxConfigBase() { m_bExpandEnvVars = true; m_bRecordDefaults = false; }
 
   // ctor
   // Not all args will always be used by derived classes, but
@@ -123,14 +123,14 @@ public:
   virtual size_t GetNumberOfGroups(bool bRecursive = false) const = 0;
 
   // tests of existence
-    // returns TRUE if the group by this name exists
+    // returns true if the group by this name exists
   virtual bool HasGroup(const mstring& strName) const = 0;
     // same as above, but for an entry
   virtual bool HasEntry(const mstring& strName) const = 0;
-    // returns TRUE if either a group or an entry with a given name exist
+    // returns true if either a group or an entry with a given name exist
   bool Exists(const mstring& strName) const;
 
-  // key access: returns TRUE if value was really read, FALSE if default used
+  // key access: returns true if value was really read, false if default used
   // (and if the key is not found the default value is returned.)
     // read a string from the key
   virtual bool Read(const mstring& key, mstring *pStr) const = 0;

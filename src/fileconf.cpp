@@ -75,7 +75,7 @@ mstring wxFileConfig::GetGlobalDir()
   #ifdef __UNIX__
     strDir = "/etc/";
   #elif defined(__WXSTUBS__)
-    wxASSERT_MSG( FALSE, "TODO" ) ;
+    wxASSERT_MSG( false, "TODO" ) ;
   #else // Windows
     char szWinDir[MAX_PATH];
     ::GetWindowsDirectory(szWinDir, MAX_PATH);
@@ -158,7 +158,7 @@ void wxFileConfig::Init()
     wxTextFile fileGlobal(m_strGlobalFile);
 
     if ( fileGlobal.Open() ) {
-      Parse(fileGlobal, FALSE /* global */);
+      Parse(fileGlobal, false /* global */);
       SetRootPath();
     }
     else
@@ -170,7 +170,7 @@ void wxFileConfig::Init()
   if ( !m_strLocalFile.IsEmpty() && wxFile::Exists(m_strLocalFile) ) {
     wxTextFile fileLocal(m_strLocalFile);
     if ( fileLocal.Open() ) {
-      Parse(fileLocal, TRUE /* local */);
+      Parse(fileLocal, true /* local */);
       SetRootPath();
     }
     else
@@ -301,12 +301,12 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
         m_pCurrentGroup->SetLine(m_linesTail);
 
       // check that there is nothing except comments left on this line
-      bool bCont = TRUE;
+      bool bCont = true;
       while ( *++pEnd != '\0' && bCont ) {
         switch ( *pEnd ) {
           case '#':
           case ';':
-            bCont = FALSE;
+            bCont = false;
             break;
 
           case ' ':
@@ -318,7 +318,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
             wxLogWarning(_("file '%s', line %d: '%s' "
                            "ignored after group header."),
                          file.GetName(), n + 1, pEnd);
-            bCont = FALSE;
+            bCont = false;
         }
       }
     }
@@ -374,7 +374,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
         while ( isspace(*pEnd) )
           pEnd++;
 
-        pEntry->SetValue(FilterIn(pEnd), FALSE /* read from file */);
+        pEntry->SetValue(FilterIn(pEnd), false /* read from file */);
       }
     }
   }
@@ -445,10 +445,10 @@ bool wxFileConfig::GetNextGroup (mstring& str, long& lIndex) const
   FT("wxFileConfig::GetNextGroup", (str, lIndex));
   if ( size_t(lIndex) < m_pCurrentGroup->Groups().Count() ) {
     str = m_pCurrentGroup->Groups()[lIndex++]->Name();
-    RET(TRUE);
+    RET(true);
   }
   else
-    RET(FALSE);
+    RET(false);
 }
 
 bool wxFileConfig::GetFirstEntry(mstring& str, long& lIndex) const
@@ -463,10 +463,10 @@ bool wxFileConfig::GetNextEntry (mstring& str, long& lIndex) const
   FT("wxFileConfig::GetFirstEntry", (str, lIndex));
   if ( size_t(lIndex) < m_pCurrentGroup->Entries().Count() ) {
     str = m_pCurrentGroup->Entries()[lIndex++]->Name();
-    RET(TRUE);
+    RET(true);
   }
   else
-    RET(FALSE);
+    RET(false);
 }
 
 size_t wxFileConfig::GetNumberOfEntries(bool bRecursive) const
@@ -478,7 +478,7 @@ size_t wxFileConfig::GetNumberOfEntries(bool bRecursive) const
     size_t nSubgroups = m_pCurrentGroup->Groups().Count();
     for ( size_t nGroup = 0; nGroup < nSubgroups; nGroup++ ) {
       CONST_CAST m_pCurrentGroup = m_pCurrentGroup->Groups()[nGroup];
-      n += GetNumberOfEntries(TRUE);
+      n += GetNumberOfEntries(true);
       CONST_CAST m_pCurrentGroup = pOldCurrentGroup;
     }
   }
@@ -495,7 +495,7 @@ size_t wxFileConfig::GetNumberOfGroups(bool bRecursive) const
     size_t nSubgroups = m_pCurrentGroup->Groups().Count();
     for ( size_t nGroup = 0; nGroup < nSubgroups; nGroup++ ) {
       CONST_CAST m_pCurrentGroup = m_pCurrentGroup->Groups()[nGroup];
-      n += GetNumberOfGroups(TRUE);
+      n += GetNumberOfGroups(true);
       CONST_CAST m_pCurrentGroup = pOldCurrentGroup;
     }
   }
@@ -537,11 +537,11 @@ bool wxFileConfig::Read(const mstring& key,
 
   ConfigEntry *pEntry = m_pCurrentGroup->FindEntry(path.Name());
   if (pEntry == NULL) {
-    RET(FALSE);
+    RET(false);
   }
   else {
     *pStr = ExpandEnvVars(pEntry->Value());
-    RET(TRUE);
+    RET(true);
   }
 }
 
@@ -556,11 +556,11 @@ bool wxFileConfig::Read(const mstring& key,
     if( IsRecordingDefaults() )
       ((wxFileConfig *)this)->Write(key,defVal);
     *pStr = ExpandEnvVars(defVal);
-    RET(FALSE);
+    RET(false);
   }
   else {
     *pStr = ExpandEnvVars(pEntry->Value());
-    RET(TRUE);
+    RET(true);
   }
 }
 
@@ -570,10 +570,10 @@ bool wxFileConfig::Read(const mstring& key, long *pl) const
   mstring str;
   if ( Read(key, & str) ) {
     *pl = atol(str);
-    RET(TRUE);
+    RET(true);
   }
   else {
-    RET(FALSE);
+    RET(false);
   }
 }
 
@@ -600,14 +600,14 @@ bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
     if ( strName[0u] == wxCONFIG_IMMUTABLE_PREFIX ) {
       wxLogError(_("Entry name can't start with '%c'."),
                  wxCONFIG_IMMUTABLE_PREFIX);
-      RET(FALSE);
+      RET(false);
     }
 
     for ( const char *pc = strName; *pc != '\0'; pc++ ) {
       if ( !IsValid(*pc) ) {
         wxLogError(_("Character '%c' is invalid in a config entry name."),
                    *pc);
-        RET(FALSE);
+        RET(false);
       }
     }
 
@@ -618,7 +618,7 @@ bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
     pEntry->SetValue(szValue);
   }
 
-  RET(TRUE);
+  RET(true);
 }
 
 bool wxFileConfig::Write(const mstring& key, long lValue)
@@ -634,20 +634,20 @@ bool wxFileConfig::Flush(bool bCurrentOnly)
 {
   FT("wxFileConfig::Flush",(bCurrentOnly));
   if ( LineListIsEmpty() || !m_pRootGroup->IsDirty() )
-    RET(TRUE);
+    RET(true);
 
   wxTempFile file(m_strLocalFile);
 
   if ( !file.IsOpened() ) {
     wxLogError(_("can't open user configuration file."));
-    RET(FALSE);
+    RET(false);
   }
 
   // write all strings to file
   for ( LineList *p = m_linesHead; p != NULL; p = p->Next() ) {
     if ( !file.Write(p->Text() + wxTextFile::GetEOL()) ) {
       wxLogError(_("can't write user configuration file."));
-      RET(FALSE);
+      RET(false);
     }
   }
 
@@ -665,21 +665,21 @@ bool wxFileConfig::RenameEntry(const mstring& oldName,
     // check that the entry exists
     ConfigEntry *oldEntry = m_pCurrentGroup->FindEntry(oldName);
     if ( !oldEntry )
-        RET(FALSE);
+        RET(false);
 
     // check that the new entry doesn't already exist
     if ( m_pCurrentGroup->FindEntry(newName) )
-        RET(FALSE);
+        RET(false);
 
     // delete the old entry, create the new one
     mstring value = oldEntry->Value();
     if ( !m_pCurrentGroup->DeleteEntry(oldName) )
-        RET(FALSE);
+        RET(false);
 
     ConfigEntry *newEntry = m_pCurrentGroup->AddEntry(newName);
     newEntry->SetValue(value);
 
-    RET(TRUE);
+    RET(true);
 }
 
 bool wxFileConfig::RenameGroup(const mstring& oldName,
@@ -689,15 +689,15 @@ bool wxFileConfig::RenameGroup(const mstring& oldName,
     // check that the group exists
     ConfigGroup *group = m_pCurrentGroup->FindSubgroup(oldName);
     if ( !group )
-        RET(FALSE);
+        RET(false);
 
     // check that the new group doesn't already exist
     if ( m_pCurrentGroup->FindSubgroup(newName) )
-        RET(FALSE);
+        RET(false);
 
     group->Rename(newName);
 
-    RET(TRUE);
+    RET(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -710,7 +710,7 @@ bool wxFileConfig::DeleteEntry(const mstring& key, bool bGroupIfEmptyAlso)
   wxConfigPathChanger path(this, key);
 
   if ( !m_pCurrentGroup->DeleteEntry(path.Name()) )
-    RET(FALSE);
+    RET(false);
 
   if ( bGroupIfEmptyAlso && m_pCurrentGroup->IsEmpty() ) {
     if ( m_pCurrentGroup != m_pRootGroup ) {
@@ -721,7 +721,7 @@ bool wxFileConfig::DeleteEntry(const mstring& key, bool bGroupIfEmptyAlso)
     //else: never delete the root group
   }
 
-  RET(TRUE);
+  RET(true);
 }
 
 bool wxFileConfig::DeleteGroup(const mstring& key)
@@ -745,7 +745,7 @@ bool wxFileConfig::DeleteAll()
   m_strLocalFile = m_strGlobalFile = "";
   Init();
 
-  RET(TRUE);
+  RET(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -845,7 +845,7 @@ ConfigGroup::ConfigGroup(ConfigGroup *pParent,
   FT("ConfigGroup::ConfigGroup", ("(ConfigGroup) pParent", strName, "(wxFileConfig) pConfig"));
   m_pConfig = pConfig;
   m_pParent = pParent;
-  m_bDirty  = FALSE;
+  m_bDirty  = false;
   m_pLine   = NULL;
 
   m_pLastEntry = NULL;
@@ -1112,7 +1112,7 @@ bool ConfigGroup::DeleteSubgroupByName(const char *szName)
 bool ConfigGroup::DeleteSubgroup(ConfigGroup *pGroup)
 {
   FT("ConfigGroup::DeleteSubgroup", ("(ConfigGroup) *pGroup"));
-  wxCHECK( pGroup != NULL, FALSE ); // deleting non existing group?
+  wxCHECK( pGroup != NULL, false ); // deleting non existing group?
 
   // delete all entries
   size_t nCount = pGroup->m_aEntries.Count();
@@ -1171,14 +1171,14 @@ bool ConfigGroup::DeleteSubgroup(ConfigGroup *pGroup)
   m_aSubgroups.Remove(pGroup);
   delete pGroup;
 
-  RET(TRUE);
+  RET(true);
 }
 
 bool ConfigGroup::DeleteEntry(const char *szName)
 {
   FT("ConfigGroup::DeleteEntry", (szName));
   ConfigEntry *pEntry = FindEntry(szName);
-  wxCHECK( pEntry != NULL, FALSE );  // deleting non existing item?
+  wxCHECK( pEntry != NULL, false );  // deleting non existing item?
 
   LineList *pLine = pEntry->GetLine();
   if ( pLine != NULL ) {
@@ -1222,7 +1222,7 @@ bool ConfigGroup::DeleteEntry(const char *szName)
   m_aEntries.Remove(pEntry);
   delete pEntry;
 
-  RET(TRUE);
+  RET(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -1231,7 +1231,7 @@ bool ConfigGroup::DeleteEntry(const char *szName)
 void ConfigGroup::SetDirty()
 {
   NFT("ConfigGroup::SetDirty");
-  m_bDirty = TRUE;
+  m_bDirty = true;
   if ( Parent() != NULL )             // propagate upwards
     Parent()->SetDirty();
 }
@@ -1255,7 +1255,7 @@ ConfigEntry::ConfigEntry(ConfigGroup *pParent,
   m_nLine   = nLine;
   m_pLine   = NULL;
 
-  m_bDirty  = FALSE;
+  m_bDirty  = false;
 
   m_bImmutable = strName[0] == wxCONFIG_IMMUTABLE_PREFIX;
   if ( m_bImmutable )
@@ -1278,7 +1278,7 @@ void ConfigEntry::SetLine(LineList *pLine)
   Group()->SetLastEntry(this);
 }
 
-// second parameter is FALSE if we read the value from file and prevents the
+// second parameter is false if we read the value from file and prevents the
 // entry from being marked as 'dirty'
 void ConfigEntry::SetValue(const mstring& strValue, bool bUser)
 {
@@ -1320,7 +1320,7 @@ void ConfigEntry::SetValue(const mstring& strValue, bool bUser)
 void ConfigEntry::SetDirty()
 {
   NFT("ConfigEntry::SetDirty");
-  m_bDirty = TRUE;
+  m_bDirty = true;
   Group()->SetDirty();
 }
 

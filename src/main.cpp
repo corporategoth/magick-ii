@@ -13,7 +13,7 @@
 
 #include "magick.h"
 #include "datetime.h"
-mDateTime Reset_Time;
+mDateTime Start_Time, Reset_Time;
 
 Magick *MagickObject;
 
@@ -27,6 +27,7 @@ int start_server(int argc, char **argv)
 }
 int main(int argc, char **argv)
 {
+    Start_Time=Now();
     try
     {
 	int Result;
