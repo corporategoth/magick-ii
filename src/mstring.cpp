@@ -533,32 +533,8 @@ mstring& mstring::operator <<(double d)
 	s.Format("%g",d);
 	return *this<<s;
 }
-#if 0
-char &mstring::operator [ ](unsigned int pos)
-{
-    string tmpstring(*this);
-    return tmpstring[pos];
-}
 
-const char &mstring::operator[](unsigned int pos)const
-{
-    string tmpstring(*this);
-    return tmpstring[pos];
-}
-
-char &mstring::operator [ ](int pos)
-{
-    string tmpstring(*this);
-    return tmpstring[pos];
-}
-
-const char &mstring::operator[](int pos)const
-{
-    string tmpstring(*this);
-    return tmpstring[pos];
-}
-#endif
-size_t mstring::Len()
+size_t mstring::Len() const
 {
 	return length();
 }

@@ -15,7 +15,6 @@
 #include "mstring.h"
 
 
-// change this shit over to ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR>
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
 private:

@@ -39,13 +39,8 @@ class mstring:public string
 	typedef string inherited;
 public:
 	char& Last();
-	size_t Len();
-#if 0
-	const char &operator[](int pos)const;
-	char &operator[](int pos);
-	const char &operator[](unsigned int pos)const;
-	char &operator[](unsigned int pos);
-#endif
+	size_t Len() const;
+	// below are fast convert_to_string+append functions
 	mstring& operator <<(double d);
 	mstring& operator <<(float f);
 	mstring& operator <<(long l);

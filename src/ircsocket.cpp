@@ -32,7 +32,9 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // might set this up to be an active object here.
     char data[513];
     int recvResult;
-    recvResult=peer().recv_n(data,512);
+    recvResult=peer().recv(data,512);
+    // possibly mstring(data,0,recvResult); rather than mstring(data)
+    // depends on null terminators etc.
     CH(T_Chatter::From,mstring("IrcServer :")+mstring(data));
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
@@ -56,57 +58,18 @@ int IrcSvcHandler::svc(void)
 
 int IrcSvcHandler::handle_input_i(const mstring& data)
 {
-    // okay data is the raw string received from the socket.
-    // this is sitting inside the thread, so just parse off hand off to
-    // wherever needed and return from this function.
-    // return -1 if we want to shutdown the socket, 0 if all's okay.
-    // <nick/server> <command> <params ...>
-
 #if 0
-    mstring tmp[3];
-    tmp[0]=data.Before(" ");				// 1st arg
-    tmp[1]=data.After(" ").Before(" ");			// 2nd arg
-    tmp[2]=data.After(" ").After(" ").Before(" ");	// 3rd arg
-    tmp[1].MakeUpper();
-#endif
-
-    // This is all we really care about for splitting.
-
-    mBase::push_message (data);
-#if 0
-    if (tmp[1] == "PRIVMSG" || tmp[1] == "NOTICE") {
-	// We pass to services all except target.
-	// We send target as a seperate argument.
-	mstring pass=tmp[0]+tmp[1]+data.After(" ").After(" ").After(" ");
-	mstring names;
-
-	// Find out if the target nick is one of the services 'clones'
-	// (and if it is, which one?)  Pass the message to them if so.
-//	     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
-//	    MagickObject->operserv.push_message(tmp[2], pass);
-	     if ((names=" "+MagickObject->nickserv.getnames()+" ").Find(" "+tmp[2]+" "))
-	    MagickObject->nickserv.push_message(tmp[2], pass);
-	else if ((names=" "+MagickObject->chanserv.getnames()+" ").Find(" "+tmp[2]+" "))
-	    MagickObject->chanserv.push_message(tmp[2], pass);
-//	else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[2]+" "))
-//	    MagickObject->memoserv.push_message(tmp[2], pass);
-//	else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[2]+" "))
-//	    MagickObject->helpserv.push_message(tmp[2], pass);
-
-	// How do we want to handle custom services (BOB created)?
-
-	// Not a MSG/NOTICE to services, fall through
-	// (it could be to a channel, or unrecognised nick).
-//	else
-//	    Server.push_message (data);
-
-    } else {
-	// This handles all non-msgs/notices.
-//	Server.push_message (data);
-
+    // relevant code in mstring needs to be coded
+    if(data.Contains("\n"))
+    {
+	int i;
+	for(i=0;i<data.WordCount("\n");i++)
+	    mBase::push_message(data.Word(i,"\n"));
     }
+    else
+        mBase::push_message (data);
 #endif
-
+    mBase::push_message (data);
     return 0;
 }
 

@@ -272,7 +272,7 @@ int Magick::Start()
 	RET(MAGICK_RET_TERMINATE);
     }
     
-    // next thing to be done here is set up a connector mechanism to listen
+    // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
 
 
