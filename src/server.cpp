@@ -100,14 +100,14 @@ void Server::Ping()
     if (!i_Ping)
     {
         SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
-#ifndef WIN32
-	timeval *tmp;
-	gettimeofday(tmp, NULL);
-	i_Ping = (double)tmp->tv_sec + ((double)tmp->tv_usec / 1000.0);
-#else
-	SYSTEMTIME lpSystemTime;
+#ifdef WIN32
+ 	SYSTEMTIME lpSystemTime;
 	GetSystemTime(&lpSystemTime);
 	i_Ping=((double)lpSystemTime.wHour*3600.0)+((double)lpSystemTime.wMinute*60.0)+(double)lpSystemTime.wSecond+((double)lpSystemTime.wMilliseconds/1000.0);
+#else
+	timeval *tmp;
+	gettimeofday(tmp, NULL);
+	i_Ping = (tmp->tv_sec * 1000) + tmp->tv_usec;
 #endif
    }
 }
@@ -117,23 +117,26 @@ void Server::Pong()
     NFT("Server::Pong");
     if (i_Ping)
     {
-#ifndef WIN32
-	timeval *tmp;
-	gettimeofday(tmp, NULL);
-	i_Lag = ((double) tmp->tv_sec + ((double) tmp->tv_usec / 1000.0)) - i_Ping;
-#else
+#ifdef WIN32
         SYSTEMTIME lpSystemTime;
 	GetSystemTime(&lpSystemTime);
 	i_Lag=(((double)lpSystemTime.wHour*3600.0)+((double)lpSystemTime.wMinute*60.0)+(double)lpSystemTime.wSecond+((double)lpSystemTime.wMilliseconds/1000.0))-i_Ping;
+#else
+ 	timeval *tmp;
+	gettimeofday(tmp, NULL);
+	i_Lag = ((tmp->tv_sec * 1000) + tmp->tv_usec) - i_Ping;
 #endif
-	i_Ping = 0.0;
+	mstring blah;
+        blah << "Lag time of " << i_Name << " is " << i_Lag / 1000.0 << " seconds.";
+	COM((blah.c_str()));
+	i_Ping = 0;
     }
 }
 
 double Server::Lag()
 {
     NFT("Server::Lag");
-    RET(i_Lag);
+    RET(i_Lag / 1000.0);
 }
 
 vector<mstring> Server::Downlinks()
@@ -144,7 +147,7 @@ vector<mstring> Server::Downlinks()
 
     for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
     {
-	if (serv->second.Uplink() == i_Name)
+	if (serv->second.Uplink() == i_Name && i_Name != "")
 	    downlinks.push_back(serv->first);
     }
     NRET(vector<mstring>, downlinks);
@@ -197,6 +200,7 @@ Server::~Server()
 
     // Take my sublinks with me (who will take theirs ...)
     vector<mstring> Kill = Downlinks();
+    COM(("Destroying %d more servers", Kill.size()));
     for (int i=0; i<Kill.size(); i++)
 	Parent->server.ServerList.erase(Kill[i]);
 }
@@ -210,7 +214,7 @@ NetworkServ::NetworkServ()
 
 bool NetworkServ::IsServer(mstring server)
 {
-    FT("IsServer", (server));
+    FT("NetworkServ::IsServer", (server));
     if (ServerList.empty()) RET(false);
     RET((ServerList.find(server.LowerCase()) != ServerList.end()));
 }

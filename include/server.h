@@ -24,8 +24,8 @@ class Server
     mstring i_Uplink;
     int i_Hops;
     mstring i_Description;
-    double i_Ping;
-    double i_Lag;
+    unsigned long i_Ping;
+    unsigned long i_Lag;
 public:
     Server();
     Server(const Server &in);
