@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.139  2000/12/10 13:06:12  prez
+** Ditched alot of the *toa's since mstring can do it internally now.
+**
 ** Revision 1.138  2000/10/10 11:47:51  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -706,7 +709,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->server.raw(tmp);
 	if (Parent->server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(itoa(time(NULL))));
+	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(time(NULL)));
 	Parent->Connected(true);
     }
     CE(1, Parent->i_server);

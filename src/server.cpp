@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.139  2000/12/10 13:06:12  prez
+** Ditched alot of the *toa's since mstring can do it internally now.
+**
 ** Revision 1.138  2000/12/10 12:47:36  prez
 ** Fixed it joining all forbidden channels on startup
 **
@@ -1883,7 +1886,7 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 		((proto.Tokens() && proto.GetNonToken("NICK") != "") ?
 			proto.GetNonToken("NICK") : mstring("NICK")) +
 		" " + newnick + (proto.TSora() ?
-			" :" + mstring(itoa(time(NULL))) :
+			" :" + mstring(time(NULL)) :
 			mstring("")));
     }
 }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.140  2000/12/10 13:06:12  prez
+** Ditched alot of the *toa's since mstring can do it internally now.
+**
 ** Revision 1.139  2000/12/09 16:45:37  prez
 ** Fixed rfind in mstring.
 **
@@ -5946,8 +5949,8 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 
     unsigned short port = FindAvailPort();
     ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
-		" " + mstring(ultoa(Parent->LocalHost())) + " " +
-		mstring(ultoa(port)) + " " + mstring(ultoa(filesize))));
+		" " + mstring(Parent->LocalHost()) + " " +
+		mstring(port) + " " + mstring(filesize)));
     Parent->dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
 }
 
