@@ -29,11 +29,10 @@ FreeBSD (3.x, 4.x):
 - The log file is not appended to properly, it is overwritten
   from the start - requiring a remove of the log file each
   restart (which is annoying!).
-- Under high loads, it seems the underlying strings library
-  of FreeBSD gives way and failes on initialising a string,
-  causing either a coredump, or a recursive signal (spinlock).
 
-Mandrake Linux:
+Linux glibc 2.1.3
 
-- The threads system sometimes fails (coredumps) on an attempt
-  to suspend a thread (probably a bad threads implementation).
+- This version of glibc is known to coredump when trying to
+  allocate memory -- It is unknown if other versions of glibc
+  do also (its only been tested on this version of glibc).
+  TODO: Test on glibc 2.2, and previous versions.
