@@ -172,6 +172,11 @@ enum bool
 #include <ace/Activation_Queue.h>
 #include <ace/NT_Service.h>
 
+#ifdef ACE_HAS_TOKENS_LIBRARY
+#include <ace/Local_Tokens.h>
+#define MAGICK_TOKENIZED_LOCKS
+#endif
+
 /* Added in 5.1.11, so accomodate it ... */
 #if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
 	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \

@@ -39,22 +39,23 @@ RCSID(lockable_h, "@(#) $Id$");
 
 #define MAX_LOCKS 16		/* Max variants */
 #define LOCK_SEGMENT 8		/* Amount of lock memory to alloc */
-class mLOCK
+#ifdef ACE_HAS_TOKENS_LIBRARY
+#define
+#endif
+
+class mLock_Read;
+class mLock_Write;
+class mLock_Mutex;
+
+class Lock_Tokenizer
 {
     friend class mLock_Read;
     friend class mLock_Write;
     friend class mLock_Mutex;
 
-    static mLock_Mutex *maplock;
+    static ACE_Thread_Mutex *maplock;
     static map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > > LockMap;
     static ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex > memory_area;
-
-    bool islocked;
-
-    vector < mstring > locks;
-#ifdef MAGICK_TRACE_WORKS
-    T_Locking tlock[MAX_LOCKS];
-#endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     static bool AcquireMapLock() throw(E_Lock);
@@ -62,6 +63,36 @@ class mLOCK
 #else
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
+#endif
+
+public:
+    // Will return NULL if map entry exists, unless recursive is set to true
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static mLock_Read *getReadLock(const mstring & lockname, bool recursive = false) throw(E_Thread);
+    static mLock_Write *getWriteLock(const mstring & lockname, bool recursive = false) throw(E_Thread);
+    static mLock_Mutex *getMutexLock(const mstring & lockname, bool recursive = false) throw(E_Thread);
+#else
+    static mLock_Read *getReadLock(const mstring & lockname, bool recursive = false);
+    static mLock_Write *getWriteLock(const mstring & lockname, bool recursive = false);
+    static mLock_Mutex *getMutexLock(const mstring & lockname, bool recursive = false);
+#endif
+    static void releaseLock(const mstring & lockname);
+    static locktype_enum getType(const mstring & lockname);
+
+    static size_t AllLocks()
+    {
+	return LockMap.size();
+    }
+    static list < pair < void *, locktype_enum > > GetLocks(ACE_thread_t thr = ACE_Thread::self());
+};
+
+class mLOCK
+{
+    bool islocked;
+
+    vector < mstring > locks;
+#ifdef MAGICK_TRACE_WORKS
+    T_Locking tlock[MAX_LOCKS];
 #endif
 
 public:
@@ -87,11 +118,6 @@ public:
     {
 	return locks.size();
     }
-    static size_t AllLocks()
-    {
-	return LockMap.size();
-    }
-    static list < pair < void *, locktype_enum > > mLOCK::GetLocks(ACE_thread_t thr = ACE_Thread::self());
 };
 
 /* We need to ditch these for the below operator new */
@@ -102,15 +128,24 @@ public:
 #undef malloc
 #undef free
 
+#ifdef MAGICK_TOKENIZED_LOCKS
+class mLock_Read : public ACE_Local_RLock
+#else
 class mLock_Read : public ACE_RW_Thread_Mutex
+#endif
 {
+#ifdef MAGICK_TOKENIZED_LOCKS
+    typedef ACE_Local_RLock base;
+#else
     typedef ACE_RW_Thread_Mutex base;
+#endif
 
 public:
     mLock_Read(const char *name = 0) : base(name)
     {
     }
 
+#ifndef MAGICK_TOKENIZED_LOCKS
     int acquire()
     {
 	return acquire_read();
@@ -119,28 +154,38 @@ public:
     {
 	return tryacquire_read();
     }
+#endif
 
-    void *operator       new(size_t size)
+    void *operator        new(size_t size)
     {
 	static_cast < void > (size);
 
-	return mLOCK::memory_area.malloc(sizeof(mLock_Read));
+	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator       delete(void *ptr)
+    void operator        delete(void *ptr)
     {
-	mLOCK::memory_area.free(ptr);
+	Lock_Tokenizer::memory_area.free(ptr);
     }
 };
 
+#ifdef MAGICK_TOKENIZED_LOCKS
+class mLock_Write : public ACE_Local_WLock
+#else
 class mLock_Write : public ACE_RW_Thread_Mutex
+#endif
 {
+#ifdef MAGICK_TOKENIZED_LOCKS
+    typedef ACE_Local_WLock base;
+#else
     typedef ACE_RW_Thread_Mutex base;
+#endif
 
 public:
     mLock_Write(const char *name = 0) : base(name)
     {
     }
 
+#ifndef MAGICK_TOKENIZED_LOCKS
     int acquire()
     {
 	return acquire_write();
@@ -149,37 +194,46 @@ public:
     {
 	return tryacquire_write();
     }
+#endif
 
-    void *operator       new(size_t size)
+    void *operator        new(size_t size)
     {
 	static_cast < void > (size);
 
-	return mLOCK::memory_area.malloc(sizeof(mLock_Write));
+	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator       delete(void *ptr)
+    void operator        delete(void *ptr)
     {
-	mLOCK::memory_area.free(ptr);
+	Lock_Tokenizer::memory_area.free(ptr);
     }
 };
 
+#ifdef MAGICK_TOKENIZED_LOCKS
+class mLock_Mutex : public ACE_Local_Mutex
+#else
 class mLock_Mutex : public ACE_Recursive_Thread_Mutex
+#endif
 {
+#ifdef MAGICK_TOKENIZED_LOCKS
+    typedef ACE_Local_Mutex base;
+#else
     typedef ACE_Recursive_Thread_Mutex base;
+#endif
 
 public:
     mLock_Mutex(const char *name = 0) : base(name)
     {
     }
 
-    void *operator       new(size_t size)
+    void *operator        new(size_t size)
     {
 	static_cast < void > (size);
 
-	return mLOCK::memory_area.malloc(sizeof(mLock_Mutex));
+	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator       delete(void *ptr)
+    void operator        delete(void *ptr)
     {
-	mLOCK::memory_area.free(ptr);
+	Lock_Tokenizer::memory_area.free(ptr);
     }
 };
 

@@ -56,6 +56,7 @@
 [COMMANDLINE]
 TRANSLATED       =Preston A. Elder <prez@magick.tm>
 UNKNOWN_OPTION   =Unknown option $1, ignored.
+UNKNOWN_PARAM    =Unknown parameter $1 for option $1.
 NEEDPARAM        =Option $1 requires a parameter.
 MUSTBENUMBER     =Parameter for $1 must be a positive number.
 MUSTHAVEDIGITS   =Parameter for $1 must be $2 digits between $3 and $4 (inclusive).
@@ -335,6 +336,7 @@ DCC_CANCEL       =DCC ID $1 failed to complete successfully.
 ; These are errors (of varying severity) that we may encounter.
 ;
 [ERROR]
+SEQUENCE         =Execution sequence invalid ($1 may not follow $2).
 REQ_BYNONUSER    =$1 command requested by non-existent user $2.
 REQ_BYNONSERVICE =$1 command requested by non-service $2.
 REQ_FORNONUSER   =$1 command requested by $2 for non-existent user $3.

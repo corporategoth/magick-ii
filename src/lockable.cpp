@@ -38,12 +38,12 @@ RCSID(lockable_cpp, "@(#)$Id$");
 
 #ifdef MAGICK_LOCKS_WORK
 
-mLock_Mutex *mLOCK::maplock = NULL;
+ACE_Thread_Mutex *Lock_Tokenizer::maplock = NULL;
 mLock_Mutex *mThread::maplock = NULL;
-map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > > mLOCK::LockMap;
+map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > > Lock_Tokenizer::LockMap;
 
 ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex >
-    mLOCK::
+    Lock_Tokenizer::
 memory_area((sizeof(mLock_Read) >
 	     sizeof(mLock_Write) ? (sizeof(mLock_Read) >
 				    sizeof(mLock_Mutex) ? sizeof(mLock_Read) : sizeof(mLock_Mutex)) : (sizeof(mLock_Write) >
@@ -55,13 +55,13 @@ memory_area((sizeof(mLock_Read) >
 map < unsigned long, mSocket * > mSocket::SockMap;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-bool mLOCK::AcquireMapLock() throw (E_Lock)
+bool Lock_Tokenizer::AcquireMapLock() throw (E_Lock)
 #else
-bool mLOCK::AcquireMapLock()
+bool Lock_Tokenizer::AcquireMapLock()
 #endif
 {
     if (maplock == NULL)
-	maplock = new mLock_Mutex("LockMap");
+	maplock = new ACE_Thread_Mutex("LockMap");
     if (maplock == NULL)
     {
 	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", "LockMap"));
@@ -82,9 +82,9 @@ bool mLOCK::AcquireMapLock()
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-bool mLOCK::ReleaseMapLock() throw (E_Lock)
+bool Lock_Tokenizer::ReleaseMapLock() throw (E_Lock)
 #else
-bool mLOCK::ReleaseMapLock()
+bool Lock_Tokenizer::ReleaseMapLock()
 #endif
 {
     if (maplock == NULL)
@@ -98,6 +98,280 @@ bool mLOCK::ReleaseMapLock()
 	return false;
     }
     return true;
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+mLock_Read *Lock_Tokenizer::getReadLock(const mstring & lockname, bool recursive) throw (E_Thread)
+#else
+mLock_Read *Lock_Tokenizer::getReadLock(const mstring & lockname, bool recursive)
+#endif
+{
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
+    mLock_Read *read_lock = NULL;
+    char hash[33];
+
+    memset(hash, 0, sizeof(hash));
+
+    if (!AcquireMapLock())
+	return NULL;
+    if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+    {
+	map < ACE_thread_t, locktype_enum >::iterator typeiter = lockiter->second.second.find(ACE_Thread::self());
+	if (typeiter == lockiter->second.second.end())
+	{
+	    lockiter->second.second[ACE_Thread::self()] = L_Read;
+	    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
+	}
+	else if (typeiter->second == L_Mutex)
+	{
+	    ReleaseMapLock();
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Read, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
+	    return NULL;
+	}
+	else if (recursive && (typeiter->second == L_Read || typeiter->second == L_WriteUpgrade))
+	    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
+    }
+    else
+    {
+	mHASH(lockname.c_str(), lockname.length(), hash);
+	read_lock = new mLock_Read(reinterpret_cast < const char * > (hash));
+
+	if (read_lock == NULL)
+	{
+	    ReleaseMapLock();
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Read, E_Lock::T_Create, lockname.c_str()));
+#endif
+	    return NULL;
+	}
+	map < ACE_thread_t, locktype_enum > tmap;
+	LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (read_lock, tmap);
+
+	LockMap[lockname].second[ACE_Thread::self()] = L_Read;
+    }
+    ReleaseMapLock();
+
+    return read_lock;
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+mLock_Write *Lock_Tokenizer::getWriteLock(const mstring & lockname, bool recursive) throw (E_Thread)
+#else
+mLock_Write *Lock_Tokenizer::getWriteLock(const mstring & lockname, bool recursive)
+#endif
+{
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
+    mLock_Write *write_lock = NULL;
+    char hash[33];
+
+    memset(hash, 0, sizeof(hash));
+
+    if (!AcquireMapLock())
+	return NULL;
+    if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+    {
+	map < ACE_thread_t, locktype_enum >::iterator typeiter = lockiter->second.second.find(ACE_Thread::self());
+	if (typeiter == lockiter->second.second.end())
+	{
+	    lockiter->second.second[ACE_Thread::self()] = L_Write;
+	    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
+	}
+	else if (typeiter->second == L_Mutex)
+	{
+	    ReleaseMapLock();
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("WRITE", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Write, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
+	    return NULL;
+	}
+	else if (typeiter->second == L_Read)
+	{
+	    typeiter->second = L_WriteUpgrade;
+	    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
+	}
+	else if (recursive && (typeiter->second == L_Write || typeiter->second == L_WriteUpgrade))
+	    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
+    }
+    else
+    {
+	mHASH(lockname.c_str(), lockname.length(), hash);
+	write_lock = new mLock_Write(reinterpret_cast < const char * > (hash));
+
+	if (write_lock == NULL)
+	{
+	    ReleaseMapLock();
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("WRITE", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Write, E_Lock::T_Create, lockname.c_str()));
+#endif
+	    return NULL;
+	}
+	map < ACE_thread_t, locktype_enum > tmap;
+	LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (write_lock, tmap);
+
+	LockMap[lockname].second[ACE_Thread::self()] = L_Write;
+    }
+    ReleaseMapLock();
+
+    return write_lock;
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+mLock_Mutex *Lock_Tokenizer::getMutexLock(const mstring & lockname, bool recursive) throw (E_Thread)
+#else
+mLock_Mutex *Lock_Tokenizer::getMutexLock(const mstring & lockname, bool recursive)
+#endif
+{
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
+    mLock_Mutex *mutex_lock = NULL;
+    char hash[33];
+
+    memset(hash, 0, sizeof(hash));
+
+    if (!AcquireMapLock())
+	return NULL;
+    if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+    {
+	map < ACE_thread_t, locktype_enum >::iterator typeiter = lockiter->second.second.find(ACE_Thread::self());
+	if (typeiter == lockiter->second.second.end())
+	{
+	    lockiter->second.second[ACE_Thread::self()] = L_Mutex;
+	    mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
+	}
+	else if (typeiter->second != L_Mutex)
+	{
+	    ReleaseMapLock();
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("MUTEX", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Mutex, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
+	    return NULL;
+	}
+	else if (recursive && typeiter->second == L_Mutex)
+	    mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
+    }
+    else
+    {
+	mHASH(lockname.c_str(), lockname.length(), hash);
+	mutex_lock = new mLock_Mutex(reinterpret_cast < const char * > (hash));
+
+	if (mutex_lock == NULL)
+	{
+	    ReleaseMapLock();
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Mutex, E_Lock::T_Create, lockname.c_str()));
+#endif
+	    return NULL;
+	}
+	map < ACE_thread_t, locktype_enum > tmap;
+	LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (mutex_lock, tmap);
+
+	LockMap[lockname].second[ACE_Thread::self()] = L_Mutex;
+    }
+    ReleaseMapLock();
+
+    return mutex_lock;
+}
+
+void Lock_Tokenizer::releaseLock(const mstring & lockname)
+{
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
+
+    map < ACE_thread_t, locktype_enum >::iterator typeiter;
+    mLock_Read *read_lock = NULL;
+    mLock_Write *write_lock = NULL;
+    mLock_Mutex *mutex_lock = NULL;
+
+    if (!AcquireMapLock())
+	return;
+    lockiter = LockMap.find(lockname);
+    if (lockiter != LockMap.end())
+    {
+	typeiter = lockiter->second.second.find(ACE_Thread::self());
+	if (typeiter != lockiter->second.second.end())
+	{
+	    if (lockiter->second.second.size() == 1)
+	    {
+		switch (typeiter->second)
+		{
+		case L_Read:
+		    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
+		    if (read_lock != NULL)
+			delete read_lock;
+		    LockMap.erase(lockiter);
+		    break;
+		case L_Write:
+		    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
+		    if (write_lock != NULL)
+			delete write_lock;
+		    LockMap.erase(lockiter);
+		    break;
+		case L_WriteUpgrade:
+		    typeiter->second = L_Read;
+		    break;
+		case L_Mutex:
+		    mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
+		    if (mutex_lock != NULL)
+			delete mutex_lock;
+		    LockMap.erase(lockiter);
+		    break;
+		}
+	    }
+	    else
+	    {
+		if (typeiter->second == L_WriteUpgrade)
+		    typeiter->second = L_Read;
+		else
+		    lockiter->second.second.erase(typeiter);
+	    }
+	}
+    }
+    ReleaseMapLock();
+}
+
+locktype_enum Lock_Tokenizer::getType(const mstring & lockname)
+{
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
+    locktype_enum retval = L_Invalid;
+
+    if (!AcquireMapLock())
+	return retval;
+    if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+    {
+	map < ACE_thread_t, locktype_enum >::iterator typeiter = lockiter->second.second.find(ACE_Thread::self());
+	if (typeiter != lockiter->second.second.end())
+	    retval = typeiter->second;
+    }
+    ReleaseMapLock();
+
+    return retval;
+}
+
+list < pair < void *, locktype_enum > > Lock_Tokenizer::GetLocks(ACE_thread_t thr)
+{
+    list < pair < void *, locktype_enum > > retval;
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator i;
+
+    map < ACE_thread_t, locktype_enum >::iterator j;
+
+    if (!AcquireMapLock())
+	return retval;
+    for (i = LockMap.begin(); i != LockMap.end(); i++)
+    {
+	for (j = i->second.second.begin(); j != i->second.second.end(); j++)
+	{
+	    if (j->first == thr)
+		retval.push_back(pair < void *, locktype_enum > (i->second.first, j->second));
+	}
+    }
+    ReleaseMapLock();
+    return retval;
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -116,9 +390,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 #ifdef MAGICK_TRACE_WORKS
     int count = 0;
 #endif
-    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mstring lockname;
-    char hash[33];
     mLock_Mutex *mutex_lock;
     mLock_Write *write_lock;
     mLock_Read *read_lock;
@@ -128,69 +400,14 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	if (!lockname.empty())
 	    lockname += "::";
 	lockname += args[i].AsString();
-	read_lock = NULL;
+	read_lock = Lock_Tokenizer::getReadLock(lockname);
 
-	if (!AcquireMapLock())
-	    return;
-	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
-	{
-	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
-	    {
-		lockiter->second.second[ACE_Thread::self()] = L_Read;
-		read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-	    }
-	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
-	    {
-		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Read, E_Lock::T_Duplicate, lockname.c_str()));
-#endif
-		return;
-	    }
-	}
-	else
-	{
-	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    read_lock = new mLock_Read(reinterpret_cast < const char * > (hash));
-
-	    if (read_lock == NULL)
-	    {
-		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Read, E_Lock::T_Create, lockname.c_str()));
-#endif
-		return;
-	    }
-	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (read_lock, tmap);
-
-	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
-	}
-	ReleaseMapLock();
 	if (read_lock != NULL)
 	{
 	    if (read_lock->acquire() < 0)
 	    {
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", lockname));
-		read_lock = NULL;
-		if (!AcquireMapLock())
-		    return;
-		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
-		{
-		    lockiter->second.second.erase(ACE_Thread::self());
-		    if (!lockiter->second.second.size())
-		    {
-			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-			if (read_lock != NULL)
-			    delete read_lock;
-
-			read_lock = NULL;
-			LockMap.erase(lockiter);
-		    }
-		}
-		ReleaseMapLock();
+		Lock_Tokenizer::releaseLock(lockname);
 #ifdef MAGICK_HAS_EXCEPTIONS
 		throw (E_Lock(L_Read, E_Lock::T_Acquire, lockname.c_str()));
 #endif
@@ -214,67 +431,13 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 
     if (type == L_Read)
     {
-	if (!AcquireMapLock())
-	    return;
-	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
-	{
-	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
-	    {
-		lockiter->second.second[ACE_Thread::self()] = L_Read;
-		read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-	    }
-	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
-	    {
-		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Read, E_Lock::T_Duplicate, lockname.c_str()));
-#endif
-		return;
-	    }
-	}
-	else
-	{
-	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    read_lock = new mLock_Read(reinterpret_cast < const char * > (hash));
-
-	    if (read_lock == NULL)
-	    {
-		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Read, E_Lock::T_Create, lockname.c_str()));
-#endif
-		return;
-	    }
-	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (read_lock, tmap);
-
-	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
-	}
-	ReleaseMapLock();
+	read_lock = Lock_Tokenizer::getReadLock(lockname);
 	if (read_lock != NULL)
 	{
 	    if (read_lock->acquire() < 0)
 	    {
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", lockname));
-		read_lock = NULL;
-		if (!AcquireMapLock())
-		    return;
-		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
-		{
-		    lockiter->second.second.erase(ACE_Thread::self());
-		    if (!lockiter->second.second.size())
-		    {
-			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-			if (read_lock != NULL)
-			    delete read_lock;
-
-			read_lock = NULL;
-			LockMap.erase(lockiter);
-		    }
-		}
-		ReleaseMapLock();
+		Lock_Tokenizer::releaseLock(lockname);
 #ifdef MAGICK_HAS_EXCEPTIONS
 		throw (E_Lock(L_Read, E_Lock::T_Acquire, lockname.c_str()));
 #endif
@@ -291,89 +454,29 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
     }
     else if (type == L_Write)
     {
-	if (!AcquireMapLock())
-	    return;
-	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+	if (Lock_Tokenizer::getType(lockname) == L_Read)
+	    read_lock = Lock_Tokenizer::getReadLock(lockname, true);
+	if (read_lock != NULL && read_lock->release() < 0)
 	{
-	    if (lockiter->second.second.find(ACE_Thread::self()) != lockiter->second.second.end())
-	    {
-		switch (lockiter->second.second[ACE_Thread::self()])
-		{
-		case L_Read:
-		    lockiter->second.second[ACE_Thread::self()] = L_WriteUpgrade;
-		    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-		    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
-		    break;
-		case L_Mutex:
-		    ReleaseMapLock();
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("WRITE", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		    throw (E_Lock(L_Write, E_Lock::T_Duplicate, lockname.c_str()));
-#endif
-		    return;
-		default:
-		    break;
-		}
-	    }
-	    else
-	    {
-		lockiter->second.second[ACE_Thread::self()] = L_Write;
-		write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
-	    }
-	}
-	else
-	{
-	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    write_lock = new mLock_Write(reinterpret_cast < const char * > (hash));
-
-	    if (write_lock == NULL)
-	    {
-		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("WRITE", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Write, E_Lock::T_Create, lockname.c_str()));
-#endif
-		return;
-	    }
-	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (write_lock, tmap);
-
-	    LockMap[lockname].second[ACE_Thread::self()] = L_Write;
-	}
-	ReleaseMapLock();
-	if (read_lock != NULL)
-	{
-	    if (read_lock->release() < 0)
-	    {
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Read, E_Lock::T_Release, lockname.c_str()));
-#endif
-	    }
+	    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", lockname));
 	    read_lock = NULL;
+	    Lock_Tokenizer::releaseLock(lockname);
+#ifdef MAGICK_HAS_EXCEPTIONS
+	    throw (E_Lock(L_Read, E_Lock::T_Release, lockname.c_str()));
+#endif
 	}
+	write_lock = Lock_Tokenizer::getWriteLock(lockname);
 	if (write_lock != NULL)
 	{
 	    if (write_lock->acquire() < 0)
 	    {
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("WRITE", lockname));
-		write_lock = NULL;
-		if (!AcquireMapLock())
-		    return;
-		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+		Lock_Tokenizer::releaseLock(lockname);
+		if (read_lock != NULL && read_lock->acquire() < 0)
 		{
-		    lockiter->second.second.erase(ACE_Thread::self());
-		    if (!lockiter->second.second.size())
-		    {
-			write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
-			if (write_lock != NULL)
-			    delete read_lock;
-
-			write_lock = NULL;
-			LockMap.erase(lockiter);
-		    }
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", lockname));
+		    Lock_Tokenizer::releaseLock(lockname);
 		}
-		ReleaseMapLock();
 #ifdef MAGICK_HAS_EXCEPTIONS
 		throw (E_Lock(L_Write, E_Lock::T_Acquire, lockname.c_str()));
 #endif
@@ -390,72 +493,13 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
     }
     else if (type == L_Mutex)
     {
-	if (!AcquireMapLock())
-	    return;
-	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
-	{
-	    map < ACE_thread_t, locktype_enum >::iterator iter;
-	    for (iter = lockiter->second.second.begin(); iter != lockiter->second.second.end(); iter++)
-	    {
-		if (iter->second != L_Mutex)
-		{
-		    ReleaseMapLock();
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("MUTEX", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		    throw (E_Lock(L_Mutex, E_Lock::T_Duplicate, lockname.c_str()));
-#endif
-		    return;
-		}
-	    }
-
-	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
-	    {
-		lockiter->second.second[ACE_Thread::self()] = L_Mutex;
-		mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
-	    }
-	}
-	else
-	{
-	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    mutex_lock = new mLock_Mutex(reinterpret_cast < const char * > (hash));
-
-	    if (mutex_lock == NULL)
-	    {
-		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", lockname));
-#ifdef MAGICK_HAS_EXCEPTIONS
-		throw (E_Lock(L_Mutex, E_Lock::T_Create, lockname.c_str()));
-#endif
-		return;
-	    }
-	    map < ACE_thread_t, locktype_enum > tmap;
-	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > > (mutex_lock, tmap);
-
-	    LockMap[lockname].second[ACE_Thread::self()] = L_Mutex;
-	}
-	ReleaseMapLock();
+	mutex_lock = Lock_Tokenizer::getMutexLock(lockname);
 	if (mutex_lock != NULL)
 	{
 	    if (mutex_lock->acquire() < 0)
 	    {
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("MUTEX", lockname));
-		mutex_lock = NULL;
-		if (!AcquireMapLock())
-		    return;
-		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
-		{
-		    lockiter->second.second.erase(ACE_Thread::self());
-		    if (!lockiter->second.second.size())
-		    {
-			mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
-			if (mutex_lock != NULL)
-			    delete mutex_lock;
-
-			mutex_lock = NULL;
-			LockMap.erase(lockiter);
-		    }
-		}
-		ReleaseMapLock();
+		Lock_Tokenizer::releaseLock(lockname);
 #ifdef MAGICK_HAS_EXCEPTIONS
 		throw (E_Lock(L_Mutex, E_Lock::T_Acquire, lockname.c_str()));
 #endif
@@ -470,8 +514,6 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    }
 	}
     }
-
-    memset(hash, 0, sizeof(hash));
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -485,178 +527,88 @@ mLOCK::~mLOCK()
 	return;
 
     int i;
-    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mLock_Mutex *mutex_lock;
     mLock_Write *write_lock;
     mLock_Read *read_lock;
 
     for (i = locks.size() - 1; i >= 0; i--)
     {
-	if (!AcquireMapLock())
-	    return;
-	if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
+	read_lock = NULL;
+	write_lock = NULL;
+	mutex_lock = NULL;
+	switch (Lock_Tokenizer::getType(locks[i]))
 	{
-	    read_lock = NULL;
-	    write_lock = NULL;
-	    mutex_lock = NULL;
-	    bool killit = false;
+	case L_Read:
+	    read_lock = Lock_Tokenizer::getReadLock(locks[i], true);
+	    break;
+	case L_Write:
+	    write_lock = Lock_Tokenizer::getWriteLock(locks[i], true);
+	    break;
+	case L_WriteUpgrade:
+	    write_lock = Lock_Tokenizer::getWriteLock(locks[i], true);
+	    read_lock = Lock_Tokenizer::getReadLock(locks[i], true);
+	    break;
+	case L_Mutex:
+	    mutex_lock = Lock_Tokenizer::getMutexLock(locks[i], true);
+	    break;
+	default:
+	    break;
+	}
 
-	    map < ACE_thread_t, locktype_enum >::iterator iter = lockiter->second.second.find(ACE_Thread::self());
-	    if (iter != lockiter->second.second.end())
+	if (write_lock != NULL)
+	{
+	    if (write_lock->release() < 0)
 	    {
-		switch (iter->second)
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("WRITE", locks[i]));
+		Lock_Tokenizer::releaseLock(locks[i]);
+		if (read_lock != NULL && read_lock->acquire() < 0)
 		{
-		case L_Read:
-		    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-		    break;
-		case L_WriteUpgrade:
-		    iter->second = L_Read;
-		case L_Write:
-		    write_lock = reinterpret_cast < mLock_Write * > (lockiter->second.first);
-		    break;
-		case L_Mutex:
-		    mutex_lock = reinterpret_cast < mLock_Mutex * > (lockiter->second.first);
-		    break;
-		default:
-		    break;
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", locks[i]));
+		    Lock_Tokenizer::releaseLock(locks[i]);
 		}
-
-		if (iter->second != L_WriteUpgrade)
-		{
-		    lockiter->second.second.erase(ACE_Thread::self());
-
-		    if (!lockiter->second.second.size())
-		    {
-			killit = true;
-			LockMap.erase(lockiter);
-		    }
-		}
-	    }
-	    ReleaseMapLock();
-
-	    if (read_lock != NULL)
-	    {
-		if (read_lock->release() < 0)
-		{
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", locks[i]));
-		    if (killit)
-			delete read_lock;
-		    killit = false;
-#ifdef MAGICK_HAS_EXCEPTIONS
-		    throw (E_Lock(L_Read, E_Lock::T_Release, locks[i].c_str()));
-#endif
-		}
-		if (killit)
-		    delete read_lock;
-
 		read_lock = NULL;
-	    }
-	    if (write_lock != NULL)
-	    {
-		if (write_lock->release() < 0)
-		{
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("WRITE", locks[i]));
-		    if (killit)
-			delete write_lock;
-		    killit = false;
 #ifdef MAGICK_HAS_EXCEPTIONS
-		    throw (E_Lock(L_Write, E_Lock::T_Release, locks[i].c_str()));
+		throw (E_Lock(L_Write, E_Lock::T_Release, locks[i].c_str()));
 #endif
-		}
-		if (killit)
-		    delete write_lock;
-
-		write_lock = NULL;
 	    }
-	    if (mutex_lock != NULL)
+	    else
+		Lock_Tokenizer::releaseLock(locks[i]);
+	    if (read_lock != NULL && read_lock->acquire() < 0)
 	    {
-		if (mutex_lock->release() < 0)
-		{
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("MUTEX", locks[i]));
-		    if (killit)
-			delete mutex_lock;
-		    killit = false;
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", locks[i]));
+		Lock_Tokenizer::releaseLock(locks[i]);
 #ifdef MAGICK_HAS_EXCEPTIONS
-		    throw (E_Lock(L_Mutex, E_Lock::T_Release, locks[i].c_str()));
+		throw (E_Lock(L_Read, E_Lock::T_Acquire, locks[i].c_str()));
 #endif
-		}
-		if (killit)
-		    delete mutex_lock;
-
-		mutex_lock = NULL;
 	    }
-
-	    if (!AcquireMapLock())
-		return;
-	    if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
-	    {
-		iter = lockiter->second.second.find(ACE_Thread::self());
-		if (iter != lockiter->second.second.end())
-		{
-		    // We're still here, must have been an upgraded lock, time to downgrade it ...
-		    if (iter->second == L_Read)
-		    {
-			read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-			ReleaseMapLock();
-			if (read_lock->acquire() < 0)
-			{
-			    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", locks[i]));
-			    read_lock = NULL;
-			    if (!AcquireMapLock())
-				return;
-			    if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
-			    {
-				lockiter->second.second.erase(ACE_Thread::self());
-				if (!lockiter->second.second.size())
-				{
-				    read_lock = reinterpret_cast < mLock_Read * > (lockiter->second.first);
-				    if (read_lock != NULL)
-					delete read_lock;
-
-				    read_lock = NULL;
-				    LockMap.erase(lockiter);
-				}
-			    }
-			    ReleaseMapLock();
-#ifdef MAGICK_HAS_EXCEPTIONS
-			    throw (E_Lock(L_Read, E_Lock::T_Acquire, locks[i].c_str()));
-#endif
-			}
-			read_lock = NULL;
-		    }
-		    else	/* Its not a read lock */
-			ReleaseMapLock();
-		}
-		else		/* Our thread isnt listed in the threads with this lock */
-		    ReleaseMapLock();
-	    }
-	    else		/* This lock doesnt exist */
-		ReleaseMapLock();
 	}
-	else			/* This lock NEVER existed */
-	    ReleaseMapLock();
-    }
-}
-
-list < pair < void *, locktype_enum > > mLOCK::GetLocks(ACE_thread_t thr)
-{
-    list < pair < void *, locktype_enum > > retval;
-    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator i;
-
-    map < ACE_thread_t, locktype_enum >::iterator j;
-
-    if (!AcquireMapLock())
-	return retval;
-    for (i = LockMap.begin(); i != LockMap.end(); i++)
-    {
-	for (j = i->second.second.begin(); j != i->second.second.end(); j++)
+	else if (read_lock != NULL)
 	{
-	    if (j->first == thr)
-		retval.push_back(pair < void *, locktype_enum > (i->second.first, j->second));
+	    if (read_lock->release() < 0)
+	    {
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", locks[i]));
+		Lock_Tokenizer::releaseLock(locks[i]);
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Release, locks[i].c_str()));
+#endif
+	    }
+	    else
+		Lock_Tokenizer::releaseLock(locks[i]);
+	}
+	else if (mutex_lock != NULL)
+	{
+	    if (mutex_lock->release() < 0)
+	    {
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("MUTEX", locks[i]));
+		Lock_Tokenizer::releaseLock(locks[i]);
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Mutex, E_Lock::T_Release, locks[i].c_str()));
+#endif
+	    }
+	    else
+		Lock_Tokenizer::releaseLock(locks[i]);
 	}
     }
-    ReleaseMapLock();
-    return retval;
 }
 
 #endif /* MAGICK_LOCKS_WORK */

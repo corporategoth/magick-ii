@@ -178,6 +178,7 @@ int Magick::Init()
 {
     if (CurrentState != Constructed)
     {
+	LOG(LM_ERROR, "ERROR/SEQUENCE", (Initialized, CurrentState));
 	return MAGICK_RET_STATE;
     }
 
@@ -274,6 +275,7 @@ int Magick::Init()
 		    return MAGICK_RET_SERVICE_STOP;
 		else
 		{
+		    LOG(LM_EMERGENCY, "COMMANDLINE/UNKNOWN_PARAM", (argv[i], "--service"));
 		    return MAGICK_RET_ERROR;
 		}
 	    }
@@ -319,6 +321,7 @@ int Magick::Start()
     NFT("Magick::Start");
     if (CurrentState != Initialized && CurrentState != Stopped)
     {
+	LOG(LM_ERROR, "ERROR/SEQUENCE", (Started, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -518,6 +521,7 @@ int Magick::Run()
     NFT("Magick::Run");
     if (CurrentState != Started)
     {
+	LOG(LM_ERROR, "ERROR/SEQUENCE", (Running, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -561,6 +565,7 @@ int Magick::Stop()
     NFT("Magick::Stop");
     if (CurrentState != Started && CurrentState != Running && CurrentState != RunCompleted)
     {
+	LOG(LM_ERROR, "ERROR/SEQUENCE", (Stopped, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -686,9 +691,11 @@ int Magick::Finish()
     NFT("Magick::Finish");
     if (CurrentState != Initialized && CurrentState != Stopped)
     {
+	LOG(LM_ERROR, "ERROR/SEQUENCE", (Finished, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
+    CurrentState = Finished;
     RET(MAGICK_RET_NORMAL);
 }
 
