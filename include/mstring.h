@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/12/09 15:40:13  prez
+** Fixed some stuff with mstring (ie. Contains called find_first_of
+** not find, and the makeupper/makelower calls had != NULL not == NULL).
+**
 ** Revision 1.56  2000/12/09 12:53:56  prez
 ** Forgot to add the 'return' to all find_first_of, find_last_of,
 ** find_first_not_of and find_last_not_of calls ...
@@ -553,11 +557,11 @@ public:
 
     /* From here is our own additions ... */
     bool Contains(const char *in) const
-	{ return (find_first_of(in) < i_len); }
+	{ return (find(in) < i_len); }
     bool Contains(const char in) const
-	{ return (find_first_of(in) < i_len); }
+	{ return (find(mstring(in)) < i_len); }
     bool Contains(const unsigned char in) const
-	{ return (find_first_of(in) < i_len); }
+	{ return (find(mstring(in)) < i_len); }
     bool IsWord() const;
     bool IsNumber() const;
     bool IsAscii() const;

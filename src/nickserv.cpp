@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.138  2000/12/09 15:40:13  prez
+** Fixed some stuff with mstring (ie. Contains called find_first_of
+** not find, and the makeupper/makelower calls had != NULL not == NULL).
+**
 ** Revision 1.137  2000/10/10 11:47:52  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -4951,6 +4955,8 @@ void NickServ::execute(const mstring & data)
     FT("NickServ::execute", (data));
     //okay this is the main nickserv command switcher
 
+printf("Got here: %s\n", data.c_str());
+
     // Nick/Server PRIVMSG/NOTICE mynick :message
 
     mstring source, msgtype, mynick, message, command;
@@ -5029,7 +5035,7 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
 		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince(),
 		source).c_str());
     }
-    else if (password.length() < 5 || !password.IsSameAs(source, true))
+    else if (password.length() < 5 || password.IsSameAs(source, true))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
     }

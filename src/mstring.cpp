@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/12/09 15:40:13  prez
+** Fixed some stuff with mstring (ie. Contains called find_first_of
+** not find, and the makeupper/makelower calls had != NULL not == NULL).
+**
 ** Revision 1.83  2000/12/09 12:53:56  prez
 ** Forgot to add the 'return' to all find_first_of, find_last_of,
 ** find_first_not_of and find_last_not_of calls ...
@@ -525,7 +529,6 @@ int mstring::find(const char *str, int occurance) const
 	return -1;
 
     length = strlen(str);
-
     if (occurance < 1)
 	occurance = 1;
 
@@ -538,7 +541,7 @@ int mstring::find(const char *str, int occurance) const
     }
     if (ptr != NULL)
 	retval = ptr - i_str;
-	
+
     return retval;
 }
 
@@ -733,7 +736,7 @@ mstring mstring::LowerCase() const
 
 void mstring::MakeUpper()
 {
-    if (i_str != NULL)
+    if (i_str == NULL)
 	return;
 
     for (size_t i=0; i<i_len; i++)
@@ -742,7 +745,7 @@ void mstring::MakeUpper()
 
 void mstring::MakeLower()
 {
-    if (i_str != NULL)
+    if (i_str == NULL)
 	return;
 
     for (size_t i=0; i<i_len; i++)
