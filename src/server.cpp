@@ -1191,6 +1191,7 @@ void NetworkServ::execute(const mstring & data)
 	    // :source VERSION :our.server
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp;
+	    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
 	    if(RELEASE!="")
 		tmp+="-" + RELEASE;
 	    if(PATCH1!="")
@@ -1211,6 +1212,7 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="+"+PATCH1;
 	    if(PATCH9!="")
 		tmp+="+"+PATCH1;
+	    tmp+=" [";
 	    if(Parent->operserv.GetNames() != "")
 		tmp+="O";
 	    else
@@ -1251,9 +1253,9 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="Y";
 	    else
 		tmp+="y";
-	    tmp<<Parent->startup.Level();
-	    sraw("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() +
-			" :" + VERSION + tmp + ")");
+	    tmp << Parent->startup.Level() << "] Build #" << BUILD_NUMBER <<
+		" (" << BUILD_TIME << ").";
+	    sraw("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() + " :" + tmp);
 	}
 	else
 	{
