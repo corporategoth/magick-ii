@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.149  2001/03/04 20:23:18  prez
+** Tweaked akill expiry to avoid iterator dependancies ... should work :P
+**
 ** Revision 1.148  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -1051,15 +1054,29 @@ int EventTask::svc(void)
 
 	    // akills
 	    {
+		vector<mstring> expired_akills;
 		MLOCK(("OperServ","Akill"));
 		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-		    Parent->operserv.Akill != Parent->operserv.Akill_end();)
+		    Parent->operserv.Akill != Parent->operserv.Akill_end();
+		    Parent->operserv.Akill++)
 		{
 		    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
 			    Parent->operserv.Akill->Value().first)
 		    {
-			set<OperServ::Akill_Type>::iterator Akill2 = Parent->operserv.Akill;
-			Akill2++;
+			expired_akills.push_back(Parent->operserv.Akill->Entry());
+		    }
+		}
+		// OK, ugly, but it avoids SET re-ordering...
+		for (i=0; i<expired_akills.size(); i++)
+		{
+		    for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
+			Parent->operserv.Akill != Parent->operserv.Akill_end();
+			Parent->operserv.Akill++)
+			if (Parent->operserv.Akill->Entry() == expired_akills[i])
+			    break;
+
+		    if (Parent->operserv.Akill != Parent->operserv.Akill_end())
+		    {
 			Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				Parent->operserv.Akill->Entry().c_str(),
@@ -1073,11 +1090,6 @@ int EventTask::svc(void)
 				Parent->operserv.Akill->Last_Modifier().c_str(),
 				ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
 			Parent->operserv.Akill_erase();
-			Parent->operserv.Akill = Akill2;
-		    }
-		    else
-		    {
-			Parent->operserv.Akill++;
 		    }
 		}
 	    }
