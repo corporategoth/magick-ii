@@ -169,6 +169,7 @@ int Magick::Start()
 
     // calibrate the threshholds.
     // try and see how many iterations of 500 random NickInfo's into a map occur in 60s
+    // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     
     //tobe changed to
 
