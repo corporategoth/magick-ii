@@ -59,11 +59,11 @@ void mBase::init()
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
 
-void mBase::send_cmd(const mstring & source, const mstring & fmt, ...)
+void mBase::send_cmd(const mstring & source, const char *fmt, ...)
 {
     FT("send_cmd", (source, fmt));
     va_list args;
-    va_start(args,fmt.c_str());
+    va_start(args,fmt);
     //if(runflags & RUN_NOSEND)
 	//return;
     mstring data1;

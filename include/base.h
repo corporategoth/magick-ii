@@ -40,7 +40,7 @@ protected:
     static bool TaskOpened;
     static mBaseTask BaseTask;
 public:
-	void send_cmd(const mstring& source, const mstring& fmt, ...);
+	void send_cmd(const mstring& source, const char *fmt, ...);
     mBase();
     static void push_message(const mstring& message);
     static void init();
