@@ -24,7 +24,7 @@ using namespace std;
 #include "variant.h"
 
 
-#define FT(x) T_Functions __ft(#x);
+#define FT(x,y) T_Functions __ft(x,y);
 #define CP(x) { T_CheckPoint __cp(#x); }
 #define MB(x) T_Modify __mod(#x);
 #define ME(x) __mod.End(#x);
@@ -74,7 +74,8 @@ class ThreadID;
 // then it gives a syntax error.
 
 enum threadtype_enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
-mstring threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
+// note to prez, don't initialize in a header it fucks the compiler up on multiple includes
+extern mstring threadname[MAX];
 
 // Trace Codes
 //   \   Down Function (T_Functions)
@@ -212,6 +213,7 @@ public:
 // NOT:
 //     T_Functions("FuncName, tid, AOC((param, param)));
 
+// ungod: lol, easy as pie, both pthreads and msvc have a "what's my thread id" call, we just backwards map it to the object that owns it.
 class ThreadID {
 private:
     threadtype_enum internaltype;
@@ -249,10 +251,11 @@ public:
 class T_Functions : public Trace
 {
     ThreadID *tid;
+    mstring m_name;
     T_Functions() {} 
 public:
     T_Functions(const mstring &name, const mVarArray &args);
-    ~T_Functions() { tid->indentdown(); }
+    ~T_Functions();
 };
 
 // ===================================================

@@ -17,6 +17,8 @@
 #include "trace.h"
 
 long Trace::TraceLevel=0;
+mstring threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
+
 
 Trace::Trace()
 {
@@ -158,7 +160,7 @@ void ThreadID::WriteOut(const mstring &message)
     for (int i=0; i<indent; i++)
         finalout += "  ";
     finalout += message;
-    out << finalout << endl;
+    out << finalout << wxEndL;
 }
 
 // ===================================================
@@ -166,8 +168,9 @@ void ThreadID::WriteOut(const mstring &message)
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
+    m_name=name;
     if (IsOn(tid)) {
-	mstring message = "\\ " + name + "(";
+	mstring message = "Entering: " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
@@ -177,6 +180,13 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 	tid->WriteOut(message);
     }
     tid->indentup();
+}
+
+T_Functions::~T_Functions()
+{ 
+    mstring message="Leaving: "+m_name+"()";
+    tid->WriteOut(message);
+    tid->indentdown(); 
 }
 
 // ===================================================
@@ -198,7 +208,7 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 
 void T_CheckPoint::common(const char *input)
 {
-    ShortLevel(Trace::T_CheckPoint);
+    ShortLevel(Trace::CheckPoint);
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -210,7 +220,7 @@ void T_CheckPoint::common(const char *input)
 
 T_Modify::T_Modify(const mVarArray &args)
 {
-    ShortLevel(Trace::T_Modify);
+    ShortLevel(Trace::Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -222,7 +232,7 @@ T_Modify::T_Modify(const mVarArray &args)
 
 void T_Modify::End(const mVarArray &args)
 {
-    ShortLevel(Trace::T_Modify);
+    ShortLevel(Trace::Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -236,12 +246,12 @@ void T_Modify::End(const mVarArray &args)
 
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
-    ShortLevel(Trace::T_Chatter);
+    ShortLevel(Trace::Chatter);
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
 	    message << "<- " << input;
-	else (direction == To)
+	else if(direction == To)
 	    message << "-> " << input;
 	else
 	    message << "-- " << input; // Confused

@@ -15,15 +15,14 @@
 
 const mVarArray EmptyArray;
 
+// tracing taken out of mVariant now that we know it works so that we don't get infinite recursion.
 mVariant::mVariant()
 {
-    FuncTrace("mVariant::mVariant()",EmptyArray);
     valuetype=VarEmpty;
 }
 
 mVariant::mVariant(short in)
 {
-    FuncTrace("mVariant::mVariant(short in)",AOC((in)));
     valuetype=VarShort;
     value.ShortValue=in;
 }
