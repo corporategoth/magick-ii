@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.138  2000/12/10 12:47:36  prez
+** Fixed it joining all forbidden channels on startup
+**
 ** Revision 1.137  2000/12/10 12:27:57  prez
 ** Added SETHOST, and fixed possibility of servers being processed out
 ** of order (causing a server to be missing!)
@@ -4701,7 +4704,8 @@ void NetworkServ::numeric_execute(const mstring & data)
 				clive = NULL;
 			    // If its live and got JOIN on || not live and mlock +k or +i
 			    if ((clive != NULL && iter->second.Join()) ||
-				(clive == NULL && (iter->second.Mlock_Key() != "" ||
+				(clive == NULL && !iter->second.Forbidden() &&
+				(iter->second.Mlock_Key() != "" ||
 				iter->second.Mlock_On().Contains("i"))))
 			    {
 				if (joinline.length())
