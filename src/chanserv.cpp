@@ -1506,7 +1506,7 @@ void ChanServ::do_Getpass(const mstring & mynick, const mstring & source, const 
     SEND(mynick, source, "CS_COMMAND/GETPASS", (chan->Name(), founder, chan->Password()));
     ANNOUNCE(mynick, "MISC/CHAN_GETPASS", (source, chan->Name(), founder));
     LOG(LM_NOTICE, "CHANSERV/GETPASS",
-	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), chan.Name(), founder));
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), chan->Name(), founder));
     ETCB();
 }
 
