@@ -32,6 +32,8 @@ RCSID(mexceptions_h, "@(#) $Id$");
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 
+#include "trace.h"
+
 class E_NickServ_Stored : public exception
 {
 public:
@@ -462,6 +464,42 @@ public:
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
 
+    const E_type type() const throw()
+    {
+	return i_type;
+    }
+    const char *what() const throw()
+    {
+	return i_reason;
+    };
+};
+
+class E_Lock : public exception
+{
+public:
+    enum E_type
+    { T_Create, T_Acquire, T_Release, T_Duplicate, T_Other };
+
+private:
+    locktype_enum i_locktype;
+    E_type i_type;
+    char i_reason[1024];
+
+public:
+    E_Lock(const locktype_enum p_locktype = L_Invalid, const E_type p_type = T_Other, const char *p_reason =
+	   "") throw() : i_locktype(p_locktype), i_type(p_type)
+    {
+	ACE_OS::strncpy(i_reason, p_reason, 1024);
+    }
+    E_Lock(const char *p_reason) throw() : i_locktype(L_Invalid), i_type(T_Other)
+    {
+	ACE_OS::strncpy(i_reason, p_reason, 1024);
+    }
+
+    const locktype_enum locktype() const throw()
+    {
+	return i_locktype;
+    }
     const E_type type() const throw()
     {
 	return i_type;

@@ -50,7 +50,7 @@ enum socktype_enum
 enum dir_enum
 { D_Unknown = 0, D_From, D_To };
 enum priority_enum
-{ P_Lowest = 0, P_Delay, P_Normal, P_DepFilled, P_System, P_Highest };
+{ P_Lowest = 0, P_Delay, P_Normal, P_DepFilled, P_Retry, P_System, P_Highest };
 
 class ThreadID
 {

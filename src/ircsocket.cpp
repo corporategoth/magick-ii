@@ -70,12 +70,24 @@ void *IrcSvcHandler::worker(void *in)
 		ACE_OS::sleep(1);
 	    if (msg != NULL)
 	    {
-		int rv = msg->call();
+		try
+		{
+		    int rv = msg->call();
 
-		delete msg;
+		    delete msg;
 
-		if (rv < 0)
-		    break;
+		    if (rv < 0)
+			break;
+		}
+		catch (E_Lock & e)
+		{
+		    // We got a locking exception, re-queue the message (at the top of the list).
+		    msg->priority(static_cast < u_long > (P_Retry));
+		    RLOCK(("IrcSvcHandler"));
+		    if (Magick::instance().ircsvchandler == NULL)
+			break;
+		    Magick::instance().ircsvchandler->enqueue(msg);
+		}
 	    }
 
 	    size_t msgcnt = 0, thrcnt = 0;
@@ -302,15 +314,18 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
     // Dump the queue and kill all our threads nicely.
     for (i = 0; i < static_cast < unsigned int > (tm.count_threads()); i++)
 	enqueue_sleep();
-    mMessage *msg;
+
+    ACE_Time_Value tv(1);
 
     while (!message_queue.is_empty())
     {
-	ACE_Time_Value tv(1);
+	mMessage *msg = dynamic_cast < mMessage * > (message_queue.dequeue(&tv));
 
-	msg = dynamic_cast < mMessage * > (message_queue.dequeue(&tv));
 	if (msg != NULL)
+	{
 	    delete msg;
+	    msg = NULL;
+	}
     }
     for (i = 0; i < static_cast < unsigned int > (tm.count_threads()); i++)
 	enqueue_shutdown();
@@ -665,14 +680,17 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
     {
 	mMessage *msg = new mMessage(source, msgtype, params, p);
 
-	for (int i = 0; immediate_process[i] != NULL; i++)
-	    if (msg->msgtype().IsSameAs(immediate_process[i], true))
-	    {
-		msg->priority(static_cast < u_long > (P_Highest));
-		break;
-	    }
-	if (msg != NULL && !msg->OutstandingDependancies())
-	    enqueue(msg);
+	if (msg != NULL)
+	{
+	    for (int i = 0; immediate_process[i] != NULL; i++)
+		if (msg->msgtype().IsSameAs(immediate_process[i], true))
+		{
+		    msg->priority(static_cast < u_long > (P_Highest));
+		    break;
+		}
+	    if (msg != NULL && !msg->OutstandingDependancies())
+		enqueue(msg);
+	}
     }
     catch (E_NickServ_Live & e)
     {
@@ -2521,6 +2539,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
     vector < mMessage * >::iterator m;
     for (m = Msgs.begin(); m != Msgs.end(); m++)
     {
+	if (*m != NULL);
 	{
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)

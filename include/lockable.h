@@ -56,16 +56,29 @@ class mLOCK
     T_Locking tlock[MAX_LOCKS];
 #endif
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static bool AcquireMapLock() throw(E_Lock);
+    static bool ReleaseMapLock() throw(E_Lock);
+#else
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
+#endif
 
 public:
-    mLOCK()
+    mLOCK() : islocked(false)
     {
     }
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+    mLOCK(const locktype_enum type, const mVarArray & args) throw(E_Lock);
+
+    ~mLOCK() throw(E_Lock);
+#else
     mLOCK(const locktype_enum type, const mVarArray & args);
 
     ~mLOCK();
+#endif
+
     bool Locked() const
     {
 	return islocked;
@@ -107,13 +120,13 @@ public:
 	return tryacquire_read();
     }
 
-    void *operator      new(size_t size)
+    void *operator       new(size_t size)
     {
 	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator      delete(void *ptr)
+    void operator       delete(void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -137,13 +150,13 @@ public:
 	return tryacquire_write();
     }
 
-    void *operator      new(size_t size)
+    void *operator       new(size_t size)
     {
 	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator      delete(void *ptr)
+    void operator       delete(void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -158,13 +171,13 @@ public:
     {
     }
 
-    void *operator      new(size_t size)
+    void *operator       new(size_t size)
     {
 	static_cast < void > (size);
 
 	return mLOCK::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator      delete(void *ptr)
+    void operator       delete(void *ptr)
     {
 	mLOCK::memory_area.free(ptr);
     }
@@ -362,8 +375,13 @@ private:
     static selftothreadidmap_t selftothreadidmap;
     static mLock_Mutex *maplock;
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static bool AcquireMapLock() throw(E_Lock);
+    static bool ReleaseMapLock() throw(E_Lock);
+#else
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
+#endif
 
 public:
     static ThreadID *find(const ACE_thread_t thread = ACE_Thread::self());

@@ -54,7 +54,11 @@ memory_area((sizeof(mLock_Read) >
 
 map < unsigned long, mSocket * > mSocket::SockMap;
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+bool mLOCK::AcquireMapLock() throw (E_Lock)
+#else
 bool mLOCK::AcquireMapLock()
+#endif
 {
     if (maplock == NULL)
 	maplock = new mLock_Mutex("LockMap");
@@ -75,7 +79,11 @@ bool mLOCK::AcquireMapLock()
     return true;
 }
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+bool mLOCK::ReleaseMapLock() throw (E_Lock)
+#else
 bool mLOCK::ReleaseMapLock()
+#endif
 {
     if (maplock == NULL)
 	return true;
@@ -89,7 +97,11 @@ bool mLOCK::ReleaseMapLock()
     return true;
 }
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+mLOCK::mLOCK(const locktype_enum type, const mVarArray & args) throw (E_Lock)
+#else
 mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
+#endif
 {
     islocked = false;
     if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
@@ -128,6 +140,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		ReleaseMapLock();
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
 		return;
 	    }
 	}
@@ -140,6 +155,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		ReleaseMapLock();
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Create, lockname.c_str()));
+#endif
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
@@ -170,6 +188,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    }
 		}
 		ReleaseMapLock();
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Acquire, lockname.c_str()));
+#endif
 	    }
 	    else
 	    {
@@ -203,6 +224,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		ReleaseMapLock();
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
 		return;
 	    }
 	}
@@ -215,6 +239,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		ReleaseMapLock();
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Create, lockname.c_str()));
+#endif
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
@@ -245,6 +272,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    }
 		}
 		ReleaseMapLock();
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Read, E_Lock::T_Acquire, lockname.c_str()));
+#endif
 	    }
 	    else
 	    {
@@ -274,6 +304,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		case L_Mutex:
 		    ReleaseMapLock();
 		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("WRITE", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		    throw (E_Lock(L_Write, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
 		    return;
 		default:
 		    break;
@@ -294,6 +327,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		ReleaseMapLock();
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("WRITE", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Write, E_Lock::T_Create, lockname.c_str()));
+#endif
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
@@ -307,6 +343,10 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    if (read_lock->release() < 0)
 	    {
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		// Dont bother throwing, we'll write lock in a second.  We should be recursive, so it shouldnt matter.
+		//throw(E_Lock(L_Read, E_Lock::T_Release, lockname.c_str()));
+#endif
 	    }
 	    read_lock = NULL;
 	}
@@ -332,6 +372,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    }
 		}
 		ReleaseMapLock();
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Write, E_Lock::T_Acquire, lockname.c_str()));
+#endif
 	    }
 	    else
 	    {
@@ -356,6 +399,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		{
 		    ReleaseMapLock();
 		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("MUTEX", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		    throw (E_Lock(L_Mutex, E_Lock::T_Duplicate, lockname.c_str()));
+#endif
 		    return;
 		}
 	    }
@@ -375,6 +421,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    {
 		ReleaseMapLock();
 		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", lockname));
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Mutex, E_Lock::T_Create, lockname.c_str()));
+#endif
 		return;
 	    }
 	    map < ACE_thread_t, locktype_enum > tmap;
@@ -405,6 +454,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 		    }
 		}
 		ReleaseMapLock();
+#ifdef MAGICK_HAS_EXCEPTIONS
+		throw (E_Lock(L_Mutex, E_Lock::T_Acquire, lockname.c_str()));
+#endif
 	    }
 	    else
 	    {
@@ -420,7 +472,11 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
     memset(hash, 0, sizeof(hash));
 }
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+mLOCK::~mLOCK() throw (E_Lock)
+#else
 mLOCK::~mLOCK()
+#endif
 {
     if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
 	Magick::instance().ResetTime() == mDateTime(0.0))
@@ -480,6 +536,12 @@ mLOCK::~mLOCK()
 		if (read_lock->release() < 0)
 		{
 		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", locks[i]));
+		    if (killit)
+			delete read_lock;
+		    killit = false;
+#ifdef MAGICK_HAS_EXCEPTIONS
+		    throw (E_Lock(L_Read, E_Lock::T_Release, locks[i].c_str()));
+#endif
 		}
 		if (killit)
 		    delete read_lock;
@@ -491,6 +553,12 @@ mLOCK::~mLOCK()
 		if (write_lock->release() < 0)
 		{
 		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("WRITE", locks[i]));
+		    if (killit)
+			delete write_lock;
+		    killit = false;
+#ifdef MAGICK_HAS_EXCEPTIONS
+		    throw (E_Lock(L_Write, E_Lock::T_Release, locks[i].c_str()));
+#endif
 		}
 		if (killit)
 		    delete write_lock;
@@ -502,6 +570,12 @@ mLOCK::~mLOCK()
 		if (mutex_lock->release() < 0)
 		{
 		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("MUTEX", locks[i]));
+		    if (killit)
+			delete mutex_lock;
+		    killit = false;
+#ifdef MAGICK_HAS_EXCEPTIONS
+		    throw (E_Lock(L_Mutex, E_Lock::T_Release, locks[i].c_str()));
+#endif
 		}
 		if (killit)
 		    delete mutex_lock;
@@ -541,6 +615,9 @@ mLOCK::~mLOCK()
 				}
 			    }
 			    ReleaseMapLock();
+#ifdef MAGICK_HAS_EXCEPTIONS
+			    throw (E_Lock(L_Read, E_Lock::T_Acquire, locks[i].c_str()));
+#endif
 			}
 			read_lock = NULL;
 		    }
@@ -942,7 +1019,11 @@ int mSocket::close()
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+bool mThread::AcquireMapLock() throw (E_Lock)
+#else
 bool mThread::AcquireMapLock()
+#endif
 {
     if (maplock == NULL)
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
@@ -963,7 +1044,11 @@ bool mThread::AcquireMapLock()
     return true;
 }
 
+#ifdef MAGICK_HAS_EXCEPTIONS
+bool mThread::ReleaseMapLock() throw (E_Lock)
+#else
 bool mThread::ReleaseMapLock()
+#endif
 {
     if (maplock == NULL)
 	return true;
