@@ -958,8 +958,8 @@ void Chan_Live_t::RemoveMode(mstring & mode, vector < mstring > & mode_params, c
 		{
 		    new_mode += mode[i];
 		    new_params.push_back(mode_params[param]);
-		    param++;
 		}
+		param++;
 	    }
 	    else
 	    {
