@@ -1166,7 +1166,7 @@ void Magick::dump_help() const
 	"                           services to convert is the version that the\n" <<
         "                           conversion utilities were taken from (you can\n" <<
         "                           usually assume previous versions will also work).\n" <<
-	"                               magick (1.4), ircservices (5.0.6), sirv (2.9.0),\n" <<
+	"                               magick (1.4), ircservices (5.0.9), sirv (2.9.0),\n" <<
 	"                               hybserv (1.9.0), auspice (2.8), ptlink (2.22.3),\n" <<
 	"                               epona (1.4.14), wrecked (1.2.0), trircd (4.26),\n" <<
 	"                               cygnus (0.1.1), bolivia (1.2.0).\n" <<

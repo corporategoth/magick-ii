@@ -35,7 +35,7 @@ RCSID(convert_ircservices_h, "@(#) $Id$");
 
 #ifdef CONVERT
 
-/* Based upon the DB loading routines from ircservices 5.0.6
+/* Based upon the DB loading routines from ircservices 5.0.9
  * (c) 1996-2002 Andrew Church <achurch@dragonfire.net>
  */
 
