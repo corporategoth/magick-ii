@@ -575,6 +575,7 @@ void Protocol::Set(const unsigned int in)
 	i_Helpops = true;
 	i_BigTopic = true;
 	i_Akill = 1000;
+	i_ChanModeArg = "ovbehklqa";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
@@ -695,7 +696,7 @@ void Protocol::Set(const unsigned int in)
 	Numeric.i_Server = 6;
 	Numeric.i_ServerNumber = true;
 	Numeric.i_Field = 3;
-	i_ChanModeArg = "ovbehklLf";
+	i_ChanModeArg = "ovbehklLfqa";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
