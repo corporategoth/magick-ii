@@ -627,7 +627,7 @@ mDateTime StringToDate(const mstring& in)
 	int first=0,second=0,third=0;
 	mstring formatspec;
 	mstring shortdateformat=ShortDateFormat;
-	shortdateformat.LowerCase();
+	shortdateformat.MakeLower();
 	formatspec="%d"+DateSeparator+"%d"+DateSeparator+"%d";
 	sscanf(in.c_str(),formatspec.c_str(),&first,&second,&third);
 	if(shortdateformat.Before(DateSeparator)=="mm"||shortdateformat.Before(DateSeparator)=="m")

@@ -425,9 +425,11 @@ bool mstring::IsWord() const
 	return true;
 }
 
-void mstring::LowerCase()
+mstring mstring::LowerCase() const
 {
-	MakeLower();
+    mstring Result=*this;
+    Result.MakeLower();
+    return Result;
 }
 
 mstring& mstring::Remove(size_t pos)
@@ -492,9 +494,11 @@ mstring mstring::Strip(stripType s)
 	return str;
 }
 
-void mstring::UpperCase()
+mstring mstring::UpperCase() const
 {
-	MakeUpper();
+    mstring Result=*this;
+    Result.MakeUpper();
+    return Result;
 }
 
 mstring mstring::operator ( )(size_t start, size_t len)

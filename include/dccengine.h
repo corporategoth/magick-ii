@@ -7,6 +7,7 @@ using namespace std;
 class DccEngine
 {
 public:
+	void GotDCC(const mstring& in);
     mstring encode(mstring& in);
     void decode(mstring& in);
     mstring lowQuote(mstring& in);

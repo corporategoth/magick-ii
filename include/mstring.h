@@ -50,7 +50,7 @@ public:
 	mstring& operator <<(float f);
 	mstring& operator<<(int i);
 	mstring operator()(size_t start,size_t len);
-	void UpperCase();
+	mstring UpperCase() const;
     // values for first parameter of Strip function
 	enum stripType {stLeading, stTrailing , stBoth };
 	mstring Strip(stripType s=stTrailing);
@@ -58,7 +58,7 @@ public:
 	mstring& RemoveLast();
 	mstring& Remove(size_t nStart, size_t nLen);
 	mstring& Remove(size_t pos);
-	void LowerCase();
+	mstring LowerCase() const;
 	bool IsWord() const;
 	bool IsNumber() const;
 	bool IsNull() const;

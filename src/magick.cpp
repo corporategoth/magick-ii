@@ -64,7 +64,7 @@ int Magick::Start()
 	    argv[i][0]='-';*/
 	if(argv[i][0U]=='-')
 	{
-	    argv[i].LowerCase();
+	    argv[i].MakeLower();
 	    if(argv[i]=="-dir")
 	    {
 		i++;
@@ -449,7 +449,7 @@ int Magick::doparamparse()
 	    argv[i][0]='-';*/
 	if(argv[i][0U]=='-')
 	{
-	    argv[i].LowerCase();
+	    argv[i].MakeLower();
 	    if(argv[i]=="-remote")
 	    {
 		i++;
