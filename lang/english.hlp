@@ -1945,8 +1945,8 @@
 04 =REGD::services treat your committee.
 05 =REGD::
 06 =REGD::You may alter your settings with these commands:
-07 =REGD::    HEAD         EMAIL        URL          SECURE
-08 =REGD::    PRIVATE      OPENMEMOS
+07 =REGD::    HEAD         DESCRIPTION  EMAIL        URL
+08 =REGD::    SECURE       PRIVATE      OPENMEMOS
 
 [COMMSERV/SET/HEAD]
 01 =REGD::SET <committee> HEAD <head>
@@ -1956,6 +1956,12 @@
 05 =REGD::members, memos and logon messages.  Please be sure
 06 =REGD::you wish to relinquish all power of the committee
 07 =REGD::before using this command.
+
+[COMMSERV/SET/DESCRIPTION]
+01 =REGD::SET <committee> DESCRIPTION <description>
+02 =REGD::
+03 =REGD::This will change the description of the committee that
+04 =REGD::is displayed in a committee listing, or an info request.
 
 [COMMSERV/SET/EMAIL]
 01 =REGD::SET <committee> EMAIL <email>

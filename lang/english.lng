@@ -739,6 +739,7 @@ OPTIONS            =\   Options: %s
 MEMBERS            =members
 MESSAGES           =messages
 SET_HEAD           =Head
+SET_EMAIL          =Description
 SET_EMAIL          =E-Mail Address
 SET_URL            =WWW Page
 SET_SECURE         =Secure

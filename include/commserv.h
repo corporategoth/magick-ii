@@ -25,6 +25,9 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/12/10 02:56:06  prez
+** Added ability to change DESCRIPTION field in committees.
+**
 ** Revision 1.39  2000/09/22 12:26:10  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -148,7 +151,6 @@ public:
     mDateTime RegTime();
     mstring HeadCom();
     mstring Head();
-    mstring Description();
     void Head(mstring newhead);
 
     bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
@@ -163,6 +165,8 @@ public:
     bool IsHead(mstring nick);
     bool IsOn(mstring nick);
 
+    void Description(mstring in);
+    mstring Description();
     void Email(mstring in);
     mstring Email();
     void URL(mstring in);
@@ -343,6 +347,7 @@ public:
     static void do_logon_Del(mstring mynick, mstring source, mstring params);
     static void do_logon_List(mstring mynick, mstring source, mstring params);
     static void do_set_Head(mstring mynick, mstring source, mstring params);
+    static void do_set_Description(mstring mynick, mstring source, mstring params);
     static void do_set_Email(mstring mynick, mstring source, mstring params);
     static void do_set_URL(mstring mynick, mstring source, mstring params);
     static void do_set_Secure(mstring mynick, mstring source, mstring params);

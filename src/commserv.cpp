@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2000/12/10 02:56:06  prez
+** Added ability to change DESCRIPTION field in committees.
+**
 ** Revision 1.78  2000/12/09 20:16:41  prez
 ** Fixed SubString and Left to have correct count/end possitions.  Also
 ** adjusted rest of source to follow suit.
@@ -311,13 +314,6 @@ mstring Committee::Head()
     RET(i_Head);
 }
 
-mstring Committee::Description()
-{
-    NFT("Committee::Description");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
-    RET(i_Description);
-}
-
 void Committee::Head(mstring newhead)
 {
     FT("Committee::Head", (newhead));
@@ -547,6 +543,22 @@ bool Committee::IsHead(mstring nick)
 	RET(retval);
     }
     RET(false);
+}
+
+void Committee::Description(mstring in)
+{
+    FT("Committee::Description", (in));
+    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
+    MCB(i_Description);
+    i_Description = in;
+    MCE(i_Description);
+}
+
+mstring Committee::Description()
+{
+    NFT("Committee::Description");
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
+    RET(i_Description);
 }
 
 void Committee::Email(mstring in)
@@ -912,6 +924,8 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* HEAD*", Parent->commserv.REGD_Name(), CommServ::do_set_Head);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* DESC*", Parent->commserv.REGD_Name(), CommServ::do_set_Description);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* E*MAIL*", Parent->commserv.REGD_Name(), CommServ::do_set_Email);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* U*R*L*", Parent->commserv.REGD_Name(), CommServ::do_set_URL);
@@ -1004,6 +1018,8 @@ void CommServ::RemCommands()
 		"LOG* VIEW", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* HEAD*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* DESC*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* E*MAIL*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -2081,12 +2097,66 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     Parent->commserv.list[committee].Head(newhead);
     Parent->commserv.stats.i_Set++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
-		Parent->getMessage(source, "COMMSERV_INFO/SET_HEAD").c_str(),
-		committee.c_str(), newhead.c_str());
+	Parent->getMessage(source, "COMMSERV_INFO/SET_HEAD").c_str(),
+	committee.c_str(), newhead.c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_HEAD").c_str(),
 	committee.c_str(), newhead.c_str());
+}
+
+
+void CommServ::do_set_Description(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_set_Description", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring desc      = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsHead(source))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    Parent->commserv.list[committee].Description(desc);
+    Parent->commserv.stats.i_Set++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
+	Parent->getMessage(source, "COMMSERV_INFO/SET_DESCRIPTION").c_str(),
+	committee.c_str(), desc.c_str());
+    Log(LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
+	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+	Parent->getMessage("COMMSERV_INFO/SET_DESCRIPTION").c_str(),
+	committee.c_str(), desc.c_str());
 }
 
 
