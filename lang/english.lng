@@ -109,6 +109,7 @@ NOKEY              =No key specified, but required (ignored).
 NOLIMIT            =No limit specified, but required (ignored).
 MUSTBEHEX          =You may only specify characters 0-f, $1 digits long.
 MUSTBESIZE         =You must specify a size $1 or above.
+MUSTBEHOST         =You may only specify something that would be valid as a host name.
 
 ;
 ; This section describes SITUATION errors, ie. errors where you have

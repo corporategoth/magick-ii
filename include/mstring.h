@@ -907,6 +907,10 @@ public:
 	return IsIpv4Address() || IsIpv6Address();
     }
 
+    /** @return true if the current contents contains a name that would be valid
+        as a hostname (NOTE: it does NOT check to see if the host exists). */
+    bool IsHostName() const;
+
     /** @return true if all characters are standard ASCII characters */
     bool IsAscii() const;
 

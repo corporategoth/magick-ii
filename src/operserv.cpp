@@ -1600,6 +1600,12 @@ void OperServ::do_Hide(const mstring & mynick, const mstring & source, const mst
     mstring target = params.ExtractWord(2, " ");
     mstring newhost = params.ExtractWord(3, " ");
 
+    if (!newhost.IsHostName())
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEHOST");
+	return;
+    }
+
     if (Magick::instance().nickserv.IsLive(target))
     {
 	target = Magick::instance().getLname(target);

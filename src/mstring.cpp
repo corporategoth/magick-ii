@@ -1172,6 +1172,38 @@ bool mstring::IsIpv6Address() const
     return retval;
 }
 
+bool mstring::IsHostName() const
+{
+    bool retval = true;
+
+    lock_read();
+
+    // First and last chars have to be [A-Za-z0-9], rest have to be [A-Za-z0-9.-_]
+
+    if (i_str == NULL)
+	retval = false;
+    else if (!isalnum(i_str[0u]))
+	retval = false;
+    else
+    {
+	for (size_t i = 1; i < i_len - 1; i++)
+	{
+	    if (!isalnum(i_str[i]) && i_str[i] != '.' && i_str[i] != '-' && i_str[i] != '_')
+	    {
+		retval = false;
+		break;
+	    }
+	}
+	if (!isalnum(i_str[i_len-1]))
+	    retval = false;
+    }
+
+    
+    lock_rel();
+
+    return retval;
+}
+
 bool mstring::IsAscii() const
 {
     bool retval = true;
