@@ -39,8 +39,7 @@ mVariant::mVariant(int in)
 
 mVariant::mVariant(long in)
 {
-    truevaluetype="long";
-    valuetype="int";
+    truevaluetype=valuetype="long";
     IntValue=in;
 }
 
@@ -109,7 +108,7 @@ mVariant::mVariant(unsigned int in)
 
 mVariant::mVariant(unsigned long in)
 {
-	truevaluetype=valuetype="unsigned int";
+	truevaluetype=valuetype="unsigned long";
 	UIntValue=in;
 }
 
@@ -216,6 +215,8 @@ mVariant& mVariant::operator=(const mVariant& in)
         FloatValue=in.FloatValue;
     else if(valuetype=="int")
         IntValue=in.IntValue;
+    else if(valuetype=="long")
+        LongValue=in.LongValue;
     else if(valuetype=="void *")
         PtrValue=in.PtrValue;
     else if(valuetype=="short")
@@ -226,6 +227,8 @@ mVariant& mVariant::operator=(const mVariant& in)
         UCharValue=in.UCharValue;
     else if(valuetype=="unsigned int")
         UIntValue=in.UIntValue;
+    else if(valuetype=="unsigned long")
+        ULongValue=in.UIntValue;
     else if(valuetype=="unsigned short")
         UShortValue=in.UShortValue;
     return *this;
@@ -270,6 +273,13 @@ bool mVariant::operator==(const mVariant& in)const
 	    else 
 		return false;
 	}
+	else if(valuetype=="long")
+	{
+	    if(LongValue==in.LongValue)
+		return true;
+	    else 
+		return false;
+	}
 	else if(valuetype=="void *")
 	{
 	    if(PtrValue==in.PtrValue)
@@ -301,6 +311,13 @@ bool mVariant::operator==(const mVariant& in)const
 	else if(valuetype=="unsigned int")
 	{
 	    if(UIntValue==in.UIntValue)
+		return true;
+	    else 
+		return false;
+	}
+	else if(valuetype=="unsigned long")
+	{
+	    if(ULongValue==in.ULongValue)
 		return true;
 	    else 
 		return false;
@@ -356,6 +373,13 @@ bool mVariant::operator<(const mVariant& in)const
 	    else 
 		return false;
 	}
+	else if(valuetype=="long")
+	{
+	    if(LongValue<in.LongValue)
+		return true;
+	    else 
+		return false;
+	}
 	else if(valuetype=="void *")
 	{
 	    if(PtrValue<in.PtrValue)
@@ -387,6 +411,13 @@ bool mVariant::operator<(const mVariant& in)const
 	else if(valuetype=="unsigned int")
 	{
 	    if(UIntValue<in.UIntValue)
+		return true;
+	    else 
+		return false;
+	}
+	else if(valuetype=="unsigned long")
+	{
+	    if(ULongValue<in.ULongValue)
 		return true;
 	    else 
 		return false;
@@ -423,6 +454,8 @@ mstring mVariant::AsString()const
 	dummystring.Format("%f",FloatValue);
     else if(valuetype=="int")
 	dummystring.Format("%d",IntValue);
+    else if(valuetype=="long")
+	dummystring.Format("%l",IntValue);
     else if(valuetype=="void *")
 	dummystring.Format("%p",PtrValue);
     else if(valuetype=="short")
@@ -433,6 +466,8 @@ mstring mVariant::AsString()const
 	dummystring.Format("%u",UCharValue);
     else if(valuetype=="unsigned int")
 	dummystring.Format("%u",UIntValue);
+    else if(valuetype=="unsigned long")
+	dummystring.Format("%lu",ULongValue);
     else if(valuetype=="unsigned short")
 	dummystring.Format("%u",UShortValue);
     else if(valuetype=="NULL")

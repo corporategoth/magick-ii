@@ -21,13 +21,13 @@
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 90;
+const int BUILD_NUMBER = 102;
 #ifdef WIN32
-const mstring BUILD_TYPE = "Microsoft Windows";
-const mstring BUILD_SYS = "localhost";
+const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
+const mstring BUILD_SYS = "castle";
 #else
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
-const mstring BUILD_SYS = "";
+const mstring BUILD_SYS = "castle";
 #endif
 const unsigned short Magick_Major_Ver=2;
 const unsigned short Magick_Minor_Ver=0;

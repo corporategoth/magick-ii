@@ -27,6 +27,7 @@ private:
 	//union value_union_t {
 		short ShortValue;
 		int IntValue;
+		long LongValue;
 		char CharValue;
 		float FloatValue;
 		double DoubleValue;
@@ -38,6 +39,7 @@ private:
 		unsigned char UCharValue;
 		unsigned short UShortValue;
 		unsigned int UIntValue;
+		unsigned long ULongValue;
 		void *PtrValue;
 	//} value;
 	

@@ -955,7 +955,7 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"CHANKEEP",&chanserv.chankeep,15);
     in.Read(ts_ChanServ+"DEF_MLOCK",&chanserv.def_mlock,"+nt");
     in.Read(ts_ChanServ+"LCK_MLOCK",&chanserv.lck_mlock,"+");
-    in.Read(ts_ChanServ+"DEF_BANTIME",&chanserv.def_bantime,0);
+    in.Read(ts_ChanServ+"DEF_BANTIME",&chanserv.def_bantime,(unsigned long) 0);
     in.Read(ts_ChanServ+"LCK_BANTIME",&chanserv.lck_bantime,false);
     in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&chanserv.def_keeptopic,true);
     in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&chanserv.lck_keeptopic,false);

@@ -17,6 +17,7 @@
 
 #include "ircsocket.h"
 #include "magick.h"
+#include "lockable.h"
 
 int IrcSvcHandler::open(void *in)
 {
@@ -281,7 +282,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
 int EventTask::open(void *in)
 {
-    FT("EventTask::open", (in));
+    FT("EventTask::open", ("(void *) in"));
     RET(activate());
 }
 
@@ -295,6 +296,7 @@ int EventTask::close(unsigned long in)
 int EventTask::svc(void)
 {
     NFT("EventTask::svc");
+    mThread::Attach(tt_MAIN);
     while(!Parent->shutdown())
     {
 	// Main routine -- when we end this, we're done!!
@@ -339,6 +341,7 @@ int EventTask::svc(void)
 	sleep(1);
 #endif
     }
+    mThread::Detach(tt_MAIN);
     RET(0);
 }
 

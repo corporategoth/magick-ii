@@ -828,6 +828,6 @@ int mDateTime::DaysSince()
 
 int mDateTime::YearsSince()
 {
-    return (DaysSince() / 365.5);
+    return (int)((double) DaysSince() / 365.5);
 }
 
