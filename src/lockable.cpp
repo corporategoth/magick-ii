@@ -303,7 +303,7 @@ void mThread::spawn(threadtype_enum type,ACE_THR_FUNC func, void *arg)
     args->second=arg;
     args->third=type;
     CP(("Spawning a new %s thread ...", threadname[type].c_str()));
-    ACE_Thread::spawn(handler_hack,(void *)args,0);
+    ACE_Thread::spawn(handler_hack,(void *)args);
 }
 void mThread::resumeself()
 {
