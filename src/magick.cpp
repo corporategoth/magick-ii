@@ -62,7 +62,8 @@ int Magick::Start()
 				}
 				config_file=argv[i];
 			}
-			else if(argv[i]=="-help"||argv[i]=="--help"||argv[i]=="-?")
+			else if(argv[i]=="-help"||argv[i]=="--help"||
+					argv[i]=="-?"||argv[i]=="-h")
 			{
 				dump_help(argv[0]);
 				return MAGICK_RET_NORMAL;
@@ -120,6 +121,12 @@ void Magick::dump_help(mstring & progname)
 
 void Magick::LoadInternalMessages()
 {
+	/* This is to be replaced with language files.
+	   blah.lng (and magick.ini has LANGUAGE=blah
+	   Another file should be created for LOGMSG=blahlog
+	   for log messages (user display and log messages
+	   should be seperated */
+
 	/* note left side of message can have spaces before '=' that will be trimmed
 		right side will *not* be trimmed*/
 	mstring tempstor[]=

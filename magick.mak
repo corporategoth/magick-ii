@@ -47,22 +47,35 @@ ALL : "$(OUTDIR)\magick.exe"
 !ENDIF 
 
 CLEAN :
-	-@erase "$(INTDIR)\AParser.obj"
-	-@erase "$(INTDIR)\ATokenBuffer.obj"
+	-@erase "$(INTDIR)\ANTLRException.obj"
+	-@erase "$(INTDIR)\AST.obj"
+	-@erase "$(INTDIR)\ASTFactory.obj"
+	-@erase "$(INTDIR)\BitSet.obj"
 	-@erase "$(INTDIR)\bob.obj"
+	-@erase "$(INTDIR)\CharBuffer.obj"
+	-@erase "$(INTDIR)\CharScanner.obj"
+	-@erase "$(INTDIR)\CommonToken.obj"
 	-@erase "$(INTDIR)\confbase.obj"
-	-@erase "$(INTDIR)\DLexerBase.obj"
-	-@erase "$(INTDIR)\EscapeParser.obj"
-	-@erase "$(INTDIR)\escDlgLexer.obj"
-	-@erase "$(INTDIR)\escparse.obj"
+	-@erase "$(INTDIR)\EscLexer.obj"
+	-@erase "$(INTDIR)\EscParser.obj"
 	-@erase "$(INTDIR)\fileconf.obj"
+	-@erase "$(INTDIR)\LLkParser.obj"
 	-@erase "$(INTDIR)\lockable.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\magick.obj"
 	-@erase "$(INTDIR)\main.obj"
+	-@erase "$(INTDIR)\MismatchedTokenException.obj"
 	-@erase "$(INTDIR)\mstream.obj"
 	-@erase "$(INTDIR)\mstring.obj"
+	-@erase "$(INTDIR)\NoViableAltException.obj"
+	-@erase "$(INTDIR)\Parser.obj"
+	-@erase "$(INTDIR)\ParserException.obj"
+	-@erase "$(INTDIR)\ScannerException.obj"
+	-@erase "$(INTDIR)\String.obj"
 	-@erase "$(INTDIR)\textfile.obj"
+	-@erase "$(INTDIR)\Token.obj"
+	-@erase "$(INTDIR)\TokenBuffer.obj"
+	-@erase "$(INTDIR)\TreeParser.obj"
 	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\vc50.idb"
 	-@erase "$(OUTDIR)\magick.exe"
@@ -70,8 +83,9 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D\
- "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "..\bob" /I "..\cryptlib21" /I "include" /D\
+ "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\"\
+ /FD /c 
 CPP_OBJS=.\Release/
 CPP_SBRS=.
 BSC32=bscmake.exe
@@ -85,22 +99,35 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
  zlib.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\magick.pdb"\
  /machine:I386 /out:"$(OUTDIR)\magick.exe" 
 LINK32_OBJS= \
-	"$(INTDIR)\AParser.obj" \
-	"$(INTDIR)\ATokenBuffer.obj" \
+	"$(INTDIR)\ANTLRException.obj" \
+	"$(INTDIR)\AST.obj" \
+	"$(INTDIR)\ASTFactory.obj" \
+	"$(INTDIR)\BitSet.obj" \
 	"$(INTDIR)\bob.obj" \
+	"$(INTDIR)\CharBuffer.obj" \
+	"$(INTDIR)\CharScanner.obj" \
+	"$(INTDIR)\CommonToken.obj" \
 	"$(INTDIR)\confbase.obj" \
-	"$(INTDIR)\DLexerBase.obj" \
-	"$(INTDIR)\EscapeParser.obj" \
-	"$(INTDIR)\escDlgLexer.obj" \
-	"$(INTDIR)\escparse.obj" \
+	"$(INTDIR)\EscLexer.obj" \
+	"$(INTDIR)\EscParser.obj" \
 	"$(INTDIR)\fileconf.obj" \
+	"$(INTDIR)\LLkParser.obj" \
 	"$(INTDIR)\lockable.obj" \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\magick.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\MismatchedTokenException.obj" \
 	"$(INTDIR)\mstream.obj" \
 	"$(INTDIR)\mstring.obj" \
+	"$(INTDIR)\NoViableAltException.obj" \
+	"$(INTDIR)\Parser.obj" \
+	"$(INTDIR)\ParserException.obj" \
+	"$(INTDIR)\ScannerException.obj" \
+	"$(INTDIR)\String.obj" \
 	"$(INTDIR)\textfile.obj" \
+	"$(INTDIR)\Token.obj" \
+	"$(INTDIR)\TokenBuffer.obj" \
+	"$(INTDIR)\TreeParser.obj" \
 	"$(INTDIR)\utils.obj"
 
 "$(OUTDIR)\magick.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -118,34 +145,78 @@ OutDir=.\Debug
 
 !IF "$(RECURSE)" == "0" 
 
-ALL : "$(OUTDIR)\magick.exe"
+ALL : "$(OUTDIR)\magick.exe" "$(OUTDIR)\magick.bsc"
 
 !ELSE 
 
-ALL : "$(OUTDIR)\magick.exe"
+ALL : "$(OUTDIR)\magick.exe" "$(OUTDIR)\magick.bsc"
 
 !ENDIF 
 
 CLEAN :
-	-@erase "$(INTDIR)\AParser.obj"
-	-@erase "$(INTDIR)\ATokenBuffer.obj"
+	-@erase "$(INTDIR)\ANTLRException.obj"
+	-@erase "$(INTDIR)\ANTLRException.sbr"
+	-@erase "$(INTDIR)\AST.obj"
+	-@erase "$(INTDIR)\AST.sbr"
+	-@erase "$(INTDIR)\ASTFactory.obj"
+	-@erase "$(INTDIR)\ASTFactory.sbr"
+	-@erase "$(INTDIR)\BitSet.obj"
+	-@erase "$(INTDIR)\BitSet.sbr"
 	-@erase "$(INTDIR)\bob.obj"
+	-@erase "$(INTDIR)\bob.sbr"
+	-@erase "$(INTDIR)\CharBuffer.obj"
+	-@erase "$(INTDIR)\CharBuffer.sbr"
+	-@erase "$(INTDIR)\CharScanner.obj"
+	-@erase "$(INTDIR)\CharScanner.sbr"
+	-@erase "$(INTDIR)\CommonToken.obj"
+	-@erase "$(INTDIR)\CommonToken.sbr"
 	-@erase "$(INTDIR)\confbase.obj"
-	-@erase "$(INTDIR)\DLexerBase.obj"
-	-@erase "$(INTDIR)\EscapeParser.obj"
-	-@erase "$(INTDIR)\escDlgLexer.obj"
-	-@erase "$(INTDIR)\escparse.obj"
+	-@erase "$(INTDIR)\confbase.sbr"
+	-@erase "$(INTDIR)\EscLexer.obj"
+	-@erase "$(INTDIR)\EscLexer.sbr"
+	-@erase "$(INTDIR)\EscParser.obj"
+	-@erase "$(INTDIR)\EscParser.sbr"
 	-@erase "$(INTDIR)\fileconf.obj"
+	-@erase "$(INTDIR)\fileconf.sbr"
+	-@erase "$(INTDIR)\LLkParser.obj"
+	-@erase "$(INTDIR)\LLkParser.sbr"
 	-@erase "$(INTDIR)\lockable.obj"
+	-@erase "$(INTDIR)\lockable.sbr"
 	-@erase "$(INTDIR)\log.obj"
+	-@erase "$(INTDIR)\log.sbr"
 	-@erase "$(INTDIR)\magick.obj"
+	-@erase "$(INTDIR)\magick.sbr"
 	-@erase "$(INTDIR)\main.obj"
+	-@erase "$(INTDIR)\main.sbr"
+	-@erase "$(INTDIR)\MismatchedTokenException.obj"
+	-@erase "$(INTDIR)\MismatchedTokenException.sbr"
 	-@erase "$(INTDIR)\mstream.obj"
+	-@erase "$(INTDIR)\mstream.sbr"
 	-@erase "$(INTDIR)\mstring.obj"
+	-@erase "$(INTDIR)\mstring.sbr"
+	-@erase "$(INTDIR)\NoViableAltException.obj"
+	-@erase "$(INTDIR)\NoViableAltException.sbr"
+	-@erase "$(INTDIR)\Parser.obj"
+	-@erase "$(INTDIR)\Parser.sbr"
+	-@erase "$(INTDIR)\ParserException.obj"
+	-@erase "$(INTDIR)\ParserException.sbr"
+	-@erase "$(INTDIR)\ScannerException.obj"
+	-@erase "$(INTDIR)\ScannerException.sbr"
+	-@erase "$(INTDIR)\String.obj"
+	-@erase "$(INTDIR)\String.sbr"
 	-@erase "$(INTDIR)\textfile.obj"
+	-@erase "$(INTDIR)\textfile.sbr"
+	-@erase "$(INTDIR)\Token.obj"
+	-@erase "$(INTDIR)\Token.sbr"
+	-@erase "$(INTDIR)\TokenBuffer.obj"
+	-@erase "$(INTDIR)\TokenBuffer.sbr"
+	-@erase "$(INTDIR)\TreeParser.obj"
+	-@erase "$(INTDIR)\TreeParser.sbr"
 	-@erase "$(INTDIR)\utils.obj"
+	-@erase "$(INTDIR)\utils.sbr"
 	-@erase "$(INTDIR)\vc50.idb"
 	-@erase "$(INTDIR)\vc50.pdb"
+	-@erase "$(OUTDIR)\magick.bsc"
 	-@erase "$(OUTDIR)\magick.exe"
 	-@erase "$(OUTDIR)\magick.ilk"
 	-@erase "$(OUTDIR)\magick.pdb"
@@ -155,13 +226,48 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "..\bob" /I\
  "..\cryptlib21" /I "include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS"\
- /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+ /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 CPP_OBJS=.\Debug/
-CPP_SBRS=.
+CPP_SBRS=.\Debug/
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\magick.bsc" 
 BSC32_SBRS= \
-	
+	"$(INTDIR)\ANTLRException.sbr" \
+	"$(INTDIR)\AST.sbr" \
+	"$(INTDIR)\ASTFactory.sbr" \
+	"$(INTDIR)\BitSet.sbr" \
+	"$(INTDIR)\bob.sbr" \
+	"$(INTDIR)\CharBuffer.sbr" \
+	"$(INTDIR)\CharScanner.sbr" \
+	"$(INTDIR)\CommonToken.sbr" \
+	"$(INTDIR)\confbase.sbr" \
+	"$(INTDIR)\EscLexer.sbr" \
+	"$(INTDIR)\EscParser.sbr" \
+	"$(INTDIR)\fileconf.sbr" \
+	"$(INTDIR)\LLkParser.sbr" \
+	"$(INTDIR)\lockable.sbr" \
+	"$(INTDIR)\log.sbr" \
+	"$(INTDIR)\magick.sbr" \
+	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\MismatchedTokenException.sbr" \
+	"$(INTDIR)\mstream.sbr" \
+	"$(INTDIR)\mstring.sbr" \
+	"$(INTDIR)\NoViableAltException.sbr" \
+	"$(INTDIR)\Parser.sbr" \
+	"$(INTDIR)\ParserException.sbr" \
+	"$(INTDIR)\ScannerException.sbr" \
+	"$(INTDIR)\String.sbr" \
+	"$(INTDIR)\textfile.sbr" \
+	"$(INTDIR)\Token.sbr" \
+	"$(INTDIR)\TokenBuffer.sbr" \
+	"$(INTDIR)\TreeParser.sbr" \
+	"$(INTDIR)\utils.sbr"
+
+"$(OUTDIR)\magick.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
  advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib\
@@ -170,22 +276,35 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
  /pdb:"$(OUTDIR)\magick.pdb" /debug /machine:I386 /out:"$(OUTDIR)\magick.exe"\
  /pdbtype:sept 
 LINK32_OBJS= \
-	"$(INTDIR)\AParser.obj" \
-	"$(INTDIR)\ATokenBuffer.obj" \
+	"$(INTDIR)\ANTLRException.obj" \
+	"$(INTDIR)\AST.obj" \
+	"$(INTDIR)\ASTFactory.obj" \
+	"$(INTDIR)\BitSet.obj" \
 	"$(INTDIR)\bob.obj" \
+	"$(INTDIR)\CharBuffer.obj" \
+	"$(INTDIR)\CharScanner.obj" \
+	"$(INTDIR)\CommonToken.obj" \
 	"$(INTDIR)\confbase.obj" \
-	"$(INTDIR)\DLexerBase.obj" \
-	"$(INTDIR)\EscapeParser.obj" \
-	"$(INTDIR)\escDlgLexer.obj" \
-	"$(INTDIR)\escparse.obj" \
+	"$(INTDIR)\EscLexer.obj" \
+	"$(INTDIR)\EscParser.obj" \
 	"$(INTDIR)\fileconf.obj" \
+	"$(INTDIR)\LLkParser.obj" \
 	"$(INTDIR)\lockable.obj" \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\magick.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\MismatchedTokenException.obj" \
 	"$(INTDIR)\mstream.obj" \
 	"$(INTDIR)\mstring.obj" \
+	"$(INTDIR)\NoViableAltException.obj" \
+	"$(INTDIR)\Parser.obj" \
+	"$(INTDIR)\ParserException.obj" \
+	"$(INTDIR)\ScannerException.obj" \
+	"$(INTDIR)\String.obj" \
 	"$(INTDIR)\textfile.obj" \
+	"$(INTDIR)\Token.obj" \
+	"$(INTDIR)\TokenBuffer.obj" \
+	"$(INTDIR)\TreeParser.obj" \
 	"$(INTDIR)\utils.obj"
 
 "$(OUTDIR)\magick.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -227,54 +346,74 @@ LINK32_OBJS= \
 
 
 !IF "$(CFG)" == "magick - Win32 Release" || "$(CFG)" == "magick - Win32 Debug"
-SOURCE=.\src\AParser.cpp
+SOURCE=.\src\antlr\ANTLRException.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_APARS=\
-	".\src\pcctscfg.h"\
-	
 
-"$(INTDIR)\AParser.obj" : $(SOURCE) $(DEP_CPP_APARS) "$(INTDIR)"
+"$(INTDIR)\ANTLRException.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_APARS=\
-	".\src\AParser.h"\
-	".\src\AToken.h"\
-	".\src\ATokenBuffer.h"\
-	".\src\ATokenStream.h"\
-	".\src\pcctscfg.h"\
-	
 
-"$(INTDIR)\AParser.obj" : $(SOURCE) $(DEP_CPP_APARS) "$(INTDIR)"
+"$(INTDIR)\ANTLRException.obj"	"$(INTDIR)\ANTLRException.sbr" : $(SOURCE)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
 
-SOURCE=.\src\ATokenBuffer.cpp
+SOURCE=.\src\antlr\AST.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_ATOKE=\
-	".\src\pcctscfg.h"\
-	
 
-"$(INTDIR)\ATokenBuffer.obj" : $(SOURCE) $(DEP_CPP_ATOKE) "$(INTDIR)"
+"$(INTDIR)\AST.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_ATOKE=\
-	".\src\AToken.h"\
-	".\src\ATokPtr.cpp"\
-	
 
-"$(INTDIR)\ATokenBuffer.obj" : $(SOURCE) $(DEP_CPP_ATOKE) "$(INTDIR)"
+"$(INTDIR)\AST.obj"	"$(INTDIR)\AST.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\ASTFactory.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\ASTFactory.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\ASTFactory.obj"	"$(INTDIR)\ASTFactory.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\BitSet.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\BitSet.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\BitSet.obj"	"$(INTDIR)\BitSet.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -284,10 +423,6 @@ SOURCE=.\src\bob.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_BOB_C=\
-	".\src\bob.hpp"\
-	".\src\magick.h"\
-	
 
 "$(INTDIR)\bob.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -295,103 +430,62 @@ NODEP_CPP_BOB_C=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_BOB_C=\
-	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
-	"..\..\program files\devstudio\vc\include\ace\containers.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
-	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
-	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\module.h"\
-	"..\..\program files\devstudio\vc\include\ace\module.i"\
-	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
-	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
-	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
-	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\task.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\thread.h"\
-	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
-	"..\bob\bob.h"\
-	"..\bob\bobexp.h"\
-	"..\bob\compiler.h"\
-	"..\bob\eval.h"\
-	"..\bob\execute.h"\
-	"..\bob\function.h"\
-	"..\bob\objects.h"\
-	"..\bob\streams.h"\
-	".\include\bob.hpp"\
-	".\include\lockable.h"\
-	".\include\magick.h"\
-	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\bob.obj" : $(SOURCE) $(DEP_CPP_BOB_C) "$(INTDIR)"
+"$(INTDIR)\bob.obj"	"$(INTDIR)\bob.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\CharBuffer.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\CharBuffer.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\CharBuffer.obj"	"$(INTDIR)\CharBuffer.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\CharScanner.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\CharScanner.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\CharScanner.obj"	"$(INTDIR)\CharScanner.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\CommonToken.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\CommonToken.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\CommonToken.obj"	"$(INTDIR)\CommonToken.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -401,11 +495,6 @@ SOURCE=.\src\confbase.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_CONFB=\
-	".\src\confbase.h"\
-	".\src\fileconf.h"\
-	".\src\log.h"\
-	
 
 "$(INTDIR)\confbase.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -413,168 +502,46 @@ NODEP_CPP_CONFB=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_CONFB=\
-	".\include\confbase.h"\
-	".\include\fileconf.h"\
-	".\include\log.h"\
-	".\include\mstring.h"\
-	
 
-"$(INTDIR)\confbase.obj" : $(SOURCE) $(DEP_CPP_CONFB) "$(INTDIR)"
+"$(INTDIR)\confbase.obj"	"$(INTDIR)\confbase.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
 
-SOURCE=.\src\DLexerBase.cpp
+SOURCE=.\src\EscLexer.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_DLEXE=\
-	".\src\pcctscfg.h"\
-	
 
-"$(INTDIR)\DLexerBase.obj" : $(SOURCE) $(DEP_CPP_DLEXE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
-
-DEP_CPP_DLEXE=\
-	".\src\AToken.h"\
-	".\src\ATokenStream.h"\
-	".\src\DLexerBase.h"\
-	".\src\pcctscfg.h"\
-	
-
-"$(INTDIR)\DLexerBase.obj" : $(SOURCE) $(DEP_CPP_DLEXE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
-SOURCE=.\src\EscapeParser.cpp
-
-!IF  "$(CFG)" == "magick - Win32 Release"
-
-DEP_CPP_ESCAP=\
-	".\src\AParser.h"\
-	".\src\EscapeParser.h"\
-	".\src\esctokens.h"\
-	".\src\pcctscfg.h"\
-	
-
-"$(INTDIR)\EscapeParser.obj" : $(SOURCE) $(DEP_CPP_ESCAP) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
-
-DEP_CPP_ESCAP=\
-	".\src\AParser.h"\
-	".\src\AToken.h"\
-	".\src\ATokenBuffer.h"\
-	".\src\ATokenStream.h"\
-	".\src\EscapeParser.h"\
-	".\src\esctokens.h"\
-	".\src\pcctscfg.h"\
-	
-
-"$(INTDIR)\EscapeParser.obj" : $(SOURCE) $(DEP_CPP_ESCAP) "$(INTDIR)"\
- ".\src\EscapeParser.h" ".\src\esctokens.h"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
-SOURCE=.\src\escDlgLexer.cpp
-
-!IF  "$(CFG)" == "magick - Win32 Release"
-
-DEP_CPP_ESCDL=\
-	".\src\AParser.h"\
-	".\src\AToken.h"\
-	".\src\DLexer.cpp"\
-	".\src\DLexerBase.h"\
-	".\src\escDlgLexer.h"\
-	".\src\esctokens.h"\
-	".\src\pcctscfg.h"\
-	
-
-"$(INTDIR)\escDlgLexer.obj" : $(SOURCE) $(DEP_CPP_ESCDL) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
-
-DEP_CPP_ESCDL=\
-	".\src\AParser.h"\
-	".\src\AToken.h"\
-	".\src\DLexer.cpp"\
-	".\src\escDlgLexer.h"\
-	
-
-"$(INTDIR)\escDlgLexer.obj" : $(SOURCE) $(DEP_CPP_ESCDL) "$(INTDIR)"\
- ".\src\escDlgLexer.h"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
-SOURCE=.\src\escparse.cpp
-
-!IF  "$(CFG)" == "magick - Win32 Release"
-
-DEP_CPP_ESCPA=\
-	".\src\AParser.h"\
-	".\src\ATokPtr.h"\
-	".\src\DLexerBase.h"\
-	".\src\EscapeParser.h"\
-	".\src\escDlgLexer.h"\
-	".\src\esctokens.h"\
-	".\src\pcctscfg.h"\
-	
-NODEP_CPP_ESCPA=\
-	".\src\mstring.h"\
-	
-
-"$(INTDIR)\escparse.obj" : $(SOURCE) $(DEP_CPP_ESCPA) "$(INTDIR)"
+"$(INTDIR)\EscLexer.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 
-"$(INTDIR)\escparse.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\EscLexer.obj"	"$(INTDIR)\EscLexer.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
 
-SOURCE=.\src\escparse.dlg
+SOURCE=.\src\EscParser.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-InputPath=.\src\escparse.dlg
+"$(INTDIR)\EscParser.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
-"src\escDlgLexer.cpp"	"src\escDlgLexer.h"	 : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	dlg -CC -o src src\escparse.dlg -cl escDlgLexer
-
-!ENDIF 
-
-SOURCE=.\src\escparse.g
-
-!IF  "$(CFG)" == "magick - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-InputPath=.\src\escparse.g
 
-"src\escparse.dlg"	"src\esctokens.h"	"src\EscapeParser.h"\
-	"src\EscapeParser.cpp"	"src\escparse.cpp"	 : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	antlr -CC src\escparse.g -o src -ft esctokens.h -fl escparse.dlg
+"$(INTDIR)\EscParser.obj"	"$(INTDIR)\EscParser.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 
 !ENDIF 
 
@@ -582,10 +549,6 @@ SOURCE=.\src\fileconf.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_FILEC=\
-	".\src\fileconf.h"\
-	".\src\utils.h"\
-	
 
 "$(INTDIR)\fileconf.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -593,39 +556,26 @@ NODEP_CPP_FILEC=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_FILEC=\
-	".\include\confbase.h"\
-	".\include\fileconf.h"\
-	".\include\log.h"\
-	".\include\mstream.h"\
-	".\include\mstring.h"\
-	".\include\textfile.h"\
-	".\include\utils.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\auto_ptr.cpp"\
-	{$(INCLUDE)}"ace\auto_ptr.h"\
-	{$(INCLUDE)}"ace\auto_ptr.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\fileconf.obj" : $(SOURCE) $(DEP_CPP_FILEC) "$(INTDIR)"
+"$(INTDIR)\fileconf.obj"	"$(INTDIR)\fileconf.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\LLkParser.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\LLkParser.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\LLkParser.obj"	"$(INTDIR)\LLkParser.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -635,9 +585,6 @@ SOURCE=.\src\lockable.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_LOCKA=\
-	".\src\lockable.h"\
-	
 
 "$(INTDIR)\lockable.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -645,92 +592,8 @@ NODEP_CPP_LOCKA=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_LOCKA=\
-	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
-	"..\..\program files\devstudio\vc\include\ace\containers.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
-	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
-	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\module.h"\
-	"..\..\program files\devstudio\vc\include\ace\module.i"\
-	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
-	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
-	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
-	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\task.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\thread.h"\
-	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
-	".\include\lockable.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\lockable.obj" : $(SOURCE) $(DEP_CPP_LOCKA) "$(INTDIR)"
+"$(INTDIR)\lockable.obj"	"$(INTDIR)\lockable.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -740,9 +603,6 @@ SOURCE=.\src\log.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_LOG_C=\
-	".\src\log.h"\
-	
 
 "$(INTDIR)\log.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -750,12 +610,8 @@ NODEP_CPP_LOG_C=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_LOG_C=\
-	".\include\log.h"\
-	".\include\mstring.h"\
-	
 
-"$(INTDIR)\log.obj" : $(SOURCE) $(DEP_CPP_LOG_C) "$(INTDIR)"
+"$(INTDIR)\log.obj"	"$(INTDIR)\log.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -765,10 +621,6 @@ SOURCE=.\src\magick.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_MAGIC=\
-	".\src\log.h"\
-	".\src\magick.h"\
-	
 
 "$(INTDIR)\magick.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -776,104 +628,8 @@ NODEP_CPP_MAGIC=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_MAGIC=\
-	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
-	"..\..\program files\devstudio\vc\include\ace\containers.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
-	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
-	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\module.h"\
-	"..\..\program files\devstudio\vc\include\ace\module.i"\
-	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
-	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
-	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
-	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\task.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\thread.h"\
-	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
-	"..\bob\bob.h"\
-	"..\bob\bobexp.h"\
-	"..\bob\compiler.h"\
-	"..\bob\eval.h"\
-	"..\bob\execute.h"\
-	"..\bob\function.h"\
-	"..\bob\objects.h"\
-	"..\bob\streams.h"\
-	".\include\bob.hpp"\
-	".\include\lockable.h"\
-	".\include\log.h"\
-	".\include\magick.h"\
-	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\magick.obj" : $(SOURCE) $(DEP_CPP_MAGIC) "$(INTDIR)"
+"$(INTDIR)\magick.obj"	"$(INTDIR)\magick.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -883,9 +639,6 @@ SOURCE=.\src\main.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_MAIN_=\
-	".\src\magick.h"\
-	
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -893,103 +646,27 @@ NODEP_CPP_MAIN_=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_MAIN_=\
-	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
-	"..\..\program files\devstudio\vc\include\ace\containers.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
-	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
-	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
-	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\module.h"\
-	"..\..\program files\devstudio\vc\include\ace\module.i"\
-	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
-	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
-	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
-	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
-	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
-	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\task.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\thread.h"\
-	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
-	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
-	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
-	"..\bob\bob.h"\
-	"..\bob\bobexp.h"\
-	"..\bob\compiler.h"\
-	"..\bob\eval.h"\
-	"..\bob\execute.h"\
-	"..\bob\function.h"\
-	"..\bob\objects.h"\
-	"..\bob\streams.h"\
-	".\include\bob.hpp"\
-	".\include\lockable.h"\
-	".\include\magick.h"\
-	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\main.obj" : $(SOURCE) $(DEP_CPP_MAIN_) "$(INTDIR)"
+"$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\MismatchedTokenException.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\MismatchedTokenException.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\MismatchedTokenException.obj"\
+	"$(INTDIR)\MismatchedTokenException.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -999,52 +676,15 @@ SOURCE=.\src\mstream.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_MSTRE=\
-	{$(INCLUDE)}"sys\types.h"\
-	{$(INCLUDE)}"zconf.h"\
-	{$(INCLUDE)}"zlib.h"\
-	
-NODEP_CPP_MSTRE=\
-	".\src\log.h"\
-	".\src\mstream.h"\
-	".\src\utils.h"\
-	
 
-"$(INTDIR)\mstream.obj" : $(SOURCE) $(DEP_CPP_MSTRE) "$(INTDIR)"
+"$(INTDIR)\mstream.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_MSTRE=\
-	".\include\log.h"\
-	".\include\mstream.h"\
-	".\include\mstring.h"\
-	".\include\utils.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"zconf.h"\
-	{$(INCLUDE)}"zlib.h"\
-	
 
-"$(INTDIR)\mstream.obj" : $(SOURCE) $(DEP_CPP_MSTRE) "$(INTDIR)"
+"$(INTDIR)\mstream.obj"	"$(INTDIR)\mstream.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1054,73 +694,108 @@ SOURCE=.\src\mstring.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-DEP_CPP_MSTRI=\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\auto_ptr.cpp"\
-	{$(INCLUDE)}"ace\auto_ptr.h"\
-	{$(INCLUDE)}"ace\auto_ptr.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\Basic_Types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config-WinCE.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\iosfwd.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\Object_Manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\OS.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\SString.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\ws2tcpip.h"\
-	
-NODEP_CPP_MSTRI=\
-	".\src\mstring.h"\
-	
 
-"$(INTDIR)\mstring.obj" : $(SOURCE) $(DEP_CPP_MSTRI) "$(INTDIR)"
+"$(INTDIR)\mstring.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_MSTRI=\
-	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\mstring.obj" : $(SOURCE) $(DEP_CPP_MSTRI) "$(INTDIR)"
+"$(INTDIR)\mstring.obj"	"$(INTDIR)\mstring.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\NoViableAltException.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\NoViableAltException.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\NoViableAltException.obj"	"$(INTDIR)\NoViableAltException.sbr" : \
+$(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\Parser.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\Parser.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\Parser.obj"	"$(INTDIR)\Parser.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\ParserException.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\ParserException.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\ParserException.obj"	"$(INTDIR)\ParserException.sbr" : $(SOURCE)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\ScannerException.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\ScannerException.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\ScannerException.obj"	"$(INTDIR)\ScannerException.sbr" : $(SOURCE)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\String.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\String.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\String.obj"	"$(INTDIR)\String.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1130,9 +805,6 @@ SOURCE=.\src\textfile.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_TEXTF=\
-	".\src\textfile.h"\
-	
 
 "$(INTDIR)\textfile.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -1140,33 +812,62 @@ NODEP_CPP_TEXTF=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_TEXTF=\
-	".\include\log.h"\
-	".\include\mstream.h"\
-	".\include\mstring.h"\
-	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	
 
-"$(INTDIR)\textfile.obj" : $(SOURCE) $(DEP_CPP_TEXTF) "$(INTDIR)"
+"$(INTDIR)\textfile.obj"	"$(INTDIR)\textfile.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\Token.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\Token.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\Token.obj"	"$(INTDIR)\Token.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\TokenBuffer.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\TokenBuffer.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\TokenBuffer.obj"	"$(INTDIR)\TokenBuffer.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\antlr\TreeParser.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
+"$(INTDIR)\TreeParser.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\TreeParser.obj"	"$(INTDIR)\TreeParser.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1176,10 +877,6 @@ SOURCE=.\src\utils.cpp
 
 !IF  "$(CFG)" == "magick - Win32 Release"
 
-NODEP_CPP_UTILS=\
-	".\src\log.h"\
-	".\src\utils.h"\
-	
 
 "$(INTDIR)\utils.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
@@ -1187,13 +884,8 @@ NODEP_CPP_UTILS=\
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
-DEP_CPP_UTILS=\
-	".\include\log.h"\
-	".\include\mstring.h"\
-	".\include\utils.h"\
-	
 
-"$(INTDIR)\utils.obj" : $(SOURCE) $(DEP_CPP_UTILS) "$(INTDIR)"
+"$(INTDIR)\utils.obj"	"$(INTDIR)\utils.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
