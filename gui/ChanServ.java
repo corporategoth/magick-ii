@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.table.*;
+import java.util.zip.DataFormatException;
 
 public class ChanServ extends TabbedPane
 {
@@ -296,6 +297,7 @@ public class ChanServ extends TabbedPane
 		case 1:
 		    JFormattedTextField ft = new JFormattedTextField(new NumberRangeFormat(
 			Integer.parseInt(low.getText()), Integer.parseInt(high.getText()) + 2));
+		    ft.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		    ft.setColumns(5);
 		    if (value != null)
 			ft.setValue((Integer) value);
@@ -422,23 +424,31 @@ public class ChanServ extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
 	rv += "[ChanServ]\n";
 	rv += "HIDE = " + (hide.isSelected() ? "TRUE" : "FALSE") + "\n";
+	if (!isEditValid(expire)) throw new DataFormatException("ChanServ/EXPIRE");
 	rv += "EXPIRE = " + expire.getText() + "\n";
+	if (!isEditValid(delay)) throw new DataFormatException("ChanServ/DELAY");
 	rv += "DELAY = " + delay.getText() + "\n";
+	if (!isEditValid(max_per_nick)) throw new DataFormatException("ChanServ/MAX_PER_NICK");
 	rv += "MAX_PER_NICK = " + max_per_nick.getText() + "\n";
+	if (!isEditValid(max_messages)) throw new DataFormatException("ChanServ/MAX_MESSAGES");
 	rv += "MAX_MESSAGES = " + max_messages.getText() + "\n";
 	rv += "DEF_AKICK = " + def_akick.getText() + "\n";
+	if (!isEditValid(passfail)) throw new DataFormatException("ChanServ/PASSFAIL");
 	rv += "PASSFAIL = " + passfail.getText() + "\n";
+	if (!isEditValid(chankeep)) throw new DataFormatException("ChanServ/CHANKEEP");
 	rv += "CHANKEEP = " + chankeep.getText() + "\n";
 	rv += "DEF_MLOCK = " + def_mlock.getText() + "\n";
 	rv += "LCK_MLOCK = " + lck_mlock.getText() + "\n";
+	if (!isEditValid(def_bantime)) throw new DataFormatException("ChanServ/DEF_BANTIME");
 	rv += "DEF_BANTIME = " + def_bantime.getText() + "\n";
 	rv += "LCK_BANTIME = " + (lck_bantime.isSelected() ? "TRUE" : "FALSE") + "\n";
+	if (!isEditValid(def_parttime)) throw new DataFormatException("ChanServ/DEF_PARTTIME");
 	rv += "DEF_PARTTIME = " + def_parttime.getText() + "\n";
 	rv += "LCK_PARTTIME = " + (lck_parttime.isSelected() ? "TRUE" : "FALSE") + "\n";
 	CellEditor ce;
@@ -455,7 +465,9 @@ public class ChanServ extends TabbedPane
 	rv += "DEF_REVENGE = " + ((String) def_revenge.getSelectedItem()).substring(0,
 			((String) def_revenge.getSelectedItem()).indexOf(" ")) + "\n";
 	rv += "LCK_REVENGE = " + (lck_revenge.isSelected() ? "TRUE" : "FALSE") + "\n";
+	if (!isEditValid(level_min)) throw new DataFormatException("ChanServ/LEVEL_MIN");
 	rv += "LEVEL_MIN = " + level_min.getText() + "\n";
+	if (!isEditValid(level_max)) throw new DataFormatException("ChanServ/LEVEL_MAX");
 	rv += "LEVEL_MAX = " + level_max.getText() + "\n";
 	ce = levels.getCellEditor();
 	if (ce != null)
@@ -474,18 +486,18 @@ public class ChanServ extends TabbedPane
 	int i;
 
 	hide.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/HIDE")));
-	expire.setText(data.getValue("ChanServ/EXPIRE"));
-	delay.setText(data.getValue("ChanServ/DELAY"));
-	max_per_nick.setText(data.getValue("ChanServ/MAX_PER_NICK"));
-	max_messages.setText(data.getValue("ChanServ/MAX_MESSAGES"));
+	setFmtField(expire, data, "ChanServ/EXPIRE");
+	setFmtField(delay, data, "ChanServ/DELAY");
+	setFmtField(max_per_nick, data, "ChanServ/MAX_PER_NICK");
+	setFmtField(max_messages, data, "ChanServ/MAX_MESSAGES");
 	def_akick.setText(data.getValue("ChanServ/DEF_AKICK"));
-	passfail.setText(data.getValue("ChanServ/PASSFAIL"));
-	chankeep.setText(data.getValue("ChanServ/CHANKEEP"));
+	setFmtField(passfail, data, "ChanServ/PASSFAIL");
+	setFmtField(chankeep, data, "ChanServ/CHANKEEP");
 	def_mlock.setText(data.getValue("ChanServ/DEF_MLOCK"));
 	lck_mlock.setText(data.getValue("ChanServ/LCK_MLOCK"));
-	def_bantime.setText(data.getValue("ChanServ/DEF_BANTIME"));
+	setFmtField(def_bantime, data, "ChanServ/DEF_BANTIME");
 	lck_bantime.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/LCK_BANTIME")));
-	def_parttime.setText(data.getValue("ChanServ/DEF_PARTTIME"));
+	setFmtField(def_parttime, data, "ChanServ/DEF_PARTTIME");
 	lck_parttime.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/LCK_PARTTIME")));
 
 	for (i=0; i<optnames.length; i++)
@@ -511,8 +523,8 @@ public class ChanServ extends TabbedPane
 	    def_revenge.setSelectedIndex(0);
 
 	lck_revenge.setSelected(IniParser.getBoolValue(data.getValue("ChanServ/LCK_REVENGE")));
-	level_min.setText(data.getValue("ChanServ/LEVEL_MIN"));
-	level_max.setText(data.getValue("ChanServ/LEVEL_MAX"));
+	setFmtField(level_min, data, "ChanServ/LEVEL_MIN");
+	setFmtField(level_max, data, "ChanServ/LEVEL_MAX");
 
 	for (i=0; i<levelnames.length; i++)
 	{

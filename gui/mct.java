@@ -33,6 +33,7 @@ import java.awt.event.*;
 
 import javax.swing.filechooser.*;
 import java.util.*;
+import java.util.zip.DataFormatException;
 import java.net.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,24 +85,36 @@ public class mct extends JApplet implements ActionListener
 
     public String getConfigData()
     {
-	String cfg = new String();
-	cfg += "# Automatically generated configuration file for\n";
-	cfg += "# Magick IRC Services v2.0.\n";
-	cfg += "#\n";
-	cfg += "# Generated at " + new Date() + "\n";
-	cfg += "\n";
-	cfg += startup.createCfg();
-	cfg += "\n" + services.createCfg();
-	cfg += "\n" + files.createCfg();
-	cfg += "\n" + config.createCfg();
-	cfg += "\n" + nickserv.createCfg();
-	cfg += "\n" + chanserv.createCfg();
-	cfg += "\n" + memoserv.createCfg();
-	cfg += "\n" + operserv.createCfg();
-	cfg += "\n" + commserv.createCfg();
-	cfg += "\n" + servmsg.createCfg();
-	cfg = cfg.replaceAll("\\\\", "\\\\\\\\");
-	return cfg;
+	try {
+	    String cfg = new String();
+	    cfg += "# Automatically generated configuration file for\n";
+	    cfg += "# Magick IRC Services v2.0.\n";
+	    cfg += "#\n";
+	    cfg += "# Generated at " + new Date() + "\n";
+	    cfg += "\n";
+	    cfg += startup.createCfg();
+	    cfg += "\n" + services.createCfg();
+	    cfg += "\n" + files.createCfg();
+	    cfg += "\n" + config.createCfg();
+	    cfg += "\n" + nickserv.createCfg();
+	    cfg += "\n" + chanserv.createCfg();
+	    cfg += "\n" + memoserv.createCfg();
+	    cfg += "\n" + operserv.createCfg();
+	    cfg += "\n" + commserv.createCfg();
+	    cfg += "\n" + servmsg.createCfg();
+	    cfg += "\n# END\n";
+	    cfg = cfg.replaceAll("\\\\", "\\\\\\\\");
+	    return cfg;
+	}
+	catch (DataFormatException ex)
+	{
+	    JOptionPane.showMessageDialog(null,
+		"Formatting error exists in property " + 
+		ex.getMessage() + ".\n",
+		"Error",
+		JOptionPane.ERROR_MESSAGE);
+	    return null;
+	}
     }
 
     public void setConfigData(String s)
@@ -170,23 +183,26 @@ public class mct extends JApplet implements ActionListener
 		if (!f.isAbsolute())
 		    f = new File(currentDirectory() + File.separator + rv);
 		String cfg = getConfigData();
-		cfg = cfg.replaceAll("\n\n", "\n \n");
-		try
+		if (cfg != null)
 		{
-		    f.createNewFile();
-		    PrintStream os = new PrintStream(new FileOutputStream(f), true);
-		    StringTokenizer st = new StringTokenizer(cfg, "\n");
-		    while (st.hasMoreTokens())
-			os.println(st.nextToken());
-		}
-		catch (Exception ex)
-		{
-		    JOptionPane.showMessageDialog(null,
-			"Could not write configuration file:\n" +
-			ex.getMessage() + "\n",
-			"Error",
-			JOptionPane.ERROR_MESSAGE);
-		    return;
+		    cfg = cfg.replaceAll("\n\n", "\n \n");
+		    try
+		    {
+			f.createNewFile();
+			PrintStream os = new PrintStream(new FileOutputStream(f), true);
+			StringTokenizer st = new StringTokenizer(cfg, "\n");
+			while (st.hasMoreTokens())
+			    os.println(st.nextToken());
+		    }
+		    catch (Exception ex)
+		    {
+			JOptionPane.showMessageDialog(null,
+				"Could not write configuration file:\n" +
+				ex.getMessage() + "\n",
+				"Error",
+				JOptionPane.ERROR_MESSAGE);
+			return;
+		    }
 		}
 	    }
 	}
@@ -605,7 +621,7 @@ public class mct extends JApplet implements ActionListener
 		try
 		{
 		    value = chooser.getSelectedFile().getCanonicalPath();
-		    if (value.startsWith(currentDirectory()))
+		    if (currentDirectory() != null && value.startsWith(currentDirectory()))
 			value = value.substring(currentDirectory().length() + 1);
 		}
 		catch (Exception ex)

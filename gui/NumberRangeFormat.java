@@ -27,6 +27,7 @@
 
 import javax.swing.*;
 import java.text.*;
+import java.awt.Color;
 
 public class NumberRangeFormat extends JFormattedTextField.AbstractFormatter
 {
@@ -71,8 +72,12 @@ public class NumberRangeFormat extends JFormattedTextField.AbstractFormatter
 	}
 	catch (NumberFormatException e)
 	{
+	    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 	    throw new ParseException(text, 0);
 	}
+
+	JFormattedTextField f = new JFormattedTextField();
+	getFormattedTextField().setBorder(f.getBorder());
 
 	if (i.intValue() < low)
 	    return new Integer(low);

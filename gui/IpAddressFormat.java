@@ -27,6 +27,7 @@
 
 import javax.swing.*;
 import java.text.*;
+import java.awt.Color;
 import java.net.*;
 
 public class IpAddressFormat extends JFormattedTextField.AbstractFormatter
@@ -42,10 +43,13 @@ public class IpAddressFormat extends JFormattedTextField.AbstractFormatter
 	try
 	{
 	    InetAddress addr = InetAddress.getByName(newtext);
+	    JFormattedTextField f = new JFormattedTextField();
+	    getFormattedTextField().setBorder(f.getBorder());
 	    return addr;
 	}
 	catch (UnknownHostException e)
 	{
+	    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 	    throw new ParseException(newtext, 0);
 	}
     }

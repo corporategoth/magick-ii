@@ -27,6 +27,7 @@
 
 import javax.swing.*;
 import java.text.*;
+import java.awt.Color;
 
 public class HexFormat extends JFormattedTextField.AbstractFormatter
 {
@@ -41,10 +42,14 @@ public class HexFormat extends JFormattedTextField.AbstractFormatter
 	    text.replaceFirst("0x", "");
 	try
 	{
-	    return new Integer(Integer.parseInt(text, 16));
+	    Integer i = new Integer(Integer.parseInt(text, 16));
+	    JFormattedTextField f = new JFormattedTextField();
+	    getFormattedTextField().setBorder(f.getBorder());
+	    return i;
 	}
 	catch (NumberFormatException e)
 	{
+	    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 	    throw new ParseException(text, 0);
 	}
     }

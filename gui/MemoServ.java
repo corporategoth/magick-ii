@@ -31,6 +31,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.util.zip.DataFormatException;
 // import javax.swing.table.*;
 // import java.util.*;
 
@@ -98,15 +99,20 @@ public class MemoServ extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
 	rv += "[MemoServ]\n";
+	if (!isEditValid(news_expire)) throw new DataFormatException("MemoServ/NEWS_EXPIRE");
 	rv += "NEWS_EXPIRE = " + news_expire.getText() + "\n";
+	if (!isEditValid(inflight)) throw new DataFormatException("MemoServ/INFLIGHT");
 	rv += "INFLIGHT = " + inflight.getText() + "\n";
+	if (!isEditValid(delay)) throw new DataFormatException("MemoServ/DELAY");
 	rv += "DELAY = " + delay.getText() + "\n";
+	if (!isEditValid(files)) throw new DataFormatException("MemoServ/FILES");
 	rv += "FILES = " + files.getText() + "\n";
+	if (!isEditValid(filesize)) throw new DataFormatException("MemoServ/FILESIZE");
 	rv += "FILESIZE = " + filesize.getText() + "\n";
 
 	return rv;
@@ -114,10 +120,10 @@ public class MemoServ extends TabbedPane
 
     public void parseCfg(IniParser data)
     {
-	news_expire.setText(data.getValue("MemoServ/NEWS_EXPIRE"));
-	inflight.setText(data.getValue("MemoServ/INFLIGHT"));
-	delay.setText(data.getValue("MemoServ/DELAY"));
-	files.setText(data.getValue("MemoServ/FILES"));
-	filesize.setText(data.getValue("MemoServ/FILESIZE"));
+	setFmtField(news_expire, data, "MemoServ/NEWS_EXPIRE");
+	setFmtField(inflight, data, "MemoServ/INFLIGHT");
+	setFmtField(delay, data, "MemoServ/DELAY");
+	setFmtField(files, data, "MemoServ/FILES");
+	setFmtField(filesize, data, "MemoServ/FILESIZE");
     }
 }

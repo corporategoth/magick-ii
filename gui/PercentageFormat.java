@@ -27,6 +27,7 @@
 
 import javax.swing.*;
 import java.text.*;
+import java.awt.Color;
 
 public class PercentageFormat extends JFormattedTextField.AbstractFormatter
 {
@@ -42,11 +43,17 @@ public class PercentageFormat extends JFormattedTextField.AbstractFormatter
 	}
 	catch (NumberFormatException e)
 	{
+	    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 	    throw new ParseException(text, 0);
 	}
 	if (f.floatValue() < 0.0 || f.floatValue() > 100.0)
+	{
+	    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 	    throw new ParseException(text, 0);
+	}
 
+	JFormattedTextField ftf = new JFormattedTextField();
+	getFormattedTextField().setBorder(ftf.getBorder());
 	return f;
     }
 

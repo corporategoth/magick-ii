@@ -482,7 +482,7 @@ public class CommServ extends TabbedPane
     public void parseCfg(IniParser data)
     {
 	int i;
-	max_logon.setText(data.getValue("CommServ/MAX_LOGON"));
+	setFmtField(max_logon, data, "CommServ/MAX_LOGON");
 
 	for (i=0; i<optnames.length; i++)
 	{

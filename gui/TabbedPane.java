@@ -33,8 +33,9 @@ import java.awt.event.*;
 
 import javax.swing.table.*;
 import java.util.*;
+import java.util.zip.DataFormatException;
+import java.text.ParseException;
 import java.net.*;
-
 
 abstract public class TabbedPane implements DocumentListener, ActionListener
 {
@@ -63,7 +64,7 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
     abstract public void documentChanged(DocumentEvent e);
     abstract public void actionPerformed(ActionEvent e);
     abstract public JComponent createPane();
-    abstract public String createCfg();
+    abstract public String createCfg() throws DataFormatException;
     abstract public void parseCfg(IniParser data);
 
     protected boolean isNonZero(String in)
@@ -156,6 +157,7 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
 		    }
 		};
 	rv.setColumns(size);
+	rv.setFocusLostBehavior(JFormattedTextField.COMMIT);
 	String tip = tips.getTip(name() + "/" + tooltip);
 	if (tip.length() != 0)
 	    rv.setToolTipText(tip);
@@ -373,5 +375,32 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
 	addGridBagLine(p, gc);
     }
 
+    protected boolean isEditValid(JFormattedTextField f)
+    {
+	try
+	{
+	    f.getFormatter().stringToValue(f.getText());
+	    return true;
+	}
+	catch (ParseException e)
+	{
+	    return false;
+	}
+    }
+
+    protected void setFmtField(JFormattedTextField f, IniParser data, String token)
+    {
+	String val = data.getValue(token);
+	try {
+	    Object o = f.getFormatter().stringToValue(val);
+	    f.setValue(o);
+	    f.commitEdit();
+	}
+	catch (Exception e)
+	{
+	    f.setText(val);
+	    f.setBorder(BorderFactory.createLineBorder(Color.RED));
+	}
+    }
 }
 

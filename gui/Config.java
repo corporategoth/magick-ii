@@ -31,6 +31,8 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.util.zip.DataFormatException;
+
 public class Config extends TabbedPane
 {
 // private:
@@ -133,27 +135,44 @@ public class Config extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
 	rv += "[Config]\n";
+	if (!isEditValid(server_relink)) throw new DataFormatException("Config/SERVER_RELINK");
 	rv += "SERVER_RELINK = " + server_relink.getText() + "\n";
+	if (!isEditValid(squit_protect)) throw new DataFormatException("Config/SQUIT_PROTECT");
 	rv += "SQUIT_PROTECT = " + squit_protect.getText() + "\n";
+	if (!isEditValid(squit_cancel)) throw new DataFormatException("Config/SQUIT_CANCEL");
 	rv += "SQUIT_CANCEL = " + squit_cancel.getText() + "\n";
+	if (!isEditValid(cycletime)) throw new DataFormatException("Config/CYCLETIME");
 	rv += "CYCLETIME = " + cycletime.getText() + "\n";
+	if (!isEditValid(savetime)) throw new DataFormatException("Config/SAVETIME");
 	rv += "SAVETIME = " + savetime.getText() + "\n";
+	if (!isEditValid(checktime)) throw new DataFormatException("Config/CHECKTIME");
 	rv += "CHECKTIME = " + checktime.getText() + "\n";
+	if (!isEditValid(ping_frequency)) throw new DataFormatException("Config/PING_FREQUENCY");
 	rv += "PING_FREQUENCY = " + ping_frequency.getText() + "\n";
+	if (!isEditValid(starthresh)) throw new DataFormatException("Config/STARTHRESH");
 	rv += "STARTHRESH = " + starthresh.getText() + "\n";
+	if (!isEditValid(listsize)) throw new DataFormatException("Config/LISTSIZE");
 	rv += "LISTSIZE = " + listsize.getText() + "\n";
+	if (!isEditValid(maxlist)) throw new DataFormatException("Config/MAXLIST");
 	rv += "MAXLIST = " + maxlist.getText() + "\n";
+	if (!isEditValid(min_threads)) throw new DataFormatException("Config/MIN_THREADS");
 	rv += "MIN_THREADS = " + min_threads.getText() + "\n";
+	if (!isEditValid(max_threads)) throw new DataFormatException("Config/MAX_THREADS");
 	rv += "MAX_THREADS = " + max_threads.getText() + "\n";
+	if (!isEditValid(low_water_mark)) throw new DataFormatException("Config/LOW_WATER_MARK");
 	rv += "LOW_WATER_MARK = " + low_water_mark.getText() + "\n";
+	if (!isEditValid(high_water_mark)) throw new DataFormatException("Config/HIGH_WATER_MARK");
 	rv += "HIGH_WATER_MARK = " + high_water_mark.getText() + "\n";
+	if (!isEditValid(heartbeat_time)) throw new DataFormatException("Config/HEARTBEAT_TIME");
 	rv += "HEARTBEAT_TIME = " + heartbeat_time.getText() + "\n";
+	if (!isEditValid(msg_seen_time)) throw new DataFormatException("Config/MSG_SEEN_TIME");
 	rv += "MSG_SEEN_TIME = " + msg_seen_time.getText() + "\n";
+	if (!isEditValid(msg_check_time)) throw new DataFormatException("Config/MSG_CHECK_TIME");
 	rv += "MSG_CHECK_TIME = " + msg_check_time.getText() + "\n";
 
 	return rv;
@@ -161,22 +180,22 @@ public class Config extends TabbedPane
 
     public void parseCfg(IniParser data)
     {
-	server_relink.setText(data.getValue("Config/SERVER_RELINK"));
-	squit_protect.setText(data.getValue("Config/SQUIT_PROTECT"));
-	squit_cancel.setText(data.getValue("Config/SQUIT_CANCEL"));
-	cycletime.setText(data.getValue("Config/CYCLETIME"));
-	savetime.setText(data.getValue("Config/SAVETIME"));
-	checktime.setText(data.getValue("Config/CHECKTIME"));
-	ping_frequency.setText(data.getValue("Config/PING_FREQUENCY"));
-	starthresh.setText(data.getValue("Config/STARTHRESH"));
-	listsize.setText(data.getValue("Config/LISTSIZE"));
-	maxlist.setText(data.getValue("Config/MAXLIST"));
-	min_threads.setText(data.getValue("Config/MIN_THREADS"));
-	max_threads.setText(data.getValue("Config/MAX_THREADS"));
-	low_water_mark.setText(data.getValue("Config/LOW_WATER_MARK"));
-	high_water_mark.setText(data.getValue("Config/HIGH_WATER_MARK"));
-	heartbeat_time.setText(data.getValue("Config/HEARTBEAT_TIME"));
-	msg_seen_time.setText(data.getValue("Config/MSG_SEEN_TIME"));
-	msg_check_time.setText(data.getValue("Config/MSG_CHECK_TIME"));
+	setFmtField(server_relink, data, "Config/SERVER_RELINK");
+	setFmtField(squit_protect, data, "Config/SQUIT_PROTECT");
+	setFmtField(squit_cancel, data, "Config/SQUIT_CANCEL");
+	setFmtField(cycletime, data, "Config/CYCLETIME");
+	setFmtField(savetime, data, "Config/SAVETIME");
+	setFmtField(checktime, data, "Config/CHECKTIME");
+	setFmtField(ping_frequency, data, "Config/PING_FREQUENCY");
+	setFmtField(starthresh, data, "Config/STARTHRESH");
+	setFmtField(listsize, data, "Config/LISTSIZE");
+	setFmtField(maxlist, data, "Config/MAXLIST");
+	setFmtField(min_threads, data, "Config/MIN_THREADS");
+	setFmtField(max_threads, data, "Config/MAX_THREADS");
+	setFmtField(low_water_mark, data, "Config/LOW_WATER_MARK");
+	setFmtField(high_water_mark, data, "Config/HIGH_WATER_MARK");
+	setFmtField(heartbeat_time, data, "Config/HEARTBEAT_TIME");
+	setFmtField(msg_seen_time, data, "Config/MSG_SEEN_TIME");
+	setFmtField(msg_check_time, data, "Config/MSG_CHECK_TIME");
     }
 }

@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.filechooser.*;
+import java.util.zip.DataFormatException;
 import java.io.File;
 
 public class Files extends TabbedPane
@@ -282,11 +283,12 @@ public class Files extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
 	rv += "[Files]\n";
+	if (!isEditValid(umask)) throw new DataFormatException("Files/UMASK");
 	rv += "UMASK = " + umask.getText() + "\n";
 	rv += "PROTOCOL = " + protocol.getText() + "\n";
 	rv += "PIDFILE = " + pidfile.getText() + "\n";
@@ -303,14 +305,23 @@ public class Files extends TabbedPane
 	rv += "MEMOATTACH = " + memoattach.getText() + "\n";
 	rv += "PUBLIC = " + f_public.getText() + "\n";
 	rv += "TEMPDIR = " + tempdir.getText() + "\n";
+	if (!isEditValid(picture_size)) throw new DataFormatException("Files/PICTURE_SIZE");
 	rv += "PICTURE_SIZE = " + picture_size.getText() + "\n";
+	if (!isEditValid(memoattach_size)) throw new DataFormatException("Files/MEMOATTACH_SIZE");
 	rv += "MEMOATTACH_SIZE = " + memoattach_size.getText() + "\n";
+	if (!isEditValid(public_size)) throw new DataFormatException("Files/PUBLIC_SIZE");
 	rv += "PUBLIC_SIZE = " + public_size.getText() + "\n";
+	if (!isEditValid(tempdir_size)) throw new DataFormatException("Files/TEMPDIR_SIZE");
 	rv += "TEMPDIR_SIZE = " + tempdir_size.getText() + "\n";
+	if (!isEditValid(blocksize)) throw new DataFormatException("Files/BLOCKSIZE");
 	rv += "BLOCKSIZE = " + blocksize.getText() + "\n";
+	if (!isEditValid(timeout)) throw new DataFormatException("Files/TIMEOUT");
 	rv += "TIMEOUT = " + timeout.getText() + "\n";
+	if (!isEditValid(min_speed)) throw new DataFormatException("Files/MIN_SPEED");
 	rv += "MIN_SPEED = " + min_speed.getText() + "\n";
+	if (!isEditValid(max_speed)) throw new DataFormatException("Files/MAX_SPEED");
 	rv += "MAX_SPEED = " + max_speed.getText() + "\n";
+	if (!isEditValid(sampletime)) throw new DataFormatException("Files/SAMPLETIME");
 	rv += "SAMPLETIME = " + sampletime.getText() + "\n";
 
 	return rv;
@@ -320,7 +331,7 @@ public class Files extends TabbedPane
     {
 	int i;
 
-	umask.setText(data.getValue("Files/UMASK"));
+	setFmtField(umask, data, "Files/UMASK");
 	protocol.setText(data.getValue("Files/PROTOCOL"));
 	pidfile.setText(data.getValue("Files/PIDFILE"));
 	logfile.setText(data.getValue("Files/LOGFILE"));
@@ -354,14 +365,14 @@ public class Files extends TabbedPane
 	memoattach.setText(data.getValue("Files/MEMOATTACH"));
 	f_public.setText(data.getValue("Files/PUBLIC"));
 	tempdir.setText(data.getValue("Files/TEMPDIR"));
-	picture_size.setText(data.getValue("Files/PICTURE_SIZE"));
-	memoattach_size.setText(data.getValue("Files/MEMOATTACH_SIZE"));
-	public_size.setText(data.getValue("Files/PUBLIC_SIZE"));
-	tempdir_size.setText(data.getValue("Files/TEMPDIR_SIZE"));
-	blocksize.setText(data.getValue("Files/BLOCKSIZE"));
-	timeout.setText(data.getValue("Files/TIMEOUT"));
-	min_speed.setText(data.getValue("Files/MIN_SPEED"));
-	max_speed.setText(data.getValue("Files/MAX_SPEED"));
-	sampletime.setText(data.getValue("Files/SAMPLETIME"));
+	setFmtField(picture_size, data, "Files/PICTURE_SIZE");
+	setFmtField(memoattach_size, data, "Files/MEMOATTACH_SIZE");
+	setFmtField(public_size, data, "Files/PUBLIC_SIZE");
+	setFmtField(tempdir_size, data, "Files/TEMPDIR_SIZE");
+	setFmtField(blocksize, data, "Files/BLOCKSIZE");
+	setFmtField(timeout, data, "Files/TIMEOUT");
+	setFmtField(min_speed, data, "Files/MIN_SPEED");
+	setFmtField(max_speed, data, "Files/MAX_SPEED");
+	setFmtField(sampletime, data, "Files/SAMPLETIME");
     }
 }

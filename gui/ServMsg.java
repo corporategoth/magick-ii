@@ -31,6 +31,8 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.util.zip.DataFormatException;
+
 public class ServMsg extends TabbedPane
 {
 // private:
@@ -69,7 +71,7 @@ public class ServMsg extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 

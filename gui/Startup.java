@@ -33,6 +33,7 @@ import java.awt.event.*;
 
 import javax.swing.table.*;
 import java.util.*;
+import java.util.zip.DataFormatException;
 import java.net.*;
 
 public class Startup extends TabbedPane
@@ -174,6 +175,7 @@ public class Startup extends TabbedPane
 		case 4:
 		case 3:
 		    ft = new JFormattedTextField(new NumberRangeFormat(1, -1));
+		    ft.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		    ft.setColumns(5);
 		    if (value != null)
 			ft.setValue((Integer) value);
@@ -182,6 +184,7 @@ public class Startup extends TabbedPane
 		    return ft;
 		case 1:
 		    ft = new JFormattedTextField(new NumberRangeFormat(1, 65535));
+		    ft.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		    ft.setColumns(5);
 		    if (value != null)
 			ft.setValue((Integer) value);
@@ -190,6 +193,7 @@ public class Startup extends TabbedPane
 		    return ft;
 		case 0:
 		    ft = new JFormattedTextField(new IpAddressFormat());
+		    ft.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		    ft.setColumns(10);
 		    if (value != null)
 			ft.setValue((InetAddress) value);
@@ -394,7 +398,7 @@ public class Startup extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
@@ -405,6 +409,7 @@ public class Startup extends TabbedPane
 	rv += "SERVICES_HOST = " + services_host.getText() + "\n";
 	rv += "OWNUSER = " + (ownuser.isSelected() ? "TRUE" : "FALSE") + "\n";
 	rv += "SETMODE = " + setmode.getText() + "\n";
+	if (!isEditValid(bind)) throw new DataFormatException("Startup/BIND");
 	rv += "BIND = " + bind.getText() + "\n";
 
 	CellEditor ce;
@@ -432,7 +437,9 @@ public class Startup extends TabbedPane
 			allows.getValueAt(i, 1) + "\n";
 	}
 
+	if (!isEditValid(level)) throw new DataFormatException("Startup/LEVEL");
 	rv += "LEVEL = " + level.getText() + "\n";
+	if (!isEditValid(lagtime)) throw new DataFormatException("Startup/LAGTIME");
 	rv += "LAGTIME = " + lagtime.getText() + "\n";
 	rv += "STOP = " + (stop.isSelected() ? "TRUE" : "FALSE") + "\n";
 
@@ -449,7 +456,7 @@ public class Startup extends TabbedPane
 	services_host.setText(data.getValue("Startup/SERVICES_HOST"));
 	ownuser.setSelected(IniParser.getBoolValue(data.getValue("Startup/OWNUSER")));
 	setmode.setText(data.getValue("Startup/SETMODE"));
-	bind.setText(data.getValue("Startup/BIND"));
+	setFmtField(bind, data, "Startup/BIND");
 
 	i=0;
 	InetAddress addr = null;
@@ -497,8 +504,8 @@ public class Startup extends TabbedPane
 	    }
 	}
 
-	level.setText(data.getValue("Startup/LEVEL"));
-	lagtime.setText(data.getValue("Startup/LAGTIME"));
+	setFmtField(level, data, "Startup/LEVEL");
+	setFmtField(lagtime, data, "Startup/LAGTIME");
 	stop.setSelected(IniParser.getBoolValue(data.getValue("Startup/STOP")));
     }
 }

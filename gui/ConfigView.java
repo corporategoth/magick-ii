@@ -58,8 +58,12 @@ public class ConfigView implements DocumentListener, ActionListener
     {
 	if (e.getSource() == generate)
 	{
-	    cfg_dump.setText(root.getConfigData());
-	    cfg_dump.setRows(cfg_dump.getLineCount());
+	    String text = root.getConfigData();
+	    if (text != null)
+	    {
+		cfg_dump.setText(text);
+		cfg_dump.setRows(cfg_dump.getLineCount());
+	    }
 	}
 	else if (e.getSource() == load)
 	{

@@ -27,6 +27,7 @@
 
 import javax.swing.*;
 import java.text.*;
+import java.awt.Color;
 
 public class OctalFormat extends JFormattedTextField.AbstractFormatter
 {
@@ -39,10 +40,14 @@ public class OctalFormat extends JFormattedTextField.AbstractFormatter
 
 	try
 	{
-	    return new Integer(Integer.parseInt(text, 8));
+	    Integer i = new Integer(Integer.parseInt(text, 8));
+	    JFormattedTextField f = new JFormattedTextField();
+	    getFormattedTextField().setBorder(f.getBorder());
+	    return i;
 	}
 	catch (NumberFormatException e)
 	{
+	    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 	    throw new ParseException(text, 0);
 	}
     }

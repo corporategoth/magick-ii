@@ -27,6 +27,7 @@
 
 import javax.swing.*;
 import java.text.*;
+import java.awt.Color;
 
 public class TimeFormat extends JFormattedTextField.AbstractFormatter
 {
@@ -51,7 +52,10 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		    number = 0;
 		}
 		else if (i <= 0 || str[i-1] != '0')
+		{
+		    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		    throw new ParseException(text, i);
+		}
 		break;
 	    case 'W':
 	    case 'w':
@@ -61,7 +65,10 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		    number = 0;
 		}
 		else if (i <= 0 || str[i-1] != '0')
+		{
+		    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		    throw new ParseException(text, i);
+		}
 		break;
 	    case 'D':
 	    case 'd':
@@ -71,7 +78,10 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		    number = 0;
 		}
 		else if (i <= 0 || str[i-1] != '0')
+		{
+		    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		    throw new ParseException(text, i);
+		}
 		break;
 	    case 'H':
 	    case 'h':
@@ -81,7 +91,10 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		    number = 0;
 		}
 		else if (i <= 0 || str[i-1] != '0')
+		{
+		    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		    throw new ParseException(text, i);
+		}
 		break;
 	    case 'M':
 	    case 'm':
@@ -91,7 +104,10 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		    number = 0;
 		}
 		else if (i <= 0 || str[i-1] != '0')
+		{
+		    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		    throw new ParseException(text, i);
+		}
 		break;
 	    case 'S':
 	    case 's':
@@ -101,7 +117,10 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		    number = 0;
 		}
 		else if (i <= 0 || str[i-1] != '0')
+		{
+		    getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		    throw new ParseException(text, i);
+		}
 		break;
 	    case '0':
 	    case '1':
@@ -117,11 +136,14 @@ public class TimeFormat extends JFormattedTextField.AbstractFormatter
 		number += str[i] - '0';
 		break;
 	    default:
+		getFormattedTextField().setBorder(BorderFactory.createLineBorder(Color.RED));
 		throw new ParseException(text, i);
 	    }
 	}
 	if (number != 0)
 	    total += number;
+	JFormattedTextField f = new JFormattedTextField();
+	getFormattedTextField().setBorder(f.getBorder());
 	return new Integer(total);
     }
 

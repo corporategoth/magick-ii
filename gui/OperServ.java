@@ -31,6 +31,8 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.util.zip.DataFormatException;
+
 public class OperServ extends TabbedPane
 {
 // private:
@@ -169,7 +171,7 @@ public class OperServ extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
@@ -177,29 +179,49 @@ public class OperServ extends TabbedPane
 	rv += "SERVICES_ADMIN = " + services_admin.getText() + "\n";
 	rv += "SECURE = " + (secure.isSelected() ? "TRUE" : "FALSE") + "\n";
 	rv += "SECUREOPER = " + (secureoper.isSelected() ? "TRUE" : "FALSE") + "\n";
+	if (!isEditValid(def_expire)) throw new DataFormatException("OperServ/DEF_EXPIRE");
 	rv += "DEF_EXPIRE = " + def_expire.getText() + "\n";
+	if (!isEditValid(expire_oper)) throw new DataFormatException("OperServ/EXPIRE_OPER");
 	rv += "EXPIRE_OPER = " + expire_oper.getText() + "\n";
+	if (!isEditValid(expire_admin)) throw new DataFormatException("OperServ/EXPIRE_ADMIN");
 	rv += "EXPIRE_ADMIN = " + expire_admin.getText() + "\n";
+	if (!isEditValid(expire_sop)) throw new DataFormatException("OperServ/EXPIRE_SOP");
 	rv += "EXPIRE_SOP = " + expire_sop.getText() + "\n";
+	if (!isEditValid(expire_sadmin)) throw new DataFormatException("OperServ/EXPIRE_SADMIN");
 	rv += "EXPIRE_SADMIN = " + expire_sadmin.getText() + "\n";
+	if (!isEditValid(akill_reject)) throw new DataFormatException("OperServ/AKILL_REJECT");
 	rv += "AKILL_REJECT = " + akill_reject.getText() + "\n";
+	if (!isEditValid(max_clone)) throw new DataFormatException("OperServ/MAX_CLONE");
 	rv += "MAX_CLONE = " + max_clone.getText() + "\n";
+	if (!isEditValid(clone_limit)) throw new DataFormatException("OperServ/CLONE_LIMIT");
 	rv += "CLONE_LIMIT = " + clone_limit.getText() + "\n";
 	rv += "DEF_CLONE = " + def_clone.getText() + "\n";
+	if (!isEditValid(clone_trigger)) throw new DataFormatException("OperServ/CLONE_TRIGGER");
 	rv += "CLONE_TRIGGER = " + clone_trigger.getText() + "\n";
+	if (!isEditValid(clone_time)) throw new DataFormatException("OperServ/CLONE_TIME");
 	rv += "CLONE_TIME = " + clone_time.getText() + "\n";
 	rv += "CLONE_AKILL = " + clone_akill.getText() + "\n";
+	if (!isEditValid(clone_akilltime)) throw new DataFormatException("OperServ/CLONE_AKILLTIME");
 	rv += "CLONE_AKILLTIME = " + clone_akilltime.getText() + "\n";
+	if (!isEditValid(flood_time)) throw new DataFormatException("OperServ/FLOOD_TIME");
 	rv += "FLOOD_TIME = " + flood_time.getText() + "\n";
+	if (!isEditValid(flood_msgs)) throw new DataFormatException("OperServ/FLOOD_MSGS");
 	rv += "FLOOD_MSGS = " + flood_msgs.getText() + "\n";
+	if (!isEditValid(ignore_time)) throw new DataFormatException("OperServ/IGNORE_TIME");
 	rv += "IGNORE_TIME = " + ignore_time.getText() + "\n";
+	if (!isEditValid(ignore_limit)) throw new DataFormatException("OperServ/IGNORE_LIMIT");
 	rv += "IGNORE_LIMIT = " + ignore_limit.getText() + "\n";
+	if (!isEditValid(ignore_remove)) throw new DataFormatException("OperServ/IGNORE_REMOVE");
 	rv += "IGNORE_REMOVE = " + ignore_remove.getText() + "\n";
 	rv += "IGNORE_METHOD = " + (ignore_method.getSelectedIndex() + 1) + "\n";
 	rv += "LOG_IGNORE = " + (log_ignore.isSelected() ? "TRUE" : "FALSE") + "\n";
+	if (!isEditValid(init_htm_gap)) throw new DataFormatException("OperServ/INIT_HTM_GAP");
 	rv += "INIT_HTM_GAP = " + init_htm_gap.getText() + "\n";
+	if (!isEditValid(init_htm_thresh)) throw new DataFormatException("OperServ/INIT_HTM_THRESH");
 	rv += "INIT_HTM_THRESH = " + init_htm_thresh.getText() + "\n";
+	if (!isEditValid(max_htm_gap)) throw new DataFormatException("OperServ/MAX_HTM_GAP");
 	rv += "MAX_HTM_GAP = " + max_htm_gap.getText() + "\n";
+	if (!isEditValid(htm_on_gap)) throw new DataFormatException("OperServ/HTM_ON_GAP");
 	rv += "HTM_ON_GAP = " + htm_on_gap.getText() + "\n";
 
 	return rv;
@@ -212,24 +234,24 @@ public class OperServ extends TabbedPane
 	services_admin.setText(data.getValue("OperServ/SERVICES_ADMIN"));
 	secure.setSelected(IniParser.getBoolValue(data.getValue("OperServ/SECURE")));
 	secureoper.setSelected(IniParser.getBoolValue(data.getValue("OperServ/SECUREOPER")));
-	def_expire.setText(data.getValue("OperServ/DEF_EXPIRE"));
-	expire_oper.setText(data.getValue("OperServ/EXPIRE_OPER"));
-	expire_admin.setText(data.getValue("OperServ/EXPIRE_ADMIN"));
-	expire_sop.setText(data.getValue("OperServ/EXPIRE_SOP"));
-	expire_sadmin.setText(data.getValue("OperServ/EXPIRE_SADMIN"));
-	akill_reject.setText(data.getValue("OperServ/AKILL_REJECT"));
-	max_clone.setText(data.getValue("OperServ/MAX_CLONE"));
-	clone_limit.setText(data.getValue("OperServ/CLONE_LIMIT"));
+	setFmtField(def_expire, data, "OperServ/DEF_EXPIRE");
+	setFmtField(expire_oper, data, "OperServ/EXPIRE_OPER");
+	setFmtField(expire_admin, data, "OperServ/EXPIRE_ADMIN");
+	setFmtField(expire_sop, data, "OperServ/EXPIRE_SOP");
+	setFmtField(expire_sadmin, data, "OperServ/EXPIRE_SADMIN");
+	setFmtField(akill_reject, data, "OperServ/AKILL_REJECT");
+	setFmtField(max_clone, data, "OperServ/MAX_CLONE");
+	setFmtField(clone_limit, data, "OperServ/CLONE_LIMIT");
 	def_clone.setText(data.getValue("OperServ/DEF_CLONE"));
-	clone_trigger.setText(data.getValue("OperServ/CLONE_TRIGGER"));
-	clone_time.setText(data.getValue("OperServ/CLONE_TIME"));
+	setFmtField(clone_trigger, data, "OperServ/CLONE_TRIGGER");
+	setFmtField(clone_time, data, "OperServ/CLONE_TIME");
 	clone_akill.setText(data.getValue("OperServ/CLONE_AKILL"));
-	clone_akilltime.setText(data.getValue("OperServ/CLONE_AKILLTIME"));
-	flood_time.setText(data.getValue("OperServ/FLOOD_TIME"));
-	flood_msgs.setText(data.getValue("OperServ/FLOOD_MSGS"));
-	ignore_time.setText(data.getValue("OperServ/IGNORE_TIME"));
-	ignore_limit.setText(data.getValue("OperServ/IGNORE_LIMIT"));
-	ignore_remove.setText(data.getValue("OperServ/IGNORE_REMOVE"));
+	setFmtField(clone_akilltime, data, "OperServ/CLONE_AKILLTIME");
+	setFmtField(flood_time, data, "OperServ/FLOOD_TIME");
+	setFmtField(flood_msgs, data, "OperServ/FLOOD_MSGS");
+	setFmtField(ignore_time, data, "OperServ/IGNORE_TIME");
+	setFmtField(ignore_limit, data, "OperServ/IGNORE_LIMIT");
+	setFmtField(ignore_remove, data, "OperServ/IGNORE_REMOVE");
 
 	String method = data.getValue("ChanServ/DEF_REVENGE");
 	for (i=0; i<ignore_method.getItemCount(); i++)
@@ -246,9 +268,9 @@ public class OperServ extends TabbedPane
 	    ignore_method.setSelectedIndex(def_ignore_method);
 
 	log_ignore.setSelected(IniParser.getBoolValue(data.getValue("OperServ/LOG_IGNORE")));
-	init_htm_gap.setText(data.getValue("OperServ/INIT_HTM_GAP"));
-	init_htm_thresh.setText(data.getValue("OperServ/INIT_HTM_THRESH"));
-	max_htm_gap.setText(data.getValue("OperServ/MAX_HTM_GAP"));
-	htm_on_gap.setText(data.getValue("OperServ/HTM_ON_GAP"));
+	setFmtField(init_htm_gap, data, "OperServ/INIT_HTM_GAP");
+	setFmtField(init_htm_thresh, data, "OperServ/INIT_HTM_THRESH");
+	setFmtField(max_htm_gap, data, "OperServ/MAX_HTM_GAP");
+	setFmtField(htm_on_gap, data, "OperServ/HTM_ON_GAP");
     }
 }

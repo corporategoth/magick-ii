@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.table.*;
+import java.util.zip.DataFormatException;
 
 public class NickServ extends TabbedPane
 {
@@ -257,17 +258,22 @@ public class NickServ extends TabbedPane
 	return rv;
     }	
 
-    public String createCfg()
+    public String createCfg() throws DataFormatException
     {
 	String rv = new String();
 
 	rv += "[NickServ]\n";
 	rv += "APPEND_RENAME = " + (append_rename.getSelectedIndex() == 0 ? "TRUE" : "FALSE") + "\n";
 	rv += "SUFFIXES = " + suffixes.getText() + "\n";
+	if (!isEditValid(expire)) throw new DataFormatException("NickServ/EXPIRE");
 	rv += "EXPIRE = " + expire.getText() + "\n";
+	if (!isEditValid(delay)) throw new DataFormatException("NickServ/DELAY");
 	rv += "DELAY = " + delay.getText() + "\n";
+	if (!isEditValid(ident)) throw new DataFormatException("NickServ/IDENT");
 	rv += "IDENT = " + ident.getText() + "\n";
+	if (!isEditValid(release)) throw new DataFormatException("NickServ/RELEASE");
 	rv += "RELEASE = " + release.getText() + "\n";
+	if (!isEditValid(passfail)) throw new DataFormatException("NickServ/PASSFAIL");
 	rv += "PASSFAIL = " + passfail.getText() + "\n";
 
 	CellEditor ce;
@@ -284,6 +290,7 @@ public class NickServ extends TabbedPane
 	String lang = new String((String) def_language.getSelectedItem());
 	rv += "DEF_LANGUAGE = " + lang.toUpperCase() + "\n";
 	rv += "LCK_LANGUAGE = " + (lck_language.isSelected() ? "TRUE" : "FALSE") + "\n";
+	if (!isEditValid(picsize)) throw new DataFormatException("NickServ/PICSIZE");
 	rv += "PICSIZE = " + picsize.getText() + "\n";
 	rv += "PICEXT = " + picext.getText() + "\n";
 
@@ -299,11 +306,11 @@ public class NickServ extends TabbedPane
 	else
 	    append_rename.setSelectedIndex(1);
 	suffixes.setText(data.getValue("NickServ/SUFFIXES"));
-	expire.setText(data.getValue("NickServ/EXPIRE"));
-	delay.setText(data.getValue("NickServ/DELAY"));
-	ident.setText(data.getValue("NickServ/IDENT"));
-	release.setText(data.getValue("NickServ/RELEASE"));
-	passfail.setText(data.getValue("NickServ/PASSFAIL"));
+	setFmtField(expire, data, "NickServ/EXPIRE");
+	setFmtField(delay, data, "NickServ/DELAY");
+	setFmtField(ident, data, "NickServ/IDENT");
+	setFmtField(release, data, "NickServ/RELEASE");
+	setFmtField(passfail, data, "NickServ/PASSFAIL");
 
 	for (i=0; i<optnames.length; i++)
 	{
@@ -326,7 +333,7 @@ public class NickServ extends TabbedPane
 	    def_language.setSelectedItem(lang);
 
 	lck_language.setSelected(IniParser.getBoolValue(data.getValue("NickServ/LCK_LANGUAGE")));
-	picsize.setText(data.getValue("NickServ/PICSIZE"));
+	setFmtField(picsize, data, "NickServ/PICSIZE");
 	picext.setText(data.getValue("NickServ/PICEXT"));
     }
 }
