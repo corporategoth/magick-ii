@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.167  2001/05/04 03:43:33  prez
+** Fixed UMODE problems (re-oper) and problems in mstring erase
+**
 ** Revision 1.166  2001/05/03 22:34:35  prez
 ** Fixed SQUIT protection ...
 **
@@ -1669,8 +1672,12 @@ void Nick_Live_t::Mode(const mstring& in)
     MCB(modes);
     for (unsigned int i=0; i<in.size(); i++)
     {
+	COM(("Processing mode %c%c", add ? '+' : '-', in[i]));
 	switch(in[i])
 	{
+	case ':':
+	    break;
+
 	case '+':
 	    add = true;
 	    break;
@@ -1682,103 +1689,111 @@ void Nick_Live_t::Mode(const mstring& in)
 	case 'o':
 	    // We check the existing modes incase we get
 	    // duplicate +o/-o (dont want to overhost it!)
-	    if (add && !modes.Contains(in[i]) && !IsServices())
+	    if (!IsServices())
 	    {
-		// Store what committee's we WERE on ...
-		// This is needed to send logon notices ONLY for committees
-		// we have joined by a nick change.
-		set<mstring> wason;
-		CommServ::list_t::iterator iter2;
-		for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
-								iter2++)
+		if (add && !modes.Contains(in[i]))
 		{
-		    if (iter2->second.IsOn(i_Name))
-			wason.insert(iter2->first);
-		}
-
-		modes += in[i];
-		{ RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
-		Parent->operserv.RemHost(i_host);
-		}
-		MLOCK(("OperServ", "OperDeny"));
-		// IF we are SecureOper and NOT (on oper list && recoznized)
-		// OR user is on OperDeny and NOT (on sadmin list && recognized)
-		// Yeah, one UUUUUUGLY if.
-		if ((Parent->operserv.SecureOper() &&
-		    !(Parent->nickserv.IsStored(i_Name) &&
-		    Parent->nickserv.GetStored(i_Name).IsOnline() &&
-		    Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(i_Name))) ||
-		    (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
-		    !(Parent->nickserv.IsStored(i_Name) &&
-		    Parent->nickserv.GetStored(i_Name).IsOnline() &&
-		    Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		    Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(i_Name))))
-		{
-		    if (!Parent->server.proto.SVSMODE().empty())
-		    {
-			SendMode("-o");
-			send(Parent->operserv.FirstName(), i_Name,
-				Parent->getMessage(i_Name, "OS_STATUS/ISOPERDENY"));
-		    }
-		    else
-		    {
-			Parent->server.KILL(Parent->operserv.FirstName(),
-		    	    i_Name, Parent->getMessage(i_Name, "MISC/KILL_OPERDENY"));
-			return;
-		    }
-		}
-		else
-		{
-		    mstring setmode;
+		    // Store what committee's we WERE on ...
+		    // This is needed to send logon notices ONLY for committees
+		    // we have joined by a nick change.
+		    set<mstring> wason;
+		    CommServ::list_t::iterator iter2;
 		    for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
 								iter2++)
 		    {
-			if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
-			{
-			    if (iter2->first == Parent->commserv.ALL_Name())
-				setmode += Parent->commserv.ALL_SetMode();
-			    else if (iter2->first == Parent->commserv.REGD_Name())
-				setmode += Parent->commserv.REGD_SetMode();
-			    else if (iter2->first == Parent->commserv.OPER_Name())
-				setmode += Parent->commserv.OPER_SetMode();
-			    else if (iter2->first == Parent->commserv.ADMIN_Name())
-				setmode += Parent->commserv.ADMIN_SetMode();
-			    else if (iter2->first == Parent->commserv.SOP_Name())
-				setmode += Parent->commserv.SOP_SetMode();
-			    else if (iter2->first == Parent->commserv.SADMIN_Name())
-				setmode += Parent->commserv.SADMIN_SetMode();
+			if (iter2->second.IsOn(i_Name))
+			    wason.insert(iter2->first);
+		    }
 
-			    for (iter2->second.message = iter2->second.MSG_begin();
-				iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
+		    modes += in[i];
+		    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
+		    Parent->operserv.RemHost(i_host);
+		    }
+		    MLOCK(("OperServ", "OperDeny"));
+		    // IF we are SecureOper and NOT (on oper list && recoznized)
+		    // OR user is on OperDeny and NOT (on sadmin list && recognized)
+		    // Yeah, one UUUUUUGLY if.
+		    if ((Parent->operserv.SecureOper() &&
+			!(Parent->nickserv.IsStored(i_Name) &&
+			Parent->nickserv.GetStored(i_Name).IsOnline() &&
+			Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+			Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(i_Name))) ||
+			(Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
+			!(Parent->nickserv.IsStored(i_Name) &&
+			Parent->nickserv.GetStored(i_Name).IsOnline() &&
+			Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+			Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(i_Name))))
+		    {
+			if (!Parent->server.proto.SVSMODE().empty())
+			{
+			    SendMode("-o");
+			    send(Parent->operserv.FirstName(), i_Name,
+				Parent->getMessage(i_Name, "OS_STATUS/ISOPERDENY"));
+			}
+			else
+			{
+			    Parent->server.KILL(Parent->operserv.FirstName(),
+		    	    	i_Name, Parent->getMessage(i_Name, "MISC/KILL_OPERDENY"));
+			    return;
+			}
+		    }
+		    else
+		    {
+			mstring setmode;
+			for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
+								iter2++)
+			{
+			    if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
 			    {
-				Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
+				if (!Parent->server.proto.SVSMODE().empty())
+				{
+				    if (iter2->first == Parent->commserv.ALL_Name())
+					setmode += Parent->commserv.ALL_SetMode();
+				    else if (iter2->first == Parent->commserv.REGD_Name())
+					setmode += Parent->commserv.REGD_SetMode();
+				    else if (iter2->first == Parent->commserv.OPER_Name())
+					setmode += Parent->commserv.OPER_SetMode();
+				    else if (iter2->first == Parent->commserv.ADMIN_Name())
+					setmode += Parent->commserv.ADMIN_SetMode();
+				    else if (iter2->first == Parent->commserv.SOP_Name())
+					setmode += Parent->commserv.SOP_SetMode();
+				    else if (iter2->first == Parent->commserv.SADMIN_Name())
+					setmode += Parent->commserv.SADMIN_SetMode();
+				}
+
+				for (iter2->second.message = iter2->second.MSG_begin();
+					iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
+				{
+				    Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
 					    "] " + iter2->second.message->Entry());
+				}
 			    }
 			}
-		    }
-		    if (!setmode.empty())
-		    {
-			mstring setmode2;
-			for (i=0; i<setmode.size(); i++)
+			if (!setmode.empty())
 			{
-			    if (setmode[i] != '+' && setmode[i] != '-' &&
-				setmode[i] != ' ' && !HasMode(setmode[i]))
-			        setmode2 += setmode[i];
+			    mstring setmode2;
+			    for (unsigned int j=0; j<setmode.size(); j++)
+			    {
+				if (setmode[j] != '+' && setmode[j] != '-' &&
+					setmode[j] != ' ' && !HasMode(setmode[j]))
+				    setmode2 += setmode[j];
+			    }
+			    SendMode("+" + setmode2);
 			}
-			Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, "+" + setmode2);
 		    }
 		}
-		// Break here for non-services ...
-		break;
-	    }
-	    else if (modes.Contains(in[i]) && !IsServices())
-	    {
-		RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
-		Parent->operserv.AddHost(i_host);
-		modes.Remove(in[i]);
-		// Break here for non-services ...
-		break;
+		else if (!add && modes.Contains(in[i]))
+		{
+		    RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
+		    Parent->operserv.AddHost(i_host);
+		    modes.Remove(in[i]);
+		}
+		else
+		{
+		    LOG((LM_TRACE, Parent->getLogMessage("ERROR/MODE_INEFFECT"),
+			add ? '+' : '-', in[i], i_Name.c_str(), i_Name.c_str()));
+		}
+	        break;
 	    }
 	    // WE dont break here coz services will fall through.
 

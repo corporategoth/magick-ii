@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.159  2001/05/04 03:43:33  prez
+** Fixed UMODE problems (re-oper) and problems in mstring erase
+**
 ** Revision 1.158  2001/05/04 01:11:13  prez
 ** Made chanserv mode stuff more efficiant
 **
@@ -1557,8 +1560,10 @@ int EventTask::svc(void)
 			mstring mode;
 			mstring modeparam;
 
+			CP(("p_modes_off_size %d (%s)", chan.p_modes_off.size(), chan.p_modes_off.c_str()));
 			for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
 			{
+			    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_off[i], j, k));
 			    if (j>=Parent->server.proto.Modes())
 			    {
 				modelines.push_back(mode + " " + modeparam);
@@ -1585,8 +1590,10 @@ int EventTask::svc(void)
 			}
 			if (mode.size() && chan.p_modes_on.size())
 			    mode += "+";
+			CP(("p_modes_on_size %d (%s)", chan.p_modes_on.size(), chan.p_modes_on.c_str()));
 			for (i=0, k=0; i<chan.p_modes_on.size(); i++)
 			{
+			    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_on[i], j, k));
 			    if (j>=Parent->server.proto.Modes())
 			    {
 				modelines.push_back(mode + " " + modeparam);

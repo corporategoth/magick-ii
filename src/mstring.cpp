@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2001/05/04 03:43:33  prez
+** Fixed UMODE problems (re-oper) and problems in mstring erase
+**
 ** Revision 1.102  2001/04/09 07:52:22  prez
 ** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
 **
@@ -558,12 +561,11 @@ void mstring::erase(int begin, int end)
 	if (i_str != NULL)
 	    dealloc(i_str);
 	i_str = tmp;
-    }
-    else if (tmp == NULL)
-    {
-	i_str = NULL;
-	i_len = 0;
-	i_res = 0;
+	if (i_str == NULL)
+	{
+	    i_len = 0;
+	    i_res = 0;
+	}
     }
 
     lock_rel();
