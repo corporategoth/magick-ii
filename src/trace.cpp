@@ -60,16 +60,18 @@ int levelname_count()
 
 // ===================================================
 
-ThreadID::ThreadID()
+ThreadID::ThreadID(Magick *Parent)
 {
+    i_Parent=Parent;
     t_indent = 0;
     t_internaltype = tt_MAIN;
     t_number = 0;
     out=NULL;
 }
 
-ThreadID::ThreadID(threadtype_enum Type, int Number)
+ThreadID::ThreadID(Magick *Parent, threadtype_enum Type, int Number)
 {
+    i_Parent=Parent;
     t_indent = 0;
     t_internaltype = Type;
     t_number = Number;
@@ -97,6 +99,7 @@ void ThreadID::WriteOut(const mstring &message)
 {
     // this stuff all has to be rewritten to use the new task object.
     
+    // todo: if tt_Main, write to file now, else put it into the logger task.
     //below for now till i get the operator bool happening.
     if (out==NULL||out->Ok()!=true) 
     {
@@ -396,8 +399,17 @@ int LoggerTask::svc(void)
     return 0;
 }
 
-int LoggerTask::shutdown()
+void LoggerTask::shutdown()
 {
     activation_queue_.enqueue(new shutdown_MO);
-    return 0;
+}
+
+void LoggerTask::logmessage(wxOutputStream *out,const mstring& data)
+{
+    activation_queue_.enqueue(new LoggerTask_logmessage_MO(this,out,data));
+}
+
+void LoggerTask::logmessage_i(wxOutputStream *out,const mstring& data)
+{
+    //
 }

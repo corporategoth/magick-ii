@@ -90,10 +90,8 @@ void mBase::shutdown()
 NetworkServ::NetworkServ(Magick *in_Parent) : mBase(in_Parent)
 {
     NFT("NetworkServ::NetworkServ");
-    if (mThread::findbytype(Get_TType(), 1) == NULL) {
-	messages=true;
-	automation=true;
-    }
+    messages=true;
+    automation=true;
 }
 
 void NetworkServ::execute(const mstring & data)
@@ -139,12 +137,14 @@ int mBaseTask::open(void *in)
 
 int mBaseTask::svc(void)
 {
+    mThread::Attach(Parent,tt_mBase);
     while(Parent->shutdown()==false)
     {
 	auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue());
 	if(mo->call()==-1)
 	    break;
     }
+    mThread::Detach(tt_mBase);
     return 0;
 }
 

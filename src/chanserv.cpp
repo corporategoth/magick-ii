@@ -22,10 +22,8 @@
 ChanServ::ChanServ(Magick *in_Parent) : mBase(in_Parent)
 {
     NFT("ChanServ::ChanServ");
-    if (mThread::findbytype(Get_TType(), 1) == NULL) {
-	messages=true;
-	automation=true;
-    }
+    messages=true;
+    automation=true;
 }
 void ChanServ::execute(const mstring & data)
 {

@@ -30,27 +30,27 @@ int main(int argc, char **argv)
     {
 #endif
 	// todo make it insert itself into the ThreadID data structures.
-	mThread::Attach(tt_MAIN, 1);
-
-#ifdef DEBUG
-	for (int i=tt_MAIN; i<tt_MAX; i++)
-	    Trace::TurnSet((threadtype_enum) i, 0xffff); // Full tracing.
-#else
-	for (int i=tt_MAIN; i<tt_MAX; i++)
-	    Trace::TurnSet((threadtype_enum) i, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
-#endif
 
 	int Result;
 	StartTime=Now();
 restart:
 	{
 	    Magick internalobject(argc, argv);
+	    mThread::Attach(&internalobject, tt_MAIN);
+
+#ifdef DEBUG
+	    for (int i=tt_MAIN; i<tt_MAX; i++)
+		Trace::TurnSet((threadtype_enum) i, 0xffff); // Full tracing.
+#else
+	    for (int i=tt_MAIN; i<tt_MAX; i++)
+		Trace::TurnSet((threadtype_enum) i, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
+#endif
 	    ResetTime=Now();
 	    Result=internalobject.Start();
 	}
 	if(Result==MAGICK_RET_RESTART)
 	    goto restart;
-	mThread::Detach(tt_MAIN,1);
+	mThread::Detach(tt_MAIN);
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }

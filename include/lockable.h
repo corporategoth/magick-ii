@@ -84,25 +84,10 @@ private:
     // really should be using auto_ptr's here, *shrug* maybe later
     typedef map<ACE_thread_t,ThreadID*> selftothreadidmap_t;
     static selftothreadidmap_t selftothreadidmap;
-    typedef map<pair<threadtype_enum,int>,ThreadID*> threadtypetothreadidmap_t; 
-    static threadtypetothreadidmap_t threadtypetothreadidmap;
-    typedef map<threadtype_enum,int> threadtypecountmap_t;
-    static threadtypecountmap_t threadtypecountmap;
-    static void *handler_hack(void *level);
 public:
-    static void spawn(threadtype_enum type,ACE_THR_FUNC func, void *arg=0);
-    static void resumeself();
-    static void suspendself();
-    static void resume(ThreadID* tid);
-    static void resume(ACE_thread_t tid);
-    static void suspend(ThreadID* tid);
-    static void suspend(ACE_thread_t tid=ACE_Thread::self());
-    static void yieldself();
     static ThreadID* find(ACE_thread_t thread=ACE_Thread::self());
-    static int typecount(threadtype_enum ttype);
-    static ThreadID* findbytype(threadtype_enum ttype, int level=1);
-    static void Attach(threadtype_enum ttype, int level);
-    static void Detach(threadtype_enum ttype, int level);
+    static void Attach(Magick *Parent, threadtype_enum ttype);
+    static void Detach(threadtype_enum ttype);
 };
 
 #endif

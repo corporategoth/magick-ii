@@ -80,7 +80,7 @@
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_BOB, tt_LOST, tt_MAX };
+enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
 
 // Trace Codes
@@ -105,14 +105,18 @@ extern mstring threadname[tt_MAX];
 // ===================================================
 class LoggerTask : public ACE_Task<ACE_MT_SYNCH>
 {
+    friend class LoggerTask_logmessage_MO;
 private:
     ACE_Activation_Queue activation_queue_;
-    map<threadtype_enum, queue<mstring> > buffers;
+    //map<threadtype_enum, queue<mstring> > buffers;
+    // todo later buffer these up until a dump is done.
+    void logmessage_i(wxOutputStream *out,const mstring& data);
 public:
     int open(void *in);
     int close(unsigned long in);
     int svc(void);
-    int shutdown();
+    void shutdown();
+    void logmessage(wxOutputStream *out,const mstring& data);
 };
 
 class shutdown_MO : public ACE_Method_Object
@@ -124,6 +128,24 @@ public:
     }
 };
 
+class LoggerTask_logmessage_MO : public ACE_Method_Object
+{
+private:
+    LoggerTask *i_loggertask;
+    wxOutputStream *i_out;
+    mstring i_data;
+public:
+    LoggerTask_logmessage_MO(LoggerTask *loggertask, wxOutputStream *out,const mstring& data)
+    {
+	i_out;
+	i_data;
+    }
+    virtual int call()
+    {
+	i_loggertask->logmessage_i(i_out,i_data);
+	return 0;
+    }
+};
 
 // ToDo -- A method to get the current ThreadID number
 
@@ -131,6 +153,8 @@ public:
 // ACE_thread_t threadid = ACE_Thread::self();
 // threadtype_enum Type=MagickObject->ThreadtoTypeMap[ACE_Thread::self()];
 // or to set the Type in the map  eg: MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
+
+class Magick;
 
 class ThreadID {
 private:
@@ -140,10 +164,11 @@ private:
     wxFileOutputStream *out;
     
     mstring logname();
+    Magick *i_Parent;
 
 public:
-    ThreadID();
-    ThreadID(threadtype_enum Type, int Number);
+    ThreadID(Magick *Parent);
+    ThreadID(Magick *Parent, threadtype_enum Type, int Number);
     ~ThreadID() { if(out!=NULL) delete out;}
     ThreadID assign(threadtype_enum Type, int Number);
     threadtype_enum type() { return t_internaltype; }

@@ -294,85 +294,6 @@ MLOCK::~MLOCK()
 }
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
-mThread::threadtypetothreadidmap_t mThread::threadtypetothreadidmap;
-mThread::threadtypecountmap_t mThread::threadtypecountmap;
-
-void mThread::spawn(threadtype_enum type,ACE_THR_FUNC func, void *arg)
-{
-    FT("mThread::spawn", ("(threadtype_enum) type", "(ACE_THR_FUNC) func", arg));
-    //todo change the below to a triplet
-    triplet<ACE_THR_FUNC,void *, threadtype_enum> *args=new triplet<ACE_THR_FUNC,void *,threadtype_enum>;
-    args->first=func;
-    args->second=arg;
-    args->third=type;
-    CP(("Spawning a new %s thread ...", threadname[type].c_str()));
-    ACE_Thread::spawn(handler_hack,(void *)args);
-}
-void mThread::resumeself()
-{
-    NFT("mThread::resumeself");
-    ACE_hthread_t temp;
-    ACE_Thread::self(temp);
-    ACE_Thread::resume(temp);
-}
-void mThread::suspendself()
-{
-    NFT("mThread::suspendself");
-    ACE_hthread_t temp;
-    ACE_Thread::self(temp);
-    ACE_Thread::suspend(temp);
-}
-void mThread::resume(ThreadID* tid)
-{
-    FT("mThread::resume", ("(ThreadID *) tid"));
-    selftothreadidmap_t::iterator i;
-    for(i=selftothreadidmap.begin();i!=selftothreadidmap.end();i++)
-    {
-	if(i->second==tid)
-	    resume(i->first);
-    }
-}
-void mThread::resume(ACE_thread_t tid)
-{
-    FT("mThread::resume", ("(ACE_thread_t) tid"));
-    ACE_Thread_Manager::instance()->resume(tid);
-}
-void mThread::suspend(ThreadID* tid)
-{
-    FT("mThread::suspend", ("(ThreadID *) tid"));
-    selftothreadidmap_t::iterator i;
-    for(i=selftothreadidmap.begin();i!=selftothreadidmap.end();i++)
-    {
-	if(i->second==tid)
-	    suspend(i->first);
-    }
-}
-void mThread::suspend(ACE_thread_t tid)
-{
-    FT("mThread::suspend", ("(ACE_thread_t) tid"));
-    ACE_Thread_Manager::instance()->suspend(tid);
-}
-void mThread::yieldself()
-{
-    NFT("mThread::yeildself");
-    ACE_Thread::yield();
-}
-void *mThread::handler_hack(void *level)
-{
-    FT("mThread::handler_hack", (level));
-    void *Result;
-    triplet<ACE_THR_FUNC,void *,threadtype_enum> *args;
-    args=(triplet<ACE_THR_FUNC,void *,threadtype_enum> *)level;
-    //add ourselves to the maps
-    int ilevel=typecount(args->third)+1;
-    Attach(args->third,ilevel);
-    Result=(*(args->first))((args->second));
-    //remove ourselves from the maps
-    Detach(args->third,ilevel);
-    delete args;
-
-    RET(Result);
-}
 
 ThreadID* mThread::find(ACE_thread_t thread)
 {
@@ -382,48 +303,25 @@ ThreadID* mThread::find(ACE_thread_t thread)
     return NULL;
 }
 
-int mThread::typecount(threadtype_enum ttype)
+void mThread::Attach(Magick *Parent,threadtype_enum ttype)
 {
-    FT("mThread::typecount", ("(threadtype_enum) ttype"));
-    if(threadtypecountmap.find(ttype)!=threadtypecountmap.end()) {
-        RET(threadtypecountmap[ttype]);
-    }
-    RET(0);
-}
-
-ThreadID *mThread::findbytype(threadtype_enum ttype, int level)
-{
-    FT("mThread::findbytype", ("(threadtype_enum) ttype", level));
-    threadtypetothreadidmap_t::key_type value=threadtypetothreadidmap_t::key_type(ttype,level);
-    if(threadtypetothreadidmap.find(value)!=threadtypetothreadidmap.end()) {
-        NRET(ThreadID, threadtypetothreadidmap[value]);
-    }
-    NRET(ThreadID, NULL);
-}
-
-void mThread::Attach(threadtype_enum ttype, int level)
-{
-    FT("mThread::Attach", ("(threadtype_enum) ttype", level));
-    ThreadID *tmpid=new ThreadID(ttype, level);
+    FT("mThread::Attach", ("(threadtype_enum) ttype"));
+    ThreadID *tmpid=new ThreadID(Parent);
     selftothreadidmap[ACE_Thread::self()]=tmpid;
-    threadtypecountmap[ttype]++;
-    threadtypetothreadidmap[threadtypetothreadidmap_t::key_type(ttype,level)]=tmpid;
-    COM(("%s Thread ID %d has been attached.", threadname[ttype].c_str(), level));
+    COM(("%s Thread ID %d has been attached.", threadname[ttype].c_str()));
 }
 
-void mThread::Detach(threadtype_enum ttype, int level)
+void mThread::Detach(threadtype_enum ttype)
 {
-    FT("mThread::Detach", ("(threadtype_enum) ttype", level));
+    FT("mThread::Detach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=find();
     if(tmpid==NULL)
     {
 	// todo ttype to typename
-	CP(("mThread::Detach without valid mThread::Attach... type: %s, level: %d",threadname[ttype].c_str(),level));
+	CP(("mThread::Detach without valid mThread::Attach... type: %s",threadname[ttype].c_str()));
 	return;
     }
-    threadtypecountmap[ttype]--;
-    threadtypetothreadidmap.erase(threadtypetothreadidmap_t::key_type(ttype,level));
     selftothreadidmap.erase(ACE_Thread::self());
     delete tmpid;
-    COM(("%s Thread ID %d has been detached.", threadname[ttype].c_str(), level));
+    COM(("%s Thread ID has been detached.", threadname[ttype].c_str()));
 }
