@@ -209,6 +209,10 @@ void CommServ::load_database(wxInputStream& in)
 
 void CommServ::save_database(wxOutputStream& out)
 {
+    out<<secure_oper;
+    out<<list.size();
+    for(map<mstring,Committee>::iterator i=list.begin();i!=list.end();i++)
+	out<<i->second;
 }
 
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in)

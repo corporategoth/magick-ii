@@ -290,3 +290,4 @@ extern const char* wxSysErrorMsg(unsigned long nErrCode = 0);
 //#define _(str) str
 
 #endif
+

@@ -52,8 +52,9 @@ mstring wxGetCwd();
 
 // extrapolated from the ms's pair<T1,T2> template code
 
-template<class _T1, class _T2, class _T3> struct triplet 
+template<class _T1, class _T2, class _T3> class triplet 
 {
+public:
     typedef _T1 first_type;
     typedef _T2 second_type;
     typedef _T3 third_type;

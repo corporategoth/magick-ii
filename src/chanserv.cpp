@@ -423,7 +423,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 }
 
 
-bool checkops(pair<mstring, pair<bool,bool> > &in)
+bool checkops(pair<const mstring, pair<bool,bool> > &in)
 {
     FT("checkops",(in.first,in.second.first,in.second.second));
     if(in.second.first==true)
@@ -437,7 +437,7 @@ bool checkops(pair<mstring, pair<bool,bool> > &in)
 }
 
 
-bool checkvoices(pair<mstring, pair<bool,bool> > &in)
+bool checkvoices(pair<const mstring, pair<bool,bool> > &in)
 {
     FT("checkvoices",(in.first,in.second.first,in.second.second));
     if(in.second.second==true)
