@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.121  2000/08/07 12:20:27  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.120  2000/08/06 08:06:41  prez
 ** Fixed loading of logon messages in committee ..
 **
@@ -755,8 +760,8 @@ int EventTask::svc(void)
 		MLOCK(("OperServ","Akill"));
 		bool firstgone = false;
 		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-			Parent->operserv.Akill_size() &&
-			(Parent->operserv.Akill != Parent->operserv.Akill_end() || firstgone);
+			(Parent->operserv.Akill_size()) &&
+			(firstgone || Parent->operserv.Akill != Parent->operserv.Akill_end());
 			Parent->operserv.Akill++)
 		{
 		    if (firstgone)
@@ -875,15 +880,16 @@ int EventTask::svc(void)
 
 	    // news articles
 	    {
-		RLOCK2(("MemoServ", "channel"));
+		vector<mstring> expired_news;
+		{ RLOCK2(("MemoServ", "channel"));
 		for (ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 		{
 		    bool firstgone = false;
 		    WLOCK(("MemoServ", "channel", ni->first));
 		    for (lni=ni->second.begin();
-			ni->second.size() &&
-			(lni != ni->second.end() || firstgone); lni++)
+			(ni->second.size()) &&
+			(firstgone || lni != ni->second.end()); lni++)
 		    {
 			if (firstgone)
 			{
@@ -912,7 +918,14 @@ int EventTask::svc(void)
 			    }
 			}
 		    }
-		}
+		    if (!ni->second.size())
+			expired_news.push_back(ni->first);
+		}}
+		{ WLOCK(("MemoServ", "channel"));
+		for (i=0; i<expired_news.size(); i++)
+		{
+		    Parent->memoserv.channel.erase(expired_news[i]);
+		}}
 	    }
 
 	    // transaction ID's (for inter-magick)

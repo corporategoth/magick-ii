@@ -17,7 +17,8 @@ Known problems that exist in magick that should be fixed.
   are already on (eg. adding to ADMIN when they're already
   on OPER) it will not remove them from the subcommittee,
   and they will appear twice.
+- When you change hosts, committees they are in because they
+  are in its head committee also show up in info (rather than
+  just the head committee showing up).
 
-- HOST does not report the transfer of hosts
-- email and url settings dont do sanity checks
-- sometimes host checking misfires (check Add/DelHost)
+- On FreeBSD, the sender does not show up in memo reads.

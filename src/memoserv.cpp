@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2000/08/07 12:20:28  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.70  2000/08/02 20:08:57  prez
 ** Minor code cleanups, added ACE installation instructions, updated the
 ** suggestions file and stopped people doing a whole bunch of stuff to
@@ -194,6 +199,13 @@ void Memo_t::operator=(const Memo_t &in)
     i_Text = in.i_Text;
     i_File = in.i_File;
     i_Read = in.i_Read;
+}
+
+void Memo_t::ChgNick(mstring in)
+{
+    FT("Memo_t::ChgNick", (in));
+    WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Nick"));
+    i_Nick = in;
 }
 
 mstring Memo_t::Sender()
@@ -600,17 +612,18 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	{
 	    bool unread = (what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0);
 	    list<News_t>::iterator iter;
-	    int i = 1;
+	    int i = 0;
 	    RLOCK(("MemoServ", "channel", who.LowerCase()));
 	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
 		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
 	    {
+		i++;
 		if (unread && iter->IsRead(whoami))
 		    continue;
 
 		iter->Read(whoami);
 		::send(mynick, source, Parent->getMessage("MS_COMMAND/NEWS"),
-			i++, iter->Sender().c_str(), iter->Channel().c_str(),
+			i, iter->Sender().c_str(), iter->Channel().c_str(),
 			iter->Time().Ago().c_str());
 		unsigned int sentsize;
 		mstring output;
@@ -726,11 +739,12 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	{
 	    list<Memo_t>::iterator iter;
 	    bool unread = (what.CmpNoCase("new")==0 || what.CmpNoCase("unread")==0);
-	    int i = 1;
+	    int i = 0;
 	    RLOCK(("MemoServ", "nick", who.LowerCase()));
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
 	    {
+		i++;
 		if (unread && iter->IsRead())
 		    continue;
 
@@ -738,7 +752,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
 		{
 		    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_FILE"),
-			i++, iter->Sender().c_str(),
+			i, iter->Sender().c_str(),
 			iter->Time().Ago().c_str(),
 			Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
 			ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
@@ -746,7 +760,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		else
 		{
 		    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
-			i++, iter->Sender().c_str(),
+			i, iter->Sender().c_str(),
 			iter->Time().Ago().c_str());
 		}
 		unsigned int sentsize;

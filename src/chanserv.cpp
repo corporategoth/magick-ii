@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.193  2000/08/07 12:20:27  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.192  2000/08/06 07:25:10  prez
 ** Fixed some minor channel bugs
 **
@@ -8797,6 +8802,19 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     if (option.CmpNoCase("none") == 0)
 	option = "";
+    else if (!option.Contains("@"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+		Parent->getMessage(source, "CS_SET/EMAIL").c_str(), '@');
+	return;
+    }
+    else if (option.WordCount("@") != 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAINONE"),
+		Parent->getMessage(source, "CS_SET/EMAIL").c_str(), '@');
+	return;
+    }
+
     cstored->Email(option);
     Parent->chanserv.stats.i_Set++;
     if (option == "")
@@ -8873,11 +8891,11 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/URL").c_str(),
-	    channel.c_str(), option.c_str());
+	    channel.c_str(), ("http://" + option).c_str());
 	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/URL").c_str(),
-		channel.c_str(), option.c_str());
+		channel.c_str(), ("http://" + option).c_str());
     }
 }
 

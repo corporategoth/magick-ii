@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/08/07 12:20:27  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.16  2000/07/30 09:04:05  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -360,6 +365,10 @@ CreateNickEntry(NickInfo *ni)
 	    out.i_Email = mstring(ni->email);
 	if (ni->url != NULL)
 	    out.i_URL = mstring(ni->url);
+	if (out.i_URL.Contains("http://"))
+	    out.i_URL.Replace("http://", "");
+	if (out.i_URL.Contains("HTTP://"))
+	    out.i_URL.Replace("HTTP://", "");
 	if (ni->last_realname != NULL)
 	    out.i_LastRealName = mstring(ni->last_realname);
 	out.i_RegTime = mDateTime(ni->time_registered);
@@ -974,6 +983,10 @@ CreateChanEntry(ChanInfo *ci)
 
 	if (ci->url != NULL)
 	    out.i_URL = mstring(ci->url);
+	if (out.i_URL.Contains("http://"))
+	    out.i_URL.Replace("http://", "");
+	if (out.i_URL.Contains("HTTP://"))
+	    out.i_URL.Replace("HTTP://", "");
 	out.i_RegTime = mDateTime(ci->time_registered);
 	out.i_LastUsed = mDateTime(ci->last_used);
 	mstring modelock;

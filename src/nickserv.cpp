@@ -1,4 +1,3 @@
-
 #include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
@@ -27,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.121  2000/08/07 12:20:28  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.120  2000/08/06 21:56:14  prez
 ** Fixed some small problems in akill/clone protection
 **
@@ -2596,7 +2600,8 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 		citer->second.erase();
 		found = true;
 	    }
-	    if (citer->second.IsHead(i_Name) || citer->second.IsHead(oldnick))
+	    if (!(citer->second.HeadCom() != "") &&
+		(citer->second.IsHead(i_Name) || citer->second.IsHead(oldnick)))
 	    {
 		citer->second.Head(i_Name);
 		found = false;
@@ -2697,6 +2702,7 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 			niter != Parent->nickserv.stored.end(); niter++)
     {
 	if (niter->first != i_Name.LowerCase() &&
+	    niter->second.Host().LowerCase() != i_Name.LowerCase() &&
 	    !IsSibling(niter->first) &&
 	    niter->second.IsIgnore(oldnick))
 	{
@@ -2705,11 +2711,35 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	}
     }
 
+    if (Parent->memoserv.IsNick(oldnick))
+    {
+	WLOCK(("MemoServ", "nick"));
+	list<Memo_t>::iterator miter;
+	for (miter=Parent->memoserv.nick[oldnick.LowerCase()].begin();
+		miter!=Parent->memoserv.nick[oldnick.LowerCase()].end();
+		miter++)
+	    miter->ChgNick(i_Name);
+	if (Parent->memoserv.IsNick(i_Name))
+	{
+	    Parent->memoserv.nick[i_Name.LowerCase()].insert(
+		Parent->memoserv.nick[i_Name.LowerCase()].end(),
+		Parent->memoserv.nick[oldnick.LowerCase()].begin(),
+		Parent->memoserv.nick[oldnick.LowerCase()].end());
+	}
+	else
+	{
+	    Parent->memoserv.nick[i_Name.LowerCase()] =
+		Parent->memoserv.nick[oldnick.LowerCase()];
+	}
+	Parent->memoserv.nick.erase(oldnick.LowerCase());
+    }
+
     map<mstring, list<News_t> >::iterator cniter;
     list<News_t>::iterator cnliter;
     for (cniter = Parent->memoserv.channel.begin();
 			cniter != Parent->memoserv.channel.end(); cniter++)
     {
+	WLOCK(("MemoServ", "channel", cniter->first));
 	for (cnliter = cniter->second.begin();
 			    cnliter != cniter->second.end(); cnliter++)
 	{
@@ -2741,9 +2771,10 @@ bool Nick_Stored_t::MakeHost()
 	    if (Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).LowerCase() != i_Name.LowerCase())
 	    {
 		i_slaves.insert(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i));
-		Parent->nickserv.stored[Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)].i_Host = i_Name;
+		Parent->nickserv.stored[Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)].i_Host = i_Name.LowerCase();
 	    }
 	}
+	i_slaves.insert(i_Host.LowerCase());
 	i_Password = Parent->nickserv.stored[i_Host.LowerCase()].i_Password;
 	i_Email = Parent->nickserv.stored[i_Host.LowerCase()].i_Email;
 	i_URL = Parent->nickserv.stored[i_Host.LowerCase()].i_URL;
@@ -2770,7 +2801,7 @@ bool Nick_Stored_t::MakeHost()
 	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.clear();
-	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name;
+	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name.LowerCase();
 	mstring tmp = i_Host;
 	i_Host = "";
 	ChangeOver(tmp);
@@ -5012,6 +5043,9 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     for (iter=Parent->commserv.list.begin();
 		iter!=Parent->commserv.list.end(); iter++)
     {
+	// IF committee is not ALL or REGD
+	// AND if it has a headcom, we're not in it
+	// AND the committee isnt private or the requesting user is in OPER
 	if (iter->first != Parent->commserv.ALL_Name() &&
 	    iter->first != Parent->commserv.REGD_Name() &&
 	    (iter->second.HeadCom() == "" ||
@@ -6095,6 +6129,18 @@ void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     if (newvalue.CmpNoCase("none") == 0)
 	newvalue = "";
+    else if (!newvalue.Contains("@"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	return;
+    }
+    else if (newvalue.WordCount("@") != 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAINONE"),
+		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	return;
+    }
 
     Parent->nickserv.stored[source.LowerCase()].Email(newvalue);
     Parent->nickserv.stats.i_Set++;
@@ -6140,11 +6186,12 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
     if (newvalue != "")
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/URL").c_str(), newvalue.c_str());
+		Parent->getMessage(source, "NS_SET/URL").c_str(),
+		("http://" + newvalue).c_str());
 	Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("NS_SET/URL").c_str(),
-		source.c_str(), newvalue.c_str());
+		source.c_str(), ("http://" + newvalue).c_str());
     }
     else
     {

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/08/07 12:20:27  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.42  2000/08/06 21:56:14  prez
 ** Fixed some small problems in akill/clone protection
 **
@@ -1519,13 +1524,9 @@ int DccMap::svc(void)
     {
 	/*COM(("Active Size is %d", active.size()));*/
 
-	// NOTE: This used to be in the if, however I pulled
-	// it out to stop it spinlocking if active size was
-	// > 0, must find out root cause however. Need more
-	// info (trace would be good, but difficult).
-	    ACE_OS::sleep(1);
 	if (!active.size())
 	{
+	    ACE_OS::sleep(1);
 	    continue;
 	}
 

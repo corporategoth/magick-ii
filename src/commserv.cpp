@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/08/07 12:20:27  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.67  2000/08/06 08:06:41  prez
 ** Fixed loading of logon messages in committee ..
 **
@@ -395,6 +400,25 @@ bool Committee::IsIn(mstring nick)
 	    RET(true);
 	}
     }
+
+    // If this committee is SADMIN, we could be a member
+    // as a SLAVE since theres no way of online changing host.
+    if (i_Name == Parent->commserv.SADMIN_Name())
+    {
+	unsigned int i;
+	for (i=0; i<Parent->nickserv.stored[target.LowerCase()].Siblings(); i++)
+	{
+	    for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
+	    {
+		if (Parent->nickserv.stored[target.LowerCase()].Sibling(i).LowerCase() ==
+						iter->Entry().LowerCase())
+		{
+		    RET(true);
+		}
+	    }
+	}
+    }
+
     RET(false);
 }
 
@@ -1655,7 +1679,13 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
     else if (comm->Head() != "")
     {
 	output = "";
-	output << nextnum++ << ". " << IRC_Bold << comm->Head() << IRC_Off;
+	output << nextnum++ << ". " << IRC_Bold;
+	if (Parent->nickserv.IsStored(comm->Head()))
+	    output << Parent->getSname(comm->Head());
+	else
+	    output << Parent->getMessage(source, "COMMSERV/DEFUNCT") <<
+	    	" " << Parent->getMessage(source, "COMMSERV_INFO/SET_HEAD");
+	output << IRC_Off;
 	if (!Parent->nickserv.IsStored(comm->Head()))
 		output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
 	::send(mynick, source, output);
@@ -1979,6 +2009,19 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     if (email.CmpNoCase("none") == 0)
 	email = "";
+    else if (!email.Contains("@"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(), '@');
+	return;
+    }
+    else if (email.WordCount("@") != 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAINONE"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(), '@');
+	return;
+    }
+
     Parent->commserv.list[committee].Email(email);
     Parent->commserv.stats.i_Set++;
     if (email == "")
@@ -2064,11 +2107,11 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),
-		committee.c_str(), url.c_str());
+		committee.c_str(), ("http://" + url).c_str());
 	Log(LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("COMMSERV_INFO/SET_URL").c_str(),
-		committee.c_str(), url.c_str());
+		committee.c_str(), ("http://" + url).c_str());
     }
 }
 

@@ -25,6 +25,11 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/08/07 12:20:26  prez
+** Fixed akill and news expiry (flaw in logic), added transferral of
+** memo list when set new nick as host, and fixed problems with commserv
+** caused by becoming a new host (also made sadmin check all linked nicks).
+**
 ** Revision 1.31  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -112,6 +117,7 @@ public:
     bool operator<(const Memo_t &in) const
     	{ return (i_Time < in.i_Time); }
 
+    void ChgNick(mstring in);
     mstring Nick()const	    { return i_Nick; }
     mstring Sender();
     mDateTime Time();

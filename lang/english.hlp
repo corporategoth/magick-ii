@@ -423,10 +423,11 @@
 04 =REGD::address.  Right now, it is a free-text field, however
 05 =REGD::it is recommended you ensure the data you put in this
 06 =REGD::is a valid web page address, as it may be used later
-07 =REGD::for such things as users links page, etc.
-08 =REGD::
-09 =REGD::This value will display as-is in your INFO display.
-10 =REGD::Setting this value to "NONE" will clear it.
+07 =REGD::for such things as users links page, etc.  You do not
+08 =REGD::need to (and should not) put 'http://' in the url.
+09 =REGD::
+10 =REGD::This value will display as-is in your INFO display.
+11 =REGD::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/ICQ]
 01 =REGD::SET ICQ <uin>
@@ -1275,10 +1276,12 @@
 01 =REGD::SET <channel> URL <url>
 02 =REGD::
 03 =REGD::This command is used to set the channels web address.
-04 =REGD::
-05 =REGD::You must have SET priviliages to use this command.
-06 =REGD::This value will display as-is in your INFO display.
-07 =REGD::Setting this value to "NONE" will clear it.
+04 =REGD::You do not need to (and should not) put 'http://' in
+05 =REGD::the url.
+06 =REGD::
+07 =REGD::You must have SET priviliages to use this command.
+08 =REGD::This value will display as-is in your INFO display.
+09 =REGD::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/COMMENT]
 01 =SOP::SET <channel> COMMENT <comment>
@@ -1965,8 +1968,9 @@
 01 =REGD::SET <committee> URL <url>
 02 =REGD::
 03 =REGD::This will set the web page address of a committee,
-04 =REGD::which will show up as-is on an INFO display.  Setting
-05 =REGD::this to NONE will clear this field.
+04 =REGD::which will show up as-is on an INFO display. You
+05 =REGD::do not need to (and should not) put 'http://' in
+06 =REGD::the url. Setting this to NONE will clear this field.
 
 [COMMSERV/SET/SECURE]
 01 =REGD::SET <committee> SECURE <ON|OFF|RESET>
