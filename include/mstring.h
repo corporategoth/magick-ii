@@ -9,6 +9,8 @@ class mstring:public string
 public:
 	const char &operator[](int pos)const;
 	char &operator[](int pos);
+	const char &operator[](unsigned int pos)const;
+	char &operator[](unsigned int pos);
 	mstring& operator <<(double d);
 	mstring& operator <<(float f);
 	mstring& operator<<(int i);
@@ -22,11 +24,11 @@ public:
 	mstring& Remove(size_t nStart, size_t nLen);
 	mstring& Remove(size_t pos);
 	void LowerCase();
-	bool IsWord();
-	bool IsNumber();
-	bool IsNull();
-	bool IsEmpty();
-	bool IsAscii();
+	bool IsWord() const;
+	bool IsNumber() const;
+	bool IsNull() const;
+	bool IsEmpty() const;
+	bool IsAscii() const;
 	size_t Index(const mstring& in, bool caseSensitive=true, bool fromEnd=false);
 	size_t Index(char ch, int startpos=0);
 	size_t First(const mstring& in);

@@ -357,7 +357,7 @@ size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd)
 	return -1;
 }
 
-bool mstring::IsAscii()
+bool mstring::IsAscii() const
 {
 	const char *s=c_str();
 	while(*s)
@@ -369,17 +369,17 @@ bool mstring::IsAscii()
 	return true;
 }
 
-bool mstring::IsEmpty()
+bool mstring::IsEmpty() const
 {
 	return *this=="";
 }
 
-bool mstring::IsNull()
+bool mstring::IsNull() const
 {
 	return IsEmpty();
 }
 
-bool mstring::IsNumber()
+bool mstring::IsNumber() const
 {
 	const char *s=c_str();
 	while(*s)
@@ -391,7 +391,7 @@ bool mstring::IsNumber()
 	return true;
 }
 
-bool mstring::IsWord()
+bool mstring::IsWord() const
 {
 	const char *s=c_str();
 	while(*s)
@@ -499,6 +499,16 @@ mstring& mstring::operator <<(double d)
 	mstring s;
 	s.Format("%g",d);
 	return *this<<s;
+}
+
+char &mstring::operator [ ](unsigned int pos)
+{
+	return ((string)*this)[pos];
+}
+
+const char &mstring::operator[](unsigned int pos)const
+{
+	return ((string)*this)[pos];
 }
 
 char &mstring::operator [ ](int pos)

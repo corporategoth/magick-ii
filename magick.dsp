@@ -93,6 +93,14 @@ SOURCE=.\include\bob.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\confbase.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\confbase.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\lockable.cpp
 # End Source File
 # Begin Source File
