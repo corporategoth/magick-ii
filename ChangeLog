@@ -1,7 +1,82 @@
+* 2002-01-18 01:44  Preston A. Elder <prez@magick.tm>
+  include/xml/ascii.h (1.5), src/xml/sxp.cpp (1.38), src/xml/xmltok.c
+  (1.10), src/xml/xmltok_impl.c (1.12):
+  
+  Fixed up &# support.	It was already in the XML parser (so I didnt need
+  the extra support int he default entities routine), I just needed to stop
+  it rejecting any token marked as NONXML.
+
+* 2002-01-18 01:08  Preston A. Elder <prez@magick.tm>
+  include/xml/ascii.h (1.4):
+  
+  Fixed ASCII_POUND
+
+* 2002-01-18 00:44  Preston A. Elder <prez@magick.tm>
+  src/xml/sxp.cpp (1.37), src/xml/xmltok_impl.c (1.11):
+  
+  Fixed XML parsing so we can load older DB's.
+
+* 2002-01-17 23:37  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.202):
+  
+  fixed error in nickserv info.
+
+* 2002-01-14 12:04  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.9), FAQ (1.6), INSTALL (1.25), KNOWN-BUGS (1.19), NEWS (1.6),
+  README (1.21), TODO (1.20), configure.in (1.51), rtfm (1.7), what.c
+  (1.9), docs/magick.ini (1.95), docs/en/index.sgml (1.33),
+  docs/man/magick.pod (1.13), docs/man/magick_keygen.pod (1.10),
+  docs/man/magick_stampkeys.pod (1.2), helper/add-patch (1.7),
+  helper/blank-patch (1.5), helper/build-ver (1.8), helper/makelang (1.11),
+  helper/makelog (1.7), helper/rem-patch (1.7), helper/reset-ver (1.6),
+  helper/servicesbkup (1.2), helper/serviceschk (1.7), helper/servicescycle
+  (1.2), include/ace_memory.h (1.11), include/base.h (1.107),
+  include/chanserv.h (1.77), include/commserv.h (1.65), include/config.h.in
+  (1.26), include/config.h.top (1.5), include/config.h.win (1.20),
+  include/convert_epona.h (1.7), include/convert_esper.h (1.9),
+  include/convert_magick.h (1.7), include/datetime.h (1.43),
+  include/dccengine.h (1.21), include/filesys.h (1.54), include/ircsocket.h
+  (1.66), include/language.h (1.37), include/lockable.h (1.70),
+  include/logfile.h (1.27), include/magick.h (1.179), include/mconfig.h
+  (1.26), include/memoserv.h (1.59), include/mexceptions.h (1.10),
+  include/mstring.h (1.93), include/nickserv.h (1.81), include/operserv.h
+  (1.65), include/pch.h (1.50), include/server.h (1.80), include/servmsg.h
+  (1.36), include/stages.h (1.9), include/trace.h (1.84), include/utils.h
+  (1.50), include/variant.h (1.43), include/version.h (1.132),
+  include/version.h-release (1.37), include/xml/sxp.h (1.30),
+  lang/english.hlp (1.46), lang/english.lfo (1.48), lang/english.lng
+  (1.87), lang/example.lfo (1.4), lang/example.lng (1.5), lang/french.lng
+  (1.9), lang/portuguese.lng (1.12), lang/swedish.lfo (1.2),
+  lang/turkish.lng (1.10), src/base.cpp (1.184), src/chanserv.cpp (1.281),
+  src/commserv.cpp (1.115), src/convert_epona.cpp (1.12),
+  src/convert_esper.cpp (1.16), src/convert_magick.cpp (1.12),
+  src/datetime.cpp (1.77), src/dccengine.cpp (1.53), src/filesys.cpp
+  (1.96), src/ircsocket.cpp (1.202), src/lockable.cpp (1.82),
+  src/magick.cpp (1.346), src/magick_keygen.c (1.25),
+  src/magick_stampkeys.c (1.9), src/main.cpp (1.57), src/mconfig.cpp
+  (1.41), src/memoserv.cpp (1.113), src/mstring.cpp (1.127),
+  src/nickserv.cpp (1.201), src/operserv.cpp (1.144), src/server.cpp
+  (1.207), src/servmsg.cpp (1.100), src/stages.cpp (1.18), src/trace.cpp
+  (1.118), src/utils.cpp (1.79), src/variant.cpp (1.53), src/xml/sxp.cpp
+  (1.36):
+  
+  Removed all LOG data from all files (now just use ChangeLog), and changes
+  copywright notice and year.
+
+* 2002-01-14 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.18):
+  
+  Created version 2.0s20020114
+
 * 2002-01-14 02:19  Preston A. Elder <prez@magick.tm>
   src/xml/sxp.cpp (1.35):
   
   Fixed delete[] calls
+
+* 2002-01-14 02:19  Preston A. Elder <prez@magick.tm>
+  src/filesys.cpp (1.95), src/mstring.cpp (1.126), src/stages.cpp (1.17):
+  
+  Fixed delete calls
 
 * 2002-01-14 02:19  Preston A. Elder <prez@magick.tm>
   src/filesys.cpp (1.95), src/mstring.cpp (1.126), src/stages.cpp (1.17):
