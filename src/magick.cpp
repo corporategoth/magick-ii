@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.315  2001/06/03 02:12:44  prez
+** Fixed problem with compress stage not recognizing its end ...
+**
 ** Revision 1.314  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -3706,8 +3709,11 @@ void Magick::save_databases()
 	if (files.Encryption())
 	{
 	    pair<mstring,mstring> keys = GetKeys();
-	    cs = new CryptStage(*ls, keys.first, keys.second);
-	    ls = cs;
+	    if (keys.first.length() && keys.second.length())
+	    {
+		cs = new CryptStage(*ls, keys.first, keys.second);
+		ls = cs;
+	    }
 	}
 
 	fs = new FileStage(*ls, files.Database()+".new");
@@ -3758,9 +3764,12 @@ void Magick::load_databases()
 	if (ls->GetTag() & STAGE_TAG_CRYPT)
 	{
 	    pair<mstring,mstring> keys = GetKeys();
-	    cs = new CryptStage(*ls, keys.first, keys.second);
-	    if (cs != NULL)
-		ls = cs;
+	    if (keys.first.length() && keys.second.length())
+	    {
+		cs = new CryptStage(*ls, keys.first, keys.second);
+		if (cs != NULL)
+		    ls = cs;
+	    }
 	}
 
 	if (ls->GetTag() & STAGE_TAG_COMPRESS)

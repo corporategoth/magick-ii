@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/06/03 02:12:44  prez
+** Fixed problem with compress stage not recognizing its end ...
+**
 ** Revision 1.74  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -737,12 +740,12 @@ long mFile::Copy(const mstring& sin, const mstring& sout, const bool append)
     if (!(in.IsOpened() && out.IsOpened()))
 	RET(0);
     
-    unsigned char c[1024];
+    unsigned char c[65535];
     size_t read, total = 0;
     do {
-        read = in.Read(c, 1024);
+        read = in.Read(c, 65535);
 	total += out.Write(c, read);
-    } while (read == 1024);
+    } while (read == 65535);
     in.Close();
     out.Close();
     RET(total);

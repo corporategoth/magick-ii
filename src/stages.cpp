@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/06/03 02:12:44  prez
+** Fixed problem with compress stage not recognizing its end ...
+**
 ** Revision 1.2  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -376,6 +379,8 @@ long CompressStage::Read(char *buf, size_t size)
 
 	    if (ret < 0)
 		return ret;
+	    if (ret != Z_OK)
+		strm.avail_in = 0;
 	}
     }
 
