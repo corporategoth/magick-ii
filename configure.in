@@ -500,8 +500,11 @@ if test "$efence" = "true"; then
   LIBS="$LIBS -lefence"
 fi
 
-if false; then
-  AC_DEFINE(HAVE_MEM_FUN1_REF)
+if true; then
+  AC_DEFINE(HAVE_RETURN_VOID)
+  AC_DEFINE(HAVE_MEM_FUN_CONST)
+else
+  AC_DEFINE(HAVE_MEM_FUN1)
 fi
 
 dnl ====================================================
