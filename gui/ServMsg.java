@@ -46,7 +46,13 @@ public class ServMsg extends TabbedPane
 
     public void documentChanged(DocumentEvent e)
     {
-	Document props = e.getDocument();
+	try
+	{
+	    Document props = e.getDocument();
+	}
+	catch (Exception ex)
+	{
+	}
     }
 
     public void actionPerformed(ActionEvent e)

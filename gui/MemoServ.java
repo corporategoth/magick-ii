@@ -55,20 +55,21 @@ public class MemoServ extends TabbedPane
 
     public void documentChanged(DocumentEvent e)
     {
-	Document props = e.getDocument();
-	if (props.getProperty("name").equals("files"))
+	try
 	{
-	    if (files.isEditValid())
+	    Document props = e.getDocument();
+	    if (props.getProperty("name").equals("files"))
 	    {
-		try {
+		if (files.isEditValid())
+		{
 		    files.commitEdit();
 		    filesize.setEditable(isNonZero(files));
 		    filesize.setEnabled(isNonZero(files));
 		}
-		catch (Exception ex)
-		{
-		}
 	    }
+	}
+	catch (Exception ex)
+	{
 	}
     }
 

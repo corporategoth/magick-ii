@@ -349,13 +349,19 @@ public class Startup extends TabbedPane
 
     public void documentChanged(DocumentEvent e)
     {
-	Document props = e.getDocument();
-        if (props.getProperty("name").equals("level") && level.getText().length() != 0 &&
-	    max_level.getText().length() != 0)
+	try
 	{
-	    if (Integer.parseInt(max_level.getText()) < Integer.parseInt(level.getText()))
-		max_level.setText(level.getText());
-	    ((NumberRangeFormat) max_level.getFormatter()).setLow(Integer.parseInt(level.getText()));
+	    Document props = e.getDocument();
+	    if (props.getProperty("name").equals("level") && level.getText().length() != 0 &&
+			max_level.getText().length() != 0)
+	    {
+		if (Integer.parseInt(max_level.getText()) < Integer.parseInt(level.getText()))
+		    max_level.setText(level.getText());
+		((NumberRangeFormat) max_level.getFormatter()).setLow(Integer.parseInt(level.getText()));
+	    }
+	}
+	catch(Exception ex)
+	{
 	}
     }
 

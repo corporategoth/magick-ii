@@ -193,11 +193,17 @@ public class NickServ extends TabbedPane
 
     public void documentChanged(DocumentEvent e)
     {
-	Document props = e.getDocument();
-	if (props.getProperty("name").equals("picext"))
+	try
 	{
-	    picsize.setEditable(picext.getText().length() != 0);
-	    picsize.setEnabled(picext.getText().length() != 0);
+	    Document props = e.getDocument();
+	    if (props.getProperty("name").equals("picext"))
+	    {
+		picsize.setEditable(picext.getText().length() != 0);
+		picsize.setEnabled(picext.getText().length() != 0);
+	    }
+	}
+	catch (Exception ex)
+	{
 	}
     }
 
