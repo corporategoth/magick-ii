@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.270  2001/12/23 19:16:35  prez
+** Fixed typos in chanserv.cpp
+**
 ** Revision 1.269  2001/12/23 08:17:36  prez
 ** Added ability to add both hostmasks and committees to channel access
 ** lists.  Priority of access search is nickname, committee, then mask.
@@ -9852,7 +9855,7 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 		    Magick::instance().getMessage(source, "LIST/ACCESS"),
 		    num));
 	LOG(LM_DEBUG, "CHANSERV/ACCESS_ADD", (
-		Magick:x:instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		who, channel, num));
     }
 }
@@ -10345,7 +10348,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	    Magick::instance().chanserv.stats.i_Akick++;
 	    mstring entry = cstored.Akick->Entry();
 	    if (entry[0u] == '@')
-		entry.MakeUpper():
+		entry.MakeUpper(); 
 	    SEND(mynick, source, "LIST/DEL2", (
 		    entry, channel,
 		    Magick::instance().getMessage(source, "LIST/AKICK")));
@@ -10383,7 +10386,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	    Magick::instance().chanserv.stats.i_Akick++;
 	    mstring entry = cstored.Akick->Entry();
 	    if (entry[0u] == '@')
-		entry.MakeUpper():
+		entry.MakeUpper();
 	    SEND(mynick, source, "LIST/DEL2", (
 		    entry, channel,
 		    Magick::instance().getMessage(source, "LIST/AKICK")));
