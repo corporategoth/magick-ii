@@ -33,7 +33,7 @@ Magick::Magick(int inargc, char **inargv)
 {
     FT("Magick::Magick", (inargc, "(char **) inargv"));
     i_shutdown = false;
-    services_dir=".";
+    services_dir=wxGetCwd();
     config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
