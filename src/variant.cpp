@@ -404,9 +404,10 @@ bool mVariant::operator<(const mVariant& in)const
 	else 
 	    return false;
 }
+
 mstring mVariant::AsString()const
 {
-    mstring dummystring="";
+    mstring dummystring;
     if(valuetype=="bool")
     {
 	if(BoolValue==true)
