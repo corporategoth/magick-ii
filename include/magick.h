@@ -21,14 +21,15 @@
 #include <vector>
 #include <map>
 using namespace std;
-#include "ace/Synch.h"
-#include "ace/Thread.h"
-
+//#include <ace/Synch.h>
+#include <ace/Thread.h>
+#include <ace/Local_Tokens.h>
 #include "bob.hpp"
 #include "mstring.h"
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
+#include "chanserv.h"
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
@@ -39,12 +40,14 @@ const int MAGICK_RET_INVALID_SERVICES_DIR = -20;
 typedef map<mstring,mstring> mapstringstring;
 class Magick
 {
+private:
 	vector<mstring> argv;
 	wxFileConfig* MagickIni;
 	mapstringstring Messages;
 	vector<mstring> MessageNamesLong;
 	vector<mstring> MessageNamesShort;
-	ACE_Thread_Mutex mutex;
+	//ACE_Thread_Mutex mutex;
+	ChanServ chanserv;
 public:
 	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	mDateTime StartTime;

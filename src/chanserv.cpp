@@ -13,10 +13,12 @@ void *chanserv_thread_handler(void *level)
 
 	// check for spawn limit hit
 	// if so ACE_Thread::spawn(chanserv_thread_handler,(void *)(ilevel+1));
-	ACE_Local_RLock *inputbufferlock=new ACE_Local_RLock("chanserv::inputbuffer");
-	// check the inputbuffer
+	// brackets are here so that the lock exists only as long as we need it.
+	{
+	    ACE_Local_RLock inputbufferlock("chanserv::inputbuffer");
+	    // check the inputbuffer
+	}
 
-	delete inputbufferlock;
 	ACE_Thread::yield();
     }
     return NULL;
@@ -29,7 +31,6 @@ void init_chanserv()
 
 void ChanServ::push_message(const mstring& servicename, const mstring& message)
 {
-	ACE_Local_WLock *inputbufferlock=new ACE_Local_WLock("chanserv::inputbuffer");
-	inputbuffer.push_back(pair<mstring,mstring>(servicename,message));
-	delete inputbufferlock;
+    ACE_Local_WLock inputbufferlock("chanserv::inputbuffer");
+    inputbuffer.push_back(pair<mstring,mstring>(servicename,message));
 }
