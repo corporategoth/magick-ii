@@ -219,17 +219,6 @@ namespace SXP
 		    if (strlen(tmp))
 			ret.append(static_cast < char > (atoi(tmp)));
 		}
-		else if (strncmp(p + 1, "#", 1) == 0)
-		{
-		    p += 2;
-		    char tmp[4];
-
-		    memset(tmp, 0, 4);
-		    for (short i = 0; *p != ';' && i < 4; p++, i++)
-			tmp[i] = * p;
-		    if (strlen(tmp))
-			ret.append(static_cast < char > (atoi(tmp)));
-		}
 		else
 		{
 		    ret.append('&');

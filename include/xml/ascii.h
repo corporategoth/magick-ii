@@ -73,7 +73,6 @@ See the file COPYING for copying permission.
 #define ASCII_SPACE 0x20
 #define ASCII_EXCL 0x21
 #define ASCII_QUOT 0x22
-#define ASCII_POUND 0x23
 #define ASCII_AMP 0x26
 #define ASCII_APOS 0x27
 #define ASCII_MINUS 0x2D

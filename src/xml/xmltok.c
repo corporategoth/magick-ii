@@ -1103,10 +1103,14 @@ static int checkCharRefNumber(int result)
     case 0xDE:
     case 0xDF:
 	return -1;
+
+/* For Magick, we want any char, even if its not normal XML.
+
     case 0:
 	if (latin1_encoding.type[result] == BT_NONXML)
 	    return -1;
 	break;
+*/
     case 0xFF:
 	if (result == 0xFFFE || result == 0xFFFF)
 	    return -1;

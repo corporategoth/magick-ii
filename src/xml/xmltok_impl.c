@@ -1725,21 +1725,11 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 		return ASCII_LT;
 	    }
 	    break;
-	case ASCII_POUND:
-	    memset(num, 0, 4);
-	    ptr += MINBPC(enc);
-	    num[0] = BYTE_TO_ASCII(enc, ptr);
-	    if (isdigit(num[0]))
-	    {
-		return atoi(num);
-	    }
-	    break;
 	}
 	break;
     case 3:
-	switch (BYTE_TO_ASCII(enc, ptr))
+	if (CHAR_MATCHES(enc, ptr, ASCII_a))
 	{
-	case ASCII_a:
 	    ptr += MINBPC(enc);
 	    if (CHAR_MATCHES(enc, ptr, ASCII_m))
 	    {
@@ -1747,21 +1737,6 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 		if (CHAR_MATCHES(enc, ptr, ASCII_p))
 		    return ASCII_AMP;
 	    }
-	    break;
-	case ASCII_POUND:
-	    memset(num, 0, 4);
-	    ptr += MINBPC(enc);
-	    num[0] = BYTE_TO_ASCII(enc, ptr);
-	    if (isdigit(num[0]))
-	    {
-		ptr += MINBPC(enc);
-		num[1] = BYTE_TO_ASCII(enc, ptr);
-		if (isdigit(num[1]))
-		{
-		    return atoi(num);
-		}
-	    }
-	    break;
 	}
 	break;
     case 4:
@@ -1808,25 +1783,6 @@ static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, 
 		    }
 		}
 		break;
-	    }
-	    break;
-	case ASCII_POUND:
-	    memset(num, 0, 4);
-	    ptr += MINBPC(enc);
-	    num[0] = BYTE_TO_ASCII(enc, ptr);
-	    if (isdigit(num[0]))
-	    {
-		ptr += MINBPC(enc);
-		num[1] = BYTE_TO_ASCII(enc, ptr);
-		if (isdigit(num[1]))
-		{
-		    ptr += MINBPC(enc);
-		    num[2] = BYTE_TO_ASCII(enc, ptr);
-		    if (isdigit(num[2]))
-		    {
-			return atoi(num);
-		    }
-		}
 	    }
 	    break;
 	}
