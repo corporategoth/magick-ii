@@ -1,3 +1,98 @@
+* 2001-12-15 21:21  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.199):
+  
+  Missed 1 unused param
+
+* 2001-12-15 21:20  Preston A. Elder <prez@magick.tm>
+  configure.in (1.47):
+  
+  More configure stuff.
+
+* 2001-12-15 20:56  Preston A. Elder <prez@magick.tm>
+  configure.in (1.46):
+  
+  Removed -Wredundant-decls and -Winline from warnings for gcc 2.95.x
+
+* 2001-12-15 20:48  Preston A. Elder <prez@magick.tm>
+  src/magick_stampkeys.c (1.7):
+  
+  Fixed RCSID
+
+* 2001-12-15 20:30  Preston A. Elder <prez@magick.tm>
+  configure.in (1.45), src/filesys.cpp (1.85), src/ircsocket.cpp (1.186),
+  src/lockable.cpp (1.76), src/mstring.cpp (1.119), src/server.cpp (1.198),
+  src/stages.cpp (1.10), src/trace.cpp (1.113):
+  
+  More changes to fix up warnings ... added some new warning flags too!
+
+* 2001-12-15 19:12  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.87):
+  
+  Some code in mstring to make its vsnprintf more safe, if possible.
+
+* 2001-12-15 19:07  Preston A. Elder <prez@magick.tm>
+  configure.in (1.44), docs/en/index.info (1.76), docs/en/index.info-1
+  (1.36), docs/en/index.info-2 (1.36), include/version.h (1.129):
+  
+  Updated configure.in to be more solaris friendly.
+
+* 2001-12-12 10:40  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.86):
+  
+  Made *toa functions guarentee the result is terminated.
+
+* 2001-12-12 10:36  Preston A. Elder <prez@magick.tm>
+  src/mstring.cpp (1.118):
+  
+  Moved around some strstr calls, to reduce calls, and clean code a little.
+
+* 2001-12-12 02:43  Preston A. Elder <prez@magick.tm>
+  configure.in (1.43), include/config.h.in (1.23), include/config.h.win
+  (1.18), include/mstring.h (1.85), include/pch.h (1.44),
+  src/convert_epona.cpp (1.6):
+  
+  Some more platform changes.  Made it look for _snprintf and _vsnprintf
+  aswell (is the case on windows).  Also updated windows config.h.win.
+
+* 2001-12-12 02:19  Preston A. Elder <prez@magick.tm>
+  configure.in (1.42), include/config.h.in (1.22), include/mstring.h
+  (1.84), src/magick.cpp (1.334), src/mstring.cpp (1.117):
+  
+  Added check for snprintf, and changed *toa functions to use snprintf. 
+  Also moved magick::snprintf and magick::vsnprintf to just snprintf and
+  vsnprintf for systems without the system calls.  Made them inline. 
+  Finally, made mstring's copy() commands for non-string types use *toa
+  functions.
+
+* 2001-12-11 22:51  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.83):
+  
+  Forgot to return SV in all the *toa functions
+
+* 2001-12-11 22:48  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.82):
+  
+  Fixed all the *toa functions, to NOT return c_str() of a temporary
+  veriable.
+
+* 2001-12-11 22:31  Preston A. Elder <prez@magick.tm>
+  include/mconfig.h (1.23), include/version.h (1.127), src/magick.cpp
+  (1.333), src/mconfig.cpp (1.37), src/mstring.cpp (1.116):
+  
+  Re-wrote the occurances/find/replace functions in mstring to actually
+  work with contents that includes a binary 0.	Also fixed PreParse in
+  mconfig.
+
+* 2001-12-10 04:43  Preston A. Elder <prez@magick.tm>
+  src/dccengine.cpp (1.47), src/server.cpp (1.197):
+  
+  Updated to remove '-' in front of release name in version tags.
+
+* 2001-12-10 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.11):
+  
+  Created version 2.0s20011210
+
 * 2001-12-09 06:25  Preston A. Elder <prez@magick.tm>
   magick.dsp (1.74), magick_stampkeys.dsp (1.5), what.dsp (1.5),
   src/magick_keygen.c (1.23), src/utils.cpp (1.74):
