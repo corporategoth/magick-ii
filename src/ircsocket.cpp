@@ -384,7 +384,7 @@ int EventTask::svc(void)
 		MLOCK(("ChanServ", "stored"));
 		vector<mstring> expired_chans;
 		for (csi = Parent->chanserv.stored.begin();
-			csi != Parent->chanserv.stored.end(); nsi++)
+			csi != Parent->chanserv.stored.end(); csi++)
 		{
 		    if (csi->second.LastUsed().SecondsSince() >
 			Parent->chanserv.Expire())
