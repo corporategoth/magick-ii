@@ -16,16 +16,26 @@
 #include "trace.h"
 #include <algorithm>
 #include <queue>
+#include <utility>
+#include <ace/Message_Queue.h>
+#include <ace/Singleton.h>
+#include <ace/Synch_T.h>
 using namespace std;
 
 class mBase
 {
-    friend void *thread_handler(void *owner);
+    friend void *thread_handler(void *dummyvar);
 protected:
-    deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
+    //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
 public:
+    static map<unsigned long,mstring > Buffer_Tuple;
+    static ACE_Message_Queue<ACE_MT_SYNCH> Buffer_Queue;
+    //static ACE_Singleton<Buffer_Queue, ACE_Mutex> Request_Queue;
+    // todo, create a static map of message_id's and buffer_tuple's. message_id get's put on the message_queue, 
+    // which then is used to pull the message off the queue, this looks to be the easiest way to use
+    // message_queue'ing with variable sized messages.
     mBase();
-    void push_message(const mstring& servicename, const mstring& message);
+    static void push_message(const mstring& message);
     void init();
 
     virtual bool MSG() =0;

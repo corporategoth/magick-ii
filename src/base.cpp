@@ -15,43 +15,72 @@
 #include "magick.h"
 #include "log.h"
 
+map<unsigned long,mstring > mBase::Buffer_Tuple;
+ACE_Message_Queue<ACE_MT_SYNCH> mBase::Buffer_Queue;
+
 mBase::mBase()
 {
     NFT("mBase::mBase");
 }
 
-void mBase::push_message(const mstring& servicename, const mstring& message)
+void mBase::push_message(const mstring& message)
 {
-    FT("mBase::push_message@"+GetInternalName(), (servicename, message));
+    FT("mBase::push_message@mBase", (message));
+    static unsigned long counter=0;
     // Braces, so that if we spawn/resume a thread, we make sure it can process
     {
-	WLOCK lock(GetInternalName(),"inputbuffer");
-	pair<mstring,mstring> dummyvar(servicename,message);
-	inputbuffer.push_back(dummyvar);
+	WLOCK lock("mBase","inputbuffer");
+	counter++;
+	Buffer_Tuple[counter]=message;
+	//Buffer_Queue
+	if(Buffer_Queue.is_full())
+	{
+	    // set new water marks and spawn off a new thread.
+	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()+1)*4);
+	    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
+	    Buffer_Queue.high_water_mark(Buffer_Queue.high_water_mark());
+	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
+		    CP(("High water mark reached, failed to create a new thread"));
+	}
+	ACE_Message_Block *mb=new ACE_Message_Block();
+	//todo: enqueue_prio
+	mb->copy((const char *)&counter,sizeof(unsigned long));
+	Buffer_Queue.enqueue(mb);
     }
-    // put this here in case the processing loop get's hung up, it just *shrugs* and 
-    // starts up another when the threshhold gets hit
-    if(inputbuffer.size()>mThread::typecount(Get_TType())*MagickObject->high_water_mark)
-    {
-        CP(("%s has reached hightide mark, starting a new thread", GetInternalName().c_str()));
-        mThread::spawn(Get_TType(),thread_handler,(void *)this);
-    }
-    if(mThread::typecount(Get_TType())==1&&inputbuffer.size()==1)
-    {
-        COM(("%s has new messages resuming thread...", GetInternalName().c_str()));
-	mThread::resume(mThread::findbytype(Get_TType()));
-    }
-
 }
 
 void mBase::init()
 {
-    NFT("mBase::init@"+GetInternalName());
-    mThread::spawn(Get_TType(),thread_handler,(void *)this);
+    //NFT("mBase::init@"+GetInternalName());
+    //mThread::spawn(Get_TType(),thread_handler,(void *)this);
+    //todo: setup the first high water mark and first low water mark
+    //and spawn off x threads.
 }
 
 void *thread_handler(void *owner)
 {
+    //todo ugh, major revamp Owner will be unknown till we figure out who
+    // the thread is to go to (via the message)
+    // we then execute the message, finally we (locked) check if we are below
+    // low water mark, if so, then we return.
+    // if Owner->MSG() == false then we toss message, else we execute it.
+    while(MagickObject->shutdown()==false)
+    {
+	NFT("thread_handler");
+        ACE_Message_Block *mb;
+	mBase::Buffer_Queue.dequeue(mb);
+	if(mb!=NULL)
+	{
+	    unsigned long messageid=*(mb->rd_ptr());
+	    delete mb; // as it's no longer needed once we get the message id.
+	    // lock here temporarily
+	    mstring message=mBase::Buffer_Tuple[messageid];
+	    mBase::Buffer_Tuple.erase(messageid);
+	    // unlock here and start splitting and siphoning.
+	}
+    }
+
+#if 0
     mBase *Owner=(mBase *)owner;
     wxASSERT(Owner);
     FT("thread_handler@"+Owner->GetInternalName(), (owner));
@@ -99,5 +128,6 @@ void *thread_handler(void *owner)
 #endif
 	}
     }
-    RET((void *) NULL);
+#endif
+    return NULL;
 }

@@ -62,13 +62,18 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
     // return -1 if we want to shutdown the socket, 0 if all's okay.
     // <nick/server> <command> <params ...>
 
+#if 0
     mstring tmp[3];
     tmp[0]=data.Before(" ");				// 1st arg
     tmp[1]=data.After(" ").Before(" ");			// 2nd arg
     tmp[2]=data.After(" ").After(" ").Before(" ");	// 3rd arg
     tmp[1].MakeUpper();
+#endif
 
     // This is all we really care about for splitting.
+
+    mBase::push_message (data);
+#if 0
     if (tmp[1] == "PRIVMSG" || tmp[1] == "NOTICE") {
 	// We pass to services all except target.
 	// We send target as a seperate argument.
@@ -100,6 +105,7 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
 //	Server.push_message (data);
 
     }
+#endif
 
     return 0;
 }
