@@ -17,6 +17,7 @@
 #include "mstring.h"
 #include "trace.h"
 
+#ifdef MAGICK_LOCKS_WORK
 class mLOCK
 {
     // union {
@@ -49,6 +50,27 @@ public:
 #define MLOCK3(y)  mVarArray __lockM3_VarArray y; mLOCK __lockM3(T_Locking::Mutex, __lockM3_VarArray)
 #define MLOCK4(y)  mVarArray __lockM4_VarArray y; mLOCK __lockM4(T_Locking::Mutex, __lockM4_VarArray)
 #define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(T_Locking::Mutex, __lockM5_VarArray)
+
+#else /* MAGICK_LOCKS_WORK */
+inline void do_nothing() {}
+
+#define RLOCK(y)   do_nothing()
+#define RLOCK2(y)  do_nothing()
+#define RLOCK3(y)  do_nothing()
+#define RLOCK4(y)  do_nothing()
+#define RLOCK5(y)  do_nothing()
+#define WLOCK(y)   do_nothing()
+#define WLOCK2(y)  do_nothing()
+#define WLOCK3(y)  do_nothing()
+#define WLOCK4(y)  do_nothing()
+#define WLOCK5(y)  do_nothing()
+#define MLOCK(y)   do_nothing()
+#define MLOCK2(y)  do_nothing()
+#define MLOCK3(y)  do_nothing()
+#define MLOCK4(y)  do_nothing()
+#define MLOCK5(y)  do_nothing()
+
+#endif /* MAGICK_LOCKS_WORK */
 
 class mThread
 {

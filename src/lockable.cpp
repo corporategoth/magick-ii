@@ -18,6 +18,8 @@
 #include "lockable.h"
 #include "utils.h"
 
+#ifdef MAGICK_LOCKS_WORK
+
 mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 {
     int i;
@@ -68,6 +70,7 @@ mLOCK::~mLOCK()
 	lock[count-1].release();
 }
 
+#endif /* MAGICK_LOCKS_WORK */
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
 

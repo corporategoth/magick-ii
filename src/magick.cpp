@@ -496,7 +496,7 @@ void Magick::LoadInternalMessages()
 
 	for(i=0;i<def_langent;i++)
 	{
-	    out.Write(&def_lang[i], strlen(def_lang[i]));
+	    out.Write(def_lang[i], strlen(def_lang[i]));
 	    out << wxEndL;
 	}
     }

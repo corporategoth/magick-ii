@@ -284,11 +284,11 @@ CreateNickEntry(NickInfo *ni)
 	Nick_Stored_t out(ni->nick);
 	return out;
     }
-    else if (ni->flags & NI_SLAVE)
+    else if (ni->flags & NI_SLAVE && ni->last_usermask != NULL)
     {
 	Nick_Stored_t tmp(mstring(ni->last_usermask));
 	Nick_Stored_t out(mstring(ni->nick),
-			    mDateTime(ni->time_registered), tmp);
+			mDateTime(ni->time_registered), tmp);
 	return out;
     }
     else
@@ -300,13 +300,13 @@ CreateNickEntry(NickInfo *ni)
 	    out.i_URL = mstring(ni->url);
 	if (ni->last_realname != NULL)
 	    out.i_LastRealName = mstring(ni->last_realname);
-	out.i_RegTime = ni->time_registered;
-	out.i_LastSeenTime = ni->last_seen;
-	for (i=0, string = ni->access; i<ni->accesscount; i++, string++)
+	out.i_RegTime = mDateTime(ni->time_registered);
+	out.i_LastSeenTime = mDateTime(ni->last_seen);
+	for (i=0, string = ni->access; i<ni->accesscount; ++i, ++string)
 	{
 	    out.i_access.insert(mstring(*string));
 	}
-	for (i=0, string = ni->ignore; i<ni->ignorecount; i++, string++)
+	for (i=0, string = ni->ignore; i<ni->ignorecount; ++i, ++string)
 	{
 	    out.i_ignore.insert(mstring(*string));
 	}
@@ -865,7 +865,7 @@ delchan (ChanInfo * ci)
 	free (ci->akick);
     free (ci);
     ci = NULL;
-}
+}	
 
 Chan_Stored_t
 CreateChanEntry(ChanInfo *ci)
@@ -908,20 +908,20 @@ CreateChanEntry(ChanInfo *ci)
 
 	if (ci->url != NULL)
 	    out.i_URL = mstring(ci->url);
-	out.i_RegTime = ci->time_registered;
-	out.i_LastUsed = ci->last_used;
+	out.i_RegTime = mDateTime(ci->time_registered);
+	out.i_LastUsed = mDateTime(ci->last_used);
 	mstring modelock;
-	if (strlen(ci->mlock_on) || strlen(ci->mlock_key) || ci->mlock_limit)
+	if (strlen(ci->mlock_on) || ci->mlock_key != NULL || ci->mlock_limit)
 	{
 	    modelock << "+" << ci->mlock_on << 
-		    (strlen(ci->mlock_key) ? "k" : "") <<
+		    (ci->mlock_key != NULL ? "k" : "") <<
 		    (ci->mlock_limit ? "l" : "");
 	}
 	if (strlen(ci->mlock_off))
 	{
 	    modelock << "-" << ci->mlock_off;
 	}
-	if (strlen(ci->mlock_key))
+	if (ci->mlock_key != NULL)
 	{
 	    modelock << " " << ci->mlock_key;
 	}
@@ -931,13 +931,15 @@ CreateChanEntry(ChanInfo *ci)
 	}
 	if (modelock.Len())
 	    out.Mlock(Parent->chanserv.FirstName(), modelock);
-	for (i=0, access = ci->access; i<ci->accesscount; i++, access++)
+	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
 	{
-	    if (access->is_nick == 1)
+	    if (access->is_nick > 0)
+	    {
 		out.Access_insert(access->name, access->level,
 			Parent->chanserv.FirstName());
+	    }
 	}
-	for (i=0, akick = ci->akick; i<ci->akickcount; i++, akick++)
+	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)
 	{
 	    if (akick->reason != NULL)
 		out.Akick_insert(akick->name, akick->reason,
@@ -998,20 +1000,24 @@ CreateChanEntry(ChanInfo *ci)
 
 	if (ci->flags & CI_SUSPENDED)
 	{
-	    out.i_Comment = mstring(ci->last_topic);
-	    out.i_Suspend_By = mstring(ci->last_topic_setter);
-	    out.i_Suspend_Time = ci->last_topic_time;
+	    if (ci->last_topic != NULL)
+		out.i_Comment = mstring(ci->last_topic);
+	    if (ci->last_topic_setter != NULL)
+		out.i_Suspend_By = mstring(ci->last_topic_setter);
+	    out.i_Suspend_Time = mDateTime(ci->last_topic_time);
 	}
 	else
 	{
-	    out.i_Topic = mstring(ci->last_topic);
-	    out.i_Topic_Setter = mstring(ci->last_topic_setter);
-	    out.i_Topic_Set_Time = ci->last_topic_time;
+	    if (ci->last_topic != NULL)
+		out.i_Topic = mstring(ci->last_topic);
+	    if (ci->last_topic_setter != NULL)
+		out.i_Topic_Setter = mstring(ci->last_topic_setter);
+	    out.i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 	}
-
+/*
 	if (ci->cmd_access != NULL)
 	{
-	    for (i=0; i<CA_SIZE; i++)
+	    for (i=0; i<CA_SIZE; ++i)
 	    {
 		switch (i)
 		{
@@ -1084,6 +1090,7 @@ CreateChanEntry(ChanInfo *ci)
 		}
 	    }
 	}
+*/
 	return out;
     }
 }
@@ -1319,7 +1326,7 @@ load_sop ()
 
 	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
 	{
-	    for (j=0; j<nsop; j++)
+	    for (j=0; j<nsop; ++j)
 	    {
 		Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
 		    mstring(sops[i].nick), Parent->commserv.FirstName());
@@ -1387,7 +1394,7 @@ load_message ()
 	}
 
 	for (j = 0; j < nmessage; ++j)
-	    free(messages[i].text);
+	    free(messages[j].text);
 	free(messages);
 	break;
 
