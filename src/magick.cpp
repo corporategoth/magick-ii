@@ -2442,7 +2442,7 @@ bool Magick::get_config_values()
     if (i != 3)
 	files.umask = 027;
 
-    in.Read(ts_Files + "PROTOCOL", value_mstring, "ircd.ini");
+    in.Read(ts_Files + "PROTOCOL", value_mstring, "ircd/ircd.rfc1459.ini");
     if (value_mstring != files.protocol)
     {
 	files.protocol = value_mstring;
@@ -2450,6 +2450,7 @@ bool Magick::get_config_values()
 
 	if (!rv)
 	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/NO_CFG_FILE", (value_mstring));
 	    RET(false);
 	}
     }
