@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.338  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.337  2001/12/24 22:54:42  prez
 ** Removed error on systems where pthread_t is not an int
 **
@@ -4104,7 +4108,7 @@ void Magick::send(const mstring& in) const
 
 SXP::Tag Magick::tag_Magick("Magick");
 
-void Magick::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Magick::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if( pElement->IsA( operserv.GetClassTag() ) )
@@ -4137,7 +4141,7 @@ void Magick::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEleme
     }
 }
 
-void Magick::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 

@@ -27,6 +27,10 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.107  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -3358,7 +3362,7 @@ SXP::Tag News_t::tag_set_NoExpire("SET_NoExpire");
 SXP::Tag News_t::tag_Read("Read");
 SXP::Tag News_t::tag_UserDef("UserDef");
 
-void Memo_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -3372,7 +3376,7 @@ void Memo_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEleme
     }
 }
 
-void Memo_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -3410,7 +3414,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->EndObject(tag_Memo_t);
 }
 
-void News_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -3424,7 +3428,7 @@ void News_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEleme
     }
 }
 
-void News_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -3475,7 +3479,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 SXP::Tag MemoServ::tag_MemoServ("MemoServ");
 
-void MemoServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("MemoServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Memo_t *m = new Memo_t;
@@ -3501,7 +3505,7 @@ void MemoServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
     }
 }
 
-void MemoServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
     static_cast<void>(pElement);

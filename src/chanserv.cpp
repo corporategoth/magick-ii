@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.274  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.273  2001/12/24 21:16:42  prez
 ** Fixed up aesthetic ACCESS/AKICK ADD/DEL outputs and updated for UNREAL support
 **
@@ -5453,7 +5457,7 @@ SXP::Tag Chan_Stored_t::tag_Greet("Greet");
 SXP::Tag Chan_Stored_t::tag_Message("Message");
 SXP::Tag Chan_Stored_t::tag_UserDef("UserDef");
 
-void Chan_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Chan_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Chan_Stored_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if( pElement->IsA(tag_Level) )
@@ -5499,7 +5503,7 @@ void Chan_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement *
     }
 }
 
-void Chan_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -14239,7 +14243,7 @@ bool ChanServ::IsLVL(const mstring& level)const
 
 SXP::Tag ChanServ::tag_ChanServ("ChanServ");
 
-void ChanServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("ChanServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Chan_Stored_t *cs = new Chan_Stored_t;
@@ -14255,7 +14259,7 @@ void ChanServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
     }
 }
 
-void ChanServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void ChanServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
     static_cast<void>(pElement);

@@ -27,6 +27,10 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.139  2001/12/25 08:43:13  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.138  2001/12/20 08:02:33  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -3980,7 +3984,7 @@ SXP::Tag OperServ::tag_Akill("Akill");
 SXP::Tag OperServ::tag_OperDeny("OperDeny");
 SXP::Tag OperServ::tag_Ignore("Ignore");
 
-void OperServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("OperServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
@@ -4013,7 +4017,7 @@ void OperServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
     }
 }
 
-void OperServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
     static_cast<void>(pElement);

@@ -27,6 +27,10 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.196  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.195  2001/12/23 20:46:03  prez
 ** Added cleanup code for committee entries in channel access list.
 **
@@ -4741,7 +4745,7 @@ SXP::Tag Nick_Stored_t::tag_Access("Access");
 SXP::Tag Nick_Stored_t::tag_Ignore("Ignore");
 SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
 
-void Nick_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Nick_Stored_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -4755,7 +4759,7 @@ void Nick_Stored_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement *
     }
 }
 
-void Nick_Stored_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -9029,7 +9033,7 @@ void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, 
 
 SXP::Tag NickServ::tag_NickServ("NickServ");
 
-void NickServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("NickServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Nick_Stored_t *ns = new Nick_Stored_t;
@@ -9045,7 +9049,7 @@ void NickServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
     }
 }
 
-void NickServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void NickServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
     static_cast<void>(pElement);

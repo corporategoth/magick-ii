@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.102  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -411,8 +415,8 @@ public:
 
     // XML handling section
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_t; }
-    virtual void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
-    virtual void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     virtual void PostLoad() const;
 
@@ -475,12 +479,12 @@ public:
     virtual T Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; };
-    virtual void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	FT("entlist_val_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
     }
-    virtual void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	FT("entlist_val_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn,pElement);
@@ -580,12 +584,12 @@ public:
     pair<X,Y> Value()const			{ return i_Value; }
 
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; }
-    virtual void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	FT("entlist_val_pair_t< pair<X,Y> >::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
     }
-    virtual void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	FT("entlist_val_pair_t< pair<X,Y> >::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn,pElement);

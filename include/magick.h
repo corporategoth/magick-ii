@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.174  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.173  2001/12/25 06:26:57  prez
 ** More new SXP fixes ...
 **
@@ -720,10 +724,11 @@ public:
 	return "";
     }
 
-    SXP::Tag& GetClassTag() const { return tag_Magick; }
-    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
-    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
+    SXP::Tag& GetClassTag() const { return tag_Magick; } void
+    BeginElement(SXP::IParser * pIn, SXP::IElement * pElement); void
+    EndElement(SXP::IParser * pIn, SXP::IElement * pElement); void
+    WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs =
+    SXP::blank_dict);
 
     set<mstring> LNG_Loaded() const;
     size_t LNG_Usage(const mstring& lang) const;

@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.178  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.177  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -390,7 +394,7 @@ SXP::Tag tag_Last_Modifier("Last_Modifier");
 SXP::Tag tag_UserDef("UserDef");
 SXP::Tag tag_Stupid("Stupid");
 
-void entlist_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -404,7 +408,7 @@ void entlist_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEl
     }
 }
 
-void entlist_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 

@@ -25,6 +25,10 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.54  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -209,8 +213,8 @@ public:
     void Unread();
 
     SXP::Tag& GetClassTag() const { return tag_Memo_t; }
-    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
-    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
@@ -262,8 +266,8 @@ public:
     void Unread(const mstring& name);
 
     SXP::Tag& GetClassTag() const { return tag_News_t; }
-    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
-    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
@@ -427,8 +431,8 @@ public:
     static void do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params);
 
     SXP::Tag& GetClassTag() const { return tag_MemoServ; }
-    void BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
-    void EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement);
+    void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };

@@ -27,6 +27,10 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.109  2001/12/23 20:46:03  prez
 ** Added cleanup code for committee entries in channel access list.
 **
@@ -3275,7 +3279,7 @@ SXP::Tag Committee_t::tag_Members("Members");
 SXP::Tag Committee_t::tag_Messages("Messages");
 SXP::Tag Committee_t::tag_UserDef("UserDef");
 
-void Committee_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Committee_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if (!(i_Name == Magick::instance().commserv.SADMIN_Name() ||
@@ -3305,7 +3309,7 @@ void Committee_t::BeginElement(const SXP::IParser * pIn, const SXP::IElement * p
     }
 }
 
-void Committee_t::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 
@@ -3411,7 +3415,7 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 SXP::Tag CommServ::tag_CommServ("CommServ");
 
-void CommServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("CommServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Committee_t *c = new Committee_t;
@@ -3427,7 +3431,7 @@ void CommServ::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pEle
     }
 }
 
-void CommServ::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
     static_cast<void>(pElement);

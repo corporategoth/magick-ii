@@ -27,6 +27,10 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2001/12/25 08:43:13  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.11  2001/12/25 04:06:46  prez
 ** Fixed up memory leak in stages
 **
@@ -605,6 +609,7 @@ long XMLStage::Consume()
 	    xres = parser->Feed(buffer, res, 1);
 	else
 	    xres = parser->Feed(buffer, res, 0);
+	COM(("XML parser returned %d\n", xres));
 	total += res;
 	COM(("XMLStage: Reading from previous stage ...")); FLUSH();
     }
@@ -613,7 +618,7 @@ long XMLStage::Consume()
     {
 	RET(res);
     }
-    else if (!xres)
+    else if (xres != SXP::err_no_error)
     {
 	RET(-1 * static_cast<long>(SE_XML_ParseError));
     }

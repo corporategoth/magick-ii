@@ -27,6 +27,10 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.86  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -1235,7 +1239,7 @@ size_t FileMap::FileSysSize(const FileMap::FileType type) const
 SXP::Tag FileMap::tag_FileMap("FileMap");
 SXP::Tag FileMap::tag_File("File");
 
-void FileMap::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
     static_cast<void>(pElement);
@@ -1243,7 +1247,7 @@ void FileMap::BeginElement(const SXP::IParser * pIn, const SXP::IElement * pElem
     FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 }
 
-void FileMap::EndElement(const SXP::IParser * pIn, const SXP::IElement * pElement)
+void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     static_cast<void>(pIn);
 

@@ -25,6 +25,10 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2001/12/25 08:43:12  prez
+** Fixed XML support properly ... it now works again with new version of
+** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
+**
 ** Revision 1.24  2001/12/25 06:26:57  prez
 ** More new SXP fixes ...
 **
@@ -231,11 +235,11 @@ namespace SXP {
 	public IDataOutput<T> {
 		inline void BeginXML(void) { ((T *)this)->BeginXML(); }
 
-		inline void BeginObject(Tag& t, dict& attribs) { ((T *)this)->BeginObject(t, attribs); }
+		inline void BeginObject(Tag& t, dict& attribs = blank_dict) { ((T *)this)->BeginObject(t, attribs); }
 		inline void EndObject  (Tag& t) { ((T *)this)->EndObject(t); }
 
 		// recursively write other objects
-		inline void WriteSubElement(IPersistObj *pObj, dict& attribs) { 
+		inline void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict) { 
 			((T *)this)->WriteSubElement(pObj, attribs); 
 		} 
 	};
@@ -385,10 +389,10 @@ namespace SXP {
 			// support for storing widechars as character data, via
 			// conversion functions in IElement::Retrieve() and 
 			// IOutStream::WriteElement
-			fprintf(m_fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			fprintf(m_fp, "%s\n", XML_STRING);
 		}
 
-		inline void BeginObject(Tag& t, dict& attribs) {
+		inline void BeginObject(Tag& t, dict& attribs = blank_dict) {
 			Indent(); m_nIndent++;
 			fprintf(m_fp, "<%s", t.ch);
 			for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
@@ -405,7 +409,7 @@ namespace SXP {
 			fprintf(m_fp, "</%s>\n", t.ch);
 		}
 
-		void WriteSubElement(IPersistObj *pObj, dict& attribs); 
+		void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
 	};
 
 	class MOutStream : public IOutStreamT<MOutStream>
@@ -507,7 +511,7 @@ namespace SXP {
 		// for which the "this" element is immediate parent
 		// it is called when the open element tag is encountered,
 		// and only the Name() and Attrib() of pElement values are valid
-		virtual void BeginElement(const IParser *pIn, const IElement *pElement) = 0;
+		virtual void BeginElement(IParser *pIn, IElement *pElement) = 0;
 
 		// this is called when the corresponding close element
 		// tag is encountered, and the Data() member of pElement is
@@ -515,7 +519,7 @@ namespace SXP {
 		// NOTE: each object receives both its own BeginElement so it can
 		// process its own element tag attributes, and its own EndElement
 		// so it can process its own character data
-		virtual void EndElement(const IParser *pIn, const IElement *pElement) = 0;
+		virtual void EndElement(IParser *pIn, IElement *pElement) = 0;
 	};
 
 	// the mighty parser itself
