@@ -99,7 +99,7 @@ int Magick::Start()
 		    // use static errors here because conf directory is not known yet
 		    wxLogFatal("trace level must be in format of TYPE:LEVEL.");
 		}
-		short level = makehex(argv[i].After(":"));
+		unsigned short level = makehex(argv[i].After(":"));
 		if (level==0)
 		{
 		    wxLogError("Zero or error parsing LEVEL, ignoring.");

@@ -59,7 +59,7 @@ int levelname_count()
     return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
 }
 
-short makehex (mstring SLevel)
+unsigned short makehex (mstring SLevel)
 {
     if (SLevel[0u]!='0' || SLevel[1u]!='x' || SLevel.Len() != 6)
 	return 0;

@@ -94,6 +94,12 @@ public:
         Reconnect_Handler rh;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
+	// TEMPORARY MEASURE
+	//
+	// This takes any characters read from the socket that dont
+	// end in \r or \n, and adds them to next read's run.
+	mstring flack;
+
 	void get_config_values();
 	bool check_config();
 	int ping_frequency;

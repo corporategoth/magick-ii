@@ -48,19 +48,26 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     }
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
-    mstring data2(data);
+    mstring data2 = Parent->flack + data;
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
     if(data2.Contains("\n")||data2.Contains("\r"))
     {
-	int i;
-	for(i=0;i<data2.WordCount("\n\r");i++)
+	if (data2.Last() == '\n' || data2.Last() == '\r')
+	    Parent->flack = "";
+	else
+	    Parent->flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
+
+	for(int i=0;i<data2.WordCount("\n\r")-1;i++)
 	    if(data2.ExtractWord(i+1,"\n\r")!="")
 		mBase::push_message(data2.ExtractWord(i+1,"\n\r"));
+	if (Parent->flack == "")
+	    mBase::push_message(data2.ExtractWord(data2.WordCount("\n\r"),"\n\r"));
+
     }
     else
-        mBase::push_message (data);
+        Parent->flack += data2;
 
     RET(0);
 }

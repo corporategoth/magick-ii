@@ -390,7 +390,8 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[data.ExtractWord(2, ": ").LowerCase()] =
 		    Nick_Live_t(
 			data.ExtractWord(2, ": "),
-			(time_t) atof(data.ExtractWord(4, ": ")),
+//			(time_t) atof(data.ExtractWord(4, ": ")),
+			Now(),
 			data.ExtractWord(7, ": "),
 			data.ExtractWord(5, ": "),
 			data.ExtractWord(6, ": "),
@@ -401,7 +402,7 @@ void NetworkServ::execute(const mstring & data)
 	    else
 	    {
 		// CHANGE NICK
-		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ").LowerCase()))
+		if (!Parent->nickserv.IsLive(data.ExtractWord(3, ": ").LowerCase()))
 		{
 		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()] =
 			Parent->nickserv.live[sourceL];
@@ -486,7 +487,8 @@ void NetworkServ::execute(const mstring & data)
     case 'S':
 	if (msgtype=="SERVER")
 	{
-	    // SERVER server hops :description
+	    // SERVER our.uplink hops :description
+	    // :uplink SERVER downlink hops :description
 	}
 	else if (msgtype=="SQLINE")
 	{
@@ -532,15 +534,26 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="TOPIC")
 	{
 	    // :server/user TOPIC #channel setter time :topic
+	    // :server/user TOPIC #channel setter
 	    // TIME is not standard (time is optional);
 	    if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
-		Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
+		if (data.ExtractWord(5, ": ") != "")
+		{ // Setting
+		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
 		        data.After(":", 2),
 		        data.ExtractWord(4, ": "),
 		        (time_t) atol(data.ExtractWord(5, ": "))
 		    );
-
+		}
+		else
+		{ // Clearing
+		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
+		        "",
+		        data.ExtractWord(4, ": "),
+		        Now()
+		    );
+		}
 	    }
 	}
 	else if (msgtype=="TRACE")
