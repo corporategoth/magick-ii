@@ -214,9 +214,9 @@ void Nick_Live_t::InFlight_t::Memo(const bool file, const mstring & mynick, cons
 	}
     }
 
-    if (file &&
-	!(Magick::instance().files.TempDirSize() == 0 ||
-	  mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
+    if (file && Magick::instance().files.TempDirSize() != 0 &&
+	  mFile::DirUsage(Magick::instance().files.TempDir()) >
+	  Magick::instance().files.TempDirSize())
     {
 	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
@@ -421,18 +421,16 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			if (realrecipiant.empty())
 			    realrecipiant = recipiant;
 
-			if (!
-			    (!filenum || Magick::instance().memoserv.FileSize() == 0 ||
-			     Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum) <=
-			     Magick::instance().memoserv.FileSize()))
+			if (filenum && Magick::instance().memoserv.FileSize() != 0 &&
+			     Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum) >
+			     Magick::instance().memoserv.FileSize())
 			{
 			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    NSEND(service, nick, "MS_COMMAND/TOOBIG");
 			}
-			else if (!
-				 (!filenum || Magick::instance().files.MemoAttachSize() == 0 ||
-				  Magick::instance().filesys.FileSysSize(FileMap::MemoAttach) <=
-				  Magick::instance().files.MemoAttachSize()))
+			else if (filenum && Magick::instance().files.MemoAttachSize() != 0 &&
+				  Magick::instance().filesys.FileSysSize(FileMap::MemoAttach) >
+				  Magick::instance().files.MemoAttachSize())
 			{
 			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    NSEND(service, nick, "MS_COMMAND/NOSPACE");
@@ -487,16 +485,16 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	    }
 	    else if (Picture())
 	    {
-		if (filenum &&
-		    !(Magick::instance().memoserv.FileSize() == 0 ||
-		      Magick::instance().filesys.GetSize(FileMap::Picture, filenum) <= Magick::instance().nickserv.PicSize()))
+		if (filenum && Magick::instance().memoserv.FileSize() != 0 &&
+		      Magick::instance().filesys.GetSize(FileMap::Picture, filenum) >
+		      Magick::instance().nickserv.PicSize())
 		{
 		    Magick::instance().filesys.EraseFile(FileMap::Picture, filenum);
 		    NSEND(service, nick, "NS_YOU_COMMAND/TOOBIG");
 		}
-		else if (filenum &&
-			 !(Magick::instance().files.PictureSize() == 0 ||
-			   Magick::instance().filesys.FileSysSize(FileMap::Picture) <= Magick::instance().files.PictureSize()))
+		else if (filenum && Magick::instance().files.PictureSize() != 0 &&
+			   Magick::instance().filesys.FileSysSize(FileMap::Picture) >
+			   Magick::instance().files.PictureSize())
 		{
 		    Magick::instance().filesys.EraseFile(FileMap::Picture, filenum);
 		    NSEND(service, nick, "NS_YOU_COMMAND/NOSPACE");
@@ -517,9 +515,9 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	    }
 	    else if (Public())
 	    {
-		if (filenum &&
-		    !(Magick::instance().files.PublicSize() == 0 ||
-		      Magick::instance().filesys.FileSysSize(FileMap::Public) <= Magick::instance().files.PublicSize()))
+		if (filenum && Magick::instance().files.PublicSize() != 0 &&
+		      Magick::instance().filesys.FileSysSize(FileMap::Public) >
+		      Magick::instance().files.PublicSize())
 		{
 		    Magick::instance().filesys.EraseFile(FileMap::Public, filenum);
 		    NSEND(service, nick, "DCC/NOSPACE");
@@ -563,9 +561,9 @@ void Nick_Live_t::InFlight_t::Picture(const mstring & mynick)
 	return;
     }
 
-    if (!
-	(Magick::instance().files.TempDirSize() == 0 ||
-	 mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
+    if (Magick::instance().files.TempDirSize() != 0 &&
+	 mFile::DirUsage(Magick::instance().files.TempDir()) >
+	 Magick::instance().files.TempDirSize())
     {
 	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
@@ -620,9 +618,9 @@ void Nick_Live_t::InFlight_t::Public(const mstring & mynick, const mstring & com
 	return;
     }
 
-    if (!
-	(Magick::instance().files.TempDirSize() == 0 ||
-	 mFile::DirUsage(Magick::instance().files.TempDir()) <= Magick::instance().files.TempDirSize()))
+    if (Magick::instance().files.TempDirSize() != 0 &&
+	 mFile::DirUsage(Magick::instance().files.TempDir()) >
+	 Magick::instance().files.TempDirSize())
     {
 	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
