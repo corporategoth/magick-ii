@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.179  2001/11/07 06:30:45  prez
+** Fixing some indenting and an unused veriable.
+**
 ** Revision 1.178  2001/11/04 23:43:14  prez
 ** Updates for MS Visual C++ compilation (it works now!).
 **
@@ -1940,7 +1943,6 @@ void EventTask::do_expire(mDateTime &synctime)
 
     // Main routine -- when we end this, we're done!!
     NickServ::stored_t::iterator nsi;
-    NickServ::recovered_t::iterator di;
     ChanServ::stored_t::iterator csi;
     MemoServ::channel_t::iterator ni;
     MemoServ::channel_news_t::iterator lni;

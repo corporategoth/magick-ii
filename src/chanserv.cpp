@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.263  2001/11/07 06:30:43  prez
+** Fixing some indenting and an unused veriable.
+**
 ** Revision 1.262  2001/11/04 19:23:08  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -11567,7 +11570,7 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
-		(channel, onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -11646,7 +11649,7 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -11725,7 +11728,7 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/PRIVATE"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -11804,7 +11807,7 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -11883,7 +11886,7 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/SECURE"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -11955,7 +11958,7 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     Parent->chanserv.stats.i_NoExpire++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/NOEXPIRE"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -12034,7 +12037,7 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/ANARCHY"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -12113,7 +12116,7 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -12192,7 +12195,7 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -12280,7 +12283,7 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/JOIN"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
@@ -12601,7 +12604,7 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -12675,7 +12678,7 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -12749,7 +12752,7 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/PRIVATE"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -12823,7 +12826,7 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -12897,7 +12900,7 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/SECURE"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -12971,7 +12974,7 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/ANARCHY"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -13045,7 +13048,7 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -13119,7 +13122,7 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
@@ -13202,7 +13205,7 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/JOIN"),
-		channel, (onoff.GetBool() ?
+	    channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
 		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
