@@ -5415,8 +5415,8 @@ void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    bool wasin = (Magick::instance().chanserv.IsLive(i_Name) &&
-		  Magick::instance().chanserv.GetLive(i_Name)->IsIn(Magick::instance().chanserv.FirstName()));
+    bool wasin = (Magick::instance().chanserv.IsLive(channel) &&
+		  Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()));
     retval = cstored->Mlock(source, option);
     Magick::instance().chanserv.stats.i_Set++;
     for (unsigned int i = 0; i < retval.size(); i++)
@@ -5425,7 +5425,7 @@ void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, cons
     {
 	if (wasin && !cstored->Mlock_On().Contains("i") && cstored->Mlock_Key().empty())
 	    Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
-	else if (!wasin && (cstored->Mlock_On().Contains("i") || !cstored->Mlock_Key().empty())))
+	else if (!wasin && (cstored->Mlock_On().Contains("i") || !cstored->Mlock_Key().empty()))
 	    Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), channel);
     }
     ETCB();
