@@ -66,14 +66,14 @@ class ref_class
     bool i_doDelete;
     mVarArray i_lockData;
 
-public:
+  public:
       ref_class() : i_references(0), i_doDelete(false)
     {
     }
     ref_class(const mVarArray & l) : i_references(0), i_doDelete(false), i_lockData(l)
     {
     }
-    virtual ~ref_class()
+    virtual ~ ref_class()
     {
     }
 
@@ -181,6 +181,7 @@ template < class T > class map_entry
 	End();
 	entry_ptr = in.entry_ptr;
 	Start();
+	return *this;
     }
 
     ~map_entry()
@@ -200,12 +201,12 @@ template < class T > class map_entry
 // extrapolated from the ms's pair<T1,T2> template code
 template < class T1, class T2, class T3 > class triplet
 {
-public:
+  public:
     typedef T1 first_type;
     typedef T2 second_type;
     typedef T3 third_type;
 
-      triplet() : first(T1()), second(T2()), third(T3())
+    triplet() : first(T1()), second(T2()), third(T3())
     {
     }
     triplet(const T1 & _V1, const T2 & _V2, const T3 & _V3) : first(_V1), second(_V2), third(_V3)
