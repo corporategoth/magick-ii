@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2001/11/07 03:09:29  prez
+** Fixed coredump on windows on shutdown.
+**
 ** Revision 1.79  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -343,7 +346,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 
 std::queue<unsigned long> DccMap::active;
 DccMap::xfers_t DccMap::xfers;
+#ifndef MAGICK_HAS_EXCEPTIONS
 static DccXfer GLOB_DccXfer;
+#endif
 
 mFile::mFile(const mstring& name, FILE *in, const mstring& mode)
 {
