@@ -3332,37 +3332,48 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is already registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISSTORED"),
+		    channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.IsLive(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not being used.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
+		    channel.c_str());
 	return;
     }
 
     if (!Parent->chanserv.live[channel.LowerCase()].IsOp(source))
     {
-	::send(mynick, source, "You are not opped in " + channel + ".");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/NOTOPPED"),
+		    channel.c_str());
 	return;
     }
 
     if (password.Len() < 5 || password.CmpNoCase(channel) == 0 ||
 	password.CmpNoCase(source) == 0)
     {
-	::send(mynick, source, "Please choose a more complex password.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
 	return;
     }
 
+    mstring founder = Parent->getSname(source);
+    if (Parent->nickserv.live[source.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.live[source.LowerCase()].Host()))
+    {
+	founder = Parent->getSname(Parent->nickserv.live[source.LowerCase()].Host());
+    }
+
     Parent->chanserv.stored[channel.LowerCase()] =
-		Chan_Stored_t(channel, source, password, desc);
+		Chan_Stored_t(channel, founder, password, desc);
     Parent->chanserv.stored[channel.LowerCase()].Topic(
 		Parent->chanserv.live[channel.LowerCase()].Topic(),
 		Parent->chanserv.live[channel.LowerCase()].Topic_Setter(),
 		Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time());
     Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, password);
-    ::send(mynick, source, "Channel " + channel + " has been registered.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/REGISTERED"),
+		channel.c_str(), founder.c_str());
 }
 
 void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
@@ -3381,19 +3392,23 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
+    channel = Parent->getSname(channel);
 
     if (!Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel))
     {
-	::send(mynick, source, "You are not identified for " + channel + ".");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_CHAN_IDENT"),
+		message.c_str(), mynick.c_str(), channel.c_str());
 	return;
     }
 
     Parent->chanserv.stored.erase(channel.LowerCase());
     Parent->nickserv.live[source.LowerCase()].UnChanIdentify(channel);
-    ::send(mynick, source, "Channel " + channel + " has been dropped.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/DROPPED"),
+	    channel.c_str());
 }
 
 void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
@@ -3413,9 +3428,11 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
 
     if (!Parent->chanserv.IsStored(channel))
     {
-	::send(mynick, source, "Channel " + channel + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
+		channel.c_str());
 	return;
     }
+    channel = Parent->getSname(channel);
 
     mstring output = Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, pass);
     if (output != "")

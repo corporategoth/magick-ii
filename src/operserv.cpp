@@ -1294,7 +1294,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Keeptopic())
 	    output << IRC_Bold;
-	output << "Keep Topic";
+	output << Parent->getMessage(source, "CS_SET/KEEPTOPIC");
 	if (Parent->chanserv.LCK_Keeptopic())
 	    output << IRC_Off;
     }
@@ -1305,7 +1305,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Topiclock())
 	    output << IRC_Bold;
-	output << "Topic Lock";
+	output << Parent->getMessage(source, "CS_SET/TOPICLOCK");
 	if (Parent->chanserv.LCK_Topiclock())
 	    output << IRC_Off;
     }
@@ -1316,7 +1316,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Private())
 	    output << IRC_Bold;
-	output << "Private";
+	output << Parent->getMessage(source, "CS_SET/PRIVATE");
 	if (Parent->chanserv.LCK_Private())
 	    output << IRC_Off;
     }
@@ -1327,7 +1327,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Secureops())
 	    output << IRC_Bold;
-	output << "Secure Ops";
+	output << Parent->getMessage(source, "CS_SET/SECUREOPS");
 	if (Parent->chanserv.LCK_Secureops())
 	    output << IRC_Off;
     }
@@ -1338,7 +1338,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Secure())
 	    output << IRC_Bold;
-	output << "Secure";
+	output << Parent->getMessage(source, "CS_SET/SECURE");
 	if (Parent->chanserv.LCK_Secure())
 	    output << IRC_Off;
     }
@@ -1349,7 +1349,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_NoExpire())
 	    output << IRC_Bold;
-	output << "NoExpire";
+	output << Parent->getMessage(source, "CS_SET/NOEXPIRE");
 	if (Parent->chanserv.LCK_NoExpire())
 	    output << IRC_Off;
     }
@@ -1360,7 +1360,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Anarchy())
 	    output << IRC_Bold;
-	output << "Anarchy";
+	output << Parent->getMessage(source, "CS_SET/ANARCHY");
 	if (Parent->chanserv.LCK_Anarchy())
 	    output << IRC_Off;
     }
@@ -1371,7 +1371,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Restricted())
 	    output << IRC_Bold;
-	output << "Restricted";
+	output << Parent->getMessage(source, "CS_SET/RESTRICTED");
 	if (Parent->chanserv.LCK_Restricted())
 	    output << IRC_Off;
     }
@@ -1382,7 +1382,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << ", ";
 	if (Parent->chanserv.LCK_Join())
 	    output << IRC_Bold;
-	output << "Join";
+	output << Parent->getMessage(source, "CS_SET/JOIN");
 	if (Parent->chanserv.LCK_Join())
 	    output << IRC_Off;
     }

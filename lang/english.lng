@@ -230,7 +230,7 @@ ISSUSPENDED        =Nickname %s is suspended.
 ISNOTSUSPENDED     =Nickname %s is not suspended.
 ISHOST             =Nickname %s is a host.
 ISNOTHOST          =Nickname %s is not a host.
-IDENTIFIED         =You are already identified for %s.
+IDENTIFIED         =You are already identified for nickname %s.
 ISLOCKED           =%s option for nickname %s is locked.
 ISNOTLOCKED        =%s option for nickname %s is not locked.
 
@@ -350,14 +350,49 @@ CANCEL             =Pending file transfer cancelled.
 SAVED              =Your picture has been saved.
 REMOVED            =Your picture has been removed.
 
+
+[CS_INFO]
+
+
+
+[CS_SET]
+FOUNDER            =Founder
+COFOUNDER          =Co-Founder
+PASSWORD           =Password
+EMAIL              =E-Mail address
+URL                =WWW Page
+DESCRIPTION        =Description
+COMMENT            =Comment
+TOPIC              =Topic
+MLOCK              =Mode lock
+BANTIME            =Bantime
+KEEPTOPIC          =Keep Topic
+TOPICLOCK          =Topic Lock
+PRIVATE            =Private
+SECUREOPS          =Secure Ops
+SECURE             =Secure
+NOEXPIRE           =No Expire
+ANARCHY            =Anarchy
+RESTRICTED         =Restricted
+JOIN               =Services Join
+REVENGE            =Revenge level
+
+
 [CS_STATUS]
 ISSTORED           =Channel %s is already registered.
 ISNOTSTORED        =Channel %s is not registered.
-
+OPPED              =You are already opped in channel %s.
+NOTOPPED           =You are not opped in channel %s.
+VOICED             =You are already voiced in channel %s.
+NOTVOICED          =You are not voiced in channel %s.
+IDENTIFIED         =You are already identified for channel %s.
 ISINUSE            =Channel %s is currently in use.
 ISNOTINUSE         =Channel %s is not currently in use.
 
+
 [CS_COMMAND]
+REGISTERED         =Channel %s has been registered with founder %s.
+DROPPED            =Channel %s has been dropped.
 IDENTIFIED         =Password accepted - you are now identified as founder of %s.
 MLOCK_REVERSED     =Mode lock has reversed %s.
 MLOCK_FORCED       =Mode lock has forced %s.
