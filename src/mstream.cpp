@@ -1848,5 +1848,5 @@ off_t wxMemoryStream::OnSysSeek(off_t seek, wxSeekMode mode)
 }
 off_t wxMemoryStream::OnSysTell() const
 {
-    return Dist(storage.begin(),streamptr);
+    return distance((vector<unsigned char>::iterator)storage.begin(),(vector<unsigned char>::iterator)streamptr);
 }
