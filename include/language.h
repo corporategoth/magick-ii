@@ -1,12 +1,12 @@
 /* Magick IRC Services
  *
- * Automatically generated language file.
+ * Automatically generated hard-coded language file.
  * Based upon english.
- * Created on Sat Feb  6 20:34:20 EST 1999
+ * Created on Sat Feb  6 20:39:47 EST 1999
  */
 
 int def_langent =     372;
-char *def_lang[] = {
+mstring *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
 ";",
