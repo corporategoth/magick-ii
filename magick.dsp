@@ -66,8 +66,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "..\bob" /I "..\cryptlib21" /I "include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "..\bob" /I "..\cryptlib21" /I "include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FD /c
+# SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -126,6 +126,14 @@ SOURCE=.\src\confbase.cpp
 # Begin Source File
 
 SOURCE=.\include\confbase.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\datetime.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\datetime.h
 # End Source File
 # Begin Source File
 

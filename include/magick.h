@@ -19,6 +19,7 @@ const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
 const int MAGICK_RET_TERMINATE = 2;
 const int MAGICK_RET_ERROR = -1;
+const int MAGICK_RET_INVALID_SERVICES_DIR = -20;
 
 typedef map<mstring,mstring> mapstringstring;
 class Magick

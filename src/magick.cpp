@@ -71,6 +71,15 @@ int Magick::Start()
 			}
 		}
 	}
+    if (chdir (services_dir) < 0)
+    {
+        perror (services_dir);
+#ifdef WIN32
+        WSACleanup ();
+#endif
+        return MAGICK_RET_INVALID_SERVICES_DIR;
+    }
+
 	MagickIni=new wxFileConfig("magick","",config_file);
 	if(MagickIni==NULL)
 	{
