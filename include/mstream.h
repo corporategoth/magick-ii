@@ -280,7 +280,6 @@ public:
     virtual unsigned char Read8();
     virtual double ReadDouble();
     mstring ReadLine();
-    virtual mstring ReadString();
 };
 
 class wxDataOutputStream: public wxFilterOutputStream {
@@ -293,7 +292,6 @@ public:
     virtual wxOutputStream& Write8(unsigned char i);
     virtual wxOutputStream& WriteDouble(double d);
     wxOutputStream& WriteLine(const mstring& line);
-    virtual wxOutputStream& WriteString(const mstring& string);
 };
 
 class wxMemoryStream: public wxInputStream,public wxOutputStream

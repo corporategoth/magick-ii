@@ -677,17 +677,20 @@ double wxInputStream::ReadDouble()
 mstring wxInputStream::ReadString()
 {
     mstring wx_string;
-    char *string;
+    char str[513];
     unsigned long len;
     
     len = Read32();
-    string = new char[len+1];
-    
-    Read(string, len);
-    
-    string[len] = 0;
-    wx_string = string;
-    delete string;
+    wx_string = "";
+    while (len > 512)
+    {
+	Read(&str, 512);
+	len-=512;
+	str[512] = 0;
+	wx_string += str;
+    }
+    Read(&str, len);
+    str[len] = 0;
     
     return wx_string;
 }
@@ -806,17 +809,17 @@ wxOutputStream& wxOutputStream::operator<<(bool b)
     return Write8(b);
 }
 
-wxOutputStream& wxOutputStream::Write32(unsigned long i)
+wxOutputStream& wxOutputStream::Write32(unsigned long l)
 {
-    return Write(&i,sizeof(i));
+    return Write(&l,sizeof(l));
 }
 wxOutputStream& wxOutputStream::Write16(unsigned short i)
 {
     return Write(&i,sizeof(i));
 }
-wxOutputStream& wxOutputStream::Write8(unsigned char i)
+wxOutputStream& wxOutputStream::Write8(unsigned char c)
 {
-    return Write(&i,sizeof(i));
+    return Write(&c,sizeof(c));
 }
 wxOutputStream& wxOutputStream::WriteDouble(double d)
 {
@@ -825,7 +828,7 @@ wxOutputStream& wxOutputStream::WriteDouble(double d)
 wxOutputStream& wxOutputStream::WriteString(const mstring& string)
 {
   Write32(string.length());
-  return Write(string.c_str(), string.length());
+  return Write(&string, string.length());
 }
 
 
@@ -898,7 +901,7 @@ unsigned long wxDataInputStream::Read32()
 {
   char buf[4];
 
-  Read(buf, 4);
+  Read(&buf, 4);
 
   return (unsigned long)buf[0] |
          ((unsigned long)buf[1] << 8) |
@@ -910,7 +913,7 @@ unsigned short wxDataInputStream::Read16()
 {
   char buf[2];
 
-  Read(buf, 2);
+  Read(&buf, 2);
 
   return (unsigned short)buf[0] |
          ((unsigned short)buf[1] << 8);
@@ -928,7 +931,7 @@ double wxDataInputStream::ReadDouble()
 {
   char buf[10];
 
-  Read(buf, 10);
+  Read(&buf, 10);
   return ConvertFromIeeeExtended((unsigned char *)buf);
 }
 
@@ -960,24 +963,6 @@ mstring wxDataInputStream::ReadLine()
   return line;
 }
 
-mstring wxDataInputStream::ReadString()
-{
-  mstring wx_string;
-  char *string;
-  unsigned long len;
-
-  len = Read32();
-  string = new char[len+1];
-
-  Read(string, len);
-
-  string[len] = 0;
-  wx_string = string;
-  delete string;
-
-  return wx_string;
-}
-
 // ---------------------------------------------------------------------------
 // wxDataOutputStream
 // ---------------------------------------------------------------------------
@@ -991,15 +976,15 @@ wxDataOutputStream::~wxDataOutputStream()
 {
 }
 
-wxOutputStream&  wxDataOutputStream::Write32(unsigned long i)
+wxOutputStream&  wxDataOutputStream::Write32(unsigned long l)
 {
   char buf[4];
 
-  buf[0] = i & 0xff;
-  buf[1] = (i >> 8) & 0xff;
-  buf[2] = (i >> 16) & 0xff;
-  buf[3] = (i >> 24) & 0xff;
-  return Write(buf, 4);
+  buf[0] = l & 0xff;
+  buf[1] = (l >> 8) & 0xff;
+  buf[2] = (l >> 16) & 0xff;
+  buf[3] = (l >> 24) & 0xff;
+  return Write(&buf, 4);
 }
 
 wxOutputStream&  wxDataOutputStream::Write16(unsigned short i)
@@ -1008,12 +993,12 @@ wxOutputStream&  wxDataOutputStream::Write16(unsigned short i)
 
   buf[0] = i & 0xff;
   buf[1] = (i >> 8) & 0xff;
-  return Write(buf, 2);
+  return Write(&buf, 2);
 }
 
-wxOutputStream&  wxDataOutputStream::Write8(unsigned char i)
+wxOutputStream&  wxDataOutputStream::Write8(unsigned char c)
 {
-  return Write(&i, 1);
+  return Write(&c, 1);
 }
 
 wxOutputStream&  wxDataOutputStream::WriteLine(const mstring& line)
@@ -1025,12 +1010,6 @@ wxOutputStream&  wxDataOutputStream::WriteLine(const mstring& line)
 #endif
 
   return Write(tmp_string.c_str(), tmp_string.length());
-}
-
-wxOutputStream&  wxDataOutputStream::WriteString(const mstring& string)
-{
-  Write32(string.length());
-  return Write(string.c_str(), string.length());
 }
 
 wxOutputStream&  wxDataOutputStream::WriteDouble(double d)
