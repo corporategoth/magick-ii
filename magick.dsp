@@ -193,6 +193,10 @@ SOURCE=.\include\base.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\build.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\chanserv.h
 # End Source File
 # Begin Source File
@@ -302,10 +306,6 @@ SOURCE=.\include\version.h
 # Begin Source File
 
 SOURCE=.\magick.rc
-# End Source File
-# Begin Source File
-
-SOURCE=".\include\version.h-release"
 # End Source File
 # End Group
 # End Target
