@@ -25,6 +25,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/10/18 18:46:33  prez
+** Well, mstring still coredumps, but it gets past the initial loading of
+** all the STATIC (or const) strings, etc -- now its coring on loading a
+** file (or possibly language.h or something).  Still investigating.
+**
 ** Revision 1.46  2000/10/14 04:25:31  prez
 ** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
 ** TODO - make mstring use MemoryManager.
@@ -114,7 +119,6 @@ static const char *ident_lockable_h = "@(#) $Id$";
 
 #include "mstring.h"
 #include "trace.h"
-#include "mmemory.h"
 
 #ifdef MAGICK_LOCKS_WORK
 
@@ -127,7 +131,7 @@ class mLOCK
     friend class mLock_Mutex;
 
     static map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > LockMap;
-    static MemCluster<ACE_Thread_Mutex> memory_area;
+    static ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> memory_area;
 
     vector<mstring> locks;
 #ifdef MAGICK_TRACE_WORKS
@@ -153,9 +157,9 @@ public:
 	int tryacquire()	{ return tryacquire_read(); }
 
 	void *operator new (size_t size)
-		{ return mLOCK::memory_area.alloc(); }
+		{ return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
 	void operator delete (void *ptr)
-		{ mLOCK::memory_area.dealloc(ptr); }
+		{ mLOCK::memory_area.free(ptr); }
 };
 
 class mLock_Write : public ACE_RW_Thread_Mutex
@@ -169,9 +173,9 @@ public:
 	int tryacquire()	{ return tryacquire_write(); }
 
 	void *operator new (size_t size)
-		{ return mLOCK::memory_area.alloc(); }
+		{ return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
 	void operator delete (void *ptr)
-		{ mLOCK::memory_area.dealloc(ptr); }
+		{ mLOCK::memory_area.free(ptr); }
 };
 
 class mLock_Mutex : public ACE_Thread_Mutex
@@ -182,9 +186,9 @@ public:
 		: base(name, arg) {}
 
 	void *operator new (size_t size)
-		{ return mLOCK::memory_area.alloc(); }
+		{ return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
 	void operator delete (void *ptr)
-		{ mLOCK::memory_area.dealloc(ptr); }
+		{ mLOCK::memory_area.free(ptr); }
 };
 
 

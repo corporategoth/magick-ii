@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/10/18 18:46:33  prez
+** Well, mstring still coredumps, but it gets past the initial loading of
+** all the STATIC (or const) strings, etc -- now its coring on loading a
+** file (or possibly language.h or something).  Still investigating.
+**
 ** Revision 1.54  2000/10/10 11:47:51  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -143,7 +148,7 @@ static const char *ident = "@(#)$Id$";
 #ifdef MAGICK_LOCKS_WORK
 
 map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > mLOCK::LockMap;
-MemCluster<ACE_Thread_Mutex> mLOCK::memory_area(
+ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> mLOCK::memory_area(
 	(sizeof(mLock_Read) > sizeof(mLock_Write) ?
 	    (sizeof(mLock_Read) > sizeof(mLock_Mutex) ?
 		sizeof(mLock_Read) : sizeof(mLock_Mutex)) :

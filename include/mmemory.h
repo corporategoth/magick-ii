@@ -22,6 +22,11 @@ static const char *ident_mmemory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/10/18 18:46:33  prez
+** Well, mstring still coredumps, but it gets past the initial loading of
+** all the STATIC (or const) strings, etc -- now its coring on loading a
+** file (or possibly language.h or something).  Still investigating.
+**
 ** Revision 1.2  2000/10/15 03:29:27  prez
 ** Mods to the memory system, LOTS of printf's to try and figure out why
 ** the damn thing coredumps on init.
@@ -35,72 +40,6 @@ static const char *ident_mmemory_h = "@(#) $Id$";
 
 #define DEF_MEMSIZE 8192
 
-template <class ACE_LOCK> class MemCluster
-{
-    ACE_Locked_Free_List<ACE_Cached_Mem_Pool_Node<void *>, ACE_LOCK> free_list;
-    vector<char *> pool;
-    size_t e_size;
-    size_t e_max;
-
-    // Disallow blank construction and copying
-    MemCluster();
-    MemCluster(const MemCluster<ACE_LOCK> &);
-    void operator=(const MemCluster<ACE_LOCK> &);
-public:
-    MemCluster(size_t size, size_t count) : free_list(ACE_PURE_FREE_LIST)
-    {
-	e_size = size;
-	e_max = count;
-	char *tmp = new char[e_size * e_max];
-	memset(tmp, 0, sizeof(char) * e_size * e_max);
-	pool.push_back(tmp);
-
-	for (unsigned int i=0; i < e_max; i++)
-	{
-	    void *ptr = (void *) &tmp[i * e_size];
-	    free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
-	}
-    }
-
-    ~MemCluster()
-    {
-	vector<char *>::iterator iter;
-	for (iter=pool.begin(); iter!=pool.end(); iter++)
-	    delete [] *iter;
-    }
-    
-    void * alloc()
-    {
-	// If we dont have any left, add a segment
-	if (!free_list.size())
-	{
-	    char *tmp = new char[e_size * e_max];
-	    memset(tmp, 0, sizeof(char) * e_size * e_max);
-	    pool.push_back(tmp);
-	    for (unsigned int i=0; i < e_max; i++)
-	    {
-		void *ptr = (void *) &tmp[i * e_size];
-		free_list.add(new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
-	    }
-	}
-	return free_list.remove ()->addr ();
-    }
-
-    void dealloc(void *ptr)
-    {
-	memset(ptr, 0, sizeof(char) * e_size);
-	free_list.add (new (ptr) ACE_Cached_Mem_Pool_Node<void *>);
-    }
-
-    size_t size()	{ return e_max * pool.size(); }
-    size_t segsize()	{ return e_max; }
-    size_t segments()	{ return pool.size(); }
-    size_t elesize()	{ return e_size; }
-    size_t count()	{ return (size() - free_list.size()); }
-};
-
-
-
 class MemoryNode
 {
     friend class MemoryBlock;
@@ -108,13 +47,19 @@ class MemoryNode
     void *i_loc;
     bool i_avail;
     size_t i_size;
+    MemoryNode *prev, *next;
 
 public:
     MemoryNode(void *loc, size_t size)
     {
+	init(loc, size);
+    }
+    void init(void *loc, size_t size)
+    {
 	i_loc = loc;
 	i_size = size;
 	i_avail = true;
+	prev = next = NULL;
     }
 
     bool avail() { return i_avail; }
@@ -126,25 +71,34 @@ class MemoryBlock
     char *i_memory;
     size_t i_size;
     size_t i_avail;
-    list<MemoryNode> i_nodes;
+    ACE_Expandable_Cached_Allocator<MemoryNode, ACE_Thread_Mutex> i_cluster;
+    MemoryNode *i_nodes;
 
 public:
+    MemoryBlock *prev, *next;
     MemoryBlock(size_t size)
+	: i_cluster(8)
     {
-printf("NEW MEM BLOCK (%d)\n", size); fflush(stdout);
 	i_avail = 0;
 	i_size = size;
 	i_memory = NULL;
+	i_nodes = NULL;
+	prev = next = NULL;
     }
     void init()
     {
-printf("MEM BLOCK INIT (%d)\n", i_size); fflush(stdout);
 	i_avail = i_size;
 	i_memory = new char[i_size];
     }
     ~MemoryBlock()
     {
-printf("DELETE MEM BLOCK\n"); fflush(stdout);
+	MemoryNode *iter = NULL, *next = NULL;
+	for (iter = i_nodes; iter != NULL;)
+	{
+	    next = iter->next;
+	    i_cluster.free(iter);
+	    iter = next;
+	}
 	if (i_memory != NULL)
 	    delete [] i_memory;
     }
@@ -152,9 +106,9 @@ printf("DELETE MEM BLOCK\n"); fflush(stdout);
     void *alloc(size_t size)
     {
 	void *retval = NULL;
-	list<MemoryNode>::iterator iter, useiter = i_nodes.end();
+	MemoryNode *iter = NULL, *useiter = NULL;
 	size_t diff = 0;
-	for (iter=i_nodes.begin(); iter != i_nodes.end(); iter++)
+	for (iter=i_nodes; iter != NULL; iter = iter->next)
 	{
 	    // Find smallest segment we have that fits ...
 	    if ((iter->avail() && iter->size() >= size) &&
@@ -169,33 +123,43 @@ printf("DELETE MEM BLOCK\n"); fflush(stdout);
 	{
 	    useiter->i_size = size;
 	    // Add a new memory block if the next is 
-	    iter++;
-	    if (iter != i_nodes.end())
+	    iter = iter->next;
+	    if (iter != NULL)
 	    {
-		MemoryNode tmp((void *) (((char *) iter->i_loc) - diff),
-	    				iter->i_avail + diff);
-		i_nodes.insert(iter, tmp);
+		MemoryNode *tmp = (MemoryNode *) i_cluster.malloc(sizeof(MemoryNode));
+		if (tmp == NULL)
+		    return NULL;
+		tmp->init((void *) (((char *) iter->i_loc) - diff), diff);
+		if (iter->prev != NULL)
+		{
+		    iter->prev->next = tmp;
+		}
+		tmp->prev = iter->prev;
+		tmp->next = iter;
+		iter->prev = tmp;
 	    }
 	}
-	else if (useiter == i_nodes.end() && size <= i_avail)
+	else if (useiter == NULL && size <= i_avail)
 	{
-	    iter--;
-	    // NEW memory ...
-	    if (i_nodes.size())
+	    MemoryNode *tmp = (MemoryNode *) i_cluster.malloc(sizeof(MemoryNode));
+	    if (tmp == NULL)
+		return NULL;
+	    if (i_nodes != NULL)
 	    {
-		MemoryNode tmp((void *) (((char *) iter->i_loc) + iter->i_size),
-	    				size);
-		i_nodes.push_back(tmp);
+		for (iter=i_nodes; iter->next != NULL; iter = iter->next) ;
+		tmp->init((void *) (((char *) iter->i_loc) + iter->i_size), size);
+		iter->next = tmp;
+		iter->next->prev = iter;
 	    }
 	    else
 	    {
-		i_nodes.push_back(MemoryNode(i_memory, size));
+		tmp->init((void *) i_memory, size);
+		i_nodes = tmp;
 	    }
-	    useiter = i_nodes.end();
-	    useiter--;
+	    useiter = tmp;
 	    i_avail -= size;
 	}
-	if (useiter != i_nodes.end())
+	if (useiter != NULL)
 	{
 	    retval = useiter->i_loc;
 	    useiter->i_avail = false;
@@ -204,79 +168,101 @@ printf("DELETE MEM BLOCK\n"); fflush(stdout);
     }
     void dealloc(void *loc)
     {
-	list<MemoryNode>::iterator iter, iternext, iterprev;
-	for (iter=i_nodes.begin(); iter!=i_nodes.end(); iter++)
+	MemoryNode *iter = NULL, *iternext = NULL;
+	for (iter=i_nodes; iter!=NULL; iter = iter->next)
 	{
 	    if (iter->i_loc == loc)
 		break;
 	}
 
 	// We found it in the for ...
-	if (iter != i_nodes.end())
+	if (iter != NULL)
 	{
 	    // make it one bigger chunk, if we can!
 	    // We do this by seeing if we can combine
 	    // with the nodes before/after us.
-	    iternext = iter;
-	    iternext++;
-	    if (iternext != i_nodes.end())
+	    iternext = iter->next;
+	    if (iternext != NULL)
 	    {
 		// We got a chunk next, is it free ...
 		if (iternext->avail())
 		{
 		    iter->i_size += iternext->i_size;
-		    i_nodes.erase(iternext);
+		    if (iternext->prev != NULL)
+		    {
+			iternext->prev->next = iternext->next;
+		    }
+		    else
+		    {
+			i_nodes = iternext->next;
+		    }
+		    if (iternext->next != NULL)
+		    {
+			iternext->next->prev = iternext->prev;
+		    }
+		    i_cluster.free(iternext);
 		}
 	    }
-	    if (iter != i_nodes.begin())
+	    if (iter->prev != NULL)
 	    {
 		// We're not the first, see if we can do it again ...
-		iterprev = iter;
-		iterprev--;
-		if (iterprev->avail())
+		if (iter->prev->avail())
 		{
-		    iterprev->i_size += iter->i_size;
-		    i_nodes.erase(iter);
-		    iter = iterprev;
+		    iter->prev->i_size += iter->i_size;
+		    iter->prev->next = iter->next;
+		    if (iter->next != NULL)
+		    {
+			iter->next->prev = iter->prev;
+		    }
+		    iternext = iter;
+		    iter = iter->prev;
+		    i_cluster.free(iternext);
 		}
+	    }
+	    else
+	    {
+		i_nodes = iter;
 	    }
 
 	    // If we are now the LAST node, we're free, so
 	    // just free up this node and return it to this
 	    // chunk's 'free' pool.
-	    iternext = iter;
-	    iternext++;
-	    if (iternext == i_nodes.end())
+	    if (iter->next == NULL)
 	    {
 		i_avail += iter->i_size;
-		i_nodes.erase(iter);
+		if (iter->prev)
+		{
+		    iter->prev->next = NULL;
+		}
+		else
+		{
+		    i_nodes = NULL;
+		}
+		i_cluster.free(iter);
 	    }
 	    else
 	    {
 		iter->i_avail = true;
-	    
 	    }
 	}
     }
     bool have(size_t size)
     {
-printf("CHECKING IF I HAVE %d (%d avail)\n", size, i_avail); fflush(stdout);
 	if (size <= i_avail)
 	    return true;
 
-	list<MemoryNode>::iterator iter;
-	for (iter=i_nodes.begin(); iter != i_nodes.end(); iter++)
+	MemoryNode *iter;
+	for (iter=i_nodes; iter != NULL; iter = iter->next)
 	{
 	    if (iter->avail() && size <= iter->size())
 		return true;
 	}
-printf("NO AVAIL MEMORY CHUNKS\n"); fflush(stdout);
 	return false;
     }
     bool ismine(void *loc)
     {
-	list<MemoryNode>::iterator iter;
-	for (iter=i_nodes.begin(); iter != i_nodes.end(); iter++)
+	MemoryNode *iter;
+	for (iter=i_nodes; iter != NULL; iter = iter->next)
 	{
 	    if (loc == iter->i_loc)
 		return true;
@@ -289,15 +275,26 @@ printf("NO AVAIL MEMORY CHUNKS\n"); fflush(stdout);
 
 template <class ACE_LOCK> class MemoryManager
 {
-    list<MemoryBlock> i_blocks;
+    MemoryBlock *i_blocks;
     size_t i_blocksize;
     char lockname[15];
 
 public:
     MemoryManager()
     {
+	i_blocks = NULL;
 	i_blocksize = 0;
 	memset(lockname, 0, 15);
+    }
+    ~MemoryManager()
+    {
+	MemoryBlock *iter, *next;
+	for (iter=i_blocks; iter!=NULL; )
+	{
+	    next = iter->next;
+	    delete iter;
+	    iter = next;
+	}
     }
 
     void init(size_t blocksize = DEF_MEMSIZE)
@@ -305,14 +302,11 @@ public:
 	sprintf(lockname, "MM_%p", this);
 	ACE_LOCK lock(lockname);
 	lock.acquire();
-	if (!i_blocksize)
+	if (i_blocks == NULL)
 	{
 	    i_blocksize = blocksize;
-printf("CREATING INITIAL BLOCK (%d)\n", i_blocksize); fflush(stdout);
-	    i_blocks.push_back(MemoryBlock(i_blocksize));
-printf("DEBUG 1\n"); fflush(stdout);
-	    i_blocks.begin()->init();
-printf("DEBUG 2\n"); fflush(stdout);
+	    i_blocks = new MemoryBlock(i_blocksize);
+	    i_blocks->init();
 	}
 	lock.release();
     }
@@ -320,61 +314,74 @@ printf("DEBUG 2\n"); fflush(stdout);
     void *alloc(size_t size, size_t blocksize = DEF_MEMSIZE)
     {
 	void *retval = NULL;
-	list<MemoryBlock>::iterator iter;
+	MemoryBlock *iter = NULL;
 
-printf("BLOCKSIZE: %d\n", i_blocksize); fflush(stdout);
-	if (!i_blocksize)
+	if (i_blocks == NULL)
 	    init(blocksize);
 
 	ACE_LOCK lock(lockname);
 	lock.acquire();
-printf("REQUEST TO ALLOCATE %d (%d)\n", size, i_blocksize); fflush(stdout);
 	if (size > i_blocksize)
 	{
-printf("EXPANDING MEMORY (SPECIAL SIZE)\n"); fflush(stdout);
-	    i_blocks.push_back(MemoryBlock(size));
-	    iter = i_blocks.end();
-	    iter--;
+	    for (iter=i_blocks; iter->next != NULL; iter = iter->next) ;
+	    iter->next = new MemoryBlock(size);
+	    iter->next->prev = iter;
+	    iter = iter->next;
 	    iter->init();
 	}
 	else
 	{
-	    for (iter=i_blocks.begin(); iter!=i_blocks.end(); iter++)
+	    for (iter=i_blocks; iter != NULL; iter = iter->next)
+	    {
 		if (iter->have(size))
 		    break;
-	    if (iter == i_blocks.end())
+	    }
+	    if (iter == NULL)
 	    {
-printf("EXPANDING MEMORY (NO SUITABLE MEMORY FOUND)\n"); fflush(stdout);
-		i_blocks.push_back(MemoryBlock(i_blocksize));
-		iter = i_blocks.end();
-		iter--;
+		for (iter=i_blocks; iter->next != NULL; iter = iter->next) ;
+		iter->next = new MemoryBlock(i_blocksize);
+		iter->next->prev = iter;
+		iter = iter->next;
 		iter->init();
 	    }
 	}
-printf("DOING ALLOC\n"); fflush(stdout);
 	retval = iter->alloc(size);
 	lock.release();
 	return retval;
     }
     void dealloc(void *loc)
     {
-	list<MemoryBlock>::iterator iter;
+	MemoryBlock *iter = NULL;
 
-	if (!i_blocksize)
+	if (i_blocks == NULL)
 	    return;
 
 	ACE_LOCK lock(lockname);
 	lock.acquire();
-	for (iter=i_blocks.begin(); iter!=i_blocks.end(); iter++)
+	for (iter=i_blocks; iter != NULL; iter = iter->next)
+	{
 	    if (iter->ismine(loc))
 		break;
-
-	if (iter != i_blocks.end())
+	}
+	if (iter != NULL)
 	{
 	    iter->dealloc(loc);
-	    if (i_blocks.size() > 1 && iter->avail() >= iter->size())
-		i_blocks.erase(iter);
+	    if (iter->avail() >= iter->size())
+	    {
+		// NOT the only entry ...
+		if (!(iter->prev == NULL && iter->next == NULL))
+		{
+		    if (iter->prev != NULL)
+			iter->prev->next = iter->next;
+		    else
+			i_blocks = iter->next;
+		    if (iter->next != NULL)
+			iter->next->prev = iter->prev;
+		    delete iter;
+		}
+	    }
 	}
+
 	lock.release();
     }
 
@@ -383,7 +390,12 @@ printf("DOING ALLOC\n"); fflush(stdout);
     void blocksize(size_t blocksize)
 	{ i_blocksize = blocksize; }
     size_t blocks()
-	{ return i_blocks.size(); }
+	{
+	    size_t count = 0;
+	    for (iter=i_blocks; iter != NULL; iter = iter->next)
+		count++;
+	    return count;
+	}
 };
 
 #endif

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/10/18 18:46:33  prez
+** Well, mstring still coredumps, but it gets past the initial loading of
+** all the STATIC (or const) strings, etc -- now its coring on loading a
+** file (or possibly language.h or something).  Still investigating.
+**
 ** Revision 1.74  2000/10/15 03:29:27  prez
 ** Mods to the memory system, LOTS of printf's to try and figure out why
 ** the damn thing coredumps on init.
@@ -144,7 +149,6 @@ void mstring::copy(const char *in, size_t length)
 	i_str = (char *) memory_area.alloc(i_res);
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
-printf("Created String %s (%d, %d reserved)\n", i_str, i_len, i_res); fflush(stdout);
     }
     else
     {

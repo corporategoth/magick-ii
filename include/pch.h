@@ -21,6 +21,11 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/10/18 18:46:33  prez
+** Well, mstring still coredumps, but it gets past the initial loading of
+** all the STATIC (or const) strings, etc -- now its coring on loading a
+** file (or possibly language.h or something).  Still investigating.
+**
 ** Revision 1.24  2000/10/03 05:36:27  prez
 ** Updated some makefiles, helper stuff, and headers -- nothing
 ** too earth shattering.
@@ -236,6 +241,12 @@
 #include <ace/Thread_Manager.h>
 #include <ace/Thread.h>
 
+/* Alter this when it is intergrated
+ * Below is an example if it was implemented in 6.5 */
+#if ACE_MAJOR_VERSION < 6 || (ACE_MAJOR_VERSION == 6 && ACE_MINOR_VERSION < 5)
+#include "ace_memory.h"
+#endif
+
 #define atoi(x)		ACE_OS::strtol(x, NULL, 10)
 #define atol(x)		ACE_OS::strtol(x, NULL, 10)
 #define atoui(x)	ACE_OS::strtoul(x, NULL, 10)
@@ -247,8 +258,8 @@
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
 #  include <mpatrol.h>
 #else
-#    define malloc	ACE_OS::malloc
-#    define calloc	ACE_OS::calloc
+// #    define malloc	ACE_OS::malloc
+// #    define calloc	ACE_OS::calloc
 // # define memalign	ACE_OS::memalign
 // # define valloc	ACE_OS::valloc
 // # define pvalloc	ACE_OS::pvalloc
@@ -256,10 +267,10 @@
 // # define strndup	ACE_OS::strndup
 // # define strsave	ACE_OS::strsave
 // # define strnsave	ACE_OS::strnsave
-#    define realloc	ACE_OS::realloc
+// #    define realloc	ACE_OS::realloc
 // # define recalloc	ACE_OS::recalloc
 // # define expand	ACE_OS::expand
-#    define free	ACE_OS::free
+// #    define free	ACE_OS::free
 // # define cfree	ACE_OS::cfree
 // # define new		ACE_OS::new
 // # define new[]	ACE_OS::new[]
