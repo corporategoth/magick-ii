@@ -111,10 +111,10 @@ void ThreadID::WriteOut(const mstring &message)
 //      \  function()
 T_Functions::T_Functions(const mstring &name)
 {
-    ShortLevel(Functions);
     m_name=name;
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "()";
 	tid->WriteOut(message);
@@ -125,10 +125,10 @@ T_Functions::T_Functions(const mstring &name)
 //      \  function( (char) T, (int) 5 )
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
-    ShortLevel(Functions);
     m_name=name;
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
@@ -145,10 +145,10 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 //      /  (char) Y
 T_Functions::~T_Functions()
 { 
-    ShortLevel(Functions);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     tid->indentdown(); 
+    ShortLevel(Functions);
     if (IsOn(tid)) {
 	mstring message;
 	if (!return_value.type().IsEmpty())
@@ -179,9 +179,9 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 
 void T_CheckPoint::common(const char *input)
 {
-    ShortLevel(CheckPoint);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(CheckPoint);
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -204,9 +204,9 @@ T_Comments::T_Comments(const char *fmt, ...)
 
 void T_Comments::common(const char *input)
 {
-    ShortLevel(Comments);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Comments);
     if (IsOn(tid)) {
 	mstring message;
 	message << "## " << input;
@@ -221,9 +221,9 @@ void T_Comments::common(const char *input)
 //      << DE3(srealm.net.au)
 T_Modify::T_Modify(const mVarArray &args)
 {
-    ShortLevel(Modify);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -238,9 +238,9 @@ T_Modify::T_Modify(const mVarArray &args)
 //      >> DE3(corewars.net)
 void T_Modify::End(const mVarArray &args)
 {
-    ShortLevel(Modify);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -257,9 +257,9 @@ void T_Modify::End(const mVarArray &args)
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
-    ShortLevel(Chatter);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Chatter);
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
@@ -291,9 +291,9 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 //      :+ M Magick::LoadMessages
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
-    ShortLevel(Locking);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Locking);
     if (IsOn(tid)) 
     {
 	locktype = ltype;
@@ -314,11 +314,11 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 //      :- M Magick::LoadMessages
 
 T_Locking::~T_Locking() {
-    ShortLevel(Locking);
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
+    ShortLevel(Locking);
     if (IsOn(tid)) {
-	if (name.IsEmpty()) {
+	if (!name.IsEmpty()) {
     	    mstring message;
 	    if(locktype == Read)
 	        message << ":- " << "R " << name;
