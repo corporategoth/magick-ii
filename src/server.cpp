@@ -272,14 +272,15 @@ void NetworkServ::execute(const mstring & data)
     case 'C':
 	if (msgtype=="CONNECT")
 	{
+	    // :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
+
+
 	    // :source CONNECT some.server port :our.server
-	    if (IsServer(data.ExtractWord(3, ": ")))
+	    if (IsServer(data.ExtractWord(3, ": ")) ||
+	    	data.ExtractWord(3, ": ").LowerCase() == Parent->Startup_SERVER_NAME.LowerCase())
 	    {
-		// Already connected
-	    }
-	    else if (data.ExtractWord(3, ": ").LowerCase() == Parent->Startup_SERVER_NAME.LowerCase())
-	    {
-		// Look mom! its us!
+		SendSVR("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
+			" already exists from " + Parent->Startup_SERVER_NAME);
 	    }
 	    else
 	    {
@@ -333,6 +334,8 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="INVITE")
 	{
 	    // :source INVITE target :channel
+	    //:PreZ INVITE ChanServ :#chatzone
+
 	}
 	else if (msgtype=="ISON")
 	{
@@ -370,6 +373,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source/server KILL target :reason
 	    // LOCAL clients ONLY (remotes are a QUIT).
+	//:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
+	    Parent->nickserv.live.erase(data.ExtractWord(3, ": ").LowerCase());
+
 	}
 	break;
     case 'L':
@@ -393,6 +399,16 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="LIST")
 	{
+	    SendSVR("321 " + source + " Channel :Users  Name");
+
+	    map<mstring,Chan_Live_t>::iterator chan;
+	    for (chan=Parent->chanserv.live.begin(); chan!=Parent->chanserv.live.end(); chan++)
+	    {
+		SendSVR("322 " + source + " " + chan->first + " " + chan->second.Users() +
+			+ " :" + chan->second.Topic());
+	    }
+
+	    SendSVR("323 " + source + " :End of /LIST");
 	}
 	break;
     case 'M':
@@ -407,7 +423,10 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="NAMES")
 	{
 	    // :source NAMES #channel our.server
-	    SendSVR("336 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
+//:soul.darker.net 353 ChanServ = #chatzone :killkickabuseme @Aimee Jupiter @Allanon Ghost_ wildrose
+//:soul.darker.net 366 ChanServ #chatzone :End of /NAMES list.
+	    SendSVR("366 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
+
 	}
 	else if (msgtype=="NICK")
 	{
@@ -638,6 +657,28 @@ void NetworkServ::execute(const mstring & data)
 	    //:ChanServ TRACE PreZ
 	    //:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
 
+//:ChanServ TRACE Aimee
+//:soul.darker.net 200 ChanServ Link Aurora2.2-r Aimee lifestone.darker.net
+//:lifestone.darker.net 200 ChanServ Link Aurora2.2-r Aimee :requiem.darker.net
+//:requiem.darker.net 204 ChanServ Operator 10 Aimee[ABD2CEFD.ipt.aol.com] :128
+
+//:ChanServ TRACE vampire
+//:soul.darker.net 200 ChanServ Link Aurora2.2-r vampire.darker.net lifestone.darker.net
+//:lifestone.darker.net 200 ChanServ Link Aurora2.2-r vampire.darker.net :vampire.darker.net
+//:vampire.darker.net 206 ChanServ Server 50 6S 19C lifestone.darker.net[0.0.0.0] AutoConn.!*@vampire.darker.net :0
+//:vampire.darker.net 204 ChanServ Operator 10 Alien[pc134.net19.ktv.koping.se] :64
+//:vampire.darker.net 205 ChanServ User 1 Nadu[bservice.org] :35
+//:vampire.darker.net 205 ChanServ User 1 tomaway[adsl1453.turboline.be] :106
+//:vampire.darker.net 205 ChanServ User 1 Wau|oK[axe.net.au] :46
+//:vampire.darker.net 205 ChanServ User 1 Ghost_[203.58.108.129] :15
+//:vampire.darker.net 205 ChanServ User 1 wildrose[cr1003083-a.crdva1.bc.wave.home.com] :48
+//:vampire.darker.net 205 ChanServ User 1 Jupiter[modem035.memnoch.comcen.com.au] :76
+//:vampire.darker.net 209 ChanServ Class 50 :1
+//:vampire.darker.net 209 ChanServ Class 10 :1
+//:vampire.darker.net 209 ChanServ Class 1 :7
+
+
+
 	}
 	break;
     case 'U':
@@ -656,6 +697,21 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="USERHOST")
 	{
+	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    {
+		SendSVR("302 " + source + " :" +
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
+			"*=-" +
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].UserName() +
+			"@" +
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].HostName());
+
+	    }
+	    else
+	    {
+		SendSVR("461 " + source + " USERHOST :Not enough paramaters");
+	    }
+
 	}
 	else if (msgtype=="USERS")
 	{
@@ -706,10 +762,73 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="WHO")
 	{
+//:ChanServ WHO
+//:soul.darker.net 352 ChanServ #chatzone ~striker syd-56K-162.tpgi.com.au requiem.darker.net killkickabuseme H :2 Pain looks good on other people...
+//:soul.darker.net 352 ChanServ * blah darker.net heaven.darker.net ChanServ H* :1 <bad-realname>
+//:soul.darker.net 352 ChanServ #operzone ~somebody ABD2CEFD.ipt.aol.com requiem.darker.net Aimee H+ :2 anybody
+//:soul.darker.net 352 ChanServ #chatzone jupiter modem035.memnoch.comcen.com.au vampire.darker.net Jupiter G :2 Jupiter
+//:soul.darker.net 352 ChanServ * jason axe.net.au shadow.darker.net WauloK G :2 Nothing really matters..
+//:soul.darker.net 352 ChanServ #chatzone allanon indra.darkshadow.net shadow.darker.net Allanon H*@ :2 God..
+//:soul.darker.net 352 ChanServ #chatzone roamer shadow.darker.net shadow.darker.net FastinI G% :2 *
+//:soul.darker.net 352 ChanServ * Tico-Rulez adsl1453.turboline.be vampire.darker.net tomaway H% :2 Captain Spartan, Dead Man Walking
+//:soul.darker.net 352 ChanServ #darkernet ~ghost 203.58.108.129 vampire.darker.net Ghost_ G :2 fuck off
+//:soul.darker.net 352 ChanServ #bothouse ~Nadu bservice.org vampire.darker.net Nadu H@ :2 BService Bot - #Bothouse - Owner: nicki
+//:soul.darker.net 352 ChanServ #chatzone wildinbed cr1003083-a.crdva1.bc.wave.home.com vampire.darker.net wildrose H :2 Prairie Flower
+//:soul.darker.net 352 ChanServ #operzone ~striker syd-56K-162.tpgi.com.au requiem.darker.net Lord_Striker G*@ :2 Pain looks good on other people...
+//:soul.darker.net 352 ChanServ #chatzone ~jason axe.net.au vampire.darker.net Wau|oK G%@ :2 Nothing really matters..
+//:soul.darker.net 352 ChanServ #operzone satan680 pc134.net19.ktv.koping.se vampire.darker.net Alien G*@ :2 am I GOD ?
+//:soul.darker.net 352 ChanServ #chatzone prez castle.srealm.net.au soul.darker.net PreZ G*@ :0 I am what the people fear, I need not fear them.
+//:soul.darker.net 352 ChanServ * ~bo pc34.net20.ktv.koping.se requiem.darker.net DarkMagic G% :2 Dark not Black
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net Magick-1 H% :2 Magick Outlet
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net Death H* :2 Global Noticer
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net OperServ H% :2 Operator Server
+//:soul.darker.net 352 ChanServ #complaints reaper darker.net hell.darker.net DevNull H% :2 /dev/null -- message sink
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net MemoServ H :2 Memo Server
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net IrcIIHelp H :2 ircII Help Server
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net HelpServ H :2 Help Server
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net NickServ H :2 Nickname Server
+//:soul.darker.net 352 ChanServ #magick prez castle.srealm.net.au soul.darker.net DarkMgk H%@ :0 Magick BridgeBot
+//:soul.darker.net 315 ChanServ * :End of /WHO list.
+
+//:ChanServ WHO PreZ
+//:soul.darker.net 352 ChanServ #chatzone prez castle.srealm.net.au soul.darker.net PreZ G*@ :0 I am what the people fear, I need not fear them.
+//:soul.darker.net 352 ChanServ #magick prez castle.srealm.net.au soul.darker.net DarkMgk H%@ :0 Magick BridgeBot
+//:soul.darker.net 315 ChanServ PreZ :End of /WHO list.
+
+//:ChanServ WHO #chatzone
+//:soul.darker.net 352 ChanServ #chatzone ~striker syd-56K-162.tpgi.com.au requiem.darker.net killkickabuseme H :2 Pain looks good on other people...
+//:soul.darker.net 352 ChanServ #chatzone ~somebody ABD2CEFD.ipt.aol.com requiem.darker.net Aimee H@ :2 anybody
+//:soul.darker.net 352 ChanServ #chatzone jupiter modem035.memnoch.comcen.com.au vampire.darker.net Jupiter G :2 Jupiter
+//:soul.darker.net 352 ChanServ #chatzone allanon indra.darkshadow.net shadow.darker.net Allanon H*@ :2 God..
+//:soul.darker.net 352 ChanServ #chatzone ~ghost 203.58.108.129 vampire.darker.net Ghost_ G :2 fuck off
+//:soul.darker.net 352 ChanServ #chatzone wildinbed cr1003083-a.crdva1.bc.wave.home.com vampire.darker.net wildrose H :2 Prairie Flower
+//:soul.darker.net 315 ChanServ #chatzone :End of /WHO list.
+
+//:ChanServ WHO vampire.darker.net
+//:soul.darker.net 352 ChanServ #chatzone jupiter modem035.memnoch.comcen.com.au vampire.darker.net Jupiter G :2 Jupiter
+//:soul.darker.net 352 ChanServ * Tico-Rulez adsl1453.turboline.be vampire.darker.net tomaway H% :2 Captain Spartan, Dead Man Walking
+//:soul.darker.net 352 ChanServ #darkernet ~ghost 203.58.108.129 vampire.darker.net Ghost_ G :2 fuck off
+//:soul.darker.net 352 ChanServ #bothouse ~Nadu bservice.org vampire.darker.net Nadu H@ :2 BService Bot - #Bothouse - Owner: nicki
+//:soul.darker.net 352 ChanServ #chatzone wildinbed cr1003083-a.crdva1.bc.wave.home.com vampire.darker.net wildrose H :2 Prairie Flower
+//:soul.darker.net 352 ChanServ #chatzone ~jason axe.net.au vampire.darker.net Wau|oK G%@ :2 Nothing really matters..
+//:soul.darker.net 352 ChanServ #operzone satan680 pc134.net19.ktv.koping.se vampire.darker.net Alien G*@ :2 am I GOD ?
+//:soul.darker.net 315 ChanServ vampire.darker.net :End of /WHO list.
+
 	}
 	else if (msgtype=="WHOIS")
 	{
-	    // :source WHOIS target :our.server
+	    // :source WHOIS target :target
+//:ChanServ WHOIS PreZ :PreZ
+//:soul.darker.net 311 ChanServ PreZ prez castle.srealm.net.au * :I am what the people fear, I need not fear them.
+//:soul.darker.net 307 ChanServ PreZ :is a registered nick
+//:soul.darker.net 319 ChanServ PreZ :#chatzone #darkernet @#mrcoffee #pagan @#wicca
+//:soul.darker.net 312 ChanServ PreZ soul.darker.net :Show me a dream .. I'll show you my nightmare
+//:soul.darker.net 301 ChanServ PreZ :Automatically set away [SZon]  Away since Sun Jul 18 20:15
+//:soul.darker.net 313 ChanServ PreZ :is an IRC Operator
+//:soul.darker.net 310 ChanServ PreZ :looks very helpful.
+//:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
+//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
+
 	}
 	else if (msgtype=="WHOWAS")
 	{

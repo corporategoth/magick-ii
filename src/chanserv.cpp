@@ -126,6 +126,12 @@ bool checkops(pair<mstring, pair<bool,bool> > &in)
     }
 }
 
+int Chan_Live_t::Users()
+{
+    NFT("Chan_Livt_t::Users");
+    RET(users.size());
+}
+
 int Chan_Live_t::Ops()
 {
     NFT("Chan_Live_t::Ops");
