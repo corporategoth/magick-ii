@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/03/08 23:38:37  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.71  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -614,8 +618,8 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
     {
 	mstring send;
 	send << "NICK " << nick << " 1 " << Now().timetstring() <<
-		" " << user << " " << host << " " << server << " 1 " <<
-		host << " :" << realname;
+		" " << user << " " << host << " " << server <<
+		" 1 :" << realname;
 	// Sign ourselves in ...
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);

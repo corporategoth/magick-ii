@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.202  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.201  2000/03/07 09:53:21  prez
 ** More helpfile updates (and associated updates).
 **
@@ -578,6 +582,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	oldCOD = wxConfigBase::CreateOnDemand();
 	wxConfigBase::CreateOnDemand(false);
 
+	CP(("Checking for group %s", name.UpperCase().c_str()));
 	if (fconf.HasGroup(name.UpperCase()))
 	{
 	    found = true;
@@ -637,6 +642,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	oldCOD = wxConfigBase::CreateOnDemand();
 	wxConfigBase::CreateOnDemand(false);
 
+	CP(("Checking for group %s", name.UpperCase().c_str()));
 	if (fconf.HasGroup(name.UpperCase()))
 	{
 	    fconf.SetPath(name.UpperCase());
@@ -2156,7 +2162,7 @@ void Magick::load_databases()
 
     mstring tag;
     unsigned long ver;
-    short ver_major, ver_minor;
+    unsigned short ver_major, ver_minor;
     bool compressed;
     bool encrypted;
     wxFileInputStream finput(databasefile);
@@ -2173,8 +2179,8 @@ void Magick::load_databases()
 	input = dinput;
 	*input >> tag >> ver >> compressed >> encrypted;
 
-	ver_minor = FileVersionNumber % 0x10000;
-	ver_major = FileVersionNumber / 0x10000;
+	ver_minor = ver % 0x10000;
+	ver_major = ver / 0x10000;
 
 	//input->Sync();
 	input = &finput;

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.87  2000/03/02 07:25:11  prez
 ** Added stuff to do the chanserv greet timings (ie. only greet if a user has
 ** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
@@ -471,7 +475,10 @@ int EventTask::svc(void)
 		for (i=0; i<expired_nicks.size(); i++)
 		{
 		    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_NICK"),
-			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str());
+			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str(),
+			    ((Parent->nickserv.stored[expired_nicks[i]].Host() != "") ?
+				Parent->nickserv.stored[expired_nicks[i]].Host().c_str() :
+				Parent->nickserv.stored[expired_nicks[i]].Name().c_str()));
 		    Parent->nickserv.stored[expired_nicks[i]].Drop();
 		    Parent->nickserv.stored.erase(expired_nicks[i]);
 		}
@@ -494,7 +501,8 @@ int EventTask::svc(void)
 		for (i=0; i<expired_chans.size(); i++)
 		{
 		    wxLogInfo(Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
-			    Parent->chanserv.stored[expired_chans[i]].Name().c_str());
+			    Parent->chanserv.stored[expired_chans[i]].Name().c_str(),
+			    Parent->chanserv.stored[expired_chans[i]].Founder().c_str());
 		    Parent->chanserv.stored.erase(expired_chans[i]);
 		}
 	    }

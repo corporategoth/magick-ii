@@ -24,6 +24,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.27  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -489,6 +493,7 @@ public:
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
     static void do_Getpass(mstring mynick, mstring source, mstring params);
+    static void do_Live(mstring mynick, mstring source, mstring params);
 
     static void do_access_Current(mstring mynick, mstring source, mstring params);
     static void do_access_Add(mstring mynick, mstring source, mstring params);

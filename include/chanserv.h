@@ -24,6 +24,10 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/03/08 23:38:35  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.31  2000/03/02 07:25:10  prez
 ** Added stuff to do the chanserv greet timings (ie. only greet if a user has
 ** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
@@ -584,6 +588,7 @@ public:
     static void do_Users(mstring mynick, mstring source, mstring params);
     static void do_Invite(mstring mynick, mstring source, mstring params);
     static void do_Unban(mstring mynick, mstring source, mstring params);
+    static void do_Live(mstring mynick, mstring source, mstring params);
 
     static void do_clear_Users(mstring mynick, mstring source, mstring params);
     static void do_clear_Modes(mstring mynick, mstring source, mstring params);

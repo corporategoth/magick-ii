@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.9  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -365,10 +369,11 @@ CreateNickEntry(NickInfo *ni)
 		out.i_LastMask = mstring(ni->last_usermask);
 	}
 
-	if (ni->flags & NI_IRCOP &&
-	    Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+	if (ni->flags & NI_IRCOP)
 	{
-	    Parent->commserv.list[Parent->commserv.OPER_Name()].insert(
+	    out.i_NoExpire = true;
+	    if (Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+		Parent->commserv.list[Parent->commserv.OPER_Name()].insert(
 		    mstring(out.i_Name), Parent->commserv.FirstName());
 	}
 

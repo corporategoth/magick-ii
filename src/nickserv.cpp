@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/03/08 23:38:37  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.62  2000/03/02 07:25:11  prez
 ** Added stuff to do the chanserv greet timings (ie. only greet if a user has
 ** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
@@ -600,7 +604,7 @@ void Nick_Live_t::Part(mstring chan)
     }
     else
     {
-	wxLogWarning("User %s PART from non-existant channel %s", i_Name.c_str(), chan.c_str());
+	wxLogDebug("User %s PART from non-existant channel %s", i_Name.c_str(), chan.c_str());
     }
 
     joined_channels.erase(chan.LowerCase());
@@ -897,7 +901,7 @@ void Nick_Live_t::Mode(mstring in)
 	    }
 	    else
 	    {
-		wxLogNotice("MODE change %c%c received for %s that is currently in effect",
+		wxLogDebug("MODE change %c%c received for %s that is currently in effect",
 			add ? '+' : '-', in[i], i_Name.c_str());
 	    }
 	    break;
@@ -2959,6 +2963,8 @@ void NickServ::AddCommands()
 		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"GET*PASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LIVE*", Parent->commserv.SOP_Name(), NickServ::do_Live);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* CUR*", Parent->commserv.REGD_Name(), NickServ::do_access_Current);
@@ -4021,6 +4027,75 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
 			nick->Name().c_str(), host.c_str(), nick->Password().c_str());
     announce(mynick, Parent->getMessage("MISC/NICK_GETPASS"),
 			source.c_str(), nick->Name().c_str(), host.c_str());
+}
+
+
+void NickServ::do_Live(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Live", (mynick, source, params));
+
+    unsigned int listsize, i, count;
+    mstring mask;
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	mask = "*!*@*";
+	listsize = Parent->config.Listsize();
+    }
+    else if (params.WordCount(" ") < 3)
+    {
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = Parent->config.Listsize();
+    }
+    else
+    {
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	if (listsize > Parent->config.Maxlist())
+	{
+	    mstring output;
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
+					Parent->config.Maxlist());
+	    return;
+	}
+    }
+
+    if (!mask.Contains("@") && !mask.Contains("!"))
+	mask += "!*@*";
+    else if (!mask.Contains("@"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+				Parent->getMessage(source, "LIST/NICKNAME").c_str(), '@');
+	return;
+    }
+    else if (!mask.Contains("!"))
+	mask.Prepend("*!");
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/NICK_LIST"),
+					mask.c_str());
+    map<mstring, Nick_Live_t>::iterator iter;
+
+    for (iter = Parent->nickserv.live.begin(), i=0, count = 0;
+			iter != Parent->nickserv.live.end(); iter++)
+    {
+	if (iter->second.Mask(Nick_Live_t::N_U_P_H).LowerCase().Matches(mask))
+	{
+	    if (i < listsize)
+	    {
+		::send(mynick, source, iter->second.Mask(Nick_Live_t::N_U_P_H) + " (" +
+					((iter->second.Server() != "") ?
+						iter->second.Server() :
+						Parent->startup.Server_Name()) +
+					((iter->second.Squit() != "") ? " (SQUIT)" : "") +
+					"): +" + iter->second.Mode());
+		i++;
+	    }
+	    count++;
+	}
+    }
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
+							i, count);
 }
 
 

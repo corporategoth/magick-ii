@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/03/08 23:38:37  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.61  2000/03/07 09:53:21  prez
 ** More helpfile updates (and associated updates).
 **
@@ -726,6 +730,18 @@ void OperServ::execute(const mstring & data)
 void OperServ::do_Help(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Help", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+
+    mstring HelpTopic = Parent->operserv.GetInternalName();
+    if (params.WordCount(" ") > 1)
+	HelpTopic += " " + params.After(" ");
+    HelpTopic.Replace(" ", "/");
+    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+					
+    unsigned int i;
+    for (i=0; i<help.size(); i++)
+	::send(mynick, source, help[i]);
 }
 
 

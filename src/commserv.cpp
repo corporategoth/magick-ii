@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.41  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -484,6 +488,17 @@ void CommServ::do_Help(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_Help", (mynick, source, params));
 
+    mstring message  = params.Before(" ").UpperCase();
+
+    mstring HelpTopic = Parent->commserv.GetInternalName();
+    if (params.WordCount(" ") > 1)
+	HelpTopic += " " + params.After(" ");
+    HelpTopic.Replace(" ", "/");
+    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+					
+    unsigned int i;
+    for (i=0; i<help.size(); i++)
+	::send(mynick, source, help[i]);
 }
 
 void CommServ::do_AddComm(mstring mynick, mstring source, mstring params)

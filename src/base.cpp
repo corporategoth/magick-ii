@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.100  2000/03/02 11:59:45  prez
 ** More helpfile updates (slowly but surely writing it)
 **
@@ -550,6 +554,8 @@ void mBaseTask::message_i(const mstring& message)
     // anything that is not a user PRIVMSG/NOTICE goes directly
     // to the server routine anyway.
     mstring source, type, target;
+    if (message == "")
+	return;
     source=message.ExtractWord(1,": ");
     type  =message.ExtractWord(2,": ").UpperCase();
     target=message.ExtractWord(3,": ");

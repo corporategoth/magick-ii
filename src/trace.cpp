@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2000/03/08 23:38:37  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.86  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -77,7 +81,7 @@ unsigned short makehex (mstring SLevel)
 		    (SLevel[1u]!='x' && SLevel[1u]!='X'))
 	return 0;
 
-    short level;
+    unsigned short level = 0;
     for (unsigned int j=2; j<6; j++) {
 	switch(SLevel[j]) {
 	case 'F':

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.35  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -552,17 +556,37 @@ size_t wxFileConfig::GetNumberOfGroups(bool bRecursive) const
 // tests for existence
 // ----------------------------------------------------------------------------
 
-bool wxFileConfig::HasGroup(const mstring& strName) const
+bool wxFileConfig::HasGroup(const mstring& strPath) const
 {
-  FT("wxFileConfig::HasGroup", (strName));
-  wxConfigPathChanger path(this, strName);
+  FT("wxFileConfig::HasGroup", (strPath));
 
-  ConfigGroup *pGroup;
-  if (strName.Contains("/"))
-    pGroup = m_pCurrentGroup->FindSubgroup(path.Name());
-  else
-    pGroup = m_pCurrentGroup;
-  RET(pGroup != NULL);
+  ConfigGroup *pGroup, *nGroup;
+  mArrayString aParts;
+
+  if ( strPath[0U] == wxCONFIG_PATH_SEPARATOR ) {
+    // absolute path
+    wxSplitPath(aParts, strPath);
+  }
+  else {
+    // relative path, combine with current one
+    mstring strFullPath = m_strPath;
+    strFullPath << wxCONFIG_PATH_SEPARATOR << strPath;
+    wxSplitPath(aParts, strFullPath);
+  }
+
+  // change current group
+  size_t n;
+  nGroup = NULL;
+  pGroup = m_pRootGroup;
+  for ( n = 0; n < aParts.size(); n++ ) {
+    nGroup = pGroup->FindSubgroup(aParts[n]);
+    if ( nGroup != NULL )
+    {
+      pGroup = nGroup;
+    }
+  }
+
+  RET(nGroup != NULL);
 }
 
 bool wxFileConfig::HasEntry(const mstring& strName) const

@@ -192,8 +192,8 @@ IGNORED          =Ignored message from %s: %s
 [EVENT]
 STARTUP          =MAGICK II HAS STARTED UP SUCCESSFULLY.
 EXPIRE_AKILL     =Expiring akill for %s (%s) set by %s for %s.
-EXPIRE_NICK      =Expiring nickname %s.
-EXPIRE_CHANNEL   =Expiring channel %s.
+EXPIRE_NICK      =Expiring nickname %s (%s).
+EXPIRE_CHAN      =Expiring channel %s (%s).
 EXPIRE_NEWS      =Expiring news article for channel %s.
 LOAD             =Database version %d.%d has been loaded.
 SAVE             =Database saved.

@@ -61,7 +61,7 @@
 13 =::You may request help on the syntax and functionalty
 14 =::of any and all of the above commands by specifying
 15 =::the command name after the HELP request.
-16 =::NOTE: Only commands you currently may use are listed
+16 =::NOTE: Only commands you currently may use are listed
 17 =::      above, and things such as nickname registration
 18 =::      may change what is displayed above.
 
@@ -479,7 +479,7 @@
 07 =REGD::will also mean you need to ident to get any access
 08 =REGD::on any channel you join, to read your memos, etc.
 
-[NICKSERV/SET/NOTEXPIRE]
+[NICKSERV/SET/NOEXPIRE]
 01 =SOP::SET NOEXPIRE <nickname> <ON|OFF>
 02 =SOP::
 03 =SOP::When you set this on a nickname, that nickname will
@@ -654,7 +654,7 @@
 15 =::You may request help on the syntax and functionalty
 16 =::of any and all of the above commands by specifying
 17 =::the command name after the HELP request.
-19 =::NOTE: Only commands you currently may use are listed
+19 =::NOTE: Only commands you currently may use are listed
 20 =::      above, and things such as nickname registration
 21 =::      may change what is displayed above.
 
@@ -1171,9 +1171,9 @@
 10 =REGD::    URL          DESCRIPTION  MLOCK        BANTIME
 11 =REGD::    PARTTIME     KEEPTOPIC    TOPICLOCK    PRIVATE
 12 =REGD::    SECUREOPS    SECURE       ANARCHY      JOIN
-12 =REGD::    RESTRICTED   REVENGE
-12 =SOP::As a SOP you may also use the following commands:
-13 =SOP::    COMMENT      NOEXPIRE
+13 =REGD::    RESTRICTED   REVENGE
+14 =SOP::As a SOP you may also use the following commands:
+15 =SOP::    COMMENT      NOEXPIRE
 
 [CHANSERV/SET/FOUNDER]
 01 =REGD::SET <channel> FOUNDER <founder>
@@ -1414,9 +1414,9 @@
 03 =SOP::This will lock the value of ModeLock for a channel,
 04 =SOP::enforcing whatever you set over whatever the channel
 05 =SOP::has set themselves.  Doing this, will prevent the
-05 =SOP::founder and people with SET privilages from being able
-06 =SOP::to override this setting, so please use with caution,
-07 =SOP::as you are removing the right to change their own record.
+06 =SOP::founder and people with SET privilages from being able
+07 =SOP::to override this setting, so please use with caution,
+08 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/BANTIME]
 01 =SOP::LOCK <channel> BANTIME <bantime>
@@ -1614,7 +1614,7 @@
 10 =::You may request help on the syntax and functionalty
 11 =::of any and all of the above commands by specifying
 12 =::the command name after the HELP request.
-13 =::NOTE: Only commands you currently may use are listed
+13 =::NOTE: Only commands you currently may use are listed
 14 =::      above, and things such as nickname registration
 15 =::      may change what is displayed above.
 
@@ -1677,7 +1677,7 @@
 11 =::You may request help on the syntax and functionalty
 12 =::of any and all of the above commands by specifying
 13 =::the command name after the HELP request.
-14 =::NOTE: Only commands you currently may use are listed
+14 =::NOTE: Only commands you currently may use are listed
 15 =::      above, and things such as nickname registration
 16 =::      may change what is displayed above.
 
@@ -1760,15 +1760,13 @@
 06 =REGD::    STATS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
-09 =::This service also offers help on the following:
-10 =::    TIME         HOSTMASKS
-11 =::
-12 =::You may request help on the syntax and functionalty
-13 =::of any and all of the above commands by specifying
-14 =::the command name after the HELP request.
-15 =::NOTE: Only commands you currently may use are listed
-16 =::      above, and things such as nickname registration
-17 =::      may change what is displayed above.
+09 =::
+10 =::You may request help on the syntax and functionalty
+11 =::of any and all of the above commands by specifying
+12 =::the command name after the HELP request.
+13 =::NOTE: Only commands you currently may use are listed
+14 =::      above, and things such as nickname registration
+15 =::      may change what is displayed above.
 
 [SERVMSG/BREAKDOWN]
 01 =::BREAKDOWN
@@ -1844,7 +1842,7 @@
 14 =OPER SOP::You may request help on the syntax and functionalty
 15 =OPER SOP::of any and all of the above commands by specifying
 16 =OPER SOP::the command name after the HELP request.
-17 =OPER SOP::NOTE: Only commands you currently may use are listed
+17 =OPER SOP::NOTE: Only commands you currently may use are listed
 18 =OPER SOP::      above, and things such as nickname registration
 19 =OPER SOP::      may change what is displayed above.
 

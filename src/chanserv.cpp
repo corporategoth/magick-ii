@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.147  2000/03/08 23:38:36  prez
+** Added LIVE to nickserv/chanserv, added help funcitonality to all other
+** services, and a bunch of other small changes (token name changes, etc)
+**
 ** Revision 1.146  2000/03/07 09:53:19  prez
 ** More helpfile updates (and associated updates).
 **
@@ -110,7 +114,7 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
     else
-	wxLogWarning(Parent->getMessage("ERROR/FORNOTINCHAN"),
+	wxLogDebug(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
 	    "PART", nick.c_str(), i_Name.c_str());
 
     RET(users.size() + squit.size());
@@ -136,7 +140,7 @@ void Chan_Live_t::UnSquit(mstring nick)
 
     if (squit.find(nick.LowerCase())==squit.end())
     {
-	wxLogWarning(Parent->getMessage("ERROR/FORNOTINCHAN"),
+	wxLogWarning(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
 		"UNSQUIT", nick.c_str(), i_Name.c_str());
     }
     else
@@ -899,7 +903,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogNotice("MODE change %c%c received from %s for %s that is currently in effect",
+		wxLogDebug("MODE change %c%c received from %s for %s that is currently in effect",
 			add ? '+' : '-', change[i], source.c_str(), i_Name.c_str());
 	    }
 	    break;
@@ -1082,6 +1086,9 @@ void Chan_Stored_t::Join(mstring nick)
 	    }
 	}
     }
+
+    if (GetAccess(nick)>0)
+	i_LastUsed = Now();
 
     if (GetAccess(nick, "AUTOOP"))
 	clive->SendMode("+o " + nick);
@@ -2789,12 +2796,12 @@ long Chan_Stored_t::GetAccess(mstring entry)
 	else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(realentry))
 	{
-	    RET(Level_Value("AUTOOP"));
+	    RET(Level_value("AUTOOP"));
 	}
 	else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(realentry))
 	{
-	    RET(Level_Value("AUTOVOICE"));
+	    RET(Level_value("AUTOVOICE"));
 	}
 
 	RET(0);
@@ -3259,6 +3266,8 @@ void ChanServ::AddCommands()
 	    "INV*", Parent->commserv.REGD_Name(), ChanServ::do_Invite);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNBAN*", Parent->commserv.REGD_Name(), ChanServ::do_Unban);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LIVE*", Parent->commserv.SOP_Name(), ChanServ::do_Live);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* *USER*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Users);
@@ -3271,7 +3280,7 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* *BAN*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Bans);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *ALL*", Parent->commserv.REGD_Name(), ChanServ::do_All);
+	    "CLEAR* *ALL*", Parent->commserv.REGD_Name(), ChanServ::do_clear_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* SET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Set);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3510,6 +3519,18 @@ void ChanServ::execute(const mstring & data)
 void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_Help", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+
+    mstring HelpTopic = Parent->chanserv.GetInternalName();
+    if (params.WordCount(" ") > 1)
+	HelpTopic += " " + params.After(" ");
+    HelpTopic.Replace(" ", "/");
+    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+					
+    unsigned int i;
+    for (i=0; i<help.size(); i++)
+	::send(mynick, source, help[i]);
 }
 
 void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
@@ -4868,6 +4889,68 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
 		    target.c_str(), channel.c_str());
     }
 }
+
+void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_Live", (mynick, source, params));
+
+    unsigned int listsize, i, count;
+    mstring mask;
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	mask = "*";
+	listsize = Parent->config.Listsize();
+    }
+    else if (params.WordCount(" ") < 3)
+    {
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = Parent->config.Listsize();
+    }
+    else
+    {
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	if (listsize > Parent->config.Maxlist())
+	{
+	    mstring output;
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
+					Parent->config.Maxlist());
+	    return;
+	}
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/CHAN_LIST"),
+					mask.c_str());
+    map<mstring, Chan_Live_t>::iterator iter;
+
+    for (iter = Parent->chanserv.live.begin(), i=0, count = 0;
+			iter != Parent->chanserv.live.end(); iter++)
+    {
+	if (iter->second.Name().LowerCase().Matches(mask))
+	{
+	    if (i < listsize)
+	    {
+		::send(mynick, source, "%s (%du %do %dv %ds %db): +%s %s %d",
+					iter->second.Name().c_str(),
+					iter->second.Users(),
+					iter->second.Ops(),
+					iter->second.Voices(),
+					iter->second.Squit(),
+					iter->second.Bans(),
+					iter->second.Mode().c_str(),
+					iter->second.Key().c_str(),
+					iter->second.Limit());
+		i++;
+	    }
+	    count++;
+	}
+    }
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
+							i, count);
+}
+
 
 void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 {

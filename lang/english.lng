@@ -306,6 +306,8 @@ CLONE              =clone override
 AKILL              =automatic kill
 OPERDENY           =IRC operator deny
 SIGNORE            =services ignore
+CHANNEL            =channel
+NICKNAME           =nicknams
 
 ;
 ; This section defines STATUS responses about OTHER nicknames.
