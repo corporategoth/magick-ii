@@ -2452,7 +2452,7 @@ void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring
 	    output << proto.GetNonToken(proto.SVSKILL());
 	else
 	    output << proto.SVSKILL();
-	output << " " << nick << " " << reason;
+	output << " " << nick << " :" << reason;
 	nraw(mynick, output);
 	mMessage::CheckDependancies(mMessage::NickNoExists, nick);
 	if (numeric)
