@@ -458,7 +458,7 @@ public class Startup extends TabbedPane
 	for (i=0; data.keyExists("Startup/REMOTE_" + (i+1)); i++)
 	{
 	    String fullLine = data.getValue("Startup/REMOTE_" + (i+1));
-	    String[] fields = fullLine.split("|");
+	    String[] fields = fullLine.split("\\|");
 	    if (fields.length == 5)
 	    {
 		try
@@ -481,7 +481,7 @@ public class Startup extends TabbedPane
 	for (i=0; data.keyExists("Startup/ALLOW_" + (i+1)); i++)
 	{
 	    String fullLine = data.getValue("Startup/ALLOW_" + (i+1));
-	    String[] fields = fullLine.split("|");
+	    String[] fields = fullLine.split("\\|");
 	    if (fields.length == 2)
 	    {
 		allows.setValueAt(fields[0], i, 0);
