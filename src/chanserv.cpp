@@ -1432,7 +1432,7 @@ bool Chan_Stored_t::Access_Level_find(mstring entry)
 	    if (iter->Entry().LowerCase() == entry.LowerCase())
 		break;
 
-    if (iter == i_Access_Level.end())
+    if (iter != i_Access_Level.end())
     {
 	Access_Level = iter;
 	RET(true);
@@ -1565,7 +1565,7 @@ bool Chan_Stored_t::Access_find(mstring entry)
 	}
     }
 
-    if (iter == i_Access.end())
+    if (iter != i_Access.end())
     {
 	Access = iter;
 	RET(true);
@@ -1702,7 +1702,7 @@ bool Chan_Stored_t::Akick_find(mstring entry)
 	}
     }
 
-    if (iter == i_Akick.end())
+    if (iter != i_Akick.end())
     {
 	Akick = iter;
 	RET(true);
@@ -1776,7 +1776,7 @@ bool Chan_Stored_t::Greet_find(mstring entry)
 	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
 		break;
 
-    if (iter == i_Greet.end())
+    if (iter != i_Greet.end())
     {
 	Greet = iter;
 	RET(true);

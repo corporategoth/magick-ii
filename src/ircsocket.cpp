@@ -86,15 +86,16 @@ int IrcSvcHandler::send(const mstring & data)
 
 int IrcSvcHandler::close(unsigned long in)
 {
+    FT("IrcSvcHandler::close",(in));
     // todo: shutdown the ping timer
     ACE_Reactor::instance()->cancel_timer(&sph);
-    FT("IrcSvcHandler::close",(in));
     CP(("Socket closed"));
     RET(handle_close());
 }
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     ACE_INET_Addr addr(Parent->startup.Remote_Port(),Parent->startup.Remote_Server());
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
     if(Parent->config.Server_Relink()==-1||Parent->reconnect!=true||Parent->shutdown()==true)
@@ -113,15 +114,27 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->server.raw("PASS " + Parent->startup.Password());
 	Parent->server.raw("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
     }
-    return 0;
+    RET(0);
 }
 
 int ServerPing_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    FT("ServerPing_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     map<mstring,Server>::iterator i;
     for(i=Parent->server.ServerList.begin();i!=Parent->server.ServerList.end();i++)
     {
 	i->second.Ping();
     }
-    return 0;
+    RET(0);
 }
+
+int KillOnSignon_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    // Nick and Reason
+    mstring tmp = *((mstring *) arg);
+
+    Parent->server.KILL(Parent->nickserv.FirstName(), tmp.Before(":"), tmp.After(":"));
+    RET(0);
+}
+

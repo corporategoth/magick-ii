@@ -73,10 +73,8 @@ typedef set<entlist_t>::const_iterator entlist_cui;
 template<class T>
 class entlist_val_t : public mUserDef
 {
-    template<T>
-    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
-    template<T>
-    friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
+    friend wxOutputStream &operator<<<T>(wxOutputStream& out,const entlist_val_t<T>& in);
+    friend wxInputStream &operator>><T>(wxInputStream& in, entlist_val_t<T>& out);
     mstring i_Entry;
     T i_Value;
     mDateTime i_Last_Modify_Time;
@@ -101,10 +99,83 @@ public:
     mstring Last_Modifier()const	{ return i_Last_Modifier; }
 };
 
+template<class T> inline
+entlist_val_t<T>::entlist_val_t(mstring entry, T value, mstring nick, bool stupid)
+{
+    FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick, stupid));
+    i_Entry = entry;
+    i_Value = value;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+    i_Stupid = stupid;
+}
+
+template<class T> inline
+void entlist_val_t<T>::operator=(const entlist_val_t<T> &in)
+{
+    FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
+    i_Entry=in.i_Entry;
+    i_Value=in.i_Value;
+    i_Last_Modify_Time=in.i_Last_Modify_Time;
+    i_Last_Modifier=in.i_Last_Modifier;
+    i_Stupid = in.i_Stupid;
+    map<mstring,mstring>::const_iterator i;
+    i_UserDef.clear();
+    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	i_UserDef[i->first]=i->second;
+}
+
+
 template<class T>
-wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
-template<class T>
-wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
+bool entlist_val_t<T>::Value(T value, mstring nick)
+{
+    FT("entlist_val_t<T>::Change", ("(T) value", nick));
+    if (i_Stupid)
+    {
+	RET(false);
+    }
+    else
+    {
+	i_Value = value;
+	i_Last_Modify_Time = Now();
+	i_Last_Modifier = nick;
+	RET(true);
+    }
+}
+
+
+template<class T> inline
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in)
+{
+    out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
+
+    map<mstring,mstring>::const_iterator j;
+    out<<in.i_UserDef.size();
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	out<<(mstring)j->first<<(mstring)j->second;
+    return out;
+}
+
+
+template<class T> inline
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out)
+{
+    unsigned int i,count;
+    mstring dummy,dummy2;
+
+    in>>out.i_Entry>>out.i_Value>>out.i_Last_Modify_Time>>out.i_Last_Modifier>>out.i_Stupid;
+
+    out.i_UserDef.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>dummy>>dummy2;
+	out.i_UserDef[dummy]=dummy2;
+    }
+    return in;
+}
+
+
 /*  These dont work with templates
 template<class T>
 typedef list<entlist_val_t<T> >::iterator entlist_val_i;

@@ -15,6 +15,12 @@ public:
     virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
+class KillOnSignon_Handler : public ACE_Event_Handler
+{
+public:
+    virtual int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+};
+
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
