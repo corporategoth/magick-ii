@@ -79,7 +79,6 @@ Nick_Live_t::InFlight_t & Nick_Live_t::InFlight_t::operator=(const InFlight_t & 
     fileattach = in.fileattach;
     fileinprog = in.fileinprog;
     service = in.service;
-    sender = in.sender;
     recipiant = in.recipiant;
     text = in.text;
     NRET(Nick_Live_t::InFlight_t &, *this);
@@ -120,7 +119,6 @@ void Nick_Live_t::InFlight_t::init()
     fileattach = false;
     fileinprog = false;
     service.erase();
-    sender.erase();
     recipiant.erase();
     text.erase();
     ETCB();
@@ -247,7 +245,6 @@ void Nick_Live_t::InFlight_t::Memo(const bool file, const mstring & mynick, cons
 	type = FileMap::MemoAttach;
 	fileattach = file;
 	service = mynick;
-	sender = nick;
 	recipiant = who;
 	text = message;
     }
@@ -257,7 +254,7 @@ void Nick_Live_t::InFlight_t::Memo(const bool file, const mstring & mynick, cons
 	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
 	timer =
-	    Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh, new mstring(sender.LowerCase()),
+	    Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh, new mstring(nick.LowerCase()),
 							ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
     DumpE();
@@ -375,13 +372,12 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	    }
 	}
 	RLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight"));
-	if (Magick::instance().nickserv.IsStored(sender))
+	if (Magick::instance().nickserv.IsStored(nick))
 	{
-	    map_entry < Nick_Stored_t > source = Magick::instance().nickserv.GetStored(sender);
-	    if (!source->Host().empty())
-	    {
-		sender = source->Host();
-	    }
+	    mstring sender = Magick::instance().nickserv.GetStored(nick)->Host();
+	    if (sender.empty())
+		sender = nick;
+
 	    if (Memo())
 	    {
 		if (IsChan(recipiant))
@@ -395,7 +391,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(recipiant);
 			SEND(service, nick, "MS_COMMAND/SENT", (recipiant, cstored->Founder()));
 			LOG(LM_DEBUG, "MEMOSERV/SEND",
-			    (Magick::instance().nickserv.GetLive(sender)->Mask(Nick_Live_t::N_U_P_H), recipiant));
+			    (Magick::instance().nickserv.GetLive(nick)->Mask(Nick_Live_t::N_U_P_H), recipiant));
 
 			RLOCK3((lck_MemoServ, lck_channel, recipiant.LowerCase()));
 			MemoServ::channel_news_t & newslist = Magick::instance().memoserv.GetChannel(recipiant);
@@ -451,7 +447,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			    if (filenum)
 			    {
 				LOG(LM_DEBUG, "MEMOSERV/FILE",
-				    (Magick::instance().nickserv.GetLive(sender)->Mask(Nick_Live_t::N_U_P_H),
+				    (Magick::instance().nickserv.GetLive(nick)->Mask(Nick_Live_t::N_U_P_H),
 				     Magick::instance().filesys.GetName(FileMap::MemoAttach, filenum),
 				     fmstring("%08x", filenum),
 				     ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum)),
@@ -507,10 +503,10 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 		}
 		else if (filenum)
 		{
-		    Magick::instance().nickserv.GetStored(sender)->GotPic(filenum);
+		    Magick::instance().nickserv.GetStored(nick)->GotPic(filenum);
 		    NSEND(service, nick, "NS_YOU_COMMAND/SAVED");
 		    LOG(LM_DEBUG, "NICKSERV/PICTURE_ADD",
-			(Magick::instance().nickserv.GetLive(sender)->Mask(Nick_Live_t::N_U_P_H), sender,
+			(Magick::instance().nickserv.GetLive(nick)->Mask(Nick_Live_t::N_U_P_H), sender,
 			 fmstring("%08x", filenum),
 			 ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Picture, filenum))));
 		}
@@ -535,7 +531,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			  Magick::instance().getMessage(nick, "LIST/FILES")));
 		    Magick::instance().filesys.SetPriv(FileMap::Public, filenum, text);
 		    LOG(LM_DEBUG, "SERVMSG/FILE_ADD",
-			(Magick::instance().nickserv.GetLive(sender)->Mask(Nick_Live_t::N_U_P_H),
+			(Magick::instance().nickserv.GetLive(nick)->Mask(Nick_Live_t::N_U_P_H),
 			 Magick::instance().filesys.GetName(FileMap::Public, filenum), fmstring("%08x", filenum),
 			 ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Public, filenum)),
 			 ((Magick::instance().filesys.GetPriv(FileMap::Public, filenum).empty()) ? "ALL" :
@@ -597,7 +593,6 @@ void Nick_Live_t::InFlight_t::Picture(const mstring & mynick)
 	WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight"));
 	type = FileMap::Picture;
 	fileattach = true;
-	sender = nick;
 	service = mynick;
     }
 
@@ -606,7 +601,7 @@ void Nick_Live_t::InFlight_t::Picture(const mstring & mynick)
 	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
 	timer =
-	    Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh, new mstring(sender.LowerCase()),
+	    Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh, new mstring(nick.LowerCase()),
 							ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
     DumpE();
@@ -655,7 +650,6 @@ void Nick_Live_t::InFlight_t::Public(const mstring & mynick, const mstring & com
 	WLOCK((lck_NickServ, lck_live, nick.LowerCase(), "InFlight"));
 	type = FileMap::Public;
 	fileattach = true;
-	sender = nick;
 	service = mynick;
 	text = committees;
     }
@@ -665,7 +659,7 @@ void Nick_Live_t::InFlight_t::Public(const mstring & mynick, const mstring & com
 	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
 	timer =
-	    Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh, new mstring(sender.LowerCase()),
+	    Magick::instance().reactor().schedule_timer(&Magick::instance().nickserv.ifh, new mstring(nick.LowerCase()),
 							ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
     DumpE();
@@ -758,7 +752,6 @@ size_t Nick_Live_t::InFlight_t::Usage() const
     retval += sizeof(timer);
     retval += sizeof(fileattach);
     retval += sizeof(fileinprog);
-    retval += sender.capacity();
     retval += recipiant.capacity();
     retval += text.capacity();
 
@@ -770,7 +763,7 @@ void Nick_Live_t::InFlight_t::DumpB() const
 {
     BTCB();
     // 8 Elements
-    MB(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
+    MB(0, (nick, type, timer, fileattach, fileinprog, recipiant, text));
     ETCB();
 }
 
@@ -778,7 +771,7 @@ void Nick_Live_t::InFlight_t::DumpE() const
 {
     BTCB();
     // 8 Elements
-    ME(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
+    ME(0, (nick, type, timer, fileattach, fileinprog, recipiant, text));
     ETCB();
 }
 

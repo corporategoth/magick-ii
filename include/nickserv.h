@@ -78,7 +78,6 @@ public:
 	bool fileattach;
 	bool fileinprog;
 	mstring service;
-	mstring sender;
 	mstring recipiant;
 	mstring text;
 

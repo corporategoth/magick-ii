@@ -2929,9 +2929,12 @@ void NickServ::do_set_Picture(const mstring & mynick, const mstring & source, co
 	if (nstored->PicNum())
 	    Magick::instance().filesys.EraseFile(FileMap::Picture, nstored->PicNum());
 	nstored->GotPic(0u);
+	mstring target = nstored->Host();
+	if (target.empty())
+		target = nstored->Name();
 	NSEND(mynick, source, "NS_YOU_COMMAND/REMOVED");
 	LOG(LM_DEBUG, "NICKSERV/PICTURE_DEL",
-	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), source));
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target));
     }
     else
     {
