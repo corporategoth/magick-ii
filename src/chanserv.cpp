@@ -928,7 +928,8 @@ void ChanServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
-#if defined(__try) && defined(__finally)
+/* wrong answer, this was put in here so that you would fix it with the
+ relevant gcc code that does exactly the same thing, try again */
 void cppexcepttest()
 {
     //test of __try..__finally
@@ -942,7 +943,6 @@ void cppexcepttest()
 	wxLogDebug("this worked too");
     }
 }
-#endif
 
 void ChanServ::save_database(wxOutputStream& out)
 {
