@@ -268,32 +268,57 @@ mstring ToHumanSpace(const unsigned long in)
     retval.Format("%ub", in);
 
     unsigned long value = 1024;
+    unsigned int power = 0;
 
-    for (int power = 1; power < 5; power++)
+    while (in > value)
     {
-	CP(("Comparing %d to %d = %d", in, power, value));
-	if (in >= value)
-	{
-	    switch (power)
-	    {
-	    case 4:
-		retval.Format("%uTb", in / value);
-		break;
-	    case 3:
-		retval.Format("%uGb", in / value);
-		break;
-	    case 2:
-		retval.Format("%uMb", in / value);
-		break;
-	    case 1:
-		retval.Format("%uKb", in / value);
-		break;
-	    }
-	}
-	else
-	    break;
 	value *= 1024;
+	power++;
     }
+    value /= 1024;
+    unsigned long num = in / value;
+    unsigned long rem = in % value;
+
+    while (rem > 10)
+	rem /= 10;
+
+    switch (power)
+    {
+    case 5:
+	if (rem)
+	    retval.Format("%u.%uPb", num, rem);
+	else
+	    retval.Format("%uPb", num);
+	break;
+    case 4:
+	if (rem)
+	    retval.Format("%u.%uTb", num, rem);
+	else
+	    retval.Format("%uTb", num);
+	break;
+    case 3:
+	if (rem)
+	    retval.Format("%u.%uGb", num, rem);
+	else
+	    retval.Format("%uGb", num);
+	break;
+    case 2:
+	if (rem)
+	    retval.Format("%u.%uMb", num, rem);
+	else
+	    retval.Format("%uMb", num);
+	break;
+    case 1:
+	if (rem)
+	    retval.Format("%u.%uKb", num, rem);
+	else
+	    retval.Format("%uKb", num);
+	break;
+    case 0:
+	retval.Format("%ub", num);
+	break;
+    }
+
     RET(retval);
 }
 

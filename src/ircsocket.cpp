@@ -636,10 +636,10 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	if (source.length() < 3)
 	    source.prepend("@");
 	else if (source.length() < (Magick::instance().server.proto.Numeric.Extended() ? 6 : 4))
-	    source.prepend(":");
+	    source.prepend("!");
     }
 
-    if (message[0u] == ':' || source[0u] == ':' || source[0u] == '@')
+    if (message[0u] == ':' || source[0u] == '@' || source[0u] == '!')
     {
 	msgtype = message.ExtractWord(2, ": ");
 	if (message.WordCount(" ") > 2)

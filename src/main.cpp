@@ -214,6 +214,8 @@ int Flow_Control::svc()
 
 void Flow_Control::stop_requested(DWORD control_code)
 {
+    static_cast < void > (control_code);
+
 #ifdef WIN32
     if (state() != SERVICE_RUNNING && state() != SERVICE_PAUSED)
 	return;
@@ -228,6 +230,8 @@ void Flow_Control::stop_requested(DWORD control_code)
 
 void Flow_Control::pause_requested(DWORD control_code)
 {
+    static_cast < void > (control_code);
+
 #ifdef WIN32
     if (state() != SERVICE_RUNNING)
 	return;
@@ -235,14 +239,16 @@ void Flow_Control::pause_requested(DWORD control_code)
     report_status(SERVICE_PAUSE_PENDING);
 #endif
     magick_instance->Pause(true);
-    suspend();
 #ifdef WIN32
+    suspend();
     report_status(SERVICE_PAUSED);
 #endif
 }
 
 void Flow_Control::continue_requested(DWORD control_code)
 {
+    static_cast < void > (control_code);
+
 #ifdef WIN32
     if (state() != SERVICE_PAUSED)
 	return;
@@ -250,8 +256,8 @@ void Flow_Control::continue_requested(DWORD control_code)
     report_status(SERVICE_CONTINUE_PENDING);
 #endif
     magick_instance->Pause(false);
-    resume();
 #ifdef WIN32
+    resume();
     report_status(SERVICE_RUNNING);
 #endif
 }

@@ -162,10 +162,17 @@ void entlist_t::DumpE() const
 // --------- end of entlist_t -----------------------------------
 
 mMessage::mMessage(const mstring & p_source, const mstring & p_msgtype, const mstring & p_params,
-		   const unsigned long p_priority) : ACE_Method_Request(p_priority), msgid_(0), source_(p_source),
-params_(p_params), creation_(mDateTime::CurrentDateTime())
+		   const unsigned long p_priority) : ACE_Method_Request(p_priority), msgid_(0), sourceToken_(false),
+source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
     FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
+
+    if (Magick::instance().server.proto.Numeric.User() && source_[0u] == '!')
+    {
+	source_.erase(0, 0);
+	sourceToken_ = true;
+    }
+
     if (source_ != " " && Magick::instance().server.proto.Tokens())
     {
 	mstring tmp(Magick::instance().server.proto.GetToken(p_msgtype));
@@ -192,13 +199,13 @@ void mMessage::AddDependancies()
 	{
 	    AddDepend(ServerExists, source_.After("@"));
 	}
-	else if (source_[0u] == ':')
-	{
-	    AddDepend(NickExists, source_.After(":"));
-	}
 	else if (source_.Contains("."))
 	{
 	    AddDepend(ServerExists, source_.LowerCase());
+	}
+	else if (sourceToken_)
+	{
+	    AddDepend(NickExists, source_);
 	}
 	else
 	{
