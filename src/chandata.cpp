@@ -5207,13 +5207,10 @@ bool Chan_Stored_t::Message_find(const unsigned int num)
     FT("Chan_Stored_t::Message_find", (num));
 
     MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
-    if (num <= 0 || num > i_Message.size())
-    {
-	RET(false);
-    }
-
     entlist_i iter = i_Message.end();
-    iter = find_if(i_Message.begin(), i_Message.end(), FindNumberedEntry(num));
+
+    if (!i_Message.empty())
+	iter = find_if(i_Message.begin(), i_Message.end(), FindNumberedEntry(num));
 
     if (iter != i_Message.end())
     {
