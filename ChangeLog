@@ -1,3 +1,33 @@
+* 2003-02-24 01:59  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.34), src/chandata.cpp (1.33.2.1):
+  
+  Fix to stop services doing revenge on themselves.
+
+* 2003-02-23 21:47  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.80):
+  
+  fixed windows workspace
+
+* 2003-02-23 21:27  Preston A. Elder <prez@magick.tm>
+  lang/spanish.lfo (1.3), lang/spanish.lng (1.4):
+  
+  Added spanish language files
+
+* 2003-02-23 21:17  Preston A. Elder <prez@magick.tm>
+  include/.cvsignore (1.10):
+  
+  Updated cvsignore.
+
+* 2003-02-23 21:04  Preston A. Elder <prez@magick.tm>
+  docs/en/.cvsignore (1.4):
+  
+  Fixed cvsignore.
+
+* 2003-02-23 21:02  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.75), Makefile.dist (1.13):
+  
+  Added something to Makefile.dist to make it work again ;)
+
 * 2003-02-23 20:50  Preston A. Elder <prez@magick.tm>
   docs/Makefile.am (1.7), docs/en/Makefile.am (1.9), helper/build-ver
   (1.11), helper/reset-ver (1.9), ircd/Makefile.am (1.3), lang/Makefile.am
