@@ -187,7 +187,7 @@ void HYB_load_cs_dbase(void)
 	    {
 		HYB_AutoKick ca;
 		ca.hostmask = data.ExtractWord(2, " ");
-		ca.reason = data.After(" :", 1);
+		ca.reason = data.After(":", 1);
 		ci->akick.push_back(ca);
 	    }
 	    else if (field.IsSameAs("ALVL", true))
@@ -198,7 +198,7 @@ void HYB_load_cs_dbase(void)
 	    }
 	    else if (field.IsSameAs("TOPIC", true))
 	    {
-		ci->topic = data.After(" :", 1);
+		ci->topic = data.After(":", 1);
 	    }
 	    else if (field.IsSameAs("LIMIT", true))
 	    {
@@ -218,7 +218,7 @@ void HYB_load_cs_dbase(void)
 	    }
 	    else if (field.IsSameAs("ENTRYMSG", true))
 	    {
-		ci->entrymsg = data.After(" :", 1);
+		ci->entrymsg = data.After(":", 1);
 	    }
 	    else if (field.IsSameAs("EMAIL", true))
 	    {
@@ -285,7 +285,7 @@ void HYB_load_ms_dbase(void)
 		m.sender = data.ExtractWord(1, " ");
 		m.sent = atoi(data.ExtractWord(2, " ").c_str());
 		m.flags = atoi(data.ExtractWord(2, " ").c_str());
-		m.text = data.After(" :", 1);
+		m.text = data.After(":", 1);
 	    }
 	}
 	else
@@ -327,8 +327,7 @@ void HYB_load_ignore_dbase(void)
 	    continue;
 
 	Magick::instance().operserv.Ignore_insert(line.ExtractWord(1, " "),
-		line.ExtractWord(2, " ").IsSameAs("0"),
-		Magick::instance().operserv.FirstName());
+		true, Magick::instance().operserv.FirstName());
     }
 
     ETCB();
@@ -499,7 +498,7 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 	    if (newlevel == 0)
 		newlevel = 1;
 	    out->Access_insert(access->entry, newlevel, Magick::instance().chanserv.FirstName(),
-		mDateTime(access->created));
+		access->created ? mDateTime::CurrentDateTime() : mDateTime(access->created));
 	}
 
 	for (akick=ci->akick.begin(); akick!=ci->akick.end(); akick++)
@@ -508,7 +507,11 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 	}
 
 	if (!ci->topic.empty())
+	{
 	    out->i_Topic = ci->topic;
+	    out->i_Topic_Setter = Magick::instance().chanserv.FirstName();
+	    out->i_Topic_Set_Time = mDateTime::CurrentDateTime();
+	}
 
 	if (!ci->entrymsg.empty())
 	    out->Message_insert(ci->entrymsg, Magick::instance().chanserv.FirstName());

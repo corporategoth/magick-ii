@@ -33,6 +33,13 @@ RCSID(convert_hybserv_h, "@(#) $Id$");
 **
 ** ======================================================================= */
 
+/* Please note, that if you use encrypted passwords, then ALL passwords
+** converted using this conversion process will be utterly useless.
+**
+** Some of the code in this (and the accompanying .cpp file) was written
+** or based code by the HybServ2 Coding Team.
+**/
+
 #ifdef CONVERT
 
 #include "mstring.h"
