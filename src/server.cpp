@@ -4159,7 +4159,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    }
 	}
 
-	if (!IsChan(dest))
+	if (!IsChan(dest) && dest[0u] != '$' && dest[0u] != '#')
 	{
 	    {
 		RLOCK((lck_IrcSvcHandler));
@@ -4275,7 +4275,7 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	    }
 	}
 
-	if (!IsChan(dest))
+	if (!IsChan(dest) && dest[0u] != '$' && dest[0u] != '#')
 	{
 	    {
 		RLOCK((lck_IrcSvcHandler));
