@@ -98,7 +98,7 @@ wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in)
 {
     out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 
-    map<mstring,mstring>::iterator j;
+    map<mstring,mstring>::const_iterator j;
     out<<in.i_UserDef.size();
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	out<<(mstring)j->first<<(mstring)j->second;
@@ -207,7 +207,7 @@ wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t& in)
 {
     out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 
-    map<mstring,mstring>::iterator j;
+    map<mstring,mstring>::const_iterator j;
     out<<in.i_UserDef.size();
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	out<<(mstring)j->first<<(mstring)j->second;

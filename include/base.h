@@ -18,7 +18,7 @@
 class mUserDef
 {
 protected:
-    map<mstring, mstring> i_UserDef;
+    map<mstring,mstring> i_UserDef;
 public:
     mstring UserDef(mstring type);
     mstring UserDef(mstring type, mstring val);
@@ -134,6 +134,7 @@ public:
     static void push_message(const mstring& message);
     virtual void execute(const mstring& message) =0;
 
+    mstring FirstName() { return names.Before(" "); }
     mstring GetNames() { return names; }
     bool IsName(mstring in)
     {

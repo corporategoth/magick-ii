@@ -316,9 +316,9 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    if ((i_Key && in.ExtractWord(fwdargs, ": ") == i_Key) || i_Key == "")
 	    {
 		if (add)
-		    i_Key = "";
-		else
 		    i_Key = in.ExtractWord(fwdargs, ": ");
+		else
+		    i_Key = "";
 	    }
 	    else
 	    {
@@ -350,6 +350,29 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		i_Limit = 0;
 	    } 
 	    fwdargs++;
+	    break;
+
+	default:
+	    break;
+	}
+    }
+
+    add = true;
+    for (unsigned int i=0; i<change.size(); i++)
+    {
+	switch(change[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+
+	case '-':
+	    add = false;
+	    break;
+
+	case 'o':
+	case 'v':
+	case 'b':
 	    break;
 
 	default:
@@ -401,18 +424,146 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
 
 // --------- end of Chan_Live_t -----------------------------------
 
-ChanServ::ChanServ()
+
+void Chan_Stored_t::defaults()
 {
-    NFT("ChanServ::ChanServ");
-    messages=true;
-    automation=true;
+    NFT("Chan_Stored_t::defaults");
+
+    i_Keeptopic = Parent->chanserv.DEF_Keeptopic();
+    i_Topiclock = Parent->chanserv.DEF_Topiclock();
+    i_Private = Parent->chanserv.DEF_Private();
+    i_Secureops = Parent->chanserv.DEF_Secureops();
+    i_Secure = Parent->chanserv.DEF_Secure();
+    i_Restricted = Parent->chanserv.DEF_Restricted();
+    i_Join = Parent->chanserv.DEF_Join();
+    i_Suspended = false;
+
+    mstring defaulted = Parent->chanserv.DEF_MLock();
+    mstring locked = Parent->chanserv.LCK_MLock();
+    bool add = true;
+
+    for (unsigned int i; i<defaulted.size(); i++)
+    {
+	switch (defaulted[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+	case '-':
+	    add = false;
+	    break;
+	case 'o':
+	case 'v':
+	case 'b':
+	case 'k':
+	case 'l':
+	    break;
+	default:
+	    if (add)
+	    {
+		if (!i_Mlock_On.Contains(defaulted[i]))
+		    i_Mlock_On += defaulted[i];
+		if (i_Mlock_Off.Contains(defaulted[i]))
+		    i_Mlock_Off.Remove((mstring) defaulted[i]);
+	    }
+	    else
+	    {
+		if (!i_Mlock_Off.Contains(defaulted[i]))
+		    i_Mlock_Off += defaulted[i];
+		if (i_Mlock_On.Contains(defaulted[i]))
+		    i_Mlock_On.Remove((mstring) defaulted[i]);
+	    }
+	    break;
+	}
+    }
+
+    add = true;
+    for (unsigned int i; i<locked.size(); i++)
+    {
+	switch (locked[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+	case '-':
+	    add = false;
+	    break;
+	case 'o':
+	case 'v':
+	case 'b':
+	case 'k':
+	case 'l':
+	    break;
+	default:
+	    if (add)
+	    {
+		if (!i_Mlock_On.Contains(locked[i]))
+		    i_Mlock_On += locked[i];
+		if (i_Mlock_Off.Contains(locked[i]))
+		    i_Mlock_Off.Remove((mstring) locked[i]);
+	    }
+	    else
+	    {
+		if (!i_Mlock_Off.Contains(locked[i]))
+		    i_Mlock_Off += locked[i];
+		if (i_Mlock_On.Contains(locked[i]))
+		    i_Mlock_On.Remove((mstring) locked[i]);
+	    }
+	    break;
+	}
+    }
+
+    i_Access_Level.insert(entlist_val_t("AUTODEOP",	Parent->chanserv.LVL_Autodeop(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("AUTOVOICE",	Parent->chanserv.LVL_Autovoice(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("AUTOOP",	Parent->chanserv.LVL_Autoop(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("READMEMO",	Parent->chanserv.LVL_Readmemo(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("WRITEMEMO",	Parent->chanserv.LVL_Writememo(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("DELMEMO",	Parent->chanserv.LVL_Delmemo(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("AKICK",	Parent->chanserv.LVL_Akick(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("STARAKICK",	Parent->chanserv.LVL_Starakick(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("UNBAN",	Parent->chanserv.LVL_Unban(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("ACCESS",	Parent->chanserv.LVL_Access(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("SET",		Parent->chanserv.LVL_Set(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("CMDINVITE",	Parent->chanserv.LVL_Cmdinvite(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("CMDUNBAN",	Parent->chanserv.LVL_Cmdunban(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("CMDVOICE",	Parent->chanserv.LVL_Cmdvoice(),	Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("CMDOP",	Parent->chanserv.LVL_Cmdop(),		Parent->chanserv.FirstName()));
+    i_Access_Level.insert(entlist_val_t("CMDCLEAR",	Parent->chanserv.LVL_Cmdclear(),	Parent->chanserv.FirstName()));
+    
 }
+
+
+Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc)
+{
+    FT("Chan_Stored_t::Chan_Stored_t", (name, founder, password, desc));
+    i_Name = name;
+    i_RegTime = Now();
+    i_Founder = founder;
+    i_Password = password;
+    i_Description = desc;
+    i_Forbidden = false;
+
+    defaults();
+}
+
+
+Chan_Stored_t::Chan_Stored_t(mstring name)
+{
+    FT("Chan_Stored_t::Chan_Stored_t", (name));
+    i_Name = name;
+    i_RegTime = Now();
+    i_Forbidden = true;
+
+    defaults();
+}
+
 
 void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 {
     NFT("Chan_Stored_t::operator=");
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
+    i_Founder=in.i_Founder;
     i_Description=in.i_Description;
     i_Password=in.i_Password;
     i_URL=in.i_URL;
@@ -421,6 +572,16 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Mlock_Off=in.i_Mlock_Off;
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
+
+    i_Keeptopic=in.i_Keeptopic;
+    i_Topiclock=in.i_Topiclock;
+    i_Private=in.i_Private;
+    i_Secureops=in.i_Secureops;
+    i_Secure=in.i_Secure;
+    i_Restricted=in.i_Restricted;
+    i_Join=in.i_Join;
+    i_Suspended=in.i_Suspended;
+    i_Forbidden=in.i_Forbidden;
 
     entlist_val_cui j;
     i_Access_Level.clear();
@@ -445,41 +606,178 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     map<mstring, mstring>::const_iterator i;
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
     i_UserDef.insert(*i);
-
 }
 
-bool ChanServ::IsLive(mstring in)
+
+mstring Chan_Stored_t::Mlock()
 {
-    FT("ChanServ::IsLive", (in));
-    RET(live.find(in.LowerCase())!=live.end());
+    NFT("Chan_Stored_t::MLock");
+    RET((i_Mlock_On != "")  ? "+" + i_Mlock_On  : mstring("") +
+	(i_Mlock_Off != "") ? "-" + i_Mlock_Off : mstring(""));
 }
 
-bool ChanServ::IsStored(mstring in)
+
+mstring Chan_Stored_t::Mlock(mstring mode)
 {
-    FT("ChanServ::IsStored", (in));
-    RET(stored.find(in.LowerCase())!=stored.end());
+    FT("Chan_Stored_t::MLock", (mode));
+
+    i_Mlock_On = i_Mlock_Off = i_Mlock_Key = "";
+    i_Mlock_Limit = 0;
+    mstring retval = "";
+    mstring change = mode.ExtractWord(1, ": ");
+    int fwdargs = 2;
+    bool add = true;
+    bool ignorek = false;
+    bool ignorel = false;
+
+    if (change.WordCount("k") > 2)
+    {
+	ignorek = true;
+	if (retval != "")
+	    retval += ", ";
+	retval += "Multiple +/-k modes specified - ignoring";
+    }
+    if (change.WordCount("l") > 2)
+    {
+	ignorel = true;
+	if (retval != "")
+	    retval += ", ";
+	retval += "Multiple +/-l modes specified - ignoring";
+    }
+
+    for (unsigned int i=0; i<change.size(); i++)
+    {
+	switch(change[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+
+	case '-':
+	    add = false;
+	    break;
+
+	case 'o':
+	case 'v':
+	case 'b':
+	    break;
+
+	case 'k':
+	    if (!ignorek && add)
+	    {
+		if (fwdargs > mode.WordCount(": "))
+		{
+		    if (retval != "")
+			retval += ", ";
+		    retval += "No key specified for +k - ignoring";
+		    fwdargs--;
+		}
+		else
+		{
+		    i_Mlock_Key = mode.ExtractWord(fwdargs, ": ");
+		}
+		fwdargs++;
+	    }
+	    break;
+
+	case 'l':
+	    if (!ignorel && add)
+	    {
+		if (fwdargs > mode.WordCount(": "))
+		{
+		    if (retval != "")
+			retval += ", ";
+		    retval += "No limit specified for +l - ignoring";
+		    fwdargs--;
+		}
+		else if (!mode.ExtractWord(fwdargs, ": ").IsNumber())
+		{
+		    if (retval != "")
+			retval += ", ";
+		    retval += "Specified limit is not a number - ignoring";
+		}
+		else if (atol(mode.ExtractWord(fwdargs, ": ")) < 1)
+		{
+		    if (retval != "")
+			retval += ", ";
+		    retval += "Specified limit is less than one - ignoring";
+		}
+		else
+		{
+		    i_Mlock_Limit = atol(mode.ExtractWord(fwdargs, ": ").c_str());
+		}
+		fwdargs++;
+	    }
+	    break;
+
+	default:
+	    break;
+	}
+    }
+
+    add = true;
+    for (unsigned int i=0; i<change.size(); i++)
+    {
+	switch(change[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+
+	case '-':
+	    add = false;
+	    break;
+
+	case 'o':
+	case 'v':
+	case 'b':
+	case 'k':
+	case 'l':
+	    break;
+
+	default:
+	    if (add)
+	    {
+		if (!i_Mlock_On.Contains(change[i]))
+		    i_Mlock_On += change[i];
+		if (i_Mlock_Off.Contains(change[i]))
+		    i_Mlock_Off.Remove((mstring) change[i]);
+	    }
+	    else
+	    {
+		if (!i_Mlock_Off.Contains(change[i]))
+		    i_Mlock_Off += change[i];
+		if (i_Mlock_On.Contains(change[i]))
+		    i_Mlock_On.Remove((mstring) change[i]);
+	    }
+	    break;
+	}
+    }
+    if (retval != "")
+	retval += ", ";
+    if (i_Mlock_On != "" || i_Mlock_Off != "")
+    {
+	retval += "MLOCK has been set to " +
+		(i_Mlock_On != "")  ? "+" + i_Mlock_On  : mstring("") +
+		(i_Mlock_Off != "") ? "-" + i_Mlock_Off : mstring("");
+	if (i_Mlock_Limit)
+	    retval << " " << i_Mlock_Limit;
+    }
+    else
+    {
+	retval += "MLOCK has been turned off";
+    }
+    retval += ".";
+    RET(retval);
 }
 
-void ChanServ::execute(const mstring & data)
-{
-    mThread::ReAttach(tt_ChanServ);
-    FT("ChanServ::execute", (data));
-    //okay this is the main chanserv command switcher
-
-    mstring source, msgtype, mynick, message;
-    source  = data.Before(" ");
-    msgtype = data.After(" ").Before(" ");
-    mynick  = data.After(" ").After(" ").Before(" ");
-    message = data.After(":");
-
-
-    mThread::ReAttach(tt_mBase);
-}
 
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
-    out<<in.i_Name<<in.i_RegTime<<in.i_Description<<in.i_Password<<in.i_URL;
-    out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Limit;
+    out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_Description<<in.i_Password<<in.i_URL;
+    out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
+    out<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
+	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Suspended<<in.i_Forbidden;
 
     entlist_val_cui j;
     out<<in.i_Access_Level.size();
@@ -507,14 +805,17 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     return out;
 }
 
+
 wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 {
     unsigned int i,count;
     mstring dummy,dummy2;
     entlist_t edummy;
     entlist_val_t evdummy;
-    in>>out.i_Name>>out.i_RegTime>>out.i_Description>>out.i_Password>>out.i_URL;
+    in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
+    in>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
+	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Suspended>>out.i_Forbidden;
 
     out.i_Access_Level.clear();
     in>>count;
@@ -558,10 +859,45 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     return in;
 }
 
-void ChanServ::load_database(wxInputStream& in)
+
+// --------- end of Chan_Stored_t ---------------------------------
+
+ChanServ::ChanServ()
 {
+    NFT("ChanServ::ChanServ");
+    messages=true;
+    automation=true;
 }
 
+bool ChanServ::IsLive(mstring in)
+{
+    FT("ChanServ::IsLive", (in));
+    RET(live.find(in.LowerCase())!=live.end());
+}
+
+bool ChanServ::IsStored(mstring in)
+{
+    FT("ChanServ::IsStored", (in));
+    RET(stored.find(in.LowerCase())!=stored.end());
+}
+
+void ChanServ::execute(const mstring & data)
+{
+    mThread::ReAttach(tt_ChanServ);
+    FT("ChanServ::execute", (data));
+    //okay this is the main chanserv command switcher
+
+    mstring source, msgtype, mynick, message;
+    source  = data.Before(" ");
+    msgtype = data.After(" ").Before(" ");
+    mynick  = data.After(" ").After(" ").Before(" ");
+    message = data.After(":");
+
+
+    mThread::ReAttach(tt_mBase);
+}
+
+#if defined(__try) && defined(__finally)
 void cppexcepttest()
 {
     //test of __try..__finally
@@ -575,6 +911,7 @@ void cppexcepttest()
 	wxLogDebug("this worked too");
     }
 }
+#endif
 
 void ChanServ::save_database(wxOutputStream& out)
 {
@@ -586,4 +923,8 @@ void ChanServ::save_database(wxOutputStream& out)
 	    out<<i->second;
 	    // todo call script saving hooks.
 	}
+}
+
+void ChanServ::load_database(wxInputStream& in)
+{
 }
