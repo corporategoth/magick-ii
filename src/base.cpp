@@ -369,7 +369,16 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // hops = servers from us
 	    // services = 1 for service, 0 for user
-	    // NICK name hops time user host server services :real name
+	    // DAL4.4.15+ NICK name hops time user host server services :real name
+	    Parent->nickserv.live[data.ExtractWord(2, ": ").LowerCase()] =
+		Nick_Live_t(
+		    data.ExtractWord(2, ": "),
+		    (time_t) atof(data.ExtractWord(4, ": ")),
+		    data.ExtractWord(7, ": "),
+		    data.ExtractWord(5, ": "),
+		    data.ExtractWord(6, ": "),
+		    data.After(":")
+		);
 	}
 	else if (msgtype=="NOTICE")
 	{
@@ -419,6 +428,9 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="QUIT")
 	{
 	    // :source QUIT :reason
+
+	    // TODO: Call stored.Quit(reason) for live.IsRecognized().
+	    Parent->nickserv.live.erase(source.LowerCase());
 	}
 	break;
     case 'R':
