@@ -47,6 +47,7 @@ public class mct extends JApplet implements ActionListener
     private Vector laf;
     private TabbedPane startup, services, files, config, nickserv, chanserv,
 		memoserv, operserv, commserv, servmsg;
+    private boolean command;
     private static String pwd;
 
     public static String currentDirectory()
@@ -57,6 +58,7 @@ public class mct extends JApplet implements ActionListener
     public mct(String argv[])
     {
 	super();
+	command = true;
 	if (argv != null && argv.length > 0)
 	{
 	    File f = new File(argv[0]);
@@ -71,13 +73,12 @@ public class mct extends JApplet implements ActionListener
 		}
 	    }
 	}
-	if (pwd == null)
-	    actionPerformed(new ActionEvent(cwd, 0, ""));
     }
 
     public mct()
     {
 	this(null);
+	command = false;
     }
 
     public String getConfigData()
@@ -297,11 +298,6 @@ public class mct extends JApplet implements ActionListener
 
     public void init()
     {
-	init(null);
-    }
-
-    public void init(String dir)
-    {
 	// Ground work ... (Look and Feel)
 	laf = new Vector();
 	UIManager.LookAndFeelInfo[] feels = UIManager.getInstalledLookAndFeels();
@@ -348,7 +344,7 @@ public class mct extends JApplet implements ActionListener
 	mb.setBorderPainted(false);
 	JMenu submenu;
 
-	if (currentDirectory() != null)
+	if (command)
 	{
 	    submenu = new JMenu("File");
 	    submenu.setMnemonic(KeyEvent.VK_F);
@@ -382,6 +378,9 @@ public class mct extends JApplet implements ActionListener
 	    submenu.add(quit);
 
 	    mb.add(submenu);
+
+	    if (currentDirectory() == null)
+		actionPerformed(new ActionEvent(cwd, 0, ""));
 	}
 
 	submenu = new JMenu("Look and Feel");
