@@ -30,9 +30,16 @@ void ChanServ::execute(const mstring & data)
     FT("ChanServ::execute", (data));
     //okay this is the main chanserv command switcher
 
+    mThread::Detach(tt_mBase);
+    mThread::Attach(Parent, tt_ChanServ);
+
     mstring source, msgtype, mynick, message;
     source  = data.Before(" ");
     msgtype = data.After(" ").Before(" ");
     mynick  = data.After(" ").After(" ").Before(" ");
     message = data.After(":");
+
+
+    mThread::Detach(tt_ChanServ);
+    mThread::Attach(Parent,tt_mBase);
 }

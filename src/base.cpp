@@ -98,6 +98,8 @@ void NetworkServ::execute(const mstring & data)
 {
     FT("NetworkServ::execute", (data));
     //okay this is the main networkserv command switcher
+    mThread::Detach(tt_mBase);
+    mThread::Attach(Parent, tt_ServNet);
 
     mstring source, msgtype, msgdata;
     if(data[0u]==':')
@@ -126,7 +128,10 @@ void NetworkServ::execute(const mstring & data)
 	    // error out?
 	}
     }
-	
+
+    mThread::Detach(tt_ServNet);
+    mThread::Attach(Parent, tt_mBase);
+   
 }
 
 int mBaseTask::open(void *in)
