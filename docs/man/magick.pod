@@ -73,7 +73,7 @@ epone (1.4.7)
 
 =item *
 
-sirc (N/A)
+sirv (N/A)
 
 =back
 

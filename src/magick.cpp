@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.326  2001/11/16 20:27:33  prez
+** Added a MAX_THREADS option, and made the thread heartbeat a timer based
+** operation, instead of part of the threads.
+**
 ** Revision 1.325  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -842,6 +846,9 @@ int Magick::Start(bool firstrun)
     load_databases();
     FLUSH();
 
+    ACE_Reactor::instance()->schedule_timer(&Parent->hh, 0,
+		ACE_Time_Value(Parent->config.Heartbeat_Time()));
+
     // Can only open these after fork if we want then to live
     NLOG(LM_STARTUP, "COMMANDLINE/START_EVENTS");
     { WLOCK(("Events"));
@@ -1237,7 +1244,8 @@ void Magick::dump_help() const
 	 << "--save X           -w      Override [CONFIG/SAVETIME] to X.\n"
 	 << "--check X          -T      Override [CONFIG/CHECKTIME] to X.\n"
 	 << "--ping X           -p      Override [CONFIG/PING_FREQUENCY] to X.\n"
-	 << "--threads X        -X      Override [CONFIG/MIN_THREADS] to X.\n"
+	 << "--minthreads X     -q      Override [CONFIG/MIN_THREADS] to X.\n"
+	 << "--maxthreads X     -Q      Override [CONFIG/MAX_THREADS] to X.\n"
 	 << "--lwm X            -m      Override [CONFIG/LOW_WATER_MARK] to X.\n"
 	 << "--hwm X            -M      Override [CONFIG/HIGH_WATER_MARK] to X.\n"
 	 << "--append           -a      Override [NICKSERV/APPEND_RENAME] to true.\n"
@@ -1651,7 +1659,7 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
 	config.ping_frequency=FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--threads" || first=="--min_threads")
+    else if(first=="--minthreads")
     {
 	if(second.empty() || second[0U]=='-')
 	{
@@ -1664,6 +1672,23 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
 	config.min_threads=atoi(second.c_str());
 	if (config.min_threads < 1)
 	    config.min_threads = 1;
+	if (config.max_threads < config.min_threads)
+	    config.max_threads = config.min_threads;
+	RET(true);
+    }
+    else if(first=="--maxthreads")
+    {
+	if(second.empty() || second[0U]=='-')
+	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
+	}
+	if(atoi(second.c_str())<0)
+	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
+	}
+	config.max_threads=atoi(second.c_str());
+	if (config.max_threads < config.min_threads)
+	    config.max_threads = config.min_threads;
 	RET(true);
     }
     else if(first=="--lwm" || first=="--low_water_mark")
@@ -2003,14 +2028,23 @@ bool Magick::paramshort(const mstring& first, const mstring& second)
 	    else
 		ArgUsed = paramlong ("--ping", second);
 	}
-	else if(first[i]=='X')
+	else if(first[i]=='q')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--threads", second);
+		ArgUsed = paramlong ("--minthreads", second);
+	}
+	else if(first[i]=='Q')
+	{
+	    if (ArgUsed)
+	    {
+		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
+	    }
+	    else
+		ArgUsed = paramlong ("--maxthreads", second);
 	}
 	else if(first[i]=='m')
 	{
@@ -2682,9 +2716,12 @@ bool Magick::get_config_values()
 	value_uint = config.listsize;
     config.maxlist = value_uint;
 
-    in.Read(ts_Config+"MIN_THREADS",config.min_threads, 2U);
+    in.Read(ts_Config+"MIN_THREADS",config.min_threads, 3U);
     if (config.min_threads < 1)
 	config.min_threads = 1;
+    in.Read(ts_Config+"MAX_THREADS",config.max_threads, 25U);
+    if (config.max_threads < config.min_threads)
+	config.max_threads = config.min_threads;
     in.Read(ts_Config+"LOW_WATER_MARK",config.low_water_mark, 10U);
     in.Read(ts_Config+"HIGH_WATER_MARK",config.high_water_mark, 15U);
     if (config.high_water_mark < config.low_water_mark)
@@ -3732,8 +3769,11 @@ void Magick::Disconnect(const bool reconnect)
     { RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
+	ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+	if (thr_mgr != NULL)
+	    thr_mgr->cancel_task(Parent->ircsvchandler);
 	if (!ircsvchandler->fini())
-	    ircsvchandler->close();
+	    ircsvchandler->close(0);
 	WLOCK(("IrcSvcHandler"));
 	delete ircsvchandler;
 	ircsvchandler = NULL;

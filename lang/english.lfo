@@ -280,6 +280,7 @@ STAGE_FAIL       =Could not create/validate a stage in load or save process, ski
 STAGE_FAIL_ABORT =Could not create/validate a stage in load or save process, aborting.
 THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
 THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
+THREAD_DEAD_MAIN =The main thread has stopped processing, shutting down!
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 
 [EXCEPTIONS]

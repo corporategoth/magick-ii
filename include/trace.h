@@ -25,6 +25,10 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2001/11/16 20:27:33  prez
+** Added a MAX_THREADS option, and made the thread heartbeat a timer based
+** operation, instead of part of the threads.
+**
 ** Revision 1.78  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -132,7 +136,7 @@ RCSID(trace_h, "@(#) $Id$");
 
 #include "variant.h"
 
-enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
+enum threadtype_enum { tt_LOST = 0, tt_MAIN, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_MAX };
 extern mstring threadname[tt_MAX];
 unsigned short makehex(const mstring &SLevel);
 enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };

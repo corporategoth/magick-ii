@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.168  2001/11/16 20:27:33  prez
+** Added a MAX_THREADS option, and made the thread heartbeat a timer based
+** operation, instead of part of the threads.
+**
 ** Revision 1.167  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -494,6 +498,7 @@ public:
 	unsigned int listsize;
 	unsigned int maxlist;
 	unsigned int min_threads;
+	unsigned int max_threads;
 	unsigned int low_water_mark;
 	unsigned int high_water_mark;
 	unsigned long heartbeat_time;
@@ -511,6 +516,7 @@ public:
 	unsigned int Listsize()const	{ return listsize; }
 	unsigned int Maxlist()const	{ return maxlist; }
 	unsigned int Min_Threads()const	{ return min_threads; }
+	unsigned int Max_Threads()const	{ return max_threads; }
 	unsigned int Low_Water_Mark()const    { return low_water_mark; }
 	unsigned int High_Water_Mark()const    { return high_water_mark; }
 	unsigned long Heartbeat_Time()const	{ return heartbeat_time; }
@@ -572,6 +578,7 @@ public:
     pair<mstring,mstring> GetKeys()const;
     void save_databases();
     void load_databases();
+    Heartbeat_Handler hh;
     Reconnect_Handler rh;
 
     operator mVariant() const

@@ -25,6 +25,10 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/11/16 20:27:33  prez
+** Added a MAX_THREADS option, and made the thread heartbeat a timer based
+** operation, instead of part of the threads.
+**
 ** Revision 1.58  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -145,6 +149,28 @@ RCSID(ircsocket_h, "@(#) $Id$");
 
 #include "variant.h"
 
+class Heartbeat_Handler : public ACE_Event_Handler
+{
+public:
+    enum heartbeat_enum { H_Invalid = 0, H_Worker, H_Main,
+			H_IrcServer, H_Events, H_DCC, H_MAX };
+    static const char *names[H_MAX];
+
+private:
+    typedef map<ACE_thread_t, pair<heartbeat_enum, mDateTime> > threads_t;
+    threads_t threads;
+
+public:
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+
+    void AddThread(heartbeat_enum type, ACE_thread_t id = ACE_Thread::self());
+    void RemoveThread(ACE_thread_t id = ACE_Thread::self());
+    void Heartbeat(ACE_thread_t id = ACE_Thread::self());
+
+    size_t size();
+    size_t count(heartbeat_enum type);
+};
+
 class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
@@ -178,25 +204,20 @@ public:
 
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
-    map<ACE_thread_t,mDateTime> thread_heartbeat;
     set<mstring> cmodes_pending;
     mDateTime last_expire;
     mDateTime last_save;
     mDateTime last_check;
     mDateTime last_ping;
     mDateTime last_msgcheck;
-    mDateTime last_heartbeat;
     static void *save_databases(void *in = NULL);
     void do_expire(mDateTime &synctime);
     void do_check(mDateTime &synctime);
     void do_ping(mDateTime &synctime);
     void do_msgcheck(mDateTime &synctime);
-    void do_heartbeat(mDateTime &synctime);
     void do_modes(mDateTime &synctime);
 
 public:
-    void RemoveThread(ACE_thread_t thr = ACE_Thread::self());
-    void Heartbeat(ACE_thread_t thr = ACE_Thread::self());
     void AddChannelModePending(const mstring &in);
 
     void ForceSave();
@@ -212,7 +233,7 @@ public:
 class mMessage;
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
-    friend void EventTask::do_heartbeat(mDateTime &synctime);
+    friend int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg);
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
