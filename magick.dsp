@@ -65,7 +65,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib-1.1.3" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr /YX"pch.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib-1.1.3" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -141,17 +142,7 @@ SOURCE=.\docs\develop
 # Begin Source File
 
 SOURCE=.\src\EscLexer.cpp
-
-!IF  "$(CFG)" == "magick - Win32 Release"
-
 # SUBTRACT CPP /YX
-
-!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
-
-# SUBTRACT CPP /YX
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -160,17 +151,7 @@ SOURCE=.\src\escparse.g
 # Begin Source File
 
 SOURCE=.\src\EscParser.cpp
-
-!IF  "$(CFG)" == "magick - Win32 Release"
-
 # SUBTRACT CPP /YX
-
-!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
-
-# SUBTRACT CPP /YX
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

@@ -127,6 +127,9 @@ void mBase::send_cmd(const mstring & source, const mstring & fmt, ...)
 
 void mBase::shutdown()
 {
+    int j=BaseTask.thr_count();
+    for(int i=0;i<j;i++)
+	BaseTask.shutdown();
 }
 
 #if 0
@@ -315,6 +318,72 @@ void mBaseTask::message(const mstring& message)
 
 void mBaseTask::message_i(const mstring& message)
 {
+    mstring tmp[2];
+    if(message[0u]==':')
+    {
+	// with from prefix
+	tmp[0]=message.ExtractWord(2,": ").UpperCase();
+	tmp[1]=message.ExtractWord(3,": ");
+    }
+    else
+    {
+	// no from prefix
+	tmp[0]=message.ExtractWord(1,": ").UpperCase();
+	tmp[1]=message.ExtractWord(2,": ");
+    }
+	    
+    // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
+    // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
+
+    if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE") {
+	mstring names;
+
+    // Find out if the target nick is one of the services 'clones'
+    // (and if it is, which one?)  Pass the message to them if so.
+    // before even that, check if it's script overriden via Parent->checkifhandled(servername,command)
+    // if so, Parent->doscripthandle(server,command,data);
+//  if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//	    Parent->operserv.execute(message);
+    if ((names=" "+Parent->nickserv.getnames()+" ").Find(" "+tmp[1]+" "))
+	Parent->nickserv.execute(message);
+    else if ((names=" "+Parent->chanserv.getnames()+" ").Find(" "+tmp[1]+" "))
+	Parent->chanserv.execute(message);
+//  else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//	Parent->memoserv.execute(message);
+//  else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//	Parent->helpserv.execute(message);
+    // else check if it's script handled, might do up a list of script servers
+    // in the magick object to check against, else trash it.
+
+    // Not a MSG/NOTICE to services, fall through
+    // (it could be to a channel, or unrecognised nick).
+    else
+        Parent->server.execute (message);
+    } 
+    else 
+    {
+	// This handles all non-msgs/notices.
+	Parent->server.execute (message);
+    }
+
+    /* Locking here because we dont want two threads
+     * dieing because they both counted at the same
+     * time and before the other had died.  Unlikely,
+     * but it CAN happen.
+     */
+#if 0
+    {
+	MLOCK("thread_handler", "LWM");
+	if(mBase::Buffer_Queue.message_count()<
+	    Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+Parent->low_water_mark*sizeof(unsigned long))
+	{
+	    mBase::Buffer_Queue.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
+	    mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
+	    COM(("Low water mark reached, killing thread."));
+	    shutdown();
+	}
+    }
+#endif
 }
 
 void mBaseTask::shutdown()
