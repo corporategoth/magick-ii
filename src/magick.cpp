@@ -915,6 +915,10 @@ void Magick::dump_help() const
 	"--dir X                    Set the initial services directory.\n" <<
 	"--config X                 Set the name of the config file.\n" <<
 	"--nofork                   Do not become a daemon/service process.\n"
+#ifdef WIN32
+	 << "--service X                Manipulate Magick's NT Service settings.\n" <<
+	"                               Values are: insert, start, stop, remove.\n"
+#endif
 #ifdef CONVERT
 	 << "--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
