@@ -1,3 +1,43 @@
+* 2002-10-11 01:07  Preston A. Elder <prez@magick.tm>
+  include/memoserv.h (1.65), src/memoserv.cpp (1.128):
+  
+  Some fixes to memoserv, and adding some more algorithms.
+
+* 2002-10-10 15:25  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.311):
+  
+  Fixed the message finding routine in chanserv.
+
+* 2002-10-09 11:06  Preston A. Elder <prez@magick.tm>
+  helper/uninstall.bat (1.4):
+  
+  Fixed uninstall batch file for win9x
+
+* 2002-10-08 13:58  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.119), include/mstring.h (1.103), src/base.cpp (1.206),
+  src/chanserv.cpp (1.310), src/commserv.cpp (1.133), src/ircsocket.cpp
+  (1.241), src/memoserv.cpp (1.127), src/mstring.cpp (1.139),
+  src/nickserv.cpp (1.222), src/operserv.cpp (1.167), src/server.cpp
+  (1.255), src/servmsg.cpp (1.112):
+  
+  Fixed problem with multiple spaces and 'After'
+
+* 2002-10-07 18:55  Preston A. Elder <prez@magick.tm>
+  include/magick.h (1.190), src/nickdata.cpp (1.17), src/operserv.cpp
+  (1.166):
+  
+  Fixed deadlock in clone protection/akill.
+
+* 2002-10-07 13:20  Preston A. Elder <prez@magick.tm>
+  include/version.h (1.141), include/version.h-release (1.43):
+  
+  Fixed typo
+
+* 2002-10-07 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.52):
+  
+  Created version 2.0s20021007
+
 * 2002-10-05 16:34  Preston A. Elder <prez@magick.tm>
   lang/english.hlp (1.53):
   
