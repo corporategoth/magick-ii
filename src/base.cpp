@@ -153,39 +153,37 @@ void mBaseTask::message_i(const mstring& message)
     // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
     // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
 
-    if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE") {
+    if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE")
+    {
 	mstring names;
 	if (Parent->nickserv.IsLive(message.ExtractWord(1, ": ")))
 	    Parent->nickserv.live[message.ExtractWord(1, ": ")].FloodTrigger();
 
-    // Find out if the target nick is one of the services 'clones'
-    // (and if it is, which one?)  Pass the message to them if so.
-    // before even that, check if it's script overriden via Parent->checkifhandled(servername,command)
-    // if so, Parent->doscripthandle(server,command,data);
-//  if ((names=" "+Parent->operserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
-//	    Parent->operserv.execute(message);
-         if ((names=" "+Parent->nickserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
-	Parent->nickserv.execute(message);
-    else if ((names=" "+Parent->chanserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
-	Parent->chanserv.execute(message);
-//  else if ((names=" "+Parent->memoserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
-//	Parent->memoserv.execute(message);
-//  else if ((names=" "+Parent->helpserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
-//	Parent->helpserv.execute(message);
+	// Find out if the target nick is one of the services 'clones'
+	// (and if it is, which one?)  Pass the message to them if so.
+	// before even that, check if it's script overriden via Parent->checkifhandled(servername,command)
+	// if so, Parent->doscripthandle(server,command,data);
+	if ((names=" "+Parent->operserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+	    Parent->operserv.execute(message);
+	else if ((names=" "+Parent->nickserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+	    Parent->nickserv.execute(message);
+	else if ((names=" "+Parent->chanserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+	    Parent->chanserv.execute(message);
+	else if ((names=" "+Parent->memoserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+	    Parent->memoserv.execute(message);
+	else if ((names=" "+Parent->helpserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+	    Parent->helpserv.execute(message);
 
-    // else check if it's script handled, might do up a list of script servers
-    // in the magick object to check against, else trash it.
+	// else check if it's script handled, might do up a list of script servers
+	// in the magick object to check against, else trash it.
 
-    // Not a MSG/NOTICE to services, fall through
-    // (it could be to a channel, or unrecognised nick).
-    else
-        Parent->server.execute (message);
+	// Not a MSG/NOTICE to services, fall through
+	// (it could be to a channel, or unrecognised nick).
+	else
+	    Parent->server.execute (message);
     } 
-    else 
-    {
-	// This handles all non-msgs/notices.
+    else    // This handles all non-msgs/notices.
 	Parent->server.execute (message);
-    }
 
     /* Locking here because we dont want two threads
      * dieing because they both counted at the same
@@ -261,7 +259,7 @@ void NetworkServ::execute(const mstring & data)
 	    SendSVR("256 " + source + " :Administrative info about " +
 		Parent->Startup_SERVER_NAME);
 	    SendSVR("257 " + source + " :" + Parent->Startup_SERVER_DESC);
-	    SendSVR("258 " + source + " :Admins - " + Parent->OperServ_SERVICES_ADMIN);
+	    SendSVR("258 " + source + " :Admins - " + Parent->operserv.Services_Admin());
 	    SendSVR("259 " + source + " :Magick IRC Services - magick@magick.tm");
 	}
 	else if (msgtype=="AKILL")
@@ -321,6 +319,8 @@ void NetworkServ::execute(const mstring & data)
 	    // :source INFO :server/nick
 
 	    // Basically, dump credits.
+	    // 371 ....
+	    // 374   (END)
 	}
 	else if (msgtype=="INVITE")
 	{
@@ -328,15 +328,15 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="ISON")
 	{
+	    // repl: :our.server 303 source :local.nick
 	}
 	break;
     case 'J':
 	if (msgtype=="JOIN")
 	{
 	    // :source JOIN :#channel
-	    mstring chan;
-	    for (int i=1; (chan=data.After(":", 2).ExtractWord(i, ",")) != ""; i++)
-		Parent->nickserv.live[sourceL].Join(chan);
+	    for (int i=1; i<=data.After(":", 2).WordCount(","); i++)
+		Parent->nickserv.live[sourceL].Join(data.After(":", 2).ExtractWord(i, ","));
 	}
 	break;
     case 'K':
@@ -354,6 +354,10 @@ void NetworkServ::execute(const mstring & data)
     case 'L':
 	if (msgtype=="LINKS")
 	{
+	    //:ChanServ LINKS :temple.magick.tm
+	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
+	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
+
 	}
 	else if (msgtype=="LIST")
 	{
@@ -371,21 +375,40 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="NAMES")
 	{
 	    // :source NAMES #channel our.server
+	    // repl: :temple.magick.tm 366 ChanServ #magick :End of /NAMES list.
 	}
 	else if (msgtype=="NICK")
 	{
-	    // hops = servers from us
-	    // services = 1 for service, 0 for user
-	    // DAL4.4.15+ NICK name hops time user host server services :real name
-	    Parent->nickserv.live[data.ExtractWord(2, ": ").LowerCase()] =
-		Nick_Live_t(
-		    data.ExtractWord(2, ": "),
-		    (time_t) atof(data.ExtractWord(4, ": ")),
-		    data.ExtractWord(7, ": "),
-		    data.ExtractWord(5, ": "),
-		    data.ExtractWord(6, ": "),
-		    data.After(":")
-		);
+	    if (source.IsEmpty()) {
+		// NEW USER
+	        // hops = servers from us
+		// services = 1 for service, 0 for user
+	        // DAL4.4.15+ NICK name hops time user host server services :real name
+		Parent->nickserv.live[data.ExtractWord(2, ": ").LowerCase()] =
+		    Nick_Live_t(
+			data.ExtractWord(2, ": "),
+			(time_t) atof(data.ExtractWord(4, ": ")),
+			data.ExtractWord(7, ": "),
+			data.ExtractWord(5, ": "),
+			data.ExtractWord(6, ": "),
+			data.After(":")
+		    );
+	    }
+	    else
+	    {
+		// CHANGE NICK
+		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ").LowerCase())) {
+		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()] =
+			Parent->nickserv.live[sourceL];
+		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].
+			Name(data.ExtractWord(3, ": "));
+		}
+		else
+		{
+		    KillUnknownUser(data.ExtractWord(3, ": "));
+		}
+		Parent->nickserv.live.erase(sourceL);
+	    }
 	}
 	else if (msgtype=="NOTICE")
 	{
@@ -402,9 +425,8 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="PART")
 	{
 	    // :source PART #channel
-	    mstring chan;
-	    for (int i=1; (chan=data.ExtractWord(3, ": ").ExtractWord(i, ",")) != ""; i++)
-		Parent->nickserv.live[sourceL].Part(chan);
+	    for (int i=1; i<=data.ExtractWord(3, ": ").WordCount(","); i++)
+		Parent->nickserv.live[sourceL].Part(data.ExtractWord(3, ": ").ExtractWord(i, ","));
 	}
 	else if (msgtype=="PASS")
 	{
@@ -470,6 +492,9 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="STATS")
 	{
 	    // :source STATS type :our.server
+	    //:temple.magick.tm 219 ChanServ o :End of /STATS report
+	    SendSVR("219 " + source + " " + data.ExtractWord(3, ": ") +
+		" :End of /STATS report");
 	}
 	else if (msgtype=="SUMMON")
 	{
@@ -515,6 +540,12 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="TRACE")
 	{
 	    // :source TRACE :server/target
+	    // repl:
+	    //:ChanServ TRACE temple.magick.tm
+	    //:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
+	    //:ChanServ TRACE PreZ
+	    //:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
+
 	}
 	break;
     case 'U':
@@ -540,6 +571,28 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="VERSION")
 	{
 	    // :source VERSION :our.server
+	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
+	    mstring tmp;
+	    SendSVR("351 " + source + " Magick " + Parent->Startup_SERVER_NAME +
+		" :pre-2.0-a1 (" +
+		(Parent->operserv.getnames() != "") ? "O" : "o" +
+		(Parent->operserv.getnames() != "" &&
+		     Parent->operserv.Akill())      ? "A" : "a" +
+		(Parent->operserv.getnames() != "" &&
+		    Parent->operserv.Flood())       ? "F" : "f" +
+		(Parent->operserv.getnames() != "" &&
+		    Parent->operserv.OperDeny())    ? "D" : "d" +
+		(Parent->nickserv.getnames() != "") ? "N" : "n" +
+		(Parent->chanserv.getnames() != "") ? "C" : "c" +
+		(Parent->memoserv.getnames() != "" &&
+		    Parent->memoserv.Memo())        ? "M" : "m" +
+		(Parent->memoserv.getnames() != "" &&
+		    Parent->memoserv.News())        ? "W" : "w" +
+		(Parent->helpserv.getnames() != "") ? "H" : "h" +
+		Parent->Services_SHOWSYNC           ? "Y" : "y" +
+		(tmp << Parent->Startup_LEVEL) +
+		")");
+
 	}
 	break;
     case 'W':

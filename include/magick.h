@@ -22,8 +22,11 @@
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
+#include "operserv.h"
 #include "nickserv.h"
 #include "chanserv.h"
+#include "memoserv.h"
+#include "helpserv.h"
 #include "ircsocket.h"
 #include "variant.h"
 
@@ -117,8 +120,11 @@ public:
 	Magick(int inargc, char **inargv);
 	int Start();
 
+	OperServ operserv;
 	ChanServ chanserv;
 	NickServ nickserv;
+	MemoServ memoserv;
+	HelpServ helpserv;
 	NetworkServ server;
 	LoggerTask loggertask;
         IrcServer ACO_server;
@@ -140,19 +146,6 @@ public:
 	int Startup_DEADTIME;
 	float Startup_GMT;
 
-//	mstring Services_NickServ;
-//	mstring Services_NickServ_Name;
-//	mstring Services_ChanServ;
-//	mstring Services_ChanServ_Name;
-	mstring Services_MemoServ;
-	mstring Services_MemoServ_Name;
-	bool Services_MEMO;
-	bool Services_NEWS;
-	mstring Services_OperServ;
-	mstring Services_OperServ_Name;
-	bool Services_FLOOD;
-	bool Services_AKILL;
-	bool Services_OPERDENY;
 	mstring Services_CommServ;
 	mstring Services_CommServ_Name;
 	mstring Services_ServMsg;
@@ -181,20 +174,6 @@ public:
 	int Config_STARTHRESH;
 
 	int MemoServ_NEWS_EXPIRE;
-
-	mstring OperServ_SERVICES_ADMIN;
-	mstring OperServ_EXPIRE_OPER;
-	mstring OperServ_EXPIRE_ADMIN;
-	mstring OperServ_EXPIRE_SOP;
-	mstring OperServ_EXPIRE_SADMIN;
-	int OperServ_CLONE_LIMIT;
-	mstring OperServ_DEF_CLONE;
-	int OperServ_FLOOD_TIME;
-	int OperServ_FLOOD_MSGS;
-	int OperServ_IGNORE_TIME;
-	int OperServ_IGNORE_LIMIT;
-	int OperServ_IGNORE_REMOVE;
-	int OperServ_IGNORE_METHOD;
 
 	bool CommServ_SECURE_OPER;
 	mDateTime ResetTime;

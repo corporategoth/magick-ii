@@ -777,11 +777,11 @@ bool Magick::check_config()
 {
     NFT("Magick::check_config");
     // change these later when the appropriate classes are set up
-    if(!Services_OperServ.IsEmpty())
+    if(operserv.names.IsEmpty())
     {
-	Services_FLOOD=false;
-	Services_AKILL=false;
-	Services_OPERDENY=false;
+	operserv.flood=false;
+	operserv.akill=false;
+	operserv.operdeny=false;
     }
     if (Startup_LEVEL < 1)
     {
@@ -852,15 +852,17 @@ void Magick::get_config_values()
     in.Read(ts_Services+"NickServ_Name",&nickserv.realname,"Nickname Service");
     in.Read(ts_Services+"ChanServ",&chanserv.names,"ChanServ");
     in.Read(ts_Services+"ChanServ_Name",&chanserv.realname,"Channel Service");
-    in.Read(ts_Services+"MemoServ",&Services_MemoServ,"MemoServ");
-    in.Read(ts_Services+"MemoServ_Name",&Services_MemoServ_Name,"Memo/News Service");
-    in.Read(ts_Services+"MEMO",&Services_MEMO,true);
-    in.Read(ts_Services+"NEWS",&Services_NEWS,true);
-    in.Read(ts_Services+"OperServ",&Services_OperServ,"OperServ");
-    in.Read(ts_Services+"OperServ_Name",&Services_OperServ_Name,"Operator Service");
-    in.Read(ts_Services+"FLOOD",&Services_FLOOD,true);
-    in.Read(ts_Services+"AKILL",&Services_AKILL,true);
-    in.Read(ts_Services+"OPERDENY",&Services_OPERDENY,true);
+    in.Read(ts_Services+"MemoServ",&memoserv.names,"MemoServ");
+    in.Read(ts_Services+"MemoServ_Name",&memoserv.realname,"Memo/News Service");
+    in.Read(ts_Services+"MEMO",&memoserv.memo,true);
+    in.Read(ts_Services+"NEWS",&memoserv.news,true);
+    in.Read(ts_Services+"OperServ",&operserv.names,"OperServ");
+    in.Read(ts_Services+"OperServ_Name",&operserv.realname,"Operator Service");
+    in.Read(ts_Services+"FLOOD",&operserv.flood,true);
+    in.Read(ts_Services+"AKILL",&operserv.akill,true);
+    in.Read(ts_Services+"OPERDENY",&operserv.operdeny,true);
+    in.Read(ts_Services+"HelpServ",&helpserv.names,"HelpServ");
+    in.Read(ts_Services+"HelpServ_Name",&helpserv.realname,"User Help Subsystem");
     in.Read(ts_Services+"CommServ",&Services_CommServ,"CommServ");
     in.Read(ts_Services+"CommServ_Name",&Services_CommServ_Name,"Committee Service");
     in.Read(ts_Services+"ServMsg",&Services_ServMsg,"GlobalMsg DevNull");
@@ -940,21 +942,21 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LVL_CMDOP",&chanserv.lvl_cmdop,10);
     in.Read(ts_ChanServ+"LVL_CMDCLEAR",&chanserv.lvl_cmdclear,20);
 
-    in.Read(ts_MemoServ+"NEWS_EXPIRE",&MemoServ_NEWS_EXPIRE,21);
+    in.Read(ts_MemoServ+"NEWS_EXPIRE",&memoserv.news_expire,21);
 
-    in.Read(ts_OperServ+"SERVICES_ADMIN",&OperServ_SERVICES_ADMIN,"");
-    in.Read(ts_OperServ+"EXPIRE_OPER",&OperServ_EXPIRE_OPER,"1d");
-    in.Read(ts_OperServ+"EXPIRE_ADMIN",&OperServ_EXPIRE_ADMIN,"7d");
-    in.Read(ts_OperServ+"EXPIRE_SOP",&OperServ_EXPIRE_SOP,"1m");
-    in.Read(ts_OperServ+"EXPIRE_SADMIN",&OperServ_EXPIRE_SADMIN,"1y");
-    in.Read(ts_OperServ+"CLONE_LIMIT",&OperServ_CLONE_LIMIT,2);
-    in.Read(ts_OperServ+"DEF_CLONE",&OperServ_DEF_CLONE,"Maximum connections from one host exceeded");
-    in.Read(ts_OperServ+"FLOOD_TIME",&OperServ_FLOOD_TIME,10);
-    in.Read(ts_OperServ+"FLOOD_MSGS",&OperServ_FLOOD_MSGS,5);
-    in.Read(ts_OperServ+"IGNORE_TIME",&OperServ_IGNORE_TIME,20);
-    in.Read(ts_OperServ+"IGNORE_LIMIT",&OperServ_IGNORE_LIMIT,5);
-    in.Read(ts_OperServ+"IGNORE_REMOVE",&OperServ_IGNORE_REMOVE,300);
-    in.Read(ts_OperServ+"IGNORE_METHOD",&OperServ_IGNORE_METHOD,8);
+    in.Read(ts_OperServ+"SERVICES_ADMIN",&operserv.services_admin,"");
+    in.Read(ts_OperServ+"EXPIRE_OPER",&operserv.expire_oper,"1d");
+    in.Read(ts_OperServ+"EXPIRE_ADMIN",&operserv.expire_admin,"7d");
+    in.Read(ts_OperServ+"EXPIRE_SOP",&operserv.expire_sop,"1m");
+    in.Read(ts_OperServ+"EXPIRE_SADMIN",&operserv.expire_sadmin,"1y");
+    in.Read(ts_OperServ+"CLONE_LIMIT",&operserv.clone_limit,2);
+    in.Read(ts_OperServ+"DEF_CLONE",&operserv.def_clone,"Maximum connections from one host exceeded");
+    in.Read(ts_OperServ+"FLOOD_TIME",&operserv.flood_time,10);
+    in.Read(ts_OperServ+"FLOOD_MSGS",&operserv.flood_msgs,5);
+    in.Read(ts_OperServ+"IGNORE_TIME",&operserv.ignore_time,20);
+    in.Read(ts_OperServ+"IGNORE_LIMIT",&operserv.ignore_limit,5);
+    in.Read(ts_OperServ+"IGNORE_REMOVE",&operserv.ignore_remove,300);
+    in.Read(ts_OperServ+"IGNORE_METHOD",&operserv.ignore_method,8);
 
     in.Read(ts_CommServ+"SECURE_OPER",&CommServ_SECURE_OPER,true);
 
