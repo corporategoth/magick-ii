@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/03/28 15:07:40  ungod
+** fix for mVariant(long)
+**
 ** Revision 1.35  2000/02/27 03:58:41  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -75,7 +78,7 @@ mVariant::mVariant(int in)
 mVariant::mVariant(long in)
 {
     truevaluetype=valuetype="long";
-    IntValue=in;
+    LongValue=in;
 }
 
 mVariant::mVariant(char in)
