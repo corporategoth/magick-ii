@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.162  2001/05/08 03:22:27  prez
+** Removed one possible deadlock cause, and stopped events engine from doing
+** anything until synch is over.
+**
 ** Revision 1.161  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -1107,6 +1111,7 @@ int EventTask::svc(void)
     // The biggie, so big, it has its own zip code ... uhh .. thread.
     NFT("EventTask::svc");
 
+    bool proc;
     { WLOCK(("Events", "last_expire"));
     WLOCK2(("Events", "last_save"));
     WLOCK3(("Events", "last_check"));
@@ -1121,8 +1126,21 @@ int EventTask::svc(void)
     mDateTime synctime;
     while(!Parent->Shutdown())
     {
+	proc = true;
 	// Make sure we're turned on ...
 	if (!Parent->AUTO())
+	    proc = false;
+	else
+	{
+	    // Make sure we're sync'd to network ...
+	    RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler == NULL || Parent->ircsvchandler->Burst())
+		proc = false;
+	    else
+		synctime = Parent->ircsvchandler->SyncTime();
+	}
+
+	if (!proc)
 	{
 	    ACE_OS::sleep(1);
 	    continue;
@@ -1148,13 +1166,6 @@ int EventTask::svc(void)
 
 	// This is mainly used for 'only do this if users have had
 	// enough time to rectify the situation since sync' ...
-	{ RLOCK(("IrcSvcHandler"));
-	if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
-	    synctime = Parent->ircsvchandler->SyncTime();
-	else
-	    synctime = mDateTime::CurrentDateTime();
-	}
-
 	{ RLOCK(("Events", "last_expire"));
 	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
 	{
@@ -1696,9 +1707,7 @@ int EventTask::svc(void)
 	}}
 
 	{ RLOCK(("Events", "last_ping"));
-	{ RLOCK(("IrcSvcHandler"));
-	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency() &&
-	    Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
+	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
 	{
 	    CP(("Starting SERVER PING ..."));
 
@@ -1747,7 +1756,7 @@ int EventTask::svc(void)
 	    MCB(last_ping);
 	    last_ping = mDateTime::CurrentDateTime();
 	    MCE(last_ping);
-	}}}
+	}}
 
     }
     catch (E_NickServ_Stored &e)

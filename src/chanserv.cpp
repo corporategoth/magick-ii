@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.241  2001/05/08 03:22:27  prez
+** Removed one possible deadlock cause, and stopped events engine from doing
+** anything until synch is over.
+**
 ** Revision 1.240  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -1147,7 +1151,7 @@ void Chan_Live_t::SendMode(const mstring& in)
 
     bool add = true;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+    { RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on"));
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
     WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
@@ -1416,6 +1420,7 @@ void Chan_Live_t::SendMode(const mstring& in)
     CE(2, p_modes_off);
     CE(3, p_modes_off_params.size());
     MCE(p_modes_on);
+    }
     RLOCK2(("Events"));
     if (Parent->events != NULL)
 	Parent->events->AddChannelModePending(i_Name);
@@ -1433,7 +1438,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
     wc = in.WordCount(": ");
 
-    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+    { WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on"));
     WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
     WLOCK4(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
@@ -1675,6 +1680,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
     CE(3, p_modes_off);
     CE(4, p_modes_off_params.size());
     MCE(modes);
+    }
 
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.GetStored(i_Name).Mode(source,

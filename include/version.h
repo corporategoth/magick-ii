@@ -25,6 +25,10 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2001/05/08 03:22:27  prez
+** Removed one possible deadlock cause, and stopped events engine from doing
+** anything until synch is over.
+**
 ** Revision 1.118  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -118,7 +122,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 1;
+const int BUILD_NUMBER = 2;
 
 /* Versioning Information
  *
