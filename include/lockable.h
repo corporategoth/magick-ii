@@ -13,10 +13,10 @@
 
 #ifndef _LOCKABLE_H
 #define _LOCKABLE_H
-#include <ace/OS.h>
-#include <ace/Task.h>
-#include <ace/Synch.h>
+#include <ace/Local_Tokens.h>
+#include "mstring.h"
 
+#if 0
 #define RLOCK(x1) \
     ACE_Local_RLock lock1(x1); \
     ACE_Guard<ACE_Local_RLock> guard1(lock1);
@@ -136,6 +136,23 @@
     ACE_Guard<ACE_Local_RLock> guard4(lock4); \
     ACE_Local_Mutex lock5(x1 + "::" + x2 + "::" + x3 + "::" + x4 + "::" + x5); \
     ACE_Guard<ACE_Local_Mutex> guard5(lock5);
+#endif
 
+class RLOCK
+{
+    ACE_Local_RLock lock1,lock2,lock3,lock4,lock5;
+    int count;
+public:
+    RLOCK(mstring x1);
+    RLOCK(mstring x1, mstring x2);
+    RLOCK(mstring x1, mstring x2, mstring x3);
+    RLOCK(mstring x1, mstring x2, mstring x3, mstring x4);
+    RLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5);
+    ~RLOCK();
+};
+
+class WLOCK
+{
+};
 
 #endif
