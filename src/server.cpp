@@ -1670,7 +1670,7 @@ mstring Server::GetServer(const mstring & server) const
 
     if (proto.Numeric.Server() && server[0u] == '@')
 	retval = proto.Numeric.FindServerNumeric(proto.Numeric.ServerNumeric(server.After("@")));
-    else if (IsList(server))
+    else if (IsList(server) || server.IsSameAs(Magick::instance().startup.Server_Name(), true))
 	retval = server;
     RET(retval);
 }
@@ -2563,12 +2563,25 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
 
 	mstring line =
 	    ((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " ";
-	unsigned long numeric = Magick::instance().nickserv.GetLive(dest)->Numeric();
 
-	if (numeric && proto.Numeric.User())
-	    line << proto.Numeric.UserNumeric(numeric);
+	if (IsChan(dest))
+	{
+	    unsigned long numeric = Magick::instance().chanserv.GetLive(dest)->Numeric();
+
+	    if (numeric && proto.Numeric.Channel())
+		line << proto.Numeric.ChannelNumeric(numeric);
+	    else
+		line << dest;
+	}
 	else
-	    line << dest;
+	{
+	    unsigned long numeric = Magick::instance().nickserv.GetLive(dest)->Numeric();
+
+	    if (numeric && proto.Numeric.User())
+		line << proto.Numeric.UserNumeric(numeric);
+	    else
+		line << dest;
+	}
 	line << " :";
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    nraw(nick, line + text.ExtractWord(i, "\n\r"));
@@ -2652,12 +2665,26 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
 	mstring line =
 	    ((proto.Tokens() &&
 	      !proto.GetNonToken("PRIVMSG").empty()) ? proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) + " ";
-	unsigned long numeric = Magick::instance().nickserv.GetLive(dest)->Numeric();
 
-	if (numeric && proto.Numeric.User())
-	    line << proto.Numeric.UserNumeric(numeric);
+	if (IsChan(dest))
+	{
+	    unsigned long numeric = Magick::instance().chanserv.GetLive(dest)->Numeric();
+
+	    if (numeric && proto.Numeric.Channel())
+		line << proto.Numeric.ChannelNumeric(numeric);
+	    else
+		line << dest;
+	}
 	else
-	    line << dest;
+	{
+	    unsigned long numeric = Magick::instance().nickserv.GetLive(dest)->Numeric();
+
+	    if (numeric && proto.Numeric.User())
+		line << proto.Numeric.UserNumeric(numeric);
+	    else
+		line << dest;
+	}
+
 	line << " :";
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    nraw(nick, line + text.ExtractWord(i, "\n\r"));
