@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/12/11 11:19:46  prez
+** Use Occurance not occurance (because occurance could later be private)
+**
 ** Revision 1.33  2000/10/10 11:47:51  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -212,9 +215,9 @@ void DccEngine::decodeReply(const mstring& mynick, const mstring& source,
     FT("DccEngine::decodeReply",((in)));
     vector<mstring> ResVector;
     mstring ResMid=lowDequote(in);
-    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
+    if(in.Occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
 	return;
-    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())>8)
+    if(in.Occurances(mstring(CTCP_DELIM_CHAR).c_str())>8)
     {
 	CP(("Hmm way too many ctcp's in a single line, flood? ignoring..."));
 	return;
@@ -234,9 +237,9 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
     FT("DccEngine::decodeRequest",((in)));
     vector<mstring> ResVector;
     mstring ResMid=lowDequote(in);
-    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
+    if(in.Occurances(mstring(CTCP_DELIM_CHAR).c_str())<2)
 	return;
-    if(in.occurances(mstring(CTCP_DELIM_CHAR).c_str())>8)
+    if(in.Occurances(mstring(CTCP_DELIM_CHAR).c_str())>8)
     {
 	CP(("Hmm way too many ctcp's in a single line, flood? ignoring..."));
 	return;
