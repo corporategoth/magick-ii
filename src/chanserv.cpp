@@ -52,8 +52,9 @@ void *chanserv_thread_handler(void *level)
 		// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
 		if(MagickObject->chanserv.inputbuffer.size()<(highestlevel-1)*MagickObject->high_water_mark+MagickObject->low_water_mark)
 		{
-		    if(highestlevel!=0)
+		    if(highestlevel!=1)
 		    {
+		        CP(("chanserv has reached lowtide mark, dropping a thread"));
 			highestlevel--;
 			return NULL;
 		    }
@@ -62,7 +63,14 @@ void *chanserv_thread_handler(void *level)
 	}
 	MagickObject->chanserv.execute(data.first,data.second);
 	// if theres leftover time in the timeslice, yield it up to the processor.
-	ACE_Thread::yield();
+	//ACE_Thread::yield();
+        if(ilevel==1&&highestlevel==1&&MagickObject->chanserv.inputbuffer.size()==0)
+        {
+            CP(("chanserv has no more messages left going to suspended state..."));
+	    ACE_hthread_t temp;
+	    ACE_Thread::self(temp);
+	    ACE_Thread::suspend(temp);
+	}
     }
     return NULL;
 }
@@ -70,7 +78,7 @@ void *chanserv_thread_handler(void *level)
 void ChanServ::init()
 {
     NFT("ChanServ::init()");
-    ACE_Thread::spawn(chanserv_thread_handler,(void *)0);
+    ACE_Thread::spawn(chanserv_thread_handler,(void *)1);
 }
 
 void ChanServ::push_message(const mstring& servicename, const mstring& message)
@@ -82,12 +90,23 @@ void ChanServ::push_message(const mstring& servicename, const mstring& message)
     // put this here in case the processing loop get's hung up, it just *shrugs* and 
     // starts up another when the threshhold gets hit
     if(inputbuffer.size()>highestlevel*MagickObject->high_water_mark)
+    {
+        CP(("chanserv has reached hightide mark, starting a new thread"));
         ACE_Thread::spawn(chanserv_thread_handler,(void *)(highestlevel+1));
+    }
+    if(highestlevel==1&&MagickObject->chanserv.inputbuffer.size()==1)
+    {
+        CP(("chanserv has new messages resuming thread..."));
+	ACE_hthread_t temp;
+	ACE_Thread::self(temp);
+	ACE_Thread::resume(temp);
+    }
+
 }
 
 void ChanServ::execute(const mstring & servicename, const mstring & message)
 {
-    FT("ChanServ::execue", (servicename, message));
+    FT("ChanServ::execute", (servicename, message));
     //okay this is the main chanserv command switcher
 }
 

@@ -19,8 +19,11 @@
 #endif
 
 #include <ace/Local_Tokens.h>
+#include <ace/Thread.h>
 #include "mstring.h"
 #include "trace.h"
+#include <map>
+using namespace std;
 
 class RLOCK
 {
@@ -67,6 +70,14 @@ public:
     MLOCK(mstring x1, mstring x2, mstring x3, mstring x4);
     MLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5);
     ~MLOCK();
+};
+
+class mThread
+{
+private:
+    static map<ACE_thread_t,ThreadID*> selftothreadidmap;
+    static multimap<threadtype_enum,ThreadID*> threadtypetothreadidmap;
+    static map<threadtype_enum,int> threadtypecountmap;
 };
 
 #endif
