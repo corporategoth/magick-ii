@@ -277,21 +277,17 @@ mstring mDateTime::FormatString(const mstring & format) const
 	    if (i + 1 < format.size() && tolower(format[i + 1]) == 'h')
 	    {
 		i++;
+		int res = iHour;
 		if (ampmtype > 0)
 		{
-		    if (iHour % 12 < 10)
-			Result += "0";
+		    res %= 12;
+		    if (res == 0)
+			res = 12;
 		}
-		else
-		{
-		    if (iHour < 10)
-			Result += "0";
-		}
+		if (res < 10)
+		    Result += "0";
+		Result += res;
 	    }
-	    if (ampmtype > 0)
-		Result += iHour % 12;
-	    else
-		Result += iHour;
 	    break;
 	case 'n':
 	    if (i + 1 < format.size() && tolower(format[i + 1]) == 'n')
