@@ -121,6 +121,7 @@ enum bool
 #  else
 #    include <exception.h>
 #  endif
+#  include <typeinfo>
 #endif
 #ifdef HAVE_LIST
 #  include <list>
