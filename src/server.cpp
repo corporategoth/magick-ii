@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2000/03/14 15:10:16  prez
+** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
+**
 ** Revision 1.76  2000/03/14 13:36:46  prez
 ** Finished P12 compliance (SJOIN, etc).
 **
@@ -1927,9 +1930,8 @@ void NetworkServ::execute(const mstring & data)
 	    vector<mstring> users;
 	    mstring modes = data.ExtractWord(5, ": ");
 	    mstring mode_params = "", nick;
-	    bool oped, voiced;
-	    if (modes.Contains("l") || modes.Contains("k"))
-		mode_params = data.Before(":").After(" ", 5);
+	    bool oped, voiced;	    if (modes.Contains("l") || modes.Contains("k"))
+		mode_params = data.Before(":", 2).After(" ", 5);
 	    for (i=0; i < data.After(":", 2).WordCount(" "); i++)
 	    {
 		nick = data.After(":", 2).ExtractWord(i+1, " ");
@@ -1965,6 +1967,8 @@ void NetworkServ::execute(const mstring & data)
 
 	    for (i=0; i<users.size(); i++)
 		Parent->nickserv.live[users[i].LowerCase()].Join(data.ExtractWord(4, ": "));
+	    CP(("MODE TO %s: %s", data.ExtractWord(4, ": ").LowerCase().c_str(),
+			(modes + " " + mode_params).c_str()));
 	    if (Parent->chanserv.IsLive(data.ExtractWord(4, ": ")))
 		Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(source,
 									modes + " " + mode_params);

@@ -2092,7 +2092,7 @@
 08 =SADMIN::
 09 =SADMIN::You may toggle trace levels with the following:
 10 =SADMIN::    UP           DOWN         SET
-10 =SADMIN::    TYPES        LEVELS
+11 =SADMIN::    TYPES        LEVELS
 
 [OPERSERV/TRACE/UP]
 01 =SADMIN::TRACE UP <type> <level|name [name [...]]>
@@ -2153,10 +2153,10 @@
 05 =SADMIN::0x0002  Source      Reading source files (cfg, scripts)
 06 =SADMIN::0x0004  Bind        Binding and Unbinding of commands
 07 =SADMIN::0x0008              Unused
-07 =SADMIN::0x0010  CheckPoint  Pre-defined Checkpoints
-08 =SADMIN::0x0020  Comments    More verbose checkpoints
-09 =SADMIN::0x0040  Locking     Acquiring and releasing locks
-10 =SADMIN::0x0080  Functions   In and out of functions (and params)
+08 =SADMIN::0x0010  CheckPoint  Pre-defined Checkpoints
+09 =SADMIN::0x0020  Comments    More verbose checkpoints
+10 =SADMIN::0x0040  Locking     Acquiring and releasing locks
+11 =SADMIN::0x0080  Functions   In and out of functions (and params)
 12 =SADMIN::0x0100  Changing    What data is changing
 13 =SADMIN::0x0200  Modify      An in/out difference of the record
 14 =SADMIN::0x0400              Unused
@@ -2326,9 +2326,9 @@
 03 =OPER SOP::This is equivilant to executing:
 04 =OPER SOP::    SETTINGS CONFIG, SETTINGS NICK, SETTINGS CHANNEL
 05 =OPER SOP::    SETTINGS OTHER
-05 =OPER SOP::
-06 =OPER SOP::Please see the respective help on each of these
-07 =OPER SOP::commands to see what they do individually.
+06 =OPER SOP::
+07 =OPER SOP::Please see the respective help on each of these
+08 =OPER SOP::commands to see what they do individually.
 
 [OPERSERV/CLONE]
 01 =OPER SOP::Services have in-built clone protection, which will

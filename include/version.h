@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/03/14 15:10:15  prez
+** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
+**
 ** Revision 1.72  2000/03/14 13:37:35  prez
 ** *** empty log message ***
 **
@@ -63,7 +66,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 148;
+const int BUILD_NUMBER = 154;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

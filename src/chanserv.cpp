@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.149  2000/03/14 15:10:15  prez
+** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
+**
 ** Revision 1.148  2000/03/14 10:02:48  prez
 ** Added SJOIN and SNICK
 **
@@ -776,6 +779,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     mstring change = in.ExtractWord(1, ": ");
     unsigned int fwdargs = 2, i;
     bool add = true;
+    CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
     for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
