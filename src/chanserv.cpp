@@ -7,12 +7,11 @@
 void *chanserv_thread_handler(void *level)
 {
     int ilevel=(int)level;  // 0 get's passed in for the first thread spawned, etc.
+    pair<mstring,mstring> data;
     MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
     while(false) // fix this a bit later to a proper check
     {
 
-	// check for spawn limit hit
-	// if so ACE_Thread::spawn(chanserv_thread_handler,(void *)(ilevel+1));
 	// brackets are here so that the lock exists only as long as we need it.
 	{
 	    ACE_Local_RLock inputbufferlock("chanserv::inputbuffer");
@@ -26,12 +25,11 @@ void *chanserv_thread_handler(void *level)
 	    // check the inputbuffer
 	    if(MagickObject->chanserv.inputbuffer.size()!=0)
 	    {
-		pair<mstring,mstring> data=MagickObject->chanserv.inputbuffer.front();
+		data=MagickObject->chanserv.inputbuffer.front();
 		MagickObject->chanserv.inputbuffer.pop_front();
-		MagickObject->chanserv.execute(data.first,data.second);
 	    }
 	}
-
+	MagickObject->chanserv.execute(data.first,data.second);
 	ACE_Thread::yield();
     }
     return NULL;
