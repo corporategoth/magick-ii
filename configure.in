@@ -360,8 +360,8 @@ if test "$convert" = "true"; then
   AC_DEFINE(CONVERT)
 fi
 
-AC_ARG_ENABLE(getpass, [  --enable-getpass        Enable GETPASS instead of SETPASS
-  --disable-getpass       Enable SETPASS instead of GETPASS (default)],
+AC_ARG_ENABLE(getpass, [  --enable-getpass        Enable GETPASS
+  --disable-getpass       Disable GETPASS (default)],
   [case "${enableval}" in
     yes) getpass=true;;
     no) getpass=false;;
@@ -532,6 +532,8 @@ cat >.max_keylen.c <<EOF
 #define BUF_SZ ((BF_ROUNDS+2)*4)
 int main() {
   char *p, *out = (char *) malloc(BUF_SZ + 1);
+  if (out == NULL)
+    return 0;
   p = out + BUF_SZ;
   *p = 0;
   memset(out, '.', BUF_SZ);
