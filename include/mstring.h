@@ -25,6 +25,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/12/05 07:48:26  prez
+** *** empty log message ***
+**
 ** Revision 1.53  2000/10/15 03:29:27  prez
 ** Mods to the memory system, LOTS of printf's to try and figure out why
 ** the damn thing coredumps on init.
@@ -88,7 +91,37 @@ static const char *ident_mstring_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
+/* Memory Allocation Scheme
+ *
+ * 1. C: malloc/free
+ * 2. C++: new/delete
+ * 3. CLUSTER: memory_area.alloc/memory_area.dealloc
+ *
+ */
+#define ALLOCTYPE	1
+
+#if ALLOCTYPE == 3
+
+/* Use our own Memory Map for clustered alloc */
 #include "mmemory.h"
+#define ALLOC(X)	(char *) memory_area.alloc(X)
+#define DEALLOC(X)	memory_area.dealloc(X)
+
+#elif ALLOCTYPE == 2
+
+/* Standard C++ Allocation */
+#define ALLOC(X)	new char[X]
+#define DEALLOC(X)	delete [] X
+
+#else
+
+/* Standard C Allocation */
+#define ALLOC(X)	(char *) malloc(X)
+#define DEALLOC(X)	free(X)
+
+#endif
+
+
 /* This would have to be the most interoperable class
  * in the existance of C++ ;P */
 
@@ -214,7 +247,9 @@ class mstring
 {
     char *i_str;
     size_t i_len, i_res;
+#if ALLOCTYPE == 3
     static MemoryManager<ACE_Thread_Mutex> memory_area;
+#endif
 
 public:
     mstring()
@@ -244,7 +279,7 @@ public:
     mstring(const double in)
 	{ i_str = NULL; copy(in); }
     ~mstring()
-	{ if (i_str != NULL) memory_area.dealloc(i_str); }
+	{ if (i_str != NULL) DEALLOC(i_str); }
 
     void copy(const char *in, size_t length);
     void append(const char *in, size_t length);
