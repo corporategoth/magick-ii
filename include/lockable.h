@@ -35,6 +35,28 @@ RCSID(lockable_h, "@(#) $Id$");
 
 #include "trace.h"
 
+const mstring lck_OperServ = "OperServ";
+const mstring lck_NickServ = "NickServ";
+const mstring lck_ChanServ = "ChanServ";
+const mstring lck_MemoServ = "MemoServ";
+const mstring lck_CommServ = "CommServ";
+const mstring lck_ServMsg = "ServMsg";
+const mstring lck_IrcSvcHandler = "IrcSvcHandler";
+const mstring lck_Server = "Server";
+const mstring lck_live = "live";
+const mstring lck_stored = "stored";
+const mstring lck_list = "list";
+const mstring lck_xfers = "xfers";
+const mstring lck_nick = "nick";
+const mstring lck_channel = "channel";
+const mstring lck_DccMap = "DccMap";
+const mstring lck_mFile = "mFile";
+const mstring lck_mSocket = "mSocket";
+const mstring lck_Events = "Events";
+const mstring lck_AllDeps = "AllDependancies";
+const mstring lck_MsgIdMap = "MsgIdMap";
+const mstring lck_FileMap = "FileMap";
+
 #ifdef MAGICK_LOCKS_WORK
 
 #define MAX_LOCKS 16		/* Max variants */
@@ -156,13 +178,13 @@ public:
     }
 #endif
 
-    void *operator         new(size_t size)
+    void *operator          new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator         delete(void *ptr)
+    void operator          delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -196,13 +218,13 @@ public:
     }
 #endif
 
-    void *operator         new(size_t size)
+    void *operator          new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator         delete(void *ptr)
+    void operator          delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -225,13 +247,13 @@ public:
     {
     }
 
-    void *operator         new(size_t size)
+    void *operator          new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator         delete(void *ptr)
+    void operator          delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
