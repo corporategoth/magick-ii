@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/04/04 03:21:36  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.36  2000/04/04 03:13:51  prez
 ** Added support for masking hostnames.
 **
@@ -103,6 +106,9 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* CHAN*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Channel);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "STAT* OPER*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Oper);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* OTH*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Other);
@@ -411,15 +417,7 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 		Parent->memoserv.channel.size());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_COMM"),
 		Parent->commserv.list.size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CLONE"),
-		Parent->operserv.Clone_size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_AKILL"),
-		Parent->operserv.Akill_size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_OPERDENY"),
-		Parent->operserv.OperDeny_size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_IGNORE"),
-		Parent->operserv.Ignore_size());
-    
+
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
 		Parent->memoserv.GetInternalName().c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD1"),
@@ -458,33 +456,53 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
 		Parent->servmsg.stats.Global(),
 		Parent->servmsg.stats.Credits());
+}
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->operserv.GetInternalName().c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+
+void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_stats_Oper", (mynick, source, params));
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CLONE"),
+		Parent->operserv.Clone_size());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_AKILL"),
+		Parent->operserv.Akill_size());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_OPERDENY"),
+		Parent->operserv.OperDeny_size());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_IGNORE"),
+		Parent->operserv.Ignore_size());
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD"));
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD1"),
 		Parent->operserv.stats.Trace(),
 		Parent->operserv.stats.Mode());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
+    if (Parent->server.proto.SVS())
+    {
+	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD2"),
 		Parent->operserv.stats.Qline(),
 		Parent->operserv.stats.Unqline());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
+	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD3"),
 		Parent->operserv.stats.Noop(),
 		Parent->operserv.stats.Kill());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD14"),
+    }
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD4"),
 		Parent->operserv.stats.Ping(),
 		Parent->operserv.stats.Update());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD15"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD5"),
 		Parent->operserv.stats.Reload(),
 		Parent->operserv.stats.Unload());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD16"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD6"),
 		Parent->operserv.stats.Jupe(),
 		Parent->operserv.stats.OnOff());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD17"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD7"),
 		Parent->operserv.stats.Clone(),
 		Parent->operserv.stats.Akill());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD18"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD8"),
 		Parent->operserv.stats.OperDeny(),
 		Parent->operserv.stats.Ignore());
+    if (Parent->server.proto.SVSHOST())
+	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD9"),
+		Parent->operserv.stats.Hide());
 }
 
 
@@ -551,6 +569,7 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
     do_Stats(mynick, source, params.ExtractWord(1, " "));
     do_stats_Nick(mynick, source, params);
     do_stats_Channel(mynick, source, params);
+    do_stats_Oper(mynick, source, params);
     do_stats_Other(mynick, source, params);
     do_stats_Usage(mynick, source, params);
 }

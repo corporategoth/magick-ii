@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.213  2000/04/04 03:21:34  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.212  2000/04/03 09:45:23  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -1718,6 +1721,7 @@ bool Magick::get_config_values()
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
 
+    in.Read(ts_NickServ+"APPEND_RENAME",&nickserv.append_rename, true);
     in.Read(ts_NickServ+"SUFFIXES",&nickserv.suffixes,"_-^`");
     in.Read(ts_NickServ+"EXPIRE",&value_mstring,"4w");
     if (FromHumanTime(value_mstring))

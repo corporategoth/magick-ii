@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2000/04/04 03:21:35  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.70  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -586,6 +589,8 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "KILL*", Parent->commserv.SOP_Name(), OperServ::do_Kill);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HIDE*", Parent->commserv.SOP_Name(), OperServ::do_Hide);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*PING*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_Ping);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1051,6 +1056,12 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Qline", (mynick, source, params));
 
+    if (!Parent->server.proto.SVS())
+    {
+	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	return;
+    }
+
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -1075,6 +1086,12 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_UnQline", (mynick, source, params));
 
+    if (!Parent->server.proto.SVS())
+    {
+	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	return;
+    }
+
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
@@ -1097,6 +1114,12 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_NOOP", (mynick, source, params));
+
+    if (!Parent->server.proto.SVS())
+    {
+	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	return;
+    }
 
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
@@ -1141,6 +1164,12 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Kill", (mynick, source, params));
 
+    if (!Parent->server.proto.SVS())
+    {
+	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	return;
+    }
+
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
@@ -1160,6 +1189,44 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
 		    target.c_str());
 	announce(mynick, Parent->getMessage("MISC/KILL"),
 		    source.c_str(), target.c_str());
+    }
+    else
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+		    target.c_str());
+    }
+}
+
+
+void OperServ::do_Hide(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Hide", (mynick, source, params));
+
+    if (!Parent->server.proto.SVSHOST())
+    {
+	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	return;
+    }
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring target  = params.ExtractWord(2, " ");
+    mstring newhost = params.ExtractWord(3, " ");
+
+    if (Parent->nickserv.IsLive(target))
+    {
+	Parent->server.SVSHOST(mynick, target, newhost);
+	Parent->operserv.stats.i_Hide++;
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HIDE"),
+		    target.c_str(), newhost.c_str());
+	announce(mynick, Parent->getMessage("MISC/HIDE"),
+		    source.c_str(), target.c_str(), newhost.c_str());
     }
     else
     {

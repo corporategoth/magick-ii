@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/04/04 03:21:36  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.87  2000/04/04 03:13:51  prez
 ** Added support for masking hostnames.
 **
@@ -613,6 +616,10 @@ void NetworkServ::FlushMsgs(mstring nick)
 		    SVSKILL(nick, j->third.first,
 				j->third.second);
 		    break;
+		case t_SVSHOST:
+		    SVSHOST(nick, j->third.first,
+				j->third.second);
+		    break;
 		case t_TOPIC:
 		    TOPIC(nick, j->third.first,
 				j->third.second);
@@ -1017,6 +1024,9 @@ void NetworkServ::NOOP(mstring nick, mstring server, bool onoff)
 {
     FT("NetworkServ::NOOP", (nick, server, onoff));
 
+    if (!Parent->server.proto.SVS())
+	return;
+
     if (!Parent->nickserv.IsLive(nick))
     {
 	wxLogWarning("NOOP command requested by non-existant user %s", nick.c_str());
@@ -1136,6 +1146,9 @@ void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
 {
     FT("NetworkServ::QLINE", (nick, target,reason));
 
+    if (!Parent->server.proto.SVS())
+	return;
+
     if (!Parent->nickserv.IsLive(nick))
     {
 	ToBeSent[nick.LowerCase()].push_back(
@@ -1180,6 +1193,9 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
 {
     FT("NetworkServ::SVSMODE", (mynick, nick, mode));
 
+    if (!Parent->server.proto.SVS())
+	return;
+
     if (!Parent->nickserv.IsLive(mynick))
     {
 	ToBeSent[mynick.LowerCase()].push_back(
@@ -1208,6 +1224,9 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
 {
     FT("NetworkServ::SVSKILL", (mynick, nick, reason));
 
+    if (!Parent->server.proto.SVS())
+	return;
+
     if (!Parent->nickserv.IsLive(mynick))
     {
 	ToBeSent[mynick.LowerCase()].push_back(
@@ -1232,9 +1251,43 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
 }
 
 
+void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
+{
+    FT("NetworkServ::SVSHOST", (mynick, nick, newhost));
+
+    if (!Parent->server.proto.SVSHOST())
+	return;
+
+    if (!Parent->nickserv.IsLive(mynick))
+    {
+	ToBeSent[mynick.LowerCase()].push_back(
+		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
+		t_SVSHOST, Now(), triplet<mstring, mstring, mstring>(
+		nick, newhost, "")));
+	return;
+    }
+    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
+    {
+	wxLogWarning("SVSHOST command requested by non-service %s", mynick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("SVSHOST command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].AltHost(newhost);
+	raw(":" + mynick + " SVSHOST " + nick + " " + newhost);
+    }
+}
+
+
 void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 {
     FT("NetworkServ::SVSNICK", (mynick, nick, newnick));
+
+    if (!Parent->server.proto.SVS())
+	return;
 
     if (!Parent->nickserv.IsLive(mynick))
     {
@@ -1305,6 +1358,9 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 void NetworkServ::UNQLINE(mstring nick, mstring target)
 {
     FT("NetworkServ::UNQLINE", (nick, target));
+
+    if (!Parent->server.proto.SVS())
+	return;
 
     if (!Parent->nickserv.IsLive(nick))
     {
@@ -1830,6 +1886,7 @@ void NetworkServ::execute(const mstring & data)
 			    data.ExtractWord(9, ": "),
 			    data.After(":")
 			);
+		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(6, ": "));
 		    break;
 		}
 		if (i_UserMax < Parent->nickserv.live.size())
@@ -1948,7 +2005,7 @@ void NetworkServ::execute(const mstring & data)
 		Parent->Disconnect();
 	    }
             else
-            {
+	    {
 		Parent->GotConnect(true);
 		SignOnAll();
             }
@@ -2102,7 +2159,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="SJOIN")
 	{
 	    //:server SJOIN chan-stamp #channel +modes extra-params :@opd_nick +voice_nick nick 
-	    //:relic.devel.relic.net SJOIN 952608432 #blah + <none> :@Kwahraw +PreZ Zephyr 
+	    //:relic.devel.relic.net SJOIN 952608432 #blah + <none> :@Kwahraw +PreZ Zephyr
 	    unsigned int i;
 
 	    vector<mstring> users;
@@ -2201,9 +2258,9 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(6, ": "),
 			data.After(":")
 		    );
+	    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
 	    if (i_UserMax < Parent->nickserv.live.size())
 		i_UserMax = Parent->nickserv.live.size();
-	    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
 
 	    // HAS to be AFTER the nickname is added to map.
 	    map<mstring, Committee>::iterator iter;
@@ -2303,7 +2360,11 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="SVSHOST")
 	{
-	    // Changing HOST (aurora)
+	    // :source SVSHOST user newhost
+	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    {
+		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].AltHost(data.ExtractWord(4, ": "));
+	    }
 	}
 	else if (msgtype=="SVSKILL")
 	{

@@ -172,6 +172,7 @@ OPERDENY_ADD       =%s just added OperDeny on host %s.
 QLINE              =%s just turned %s a quarantine on nicknames matching %s.
 NOOP               =%s just turned %s IRC Operator quarantine on server %s.
 KILL               =%s just silently killed user %s.
+HIDE               =%s just changed the host of %s to %s.
 SHUTDOWN           =SHUTDOWN command received from %s.
 RELOAD             =%s just reloaded the server configuration file.
 JUPE               =%s just JUPED server %s.
@@ -229,13 +230,24 @@ CHAN_CMD12         =GREET      %10d / MESSAGE    %10d
 CHAN_CMD13         =SET        %10d / NOEXPIRE   %10d
 CHAN_CMD14         =LOCK       %10d / UNLOCK     %10d
 
+OPER_CLONE         =Clone Override entries     : %d
+OPER_AKILL         =AutoKill entries           : %d
+OPER_OPERDENY      =OperDeny entries           : %d
+OPER_IGNORE        =Ignore entries             : %d
+OPER_CMD           =Successful Command Usage:
+OPER_CMD1          =TRACE      %10d / MODE       %10d
+OPER_CMD2          =QLINE      %10d / UNQLINE    %10d
+OPER_CMD3          =NOOP       %10d / KILL       %10d
+OPER_CMD4          =PING       %10d / UPDATE     %10d
+OPER_CMD5          =RELOAD     %10d / UNLOAD     %10d
+OPER_CMD6          =JUPE       %10d / ON/OFF     %10d
+OPER_CMD7          =CLONE      %10d / AKILL      %10d
+OPER_CMD8          =OPERDENY   %10d / IGNORE     %10d
+OPER_CMD9          =HIDE       %10d
+
 OTH_MEMO           =Users with waiting memos   : %d
 OTH_NEWS           =Channels with news articles: %d
 OTH_COMM           =Active Committees          : %d
-OTH_CLONE          =Clone Override entries     : %d
-OTH_AKILL          =AutoKill entries           : %d
-OTH_OPERDENY       =OperDeny entries           : %d
-OTH_IGNORE         =Ignore entries             : %d
 
 OTH_CMD            =Successful %s Command Usage:
 OTH_CMD1           =READ       %10d / UNREAD     %10d
@@ -250,16 +262,6 @@ OTH_CMD8           =LOGON      %10d / SET        %10d
 OTH_CMD9           =LOCK       %10d / UNLOCK     %10d
 
 OTH_CMD10          =GLOBAL     %10d / CREDITS    %10d
-
-OTH_CMD11          =TRACE      %10d / MODE       %10d
-OTH_CMD12          =QLINE      %10d / UNQLINE    %10d
-OTH_CMD13          =NOOP       %10d / KILL       %10d
-OTH_CMD14          =PING       %10d / UPDATE     %10d
-OTH_CMD15          =RELOAD     %10d / UNLOAD     %10d
-OTH_CMD16          =JUPE       %10d / ON/OFF     %10d
-OTH_CMD17          =CLONE      %10d / AKILL      %10d
-OTH_CMD18          =OPERDENY   %10d / IGNORE     %10d
-
 
 USE_NS_LIVE        =Live Nicknames      %5d (%dkb)
 USE_CS_LIVE        =Live Channels       %5d (%dkb)
@@ -740,6 +742,7 @@ NICK_MODE          =Mode change %s has been sent for nickname %s.
 QLINE              =Quarantine for nicknames matching %s has been turned %s.
 NOOP               =IRC Operator quarantine has been turned %s for server %s.
 KILL               =User %s has been killed (silently).
+HIDE               =Changed host of nickname %s to %s.
 PING               =PING message being sent to all servers.
 UPDATE             =Saving databases.
 SHUTDOWN           =Shutting down ...
@@ -765,6 +768,7 @@ TRUNCATE           =Message truncated at "...%s".  Type /MSG %s CONTINUE <text>
 PENDING            =You have memos pending to be sent.
 NOPENDING          =You have no memos pending to be sent.
 FILEDISABLED       =File attachments in memos have been DISABLED.
+ATTACHLIMIT        =Nickname %s has reached their limit of file attachments.
 FORWARD            =[FORWARD: %s] %s
 FORWARD_ARG        =[FORWARD(%s): %s] %s
 REPLY              =[REPLY: "%s"] %s

@@ -24,6 +24,9 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/04/04 03:21:34  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.11  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -84,6 +87,7 @@ public:
     static void do_Global(mstring mynick, mstring source, mstring params);
     static void do_stats_Nick(mstring mynick, mstring source, mstring params);
     static void do_stats_Channel(mstring mynick, mstring source, mstring params);
+    static void do_stats_Oper(mstring mynick, mstring source, mstring params);
     static void do_stats_Other(mstring mynick, mstring source, mstring params);
     static void do_stats_Usage(mstring mynick, mstring source, mstring params);
     static void do_stats_All(mstring mynick, mstring source, mstring params);

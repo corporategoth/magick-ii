@@ -24,6 +24,9 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/04/04 03:21:34  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.31  2000/04/03 09:45:21  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -101,6 +104,7 @@ public:
 	unsigned long i_Unqline;
 	unsigned long i_Noop;
 	unsigned long i_Kill;
+	unsigned long i_Hide;
 	unsigned long i_Ping;
 	unsigned long i_Update;
 	unsigned long i_Reload;
@@ -114,7 +118,7 @@ public:
     public:
 	stats_t() {
 	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop =
-		i_Kill = i_Ping = i_Update = i_Reload =
+		i_Kill = i_Hide = i_Ping = i_Update = i_Reload =
 		i_Unload = i_Jupe = i_OnOff = i_Clone =
 		i_Akill = i_OperDeny = i_Ignore = 0; }
 	unsigned long Trace()	    { return i_Trace; }
@@ -123,6 +127,7 @@ public:
 	unsigned long Unqline()	    { return i_Unqline; }
 	unsigned long Noop()	    { return i_Noop; }
 	unsigned long Kill()	    { return i_Kill; }
+	unsigned long Hide()	    { return i_Hide; }
 	unsigned long Ping()	    { return i_Ping; }
 	unsigned long Update()	    { return i_Update; }
 	unsigned long Reload()	    { return i_Reload; }
@@ -217,6 +222,7 @@ public:
     static void do_UnQline(mstring mynick, mstring source, mstring params);
     static void do_NOOP(mstring mynick, mstring source, mstring params);
     static void do_Kill(mstring mynick, mstring source, mstring params);
+    static void do_Hide(mstring mynick, mstring source, mstring params);
     static void do_Ping(mstring mynick, mstring source, mstring params);
     static void do_Update(mstring mynick, mstring source, mstring params);
     static void do_Shutdown(mstring mynick, mstring source, mstring params);

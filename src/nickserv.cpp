@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2000/04/04 03:21:35  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.77  2000/04/04 03:13:51  prez
 ** Added support for masking hostnames.
 **
@@ -3134,20 +3137,40 @@ mstring NickServ::findnextnick(mstring in)
 {
     FT("NickServ::findnextnick", (in));
     mstring retval = in;
-    unsigned int i;
+    // Amountof nicknames it will try, only
+    // for the guest????? method.
+    unsigned int i, attempts = 64;
 
-    for (i=0; i<Parent->nickserv.Suffixes().Len(); i++)
+    if (Parent->nickserv.Append_Rename())
     {
-	while (retval.Len() < Parent->server.proto.NickLen())
+	for (i=0; i<Parent->nickserv.Suffixes().Len(); i++)
 	{
-	    retval << Parent->nickserv.Suffixes()[i];
-	    if (!Parent->nickserv.IsLive(retval) &&
-		!Parent->nickserv.IsStored(retval))
+	    while (retval.Len() < Parent->server.proto.NickLen())
+	    {
+		retval << Parent->nickserv.Suffixes()[i];
+		if (!Parent->nickserv.IsLive(retval) &&
+		    !Parent->nickserv.IsStored(retval))
+		{
+		    RET(retval);
+		}
+	    }
+	    retval = in;
+	}
+    }
+    else
+    {
+	srand(time(NULL));
+	for (i=0; i<attempts; i++)
+	{
+	    retval = "";
+	    retval.Format("%s%05d",
+		    Parent->nickserv.Suffixes().c_str(),
+		    rand() % 65535);
+	    if (!Parent->nickserv.IsLive(retval))
 	    {
 		RET(retval);
 	    }
 	}
-	retval = in;
     }
     RET("");
 }

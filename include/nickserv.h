@@ -24,6 +24,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/04/04 03:21:34  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.33  2000/04/04 03:13:50  prez
 ** Added support for masking hostnames.
 **
@@ -383,6 +386,7 @@ class NickServ : public mBase
 private:
     // Config Entries ...
     mstring enforcer_name;	// Realname of enforcer
+    bool append_rename;		// Type of renaming scheme to use.
     mstring suffixes;		// What to add to unidentified nicks
     unsigned long expire;	// How long to keep nicknames
     unsigned long ident;	// How long to wait for IDENT
@@ -458,6 +462,7 @@ public:
     } stats;
 
     mstring Enforcer_Name()	{ return enforcer_name; }
+    bool Append_Rename()	{ return append_rename; }
     mstring Suffixes()		{ return suffixes; }
     unsigned long Expire()	{ return expire; }
     unsigned long Ident()	{ return ident; }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/04/04 03:21:35  prez
+** Added support for SVSHOST where applicable.
+**
 ** Revision 1.48  2000/04/03 09:45:24  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -1006,9 +1009,9 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 	}
 	name = Parent->getSname(name);
 
-	bool ignored = Parent->nickserv.stored[name.LowerCase()].IsIgnore(source);
-	if ((ignored && !Parent->nickserv.stored[name.LowerCase()].NoMemo()) ||
-	    (!ignored && Parent->nickserv.stored[name.LowerCase()].NoMemo()))
+	if (Parent->nickserv.stored[name.LowerCase()].IsIgnore(source) ?
+		!Parent->nickserv.stored[name.LowerCase()].NoMemo() :
+		Parent->nickserv.stored[name.LowerCase()].NoMemo())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
 			    name.c_str());
@@ -1209,9 +1212,9 @@ void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 	}
 	dest = Parent->getSname(dest);
 
-	bool ignored = Parent->nickserv.stored[dest.LowerCase()].IsIgnore(source);
-	if ((ignored && !Parent->nickserv.stored[dest.LowerCase()].NoMemo()) ||
-	    (!ignored && Parent->nickserv.stored[dest.LowerCase()].NoMemo()))
+	if (Parent->nickserv.stored[dest.LowerCase()].IsIgnore(source) ?
+		!Parent->nickserv.stored[dest.LowerCase()].NoMemo() :
+		Parent->nickserv.stored[dest.LowerCase()].NoMemo())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
 			    dest.c_str());
@@ -1351,9 +1354,9 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	bool ignored = Parent->nickserv.stored[iter->Sender().LowerCase()].IsIgnore(source);
-	if ((ignored && !Parent->nickserv.stored[iter->Sender().LowerCase()].NoMemo()) ||
-	    (!ignored && Parent->nickserv.stored[iter->Sender().LowerCase()].NoMemo()))
+	if (Parent->nickserv.stored[iter->Sender().LowerCase()].IsIgnore(source) ?
+		!Parent->nickserv.stored[iter->Sender().LowerCase()].NoMemo() :
+		Parent->nickserv.stored[iter->Sender().LowerCase()].NoMemo())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
 			    iter->Sender().c_str());
@@ -1700,12 +1703,6 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (Parent->memoserv.Files() == 0)
-	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/FILEDISABLED"));
-	    return;
-	}
-
 	if (!Parent->nickserv.IsStored(name))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
@@ -1713,10 +1710,40 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 	name = Parent->getSname(name);
+	mstring target = name;
+	if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
+	    target = Parent->getSname(Parent->nickserv.stored[name.LowerCase()].Host());
 
-	bool ignored = Parent->nickserv.stored[name.LowerCase()].IsIgnore(source);
-	if ((ignored && !Parent->nickserv.stored[name.LowerCase()].NoMemo()) ||
-	    (!ignored && Parent->nickserv.stored[name.LowerCase()].NoMemo()))
+	if (Parent->memoserv.Files() > 0)
+	{
+	    if (Parent->memoserv.IsNick(target))
+	    {
+		unsigned int count = 0;
+		list<Memo_t>::iterator iter;
+		for (iter=Parent->memoserv.nick[target.LowerCase()].begin();
+			iter!=Parent->memoserv.nick[target.LowerCase()].end();
+			iter++)
+		{
+		    if (iter->File())
+			count++;
+		}
+		if (count >= Parent->memoserv.Files())
+		{
+		    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/ATTACHLIMIT"),
+					name.c_str());
+		    return;
+		}
+	    }
+	}
+	else
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/FILEDISABLED"));
+	    return;
+	}
+
+	if (Parent->nickserv.stored[name.LowerCase()].IsIgnore(source) ?
+		!Parent->nickserv.stored[name.LowerCase()].NoMemo() :
+		Parent->nickserv.stored[name.LowerCase()].NoMemo())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
 			    name.c_str());
