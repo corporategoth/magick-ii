@@ -21,7 +21,7 @@
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 88;
+const int BUILD_NUMBER = 31;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;
@@ -106,7 +106,7 @@ const mstring contrib[] = {
 "    Tschaicovski         If you dont understand ... you never will.",
 "",
 "Also Thanks To:",
-"    Kelly Hill, Emma Ellison, Marieke Burmon",
+"    Kelly Hill, Emma Ellison, Marieke Bermon",
 "",
 "Library Creditations: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt",
@@ -116,12 +116,6 @@ const mstring contrib[] = {
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
 "    zlib           http://www.cdrom.com/pub/infozip/zlib",
 "    cint           http://root.cern.ch/root/Cint.html",
-"",
-"Magick II may be freely distributed, but may NOT be modified",
-"in any way unless DETAILED lists of exactly what has been",
-"modified are kept, AND the original copyrights are untouched.",
-"Magick II and ALL derivatives must be bundled with FULL source",
-"code and documentation.  No charge may be imposed for Magick.",
 "---EOM---"
 };
 

@@ -158,7 +158,7 @@ JUPE               =%s just JUPED server %s.
 ONOFF              =Services have been turned %s by %s.
 ONOFF_ONE          =Service %s has been turned %s by %s.
 
-BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
+BREAKDOWN_HEAD     =SERVER                                        LAG  USERS (OPS)
 BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
 ON                 =ON
 OFF                =OFF

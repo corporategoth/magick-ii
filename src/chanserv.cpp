@@ -1078,7 +1078,7 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
     }
 
     // WE can kick anyone we want
-    if (Parent->nickserv.IsLive(kicker) &&
+    if (!Parent->nickserv.IsLive(kicker) ||
 	Parent->nickserv.live[kicker.LowerCase()].IsServices())
 	return;
 
@@ -3419,10 +3419,10 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
     }
 
     mstring founder = Parent->getSname(source);
-    if (Parent->nickserv.live[source.LowerCase()].Host() != "" &&
-	Parent->nickserv.IsStored(Parent->nickserv.live[source.LowerCase()].Host()))
+    if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
     {
-	founder = Parent->getSname(Parent->nickserv.live[source.LowerCase()].Host());
+	founder = Parent->getSname(Parent->nickserv.stored[source.LowerCase()].Host());
     }
 
     Parent->chanserv.stored[channel.LowerCase()] =

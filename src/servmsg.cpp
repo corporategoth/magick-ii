@@ -110,7 +110,10 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
-	::send(mynick, source, credits[i]);
+	if (credits[i].Len())
+	    ::send(mynick, source, credits[i]);
+	else
+	    ::send(mynick, source, " ");
 }
 
 
@@ -120,7 +123,10 @@ void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
-	::send(mynick, source, contrib[i]);
+	if (contrib[i].Len())
+	    ::send(mynick, source, contrib[i]);
+	else
+	    ::send(mynick, source, " ");
 }
 
 
@@ -466,7 +472,7 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_All", (mynick, source, params));
 
-    do_Stats(mynick, source, params);
+    do_Stats(mynick, source, params.ExtractWord(1, " "));
     do_stats_Nick(mynick, source, params);
     do_stats_Channel(mynick, source, params);
     do_stats_Other(mynick, source, params);
@@ -487,7 +493,7 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_UPTIME"),
 		StartTime.Ago().c_str());
-    if (StartTime != Parent->ResetTime())
+    if ((StartTime - Parent->ResetTime()).Minute() >= 1)
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_RESET"),
 		Parent->ResetTime().Ago().c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_MAXUSERS"),
@@ -503,10 +509,10 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_USERS"),
 		Parent->nickserv.live.size(), opers);
 
-    if (Parent->operserv.CloneList_size())
+    if (Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1u))
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
-		Parent->operserv.CloneList_sum(),
-		Parent->operserv.CloneList_size());
+		Parent->operserv.CloneList_sum() - Parent->operserv.CloneList_size(),
+		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1u));
 }
 
 

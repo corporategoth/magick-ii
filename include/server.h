@@ -78,6 +78,13 @@ private:
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;
+    
+    enum send_type {
+	t_GLOBOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
+	t_PRIVMSG, t_QLINE, t_SVSMODE, t_SVSNICK,
+	t_SVSKILL, t_TOPIC, t_UNQLINE, t_WALLOPS };
+    map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
+    void FlushMsgs(mstring nick);
 
     void OurUplink(mstring server) { i_OurUplink = server; }
 public:

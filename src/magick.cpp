@@ -164,7 +164,9 @@ int Magick::Start()
 	RET(1);
     }
     else if (i != 0)
+    {
 	RET(0);
+    }
     if (setpgid (0, 0) < 0)
     {
 	//log_perror ("setpgid()");
@@ -376,12 +378,15 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGTSTP);
 #endif
 
+
     if (events != NULL)
     {
 	events->close(0);
 	delete events;
     }
+
     delete signalhandler;
+
     if(logger!=NULL)
 	delete logger;
     if(logfile!=NULL)
@@ -2088,6 +2093,7 @@ void Magick::load_databases()
 	} */
 	if (compressed)
 	{
+CP(("Compressed datastream active ..."));
 	    zinput = new wxZlibInputStream(*input);
 	    input = zinput;
 	}
@@ -2110,6 +2116,7 @@ void Magick::load_databases()
 	} */
 	if (compressed)
 	{
+CP(("Compressed datastream inactive ..."));
 	    delete zinput;
 	}
 	input = &finput;
@@ -2155,6 +2162,7 @@ void Magick::save_databases()
 	} */
 	if (files.Compression())
 	{
+CP(("Compressed datastream active ..."));
 	    zoutput = new wxZlibOutputStream(*output, files.Compression());
 	    output = zoutput;
 	}
@@ -2178,6 +2186,7 @@ void Magick::save_databases()
 	} */
 	if (files.Compression())
 	{
+CP(("Compressed datastream inactive ..."));
 	    delete zoutput;
 	}
 	output = &foutput;

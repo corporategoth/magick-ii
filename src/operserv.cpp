@@ -60,16 +60,31 @@ void OperServ::RemHost(mstring host)
     }
 }
 
-unsigned int OperServ::CloneList_sum()
+size_t OperServ::CloneList_sum()
 {
-    NFT("OperServ::Clones");
+    NFT("OperServ::ClonesList_sum");
 
     map<mstring, unsigned int>::iterator i;
-    unsigned int value = 0;
+    size_t value = 0;
 
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	value += i->second;
+    }
+    RET(value);
+}
+
+size_t OperServ::CloneList_size(unsigned int amt)
+{
+    FT("OperServ::CloneL:ist_size", (amt));
+
+    map<mstring, unsigned int>::iterator i;
+    size_t value = 0;
+
+    for (i=CloneList.begin(); i!=CloneList.end(); i++)
+    {
+	if (i->second == amt)
+	    value++;
     }
     RET(value);
 }

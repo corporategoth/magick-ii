@@ -502,7 +502,7 @@ void mBaseTask::message_i(const mstring& message)
     if (type == "PRIVMSG" || type == "NOTICE")
     {
 	// Split stuff for NON-CHANNEL traffic.
-	if (!IsChan(target))
+	if (!IsChan(target) && Parent->nickserv.IsLive(source))
 	{
 	    // Execute if we DONT (or havnt) trigger ignore
 	    if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())

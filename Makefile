@@ -33,7 +33,7 @@ LIBS=$(SUBLIBS) $(LIBZ)
 # --[ Dont edit below this line ]-----------------------------------------
 OLDPWD=$(TOPDIR)
 
-all: rmexec magick
+all: magick
 
 rmexec:
 	rm -f magick magick.debug
@@ -51,7 +51,7 @@ subdirs:
 		cd $(OLDPWD); \
 	done
 
-link:
+link:	rmexec
 	gcc $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
 	strip magick

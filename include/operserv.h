@@ -131,7 +131,8 @@ public:
     bool oOperDeny()		{ return operdeny; }
 
     size_t CloneList_size() { return CloneList.size(); }
-    unsigned int CloneList_sum();
+    size_t CloneList_sum();
+    size_t CloneList_size(unsigned int amt);
 
     bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
     bool Clone_erase();
