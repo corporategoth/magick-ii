@@ -86,9 +86,61 @@ LINK32=link.exe
 # Begin Group "docs"
 
 # PROP Default_Filter ""
+# Begin Group "rfcs"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc1459.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc854.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc855.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc856.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc857.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc858.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc859.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc860.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc861.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\rfcs\rfc959.txt
+# End Source File
+# Begin Source File
+
+SOURCE=".\docs\rfcs\The Client-To-Client Protocol (CTCP).txt"
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\docs\communication.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\config.h
 # End Source File
 # Begin Source File
 
@@ -101,6 +153,10 @@ SOURCE=.\docs\develop
 # Begin Source File
 
 SOURCE=.\docs\magick.ini
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\policy
 # End Source File
 # Begin Source File
 
