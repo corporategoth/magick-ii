@@ -69,12 +69,6 @@ maint:
 	rm -f config1.guess
 	chmod u+x config.guess
 	chmod -Rf go=u,go-w *
-	for i in files files/memo files/pic files/public files/temp; do \
-	  if [ ! -d files ]; then \
-	    mkdir files; \
-	  fi; \
-	done
-	rm -f files/*/*
 
 all:
 	rm -f Makefile
