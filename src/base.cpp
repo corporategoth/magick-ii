@@ -18,9 +18,38 @@
 #include "lockable.h"
 #include "magick.h"
 
-
 bool mBase::TaskOpened;
 mBaseTask mBase::BaseTask;
+
+mstring mUserDef::UserDef(mstring type)
+{
+    FT("mUserDef::UserDef", (type));
+    if (i_UserDef.empty() || i_UserDef.find(type.LowerCase()) == i_UserDef.end())
+    {
+	RET("");
+    }
+    else
+    {
+	RET(i_UserDef[type.LowerCase()]);
+    }
+}
+
+
+mstring mUserDef::UserDef(mstring type, mstring val)
+{
+    FT("mUserDef::UserDef", (type, val));
+    if (val.UpperCase() == "NONE")
+    {
+	i_UserDef.erase(type.LowerCase());
+	RET("Value of " + type.UpperCase() + " has been cleared.");
+    }
+    else
+    {
+	i_UserDef[type.LowerCase()] = val;
+	RET("Value of " + type.UpperCase() + " has been set to " + val + ".");
+    }
+}
+
 
 mBase::mBase()
 {

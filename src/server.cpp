@@ -18,17 +18,6 @@
 #include "lockable.h"
 #include "magick.h"
 
-Server::Server()
-{
-    NFT("Server::Server");
-}
-
-Server::Server(const Server &in)
-{
-    FT("Server::Server", ("(const Server &) in"));
-    *this = in;
-}
-
 Server::Server(mstring name, int hops, mstring description)
 {
     FT("Server::Server", (name, hops, description));
@@ -58,42 +47,6 @@ void Server::operator=(const Server &in)
     i_Lag = in.i_Lag;
 }
 
-bool Server::operator==(const Server &in) const
-{
-    FT("Server::operator==", ("(const Server &) in"));
-    RET(i_Name == in.i_Name);
-}
-
-bool Server::operator<(const Server &in) const
-{
-    FT("Server::operator<", ("(const Server &) in"));
-    RET(i_Name < in.i_Name);
-}
-
-mstring Server::Name()
-{
-    NFT("Server::Name");
-    RET(i_Name);
-}
-
-mstring Server::Uplink()
-{
-    NFT("Server::Uplink");
-    RET(i_Uplink);
-}
-
-int Server::Hops()
-{
-    NFT("Server::Hops");
-    RET(i_Hops);
-}
-
-mstring Server::Description()
-{
-    NFT("Server::Description");
-    RET(i_Description);
-}
-
 void Server::Ping()
 {
     NFT("Server::Ping");
@@ -113,12 +66,6 @@ void Server::Pong()
 	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag / 1000.0));
 	i_Ping = 0;
     }
-}
-
-double Server::Lag()
-{
-    NFT("Server::Lag");
-    RET(i_Lag / 1000.0);
 }
 
 vector<mstring> Server::Downlinks()

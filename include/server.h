@@ -27,21 +27,23 @@ class Server
     long i_Ping;
     long i_Lag;
 public:
-    Server();
-    Server(const Server &in);
+    Server() {}
+    Server(const Server &in) { *this = in; }
     Server(mstring name, int hops, mstring description);
     Server(mstring name, mstring uplink, int hops, mstring description);
     void operator=(const Server &in);
-    bool operator==(const Server &in) const;
-    bool operator<(const Server &in) const;
+    bool operator==(const Server &in) const
+	{ return (i_Name == in.i_Name); }
+    bool operator<(const Server &in) const
+	{ return (i_Name < in.i_Name); }
 
-    mstring Name();
-    mstring Uplink();
-    int Hops();
-    mstring Description();
+    mstring Name()		{ return i_Name; }
+    mstring Uplink()		{ return i_Uplink; }
+    int Hops()			{ return i_Hops; }
+    mstring Description()	{ return i_Description; }
     void Ping();
     void Pong();
-    double Lag();
+    double Lag()		{ return i_Lag / 1000.0; }
 
     vector<mstring> Downlinks();
     vector<mstring> AllDownlinks();

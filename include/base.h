@@ -15,6 +15,15 @@
 #include "mstring.h"
 #include "trace.h"
 
+class mUserDef
+{
+protected:
+    map<mstring, mstring> i_UserDef;
+public:
+    mstring UserDef(mstring type);
+    mstring UserDef(mstring type, mstring val);
+};
+
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;

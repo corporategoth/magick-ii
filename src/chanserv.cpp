@@ -68,21 +68,6 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     }
 }
 
-// Public functions
-
-Chan_Live_t::Chan_Live_t()
-{
-    NFT("Chan_Live_t::Chan_Live_t");
-}
-
-
-Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
-{
-    NFT("Chan_Live_t::Chan_Live_t");
-    *this=in;
-}
-
-
 Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
@@ -117,34 +102,6 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 }
 
 
-bool Chan_Live_t::operator==(const Chan_Live_t &in) const
-{
-    NFT("Chan_Live_t::operator==");
-    RET(i_Name==in.i_Name);
-}
-
-
-bool Chan_Live_t::operator<(const Chan_Live_t &in) const
-{
-    NFT("Chan_Live_t::operator<");
-    RET(i_Name<in.i_Name);
-}
-
-
-mstring Chan_Live_t::Name()
-{
-    NFT("Chan_Live_t::Name");
-    RET(i_Name);
-}
-
-
-mDateTime Chan_Live_t::Creation_Time()
-{
-    NFT("Chan_Live_t::Creation_Time");
-    RET(i_Creation_Time);
-}
-
-
 void Chan_Live_t::Topic(mstring topic, mstring setter)
 {
     FT("Chan_Live_t::Topic", (topic, setter));
@@ -160,27 +117,6 @@ void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = time;
-}
-
-
-mstring Chan_Live_t::Topic()
-{
-    NFT("Chan_Live_t::Topic");
-    RET(i_Topic);
-}
-
-
-mstring Chan_Live_t::Topic_Setter()
-{
-    NFT("Chan_Live_t::Topic_Setter");
-    RET(i_Topic_Setter);
-}
-
-
-mDateTime Chan_Live_t::Topic_Set_Time()
-{
-    NFT("Chan_Live_t::Topic_Set_Time");
-    RET(i_Topic_Set_Time);
 }
 
 
@@ -436,46 +372,6 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     }
 }
 
-bool Chan_Live_t::HasMode(mstring in)
-{
-    FT("Chan_Live_t::HasMode", (in));
-    RET(modes.Contains(in));
-}
-
-
-mstring Chan_Live_t::Mode()
-{
-    NFT("Chan_Live_t::Mode");
-    RET(modes);
-}
-
-
-mstring Chan_Live_t::Key()
-{
-    NFT("Chan_Live_t::Key");
-    RET(i_Key);
-}
-
-
-int Chan_Live_t::Limit()
-{
-    NFT("Chan_Live_t::Limit");
-    RET(i_Limit);
-}
-
-
-mstring Chan_Live_t::UserDef(mstring type)
-{
-    FT("Chan_Live_t::UserDef", (type));
-    RET("");
-}
-
-mstring Chan_Live_t::UserDef(mstring type, mstring val)
-{
-    FT("Chan_Live_t::UserDef", (type, val));
-    RET("");
-}
-
 
 bool checkops(pair<mstring, pair<bool,bool> > &in)
 {
@@ -506,11 +402,6 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
 
 // --------- end of Chan_Live_t -----------------------------------
 
-entlist_t::entlist_t()
-{
-    NFT("entlist_t::entlist_t");
-}
-
 entlist_t::entlist_t(mstring entry, mstring nick)
 {
     FT("entlist_t::entlist_t", (entry, nick));
@@ -519,11 +410,6 @@ entlist_t::entlist_t(mstring entry, mstring nick)
     i_Last_Modifier = nick;
 }
 
-entlist_t::entlist_t(const entlist_t& in)
-{
-    FT("entlist_t::entlist_t", ("(const entlist_t &) in"));
-    *this=in;
-}
 
 void entlist_t::operator=(const entlist_t &in)
 {
@@ -537,17 +423,6 @@ void entlist_t::operator=(const entlist_t &in)
 	i_UserDef[i->first]=i->second;
 }
 
-bool entlist_t::operator==(const entlist_t &in) const
-{
-    FT("entlist_t::operator==", ("(const entlist_t &) in"));
-    RET(i_Entry==in.i_Entry);
-}
-
-bool entlist_t::operator<(const entlist_t &in) const
-{
-    FT("entlist_t::operator<", ("(const entlist_t &) in"));
-    RET(i_Entry<in.i_Entry);
-}
 
 bool entlist_t::Change(mstring entry, mstring nick)
 {
@@ -558,35 +433,6 @@ bool entlist_t::Change(mstring entry, mstring nick)
     RET(true);
 }
 
-mstring entlist_t::Entry()
-{
-    NFT("entlist_t::Entry");
-    RET(i_Entry);
-}
-
-mDateTime entlist_t::Last_Modify_Time()
-{
-    NFT("entlist_t::Last_Modify_Time");
-    RET(i_Last_Modify_Time);
-}
-
-mstring entlist_t::Last_Modifier()
-{
-    NFT("entlist_t::Last_Modifier");
-    RET(i_Last_Modifier);
-}
-
-mstring entlist_t::UserDef(mstring type)
-{
-    FT("entlist_t::UserDef", (type));
-    RET("");
-}
-
-mstring entlist_t::UserDef(mstring type, mstring val)
-{
-    FT("entlist_t::UserDef", (type, val));
-    RET("");
-}
 
 wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
 {
@@ -598,6 +444,7 @@ wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
 	out<<(mstring)j->first<<(mstring)j->second;
     return out;
 }
+
 
 wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
 {
@@ -618,11 +465,6 @@ wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
 
 // --------- end of entlist_val_t -----------------------------------
 
-entlist_val_t::entlist_val_t()
-{
-    NFT("entlist_val_t::entlist_val_t");
-}
-
 entlist_val_t::entlist_val_t(mstring entry, long value, mstring nick)
 {
     FT("entlist_val_t::entlist_val_t", (entry, value, nick));
@@ -632,11 +474,6 @@ entlist_val_t::entlist_val_t(mstring entry, long value, mstring nick)
     i_Last_Modifier = nick;
 }
 
-entlist_val_t::entlist_val_t(const entlist_val_t& in)
-{
-    FT("entlist_val_t::entlist_val_t", ("(const entlist_val_t &) in"));
-    *this=in;
-}
 
 void entlist_val_t::operator=(const entlist_val_t &in)
 {
@@ -651,17 +488,6 @@ void entlist_val_t::operator=(const entlist_val_t &in)
 	i_UserDef[i->first]=i->second;
 }
 
-bool entlist_val_t::operator==(const entlist_val_t &in) const
-{
-    FT("entlist_val_t::operator==", ("(const entlist_val_t &) in"));
-    RET(i_Entry==in.i_Entry);
-}
-
-bool entlist_val_t::operator<(const entlist_val_t &in) const
-{
-    FT("entlist_val_t::operator<", ("(const entlist_val_t &) in"));
-    RET(i_Entry<in.i_Entry);
-}
 
 bool entlist_val_t::Change(mstring entry, mstring nick)
 {
@@ -672,6 +498,7 @@ bool entlist_val_t::Change(mstring entry, mstring nick)
     RET(true);
 }
 
+
 bool entlist_val_t::Change(long value, mstring nick)
 {
     FT("entlist_val_t::Change", (value, nick));
@@ -680,6 +507,7 @@ bool entlist_val_t::Change(long value, mstring nick)
     i_Last_Modifier = nick;
     RET(true);
 }
+
 
 bool entlist_val_t::Change(mstring entry, long value, mstring nick)
 {
@@ -691,41 +519,6 @@ bool entlist_val_t::Change(mstring entry, long value, mstring nick)
     RET(true);
 }
 
-mstring entlist_val_t::Entry()
-{
-    NFT("entlist_val_t::Entry");
-    RET(i_Entry);
-}
-
-long entlist_val_t::Value()
-{
-    NFT("entlist_val_t::Value");
-    RET(i_Value);
-}
-
-mDateTime entlist_val_t::Last_Modify_Time()
-{
-    NFT("entlist_val_t::Last_Modify_Time");
-    RET(i_Last_Modify_Time);
-}
-
-mstring entlist_val_t::Last_Modifier()
-{
-    NFT("entlist_val_t::Last_Modifier");
-    RET(i_Last_Modifier);
-}
-
-mstring entlist_val_t::UserDef(mstring type)
-{
-    FT("entlist_val_t::UserDef", (type));
-    RET("");
-}
-
-mstring entlist_val_t::UserDef(mstring type, mstring val)
-{
-    FT("entlist_val_t::UserDef", (type, val));
-    RET("");
-}
 
 wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
 {
@@ -737,6 +530,7 @@ wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
 	out<<(mstring)j->first<<(mstring)j->second;
     return out;
 }
+
 
 wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
 {
@@ -757,12 +551,12 @@ wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
 
 // --------- end of entlist_val_t -----------------------------------
 
-Chan_Stored_t::Chan_Stored_t(const Chan_Stored_t& in)
+ChanServ::ChanServ()
 {
-    NFT("Chan_Stored_t::Chan_Stored_t");
-    *this=in;
+    NFT("ChanServ::ChanServ");
+    messages=true;
+    automation=true;
 }
-
 
 void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 {
@@ -799,25 +593,6 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
     i_UserDef.insert(*i);
 
-}
-
-bool Chan_Stored_t::operator==(const Chan_Stored_t &in) const
-{
-    NFT("Chan_Stored_t::operator==");
-    RET(i_Name==in.i_Name);
-}
-
-bool Chan_Stored_t::operator<(const Chan_Stored_t &in) const
-{
-    NFT("Chan_Stored_t::operator<");
-    RET(i_Name<in.i_Name);
-}
-
-ChanServ::ChanServ()
-{
-    NFT("ChanServ::ChanServ");
-    messages=true;
-    automation=true;
 }
 
 bool ChanServ::IsLive(mstring in)
