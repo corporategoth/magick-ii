@@ -157,7 +157,7 @@ int Magick::Start()
 #endif
 #endif
     wxFile pidfile;
-    pidfile.Create(Files_PIDFILE,true);
+    pidfile.Create(Files_PIDFILE.Strip(mstring::stBoth),true);
     if(pidfile.IsOpened())
     {
 	mstring dummystring;
