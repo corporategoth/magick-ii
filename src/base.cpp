@@ -58,9 +58,8 @@ void *thread_handler(void *owner)
     int ilevel=mThread::find()->number();
     pair<mstring,mstring> data;
     bool gotdata;
-    Owner->on=true; // temporary force.
 
-    while(Owner->on==true)
+    while(Owner->IsOnMSG())
     {
 
 	gotdata=false;

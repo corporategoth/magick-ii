@@ -21,15 +21,6 @@ mDateTime Start_Time, Reset_Time;
 
 Magick *MagickObject;
 
-int start_server(int argc, char **argv)
-{
-    FT("start_server", (argc, "(char **) argv"));
-    Reset_Time=Now();
-    Magick internalobject(argc, argv);
-    MagickObject=&internalobject;
-    RET(internalobject.Start());
-}
-
 int main(int argc, char **argv)
 {
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -47,10 +38,15 @@ int main(int argc, char **argv)
 	    Trace::TurnSet((threadtype_enum) i, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
 #endif
 
-	Start_Time=Now();
 	int Result;
+	StartTime=Now();
+	{
 restart:
-	Result=start_server(argc,argv);
+	    Magick internalobject(argc, argv);
+	    MagickObject=&internalobject;
+	    ResetTime=Now();
+	    Result=internalobject.Start();
+	}
 	if(Result==MAGICK_RET_RESTART)
 	    goto restart;
 	mThread::Detach(tt_MAIN,1);
@@ -61,19 +57,16 @@ restart:
     {
 	// new style STL exceptions
 	fprintf(stderr,"Unhandled exception: %s\n",e.what());
-	delete mainthread;
     }
     catch(int i)
     {
 	// old style c exceptions
 	fprintf(stderr,"Unhandled exception: %d\n",i);
-	delete mainthread;
     }
     catch(...)
     {
 	// even older style exceptions like SIGSEGV
 	fprintf(stderr,"Unhandled exception: Unknown\n");
-	delete mainthread;
 	return -1;
     }
 #endif

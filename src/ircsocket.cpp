@@ -77,7 +77,7 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
 
 	// Find out if the target nick is one of the services 'clones'
 	// (and if it is, which one?)  Pass the message to them if so.
-//	if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//	     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
 //	    MagickObject->operserv.push_message(tmp[2], pass);
 	     if ((names=" "+NickServ::getnames()+" ").Find(" "+tmp[2]+" "))
 	    MagickObject->nickserv.push_message(tmp[2], pass);

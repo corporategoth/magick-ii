@@ -74,6 +74,9 @@ private:
 	SignalHandler *signalhandler;
 	IrcSvcHandler *ircsvchandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
+
+	static bool messages;		// Wether to process /MSG, /NOTICE.
+	static bool automation;		// Wether to do automatic tasks.
 public:
 	void shutdown(bool in);
 	bool shutdown();
@@ -87,13 +90,19 @@ public:
 	// add a bob function to handle commands
 	void handle(const mstring& server, const mstring& command, const mstring& functionname);
 
+	static bool IsOnMSG() { return messages; }
+	static void TurnOnMSG() { messages = true; }
+	static void TurnOffMSG() { messages = false; }
+	static bool IsOnAUTO() { return automation; }
+	static void TurnOnAUTO() { automation = true; }
+	static void TurnOffAUTO() { automation = false; }
+
 	wxFileConfig* MagickIni;
 	long runflags;
 	mstring services_dir;
 	mstring config_file;
 	int high_water_mark;
 	int low_water_mark;
-	mDateTime StartTime;
 	mstring ProgramName;
 	bool debug;
 	bool live;
@@ -193,6 +202,7 @@ protected:
 };
 
 extern Magick *MagickObject;
-extern mDateTime Reset_Time;
+extern mDateTime StartTime;
+extern mDateTime ResetTime;
 
 #endif

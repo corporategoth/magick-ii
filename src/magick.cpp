@@ -27,6 +27,7 @@ using namespace std;
 #define ACE_DEBUGGING
 
 wxLogStderr *logger;
+mDateTime StartTime, ResetTime;
 
 Magick::Magick(int inargc, char **inargv)
 {
@@ -136,7 +137,6 @@ int Magick::Start()
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
     LoadExternalMessages();
-    StartTime=Now();
 
 
     //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.

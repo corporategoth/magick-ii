@@ -24,12 +24,16 @@ class mBase
 protected:
     deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
 public:
-    bool on;
-    void FlagTerminate(void) {on=false;}
-
     mBase();
     void push_message(const mstring& servicename, const mstring& message);
     void init();
+
+    virtual bool IsOnMSG() =0;
+    virtual void TurnOnMSG() =0;
+    virtual void TurnOffMSG() =0;
+    virtual bool IsOnAUTO() =0;
+    virtual void TurnOnAUTO() =0;
+    virtual void TurnOffAUTO() =0;
 
     virtual void execute(const mstring& servicename, const mstring& message)=0;
     virtual threadtype_enum Get_TType() const=0;

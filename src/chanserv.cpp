@@ -57,10 +57,16 @@ int ChanServ::lvl_cmdvoice;		// Default level for CMDVOICE
 int ChanServ::lvl_cmdop;		// Default level for CMDOP
 int ChanServ::lvl_cmdclear;		// Default level for CMDCLEAR
 
+bool ChanServ::messages;		// Wether to process /MSG, /NOTICE.
+bool ChanServ::automation;		// Wether to do automatic tasks.
+
 ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
-    on=false;
+    if (mThread::findbytype(Get_TType(), 1) == NULL) {
+	messages=true;
+	automation=true;
+    }
 }
 void ChanServ::execute(const mstring & servicename, const mstring & message)
 {
